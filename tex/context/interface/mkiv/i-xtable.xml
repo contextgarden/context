@@ -77,6 +77,25 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="aligncharacter">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentleftsample">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentrightsample">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentleftwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentrightwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="alignmentcharacter">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>

@@ -44,14 +44,20 @@
                 <cd:parameter name="headstyle">
                     <cd:resolve name="value-style"/>
                 </cd:parameter>
-                <cd:parameter name="backgroundcolor">
+                <cd:parameter name="headcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
-                <cd:parameter name="foregroundcolor">
+                <cd:parameter name="background">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="backgroundcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="foregroundstyle">
                     <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundcolor">
+                    <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="align">
                     <cd:constant type="left"/>

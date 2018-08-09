@@ -164,6 +164,8 @@
 
 \newdimen\d_page_shipouts_offset \d_page_shipouts_offset=-1in
 
+\def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone
    % this is not resource safe!
@@ -186,7 +188,7 @@
      \ifcase\shipoutfinalizemethod
        \finalizeshipoutbox\shipoutscratchbox
      \fi
-     \normalshipout\vpack
+     \setbox\shipoutscratchbox\vpack
        {\offinterlineskip
         \vskip\d_page_shipouts_offset
         \hskip\d_page_shipouts_offset
@@ -194,6 +196,7 @@
           {\page_otr_flush_every_stuff
            \page_otr_flush_special_content
            \box\shipoutscratchbox}}%
+     \page_shipout_box\shipoutscratchbox % takes a box number!
    \else
      \page_shipouts_ignore{#1}%
    \fi}

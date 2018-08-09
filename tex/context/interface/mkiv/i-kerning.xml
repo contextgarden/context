@@ -90,4 +90,36 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="defineperiodkerning" level="style" catgeory="fonts whitespace" file="typo-pnc.mkic">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupperiodkerning"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupperiodkerning" level="style" catgeory="fonts whitespace" file="typo-pnc.mkic">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setperiodkerning" level="style" catgeory="fonts whitespace" file="typo-pnc.mkic">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="reset"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetperiodkerning" level="style" catgeory="fonts whitespace" file="typo-pnc.mkic"/>
+
 </cd:interface>

@@ -231,9 +231,151 @@
             </cd:arguments>
         </cd:command>
 
+        <cd:command name="setupfloatcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="suffix">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="suffixseparator">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="suffixstopper">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="location">
+                        <cd:constant type="left"/>
+                        <cd:constant type="right"/>
+                        <cd:constant type="middle"/>
+                        <cd:constant type="low"/>
+                        <cd:constant type="high"/>
+                        <cd:constant type="grid"/>
+                        <cd:constant type="lines"/>
+                        <cd:constant type="overlay"/>
+                        <cd:constant type="inner"/>
+                        <cd:constant type="outer"/>
+                        <cd:constant type="innermargin"/>
+                        <cd:constant type="outermargin"/>
+                        <cd:constant type="leftmargin"/>
+                        <cd:constant type="rightmargin"/>
+                        <cd:constant type="lefthanging"/>
+                        <cd:constant type="righthanging"/>
+                        <cd:constant type="hang"/>
+                        <cd:constant type="top"/>
+                        <cd:constant type="bottom" default="yes"/>
+                        <cd:constant type="stretch"/>
+                        <cd:constant type="tolerant"/>
+                        <cd:constant type="verytolerant"/>
+                        <cd:constant type="none"/>
+                        <cd:constant type="default"/>
+                    </cd:parameter>
+                    <cd:parameter name="command">
+                        <cd:constant type="cd:oneargument"/>
+                    </cd:parameter>
+                    <cd:parameter name="numbercommand">
+                        <cd:constant type="cd:oneargument"/>
+                    </cd:parameter>
+                    <cd:parameter name="textcommand">
+                        <cd:constant type="cd:oneargument"/>
+                    </cd:parameter>
+                    <cd:parameter name="spacebefore">
+                        <cd:inherit name="blank"/>
+                    </cd:parameter>
+                    <cd:parameter name="spaceinbetween">
+                        <cd:inherit name="blank"/>
+                    </cd:parameter>
+                    <cd:parameter name="spaceafter">
+                        <cd:inherit name="blank"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="headstyle">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="headcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="headseparator">
+                        <cd:constant type="cd:text"/>
+                    </cd:parameter>
+                    <cd:parameter name="inbetween">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="topoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="bottomoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="number">
+                        <cd:constant type="yes" default="yes"/>
+                        <cd:constant type="no"/>
+                        <cd:constant type="none"/>
+                    </cd:parameter>
+                    <cd:parameter name="group">
+                        <cd:constant type="cd:text"/>
+                    </cd:parameter>
+                    <cd:parameter name="leftmargin">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rightmargin">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="innermargin">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="outermargin">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="align">
+                        <cd:inherit name="setupalign"/>
+                    </cd:parameter>
+                    <cd:parameter name="width">
+                        <cd:constant type="fit" default="yes"/>
+                        <cd:constant type="max"/>
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="minwidth">
+                        <cd:constant type="fit" default="yes"/>
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="maxwidth">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupcounter"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupfloatcaption"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="setupcaptions" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupfloatcaption"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
     -->
 
-    <cd:command name="setupfloatcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+    <cd:command name="setupcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -293,7 +435,12 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
-                <!-- headstyle headcolor headseparator -->
+                <cd:parameter name="headstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="headcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="headseparator">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -352,20 +499,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupfloatcaption"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
     <cd:command name="setupcaptions" level="style" category="structure fonts counter" file="strc-flt.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
-                <cd:inherit name="setupfloatcaption"/>
+                <cd:inherit name="setupcaption"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -794,6 +932,46 @@
             <cd:resolve name="keyword-reference-list-optional"/>
             <cd:resolve name="argument-text"/>
             <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definefacingfloat" level="style" category="structure" file="page-ffl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupfacingfloat"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupfacingfloat" level="style" category="structure" file="page-ffl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:inherit name="page"/>
+                </cd:parameter>
+                <cd:parameter name="spaceinbetween">
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="facingfloat" type="environment" level="document" category="structure" file="page-ffl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 

@@ -33,59 +33,83 @@ nodes.is_rotated = allocate { -- used
     RTT = true, ["+RTT"] = true,
 }
 
-nodes.textdir_is_parallel = allocate { -- used
-    TLT = {
+do
+
+    local tlt = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
      -- LTL = false,
      -- RTT = false,
-    },
-    TRT= {
+    }
+
+    local trt = {
         TLT = true, ["+TLT"] = true,
         TRT = true, ["+TRT"] = true,
      -- LTL = false,
      -- RTT = false,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    },
-    RTT = {
+    }
+
+    local ltl = {
      -- TLT = false,
      -- TRT = false,
         LTL = true, ["+LTL"] = true,
         RTT = true, ["+RTT"] = true,
     }
-}
 
-nodes.pardir_is_parallel = allocate {
-    TLT = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    TRT = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL = {
+    local rtt = {
      -- TLT = false,
      -- TRT = false,
         LTL = true, ["+LTL"] = true,
         RTT = true, ["+RTT"] = true,
-    },
-    RTT = {
+    }
+
+    nodes.textdir_is_parallel = allocate { -- used
+        TLT = tlt, ["+TLT"] = tlt, -- ["-TLT"] = tlt,
+        TRT = trt, ["+TRT"] = trt, -- ["-TRT"] = trt,
+        LTL = ltl, ["+LTL"] = ltl, -- ["-LTL"] = ltl,
+        RTT = rtt, ["+RTT"] = rtt, -- ["-RTT"] = rtt,
+    }
+
+end
+
+do
+
+    local tlt = {
+        TLT = true, ["+TLT"] = true,
+        TRT = true, ["+TRT"] = true,
+     -- LTL = false,
+     -- RTT = false,
+    }
+
+    local trt = {
+        TLT = true, ["+TLT"] = true,
+        TRT = true, ["+TRT"] = true,
+     -- LTL = false,
+     -- RTT = false,
+    }
+
+    local ltl = {
      -- TLT = false,
      -- TRT = false,
         LTL = true, ["+LTL"] = true,
         RTT = true, ["+RTT"] = true,
-    },
-}
+    }
+
+    local rtt = {
+     -- TLT = false,
+     -- TRT = false,
+        LTL = true, ["+LTL"] = true,
+        RTT = true, ["+RTT"] = true,
+    }
+
+    nodes.pardir_is_parallel = allocate {
+        TLT = tlt, ["+TLT"] = tlt, -- ["-TLT"] = tlt,
+        TRT = trt, ["+TRT"] = trt, -- ["-TRT"] = trt,
+        LTL = ltl, ["+LTL"] = ltl, -- ["-LTL"] = ltl,
+        RTT = rtt, ["+RTT"] = rtt, -- ["-RTT"] = rtt,
+    }
+
+end
 
 nodes.pardir_is_opposite = allocate {
     TLT = {

@@ -792,4 +792,21 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * SCRIPT    -->
+
+    <cd:define name="keyword-script">
+        <cd:keywords>
+            <cd:constant type="hangul"/>
+            <cd:constant type="hanzi"/>
+            <cd:constant type="nihongo"/>
+            <cd:constant type="ethiopic"/>
+            <cd:constant type="thai"/>
+            <cd:constant type="test"/>
+            <cd:constant type="cd:name"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

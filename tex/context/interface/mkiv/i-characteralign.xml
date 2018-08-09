@@ -24,9 +24,32 @@
 
     <cd:command name="resetcharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
 
+    <cd:command name="nocharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+
+    <cd:command name="setcharacteraligndetail" level="system" category="alignment" file="typo-tal.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:text"/>
+                <cd:constant type="cd:text" prefix="number" method="apply"/>
+                <cd:constant type="cd:text" prefix="text" method="apply"/>
+            </cd:keywords>
+            <cd:resolve name="argument-dimension"/>
+            <cd:resolve name="argument-dimension"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="alignmentcharacter" level="system" category="alignment" file="typo-tal.mkiv"/>
 
     <cd:command name="characteralign" type="environment" category="alignment" level="system" file="typo-tal.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupcharacteralign"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="characteralign" type="environment" variant="argument" category="alignment" level="system" file="typo-tal.mkiv">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>
@@ -41,5 +64,33 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="setupcharacteralign" level="style" category="alignment" file="typo-tal.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="leftwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="leftsample">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="rightsample">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="character">
+                    <cd:constant type="cd:text"/>
+                    <cd:constant type="cd:text" prefix="number" method="apply"/>
+                    <cd:constant type="cd:text" prefix="text" method="apply"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setfirstpasscharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+
+    <cd:command name="setsecondpasscharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
 
 </cd:interface>

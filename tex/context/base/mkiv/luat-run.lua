@@ -141,6 +141,11 @@ else
     callbacks.register("finish_synctex_callback", wrapup_synctex,      "rename temporary synctex file")
 end
 
+-- temp hack for testing:
+
+callbacks.functions.start_page_number = start_shipout_page
+callbacks.functions.stop_page_number  = stop_shipout_page
+
 -- an example:
 
 local tempfiles = { }

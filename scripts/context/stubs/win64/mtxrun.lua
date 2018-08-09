@@ -190,7 +190,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-macro"] = package.loaded["l-macro"] or true
 
--- original size: 9473, stripped down to: 5845
+-- original size: 9974, stripped down to: 6204
 
 if not modules then modules={} end modules ['l-macros']={
   version=1.001,
@@ -208,7 +208,7 @@ local newline=S("\n\r")^1
 local continue=P("\\")*newline
 local spaces=S(" \t")+continue
 local name=R("az","AZ","__","09")^1
-local body=((1+continue/"")-newline)^1
+local body=((continue/""+1)-newline)^1
 local lparent=P("(")
 local rparent=P(")")
 local noparent=1-(lparent+rparent)
@@ -261,7 +261,7 @@ resolve=C(C(name)*arguments^-1)/function(raw,s,a)
 end
 subparser=Cs((resolve+P(1))^1)
 local enddefine=P("#enddefine")/""
-local beginregister=(C(name)*spaces^0*(arguments+Cc(false))*C((1-enddefine)^1)*enddefine)/function(k,a,v)
+local beginregister=(C(name)*(arguments+Cc(false))*C((1-enddefine)^1)*enddefine)/function(k,a,v)
   local n=0
   if a then
     n=#a
@@ -279,13 +279,13 @@ local beginregister=(C(name)*spaces^0*(arguments+Cc(false))*C((1-enddefine)^1)*e
   end
   local d=definitions[k]
   if not d then
-    d={ [0]=false,false,false,false,false,false,false,false,false }
+    d={ a=a,[0]=false,false,false,false,false,false,false,false,false }
     definitions[k]=d
   end
   d[n]=lpegmatch(subparser,v) or v
   return ""
 end
-local register=(C(name)*spaces^0*(arguments+Cc(false))*spaces^0*C(body))/function(k,a,v)
+local register=(Cs(name)*(arguments+Cc(false))*spaces^0*Cs(body))/function(k,a,v)
   local n=0
   if a then
     n=#a
@@ -303,7 +303,7 @@ local register=(C(name)*spaces^0*(arguments+Cc(false))*spaces^0*C(body))/functio
   end
   local d=definitions[k]
   if not d then
-    d={ [0]=false,false,false,false,false,false,false,false,false }
+    d={ a=a,[0]=false,false,false,false,false,false,false,false,false }
     definitions[k]=d
   end
   d[n]=lpegmatch(subparser,v) or v
@@ -331,6 +331,23 @@ local parser=Cs((((P("#")/"")*(define+begindefine+undefine)*(newline^0/"") )+res
 function macros.reset()
   definitions={}
   patterns={}
+end
+function macros.showdefinitions()
+  for name,list in table.sortedhash(definitions) do
+    local arguments=list.a
+    if arguments then
+      arguments="("..concat(arguments,",")..")"
+    else
+      arguments=""
+    end
+    print("macro: "..name..arguments)
+    for i=0,#list do
+      local l=list[i]
+      if l then
+        print("  "..l)
+      end
+    end
+  end
 end
 function macros.resolvestring(str)
   return lpegmatch(parser,str) or str
@@ -9174,7 +9191,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13044, stripped down to: 9231
+-- original size: 13340, stripped down to: 9459
 
 if not modules then modules={} end modules ['trac-set']={ 
   version=1.001,
@@ -9495,6 +9512,19 @@ if texconfig then
   directives.register("luatex.savesize",function(v) set("save_size",v)   end)
   directives.register("luatex.stacksize",function(v) set("stack_size",v)   end)
 end
+local data=table.setmetatableindex("table")
+updaters={
+  register=function(what,f)
+    local d=data[what]
+    d[#d+1]=f
+  end,
+  apply=function(what,...)
+    local d=data[what]
+    for i=1,#d do
+      d[i](...)
+    end
+  end,
+}
 
 
 end -- of closure
@@ -21664,8 +21694,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 890251
--- stripped bytes    : 321683
+-- original bytes    : 891048
+-- stripped bytes    : 321893
 
 -- end library merge
 

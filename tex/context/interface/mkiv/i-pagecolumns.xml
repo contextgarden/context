@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definepagecolumns" level="style" category="structure layout" file="page-pcl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppagecolumns"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuppagecolumns" level="style" category="structure layout" file="page-pcl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="separator">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="direction">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="reverse"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="maxwidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="maxheight">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="step">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="align">
+                    <cd:inherit name="setupalign"/>
+                </cd:parameter>
+                <cd:parameter name="blank">
+                    <cd:inherit name="blank"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="profile">
+                        <cd:inherit name="setprofile"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagecolumns" type="environment" variant="name" level="document" category="structure layout" file="page-pcl.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagecolumns" type="environment" level="document" category="structure layout" file="page-pcl.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuppagecolumns"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagecolumns" type="environment" generated="yes" variant="instance" level="document" category="structure layout" file="page-pcl.mkiv">
+        <cd:sequence>
+            <cd:instance value="pagecolumns"/>
+        </cd:sequence>
+    </cd:command>
+
+</cd:interface>

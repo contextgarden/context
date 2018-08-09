@@ -55,6 +55,7 @@
                     <cd:constant type="serried"/>
                     <cd:constant type="hanging"/>
                     <cd:constant type="top"/>
+                    <cd:constant type="empty"/>
                     <cd:constant type="command"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
@@ -128,6 +129,10 @@
                 </cd:parameter>
                 <cd:parameter name="headcolor">
                     <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="aligntitle">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
                 </cd:parameter>
                 <!-- end construction values -->
             </cd:assignments>

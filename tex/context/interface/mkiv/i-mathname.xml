@@ -1,0 +1,1091 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="mathhash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mathdollar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mathpercent" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mathampersand" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lparent" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rparent" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ast" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mathhyphen" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="colon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lt" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gt" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="backslash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Hat" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="grave" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lbrace" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rbrace" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="yen" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="S" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ddot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="pm" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="acute" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="P" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="centerdot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="times" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eth" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="div" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lambdabar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="hat" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="check" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="breve" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ring" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="tilde" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="widehat" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="widetilde" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="not" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Alpha" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Beta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Gamma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Delta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Epsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Zeta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Eta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Theta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Iota" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Kappa" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Lambda" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Mu" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Nu" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Xi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Omicron" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Pi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Rho" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Sigma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Tau" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Upsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Phi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Chi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Psi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Omega" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="alpha" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="beta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gamma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="delta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varepsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="zeta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="theta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="iota" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="kappa" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lambda" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mu" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nu" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="xi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="omicron" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="pi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rho" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varsigma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sigma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="tau" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="upsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varphi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="chi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="psi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="omega" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varTheta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="phi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varpi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="digamma" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varkappa" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="epsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="backepsilon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bullet" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="prime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="doubleprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="tripleprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="reversedprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="reverseddoubleprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="reversedtripleprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="quadrupleprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="invisibletimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="positivesign" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="negativesign" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="vec" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dddot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigsquare" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigdiamond" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="actuarial" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="complexes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Eulerconst" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Plankconst" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Im" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ell" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="naturalnumbers" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="wp" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="primes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rationals" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Re" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="reals" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="integers" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ohm" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mho" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="turnediota" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Angstrom" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Finv" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="aleph" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="beth" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gimel" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="daleth" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Game" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sansLturned" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sansLmirrored" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Yup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="differentialD" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="differentiald" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="exponentiale" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="imaginaryi" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="imaginaryj" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="PropertyLine" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="upand" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="uparrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="updownarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nwarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="searrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="swarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftwavearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightwavearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="twoheadleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="twoheaduparrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="twoheadrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="twoheaddownarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftarrowtail" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightarrowtail" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mapsfrom" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mapsup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mapsto" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mapsdown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="updownarrowbar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="hookleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="hookrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="looparrowleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="looparrowright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftrightsquigarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nleftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downzigzagarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Lsh" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Rsh" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Ldsh" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Rdsh" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="linefeed" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="carriagereturn" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curvearrowleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curvearrowright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="barovernorthwestarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="barleftarrowrightarrowbar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftharpoonup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftharpoondown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="upharpoonleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightharpoonup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightharpoondown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downharpoonright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downharpoonleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightleftarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="updownarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftrightarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftleftarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="upuparrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightrightarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downdownarrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftrightharpoons" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightleftharpoons" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nLeftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nLeftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nRightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Leftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Uparrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Downarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Leftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Updownarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Nwarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Nearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Searrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Swarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Lleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Rrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftsquigarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nHuparrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nHdownarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftdasharrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="updasharrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downdasharrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="barleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightarrowbar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftwhitearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="upwhitearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightwhitearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downwhitearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="whitearrowupfrombar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circleonrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="downuparrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightthreearrows" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nvleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nvrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nvleftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nVleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nVrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nVleftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftarrowtriangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightarrowtriangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftrightarrowtriangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="forall" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="complement" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="partial" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="exists" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nexists" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="emptyset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nabla" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="in" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="prod" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="coprod" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sum" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="mp" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dotplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="diagup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="diagdown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ast" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circ" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="propto" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="infty" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="angle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="measuredangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sphericalangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="divides" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nparallel" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="cap" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="cup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="oint" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="oiint" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="oiiint" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="intclockwise" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ointclockwise" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ointctrclockwise" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="therefore" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="because" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="colon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="squaredots" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dotminus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="minuscolon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="backsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="wr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="simeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsimeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="approxnEq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="approx" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="napprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="approxeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="asymp" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Bumpeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="doteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="fallingdotseq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="risingdotseq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="colonequals" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="equalscolon" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqcirc" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="wedgeeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="veeeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="stareq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="triangleq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="definedeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="measuredeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="questionedeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="equiv" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nequiv" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="geqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ll" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gg" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="between" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nasymp" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ngtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nleq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ngeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lesssim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtrsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nlesssim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ngtrsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lessgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtrless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nlessgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ngtrless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="prec" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succ" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="preccurlyeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succcurlyeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nprec" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsucc" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="subset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="supset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsubset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsupset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="subseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="supseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsubseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsupseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="subsetneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="supsetneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="uplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsubset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsupset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsubseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsupseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqcap" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqcup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="oplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ominus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="otimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="oslash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="odot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circledcirc" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circledast" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circledequals" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circleddash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="boxplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="boxminus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="boxtimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="boxdot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="vdash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dashv" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="top" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="models" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="vDash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Vdash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Vvdash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="VDash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nvdash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nvDash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nVdash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nVDash" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="multimap" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="intercal" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="veebar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="barwedge" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigwedge" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigvee" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigcap" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigcup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="diamond" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="star" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="divideontimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ltimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rtimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leftthreetimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rightthreetimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curlyvee" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curlywedge" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Subset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Supset" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="pitchfork" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lessdot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtrdot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lesseqgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtreqless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curlyeqprec" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="curlyeqsucc" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="npreccurlyeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsucccurlyeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsqsubseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nsqsupseteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsubsetneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sqsupsetneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lnsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gnsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precnsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succnsim" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ntriangleright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ntriangleleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ntrianglelefteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ntrianglerighteq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="vdots" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="cdots" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="udots" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ddots" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lceil" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rceil" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lfloor" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rfloor" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="ulcorner" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="urcorner" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="llcorner" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lrcorner" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="frown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="smile" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lmoustache" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rmoustache" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="overbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="underbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="overparent" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="underparent" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="overbrace" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="underbrace" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circledR" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="circledS" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacksquare" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacktriangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacktriangleright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="triangleright" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacktriangledown" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacktriangleleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="triangleleft" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lozenge" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigcirc" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigstar" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="spadesuit" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="heartsuit" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="diamondsuit" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="clubsuit" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="blacklozenge" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="flat" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="natural" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="sharp" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="checkmark" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="maltese" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="llbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rrbracket" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="langle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="llangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rrangle" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lgroup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rgroup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longleftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Longleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Longrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Longleftrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longmapsfrom" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longmapsto" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Longmapsfrom" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Longmapsto" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="longrightsquigarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Mapsfrom" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Mapsto" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Uuparrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="Ddownarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dashedleftarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dashedrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="dottedrightarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="twoheadrightarrowtail" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="nwsearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="neswarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lhooknwarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rhooknearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lhooksearrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rhookswarrow" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigodot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigoplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigotimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigudot" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="biguplus" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigsqcap" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigsqcup" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="bigtimes" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="amalg" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="coloncolonequals" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqeqeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="leqslant" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="geqslant" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lessapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtrapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="rneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lnapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gnapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="lesseqqgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="gtreqqless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqslantless" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="eqslantgtr" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="preceq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succeq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succneq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="preceqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succeqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="precnapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="succnapprox" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="subseteqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="supseteqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="subsetneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="supsetneqq" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="backprime" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="imath" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="jmath" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="vartheta" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varkappa" level="document" category="character mathematics" file="char-def.lua"/>
+
+    <cd:command name="varrho" level="document" category="character mathematics" file="char-def.lua"/>
+
+</cd:interface>

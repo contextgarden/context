@@ -334,6 +334,12 @@ local getpos  = function() getpos  = backends.codeinjections.getpos  return getp
 local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
 local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
 
+updaters.register("backend.update",function()
+    getpos  = backends.codeinjections.getpos
+    gethpos = backends.codeinjections.gethpos
+    getvpos = backends.codeinjections.getvpos
+end)
+
 local function setall(name,p,x,y,w,h,d,extra)
     tobesaved[name] = {
         p = p,
@@ -531,7 +537,7 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     end
     local box = getbox(n)
     local w, h, d = getwhd(box)
-    local x, y = getpos() -- hm, makes no sense here
+    local x, y = getpos() -- hm, makes no sense here as not in shipout
     tobesaved[tag] = {
      -- p = texgetcount("realpageno"), -- we copy them
         x = x ~= 0 and x or nil,       -- was true

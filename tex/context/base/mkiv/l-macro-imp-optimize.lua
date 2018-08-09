@@ -46,17 +46,17 @@ if LUAVERSION >= 5.3 and lua.macros then
  --     #define rshift(a,b)    ((a >> b) & 0xFFFFFFFF)
  -- ]]
 
-    lua.macros.resolvestring [[
-        #define band(a,b)      (a&b)
-        #define bnot(a)        (~a&0xFFFFFFFF)
-        #define bor(a,b)       ((a|b)&0xFFFFFFFF)
-        #define btest(a,b)     ((a&b)~=0)
-        #define bxor(a,b)      ((a~b)&0xFFFFFFFF)
-        #define rshift(a,b)    ((a&b)~=0)
-        #define extract(a,b,c) ((a>>b)&~(-1<<c))
-        #define extract(a,b)   ((a>>b)&0x1))
-        #define lshift(a,b)    ((a<<b)&0xFFFFFFFF)
-        #define rshift(a,b)    ((a>>b)&0xFFFFFFFF)
-    ]]
+lua.macros.resolvestring [[
+#define band(a,b)      (a&b)
+#define bnot(a)        (~a&0xFFFFFFFF)
+#define bor(a,b)       ((a|b)&0xFFFFFFFF)
+#define btest(a,b)     ((a&b)~=0)
+#define bxor(a,b)      ((a~b)&0xFFFFFFFF)
+#define rshift(a,b)    ((a&b)~=0)
+#define extract(a,b,c) ((a>>b)&~(-1<<c))
+#define extract(a,b)   ((a>>b)&0x1)
+#define lshift(a,b)    ((a<<b)&0xFFFFFFFF)
+#define rshift(a,b)    ((a>>b)&0xFFFFFFFF)
+]]
 
 end

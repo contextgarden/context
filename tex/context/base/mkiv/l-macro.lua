@@ -21,7 +21,7 @@ local newline       = S("\n\r")^1
 local continue      = P("\\") * newline
 local spaces        = S(" \t") + continue
 local name          = R("az","AZ","__","09")^1
-local body          = ((1+continue/"")-newline)^1
+local body          = ((continue/"" + 1) - newline)^1
 local lparent       = P("(")
 local rparent       = P(")")
 local noparent      = 1 - (lparent  + rparent)
@@ -85,7 +85,7 @@ subparser = Cs((resolve + P(1))^1)
 
 local enddefine   = P("#enddefine") / ""
 
-local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
+local beginregister = (C(name) * (arguments + Cc(false)) * C((1-enddefine)^1) * enddefine) / function(k,a,v)
     local n = 0
     if a then
         n = #a
@@ -103,14 +103,14 @@ local beginregister = (C(name) * spaces^0 * (arguments + Cc(false)) * C((1-endde
     end
     local d = definitions[k]
     if not d then
-        d = { [0] = false, false, false, false, false, false, false, false, false }
+        d = { a = a, [0] = false, false, false, false, false, false, false, false, false }
         definitions[k] = d
     end
     d[n] = lpegmatch(subparser,v) or v
     return ""
 end
 
-local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(body)) / function(k,a,v)
+local register = (Cs(name) * (arguments + Cc(false)) * spaces^0 * Cs(body)) / function(k,a,v)
     local n = 0
     if a then
         n = #a
@@ -128,7 +128,7 @@ local register = (C(name) * spaces^0 * (arguments + Cc(false)) * spaces^0 * C(bo
     end
     local d = definitions[k]
     if not d then
-        d = { [0] = false, false, false, false, false, false, false, false, false }
+        d = { a = a, [0] = false, false, false, false, false, false, false, false, false }
         definitions[k] = d
     end
     d[n] = lpegmatch(subparser,v) or v
@@ -160,6 +160,25 @@ local parser = Cs( ( ( (P("#")/"") * (define + begindefine + undefine) * (newlin
 function macros.reset()
     definitions = { }
     patterns    = { }
+end
+
+function macros.showdefinitions()
+    -- no helpers loaded but not called early
+    for name, list in table.sortedhash(definitions) do
+        local arguments = list.a
+        if arguments then
+            arguments = "(" .. concat(arguments,",") .. ")"
+        else
+            arguments = ""
+        end
+        print("macro: " .. name .. arguments)
+        for i=0,#list do
+            local l = list[i]
+            if l then
+                print("  " .. l)
+            end
+        end
+    end
 end
 
 function macros.resolvestring(str)

@@ -214,6 +214,8 @@ local getshift             = nuts.getshift
 local getwidth             = nuts.getwidth
 local getheight            = nuts.getheight
 local getdepth             = nuts.getdepth
+local getdata              = nuts.getdata
+local getwhd               = nuts.getwhd
 
 local isglyph              = nuts.isglyph
 
@@ -233,6 +235,7 @@ local setshift             = nuts.setshift
 local setwidth             = nuts.setwidth
 ----- setheight            = nuts.setheight
 ----- setdepth             = nuts.setdepth
+local setexpansion         = nuts.setexpansion
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
@@ -630,7 +633,7 @@ local function find(head) -- do we really want to recurse into an hlist?
             end
         elseif id == boundary_code then
             if getsubtype(head) == protrusion_code then
-                local v = getfield(head,"value")
+                local v = getdata(head)
                 if v == 1 or v == 3 then
                     head = getnext(head)
                     if head then
@@ -653,19 +656,19 @@ end
 
 local function find_protchar_left(l) -- weird function
     local ln = getnext(l)
-    if ln and getid(ln) == hlist_code and not getlist(ln) and getfield(ln,"width") == 0 and getfield(ln,"height") == 0 and getfield(ln,"depth") == 0 then
-        l = getnext(l)
-    else -- if d then -- was always true
-        local id = getid(l)
-        while ln and not (id == glyph_code or id < math_code) do -- is there always a glyph?
-            l = ln
-            ln = getnext(l)
-            id = getid(ln)
+    if ln and getid(ln) == hlist_code and not getlist(ln) then
+        local w, h, d = getwhd(ln)
+        if w == 0 and h == 0 and d == 0 then
+            l = getnext(l)
+            return find(l) or l
         end
+    end -- if d then -- was always true
+    local id = getid(l)
+    while ln and not (id == glyph_code or id < math_code) do -- is there always a glyph?
+        l = ln
+        ln = getnext(l)
+        id = getid(ln)
     end
- -- if getid(l) == glyph_code then
- --     return l
- -- end
     return find(l) or l
 end
 
@@ -684,7 +687,7 @@ local function find(head,tail)
             end
         elseif id == boundary_code then
             if getsubtype(head) == protrusion_code then
-                local v = getfield(tail,"value")
+                local v = getdata(tail)
                 if v == 2 or v == 3 then
                     tail = getprev(tail)
                     if tail then
@@ -3130,7 +3133,7 @@ do
                         local stretch, shrink = kern_stretch_shrink(g,kern)
                         e = font_expand_ratio * stretch / 1000
                     end
-                    setfield(g,"expansion_factor",e)
+                    setexpansion(g,e)
                 end
             end
             local tso = total_stretch[order]
@@ -3187,7 +3190,7 @@ do
                         local stretch, shrink = kern_stretch_shrink(g,kern)
                         e = font_expand_ratio * shrink / 1000
                     end
-                    setfield(g,"expansion_factor",e)
+                    setexpansion(g,e)
                 end
             end
             local tso = total_shrink[order]

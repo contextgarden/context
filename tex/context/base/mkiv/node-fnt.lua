@@ -50,7 +50,7 @@ local getdisc           = nuts.getdisc
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getboth           = nuts.getboth
-local getfield          = nuts.getfield
+local getdata           = nuts.getdata
 ----- getdisc           = nuts.getdisc
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
@@ -183,7 +183,7 @@ local function start_trace(head)
         elseif id == disc_code then
             report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
         elseif id == boundary_code then
-            report_fonts("[boundary] %i:%i",getsubtype(n),getfield(n,"value"))
+            report_fonts("[boundary] %i:%i",getsubtype(n),getdata(n))
         else
             report_fonts("[%s]",nodecodes[id])
         end

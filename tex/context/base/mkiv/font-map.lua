@@ -225,7 +225,7 @@ local hash = table.setmetatableindex(function(t,k)
     elseif k < 0xD7FF or (k > 0xDFFF and k <= 0xFFFF) then
         v = f_single(k)
     else
-        v = k - 0x10000
+        k = k - 0x10000
         v = f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
     end
     t[k] = v

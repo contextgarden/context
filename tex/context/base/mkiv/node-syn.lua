@@ -179,10 +179,11 @@ local force_synctex_line = tex.force_synctex_line
 local get_synctex_line   = tex.get_synctex_line
 local set_synctex_mode   = tex.set_synctex_mode
 
-local getpos             = function()
-                               getpos = backends.codeinjections.getpos
-                               return getpos()
-                           end
+local getpos = function() getpos = backends.codeinjections.getpos return getpos() end
+
+updaters.register("backend.update",function()
+    getpos = backends.codeinjections.getpos
+end)
 
 local foundintree        = resolvers.foundintree
 

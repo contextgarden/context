@@ -29,6 +29,8 @@ local getsubtype       = nuts.getsubtype
 local getfield         = nuts.getfield
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
+local getdata          = nuts.getdata
+
 local removenode       = nuts.remove
 
 local nextnode         = nuts.traversers.node
@@ -333,7 +335,7 @@ end)
 --                 last = nil
 --             end
 --             if getfield(source,"user_id") == property_id then
---                 local slot = getfield(source,"value")
+--                 local slot = getdata(source)
 --                 local data = cache[slot]
 --                 if data then
 --                     cache[slot] = nil
@@ -432,7 +434,7 @@ if LUATEXVERSION >= 1.090 then
                     last = nil
                 end
                 if getfield(source,"user_id") == property_id then
-                    local slot = getfield(source,"value")
+                    local slot = getdata(source)
                     local data = cache[slot]
                     if data then
                         cache[slot] = nil

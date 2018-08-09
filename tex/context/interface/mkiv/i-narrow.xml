@@ -75,7 +75,7 @@
                 <cd:constant type="right" prefix="cd:number" method="factor"/>
                 <cd:constant type="reset"/>
                 <cd:constant type="reverse"/>
-             </cd:keywords>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 
@@ -100,7 +100,7 @@
                 <cd:constant type="right" prefix="cd:number" method="factor"/>
                 <cd:constant type="reset"/>
                <cd:constant type="reverse"/>
-             </cd:keywords>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 
@@ -118,7 +118,7 @@
                 <cd:constant type="right" prefix="cd:number" method="factor"/>
                 <cd:constant type="reset"/>
                <cd:constant type="reverse"/>
-             </cd:keywords>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 

@@ -35,6 +35,7 @@
                 <cd:parameter name="align">
                     <cd:constant type="l2r" default="yes"/>
                     <cd:constant type="r2l"/>
+                    <cd:constant type="righttoleft"/>
                 </cd:parameter>
                 <cd:parameter name="bidi">
                     <cd:constant type="yes"/>
@@ -108,6 +109,17 @@
                 </cd:parameter>
                 <cd:parameter name="ampersand">
                     <cd:constant type="normal"/>
+                </cd:parameter>
+                <cd:parameter name="collapsing">
+                    <cd:constant type="1"/>
+                    <cd:constant type="2"/>
+                    <cd:constant type="3" default="yes"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="reset"/>
+                </cd:parameter>
+                <cd:parameter name="kernpairs">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

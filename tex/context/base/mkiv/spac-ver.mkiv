@@ -1332,8 +1332,14 @@
   {\aftergroup\page_otr_synchronize_page_indeed
    \glet\page_otr_synchronize_page\relax}
 
+% \unexpanded\def\page_otr_synchronize_page_indeed
+%   {\clf_synchronizepage
+%    \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
+%
+% This has to become an otr method: \s!page_otr_command_synchonize_page
+
 \unexpanded\def\page_otr_synchronize_page_indeed
-  {\clf_synchronizepage
+  {\ifx\currentoutputroutine\s!multicolumn\else\clf_synchronizepage\fi
    \glet\page_otr_synchronize_page\page_otr_synchronize_page_yes}
 
 \let\page_otr_synchronize_page\page_otr_synchronize_page_yes

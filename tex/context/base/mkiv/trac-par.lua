@@ -22,6 +22,7 @@ local getlist       = nuts.getlist
 local getfont       = nuts.getfont
 local getchar       = nuts.getchar
 local getwidth      = nuts.getwidth
+local getexpansion  = nuts.getexpansion
 
 local nodecodes     = nodes.nodecodes
 local hlist_code    = nodecodes.hlist
@@ -65,7 +66,7 @@ local function colorize(n)
     while n do
         local id = getid(n)
         if id == glyph_code then
-            local ne = getfield(n,"expansion_factor")
+            local ne = getexpansion(n)
             if ne == 0 then
                 if length > 0 then flush() end
                 setnodecolor(n,"hz:zero")

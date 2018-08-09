@@ -124,4 +124,20 @@
 
     <cd:command name="bigskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
 
+    <cd:command name="checkedblank" level="system" category="whitespace" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="prerollblank" level="system" category="whitespace" file="spac-ver.mkiv">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

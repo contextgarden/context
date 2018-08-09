@@ -90,6 +90,9 @@ local setwidth     = nuts.setwidth
 local setsubtype   = nuts.setsubtype
 local setleader    = nuts.setleader
 
+local setdata      = nuts.setdata
+local setvalue     = nuts.setvalue
+
 local copy_nut     = nuts.copy
 local new_nut      = nuts.new
 local flush_nut    = nuts.flush
@@ -236,7 +239,8 @@ end
 function nutpool.boundary(v)
     local n = copy_nut(boundary)
     if v and v ~= 0 then
-        setfield(n,"value",v)
+     -- setfield(n,"value",v)
+        setvalue(n,v)
     end
     return n
 end
@@ -244,7 +248,8 @@ end
 function nutpool.wordboundary(v)
     local n = copy_nut(wordboundary)
     if v and v ~= 0 then
-        setfield(n,"value",v)
+     -- setfield(n,"value",v)
+        setvalue(n,v)
     end
     return n
 end
@@ -523,9 +528,11 @@ function nutpool.usernumber(id,num)
     local n = copy_nut(user_number)
     if num then
         setfield(n,"user_id",id)
-        setfield(n,"value",num)
+     -- setfield(n,"value",num)
+        setvalue(n,num)
     elseif id then
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
@@ -534,9 +541,11 @@ function nutpool.userlist(id,list)
     local n = copy_nut(user_nodes)
     if list then
         setfield(n,"user_id",id)
-        setfield(n,"value",list)
+     -- setfield(n,"value",list)
+        setvalue(n,list)
     else
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
@@ -545,9 +554,11 @@ function nutpool.userstring(id,str)
     local n = copy_nut(user_string)
     if str then
         setfield(n,"user_id",id)
-        setfield(n,"value",str)
+     -- setfield(n,"value",str)
+        setvalue(n,str)
     else
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
@@ -556,9 +567,11 @@ function nutpool.usertokens(id,tokens)
     local n = copy_nut(user_tokens)
     if tokens then
         setfield(n,"user_id",id)
-        setfield(n,"value",tokens)
+     -- setfield(n,"value",tokens)
+        setvalue(n,tokens)
     else
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
@@ -567,9 +580,11 @@ function nutpool.userlua(id,code)
     local n = copy_nut(user_lua)
     if code then
         setfield(n,"user_id",id)
-        setfield(n,"value",code)
+     -- setfield(n,"value",code)
+        setvalue(n,code)
     else
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
@@ -578,16 +593,19 @@ function nutpool.userattributes(id,attr)
     local n = copy_nut(user_attributes)
     if attr then
         setfield(n,"user_id",id)
-        setfield(n,"value",attr)
+     -- setfield(n,"value",attr)
+        setvalue(n,attr)
     else
-        setfield(n,"value",id)
+     -- setfield(n,"value",id)
+        setvalue(n,id)
     end
     return n
 end
 
 function nutpool.special(str)
     local n = copy_nut(special)
-    setfield(n,"data",str)
+ -- setfield(n,"data",str)
+    setdata(n,str)
     return n
 end
 

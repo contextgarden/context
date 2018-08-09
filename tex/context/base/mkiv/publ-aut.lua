@@ -64,8 +64,8 @@ local v_last          = interfaces.variables.last
 
 local space          = lpegpatterns.whitespace
 local comma          = P(",")
-local period         = P(".")
-local dash           = P("-")
+local period         = P(".") + P("{.}")
+local dash           = P("-") + P("{-}")
 local firstcharacter = lpegpatterns.utf8byte
 local utf8character  = lpegpatterns.utf8character
 local p_and          = space^1 * (P("and") + P("&&") + P("++")) * space^1

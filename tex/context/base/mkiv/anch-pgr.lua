@@ -56,7 +56,6 @@ graphics.backgrounds    = backgrounds
 -- -- --
 
 local texsetattribute   = tex.setattribute
-local pdfgetpos         = pdf.getpos  -- why not a generic name !
 
 local a_textbackground  = attributes.private("textbackground")
 
@@ -91,13 +90,21 @@ local realpage          = 1
 local recycle           = 1000 -- only tables can overflow this
 local enabled           = false
 
+-- can change:
+
+local getpos = function() getpos = backends.codeinjections.getpos return getpos() end
+
+updaters.register("backend.update",function()
+    getpos = backends.codeinjections.getpos
+end)
+
 -- Freeing the data is somewhat tricky as we can have backgrounds spanning
 -- many pages but for an arbitrary background shape that is not so common.
 
 local function check(a,index,depth,d,where,ht,dp)
     -- this is not yet r2l ready
     local w = d.shapes[realpage]
-    local x, y = pdfgetpos()
+    local x, y = getpos()
     if trace_ranges then
         report_shapes("attribute %i, index %i, depth %i, location %s, position (%p,%p)",
             a,index,depth,where,x,y)

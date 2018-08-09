@@ -26,7 +26,7 @@
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="rulethickness">
-                    <cd:constant type="cd:number"/>
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="alternative">
                     <cd:constant type="normal" default="yes"/>

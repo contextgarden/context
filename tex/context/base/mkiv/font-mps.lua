@@ -267,6 +267,7 @@ local getshift       = nuts.getshift
 local getwidth       = nuts.getwidth
 local getheight      = nuts.getheight
 local getdepth       = nuts.getdepth
+local getexpansion   = nuts.getexpansion
 
 local effective_glue = nuts.effective_glue
 
@@ -339,7 +340,7 @@ function fonts.metapost.boxtomp(n,kind)
         while current do
             local id = getid(current)
             if id == glyph_code then
-                local code, width = metapost.output(kind,getfont(current),getchar(current),xoffset+dx,yoffset,getfield(current,"expansion_factor"))
+                local code, width = metapost.output(kind,getfont(current),getchar(current),xoffset+dx,yoffset,getexpansion(current))
                 result[#result+1] = code
                 dx = dx + width
             elseif id == disc_code then

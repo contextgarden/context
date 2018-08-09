@@ -55,7 +55,9 @@
                 <cd:parameter name="width">
                     <cd:constant type="fit"/>
                     <cd:constant type="broad"/>
-                    <cd:constant type="auto"/>
+                    <!--
+                        <cd:constant type="auto"/>
+                    -->
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="height">
@@ -386,7 +388,7 @@
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-list-list"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:inherit name="setupcombinedlist"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -395,7 +397,55 @@
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:parameter name="criterium">
+                    <cd:constant type="local" default="yes"/>
+                    <cd:constant type="intro"/>
+                    <cd:constant type="reference"/>
+                    <cd:constant type="reference" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="all" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="text"/>
+                    <cd:constant type="text" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="current"/>
+                    <cd:constant type="current" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="here"/>
+                    <cd:constant type="previous"/>
+                    <cd:constant type="previous" prefix="cd:sectionblock" method="range"/>
+                    <cd:constant type="component"/>
+                    <cd:constant type="cd:section"/>
+                    <cd:constant type="cd:section" prefix="cd:sectionblock" method="range"/>
+                </cd:parameter>
+                <cd:parameter name="reference">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="extras">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="order">
+                    <cd:constant type="command"/>
+                    <cd:constant type="all"/>
+                    <cd:constant type="title"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="a"/>
+                    <cd:constant type="b" default="yes"/>
+                    <cd:constant type="c"/>
+                    <cd:constant type="d"/>
+                    <cd:constant type="e"/>
+                    <cd:constant type="f"/>
+                    <cd:constant type="g"/>
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="top"/>
+                    <cd:constant type="bottom"/>
+                    <cd:constant type="command"/>
+                    <cd:constant type="none"/>
+                    <cd:constant type="interactive"/>
+                    <cd:constant type="paragraph"/>
+                    <cd:constant type="horizontal"/>
+                    <cd:constant type="vertical"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -404,7 +454,7 @@
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:inherit name="setupcombinedlist"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -416,7 +466,7 @@
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:inherit name="setupcombinedlist"/>
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
@@ -431,7 +481,7 @@
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:inherit name="setupcombinedlist"/>
             </cd:assignments>
         </cd:arguments>
         <cd:instances>
@@ -446,7 +496,7 @@
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuplist"/>
+                <cd:inherit name="setupcombinedlist"/>
             </cd:assignments>
         </cd:arguments>
         <cd:instances>

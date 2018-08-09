@@ -90,6 +90,15 @@
 
     -->
 
+    <cd:command name="mathmatrix" generated="yes" level="document" category="mathematics tables" file="math-ali.mkiv">
+        <cd:sequence>
+            <cd:variable value="mathmatrix"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="matrices" type="environment" level="document" category="mathematics tables" file="math-ali.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">

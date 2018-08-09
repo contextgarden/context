@@ -119,6 +119,11 @@
     <cd:command name="symbolset" type="environment" level="style" category="symbols" file="symb-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="font">
+                    <cd:constant type="cd:font"/>
+                </cd:parameter>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 

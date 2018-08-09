@@ -48,10 +48,6 @@ local nodeinjections          = backends.pdf.nodeinjections
 local codeinjections          = backends.pdf.codeinjections
 local registrations           = backends.pdf.registrations
 
-local getpos                  = codeinjections.getpos
-local gethpos                 = codeinjections.gethpos
-local getvpos                 = codeinjections.getvpos
-
 local javascriptcode          = interactions.javascripts.code
 
 local references              = structures.references
@@ -73,6 +69,18 @@ local nodepool                = nodes.pool
 local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
+
+-- can change:
+
+local getpos  = lpdf.getpos
+local gethpos = lpdf.gethpos
+local getvpos = lpdf.getvpos
+
+updaters.register("backend.update",function()
+    getpos  = lpdf.getpos
+    gethpos = lpdf.gethpos
+    getvpos = lpdf.getvpos
+end)
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array

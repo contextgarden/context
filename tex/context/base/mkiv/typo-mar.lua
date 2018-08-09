@@ -83,6 +83,7 @@ local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
+local getdata            = nuts.getdata
 
 local currentattr        = nuts.current_attr
 local setattrlist        = nuts.setattrlist
@@ -722,7 +723,7 @@ local function flushinline(parent,head)
         local id = getid(current)
         if id == whatsit_code then
             if getsubtype(current) == userdefined_code and getfield(current,"user_id") == inline_mark then
-                local n = getfield(current,"value")
+                local n = getdata(current)
                 local candidate = inlinestore[n]
                 if candidate then -- no vpack, as we want to realign
                     inlinestore[n] = nil

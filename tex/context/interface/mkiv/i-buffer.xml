@@ -66,7 +66,7 @@
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="strip">
-                    <cd:constant type="yes"/>
+                    <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
             </cd:assignments>
@@ -85,7 +85,7 @@
 
     <cd:command name="getbuffer" level="document" category="buffer" file="buff-ini.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-buffer-optional"/>
+            <cd:resolve name="keyword-buffer-list-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -168,7 +168,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getbufferdata" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="getbufferdata" level="style" category="buffer" file="buff-ini.mkiv">  
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>

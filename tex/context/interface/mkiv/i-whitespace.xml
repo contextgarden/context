@@ -59,4 +59,6 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="forgetparskip" category="alignment" level="system" file="spac-ver.mkiv"/>
+
 </cd:interface>

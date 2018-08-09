@@ -423,6 +423,10 @@ end
 
 local getpos = function() getpos = backends.codeinjections.getpos  return getpos () end
 
+updaters.register("backend.update",function()
+    getpos = backends.codeinjections.getpos
+end)
+
 local function synchronizepage(reference) -- non public helper
     reference.realpage = texgetcount("realpageno")
     if jobpositions.used then

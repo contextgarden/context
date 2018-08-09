@@ -30,6 +30,7 @@
                 <cd:constant type="global"/>
                 <cd:constant type="public" default="yes"/>
                 <cd:constant type="private"/>
+                <cd:constant type="pickup"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
@@ -42,6 +43,7 @@
                 <cd:constant type="global"/>
                 <cd:constant type="public"/>
                 <cd:constant type="private" default="yes"/>
+                <cd:constant type="pickup"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

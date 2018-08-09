@@ -34,7 +34,7 @@ local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local textoutf = characters and characters.tex.toutf
 local settings_to_hash, settings_to_array = utilities.parsers.settings_to_hash, utilities.parsers.settings_to_array
 local formatters = string.formatters
-local sortedkeys, sortedhash, keys = table.sortedkeys, table.sortedhash, table.keys
+local sortedkeys, sortedhash, keys, sort = table.sortedkeys, table.sortedhash, table.keys, table.sort
 local xmlcollected, xmltext, xmlconvert = xml.collected, xml.text, xml.convert
 local setmetatableindex = table.setmetatableindex
 
@@ -486,6 +486,8 @@ do
 
     local tags = table.setmetatableindex("table")
 
+    local indirectcrossrefs = true
+
     local function do_definition(category,tag,tab,dataset)
         publicationsstats.nofdefinitions = publicationsstats.nofdefinitions + 1
         if tag == "" then
@@ -533,20 +535,24 @@ do
                     value = lpegmatch(filter_2,value,1,dataset.commands) -- we need to start at 1 for { }
                 end
                 if normalized == "crossref" then
-                    setmetatableindex(entries,function(t,k)
-                        local parent = rawget(luadata,value)
-                        if parent == entries then
-                            report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
-                            setmetatableindex(entries,nil)
-                            return entries
-                        elseif parent then
-                            setmetatableindex(entries,parent)
-                            return entries[k]
-                        else
-                            report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
-                            setmetatableindex(entries,nil)
-                        end
-                    end)
+                    if indirectcrossrefs then
+                        setmetatableindex(entries,function(t,k)
+                            local parent = rawget(luadata,value)
+                            if parent == entries then
+                                report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                                setmetatableindex(entries,nil)
+                                return entries
+                            elseif parent then
+                                setmetatableindex(entries,parent)
+                                return entries[k]
+                            else
+                                report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                                setmetatableindex(entries,nil)
+                            end
+                        end)
+                    else
+                        dataset.nofcrossrefs = dataset.nofcrossrefs +1
+                    end
                 end
                 entries[normalized] = value
             end
@@ -695,12 +701,37 @@ do
         statistics.starttiming(publications)
         publicationsstats.nofbytes = publicationsstats.nofbytes + size
         current.nofbytes = current.nofbytes + size
+        current.nofcrossrefs = 0
         if source then
             table.insert(current.sources, { filename = source, checksum = md5.HEX(content) })
             current.loaded[source] = kind or true
         end
-        current.newtags = #current.luadata > 0 and { } or current.newtags
+        local luadata = current.luadata
+        current.newtags = #luadata > 0 and { } or current.newtags
         lpegmatch(bibtotable,content or "",1,current)
+        if current.nofcrossrefs > 0 then
+            for tag, entries in next, luadata do
+                local value = entries.crossref
+                if value then
+                    local parent = luadata[value]
+                    if parent == entries then
+                        report_duplicates("bad parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                    elseif parent then
+                        local t = { }
+                        for k, v in next, parent do
+                            if not entries[k] then
+                                entries[k] = v
+                                t[#t+1] = k
+                            end
+                        end
+                        sort(t)
+                        entries.inherited = concat(t,",")
+                    else
+                        report_duplicates("no valid parent %a for %a in dataset %s",value,hashtag,dataset.name)
+                    end
+                end
+            end
+        end
         statistics.stoptiming(publications)
     end
 

@@ -85,6 +85,7 @@ local pdfgethpos            = pdf.gethpos
 local pdfgetvpos            = pdf.getvpos
 local pdfgetmatrix          = pdf.getmatrix
 local pdfhasmatrix          = pdf.hasmatrix
+local pdfprint              = pdf.print
 
 local pdfreserveobject      = pdf.reserveobj
 local pdfimmediateobject    = pdf.immediateobj
@@ -185,11 +186,36 @@ end
 local codeinjections = pdfbackend.codeinjections
 local nodeinjections = pdfbackend.nodeinjections
 
-codeinjections.getpos    = pdfgetpos     lpdf.getpos    = pdfgetpos
-codeinjections.gethpos   = pdfgethpos    lpdf.gethpos   = pdfgethpos
-codeinjections.getvpos   = pdfgetvpos    lpdf.getvpos   = pdfgetvpos
-codeinjections.hasmatrix = pdfhasmatrix  lpdf.hasmatrix = pdfhasmatrix
-codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
+-- can change:
+
+pdfbackend.codeinjections.getpos  = pdfgetpos
+pdfbackend.codeinjections.gethpos = pdfgethpos
+pdfbackend.codeinjections.getvpos = pdfgetvpos
+
+lpdf.getpos        = pdfgetpos
+lpdf.gethpos       = pdfgethpos
+lpdf.getvpos       = pdfgetvpos
+lpdf.print         = pdfprint
+
+updaters.register("backend.update.pdf",function()
+
+    pdfgetpos    = pdf.getpos
+    pdfgethpos   = pdf.gethpos
+    pdfgetvpos   = pdf.getvpos
+    pdfhasmatrix = pdf.hasmatrix
+    pdfgetmatrix = pdf.getmatrix
+    pdfprint     = pdf.print
+
+    pdfbackend.codeinjections.getpos  = pdfgetpos
+    pdfbackend.codeinjections.gethpos = pdfgethpos
+    pdfbackend.codeinjections.getvpos = pdfgetvpos
+
+    lpdf.getpos  = pdfgetpos
+    lpdf.gethpos = pdfgethpos
+    lpdf.getvpos = pdfgetvpos
+    lpdf.print   = pdfprint
+
+end)
 
 -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
 --     local x1 = llx * rx + lly * sy
@@ -206,17 +232,17 @@ codeinjections.getmatrix = pdfgetmatrix  lpdf.getmatrix = pdfgetmatrix
 --     ury = max(y1,y2,y3,y4);
 --     return llx, lly, urx, ury
 -- end
-
-function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
-    if pdfhasmatrix() then
-        local sx, rx, ry, sy = pdfgetmatrix()
-        local w, h = urx - llx, ury - lly
-        return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
-     -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
-    else
-        return llx, lly, urx, ury
-    end
-end
+--
+-- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
+--     if pdfhasmatrix() then
+--         local sx, rx, ry, sy = pdfgetmatrix()
+--         local w, h = urx - llx, ury - lly
+--         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
+--      -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
+--     else
+--         return llx, lly, urx, ury
+--     end
+-- end
 
 -- funny values for tx and ty
 
@@ -266,96 +292,103 @@ end
 --     end
 -- end
 
-local cache = table.setmetatableindex(function(t,k) -- can be made weak
-    local v = utfbyte(k)
-    if v < 0x10000 then
-        v = format("%04x",v)
-    else
-        v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
+local tosixteen, fromsixteen, topdfdoc, frompdfdoc, toeight, fromeight
+
+do
+
+    local escaped = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
+
+    local cache = table.setmetatableindex(function(t,k) -- can be made weak
+        local v = utfbyte(k)
+        if v < 0x10000 then
+            v = format("%04x",v)
+        else
+            v = format("%04x%04x",rshift(v,10),v%1024+0xDC00)
+        end
+        t[k] = v
+        return v
+    end)
+
+    local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
+
+    tosixteen = function(str) -- an lpeg might be faster (no table)
+        if not str or str == "" then
+            return "<feff>" -- not () as we want an indication that it's unicode
+        else
+            return lpegmatch(unified,str)
+        end
     end
-    t[k] = v
-    return v
-end)
 
-local escaped = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
-local unified = Cs(Cc("<feff") * (lpeg.patterns.utf8character/cache)^1 * Cc(">"))
+    local more = 0
 
-local function tosixteen(str) -- an lpeg might be faster (no table)
-    if not str or str == "" then
-        return "<feff>" -- not () as we want an indication that it's unicode
-    else
-        return lpegmatch(unified,str)
+    local pattern = C(4) / function(s) -- needs checking !
+        local now = tonumber(s,16)
+        if more > 0 then
+            now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
+            more = 0
+            return utfchar(now)
+        elseif now >= 0xD800 and now <= 0xDBFF then
+            more = now
+            return "" -- else the c's end up in the stream
+        else
+            return utfchar(now)
+        end
     end
-end
 
-local more = 0
+    local pattern = P(true) / function() more = 0 end * Cs(pattern^0)
 
-local pattern = C(4) / function(s) -- needs checking !
-    local now = tonumber(s,16)
-    if more > 0 then
-        now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
-        more = 0
-        return utfchar(now)
-    elseif now >= 0xD800 and now <= 0xDBFF then
-        more = now
-        return "" -- else the c's end up in the stream
-    else
-        return utfchar(now)
+    fromsixteen = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(pattern,str)
+        end
     end
-end
 
-local pattern = P(true) / function() more = 0 end * Cs(pattern^0)
+    local toregime   = regimes.toregime
+    local fromregime = regimes.fromregime
 
-local function fromsixteen(str)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(pattern,str)
+    topdfdoc = function(str,default)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(escaped,toregime("pdfdoc",str,default)) -- could be combined if needed
+        end
     end
-end
 
-local toregime   = regimes.toregime
-local fromregime = regimes.fromregime
-
-local function topdfdoc(str,default)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(escaped,toregime("pdfdoc",str,default)) -- could be combined if needed
+    frompdfdoc = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return fromregime("pdfdoc",str)
+        end
     end
-end
 
-local function frompdfdoc(str)
-    if not str or str == "" then
-        return ""
-    else
-        return fromregime("pdfdoc",str)
+    if not toregime   then topdfdoc   = function(s) return s end end
+    if not fromregime then frompdfdoc = function(s) return s end end
+
+    toeight = function(str)
+        if not str or str == "" then
+            return "()"
+        else
+            return lpegmatch(escaped,str)
+        end
     end
-end
 
-if not toregime   then topdfdoc   = function(s) return s end end
-if not fromregime then frompdfdoc = function(s) return s end end
+    local b_pattern = Cs((P("\\")/"" * (
+        S("()")
+      + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
+      + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
+    + P(1))^0)
 
-local function toeight(str)
-    if not str or str == "" then
-        return "()"
-    else
-        return lpegmatch(escaped,str)
+    fromeight = function(str)
+        if not str or str == "" then
+            return ""
+        else
+            return lpegmatch(unescape,str)
+        end
     end
-end
 
-local b_pattern = Cs((P("\\")/"" * (
-    S("()")
-  + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
-  + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
-+ P(1))^0)
-
-local function fromeight(str)
-    if not str or str == "" then
-        return ""
-    else
-        return lpegmatch(unescape,str)
-    end
 end
 
 lpdf.tosixteen   = tosixteen
@@ -921,6 +954,14 @@ local function resetpageproperties()
     pagesattributes = pdfdictionary()
 end
 
+function lpdf.getpageproperties()
+    return {
+        pageresources   = pageresources,
+        pageattributes  = pageattributes,
+        pagesattributes = pagesattributes,
+    }
+end
+
 resetpageproperties()
 
 local function setpageproperties()
@@ -1132,9 +1173,12 @@ do
                 ColorSpace = ColorSpace,
                 Pattern    = Pattern,
                 Shading    = Shading,
-             -- ProcSet    = pdfarray { pdfconstant("PDF") },
             }
-            return collected()
+            if options and options.serialize == false then
+                return collected
+            else
+                return collected()
+            end
         else
             return ""
         end

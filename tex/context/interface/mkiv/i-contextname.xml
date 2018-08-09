@@ -1,0 +1,2353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+	<cd:command name="quotedbl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texthash" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdollar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textpercent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textampersand" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quotesingle" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcomma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texthyphen" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textperiod" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textslash" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textat" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dotlessI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dotlessJ" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbackslash" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textasciicircum" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textunderscore" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="idotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbraceleft" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbraceright" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textasciitilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="nobreakspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="exclamdown" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textsterling" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcurrency" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textyen" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbrokenbar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="sectionmark" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="copyright" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ordfeminine" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="leftguillemot" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textlognot" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="softhyphen" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="registered" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdegree" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textpm" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="twosuperior" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="threesuperior" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textmu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="paragraphmark" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="periodcentered" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onesuperior" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ordmasculine" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="rightguillemot" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onequarter" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onehalf" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="threequarter" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="questiondown" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Agrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Aacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Atilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Aring" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="AEligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ccedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Egrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Eacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Igrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Iacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Icircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Idiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Eth" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ograve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Oacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Otilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textmultiply" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ostroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ugrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ucircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Yacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Thorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ssharp" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="agrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="atilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aring" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aeligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ccedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="egrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="eacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="igrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="iacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="icircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="idiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+  comment="contextname=eth" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ograve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="otilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdiv" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ostroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ugrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ucircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="yacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="thorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ydiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Amacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="amacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Aogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Cacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ccircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ccircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Cdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ccaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ccaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Emacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="emacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ebreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ebreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Edotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="edotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Eogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="eogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Hcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Hstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Itilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="itilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Imacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="imacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ibreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ibreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Iogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="iogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Idotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dotlessi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="IJligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ijligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Jcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="jcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Kcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="kcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="kkra" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Lacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Lcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Lcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ldotmiddle" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ldotmiddle" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Lstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Nacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="nacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ncommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ncommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ncaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ncaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="napostrophe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Neng" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="neng" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Omacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="omacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Obreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="obreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohungarumlaut" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohungarumlaut" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="OEligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oeligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Racute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="racute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Rcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="rcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Rcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="rcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Sacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="sacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Scircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="scircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Scedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="scedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Scaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="scaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Tcedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="tcedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Tcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="tcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Tstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="tstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Utilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="utilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Umacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="umacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ubreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ubreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uring" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uring" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhungarumlaut" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhungarumlaut" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Wcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="wcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ycircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ycircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ydiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Zacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Zdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Zcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="slong" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="bstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Bhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Chook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="chook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dafrican" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Schwa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Fhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ghook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Istroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Khook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="khook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lbar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Phook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="phook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Thook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="thook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhorn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Yhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="yhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Zstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="DZcaronligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dzcaronligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dzcaronligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="LJligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ljligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ljligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="NJligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Njligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="njligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Icaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="icaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ucaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ucaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udiaeresisacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udiaeresisacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udiaeresiscaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udiaeresiscaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udiaeresisgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udiaeresisgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adotaccentmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adotaccentmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="AEmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aemacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Kcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="kcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Oogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Oogonekmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oogonekmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="jcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="DZligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Dzligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dzligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Gacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="gacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Aringacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aringacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="AEacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="aeacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ostrokeacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ostrokeacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ainvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ainvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Edoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="edoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Einvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="einvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Idoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="idoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Iinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="iinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Oinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Rdoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="rdoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Rinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="rinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uinvertedbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Scommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="scommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Tcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="tcommaaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Hcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dcurl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Zhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecedilla" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odiaeresismacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Otildemacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="otildemacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odotaccentmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odotaccentmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ymacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ymacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="lcurl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ncurl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="tcurl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dotlessj" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Astroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Cstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Lbar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="bhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ccurl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="schwa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="schwahook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="dotlessjstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcircumflex" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcaron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdotaccent" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textring" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textogonek" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texttilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texthungarumlaut" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbottomdot" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbottomcomma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greektonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicrontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlpha" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekBeta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekGamma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekDelta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilon" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekZeta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekTheta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIota" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekKappa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekLambda" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekMu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekNu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekXi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekPi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekRho" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekSigma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekTau" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilon" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekPhi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekChi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekPsi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmega" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotadialytika" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilondialytika" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalpha" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekbeta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekgamma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdelta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilon" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekzeta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greektheta" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiota" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekkappa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeklambda" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekmu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeknu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekxi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekrho" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekfinalsigma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeksigma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greektau" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilon" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekphi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekchi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpsi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomega" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadialytika" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicrontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekthetaalt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekphialt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpialt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekkoppa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekstigma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdigamma" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeknumkoppa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeksampi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekrhoalt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeksigmalunate" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonalt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekSigmalunate" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYO" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicDJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicGJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicIE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicDZE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicLJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicNJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicTSHE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKJE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicIgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicUSHRT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicDZHE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicB" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicV" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicG" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicD" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZH" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZ" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicISHRT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicK" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicL" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicM" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicN" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicO" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicP" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicR" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicS" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicU" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicF" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicH" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCH" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSH" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSHCH" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicHRDSN" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicERY" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSFTSN" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEREV" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYU" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillica" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicb" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicv" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicg" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicd" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillice" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczh" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicz" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillici" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicishrt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillick" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicm" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillico" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicp" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicr" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillics" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillict" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicf" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillich" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicch" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicsh" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicshch" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillichrdsn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicery" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicsftsn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicerev" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicyu" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicya" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicyo" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicdje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicgje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicie" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicdze" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicyi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliclje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicnje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillictshe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickje" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicigrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicushrt" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicdzhe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicOMEGA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicomega" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYAT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicyat" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliceiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicLITTLEYUS" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliclittleyus" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicLITTLEYUSiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliclittleyusiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicBIGYUS" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicbigyus" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicBIGYUSiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicbigyusiotified" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKSI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicksi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicPSI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicpsi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicFITA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicfita" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicIZHITSA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicizhitsa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicIZHITSAdoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicizhitsadoublegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicUK" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicuk" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicOMEGAround" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicomegaround" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicOMEGAtitlo" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicomegatitlo" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicOT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicot" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKOPPA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickoppa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicTITLO" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicPALATALIZATION" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicDASIAPNEUMATA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicPSILIPNEUMATA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicISHRTtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicishrttail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSEMISOFT" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicsemisoft" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicERtick" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicertick" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicGHEupturn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicgheupturn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicGHEstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicghestroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicGHEmidhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicghemidhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZHEdescender" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczhedescender" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZDSC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczdsc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKADC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickadc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKAvertstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickavertstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKAstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickastroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKAbashkir" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickabashkir" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicENDC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicendc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicENGHE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicenghe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicPEmidhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicpemidhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicHA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicha" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSDSC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicsdsc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicTEDC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillictedc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYstr" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicystr" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYstrstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicystrstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicHADC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillichadc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicTETSE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillictetse" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEDC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicchedc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEvertstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicchevertstroke" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSHHA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicshha" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliccheabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEDCabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicchedcabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicPALOCHKA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZHEbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczhebreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicKAhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillickahook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicELtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliceltail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicENhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicenhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicENtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicentail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEkhakassian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicchekhakassian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEMtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicemtail" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicAbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicabreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicAdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicadiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicAE" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicae" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEbreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicebreve" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSCHWA" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicschwa" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicSCHWAdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicschwadiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZHEdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczhediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicZEdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrilliczediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicDZEabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicdzeabkhasian" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicImacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicimacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicIdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicidiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicOdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicodiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicObarred" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicobarred" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicObarreddiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicobarreddiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicEdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicUmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicumacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicUdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicudiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicUdoubleacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicudoubleacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicCHEdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicchediaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicYERUdiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="cyrillicyerudiaeresis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewAlef" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewBet" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewGimel" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewDalet" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewHe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewVav" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewZayin" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewHet" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewTet" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewYod" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewKaffinal" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewKaf" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewLamed" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewMemfinal" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewMem" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewNunfinal" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewNun" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewSamekh" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewAyin" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewPefinal" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewPe" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewTsadifinal" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewTsadi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewQof" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewResh" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewShin" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hebrewTav" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Adotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="adotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ahook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ahook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Acircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="acircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abreveacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abreveacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abrevegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abrevegrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abrevehook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abrevehook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abrevetilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abrevetilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Abrevedotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="abrevedotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Edotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="edotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ehook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ehook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Etilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="etilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ecircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ecircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ihook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ihook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Idotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="idotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Odotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="odotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflexacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflexgrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflexhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflextilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ocircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ocircumflexdotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohornacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohornacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohorngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohorngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohornhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohornhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohorntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohorntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ohorndotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ohorndotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Udotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="udotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhornacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhornacute" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhorngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhorngrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhornhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhornhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhorntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhorntilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Uhorndotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="uhorndotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ygrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ygrave" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ydotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ydotbelow" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Yhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="yhook" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="Ytilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ytilde" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilonpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilonpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilonpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicronpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicrondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicronpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicrondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicronpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicrondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicronpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicrondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicronpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicrondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicronpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicrondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilondasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilondasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilondasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilondasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegapsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegadasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegapsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegadasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegapsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegadasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegapsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegadasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekepsilonoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotaoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicronvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomicronoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasubdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphavrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphamacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubtonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekalphaiotasubperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphavrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphamacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekAlphaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekCoronis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekprosgegrammeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdialytikaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubtonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greeketaiotasubperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilonvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEpsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekEtaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpsilivaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpsilitonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekpsiliperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotavrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotamacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadialytikavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekiotadialytikaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotavrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotamacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekIotatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdasiavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdasiatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdasiaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonvrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondialytikavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekrhopsili" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekrhodasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilonperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekupsilondialytikaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilonvrachy" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilonmacron" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilonvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekUpsilontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekRhodasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdialytikavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdialytikatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubtonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekomegaiotasubperispomeni" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicronvaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmicrontonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegavaria" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegatonos" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekOmegaiotasub" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekoxia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="greekdasia" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="enspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="emspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="threeperemspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fourperemspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="sixperemspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="figurespace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="punctuationspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="breakablethinspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="hairspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zerowidthspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zwnj" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zwj" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textminus" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="endash" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="emdash" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texthorizontalbar" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quoteleft" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quoteright" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quotesinglebase" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quotedblleft" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quotedblright" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="quotedblbase" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdag" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textddag" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textbullet" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textellipsis" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="narrownobreakspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="perthousand" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="guilsingleleft" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="guilsingleright" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textfraction" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="medspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textdong" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="texteuro" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcelsius" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textnumero" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textcircledP" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="trademark" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textounce" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textohm" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textmho" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textkelvin" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="textAngstrom" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onethird" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="twothirds" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onefifth" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="twofifths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="threefifths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fourfifths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="onesixth" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fivesixths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="oneeighth" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="threeeighths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fiveeighths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="seveneighths" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanIII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanIV" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanV" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanVI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanVII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanVIII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanIX" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanX" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanXI" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanXII" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanL" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanC" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanD" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanM" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romani" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romaniii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romaniv" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanv" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanvi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanvii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanviii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanix" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanx" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanxi" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanxii" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanl" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanc" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romand" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="romanm" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="carriagereturn" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ideographicspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ideographichalffillspace" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ffligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="filigature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="flligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="ffiligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="fflligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="stligature" level="document" category="characters" file="char-def.lua"/>
+
+	<cd:command name="zerowidthnobreakspace" level="document" category="characters" file="char-def.lua"/>
+
+</cd:interface>

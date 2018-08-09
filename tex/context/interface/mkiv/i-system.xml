@@ -1641,7 +1641,7 @@
 
     <cd:command name="increment" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:keywords delimiters="parentheses" list="yes">
+            <cd:keywords delimiters="parenthesis" list="yes">
                 <cd:constant type="cd:csname"/>
                 <cd:constant type="cd:number"/>
             </cd:keywords>
@@ -1656,7 +1656,7 @@
 
     <cd:command name="decrement" variant="argument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
-            <cd:keywords delimiters="parentheses" list="yes">
+            <cd:keywords delimiters="parenthesis" list="yes">
                 <cd:constant type="cd:csname"/>
                 <cd:constant type="cd:number"/>
             </cd:keywords>
@@ -3598,6 +3598,31 @@
             <cd:content/>
             <cd:content/>
             <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoif" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoifnot" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="expandeddoifelse" level="system" file="syst-lua.mkiv">
+        <cd:arguments>
+            <cd:content/>
+            <cd:content/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 

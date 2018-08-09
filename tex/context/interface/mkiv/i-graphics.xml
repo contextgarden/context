@@ -218,12 +218,6 @@
                 <cd:parameter name="cache">
                     <cd:constant type="cd:path"/>
                 </cd:parameter>
-                <cd:parameter name="userpassword">
-                    <cd:constant type="cd:string"/>
-                </cd:parameter>
-                <cd:parameter name="ownerpassword">
-                    <cd:constant type="cd:string"/>
-                </cd:parameter>
                 <cd:parameter name="resources">
                     <cd:constant type="cd:path"/>
                 </cd:parameter>
@@ -241,6 +235,16 @@
                     <cd:constant type="no"/>
                     <!-- only passed by the system: -->
                     <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="transform">
+                    <cd:constant type="auto" default="yes"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="userpassword">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="ownerpassword">
+                    <cd:constant type="cd:text"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -527,6 +531,18 @@
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-dimension"/>
             <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="overlayimage" level="style" category="graphics" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="clippedoverlayimage" level="style" category="graphics" file="pack-box.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 

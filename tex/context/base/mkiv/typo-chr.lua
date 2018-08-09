@@ -22,6 +22,7 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 -- local getid          = nuts.getid
 -- local getprev        = nuts.getprev
 -- local getchar        = nuts.getchar
+-- local getdata        = nuts.getdata
 -- local getfield       = nuts.getfield
 --
 -- local remove_node    = nuts.remove
@@ -51,7 +52,7 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 --     local done = false
 --     for n, subtype in nextwhatsit, head do
 --         if subtype == user_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
---             local action = actions[getfield(n,"value")]
+--             local action = actions[getdata(n)]
 --             if action then
 --                 head = action(h,n)
 --             end

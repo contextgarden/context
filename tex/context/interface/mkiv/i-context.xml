@@ -152,6 +152,7 @@
     <cd:interfacefile filename="i-output.xml"/>
     <cd:interfacefile filename="i-overlay.xml"/>
     <cd:interfacefile filename="i-pagebreak.xml"/>
+    <cd:interfacefile filename="i-pagecolumns.xml"/>
     <cd:interfacefile filename="i-pagecomment.xml"/>
     <cd:interfacefile filename="i-pagefigure.xml"/>
     <cd:interfacefile filename="i-pagegrid.xml"/>

@@ -67,6 +67,7 @@ local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
+local getexpansion        = nuts.getexpansion
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -474,7 +475,7 @@ local fontkern, italickern do
 
     local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
-        local extra = getfield(current,"expansion_factor")
+        local extra = getexpansion(current)
         local kern  = width + extra
         local info  = cache[kern]
         if not info then
@@ -515,7 +516,7 @@ local glyphexpansion do
     local f_cache = caches["glyphexpansion"]
 
     glyphexpansion = function(head,current)
-        local extra = getfield(current,"expansion_factor")
+        local extra = getexpansion(current)
         if extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
@@ -549,7 +550,7 @@ local kernexpansion do
     local f_cache = caches["kernexpansion"]
 
     kernexpansion = function(head,current)
-        local extra = getfield(current,"expansion_factor")
+        local extra = getexpansion(current)
         if extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]

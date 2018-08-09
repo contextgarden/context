@@ -1846,7 +1846,7 @@ local ot_reset, ot_analyze, ot_process do
 
     local outlinetexts = { } -- also in top data
 
-    local function ot_reset()
+    ot_reset = function ()
         outlinetexts = { }
     end
 
@@ -1874,7 +1874,7 @@ local ot_reset, ot_analyze, ot_process do
 
     else
 
-        local function ot_analyze(object,prescript)
+        ot_analyze = function(object,prescript)
             local ot_stage = prescript.ot_stage
             local ot_index = tonumber(prescript.ot_index)
             if ot_index and ot_stage == "trial" and not outlinetexts[ot_index] then

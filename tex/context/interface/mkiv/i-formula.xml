@@ -274,6 +274,7 @@
     <cd:command name="placeformula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
+            <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -303,12 +304,14 @@
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="placesubformula" level="document" category="mathematics" file="strc-mat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
+            <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 

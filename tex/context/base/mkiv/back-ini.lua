@@ -105,11 +105,9 @@ tables.vfspecials = allocate {
 
 -- we'd better have this return something (defaults)
 
-function codeinjections.getpos   () return 0, 0 end
-function codeinjections.gethpos  () return 0 end
-function codeinjections.getvpos  () return 0 end
-function codeinjections.hasmatrix() return false end
-function codeinjections.getmatrix() return 1, 0, 0, 1, 0, 0 end
+function codeinjections.getpos () return 0, 0 end
+function codeinjections.gethpos() return 0 end
+function codeinjections.getvpos() return 0 end
 
 -- can best be here
 

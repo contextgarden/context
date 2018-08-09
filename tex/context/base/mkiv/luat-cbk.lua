@@ -121,6 +121,12 @@ if trace_calls then
 
 end
 
+-- temporary, not public:
+
+callbacks.functions = { }
+
+-- till here
+
 local reported = { }
 
 local function register_usercall(what,name,func)

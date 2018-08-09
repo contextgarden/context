@@ -183,6 +183,10 @@
                 <cd:parameter name="headcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="aligntitle">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <!-- end construction values -->
                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
@@ -466,6 +470,8 @@
     <cd:command name="postponenotes" level="style" category="structure notes" file="strc-not.mkvi"/>
 
     <cd:command name="flushnotes" level="style" category="structure notes" file="strc-not.mkvi"/>
+
+    <cd:command name="postponingnotes" type="environment" category="structure notes" file="strc-not.mkvi"/>
 
     <cd:command name="doifelsenoteonsamepage" level="system" category="structure notes conditional" file="strc-not.mkvi">
         <cd:arguments>

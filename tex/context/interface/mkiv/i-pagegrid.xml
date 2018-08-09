@@ -4,17 +4,76 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definepagegrid" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="definepagegrid" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegrid"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definecolumnset" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegrid"/>
+                <cd:inherit name="setupcolumnset"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegrid" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegrid" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="n">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="nleft">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="nright">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="width">
+                        <cd:constant type="cd:dimension"/>
+                        <cd:constant type="auto"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="lines">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="maxwidth">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="maxheight">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="direction">
+                        <cd:constant type="normal" default="yes"/>
+                        <cd:constant type="reverse"/>
+                    </cd:parameter>
+                    <cd:parameter name="page">
+                        <cd:inherit name="page"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupframed"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnset" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -55,57 +114,121 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegrid" type="environment" generated="yes" variant="example" level="document" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="pagegrid" type="environment" generated="yes" variant="example" level="document" category="layout" file="page-cst.mkiv">
+            <cd:sequence>
+                <cd:variable value="pagegrid"/>
+            </cd:sequence>
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegrid"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="pagegrid" type="environment" level="document" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegrid"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="columnset" type="environment" generated="yes" variant="example" level="document" category="layout" file="page-cst.mkiv">
         <cd:sequence>
-            <cd:variable value="pagegrid"/>
+            <cd:variable value="columnset"/>
         </cd:sequence>
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegrid"/>
+                <cd:inherit name="setupcolumnset"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegrid" type="environment" level="document" category="layout" file="page-cst.mkiv">
+    <cd:command name="columnset" type="environment" level="document" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegrid"/>
+                <cd:inherit name="setupcolumnset"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setpagegrid" level="document" category="layout" file="page-cst.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="c">
-                    <cd:constant type="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="r">
-                    <cd:constant type="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="option">
-                    <cd:constant type="none" default="yes"/>
-                    <!--
+    <!--
+
+        <cd:command name="setpagegrid" level="document" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:parameter name="c">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="r">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="option">
+                        <cd:constant type="none" default="yes"/>
                         <cd:constant type="wide"/>
-                    -->
-                </cd:parameter>
-            </cd:assignments>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
+                    </cd:parameter>
+                </cd:assignments>
+                <cd:content/>
+            </cd:arguments>
+        </cd:command>
 
-    <cd:command name="definepagegridspan" level="style" category="layout" file="page-cst.mkiv">
+        <cd:command name="definepagegridspan" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegridspan"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definecolumnsetspan" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegridspan"/>
+                <cd:inherit name="setupcolumnsetspan"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridspan" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegridspan" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="n">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="before">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="after">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupframed"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnsetspan" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -129,32 +252,111 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegridspan" type="environment" level="document" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="pagegridspan" type="environment" level="document" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegridspan"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="columnsetspan" type="environment" level="document" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegridspan"/>
+                <cd:inherit name="setupcolumnsetspan"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagegridspanwidth" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="pagegridspanwidth" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="argument-number"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="columnsetspanwidth" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definepagegridarea" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="definepagegridarea" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuppagegridarea"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definecolumnsetarea" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuppagegridarea"/>
+                <cd:inherit name="setupcolumnsetarea"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridarea" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegridarea" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="state">
+                        <cd:constant type="start"/>
+                        <cd:constant type="stop" default="yes"/>
+                        <cd:constant type="repeat"/>
+                    </cd:parameter>
+                    <cd:parameter name="x">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="y">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="nx">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="ny">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="style">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="color">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="clipoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rightoffset">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:inherit name="setupframed"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnsetarea" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -192,14 +394,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridareatext" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegridareatext" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnsetareatext" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridlines" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegridlines" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-number"/>
+                <cd:resolve name="keyword-number"/>
+                <cd:resolve name="keyword-number"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnsetlines" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
@@ -208,7 +434,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuppagegridstart" level="style" category="layout" file="page-cst.mkiv">
+    <!--
+
+        <cd:command name="setuppagegridstart" level="style" category="layout" file="page-cst.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-number"/>
+                <cd:resolve name="keyword-number"/>
+                <cd:resolve name="keyword-number"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupcolumnsetstart" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>

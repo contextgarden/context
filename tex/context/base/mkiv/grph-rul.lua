@@ -15,7 +15,6 @@ local context        = context
 local ruleactions    = nodes.rules.ruleactions
 local userrule       = nodes.rules.userrule
 local bpfactor       = number.dimenfactors.bp
-local pdfprint       = pdf.print
 
 local current_attr   = nodes.current_attr
 local setfield       = nodes.setfield
@@ -35,6 +34,16 @@ local report_mp      = logs.reporter("rules","mp")
 local floor          = math.floor
 local getrandom      = utilities.randomizer.get
 local formatters     = string.formatters
+
+-- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
+
+local pdfprint
+
+pdfprint = function(...) pdfprint = lpdf.print return pdfprint(...) end
+
+updaters.register("backend.update",function()
+    pdfprint = lpdf.print
+end)
 
 do
 

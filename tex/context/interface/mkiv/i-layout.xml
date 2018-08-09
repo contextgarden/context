@@ -197,6 +197,7 @@
                 </cd:parameter>
                 <cd:parameter name="cropoffset">
                     <cd:constant type="cd:dimension"/>
+                    <cd:constant type="auto"/>
                 </cd:parameter>
                 <cd:parameter name="trimoffset">
                     <cd:constant type="cd:dimension"/>
@@ -367,14 +368,14 @@
 
     <cd:command name="spread" type="environment" level="document" category="layout" file="page-spr.mkiv"/>
 
-    <cd:command name="doifelsetopofpage" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doifelsetopofpage" level="system" category="layout conditional" file="page-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftopofpageelse" level="system" category="layout conditional" file="page-lay.mkiv">
+    <cd:command name="doiftopofpageelse" level="system" category="layout conditional" file="page-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

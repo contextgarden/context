@@ -44,6 +44,7 @@
                     <cd:constant type="fit"/>
                     <cd:constant type="broad"/>
                     <cd:constant type="max"/>
+                    <cd:constant type="min"/>
                     <cd:constant type="auto"/>
                     <cd:constant type="default"/>
                 </cd:parameter>
@@ -51,6 +52,7 @@
                     <cd:constant type="fit"/>
                     <cd:constant type="broad"/>
                     <cd:constant type="max"/>
+                    <cd:constant type="min"/>
                     <cd:constant type="auto"/>
                     <cd:constant type="default"/>
                 </cd:parameter>
@@ -58,6 +60,7 @@
                     <cd:constant type="fit"/>
                     <cd:constant type="broad"/>
                     <cd:constant type="max"/>
+                    <cd:constant type="min"/>
                     <cd:constant type="auto"/>
                     <cd:constant type="default"/>
                 </cd:parameter>

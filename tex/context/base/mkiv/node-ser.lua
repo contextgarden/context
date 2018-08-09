@@ -87,7 +87,7 @@ local ignore = allocate ( tohash {
 local dimension = allocate ( tohash {
     "width", "height", "depth", "shift",
     "stretch", "shrink",
-    "xoffset", "yoffset", "xadvance",
+    "xoffset", "yoffset",
     "surround",
     "kern",
     "box_left_width", "box_right_width"

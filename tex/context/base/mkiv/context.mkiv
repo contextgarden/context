@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.07.30 12:12}
+\edef\contextversion{2018.08.09 23:37}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -565,6 +565,9 @@
 \loadmarkfile{back-exp}
 
 \loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
+
+\doifelsefileexists{back-shp.mkiv}{\loadmarkfile{back-shp}}{}
+
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}

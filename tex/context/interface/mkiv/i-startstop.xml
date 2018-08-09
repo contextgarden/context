@@ -57,10 +57,32 @@
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="startstop" type="environment" level="document" category="structure" file="core-sys.mkiv">
-        <cd:sequence>
-            <cd:string value="​"/><!-- value="zero width space -->
-        </cd:sequence>
+    <!--
+
+        Variant 1: <cd:string value="zero width space"/>
+
+        <cd:command name="startstop" type="environment" level="document" category="structure" file="core-sys.mkiv">
+            <cd:sequence>
+                <cd:string value="​"/>
+            </cd:sequence>
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        Variant 2: <cd:delimiter name="stop"/>
+
+        <cd:command name="start" level="document" category="structure" file="core-sys.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:resolve name="string-content"/>
+                <cd:delimiter name="stop"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="" type="environment" level="document" category="structure" file="core-sys.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>

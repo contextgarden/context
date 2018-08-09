@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/30/18 12:12:22
+-- merge date  : 08/09/18 23:37:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -10748,7 +10748,7 @@ local hash=table.setmetatableindex(function(t,k)
   elseif k<0xD7FF or (k>0xDFFF and k<=0xFFFF) then
     v=f_single(k)
   else
-    v=k-0x10000
+    k=k-0x10000
     v=f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
   end
   t[k]=v

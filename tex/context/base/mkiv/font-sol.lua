@@ -65,6 +65,8 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
+local getdata            = nuts.getdata
+
 local getboxglue         = nuts.getboxglue
 
 local setattr            = nuts.setattr
@@ -446,7 +448,7 @@ local function collect_words(list) -- can be made faster for attributes
             if subtype == userdefined_code then -- hm
                 local user_id = getfield(current,"user_id")
                 if user_id == splitter_one then
-                    word = { getfield(current,"value"), current, current }
+                    word = { getdata(current), current, current }
                     w = w + 1
                     words[w] = word
                 elseif user_id == splitter_two then

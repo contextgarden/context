@@ -20,6 +20,7 @@ local nuts             = nodes.nuts
 local tonut            = nuts.tonut
 
 local setfield         = nuts.setfield
+local setdata          = nuts.setdata
 
 local copy_node        = nuts.copy
 local new_node         = nuts.new
@@ -42,10 +43,15 @@ local pdfsetmatrix     = register(new_node(whatsit_code, whatsitcodes.pdfsetmatr
 
 local variables = interfaces.variables
 
-function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setfield(t,"data",str) return t end
-function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setfield(t,"data",str) return t end
-function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setfield(t,"data",str) return t end
-function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setfield(t,"data",str) return t end
+-- function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setfield(t,"data",str) return t end
+-- function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setfield(t,"data",str) return t end
+-- function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setfield(t,"data",str) return t end
+-- function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setfield(t,"data",str) return t end
+
+function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setdata(t,str) return t end
+function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setdata(t,str) return t end
+function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setdata(t,str) return t end
+function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setdata(t,str) return t end
 
 nodepool.pdfliteral = nodepool.pdfpageliteral -- best is to use a specific one: origin | page | direct | raw
 
@@ -60,7 +66,7 @@ end
 function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
     local t = copy_node(pdfsetmatrix)
     if type(rx) == "string" then
-        setfield(t,"data",rx)
+        setdata(t,rx)
     else
         if not rx then
             rx = 1
@@ -80,12 +86,12 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
         end
         if sx == 0 and sy == 0 then
             if rx == 1 and ry == 1 then
-                setfield(t,"data","1 0 0 1")
+                setdata(t,"1 0 0 1")
             else
-                setfield(t,"data",formatters["%0.6F 0 0 %0.6F"](rx,ry))
+                setdata(t,formatters["%0.6F 0 0 %0.6F"](rx,ry))
             end
         else
-            setfield(t,"data",formatters["%0.6F %0.6F %0.6F %0.6F"](rx,sx,sy,ry))
+            setdata(t,formatters["%0.6F %0.6F %0.6F %0.6F"](rx,sx,sy,ry))
         end
     end
     return t

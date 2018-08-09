@@ -204,18 +204,18 @@ local subtypeactions = {
     [rulecodes.radical]  = mathradical,
 }
 
-callbacks.register(
-    "process_rule",
-    function(n,h,v)
-        local n = tonut(n)
-        local s = getsubtype(n)
-        local a = subtypeactions[s]
-        if a then
-            a(n,h,v)
-        end
-    end,
-    "handle additional user rule features"
-)
+local function process_rule(n,h,v)
+    local n = tonut(n)
+    local s = getsubtype(n)
+    local a = subtypeactions[s]
+    if a then
+        a(n,h,v)
+    end
+end
+
+callbacks.register("process_rule",process_rule,"handle additional user rule features")
+
+callbacks.functions.process_rule = process_rule
 
 --
 
@@ -899,7 +899,7 @@ interfaces.implement {
                 setfield(n,"left",l)
             end
             if r then
-                etfield(n,"right",r)
+                setfield(n,"right",r)
             end
         end
         context(tonode(n))

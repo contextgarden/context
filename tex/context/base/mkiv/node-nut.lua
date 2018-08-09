@@ -175,16 +175,119 @@ if not direct.getdirection then
 
 end
 
+if not direct.getexpansion then
+
+    local getfield           = direct.getfield
+    local setfield           = direct.setfield
+
+    local nodecodes          = nodes.nodecodes
+    local whatsitcodes       = nodes.whatsitcodes
+
+    local glyph_code         = nodecodes.glyph
+    local kern_code          = nodecodes.kern
+
+    function direct.getexpansion(n)
+        local id = getid(n)
+        if id == glyph_code or id == kern_code then
+            return getfield(n,"expansion_factor")
+        end
+    end
+
+    function direct.setexpansion(n,e)
+        local id = getid(n)
+        if id == glyph_code or id == kern_code then
+            setfield(n,"expansion_factor",e)
+        end
+    end
+
+end
+
+if not direct.getdata then
+
+    local getid              = direct.getid
+    local getsubtype         = direct.getsubtype
+    local getfield           = direct.getfield
+    local setfield           = direct.setfield
+
+    local nodecodes          = nodes.nodecodes
+    local whatsitcodes       = nodes.whatsitcodes
+
+    local glyph_code         = nodecodes.glyph
+    local boundary_code      = nodecodes.boundary
+    local whatsit_code       = nodecodes.whatsit
+
+    local user_defined_code  = whatsitcodes.userdefined
+    local pdf_literal_code   = whatsitcodes.pdfliteral
+    local pdf_setmatrix_code = whatsitcodes.pdfsetmatrix
+    local late_lua_code      = whatsitcodes.latelua
+    local special_code       = whatsitcodes.special
+    local write_code         = whatsitcodes.write
+
+    function direct.getdata(n)
+        local id = getid(n)
+        if id == glyph_code then
+            return getfield(n,"data")
+        elseif id == boundary_code then
+            return getfield(n,"value")
+        elseif id == whatsit_code then
+            local subtype = getsubtype(n)
+            if subtype == user_defined_code then
+                return getfield(n,"value")
+            elseif subtype == pdf_literal_code then
+                return getfield(n,"data"), getfield(n,"mode")
+            elseif subtype == late_lua_code then
+                return getfield(n,"data")
+            elseif subtype == pdf_setmatrix_code then
+                return getfield(n,"data")
+            elseif subtype == special_code then
+                return getfield(n,"data")
+            elseif subtype == write_code then
+                return getfield(n,"data")
+            end
+        end
+    end
+
+    function direct.setdata(n,v,vv)
+        local id = getid(n)
+        if id == glyph_code then
+            return setfield(n,"data",v)
+        elseif id == boundary_code then
+            return setfield(n,"value",v)
+        elseif id == whatsit_code then
+            local subtype = getsubtype(n)
+            if subtype == user_defined_code then
+                setfield(n,"value",v)
+            elseif subtype == pdf_literal_code then
+                setfield(n,"data",v)
+                if m then
+                    setfield(n,"mode",vv)
+                end
+            elseif subtype == late_lua_code then
+                setfield(n,"data",v)
+            elseif subtype == pdf_setmatrix_code then
+                setfield(n,"data",v)
+            elseif subtype == special_code then
+                setfield(n,"data",v)
+            elseif subtype == write_code then
+                setfield(n,"data",v)
+            end
+        end
+    end
+
+end
+
 if not node.direct.traverse_glyph or not node.direct.traverse_list then
 
     logs.report("system","using fake node list traversers")
 
-    local getnext    = node.direct.getnext
-    local getid      = node.direct.getid
-    local getsubtype = node.direct.getsubtype
-    local getchar    = node.direct.getchar
-    local getfont    = node.direct.getfont
-    local getlist    = node.direct.getlist
+    local direct     = node.direct
+
+    local getnext    = direct.getnext
+    local getid      = direct.getid
+    local getsubtype = direct.getsubtype
+    local getchar    = direct.getchar
+    local getfont    = direct.getfont
+    local getlist    = direct.getlist
 
     local function iterate(h,n)
         if n then
@@ -373,6 +476,14 @@ nuts.getdisc               = direct.getdisc
 nuts.setdisc               = direct.setdisc
 nuts.getdiscretionary      = direct.getdisc
 nuts.setdiscretionary      = direct.setdisc
+
+nuts.getdata               = direct.getdata
+nuts.setdata               = direct.setdata
+nuts.getvalue              = direct.getdata
+nuts.setvalue              = direct.setdata
+
+nuts.getexpansion          = direct.getexpansion
+nuts.setexpansion          = direct.setexpansion
 
 nuts.getwhd                = direct.getwhd
 nuts.setwhd                = direct.setwhd

@@ -396,3 +396,20 @@ if texconfig then
     directives.register("luatex.stacksize",    function(v) set("stack_size",v)     end)
 
 end
+
+-- for now here:
+
+local data = table.setmetatableindex("table")
+
+updaters = {
+    register = function(what,f)
+        local d = data[what]
+        d[#d+1] = f
+    end,
+    apply = function(what,...)
+        local d = data[what]
+        for i=1,#d do
+            d[i](...)
+        end
+    end,
+}
