@@ -319,7 +319,7 @@ function codeinjections.mergereferences(specification)
         end
     end
     -- moved outside previous test
-    context.setgvalue("figurereference",reference) -- global
+    context.setgvalue("figurereference",reference) -- global, todo: setmacro
     if trace_links then
         report_link("setting figure reference to %a",reference)
     end
@@ -498,6 +498,8 @@ local validstamps = {
     Draft               = true,
     ForPublicRelease    = true,
 }
+
+-- todo: we can use runtoks instead of steps
 
 local function validStamp(v)
     local name = "Stamped" -- fallback

@@ -389,17 +389,6 @@ do
         end
     end
 
-end
-
-lpdf.tosixteen   = tosixteen
-lpdf.toeight     = toeight
-lpdf.topdfdoc    = topdfdoc
-lpdf.fromsixteen = fromsixteen
-lpdf.fromeight   = fromeight
-lpdf.frompdfdoc  = frompdfdoc
-
-do
-
     local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
                     + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
 
@@ -449,6 +438,13 @@ do
         return lpegmatch(b_pattern,s)
     end
 
+    lpdf.tosixteen   = tosixteen
+    lpdf.toeight     = toeight
+    lpdf.topdfdoc    = topdfdoc
+    lpdf.fromsixteen = fromsixteen
+    lpdf.fromeight   = fromeight
+    lpdf.frompdfdoc  = frompdfdoc
+
 end
 
 local function merge_t(a,b)
@@ -458,108 +454,116 @@ local function merge_t(a,b)
     return setmetatable(t,getmetatable(a))
 end
 
-local f_key_null       = formatters["/%s null"]
-local f_key_value      = formatters["/%s %s"]
-local f_key_dictionary = formatters["/%s << % t >>"]
-local f_dictionary     = formatters["<< % t >>"]
-local f_key_array      = formatters["/%s [ % t ]"]
-local f_array          = formatters["[ % t ]"]
-local f_key_number     = formatters["/%s %N"]
-local f_tonumber       = formatters["%N"]
-
 local tostring_a, tostring_d
 
-tostring_d = function(t,contentonly,key)
-    if next(t) then
-        local r, n = { }, 0
-        for k in next, t do
-            n = n + 1
-            r[n] = k
-        end
-        sort(r)
-        for i=1,n do
-            local k  = r[i]
-            local v  = t[k]
-            local tv = type(v)
-            if tv == "string" then
-                r[i] = f_key_value(k,toeight(v))
-            elseif tv == "number" then
-                r[i] = f_key_number(k,v)
-            elseif tv == "table" then
-                local mv = getmetatable(v)
-                if mv and mv.__lpdftype then
-                 -- if v == t then
-                 --     report_objects("ignoring circular reference in dirctionary")
-                 --     r[i] = f_key_null(k)
-                 -- else
-                        r[i] = f_key_value(k,tostring(v))
-                 -- end
-                elseif v[1] then
-                    r[i] = f_key_value(k,tostring_a(v))
-                else
-                    r[i] = f_key_value(k,tostring_d(v))
-                end
-            else
-                r[i] = f_key_value(k,tostring(v))
+do
+
+    local f_key_null       = formatters["/%s null"]
+    local f_key_value      = formatters["/%s %s"]
+    local f_key_dictionary = formatters["/%s << % t >>"]
+    local f_dictionary     = formatters["<< % t >>"]
+    local f_key_array      = formatters["/%s [ % t ]"]
+    local f_array          = formatters["[ % t ]"]
+    local f_key_number     = formatters["/%s %N"]
+    local f_tonumber       = formatters["%N"]
+
+    tostring_d = function(t,contentonly,key)
+        if next(t) then
+            local r, n = { }, 0
+            for k in next, t do
+                n = n + 1
+                r[n] = k
             end
-        end
-        if contentonly then
-            return concat(r," ")
-        elseif key then
-            return f_key_dictionary(key,r)
+            sort(r)
+            for i=1,n do
+                local k  = r[i]
+                local v  = t[k]
+                local tv = type(v)
+                -- mostly tables
+                if tv == "table" then
+                    local mv = getmetatable(v)
+                    if mv and mv.__lpdftype then
+                     -- if v == t then
+                     --     report_objects("ignoring circular reference in dirctionary")
+                     --     r[i] = f_key_null(k)
+                     -- else
+                            r[i] = f_key_value(k,tostring(v))
+                     -- end
+                    elseif v[1] then
+                        r[i] = f_key_value(k,tostring_a(v))
+                    else
+                        r[i] = f_key_value(k,tostring_d(v))
+                    end
+                elseif tv == "string" then
+                    r[i] = f_key_value(k,toeight(v))
+                elseif tv == "number" then
+                    r[i] = f_key_number(k,v)
+                else
+                    r[i] = f_key_value(k,tostring(v))
+                end
+            end
+            if contentonly then
+                return concat(r," ")
+            elseif key then
+                return f_key_dictionary(key,r)
+            else
+                return f_dictionary(r)
+            end
+        elseif contentonly then
+            return ""
         else
-            return f_dictionary(r)
+            return "<< >>"
         end
-    elseif contentonly then
-        return ""
-    else
-        return "<< >>"
     end
+
+    tostring_a = function(t,contentonly,key)
+        local tn = #t
+        if tn ~= 0 then
+            local r = { }
+            for k=1,tn do
+                local v = t[k]
+                local tv = type(v)
+                -- mostly numbers and tables
+                if tv == "number" then
+                    r[k] = f_tonumber(v)
+                elseif tv == "table" then
+                    local mv = getmetatable(v)
+                    local mt = mv and mv.__lpdftype
+                    if mt then
+                     -- if v == t then
+                     --     report_objects("ignoring circular reference in array")
+                     --     r[k] = "null"
+                     -- else
+                            r[k] = tostring(v)
+                     -- end
+                    elseif v[1] then
+                        r[k] = tostring_a(v)
+                    else
+                        r[k] = tostring_d(v)
+                    end
+                elseif tv == "string" then
+                    r[k] = toeight(v)
+                else
+                    r[k] = tostring(v)
+                end
+            end
+            if contentonly then
+                return concat(r, " ")
+            elseif key then
+                return f_key_array(key,r)
+            else
+                return f_array(r)
+            end
+        elseif contentonly then
+            return ""
+        else
+            return "[ ]"
+        end
+    end
+
 end
 
-tostring_a = function(t,contentonly,key)
-    local tn = #t
-    if tn ~= 0 then
-        local r = { }
-        for k=1,tn do
-            local v = t[k]
-            local tv = type(v)
-            if tv == "string" then
-                r[k] = toeight(v)
-            elseif tv == "number" then
-                r[k] = f_tonumber(v)
-            elseif tv == "table" then
-                local mv = getmetatable(v)
-                local mt = mv and mv.__lpdftype
-                if mt then
-                 -- if v == t then
-                 --     report_objects("ignoring circular reference in array")
-                 --     r[k] = "null"
-                 -- else
-                        r[k] = tostring(v)
-                 -- end
-                elseif v[1] then
-                    r[k] = tostring_a(v)
-                else
-                    r[k] = tostring_d(v)
-                end
-            else
-                r[k] = tostring(v)
-            end
-        end
-        if contentonly then
-            return concat(r, " ")
-        elseif key then
-            return f_key_array(key,r)
-        else
-            return f_array(r)
-        end
-    elseif contentonly then
-        return ""
-    else
-        return "[ ]"
-    end
-end
+local f_tonumber = formatters["%N"]
 
 local tostring_x = function(t) return concat(t," ")       end
 local tostring_s = function(t) return toeight(t[1])       end
@@ -685,8 +689,6 @@ end
 
 for i=-1,9 do cache[i] = pdfnumber(i) end
 
-local cache = { } -- can be weak
-
 local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
     ["\00"]="#00",
     ["\09"]="#09",
@@ -708,16 +710,17 @@ local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
 
 local escaped = Cs(Cc("/") * replacer^0)
 
+local cache = table.setmetatableindex(function(t,k)
+    local v = setmetatable({ lpegmatch(escaped,k) }, mt_c)
+    t[k] = v
+    return v
+end)
+
 local function pdfconstant(str,default)
     if not str then
-        str = default or ""
+        str = default or "none"
     end
-    local c = cache[str]
-    if not c then
-        c = setmetatable({ lpegmatch(escaped,str) },mt_c)
-        cache[str] = c
-    end
-    return c
+    return cache[str]
 end
 
 local escaped = Cs(replacer^0)

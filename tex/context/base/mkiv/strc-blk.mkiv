@@ -34,15 +34,47 @@
 
 \appendtoks
     \clf_definestructureblock{\currentblock}%
-    \setuevalue{\e!begin\currentblock}{\dotripleempty\strc_blocks_begin[\currentblock]}%
+    \setuevalue{\e!begin\currentblock}{\strc_blocks_begin{\currentblock}}%
     \letvalue  {\e!end  \currentblock}\donothing
 \to \everydefineblock
 
-\unexpanded\def\strc_blocks_begin[#1][#2][#3]%
-  {\normalexpanded{\buff_pickup{\??block}{\e!begin#1}{\e!end#1}}
+% The naive way:
+%
+% \unexpanded\def\strc_blocks_begin#1%
+%   {\dotripleempty\strc_blocks_begin_indeed[#1]}
+%
+% \unexpanded\def\strc_blocks_begin_indeed[#1][#2][#3]%
+%   {\normalexpanded{\buff_pickup{\??block}{\e!begin#1}{\e!end#1}}
+%      {}%
+%      {\clf_savestructureblock{#1}{#2}{#3}{\??block}}%
+%      \plusone}%
+%
+% We need to prevent too much lookahead which will gobble newlines
+% that are needed for buffers. See blocks-002.tex as example.
+
+\let\m_block   \empty
+\let\m_subblock\empty
+
+\unexpanded\def\strc_blocks_begin#1%
+  {\edef\m_block   {#1}%
+   \let \m_subblock\empty
+   \doifelsenextoptionalcs\strc_blocks_begin_yes\strc_blocks_begin_nop}
+
+\unexpanded\def\strc_blocks_begin_yes[#1]%
+  {\edef\m_subblock{#1}%
+   \doifelsenextoptionalcs\strc_blocks_begin_yes_yes\strc_blocks_begin_nop}
+
+\unexpanded\def\strc_blocks_begin_yes_yes[#1]%
+  {\strc_blocks_begin_indeed{#1}}
+
+\unexpanded\def\strc_blocks_begin_nop
+  {\strc_blocks_begin_indeed{}}
+
+\unexpanded\def\strc_blocks_begin_indeed#1%
+  {\normalexpanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
      {}%
-     {\clf_savestructureblock{#1}{#2}{#3}{\??block}}%
-     \plusone}%
+     {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
+     \plusone}
 
 \let\strc_blocks_setup\relax
 

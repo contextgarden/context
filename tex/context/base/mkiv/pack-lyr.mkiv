@@ -540,24 +540,85 @@
 
 % todo: pass the layer with \lastnamedcs
 
+% \def\pack_layers_flush_single
+%   {\startoverlay
+%      {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone   \currentlayer                 \fi}%
+%      {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\fi}%
+%    \stopoverlay}
+%
+% \def\pack_layers_flush_double#1%
+%   {\startoverlay
+%      {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone     \currentlayer                 \fi}%
+%      {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount  {\currentlayer:\the\realpageno}\fi}%
+%      {\ifcsname\??layerbox#1\currentlayer                \endcsname\pack_layers_flush_indeed\plusone  {#1\currentlayer                }\fi}%
+%      {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\fi}%
+%    \stopoverlay}
+
+% optimized:
+
 \def\pack_layers_flush_single
-  {\startoverlay
-     {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone   \currentlayer                 \fi}%
-     {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\fi}%
-   \stopoverlay}
+  {\ifcsname\??layerbox\currentlayer\endcsname
+     \ifvoid\lastnamedcs
+       \ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
+         \ifvoid\lastnamedcs\else
+           \chardef\b_layer_two\lastnamedcs
+           \pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two
+         \fi
+       \fi
+     \else
+       \chardef\b_layer_one\lastnamedcs
+       \ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
+         \ifvoid\lastnamedcs\else
+           \chardef\b_layer_two\lastnamedcs
+           \startoverlay
+             {\pack_layers_flush_indeed\plusone   \currentlayer                 \b_layer_one}%
+             {\pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two}%
+           \stopoverlay
+         \fi
+       \else
+         \pack_layers_flush_indeed\plusone\currentlayer\b_layer_one
+       \fi
+     \fi
+   \else\ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
+     \ifvoid\lastnamedcs
+        % nothing
+     \else
+       \chardef\b_layer_two\lastnamedcs
+       \pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two
+     \fi
+   \fi\fi}
+
+% less optimized:
 
 \def\pack_layers_flush_double#1%
   {\startoverlay
-     {\ifcsname\??layerbox  \currentlayer                \endcsname\pack_layers_flush_indeed\plusone     \currentlayer                 \fi}%
-     {\ifcsname\??layerbox  \currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount  {\currentlayer:\the\realpageno}\fi}%
-     {\ifcsname\??layerbox#1\currentlayer                \endcsname\pack_layers_flush_indeed\plusone  {#1\currentlayer                }\fi}%
-     {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname\pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\fi}%
+     {\ifcsname\??layerbox\currentlayer\endcsname
+        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+          \pack_layers_flush_indeed\plusone\currentlayer\b_layer_two
+        \fi
+      \fi}%
+     {\ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
+        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+          \pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two
+        \fi
+      \fi}%
+     {\ifcsname\??layerbox#1\currentlayer\endcsname
+        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+          \pack_layers_flush_indeed\plusone{#1\currentlayer}\b_layer_two
+        \fi
+      \fi}%
+     {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname
+        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+          \pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\b_layer_two
+        \fi
+      \fi}%
    \stopoverlay}
 
 \let\pack_layers_top_fill   \relax
 \let\pack_layers_bottom_fill\vss
 
-\def\pack_layers_flush_indeed#1#2% quite core, so optimized
+%def\pack_layers_flush_indeed#1#2%
+\def\pack_layers_flush_indeed#1#2#3%
   {\begingroup % already grouped
    \offinterlineskip
    \edef\p_pack_layers_preset{\layerparameter\c!preset}%
@@ -587,7 +648,8 @@
        \fi\fi
      \fi
    \fi
-   \chardef\b_layers\csname\??layerbox#2\endcsname % trick
+   %chardef\b_layers\csname\??layerbox#2\endcsname % trick
+   \let\b_layers#3%
    % we need to copy in order to retain the negative offsets for a next
    % stage of additions, i.e. llx/lly accumulate in repeat mode and the
    % compensation may differ each flush depending on added content

@@ -43,7 +43,7 @@ local report_passes  = logs.reporter("job","passes")
 job                  = job or { }
 local job            = job
 
-job.version          = 1.30
+job.version          = 1.31
 job.packversion      = 1.02
 
 -- some day we will implement loading of other jobs and then we need

@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['scrp-eth'] = {
 local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
-local getchar            = nuts.getchar
+local ischar             = nuts.ischar
 local getattr            = nuts.getattr
 
 local nodecodes          = nodes.nodecodes

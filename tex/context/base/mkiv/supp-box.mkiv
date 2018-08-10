@@ -2128,7 +2128,27 @@
 %D
 %D \leavevmode\getbuffer
 
+\def\boxisempty#1%
+  {\ifdim\wd#1=\zeropoint
+     \ifdim\ht#1=\zeropoint
+       \ifdim\dp#1=\zeropoint
+         \zerocount
+       \else
+         \plusone
+       \fi
+     \else
+       \plusone
+     \fi
+   \else
+     \plusone
+   \fi}
+
 \def\syst_boxes_overlay_process
+  {\ifcase\boxisempty\nextbox\else
+     \syst_boxes_overlay_process_indeed
+   \fi}
+
+\def\syst_boxes_overlay_process_indeed
   {%\removeunwantedspaces % already done
    \scratchdepth\dp\ifdim\dp\nextbox>\dp\processbox\nextbox\else\processbox\fi
    \ifdim\ht\nextbox>\ht\processbox

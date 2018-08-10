@@ -1062,12 +1062,14 @@ do
         end,
 
         nobreakspace_before = function(head,current)
-            head, current = insert_node_before(head,current,new_penalty(10000))
-            return insert_node_before(head,current,space_glue(current))
+            local g, p = space_glue(current), new_penalty(10000)
+            head, current = insert_node_before(head,current,p)
+            return insert_node_before(head,current,g)
         end,
         nobreakspace_after = function(head,current)
-            head, current = insert_node_after(head,current,space_glue(current))
-            return insert_node_after(head,current,new_penalty(10000))
+            local g, p = space_glue(current), new_penalty(10000)
+            head, current = insert_node_after(head,current,g)
+            return insert_node_after(head,current,p)
         end,
 
     }

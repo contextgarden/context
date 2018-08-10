@@ -1261,7 +1261,7 @@ local traced = function(one,two,...)
         elseif argtype == "number" then
             currenttrace(formatters["f : - : %s"](one))
         elseif argtype == "userdata" then
-            currenttrace(formatters["f : - : %s"](userdata(one)))
+            currenttrace(formatters["F : - : %s"](userdata(one)))
         else
             currenttrace(formatters["f : - : <<%S>>"](one))
         end
