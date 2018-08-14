@@ -1,0 +1,326 @@
+% language=uk
+
+\startcomponent musings-whytex
+
+\environment musings-style
+
+\startchapter[title={Why use \TEX ?}]
+
+\startsection[title={Introduction}]
+
+Let's assume that you know what \TEX\ is: a program that interprets a language
+with the same name that makes it possible to convert (tagged) input into for
+instance \PDF. For many of its users it is a black box: you key in some text, hit
+a button and get some typeset result in return. After a while you start tweaking
+this black box, meet other users (on the web), become more fluent and stick to it
+forever.
+
+But now let's assume that you don't know \TEX\ and are in search of a system
+that helps you create beautiful documents in an efficient way. When your
+documents have a complex structure you are probably willing to spend some time on
+figuring out what the best tool is. Even if a search lets you end up with
+something called \TEX, a three letter word with a dropped E, you still don't
+know what it is. Advertisement for \TEX\ is often pretty weak. It's rather easy
+to point to the numerous documents that can be found on the web. But what exactly
+does \TEX\ do and what are its benefits? In order to answer this we need to know
+who you are: an author, editor, an organization that deals with documents or needs
+to generate readable output, like publishers do.
+
+\stopsection
+
+\startsection[title={Authors}]
+
+We start with authors. Students of sciences that use mathematics don't have much
+of a choice. But most of these documents hardly communicate the message that
+\quotation {Everyone should use \TEX.} or that \quotation {All documents produced
+by \TEX\ look great.} but they do advocate that for rendering math it is a pretty
+good system. The source code of these documents often look rather messy and
+unattractive and for a non|-|math user it can be intimidating. Choosing some
+lightweight click|-|and|-|ping alternative looks attractive.
+lightweight click|-|and|-|ping alternative looks attractive.
+
+Making \TEX\ popular is not going to happen by convincing those who have to write
+an occasional letter or report. They should just use whatever suits them. On the
+other hand if you love consistency, long term support, need math, are dealing
+with a rare language or script, like to reuse content, prefer different styling
+from one source, use one source for multiple documents, or maybe love open source
+tools, then you are a candidate. Of course there is a learning curve but normally
+you can master \TEX\ rather fast and once you get the hang of it there's often no
+way back. But you always need to invest a bit beforehand.
+
+So what authors are candidates for \TEX ? It could be that \TEX\ is the only tool
+that does the job. If so, you probably learned that from someone who saw you
+struggle or had the same experience and wrote or talked about it somewhere. In
+that case using \TEX\ for creating just one document (like a thesis) makes sense.
+Otherwise, you should really wonder if you want to invest time in a tool that you
+probably have to ditch later on as most organizations stick to standard
+(commercial) word processing tools.
+
+Talking to customers we are often surprised that people have heard about \TEX, or
+even used it for a few documents in college. Some universities just prescribe the
+use of \TEX\ for reporting, so not much of a choice there. Memories are normally
+rather positive in the sense that they know that it can do the job and that it's
+flexible.
+
+User group journals, presentations at \TEX\ meetings, journals, books and manuals
+that come with \TEX\ macro packages can all be used to determine if this tool
+suits an author. Actually, I started using \TEX\ because the original \TEX book
+had some magic, and reading it was just that: reading it, as I had no running
+implementation. A few years later, when I had to write (evolving) reports, I
+picked up again. But I'm not a typical user.
+
+\stopsection
+
+\startsection[title={Programmers}]
+
+When you are a programmer who has to generate reports, for instance in \PDF, or
+write manuals, then \TEX\ can really be beneficial. Of course \TEX\ is not always
+an obvious choice, but if you're a bit able to use it it's hard to beat in
+quality, flexibility and efficiency. I'm often surprised that companies are
+willing to pay a fortune for functionality that basically comes for free.
+Programmers are accustomed to running commands and working in a code editor with
+syntax highlighting so that helps too. They too recognize when something can be
+done more efficiently.
+
+When you need to go from some kind of input (document source, database,
+generated) to some rendered output there currently are a few endpoints: a
+(dynamic) \HTML\ page, a \PDF\ document, something useable in a word processor,
+or a representation using the desktop user interface. It's the second category
+where \TEX\ is hard to beat but even using \TEX\ and \METAPOST\ for creating a
+chart can make sense.
+
+There are of course special cases where \TEX\ fits in nicely. Say that you have
+to combine \PDF\ documents. There are numerous tools to do that and \TEX\ is one.
+The advantage of \TEX\ over other tools is that it's trivial to add additional
+text, number pages, provide headers and footers. And it will work forever. Why?
+Because \TEX\ has been around for decades and will be around for decades to come.
+It's an independent component. The problem with choosing for \TEX\ is that the
+starting point is important. The question is not \quotation {What tool should I
+use?} but \quotation {What problem do I need to solve?}. An open discussion about
+the objectives and possibilities is needed, not some checklist based on
+assumptions. If you don't know \TEX\ and have never worked with a programmable
+typesetting environment, you probably don't see the possibilities. In fact, you
+might even choose for \TEX\ for the wrong reasons.
+
+The problem with this category of users is that they seldom have the freedom to
+choose their tools. There are not that many jobs where the management is able to
+recognize the clever programmer who can determine that \TEX\ is suitable for a
+lot of jobs and can save money and time. Even the long term availability and
+support is not an argument since not only most tools (or even apis) changes every
+few years but also organizations themselves change ownership, objectives, and
+personnel on a whim. The concept of \quote {long term} is hard to grasp for most
+people (just look at politics) and it's only in retrospect that one can say
+\quote {We used that toolkit for over a decade.}
+
+\stopsection
+
+\startsection[title={Organizations}]
+
+Authors (often) have the advantage that they can choose themselves: they can use
+what they like. In practice any decent programmer is able to find the suitable
+tools but convincing the management to use one of them can be a challenge. Here
+we're also talking of \quote {comfort zones}: you have to like a tool(chain).
+Organizations normally don't look for \TEX. Special departments are responsible
+for choosing and negotiating whatever is used in a company. Unfortunately
+companies don't always start from the open question \quotation {We have this
+problem, we want to go there, what should we do?} and then discuss options with
+for instance those who know \TEX. Instead requirements are formulated and matches
+are found. The question then is \quotation {Are these requirements cut in stone?}
+and if not (read: we just omit some requirements when most alternatives don't
+meet them), were other requirements forgotten? Therefore organizations can end up
+with the wrong choice (using \TEX\ in a situation where it makes no sense) or
+don't see opportunities (not using \TEX\ while it makes most sense). It doesn't
+help that a hybrid solution (use a mix of \TEX\ and other tools) is often not an
+option. Where an author can just stop using a tool after a few days of
+disappointment, and where a programmer can play around a bit before making a
+choice, an organization probably best can start small with a proof of concept.
+
+Let's take a use case. A publisher wants to automatically convert \XML\ files
+into \PDF. One product can come from multiple sources (we have cases where
+thousands of small \XML\ files combine into one final product). Say that we have
+three different layouts: a theory book, a teachers manual and an answer book. In
+addition special proofing documents have to be rendered. The products might be
+produced on demand with different topics in any combination. There is at least
+one image and table per page, but there can be more. There are color and
+backgrounds used, tables of contents generated, there is extensive cross
+referencing and an index. Of course there is math.
+
+Now let's assume an initial setup costs 20K Euro and, what happens often when the
+real products show up, a revision after one year takes the same amount. We also
+assume 10K for the following eight years for support. So, we end up with 120K
+over 10 years. If one goes cheap we can consider half of that, or we can be
+pessimistic and double the amount.
+
+The first year 10K pages are produced, the second year 20K and after that 30K per
+year. So, we're talking of 270K pages. If we include customer specific documents
+and proofing we might as well end up with a multiple of that.
+
+So, we have 120K Euro divided by 270K pages or about half an Euro per page. But
+likely we have more pages so it costs less. If we double the costs then we can
+assume that some major changes took place which means more pages. In fact we had
+projects where the layout changed, all documents were regenerated and the costs
+were included in the revision, so far from double. We also see many more pages
+being generated so in practice the price per page drops below half an Euro. The
+more we process the cheaper it gets and one server can produce a lot of pages!
+
+Now, the interesting bit of such a calculation is that the costs only concern the
+hours spent on a solution. A \TEX\ based system comes for free and there are no
+license costs. Whatever alternative is taken, even if it is as flexible, it will
+involve additional costs. From the perspective of costs it's very hard to beat
+\TEX. Add to that the possibility for custom extensions, long term usage and the
+fact that one can adapt the system. The main question of course is: does it do
+the job. The only way to find out is to either experiment (which is free),
+consult an expert (not free, but then needed anyway for any solution) or ask an
+expert to make a proof of concept (also not free but relatively cheap and
+definitely cheaper than a failure). In fact, before making decisions about what
+solution is best it might be a good idea to check with an expert anyway, because
+more or less than one thinks might be possible. Also, take into account that the
+\TEX\ ecosystem is often one of the first to support new technologies, and
+normally does that within its existing interface. And there is plenty of free
+support and knowledge available once you know how to find it. Instead of wasting
+time and money on advertisement and fancy websites, effort goes into support and
+development. Even if you doubt that the current provider is around in the decade
+to come, you can be sure that there will be others, simply because \TEX\ attracts
+people. Okay, it doesn't help that large companies like to out source to
+far||far||away and expect support around the corner, so in the end they might
+kill their support chain.
+
+When talking of \TEX\ used in organizations we tend to think of publishers. But
+this is only a small subset of organizations where information gets transformed
+into something presentable. For small organizations the choice for \TEX\ can be
+easy: costs, long term stability, knowing some experts are driving forces. For
+large organizations these factors seem (at least to us) hardly relevant. We've
+(had) projects where actually the choice for using a \TEX\ based solution was (in
+retrospect) a negative one: there was no other tool than this relatively unknown
+thing called \TEX. Or, because the normal tools could not be used, one ended up
+with a solution where (behind the scenes) \TEX\ is used, without the organization
+knowing it. Or, it happened that the problem at hand was mostly one that demands
+in|-|depth knowledge of manipulating content, cleaning up messy data, combining
+resources (images or \PDF\ documents), all things that happen to be available in
+the perspective of \TEX. If you can solve a hard to solve problem for them then
+an organization doesn't care what tool you use. What does matter is that the
+solution runs forever, that costs are controllable and above all, that it
+\quotation {Just works.} And if you can make it work fast, that helps too. We
+can safely claim that when \TEX\ is evaluated as being a good option, that in the
+end it always works out quite well.
+
+Among arguments that (large) organizations like to use against a choice for \TEX\
+(or something comparable) are the size of the company that they buy their
+solution from, the expected availability for support, and the wide|-|spread usage
+of the tool at hand. One can wonder if it also matters that many vendors change
+ownership, change products every few years, change license conditions when they
+like, charge a lot for support or just abort a tool chain. Unfortunately when that
+happens those responsible for choosing such a system can have moved on to another
+job, so this is seldom part of an evaluation. For the supplier the other side of
+the table is just as much of a gamble. In that respect, an organization that
+wants to use an open source (and|/|or free) solution should realize that getting
+a return on investment on such a development is pretty hard to achieve. So, who
+really takes the risk for writing open source?
+
+For us, the reason to develop \CONTEXT\ and make it open is that it fits in our
+philosophy and we like the community. It is actually not really giving us an
+advantage commercially: it costs way more to develop, support and keep
+up|-|to|-|date than it will ever return. We can come up with better, faster and
+easier solutions and in the end we pay the price because it takes less time to
+cook up styles. So there is some backslash involved because commercially a
+difficult solution leads to more billable hours. Luckily we tend to avoid wasting
+time so we improve when possible and then it ends up in the distributed code.
+And, once the solution is there, anyone can use it. Basically also for us it's
+just a tool, like the operating system, editor and viewer are. So, what keep
+development going is mostly the interaction with the community. This also means
+that a customer can't really demand functionality for free: either wait for it to
+show up or pay for it (which seldom happens). Open source is not equivalent with
+\quotation {You get immediately what you want because someone out there writes
+the code.}. There has to be a valid reason and often it's just users and meetings
+or just some challenge that drives it.
+
+This being said, it is hard to convince a company to use \TEX. It has to come
+from users in the organization. Or, what we sometimes see with publishers, it
+comes with an author team or acquired product line where it's the only option.
+Even then we seldom see transfer to other branches in the organizations. No one
+seems to wonder \quotation {How on earth can that \XML\ to \PDF\ project produce
+whatever output in large quantities in a short period of time} while other (past)
+projects failed. It probably relates to the abstraction of the process. Even
+among \TEX\ users it can be that you demonstrate something with a click on a
+button and that many years afterwards someone present at that moment tells you
+that they just discovered that this or that can be done by hitting a button. I'm
+not claiming that \TEX\ is the magic wand for everything but in some areas it's
+pretty much ahead of the pack. Go to a \TEX\ user meeting and you will be surprised
+about the accumulated diverse knowledge present in the room. It's user demand that
+drives \CONTEXT\ development, not commerce.
+
+\stopsection
+
+\startsection[title={Choosing}]
+
+So, where can one find information about \TEX\ and friends? On the web
+one has to use the right search keys, so adding \type {tex} helps: \typ {context
+tex} or \typ {xml tex pdf} and so on. Can one make a fancy hip website, sure, but
+it being a life|-|long, already old and mature environment, and given that it
+comes for free, or is used low|-|budget, not much effort and money can be spent
+on advertising it. A benefit is that no false promises and hypes are made either.
+If you want to know more, just ask the right folks.
+
+For all kind of topics one can find interesting videos and blogs. One can
+subscribe to channels on YouTube or join forums. Unfortunately not that many
+bloggers or vloggers or podcasters come up with original material every time, and
+often one starts to recognize patterns and will get boring by repetition of wisdom
+and arguments. The same is true for manuals. Is a ten year old manual really
+obsolete? Should we just recompile it to fake an update while in fact there has
+been no need for it? Should we post twenty similar presentations while one can
+do? (If one already wants to present the same topic twenty times in the first
+place?) Maybe one should compare \TEX\ with cars: they became better over time
+and can last for decades. And no new user manual is needed.
+
+As with blogs and vlogs advertising \TEX\ carries the danger for triggering
+political discussions and drawing people into discussions that are not pleasant:
+\TEX\ versus some word processor, open versus closed source, free versus paid
+software, this versus that operating system, editor such or editor so.
+
+To summarize, it's not that trivial to come up with interesting information about
+\TEX, unless one goes into details that are beyond the average user. And those
+who are involved are often involved for a long time so it gets more complex over
+time. User group journals that started with tutorials later on became expert
+platforms. This is a side effect of being an old and long|-|term toolkit. If
+you run into it, and wonder if it can serve your purpose, just ask an expert.
+
+Most \TEX\ solutions are open source and come for free as well. Of course if you
+want a specific solution or want support beyond what is offered on mailing lists
+and forums you should be willing to pay for the hours spent. For a professional
+publisher (of whatever kind) this is not a problem, if only because any other
+solution also will cost something. It is hard to come up with a general estimate.
+A popular measure of typesetting costs is the price per page, which can range
+from a couple of euro's per page to two digit numbers. We've heard of cases where
+initial setup costs were charged. If not much manual intervention is needed a
+\TEX\ solution mostly concerns initial costs.
+
+Let's return to the main question \quotation {Why use \TEX ?} in which you can
+replace \TEX\ by one of the macro packages build on top of it, for instance
+\CONTEXT. If an (somewhat older) organization considers using \TEX\ it should
+also ask itself, why it wasn't considered long ago already? For sure there have
+been developments in \TEX\ engines (in \CONTEXT\ we use \LUATEX) as well as
+possibilities of macro packages but if you look at the documents produced with
+them, there is not that much difference with decades ago. Processing has become
+faster, some things have become easier, but new technologies have always been
+supported as soon at they showed up. Advertising is often just repeating an old
+message.
+
+The \TEX\ ecosystem was among the first in supporting for instance \OPENTYPE, and
+the community even made sure that there were free fonts available. A format like
+\PDF\ was supported as soon as it shows up and \TEX\ was the first to demonstrate
+what advanced features were there and how way it was to adapt to changes.
+Processing \XML\ using \TEX\ has never been a big deal and if that is a reason to
+look at this already old and mature technology, then an organization can wonder
+if years and opportunities (for instance for publishing on demand or easy
+updating of manuals) have been lost. Of course there are (and have been)
+alternative tools but the arguments for using \TEX\ or not are not much different
+now. It can be bad marketing of open and free software. It can be that \TEX\ has
+been around too long. It can also be that its message was not understood yet. On
+the other hand, in software development it's quite common to reinvent wheels and
+present old as new. It's never to late to catch on.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

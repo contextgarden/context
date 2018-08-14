@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['data-res'] = {
 -- todo: cache:/// home:/// selfautoparent:/// (sometime end 2012)
 
 local gsub, find, lower, upper, match, gmatch = string.gsub, string.find, string.lower, string.upper, string.match, string.gmatch
-local concat, insert, remove, sortedkeys, sortedhash = table.concat, table.insert, table.remove, table.sortedkeys, table.sortedhash
+local concat, insert, remove = table.concat, table.insert, table.remove
 local next, type, rawget = next, type, rawget
 local os = os
 

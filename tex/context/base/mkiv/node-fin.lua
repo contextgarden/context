@@ -16,10 +16,8 @@ local next, type, format = next, type, string.format
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts               = nodes.nuts
-local tonut              = nuts.tonut
 
 local getnext            = nuts.getnext
-local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getlist            = nuts.getlist
 local getleader          = nuts.getleader
@@ -605,7 +603,6 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
         elseif id == rule_code then
             check = getwidth(stack) ~= 0
         end
-
         if check then
             local a = getattr(stack,attribute)
             if a then
@@ -698,7 +695,7 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 end
                 local n = nsstep(a)
                 if n then
-                    head = insert_node_before(head,current,tonut(n)) -- a
+                    head = insert_node_before(head,current,n) -- a
                 end
                 attrib = a
                 if leader then
@@ -717,7 +714,7 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
     if stacked then
         local n = nsend()
         while n do
-            head = insert_node_after(head,previous,tonut(n))
+            head = insert_node_after(head,previous,n)
             n = nsend()
         end
     end
@@ -780,7 +777,7 @@ end
 --                 end
 --                 local n = nsstep(a)
 --                 if n then
---                     head = insert_node_before(head,current,tonut(n)) -- a
+--                     head = insert_node_before(head,current,n) -- a
 --                 end
 --                 attrib = a
 --                 if leader then
@@ -800,7 +797,7 @@ end
 --     if stacked then
 --         local n = nsend()
 --         while n do
---             head = insert_node_after(head,previous,tonut(n))
+--             head = insert_node_after(head,previous,n)
 --             n = nsend()
 --         end
 --     end

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/10/18 16:51:00
+-- merge date  : 08/14/18 23:10:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -880,7 +880,7 @@ do
   local nonzero=digit-zero
   local trailingzeros=zero^1*endofstring
   local stripper=Cs((1-period)^0*(
-    (period*trailingzeros/"")+period*(nonzero^1+(trailingzeros/"")+zero^1)^0
+    period*trailingzeros/""+period*(nonzero^1+(trailingzeros/"")+zero^1)^0+endofstring
   ))
   lpeg.patterns.stripzero=stripper
 end
@@ -4375,10 +4375,9 @@ end
 local format_N=function(f) 
   n=n+1
   if not f or f=="" then
-    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
-  else
-    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
-  end
+    f=".9"
+  end 
+  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
 end
 local format_a=function(f)
   n=n+1
@@ -10737,7 +10736,16 @@ local function tounicode16sequence(unicodes)
   return concat(t)
 end
 local unknown=f_single(0xFFFD)
-local hash=table.setmetatableindex(function(t,k)
+local hash={}
+local conc={}
+table.setmetatableindex(hash,function(t,k)
+  if type(k)=="table" then
+    local n=#k
+    for l=1,n do
+      conc[l]=hash[k[l]]
+    end
+    return concat(conc,"",1,n)
+  end
   local v
   if k>=0x00E000 and k<=0x00F8FF then
     v=unknown
@@ -10754,17 +10762,8 @@ local hash=table.setmetatableindex(function(t,k)
   t[k]=v
   return v
 end)
-table.makeweak(hash)
-local function tounicode(unicode,name)
-  if type(unicode)=="table" then
-    local t={}
-    for l=1,#unicode do
-      t[l]=hash[unicode[l]]
-    end
-    return concat(t)
-  else
-    return hash[unicode]
-  end
+local function tounicode(unicode)
+  return hash[unicode]
 end
 local function fromunicode16(str)
   if #str==4 then

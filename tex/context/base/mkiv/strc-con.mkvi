@@ -1093,7 +1093,7 @@
        \endgroup
        \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
        \edef\noexpand\currentconstructionattribute  {\the\lastdestinationattribute}%
-       \edef\noexpand\currentconstructionsynchronize{\ctxlatecommand{enhancelist(\the\scratchcounter)}}%
+       \edef\noexpand\currentconstructionsynchronize{\clf_deferredenhancelist\scratchcounter}%
      }%
    \fi}
 
@@ -1103,11 +1103,11 @@
 
 \def\reinstateconstructionnumberentry#1% was xdef
   {\edef\currentconstructionattribute  {\clf_getinternallistreference#1}%
-   \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
+   \edef\currentconstructionsynchronize{\clf_deferredenhancelist#1}}
 
 \def\reinstatecachedconstructionnumberentry#1% was xdef | #1 = cached index can be different from real
   {\edef\currentconstructionattribute  {\clf_getinternalcachedlistreference#1}% destination
-   \edef\currentconstructionsynchronize{\ctxlatecommand{enhancelist(#1)}}}
+   \edef\currentconstructionsynchronize{\clf_deferredenhancelist#1}}
 
 \installstructurelistprocessor{construction}{\usestructurelistprocessor{number+title}}
 

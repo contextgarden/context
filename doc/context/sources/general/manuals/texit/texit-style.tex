@@ -1,0 +1,52 @@
+\startenvironment texit-style
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   header=empty,
+   color=darkgray]
+
+\setuplist
+  [chapter]
+  [alternative=c,
+   width=1.5em]
+
+\setuplayout
+ [width=middle,
+  height=middle,
+  topspace=15mm,
+  backspace=15mm,
+  header=15mm,
+  footer=0mm]
+
+\setupwhitespace
+  [big]
+
+\setupheadertexts
+  []
+
+\setupheadertexts
+  []
+  [{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}]
+  []
+
+\setupheader
+  [style=\bf,
+   color=darkgray]
+
+% \setuptype
+%   [color=darkred]
+
+% \setuptyping
+%   [color=darkred]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\usemodule[scite]
+
+\stopenvironment

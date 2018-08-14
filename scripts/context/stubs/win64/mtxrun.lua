@@ -1028,7 +1028,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 39717, stripped down to: 21361
+-- original size: 39759, stripped down to: 21371
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1772,7 +1772,7 @@ do
   local nonzero=digit-zero
   local trailingzeros=zero^1*endofstring
   local stripper=Cs((1-period)^0*(
-    (period*trailingzeros/"")+period*(nonzero^1+(trailingzeros/"")+zero^1)^0
+    period*trailingzeros/""+period*(nonzero^1+(trailingzeros/"")+zero^1)^0+endofstring
   ))
   lpeg.patterns.stripzero=stripper
 end
@@ -6203,7 +6203,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 41537, stripped down to: 23512
+-- original size: 42387, stripped down to: 23340
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6797,10 +6797,9 @@ end
 local format_N=function(f) 
   n=n+1
   if not f or f=="" then
-    return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
-  else
-    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
-  end
+    f=".9"
+  end 
+  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
 end
 local format_a=function(f)
   n=n+1
@@ -10936,7 +10935,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 8984, stripped down to: 6573
+-- original size: 9387, stripped down to: 6861
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -11017,7 +11016,7 @@ end
 setmetatableindex(names,function(t,name)
   local v=setmetatableindex(function(t,source)
     local v=setmetatableindex(function(t,line)
-      local v={ total=0,count=0 }
+      local v={ total=0,count=0,nesting=0 }
       t[line]=v
       return v
     end)
@@ -11046,12 +11045,24 @@ local function hook(where)
     end
     local data=names[name][source][line]
     if where=="call" then
-      data.count=data.count+1
-      insert(data,ticks())
+      local nesting=data.nesting
+      if nesting==0 then
+        data.count=data.count+1
+        insert(data,ticks())
+        data.nesting=1
+      else
+        data.nesting=nesting+1
+      end
     elseif where=="return" then
-      local t=remove(data)
-      if t then
-        data.total=data.total+ticks()-t
+      local nesting=data.nesting
+      if nesting==1 then
+        local t=remove(data)
+        if t then
+          data.total=data.total+ticks()-t
+        end
+        data.nesting=0
+      else
+        data.nesting=nesting-1
       end
     end
   end
@@ -18005,7 +18016,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 68255, stripped down to: 47783
+-- original size: 68195, stripped down to: 47727
 
 if not modules then modules={} end modules ['data-res']={
   version=1.001,
@@ -18015,7 +18026,7 @@ if not modules then modules={} end modules ['data-res']={
   license="see context related readme files",
 }
 local gsub,find,lower,upper,match,gmatch=string.gsub,string.find,string.lower,string.upper,string.match,string.gmatch
-local concat,insert,remove,sortedkeys,sortedhash=table.concat,table.insert,table.remove,table.sortedkeys,table.sortedhash
+local concat,insert,remove=table.concat,table.insert,table.remove
 local next,type,rawget=next,type,rawget
 local os=os
 local P,S,R,C,Cc,Cs,Ct,Carg=lpeg.P,lpeg.S,lpeg.R,lpeg.C,lpeg.Cc,lpeg.Cs,lpeg.Ct,lpeg.Carg
@@ -21694,8 +21705,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 891048
--- stripped bytes    : 321893
+-- original bytes    : 892283
+-- stripped bytes    : 323058
 
 -- end library merge
 
@@ -21746,6 +21757,19 @@ local ownlibs = { -- order can be made better
     'util-sto.lua',
     'util-prs.lua',
     'util-fmt.lua',
+
+    'util-soc-imp-reset',
+    'util-soc-imp-socket',
+    'util-soc-imp-copas',
+    'util-soc-imp-ltn12',
+ -- 'util-soc-imp-mbox',
+    'util-soc-imp-mime',
+    'util-soc-imp-url',
+    'util-soc-imp-headers',
+    'util-soc-imp-tp',
+    'util-soc-imp-http',
+    'util-soc-imp-ftp',
+    'util-soc-imp-smtp',
 
     'trac-set.lua',
     'trac-log.lua',

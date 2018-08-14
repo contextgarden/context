@@ -101,9 +101,10 @@ local f_f3    = formatters["%.3F"]
 local f_gray  = formatters["%.3F g %.3F G"]
 local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
-local f_cm_b  = formatters["q %F %F %F %F %F %F cm"]
-local f_shade = formatters["MpSh%s"]
+local f_cm_b  = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
 
+local f_shade = formatters["MpSh%s"]
+local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 local s_cm_e  = "Q"
 
 directives.register("metapost.stripzeros",function()
@@ -112,11 +113,8 @@ directives.register("metapost.stripzeros",function()
     f_gray  = formatters["%.3N g %.3N G"]
     f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
     f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
-    f_cm_b  = formatters["q %N %N %N %N %N %N cm"]
-    f_shade = formatters["MpSh%s"]
+    f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
 end)
-
-local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 
 local function checked_color_pair(color,...)
     if not color then

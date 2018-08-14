@@ -946,4 +946,23 @@
       data      {#1}%
    \relax}
 
+%D For those who sart counting at zero:
+%D
+%D \starttyping
+%D \defineconversionset [zero] [n,zero] [n]
+%D
+%D \setuphead [sectionconversionset=zero]
+%D
+%D \starttext
+%D     \startchapter [title=Introduction]
+%D         \startsection [title=First topic]  \stopsection
+%D         \startsection [title=Second topic] \stopsection
+%D     \stopchapter
+%D \stoptext
+%D \stoptyping
+
+\def\zeronumberconversion#1{\number\numexpr#1-\plusone\relax}
+
+\defineconversion [zero] [\zeronumberconversion]
+
 \protect \endinput

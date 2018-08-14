@@ -239,10 +239,12 @@ local function flushembeddedfiles()
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
             else
-                -- messy spec ... when annot not in named else twice in menu list acrobat
+         --     -- messy spec ... when annot not in named else twice in menu list acrobat
             end
         end
-        lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+        if #e > 0 then
+            lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+        end
     end
 end
 
@@ -612,7 +614,8 @@ local function insertrendering(specification)
     local option = settings_to_hash(specification.option)
     if not mf[label] then
         local filename = specification.filename
-        local isurl = find(filename,"://",1,true)
+        local isurl    = find(filename,"://",1,true)
+        local mimetype = specification.mimetype or specification.mime
      -- local start = pdfdictionary {
      --     Type = pdfconstant("MediaOffset"),
      --     S = pdfconstant("T"), -- time
@@ -648,13 +651,16 @@ local function insertrendering(specification)
         if isurl then
             descriptor.FS = pdfconstant("URL")
         elseif option[v_embed] then
-            descriptor.EF = codeinjections.embedfile { file = filename }
+            descriptor.EF = codeinjections.embedfile {
+                file     = filename,
+                mimetype = mimetype, -- yes or no
+            }
         end
         local clip = pdfdictionary {
             Type = pdfconstant("MediaClip"),
             S    = pdfconstant("MCD"),
             N    = label,
-            CT   = specification.mime,
+            CT   = mimetype,
             Alt  = pdfarray { "", "file not found" }, -- language id + message
             D    = pdfreference(pdfflushobject(descriptor)),
          -- P    = pdfreference(pdfflushobject(parameters)),

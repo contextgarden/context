@@ -128,7 +128,7 @@
 \newcount\lastdestinationattribute
 
 \def\strc_references_finish#prefix#reference#internal%
-  {\normalexpanded{\ctxlatecommand{enhancereference("#prefix","#reference")}}}
+  {\normalexpanded{\clf_deferredenhancereference{#prefix}{#reference}}}
 
 \let\dofinishreference\strc_references_finish % used at lua end
 

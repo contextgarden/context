@@ -6,6 +6,29 @@ if not modules then modules = { } end modules ['util-soc'] = {
     license   = "see context related readme files"
 }
 
+--[[--
+
+In LuaTeX we provide the socket library that is more or less the standard one for
+Lua. It has been around for a while and seems to be pretty stable. The binary
+module is copmpiled into LuaTeX and the accompanying .lua files are preloaded.
+These files are mostly written by Diego Nehab, Andre Carregal, Javier Guerra, and
+Fabio Mascarenhas with contributions from Diego Nehab, Mike Pall, David Burgess,
+Leonardo Godinho, Thomas Harning Jr., and Gary NG. The originals are part of and
+copyrighted by the Kepler project.
+
+Here we reload a slightly reworked version of these .lua files. We keep the same
+(documented) interface but streamlined some fo the code. No more modules, no more
+pre 5.2 Lua, etc. Also, as it loads into the ConTeXt ecosystem, we plug in some
+logging. (and maybe tracing in the future). As we don't support serial ports in
+LuaTeX, related code has been dropped.
+
+The files are reformatted so that we can more easilly add additional features
+and/or tracing options. Any error introduced there is our fault! The url module
+might be replaced by the one in ConTeXt. When we need mbox a suitable variant
+will be provided.
+
+--]]--
+
 local format = string.format
 
 local smtp  = require("socket.smtp")

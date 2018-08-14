@@ -1,0 +1,92 @@
+\startenvironment musings-style
+
+\usemodule[abr-04]
+
+\setupbodyfont
+  [pagella]
+
+\setuplayout
+  [topspace=2cm,
+   header=0pt,
+   footer=1.5cm,
+   bottomspace=1cm,
+   width=middle,
+   height=middle]
+
+% \definecolor[maincolor] [darkyellow]
+% \definecolor[extracolor][darkblue]
+
+\definecolor[maincolor] [middleorange]
+\definecolor[extracolor][middleblue]
+
+\setuptype
+  [color=maincolor]
+
+\setuptyping
+  [color=maincolor]
+
+\setuphead
+  [color=maincolor]
+
+\setuphead
+  [chapter]
+  [style=\bfd]
+
+\setuphead
+  [chapter]
+  [after={\blank[3*line]},
+   align=flushright,
+   command=\ChapterCommand]
+
+\starttexdefinition unexpanded ChapterCommand#1#2
+    \hbox to \textwidth {
+        \hss
+        % title
+        #2
+        \doifmode {*sectionnumber} {
+            % distance
+            \hskip10mm
+            % number
+            \struttedbox{\offset[x=-1mm,y=2.5mm]{\scale[height=2cm]{#1}}}
+        }
+    }
+\stoptexdefinition
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bf,
+   before=\blank,
+   after=\blank]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupfootertexts
+  [][{\getmarking[chapter]\hbox to 2em{\hss\pagenumber}}]
+  [{\hbox to 2em{\pagenumber\hss}\getmarking[chapter]}][]
+
+\setupwhitespace
+  [big]
+
+\setuplist
+  [chapter]
+  [width=3em,
+   before={\testpage[3]\blank},
+   after={\blank[samepage]},
+   color=maincolor,
+   style=bold]
+
+\setuplist
+  [section]
+  [width=3em,
+   before={\blank[nowhite]},
+   after={\blank[nowhite]}]
+
+% \logo [MATHTYPE] {MathType}
+% \logo [SYNCTEX]  {Sync\TeX}
+
+\stopenvironment

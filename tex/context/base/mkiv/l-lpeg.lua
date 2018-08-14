@@ -1135,7 +1135,7 @@ end
 
 do
 
-    local trailingzeros = zero^0 * -digit -- suggested by Roberto R
+    local trailingzeros = zero^0 * -digit -- suggested by Roberto
     local stripper      = Cs((
         digits * (
             period * trailingzeros / ""
@@ -1145,15 +1145,15 @@ do
 
     lpeg.patterns.stripzeros = stripper -- multiple in string
 
-    local nonzero = digit - zero
-
+    local nonzero       = digit - zero
     local trailingzeros = zero^1 * endofstring
     local stripper      = Cs( (1-period)^0 * (
-       (period *               trailingzeros/"") +
-        period * (nonzero^1 + (trailingzeros/"") + zero^1)^0
+        period *               trailingzeros/""
+      + period * (nonzero^1 + (trailingzeros/"") + zero^1)^0
+      + endofstring
     ))
 
-    lpeg.patterns.stripzero  = stripper -- slightly more efficient
+    lpeg.patterns.stripzero  = stripper -- slightly more efficient but expects a float !
 
     -- local sample = "bla 11.00 bla 11 bla 0.1100 bla 1.00100 bla 0.00 bla 0.001 bla 1.1100 bla 0.100100100 bla 0.00100100100"
     -- collectgarbage("collect")
@@ -1164,7 +1164,7 @@ do
 
 end
 
--- for practical reasone we keep this here:
+-- for practical reasons we keep this here:
 
 local byte_to_HEX = { }
 local byte_to_hex = { }

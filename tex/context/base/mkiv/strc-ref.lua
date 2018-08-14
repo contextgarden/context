@@ -52,6 +52,8 @@ local context            = context
 local commands           = commands
 local implement          = interfaces.implement
 
+local ctx_latelua        = context.latelua
+
 local texgetcount        = tex.getcount
 local texsetcount        = tex.setcount
 local texconditionals    = tex.conditionals
@@ -436,17 +438,27 @@ end
 
 references.synchronizepage = synchronizepage
 
-function references.enhance(prefix,tag)
+local function enhancereference(prefix,tag)
     local l = tobesaved[prefix][tag]
     if l then
         synchronizepage(l.references)
     end
 end
 
+references.enhance = enhancereference
+
+-- implement {
+--     name      = "enhancereference",
+--     arguments = "2 strings",
+--     actions   = references.enhance,
+-- }
+
 implement {
-    name      = "enhancereference",
-    actions   = references.enhance,
+    name      = "deferredenhancereference",
     arguments = "2 strings",
+    actions   = function(prefix,tag)
+        ctx_latelua(function() enhancereference(prefix,tag) end)
+    end,
 }
 
 -- -- -- related to strc-ini.lua -- -- --

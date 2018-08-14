@@ -30,7 +30,6 @@ utilities.youless = youless
 
 local lpegmatch  = lpeg.match
 local formatters = string.formatters
-local sortedhash = table.sortedhash
 
 local tonumber, type, next = tonumber, type, next
 

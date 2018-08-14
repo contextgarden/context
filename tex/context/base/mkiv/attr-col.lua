@@ -406,10 +406,29 @@ function colors.setmodel(name,weightgray)
             weightgray = true
         end
     end
-    colors.model      = name              -- global, not useful that way
-    colors.default    = models[name] or 1 -- global
-    colors.weightgray = weightgray        -- global
-    return colors.default
+    local default = models[name] or 1
+
+    colors.model      = name       -- global, not useful that way
+    colors.default    = default    -- global
+    colors.weightgray = weightgray -- global
+
+    -- avoid selective checking is no need for it
+
+    local forced = colors.forced
+
+    if forced == nil then
+        -- unset
+        colors.forced = default
+    elseif forced == false then
+        -- assumed mixed
+    elseif forced ~= default then
+        -- probably mixed
+        colors.forced = false
+    else
+        -- stil the same
+    end
+
+    return default
 end
 
 function colors.register(name, colorspace, ...) -- passing 9 vars is faster (but not called that often)

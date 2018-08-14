@@ -1,0 +1,1253 @@
+% language=uk
+
+% naming-nature.jog
+
+\startcomponent musings-children
+
+\environment musings-style
+
+\definedescription
+  [presomething]
+  [headstyle=\bold,
+   alternative=hanging,
+   width=fit,
+   hang=1]
+
+\startchapter[title={Children of \TEX}]
+
+\startsection[title={The theme}]
+
+Nearly always \TEX\ conferences carry a theme. As there have been many
+conferences the organizers have run out of themes involving fonts, macros and
+typesetting and are now cooking up more fuzzy ones. Take the Bacho\TUG\ 2017
+theme:
+
+\startnarrower[left,8*right] \startpacked
+\startpresomething {Premises}
+    The starting point, what we have, what do we use, what has been achieved?
+\stoppresomething
+\startpresomething {Predilections}
+    How do we act now, how do we want to act, what is important to us and what do
+    we miss?
+\stoppresomething
+\startpresomething {Predictions}
+    What is the future of \TEX, what we'd like to achieve and can we influence
+    it?
+\stoppresomething
+\stoppacked \stopnarrower
+
+My first impression with these three P words was: what do they mean? Followed by
+the thought: this is no longer a place to take kids to. But the Internet gives
+access to the Cambridge Dictionary, so instead of running to the dusty meter of
+dictionaries somewhere else in my place, I made sure that I googled the most
+recent definitions:
+
+\startnarrower[left] \startpacked
+\startpresomething {premise}
+    an idea or theory on which a statement or action is based
+\stoppresomething
+\startpresomething {predilection}
+    if someone has a predilection for something, they like it a lot
+\stoppresomething
+\startpresomething {prediction}
+    a statement about what you think will happen in the future
+\stoppresomething
+\stoppacked \stopnarrower
+
+I won't try to relate these two sets of definitions but several words stand out
+in the second set: idea, theory, action, like, statement and future. Now, as a
+preparation for the usual sobering thoughts that Jerzy, Volker and I have when we
+staring into a Bacho\TEX\ campfire I decided to wrap up some ideas around these
+themes and words. The books that I will mention are just a selection of what you
+can find distributed around my place. This is not some systematic research but
+just the result of a few weeks making a couple of notes while pondering about
+this conference.
+
+\stopsection
+
+\startsection[title=Introduction]
+
+One cannot write the amount of \TEX\ macros that I've written without also liking
+books. If you look at my bookshelves the topics are somewhat spread over the
+possible spectrum of topics: history, biology, astronomy, paleontology, general
+science but surprisingly little math. There are a bunch of typography|-|related
+books but only some have been read: it's the visuals that matter most and as
+there are no real developments I haven't bought new ones in over a decade,
+although I do buy books that look nice for our office display but the content
+should be interesting too. Of course I do have a couple of books about computer
+(related) science and technology but only a few are worth a second look.
+Sometimes I bought computer books expecting to use them (in some project) but I
+must admit that most have not been read and many will soon end up in the paper
+bin (some already went that way). I'll make an exception for Knuth, Wirth and a
+few other fundamental ones that I (want to) read. And, I need to catch up on deep
+learning, so that might need a book.
+
+My colleagues and I have many discussions, especially about what we read, and
+after a few decades one starts seeing patterns. Therefore the last few years it
+was a pleasant surprise for me to run into books and lectures that nicely
+summarize what one has noticed and discussed in a consistent way. My memory is
+not that good, but good enough to let some bells ring.
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/sapiens.jpg]          [height=5cm]} {history}
+        {\externalfigure[covers/homo-deus.jpg]        [height=5cm]} {futurology}
+        {\externalfigure[covers/children-of-time.jpg] [height=5cm]} {science fiction}
+        {\externalfigure[covers/superintelligence.jpg][height=5cm]} {informatics}
+    \stopcombination
+\stopplacefigure
+
+The first book that gave me this \quotation {finally a perfect summary of
+historic developments} feeling is \quotation{Sapiens} by Yuval Noah Harari. The
+author summarizes human history from a broad perspective where modern views on
+psychology, anthropology and technical developments are integrated. It's a follow
+up on a history writing trend started by Jared Diamond. The follow up \quotation
+{Homo Deus} looks ahead and is just as well written. It also integrates ideas
+from other fields, for instance those related to development of artificial
+intelligence (Dennett, Bostrom, etc.).
+
+Another inspiration for this talk and article is the 50 hour lecture series on
+behavioral biology by Robert Sapolsky of Stanford University, brought to my
+attention by my nephew Bram who visited a few \TEX\ conferences with me and who
+is now also forced to use \TEX\ for assignments and reports. (How come
+self|-|published books used at universities often look so bad?)
+
+The title of this talk is inspired by the book \quotation {Children of Time} by
+Adrian Tchaikovsky that I read recently. There are science fiction writers who
+focus on long term science and technology, such as some of Alastair Reynolds,
+while others follow up on recent development in all kind of sciences. One can
+recognize aspects of \quotation {Superintelligence} by Bostrom in Neal Asher's
+books, insights in psychology in the older Greg Bear books, while in the
+mentioned \quotation {Children of Time} (socio)biological insights dominate. The
+main thread in that book is the development of intelligence, social behaviour,
+language, script and cooperation in a species quite different from us: spiders.
+It definitely avoids the anthropocentric focus that we normally have.
+
+So how does this relate to the themes of the Bacho\TEX\ conference? I will pick
+out some ways to approach them using ideas from the kind of resources mentioned
+above. I could probably go on and on for pages because once you start relating
+what you read and hear to this \TEX\ ecosystem and community, there is no end.
+So, consider this a snapshot, that somehow relates to the themes:
+
+\startnarrower[left,8*right] \startpacked
+\startpresomething {premise}
+    Let's look at what the live sciences have to say about \TEX\ and friends and
+    let's hope that I don't offend the reader and the field.
+\stoppresomething
+\startpresomething {predilection}
+    Let's figure out what brings us here to this place deeply hidden in the woods,
+    a secret gathering of the \TEX\ sect.
+\stoppresomething
+\startpresomething {prediction}
+    Let's see if the brains present here can predict the future because after
+    all, according to Dennett, that is what brains are for.
+\stoppresomething
+\stoppacked \stopnarrower
+
+At school I was already intrigued by patterns in history: a cyclic, spiral and
+sinusoid social evolution instead of a pure linear sequence of events. It became
+my first typeset|-|by|-|typewriter document: Is history an exact science? Next I
+will use and abuse patterns and ideas to describe the \TEX\ world, not wearing a
+layman's mathematical glasses, but more from the perspective of live sciences,
+where chaos dominates.
+
+\stopsection
+
+\startsection[title={The larger picture}]
+
+History of mankind can be roughly summarized as follows. For a really long time
+we were hunters but at some point (10K years ago) became farmers. As a result we
+could live in larger groups and still feed them. The growing complexity of
+society triggered rules and religion as instruments for stability and
+organization (I use the term religion in its broadest sense here). For quite a
+while cultures came and went, and climate changes are among the reasons.
+
+After the industrial revolution new religions were invented (social, economic and
+national liberalism) and we're now getting dataism (search for Harari on youtube
+for a better summary). Some pretty great minds seem to agree that we're heading
+to a time when humans as we are will be outdated. Massive automation, interaction
+between the self and computer driven ecosystems, lack of jobs and purpose,
+messing around with our genome. Some countries and cultures still have to catch
+up on the industrial revolution, if they manage at all, and maybe we ourselves
+will be just as behind reality soon. Just ask yourself: did you manage to catch
+up? Is \TEX\ a stone age tool or a revolutionary turning point?
+
+A few decades ago a trip to Bacho\TEX\ took more than a day. Now you drive there
+in just over half a day. There was a time that it took weeks: preparation,
+changing horses, avoiding bad roads. Not only your own man|-|hours were involved.
+It became easier later (my first trip took only 24 hours) and recently it turned
+into a piece of cake: you don't pick up maps but start your device; you don't
+need a travel agent but use the Internet; there are no border patrols, you can
+just drive on. (Okay, maybe some day soon border patrols at the Polish border
+show up again, just like road tax police in Germany, but that might be a
+temporary glitch.)
+
+Life gets easier and jobs get lost. Taxi and truck drivers, travel agents, and
+cashiers become as obsolete as agricultural workers before. Next in line are
+doctors, lawyers, typesetters, printers, and all those who think they're safe.
+Well, how many people were needed 400 years ago to produce the proceedings of a
+conference like this in a few days' time span? Why read the introduction of a
+book or a review when you can just listen to the author's summary on the web? How
+many conferences still make proceedings (or go for videos instead), will we
+actually need editors and typesetters in the future? How much easier has it
+become to design a font, including variants? What stories can designers tell in
+the future when programs do the lot? The narrower your speciality is, the worse
+are your changes; hopefully the people present at this conference operate on a
+broader spectrum. It's a snapshot. I will show some book covers as reference but
+am aware that years ago or ahead the selection could have been different.
+
+\stopsection
+
+\startsection[title=Words]
+
+Words (whatever they represent) found a perfect spot to survive: our minds. Then
+they made it from speech (and imagination) into writing: carved in stone, wood,
+lead. At some point they managed to travel over wires but no matter what
+happened, they are still around. Typesetting as visualization is also still
+surrounding us so that might give us a starting point for ensuring a future for
+\TEX\ to work on, because \TEX\ is all about words. There is a lot we don't see;
+imagine if our eyes had microscopic qualities. What if we could hear beyond
+20KHz. Imagine we could see infrared. How is that with words. What tools, similar
+in impact as \TEX, can evolve once we figure that out. What if we get access to
+the areas of our brain that hold information? We went from print to screen and
+\TEX\ could cope with that. Can it cope with what comes next?
+
+The first printing press replaced literal copying by hand. Later we got these
+linotype|-|like machines but apart from a few left, these are already thrown out
+of windows (as we saw in a movie a few Bacho\TeX's ago). Photo|-|typesetting has
+been replaced too and because a traditional centuries old printing press is a
+nice to see item, these probably ring more bells than that gray metal closed box
+typesetters. Organizers of \TEX\ conferences love to bring the audience to old
+printing workshops and museums. At some point computers got used for typesetting
+and in that arena \TEX\ found its place. These gray closed boxes are way less
+interesting than something mechanical that at least invites us to touch it. How
+excited can one be about a stack of \TEX\,Live \DVD{}s?
+
+\stopsection
+
+\startsection[title=Remembering]
+
+Two times I visited the part of the science museum in London with young family
+members: distracted by constantly swiping their small powerful devices, they
+didn't have the least interest in the exhibited computer related items, let alone
+the fact that the couch they were sitting on was a Cray mainframe. Later on,
+climbing on some old monument or an old cannon seemed more fun. So, in a few
+decades folks will still look at wooden printing presses but quickly walk through
+the part of an exhibition where the tools that we use are shown. We need to find
+ways to look interesting. But don't think we're unique: how many kids find
+graphical trend|-|setting games like Myst and Riven still interesting? On the
+other hand a couple of month ago a bunch of nieces and nephews had a lot of fun
+with an old Atari console running low|-|res bitmap games. Maybe there is hope for
+good old \TEX.
+
+If indeed we're heading to a radically different society one can argue if this
+whole discussion makes sense. When the steam engine showed up, the metaphor for
+what went on in our heads was that technology, It's a popular example of speakers
+on this topic: \quotation {venting off steam}. When electricity and radio came
+around metaphors like \quotation {being on the same wavelength} showed up. A few
+decades ago the computer replaced that model although in the meantime the model
+is more neurobiological: we're a hormone and neurotransmitter driven computer. We
+don't have memory the way computers do.
+
+How relevant will page breaks, paragraph and line breaks be in the future? Just
+like \quotation {venting off steam} may make no sense to the youth, asking a
+typesetter to \quotation {give me a break} might not make much sense soon.
+However, when discussing automated typesetting the question \quotation {are we on
+the same page} still has relevance.
+
+Typesetting with a computer might seem like the ultimate solution but it's
+actually rather dumb when we consider truly intelligent systems. On the large
+scale of history and developments what we do might get quite unnoticed. Say that
+mankind survives the next few hundred years one way or the other. Science fiction
+novels by Jack McDevitt have an interesting perspective of rather normal humans
+millennia ahead of us who look back on these times in the same way as we look
+back now. Nothing fundamental changed in the way we run society. Nearly nothing
+from the past is left over and apart from being ruled by \AI{}s people still do
+sort of what they do now. \TEX ? What is that? Well, there once was this great
+computer scientist Knuth (in the remembered row of names like Aristotle |<|I just
+started reading \quotation {The Lagoon} by Armand Leroi|>| Newton, Einstein, his
+will show up) who had a group of followers that used a program that he seems to
+have written. And even that is unlikely to be remembered, unless maybe user
+groups manage to organize an archive and pass that on. Maybe the fact that \TEX\
+was one of the first large scale open source programs, of which someone can study
+the history, makes it a survivor. The first program that was properly documented
+in detail! But then we need to make sure that it gets known and persists.
+
+\startsection[title=Automation]
+
+In a recent interview Daniel Dennett explains that his view of the mind as a big
+neural network, one that can be simulated in software on silicon, is a bit too
+simplistic. He wonders if we shouldn't more tend to think of a network of
+(selfish) neurons that group together in tasks and then compete with each other,
+if only because they want to have something to do.
+
+Maybe attempts to catch the creative mindset and working of a typesetter in
+algorithms is futile. What actually is great typography or good typesetting?
+Recently I took a look at my bookshelf wondering what to get rid of \emdash\
+better do that now than when I'm too old to carry the crap down (crap being
+defined as uninteresting content or bad looking). I was surprised about the
+on|-|the|-|average bad quality of the typesetting and print. It's also not really
+getting better. One just gets accustomed to what is the norm at a certain point.
+Whenever they change the layout and look and feel of the newspaper I read the
+arguments are readability and ease of access. Well, I never had such a hard time
+reading my paper as today (with my old eyes).
+
+Are we, like Dennett, willing to discard old views on our tools and models? When
+my first computer was a \RCA\ 1802 based kit, that had 256 bytes of memory. My
+current laptop (from 2013) is a Dell Precision workstation with an extreme quad
+core processor and 16 GB of memory and ssd storage. Before I arrived there I
+worked with \DECTEN, \VAX\ and the whole range of Intel \CPU{}s. So if you really
+want to compare a brain with a computer, take your choice.
+
+I started with \TEX\ on a 4 MHz desk top with 640 MB memory and a 10 MB hard
+disk. Running \CONTEXT\ \MKIV\ with \LUATEX\ on such a machine is no option at
+all, but I still carry the burden of trying to write efficient code (which is
+still somewhat reflected in the code that makes up \CONTEXT). In the decades that
+we have been using \TEX\ we had to adapt! Demands changed, possibilities changed,
+technologies changed. And they keep changing. How many successive changes can a
+\TEX\ user handle? Sometimes, when I look and listen I wonder.
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/the-mind-in-the-cave.jpg]         [height=5cm]} {paleontology}
+        {\externalfigure[covers/the-ancestors-tale.jpg]           [height=5cm]} {evolutionary biology}
+        {\externalfigure[covers/the-good-book-of-human-nature.jpg][height=5cm]} {anthropology}
+        {\externalfigure[covers/chaos-and-harmony.jpg]            [height=5cm]} {physics}
+    \stopcombination
+\stopplacefigure
+
+If you look back, that is, if you read about the tens of thousands of years that
+it took humans to evolve (\quotation {The mind in the cave} by Lewis|-|Williams
+is a good exercise) you realize even more in what a fast|-|paced time we live and
+that we're witnessing transitions of another magnitude.
+
+In the evolution of species some tools were invented multiple times, like eyes.
+You see the same in our \TEX\ world: multiple (sub)macro packages, different font
+technologies, the same solutions but with an alternative approach. Some
+disappear, some stay around. Just like different circumstances demand different
+solutions in nature, so do different situations in typesetting, for instance
+different table rendering solutions. Sometime I get the feeling that we focus too
+much on getting rid of all but one solution while more natural would be to accept
+diversity, like bio|-|diversity is accepted. Transitions nowadays happen faster
+but the question is if, like aeons before, we (have to) let them fade away. When
+evolution is discussed the terms \quote {random}, \quote {selection}, \quote
+{fit}, and so on are used. This probably also applies to typography: at some
+point a font can be used a lot, but in the end the best readable and most
+attractive one will survive. Newspapers are printed in many copies, but rare
+beautiful books hold value. Of course, just like in nature some developments
+force the further path of development, we don't suddenly grow more legs or digits
+on our hands. The same happens with \TEX\ on a smaller timescale: successors
+still have the same core technology, also because if we'd drop it, it would be
+something different and then give a reason to reconsider using such technology
+(which likely would result in going by another path).
+
+\stopsection
+
+\startsection[title=Quality]
+
+Richard Dawkins \quotation {The Ancestor's Tale} is a non|-|stop read. In a
+discussion with Jared Diamond about religion and evolution they ponder this
+thread: you holding the hand of your mother who is handing her mother's hand and
+so on till at some point fish get into the picture. The question then is, when do
+we start calling something human? And a related question is, when does what we
+call morality creeps in? Is 50\% neanderthaler human or not?
+
+So, in the history of putting thoughts on paper: where does \TEX\ fit in? When do
+we start calling something automated typesetting? When do we decide that we have
+quality? Is \TEX\ so much different from its predecessors? And when we see
+aspects of \TEX\ (or related font technology) in more modern programs, do we see
+points where we cross qualitative or other boundaries? Is a program doing a
+better job than a human? Where do we stand? There are fields where there is no
+doubt that machines outperform humans. It's probably a bit more difficult in
+aesthetic fields except perhaps when we lower the conditions and expectations
+(something that happens a lot).
+
+For sure \TEX\ will become obsolete, maybe even faster that we think, but so will
+other typesetting technologies. Just look back and have no illusions. Till then
+we can have our fun and eventually, when we have more free time than we need, we
+might use it out of hobbyism. Maybe \TEX\ will be remembered by probably its most
+important side effect: the first large scale open source, the time when users met
+over programs, Knuth's disciples gathered in user groups, etc. The tools that we
+use are just a step in an evolution. And, as with evolution, most branches are
+pruned. So, when in the far future one looks back, will they even notice \TEX ?
+The ancestor's tail turns the tree upside down: at the end of the successful
+branch one doesn't see the dead ends.
+
+Just a thought: \CD{}s and media servers are recently being replaced (or at least
+accompanied) by Long Play records. In the shop where I buy my \CD{}s the space
+allocated to records grows at the cost of more modern media. So, maybe at some
+point retro|-|typesetting will pop up. Of course it might skip \TEX\ and end up
+at woodcutting or printing with lead.
+
+\stopsection
+
+\startsection[title=What mission]
+
+We rely on search engines instead of asking around or browsing libraries. Do
+students really still read books and manuals or do they just search and listen to
+lectures. Harari claims that instead of teaching kids facts in school we should
+just take for granted that they can get all the data they want and that we should
+learn them how to deal with data and adapt to what is coming. We take for granted
+that small devices with human voices show us the route to drive to Bacho\TEX, for
+instance, although by now I can drive it without help. In fact, kids can surprise
+you by asking if we're driving in Germany when we are already in Poland.
+
+We accept that computer programs help physicians in analyzing pictures. Some wear
+watches that warn them about health issues, and I know a few people who monitor
+their sugar levels electronically instead of relying on their own measurements.
+We seem to believe and trust the programs. And indeed, we also believe that \TEX\
+does the job in the best way possible. How many people really understand the way
+\TEX\ works?
+
+We still have mailing lists where we help each other. There are also wikis and
+forums like stack exchange. But who says that even a moderate bit of artificial
+intelligence doesn't answer questions better. Of course there needs to be input
+(manuals, previous answers, etc.) but just like we need fewer people as workforce
+soon, the number of experts needed also can be smaller. And we're still talking
+about a traditional system like \TEX. Maybe the social experience that we have on
+these media will survive somehow, although: how many people are members of
+societies, participate in demonstrations, meet weekly in places where ideas get
+exchanged, compared to a few decades ago? That being said, I love to watch posts
+with beautiful \CONTEXT\ solutions or listen to talks by enthusiastic users who
+do things I hadn't expected. I really hope that this property survives, just like
+I hope that we will be able to see the difference between a real user's response
+and one from an intelligent machine (an unrealistic hope I fear). Satisfaction
+wins and just like our neurological subsystems at some point permanently adapt to
+thresholds (given that you trigger things often enough), we get accustomed to
+what \TEX\ provides and so we stick to it.
+
+\stopsection
+
+\startsection[title={Intelligence versus consciousness}]
+
+Much of what we do is automated. You don't need to think of which leg to move and
+what foot to put down when you walk. Reacting to danger also to a large extent is
+automated. It doesn't help much to start thinking about how dangerous a lion can
+be when it's coming after you, you'd better move fast. Our limbic system is
+responsible for such automated behaviour, for instance driven by emotions. The
+more difficult tasks and thoughts about them happen in the frontal cortex (sort
+of).
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/death-by-black-hole.jpg] [height=5cm]} {astronomy}
+        {\externalfigure[covers/the-formula.jpg]         [height=5cm]} {informatics}
+        {\externalfigure[covers/hals-legacy.jpg]         [height=5cm]} {future science}
+        {\externalfigure[covers/lucky-planet.jpg]        [height=5cm]} {earth science}
+    \stopcombination
+\stopplacefigure
+
+For most users \TEX\ is like the limbic system: there is not much thinking
+involved, and the easy solutions are the ones used. Just like hitting a nerve
+triggers a chain of reactions, hitting a key eventually produces a typeset
+document. Often this is best because the job needs to get done and no one really
+cares how it looks; just copy a preamble, key in the text and assume that it
+works out well (enough). It is tempting to compare \TEX's penalties, badness and
+other parameters with levels of hormones and neurotransmitters. Their function
+depends on where they get used and the impact can be accumulated, blocked or
+absent. It's all magic, especially when things interact.
+
+Existing \TEX\ users, developers and user groups of course prefer to think
+otherwise, that it is a positive choice by free will. That new users have looked
+around and arrived at \TEX\ for good reason: their frontal cortex steering a
+deliberate choice. Well, it might have played a role but the decision to use
+\TEX\ might in the end be due to survival skills: I want to pass this exam and
+therefore I will use that weird system called \TEX.
+
+All animals, us included, have some level of intelligence but also have this hard
+to describe property that we think makes us what we are. Intelligence and
+consciousness are not the same (at least we know a bit about the first but nearly
+nothing about the second). We can argue about how well composed some music is but
+why we like it is a different matter.
+
+We can make a well thought out choice for using \TEX\ for certain tasks but can
+we say why we started liking it (or not)? Why it gives us pleasure or maybe
+grief? Has it become a drug that we got addicted to? So, one can make an
+intelligent decision about using \TEX\ but getting a grip on why we like it can
+be hard. Do we enjoy the first time struggle? Probably not. Do we like the folks
+involved? Yes, Don Knuth is a special and very nice person. Can we find help and
+run into a friendly community? Yes, and a unique one too, annoying at times,
+often stimulating and on the average friendly for all the odd cases running
+around.
+
+Artificial intelligence is pretty ambitious, so speaking of machine intelligence
+is probably better. Is \TEX\ an intelligent program? There is definitely some
+intelligence built in and the designer of that program is for sure very
+intelligent. The designer is also a conscious entity: he likes what he did and
+finds pleasure in using it. The program on the other hand is just doing its job:
+it doesn't care how it's done and how long it takes: a mindless entity. So here
+is a question: do we really want a more intelligent program doing the job for us,
+or do those who attend conferences like Bacho\TEX\ enjoy \TEX ing so much that
+they happily stay with what they have now? Compared to rockets tumbling down
+and|/|or exploding or Mars landers thrashing themselves due to programming errors
+of interactions, \TEX\ is surprisingly stable and bug free.
+
+\stopsection
+
+\startsection[title={Individual versus group evolution}]
+
+After listening for hours to Sapolsky you start getting accustomed to remarks
+about (unconscious) behaviour driven by genes, expression and environment, aimed
+at \quotation {spreading many copies of your genes}. In most cases that is an
+individual's driving force. However, cooperation between individuals plays a role
+in this. A possible view is that we have now reached a state where survival is
+more dependent on a group than on an individual. This makes sense when we
+consider that developments (around us) can go way faster than regular evolution
+(adaptation) can handle. We take control over evolution, a mechanism that needs
+time to adapt and time is something we don't give it anymore.
+
+Why does \TEX\ stay around? It started with an individual but eventually it's the
+groups that keeps it going. A too|-|small group won't work but too|-|large groups
+won't work either. It's a known fact that one can only handle some 150 social
+contacts: we evolved in small bands that split when they became too large. Larger
+groups demanded abstract beliefs and systems to deal with the numbers: housing,
+food production, protection. The \TEX\ user groups also provide some
+organization: they organize meetings, somehow keep development going and provide
+infrastructure and distributions. They are organized around languages. According
+to Diamond new languages are still discovered but many go extinct too. So the
+potential for language related user groups is not really growing.
+
+Some of the problems that we face in this world have become too large to be dealt
+with by individuals and nations. In spite of what anti|-|globalists want we
+cannot deal with our energy hunger, environmental issues, lack of natural
+resources, upcoming technologies without global cooperation. We currently see a
+regression in cooperation by nationalistic movements, protectionism and the usual
+going back to presumed better times, but that won't work.
+
+Local user groups are important but the number of members is not growing. There
+is some cooperation between groups but eventually we might need to combine the
+groups into one which might succeed unless one wants to come first. Of course we
+will get the same sentiments and arguments as in regular politics but on the
+other hand, we already have the advantage of \TEX\ systems being multi|-|lingual
+and users sharing interest in the diversity of usage and users. The biggest
+challenge is to pass on what we have achieved. We're just a momentary highlight
+and let's not try to embrace some \quotation {\TEX\ first} madness.
+
+\stopsection
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/3-16.jpg]                [height=5cm]} {art}
+      % {\externalfigure[covers/dirt.jpg]                [height=5cm]} {history}
+        {\externalfigure[covers/the-winds-of-change.jpg] [height=5cm]} {history}
+        {\externalfigure[covers/pale-blue-dot.jpg]       [height=5cm]} {astronomy}
+        {\externalfigure[covers/the-third-chimpanzee.jpg][height=5cm]} {history}
+    \stopcombination
+\stopplacefigure
+
+\startsection[title=Sexes]
+
+Most species have two sexes but it is actually a continuum controlled by hormones
+and genetic expression: we just have to accept it. Although the situation has
+improved there are plenty of places where some gender relationships are
+considered bad even to the extent that one's life can be in danger. Actually
+having strong ideas about these issues is typically human. But in the end one has
+to accept the continuum.
+
+In a similar way we just have to accept that \TEX\ usage, application of \TEX\
+engines, etc.\ is a continuum and not a batch versus \WYSIWYG\ battle any more.
+It's disturbing to read strong recommendations not to use this or that. Of the
+many macro packages that showed up only a few were able to survive. How do users
+of outlines look at bitmaps, how do \DVI\ lovers look at \PDF. But, as
+typesetting relates to esthetics, strong opinions come with the game.
+
+Sapolsky reports about a group of baboons where due to the fact that they get the
+first choice of food the alpha males of pack got poisoned, so that the remaining
+suppressed males who treated the females well became dominant. In fact they can
+then make sure that no new alpha male from outside joins the pack without
+behaving like they do. A sort of social selection. In a similar fashion, until
+now the gatherings of \TEX ies managed to keep its social properties and has not
+been dominated by for instance commerce.
+
+% So, maybe should focus on acceptance and tolerance and then make sure that that
+% we keep what we have and let it not be influenced too much by sectarianism. It
+% makes a nice topic for a meeting of the context (sub)group, that actually has a
+% women as driving force. How can we preserve what we have but still proceed is a
+% legitimate question. Where do we stand in the landscape.
+
+In the animal world often sexes relate to appearance. The word sexy made it to
+other domains as well. Is \TEX\ sexy? For some it is. We often don't see the real
+colors of birds. What looks gray to us looks vivid to a bird which sees in a
+different spectrum. The same is true for \TEX. Some users see a command line
+(shell) and think: this is great! Others just see characters and keystrokes and
+are more attracted to an interactive program. When I see a graphic made by
+\METAPOST, I always note how exact it is. Others don't care if their interactive
+effort doesn't connect the dots well. Some people (also present here) think that
+we should make \TEX\ attractive but keep in mind that like and dislike are not
+fixed human properties. Some mindsets might as well be the result from our
+makeup, others can be driven by culture.
+
+\stopsection
+
+\startsection[title=Religion]
+
+One of Sapolsky's lectures is about religion and it comes in the sequence of
+mental variations including depression and schizophrenia, because all these
+relate to mental states, emotions, thresholds and such (all things human). That
+makes it a tricky topic which is why it has not been taped. As I was raised in a
+moderate Protestant tradition I can imagine that it's an uncomfortable topic
+instead. But there are actually a few years older videos around and they are
+interesting to watch and not as threatening as some might expect. Here I just
+stick to some common characteristics.
+
+If you separate the functions that religions play into for instance explanation
+of the yet unknown, social interactions, control of power and regulation of
+morals, then it's clear why at \TEX\ user group meetings the religious aspect of
+\TEX\ has been discussed in talks. Those who see programs as infallible and
+always right and don't understand the inner working can see it as an almighty
+entity. In the Netherlands church-going diminishes but it looks like alternative
+meetings are replacing it (and I'm not talking of football matches). So what are
+our \TEX\ meetings? What do we believe in? The reason that I bring up this aspect
+is that in the \TEX\ community we can find aspects of the more extremist aspects
+of religions: if you don't use the macro package that I use, you're wrong. If you
+don't use the same operating system as I do, you're evil. You will be punished if
+you use the wrong editor for \TEX ? Why don't you use this library (which, by the
+way, just replaced that other one)? We create angels and daemons. Even for quite
+convinced atheists (it's not hard to run into them on youtube) a religion only
+survives when it has benefits, something that puzzles them. So when we're
+religious about \TEX\ and friends we have to make sure that it's at least
+beneficial. Also, maybe we fall in Dennett's category of \quotation {believers
+who want to believe}: it helps us to do our job if we just believe that we have
+the perfect tool. Religion has inspired visual and aural art and keeps doing
+that. (Don Knuth's current musical composition project is a good example of
+this.)
+
+Scientists can be religious, in flexible ways too, which is demonstrated by Don
+Knuth. In fact, I'm pretty sure \TEX\ would not be in the position it is in now
+if it weren't for his knowledgeable, inspirational, humorous, humble, and always
+positive presence. And for sure he's not at all religious about the open source
+software that he sent viral.
+
+I'm halfway through reading \quotation {The Good Book of Human Nature} (An
+Evolutionary Reading of the Bible) a book about the evolution of the bible and
+monotheism which is quite interesting. It discusses for instance how transitions
+from a hunter to a farmer society demanded a change of rules and introduced
+stories that made sense in that changing paradigm. Staying in one place means
+that possessions became more important and therefore inheritance. Often when
+religion is discussed by behavioral biologists, historians and anthropologists
+they stress this cultural narrative aspect. Also mentioned is that such societies
+were willing to support (in food and shelter) the ones that didn't normally fit
+it but added to the spiritual character of religions. The social and welcoming
+aspect is definitely present in for instance Bacho\TEX\ conferences although a
+bystander can wonder what these folks are doing in the middle of the night around
+a campfire, singing, drinking, frying sausages, spitting fire, and discussing the
+meaning of life.
+
+Those who wrap up the state of religious affairs, do predictions and advocate the
+message, are sometimes called evangelists. I remember a \TEX\ conference in the
+\USA\ where the gospel of \XML\ was preached (by someone from outside the \TEX\
+community). We were all invited to believe it. I was sitting in the back of the
+crowded (!)\ room and that speaker was not at all interested in who spoke before
+and after. Well, I do my share of \XML\ processing with \CONTEXT, but believe me:
+much of the \XML\ that we see is not according to any gospel. It's probably
+blessed the same way as those state officials get blessed when they ask and pray
+for it in public.
+
+It can get worse at \TEX\ conferences. Some present here at Bacho\TEX\ might
+remember the \PDF\ evangelists that we had show up at \TEX\ conferences. You see
+this qualification occasionally and I have become quite allergic to
+qualifications like architect, innovator, visionary, inspirator and evangelist,
+even worse when they look young but qualify as senior. I have no problem with
+religion at all but let's stay away from becoming one. And yes, typography also
+falls into that trap, so we have to be doubly careful.
+
+\stopsection
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/from-bacteria-to-bach-and-back.jpg][height=5cm]} {philosophy}
+        {\externalfigure[covers/the-lagoon.jpg]                    [height=5cm]} {science history}
+        {\externalfigure[covers/chaos.jpg]                         [height=5cm]} {science}
+        {\externalfigure[covers/why-zebras-dont-get-ulcers.jpg]    [height=5cm]} {behavioral biology}
+    \stopcombination
+\stopplacefigure
+
+\startsection[title=Chaotic solutions]
+
+The lectures on \quotation {chaos and reductionism} and \quotation {emergence and
+complexity} were the highlights in Sapolsky's lectures. I'm not a good narrator
+so I will not summarize them but it sort of boils down to the fact that certain
+classes of problems cannot be split up in smaller tasks that we understand well,
+after which we can reassemble the solutions to deal with the complex task.
+Emerging systems can however cook up working solutions from random events.
+Examples are colonies of ants and bees.
+
+The \TEX\ community is like a colony: we cook up solutions, often by trial and
+error. We dream of the perfect solutions but deep down know that esthetics cannot
+be programmed in detail. This is a good thing because it doesn't render us
+obsolete. At last year's Bacho\TEX, my nephew Teun and I challenged the anthill
+outside the canteen to typeset the \TEX\ logo with sticks but it didn't persist.
+So we don't need to worry about competition from that end. How do you program a
+hive mind anyway?
+
+When chaos theory evolved in the second half of the previous century not every
+scientist felt happy about it. Instead of converging to more perfect predictions
+and control in some fields a persistent uncertainty became reality.
+
+After about a decade of using \TEX\ and writing macros to solve recurring
+situations I came to the conclusion that striving for a perfect \TEX\ (the
+engine) that can do everything and anything makes no sense. Don Knuth not only
+stopped adding code when he could do what he needed for his books, he also stuck
+to what to me seems reasonable endpoints. Every hard|-|coded solution beyond that
+is just that: a hard|-|coded solution that is not able to deal with the
+exceptions that make up most of the more complex documents. Of course we can
+theorize and discuss at length the perfect never|-|reachable solutions but
+sometimes it makes more sense to admit that an able user of a desktop publishing
+system can do that job in minutes, just by looking at the result and moving
+around an image or piece of text a bit.
+
+There are some hard|-|coded solutions and presets in the programs but with
+\LUATEX\ and \MPLIB\ we try to open those up. And that's about it. Thinking that
+for instance adding features like protrusion or expansion (or whatever else)
+always lead to better results is just a dream. Just as a butterfly flapping its
+wings on one side of the world can have an effect on the other side, so can
+adding a single syllable to your source completely confuse an otherwise clever
+column or page break algorithm. So, we settle for not adding more to the engine,
+and provide just a flexible framework.
+
+A curious observation is that when Edward Lorenz ran into chaotic models it was
+partially due to a restart of a simulation midway, using printed floating point
+numbers that then in the computer were represented with a different accuracy than
+printed. Aware of floating point numbers being represented differently across
+architectures, Don Knuth made sure that \TEX\ was insensitive to this so that its
+outcome was predictable, if you knew how it worked internally. Maybe \LUATEX\
+introduces a bit of chaos because the \LUA\ we use has only floats. In fact, a
+few months ago we did uncover a bug in the backend where the same phenomena gave
+a chaotic crash.
+
+In chaos theory there is the concept of an attractor. When visualized this can be
+the area (seemingly random) covered by a trajectory. Or it can be a single point
+where for instance a pendulum comes to rest. So what is our attractor? We have a
+few actually. First there is the engine, the stable core of primitives always
+present. You often see programs grow more complex every update and for sure that
+happened with \ETEX, \PDFTEX, \XETEX\ and \LUATEX. However there is always the
+core that is supposed to be stable. After some time the new kid arrives at a
+stable state not much different from the parent. The same is true for \METAPOST.
+Fonts are somewhat different because the technology changes but in the end the
+shapes and their interactions become stable as well. Yet another example is \TEX\
+Live: during a year it might diverge from its route but eventually it settles
+down and enters the area where we expect it to end up. The \TEX\ world is at
+times chaotic, but stable in the long run.
+
+So, how about the existence, the reason for it still being around? One can
+speculate about its future trajectory but one thing is sure: as long as we break
+a text into paragraphs and pages \TEX\ is hard to beat. But what if we don't need
+that any more? What if the concept of a page is no longer relevant? What if
+justified texts no longer matter (often designers don't care anyway)? What if
+students are no longer challenged to come up with a nice looking thesis? Do these
+collaborative tools with remote \TEX\ processing really bring new long term users
+or is \TEX\ then just one of the come|-|and|-|go tools?
+
+\stopsection
+
+\startsection[title=Looking ahead]
+
+In an interview (\quotation {World of ideas}) Asimov explains that science
+fiction evolved rapidly when people lived long enough to see that there was a
+future (even for their offspring) that is different from today. It is (at least
+for me) mind boggling to think of an evolution of hundreds of thousands of years
+to achieve something like language. Waiting for the physical being to arrive at a
+spot where you can make sounds, where the brain is suitable for linguistic
+patterns, etc. A few hundred years ago speed of any developments (and science)
+stepped up.
+
+\TEX\ is getting near 40 years old. Now, for software that {\bf is} old! In that
+period we have seen computers evolve: thousands of times faster processing, even
+more increase in memory and storage. If we read about spaceships that travel at a
+reasonable fraction of the speed of light, and think that will not happen soon,
+just think back to the terminals that were sitting in computer labs when \TEX\
+was developed: 300 baud was normal. I actually spent quite some time on
+optimizing time|-|critical components of \CONTEXT\ but on this timescale that is
+really a waste of time. But even temporary bottlenecks can be annoying (and
+costly) enough to trigger such an effort. (Okay, I admit that it can be a
+challenge, a kind of game, too.)
+
+Neil Tyson, in the video \quotation {Storytelling of science} says that when
+science made it possible to make photos it also made possible a transition in
+painting to impressionism. Other technology could make the exact snapshot so
+there was new room for inner feelings and impressions. When the Internet showed
+up we went through a similar transition, but \TEX\ actually dates from before the
+Internet. Did we also have a shift in typesetting? To some extent yes, browsers
+and real time rendering is different from rendering pages on paper. In what space
+and time are \TEX ies rooted?
+
+We get older than previous generations. Quoting Sapolsky \quotation{\unknown\ we
+are now living well enough and long enough to slowly fall apart.} The opposite is
+happening with our tools, especially software: it's useful lifetime becomes
+shorter and changes faster each year. Just look at the version numbers of
+operating systems. Don Knuth expected \TEX\ to last for a long time and compared
+to other software its core concept and implementation is doing surprisingly well.
+We use a tool that suits our lifespan! Let's not stress ourselves out too much
+with complex themes. (It helps to read \quotation {Why zebras don't get ulcers}.)
+
+\stopsection
+
+\startsection[title=Memes]
+
+If you repeat a message often enough, even if it's something not true, it can
+become a meme that gets itself transferred across generations. Conferences like
+this is where they can evolve. We tell ourselves and the audience how good \TEX\
+is and because we spend so many hours, days, weeks, months using it, it actually
+must be good, or otherwise we would not come here and talk about it. We're not so
+stupid as to spend time on something not good, are we? We're always surprised
+when we run into a (potential) customer who seems to know \TEX. It rings a bell,
+and it being around must mean something. Somehow the \TEX\ meme has anchored
+itself when someone attended university. Even if experiences might have been bad
+or usage was minimal. The meme that \TEX\ is the best in math typesetting is a
+strong survivor.
+
+There's a certain kind of person who tries to get away with their own deeds and
+decisions by pointing to \quotation {fake news} and accusations of \quotation
+{mainstream media} cheating on them. But to what extent are our stories true
+about how easy \TEX\ macro packages are to use and how good their result? We have
+to make sure we spread the right memes. And the user groups are the guardians.
+
+Maybe macro packages are like memes too. In the beginning there was a bunch but
+only some survived. It's about adaptation and evolution. Maybe competition was
+too fierce in the beginning. Like ecosystems, organisms and cellular processes in
+biology we can see the \TEX\ ecosystem, users and usage, as a chaotic system.
+Solutions pop up, succeed, survive, lead to new ones. Some look similar and
+slightly different input can give hugely different outcomes. You cannot really
+look too far ahead and you cannot deduce the past from the present. Whenever
+something kicks it off its stable course, like the arrival of color, graphics,
+font technologies, \PDF, \XML, ebooks, the \TEX\ ecosystem has to adapt and find
+its stable state again. The core technology has proven to be quite fit for the
+kind of adaptation needed. But still, do it wrong and you get amplified out of
+existence, don't do anything and the external factors also make you extinct.
+There is no denial that (in the computer domain) \TEX\ is surprisingly stable and
+adaptive. It's also hard not to see how conservatism can lead to extinction.
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/the-epigenetics-revolution.jpg]   [height=5cm]} {genetics}
+        {\externalfigure[covers/dark-matter-and-the-dinosaurs.jpg][height=5cm]} {physics}
+        {\externalfigure[covers/the-world-without-us.jpg]         [height=5cm]} {history}
+        {\externalfigure[covers/what-we-cannot-know.jpg]          [height=5cm]} {science}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Inspiration]
+
+I just took some ideas from different fields. I could have mentioned quantum
+biology, which tries to explain some unexplainable phenomena in living creatures.
+For instance how do birds navigate without visible and measurable clues. How do
+people arrive at \TEX\ while we don't really advertise? Or I could mention
+epigenetics and explorations in junk \DNA. It's not the bit of the genome that we
+thought that matters, but also the expression of the genes driven by other
+factors. Offspring not only gets genetic material passed but it can get presets.
+How can the \TEX\ community pass on Knuth's legacy? Do we need to hide the
+message in subtle ways? Or how about the quest for dark matter? Does it really
+exist or do we want (need) it to exist? Does \TEX\ really have that many users,
+or do we cheat by adding the users that are enforced during college but don't
+like it at all? There's enough inspiration for topics at \TEX\ conferences, we
+just have to look around us.
+
+\stopsection
+
+\startsection[title=Stability]
+
+I didn't go into technical aspects of \TEX\ yet. I must admit that after decades
+of writing macros I've reached a point where I can safely say that there will
+never be perfect automated solutions for really complex documents. When books
+about neural networks show up I wondered if it could be applied (but I couldn't).
+When I ran into genetic algorithms I tried to understand its possible impact (but
+I never did). So I stuck to writing solutions for problems using visualization:
+the trial and error way. Of course, speaking of \CONTEXT, I will adapt what is
+needed, and others can do that as well. Is there a new font technology? Fine,
+let's support it as it's no big deal, just a boring programming task. Does a user
+want a new mechanism? No problem, as solving a reduced subset of problems can be
+fun. But to think of \TEX\ in a reductionist way, i.e.\ solving the small
+puzzles, and to expect the whole to work in tandem to solve a complex task is not
+trivial and maybe even impossible. It's a good thing actually, as it keeps us on
+edge. Also, \CONTEXT\ was designed to help you with your own solutions: be
+creative.
+
+I mentioned my nephew Bram. He has seen part of this crowd a few times, just like
+his brother and sister do now. He's into artificial intelligence now. In a few
+years I'll ask him how he sees the current state of \TEX\ affairs. I might learn
+a few tricks in the process.
+
+In \quotation {The world without us} Weisman explores how fast the world would be
+void of traces of humankind. A mere 10.000 years can be more than enough. Looking
+back, that's about the time hunters became farmers. So here's a challenge: say
+that we want an ant culture that evolves to the level of having archaeologists to
+know that we were here at Bacho\TEX\ \unknown\ what would we leave behind?
+
+Sapolsky ends his series by stressing that we should accept and embrace
+individual differences. The person sitting next to you can have the same makeup
+but be just a bit more sensitive to depression or be the few percent with genes
+controlling schizophrenic behaviour. He stresses that knowing how things work or
+where things go wrong doesn't mean that we should fix everything. So look at this
+room full of \TEX ies: we don't need to be all the same, use all the same, we
+don't need some dominance, we just need to accept and especially we need to
+understand that we can never fully understand (and solve) everything forever.
+
+Predictions, one of the themes, can be hard. It's not true that science has the
+answer to everything. There will always be room for speculation and maybe we will
+always need metaphysics too. I just started to read \quotation {What we cannot
+know} by Sautoy. For sure those present here can not predict how \TEX\ will go on
+and|/|or be remembered.
+
+\stopsection
+
+\startsection[title=Children of \TEX]
+
+I mentioned \quotation {Children of time}. The author lets you see their spidery
+world through spider eyes and physiology. They have different possibilities
+(eyesight, smell) than we do and also different mental capabilities. They evolve
+rapidly and have to cope conceptually with signals from a human surveillance
+satellite up in the sky. Eventually they need to deal with a bunch of (of course)
+quarrelling humans who want their place on the planet. We humans have some
+pre|-|occupation with spiders and other creatures. In a competitive world it is
+sometimes better to be suspicious (and avoid and flee) that to take a risk of
+being eaten. A frequently used example is that a rustle in a bush can be the wind
+or a lion, so best is to run.
+
+We are not that well adapted to our current environment. We evolved at a very
+slow pace so there was no need to look ahead more than a year. And so we still
+don't look too far ahead (and choose politicians accordingly). We can also not
+deal that well with statistics (Dawkins's \quotation {Climbing Mount Probability}
+is a good read) so we make false assumptions, or just forget.
+
+Does our typeset text really look that good on the long run, or do we cheat with
+statistics? It's not too hard to find a bad example of something not made by
+\TEX\ and extrapolate that to the whole body of typeset documents. Just like we
+can take a nice example of something done by \TEX\ and assume that what we do
+ourselves is equally okay. I still remember the tests we did with \PDFTEX\ and
+hz. When \THANH\ and I discussed that with Hermann Zapf he was not surprised at
+all that no one saw a difference between the samples and instead was focusing on
+aspects that \TEX ies are told to look at, like two hyphens in a row.
+
+A tool like \TEX\ has a learning curve. If you don't like that just don't use it.
+If you think that someone doesn't like that, don't enforce this tool on that
+someone. And don't use (or lie with) statistics. Much better arguments are that
+it's a long|-|lived stable tool with a large user base and support. That it's not
+a waste of time. Watching a designer like Hermann Zapf draw shapes is more fun
+than watching click and point in heavily automated tools. It's probably also less
+fun to watch a \TEX ie converge towards a solution.
+
+Spiders are resilient. Ants maybe even more. Ants will survive a nuclear blast
+(mutations might even bring them benefits), they can handle the impact of a
+meteorite, a change in climate won't harm them much. Their biggest enemy is
+probably us, when we try to wipe them out with poison. But, as long as they keep
+a low profile they're okay. \TEX\ doesn't fit into the economic model as there is
+no turnaround involved, no paid development, it is often not seen at all, it's
+just a hit in a search engine and even then you might miss it (if only because no
+one pays for it being shown at the top).
+
+We can learn from that. Keeping a low profile doesn't trigger the competition to
+wipe you out. Many (open source) software projects fade away: some big company
+buys out the developer and stalls the project or wraps what they bought in their
+own stuff, other projects go professional and enterprise and alienate the
+original users. Yet others abort because the authors lose interest. Just like the
+ideals of socialism don't automatically mean that every attempt to implement it
+is a success, so not all open source and free software is good (natured) by
+principle either. The fact that communism failed doesn't mean that capitalism is
+better and a long term winner. The same applies to programs, whether successful
+or not.
+
+Maybe we should be like the sheep. Dennett uses these animals as a clever
+species. They found a way to survive by letting themselves (unconsciously) be
+domesticated. The shepherd guarantees food, shelter and protection. He makes sure
+they don't get ill. Speaking biologically: they definitely made sure that many
+copies of their genes survived. Cows did the same and surprisingly many of them
+are related due to the fact that they share the same father (something now trying
+to be reverted). All \TEX\ spin|-|offs relate to the same parent, and those that
+survived are those that were herded by user groups. We see bits and pieces of
+\TEX\ end up in other applications. Hyphenation is one of them. Maybe we should
+settle for that small victory in a future hall of fame.
+
+When I sit on my balcony and look at the fruit trees in my garden, some simple
+math can be applied. Say that one of the apple trees has 100 apples per year and
+say that this tree survives for 25 years (it's one of those small manipulated
+trees). That makes 2.500 apples. Without human intervention only a few of these
+apples make it into new trees, otherwise the whole world would be dominated by
+apple trees. Of course that tree now only survives because we permit it to
+survive, and for that it has to be humble (something that is very hard for modern
+Apples). Anyway, the apple tree doesn't look too unhappy.
+
+A similar calculation can be done for birds that nest in the trees and under my
+roof. Given that the number of birds stays the same, most of energy spent on
+raising offspring is wasted. Nevertheless they seem to enjoy life. Maybe we
+should be content if we get one enthusiastic new user when we demonstrate \TEX\
+to thousands of potential users.
+
+Maybe, coming back to the themes of the conference, we should not come up with
+these kinds of themes. We seem to be quite happy here. Talking about the things
+that we like, meeting people. We just have to make sure that we survive. Why not
+stay low under the radar? That way nothing will see us as a danger. Let's be like
+the ants and spiders, the invisible hive mind that carries our message, whatever
+that is.
+
+When Dennett discusses language he mentions (coined) words that survive in
+language. He also mentions that children pick up language no matter what. Their
+minds are made for it. Other animals don't do that: they listen but don't start
+talking back. Maybe \TEX\ is just made for certain minds. Some like it and pick
+it up, while for others it's just noise. There's nothing wrong with that.
+Predilection can be a user property.
+
+\stopsection
+
+\startsection[title={The unexpected}]
+
+In a discussion with Dawkins the well|-|spoken astrophysicist Neil deGrasse Tyson
+brings up the following. We differ only a few percent in \DNA\ from a chimp but
+quite a lot in brain power, so how would it be if an alien that differs a few
+percent (or more) passes by earth. Just like we don't talk to ants or chimps or
+whatever expecting an intelligent answer, whatever passes earth won't bother
+wasting time on us. Our rambling about the quality of typesetting probably sounds
+alien to many people who just want to read and who happily reflow a text on an
+ebook device, not bothered by a lack of quality.
+
+\startplacefigure[location=top]
+    \startcombination[nx=4,ny=1,width=\textwidth,distance=0pt]
+        {\externalfigure[covers/live-as-we-do-not-know-it.jpg][height=5cm]} {astrobiology}
+        {\externalfigure[covers/life-on-the-edge.jpg]         [height=5cm]} {quantumbiology}
+        {\externalfigure[covers/rare-earth.jpg]               [height=5cm]} {astrophysics}
+        {\externalfigure[covers/austerity.jpg]                [height=5cm]} {economics}
+    \stopcombination
+\stopplacefigure
+
+We tend to take ourselves as reference. In \quotation {Rare Earth} Ward and
+Brownlee extrapolate the possibility of life elsewhere in the universe. They are
+not alone in thinking that while on one hand applying statistics to these
+formulas of possible life on planets there might also be a chance that we're the
+only intelligent species ever evolved. In a follow up, \quotation {Life as we do
+not know it} paleontologist and astrobiologist Ward (one of my favourite authors)
+discusses the possibility of life not based on carbon, which is not natural for a
+carbon based species. Carl Sagan once pointed out that an alien species looking
+down to earth can easily conclude that cars are the dominant species on earth and
+that the thingies crawling in and out them are some kind of parasites. So, when
+we look at the things that somehow end up on paper (as words, sentences,
+ornaments, etc.), what is dominant there? And is what we consider dominant really
+that dominant in the long run? You can look at a nice page as a whole and don't
+see the details of the content. Maybe beauty hides nonsense.
+
+When \TEX ies look around they look to similar technologies. Commands in shells
+and solutions done by scripting and programming. This make sense in the
+perspective of survival. However, if you want to ponder alternatives, maybe not
+for usage but just for fun, a completely different perspective might be needed.
+You must be willing to accept that communicating with a user of a \WYSIWYG\
+program might be impossible. If mutual puzzlement is a fact, then they can either
+be too smart and you can be too dumb or the reverse. Or both approaches can be
+just too alien, based on different technologies and assumptions. Just try to
+explain \TEX\ to a kid 40 years younger or to an 80 year old grandparent for that
+matter. Today you can be very clever in one area and very stupid in another.
+
+In another debate, Neil deGrasse Tyson asks Dawkins the question why in science
+fiction movies the aliens look so human and when they don't, why they look so
+strange, for instance like cumbersome sluggish snails. The response to that is
+one of puzzlement: the opponent has no reference of such movies. In discussions
+old \TEX ies like to suggest that we should convert young users. They often don't
+understand that kids live in a different universe.
+
+How often does that happen to us? In a world of many billions \TEX\ has its place
+and can happily coexist with other typesetting technologies. Users of other
+technologies can be unaware of us and even create wrong images. In fact, this
+also happens in the community itself: (false) assumptions turned into
+conclusions. Solutions that look alien, weird and wrong to users of the same
+community. Maybe something that I present as hip and modern and high|-|\TEX\ and
+promising might be the opposite: backward, old|-|fashioned and of no use to
+others. Or maybe it is, but the audience is in a different mindset. Does it
+matter? Let's just celebrate that diversity. (So maybe, instead of discussing the
+conference theme, I should have talked about how I abuse \LUATEX\ in controlling
+lights in my home as part of some IoT experiments.)
+
+\stopsection
+
+\startsection[title=What drives us]
+
+I'm no fan of economics and big money talk makes me suspicious. I cannot imagine
+working in a large company where money is the drive. It also means that I have
+not much imagination in that area. We get those calls at the office from far away
+countries who are hired to convince us by phone of investments. Unfortunately
+mentioning that you're not at all interested in investments or that multiplying
+money is irrelevant to you does not silence the line. You have to actively kill
+such calls. This is also why I probably don't understand today's publishing world
+where money also dominates. Recently I ran into talks by Mark Blyth about the
+crisis (what crisis?) and I wish I could argue like he does when it comes to
+typesetting and workflows. He discusses quite well that most politicians have no
+clue what the crisis is about.
+
+I think that the same applies to the management of publishers: many have no clue
+what typesetting is about. So they just throw lots of money into the wrong
+activities, just like the central banks seem to do. It doesn't matter if we \TEX
+ies demonstrate cheap and efficient solutions.
+
+Of course there are exceptions. We're lucky to have some customers that do
+understand the issues at hand. Those are also the customers where authors may use
+the tools themselves. Educating publishers, and explaining that authors can do a
+lot, might be a premise, predilection and prediction in one go! Forget about
+those who don't get it: they will lose eventually, unfortunately not before they
+have reaped and wasted the landscape.
+
+Google, Facebook, Amazon, Microsoft and others invest a lot in artificial
+intelligence (or, having all that virtual cash, just buy other companies that
+do). They already have such entities in place to analyze whatever you do. It is
+predicted that at some point they know more about you then you know yourself.
+Reading Luke Dormehl's \quotation {The Formula} is revealing. So what will that
+do with our so|-|called (disputed by some) free will? Can we choose our own
+tools? What if a potential user is told that all his or her friends use
+WhateverOffice so they'd better do that too? Will subtle pressure lead them or
+even us users away from \TEX ? We already see arguments among \TEX ies, like
+\quotation {It doesn't look updated in 3 years, is it still good?} Why update
+something that is still valid? Will the community be forced to update everything,
+sort of fake updates. Who sets out the rules? Do I really need to update (or
+re|-|run) manuals every five years?
+
+Occasionally I visit the Festo website. This is a (family owned) company that
+does research at the level that used to be common in large companies decades ago.
+If I had to choose a job, that would be the place to go to. Just google for
+\quotation {festo bionic learning network} and you understand why. We lack this
+kind of research in the field we talk about today: research not driven by
+commerce, short term profit, long term control, but because it is fundamental
+fun.
+
+Last year Alan Braslau and I spent some time on \BIBTEX. Apart from dealing with
+all the weird aspects of the \APA\ standard, dealing with the inconsistently
+constructed author fields is a real pain. There have been numerous talks about
+that aspect here at Bacho\TEX\ by Jean|-|Michel Hufflen. We're trying to deal
+with a more than 30|-|year|-|old flawed architecture. Just look back over a curve
+that backtracks 30 years of exponential development in software and databases and
+you realize that it's a real waste of time and a lost battle. It's fine to have a
+text based database, and stable formats are great, but the lack of structure is
+appalling and hard to explain to young programmers. Compare that to the Festo
+projects and you realize that there can be more challenging projects. Of course,
+dealing with the old data can be a challenge, a necessity and eventually even be
+fun, but don't even think that it can be presented as something hip and modern.
+We should be willing to admit flaws. No wonder that Jean|-|Michel decided to
+switch to talking about music instead. Way more fun.
+
+Our brains are massively parallel bio|-|machinery. Groups of neurons cooperate
+and compete for attention. Coming up with solutions that match what comes out of
+our minds demands a different approach. Here we still think in traditional
+programming solutions. Will new ideas about presenting information, the follow up
+on books come from this community? Are we the innovative Festo or are we an old
+dinosaur that just follows the fashion?
+
+\stopsection
+
+\startsection[title=User experience]
+
+Here is a nice one. Harari spends many pages explaining that research shows that
+when an unpleasant experience has less unpleasantness at the end of the period
+involved, the overall experience is valued according to the last experience. Now,
+this is something we can apply to working with \TEX: often, the more you reach
+the final state of typesetting the more it feels as all hurdles are in the
+beginning: initial coding, setting up a layout, figuring things out, etc.
+
+It can only get worse if you have a few left|-|over typesetting disasters but
+there adapting the text can help out. Of course seeing it in a cheap bad print
+can make the whole experience bad again. It happens. There is a catch here: one
+can find lots of bad|-|looking documents typeset by \TEX. Maybe there frustration
+(or indifference) prevails.
+
+I sometimes get to see what kind of documents people make with \CONTEXT\ and it's
+nice to see a good looking thesis with diverse topics: science, philosophy,
+music, etc. Here \TEX\ is just instrumental, as what it is used for is way more
+interesting (and often also more complex) than the tool used to get it on paper.
+We have conferences but they're not about rocket science or particle
+accelerators. Proceedings of such conferences can still scream \TEX, but it's the
+content that matters. Here somehow \TEX\ still sells itself, being silently
+present in rendering and presentations. It's like a rootkit: not really
+appreciated and hard to get rid of. Does one discuss the future of rootkits other
+than in the perspective of extinction? So, even as an invisible rootkit, hidden
+in the workings of other programs, \TEX's future is not safe. Sometimes, when you
+install a Linux system, you automatically get this large \TEX\ installation,
+either because of dependencies or because it is seen as a similar toolkit as for
+instance Open (or is it Libre) Office. If you don't need it, that user might as
+well start seeing it as a (friendly) virus.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+At some point those who introduced computers in typesetting had no problem
+throwing printing presses out of the window. So don't pity yourself if at some
+point in the near future you figure out that professional typesetting is no
+longer needed. Maybe once we let machines rule the world (even more) we will be
+left alone and can make beautiful documents (or whatever) just for the joy, not
+bothering if we use outdated tools. After all, we play modern music on old
+instruments (and the older rock musicians get, the more they seem to like
+acoustic).
+
+There are now computer generated compositions that experienced listeners cannot
+distinguish from old school. We already had copies of paintings that could only
+be determined forgeries by looking at chemical properties. Both of these
+(artificial) arts can be admired and bring joy. So, the same applies to fully
+automated typeset novels (or runtime rendered ebooks). How bad is that really?
+You don't dig channels with your hand. You don't calculate logarithmic tables
+manually any longer.
+
+However, one of the benefits of the Internet is watching and listening to great
+minds. Another is seeing musicians perform, which is way more fun that watching a
+computer (although googling for \quotation {animusic} brings nice visuals).
+Recently I ran into a wooden musical computer made by \quotation {Wintergatan}
+which reminded me of the \quotation {Paige Compositor} that we use in a \LUATEX\
+cartoon. Watching something like that nicely compensates for a day of rather
+boring programming. Watching how the marble machine x (mmx) evolves is yet
+another nice distraction.
+
+Now, the average age of the audience here is pretty high even if we consider that
+we get older. When I see solutions of \CONTEXT\ users (or experts) posted by
+(young) users on the mailing list or stack exchange I often have to smile because
+my answer would have been worse. A programmable system invokes creative
+solutions. My criterion is always that it has to look nice in code and has some
+elegance. Many posted solutions fit. Do we really want more automation? It's more
+fun to admire the art of solutions and I'm amazed how well users use the
+possibilities (even ones that I already forgot).
+
+One of my favourite artists on my weekly \quotation {check youtube} list is Jacob
+Collier. Right from when I ran into him I realized that a new era in music had
+begun. Just google for his name and \quotation {music theory interview} and you
+probably understand what I mean. When Dennett comments on the next generation
+(say up to 25) he wonders how they will evolve as they grow up in a completely
+different environment of connectivity. I can see that when I watch family
+members. Already long ago Greg Bear wrote the novel \quotation {Darwin's
+Children}. It sets you thinking and when looking around you even wonder if there
+is a truth in it.
+
+There are folks here at Bacho\TEX\ who make music. Now imagine that this is a
+conference about music and that the theme includes the word \quotation {future}.
+Then, imagine watching that video. You see some young musicians, one of them
+probably one of the musical masterminds of this century, others instrumental to
+his success, for instance by wrapping up his work. While listening you realize
+that this next generation knows perfectly well what previous generations did and
+achieved and how they influenced the current. You see the future there. Just look
+at how old musicians reflect on such videos. (There are lots of examples of youth
+evolving into prominent musicians around and I love watching them). There is no
+need to discuss the future, in fact, we might make a fool of ourselves doing so.
+Now back to this conference. Do we really want to discuss the future? What we
+think is the future? Our future? Why not just hope that in the flow of getting
+words on a medium we play our humble role and hope we're not forgotten but
+remembered as inspiration.
+
+One more word about predicting the future. When Arthur Clarke's \quotation {2001:
+A Space Odyssey} was turned into a movie in 1968, a lot of effort went into
+making sure that the not so far ahead future would look right. In 1996 scientists
+were asked to reflect on these predictions in \quotation {Hal's Legacy}. It
+turned out that most predictions were plain wrong. For instance computers got way
+smaller (and even smaller in the next 20 years) while (self|-|aware) artificial
+intelligence had not arrived either. So, let's be careful in what we predict (and
+wish for).
+
+\stopsection
+
+\startsection[title=No more themes]
+
+We're having fun here, that's why we come to Bacho\TEX\ (predilection). That
+should be our focus. Making sure that \TEX's future is not so much in the cutting
+edge but in providing fun to its users (prediction). So we just have to make sure
+it stays around (premise). That's how it started out. Just watch at Don Knuth's
+3:16 poster: via \TEX\ and \METAFONT\ he got in contact with designers and I
+wouldn't be surprised if that sub|-|project was among the most satisfying parts.
+So, maybe instead of ambitious themes the only theme that matters is: show what
+you did and how you did it.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

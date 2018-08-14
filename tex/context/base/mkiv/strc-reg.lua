@@ -48,6 +48,7 @@ local v_last               = variables.last
 local v_text               = variables.text
 
 local context              = context
+local ctx_latelua          = context.latelua
 
 local implement            = interfaces.implement
 
@@ -564,9 +565,7 @@ local function storeregister(rawdata) -- metadata, references, entries
     return #entries
 end
 
-registers.store = storeregister
-
-function registers.enhance(name,n)
+local function enhanceregister(name,n)
     local data = tobesaved[name].metadata.notsaved and collected[name] or tobesaved[name]
     local entry = data.entries[n]
     if entry then
@@ -574,7 +573,7 @@ function registers.enhance(name,n)
     end
 end
 
-function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
+local function extendregister(name,tag,rawdata) -- maybe do lastsection internally
     if type(tag) == "string" then
         tag = tagged[tag]
     end
@@ -618,6 +617,10 @@ function registers.extend(name,tag,rawdata) -- maybe do lastsection internally
     end
 end
 
+registers.store   = storeregister
+registers.enhance = enhanceregister
+registers.extend  = extendregister
+
 function registers.get(tag,n)
     local list = tobesaved[tag]
     return list and list.entries[n]
@@ -625,13 +628,21 @@ end
 
 implement {
     name      = "enhanceregister",
-    actions   = registers.enhance,
     arguments = { "string", "integer" },
+    actions   = enhanceregister,
+}
+
+implement {
+    name      = "deferredenhanceregister",
+    arguments = { "string", "integer" },
+    actions   = function(name,n)
+        ctx_latelua(function() enhanceregister(name,n) end)
+    end,
 }
 
 implement {
     name      = "extendregister",
-    actions   = registers.extend,
+    actions   = extendregister,
     arguments = "2 strings",
 }
 

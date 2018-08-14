@@ -31,10 +31,13 @@ local concat       = table.concat
 local context      = context
 local ctxcore      = context.core
 local variables    = interfaces.variables
+local sprint       = context.sprint
 
 local nodepool     = nodes.pool
 local new_rule     = nodepool.rule
 local new_glyph    = nodepool.glyph
+local new_latelua  = nodepool.latelua
+
 local current_attr = nodes.current_attr
 
 local current_font = font.current
@@ -172,3 +175,7 @@ context.registers = {
     -- not really a register but kind of belongs here
     newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }
+
+function context.latelua(f)
+    sprint(new_latelua(f)) -- maybe just context
+end

@@ -98,7 +98,7 @@ end
 setmetatableindex(names,function(t,name)
     local v = setmetatableindex(function(t,source)
         local v = setmetatableindex(function(t,line)
-            local v = { total = 0, count = 0 }
+            local v = { total = 0, count = 0, nesting = 0 }
             t[line] = v
             return v
         end)
@@ -128,12 +128,24 @@ local function hook(where)
         end
         local data = names[name][source][line]
         if where == "call" then
-            data.count = data.count + 1
-            insert(data,ticks())
+            local nesting = data.nesting
+            if nesting == 0 then
+                data.count = data.count + 1
+                insert(data,ticks())
+                data.nesting = 1
+            else
+                data.nesting = nesting + 1
+            end
         elseif where == "return" then
-            local t = remove(data)
-            if t then
-                data.total = data.total + ticks() - t
+            local nesting = data.nesting
+            if nesting == 1 then
+                local t = remove(data)
+                if t then
+                    data.total = data.total + ticks() - t
+                end
+                data.nesting = 0
+            else
+                data.nesting = nesting - 1
             end
         end
     end

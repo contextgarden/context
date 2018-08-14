@@ -1,0 +1,247 @@
+\environment texit-style
+
+\startcomponent texit-leaders
+
+\startchapter[title={Leaders}]
+
+The following example comes from a question on the \CONTEXT\ list. It
+exhibits a few low level tricks. For the purpose of this example we
+use \type {\ruledhbox} instead of \type {\hbox}. We start with a simple
+command that puts something at the end of a line:
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \removeunwantedspaces
+    \hfill
+    \ruledhbox{#1}
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We use this in:
+
+\startbuffer[sample]
+\startitemize[packed,joinedup][rightmargin=3em]
+    \startitem
+        \samplefile{ward}\MyFill{DW}
+    \stopitem
+\stopitemize
+\stopbuffer
+
+\typebuffer[sample][option=TEX]
+
+and get:
+
+\getbuffer[sample]
+
+But, the requirement was that we move the number towards the right margin, so
+instead we need something:
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \removeunwantedspaces
+    \hfill
+    \rlap{\ruledhbox to \rightskip{\hss#1}}
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This already looks more like it:
+
+\getbuffer[sample]
+
+But also part of the requirements was that there should be dots between the end
+of the last sentence and the number. In low level \TEX\ speak that means using
+leaders: repeated boxed content where the repitition is driven by a glue
+specification. Let's naively use leaders now:
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \leaders
+        \ruledhbox to 1em{\hss.\hss}
+        \hfill
+    \ruledhbox{#1}
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Let's see what we get:
+
+\getbuffer[sample]
+
+Again we need to move the number to the right. This time we need a different
+solution because we need to fill the space in between. When \TEX\ ends a
+paragraph it adds \type {\parfillskip} so we will now manipulate that parameter.
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \parfillskip-1\rightskip plus 1fil\relax
+    \leaders
+        \ruledhbox to 1em{\hss.\hss}
+        \hfill
+    \ruledhbox{#1}
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Does it look better?
+
+\getbuffer[sample]
+
+Indeed it does, but watch this:
+
+\startbuffer[sample]
+\startitemize[packed,joinedup][rightmargin=8.5em]
+    \startitem
+        \samplefile{ward}\MyFill{DW}\par
+        \samplefile{ward}\par
+        \samplefile{ward}\MyFill{DW}
+    \stopitem
+\stopitemize
+\stopbuffer
+
+\typebuffer[sample][option=TEX]
+
+The first \type {\MyFill} will set the \type {\parfillskip} to a value that will
+also be used later on.
+
+\getbuffer[sample]
+
+The way out is the following
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \begingroup
+    \parfillskip-1\rightskip plus 1fil\relax
+    \leaders
+        \ruledhbox to 1em{\hss.\hss}
+        \hfill
+    \ruledhbox{#1}
+    \par
+    \endgroup
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This looks more or less okay. The \type {\par} keeps the adaption local but for
+it to work well, the \type {\par} must be inside the group.
+
+\getbuffer[sample]
+
+Now it's time to go for perfection! First of all, we get rid of any leading
+spacing. If we need some we should inject it after a cleanup. We also use a
+different leader command. Instead of \type {to} we use a \type {spread} so that
+we get half the emwidth and not something slightly less due to the width of the
+period.
+
+\startbuffer
+\starttexdefinition MyFill #1
+    \removeunwantedspaces
+    \begingroup
+    \parfillskip-1\rightskip plus 1fil\relax
+    \cleaders
+        \ruledhbox spread 1em{\hss.\hss}
+        \hfill
+    \ruledhbox{#1}
+    \par
+    \endgroup
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+So, we end up here:
+
+\startbuffer[sample]
+\startitemize[packed,joinedup][rightmargin=5em]
+    \startitem
+        \samplefile{sapolsky}\MyFill{RS}\par
+    \stopitem
+\stopitemize
+\stopbuffer
+
+\getbuffer[sample]
+
+For which we used this:
+
+\typebuffer[sample][option=TEX]
+
+Finally we get rid of the tracing:
+
+\startbuffer
+\starttexdefinition unexpanded MyFill #1
+    \begingroup
+    \parfillskip-1\rightskip plus 1fil\relax
+    \leaders
+        \hbox to \emwidth{\hss.\hss}
+        \hfill
+    \hbox{#1}
+    \par
+    \endgroup
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Watch a few more details. It brings us to:
+
+\getbuffer[sample]
+
+\page
+
+\startbuffer
+\definefiller
+  [MyFiller]
+  [offset=.25\emwidth,
+   method=middle]
+
+\starttexdefinition unexpanded MyFill #1
+    \begingroup
+    \parfillskip-1\rightskip plus 1fil\relax
+    \filler[MyFiller]%
+    \hbox{#1}
+    \par
+    \endgroup
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\getbuffer[sample]
+
+When writing these examples I realized that it's rather trivial to add this
+option to the already existing filler mechanism. The definition of such a filler
+looks like this:
+
+\startbuffer
+\definefiller
+  [MyFiller]
+  [offset=.25\emwidth,
+   rightmargindistance=-\rightskip,
+   method=middle]
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer[sample]
+\startitemize[packed,joinedup][rightmargin=5em]
+    \startitem
+        \samplefile{sapolsky}\fillupto[MyFiller]{RS}
+    \stopitem
+\stopitemize
+\stopbuffer
+
+The sample code now becomes:
+
+\typebuffer[sample][option=TEX]
+
+Ans as expected renders as:
+
+\getbuffer[sample]
+
+\stopcomponent

@@ -145,8 +145,9 @@
   {\endgroup}
 
 % \unexpanded
+
 \def\strc_lists_inject_enhance#listindex#internal%
-  {\normalexpanded{\ctxlatecommand{enhancelist(\number#listindex)}}}
+  {\normalexpanded{\clf_deferredenhancelist#listindex}}
 
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
@@ -168,7 +169,7 @@
         userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
-\setxvalue{\??listlocations\currentlist}{\the\locationcount}%
+   \setxvalue{\??listlocations\currentlist}{\the\locationcount}%
    \ifx\p_location\v!here
      % this branch injects nodes !
      \strc_lists_inject_enhance{\currentlistnumber}{\the\locationcount}%

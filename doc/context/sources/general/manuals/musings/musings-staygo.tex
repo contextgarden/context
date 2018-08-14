@@ -1,0 +1,461 @@
+% language=uk
+
+% Written with on repeat:
+%
+% Rai Thistlethwayte: Betty Page (the keyscape version)
+
+% \usemodule[art-01,abr-04]
+%
+% \setupbodyfont[12pt]
+%
+% \startdocument
+%   [title={What’s to stay, what’s to go},
+%    subtitle={The 2018 Bacho\TeX\ theme},
+%    author={Hans Hagen}]
+
+\definedescription
+  [theme]
+  [before=\startnarrower,
+   after=\stopnarrower,
+   title=yes,
+   alternative=serried,
+   width=fit,
+   distance=.5\emwidth,
+   text={\documentvariable{title}:}]
+
+% \starttitle[title=\documentvariable{title}\\\txx\documentvariable{subtitle}]
+
+\startcomponent musings-staygo
+
+\environment musings-style
+
+\startchapter[title={What’s to stay, what’s to go}]
+
+\startsection[title=Introduction]
+
+The following text was written as preparation for a 2018 talk at Bacho\TEX, which
+has this theme. It's mostly a collection of thoughts. It was also more meant as a
+wrapup for the presentation (possibly with some discussions) than an article.
+
+\stopsection
+
+\startsection[title=Attraction]
+
+There are those movies where some whiz-kid sits down behind a computer, keys in a
+few commands, and miracles happen. Ten fingers are used to generate programs that
+work immediately. It's no problem to bypass firewalls. There is no lag over
+network connections. Checking massive databases is no big deal and there's even
+processing power left for real time visualization or long logs to the terminal.
+
+How boring and old fashioned must a regular edit||run||preview cycle look
+compared to this. If we take this 2018 movie reality as reference, in a time when
+one can suck a phone empty with a simple connection, pull a hard drive from a
+raid five array and still get all data immediately available, when we can follow
+realtime whoever we want using cameras spread over the country, it's pretty clear
+that this relatively slow page production engine \TEX\ has no chance to survive,
+unless we want to impress computer illiterate friends with a log flying by on the
+console (which in fact is used in movies to impress as well).
+
+On YouTube you can find these (a few hours) sessions where Jacob Collier
+harmonizes live in one of these Digital Audio Workstation programs. A while later
+on another channel June Lee will transcribe these masterpieces into complex
+sheets of music by ear. Or you can watch the weekly Wintergatan episodes on
+building the Marble Machine from wood using drilling, milling, drawing programs
+etc. There are impressive videos of multi|-|dimensional led arrays made by hand
+and controlled by small computers and robots that solve Rubic Cubes. You can be
+impressed by these Animusic videos, musicians show their craftmanship and
+interesting informative movies are all over the place. I simply cannot imagine
+millions of kids watching a \TEX\ style being written in a few hours. It's a real
+challenge for an attention span. I hope to be proven wrong but I fear that for
+the upcoming generation it's probably already too late because the \quote {whow}
+factor of \TEX\ is low at first encounter. Although: picking up one of Don Knuths
+books can have that effect: a nice mixture of code, typesetting and subtle
+graphics, combined with great care, only possible with a system like \TEX.
+
+\starttheme
+    Biology teaches us that \quote {cool} is not a recipe for \quote {survival}.
+    Not all designs by nature look cool, and it's only efficiency and
+    functionality that matters. Beauty sometimes matters too but many functional
+    mechanisms can do without. So far \TEX\ and its friends were quite capable to
+    survive so there must be something in it that prevents it to be discarded.
+    But survival is hard to explain. So far \TEX\ just stayed around but lack of
+    visual attraction is a missing competitive trait.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Satisfaction]
+
+Biology also teaches us that chemistry can overload reason. When we go for
+short|-|term pleasure instead of long|-|term satisfaction (Google for Simon Sinek
+on this topic), addiction kicks in (for instance driven by crossing the dopamine
+thresholds too often, Google for Robert Sapolsky). Cool might relate more to
+pleasure while satisfaction relates to an effort. Using \TEX\ is not that cool
+and often takes an effort. But the results can be very satisfying. Where \quote
+{cool} is rewarding in the short term, \quote {satisfaction} is more a long term
+effect. So, you probably get the best (experience) out of \TEX\ by using it a
+lifetime. That's why we see so many old \TEX ies here: many like the rewards.
+
+If we want to draw new users we run into the problem that humans are not that
+good in long term visions. This means that we cannot rely on showing cool (and
+easy) features but must make sure that the long term reward is clear. We can try
+to be \quote {cool} to draw in new users, but it will not be the reason they
+stay. Instant success is important for kids who have to make a report for school,
+and a few days \quotation {getting acquainted with a program} doesn't fit in.
+It's hard to make kids addicted to \TEX\ (which could be a dubious objective).
+
+\starttheme
+    As long as the narrative of satisfaction can be told we will see new users.
+    Meetings like Bacho\TEX\ is where the narrative gets told. What will happen
+    when we no longer meet?
+\stoptheme
+
+\stopsection
+
+\startsection[title=Survival]
+
+Survival relates to improvements, stability and discarding of weak aspects.
+Unfortunately that does not work out well in practice. Fully automated
+multi||columns typesetting with all other elements done well too (we just mention
+images) is hard and close to impossible for arbitrary cases, so nature would have
+gotten rid of it. Ligatures can be a pain especially when the language is not
+tagged and some kind of intelligence is needed to selectively disable them. They
+are the tail of the peacock: not that handy but meant to be impressive. Somehow
+it stayed around in automated typesetting, in biology it would be called a freak
+of nature: probably a goodbye in wildlife. And how about page breaks on an
+electronic device: getting rid of them would make the floating figures go away
+and remove boundary conditions often imposed. It would also make widows and clubs
+less of a problem. One can even wonder if with page breaks the windows and clubs
+are the biggest problems, and if one can simply live with them. After all, we can
+live with our own bodily limitations too. After all, (depending on what country
+you live in) you can also live with bad roads, bad weather, polution, taxes, lack
+of healthcare for many, too much sugar in food, and more.
+
+
+\starttheme
+    Animals or plants that can adapt to live on a specific island might not
+    survive elsewhere. Animals or plants introduced in an isolated environment
+    might quickly dominate and wipe out the locals. What are the equivalents in
+    our \TEX\ ecosystem?
+\stoptheme
+
+\stopsection
+
+\startsection[title=Niches]
+
+But arguments will not help us determine if \TEX\ is the fittest for survival.
+It's not a rational thing. Humans are bad in applying statistics in their live,
+and looking far ahead is not a treat needed to survive. Often nature acts in
+retrospect. (Climbing mount probability by Richard Dawkins). So, it doesn't
+matter if we save time in the future if it complicates the current job. If
+governments and companies cannot look ahead and act accordingly, how can we
+extrapolate software (usage) or more specifically typesetting demands. Just look
+at the political developments in the country that hosts this conference. Could we
+have predicted the diminishing popularity of the \EU\ (and disturbing retrograde
+political mess in some countries) of 2018 when we celebrated the moment Poland
+joining the \EU\ at a Bacho\TEX\ campfire?
+
+Extrapolating the future quality of versions of \TEX\ or macro packages also doesn't
+matter much. With machine learning and artificial intelligence around the corner and
+with unavoidable new interfaces that hook into our brains, who knows what systems
+we need in the future. A generic flexible typesetting system is probably not the
+most important tool then. When we discuss quality and design it gets personal so
+a learning system that renders neutrally coded content into a form that suits
+an individual, demands a different kind of tool than we have now.
+
+On the short term (our live span) it makes more sense to look around and see how
+other software (ecosystems) fare. Maybe we can predict \TEX's future from that.
+Maybe we can learn from others mistakes. In the meantime we should not flatter
+ourselves with the idea that a near perfect typesetting system will draw attention
+and be used by a large audience. Factors external to the community play a too
+important role in this.
+
+\starttheme
+    It all depends on how well it fits into a niche. Sometimes survival is only
+    possible by staying low on the radar. But just as we destroy nature and kill
+    animals competing for space, programs get driven out of the software world.
+    On a positive note: in a project that provides open (free) math for schools
+    students expressed to favour a printed book over \WEB|-|only (one curious
+    argument for \WEB\ was that it permits easier listening to music at the same
+    time).
+\stoptheme
+
+\stopsection
+
+\startsection[title=Dominance]
+
+Last year I installed a bit clever (evohome) heating control system. It's
+probably the only \quotation {working out of the box} system that supports 12
+zones but at the same time it has a rather closed interface as any other. One can
+tweak a bit via a web interface but that one works by a proxy outside so there is
+a lock in. Such a system is a gamble because it's closed and we're talking of a
+20 year investment. I was able to add a layer of control (abusing \LUATEX\ as
+\LUA\ engine and \CONTEXT\ as library) so let's see. When I updated the boiler I
+also reconfigured some components (like valves) and was surprised how limited
+upgrading was supported. One ends up with lost settings and weird interference
+and it's because I know a bit of programming that I kept going and managed to add
+more control. Of course, after a few weeks I had to check a few things in the
+manuals, like how to enter the right menu.
+
+So, as the original manuals are stored somewhere, one picks up the smart phone
+and looks for the manual on the web. I have no problem with proper \PDF\ as a
+manual but why not provide a simple standard format document alongside the fancy
+folded A3 one. Is it because it's hard to produce different instances from one
+source? Is it because it takes effort? We're talking of a product that doesn't
+change for years.
+
+\starttheme
+    The availability of flexible tools for producing manuals doesn't mean that
+    they are used as such. They don't support the survival of tools. Bad examples
+    are a threat. Dominant species win.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Extinction]
+
+When I was writing this I happened to visit a bookshop where I always check the
+SciFi section for new publications. I picked out a pocket and wondered if I had
+the wrong glasses on. The text was wobbling and looked kind of weird. On close
+inspection indeed the characters were kind of randomly dancing on the baseline
+and looked like some 150 \DPI\ (at most) scan. (By the way, I checked this the
+next time I was there by showing the book to a nephew.) I get the idea that quite
+some books get published first in the (more expensive) larger formats, so
+normally I wait till a pocket size shows up (which can take a year) so maybe here
+I had to do with a scan of a larger print scaled down.
+
+What does that tell us? First of all that the publisher doesn't care about the
+reader: this book is just unreadable. Second, it demonstrates that the printer
+didn't ask for the original \PDF\ file and then scaled down the outline copy. It
+really doesn't matter in this case if you use some high quality typesetting
+program then. It's also a waste of time to talk to such publishers about quality
+typesetting. The printer probably didn't bother to ask for a \PDF\ file that
+could be scaled down.
+
+\starttheme
+    In the end most of the publishing industry will die and this is just one of
+    the symptoms. Typesetting as we know it might fade away.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Desinterest]
+
+The newspaper that I read has a good reputation for design. But why do they need
+to drastically change the layout and font setup every few years? Maybe like an
+animal marking his or her territory a new department head also has to put a mark
+on the layout. Who knows. For me the paper became pretty hard to read: a too
+light font that suits none of the several glasses that I have. So yes, I spend
+less time reading the paper. In a recent commentary about the 75 year history of
+the paper there was a remark about the introduction of a modern look a few
+decades ago by using a sans serif font. I'm not sure why sans is considered
+modern (most handwriting is sans) and to me some of these sans fonts look pretty
+old fashioned compared to a modern elegant serif (or mix).
+
+\starttheme
+    If marketing and fashion of the day dominate then a wrong decision can result
+    in dying pretty fast.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Persistence]
+
+Around the turn of the century I had to replace my \CD\ player and realized that it
+made more sense to invest in ripping the \CD's to \FLAC\ files and use a decent
+\DAC\ to render the sound. This is a generic approach similar to processing
+documents with \TEX\ and it looks as future proof as well. So, I installed a
+virtual machine running SlimServer and bought a few SlimDevices, although by that
+time they were already called SqueezeBoxes.
+
+What started as an independent supplier of hardware and an open source program
+had gone the (nowadays rather predictable) route of a buy out by a larger company
+(Logitech). That company later ditched the system, even if it had a decent share
+of users. This \quotation {start something interesting and rely on dedicated
+users}, then \quotation {sell yourself (to the highest bidder)} and a bit later
+\quotation {accept that the product gets abandoned} is where open source can fail
+in many aspects: loyal users are ignored and offended with the original author
+basically not caring about it. The only good thing is that because the software
+is open source there can be a follow up, but of course that requires that there
+are users able to program.
+
+I have 5 small boxes and a larger transporter so my setup is for now safe from
+extinction. And I can run the server on any (old) \LINUX\ or \MSWINDOWS\
+distribution. For the record, when I recently connected the 20 year old Cambridge
+CD2 I was surprised how well it sounded on my current headphones. The only
+drawback was that it needs 10 minutes for the transport to warm up and get
+working.
+
+In a similar fashion I can still use \TEX, even when we originally started using
+it with the only viable quality \DVI\ to \POSTSCRIPT\ backend at that time
+(\DVIPSONE). But I'm not so sure what I'd done if I had not been involved in the
+development of \PDFTEX\ and later \LUATEX . As an average user I might just have
+dropped out. As with the \CD\ player, maybe someone will dust off an old \TEX\
+some day and maybe the only hurdle is to get it running on a virtual retro
+machine. Although \unknown\ recently I ran into an issue with a virtual machine
+that didn't provide a console after a \KVM\ host update, so I'm also getting
+pessimistic about that escape for older programs. (Not seldom when a library
+update is forced into the \LUATEX\ repository we face some issue and it's not
+something the average user want (or is able to) cope with.)
+
+\starttheme
+    Sometimes it's hard to go extinct, even when commerce interfered at some
+    point. But it does happen that users successfully take (back) control.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Freedom]
+
+If you buy a book originating in academia written and typeset by the author,
+there is a chance that it is produced by some flavour of \TEX\ and looks quite
+okay. This is because the author could iterate to the product she or he likes.
+Unfortunately the web is also a source of bad looking documents produced by \TEX.
+Even worse is that many authors don't even bother to set up a document layout
+properly, think about structure and choose a font setup that matches well. One
+can argue that only content matters. Fine, but than also one shouldn't claim
+quality simply because \TEX\ has been used.
+
+I've seen examples of material meant for bachelor students that made me pretend
+that I am not familiar with \TEX\ and cannot be held responsible. Letter based
+layouts on A4 paper, or worse, meant for display (or e|-|book devices) without
+bothering to remove the excessive margins. Then these students are forced to use
+some collaborative \TEX\ environment, which makes them dependent on the quality
+standards of fellow students. No wonder that one then sees dozens of packages
+being loaded, abundant copy and paste and replace of already entered formulas and
+interesting mixtures of inline and display math, skips, kerns and whatever can
+help to make the result look horrible.
+
+\starttheme
+    Don't expect enthusiast new users when you impose \TEX\ but take away freedom
+    and force folks to cooperate with those with lesser standards. It will not
+    help quality \TEX\ to stay around. You cannot enforce survival, it just
+    happens or not, probably better with no competition or with a competition so
+    powerful that it doesn't bother with the niches. In fact, keeping a low
+    profile might be best! The number of users is no indication of quality,
+    although one can abuse that statistic selectively?
+\stoptheme
+
+\stopsection
+
+\startsection[title=Diversity]
+
+Diversity in nature is enormous. There are or course niches, but in general there
+are multiple variants of the same. When humans started breeding stock or
+companion animals diversity also was a property. No one is forcing the same dog
+upon everyone or the same cow. However, when industrialization kicks in things
+become worse. Many cows in our country share the same dad. And when we look at
+for instance corn, tomatoes or whatever dominance is not dictated by what nature
+figures out best, but by what commercially makes most sense, even if that means
+that something can't reproduce by itself any longer.
+
+In a similar way the diversity of methods and devices to communicate (on paper)
+at some point turns into commercial uniformity. The diversity is simply very
+small, also in typesetting. And even worse, a user even has to defend
+her|/|himself for a choice of system (even in the \TEX\ community). It's just
+against nature.
+
+\starttheme
+    Normally something stays around till it no longer can survive. However, we
+    humans have a tendency to destroy and commerce is helping a hand here. In
+    that respect it's a surprise that \TEX\ is still around. On the other hand,
+    humans also have a tendency to keep things artificially alive and even
+    revive. Can we revive \TEX\ in a few hundred years given the complex code
+    base and Make infrastructure?
+\stoptheme
+
+\stopsection
+
+\startsection[title=Publishing]
+
+What will happen with publishing? In the production notes of some of my recently
+bought books the author mentions that the first prints were self|-|published
+(either or not sponsored). This means that when a publisher \quotation {takes
+over} (which still happens when one scales up) not much work has to be done.
+Basically the only thing an author needs is a distribution network. My personal
+experience with for instance \CD's produced by a group of musicians is that it is
+often hard to get it from abroad (if at all) simply because one needs a payment
+channel and mail costs are also relatively high.
+
+But both demonstrate that given good facilitating options it is unlikely that
+publishers as we have now have not much change of survival. Add to the argument
+that while in Gutenbergs time a publisher also was involved in the technology,
+today nothing innovative comes from publishers: the internet, ebook devices,
+programs, etc.\ all come from elsewhere. And I get the impression that even in
+picking up on technology publishers lag behind and mostly just react. Even
+arguments like added value in terms of peer review are disappearing with the
+internet where peer groups can take over that task. Huge amounts of money are
+wasted on short|-|term modern media. (I bet similar amounts were never spend on
+typesetting.)
+
+\starttheme
+    Publishers, publishing, publications and their public: as they are now they
+    might not stay around. Lack of long term vision and ideas and decoupling of
+    technology can make sure of that. Publishing will stay but anyone can
+    publish; we only need the infrastructure. Creativity can win over greed and
+    exploitation, small can win over big. And tools like \TEX\ can thrive in
+    there, as it already does on a small scale.
+\stoptheme
+
+\stopsection
+
+\startsection[title=Understanding]
+
+\quotation {Why do you use \TEX?} If we limit this question to typesetting, you
+can think of \quotation {Why don't you use \MSWORD ?} \quotation {Why don't you use
+Indesign?}, \quotation {Why don't you use that macro package?}, \quotation {Why
+don't you use this \TEX\ engine?} and alike. I'm sure that most of the readers
+had to answer questions like this, questions that sort of assume that you're not
+happy with what you use now, or maybe even suggest that you must be stupid not to
+use \unknown
+
+It's not that easy to explain why I use \TEX\ and|/|or why \TEX\ is good a the
+job. If you are in a one|-|to|-|one (or few) sessions you can demonstrate its
+virtues but \quote {selling} it to for instance a publisher is close to
+impossible because this kind of technology is rather unknown and far from the
+click|-|and|-|point paradigm. It's even harder when students get accustomed to
+these interactive books from wherein they can even run code snippets although one
+can wonder how individual these are when a student has the web as a source of
+solutions. Only after a long exposure to similar and maybe imperfect alternatives
+books will get appreciated.
+
+For instance speaking of \quotation {automated typesetting} assumes that one
+knows what typesetting is and also is aware that automated has some benefits. A
+simple \quotation {it's an \XML\ to \PDF\ converter} might work better but that
+assumes \XML\ being used which for instance not always makes sense. And while
+hyphenation, fancy font support and proper justification might impress a \TEX\
+user it often is less of an argument than one thinks.
+
+The \quotation {Why don't you} also can be heard in the \TEX\ community. In the
+worst case it's accompanied by a \quotation {\unknown\ because everybody uses
+\unknown} which of course makes no sense because you can bet that the same user
+will not fall for that argument when it comes to using an operating system or so.
+Also from outside the community there is pressure to use something else: one can
+find defense of minimal markup over \TEX\ markup or even \HTML\ markup as better
+alternative for dissemination than for instance \PDF\ or \TEX\ sources. The
+problem here is that old||timers can reflect on how relatively wonderful a
+current technique really is, given changes over time, but who wants to listen to
+an old|-|timer. Progress is needed and stimulating (which doesn't mean that all
+old technology is obsolete). When I watched Endre eNerd's \quotation {The Time
+Capsule} blu|-|ray I noticed an Ensoniq Fizmo keyboard and looked up what it was.
+I ended up in interesting reads where the bottom line was \quotation {Either you
+get it or you don't}. Reading the threads rang a bell. As with \TEX, you cannot
+decide after a quick test or even a few hours if you (get the concept and) like
+it or not: you need days, weeks, or maybe even months, and some actually never
+really get it after years.
+
+\starttheme
+    It is good to wonder why you use some program but what gets used by others
+    depends on understanding. If we can't explain the benefits there is no
+    future for \TEX. Or more exact: if it no longer provide benefits, it will
+    just disappear. Just walk around a gallery in a science museum that deals
+    with computers: it can be a bit pathetic experience.
+\stoptheme
+
+\stopsection
+
+{\bf Who knows \unknown}
+
+\stoptitle
+
+\stopdocument

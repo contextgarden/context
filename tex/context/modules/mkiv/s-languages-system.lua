@@ -19,7 +19,7 @@ local ctx_bold   = context.bold
 
 function moduledata.languages.system.loadinstalled()
     context.start()
-    for k, v in table.sortedhash(registered) do
+    for k, v in sortedhash(registered) do
         context.language{ k }
     end
     context.stop()

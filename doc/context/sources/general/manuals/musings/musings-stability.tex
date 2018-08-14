@@ -1,0 +1,388 @@
+% language=uk
+
+\environment musings-style
+
+\startcomponent musings-stability
+
+\startchapter[title={Stability}]
+
+\startsubject[title=Introduction]
+
+How stable is \CONTEXT ? This question is hard to answer. For instance \MKII\
+hasn't changed for years and seems to work quite well: no changes equals
+stability. Those who use it can do with what it offers. The potentially sensitive
+dependencies on for instance fonts are probably absent because there is not much
+development in the 8 bit fonts arena. As long as these are available we're okay,
+in fact, \OPENTYPE\ fonts are more a moving target and therefore less stable.
+
+What do we mean by stable? The fundamental differences between an 8 bit engine
+(and fonts) and an \UNICODE\ aware engine able to handle \OPENTYPE\ fonts is
+substantial which is why we dropped some functionality and added some relevant
+new. One can consider that a problem but in practice using fonts has become
+easier so no one is hurt by it. Here we need to keep in mind that \PDFTEX\ is
+really stable: it uses fonts and technology that doesn't change. On the other
+hand \XETEX\ and \LUATEX\ follow new trends. Thereby \XETEX\ uses libraries,
+which introduces a dependency and instability, while \LUATEX\ assumes solutions
+in \LUA\ which means that users and macro writers can tweak and thereby also
+introduce instability (but at least one can adapt that code).
+
+Due to the way the user interface is set up, it is unlikely that \CONTEXT\ will
+change. But the fact that we now have \LUA\ available means that many commands
+have been touched. Most behave compatible, some have more functionality, and of
+course we have a \LUA\ interface. We include a lot of support code which also
+lessens dependencies.
+
+The user input is normally \TEX\ but when you use \XML\ the move to \MKIV\ meant
+that we dropped the \MKII\ way of dealing with it in favour of a completely new
+mechanism. I get the impression that those using \XML\ don't regret that change.
+Talking of stability the \MKIV\ \XML\ interface is typically a mechanism that is
+stable and might change little. We can add new trickery but the old stays as it
+is.
+
+If we look at the output, there is \DVI\ and \PDF. In \MKII\ the \DVI\ could
+become \POSTSCRIPT. As there are different \DVI\ post|-|processors the backend
+code was using a plug|-|in model. Contrary to other macro packages there was only
+one so called format that could adapt itself to the required (engine specific)
+output. A \CONTEXT\ run has always been managed by a wrapper so users were not
+bothered much by what \TEX\ engine they used and|/|or what backend was triggered.
+This changed with \MKIV\ where we use just \LUATEX, always produce \PDF\ and
+optionally can export \XML. But again the run is managed by a wrapper, which
+incidentally is written in \LUA\ and thereby avoids dependencies on for instance
+\PERL, \RUBY\ or \PYTHON, which are moving targets, use libraries and additional
+user code, and thereby are potentially instable too.
+
+The \PDF\ code that is produced is a mix of what the engine spits out and what
+the macro package injects. The code is normally rather simple. This means that
+it's no big deal to support the so called standards. It also means that we can
+support advanced interactivity and other features but these also depends on the
+viewers used. So, stability here is more fluent, for instance because the \PDF\
+standard evolves and|/|or we need to adapt to viewers. Special demands like
+tagged \PDF\ have been supported right from the start but how that evolves
+depends mostly on input from users who need it. Again, that is less important
+(and crucial) for stability than the rendering capabilities.
+
+The fact that we use \LUA\ creates a dependency on that language but the reason
+that we use it is {\em because} it is so stable. We follow the updates and so far
+that worked out well. Now, say that we had a frozen version of \CONTEXT\ 2010 and
+\LUATEX\ 1.09 that uses \LUA\ 5.3, would that work? First of all, in 2010
+\LUATEX\ itself was evolving so the answer is probably \quotation {no}, unless
+one adds a few compatibility patches. I'm not going to try it. The change from
+5.1 to 5.2 to 5.3 was not really a problem I think and the few issues could be
+dealt with easily. If you want long term stability and use a lot of \LUA\ code
+you can take it into account when coding. Avoiding external libraries is a good
+start.
+
+Fonts are more than before moving targets. So, if you want stability there you
+should save them with your document source. The processing of them has evolved
+and has been improved over time. By now it's rather stable. More recent code can
+catch more issues and fixes are relatively easy. But it's an area that you always
+need to check when you update an old distribution. The same is true for language
+related hyphenation patterns and script specific support. The community is no
+longer leading in the math department either (\OPENTYPE\ math is a \MICROSOFT\
+invention). But, the good news is that the \TEX\ ecosystem is always fast to
+adapt and can also often provide more functionality.
+
+Vertical spacing, in fact spacing in general is an aera that can always be
+improved, so there is where you can expect changed. The same is true for side
+floats or mechanisms where content is somehow attached to other moving content,
+for instance marginal notes.
+
+But code dealing with fonts, color, scripts, structure, and specific features
+that once written don't need more, will not change that much. As mentioned for
+fonts, like any resource, we also depend on third parties. Colors can relate to
+standards, but their main properties are unchanged. Support for specific scripts
+can (and will) be improved due to user input and demands so there the users also
+influence stability. Structure doesn't really influence the overall rendering,
+but the way you set it up does, but that's user styling. Of course during the
+transition from \MKII\ to \MKIV\ and the evolution of \LUATEX\ things could be
+broken, but fixing something structural seldom relates to rendering. If for
+instance we improve the interpretation of \BIBTEX\ input , which can be real
+messy, that involves data processing, nor rendering. When we improve support for
+the \APA\ standard, which is complex, it might involve rendering but then that's
+asked for and expected. One cannot do better than the input permits.
+
+\stopsubject
+
+\startsubject[title=Publishers]
+
+When discussing stability and especially stability as requirement we need to look
+at the way \CONTEXT\ is used. So let's look at a few scenarios. Say that a
+publisher gets a camera ready book from an author in \PDF\ format. In that
+case the author can do all tweaks needed. Now say that the publisher also wants
+the source code in a format that makes reuse possible.
+
+But let's face reality. Will that publisher really reformat the document in \PDF\
+again? It's very unlikely. First of all the original \PDF\ can be kept, and
+second, a reformat only makes sense after updating the content or going for a
+completely different layout. It's basically a new book then. In that case literal
+similarity of output is irrelevant. It is a cheap demand without much substance.
+
+When the source is used for a different purpose the tool used to make the \PDF\
+is irrelevant. In that case the coding of the source can matter. If it is in some
+dialect of \TEX, fine, one has to convert it anyway (to suit the other usage). If
+there is an \XML\ export available, fine too as it can be transformed, given that
+the structure is rich enough, something that is unlikely to have been checked
+when the original was archived. Then there could have been the demand for a
+document in some other format and who can guarantee stability of the tools used
+there? Just look at how \MICROSOFT\ Word evolved, or for that matter, its
+competitors. On the average \TEX\ is more stable as one can snapshot a \TEX\ tree
+and run binaries for years, if needed, in a virtual machine.
+
+So, I don't think that a publisher is of any relevance in the discussion about
+stability. Even if we can clearly define what a publisher is, I doubt if
+publishers themselves can be considered long term stable organizations. Not
+today. I'm not sure if (especially the large) publishers really deserve a place
+in the discussion about stability but I'm willing to discuss that when I run into
+one.
+
+The main problem that an author can face when being confronted with the stability
+issue this way is that the times are long gone that publishers have a clue about
+what \TEX\ is, how it evolved and how it always had to and did adapt to changing
+requirements. If you're lucky you will run into someone who does know all this.
+They're normally a bit older and have seen the organization from any angles and
+therefore are fun to work with.
+
+But even then, rendering issues are often not high on their agenda. Outsourcing
+often has become the modus operandi which basically brings us to the second group
+involved in this discussion: suppliers.
+
+\stopsubject
+
+\startsubject[title=Suppliers]
+
+I don't know many suppliers other than the ones we ran into over a few decades.
+At least where I live the departments that are responsible for outsourcing
+typesetting like to deal with only a few large suppliers, interestingly because
+they assume that they are stable. However, in my experience hardly any of those
+seem to have survived. (Of course one can wonder if long term commitment really
+is that important in a world where companies change so fast.) This is somewhat
+obscured by the fact that publishers themselves merge, reorganize, move people
+around, etc. so who can check on the stability of suppliers. It is definitely a
+fact that at least recently hardly any of them played a rol of any relevance in
+the development of stable tools. In the past the membership of \TEX\ user groups
+contained people working at publishers and suppliers but that has changed.
+
+Let's focus on the suppliers that somehow use \TEX\ and let's consider two kind
+of suppliers: small ones, one were only a few people work, and large ones. The
+small ones depend on stable \TEX\ distributions, like \TEX Live where they can
+get the resources from: styles, fonts, patterns, binaries. If they get the
+authors \TEX\ files they need to have that access. They have to rework that input
+into what the customer demands and that likely involves tweaks. So, maybe they
+have developed their own additional code. For that code, stability is their own
+responsibility. Did they tweak core code of a macro package? Fine, but you might
+have it coming when you update. You cannot expect the evolving free meal world to
+stick to your commercial needs. A supplier can play safe and somehow involve the
+developers of macro packages or consult them occasionally, but does that really
+happen often? Interesting is that a few times that I was asked for input it was
+also wrapped in obscurity, as if some holy grail of styling was involved, while
+it's quite likely that the developer of a macro package can write such a style
+(or extra code) easily and probably also better. There really is not that much
+unique code around.
+
+Small suppliers can be on mailing lists where they can contribute, get feedback,
+provide testing, etc. They are part of a process and as such have some influence
+on stability. If they charge by the page, then a change in their tools can be
+reflected in what they charge. Basically redoing a book (or so) after a decade is
+doing a new job. And adapting to some new options in a package, as part of a
+typesetting job is probably no big deal. Is commercial really more stable than
+open source free software? Probably not, except from open source software
+developers whose real objective is to eventually sell their stuff to some company
+(and cash) and even accept it to be ditched. Small suppliers are more flexible.
+
+The large suppliers are a different group. They often guard their secrets and
+stay in the dark. They probably seldom share (fundamental) code and information.
+If they are present in a community it can be for marketing reasons. If at some
+point a large supplier would demand stability, then my first response would be:
+sure I can make you a stable setup and maybe even provide intermediate patches
+but put your money where your mouth is. But that never happened and I've come to
+the conclusion that we can safely ignore that group. The \TEX\ user groups create
+distributions and have for instance funded font development and it are the common
+users who paid for that, not the scale ones. To some extent this is actually good
+because large (software related) organizations often have special agendas that
+can contradict what we aim at in the long term.
+
+From the authors perspective there is a dilemma here. When you submit to a
+publisher who outsources, it can be a demand to deliver in a specific \TEX\
+format. Often a \PDF\ comes with the source then, so that the intended rendering
+is known. Then that source goes to a supplier who then (quite likely) redoes a
+lot of the coding in some stable subset, maybe even in a very old version of the
+macro package. If I were such an author I'd render the document in \quote {as
+stupid as possible mode} because you gain nothing by spending time on the looks.
+So, stability within the package that you use is easy and translation from one to
+another probably also. It's best to check beforehand what will happen with your
+source and let stability, if mentioned, be their problem. After all they get paid
+for it.
+
+Suppliers seldom know \CONTEXT. An interesting question is if they really know
+the alternatives well, apart from the bit they use. A well structured \CONTEXT\
+source (or probably any source) is often easy to convert to another format. You
+can assume that a supplier has tools for that (although we're often surprised
+about the poor quality of tools used). Often the strict demand for some kind of
+format is an excuse for lack of knowledge. Unfortunately you need a large author
+base to change that attitude.
+
+\stopsubject
+
+\startsubject[title=Authors]
+
+Before we move to some variants of the above, first I will look at stability from
+the authors perspective. When a book is being written the typesetting more or
+less happens as part of the process. The way it looks can influence the way you
+write and vise versa. Once the book is done it can go in print and, unless you
+were using beta versions of \CONTEXT\ and updated frequently. Normally you will
+try to work in a stable setup. Of course when a user asks for additional features
+while working on a project, he or she should also accept other beta features
+and side effects.
+
+After a few years an author might decide to update the book. The worst that can
+happen is that the code doesn't run with the latest \CONTEXT. This is not so
+likely because commands are upward compatible. However, the text might come out a
+bit different, for instance because different fonts or patterns are used. But on
+the average paragraphs will come out the same in \TEX. You can encounter
+differences in the vertical spacing and page breaks, because that is where
+improvements are still possible. If you use conceptually and implementation wise
+complex mechanism like side floats, you can also run into compatibility issues.
+But all these don't really matter much because the text will be updated anyway
+and fine|-|tuning of page breaks (if at all) happens at the end. The more you try
+to compete with desk top publishing, and the more tweaks you apply, the greater
+is the risk that you introduce instability. It is okay for a one|-|time job, but
+when you come back to it after a decade, be prepared for surprises.
+
+Even if you stick to the original coding, it makes sense to sacrifice some of that
+stability if new mechanisms have become available. For instance, if you use
+\METAPOST, better ways to solve your problem might have become available. Or if
+you document is 15 years old, a move from \MKII\ to \MKIV\ is a valid option,
+in which case you might also consider using the latest fonts.
+
+Of course, when you made a style where you patched core code, you can expect
+problems, because anything not explicitly mentioned in the interface definition
+files is subjected to change. But you probably see that coming anyway.
+
+So, is an author (or stand alone user) really dependent on stability? Probably
+less than thought. In fact, the operating system, internet and browsers,
+additional tools: all change over time and one adapts. It's something one can
+live with. Just see how people adapt to phones, tablets, social media, electric
+cars, etc. As long as the document processes and reasonable output is generated
+it's fine. And that is always what we aim at! After all we need to be able to use
+it ourselves, don't we?
+
+\stopsubject
+
+\startsubject[title=Projects]
+
+Although it is often overlooked as valid alternative in rendering in large scale
+projects, \CONTEXT\ is perfect as component in a larger whole. Something goes
+in, something comes out. In a long term project one can just install a minimal
+distribution, write styles, and run it for ages. Use a virtual machine and
+we're talking decades without any change. And, when one updates, it's easy to check
+if all still works. Often the demands and styles are simple and predictable. It's
+way more likely that a hard coded solution in some large programming environment has
+stability issues than that the \CONTEXT\ bit has.
+
+If \CONTEXT\ is used in for instance documentation of (say) software, again there
+is no real issue. Such documents are simple, evolve and therefore have no stable
+page flow, and updating \CONTEXT\ is not needed if the once decided upon coding
+is stable. You don't need the latest features. We've written styles and setups for
+such tasks and indeed they run for ages.
+
+It can make me smile to see how much effort sometimes goes in low quality
+rendering where \CONTEXT\ could do a way better job with far less investment in
+time and money but where using some presumed stable toolkit is used instead, one
+that comes with expensive licensing, from companies that come and go but shine in
+marketing. (A valid question is to what extent the quality of and care for
+documentation reflects the core products that a company produces, at least under
+the hood.)
+
+The biggest hurdle in setting up a decent efficient workflow is that it has to be
+seen as a project: proper analysis, proper planning, prototyping and testing,
+etc. You invest first and gain later. When dealing with paper many publishers
+still think in price per page and have problems seeing that a stable mostly
+automated flow in the end can result in a ridiculous low price per page,
+especially in typesetting on demand.
+
+\stopsubsubject
+
+\startsubject[title=Hybrids]
+
+Last I will mention a setup that we sometimes are involved in. An author writes
+books and uses \TEX. The publisher is okay with that and adds some quality
+assurance but in the end the product comes from the author. Maybe images are
+oursourced (not always for the better) but these can be handled easily. It can be that
+a copy|-|editor is involved and that person also then has to use \TEX\ of course,
+or feedback to the author.
+
+Publishers, and this really depends on knowledgeable persons, which as said can
+be fun to work with, can look beyond paper and also decide for additional
+materials, for instance web pages, interactive exercises, etc. In that case
+either \CONTEXT\ input has to be available as \XML\ (an export) or (often better)
+\XML\ is the starting point for multiple output. Contrary to what is believed,
+there are authors out there who have no problem coding in \XML\ directly. They
+think in structured content and reuse! The fact that they can hit a button in the
+editor and see the result in \PDF\ helps a lot. It just works.
+
+Here stability is either achieved by simply not updating during a project. There
+are however cases where an update is needed, for instance because demands
+changed. An example is a project where \ASCIIMATH\ is used which is a moving
+target. Of course one can update just that module, and often that works, but not
+when a module uses some new improved core helpers. Another example is additional
+proofing options.
+
+The budget of such projects seldom permit patching an existing distribution, so
+we then just update to the latest but not after checking if the used style works
+okay. There is no author involvement in this. Depending on the workflow, it can
+even be that the final rendering which involves fine tuning (side) float placement
+or page breaks (often educational documents have special demands) is done by us
+using special directives.
+
+Such hybrid workflows are quite convenient for all parties. The publisher works
+with the author who likes using these tools, the author can do her or his thing
+in the preferred way, and we do what we're best in: supporting this. And it
+scales up pretty well too if needed, without much costs for the publishers.
+
+\stopsubject
+
+\startsubject[title=Conclusion]
+
+So what can we conclude with respect to the demand for stability? First of course
+that it's important that our files keep running well. So, functionality should be
+stable. Freezing a distribution will make sure that during project you don't run
+into issues. Many \CONTEXT\ users update frequently in order to benefit from the
+latest additions. Most will not be harmed by this, but when something really
+breaks it's users like those on the \CONTEXT\ support list (who often also
+contribute in helping out other users) that are listened to first. Publishers
+demands play no role in this, if only because they also play no role in
+typesetting, and if they want to they should also contribute. The same is true
+for large suppliers. We're talking of free software often written without any
+compensation so these parties have no say in the matter unless they pay for it.
+It's small suppliers, authors and general users that matter most. If \CONTEXT\ is
+part of a workflow that we support, of course stability is guaranteed quite well,
+and those paying for that never have an issue with better solutions popping up.
+In fact, \CONTEXT\ is often just a tool then, one that does the job and questions
+about stability don't matter much in practice, as long as it does the job well.
+
+The main engine we use, \LUATEX, will be quite stable from version 1.10 and we'll
+try to make sure that newer versions are capable of running an older \CONTEXT,
+which is easier when no fundamental changes happen in the engine. Maybe a stripped
+down version of \LUATEX\ for \CONTEXT\ can facilitate that objective even more.
+
+Users themselves can try to stick to standard \CONTEXT\ features. The more tricks
+you apply, the less stable your future might be. Most mechanism are not evolving
+but some, like those that deal with columns, might become better over time. But
+typesetting in columns is often a one|-|shot adventure anyway (and who needs
+columns in the future).
+
+Of one thing users can be sure. There will never be a \CONTEXT\ professional or
+\CONTEXT\ enterprise. There is only one variant. All users get the same
+functionality and policies don't change suddenly. There will be no lock in to some
+cloud or web based service either. Of course one can hire us for support of any
+kind but that's independent of the distributed package. There is support by users
+for users on mailing lists and other media. That itself can also guard stability.
+
+But, always keep in mind that stability and progress, either of not driven by the
+environment that we operate in, can be in conflict.
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

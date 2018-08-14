@@ -53,7 +53,9 @@ local strip = false if arg then for i=-1,#arg do if arg[i] == "--c:strip" then s
 
 function lua.registercode(filename,options)
     local barename = gsub(filename,"%.[%a%d]+$","")
-    if barename == filename then filename = filename .. ".lua" end
+    if barename == filename then
+        filename = filename .. ".lua"
+    end
     local basename = match(barename,"^.+[/\\](.-)$") or barename
     if not bytedone[basename] then
         local opts = { }
@@ -157,12 +159,14 @@ environment.initexmode          = INITEXMODE
 if not environment.luafilechunk then
 
     function environment.luafilechunk(filename)
+        local fullname = filename
         if sourcepath ~= "" then
-            filename = sourcepath .. "/" .. filename
+            fullname = sourcepath .. "/" .. filename
         end
-        local data = loadfile(filename)
-        texio.write("term and log","<",data and "+ " or "- ",filename,">")
+        local data = loadfile(fullname)
+        texio.write("term and log","<",data and "+ " or "- ",fullname,">")
         if data then
+-- package.loaded[gsub(filename,"%..-$"] =
             data()
         end
         return data

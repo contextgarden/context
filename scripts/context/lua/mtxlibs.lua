@@ -98,6 +98,19 @@ local ownlibs = {
  -- "util-fmt.lua", -- no need for table formatters
  -- "util-deb.lua", -- no need for debugging (and tracing)
 
+    "util-soc-imp-reset",
+    "util-soc-imp-socket",
+    "util-soc-imp-copas",
+    "util-soc-imp-ltn12",
+ -- "util-soc-imp-mbox",
+    "util-soc-imp-mime",
+    "util-soc-imp-url",
+    "util-soc-imp-headers",
+    "util-soc-imp-tp",
+    "util-soc-imp-http",
+    "util-soc-imp-ftp",
+    "util-soc-imp-smtp",
+
     "trac-set.lua",
     "trac-log.lua",
  -- "trac-pro.lua",  -- not relevant outside context

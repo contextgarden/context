@@ -447,13 +447,6 @@ do
 
 end
 
-local function merge_t(a,b)
-    local t = { }
-    for k,v in next, a do t[k] = v end
-    for k,v in next, b do t[k] = v end
-    return setmetatable(t,getmetatable(a))
-end
-
 local tostring_a, tostring_d
 
 do

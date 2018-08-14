@@ -35,6 +35,8 @@ local commands          = commands
 local implement         = interfaces.implement
 local conditionals      = tex.conditionals
 
+local ctx_latelua       = context.latelua
+
 local structures        = structures
 local lists             = structures.lists
 local sections          = structures.sections
@@ -307,7 +309,7 @@ local synchronizepage = function(r)  -- bah ... will move
     return synchronizepage(r)
 end
 
-function lists.enhance(n)
+local function enhancelist(n)
     local l = cached[n]
     if not l then
         report_lists("enhancing %a, unknown internal",n)
@@ -347,6 +349,8 @@ function lists.enhance(n)
         return l
     end
 end
+
+lists.enhance = enhancelist
 
 -- we can use level instead but we can also decide to remove level from the metadata
 
@@ -1071,8 +1075,16 @@ implement {
 
 implement {
     name      = "enhancelist",
-    actions   = lists.enhance,
-    arguments = "integer"
+    arguments = "integer",
+    actions   = enhancelist,
+}
+
+implement {
+    name      = "deferredenhancelist",
+    arguments = "integer",
+    actions   = function(n)
+        ctx_latelua(function() enhancelist(n) end)
+    end,
 }
 
 implement {

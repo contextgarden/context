@@ -918,14 +918,33 @@ end
 --     return format("tostring(tonumber(a%s) or a%s)",n,n)
 -- end
 
-local format_N = function(f) -- strips leading and trailing zeros (also accepts string)
+-- local format_N = function(f) -- strips leading and trailing zeros
+--     n = n + 1
+--     -- stripzero (singular) as we only have a number
+--     if not f or f == "" then
+--         return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
+--     else
+--         return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+--     end
+-- end
+
+-- local format_N = function(f) -- strips leading and trailing zeros
+--     n = n + 1
+--     -- stripzero (singular) as we only have a number
+--     if not f or f == "" then
+--         return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or ((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
+--     else
+--         return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+--     end
+-- end
+
+local format_N = function(f) -- strips leading and trailing zeros
     n = n + 1
     -- stripzero (singular) as we only have a number
     if not f or f == "" then
-        return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or ((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%.9f',a%s)))",n,n,n,n,n)
-    else
-        return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
-    end
+        f = ".9"
+    end -- always a leading number !
+    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
 end
 
 local format_a = function(f)

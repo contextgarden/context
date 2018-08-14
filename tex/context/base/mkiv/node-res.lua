@@ -428,7 +428,8 @@ end
 
 function nutpool.latelua(code)
     local n = copy_nut(latelua)
-    setfield(n,"string",code)
+ -- setfield(n,"string",code)
+    setdata(n,code)
     return n
 end
 

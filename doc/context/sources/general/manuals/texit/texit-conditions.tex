@@ -1,0 +1,108 @@
+\environment texit-style
+
+\startcomponent texit-conditions
+
+\startchapter[title={Conditions}]
+
+In case you wonder why we have modes in \CONTEXT, here is an example that might
+convince you. The \TEX\ language has conditionals and they are in fact quite
+efficient, take for instance:
+
+\startTEX
+\ifnum\scratchcounter>10
+    \ifdim\scratchdimen>10pt
+        one
+    \else
+        two
+    \fi
+\else
+    three
+\fi
+\stopTEX
+
+When the first test fails, \TEX\ will do a fast scan over the following tokens
+and expand the \type {three} branch. In order to do such a fast scan, the nested
+condition needs to be properly balanced: the \type {\else} is optional but the
+nested \type {\fi} definitely isn't. Now imagine that you use a few pseudo
+booleans, like:
+
+\startTEX
+\newif\ifalpha \alphatrue
+\newif\ifbeta  \betatrue
+\stopTEX
+
+And you need it in:
+
+\startTEX
+\ifalpha
+    \ifbeta
+        YES
+    \else
+        NOP
+    \fi
+\else
+    NOP
+\fi
+\stopTEX
+
+This happens occasionally in real applications and one can either repeat the
+\type {NOP} or wrap it in a macro in order to save tokens. However, way more
+natural would be something like this:
+
+\startTEX
+\ifalphaorbeta
+    YES
+\else
+    NOP
+\fi
+\stopTEX
+
+This basically would introduce a new kind concept: an expandable macro flagged as
+\type {\if} kind of token. I actually experimented with that in \LUATEX\ but
+rejected it eventually. Instead \type {\ifcondition} was introduced. This is
+basically equivalent to \type {\iffalse} when \TEX\ is in fast \type {\if*}
+skipping mode, but when a real test happens the next argument is expanded. That
+macro is expected to end up as something equivalent to \type {\iftrue} or \type
+{\iffalse} so that other the nexct branch or the \type {\else} is entered. Here
+is an example:
+
+\startTEX
+\ifcondition\alphaorbeta
+    YES
+\else
+    NOP
+\fi
+\stopTEX
+
+There are several ways to define \type {\alphaorbeta} now and we show a few here.
+It's up to you to figure out which ons is the most efficient.
+
+\startTEX
+\def\alphaorbeta{\ifcase0\ifalpha \else\ifbeta \else1\fi\fi\relax}
+\def\alphaorbeta{\ifcase \ifalpha0\else\ifbeta0\else1\fi\fi\relax}
+\def\alphaorbeta{\ifnum1=\ifalpha1\else\ifbeta1\else0\fi\fi\relax}
+\def\alphaorbeta{\ifnum 0\ifalpha1\fi  \ifbeta1\fi       >1\relax}
+\stopTEX
+
+Now, do we expect users to come up with such constructs? Of course not. Even in
+\CONTEXT\ we don't really need them, although there are a few places where they
+can be used. In \CONTEXT\ you would just do this:
+
+\startTEX
+\enablemode[alpha]
+\enablemode[beta]
+
+\doifelsemode {alpha,beta} {
+    YES
+} {
+    NOP
+}
+\stopTEX
+
+Of course such a verbose macro is less efficient but even if you use this test
+10.000 times in a run it will not take more than 0.06 seconds on a decent 2013
+laptop.
+
+\stopchapter
+
+\stopcomponent

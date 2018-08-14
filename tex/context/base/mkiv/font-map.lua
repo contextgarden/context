@@ -214,7 +214,51 @@ local unknown = f_single(0xFFFD)
 --     end
 -- end
 
-local hash = table.setmetatableindex(function(t,k)
+-- local hash = table.setmetatableindex(function(t,k)
+--     local v
+--     if k >= 0x00E000 and k <= 0x00F8FF then
+--         v = unknown
+--     elseif k >= 0x0F0000 and k <= 0x0FFFFF then
+--         v = unknown
+--     elseif k >= 0x100000 and k <= 0x10FFFF then
+--         v = unknown
+--     elseif k < 0xD7FF or (k > 0xDFFF and k <= 0xFFFF) then
+--         v = f_single(k)
+--     else
+--         k = k - 0x10000
+--         v = f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+--     end
+--     t[k] = v
+--     return v
+-- end)
+--
+-- table.makeweak(hash)
+--
+-- local function tounicode(unicode)
+--     if type(unicode) == "table" then
+--         local t = { }
+--         for l=1,#unicode do
+--             t[l] = hash[unicode[l]]
+--         end
+--         return concat(t)
+--     else
+--         return hash[unicode]
+--     end
+-- end
+
+local hash = { }
+local conc = { }
+
+-- table.makeweak(hash)
+
+table.setmetatableindex(hash,function(t,k)
+    if type(k) == "table" then
+        local n = #k
+        for l=1,n do
+            conc[l] = hash[k[l]]
+        end
+        return concat(conc,"",1,n)
+    end
     local v
     if k >= 0x00E000 and k <= 0x00F8FF then
         v = unknown
@@ -232,18 +276,8 @@ local hash = table.setmetatableindex(function(t,k)
     return v
 end)
 
-table.makeweak(hash)
-
-local function tounicode(unicode,name)
-    if type(unicode) == "table" then
-        local t = { }
-        for l=1,#unicode do
-            t[l] = hash[unicode[l]]
-        end
-        return concat(t)
-    else
-        return hash[unicode]
-    end
+local function tounicode(unicode)
+    return hash[unicode]
 end
 
 local function fromunicode16(str)

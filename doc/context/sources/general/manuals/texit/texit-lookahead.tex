@@ -1,0 +1,387 @@
+\environment texit-style
+
+\startcomponent texit-lookahead
+
+\startchapter[title={Lookahead}]
+
+When you look at the \TEX\ source of a macro package, your can often see
+constructs like this:
+
+\startTEX
+\def\foo#1%
+  {We do something with  "#1".}
+\stopTEX
+
+or maybe:
+
+\startTEX
+\def\foo#1{%
+    We do something with  "#1".%
+}
+\stopTEX
+
+Normally the percentage symbol is used to indicate a comment, but here
+are no comments. In these cases it makes the definition effectively
+
+\startTEX
+\def\foo#1{do something with "#1"!}
+\stopTEX
+
+which is different from when we would not have that percent sign there:
+
+\startTEX
+\def\foo#1 {We do something with "#1"!}
+\stopTEX
+
+That variant is valid \TEX\ code but expects a space as delimiter of the
+argument to \type {\foo}. This means that you can say:
+
+\startTEX
+\foo{1} \foo 2 \foo {34} and \foo 56 .
+\stopTEX
+
+while this can trigger an error message (when no space is seen at some point) or
+at least give unexpected results.
+
+\startTEX
+\foo{1}\foo 2\foo {34}and\foo 56.
+\stopTEX
+
+A different use of the percent is seen in cases like this:
+
+\startTEX
+\def\foo#1%
+  {We do something %
+   with "#1".}
+\stopTEX
+
+This time we want to preserve the space after \type {something} because an
+end|-|of|-|line would either or not collapse it with \type {with} depending on
+how the endofline character is set up. Normally:
+
+\startTEX
+\def\foo#1%
+  {We do something
+   with "#1".}
+\stopTEX
+
+Will also add a space after something but when \TEX\ is set up to ignore lines
+you get a collapse. So the explicit space is a robust way out. Both cases of
+using or omitting the comment symbol are easy to spot as they trigger an error
+or result in weird typeset results.
+
+\startbuffer[defs]
+\def\fooA#1%
+  {\ifnum#1>100
+     yes\else nop%
+   \fi}
+
+\def\fooB#1{\ifnum#1>100 yes\else nop \fi}
+
+\def\fooC#1%
+  {\ifnum#1>100%
+     yes\else nop%
+   \fi}
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+We test this with:
+
+\startbuffer[demo]
+\fooA{100} \fooB{100} \fooC{100}
+\fooA{101} \fooB{101} \fooC{101}
+\stopbuffer
+
+\typebuffer[demo][option=TEX]
+
+And the result is probably what you expect:
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+\startbuffer[defs]
+\def\fooA#1%
+  {\ifnum#1>100
+     1\else 0%
+   \fi}
+
+\def\fooB#1{\ifnum#1>100 1\else 0\fi}
+
+\def\fooC#1%
+  {\ifnum#1>100%
+     1\else 0%
+   \fi}
+\stopbuffer
+
+However, when we have the following macro body:
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+We get this output. Do you see the issue?
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+A preferred way to catch this is the following as a \type {\relax} ends scanning
+for a number:
+
+\startbuffer[defs]
+\def\foo#1%
+  {\ifnum#1>100\relax
+     1\else 0%
+   \fi}
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+However, watch what happens here:
+
+\startbuffer[demo]
+\edef\result{\foo{123}}
+\stopbuffer
+
+\typebuffer[demo][option=TEX] \getbuffer[demo]
+
+The \type {\result} macro has the following body:
+
+\expanded{\setbuffer[result]\meaning\result\endbuffer}
+
+\typebuffer[result][option=TEX]
+
+A neat trick out of this is the following:
+
+\startbuffer[defs]
+\def\foo#1%
+  {\ifnum#1>\numexpr100\relax
+     1\else 0%
+   \fi}
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+\getbuffer[demo]
+
+Now the body of \type {\result} looks like this:
+
+\expanded{\setbuffer[result]\meaning\result\endbuffer}
+
+\typebuffer[result][option=TEX]
+
+Of course this also works:
+
+\startTEX
+\def\foo#1%
+  {\ifnum#1>100 %
+     1\else 0%
+   \fi}
+\stopTEX
+
+as a space also delimits scanning the number. But that method can actually introduce
+that space in the output. Think of this definition:
+
+\startbuffer[defs]
+\def\foo#1#2%
+  {\ifnum#1>#2 %
+     1\else 0%
+   \fi}
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+What if \type {#2} has a trailing space? What if it is a verbose number? What if
+it is a counter variable?
+
+\startbuffer[demo]
+\scratchcounter=100
+    [\foo{101}{100}] [\foo{101}{100 }] [\foo{101}\scratchcounter]
+\scratchcounter=101
+    [\foo{100}{101}] [\foo{100}{101 }] [\foo{100}\scratchcounter]
+\stopbuffer
+
+\typebuffer[demo][option=TEX]
+
+\startlines
+\getbuffer[demo]
+\stoplines
+
+If you really want to introduce an unpredictable situation, use a coding style like
+this:
+
+\startTEX
+\def\foo#1#2#3#4{\if#1=#2#3\else#4\fi}
+\stopTEX
+
+This is not that imaginary as you often see users play safe and do things like this:
+
+\startTEX
+\ifnum\scratchcounterone=\scratchcountertwo%
+    ...
+\else
+    ...
+\fi
+\stopTEX
+
+Here the percent sign is useless as the number scanner already got the number,
+just try:
+
+\startTEX
+\scratchcounterone=1
+\scratchcountertwo=1
+
+\ifnum\scratchcounterone=\scratchcountertwo
+    yes
+\else
+    nop
+\fi
+\stopTEX
+
+A previous one liner formatted like this really is not better!
+
+\startTEX
+\def\foo#1#2#3#4%
+  {\ifnum#1=#2%
+      #3%
+   \else
+      #4%
+   \fi}
+\stopTEX
+
+When you define macros more often than not you don't want unexpected spaces (aka spurious spaces)
+which is why in \CONTEXT\ for instance setups ignores lines:
+
+\startbuffer[defs]
+\startsetups foo
+    here
+    we ignore
+    spaces at the end
+    of a line
+\stopsetups
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+so we get: \quotation {\directsetup{foo}} which means that the normally few times
+that we {\em do} want spaces we need to be explicit:
+
+\startbuffer[defs]
+\startsetups foo
+    here\space
+    we ignore\space
+    spaces at the end\space
+    of a line\space
+\stopsetups
+\stopbuffer
+
+\typebuffer[defs][option=TEX] \getbuffer[defs]
+
+Now we're okay: \quotation {\directsetup{foo}}. The same is true for:
+
+\startTEX
+\starttexdefinition foo
+    here\space
+    we ignore\space
+    spaces at the end\space
+    of a line\space
+\stoptexdefinition
+\stopTEX
+
+There are more cases where \TEX\ will look further. Take for example skip (glue)
+scanning. A glue specification can have \type {plus} and \type {minus} fields.
+
+\startbuffer[defs]
+\scratchdimenone=10pt
+\scratchskipone =10pt plus 10pt minus 10pt
+\scratchskiptwo =0pt
+\stopbuffer
+
+\typebuffer[defs][option=TEX]
+
+Now take the following test:
+
+\startbuffer[demo]
+{1 \scratchskiptwo  10pt             plus 10pt \relax\the\scratchskiptwo}
+{2 \scratchskiptwo  \scratchdimenone plus 10pt \relax\the\scratchskiptwo}
+{3 \scratchskiptwo 1\scratchdimenone plus 10pt \relax\the\scratchskiptwo}
+{4 \scratchskiptwo  \scratchskipone  plus 10pt \relax\the\scratchskiptwo}
+{5 \scratchskiptwo 1\scratchskipone  plus 10pt \relax\the\scratchskiptwo}
+\stopbuffer
+
+\typebuffer[demo][option=TEX]
+
+\startlines
+\inlinebuffer[defs]\getbuffer[demo]
+\stoplines
+
+If you wonder what the second \type {\relax} does, here is a variant:
+
+\startlines
+{1 \scratchskiptwo  10pt             plus 10pt \the\scratchskiptwo}
+{2 \scratchskiptwo  \scratchdimenone plus 10pt \the\scratchskiptwo}
+{3 \scratchskiptwo 1\scratchdimenone plus 10pt \the\scratchskiptwo}
+{4 \scratchskiptwo  \scratchskipone  plus 10pt \the\scratchskiptwo}
+{5 \scratchskiptwo 1\scratchskipone  plus 10pt \the\scratchskiptwo}
+\stoplines
+
+\typebuffer[demo][option=TEX]
+
+\startlines
+\inlinebuffer[defs]\getbuffer[demo]
+\stoplines
+
+In this second variant \TEX\ happily keep looking for a glue specification when
+it sees the \type {\the} so it serializes \type {\scratchskiptwo}. But as it sees
+\type {0pt} then, it stops scanning the glue spec. What we get typeset is the old
+value, not the new one! If you want to prevent this you need to \type {\relax}.
+
+Another case where \TEX\ keeps scanning is the following:
+
+\startbuffer[demo]
+\vrule width 40pt height 2pt depth 5pt \quad
+\vrule width 40pt height 20pt depth 5pt height 10pt \quad
+\vrule width 40pt height 10pt height 20pt \quad
+\vrule width 40pt height 20pt depth 5pt height 10pt width 80pt
+\stopbuffer
+
+\typebuffer[demo][option=TEX]
+
+This gives the rules:
+
+\startlinecorrection \darkgray
+\getbuffer[demo]
+\stoplinecorrection
+
+So you can overload dimensions. The space before the \type {quad} is gobbled as
+part of the look ahead for more keywords.
+
+Often rules (just like glue assignments) are wrapped in macro definitions where the
+macro writer used \type {\relax} to look ahead. That way you prevent an error message
+in cases like:
+
+\startTEX
+\def\foo{\vrule width 40pt height 2pt}
+
+The \foo depth of this thought is amazing.
+\stopTEX
+
+because \type {of} definitely is not a valid dimension. Even more subtle is:
+
+\startTEX
+\def\foo{\hskip 10pt plus 1fil}
+
+The \foo fine points of typesetting can actually become a nightmare.
+\stopTEX
+
+As \TEX\ will now see the \type {f} of \type {fine} as further specification and
+think that you want \type {1fill}.
+
+So, the most important lesson of this chapter is that you need to be aware of the way
+\TEX\ scans for quantities and specifications. In most cases the users can safely use
+a \type {\relax} to prevent a lookahead. And try to avoid adding percent signs all
+over the place.
+
+\stopchapter
+
+\stopcomponent

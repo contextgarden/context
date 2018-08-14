@@ -1,0 +1,40 @@
+\environment texit-style
+
+\startcomponent texit-titlepage
+
+\startMPpage
+
+fill Page
+    withcolor "darkyellow"
+    withtransparency (1,.75) ;
+
+draw image (
+    for i=1 upto 500 :
+        draw (((1,-2) ... origin ... (-1,2)) randomized 0.2)
+            scaled 1cm
+            rotated (0 randomized 15)
+            shifted (origin randomized (PaperWidth,PaperHeight))
+            withpen pencircle yscaled 5mm xscaled 2mm rotated 45
+            withcolor "darkmagenta"
+            withtransparency (1,.5)
+        ;
+    endfor ;
+) shifted center Page ;
+
+clip currentpicture to Page ;
+
+draw textext.ulft ("\TeX it") ysized 5cm
+    shifted lrcorner Page shifted (-1cm,1cm)
+    withcolor white ;
+
+draw textext.llft ("Hans Hagen") ysized 1cm
+    rotated 90
+    shifted urcorner Page shifted (-15mm,-1cm)
+    withcolor white ;
+
+\stopMPpage
+
+\startstandardmakeup[doublesided=no,page=no]
+\stopstandardmakeup
+
+\stopcomponent
