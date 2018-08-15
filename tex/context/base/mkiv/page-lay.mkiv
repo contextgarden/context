@@ -1154,8 +1154,8 @@
 \def\compensatedinnermakeupmargin
   {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
 
-\unexpanded\def\freezetextwidth % name will change      % \makeupwidth may be set to \textwidth
-  {\textwidth\makeupwidth                    % which is a tricky but valid value
+\unexpanded\def\freezetextwidth % name will change % \makeupwidth may be set to \textwidth
+  {\textwidth\makeupwidth                          % which is a tricky but valid value
    \edef\m_currentlayout_text_width {\layoutparameter\c!textwidth }%
    \edef\m_currentlayout_text_margin{\layoutparameter\c!textmargin}%
    \ifx\m_currentlayout_text_width\empty \else

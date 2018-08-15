@@ -1123,6 +1123,13 @@ context|div.comment {
 	font-family      : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
+/* blocks */
+
+block,
+context|div.block {
+	display : block ;
+}
+
 /* special */
 
 c,

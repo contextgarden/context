@@ -149,19 +149,19 @@ function helpers.textopener(tag,filename,filehandle,coding)
                 currentline = currentline + 1
              -- self.currentline = currentline
                 local content = lines[currentline]
-                if not content then
-                    return nil
-                elseif content == "" then
+                if content == "" then
                     return ""
              -- elseif content == ctrl_d or ctrl_z then
              --     return nil -- we need this as \endinput does not work in prints
-                else
+                elseif content then
                     local runner = textlineactions.runner
                     if runner then
                         return runner(content,filename,currentline,noflines,coding) or content
                     else
                         return content
                     end
+                else
+                    return nil
                 end
             end
         end

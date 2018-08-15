@@ -52,6 +52,8 @@
 % We need to prevent too much lookahead which will gobble newlines
 % that are needed for buffers. See blocks-002.tex as example.
 
+% maybe: systemmode "block:<name>"
+
 \let\m_block   \empty
 \let\m_subblock\empty
 
@@ -78,33 +80,67 @@
 
 \let\strc_blocks_setup\relax
 
+\newconstant   \c_strc_blocks_index
+\newconditional\c_strc_blocks_display
+
 \unexpanded\def\dostarthiddenblock % called at lua end
-  {\startnointerference
-   \dostartnormalblock}
+  {\begingroup
+   \visiblefalse % blocks float
+   \startnointerference
+   \strc_start_block}
 
 \unexpanded\def\dostophiddenblock % called at lua end
-  {\dostopnormalblock
-   \stopnointerference}
+  {\strc_stop_block
+   \stopnointerference
+   \endgroup}
 
-\newconstant\c_strc_blocks_index
-
-\unexpanded\def\dostartnormalblock#1#2% called at lua end
+\unexpanded\def\dostartnormalblock % called at lua end
   {\begingroup
-   \visibletrue  % will change
-   \edef\currentblock{#2}%
+   \visibletrue
+   \strc_start_block}
+
+\unexpanded\def\dostopnormalblock % called at lua end
+  {\strc_stop_block
+   \endgroup}
+
+\def\strc_start_block#1#2%
+  {\edef\currentblock{#2}%
    \c_strc_blocks_index#1\relax
    \strc_blocks_setup
    \let\strc_blocks_setup\relax
-   \blockparameter\c!before
-   \useblockstyleandcolor\c!style\c!color % maybe moev one line up (font spacing)
-   \blockparameter\c!inner % better \c!setups
+   \edef\p_alternative{\blockparameter\c!alternative}%
+   \ifx\p_alternative\v!text
+      \setfalse\c_strc_blocks_display
+   \else
+      \settrue\c_strc_blocks_display
+   \fi
+   \ifconditional\c_strc_blocks_display
+      \blockparameter\c!before
+   \fi
+   \begingroup
+   \usesetupsparameter\blockparameter\relax
+   \dostarttagged\t!block\currentblock
+   \useblockstyleandcolor\c!style\c!color
+   \blockparameter\c!inner % old
+   \ifconditional\c_strc_blocks_display
+     \usealignparameter\blockparameter
+   \else
+     \blockparameter\c!left
+   \fi
    \ignorespaces}
 
-\unexpanded\def\dostopnormalblock % called at lua end
+\def\strc_stop_block
   {\removeunwantedspaces
-   \blockparameter\c!after
-   \par % todo: alternative = text, paragraph
-   \endgroup}
+   \ifconditional\c_strc_blocks_display
+     \par
+   \else
+     \blockparameter\c!right
+   \fi
+   \dostoptagged
+   \endgroup
+   \ifconditional\c_strc_blocks_display
+     \blockparameter\c!after
+   \fi}
 
 \def\strc_blocks_set_state[#1][#2][#3]% state name tag
   {\clf_setstructureblockstate{#1}{#2}{#3}}

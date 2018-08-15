@@ -8196,3 +8196,23 @@
 %    \edef\tempstring{\the#1}%
 %    \tx\ttbf\string#1: \tttf\meaning\tempstring
 %    \endgroup}
+
+%D Not needed now, but more efficient that expanding
+%
+% \chardef\_E_O_T_0
+%
+% \unexpanded\def\doifelsetokens#1%
+%   {\dodoifelsetokens#1\_E_O_T_\_e_o_t_}
+%
+% \def\dodoifelsetokens#1#2\_e_o_t_
+%   {\ifx#1\_E_O_T_
+%      \expandafter\secondoftwoarguments
+%    \else
+%      \expandafter\firstoftwoarguments
+%    \fi}
+%
+% \def\emptytokscondition#1%
+%   {\doemptytokscondition#1\_E_O_T_\_e_o_t_}
+%
+% \def\doemptytokscondition#1#2\_e_o_t_
+%   {\ifx#1\_E_O_T_}

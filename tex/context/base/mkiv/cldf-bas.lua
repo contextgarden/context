@@ -176,6 +176,16 @@ context.registers = {
     newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }
 
-function context.latelua(f)
-    sprint(new_latelua(f)) -- maybe just context
+if LUATEXFUNCTIONALITY > 6780 then
+
+    function context.latelua(f)
+        sprint(new_latelua(f)) -- maybe just context
+    end
+
+else
+
+    function context.latelua(f)
+        context(new_latelua(f))
+    end
+
 end

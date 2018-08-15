@@ -487,7 +487,7 @@
 
 \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
   {\bgroup % redundant grouping
-   \setbox\scratchbox\hbox\bgroup % \hpack ?
+   \setbox\scratchbox\hbox\bgroup
      \ifzeropt\d_framed_target_dp
        \the\everyoverlay#2% saves wrapping (and lua call)
      \else
@@ -553,40 +553,36 @@
 
 \def\pack_framed_process_background_indeed_internal#1% % : in name
   {\bgroup
-   \setbox\b_framed_extra\hbox{%\bgroup
-     \ifzeropt\framedbackgroundoffset
-      %\csname\??overlaybuiltin\m_framed_background\endcsname
-       #1
-     \else
+   \setbox\b_framed_extra\hpack\bgroup
+     \ifzeropt\framedbackgroundoffset\else
        \kern-\framedbackgroundoffset
-      %\hbox{\csname\??overlaybuiltin\m_framed_background\endcsname}%
-       \hbox{#1}%
      \fi
-   }%\egroup
+     \hbox\bgroup#1\egroup
+   \egroup
    \wd\b_framed_extra\zeropoint
    \ht\b_framed_extra\framedbackgroundheight
    \dp\b_framed_extra\framedbackgrounddepth
    \box\b_framed_extra
    \egroup}
 
-\def\pack_framed_process_background_indeed_external#1%
+% \def\pack_framed_process_background_indeed_external#1%
+%   {\pack_framed_overlay_initialize
+%    \bgroup
+%    \setbox\b_framed_extra\hpack\bgroup
+%      \ifzeropt\framedbackgroundoffset\else
+%        \kern-\framedbackgroundoffset
+%      \fi
+%      \hbox\bgroup#1\egroup
+%    \egroup
+%    \wd\b_framed_extra\zeropoint
+%    \ht\b_framed_extra\framedbackgroundheight
+%    \dp\b_framed_extra\framedbackgrounddepth
+%    \box\b_framed_extra
+%    \egroup}
+
+\def\pack_framed_process_background_indeed_external
   {\pack_framed_overlay_initialize
-   \bgroup
-   \setbox\b_framed_extra\hbox{%\bgroup
-     \ifzeropt\framedbackgroundoffset
-      %\csname\??overlay\m_framed_background\endcsname
-       #1%
-     \else
-       \kern-\framedbackgroundoffset
-      %\hbox{\csname\??overlay\m_framed_background\endcsname}%
-       \hbox{#1}%
-     \fi
-   }%\egroup
-   \wd\b_framed_extra\zeropoint
-   \ht\b_framed_extra\framedbackgroundheight
-   \dp\b_framed_extra\framedbackgrounddepth
-   \box\b_framed_extra
-   \egroup}
+   \pack_framed_process_background_indeed_internal}
 
 \def\pack_framed_process_backgrounds#1,#2% #2 gobbles spaces (we could avoid one catch if we have nextbackground)
   {\edef\m_framed_background{#1}%
@@ -726,18 +722,18 @@
 
 \def\pack_framed_stroked_box_normal
   {\setbox\scratchbox\vpack \bgroup
-     \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
+     \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
      \nointerlineskip % new (needed for fences)
      \hpack \bgroup
-       \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
+       \csname\??framedleft\p_framed_frame\framedparameter\c!leftframe\endcsname
        \novrule
          \s!width \d_framed_target_wd
          \s!height\d_framed_target_ht
          \s!depth \d_framed_target_dp
-       \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
+       \csname\??framedright\p_framed_frame\framedparameter\c!rightframe\endcsname
      \egroup
      \nointerlineskip % new (needed for fences)
-     \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
+     \csname\??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
    \egroup
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
@@ -836,7 +832,7 @@
 %D for passing this identifier between brackets lays in the mere fact that this way
 %D we can use the optional argument grabbers.
 
-\def\defaultframeoffset{.25ex}
+\def\defaultframeoffset{.25\exheight}
 
 \installcorenamespace{regularframedlevel}
 

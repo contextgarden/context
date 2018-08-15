@@ -212,7 +212,7 @@
 \def\strc_lists_write_data_to[#tag]%
   {\begingroup
    \edef\currentlist{#tag}%
-   \doifelse{\namedlistparameter{#tag}\c!state}\v!start
+   \ {\namedlistparameter{#tag}\c!state}\v!start
      \strc_lists_write_data_to_yes
      \strc_lists_write_data_to_nop}
 

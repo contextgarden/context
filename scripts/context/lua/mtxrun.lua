@@ -12237,7 +12237,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 5820, stripped down to: 4155
+-- original size: 5788, stripped down to: 4125
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -12246,7 +12246,7 @@ package.loaded["luat-env"] = package.loaded["luat-env"] or true
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local rawset,rawget,loadfile,assert=rawset,rawget,loadfile,assert
+local rawset,rawget,loadfile=rawset,rawget,loadfile
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_lua=logs.reporter("resolvers","lua")
 local luautilities=utilities.lua
@@ -12334,7 +12334,7 @@ function environment.loadluafile(filename,version)
     luaname=file.addsuffix(basename,luasuffixes.lua)
     lucname=file.addsuffix(basename,luasuffixes.luc)
   else
-    luaname=basename 
+    luaname=filename 
     lucname=nil
   end
   local fullname=(lucname and environment.luafile(lucname)) or ""
@@ -12345,7 +12345,7 @@ function environment.loadluafile(filename,version)
     chunk=loadfile(fullname) 
   end
   if chunk then
-    assert(chunk)()
+    chunk()
     if version then
       local v=version 
       if modules and modules[filename] then
@@ -12376,7 +12376,7 @@ function environment.loadluafile(filename,version)
         report_lua("unknown file %a",filename)
       end
     else
-      assert(chunk)()
+      chunk()
       return true
     end
   end
@@ -21705,8 +21705,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 892283
--- stripped bytes    : 323058
+-- original bytes    : 892251
+-- stripped bytes    : 323056
 
 -- end library merge
 

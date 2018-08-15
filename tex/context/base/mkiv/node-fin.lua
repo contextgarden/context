@@ -23,6 +23,7 @@ local getlist            = nuts.getlist
 local getleader          = nuts.getleader
 local getattr            = nuts.getattr
 local getwidth           = nuts.getwidth
+local getwhd             = nuts.getwhd
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -295,7 +296,9 @@ local function process(attribute,head,inheritance,default) -- one attribute
                 -- end nested --
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+--             check = getwidth(stack) ~= 0
+local wd, ht, dp = getwhd(stack)
+check = wd ~= 0 or (ht+dp) ~= 0
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -491,7 +494,9 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 -- end nested
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+--             check = getwidth(stack) ~= 0
+local wd, ht, dp = getwhd(stack)
+check = wd ~= 0 or (ht+dp) ~= 0
         end
 
         if check then
@@ -601,7 +606,9 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
-            check = getwidth(stack) ~= 0
+--             check = getwidth(stack) ~= 0
+local wd, ht, dp = getwhd(stack)
+check = wd ~= 0 or (ht+dp) ~= 0
         end
         if check then
             local a = getattr(stack,attribute)
@@ -612,9 +619,12 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                     current = a
                 end
                 if leader then
-                    local list = stacked(attribute,content,current)
-                    if leader ~= list then
-                        setleader(stack,list) -- only if ok
+                    local content = getlist(leader)
+                    if content then
+                        local list = stacked(attribute,content,current)
+                        if leader ~= list then
+                            setleader(stack,list) -- only if ok
+                        end
                     end
                     leader = false
                 end
@@ -683,7 +693,9 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
-            check = getwidth(current) ~= 0
+--             check = getwidth(current) ~= 0
+local wd, ht, dp = getwhd(current)
+check = wd ~= 0 or (ht+dp) ~= 0
         end
 
         if check then
@@ -700,7 +712,17 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 attrib = a
                 if leader then
                     -- tricky as a leader has to be a list so we cannot inject before
-                    local list = stacker(attribute,leader,attrib)
+                 -- local list = stacker(attribute,leader,attrib)
+                 -- leader = false
+
+                    local content = getlist(leader)
+                    if content then
+                        local list = stacker(attribute,leader,attrib)
+                        if leader ~= list then
+                            setleader(current,list)
+                        end
+                    end
+
                     leader = false
                 end
             end

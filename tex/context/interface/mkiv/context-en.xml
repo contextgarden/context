@@ -1446,8 +1446,30 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="left">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="right">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="alternative">
+      <cd:constant default="yes" type="paragraph"/>
+      <cd:constant type="text"/>
+     </cd:parameter>
      <cd:parameter name="inner">
       <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="setups">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant type="inner"/>
+      <cd:constant type="outer"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>

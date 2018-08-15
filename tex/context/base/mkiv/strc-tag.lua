@@ -212,6 +212,9 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     publications          = { pdf = "Div",        nature = "display" },
     publication           = { pdf = "Div",        nature = "mixed"   },
     pubfld                = { pdf = "Span",       nature = "inline"  },
+
+    block                 = { pdf = "Div",        nature = "display"  },
+
 }
 
 tags.properties = properties

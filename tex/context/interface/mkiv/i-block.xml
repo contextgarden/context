@@ -24,8 +24,24 @@
                 <cd:parameter name="after">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="paragraph" default="yes"/>
+                    <cd:constant type="text"/>
+                </cd:parameter>
                 <cd:parameter name="inner">
                     <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:resolve name="value-alignsimple"/>
                 </cd:parameter>
                 <cd:parameter name="style">
                     <cd:resolve name="value-style"/>
