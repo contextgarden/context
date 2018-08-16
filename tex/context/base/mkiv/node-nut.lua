@@ -236,7 +236,7 @@ if not direct.getdata then
             elseif subtype == pdf_literal_code then
                 return getfield(n,"data"), getfield(n,"mode")
             elseif subtype == late_lua_code then
-                return getfield(n,"data")
+                return getfield(n,"string")
             elseif subtype == pdf_setmatrix_code then
                 return getfield(n,"data")
             elseif subtype == special_code then
@@ -263,7 +263,7 @@ if not direct.getdata then
                     setfield(n,"mode",vv)
                 end
             elseif subtype == late_lua_code then
-                setfield(n,"data",v)
+                setfield(n,"string",v)
             elseif subtype == pdf_setmatrix_code then
                 setfield(n,"data",v)
             elseif subtype == special_code then

@@ -147,7 +147,7 @@
 % \unexpanded
 
 \def\strc_lists_inject_enhance#listindex#internal%
-  {\normalexpanded{\clf_deferredenhancelist#listindex}}
+  {\clf_deferredenhancelist#listindex\relax}
 
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...

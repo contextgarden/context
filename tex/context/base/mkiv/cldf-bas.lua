@@ -176,16 +176,46 @@ context.registers = {
     newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }
 
-if LUATEXFUNCTIONALITY > 6780 then
+do
+
+    local ctx_flushnode = context.nodes.flush
 
     function context.latelua(f)
-        sprint(new_latelua(f)) -- maybe just context
-    end
-
-else
-
-    function context.latelua(f)
-        context(new_latelua(f))
+        ctx_flushnode(new_latelua(f))
     end
 
 end
+-- yes or no
+
+do
+
+    local NC = ctxcore.NC
+    local BC = ctxcore.BC
+    local NR = ctxcore.NR
+
+    context.nc = setmetatable({ }, {
+        __call =
+            function(t,...)
+                NC()
+                return context(...)
+            end,
+        __index =
+            function(t,k)
+                NC()
+                return context[k]
+            end,
+        }
+    )
+
+    function context.bc(...)
+        BC()
+        return context(...)
+    end
+
+    function context.nr(...)
+        NC()
+        NR()
+    end
+
+end
+

@@ -262,8 +262,6 @@ local mt = { __index = {
     }
 }
 
-local nt = setmetatable({},mt)
-
 -- session
 
 local function close(t)
@@ -297,7 +295,8 @@ local function execute(t,query)
                 }
                 return setmetatable(t,mt)
             else
-                return nt
+                return false
+             -- return setmetatable({},mt)
             end
         end
     end
