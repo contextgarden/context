@@ -22,27 +22,30 @@ if not modules then modules = { } end modules ['cldf-bas'] = {
 --     flush(ctxcatcodes,"}")
 -- end
 
-local tonumber     = tonumber
-local type         = type
-local format       = string.format
-local utfchar      = utf.char
-local concat       = table.concat
+local tonumber      = tonumber
+local type          = type
+local format        = string.format
+local utfchar       = utf.char
+local concat        = table.concat
 
-local context      = context
-local ctxcore      = context.core
-local variables    = interfaces.variables
-local sprint       = context.sprint
+local context       = context
+local ctxcore       = context.core
 
-local nodepool     = nodes.pool
-local new_rule     = nodepool.rule
-local new_glyph    = nodepool.glyph
-local new_latelua  = nodepool.latelua
+local variables     = interfaces.variables
 
-local current_attr = nodes.current_attr
+local ctx_flushnode = context.nodes.flush
 
-local current_font = font.current
-local texgetcount  = tex.getcount
-local texsetcount  = tex.setcount
+local nuts          = nodes.nuts
+local tonode        = nuts.tonode
+local nodepool      = nuts.pool
+local new_rule      = nodepool.rule
+local new_glyph     = nodepool.glyph
+local new_latelua   = nodepool.latelua
+
+local setattrlist   = nuts.setattrlist
+
+local texgetcount   = tex.getcount
+local texsetcount   = tex.setcount
 
 -- a set of basic fast ones
 
@@ -80,19 +83,20 @@ function context.rule(w,h,d,dir)
     else
         rule = new_rule(w,h,d,dir)
     end
-    rule.attr = current_attr()
-    context(rule)
+    setattrlist(rule,true)
+    context(tonode(rule))
+ -- ctx_flushnode(tonode(rule))
 end
 
 function context.glyph(id,k)
     if id then
         if not k then
-            id, k = current_font(), id
+            id, k = true, id
         end
         local glyph = new_glyph(id,k)
-        glyph.attr = current_attr()
-        context(glyph)
-     -- context.node(glyph)
+        setattrlist(glyph,true)
+        context(tonode(glyph))
+     -- ctx_flushnode(tonode(glyph))
     end
 end
 
@@ -178,10 +182,11 @@ context.registers = {
 
 do
 
-    local ctx_flushnode = context.nodes.flush
 
     function context.latelua(f)
-        ctx_flushnode(new_latelua(f))
+        local latelua = new_latelua(f)
+        setattrlist(latelua,true)
+        ctx_flushnode(tonode(latelua))
     end
 
 end

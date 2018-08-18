@@ -1024,3 +1024,15 @@ function nuts.copy_properties(source,target,what)
     return newprops -- for checking
 end
 
+if LUATEXFUNCTIONALITY < 6894 then
+
+    local sal = nuts.setattrlist
+    local cal = nuts.current_attr
+
+    function nuts.setattrlist(n,a)
+        return sal(n,a == true and cal() or a)
+    end
+
+    nuts.setattributelist = nuts.setattrlist
+
+end

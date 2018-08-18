@@ -32,6 +32,8 @@ local usercodes     = nodes.usercodes
 
 local glyph_code    = nodecodes.glyph
 
+local currentfont   = font.current
+
 local allocate      = utilities.storage.allocate
 
 local texgetcount   = tex.getcount
@@ -213,7 +215,7 @@ local vlist             = register_nut(new_nut(nodecodes.vlist))                
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
     if fnt then
-        setfont(n,fnt,chr)
+        setfont(n,fnt == true and currentfont() or fnt,chr)
     elseif chr then
         setchar(n,chr)
     end

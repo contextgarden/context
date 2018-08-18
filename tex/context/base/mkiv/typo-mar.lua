@@ -85,7 +85,6 @@ local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
 local getdata            = nuts.getdata
 
-local currentattr        = nuts.current_attr
 local setattrlist        = nuts.setattrlist
 
 local getbox             = nuts.getbox
@@ -303,7 +302,7 @@ function margins.save(t)
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
             local n = new_usernumber(inline_mark,nofsaved)
-            setattrlist(n,currentattr())
+            setattrlist(n,true)
             context(tonode(n)) -- or use a normal node
             store[nofsaved] = t -- no insert
             nofinlined = nofinlined + 1

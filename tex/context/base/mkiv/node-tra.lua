@@ -656,6 +656,9 @@ end
 
 tracers.setproperties = setproperties
 
+-- setting attrlist entries instead of attr for successive entries doesn't
+-- speed up much (this function is only used in tracers anyway)
+
 function tracers.setlist(n,c,s)
     local nn = tonut(n)
     local mc = m_color[c]

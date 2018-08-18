@@ -58,7 +58,6 @@ local find_tail          = nuts.tail
 local setglue            = nuts.setglue
 local list_dimensions    = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
-local current_attr       = nuts.current_attr
 local copy_list          = nuts.copy_list
 
 local nexthlist          = nuts.traversers.hlist
@@ -145,7 +144,7 @@ local function usernutrule(t,noattributes)
     if noattributes == false or noattributes == nil then
         -- avoid fuzzy ones
     else
-        setattrlist(r,current_attr())
+        setattrlist(r,true)
     end
     properties[r] = t
     return r
@@ -157,9 +156,11 @@ local function userrule(t,noattributes)
     return tonode(usernutrule(t,noattributes))
 end
 
-rules.userrule    = userrule
-local ruleactions = { }
-rules.ruleactions = ruleactions
+rules.userrule       = userrule
+local ruleactions    = { }
+
+rules   .ruleactions = ruleactions
+nutrules.ruleactions = ruleactions -- convenient
 
 local function mathradical(n,h,v)
     ----- size    = getfield(n,"index")
@@ -893,7 +894,7 @@ interfaces.implement {
             t.height,
             t.depth
         )
-        setattrlist(n,current_attr())
+        setattrlist(n,true)
         if LUATEXFUNCTIONALITY >= 6710 then
             if l then
                 setfield(n,"left",l)

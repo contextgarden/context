@@ -43,6 +43,7 @@
         end
 
         local year    = tonumber(specification.year) or os.today().year
+        local month   = tonumber(specification.month)
         local years   = data.years
         local variant = data.variant
         local unit    = specification.unit
@@ -60,16 +61,19 @@
             end
         end
 
+        local firstmonth = month or 1
+        local lastmonth  = month or 12
+
         local max   = max
         local delta = round(max/10)
         local scale = round(delta/20)
         local mark  = 3
 
         for y=year,year do
-            local year  = years[y]
+            local year = years[y]
             if year then
                 local grand = 0
-                for m=1,12 do
+                for m=firstmonth,lastmonth do
                     local month = year.months[m]
                     if month then
                         context.startMPpage { offset = "10pt" }

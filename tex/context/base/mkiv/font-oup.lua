@@ -814,9 +814,9 @@ function readers.getcomponents(fontdata) -- handy for resolving ligatures when n
                         end
                         for i=1,#steps do
                          -- we actually had/have this in base mode
-                            local coverage = steps[i].coverage
-                            if coverage then
-                                for k, v in next, coverage do
+                            local c = steps[i].coverage
+                            if c then
+                                for k, v in next, c do
                                     traverse(k,k,v)
                                 end
                             end
@@ -2134,9 +2134,12 @@ local function mergesteps_1(lookup,strict)
     report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            if not target[k] then
-                target[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                if not target[k] then
+                    target[k] = v
+                end
             end
         end
     end
@@ -2165,16 +2168,19 @@ local function mergesteps_2(lookup) -- pairs
     report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                for kk, vv in next, v do
-                    if tk[kk] == nil then
-                        tk[kk] = vv
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    for kk, vv in next, v do
+                        if tk[kk] == nil then
+                            tk[kk] = vv
+                        end
                     end
+                else
+                    target[k] = v
                 end
-            else
-                target[k] = v
             end
         end
     end
@@ -2194,13 +2200,16 @@ local function mergesteps_3(lookup,strict) -- marks
     -- check first
     local coverage = { }
     for i=1,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = coverage[k] -- { class, { x, y } }
-            if tk then
-                report("quitting merge due to multiple checks")
-                return nofsteps
-            else
-                coverage[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = coverage[k] -- { class, { x, y } }
+                if tk then
+                    report("quitting merge due to multiple checks")
+                    return nofsteps
+                else
+                    coverage[k] = v
+                end
             end
         end
     end
@@ -2249,12 +2258,15 @@ local function mergesteps_4(lookup) -- ligatures
     report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
     local target = first.coverage
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                nested(v,tk)
-            else
-                target[k] = v
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    nested(v,tk)
+                else
+                    target[k] = v
+                end
             end
         end
     end
@@ -2279,18 +2291,21 @@ local function mergesteps_5(lookup) -- cursive
         break
     end
     for i=2,nofsteps do
-        for k, v in next, steps[i].coverage do
-            local tk = target[k]
-            if tk then
-                if not tk[2] then
-                    tk[2] = v[2]
+        local c = steps[i].coverage
+        if c then
+            for k, v in next, c do
+                local tk = target[k]
+                if tk then
+                    if not tk[2] then
+                        tk[2] = v[2]
+                    end
+                    if not tk[3] then
+                        tk[3] = v[3]
+                    end
+                else
+                    target[k] = v
+                    v[1] = hash
                 end
-                if not tk[3] then
-                    tk[3] = v[3]
-                end
-            else
-                target[k] = v
-                v[1] = hash
             end
         end
     end

@@ -725,4 +725,3 @@ if not nodes.unprotect_glyph then
     end
 
 end
-

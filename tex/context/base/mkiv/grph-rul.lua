@@ -12,13 +12,12 @@ local attributes     = attributes
 local nodes          = nodes
 local context        = context
 
+local nuts           = nodes.nuts
 local ruleactions    = nodes.rules.ruleactions
-local userrule       = nodes.rules.userrule
+local userrule       = nuts.rules.userrule
 local bpfactor       = number.dimenfactors.bp
 
-local current_attr   = nodes.current_attr
-local setfield       = nodes.setfield
-
+local setattrlist    = nuts.setattrlist
 local getattribute   = tex.getattribute
 
 local a_color        = attributes.private('color')
@@ -232,7 +231,7 @@ interfaces.implement {
         local ma = getattribute(a_colormodel) or 1
         local ca = getattribute(a_color)
         local ta = getattribute(a_transparency)
-        setfield(rule,"attr",current_attr())
+        setattrlist(rule,true)
         if t.type == "mp" then
             t.ma = ma
             t.ca = ca
@@ -242,7 +241,7 @@ interfaces.implement {
             rule[a_color]        = ca
             rule[a_transparency] = ta
         end
-        context(rule)
+        context(tonode(rule))
     end
 }
 
@@ -269,8 +268,8 @@ interfaces.implement {
             type   = "mp",
             name   = t.name,
         }
-        setfield(rule,"attr",current_attr())
-        context(rule)
+        setattrlist(rule,true)
+        context(tonode(rule))
     end
 }
 

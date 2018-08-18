@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/16/18 10:17:32
+-- merge date  : 08/18/18 15:14:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -20900,9 +20900,9 @@ function readers.getcomponents(fontdata)
               end
             end
             for i=1,#steps do
-              local coverage=steps[i].coverage
-              if coverage then
-                for k,v in next,coverage do
+              local c=steps[i].coverage
+              if c then
+                for k,v in next,c do
                   traverse(k,k,v)
                 end
               end
@@ -21969,9 +21969,12 @@ local function mergesteps_1(lookup,strict)
   report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
   local target=first.coverage
   for i=2,nofsteps do
-    for k,v in next,steps[i].coverage do
-      if not target[k] then
-        target[k]=v
+    local c=steps[i].coverage
+    if c then
+      for k,v in next,c do
+        if not target[k] then
+          target[k]=v
+        end
       end
     end
   end
@@ -21996,16 +21999,19 @@ local function mergesteps_2(lookup)
   report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
   local target=first.coverage
   for i=2,nofsteps do
-    for k,v in next,steps[i].coverage do
-      local tk=target[k]
-      if tk then
-        for kk,vv in next,v do
-          if tk[kk]==nil then
-            tk[kk]=vv
+    local c=steps[i].coverage
+    if c then
+      for k,v in next,c do
+        local tk=target[k]
+        if tk then
+          for kk,vv in next,v do
+            if tk[kk]==nil then
+              tk[kk]=vv
+            end
           end
+        else
+          target[k]=v
         end
-      else
-        target[k]=v
       end
     end
   end
@@ -22020,13 +22026,16 @@ local function mergesteps_3(lookup,strict)
   report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
   local coverage={}
   for i=1,nofsteps do
-    for k,v in next,steps[i].coverage do
-      local tk=coverage[k] 
-      if tk then
-        report("quitting merge due to multiple checks")
-        return nofsteps
-      else
-        coverage[k]=v
+    local c=steps[i].coverage
+    if c then
+      for k,v in next,c do
+        local tk=coverage[k] 
+        if tk then
+          report("quitting merge due to multiple checks")
+          return nofsteps
+        else
+          coverage[k]=v
+        end
       end
     end
   end
@@ -22072,12 +22081,15 @@ local function mergesteps_4(lookup)
   report("merging %a steps of %a lookup %a",nofsteps,lookup.type,lookup.name)
   local target=first.coverage
   for i=2,nofsteps do
-    for k,v in next,steps[i].coverage do
-      local tk=target[k]
-      if tk then
-        nested(v,tk)
-      else
-        target[k]=v
+    local c=steps[i].coverage
+    if c then
+      for k,v in next,c do
+        local tk=target[k]
+        if tk then
+          nested(v,tk)
+        else
+          target[k]=v
+        end
       end
     end
   end
@@ -22097,18 +22109,21 @@ local function mergesteps_5(lookup)
     break
   end
   for i=2,nofsteps do
-    for k,v in next,steps[i].coverage do
-      local tk=target[k]
-      if tk then
-        if not tk[2] then
-          tk[2]=v[2]
+    local c=steps[i].coverage
+    if c then
+      for k,v in next,c do
+        local tk=target[k]
+        if tk then
+          if not tk[2] then
+            tk[2]=v[2]
+          end
+          if not tk[3] then
+            tk[3]=v[3]
+          end
+        else
+          target[k]=v
+          v[1]=hash
         end
-        if not tk[3] then
-          tk[3]=v[3]
-        end
-      else
-        target[k]=v
-        v[1]=hash
       end
     end
   end
