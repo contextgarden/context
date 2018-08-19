@@ -635,6 +635,7 @@ implement {
 implement {
     name      = "deferredenhanceregister",
     arguments = { "string", "integer" },
+    protected = true,
     actions   = function(name,n)
         ctx_latelua(function() enhanceregister(name,n) end)
     end,

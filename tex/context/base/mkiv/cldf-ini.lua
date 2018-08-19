@@ -90,6 +90,7 @@ local isnode            = node.is_node
 local writenode         = node.write
 local copynodelist      = node.copy_list
 local tonut             = node.direct.todirect
+local tonode            = node.direct.tonode
 
 local istoken           = token.is_token
 local newtoken          = token.new
@@ -1107,6 +1108,23 @@ context.nodes = { -- todo
             end
         else
             flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
+        end
+    end,
+}
+
+context.nuts = { -- todo
+    store = function(n)
+        return storenode(tonut(n))
+    end,
+    flush = function(n)
+        if nodeflushmode then
+            if n <= maxflushnodeindex then
+                flush(tonode(n))
+            else
+                flush(currentcatcodes,s_cldl_option_s,storenode(tonode(n))," ")
+            end
+        else
+            flush(currentcatcodes,s_cldl_option_s,storenode(tonode(n))," ")
         end
     end,
 }

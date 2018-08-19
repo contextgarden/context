@@ -456,6 +456,7 @@ references.enhance = enhancereference
 implement {
     name      = "deferredenhancereference",
     arguments = "2 strings",
+    protected = true,
     actions   = function(prefix,tag)
         ctx_latelua(function() enhancereference(prefix,tag) end)
     end,

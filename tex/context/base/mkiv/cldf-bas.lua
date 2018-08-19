@@ -33,7 +33,7 @@ local ctxcore       = context.core
 
 local variables     = interfaces.variables
 
-local ctx_flushnode = context.nodes.flush
+local ctx_flushnode = context.nuts.flush
 
 local nuts          = nodes.nuts
 local tonode        = nuts.tonode
@@ -182,11 +182,10 @@ context.registers = {
 
 do
 
-
     function context.latelua(f)
         local latelua = new_latelua(f)
         setattrlist(latelua,true)
-        ctx_flushnode(tonode(latelua))
+        ctx_flushnode(latelua)
     end
 
 end
