@@ -536,6 +536,7 @@ local function gettemperatures(presets)
                                     if zones then
                                         local z = s[i].zones
                                         for i=1,#zones do
+                                            local zone = zones[i]
                                             if validzonetypes[zone.zoneType] then
                                                 local z = z[i]
                                                 if z.name == zone.name then

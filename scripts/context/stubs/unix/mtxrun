@@ -25,14 +25,26 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 -- copyright: PRAGMA ADE / ConTeXt Development Team
 -- license  : see context related readme files
 
--- This script is based on texmfstart.rb but does not use kpsewhich to
--- locate files. Although kpse is a library it never came to opening up
--- its interface to other programs (esp scripting languages) and so we
--- do it ourselves. The lua variant evolved out of an experimental ruby
--- one. Interesting is that using a scripting language instead of c does
--- not have a speed penalty. Actually the lua variant is more efficient,
--- especially when multiple calls to kpsewhich are involved. The lua
+-- This script is based on texmfstart.rb but does not use kpsewhich to locate files.
+-- Although kpse is a library it never came to opening up its interface to other
+-- programs (esp scripting languages) and so we do it ourselves. The lua variant
+-- evolved out of an experimental ruby one. Interesting is that using a scripting
+-- language instead of c does not have a speed penalty. Actually the lua variant is
+-- more efficient, especially when multiple calls to kpsewhich are involved. The lua
 -- library also gives way more control.
+
+-- When libraries used here are updates you can run
+--
+--   mtxrun --selfmerge
+--
+-- to update the embedded code. After that you might need to run
+--
+--   mtxrun --selfupdate
+--
+-- to copy the new script (from scripts/context/lua) to location where
+-- binaries are expected. If you want to remove the embedded code you can run
+--
+--   mtxxun --selfclean
 
 -- to be done / considered
 --
@@ -3640,7 +3652,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16683, stripped down to: 9462
+-- original size: 16952, stripped down to: 9696
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -4014,6 +4026,20 @@ function os.validdate(year,month,day)
     end
   end
   return year,month,day
+end
+local osexit=os.exit
+local exitcode=nil
+function os.setexitcode(code)
+  exitcode=code
+end
+function os.exit(c)
+  if exitcode~=nil then
+    return osexit(exitcode)
+  end
+  if c~=nil then
+    return osexit(c)
+  end
+  return osexit()
 end
 
 
@@ -4835,7 +4861,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 18035, stripped down to: 11890
+-- original size: 18002, stripped down to: 11863
 
 if not modules then modules={} end modules ['l-dir']={
   version=1.001,
@@ -4900,7 +4926,6 @@ local function glob_pattern_function(path,patt,recurse,action)
     end
     local dirs
     local nofdirs=0
-    local noffiles=#result
     for name in walkdir(usedpath) do
       if name~="." and name~=".." then
         local full=path..name
@@ -12037,7 +12062,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9400, stripped down to: 5499
+-- original size: 9634, stripped down to: 5673
 
 if not modules then modules={} end modules ['util-env']={
   version=1.001,
@@ -12208,13 +12233,20 @@ if arg then
   for index=1,#arg do
     local argument=arg[index]
     if find(argument,"^\"") then
-      newarg[#newarg+1]=gsub(argument,"^\"","")
-      if not find(argument,"\"$") then
+      if find(argument,"\"$") then
+        newarg[#newarg+1]=gsub(argument,"^\"(.-)\"$","%1")
+        instring=false
+      else
+        newarg[#newarg+1]=gsub(argument,"^\"","")
         instring=true
       end
     elseif find(argument,"\"$") then
-      newarg[#newarg]=newarg[#newarg].." "..gsub(argument,"\"$","")
-      instring=false
+      if instring then
+        newarg[#newarg]=newarg[#newarg].." "..gsub(argument,"\"$","")
+        instring=false
+      else
+        newarg[#newarg+1]=argument
+      end
     elseif instring then
       newarg[#newarg]=newarg[#newarg].." "..argument
     else
@@ -19632,7 +19664,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-pre"] = package.loaded["data-pre"] or true
 
--- original size: 4090, stripped down to: 3059
+-- original size: 4854, stripped down to: 2993
 
 if not modules then modules={} end modules ['data-pre']={
   version=1.001,
@@ -19744,8 +19776,6 @@ prefixes.toppath=function(str) return cleanpath(joinpath(toppath(),str)) end
 prefixes.jobpath=function(str) return cleanpath(joinpath(jobpath(),str)) end 
 resolvers.setdynamic("toppath")
 resolvers.setdynamic("jobpath")
-prefixes.jobfile=prefixes.jobpath
-resolvers.setdynamic("jobfile")
 
 
 end -- of closure
@@ -21704,9 +21734,9 @@ end
 end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
--- skipped libraries : -
--- original bytes    : 892251
--- stripped bytes    : 323056
+-- skipped libraries : util-soc-imp-reset util-soc-imp-socket util-soc-imp-copas util-soc-imp-ltn12 util-soc-imp-mime util-soc-imp-url util-soc-imp-headers util-soc-imp-tp util-soc-imp-http util-soc-imp-ftp util-soc-imp-smtp
+-- original bytes    : 893485
+-- stripped bytes    : 323975
 
 -- end library merge
 
@@ -21973,9 +22003,7 @@ local helpinfo = [[
     <flag name="locate"><short>locate given filename in database (default) or system (<ref name="first"/> <ref name="all"/> <ref name="detail"/>)</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="autotree"><short>use texmf tree cf. env texmfstart_tree or texmfstarttree</short></flag>
     <flag name="tree" value="pathtotree"><short>use given texmf tree (default file: setuptex.tmf)</short></flag>
-    <flag name="environment" value="name"><short>use given (tmf) environment file</short></flag>
     <flag name="path" value="runpath"><short>go to given path before execution</short></flag>
     <flag name="ifchanged" value="filename"><short>only execute when given file has changed (md checksum)</short></flag>
     <flag name="iftouched" value="old,new"><short>only execute when given file has changed (time stamp)</short></flag>
@@ -22556,12 +22584,9 @@ function runners.execute_ctx_script(filename,...)
             dofile(fullname)
             local savename = environment.arguments['save']
             if savename then
-                local save_list = runners.save_list
-                if save_list and next(save_list) then
-                    if type(savename) ~= "string" then savename = file.basename(fullname) end
-                    savename = file.replacesuffix(savename,"cfg")
-                    runners.save_script_session(savename,save_list)
-                end
+                if type(savename) ~= "string" then savename = file.basename(fullname) end
+                savename = file.replacesuffix(savename,"cfg")
+                runners.save_script_session(savename,save_list)
             end
             return true
         end

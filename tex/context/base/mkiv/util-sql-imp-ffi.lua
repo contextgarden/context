@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['util-sql-imp-ffi'] = {
 
 -- I looked at luajit-mysql to see how the ffi mapping was done but it didn't work
 -- out that well (at least not on windows) but I got the picture. As I have somewhat
--- different demands I simplified / redid the ffi bti and just took the swiglib
+-- different demands I simplified / redid the ffi bit and just took the swiglib
 -- variant and adapted that.
 
 local tonumber = tonumber
@@ -32,6 +32,9 @@ ffi.cdef [[
         This is as lean and mean as possible. After all we just need a connection and
         a query. The rest is handled already in the Lua code elsewhere.
     */
+
+    void free(void*ptr);
+    void * malloc(size_t size);
 
     typedef void MYSQL_instance;
     typedef void MYSQL_result;
@@ -188,7 +191,10 @@ local ffi_tostring           = ffi.string
 local ffi_gc                 = ffi.gc
 
 ----- mysqldata              = ffi.cast("MYSQL_instance*",mysql.malloc(1024*1024))
-local instance               = mysql.mysql_init(nil) -- (mysqldata)
+-- local instance               = mysql.mysql_init(nil) -- (mysqldata)
+
+local instance               = ffi.cast("MYSQL_instance*",mysql.malloc(1024*1024))
+local success                = mysql.mysql_init(mysqldata)
 
 local mysql_constant_false   = false
 local mysql_constant_true    = true

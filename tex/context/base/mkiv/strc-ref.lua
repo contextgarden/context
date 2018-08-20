@@ -410,6 +410,7 @@ function references.set(data)
             pd[ref] = data
             local r = data.references
             ctx_dofinishreference(prefix or "",ref or "",r and r.internal or 0)
+         -- ctx_latelua(function() structures.references.enhance(prefix or ref,ref or "") end)
         end
     end
     process_settings(reference,action)

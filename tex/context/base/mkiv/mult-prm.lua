@@ -278,6 +278,7 @@ return {
   "lastxpos",
   "lastypos",
   "latelua",
+  "lateluafunction",
   "leftghost",
   "leftmarginkern",
   "letcharcode",

@@ -185,7 +185,7 @@ do
     function context.latelua(f)
         local latelua = new_latelua(f)
         setattrlist(latelua,true)
-        ctx_flushnode(latelua)
+        ctx_flushnode(latelua,true)
     end
 
 end

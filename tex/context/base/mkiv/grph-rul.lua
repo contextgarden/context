@@ -12,12 +12,16 @@ local attributes     = attributes
 local nodes          = nodes
 local context        = context
 
-local nuts           = nodes.nuts
-local ruleactions    = nodes.rules.ruleactions
-local userrule       = nuts.rules.userrule
 local bpfactor       = number.dimenfactors.bp
 
+local nuts           = nodes.nuts
+local userrule       = nuts.rules.userrule
+local ruleactions    = nuts.rules.ruleactions
+
 local setattrlist    = nuts.setattrlist
+local setattr        = nuts.setattr
+local tonode         = nuts.tonode
+
 local getattribute   = tex.getattribute
 
 local a_color        = attributes.private('color')
@@ -237,11 +241,11 @@ interfaces.implement {
             t.ca = ca
             t.ta = ta
         else
-            rule[a_colormodel]   = ma
-            rule[a_color]        = ca
-            rule[a_transparency] = ta
+            setattr(rule,a_colormodel,ma)
+            setattr(rule,a_color,ca)
+            setattr(rule,a_transparency,ta)
         end
-        context(tonode(rule))
+        context(tonode(rule)) -- will become context.nodes.flush
     end
 }
 

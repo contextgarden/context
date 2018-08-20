@@ -1016,25 +1016,33 @@ definers.registersplit(":",colonized,"direct")
 
 -- define (two steps)
 
------ space        = P(" ")
------ spaces       = space^0
-local leftparent   = (P"(")
-local rightparent  = (P")")
-local value        = C((leftparent * (1-rightparent)^0 * rightparent + (1-space))^1)
-local dimension    = C((space/"" + P(1))^1)
-local rest         = C(P(1)^0)
-local scale_none   =                     Cc(0)
-local scale_at     = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
-local scale_sa     = P("sa")           * Cc(2) * spaces * dimension -- number
-local scale_mo     = P("mo")           * Cc(3) * spaces * dimension -- number
-local scale_scaled = P("scaled")       * Cc(4) * spaces * dimension -- number
-local scale_ht     = P("ht")           * Cc(5) * spaces * dimension -- dimension
-local scale_cp     = P("cp")           * Cc(6) * spaces * dimension -- dimension
+local sizepattern, splitpattern, specialscale  do
 
-local specialscale = { [5] = "ht", [6] = "cp" }
+    ----- space          = P(" ")
+    ----- spaces         = space^0
+    local leftparent     = (P"(")
+    local rightparent    = (P")")
+    local leftbrace      = (P"{")
+    local rightbrace     = (P"}")
+    local withinparents  = leftparent * (1-rightparent)^0 * rightparent
+    local withinbraces   = leftbrace  * (1-rightbrace )^0 * rightbrace
+    local value          = C((withinparents + withinbraces + (1-space))^1)
+    local dimension      = C((space/"" + P(1))^1)
+    local rest           = C(P(1)^0)
+    local scale_none     =                     Cc(0)
+    local scale_at       = (P("at") +P("@")) * Cc(1) * spaces * dimension -- dimension
+    local scale_sa       = P("sa")           * Cc(2) * spaces * dimension -- number
+    local scale_mo       = P("mo")           * Cc(3) * spaces * dimension -- number
+    local scale_scaled   = P("scaled")       * Cc(4) * spaces * dimension -- number
+    local scale_ht       = P("ht")           * Cc(5) * spaces * dimension -- dimension
+    local scale_cp       = P("cp")           * Cc(6) * spaces * dimension -- dimension
 
-local sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
-local splitpattern = spaces * value * spaces * rest
+    specialscale = { [5] = "ht", [6] = "cp" }
+
+    sizepattern  = spaces * (scale_at + scale_sa + scale_mo + scale_ht + scale_cp + scale_scaled + scale_none)
+    splitpattern = spaces * value * spaces * rest
+
+end
 
 function helpers.splitfontpattern(str)
     local name, size = lpegmatch(splitpattern,str)

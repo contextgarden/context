@@ -146,8 +146,8 @@
 
 % \unexpanded
 
-\def\strc_lists_inject_enhance#listindex#internal%
-  {\clf_deferredenhancelist#listindex\relax}
+\def\strc_lists_inject_enhance#listindex%
+  {\expandafter\clf_deferredenhancelist\number#listindex\relax}
 
 \unexpanded\def\strc_lists_inject_yes[#settings][#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
@@ -172,7 +172,7 @@
    \setxvalue{\??listlocations\currentlist}{\the\locationcount}%
    \ifx\p_location\v!here
      % this branch injects nodes !
-     \strc_lists_inject_enhance{\currentlistnumber}{\the\locationcount}%
+     \strc_lists_inject_enhance{\currentlistnumber}%
      \clf_setinternalreference
         internal \locationcount
         view     {\interactionparameter\c!focus}%
@@ -212,7 +212,7 @@
 \def\strc_lists_write_data_to[#tag]%
   {\begingroup
    \edef\currentlist{#tag}%
-   \ {\namedlistparameter{#tag}\c!state}\v!start
+   \doifelse{\namedlistparameter{#tag}\c!state}\v!start
      \strc_lists_write_data_to_yes
      \strc_lists_write_data_to_nop}
 

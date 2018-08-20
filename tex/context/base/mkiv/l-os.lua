@@ -582,3 +582,20 @@ function os.validdate(year,month,day)
     end
     return year, month, day
 end
+
+local osexit   = os.exit
+local exitcode = nil
+
+function os.setexitcode(code)
+    exitcode = code
+end
+
+function os.exit(c)
+    if exitcode ~= nil then
+        return osexit(exitcode)
+    end
+    if c ~= nil then
+        return osexit(c)
+    end
+    return osexit()
+end

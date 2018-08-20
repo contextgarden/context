@@ -281,13 +281,20 @@ if arg then
     for index=1,#arg do
         local argument = arg[index]
         if find(argument,"^\"") then
-            newarg[#newarg+1] = gsub(argument,"^\"","")
-            if not find(argument,"\"$") then
+            if find(argument,"\"$") then
+                newarg[#newarg+1] = gsub(argument,"^\"(.-)\"$","%1")
+                instring = false
+            else
+                newarg[#newarg+1] = gsub(argument,"^\"","")
                 instring = true
             end
         elseif find(argument,"\"$") then
-            newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
-            instring = false
+            if instring then
+                newarg[#newarg] = newarg[#newarg] .. " " .. gsub(argument,"\"$","")
+                instring = false
+            else
+                newarg[#newarg+1] = argument
+            end
         elseif instring then
             newarg[#newarg] = newarg[#newarg] .. " " .. argument
         else

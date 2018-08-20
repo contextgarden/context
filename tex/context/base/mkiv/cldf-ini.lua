@@ -710,9 +710,14 @@ local s_cldl_option_b   = "[\\cldl"
 local s_cldl_option_f   = "[\\cldl" -- add space (not needed)
 local s_cldl_option_e   = "]"
 local s_cldl_option_s   = "\\cldl"
+local s_cldl_option_d   = "\\cldd"
 local s_cldl_argument_b = "{\\cldl"
 local s_cldl_argument_f = "{\\cldl "
 local s_cldl_argument_e = "}"
+
+if LUATEXFUNCTIONALITY < 6898 then
+    s_cldl_option_d = s_cldl_option_s
+end
 
 -- local s_cldl_option_b   = "["
 -- local s_cldl_option_f   = "" -- add space (not needed)
@@ -1100,14 +1105,10 @@ end
 context.nodes = { -- todo
     store = storenode,
     flush = function(n)
-        if nodeflushmode then
-            if tonut(n) <= maxflushnodeindex then
-                flush(n)
-            else
-                flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
-            end
+        if nodeflushmode and tonut(n) <= maxflushnodeindex then
+            flush(n)
         else
-            flush(currentcatcodes,s_cldl_option_s,storenode(n)," ")
+            flush(currentcatcodes,d and s_cldl_option_d or s_cldl_option_s,storenode(n)," ")
         end
     end,
 }
@@ -1116,15 +1117,11 @@ context.nuts = { -- todo
     store = function(n)
         return storenode(tonut(n))
     end,
-    flush = function(n)
-        if nodeflushmode then
-            if n <= maxflushnodeindex then
-                flush(tonode(n))
-            else
-                flush(currentcatcodes,s_cldl_option_s,storenode(tonode(n))," ")
-            end
+    flush = function(n,d)
+        if nodeflushmode and n <= maxflushnodeindex then
+            flush(tonode(n))
         else
-            flush(currentcatcodes,s_cldl_option_s,storenode(tonode(n))," ")
+            flush(currentcatcodes,d and s_cldl_option_d or s_cldl_option_s,storenode(tonode(n))," ")
         end
     end,
 }

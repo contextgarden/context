@@ -103,12 +103,18 @@ function scripts.tools.downcase()
         local basename = file.basename(name)
         if lower(basename) ~= basename then
             n = n + 1
+            local low = lower(name)
+            if n == 1 then
+                report()
+            end
+            report("%a renamed to %a",name,low)
             if force then
-                os.rename(name,lower(name))
+                os.rename(name,low)
             end
         end
     end)
     if n > 0 then
+        report()
         if force then
             report("%s files renamed",n)
         else

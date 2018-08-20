@@ -1313,7 +1313,7 @@ do
 
 end
 
-do
+if implement then
 
     implement {
         name      = "btxshortcut",

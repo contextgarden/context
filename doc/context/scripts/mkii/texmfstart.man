@@ -32,14 +32,8 @@ run script using built in libraries (same as --ctxlua)
 .B --locate
 locate given filename in database (default) or system (--first --all --detail)
 .TP
-.B --autotree
-use texmf tree cf. env texmfstart_tree or texmfstarttree
-.TP
 .B --tree=pathtotree
 use given texmf tree (default file: setuptex.tmf)
-.TP
-.B --environment=name
-use given (tmf) environment file
 .TP
 .B --path=runpath
 go to given path before execution

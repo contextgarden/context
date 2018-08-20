@@ -91,7 +91,6 @@ local function glob_pattern_function(path,patt,recurse,action)
         end
         local dirs
         local nofdirs  = 0
-        local noffiles = #result
         for name in walkdir(usedpath) do
             if name ~= "." and name ~= ".." then
                 local full = path .. name

@@ -29,7 +29,9 @@
 %
 % example: context --extra=domotica --openzwave ./config/fibaro/fgms.xml ./open-zwave-master/config/aeotec/zw100.xml
 % example: context --extra=domotica --openzwave --pattern="./open-zwave-master/config/**.xml"
-% example: context --extra=domotica --hue       hue-pragma-tasks.lua
+% example: context --extra=domotica --hue hue-pragma-tasks.lua
+% example: context --extra=domotica --hue pragma-youless-gas.lua --year=2018 --month=8
+% example: context --extra=domotica --hue pragma-youless-electricity.lua
 %
 % end help
 
@@ -161,7 +163,10 @@
 
 \stopmode
 
+
 \startmode[hue]
+
+    \usemodule[youless]
 
     \starttext
 
@@ -171,10 +176,22 @@
 
     local arguments = document.arguments
     local files     = document.files
-    local pattern   = arguments.pattern
     local filename  = files[1]
+    local pattern   = arguments.pattern
+    local year      = arguments.year
+    local month     = arguments.month
 
-    if filename then
+    local action    = (arguments.tasks                     and "task")
+                   or (arguments.graphics                  and "graphics")
+                   or (string.find(filename,"tasks")       and "tasks")
+                   or (string.find(filename,"electricity") and "graphics")
+                   or (string.find(filename,"pulse")       and "graphics")
+                   or (string.find(filename,"gas")         and "graphics")
+
+    if not filename or filename == "" then
+        logs.report("youless","provide filename")
+        context("no files given")
+    elseif action == "tasks" then
         context.starttitle { title = "Hue: " .. file.nameonly(filename) }
         filename = file.addsuffix(filename,"lua")
         if lfs.isfile(filename) then
@@ -183,9 +200,11 @@
             context("unknown file %a",filename)
         end
         context.stoptitle()
+    elseif action == "graphics" then
+        moduledata.youless.graphics { year = year, month = month, filename = filename }
     else
-        context("no files given")
-        context.stoptitle()
+        logs.report("youless","provide --status or --graphics")
+        context("no action given")
     end
 
     \stopluacode

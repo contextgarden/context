@@ -61,7 +61,14 @@ function scripts.colors.table()
             end
         end
     else
-        report("no file(s) given" )
+        local files = resolvers.findfiles("*.icc")
+        if #files > 0 then
+            for i=1,#files do
+                report(files[i])
+            end
+        else
+            report("no file(s) given" )
+        end
     end
 end
 

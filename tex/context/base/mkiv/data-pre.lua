@@ -6,6 +6,25 @@ if not modules then modules = { } end modules ['data-pre'] = {
     license   = "see context related readme files"
 }
 
+-- filename        : only the basename, including suffix (file:)
+-- pathname        : the pathpart (path:)
+-- locate          : lookup in database (full: kpse: loc:)
+-- home            : home path
+-- jobpath         : job path
+-- relative        : relative path ./ ../ ../.. (rel:)
+-- auto            : relatove or lookup
+-- toppath         : topmost path in input stack
+-- selfautodir     : rather tex specific
+-- selfautoloc     : rather tex specific
+-- selfautoparent  : rather tex specific
+-- environment     : expansion of variable (env:)
+--
+-- nodename        : computer name
+-- machine         : private, when set
+-- sysname         : operating system name
+-- version         : operating system version
+-- release         : operating system release
+
 local resolvers     = resolvers
 local prefixes      = resolvers.prefixes
 
@@ -140,7 +159,6 @@ resolvers.setdynamic("toppath")
 resolvers.setdynamic("jobpath")
 
 -- for a while (obsolete):
-
-prefixes.jobfile = prefixes.jobpath
-
-resolvers.setdynamic("jobfile")
+--
+-- prefixes.jobfile = prefixes.jobpath
+-- resolvers.setdynamic("jobfile")

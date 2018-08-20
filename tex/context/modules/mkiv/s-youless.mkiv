@@ -33,7 +33,26 @@
 
     moduledata.youless = { }
 
-    local function process(specification)
+    local defaults = {
+        electricity = {
+            unit    = "watt",
+            maxunit = "maxwatt",
+        },
+        watt        = {
+            unit    = "watt",
+            maxunit = "maxwatt",
+        },
+        pulse       = {
+            unit    = "watt",
+            maxunit = "maxwatt",
+        },
+        gas         = {
+            unit    = "liters",
+            maxunit = "maxliters",
+        },
+    }
+
+    local function process(specification,thevariant)
 
         local data, message = utilities.youless.analyze(specification.filename or "youless-electricity.lua")
 
@@ -42,13 +61,32 @@
             return
         end
 
-        local year    = tonumber(specification.year) or os.today().year
-        local month   = tonumber(specification.month)
-        local years   = data.years
         local variant = data.variant
         local unit    = specification.unit
         local maxunit = specification.maxunit
 
+        if thevariant then
+            if variant ~= thevariant then
+                context("invalid variant")
+                return
+            end
+        elseif variant then
+            local d = defaults[variant]
+            if d then
+                unit    = d.unit
+                maxunit = d.maxunit
+            else
+                context("unknown variant")
+                return
+            end
+        else
+            context("invalid variant")
+            return
+        end
+
+        local year    = tonumber(specification.year) or os.today().year
+        local month   = tonumber(specification.month)
+        local years   = data.years
         local max     = specification[maxunit]
 
         if not max then
@@ -171,7 +209,7 @@
     function moduledata.youless.electricity(specification)
         specification.unit    = "watt"
         specification.maxunit = "maxwatt"
-        process(specification)
+        process(specification,"electricity")
     end
 
     moduledata.youless.watt = moduledata.youless.electricity
@@ -179,12 +217,16 @@
     function moduledata.youless.gas(specification)
         specification.unit    = "liters"
         specification.maxunit = "maxliters"
-        process(specification)
+        process(specification,"gas")
     end
 
     function moduledata.youless.pulse(specification)
         specification.unit    = "watt"
         specification.maxunit = "maxwatt"
+        process(specification,"pulse")
+    end
+
+    function moduledata.youless.graphics(specification)
         process(specification)
     end
 

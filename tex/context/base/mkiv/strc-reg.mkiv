@@ -305,7 +305,7 @@
    \ifx\currentregisterownnumber\v!yes
      \glet\currentregistersynchronize\relax
    \else
-     \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\currentregisternumber}%
+     \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\number\currentregisternumber}%
    \fi
    \currentregistersynchronize % here?
    % needs thinking ... bla\index{bla}. will break before the . but adding a
@@ -341,7 +341,7 @@
  %    internal \locationcount
  %    view     {\interactionparameter\c!focus}%
    \relax % this will change
-   \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\currentregisternumber}%
+   \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\number\currentregisternumber}%
    \currentregistersynchronize % here?
    \dostarttagged\t!registerlocation\currentregister
    \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup

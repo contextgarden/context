@@ -1082,7 +1082,7 @@ implement {
 implement {
     name      = "deferredenhancelist",
     arguments = "integer",
-    protected = true,
+    protected = true, -- for now, pre 1.09
     actions   = function(n)
         ctx_latelua(function() enhancelist(n) end)
     end,

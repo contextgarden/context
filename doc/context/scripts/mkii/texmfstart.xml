@@ -16,9 +16,7 @@
     <flag name="locate"><short>locate given filename in database (default) or system (<ref name="first"/> <ref name="all"/> <ref name="detail"/>)</short></flag>
    </subcategory>
    <subcategory>
-    <flag name="autotree"><short>use texmf tree cf. env texmfstart_tree or texmfstarttree</short></flag>
     <flag name="tree" value="pathtotree"><short>use given texmf tree (default file: setuptex.tmf)</short></flag>
-    <flag name="environment" value="name"><short>use given (tmf) environment file</short></flag>
     <flag name="path" value="runpath"><short>go to given path before execution</short></flag>
     <flag name="ifchanged" value="filename"><short>only execute when given file has changed (md checksum)</short></flag>
     <flag name="iftouched" value="old,new"><short>only execute when given file has changed (time stamp)</short></flag>
