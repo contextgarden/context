@@ -161,13 +161,20 @@ local function loadedtable(filename)
         for i=1,10 do
             local t = loadtable(filename)
             if t then
+                report("file %a loaded",filename)
                 return t
             else
                 ossleep(1/4)
             end
         end
     end
+    report("file %a not loaded",filename)
     return { }
+end
+
+local function savedtable(filename,data)
+    savetable(filename,data)
+    report("file %a saved",filename)
 end
 
 local function loadpresets(filename)
@@ -190,6 +197,13 @@ end
 local function loadeverything(filename)
     if type(filename) == "table" and validpresets(filename) then
         filename = filename.files and filename.files.everything
+    end
+    return loadedtable(filename)
+end
+
+local function loadlatest(filename)
+    if type(filename) == "table" and validpresets(filename) then
+        filename = filename.files and filename.files.latest
     end
     return loadedtable(filename)
 end
@@ -503,7 +517,7 @@ local function geteverything(presets,noschedules)
                     end
                 end
             end
-            savetable(presets.files.everything,data)
+            savedtable(presets.files.everything,data)
             return result(data,"getting everything, %s")
         end
     end
@@ -554,7 +568,7 @@ local function gettemperatures(presets)
             end
             if updated then
                 data.time = ostime()
-                savetable(presets.files.latest,data)
+                savedtable(presets.files.latest,data)
             end
             return result(data,"getting temperatures, %s")
         end
@@ -602,7 +616,10 @@ end
 
 local function loadtemperatures(presets)
     if validpresets(presets) then
-        local status = loadeverything(presets)
+        local status = loadlatest(presets)
+        if not status or not next(status) then
+            status = loadeverything(presets)
+        end
         if status then
             local usedgateways = presets.data.gateways
             for i=1,#status do
@@ -638,9 +655,10 @@ end
 local function updatetemperatures(presets)
     if validpresets(presets) then
         local everythingname = presets.files.everything
+        local latestname     = presets.files.latest
         local historyname    = presets.files.history
-        if everythingname and historyname then
-            gettemperatures(presets,everythingname)
+        if (everythingname or latestname) and historyname then
+            gettemperatures(presets)
             local t = loadtemperatures(presets)
             if t then
                 local data = { }
@@ -650,7 +668,7 @@ local function updatetemperatures(presets)
                 end
                 local history = loadhistory(historyname) or { }
                 setmoment(history,ostime(),data)
-                savetable(historyname,history)
+                savedtable(historyname,history)
                 return result(t,"updating temperatures, %s")
             end
         end
@@ -788,7 +806,7 @@ local function settask(presets,when,tag,action)
         else
             list[tag] = nil
         end
-        savetable(presets.files.schedules,list)
+        savedtable(presets.files.schedules,list)
     end
 end
 
@@ -833,7 +851,7 @@ local function checktasks(presets)
             for k, v in next, q do
                 list[q] = nil
             end
-            savetable(presets.files.schedules,list)
+            savedtable(presets.files.schedules,list)
         end
         return list
     end

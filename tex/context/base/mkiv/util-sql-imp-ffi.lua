@@ -191,10 +191,10 @@ local ffi_tostring           = ffi.string
 local ffi_gc                 = ffi.gc
 
 ----- mysqldata              = ffi.cast("MYSQL_instance*",mysql.malloc(1024*1024))
--- local instance               = mysql.mysql_init(nil) -- (mysqldata)
+local instance               = mysql.mysql_init(nil) -- (mysqldata)
 
-local instance               = ffi.cast("MYSQL_instance*",mysql.malloc(1024*1024))
-local success                = mysql.mysql_init(mysqldata)
+-- local instance            = ffi.cast("MYSQL_instance*",mysql.malloc(1024*1024))
+-- local success             = mysql.mysql_init(mysqldata)
 
 local mysql_constant_false   = false
 local mysql_constant_true    = true
@@ -309,7 +309,8 @@ local function execute(t,query)
     return false
 end
 
-local mt = { __index = {
+local mt = {
+    __index = {
         close   = close,
         execute = execute,
     }
@@ -475,6 +476,20 @@ local function datafetched(specification,query,converter)
     elseif message then
         report_state("message %s",message)
     end
+
+    if not result then -- can go
+        if session then
+            session:close()
+        end
+        if connection then
+            connection:close()
+        end
+        if id then
+            cache[id] = nil
+        end
+        return "execution error"
+    end
+
     if not keys then
         keys = { }
     end
@@ -482,8 +497,12 @@ local function datafetched(specification,query,converter)
         data = { }
     end
     if not id then
-        connection:close()
-        session:close()
+        if connection then
+            connection:close()
+        end
+        if session then
+            session:close()
+        end
     end
     return data, keys
 end

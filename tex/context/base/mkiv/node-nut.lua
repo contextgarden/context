@@ -177,14 +177,15 @@ end
 
 if not direct.getexpansion then
 
-    local getfield           = direct.getfield
-    local setfield           = direct.setfield
+    local getfield     = direct.getfield
+    local setfield     = direct.setfield
+    local getid        = direct.getid
 
-    local nodecodes          = nodes.nodecodes
-    local whatsitcodes       = nodes.whatsitcodes
+    local nodecodes    = nodes.nodecodes
+    local whatsitcodes = nodes.whatsitcodes
 
-    local glyph_code         = nodecodes.glyph
-    local kern_code          = nodecodes.kern
+    local glyph_code   = nodecodes.glyph
+    local kern_code    = nodecodes.kern
 
     function direct.getexpansion(n)
         local id = getid(n)
