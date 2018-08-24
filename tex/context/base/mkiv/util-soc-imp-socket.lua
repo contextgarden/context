@@ -12,8 +12,13 @@ local tcp4        = socket.tcp4
 local tcp6        = socket.tcp6
 local getaddrinfo = socket.dns.getaddrinfo
 
-local report = logs and logs.reporter("socket") or function(fmt,first,...)
-    if fmt then
+local defaulthost = "0.0.0.0"
+
+local function report(fmt,first,...)
+    if logs then
+        report = logs and logs.reporter("socket")
+        report(fmt,first,...)
+    elseif fmt then
         fmt = "socket: " .. fmt
         if first then
             print(format(fmt,first,...))
@@ -181,10 +186,8 @@ sourcet["default"] = sourcet["until-closed"]
 
 socket.source = socket.choose(sourcet)
 
-if logs then
-    _G.socket = socket
-    package.loaded.socket = socket
- -- report("module (re)installed")
-end
+_G.socket = socket -- for now global
+
+package.loaded.socket = socket
 
 return socket

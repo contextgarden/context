@@ -274,7 +274,9 @@ local function forcedmodel(model) -- delayed till the backend but mp directly
             return 2
         end
     elseif model == 5 then -- spot
-        if cmyk_okay then
+        if spot_okay then
+            return 5
+        elseif cmyk_okay then
             return 4
         elseif rgb_okay then
             return 3
@@ -565,7 +567,7 @@ local function f(i,colors,fraction)
     return otf
 end
 
-local function definemixcolor(makename,name,fractions,cs,global,freeze)
+local function definemixcolor(makecolor,name,fractions,cs,global,freeze)
     local values = { }
     for i=1,#cs do -- do fraction in here
         local v = colorvalues[cs[i]]
@@ -593,7 +595,7 @@ local function definemixcolor(makename,name,fractions,cs,global,freeze)
         end
         definecolor(name,ca,global,freeze)
     else
-        report_colors("invalid specification of components for color %a",makename)
+        report_colors("invalid specification of components for color %a",makecolor)
     end
 end
 
@@ -609,12 +611,12 @@ local function definemultitonecolor(name,multispec,colorspec,selfspec)
         nn = concat(nn,'_')
         local parent = gsub(lower(nn),"[^%d%a%.]+","_")
         if not colorspec or colorspec == "" then
+            -- this can happens when we come from metapost
             local cc = { }
             for i=1,max do
---                 cc[i] = l_color[dd[i]]
                 cc[i] = resolvedname(dd[i])
             end
-            definemixcolor(name,parent,pp,cc,global,freeze) -- can become local
+            definemixcolor(name,parent,pp,cc,true,true)
         else
             if selfspec ~= "" then
                 colorspec = colorspec .. "," .. selfspec
@@ -646,24 +648,29 @@ colors.definemultitonecolor = definemultitonecolor
 -- that we cannot cast .. so we really need to use (s,s,s) for gray in order
 -- to be able to map onto 'color'
 
-local function mpcolor(model,ca,ta,default)
+local function mpcolor(model,ca,ta,default,name)
     local cv = colorvalues[ca]
     if cv then
         local tv = transparencyvalues[ta]
+        -- maybe move the 5 logic into the forcedmodel call
+        local cm = cv[1]
         if model == 1 then
-            model = cv[1]
+            model = cm
         end
         model = forcedmodel(model)
+        if cm == 5 and model == 4 then
+            model = 5 -- a cheat but ok as spot colors have a representation
+        end
         if tv then
             if model == 2 then
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 3 then
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return formatters["transparent(%s,%s,cmyk(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
+                return formatters["transparent(%s,%s,(%s,%s,%s,%s))"](tv[1],tv[2],cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
              -- return formatters['transparent(%s,%s,multitonecolor("%s",%s,"%s","%s"))'](tv[1],tv[2],cv[10],cv[11],cv[12],cv[13])
-                return formatters['transparent(%s,%s,namedcolor("%s"))'](tv[1],tv[2],cv[10])
+                return formatters['transparent(%s,%s,namedcolor("%s"))'](tv[1],tv[2],name or cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["transparent(%s,%s,(%s))"](tv[1],tv[2],cv[2])
                 return formatters["transparent(%s,%s,(%s,%s,%s))"](tv[1],tv[2],cv[3],cv[4],cv[5])
             end
@@ -673,10 +680,9 @@ local function mpcolor(model,ca,ta,default)
             elseif model == 3 then
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             elseif model == 4 then
-                return formatters["cmyk(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
+                return formatters["(%s,%s,%s,%s)"](cv[6],cv[7],cv[8],cv[9])
             elseif model == 5 then
-             -- return formatters['multitonecolor("%s",%s,"%s","%s")'](cv[10],cv[11],cv[12],cv[13])
-                return formatters['namedcolor("%s")'](cv[10])
+                return formatters['namedcolor("%s")'](name or cv[10])
             else -- see ** in meta-ini.mkiv: return formatters["%s"]((cv[2]))
                 return formatters["(%s,%s,%s)"](cv[3],cv[4],cv[5])
             end
@@ -736,7 +742,8 @@ end
 colors.namedcolorattributes = namedcolorattributes -- can be used local
 
 local function mpnamedcolor(name)
-    return mpcolor(namedcolorattributes(name))
+    local model, ca, ta = namedcolorattributes(name)
+    return mpcolor(model,ca,ta,nil,name)
 end
 
 local function mpoptions(model,ca,ta,default) -- will move to mlib-col .. not really needed

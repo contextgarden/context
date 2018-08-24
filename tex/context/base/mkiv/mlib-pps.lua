@@ -102,6 +102,7 @@ local f_gray  = formatters["%.3F g %.3F G"]
 local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
 local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_cm_b  = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
+local f_scn   = formatters["%.3F"]
 
 local f_shade = formatters["MpSh%s"]
 local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
@@ -114,6 +115,7 @@ directives.register("metapost.stripzeros",function()
     f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
     f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
     f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
+    f_scn   = formatters["%.3N"]
 end)
 
 local function checked_color_pair(color,...)
@@ -1701,14 +1703,27 @@ local remappers = {
     [4] = formatters["c=%s,m=%s,y=%s,k=%s"],
 }
 
+local processlast = 0
+local processhash = setmetatableindex(function(t,k)
+    processlast = processlast + 1
+    local v = formatters["mp_%s"](processlast)
+    defineprocesscolor(v,k,true,true)
+    t[k] = v
+    return v
+end)
+
+local function checked_transparency(alternative,transparency,before,after)
+    alternative  = tonumber(alternative)  or 1
+    transparency = tonumber(transparency) or 0
+    before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,alternative,transparency,true))
+    after [#after +1] = "/Tr0 gs" -- outertransparency
+end
+
 local function tr_process(object,prescript,before,after)
     -- before can be shortcut to t
     local tr_alternative = prescript.tr_alternative
     if tr_alternative then
-        tr_alternative = tonumber(tr_alternative)
-        local tr_transparency = tonumber(prescript.tr_transparency)
-        before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,tr_alternative,tr_transparency,true))
-        after[#after+1] = "/Tr0 gs" -- outertransparency
+        checked_transparency(tr_alternative,prescript.tr_transparency,before,after)
     end
     local cs = object.color
     if cs and #cs > 0 then
@@ -1719,29 +1734,35 @@ local function tr_process(object,prescript,before,after)
         else
             local sp_name = prescript.sp_name or "black"
             if sp_type == "spot" then
-                local sp_value = prescript.sp_value or "s:1"
-                local sp_temp  = formatters["mp:%s"](sp_value)
-                local s = split(sp_value,":")
-                local r = remappers[#s]
-                defineprocesscolor(sp_temp,r and r(unpack(s)) or "s=0",true,true)
-                definespotcolor(sp_name,sp_temp,"p=1",true)
+                local sp_value      = prescript.sp_value or "1"
+                local components    = split(sp_value,":")
+                local specification = remappers[#components]
+                if specification then
+                    specification = specification(unpack(components))
+                else
+                    specification = "s=0"
+                end
+                local sp_spec = processhash[specification]
+                definespotcolor(sp_name,sp_spec,"p=1",true)
                 sp_type = "named"
             elseif sp_type == "multitone" then -- (fractions of a multitone) don't work well in mupdf
-                local sp_value = prescript.sp_value or "s:1"
-                local sp_spec  = { }
+                local sp_value = prescript.sp_value or "1"
+                local sp_specs = { }
                 local sp_list  = split(sp_value," ")
                 for i=1,#sp_list do
-                    local v = sp_list[i]
-                    local t = formatters["mp:%s"](v)
-                    local s = split(v,":")
-                    local r = remappers[#s]
-                    defineprocesscolor(t,r and r(unpack(s)) or "s=0",true,true)
-                    local tt = formatters["ms:%s"](v)
-                    definespotcolor(tt,t,"p=1",true)
-                    sp_spec[#sp_spec+1] = formatters["%s=1"](t)
+                    local sp_value      = sp_list[i]
+                    local components    = split(sp_value,":")
+                    local specification = remappers[#components]
+                    if specification then
+                        specification = specification(unpack(components))
+                    else
+                        specification = "s=0"
+                    end
+                    local sp_spec = processhash[specification]
+                    sp_specs[i] = formatters["%s=1"](sp_spec)
                 end
-                sp_spec = concat(sp_spec,",")
-                definemultitonecolor(sp_name,sp_spec,"","",true)
+                sp_specs = concat(sp_specs,",")
+                definemultitonecolor(sp_name,sp_specs,"","")
                 sp_type = "named"
             end
             if sp_type == "named" then
@@ -1753,8 +1774,7 @@ local function tr_process(object,prescript,before,after)
                     local t = t_list[sp_name] -- string or attribute
                     local v = t and transparencyvalue(t)
                     if v then
-                        before[#before+1] = formatters["/Tr%s gs"](registertransparency(nil,v[1],v[2],true))
-                        after[#after+1] = "/Tr0 gs" -- outertransparency
+                        checked_transparency(v[1],v[2],before,after)
                     end
                 end
                 local c = c_list[sp_name] -- string or attribute
@@ -1762,29 +1782,34 @@ local function tr_process(object,prescript,before,after)
                 if v then
                     -- all=1 gray=2 rgb=3 cmyk=4
                     local colorspace = v[1]
-                    local f = cs[1]
+                    local factor     = cs[1]
                     if colorspace == 2 then
-                        local s = f*v[2]
+                        local s = factor * v[2]
                         c_b, c_a = checked_color_pair(f_gray,s,s)
                     elseif colorspace == 3 then
-                        local r, g, b = f*v[3], f*v[4], f*v[5]
+                        local r = factor * v[3]
+                        local g = factor * v[4]
+                        local b = factor * v[5]
                         c_b, c_a = checked_color_pair(f_rgb,r,g,b,r,g,b)
                     elseif colorspace == 4 or colorspace == 1 then
-                        local c, m, y, k = f*v[6], f*v[7], f*v[8], f*v[9]
+                        local c = factor * v[6]
+                        local m = factor * v[7]
+                        local y = factor * v[8]
+                        local k = factor * v[9]
                         c_b, c_a = checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
                     elseif colorspace == 5 then
                         -- not all viewers show the fractions ok
                         local name  = v[10]
                         local value = split(v[13],",")
-                        if f ~= 1 then
+                        if factor ~= 1 then
                             for i=1,#value do
-                                value[i] = f * (tonumber(value[i]) or 1)
+                                value[i] = f_scn(factor * (tonumber(value[i]) or 1))
                             end
                         end
                         value = concat(value," ")
                         c_b, c_a = checked_color_pair(f_spot,name,name,value,value)
                     else
-                        local s = f*v[2]
+                        local s = factor *v[2]
                         c_b, c_a = checked_color_pair(f_gray,s,s)
                     end
                 end

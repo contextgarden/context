@@ -57,24 +57,36 @@ do -- todo: only once, store in global
     local definitions = context.loaddefinitions("scite-context-data-interfaces")
 
     if definitions then
-        local list = { }
+        local used = { }
         for interface, list in next, definitions do
-            list[#list+1] = interface
-            local c = { }
-            for i=1,#list do
-                c[list[i]] = true
-            end
-            if interface ~= "en" then
+            if interface ~= "common" then
+                used[#used+1] = interface
+                local c = { }
+                -- these are shared
+                local list = definitions.common
+                if list then
+                    for i=1,#list do
+                        c[list[i]] = true
+                    end
+                end
+                -- normally this one is empty
                 list = definitions.en
                 if list then
                     for i=1,#list do
                         c[list[i]] = true
                     end
                 end
+                -- these are interface specific
+                if interface ~= "en" then
+                    for i=1,#list do
+                        c[list[i]] = true
+                    end
+                end
+                commands[interface] = c
             end
-            commands[interface] = c
         end
-        inform("context user interfaces '%s' supported",table.concat(list," "))
+        table.sort(used)
+        inform("context user interfaces '%s' supported",table.concat(used," "))
     end
 
     local definitions = context.loaddefinitions("scite-context-data-context")
@@ -405,7 +417,7 @@ local luaenvironment         = P("lua") * (P("setups") + P("code") + P(true))
 local inlinelua              = P("\\") * (
                                     P("ctx") * (P("lua") + P("command") + P("late") * (P("lua") + P("command")) + P("function"))
                                   + P("cld") * (P("command") + P("context"))
-                                  + P("luaexpr")
+                                  + P("lua") * (P("expr") + P("script") + P("thread"))
                                   + (P("direct") + P("late")) * P("lua")
                                )
 

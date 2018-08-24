@@ -295,7 +295,7 @@ function colors.spot(parent,f,d,p)
             local v = values[n]
             if v then
                 -- the via cmyk hack is dirty, but it scales better
-                local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[8]
+                local c, m, y, k = p*v[6], p*v[7], p*v[8], p*v[9]
                 local r, g, b = cmyktorgb(c,m,y,k)
                 local s = cmyktogray(c,m,y,k)
                 return { 5, s, r, g, b, c, m, y, k, parent, f, d, p }
@@ -318,7 +318,7 @@ function colors.spot(parent,f,d,p)
                         c = c + p*v[6]
                         m = m + p*v[7]
                         y = y + p*v[8]
-                        k = k + p*v[8]
+                        k = k + p*v[9]
                         done = true
                     end
                 end

@@ -8,8 +8,11 @@ local ltn12       = ltn12 or require("ltn12")
 
 local filtercycle = ltn12.filter.cycle
 
-local report = logs and logs.reporter("mime") or function(fmt,first,...)
-    if fmt then
+local function report(fmt,first,...)
+    if logs then
+        report = logs and logs.reporter("mime")
+        report(fmt,first,...)
+    elseif fmt then
         fmt = "mime: " .. fmt
         if first then
             print(format(fmt,first,...))
@@ -96,10 +99,6 @@ mime.encode = choose(encodet)
 mime.decode = choose(decodet)
 mime.wrap   = choose(wrapt)
 
-if logs then
-    _G.mime = mime
-    package.loaded.mime = mime
- -- report("module (re)installed")
-end
+package.loaded.mime = mime
 
 return mime

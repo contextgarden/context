@@ -278,6 +278,7 @@ local function execute(t,query)
     if query and query ~= "" then
         local connection = t._connection_
         local result = mysql_execute_query(connection,query,#query)
+print(connection,result,query)
         if result == 0 then
             local result = mysql_store_result(connection)
             if result ~= NULL then
@@ -331,6 +332,7 @@ local function open(t,database,username,password,host,port)
         local t = {
             _connection_ = connection,
         }
+-- ffi_gc(connection, mysql_close)
         return setmetatable(t,mt)
     end
 end
@@ -348,13 +350,14 @@ local mt = {
         connect = open,
         close   = close,
         message = message,
-    }
+    },
 }
 
 local function initialize()
     local session = {
         _session_ = mysql_initialize(instance) -- maybe share, single thread anyway
     }
+ -- ffi_gc(session, mysql_close)
     return setmetatable(session,mt)
 end
 
@@ -457,10 +460,11 @@ local function datafetched(specification,query,converter)
         if type(r) == "table" then
             result = r
             okay = true
-        elseif not m  then
+        elseif not m then
             okay = true
         end
     end
+
     local data, keys
     if result then
         if converter then
@@ -477,25 +481,13 @@ local function datafetched(specification,query,converter)
         report_state("message %s",message)
     end
 
-    if not result then -- can go
-        if session then
-            session:close()
-        end
-        if connection then
-            connection:close()
-        end
-        if id then
-            cache[id] = nil
-        end
-        return "execution error"
-    end
-
     if not keys then
         keys = { }
     end
     if not data then
         data = { }
     end
+
     if not id then
         if connection then
             connection:close()

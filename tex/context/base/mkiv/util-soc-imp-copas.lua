@@ -25,8 +25,11 @@ local runningcoroutine = coroutine.running
 
 -- Meta information is public even if beginning with an "_"
 
-local report = logs and logs.reporter("copas") or function(fmt,first,...)
-    if fmt then
+local function report(fmt,first,...)
+    if logs then
+        report = logs and logs.reporter("copas")
+        report(fmt,first,...)
+    elseif fmt then
         fmt = "copas: " .. fmt
         if first then
             print(format(fmt,first,...))
@@ -734,16 +737,16 @@ local _tasks = { }
 
 -- Lets tasks call the default _tick().
 
-local function addtaskRead(tsk)
-    tsk.def_tick = _tickRead
-    _tasks[tsk] = true
+local function addtaskRead(task)
+    task.def_tick = _tickRead
+    _tasks[task] = true
 end
 
 -- Lets tasks call the default _tick().
 
-local function addtaskWrite(tsk)
-    tsk.def_tick = _tickWrite
-    _tasks[tsk] = true
+local function addtaskWrite(task)
+    task.def_tick = _tickWrite
+    _tasks[task] = true
 end
 
 local function tasks()
@@ -823,7 +826,7 @@ local function _select(timeout)
 
     local now = gettime()
 
-    local r_evs, w__evs, err = selectsocket(_reading, _writing, timeout)
+    local r_evs, w_evs, err = selectsocket(_reading, _writing, timeout)
 
     _readable_t._evs = r_evs
     _writable_t._evs = w_evs
@@ -888,7 +891,7 @@ local function copasstep(timeout)
     local nextwait = _sleeping:getnext()
     if nextwait then
         timeout = timeout and min(nextwait,timeout) or nextwait
-    elseif finished() then
+    elseif copasfinished() then
         return false
     end
 
@@ -902,7 +905,7 @@ local function copasstep(timeout)
 
     for task in tasks() do
         for event in task:events() do
-            tsk:tick(event)
+            task:tick(event)
         end
     end
     return true
@@ -921,10 +924,8 @@ function copas.loop(timeout)
     copas.running = false
 end
 
-if logs then
-    _G.copas = copas
-    package.loaded.copas = copas
- -- report("module (re)installed")
-end
+-- _G.copas = copas
+
+package.loaded.copas = copas
 
 return copas

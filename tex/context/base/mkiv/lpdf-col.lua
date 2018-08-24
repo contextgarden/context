@@ -617,7 +617,7 @@ function lpdf.colorvalues(model,ca,default)
             return cv[3], cv[4], cv[5]
         elseif model == 4 then
             return cv[6], cv[7], cv[8], cv[9]
-        elseif model == 4 then
+        elseif model == 5 then
             return cv[13]
         end
     else

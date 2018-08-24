@@ -2883,13 +2883,15 @@ enddef ;
 
 % This could be standard mplib 2 behaviour:
 
+% vardef rcomponent expr p = if rgbcolor  p : redpart     elseif cmykcolor p : 1 - cyanpart    fi p enddef ;
+
 vardef rcomponent expr p = if rgbcolor  p : redpart     p elseif cmykcolor p : 1 - cyanpart    p else : p fi enddef ;
 vardef gcomponent expr p = if rgbcolor  p : greenpart   p elseif cmykcolor p : 1 - magentapart p else : p fi enddef ;
 vardef bcomponent expr p = if rgbcolor  p : bluepart    p elseif cmykcolor p : 1 - yellowpart  p else : p fi enddef ;
 vardef ccomponent expr p = if cmykcolor p : cyanpart    p elseif rgbcolor  p : 1 - redpart     p else : p fi enddef ;
 vardef mcomponent expr p = if cmykcolor p : magentapart p elseif rgbcolor  p : 1 - greenpart   p else : p fi enddef ;
 vardef ycomponent expr p = if cmykcolor p : yellowpart  p elseif rgbcolor  p : 1 - bluepart    p else : p fi enddef ;
-vardef bcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p :                 0 else : p fi enddef ;
+vardef kcomponent expr p = if cmykcolor p : blackpart   p elseif rgbcolor  p : 0                 else : p fi enddef ;
 
 % draw image       (...) ... ; % prescripts prepended to first, postscripts appended to last
 % draw decorated   (...) ... ; % prescripts prepended to each,  postscripts appended to each

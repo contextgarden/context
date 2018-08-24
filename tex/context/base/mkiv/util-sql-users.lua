@@ -238,9 +238,7 @@ function users.valid(db,username,password,address)
             name     = username,
         },
     }
-
     local data = data and data[1]
-
     if not data then
         return false, "unknown user"
     elseif not data.enabled then

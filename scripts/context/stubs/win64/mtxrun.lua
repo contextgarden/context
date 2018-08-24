@@ -9213,6 +9213,2827 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-soc-imp-reset"] = package.loaded["util-soc-imp-reset"] or true
+
+-- original size: 374, stripped down to: 282
+
+local loaded=package.loaded
+loaded["socket"]=nil
+loaded["copas"]=nil
+loaded["ltn12"]=nil
+loaded["mbox"]=nil
+loaded["mime"]=nil
+loaded["socket.url"]=nil
+loaded["socket.headers"]=nil
+loaded["socket.tp"]=nil
+loaded["socket.http"]=nil
+loaded["socket.ftp"]=nil
+loaded["socket.smtp"]=nil
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-socket"] = package.loaded["util-soc-imp-socket"] or true
+
+-- original size: 4867, stripped down to: 3858
+
+
+local type,tostring,setmetatable=type,tostring,setmetatable
+local min=math.min
+local format=string.format
+local socket=require("socket.core")
+local connect=socket.connect
+local tcp4=socket.tcp4
+local tcp6=socket.tcp6
+local getaddrinfo=socket.dns.getaddrinfo
+local defaulthost="0.0.0.0"
+local function report(fmt,first,...)
+  if logs then
+    report=logs and logs.reporter("socket")
+    report(fmt,first,...)
+  elseif fmt then
+    fmt="socket: "..fmt
+    if first then
+      print(format(fmt,first,...))
+    else
+      print(fmt)
+    end
+  end
+end
+socket.report=report
+function socket.connect4(address,port,laddress,lport)
+  return connect(address,port,laddress,lport,"inet")
+end
+function socket.connect6(address,port,laddress,lport)
+  return connect(address,port,laddress,lport,"inet6")
+end
+function socket.bind(host,port,backlog)
+  if host=="*" or host=="" then
+    host=defaulthost
+  end
+  local addrinfo,err=getaddrinfo(host)
+  if not addrinfo then
+    return nil,err
+  end
+  for i=1,#addrinfo do
+    local alt=addrinfo[i]
+    local sock,err=(alt.family=="inet" and tcp4 or tcp6)()
+    if not sock then
+      return nil,err or "unknown error"
+    end
+    sock:setoption("reuseaddr",true)
+    local res,err=sock:bind(alt.addr,port)
+    if res then
+      res,err=sock:listen(backlog)
+      if res then
+        return sock
+      else
+        sock:close()
+      end
+    else
+      sock:close()
+    end
+  end
+  return nil,"invalid address"
+end
+socket.try=socket.newtry()
+function socket.choose(list)
+  return function(name,opt1,opt2)
+    if type(name)~="string" then
+      name,opt1,opt2="default",name,opt1
+    end
+    local f=list[name or "nil"]
+    if f then
+      return f(opt1,opt2)
+    else
+      report("error: unknown key '%s'",tostring(name))
+    end
+  end
+end
+local sourcet={}
+local sinkt={}
+socket.sourcet=sourcet
+socket.sinkt=sinkt
+socket.BLOCKSIZE=2048
+sinkt["close-when-done"]=function(sock)
+  return setmetatable (
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },
+    {
+      __call=function(self,chunk,err)
+        if chunk then
+          return sock:send(chunk)
+        else
+          sock:close()
+          return 1 
+        end
+      end
+    }
+  )
+end
+sinkt["keep-open"]=function(sock)
+  return setmetatable (
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },{
+      __call=function(self,chunk,err)
+        if chunk then
+          return sock:send(chunk)
+        else
+          return 1 
+        end
+      end
+    }
+  )
+end
+sinkt["default"]=sinkt["keep-open"]
+socket.sink=socket.choose(sinkt)
+sourcet["by-length"]=function(sock,length)
+  local blocksize=socket.BLOCKSIZE
+  return setmetatable (
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },
+    {
+      __call=function()
+        if length<=0 then
+          return nil
+        end
+        local chunk,err=sock:receive(min(blocksize,length))
+        if err then
+          return nil,err
+        end
+        length=length-#chunk
+        return chunk
+      end
+    }
+  )
+end
+sourcet["until-closed"]=function(sock)
+  local blocksize=socket.BLOCKSIZE
+  local done=false
+  return setmetatable (
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },{
+      __call=function()
+        if done then
+          return nil
+        end
+        local chunk,status,partial=sock:receive(blocksize)
+        if not status then
+          return chunk
+        elseif status=="closed" then
+          sock:close()
+          done=true
+          return partial
+        else
+          return nil,status
+        end
+      end
+    }
+  )
+end
+sourcet["default"]=sourcet["until-closed"]
+socket.source=socket.choose(sourcet)
+_G.socket=socket 
+package.loaded.socket=socket
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-copas"] = package.loaded["util-soc-imp-copas"] or true
+
+-- original size: 25841, stripped down to: 16063
+
+
+local socket=socket or require("socket")
+local ssl=ssl or nil 
+local WATCH_DOG_TIMEOUT=120
+local UDP_DATAGRAM_MAX=8192
+local type,next,pcall,getmetatable,tostring=type,next,pcall,getmetatable,tostring
+local min,max,random=math.min,math.max,math.random
+local find=string.find
+local insert,remove=table.insert,table.remove
+local gettime=socket.gettime
+local selectsocket=socket.select
+local createcoroutine=coroutine.create
+local resumecoroutine=coroutine.resume
+local yieldcoroutine=coroutine.yield
+local runningcoroutine=coroutine.running
+local function report(fmt,first,...)
+  if logs then
+    report=logs and logs.reporter("copas")
+    report(fmt,first,...)
+  elseif fmt then
+    fmt="copas: "..fmt
+    if first then
+      print(format(fmt,first,...))
+    else
+      print(fmt)
+    end
+  end
+end
+local copas={
+  _COPYRIGHT="Copyright (C) 2005-2016 Kepler Project",
+  _DESCRIPTION="Coroutine Oriented Portable Asynchronous Services",
+  _VERSION="Copas 2.0.1",
+  autoclose=true,
+  running=false,
+  report=report,
+}
+local function statushandler(status,...)
+  if status then
+    return...
+  end
+  local err=(...)
+  if type(err)=="table" then
+    err=err[1]
+  end
+  report("error: %s",tostring(err))
+  return nil,err
+end
+function socket.protect(func)
+  return function(...)
+    return statushandler(pcall(func,...))
+  end
+end
+function socket.newtry(finalizer)
+  return function (...)
+    local status=(...)
+    if not status then
+      local detail=select(2,...)
+      pcall(finalizer,detail)
+      report("error: %s",tostring(detail))
+      return
+    end
+    return...
+  end
+end
+local function newset()
+  local reverse={}
+  local set={}
+  local queue={}
+  setmetatable(set,{
+    __index={
+      insert=function(set,value)
+          if not reverse[value] then
+            local n=#set+1
+            set[n]=value
+            reverse[value]=n
+          end
+        end,
+      remove=function(set,value)
+          local index=reverse[value]
+          if index then
+            reverse[value]=nil
+            local n=#set
+            local top=set[n]
+            set[n]=nil
+            if top~=value then
+              reverse[top]=index
+              set[index]=top
+            end
+          end
+        end,
+      push=function (set,key,itm)
+          local entry=queue[key]
+          if entry==nil then 
+            queue[key]={ itm }
+          else
+            entry[#entry+1]=itm
+          end
+        end,
+      pop=function (set,key)
+          local top=queue[key]
+          if top~=nil then
+            local ret=remove(top,1)
+            if top[1]==nil then
+              queue[key]=nil
+            end
+            return ret
+          end
+        end
+    }
+  } )
+  return set
+end
+local _sleeping={
+  times={},
+  cos={},
+  lethargy={},
+  insert=function()
+    end,
+  remove=function()
+    end,
+  push=function(self,sleeptime,co)
+      if not co then
+        return
+      end
+      if sleeptime<0 then
+        self.lethargy[co]=true
+        return
+      else
+        sleeptime=gettime()+sleeptime
+      end
+      local t=self.times
+      local c=self.cos
+      local i=1
+      local n=#t
+      while i<=n and t[i]<=sleeptime do
+        i=i+1
+      end
+      insert(t,i,sleeptime)
+      insert(c,i,co)
+    end,
+  getnext=
+    function(self)
+      local t=self.times
+      local delay=t[1] and t[1]-gettime() or nil
+      return delay and max(delay,0) or nil
+    end,
+  pop=
+    function(self,time)
+      local t=self.times
+      local c=self.cos
+      if #t==0 or time<t[1] then
+        return
+      end
+      local co=c[1]
+      remove(t,1)
+      remove(c,1)
+      return co
+    end,
+    wakeup=function(self,co)
+        local let=self.lethargy
+        if let[co] then
+          self:push(0,co)
+          let[co]=nil
+        else
+          local c=self.cos
+          local t=self.times
+          for i=1,#c do
+            if c[i]==co then
+              remove(c,i)
+              remove(t,i)
+              self:push(0,co)
+              return
+            end
+          end
+        end
+      end
+}
+local _servers=newset() 
+local _reading=newset() 
+local _writing=newset() 
+local _reading_log={}
+local _writing_log={}
+local _is_timeout={    
+  timeout=true,
+  wantread=true,
+  wantwrite=true,
+}
+local function isTCP(socket)
+  return not find(tostring(socket),"^udp")
+end
+local function copasreceive(client,pattern,part)
+  if not pattern or pattern=="" then
+    pattern="*l"
+  end
+  local current_log=_reading_log
+  local s,err
+  repeat
+    s,err,part=client:receive(pattern,part)
+    if s or (not _is_timeout[err]) then
+      current_log[client]=nil
+      return s,err,part
+    end
+    if err=="wantwrite" then
+      current_log=_writing_log
+      current_log[client]=gettime()
+      yieldcoroutine(client,_writing)
+    else
+      current_log=_reading_log
+      current_log[client]=gettime()
+      yieldcoroutine(client,_reading)
+    end
+  until false
+end
+local function copasreceivefrom(client,size)
+  local s,err,port
+  if not size or size==0 then
+    size=UDP_DATAGRAM_MAX
+  end
+  repeat
+    s,err,port=client:receivefrom(size)
+    if s or err~="timeout" then
+      _reading_log[client]=nil
+      return s,err,port
+    end
+    _reading_log[client]=gettime()
+    yieldcoroutine(client,_reading)
+  until false
+end
+local function copasreceivepartial(client,pattern,part)
+  if not pattern or pattern=="" then
+    pattern="*l"
+  end
+  local logger=_reading_log
+  local queue=_reading
+  local s,err
+  repeat
+    s,err,part=client:receive(pattern,part)
+    if s or (type(pattern)=="number" and part~="" and part) or not _is_timeout[err] then
+     logger[client]=nil
+     return s,err,part
+    end
+    if err=="wantwrite" then
+      logger=_writing_log
+      queue=_writing
+    else
+      logger=_reading_log
+      queue=_reading
+    end
+    logger[client]=gettime()
+    yieldcoroutine(client,queue)
+  until false
+end
+local function copassend(client,data,from,to)
+  if not from then
+    from=1
+  end
+  local lastIndex=from-1
+  local logger=_writing_log
+  local queue=_writing
+  local s,err
+  repeat
+    s,err,lastIndex=client:send(data,lastIndex+1,to)
+    if random(100)>90 then
+      logger[client]=gettime()
+      yieldcoroutine(client,queue)
+    end
+    if s or not _is_timeout[err] then
+      logger[client]=nil
+      return s,err,lastIndex
+    end
+    if err=="wantread" then
+      logger=_reading_log
+      queue=_reading
+    else
+      logger=_writing_log
+      queue=_writing
+    end
+    logger[client]=gettime()
+    yieldcoroutine(client,queue)
+  until false
+end
+local function copassendto(client,data,ip,port)
+  repeat
+    local s,err=client:sendto(data,ip,port)
+    if random(100)>90 then
+      _writing_log[client]=gettime()
+      yieldcoroutine(client,_writing)
+    end
+    if s or err~="timeout" then
+      _writing_log[client]=nil
+      return s,err
+    end
+    _writing_log[client]=gettime()
+    yieldcoroutine(client,_writing)
+  until false
+end
+local function copasconnect(skt,host,port)
+  skt:settimeout(0)
+  local ret,err,tried_more_than_once
+  repeat
+    ret,err=skt:connect (host,port)
+    if ret or (err~="timeout" and err~="Operation already in progress") then
+      if not ret and err=="already connected" and tried_more_than_once then
+        ret=1
+        err=nil
+      end
+      _writing_log[skt]=nil
+      return ret,err
+    end
+    tried_more_than_once=tried_more_than_once or true
+    _writing_log[skt]=gettime()
+    yieldcoroutine(skt,_writing)
+  until false
+end
+local function copasdohandshake(skt,sslt) 
+  if not ssl then
+    ssl=require("ssl")
+  end
+  if not ssl then
+    report("error: no ssl library")
+    return
+  end
+  local nskt,err=ssl.wrap(skt,sslt)
+  if not nskt then
+    report("error: %s",tostring(err))
+    return
+  end
+  nskt:settimeout(0)
+  local queue
+  repeat
+    local success,err=nskt:dohandshake()
+    if success then
+      return nskt
+    elseif err=="wantwrite" then
+      queue=_writing
+    elseif err=="wantread" then
+      queue=_reading
+    else
+      report("error: %s",tostring(err))
+      return
+    end
+    yieldcoroutine(nskt,queue)
+  until false
+end
+local function copasflush(client)
+end
+copas.connect=copassconnect
+copas.send=copassend
+copas.sendto=copassendto
+copas.receive=copasreceive
+copas.receivefrom=copasreceivefrom
+copas.copasreceivepartial=copasreceivepartial
+copas.copasreceivePartial=copasreceivepartial
+copas.dohandshake=copasdohandshake
+copas.flush=copasflush
+local function _skt_mt_tostring(self)
+  return tostring(self.socket).." (copas wrapped)"
+end
+local _skt_mt_tcp_index={
+  send=function(self,data,from,to)
+      return copassend (self.socket,data,from,to)
+    end,
+  receive=function (self,pattern,prefix)
+      if self.timeout==0 then
+        return copasreceivePartial(self.socket,pattern,prefix)
+      else
+        return copasreceive(self.socket,pattern,prefix)
+      end
+    end,
+  flush=function (self)
+      return copasflush(self.socket)
+    end,
+  settimeout=function (self,time)
+      self.timeout=time
+      return true
+    end,
+  connect=function(self,...)
+      local res,err=copasconnect(self.socket,...)
+      if res and self.ssl_params then
+        res,err=self:dohandshake()
+      end
+      return res,err
+    end,
+  close=function(self,...)
+      return self.socket:close(...)
+    end,
+  bind=function(self,...)
+      return self.socket:bind(...)
+    end,
+  getsockname=function(self,...)
+      return self.socket:getsockname(...)
+    end,
+  getstats=function(self,...)
+      return self.socket:getstats(...)
+    end,
+  setstats=function(self,...)
+      return self.socket:setstats(...)
+    end,
+  listen=function(self,...)
+      return self.socket:listen(...)
+    end,
+  accept=function(self,...)
+      return self.socket:accept(...)
+    end,
+  setoption=function(self,...)
+      return self.socket:setoption(...)
+    end,
+  getpeername=function(self,...)
+      return self.socket:getpeername(...)
+    end,
+  shutdown=function(self,...)
+      return self.socket:shutdown(...)
+    end,
+  dohandshake=function(self,sslt)
+      self.ssl_params=sslt or self.ssl_params
+      local nskt,err=copasdohandshake(self.socket,self.ssl_params)
+      if not nskt then
+        return nskt,err
+      end
+      self.socket=nskt
+      return self
+    end,
+}
+local _skt_mt_tcp={
+  __tostring=_skt_mt_tostring,
+  __index=_skt_mt_tcp_index,
+}
+local _skt_mt_udp_index={
+  sendto=function (self,...)
+      return copassendto(self.socket,...)
+    end,
+  receive=function (self,size)
+      return copasreceive(self.socket,size or UDP_DATAGRAM_MAX)
+    end,
+  receivefrom=function (self,size)
+      return copasreceivefrom(self.socket,size or UDP_DATAGRAM_MAX)
+    end,
+  setpeername=function(self,...)
+      return self.socket:getpeername(...)
+    end,
+  setsockname=function(self,...)
+      return self.socket:setsockname(...)
+    end,
+  close=function(self,...)
+      return true
+    end
+}
+local _skt_mt_udp={
+  __tostring=_skt_mt_tostring,
+  __index=_skt_mt_udp_index,
+}
+for k,v in next,_skt_mt_tcp_index do
+  if not _skt_mt_udp_index[k] then
+    _skt_mt_udp_index[k]=v
+  end
+end
+local function wrap(skt,sslt)
+  if getmetatable(skt)==_skt_mt_tcp or getmetatable(skt)==_skt_mt_udp then
+    return skt 
+  end
+  skt:settimeout(0)
+  if isTCP(skt) then
+    return setmetatable ({ socket=skt,ssl_params=sslt },_skt_mt_tcp)
+  else
+    return setmetatable ({ socket=skt },_skt_mt_udp)
+  end
+end
+copas.wrap=wrap
+function copas.handler(handler,sslparams)
+  return function (skt,...)
+    skt=wrap(skt)
+    if sslparams then
+      skt:dohandshake(sslparams)
+    end
+    return handler(skt,...)
+  end
+end
+local _errhandlers={}
+function copas.setErrorHandler(err)
+  local co=runningcoroutine()
+  if co then
+    _errhandlers[co]=err
+  end
+end
+local function _deferror (msg,co,skt)
+  report("%s (%s) (%s)",msg,tostring(co),tostring(skt))
+end
+local function _doTick (co,skt,...)
+  if not co then
+    return
+  end
+  local ok,res,new_q=resumecoroutine(co,skt,...)
+  if ok and res and new_q then
+    new_q:insert(res)
+    new_q:push(res,co)
+  else
+    if not ok then
+      pcall(_errhandlers[co] or _deferror,res,co,skt)
+    end
+    if skt and copas.autoclose and isTCP(skt) then
+      skt:close()
+    end
+    _errhandlers[co]=nil
+  end
+end
+local function _accept(input,handler)
+  local client=input:accept()
+  if client then
+    client:settimeout(0)
+    local co=createcoroutine(handler)
+    _doTick (co,client)
+  end
+  return client
+end
+local function _tickRead(skt)
+  _doTick(_reading:pop(skt),skt)
+end
+local function _tickWrite(skt)
+  _doTick(_writing:pop(skt),skt)
+end
+local function addTCPserver(server,handler,timeout)
+  server:settimeout(timeout or 0)
+  _servers[server]=handler
+  _reading:insert(server)
+end
+local function addUDPserver(server,handler,timeout)
+  server:settimeout(timeout or 0)
+  local co=createcoroutine(handler)
+  _reading:insert(server)
+  _doTick(co,server)
+end
+function copas.addserver(server,handler,timeout)
+  if isTCP(server) then
+    addTCPserver(server,handler,timeout)
+  else
+    addUDPserver(server,handler,timeout)
+  end
+end
+function copas.removeserver(server,keep_open)
+  local s=server
+  local mt=getmetatable(server)
+  if mt==_skt_mt_tcp or mt==_skt_mt_udp then
+    s=server.socket
+  end
+  _servers[s]=nil
+  _reading:remove(s)
+  if keep_open then
+    return true
+  end
+  return server:close()
+end
+function copas.addthread(handler,...)
+  local thread=createcoroutine(function(_,...) return handler(...) end)
+  _doTick(thread,nil,...)
+  return thread
+end
+local _tasks={}
+local function addtaskRead(task)
+  task.def_tick=_tickRead
+  _tasks[task]=true
+end
+local function addtaskWrite(task)
+  task.def_tick=_tickWrite
+  _tasks[task]=true
+end
+local function tasks()
+  return next,_tasks
+end
+local _readable_t={
+  events=function(self)
+      local i=0
+      return function ()
+        i=i+1
+        return self._evs[i]
+      end
+    end,
+  tick=function(self,input)
+      local handler=_servers[input]
+      if handler then
+        input=_accept(input,handler)
+      else
+        _reading:remove(input)
+        self.def_tick(input)
+      end
+    end
+}
+addtaskRead(_readable_t)
+local _writable_t={
+  events=function(self)
+      local i=0
+      return function()
+        i=i+1
+        return self._evs[i]
+      end
+    end,
+  tick=function(self,output)
+      _writing:remove(output)
+      self.def_tick(output)
+    end
+}
+addtaskWrite(_writable_t)
+local _sleeping_t={
+  tick=function(self,time,...)
+    _doTick(_sleeping:pop(time),...)
+  end
+}
+function copas.sleep(sleeptime)
+  yieldcoroutine((sleeptime or 0),_sleeping)
+end
+function copas.wakeup(co)
+  _sleeping:wakeup(co)
+end
+local last_cleansing=0
+local function _select(timeout)
+  local now=gettime()
+  local r_evs,w_evs,err=selectsocket(_reading,_writing,timeout)
+  _readable_t._evs=r_evs
+  _writable_t._evs=w_evs
+  if (last_cleansing-now)>WATCH_DOG_TIMEOUT then
+    last_cleansing=now
+    for skt,time in next,_reading_log do
+      if not r_evs[skt] and (time-now)>WATCH_DOG_TIMEOUT then
+        local n=#r_evs+1
+        _reading_log[skt]=nil
+        r_evs[n]=skt
+        r_evs[skt]=n
+      end
+    end
+    for skt,time in next,_writing_log do
+      if not w_evs[skt] and (time-now)>WATCH_DOG_TIMEOUT then
+        local n=#w_evs+1
+        _writing_log[skt]=nil
+        w_evs[n]=skt
+        w_evs[skt]=n
+      end
+    end
+  end
+  if err=="timeout" and #r_evs+#w_evs>0 then
+    return nil
+  else
+    return err
+  end
+end
+local function copasfinished()
+  return not (next(_reading) or next(_writing) or _sleeping:getnext())
+end
+local function copasstep(timeout)
+  _sleeping_t:tick(gettime())
+  local nextwait=_sleeping:getnext()
+  if nextwait then
+    timeout=timeout and min(nextwait,timeout) or nextwait
+  elseif copasfinished() then
+    return false
+  end
+  local err=_select(timeout)
+  if err then
+    if err=="timeout" then
+      return false
+    end
+    return nil,err
+  end
+  for task in tasks() do
+    for event in task:events() do
+      task:tick(event)
+    end
+  end
+  return true
+end
+copas.finished=copasfinished
+copas.step=copasstep
+function copas.loop(timeout)
+  copas.running=true
+  while not copasfinished() do
+    copasstep(timeout)
+  end
+  copas.running=false
+end
+package.loaded.copas=copas
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-ltn12"] = package.loaded["util-soc-imp-ltn12"] or true
+
+-- original size: 8706, stripped down to: 6102
+
+
+local select,unpack=select,unpack
+local insert,remove=table.insert,table.remove
+local sub=string.sub
+local function report(fmt,first,...)
+  if logs then
+    report=logs and logs.reporter("ltn12")
+    report(fmt,first,...)
+  elseif fmt then
+    fmt="ltn12: "..fmt
+    if first then
+      print(format(fmt,first,...))
+    else
+      print(fmt)
+    end
+  end
+end
+local filter={}
+local source={}
+local sink={}
+local pump={}
+local ltn12={
+  _VERSION="LTN12 1.0.3",
+  BLOCKSIZE=2048,
+  filter=filter,
+  source=source,
+  sink=sink,
+  pump=pump,
+  report=report,
+}
+function filter.cycle(low,ctx,extra)
+  if low then
+    return function(chunk)
+      return (low(ctx,chunk,extra))
+    end
+  end
+end
+function filter.chain(...)
+  local arg={... }
+  local n=select('#',...)
+  local top=1
+  local index=1
+  local retry=""
+  return function(chunk)
+    retry=chunk and retry
+    while true do
+      local action=arg[index]
+      if index==top then
+        chunk=action(chunk)
+        if chunk=="" or top==n then
+          return chunk
+        elseif chunk then
+          index=index+1
+        else
+          top=top+1
+          index=top
+        end
+      else
+        chunk=action(chunk or "")
+        if chunk=="" then
+          index=index-1
+          chunk=retry
+        elseif chunk then
+          if index==n then
+            return chunk
+          else
+            index=index+1
+          end
+        else
+          report("error: filter returned inappropriate 'nil'")
+          return
+        end
+      end
+    end
+  end
+end
+local function empty()
+  return nil
+end
+function source.empty()
+  return empty
+end
+local function sourceerror(err)
+  return function()
+    return nil,err
+  end
+end
+source.error=sourceerror
+function source.file(handle,io_err)
+  if handle then
+    local blocksize=ltn12.BLOCKSIZE
+    return function()
+      local chunk=handle:read(blocksize)
+      if not chunk then
+        handle:close()
+      end
+      return chunk
+    end
+  else
+    return sourceerror(io_err or "unable to open file")
+  end
+end
+function source.simplify(src)
+  return function()
+    local chunk,err_or_new=src()
+    if err_or_new then
+      src=err_or_new
+    end
+    if chunk then
+      return chunk
+    else
+      return nil,err_or_new
+    end
+  end
+end
+function source.string(s)
+  if s then
+    local blocksize=ltn12.BLOCKSIZE
+    local i=1
+    return function()
+      local nexti=i+blocksize
+      local chunk=sub(s,i,nexti-1)
+      i=nexti
+      if chunk~="" then
+        return chunk
+      else
+        return nil
+      end
+    end
+  else return source.empty() end
+end
+function source.rewind(src)
+  local t={}
+  return function(chunk)
+    if chunk then
+      insert(t,chunk)
+    else
+      chunk=remove(t)
+      if chunk then
+        return chunk
+      else
+        return src()
+      end
+    end
+  end
+end
+function source.chain(src,f,...)
+  if... then
+    f=filter.chain(f,...)
+  end
+  local last_in=""
+  local last_out=""
+  local state="feeding"
+  local err
+  return function()
+    if not last_out then
+      report("error: source is empty")
+      return
+    end
+    while true do
+      if state=="feeding" then
+        last_in,err=src()
+        if err then
+          return nil,err
+        end
+        last_out=f(last_in)
+        if not last_out then
+          if last_in then
+            report("error: filter returned inappropriate 'nil'")
+          end
+          return nil
+        elseif last_out~="" then
+          state="eating"
+          if last_in then
+            last_in=""
+          end
+          return last_out
+        end
+      else
+        last_out=f(last_in)
+        if last_out=="" then
+          if last_in=="" then
+            state="feeding"
+          else
+            report("error: filter returned nothing")
+            return
+          end
+        elseif not last_out then
+          if last_in then
+            report("filter returned inappropriate 'nil'")
+          end
+          return nil
+        else
+          return last_out
+        end
+      end
+    end
+  end
+end
+function source.cat(...)
+  local arg={... }
+  local src=remove(arg,1)
+  return function()
+    while src do
+      local chunk,err=src()
+      if chunk then
+        return chunk
+      end
+      if err then
+        return nil,err
+      end
+      src=remove(arg,1)
+    end
+  end
+end
+function sink.table(t)
+  if not t then
+    t={}
+  end
+  local f=function(chunk,err)
+    if chunk then
+      insert(t,chunk)
+    end
+    return 1
+  end
+  return f,t
+end
+function sink.simplify(snk)
+  return function(chunk,err)
+    local ret,err_or_new=snk(chunk,err)
+    if not ret then
+      return nil,err_or_new
+    end
+    if err_or_new then
+      snk=err_or_new
+    end
+    return 1
+  end
+end
+local function null()
+  return 1
+end
+function sink.null()
+  return null
+end
+local function sinkerror(err)
+  return function()
+    return nil,err
+  end
+end
+sink.error=sinkerror
+function sink.file(handle,io_err)
+  if handle then
+    return function(chunk,err)
+      if not chunk then
+        handle:close()
+        return 1
+      else
+        return handle:write(chunk)
+      end
+    end
+  else
+    return sinkerror(io_err or "unable to open file")
+  end
+end
+function sink.chain(f,snk,...)
+  if... then
+    local args={ f,snk,... }
+    snk=remove(args,#args)
+    f=filter.chain(unpack(args))
+  end
+  return function(chunk,err)
+    if chunk~="" then
+      local filtered=f(chunk)
+      local done=chunk and ""
+      while true do
+        local ret,snkerr=snk(filtered,err)
+        if not ret then
+          return nil,snkerr
+        end
+        if filtered==done then
+          return 1
+        end
+        filtered=f(done)
+      end
+    else
+      return 1
+    end
+  end
+end
+function pump.step(src,snk)
+  local chunk,src_err=src()
+  local ret,snk_err=snk(chunk,src_err)
+  if chunk and ret then
+    return 1
+  else
+    return nil,src_err or snk_err
+  end
+end
+function pump.all(src,snk,step)
+  if not step then
+    step=pump.step
+  end
+  while true do
+    local ret,err=step(src,snk)
+    if not ret then
+      if err then
+        return nil,err
+      else
+        return 1
+      end
+    end
+  end
+end
+package.loaded.ltn12=ltn12
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-mime"] = package.loaded["util-soc-imp-mime"] or true
+
+-- original size: 2325, stripped down to: 1927
+
+
+local type,tostring=type,tostring
+local mime=require("mime.core")
+local ltn12=ltn12 or require("ltn12")
+local filtercycle=ltn12.filter.cycle
+local function report(fmt,first,...)
+  if logs then
+    report=logs and logs.reporter("mime")
+    report(fmt,first,...)
+  elseif fmt then
+    fmt="mime: "..fmt
+    if first then
+      print(format(fmt,first,...))
+    else
+      print(fmt)
+    end
+  end
+end
+mime.report=report
+local encodet={}
+local decodet={}
+local wrapt={}
+mime.encodet=encodet
+mime.decodet=decodet
+mime.wrapt=wrapt
+local mime_b64=mime.b64
+local mime_qp=mime.qp
+local mime_unb64=mime.unb64
+local mime_unqp=mime.unqp
+local mime_wrp=mime.wrp
+local mime_qpwrp=mime.qpwrp
+local mime_eol=mime_eol
+local mime_dot=mime_dot
+encodet['base64']=function()
+  return filtercycle(mime_b64,"")
+end
+encodet['quoted-printable']=function(mode)
+  return filtercycle(mime_qp,"",mode=="binary" and "=0D=0A" or "\r\n")
+end
+decodet['base64']=function()
+  return filtercycle(mime_unb64,"")
+end
+decodet['quoted-printable']=function()
+  return filtercycle(mime_unqp,"")
+end
+local wraptext=function(length)
+  if not length then
+    length=76
+  end
+  return filtercycle(mime_wrp,length,length)
+end
+local wrapquoted=function()
+  return filtercycle(mime_qpwrp,76,76)
+end
+wrapt['text']=wraptext
+wrapt['base64']=wraptext
+wrapt['default']=wraptext
+wrapt['quoted-printable']=wrapquoted
+function mime.normalize(marker)
+  return filtercycle(mime_eol,0,marker)
+end
+function mime.stuff()
+  return filtercycle(mime_dot,2)
+end
+local function choose(list)
+  return function(name,opt1,opt2)
+    if type(name)~="string" then
+      name,opt1,opt2="default",name,opt1
+    end
+    local filter=list[name or "nil"]
+    if filter then
+      return filter(opt1,opt2)
+    else
+      report("error: unknown key '%s'",tostring(name))
+    end
+  end
+end
+mime.encode=choose(encodet)
+mime.decode=choose(decodet)
+mime.wrap=choose(wrapt)
+package.loaded.mime=mime
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-url"] = package.loaded["util-soc-imp-url"] or true
+
+-- original size: 6827, stripped down to: 5624
+
+
+local tonumber,tostring,type=tonumber,tostring,type
+local gsub,sub,match,find,format,byte,char=string.gsub,string.sub,string.match,string.find,string.format,string.byte,string.char
+local insert=table.insert
+local socket=socket or require("socket")
+local url={
+  _VERSION="URL 1.0.3",
+}
+socket.url=url
+function url.escape(s)
+  return (gsub(s,"([^A-Za-z0-9_])",function(c)
+    return format("%%%02x",byte(c))
+  end))
+end
+local function make_set(t) 
+  local s={}
+  for i=1,#t do
+    s[t[i]]=true
+  end
+  return s
+end
+local segment_set=make_set {
+  "-","_",".","!","~","*","'","(",
+  ")",":","@","&","=","+","$",",",
+}
+local function protect_segment(s)
+  return gsub(s,"([^A-Za-z0-9_])",function(c)
+    if segment_set[c] then
+      return c
+    else
+      return format("%%%02X",byte(c))
+    end
+  end)
+end
+function url.unescape(s)
+  return (gsub(s,"%%(%x%x)",function(hex)
+    return char(tonumber(hex,16))
+  end))
+end
+local function absolute_path(base_path,relative_path)
+  if find(relative_path,"^/") then
+    return relative_path
+  end
+  local path=gsub(base_path,"[^/]*$","")
+  path=path..relative_path
+  path=gsub(path,"([^/]*%./)",function (s)
+    if s~="./" then
+      return s
+    else
+      return ""
+    end
+  end)
+  path=gsub(path,"/%.$","/")
+  local reduced
+  while reduced~=path do
+    reduced=path
+    path=gsub(reduced,"([^/]*/%.%./)",function (s)
+      if s~="../../" then
+        return ""
+      else
+        return s
+      end
+    end)
+  end
+  path=gsub(reduced,"([^/]*/%.%.)$",function (s)
+    if s~="../.." then
+      return ""
+    else
+      return s
+    end
+  end)
+  return path
+end
+function url.parse(url,default)
+  local parsed={}
+  for k,v in next,default or parsed do
+    parsed[k]=v
+  end
+  if not url or url=="" then
+    return nil,"invalid url"
+  end
+  url=gsub(url,"#(.*)$",function(f)
+    parsed.fragment=f
+    return ""
+  end)
+  url=gsub(url,"^([%w][%w%+%-%.]*)%:",function(s)
+    parsed.scheme=s
+    return ""
+  end)
+  url=gsub(url,"^//([^/]*)",function(n)
+    parsed.authority=n
+    return ""
+  end)
+  url=gsub(url,"%?(.*)",function(q)
+    parsed.query=q
+    return ""
+  end)
+  url=gsub(url,"%;(.*)",function(p)
+    parsed.params=p
+    return ""
+  end)
+  if url~="" then
+    parsed.path=url
+  end
+  local authority=parsed.authority
+  if not authority then
+    return parsed
+  end
+  authority=gsub(authority,"^([^@]*)@",function(u)
+    parsed.userinfo=u
+    return ""
+  end)
+  authority=gsub(authority,":([^:%]]*)$",function(p)
+    parsed.port=p
+    return ""
+  end)
+  if authority~="" then
+    parsed.host=match(authority,"^%[(.+)%]$") or authority
+  end
+  local userinfo=parsed.userinfo
+  if not userinfo then
+    return parsed
+  end
+  userinfo=gsub(userinfo,":([^:]*)$",function(p)
+    parsed.password=p
+    return ""
+  end)
+  parsed.user=userinfo
+  return parsed
+end
+function url.build(parsed)
+  local url=parsed.path or ""
+  if parsed.params then
+    url=url..";"..parsed.params
+  end
+  if parsed.query then
+    url=url.."?"..parsed.query
+  end
+  local authority=parsed.authority
+  if parsed.host then
+    authority=parsed.host
+    if find(authority,":") then 
+      authority="["..authority.."]"
+    end
+    if parsed.port then
+      authority=authority..":"..tostring(parsed.port)
+    end
+    local userinfo=parsed.userinfo
+    if parsed.user then
+      userinfo=parsed.user
+      if parsed.password then
+        userinfo=userinfo..":"..parsed.password
+      end
+    end
+    if userinfo then authority=userinfo.."@"..authority end
+  end
+  if authority then
+    url="//"..authority..url
+  end
+  if parsed.scheme then
+    url=parsed.scheme..":"..url
+  end
+  if parsed.fragment then
+    url=url.."#"..parsed.fragment
+  end
+  return url
+end
+function url.absolute(base_url,relative_url)
+  local base_parsed
+  if type(base_url)=="table" then
+    base_parsed=base_url
+    base_url=url.build(base_parsed)
+  else
+    base_parsed=url.parse(base_url)
+  end
+  local relative_parsed=url.parse(relative_url)
+  if not base_parsed then
+    return relative_url
+  elseif not relative_parsed then
+    return base_url
+  elseif relative_parsed.scheme then
+    return relative_url
+  else
+    relative_parsed.scheme=base_parsed.scheme
+    if not relative_parsed.authority then
+      relative_parsed.authority=base_parsed.authority
+      if not relative_parsed.path then
+        relative_parsed.path=base_parsed.path
+        if not relative_parsed.params then
+          relative_parsed.params=base_parsed.params
+          if not relative_parsed.query then
+            relative_parsed.query=base_parsed.query
+          end
+        end
+      else
+        relative_parsed.path=absolute_path(base_parsed.path or "",relative_parsed.path)
+      end
+    end
+    return url.build(relative_parsed)
+  end
+end
+function url.parse_path(path)
+  local parsed={}
+  path=path or ""
+  gsub(path,"([^/]+)",function (s)
+    insert(parsed,s)
+  end)
+  for i=1,#parsed do
+    parsed[i]=url.unescape(parsed[i])
+  end
+  if sub(path,1,1)=="/" then
+    parsed.is_absolute=1
+  end
+  if sub(path,-1,-1)=="/" then
+    parsed.is_directory=1
+  end
+  return parsed
+end
+function url.build_path(parsed,unsafe)
+  local path=""
+  local n=#parsed
+  if unsafe then
+    for i=1,n-1 do
+      path=path..parsed[i].."/"
+    end
+    if n>0 then
+      path=path..parsed[n]
+      if parsed.is_directory then
+        path=path.."/"
+      end
+    end
+  else
+    for i=1,n-1 do
+      path=path..protect_segment(parsed[i]).."/"
+    end
+    if n>0 then
+      path=path..protect_segment(parsed[n])
+      if parsed.is_directory then
+        path=path.."/"
+      end
+    end
+  end
+  if parsed.is_absolute then
+    path="/"..path
+  end
+  return path
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-headers"] = package.loaded["util-soc-imp-headers"] or true
+
+-- original size: 5712, stripped down to: 3865
+
+
+local next=next
+local lower=string.lower
+local concat=table.concat
+local socket=socket or require("socket")
+local canonic={
+  ["accept"]="Accept",
+  ["accept-charset"]="Accept-Charset",
+  ["accept-encoding"]="Accept-Encoding",
+  ["accept-language"]="Accept-Language",
+  ["accept-ranges"]="Accept-Ranges",
+  ["action"]="Action",
+  ["alternate-recipient"]="Alternate-Recipient",
+  ["age"]="Age",
+  ["allow"]="Allow",
+  ["arrival-date"]="Arrival-Date",
+  ["authorization"]="Authorization",
+  ["bcc"]="Bcc",
+  ["cache-control"]="Cache-Control",
+  ["cc"]="Cc",
+  ["comments"]="Comments",
+  ["connection"]="Connection",
+  ["content-description"]="Content-Description",
+  ["content-disposition"]="Content-Disposition",
+  ["content-encoding"]="Content-Encoding",
+  ["content-id"]="Content-ID",
+  ["content-language"]="Content-Language",
+  ["content-length"]="Content-Length",
+  ["content-location"]="Content-Location",
+  ["content-md5"]="Content-MD5",
+  ["content-range"]="Content-Range",
+  ["content-transfer-encoding"]="Content-Transfer-Encoding",
+  ["content-type"]="Content-Type",
+  ["cookie"]="Cookie",
+  ["date"]="Date",
+  ["diagnostic-code"]="Diagnostic-Code",
+  ["dsn-gateway"]="DSN-Gateway",
+  ["etag"]="ETag",
+  ["expect"]="Expect",
+  ["expires"]="Expires",
+  ["final-log-id"]="Final-Log-ID",
+  ["final-recipient"]="Final-Recipient",
+  ["from"]="From",
+  ["host"]="Host",
+  ["if-match"]="If-Match",
+  ["if-modified-since"]="If-Modified-Since",
+  ["if-none-match"]="If-None-Match",
+  ["if-range"]="If-Range",
+  ["if-unmodified-since"]="If-Unmodified-Since",
+  ["in-reply-to"]="In-Reply-To",
+  ["keywords"]="Keywords",
+  ["last-attempt-date"]="Last-Attempt-Date",
+  ["last-modified"]="Last-Modified",
+  ["location"]="Location",
+  ["max-forwards"]="Max-Forwards",
+  ["message-id"]="Message-ID",
+  ["mime-version"]="MIME-Version",
+  ["original-envelope-id"]="Original-Envelope-ID",
+  ["original-recipient"]="Original-Recipient",
+  ["pragma"]="Pragma",
+  ["proxy-authenticate"]="Proxy-Authenticate",
+  ["proxy-authorization"]="Proxy-Authorization",
+  ["range"]="Range",
+  ["received"]="Received",
+  ["received-from-mta"]="Received-From-MTA",
+  ["references"]="References",
+  ["referer"]="Referer",
+  ["remote-mta"]="Remote-MTA",
+  ["reply-to"]="Reply-To",
+  ["reporting-mta"]="Reporting-MTA",
+  ["resent-bcc"]="Resent-Bcc",
+  ["resent-cc"]="Resent-Cc",
+  ["resent-date"]="Resent-Date",
+  ["resent-from"]="Resent-From",
+  ["resent-message-id"]="Resent-Message-ID",
+  ["resent-reply-to"]="Resent-Reply-To",
+  ["resent-sender"]="Resent-Sender",
+  ["resent-to"]="Resent-To",
+  ["retry-after"]="Retry-After",
+  ["return-path"]="Return-Path",
+  ["sender"]="Sender",
+  ["server"]="Server",
+  ["smtp-remote-recipient"]="SMTP-Remote-Recipient",
+  ["status"]="Status",
+  ["subject"]="Subject",
+  ["te"]="TE",
+  ["to"]="To",
+  ["trailer"]="Trailer",
+  ["transfer-encoding"]="Transfer-Encoding",
+  ["upgrade"]="Upgrade",
+  ["user-agent"]="User-Agent",
+  ["vary"]="Vary",
+  ["via"]="Via",
+  ["warning"]="Warning",
+  ["will-retry-until"]="Will-Retry-Until",
+  ["www-authenticate"]="WWW-Authenticate",
+  ["x-mailer"]="X-Mailer",
+}
+setmetatable(canonic,{
+  __index=function(t,k)
+    socket.report("invalid header: %s",k)
+    t[k]=k
+    return k
+  end
+})
+local function normalizeheaders(headers)
+  if not headers then
+    return {}
+  end
+  local normalized={}
+  for k,v in next,headers do
+    normalized[#normalized+1]=canonic[k]..": "..v
+  end
+  normalized[#normalized+1]=""
+  normalized[#normalized+1]=""
+  return concat(normalized,"\r\n")
+end
+local function lowerheaders(lowered,headers)
+  if not lowered then
+    return {}
+  end
+  if not headers then
+    lowered,headers={},lowered
+  end
+  for k,v in next,headers do
+    lowered[lower(k)]=v
+  end
+  return lowered
+end
+socket.headers={
+  canonic=canonic,
+  normalize=normalizeheaders,
+  lower=lowerheaders,
+}
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-tp"] = package.loaded["util-soc-imp-tp"] or true
+
+-- original size: 3082, stripped down to: 2612
+
+
+local setmetatable,next,type,tonumber=setmetatable,next,type,tonumber
+local find,upper=string.find,string,upper
+local socket=socket or require("socket")
+local ltn12=ltn12 or require("ltn12")
+local skipsocket=socket.skip
+local sinksocket=socket.sink
+local tcpsocket=socket.tcp
+local ltn12pump=ltn12.pump
+local pumpall=ltn12pump.all
+local pumpstep=ltn12pump.step
+local tp={
+  TIMEOUT=60,
+}
+socket.tp=tp
+local function get_reply(c)
+  local line,err=c:receive()
+  local reply=line
+  if err then return
+    nil,err
+  end
+  local code,sep=skipsocket(2,find(line,"^(%d%d%d)(.?)"))
+  if not code then
+    return nil,"invalid server reply"
+  end
+  if sep=="-" then
+    local current
+    repeat
+      line,err=c:receive()
+      if err then
+        return nil,err
+      end
+      current,sep=skipsocket(2,find(line,"^(%d%d%d)(.?)"))
+      reply=reply.."\n"..line
+    until code==current and sep==" "
+  end
+  return code,reply
+end
+local methods={}
+local mt={ __index=methods }
+function methods.getpeername(self)
+  return self.c:getpeername()
+end
+function methods.getsockname(self)
+  return self.c:getpeername()
+end
+function methods.check(self,ok)
+  local code,reply=get_reply(self.c)
+  if not code then
+    return nil,reply
+  end
+  local c=tonumber(code)
+  local t=type(ok)
+  if t=="function" then
+    return ok(c,reply)
+  elseif t=="table" then
+    for i=1,#ok do
+      if find(code,ok[i]) then
+        return c,reply
+      end
+    end
+    return nil,reply
+  elseif find(code,ok) then
+    return c,reply
+  else
+    return nil,reply
+  end
+end
+function methods.command(self,cmd,arg)
+  cmd=upper(cmd)
+  if arg then
+    cmd=cmd.." "..arg.."\r\n"
+  else
+    cmd=cmd.."\r\n"
+  end
+  return self.c:send(cmd)
+end
+function methods.sink(self,snk,pat)
+  local chunk,err=self.c:receive(pat)
+  return snk(chunk,err)
+end
+function methods.send(self,data)
+  return self.c:send(data)
+end
+function methods.receive(self,pat)
+  return self.c:receive(pat)
+end
+function methods.getfd(self)
+  return self.c:getfd()
+end
+function methods.dirty(self)
+  return self.c:dirty()
+end
+function methods.getcontrol(self)
+  return self.c
+end
+function methods.source(self,source,step)
+  local sink=sinksocket("keep-open",self.c)
+  local ret,err=pumpall(source,sink,step or pumpstep)
+  return ret,err
+end
+function methods.close(self)
+  self.c:close()
+  return 1
+end
+function tp.connect(host,port,timeout,create)
+  local c,e=(create or tcpsocket)()
+  if not c then
+    return nil,e
+  end
+  c:settimeout(timeout or tp.TIMEOUT)
+  local r,e=c:connect(host,port)
+  if not r then
+    c:close()
+    return nil,e
+  end
+  return setmetatable({ c=c },mt)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-http"] = package.loaded["util-soc-imp-http"] or true
+
+-- original size: 12499, stripped down to: 10001
+
+
+local tostring,tonumber,setmetatable,next,type=tostring,tonumber,setmetatable,next,type
+local find,lower,format,gsub,match=string.find,string.lower,string.format,string.gsub,string.match
+local concat=table.concat
+local socket=socket     or require("socket")
+local url=socket.url   or require("socket.url")
+local ltn12=ltn12     or require("ltn12")
+local mime=mime      or require("mime")
+local headers=socket.headers or require("socket.headers")
+local normalizeheaders=headers.normalize
+local parseurl=url.parse
+local buildurl=url.build
+local absoluteurl=url.absolute
+local unescapeurl=url.unescape
+local skipsocket=socket.skip
+local sinksocket=socket.sink
+local sourcesocket=socket.source
+local trysocket=socket.try
+local tcpsocket=socket.tcp
+local newtrysocket=socket.newtry
+local protectsocket=socket.protect
+local emptysource=ltn12.source.empty
+local stringsource=ltn12.source.string
+local rewindsource=ltn12.source.rewind
+local pumpstep=ltn12.pump.step
+local pumpall=ltn12.pump.all
+local sinknull=ltn12.sink.null
+local sinktable=ltn12.sink.table
+local mimeb64=mime.b64
+local http={
+  TIMEOUT=60,
+  USERAGENT=socket._VERSION,
+}
+socket.http=http
+local PORT=80
+local SCHEMES={
+  http=true,
+}
+local function receiveheaders(sock,headers)
+  if not headers then
+    headers={}
+  end
+  local line,err=sock:receive()
+  if err then
+    return nil,err
+  end
+  while line~="" do
+    local name,value=skipsocket(2,find(line,"^(.-):%s*(.*)"))
+    if not (name and value) then
+      return nil,"malformed reponse headers"
+    end
+    name=lower(name)
+    line,err=sock:receive()
+    if err then
+      return nil,err
+    end
+    while find(line,"^%s") do
+      value=value..line
+      line=sock:receive()
+      if err then
+        return nil,err
+      end
+    end
+    local found=headers[name]
+    if found then
+      value=found..", "..value
+    end
+    headers[name]=value
+  end
+  return headers
+end
+socket.sourcet["http-chunked"]=function(sock,headers)
+  return setmetatable (
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },{
+      __call=function()
+        local line,err=sock:receive()
+        if err then
+          return nil,err
+        end
+        local size=tonumber(gsub(line,";.*",""),16)
+        if not size then
+          return nil,"invalid chunk size"
+        end
+        if size>0 then
+          local chunk,err,part=sock:receive(size)
+          if chunk then
+            sock:receive()
+          end
+          return chunk,err
+        else
+          headers,err=receiveheaders(sock,headers)
+          if not headers then
+            return nil,err
+          end
+        end
+      end
+    }
+  )
+end
+socket.sinkt["http-chunked"]=function(sock)
+  return setmetatable(
+    {
+      getfd=function() return sock:getfd() end,
+      dirty=function() return sock:dirty() end,
+    },
+    {
+      __call=function(self,chunk,err)
+        if not chunk then
+          chunk=""
+        end
+        return sock:send(format("%X\r\n%s\r\n",#chunk,chunk))
+      end
+  })
+end
+local methods={}
+local mt={ __index=methods }
+local function openhttp(host,port,create)
+  local c=trysocket((create or tcpsocket)())
+  local h=setmetatable({ c=c },mt)
+  local try=newtrysocket(function() h:close() end)
+  h.try=try
+  try(c:settimeout(http.TIMEOUT))
+  try(c:connect(host,port or PORT))
+  return h
+end
+http.open=openhttp
+function methods.sendrequestline(self,method,uri)
+  local requestline=format("%s %s HTTP/1.1\r\n",method or "GET",uri)
+  return self.try(self.c:send(requestline))
+end
+function methods.sendheaders(self,headers)
+  self.try(self.c:send(normalizeheaders(headers)))
+  return 1
+end
+function methods.sendbody(self,headers,source,step)
+  if not source then
+    source=emptysource()
+  end
+  if not step then
+    step=pumpstep
+  end
+  local mode="http-chunked"
+  if headers["content-length"] then
+    mode="keep-open"
+  end
+  return self.try(pumpall(source,sinksocket(mode,self.c),step))
+end
+function methods.receivestatusline(self)
+  local try=self.try
+  local status=try(self.c:receive(5))
+  if status~="HTTP/" then
+    return nil,status 
+  end
+  status=try(self.c:receive("*l",status))
+  local code=skipsocket(2,find(status,"HTTP/%d*%.%d* (%d%d%d)"))
+  return try(tonumber(code),status)
+end
+function methods.receiveheaders(self)
+  return self.try(receiveheaders(self.c))
+end
+function methods.receivebody(self,headers,sink,step)
+  if not sink then
+    sink=sinknull()
+  end
+  if not step then
+    step=pumpstep
+  end
+  local length=tonumber(headers["content-length"])
+  local encoding=headers["transfer-encoding"] 
+  local mode="default" 
+  if encoding and encoding~="identity" then
+    mode="http-chunked"
+  elseif length then
+    mode="by-length"
+  end
+  return self.try(pumpall(sourcesocket(mode,self.c,length),sink,step))
+end
+function methods.receive09body(self,status,sink,step)
+  local source=rewindsource(sourcesocket("until-closed",self.c))
+  source(status)
+  return self.try(pumpall(source,sink,step))
+end
+function methods.close(self)
+  return self.c:close()
+end
+local function adjusturi(request)
+  if not request.proxy and not http.PROXY then
+    request={
+      path=trysocket(request.path,"invalid path 'nil'"),
+      params=request.params,
+      query=request.query,
+      fragment=request.fragment,
+    }
+  end
+  return buildurl(request)
+end
+local function adjustheaders(request)
+  local headers={
+    ["user-agent"]=http.USERAGENT,
+    ["host"]=gsub(request.authority,"^.-@",""),
+    ["connection"]="close, TE",
+    ["te"]="trailers"
+  }
+  local username=request.user
+  local password=request.password
+  if username and password then
+    headers["authorization"]="Basic "..(mimeb64(username..":"..unescapeurl(password)))
+  end
+  local proxy=request.proxy or http.PROXY
+  if proxy then
+    proxy=parseurl(proxy)
+    local username=proxy.user
+    local password=proxy.password
+    if username and password then
+      headers["proxy-authorization"]="Basic "..(mimeb64(username..":"..password))
+    end
+  end
+  local requestheaders=request.headers
+  if requestheaders then
+    headers=lowerheaders(headers,requestheaders)
+  end
+  return headers
+end
+local default={
+  host="",
+  port=PORT,
+  path="/",
+  scheme="http"
+}
+local function adjustrequest(originalrequest)
+  local url=originalrequest.url
+  local request=url and parseurl(url,default) or {}
+  for k,v in next,originalrequest do
+    request[k]=v
+  end
+  local host=request.host
+  local port=request.port
+  local uri=request.uri
+  if not host or host=="" then
+    trysocket(nil,"invalid host '"..tostring(host).."'")
+  end
+  if port=="" then
+    request.port=PORT
+  end
+  if not uri or uri=="" then
+    request.uri=adjusturi(request)
+  end
+  request.headers=adjustheaders(request)
+  local proxy=request.proxy or http.PROXY
+  if proxy then
+    proxy=parseurl(proxy)
+    request.host=proxy.host
+    request.port=proxy.port or 3128
+  end
+  return request
+end
+local maxredericts=4
+local validredirects={ [301]=true,[302]=true,[303]=true,[307]=true }
+local validmethods={ [false]=true,GET=true,HEAD=true }
+local function shouldredirect(request,code,headers)
+  local location=headers.location
+  if not location then
+    return false
+  end
+  location=gsub(location,"%s","")
+  if location=="" then
+    return false
+  end
+  local scheme=match(location,"^([%w][%w%+%-%.]*)%:")
+  if scheme and not SCHEMES[scheme] then
+    return false
+  end
+  local method=request.method
+  local redirect=request.redirect
+  local redirects=request.nredirects or 0
+  return redirect and validredirects[code] and validmethods[method] and redirects<=maxredericts
+end
+local function shouldreceivebody(request,code)
+  if request.method=="HEAD" then
+    return nil
+  end
+  if code==204 or code==304 then
+    return nil
+  end
+  if code>=100 and code<200 then
+    return nil
+  end
+  return 1
+end
+local tredirect,trequest,srequest
+tredirect=function(request,location)
+  local result,code,headers,status=trequest {
+    url=absoluteurl(request.url,location),
+    source=request.source,
+    sink=request.sink,
+    headers=request.headers,
+    proxy=request.proxy,
+    nredirects=(request.nredirects or 0)+1,
+    create=request.create,
+  }
+  if not headers then
+    headers={}
+  end
+  if not headers.location then
+    headers.location=location
+  end
+  return result,code,headers,status
+end
+trequest=function(originalrequest)
+  local request=adjustrequest(originalrequest)
+  local connection=openhttp(request.host,request.port,request.create)
+  local headers=request.headers
+  connection:sendrequestline(request.method,request.uri)
+  connection:sendheaders(headers)
+  if request.source then
+    connection:sendbody(headers,request.source,request.step)
+  end
+  local code,status=connection:receivestatusline()
+  if not code then
+    connection:receive09body(status,request.sink,request.step)
+    return 1,200
+  end
+  while code==100 do
+    headers=connection:receiveheaders()
+    code,status=connection:receivestatusline()
+  end
+  headers=connection:receiveheaders()
+  if shouldredirect(request,code,headers) and not request.source then
+    connection:close()
+    return tredirect(originalrequest,headers.location)
+  end
+  if shouldreceivebody(request,code) then
+    connection:receivebody(headers,request.sink,request.step)
+  end
+  connection:close()
+  return 1,code,headers,status
+end
+local function genericform(url,body)
+  local buffer={}
+  local request={
+    url=url,
+    sink=sinktable(buffer),
+    target=buffer,
+  }
+  if body then
+    request.source=stringsource(body)
+    request.method="POST"
+    request.headers={
+      ["content-length"]=#body,
+      ["content-type"]="application/x-www-form-urlencoded"
+    }
+  end
+  return request
+end
+http.genericform=genericform
+srequest=function(url,body)
+  local request=genericform(url,body)
+  local _,code,headers,status=trequest(request)
+  return concat(request.target),code,headers,status
+end
+http.request=protectsocket(function(request,body)
+  if type(request)=="string" then
+    return srequest(request,body)
+  else
+    return trequest(request)
+  end
+end)
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-ftp"] = package.loaded["util-soc-imp-ftp"] or true
+
+-- original size: 10321, stripped down to: 8867
+
+
+local setmetatable,type,next=setmetatable,type,next
+local find,format,gsub,match=string.find,string.format,string.gsub,string.match
+local concat=table.concat
+local mod=math.mod
+local socket=socket   or require("socket")
+local url=socket.url or require("socket.url")
+local tp=socket.tp or require("socket.tp")
+local ltn12=ltn12   or require("ltn12")
+local tcpsocket=socket.tcp
+local trysocket=socket.try
+local skipsocket=socket.skip
+local sinksocket=socket.sink
+local selectsocket=socket.select
+local bindsocket=socket.bind
+local newtrysocket=socket.newtry
+local sourcesocket=socket.source
+local protectsocket=socket.protect
+local parseurl=url.parse
+local unescapeurl=url.unescape
+local pumpall=ltn12.pump.all
+local pumpstep=ltn12.pump.step
+local sourcestring=ltn12.source.string
+local sinktable=ltn12.sink.table
+local ftp={
+  TIMEOUT=60,
+  USER="ftp",
+  PASSWORD="anonymous@anonymous.org",
+}
+socket.ftp=ftp
+local PORT=21
+local methods={}
+local mt={ __index=methods }
+function ftp.open(server,port,create)
+  local tp=trysocket(tp.connect(server,port or PORT,ftp.TIMEOUT,create))
+  local f=setmetatable({ tp=tp },metat)
+  f.try=newtrysocket(function() f:close() end)
+  return f
+end
+function methods.portconnect(self)
+  local try=self.try
+  local server=self.server
+  try(server:settimeout(ftp.TIMEOUT))
+  self.data=try(server:accept())
+  try(self.data:settimeout(ftp.TIMEOUT))
+end
+function methods.pasvconnect(self)
+  local try=self.try
+  self.data=try(tcpsocket())
+  self(self.data:settimeout(ftp.TIMEOUT))
+  self(self.data:connect(self.pasvt.address,self.pasvt.port))
+end
+function methods.login(self,user,password)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("user",user or ftp.USER))
+  local code,reply=try(tp:check{"2..",331})
+  if code==331 then
+    try(tp:command("pass",password or ftp.PASSWORD))
+    try(tp:check("2.."))
+  end
+  return 1
+end
+function methods.pasv(self)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("pasv"))
+  local code,reply=try(self.tp:check("2.."))
+  local pattern="(%d+)%D(%d+)%D(%d+)%D(%d+)%D(%d+)%D(%d+)"
+  local a,b,c,d,p1,p2=skipsocket(2,find(reply,pattern))
+  try(a and b and c and d and p1 and p2,reply)
+  local address=format("%d.%d.%d.%d",a,b,c,d)
+  local port=p1*256+p2
+  local server=self.server
+  self.pasvt={
+    address=address,
+    port=port,
+  }
+  if server then
+    server:close()
+    self.server=nil
+  end
+  return address,port
+end
+function methods.epsv(self)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("epsv"))
+  local code,reply=try(tp:check("229"))
+  local pattern="%((.)(.-)%1(.-)%1(.-)%1%)"
+  local d,prt,address,port=match(reply,pattern)
+  try(port,"invalid epsv response")
+  local address=tp:getpeername()
+  local server=self.server
+  self.pasvt={
+    address=address,
+    port=port,
+  }
+  if self.server then
+    server:close()
+    self.server=nil
+  end
+  return address,port
+end
+function methods.port(self,address,port)
+  local try=self.try
+  local tp=self.tp
+  self.pasvt=nil
+  if not address then
+    address,port=try(tp:getsockname())
+    self.server=try(bindsocket(address,0))
+    address,port=try(self.server:getsockname())
+    try(self.server:settimeout(ftp.TIMEOUT))
+  end
+  local pl=mod(port,256)
+  local ph=(port-pl)/256
+  local arg=gsub(format("%s,%d,%d",address,ph,pl),"%.",",")
+  try(tp:command("port",arg))
+  try(tp:check("2.."))
+  return 1
+end
+function methods.eprt(self,family,address,port)
+  local try=self.try
+  local tp=self.tp
+  self.pasvt=nil
+  if not address then
+    address,port=try(tp:getsockname())
+    self.server=try(bindsocket(address,0))
+    address,port=try(self.server:getsockname())
+    try(self.server:settimeout(ftp.TIMEOUT))
+  end
+  local arg=format("|%s|%s|%d|",family,address,port)
+  try(tp:command("eprt",arg))
+  try(tp:check("2.."))
+  return 1
+end
+function methods.send(self,sendt)
+  local try=self.try
+  local tp=self.tp
+  try(self.pasvt or self.server,"need port or pasv first")
+  if self.pasvt then
+    self:pasvconnect()
+  end
+  local argument=sendt.argument or unescapeurl(gsub(sendt.path or "","^[/\\]",""))
+  if argument=="" then
+    argument=nil
+  end
+  local command=sendt.command or "stor"
+  try(tp:command(command,argument))
+  local code,reply=try(tp:check{"2..","1.."})
+  if not self.pasvt then
+    self:portconnect()
+  end
+  local step=sendt.step or pumpstep
+  local readt={ tp }
+  local checkstep=function(src,snk)
+    local readyt=selectsocket(readt,nil,0)
+    if readyt[tp] then
+      code=try(tp:check("2.."))
+    end
+    return step(src,snk)
+  end
+  local sink=sinksocket("close-when-done",self.data)
+  try(pumpall(sendt.source,sink,checkstep))
+  if find(code,"1..") then
+    try(tp:check("2.."))
+  end
+  self.data:close()
+  local sent=skipsocket(1,self.data:getstats())
+  self.data=nil
+  return sent
+end
+function methods.receive(self,recvt)
+  local try=self.try
+  local tp=self.tp
+  try(self.pasvt or self.server,"need port or pasv first")
+  if self.pasvt then self:pasvconnect() end
+  local argument=recvt.argument or unescapeurl(gsub(recvt.path or "","^[/\\]",""))
+  if argument=="" then
+    argument=nil
+  end
+  local command=recvt.command or "retr"
+  try(tp:command(command,argument))
+  local code,reply=try(tp:check{"1..","2.."})
+  if code>=200 and code<=299 then
+    recvt.sink(reply)
+    return 1
+  end
+  if not self.pasvt then
+    self:portconnect()
+  end
+  local source=sourcesocket("until-closed",self.data)
+  local step=recvt.step or pumpstep
+  try(pumpall(source,recvt.sink,step))
+  if find(code,"1..") then
+    try(tp:check("2.."))
+  end
+  self.data:close()
+  self.data=nil
+  return 1
+end
+function methods.cwd(self,dir)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("cwd",dir))
+  try(tp:check(250))
+  return 1
+end
+function methods.type(self,typ)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("type",typ))
+  try(tp:check(200))
+  return 1
+end
+function methods.greet(self)
+  local try=self.try
+  local tp=self.tp
+  local code=try(tp:check{"1..","2.."})
+  if find(code,"1..") then
+    try(tp:check("2.."))
+  end
+  return 1
+end
+function methods.quit(self)
+  local try=self.try
+  try(self.tp:command("quit"))
+  try(self.tp:check("2.."))
+  return 1
+end
+function methods.close(self)
+  local data=self.data
+  if data then
+    data:close()
+  end
+  local server=self.server
+  if server then
+    server:close()
+  end
+  local tp=self.tp
+  if tp then
+    tp:close()
+  end
+end
+local function override(t)
+  if t.url then
+    local u=parseurl(t.url)
+    for k,v in next,t do
+      u[k]=v
+    end
+    return u
+  else
+    return t
+  end
+end
+local function tput(putt)
+  putt=override(putt)
+  local host=putt.host
+  trysocket(host,"missing hostname")
+  local f=ftp.open(host,putt.port,putt.create)
+  f:greet()
+  f:login(putt.user,putt.password)
+  local typ=putt.type
+  if typ then
+    f:type(typ)
+  end
+  f:epsv()
+  local sent=f:send(putt)
+  f:quit()
+  f:close()
+  return sent
+end
+local default={
+  path="/",
+  scheme="ftp",
+}
+local function genericform(u)
+  local t=trysocket(parseurl(u,default))
+  trysocket(t.scheme=="ftp","wrong scheme '"..t.scheme.."'")
+  trysocket(t.host,"missing hostname")
+  local pat="^type=(.)$"
+  if t.params then
+    local typ=skipsocket(2,find(t.params,pat))
+    t.type=typ
+    trysocket(typ=="a" or typ=="i","invalid type '"..typ.."'")
+  end
+  return t
+end
+ftp.genericform=genericform
+local function sput(u,body)
+  local putt=genericform(u)
+  putt.source=sourcestring(body)
+  return tput(putt)
+end
+ftp.put=protectsocket(function(putt,body)
+  if type(putt)=="string" then
+    return sput(putt,body)
+  else
+    return tput(putt)
+  end
+end)
+local function tget(gett)
+  gett=override(gett)
+  local host=gett.host
+  trysocket(host,"missing hostname")
+  local f=ftp.open(host,gett.port,gett.create)
+  f:greet()
+  f:login(gett.user,gett.password)
+  if gett.type then
+    f:type(gett.type)
+  end
+  f:epsv()
+  f:receive(gett)
+  f:quit()
+  return f:close()
+end
+local function sget(u)
+  local gett=genericform(u)
+  local t={}
+  gett.sink=sinktable(t)
+  tget(gett)
+  return concat(t)
+end
+ftp.command=protectsocket(function(cmdt)
+  cmdt=override(cmdt)
+  local command=cmdt.command
+  local argument=cmdt.argument
+  local check=cmdt.check
+  local host=cmdt.host
+  trysocket(host,"missing hostname")
+  trysocket(command,"missing command")
+  local f=ftp.open(host,cmdt.port,cmdt.create)
+  local try=f.try
+  local tp=f.tp
+  f:greet()
+  f:login(cmdt.user,cmdt.password)
+  if type(command)=="table" then
+    local argument=argument or {}
+    for i=1,#command do
+      local cmd=command[i]
+      try(tp:command(cmd,argument[i]))
+      if check and check[i] then
+        try(tp:check(check[i]))
+      end
+    end
+  else
+    try(tp:command(command,argument))
+    if check then
+      try(tp:check(check))
+    end
+  end
+  f:quit()
+  return f:close()
+end)
+ftp.get=protectsocket(function(gett)
+  if type(gett)=="string" then
+    return sget(gett)
+  else
+    return tget(gett)
+  end
+end)
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["util-soc-imp-smtp"] = package.loaded["util-soc-imp-smtp"] or true
+
+-- original size: 6975, stripped down to: 6055
+
+
+local type,setmetatable,next=type,setmetatable,next
+local find,lower,format=string.find,string.lower,string.format
+local osdate,osgetenv=os.data,os.getenv
+local random=math.random
+local socket=socket     or require("socket")
+local headers=socket.headers or require("socket.headers")
+local ltn12=ltn12     or require("ltn12")
+local tp=socket.tp   or require("socket.tp")
+local mime=mime      or require("mime")
+local mimeb64=mime.b64
+local mimestuff=mime.stuff
+local skipsocket=socket.skip
+local trysocket=socket.try
+local newtrysocket=socket.newtry
+local protectsocket=socket.protect
+local normalizeheaders=headers.normalize
+local lowerheaders=headers.lower
+local createcoroutine=coroutine.create
+local resumecoroutine=coroutine.resume
+local yieldcoroutine=coroutine.resume
+local smtp={
+  TIMEOUT=60,
+  SERVER="localhost",
+  PORT=25,
+  DOMAIN=osgetenv("SERVER_NAME") or "localhost",
+  ZONE="-0000",
+}
+socket.smtp=smtp
+local methods={}
+local mt={ __index=methods }
+function methods.greet(self,domain)
+  local try=self.try
+  local tp=self.tp
+  try(tp:check("2.."))
+  try(tp:command("EHLO",domain or _M.DOMAIN))
+  return skipsocket(1,try(tp:check("2..")))
+end
+function methods.mail(self,from)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("MAIL","FROM:"..from))
+  return try(tp:check("2.."))
+end
+function methods.rcpt(self,to)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("RCPT","TO:"..to))
+  return try(tp:check("2.."))
+end
+function methods.data(self,src,step)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("DATA"))
+  try(tp:check("3.."))
+  try(tp:source(src,step))
+  try(tp:send("\r\n.\r\n"))
+  return try(tp:check("2.."))
+end
+function methods.quit(self)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("QUIT"))
+  return try(tp:check("2.."))
+end
+function methods.close(self)
+  return self.tp:close()
+end
+function methods.login(self,user,password)
+  local try=self.try
+  local tp=self.tp
+  try(tp:command("AUTH","LOGIN"))
+  try(tp:check("3.."))
+  try(tp:send(mimeb64(user).."\r\n"))
+  try(tp:check("3.."))
+  try(tp:send(mimeb64(password).."\r\n"))
+  return try(tp:check("2.."))
+end
+function methods.plain(self,user,password)
+  local try=self.try
+  local tp=self.tp
+  local auth="PLAIN "..mimeb64("\0"..user.."\0"..password)
+  try(tp:command("AUTH",auth))
+  return try(tp:check("2.."))
+end
+function methods.auth(self,user,password,ext)
+  if not user or not password then
+    return 1
+  end
+  local try=self.try
+  if find(ext,"AUTH[^\n]+LOGIN") then
+    return self:login(user,password)
+  elseif find(ext,"AUTH[^\n]+PLAIN") then
+    return self:plain(user,password)
+  else
+    try(nil,"authentication not supported")
+  end
+end
+function methods.send(self,mail)
+  self:mail(mail.from)
+  local receipt=mail.rcpt
+  if type(receipt)=="table" then
+    for i=1,#receipt do
+      self:rcpt(receipt[i])
+    end
+  elseif receipt then
+    self:rcpt(receipt)
+  end
+  self:data(ltn12.source.chain(mail.source,mimestuff()),mail.step)
+end
+local function opensmtp(self,server,port,create)
+  if not server or server=="" then
+    server=smtp.SERVER
+  end
+  if not port or port=="" then
+    port=smtp.PORT
+  end
+  local s={
+    tp=trysocket(tp.connect(server,port,smtp.TIMEOUT,create)),
+    try=newtrysocket(function()
+      s:close()
+    end),
+  }
+  setmetatable(s,mt)
+  return s
+end
+smtp.open=opensmtp
+local nofboundaries=0
+local function newboundary()
+  nofboundaries=nofboundaries+1
+  return format('%s%05d==%05u',osdate('%d%m%Y%H%M%S'),random(0,99999),nofboundaries)
+end
+local send_message
+local function send_headers(headers)
+  yieldcoroutine(normalizeheaders(headers))
+end
+local function send_multipart(message)
+  local boundary=newboundary()
+  local headers=lowerheaders(message.headers)
+  local body=message.body
+  local preamble=body.preamble
+  local epilogue=body.epilogue
+  local content=headers['content-type'] or 'multipart/mixed'
+  headers['content-type']=content..'; boundary="'..boundary..'"'
+  send_headers(headers)
+  if preamble then
+    yieldcoroutine(preamble)
+    yieldcoroutine("\r\n")
+  end
+  for i=1,#body do
+    yieldcoroutine("\r\n--"..boundary.."\r\n")
+    send_message(body[i])
+  end
+  yieldcoroutine("\r\n--"..boundary.."--\r\n\r\n")
+  if epilogue then
+    yieldcoroutine(epilogue)
+    yieldcoroutine("\r\n")
+  end
+end
+local default_content_type='text/plain; charset="UTF-8"'
+local function send_source(message)
+  local headers=lowerheaders(message.headers)
+  if not headers['content-type'] then
+    headers['content-type']=default_content_type
+  end
+  send_headers(headers)
+  local getchunk=message.body
+  while true do
+    local chunk,err=getchunk()
+    if err then
+      yieldcoroutine(nil,err)
+    elseif chunk then
+      yieldcoroutine(chunk)
+    else
+      break
+    end
+  end
+end
+local function send_string(message)
+  local headers=lowerheaders(message.headers)
+  if not headers['content-type'] then
+    headers['content-type']=default_content_type
+  end
+  send_headers(headers)
+  yieldcoroutine(message.body)
+end
+function send_message(message)
+  local body=message.body
+  if type(body)=="table" then
+    send_multipart(message)
+  elseif type(body)=="function" then
+    send_source(message)
+  else
+    send_string(message)
+  end
+end
+local function adjust_headers(message)
+  local headers=lowerheaders(message.headers)
+  if not headers["date"] then
+    headers["date"]=osdate("!%a, %d %b %Y %H:%M:%S ")..(message.zone or smtp.ZONE)
+  end
+  if not headers["x-mailer"] then
+    headers["x-mailer"]=socket._VERSION
+  end
+  headers["mime-version"]="1.0"
+  return headers
+end
+function smtp.message(message)
+  message.headers=adjust_headers(message)
+  local action=createcoroutine(function()
+    send_message(message)
+  end)
+  return function()
+    local ret,a,b=resumecoroutine(action)
+    if ret then
+      return a,b
+    else
+      return nil,a
+    end
+  end
+end
+smtp.send=protectsocket(function(mail)
+  local snd=opensmtp(mail.server,mail.port,mail.create)
+  local ext=snd:greet(mail.domain)
+  snd:auth(mail.user,mail.password,ext)
+  snd:send(mail)
+  snd:quit()
+  return snd:close()
+end)
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
 -- original size: 13340, stripped down to: 9459
@@ -21733,10 +24554,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
--- skipped libraries : util-soc-imp-reset util-soc-imp-socket util-soc-imp-copas util-soc-imp-ltn12 util-soc-imp-mime util-soc-imp-url util-soc-imp-headers util-soc-imp-tp util-soc-imp-http util-soc-imp-ftp util-soc-imp-smtp
--- original bytes    : 893485
--- stripped bytes    : 323975
+-- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- skipped libraries : -
+-- original bytes    : 981014
+-- stripped bytes    : 346248
 
 -- end library merge
 
@@ -21788,18 +24609,18 @@ local ownlibs = { -- order can be made better
     'util-prs.lua',
     'util-fmt.lua',
 
-    'util-soc-imp-reset',
-    'util-soc-imp-socket',
-    'util-soc-imp-copas',
-    'util-soc-imp-ltn12',
- -- 'util-soc-imp-mbox',
-    'util-soc-imp-mime',
-    'util-soc-imp-url',
-    'util-soc-imp-headers',
-    'util-soc-imp-tp',
-    'util-soc-imp-http',
-    'util-soc-imp-ftp',
-    'util-soc-imp-smtp',
+    'util-soc-imp-reset.lua',
+    'util-soc-imp-socket.lua',
+    'util-soc-imp-copas.lua',
+    'util-soc-imp-ltn12.lua',
+ -- 'util-soc-imp-mbox.lua',
+    'util-soc-imp-mime.lua',
+    'util-soc-imp-url.lua',
+    'util-soc-imp-headers.lua',
+    'util-soc-imp-tp.lua',
+    'util-soc-imp-http.lua',
+    'util-soc-imp-ftp.lua',
+    'util-soc-imp-smtp.lua',
 
     'trac-set.lua',
     'trac-log.lua',

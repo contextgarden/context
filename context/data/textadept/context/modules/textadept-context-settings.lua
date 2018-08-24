@@ -95,21 +95,41 @@ if context then
 
         buffer.annotation_visible              = buffer.ANNOTATION_BOXED
 
-     -- local NUMBER_MARGIN                    = 0
-     -- local MARKER_MARGIN                    = 1
-     -- local FOLD_MARGIN                      = 2  -- there are more
-     --
-     -- buffer.margin_type_n [NUMBER_MARGIN]   = buffer.MARGIN_NUMBER
-     -- buffer.margin_width_n[NUMBER_MARGIN]   = (CURSES and 0 or  4)
-     --                                        + 4 * buffer:text_width(buffer.STYLE_LINENUMBER,'9') -- magic
-     -- buffer.margin_width_n[MARKER_MARGIN]   =  CURSES and 1 or  4
-     -- buffer.margin_width_n[FOLD_MARGIN]     =  CURSES and 1 or 12
-     --
-     -- buffer.margin_mask_n[FOLD_MARGIN]      = buffer.MASK_FOLDERS
+        local NUMBER_MARGIN                    = 0
+        local MARKER_MARGIN                    = 1
+        local FOLD_MARGIN                      = 2  -- there are more
+
+        buffer.margin_type_n [NUMBER_MARGIN]   = buffer.MARGIN_NUMBER
+        buffer.margin_width_n[NUMBER_MARGIN]   = (CURSES and 0 or 6) + 4 * buffer:text_width(buffer.STYLE_LINENUMBER,'9') -- magic
+        buffer.margin_width_n[MARKER_MARGIN]   =  CURSES and 1 or 18
+        buffer.margin_width_n[FOLD_MARGIN]     =  CURSES and 1 or 18
+
+        buffer.margin_mask_n[FOLD_MARGIN]      = buffer.MASK_FOLDERS -- does something weird: bullets
+
+        buffer:marker_define(buffer.MARKNUM_FOLDEROPEN,    buffer.MARK_BOXMINUS)
+        buffer:marker_define(buffer.MARKNUM_FOLDER,        buffer.MARK_BOXPLUS)
+        buffer:marker_define(buffer.MARKNUM_FOLDERSUB,     buffer.MARK_VLINE)
+        buffer:marker_define(buffer.MARKNUM_FOLDERTAIL,    buffer.MARK_LCORNER)
+        buffer:marker_define(buffer.MARKNUM_FOLDEREND,     buffer.MARK_BOXPLUSCONNECTED)
+        buffer:marker_define(buffer.MARKNUM_FOLDEROPENMID, buffer.MARK_BOXMINUSCONNECTED)
+        buffer:marker_define(buffer.MARKNUM_FOLDERMIDTAIL, buffer.MARK_TCORNER)
+
+     -- buffer.fold_all = buffer.FOLDACTION_CONTRACT + buffer.FOLDACTION_EXPAND + buffer.FOLDACTION_TOGGLE
+
+        -- somehow the foldeing sumbol sin th emargin cannot be clicked on ... there seems to be some
+        -- interface .. if this needs to be implemented via events i'll then probably make a copy and
+        -- start doing all
+
+     -- buffer.margin_sensitive_n[2] = true
+
+     -- buffer.property['fold']                = "1"
+     -- buffer.automatic_fold                  = buffer.AUTOMATICFOLD_SHOW + buffer.AUTOMATICFOLD_CLICK + buffer.AUTOMATICFOLD_CHANGE
+     -- buffer.fold_flags                      = not CURSES and buffer.FOLDFLAG_LINEAFTER_CONTRACTED or 0
+     -- buffer.fold_display_text_style         = buffer.FOLDDISPLAYTEXT_BOXED
 
         buffer.wrap_mode                       = buffer.WRAP_NONE
 
-        buffer.margin_back_n[0]                = property_int["color.linenumber"] -- doesn't work
+        buffer.margin_back_n[NUMBER_MARGIN]    = property_int["color.linenumber"] -- doesn't work
 
         buffer.property     = {
          -- ["style.linenumber"] = property["style.linenumber"], -- somehow it fails

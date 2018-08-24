@@ -8,6 +8,10 @@ local info = {
 
 }
 
+-- We need a copy of this file to lexer.lua in the same path. This was not needed
+-- before version 10 but I can't figure out what else to do. It looks like there
+-- is some loading of lexer.lua but I can't see where.
+
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end
 
 local log      = false
@@ -232,6 +236,17 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 -- is still not perfect (sometimes hangs) but it was enough reason to spend time on
 -- making our lexer work with TextAdept and create a setup.
 --
+-- Some bad news. The interface changed (again) in textadept 10, some for the better
+-- (but a bit different from what happens here) and some for the worse, especially
+-- moving some code to the init file so we now need some bad hacks. I decided to
+-- stay with the old method of defining lexers and because the lexer cannot be run
+-- in parallel any more (some change in the binary?) I will probably also cleanup
+-- code below as we no longer need to be compatible. Unfortunately textadept is too
+-- much a moving target to simply kick in some (tex related) production flow (apart
+-- from the fact that it doesn't yet have the scite like realtime console). I'll
+-- keep an eye on it. Because we don't need many added features I might as well decide
+-- to make a lean and mean instance (after all the license permits forking).
+
 -- TRACING
 --
 -- The advantage is that we now can check more easily with regular Lua(TeX). We can
@@ -243,8 +258,8 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 --
 -- TODO
 --
--- It would be nice if we could lods some ConTeXt Lua modules (the basic set) and
--- then use resolvers and such.
+-- It would be nice if we could loads some ConTeXt Lua modules (the basic set) and
+-- then use resolvers and such. But it might not work well with scite.
 --
 -- The current lexer basics are still a mix between old and new. Maybe I should redo
 -- some more. This is probably easier in TextAdept than in SciTE.
@@ -300,7 +315,17 @@ local lpegmatch = lpeg.match
 
 local usage   = (textadept and "textadept") or (resolvers and "context") or "scite"
 local nesting = 0
-local print   = textadept and ui and ui.print or print
+local output  = nil
+
+----- print   = textadept and ui and ui.print or print -- crashes when ui is not yet defined
+
+local function print(...)
+    if not output then
+        output = io.open("lexer.log","w")
+    end
+    output:write(...,"\n")
+    output:flush()
+end
 
 local function report(fmt,str,...)
     if log then
@@ -318,6 +343,36 @@ local function inform(...)
 end
 
 inform("loading context lexer module (global table: %s)",tostring(global))
+
+do
+
+    local floor    = math and math.floor
+    local format   = format
+    local tonumber = tonumber
+
+    if not floor then
+
+        if tonumber(string.match(_VERSION,"%d%.%d")) < 5.3 then
+            floor = function(n)
+                return tonumber(format("%d",n))
+            end
+        else
+            -- 5.3 has a mixed number system and format %d doesn't work with
+            -- floats any longer ... no fun
+            floor = function(n)
+                return (n - n % 1)
+            end
+        end
+
+        math = math or { }
+
+        math.floor = floor
+
+    end
+
+end
+
+local floor = math.floor
 
 if not package.searchpath then
 
@@ -412,7 +467,9 @@ local default = {
 
 local predefined = {
     "default", "linenumber", "bracelight", "bracebad", "controlchar",
-    "indentguide", "calltip"
+    "indentguide", "calltip",
+    -- seems new
+    "folddisplaytext"
 }
 
 -- Bah ... ugly ... nicer would be a proper hash .. we now have properties
@@ -510,9 +567,16 @@ lexers.property_expanded = setmetatable({ }, {
             check_main_properties()
         end
         --
-        return gsub(property[k],"[$%%]%b()", function(k)
-            return t[sub(k,3,-2)]
-        end)
+--         return gsub(property[k],"[$%%]%b()", function(k)
+--             return t[sub(k,3,-2)]
+--         end)
+        local v = property[k]
+        if v then
+            v = gsub(v,"[$%%]%b()", function(k)
+                return t[sub(k,3,-2)]
+            end)
+        end
+        return v
     end,
     __newindex = function(t,k,v)
         report("properties are read-only, '%s' is not changed",k)
@@ -835,32 +899,42 @@ function context.loaddefinitions(name)
     return type(data) == "table" and data
 end
 
+-- A bit of regression in textadept > 10 so updated ... done a bit different.
+-- We don't use this in the context lexers anyway.
+
 function context.word_match(words,word_chars,case_insensitive)
-    local chars = "%w_" -- maybe just "" when word_chars
-    if word_chars then
-        chars = "^([" .. chars .. gsub(word_chars,"([%^%]%-])", "%%%1") .."]+)"
-    else
-        chars = "^([" .. chars .."]+)"
+    -- used to be proper tables ...
+    if type(words) == "string" then
+        local clean = gsub(words,"%-%-[^\n]+","")
+        local split = { }
+        for s in gmatch(clean,"%S+") do
+            split[#split+1] = s
+        end
+        words = split
+    end
+    local list = { }
+    for i=1,#words do
+        list[words[i]] = true
     end
     if case_insensitive then
-        local word_list = { }
         for i=1,#words do
-            word_list[lower(words[i])] = true
+            list[lower(words[i])] = true
         end
-        return P(function(input, index)
-            local s, e, word = find(input,chars,index)
-            return word and word_list[lower(word)] and e + 1 or nil
-        end)
-    else
-        local word_list = { }
-        for i=1,#words do
-            word_list[words[i]] = true
-        end
-        return P(function(input, index)
-            local s, e, word = find(input,chars,index)
-            return word and word_list[word] and e + 1 or nil
-        end)
     end
+    local chars = S(word_chars or "")
+    for i=1,#words do
+        chars = chars + S(words[i])
+    end
+    local match = case_insensitive and
+            function(input,index,word)
+                -- We can speed mixed case if needed.
+                return (list[word] or list[lower(word)]) and index or nil
+            end
+        or
+            function(input,index,word)
+                return list[word] and index or nil
+            end
+    return Cmt(chars^1,match)
 end
 
 -- Patterns are grouped in a separate namespace but the regular lexers expect
@@ -888,6 +962,11 @@ do
     local hexadecimal          = P("0") * S("xX")
                                * (hexdigit^0 * period * hexdigit^1 + hexdigit^1 * period * hexdigit^0 + hexdigit^1)
                                * (S("pP") * sign^-1 * hexdigit^1)^-1 -- *
+    local integer              = sign^-1
+                               * (hexadecimal + octal + decimal)
+    local float                = sign^-1
+                               * (digit^0 * period * digit^1 + digit^1 * period * digit^0 + digit^1)
+                               * S("eE") * sign^-1 * digit^1 -- *
 
     patterns.idtoken           = idtoken
     patterns.digit             = digit
@@ -904,15 +983,13 @@ do
     patterns.decimal           = decimal
     patterns.octal             = octal
     patterns.hexadecimal       = hexadecimal
-    patterns.float             = sign^-1
-                               * (digit^0 * period * digit^1 + digit^1 * period * digit^0 + digit^1)
-                               * S("eE") * sign^-1 * digit^1 -- *
+    patterns.float             = float
     patterns.cardinal          = decimal
 
     patterns.signeddecimal     = sign^-1 * decimal
     patterns.signedoctal       = sign^-1 * octal
     patterns.signedhexadecimal = sign^-1 * hexadecimal
-    patterns.integer           = sign^-1 * (hexadecimal + octal + decimal)
+    patterns.integer           = integer
     patterns.real              =
         sign^-1 * (                    -- at most one
             digit^1 * period * digit^0 -- 10.0 10.
@@ -928,6 +1005,7 @@ do
     patterns.nospacing         = (1-space)^1
     patterns.eol               = eol
     patterns.newline           = P("\r\n") + eol
+    patterns.backslash         = backslash
 
     local endof                = S("\n\r\f")
 
@@ -943,7 +1021,7 @@ do
     lexers.extend         = extend
     lexers.alpha          = alpha
     lexers.digit          = digit
-    lexers.alnum          = alnum
+    lexers.alnum          = alpha + digit
     lexers.lower          = lower
     lexers.upper          = upper
     lexers.xdigit         = hexdigit
@@ -1127,6 +1205,8 @@ local p_nop   = newline
 
 local folders = { }
 
+-- Snippets from the > 10 code .. but we do things different so ...
+
 local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
     local folder = folders[lexer]
     if not folder then
@@ -1135,6 +1215,12 @@ local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
         --
         local fold_symbols = lexer._foldsymbols
         local fold_pattern = lexer._foldpattern -- use lpeg instead (context extension)
+        --
+        -- textadept >= 10
+        --
+     -- local zerosumlines = lexer.property_int["fold.on.zero.sum.lines"] > 0 -- not done
+     -- local compact      = lexer.property_int['fold.compact'] > 0           -- not done
+     -- local lowercase    = lexer._CASEINSENSITIVEFOLDPOINTS                 -- useless (utf will distort)
         --
         if fold_pattern then
             -- if no functions are found then we could have a faster one
@@ -1168,7 +1254,7 @@ local function fold_by_parsing(text,start_pos,start_line,start_level,lexer)
             -- the traditional one but a bit optimized
             local fold_symbols_patterns = fold_symbols._patterns
             local action_y = function(pos,line)
-                for j = 1, #fold_symbols_patterns do
+                for j=1, #fold_symbols_patterns do
                     for s, match in gmatch(line,fold_symbols_patterns[j]) do -- "()(" .. patterns[i] .. ")"
                         local symbols = fold_symbols[style_at[start_pos + pos + s - 1]]
                         local l = symbols and symbols[match]
@@ -1311,11 +1397,11 @@ function context.fold(lexer,text,start_pos,start_line,start_level) -- hm, we had
         if filesize <= threshold_by_parsing then
             return fold_by_parsing(text,start_pos,start_line,start_level,lexer)
         end
-    elseif lexer.properties("fold.by.indentation",1) > 0 then
+    elseif lexer._FOLDBYINDENTATION or lexer.properties("fold.by.indentation",1) > 0 then
         if filesize <= threshold_by_indentation then
             return fold_by_indentation(text,start_pos,start_line,start_level,lexer)
         end
-    elseif lexer.properties("fold.by.line",1) > 0 then
+    elseif lexer._FOLDBYLINE or lexer.properties("fold.by.line",1) > 0 then
         if filesize <= threshold_by_line then
             return fold_by_line(text,start_pos,start_line,start_level,lexer)
         end
@@ -1332,6 +1418,20 @@ local function add_rule(lexer,id,rule) -- unchanged
     end
     lexer._RULES[id] = rule
     lexer._RULEORDER[#lexer._RULEORDER + 1] = id
+end
+
+local function modify_rule(lexer,id,rule) -- needed for textadept > 10
+    if lexer._lexer then
+        lexer = lexer._lexer
+    end
+    lexer._RULES[id] = rule
+end
+
+local function get_rule(lexer,id) -- needed for textadept > 10
+    if lexer._lexer then
+        lexer = lexer._lexer
+    end
+    return lexer._RULES[id]
 end
 
 -- I finally figured out that adding more styles was an issue because of several
@@ -1357,12 +1457,12 @@ local function add_style(lexer,token_name,style) -- changed a bit around 3.41
         if trace and detail then
             report("default style '%s' is ignored as extra style",token_name)
         end
-        return
+--         return
     elseif predefinedstyles[token_name] then
         if trace and detail then
             report("predefined style '%s' is ignored as extra style",token_name)
         end
-        return
+--        return
     else
         if trace and detail then
             report("adding extra style '%s' as '%s'",token_name,style)
@@ -1379,6 +1479,7 @@ local function add_style(lexer,token_name,style) -- changed a bit around 3.41
     lexer._TOKENSTYLES[token_name] = num_styles
     lexer._EXTRASTYLES[token_name] = style
     lexer._numstyles = num_styles + 1
+    -- hm, the original (now) also copies to the parent ._lexer
 end
 
 local function check_styles(lexer)
@@ -1427,6 +1528,8 @@ local function join_tokens(lexer) -- slightly different from the original (no 'a
         return P(1)
     end
 end
+
+-- hm, maybe instead of a grammer just a flat one
 
 local function add_lexer(grammar, lexer) -- mostly the same as the original
     local token_rule = join_tokens(lexer)
@@ -1533,17 +1636,17 @@ local function matched(lexer,grammar,text)
                     else
                         txt = "!no text!"
                     end
-                    report("%4i : %s > %s (%s) (%s)",n/2,ti,tn,s[ti] or "!unset!",txt)
+                    report("%4i : %s > %s (%s) (%s)",floor(n/2),ti,tn,s[ti] or "!unset!",txt)
                     p = tn
                 else
                     break
                 end
             end
         end
-        report("lexer results: %s, length: %s, ranges: %s",lexer._NAME,#text,#t/2)
+        report("lexer results: %s, length: %s, ranges: %s",lexer._NAME,#text,floor(#t/2))
         if collapse then
             t = collapsed(t)
-            report("lexer collapsed: %s, length: %s, ranges: %s",lexer._NAME,#text,#t/2)
+            report("lexer collapsed: %s, length: %s, ranges: %s",lexer._NAME,#text,floor(#t/2))
         end
     elseif collapse then
         t = collapsed(t)
@@ -1553,6 +1656,9 @@ end
 
 -- Todo: make nice generic lexer (extra argument with start/stop commands) for
 -- context itself.
+--
+-- In textadept >= 10 grammar building seem to have changed a bit. So, in retrospect
+-- I could better have just dropped compatibility and stick to ctx lexers only.
 
 function context.lex(lexer,text,init_style)
  -- local lexer = global._LEXER
@@ -1623,9 +1729,9 @@ function context.lex(lexer,text,init_style)
             hash[init_style] = grammar
         end
         if trace then
-            report("lexing '%s' with initial style '%s' and %s children",lexer._NAME,#lexer._CHILDREN or 0,init_style)
+            report("lexing '%s' with initial style '%s' and %s children", lexer._NAME,init_style,#lexer._CHILDREN or 0)
         end
-        return result
+        return matched(lexer,grammar,text)
     else
         if trace then
             report("lexing '%s' with initial style '%s'",lexer._NAME,init_style)
@@ -1634,7 +1740,8 @@ function context.lex(lexer,text,init_style)
     end
 end
 
--- hm, changed in 3.24 .. no longer small table but one table:
+-- hm, changed in 3.24 .. no longer small table but one table (so we could remove our
+-- agressive optimization which worked quite well)
 
 function context.token(name, patt)
     return patt * Cc(name) * Cp()
@@ -1687,6 +1794,8 @@ function context.new(name,filename)
         --
         name         = name,
         filename     = filename,
+        --
+--         _tokenstyles = context.styleset,
     }
     if trace then
         report("initializing lexer tagged '%s' from file '%s'",name,filename or name)
@@ -1694,6 +1803,7 @@ function context.new(name,filename)
     check_whitespace(lexer)
     check_styles(lexer)
     check_properties(lexer)
+    lexer._tokenstyles = context.styleset
     return lexer
 end
 
@@ -1799,7 +1909,36 @@ end
 
 -- namespace can be automatic: if parent then use name of parent (chain)
 
+-- The original lexer framework had a rather messy user uinterface (e.g. moving
+-- stuff from _rules to _RULES at some point but I could live with that. Now it uses
+-- add_ helpers. But the subsystem is still not clean and pretty. Now, I can move to
+-- the add_ but there is no gain in it so we support a mix which gives somewhat ugly
+-- code. In fact, there should be proper subtables for this. I might actually do
+-- this because we now always overload the normal lexer (parallel usage seems no
+-- longer possible). For SciTE we can actually do a conceptual upgrade (more the
+-- context way) because there is no further development there. That way we could
+-- make even more advanced lexers.
+
+local savedrequire = require
+
+local escapes = {
+    ["%"] = "%%",
+    ["."] = "%.",
+    ["+"] = "%+", ["-"] = "%-", ["*"] = "%*",
+    ["["] = "%[", ["]"] = "%]",
+    ["("] = "%(", [")"] = "%)",
+ -- ["{"] = "%{", ["}"] = "%}"
+ -- ["^"] = "%^", ["$"] = "%$",
+}
+
 function context.loadlexer(filename,namespace)
+
+    if textadept then
+        require = function(name)
+            return savedrequire(name == "lexer" and "scite-context-lexer" or name)
+        end
+    end
+
     nesting = nesting + 1
     if not namespace then
         namespace = filename
@@ -1824,7 +1963,7 @@ function context.loadlexer(filename,namespace)
     lexer = load_lexer(filename,namespace) or nolexer(filename,namespace)
     usedlexers[filename] = lexer
     --
-    if not lexer._rules and not lexer._lexer and not lexer_grammar then
+    if not lexer._rules and not lexer._lexer and not lexer_grammar then -- hmm should be lexer._grammar
         lexer._lexer = parent_lexer
     end
     --
@@ -1871,6 +2010,9 @@ function context.loadlexer(filename,namespace)
             end
         end
         build_grammar(lexer)
+    else
+        -- other lexers
+        build_grammar(lexer)
     end
     --
     add_style(lexer, lexer.whitespace, lexers.STYLE_WHITESPACE)
@@ -1880,7 +2022,7 @@ function context.loadlexer(filename,namespace)
         local patterns = foldsymbols._patterns
         if patterns then
             for i = 1, #patterns do
-                patterns[i] = "()(" .. patterns[i] .. ")"
+                patterns[i] = "()(" .. gsub(patterns[i],".",escapes) .. ")"
             end
         end
     end
@@ -1892,6 +2034,10 @@ function context.loadlexer(filename,namespace)
     --
     if inspect then
         context.inspect(lexer)
+    end
+    --
+    if textadept then
+        require = savedrequire
     end
     --
     return lexer
@@ -1971,6 +2117,17 @@ function context.embed_lexer(parent, child, start_rule, end_rule) -- mostly the 
             end
         end
     end
+    -- newer, textadept >= 10, whatever ...
+    local childsymbols = child._FOLDPOINTS
+    if childsymbols then
+       for token, symbols in next, childsymbols do
+           if token ~= "_SYMBOLS" then
+               for symbol, v in next, symbols do
+                   lexer:add_fold_point(token_name, symbol, v)
+               end
+           end
+       end
+    end
     --
     child._lexer = parent
     parent_lexer = parent
@@ -1993,8 +2150,8 @@ lexers.inspect     = context.inspect
 lexers.report      = context.report
 lexers.inform      = context.inform
 
--- helper .. alas ... the lexer's lua instance is rather crippled .. not even
--- math is part of it
+-- helper .. alas ... in scite the lexer's lua instance is rather crippled .. not
+-- even math is part of it
 
 do
 
@@ -2002,26 +2159,6 @@ do
     local char     = string.char
     local format   = format
     local tonumber = tonumber
-
-    if not floor then
-
-        if tonumber(string.match(_VERSION,"%d%.%d")) < 5.3 then
-            floor = function(n)
-                return tonumber(format("%d",n))
-            end
-        else
-            -- 5.3 has a mixed number system and format %d doesn't work with
-            -- floats any longer ... no fun
-            floor = function(n)
-                return (n - n % 1)
-            end
-        end
-
-        math = math or { }
-
-        math.floor = floor
-
-    end
 
     local function utfchar(n)
         if n < 0x80 then
@@ -2396,6 +2533,128 @@ function lexers.fold_line_comments(prefix)
         end
         return 0
     end
+end
+
+-- There are some fundamental changes in textadept version 10 and I don't want to
+-- adapt again so we go the reverse route: map new to old. This is needed because
+-- we need to load other lexers which is teh result of not being able to load the
+-- lexer framework in parallel. Something happened in 10 that makes the main lexer
+-- always enforced so now we need to really replace that one (and even then it loads
+-- twice (i can probably sort that out). Maybe there's now some hard coded magic
+-- in the binary.
+
+if textadept then
+
+    -- Folds are still somewhat weak because of the end condition not being
+    -- bound to a start .. probably to complex and it seems to work anyhow. As
+    -- we have extended thinsg we just remap.
+
+    local function add_fold_point(lexer,token_name,start_symbol,end_symbol)
+        if type(start_symbol) == "string" then
+            local foldsymbols = lexer._foldsymbols
+            if not foldsymbols then
+                foldsymbols        = { }
+                lexer._foldsymbols = foldsymbols
+            end
+            local patterns = foldsymbols._patterns
+            if not patterns then
+                patterns              = { }
+                usedpatt              = { } -- > 10 uses a mixed index/hash (we don't use patterns)
+                foldsymbols._patterns = patterns
+                foldsymbols._usedpatt = usedpatt
+            end
+            local foldsymbol = foldsymbols[token_name]
+            if not foldsymbol then
+                foldsymbol = { }
+                foldsymbols[token_name] = foldsymbol
+            end
+            if not usedpatt[start_symbol] then
+                patterns[#patterns+1] = start_symbol
+                usedpatt[start_symbol] = true
+            end
+            if type(end_symbol) == "string" then
+                foldsymbol[start_symbol] =  1
+                foldsymbol[end_symbol]  = -1
+                if not usedpatt[end_symbol] then
+                    patterns[#patterns+1] = end_symbol
+                    usedpatt[end_symbol]  = true
+                end
+            else
+                foldsymbol[start_symbol] = end_symbol
+            end
+        end
+    end
+
+    local function add_style(lexer,name,style)
+        local tokenstyles = lexer._tokenstyles
+        if not tokenstyles then
+            tokenstyles        = { }
+            lexer._tokenstyles = tokenstyles
+        end
+        tokenstyles[name] = style
+    end
+
+    local function add_rule(lexer,id,rule)
+        local rules = lexer._rules
+        if not rules then
+            rules        = { }
+            lexer._rules = rules
+        end
+        rules[#rules+1] = { id, rule }
+    end
+
+    local function modify_rule(lexer,id,rule) -- needed for textadept > 10
+        if lexer._lexer then
+            lexer = lexer._lexer
+        end
+        local RULES = lexer._RULES
+        if RULES then
+            RULES[id] = rule
+        end
+    end
+
+    local function get_rule(lexer,id) -- needed for textadept > 10
+        if lexer._lexer then
+            lexer = lexer._lexer
+        end
+        local RULES = lexer._RULES
+        if RULES then
+            return RULES[id]
+        end
+    end
+
+    local new = context.new
+    local lmt = {
+        __index = {
+
+            add_rule       = add_rule,
+            modify_rule    = modify_rule,
+            get_rule       = get_rule,
+            add_style      = add_style,
+            add_fold_point = add_fold_point,
+
+            join_tokens    = join_tokens,
+            build_grammar  = build_grammar,
+
+            embed          = lexers.embed,
+            lex            = lexers.lex,
+            fold           = lexers.fold
+
+        }
+    }
+
+    function lexers.new(name,options)
+        local lexer = new(name)
+        if options then
+            lexer._LEXBYLINE                 = options['lex_by_line']
+            lexer._FOLDBYINDENTATION         = options['fold_by_indentation']
+            lexer._CASEINSENSITIVEFOLDPOINTS = options['case_insensitive_fold_points']
+            lexer._lexer                     = options['inherit']
+        end
+        setmetatable(lexer,lmt)
+        return lexer
+    end
+
 end
 
 -- done

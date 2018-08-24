@@ -5,8 +5,11 @@ local select, unpack = select, unpack
 local insert, remove = table.insert, table.remove
 local sub = string.sub
 
-local report = logs and logs.reporter("ltn12") or function(fmt,first,...)
-    if fmt then
+local function report(fmt,first,...)
+    if logs then
+        report = logs and logs.reporter("ltn12")
+        report(fmt,first,...)
+    elseif fmt then
         fmt = "ltn12: " .. fmt
         if first then
             print(format(fmt,first,...))
@@ -379,10 +382,6 @@ function pump.all(src, snk, step)
     end
 end
 
-if logs then
-    _G.ltn12 = ltn12
-    package.loaded.ltn12 = ltn12
- -- report("module (re)installed")
-end
+package.loaded.ltn12 = ltn12
 
 return ltn12

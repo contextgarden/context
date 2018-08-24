@@ -66,4 +66,78 @@ require("textadept-context-types")
 
 -- This prevents other themes to spoil our settings.
 
-ui.set_theme("scite-context-theme")
+-- ui.set_theme("scite-context-theme")
+buffer:set_theme("scite-context-theme")
+
+-- Since version 10 there is some settings stuff in the main init file but that
+-- crashes on load_settings. It has to do with the replacement of properties
+-- but we already had that replaced for a while. There is some blob made that
+-- gets loaded but it's not robust (should be done different I think). Anyway,
+-- intercepting the two event handlers is easiest. Maybe some day I will
+-- replace that init anyway (if these fundamentals keep changing between
+-- versions.)
+--
+-- I admit that it's not a beautiful solution but it works ok and I already
+-- spent too much time figuring things out anyway.
+
+local events_connect = events.connect
+
+local function events_newbuffer()
+    local buffer = _G.buffer
+    local SETDIRECTFUNCTION = _SCINTILLA.properties.direct_function[1]
+    local SETDIRECTPOINTER  = _SCINTILLA.properties.doc_pointer[2]
+    local SETLUASTATE       = _SCINTILLA.functions.change_lexer_state[1]
+    local SETLEXERLANGUAGE  = _SCINTILLA.properties.lexer_language[2]
+    buffer.lexer_language = 'lpeg'
+    buffer:private_lexer_call(SETDIRECTFUNCTION, buffer.direct_function)
+    buffer:private_lexer_call(SETDIRECTPOINTER, buffer.direct_pointer)
+    buffer:private_lexer_call(SETLUASTATE, _LUA)
+    buffer.property['lexer.lpeg.home'] = _USERHOME..'/lexers/?.lua;'.. _HOME..'/lexers'
+ -- load_settings()
+    buffer:private_lexer_call(SETLEXERLANGUAGE, 'text')
+    if buffer == ui.command_entry then
+        buffer.caret_line_visible = false
+    end
+end
+
+-- Why these resets:
+
+local ctrl_keys = {
+    '[', ']', '/', '\\', 'Z', 'Y', 'X', 'C', 'V', 'A', 'L', 'T', 'D', 'U'
+}
+
+local ctrl_shift_keys = {
+    'L', 'T', 'U', 'Z'
+}
+
+local function events_newview()
+    local buffer = _G.buffer
+    for i=1, #ctrl_keys do
+        buffer:clear_cmd_key(string.byte(ctrl_keys[i]) | buffer.MOD_CTRL << 16)
+    end
+    for i=1, #ctrl_shift_keys do
+        buffer:clear_cmd_key(string.byte(ctrl_shift_keys[i]) | (buffer.MOD_CTRL | buffer.MOD_SHIFT) << 16)
+    end
+    if #_VIEWS > 1 then
+     -- load_settings()
+        local SETLEXERLANGUAGE = _SCINTILLA.properties.lexer_language[2]
+        buffer:private_lexer_call(SETLEXERLANGUAGE, buffer._lexer or 'text')
+    end
+end
+
+events.connect = function(where,what,location)
+    if location == 1 then
+        if where == events.BUFFER_NEW then
+            return events_connect(where,events_newbuffer,location)
+        elseif where == events.VIEW_NEW then
+            return events_connect(where,events_newview,location)
+        end
+    end
+    return events_connect(where,what,location)
+end
+
+local savedrequire = require
+
+require = function(name,...)
+    return savedrequire(name == "lexer" and "scite-context-lexer" or name,...)
+end

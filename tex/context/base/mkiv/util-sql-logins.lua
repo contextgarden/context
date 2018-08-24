@@ -211,9 +211,10 @@ end
 logins.userpurge = userpurge
 
 local function verdict(okay,...)
-    if not trace_logins then
-        -- no tracing
-    elseif okay then
+--     if not trace_logins then
+--         -- no tracing
+--     else
+    if okay then
         report_logins("%s, granted",formatter(...))
     else
         report_logins("%s, blocked",formatter(...))

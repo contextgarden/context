@@ -620,6 +620,14 @@
 
 \newcount\mainlanguagenumber
 
+%D Beware: you might need to use \type {\dontleavehmode} outside and|/|or \type {\par}
+%D inside the group!
+
+\unexpanded\def\startlanguage
+  {\begingroup\language}
+
+\let\stoplanguage\endgroup
+
 % \unexpanded\def\mainlanguage[#1]%
 %   {\edef\askedlanguage{#1}%
 %    \ifx\askedlanguage\empty \else

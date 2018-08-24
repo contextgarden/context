@@ -366,7 +366,7 @@ do
 
     }
 
-    newkeys[OSX and 'mc' or 'cc'] = runner.check
+ -- newkeys[OSX and 'mc' or 'cc'] = runner.check
     newkeys[OSX and 'mr' or 'cr'] = runner.process
     newkeys[OSX and 'mp' or 'cp'] = runner.preview
  -- newkeys[OSX and 'mx' or 'cx'] = runner.quit -- makes no sense
@@ -529,7 +529,7 @@ end
 
 do
 
-    -- It's a pity that we can't have a proper monospaced font here so we try to make the best of it:
+    -- It's a pitt y that we can't have a proper monospaced font here so we try to make the best of it:
 
     local template = "\n\trelease info: %s\t\n\n\tcopyright: %s\t\n\n\tvariant: ConTeXt related editing\t\n\n\tadapted by: Hans Hagen\t"
 
@@ -697,7 +697,7 @@ local function synchronize(lexer)
 end
 
 events.connect(events.FILE_OPENED,function(filename)
-    synchronize(buffer.get_lexer(buffer))
+    synchronize(buffer:get_lexer())
 end)
 
 events.connect(events.LEXER_LOADED,function(lexer)
@@ -707,23 +707,23 @@ end)
 -- obsolete
 
 -- events.connect(events.BUFFER_AFTER_SWITCH,function()
---     synchronize(buffer.get_lexer(buffer))
+--     synchronize(buffer:get_lexer())
 -- end)
 
 -- events.connect(events.VIEW_AFTER_SWITCH,function()
---     synchronize(buffer.get_lexer(buffer))
+--     synchronize(buffer:get_lexer())
 -- end)
 
 -- events.connect(events.BUFFER_NEW,function()
---     synchronize(buffer.get_lexer(buffer))
+--     synchronize(buffer:get_lexer())
 -- end)
 
 -- events.connect(events.VIEW_NEW,function()
---     synchronize(buffer.get_lexer(buffer))
+--     synchronize(buffer:get_lexer())
 -- end)
 
 -- events.connect(events.RESET_AFTER,function()
---     synchronize(buffer.get_lexer(buffer))
+--     synchronize(buffer:get_lexer())
 -- end)
 
 -- local oldtools  = { }

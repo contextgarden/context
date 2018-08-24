@@ -74,16 +74,16 @@ def namedcolor expr n =
     withprescript "sp_name=" & n
 enddef ;
 
-% def spotcolor(expr n, v) =
+% def mfun_spotcolor(expr n, v) =
 %     1
-%     withprescript "sp_type=spot"
+%     withprescript "sp_type=xspot"
 %     withprescript "sp_name="  & n
 %     withprescript "sp_value=" & (if numeric v : decimal v else : v fi)
 % enddef ;
-%
-% def multitonecolor(expr name, fractions, components, value) =
+
+% def mfun_multispotcolor(expr name, fractions, components, value) =
 %     1
-%     withprescript "sp_type=multitone"
+%     withprescript "sp_type=multispot"
 %     withprescript "sp_name="       & name
 %     withprescript "sp_fractions="  & decimal fractions
 %     withprescript "sp_components=" & components
@@ -96,6 +96,8 @@ def spotcolor(expr name, v) =
     withprescript "sp_name=" & name
     withprescript "sp_value=" & colordecimals v
 enddef ;
+
+% In this case a mixed color will be calculated:
 
 def multitonecolor(expr name)(text t) =
     (1)

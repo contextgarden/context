@@ -1,0 +1,54 @@
+%D \module
+%D   [       file=type-imp-firacode,
+%D        version=2018.08.24,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Firacode,
+%D         author=Taco Hoekwater \& Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+
+\starttypescriptcollection[firacode]
+
+    \usetypescriptfile[dejavu]
+
+    \definefontfeature
+      [firacode]
+      [mode=node,script=dflt,language=dflt,
+       calt=yes,mark=yes,mkmk=yes]
+
+    \starttypescript [\s!mono] [firacode]
+        \definefontsynonym[FiraRetina] [\s!name:firacoderetina] [\s!features=firacode]
+        \definefontsynonym[FiraLight]  [\s!name:firacodelight]  [\s!features=firacode]
+        \definefontsynonym[FiraRegular][\s!name:firacoderegular][\s!features=firacode]
+        \definefontsynonym[FiraMedium] [\s!name:firacodemedium] [\s!features=firacode]
+        \definefontsynonym[FiraBold]   [\s!name:firacodebold]   [\s!features=firacode]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [firacode-light]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym[\s!Mono]    [FiraLight]
+        \definefontsynonym[\s!MonoBold][FiraMedium]
+    \stoptypescript
+
+    \starttypescript [\s!mono] [firacode]
+        \setups[\s!font:\s!fallback:\s!mono]
+        \definefontsynonym[\s!Mono]    [FiraRegular]
+        \definefontsynonym[\s!MonoBold][FiraBold]
+    \stoptypescript
+
+    \starttypescript[firacode]
+        \definetypeface[firacode][\s!rm][\s!serif][dejavu]  [\s!default]
+        \definetypeface[firacode][\s!ss][\s!sans] [dejavu]  [\s!default]
+        \definetypeface[firacode][\s!mm][\s!math] [dejavu]  [\s!default]
+        \definetypeface[firacode][\s!tt][\s!mono] [firacode][\s!default]
+    \stoptypescript
+
+\stoptypescriptcollection
+
+% \setupbodyfont[firacode,12pt]
+
