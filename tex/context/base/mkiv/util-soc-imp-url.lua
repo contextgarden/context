@@ -263,4 +263,6 @@ function url.build_path(parsed, unsafe)
     return path
 end
 
+package.loaded["socket.url"] = url
+
 return url

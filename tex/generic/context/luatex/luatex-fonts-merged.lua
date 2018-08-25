@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/24/18 19:18:34
+-- merge date  : 08/25/18 10:04:30
 
 do -- begin closure to overcome local limits and interference
 
@@ -123,16 +123,6 @@ end
 if not bit32 then
   bit32=require("l-bit32")
 end
-local loaded=package.loaded
-if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
-if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
-if not socket.mime then socket.mime=package.loaded["mime"] end
-if not loaded["socket.mime"] then loaded["socket.mime"]=socket.mime end
-if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
-if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
-if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
-if not loaded["socket.tp"]  then loaded["socket.tp"]=socket.tp  end
-if not loaded["socket.url"] then loaded["socket.url"]=socket.url end
 
 end -- closure
 

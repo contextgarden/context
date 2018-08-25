@@ -99,6 +99,6 @@ mime.encode = choose(encodet)
 mime.decode = choose(decodet)
 mime.wrap   = choose(wrapt)
 
-package.loaded.mime = mime
+package.loaded["mime"] = mime
 
 return mime

@@ -382,6 +382,6 @@ function pump.all(src, snk, step)
     end
 end
 
-package.loaded.ltn12 = ltn12
+package.loaded["ltn12"] = ltn12
 
 return ltn12

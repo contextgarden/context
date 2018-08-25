@@ -926,6 +926,6 @@ end
 
 -- _G.copas = copas
 
-package.loaded.copas = copas
+package.loaded["copas"] = copas
 
 return copas

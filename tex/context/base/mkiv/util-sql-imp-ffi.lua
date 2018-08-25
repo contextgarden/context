@@ -183,6 +183,7 @@ local mysql_init             = mysql.mysql_init
 local mysql_store_result     = mysql.mysql_store_result
 local mysql_free_result      = mysql.mysql_free_result
 
+local mysql_error_number     = mysql.mysql_errno
 local mysql_error_message    = mysql.mysql_error
 
 local NULL                   = ffi.cast("MYSQL_result *",0)
@@ -278,7 +279,6 @@ local function execute(t,query)
     if query and query ~= "" then
         local connection = t._connection_
         local result = mysql_execute_query(connection,query,#query)
-print(connection,result,query)
         if result == 0 then
             local result = mysql_store_result(connection)
             if result ~= NULL then
@@ -302,9 +302,15 @@ print(connection,result,query)
                 }
                 return setmetatable(t,mt)
             else
-                return false
              -- return setmetatable({},mt)
             end
+        else
+report_state()
+report_state("result  : %S", result)
+report_state("error   : %S", mysql_error_number(connection))
+report_state("message : %S", ffi_tostring(mysql_error_message(connection)))
+report_state("query   : \n\n%S\n\n",query)
+report_state()
         end
     end
     return false
@@ -332,7 +338,6 @@ local function open(t,database,username,password,host,port)
         local t = {
             _connection_ = connection,
         }
--- ffi_gc(connection, mysql_close)
         return setmetatable(t,mt)
     end
 end
@@ -342,7 +347,7 @@ local function message(t)
 end
 
 local function close(t)
-    -- dummy, as we have a global session
+  -- ffi_gc(t._connection_, mysql_close)
 end
 
 local mt = {
@@ -357,7 +362,6 @@ local function initialize()
     local session = {
         _session_ = mysql_initialize(instance) -- maybe share, single thread anyway
     }
- -- ffi_gc(session, mysql_close)
     return setmetatable(session,mt)
 end
 
@@ -476,7 +480,7 @@ local function datafetched(specification,query,converter)
                 data[i] = result:hash()
             end
         end
-        result:finish() -- result:close()
+        result:finish()
     elseif message then
         report_state("message %s",message)
     end

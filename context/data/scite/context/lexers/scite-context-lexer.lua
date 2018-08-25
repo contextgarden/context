@@ -258,7 +258,7 @@ local inspect  = false -- can save some 15% (maybe easier on scintilla)
 --
 -- TODO
 --
--- It would be nice if we could loads some ConTeXt Lua modules (the basic set) and
+-- It would be nice if we could load some ConTeXt Lua modules (the basic set) and
 -- then use resolvers and such. But it might not work well with scite.
 --
 -- The current lexer basics are still a mix between old and new. Maybe I should redo
@@ -1112,7 +1112,12 @@ end
 --     },
 -- }
 
-local lists = { }
+local lists    = { }
+local disabled = false
+
+function context.disablewordcheck()
+    disabled = true
+end
 
 function context.setwordlist(tag,limit) -- returns hash (lowercase keys and original values)
     if not tag or tag == "" then
@@ -1457,12 +1462,20 @@ local function add_style(lexer,token_name,style) -- changed a bit around 3.41
         if trace and detail then
             report("default style '%s' is ignored as extra style",token_name)
         end
---         return
+        if textadept then
+            -- go on, stored per buffer
+        else
+            return
+        end
     elseif predefinedstyles[token_name] then
         if trace and detail then
             report("predefined style '%s' is ignored as extra style",token_name)
         end
---        return
+        if textadept then
+            -- go on, stored per buffer
+        else
+            return
+        end
     else
         if trace and detail then
             report("adding extra style '%s' as '%s'",token_name,style)
@@ -1561,9 +1574,10 @@ local function build_grammar(lexer,initial_rule) -- same as the original
     local lexer_name = lexer._NAME
     local preamble   = lexer._preamble
     local grammar    = lexer._grammar
-    if grammar then
-        -- experiment
-    elseif children then
+ -- if grammar then
+ --     -- experiment
+ -- elseif children then
+    if children then
         if not initial_rule then
             initial_rule = lexer_name
         end
@@ -1794,8 +1808,6 @@ function context.new(name,filename)
         --
         name         = name,
         filename     = filename,
-        --
---         _tokenstyles = context.styleset,
     }
     if trace then
         report("initializing lexer tagged '%s' from file '%s'",name,filename or name)
@@ -1996,7 +2008,8 @@ function context.loadlexer(filename,namespace)
     --
     local _r = lexer._rules
     local _g = lexer._grammar
-    if _r or _g then
+ -- if _r or _g then
+    if _r then
         local _s = lexer._tokenstyles
         if _s then
             for token, style in next, _s do
@@ -2116,17 +2129,6 @@ function context.embed_lexer(parent, child, start_rule, end_rule) -- mostly the 
                 end
             end
         end
-    end
-    -- newer, textadept >= 10, whatever ...
-    local childsymbols = child._FOLDPOINTS
-    if childsymbols then
-       for token, symbols in next, childsymbols do
-           if token ~= "_SYMBOLS" then
-               for symbol, v in next, symbols do
-                   lexer:add_fold_point(token_name, symbol, v)
-               end
-           end
-       end
     end
     --
     child._lexer = parent

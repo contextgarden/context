@@ -397,4 +397,6 @@ ftp.get = protectsocket(function(gett)
     end
 end)
 
+package.loaded["socket.ftp"] = ftp
+
 return ftp

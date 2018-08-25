@@ -429,4 +429,6 @@ http.request = protectsocket(function(request, body)
     end
 end)
 
+package.loaded["socket.http"] = http
+
 return http

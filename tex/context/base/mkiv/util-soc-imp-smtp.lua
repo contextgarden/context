@@ -262,4 +262,6 @@ smtp.send = protectsocket(function(mail)
     return snd:close()
 end)
 
+package.loaded["socket.smtp"] = smtp
+
 return smtp

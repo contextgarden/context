@@ -63,7 +63,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6230, stripped down to: 3662
+-- original size: 6266, stripped down to: 3009
 
 if not modules then modules={} end modules ['l-lua']={
   version=1.001,
@@ -184,16 +184,6 @@ end
 if not bit32 then
   bit32=require("l-bit32")
 end
-local loaded=package.loaded
-if not loaded["socket"] then loaded["socket"]=loaded["socket.core"] end
-if not loaded["mime"]  then loaded["mime"]=loaded["mime.core"]  end
-if not socket.mime then socket.mime=package.loaded["mime"] end
-if not loaded["socket.mime"] then loaded["socket.mime"]=socket.mime end
-if not loaded["socket.http"] then loaded["socket.http"]=socket.http end
-if not loaded["socket.ftp"] then loaded["socket.ftp"]=socket.ftp end
-if not loaded["socket.smtp"] then loaded["socket.smtp"]=socket.smtp end
-if not loaded["socket.tp"]  then loaded["socket.tp"]=socket.tp  end
-if not loaded["socket.url"] then loaded["socket.url"]=socket.url end
 
 
 end -- of closure
@@ -9237,7 +9227,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-socket"] = package.loaded["util-soc-imp-socket"] or true
 
--- original size: 4867, stripped down to: 3858
+-- original size: 4870, stripped down to: 3861
 
 
 local type,tostring,setmetatable=type,tostring,setmetatable
@@ -9404,7 +9394,7 @@ end
 sourcet["default"]=sourcet["until-closed"]
 socket.source=socket.choose(sourcet)
 _G.socket=socket 
-package.loaded.socket=socket
+package.loaded["socket"]=socket
 
 
 end -- of closure
@@ -9413,7 +9403,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-copas"] = package.loaded["util-soc-imp-copas"] or true
 
--- original size: 25841, stripped down to: 16063
+-- original size: 25844, stripped down to: 16066
 
 
 local socket=socket or require("socket")
@@ -10092,7 +10082,7 @@ function copas.loop(timeout)
   end
   copas.running=false
 end
-package.loaded.copas=copas
+package.loaded["copas"]=copas
 
 
 end -- of closure
@@ -10101,7 +10091,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-ltn12"] = package.loaded["util-soc-imp-ltn12"] or true
 
--- original size: 8706, stripped down to: 6102
+-- original size: 8709, stripped down to: 6105
 
 
 local select,unpack=select,unpack
@@ -10417,7 +10407,7 @@ function pump.all(src,snk,step)
     end
   end
 end
-package.loaded.ltn12=ltn12
+package.loaded["ltn12"]=ltn12
 
 
 end -- of closure
@@ -10426,7 +10416,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-mime"] = package.loaded["util-soc-imp-mime"] or true
 
--- original size: 2325, stripped down to: 1927
+-- original size: 2328, stripped down to: 1930
 
 
 local type,tostring=type,tostring
@@ -10508,7 +10498,7 @@ end
 mime.encode=choose(encodet)
 mime.decode=choose(decodet)
 mime.wrap=choose(wrapt)
-package.loaded.mime=mime
+package.loaded["mime"]=mime
 
 
 end -- of closure
@@ -10517,7 +10507,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-url"] = package.loaded["util-soc-imp-url"] or true
 
--- original size: 6827, stripped down to: 5624
+-- original size: 6863, stripped down to: 5657
 
 
 local tonumber,tostring,type=tonumber,tostring,type
@@ -10766,6 +10756,7 @@ function url.build_path(parsed,unsafe)
   end
   return path
 end
+package.loaded["socket.url"]=url
 
 
 end -- of closure
@@ -10774,13 +10765,15 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-headers"] = package.loaded["util-soc-imp-headers"] or true
 
--- original size: 5712, stripped down to: 3865
+-- original size: 5721, stripped down to: 3878
 
 
 local next=next
 local lower=string.lower
 local concat=table.concat
 local socket=socket or require("socket")
+local headers={}
+socket.headers=headers
 local canonic={
   ["accept"]="Accept",
   ["accept-charset"]="Accept-Charset",
@@ -10874,14 +10867,14 @@ local canonic={
   ["www-authenticate"]="WWW-Authenticate",
   ["x-mailer"]="X-Mailer",
 }
-setmetatable(canonic,{
+headers.canonic=setmetatable(canonic,{
   __index=function(t,k)
     socket.report("invalid header: %s",k)
     t[k]=k
     return k
   end
 })
-local function normalizeheaders(headers)
+function headers.normalize(headers)
   if not headers then
     return {}
   end
@@ -10893,7 +10886,7 @@ local function normalizeheaders(headers)
   normalized[#normalized+1]=""
   return concat(normalized,"\r\n")
 end
-local function lowerheaders(lowered,headers)
+function headers.lower(lowered,headers)
   if not lowered then
     return {}
   end
@@ -10905,11 +10898,8 @@ local function lowerheaders(lowered,headers)
   end
   return lowered
 end
-socket.headers={
-  canonic=canonic,
-  normalize=normalizeheaders,
-  lower=lowerheaders,
-}
+socket.headers=headers
+package.loaded["socket.headers"]=headers
 
 
 end -- of closure
@@ -10918,7 +10908,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-tp"] = package.loaded["util-soc-imp-tp"] or true
 
--- original size: 3082, stripped down to: 2612
+-- original size: 3116, stripped down to: 2643
 
 
 local setmetatable,next,type,tonumber=setmetatable,next,type,tonumber
@@ -11038,6 +11028,7 @@ function tp.connect(host,port,timeout,create)
   end
   return setmetatable({ c=c },mt)
 end
+package.loaded["socket.tp"]=tp
 
 
 end -- of closure
@@ -11046,7 +11037,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-http"] = package.loaded["util-soc-imp-http"] or true
 
--- original size: 12499, stripped down to: 10001
+-- original size: 12537, stripped down to: 10036
 
 
 local tostring,tonumber,setmetatable,next,type=tostring,tonumber,setmetatable,next,type
@@ -11418,6 +11409,7 @@ http.request=protectsocket(function(request,body)
     return trequest(request)
   end
 end)
+package.loaded["socket.http"]=http
 
 
 end -- of closure
@@ -11426,7 +11418,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-ftp"] = package.loaded["util-soc-imp-ftp"] or true
 
--- original size: 10321, stripped down to: 8867
+-- original size: 10357, stripped down to: 8900
 
 
 local setmetatable,type,next=setmetatable,type,next
@@ -11789,6 +11781,7 @@ ftp.get=protectsocket(function(gett)
     return tget(gett)
   end
 end)
+package.loaded["socket.ftp"]=ftp
 
 
 end -- of closure
@@ -11797,7 +11790,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-smtp"] = package.loaded["util-soc-imp-smtp"] or true
 
--- original size: 6975, stripped down to: 6055
+-- original size: 7013, stripped down to: 6090
 
 
 local type,setmetatable,next=type,setmetatable,next
@@ -12028,6 +12021,7 @@ smtp.send=protectsocket(function(mail)
   snd:quit()
   return snd:close()
 end)
+package.loaded["socket.smtp"]=smtp
 
 
 end -- of closure
@@ -24556,8 +24550,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 981014
--- stripped bytes    : 346248
+-- original bytes    : 981253
+-- stripped bytes    : 346948
 
 -- end library merge
 

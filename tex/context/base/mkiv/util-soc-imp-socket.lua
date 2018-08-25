@@ -188,6 +188,6 @@ socket.source = socket.choose(sourcet)
 
 _G.socket = socket -- for now global
 
-package.loaded.socket = socket
+package.loaded["socket"] = socket
 
 return socket

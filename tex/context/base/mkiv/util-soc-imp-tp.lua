@@ -139,4 +139,6 @@ function tp.connect(host, port, timeout, create)
     return setmetatable({ c = c }, mt)
 end
 
+package.loaded["socket.tp"] = tp
+
 return tp

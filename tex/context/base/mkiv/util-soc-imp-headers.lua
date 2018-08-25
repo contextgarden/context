@@ -5,7 +5,10 @@ local next = next
 local lower = string.lower
 local concat = table.concat
 
-local socket = socket or require("socket")
+local socket   = socket or require("socket")
+
+local headers  = { }
+socket.headers = headers
 
 local canonic = {
     ["accept"]                    = "Accept",
@@ -101,7 +104,7 @@ local canonic = {
     ["x-mailer"]                  = "X-Mailer",
 }
 
-setmetatable(canonic, {
+headers.canonic = setmetatable(canonic, {
     __index = function(t,k)
         socket.report("invalid header: %s",k)
         t[k] = k
@@ -109,7 +112,7 @@ setmetatable(canonic, {
     end
 })
 
-local function normalizeheaders(headers)
+function headers.normalize(headers)
     if not headers then
         return { }
     end
@@ -122,7 +125,7 @@ local function normalizeheaders(headers)
     return concat(normalized,"\r\n")
 end
 
-local function lowerheaders(lowered,headers)
+function headers.lower(lowered,headers)
     if not lowered then
         return { }
     end
@@ -135,10 +138,8 @@ local function lowerheaders(lowered,headers)
     return lowered
 end
 
-socket.headers = {
-    canonic   = canonic,
-    normalize = normalizeheaders,
-    lower     = lowerheaders,
-}
+socket.headers = headers
 
-return socket.headers
+package.loaded["socket.headers"] = headers
+
+return headers

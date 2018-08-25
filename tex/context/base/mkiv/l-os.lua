@@ -32,11 +32,12 @@ local concat = table.concat
 local random, ceil, randomseed = math.random, math.ceil, math.randomseed
 local rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring = rawget, rawset, type, getmetatable, setmetatable, tonumber, tostring
 
--- The following code permits traversing the environment table, at least
--- in luatex. Internally all environment names are uppercase.
+-- The following code permits traversing the environment table, at least in luatex. Internally all
+-- environment names are uppercase.
 
 -- The randomseed in Lua is not that random, although this depends on the operating system as well
--- as the binary (Luatex is normally okay). But to be sure we set the seed anyway.
+-- as the binary (Luatex is normally okay). But to be sure we set the seed anyway. It will be better
+-- in Lua 5.4 (according to the announcements.)
 
 math.initialseed = tonumber(string.sub(string.reverse(tostring(ceil(socket and socket.gettime()*10000 or time()))),1,6))
 
