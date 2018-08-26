@@ -63,6 +63,12 @@
    \doifelsenextoptionalcs\strc_blocks_begin_yes\strc_blocks_begin_nop}
 
 \unexpanded\def\strc_blocks_begin_yes[#1]%
+  {\doifelseassignmentcs{#1}%
+     \strc_blocks_begin_indeed
+     \strc_blocks_begin_tagged
+     {#1}}
+
+\unexpanded\def\strc_blocks_begin_tagged#1%
   {\edef\m_subblock{#1}%
    \doifelsenextoptionalcs\strc_blocks_begin_yes_yes\strc_blocks_begin_nop}
 

@@ -8,6 +8,13 @@ if not modules then modules = { } end modules ['util-sha'] = {
     comment3  = "due to bit operators this code only works in lua(tex) 5.3",
 }
 
+if sha2 then
+    if utilities then
+        utilities.sha2 = sha2
+    end
+    return sha2
+end
+
 -- This doesn't work in luajittex ... maybe some day it will have bit operators too.
 -- I'm not really in the mood for making this module aware (by compiling the
 -- function depending on the engine that I use but I probably won't use luajittex in

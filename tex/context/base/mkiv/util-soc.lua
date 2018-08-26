@@ -118,3 +118,12 @@ function mail.send(specification)
         return true
     end
 end
+
+-- for now we have this here:
+
+if socket then
+
+    math.initialseed = tonumber(string.sub(string.reverse(tostring(math.ceil(socket.gettime()*10000))),1,6))
+    math.randomseed(math.initialseed)
+
+end

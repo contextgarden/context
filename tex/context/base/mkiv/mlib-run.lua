@@ -194,7 +194,8 @@ local f_preamble = formatters [ [[
 local methods = {
     double  = "double",
     scaled  = "scaled",
-    binary  = "binary",
+ -- binary  = "binary",
+    binary  = "double",
     decimal = "decimal",
     default = "scaled",
 }

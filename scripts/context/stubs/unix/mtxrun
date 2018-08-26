@@ -3642,7 +3642,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 16952, stripped down to: 9696
+-- original size: 17018, stripped down to: 9696
 
 if not modules then modules={} end modules ['l-os']={
   version=1.001,
@@ -4578,6 +4578,38 @@ function file.savechecksum(name,checksum)
     return checksum
   end
   return nil
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
+package.loaded["l-sha"] = package.loaded["l-sha"] or true
+
+-- original size: 1085, stripped down to: 987
+
+if not modules then modules={} end modules ['l-sha']={
+  version=1.001,
+  comment="companion to luat-lib.mkiv",
+  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+  copyright="PRAGMA ADE / ConTeXt Development Team",
+  license="see context related readme files"
+}
+if sha2 then
+  local lpegmatch=lpeg.match
+  local lpegpatterns=lpeg.patterns
+  local bytestohex=lpegpatterns.bytestohex
+  local bytestoHEX=lpegpatterns.bytestoHEX
+  local digest256=sha2.digest256
+  local digest384=sha2.digest384
+  local digest512=sha2.digest512
+  sha2.hash256=function(str) return lpegmatch(bytestohex,digest256(str)) end
+  sha2.hash384=function(str) return lpegmatch(bytestohex,digest384(str)) end
+  sha2.hash512=function(str) return lpegmatch(bytestohex,digest512(str)) end
+  sha2.HASH256=function(str) return lpegmatch(bytestoHEX,digest256(str)) end
+  sha2.HASH384=function(str) return lpegmatch(bytestoHEX,digest384(str)) end
+  sha2.HASH512=function(str) return lpegmatch(bytestoHEX,digest512(str)) end
 end
 
 
@@ -24548,10 +24580,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 981253
--- stripped bytes    : 346948
+-- original bytes    : 982404
+-- stripped bytes    : 347112
 
 -- end library merge
 
@@ -24589,6 +24621,7 @@ local ownlibs = { -- order can be made better
     'l-file.lua',
     'l-gzip.lua',
     'l-md5.lua',
+    'l-sha.lua',
     'l-url.lua',
     'l-dir.lua',
     'l-boolean.lua',

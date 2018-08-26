@@ -1,0 +1,180 @@
+%D \module
+%D   [       file=strc-bkm,
+%D        version=2009.04.01,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Bookmarks,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Userdata}
+
+\registerctxluafile{strc-usr}{}
+
+%D It's a bit like blocks that also use buffers but more lightweight and with
+%D inplace settings.
+%D
+%D \starttyping
+%D \defineuserdata [test] [style=italic]
+%D
+%D \samplefile{klein}
+%D
+%D \startuserdata [before=\blank,after=\blank,color=red]
+%D     \samplefile{greenfield}
+%D \stopuserdata
+%D
+%D \samplefile{sapolsky}
+%D
+%D \startuserdata [test]
+%D     \samplefile{bryson}
+%D \stopuserdata
+%D
+%D \samplefile{jojomayer}
+%D
+%D \startuserdata [test] [before=\blank,after=\blank,color=red]
+%D     \samplefile{linden}
+%D \stopuserdata
+%D
+%D \samplefile{montgomery}
+%D \stoptyping
+%D
+%D Or from \LUA:
+%D
+%D \starttyping
+%D \startluacode
+%D     context.startuserdata({color="blue"})
+%D         context.samplefile("klein")
+%D     context.stopuserdata()
+%D \stopluacode
+%D \stoptyping
+%D
+%D An example of an alternative:
+%D
+%D \starttyping
+%D \defineuserdataalternative [epigraph] [renderingsetup=userdata:epigraph]
+%D
+%D \startsetups [userdata:epigraph]
+%D     \startframedtext [location=right,frame=off,align={flushleft,broad},style=\tfx,offset=.25ex,width=.5\textwidth]
+%D         \begstrut\inlinebuffer[userdata]\endstrut
+%D         \hairline
+%D         \wordright{\userdataparameter{author}}
+%D     \stopframedtext
+%D \stopsetups
+%D
+%D \defineuserdata
+%D   [epigraph]
+%D   [alternative=epigraph]
+%D
+%D \startuserdata [epigraph] [author={Sean B. Carrol}]
+%D     The fraction of fossil olfactory receptor genes is significantly higher in
+%D     all species with full color vision. This suggests that the evolution of
+%D     trichromatic vision --- which allows these primates to detect food, mates,
+%D     and danger with visual cues --- has reduced their reliance on the sense of
+%D     smell.
+%D \stopuserdata
+%D
+%D \startuserdata [epigraph] [author={Sean B. Carrol}]
+%D     \samplefile{carrol}
+%D \stopuserdata
+%D \stoptyping
+
+\unprotect
+
+\installnamespace {userdata}
+\installnamespace {userdataalternative}
+\installnamespace {userdatarenderings}
+
+\installcommandhandler \????userdata            {userdata}            \????userdata
+\installcommandhandler \????userdataalternative {userdataalternative} \????userdataalternative
+
+\unexpanded\def\startuserdata
+  {\begingroup
+   \let\currentuserdata\empty
+   \doifelsenextoptionalcs\userdata_start_delayed\userdata_start_indeed}
+
+% This variant works only when the userdata instance exists while the assignment check
+% can also be used with undefined instances which falls back to the global settings.
+%
+% \def\userdata_start_delayed[#1]%
+%   {\ifcsname\nameduserdatahash{\detokenize\expandafter{\normalexpanded{#1}}}\s!parent\endcsname
+%      \expandafter\userdata_start_delayed_name
+%    \else
+%      \expandafter\userdata_start_delayed_parameters
+%    \fi[#1]}
+
+\def\userdata_start_delayed[#1]%
+  {\doifelseassignmentcs{#1}%
+     \userdata_start_delayed_parameters
+     \userdata_start_delayed_name
+   [#1]}
+
+\def\userdata_start_delayed_parameters[#1]%
+  {\setupcurrentuserdata[#1]%
+   \userdata_start_indeed}
+
+\def\userdata_start_delayed_name[#1]%
+  {\edef\currentuserdata{#1}%
+   \checkuserdataparent
+   \doifelsenextoptionalcs\userdata_start_delayed_parameters\userdata_start_indeed}
+
+\def\userdata_start_indeed
+  {\grabbufferdatadirect\s!userdata{\csstring\startuserdata}{\csstring\stopuserdata}}
+
+% \unexpanded\def\stopuserdata
+%   {\useuserdatastyleandcolor\c!style\c!color
+%    \usealignparameter\userdataparameter
+%    \edef\currentuserdataalternative{\userdataparameter\c!alternative}%
+%    \ifcsname\currentuserdataalternativehash\s!parent\endcsname \else
+%      \let\currentuserdataalternative\s!default
+%    \fi
+%    \edef\p_renderingsetup{\userdataalternativeparameter\c!renderingsetup}%
+%    \directsetup\p_renderingsetup
+%    \endgroup}
+
+\unexpanded\def\stopuserdata
+  {\userdataparameter\c!before % HH: moved, so we obey the outer spacing
+   \dostarttagged\t!userdata\currentuserdata % HH: added, maybe move up ?
+   \begingroup
+   \useuserdatastyleandcolor\c!style\c!color
+   \usealignparameter\userdataparameter % HH: added
+   \edef\currentuserdataalternative{\userdataparameter\c!alternative}%
+   \ifcsname\currentuserdataalternativehash\s!parent\endcsname \else
+     \let\currentuserdataalternative\s!default
+   \fi
+   \usesetupsparameter\userdataparameter
+   \edef\p_renderingsetup{\userdataalternativeparameter\c!renderingsetup}%
+   \directsetup\p_renderingsetup
+   \endgroup
+   \dostoptagged
+   \userdataparameter\c!after % HH: moved
+   \endgroup}
+
+\unexpanded\def\getuserdata
+  {\getbufferdata[\s!userdata]}
+
+\unexpanded\def\getinlineuserdata
+  {\inlinebuffer[\s!userdata]}
+
+\defineuserdataalternative
+  [\s!default]
+  [\c!renderingsetup=\????userdatarenderings:\s!default]
+
+% \startsetups[\????userdatarenderings:\s!default]
+%     \userdataparameter\c!before
+%     \usesetupsparameter\userdataparameter
+%     \getbufferdata[\s!userdata]
+%     \userdataparameter\c!after
+% \stopsetups
+
+\startsetups[\????userdatarenderings:\s!default]
+    \getuserdata
+\stopsetups
+
+\setupuserdata
+  [\c!alternative=\s!default]
+
+\protect

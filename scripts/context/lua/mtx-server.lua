@@ -48,8 +48,6 @@ local gettime = os.gettimeofday or os.clock
 scripts           = scripts           or { }
 scripts.webserver = scripts.webserver or { }
 
-dofile(resolvers.findfile("luat-soc.lua","tex"))
-
 local socket = socket or require("socket")
 ----- http   = http   or require("socket.http") -- not needed
 

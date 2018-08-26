@@ -25,12 +25,16 @@ local trace_sql = false  trackers.register("sql.users.trace", function(v) trace_
 local report    = logs.reporter("sql","users")
 
 local split = lpeg.splitat(":")
+
 local valid = nil
 local hash  = function(s) return "MD5:" .. sumHEXA(s) end
+local sha2  = sha2 or (utilities and utilities.sha2)
 
-if LUAVERSION >= 5.3 then
+if not sha2 and LUAVERSION >= 5.3 then
+    sha2 = require("util-sha")
+end
 
-    local sha2    = require("util-sha")
+if sha2 then
 
     local HASH224 = sha2.HASH224
     local HASH256 = sha2.HASH256

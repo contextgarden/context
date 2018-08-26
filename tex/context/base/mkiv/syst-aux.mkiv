@@ -4718,14 +4718,22 @@
 
 \def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_p_{\if#2@}%
 
-\unexpanded\def\doifelseassignment#1% expandable
+\unexpanded\def\doifelseassignment#1%
   {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\let\doifassignmentelse\doifelseassignment
+\unexpanded\def\doifelseassignmentcs#1#2#3%
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
+     \expandafter#3%
+   \else
+     \expandafter#2%
+   \fi}
+
+\let\doifassignmentelse  \doifelseassignment
+\let\doifassignmentelsecs\doifelseassignmentcs
 
 \newif\ifassignment
 

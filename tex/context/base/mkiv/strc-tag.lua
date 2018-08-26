@@ -214,6 +214,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     pubfld                = { pdf = "Span",       nature = "inline"  },
 
     block                 = { pdf = "Div",        nature = "display"  },
+    userdata              = { pdf = "Div",        nature = "display"  },
 
 }
 

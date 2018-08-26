@@ -118,6 +118,14 @@ ffi.cdef [[
         MYSQL_result *result
     );
 
+    unsigned int mysql_affected_rows (
+        MYSQL_instance *mysql
+    );
+
+    unsigned int mysql_field_count (
+        MYSQL_instance *mysql
+    );
+
     unsigned int mysql_num_fields (
         MYSQL_result *res
     );
@@ -172,6 +180,8 @@ local mysql_open_connection  = mysql.mysql_real_connect
 local mysql_execute_query    = mysql.mysql_real_query
 local mysql_close_connection = mysql.mysql_close
 
+local mysql_affected_rows    = mysql.mysql_affected_rows
+local mysql_field_count      = mysql.mysql_field_count
 local mysql_field_seek       = mysql.mysql_field_seek
 local mysql_num_fields       = mysql.mysql_num_fields
 local mysql_fetch_fields     = mysql.mysql_fetch_fields
@@ -207,65 +217,61 @@ local function finish(t)
     end
 end
 
+local function getcoldata(t)
+    local result = t._result_
+    local nofrows   = t.nofrows
+    local noffields = t.noffields
+    local names     = { }
+    local types     = { }
+    local fields    = mysql_fetch_fields(result)
+    for i=1,noffields do
+        local field = fields[i-1]
+        names[i] = ffi_tostring(field.name)
+        types[i] = tonumber(field.type) -- todo
+    end
+    t.names = names
+    t.types = types
+end
+
 local function getcolnames(t)
+    local names = t.names
+    if names then
+        return names
+    end
+    getcoldata(t)
     return t.names
 end
 
 local function getcoltypes(t)
+    local types = t.types
+    if types then
+        return types
+    end
+    getcoldata(t)
     return t.types
 end
 
 local function numrows(t)
-    return tonumber(t.nofrows)
+    return t.nofrows
 end
 
-local function list(t)
-    local result = t._result_
-    if result then
-        local row = mysql_fetch_row(result)
-     -- local len = mysql_fetch_lengths(result)
-        local result = { }
-        for i=1,t.noffields do
-            result[i] = ffi_tostring(row[i-1])
-        end
-        return result
-    end
-end
-
-local function hash(t)
-    local result = t._result_
-    local fields = t.names
-    if result then
-        local row = mysql_fetch_row(result)
-     -- local len = mysql_fetch_lengths(result)
-        local result = { }
-        for i=1,t.noffields do
-            result[fields[i]] = ffi_tostring(row[i-1])
-        end
-        return result
-    end
-end
-
-local function wholelist(t)
-    return fetch_all_rows(t._result_)
-end
+-- local function fetch(t)
+--     local
+--     local row    = mysql_fetch_row(result)
+--     local result = { }
+--     for i=1,t.noffields do
+--         result[i] = ffi_tostring(row[i-1])
+--     end
+--     return unpack(result)
+-- end
 
 local mt = { __index = {
-        -- regular
-        finish      = finish,
-        list        = list,
-        hash        = hash,
-        wholelist   = wholelist,
-        -- compatibility
+        _result_    = nil,
+        close       = finish,
         numrows     = numrows,
         getcolnames = getcolnames,
         getcoltypes = getcoltypes,
-        -- fallback
-        _result_    = nil,
-        names       = { },
-        types       = { },
-        noffields   = 0,
-        nofrows     = 0,
+     -- fetch       = fetch, -- not efficient
     }
 }
 
@@ -275,6 +281,7 @@ local function close(t)
     mysql_close_connection(t._connection_)
 end
 
+
 local function execute(t,query)
     if query and query ~= "" then
         local connection = t._connection_
@@ -283,34 +290,18 @@ local function execute(t,query)
             local result = mysql_store_result(connection)
             if result ~= NULL then
                 mysql_field_seek(result,0)
-                local nofrows   = tonumber(mysql_num_rows(result) or 0)
-                local noffields = tonumber(mysql_num_fields(result))
-                local names     = { }
-                local types     = { }
-                local fields    = mysql_fetch_fields(result)
-                for i=1,noffields do
-                    local field = fields[i-1]
-                    names[i] = ffi_tostring(field.name)
-                    types[i] = tonumber(field.type) -- todo
-                end
                 local t = {
                     _result_  = result,
-                    names     = names,
-                    types     = types,
-                    noffields = noffields,
-                    nofrows   = nofrows,
+                    nofrows   = tonumber(mysql_num_rows  (result) or 0) or 0,
+                    noffields = tonumber(mysql_num_fields(result) or 0) or 0,
                 }
                 return setmetatable(t,mt)
-            else
-             -- return setmetatable({},mt)
+            elseif tonumber(mysql_field_count(connection) or 0) or 0 > 0 then
+                return tonumber(mysql_affected_rows(connection))
             end
         else
-report_state()
-report_state("result  : %S", result)
-report_state("error   : %S", mysql_error_number(connection))
-report_state("message : %S", ffi_tostring(mysql_error_message(connection)))
-report_state("query   : \n\n%S\n\n",query)
-report_state()
+         -- mysql_error_number(connection)
+            return false, ffi_tostring(mysql_error_message(connection))
         end
     end
     return false
@@ -347,7 +338,10 @@ local function message(t)
 end
 
 local function close(t)
-  -- ffi_gc(t._connection_, mysql_close)
+    local connection = t._connection_
+    if connection and connection ~= NULL then
+        ffi_gc(connection, mysql_close)
+    end
 end
 
 local mt = {
@@ -387,10 +381,10 @@ local function error_in_connection(specification,action)
         )
 end
 
-local function datafetched(specification,query,converter)
+local function fetched(specification,query,converter)
     if not query or query == "" then
         report_state("no valid query")
-        return { }, { }
+        return false
     end
     local id = specification.id
     local session, connection
@@ -402,96 +396,95 @@ local function datafetched(specification,query,converter)
         end
         if not connection then
             session = initialize()
+            if not session then
+                return formatters["no session for %a"](id)
+            end
             connection = connect(session,specification)
             if not connection then
-                for i=1,nofretries do
-                    sleep(retrydelay)
-                    report_state("retrying to connect: [%s.%s] %s@%s to %s:%s",
-                            id,i,
-                            specification.database or "no database",
-                            specification.username or "no username",
-                            specification.host     or "no host",
-                            specification.port     or "no port"
-                        )
-                    connection = connect(session,specification)
-                    if connection then
-                        break
-                    end
-                end
+                return formatters["no connection for %a"](id)
             end
-            if connection then
-                cache[id] = { session = session, connection = connection }
-            end
+            cache[id] = { session = session, connection = connection }
         end
     else
         session = initialize()
+        if not session then
+            return "no session"
+        end
         connection = connect(session,specification)
         if not connection then
-            for i=1,nofretries do
-                sleep(retrydelay)
-                report_state("retrying to connect: [%s] %s@%s to %s:%s",
-                        i,
-                        specification.database or "no database",
-                        specification.username or "no username",
-                        specification.host     or "no host",
-                        specification.port     or "no port"
-                    )
-                connection = connect(session,specification)
-                if connection then
-                    break
-                end
-            end
+            return "no connection"
         end
     end
     if not connection then
         report_state("error in connection: %s@%s to %s:%s",
-                specification.database or "no database",
-                specification.username or "no username",
-                specification.host     or "no host",
-                specification.port     or "no port"
-            )
-        return { }, { }
+            specification.database or "no database",
+            specification.username or "no username",
+            specification.host     or "no host",
+            specification.port     or "no port"
+        )
+        return "no connection"
     end
     query = lpegmatch(querysplitter,query)
-    local result, message, okay
+    local result, okay
     for i=1,#query do
         local q = query[i]
         local r, m = connection:execute(q)
         if m then
-            report_state("error in query, stage: %s",string.collapsespaces(q or "?"))
-            message = message and format("%s\n%s",message,m) or m
+            report_state("error in query to host %a: %s",specification.host,string.collapsespaces(q or "?"))
+            if m then
+                report_state("message: %s",m)
+            end
         end
-        if type(r) == "table" then
+        local t = type(r)
+        if t == "table" then
             result = r
             okay = true
-        elseif not m then
+        elseif t == "number" then
             okay = true
         end
     end
-
+    if not okay then -- can go
+        if session then
+            session:close()
+        end
+        if connection then
+            connection:close()
+        end
+        if id then
+            cache[id] = nil
+        end
+        return "execution error"
+    end
     local data, keys
     if result then
         if converter then
             data = converter.ffi(result)
         else
-            keys = result.names
+            local _result_  = result._result_
+            local noffields = result.noffields
+            local nofrows   = result.nofrows
+            keys = result:getcolnames()
             data = { }
-            for i=1,result.nofrows do
-                data[i] = result:hash()
+            if noffields > 0 and nofrows > 0 then
+                for i=1,nofrows do
+                    local cells = { }
+                    local row   = mysql_fetch_row(_result_)
+                    for j=1,noffields do
+                        local s = row[j-1]
+                        local k = keys[j]
+                        if s == NULL then
+                            cells[k] = ""
+                        else
+                            cells[k] = ffi_tostring(s)
+                        end
+                    end
+                    data[i] = cells
+                end
             end
         end
-        result:finish()
-    elseif message then
-        report_state("message %s",message)
+        result:close()
     end
-
-    if not keys then
-        keys = { }
-    end
-    if not data then
-        data = { }
-    end
-
+    --
     if not id then
         if connection then
             connection:close()
@@ -500,7 +493,24 @@ local function datafetched(specification,query,converter)
             session:close()
         end
     end
-    return data, keys
+    return false, data, keys
+end
+
+local function datafetched(specification,query,converter)
+    local callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    if not callokay then
+        report_state("call error, retrying")
+        callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    elseif connectionerror then
+        report_state("error: %s, retrying",connectionerror)
+        callokay, connectionerror, data, keys = pcall(fetched,specification,query,converter)
+    end
+    if not callokay then
+        report_state("persistent call error")
+    elseif connectionerror then
+        report_state("persistent error: %s",connectionerror)
+    end
+    return data or { }, keys or { }
 end
 
 local function execute(specification)
@@ -550,13 +560,14 @@ return function(result)
     if not result then
         return { }
     end
-    local nofrows = result.nofrows or 0
+    local nofrows = result.nofrows
     if nofrows == 0 then
         return { }
     end
-    local noffields = result.noffields or 0
-    local _result_  = result._result_
+    local noffields = result.noffields
     local target    = { } -- no %s needed here
+    local _result_  = result._result_
+    -- we can share cells
     for i=1,nofrows do
         local cells = { }
         local row   = mysql_fetch_row(_result_)
@@ -572,7 +583,7 @@ return function(result)
             %s
         }
     end
-    result:finish() -- result:close()
+    result:close()
     return target
 end
 ]]
