@@ -156,12 +156,12 @@ local function fetched(specification,query,converter)
             okay = true
         end
     end
-    if not okay then -- can go
-        if session then
-            session:close()
-        end
+    if not okay then
         if connection then
             connection:close()
+        end
+        if session then
+            session:close()
         end
         if id then
             cache[id] = nil
