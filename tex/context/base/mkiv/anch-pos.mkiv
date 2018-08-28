@@ -296,7 +296,7 @@
   {\clf_markregionbox#1\relax}
 
 \unexpanded\def\anch_mark_flow_box#1% will be extended / renamed
-  {\hbox\bgroup % \hpack
+  {\hpack\bgroup % \hpack
    \global\advance\c_anch_text\plusone
    \clf_markregionboxtagged#1{textarea:\the\c_anch_text}%
    \box#1%

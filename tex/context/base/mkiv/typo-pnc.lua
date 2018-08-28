@@ -135,7 +135,7 @@ function periodkerns.handler(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function periodkerns.handler(head)
         for current, font, char in nextglyph, head do

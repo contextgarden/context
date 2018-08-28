@@ -787,18 +787,18 @@ do
                         local data = fontdata[id]
                         local char = mathematics.big(data,chr,size,method)
                         local ht   = getfield(pointer,"height")
-                     -- local ht   = getheight(pointer) -- LUATEXVERSION >= 1.090
+                     -- local ht   = getheight(pointer) -- LUATEXVERSION >= 1.080
                         local dp   = getfield(pointer,"depth")
-                     -- local dp   = getdepth(pointer) -- LUATEXVERSION >= 1.090
+                     -- local dp   = getdepth(pointer) -- LUATEXVERSION >= 1.080
                         if ht == 1 or dp == 1 then -- 1 scaled point is a signal
                             local chardata = data.characters[char]
                             if ht == 1 then
                                 setfield(pointer,"height",chardata.height)
-                             -- setheight(pointer,chardata.height) -- LUATEXVERSION >= 1.090
+                             -- setheight(pointer,chardata.height) -- LUATEXVERSION >= 1.080
                             end
                             if dp == 1 then
                                 setfield(pointer,"depth",chardata.depth)
-                             -- setdepth(pointer,chardata.depth) -- LUATEXVERSION >= 1.090
+                             -- setdepth(pointer,chardata.depth) -- LUATEXVERSION >= 1.080
                             end
                         end
                         if trace_fences then

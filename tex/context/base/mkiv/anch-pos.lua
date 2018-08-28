@@ -69,9 +69,10 @@ local getbox            = nuts.getbox
 local getid             = nuts.getid
 local getwhd            = nuts.getwhd
 
------ hlist_code        = nodes.listcodes.hlist
+local hlist_code        = nodes.listcodes.hlist
 
 local find_tail         = nuts.tail
+local hpack             = nuts.hpack
 
 local new_latelua       = nuts.pool.latelua
 local new_latelua_node  = nodes.pool.latelua
@@ -565,11 +566,10 @@ local function markregionbox(n,tag,correct,...) -- correct needs checking
     local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
- -- no :
- -- if getid(box) ~= hlist_code then
- --  -- report("mark region box assumes a hlist, fix this for %a",tag)
- --     head = nuts.hpack(head)
- -- end
+    if getid(box) ~= hlist_code then
+     -- report("mark region box assumes a hlist, fix this for %a",tag)
+        head = hpack(head)
+    end
     if head then
         local tail = find_tail(head)
         setlink(push,head)

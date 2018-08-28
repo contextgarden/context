@@ -16,7 +16,7 @@ function requireswiglib(required,version)
     if library then
         return library
     else
-        local full = string.gsub(required,"%.","/"
+        local full = string.gsub(required,"%.","/")
         local path = file.pathpart(full)
         local name = file.nameonly(full) .. libsuffix
         local list = kpse.show_path("clua")

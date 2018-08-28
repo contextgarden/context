@@ -167,7 +167,7 @@ local function doreshapeframedbox(n)
     texsetdimen("global","framedaveragewidth",averagewidth)
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     local traverse_list = node.direct.traverse_list
 

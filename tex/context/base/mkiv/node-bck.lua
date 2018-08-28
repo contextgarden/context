@@ -203,7 +203,7 @@ local function add_backgrounds(head,id,list)
     end
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
  -- local function add_alignbackgrounds(head,list)
     add_alignbackgrounds = function(head,list)

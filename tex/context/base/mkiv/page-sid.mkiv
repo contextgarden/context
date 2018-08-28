@@ -41,6 +41,9 @@
 \newdimen       \d_page_sides_progress
 \newdimen       \d_page_sides_page_total
 
+\newdimen       \d_page_sides_leftoffset
+\newdimen       \d_page_sides_rightoffset
+
 %newbox         \b_page_sides_bottom
 
 \newcount       \c_page_sides_lines_done
@@ -217,6 +220,8 @@
        +\compensatedinnermakeupmargin
      \relax
    \fi
+   \global\d_page_sides_leftoffset \d_page_sides_rightskip
+   \global\d_page_sides_rightoffset\d_page_sides_leftskip
    \ifdim\d_page_sides_rightskip>\zeropoint
      \global\advance\d_page_sides_rightskip\rightskip
    \fi

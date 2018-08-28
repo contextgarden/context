@@ -81,7 +81,7 @@ function cleaners.handler(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function cleaners.handler(head)
         local inline = false

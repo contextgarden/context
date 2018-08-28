@@ -415,7 +415,7 @@ end)
 --
 -- end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function properties.attach(head)
 

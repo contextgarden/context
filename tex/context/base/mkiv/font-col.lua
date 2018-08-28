@@ -345,7 +345,7 @@ function collections.process(head) -- this way we keep feature processing
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function collections.process(head) -- this way we keep feature processing
         for n, char, font in nextchar, head do

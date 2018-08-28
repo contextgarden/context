@@ -30,7 +30,7 @@
      \glet\flushsyncpresets  \doflushsyncpresets
      \expandafter\newcount\csname\s!num:\s!syncpos:#1\endcsname
      \doglobal\appendtoksonce\csname\s!reset :\s!syncpos:#1\endcsname\to\resetsyncpositions
-   \doglobal\appendtoksonce\csname\s!preset:\s!syncpos:#1\endcsname\to\presetsyncpositions
+     \doglobal\appendtoksonce\csname\s!preset:\s!syncpos:#1\endcsname\to\presetsyncpositions
 % to be tested:
 %    \doglobal\expandafter\appendtoksonce\csname\s!reset :\s!syncpos:#1\endcsname\to\resetsyncpositions
 %    \doglobal\expandafter\appendtoksonce\csname\s!preset:\s!syncpos:#1\endcsname\to\presetsyncpositions
@@ -72,15 +72,15 @@
 
 \def\dosetsyncpositions#1%
   {\startnointerference % removing out of sync can best be done in mp
-   \!!dimena\maxdimen
-   \!!counta\zerocount
-   \!!countc\zerocount
+   \scratchdimenone\maxdimen
+   \scratchcounterone\zerocount
+   \scratchcounterthree\zerocount
    \doloop
      {\doifelseposition{\s!syncpos:#1:\recurselevel}
-        {\!!dimenb\MPy{\s!syncpos:#1:\recurselevel}\relax
-         \!!countb\MPp{\s!syncpos:#1:\recurselevel}\relax
-         \ifnum\!!countb=\!!counta % same page
-           \ifdim\!!dimenb>\!!dimena
+        {\scratchdimentwo\MPy{\s!syncpos:#1:\recurselevel}\relax
+         \scratchcountertwo\MPp{\s!syncpos:#1:\recurselevel}\relax
+         \ifnum\scratchcountertwo=\scratchcounterone % same page
+           \ifdim\scratchdimentwo>\scratchdimenone
              \donefalse % out of order nodes
            \else
              \donetrue % nodes in order
@@ -89,11 +89,11 @@
            \donetrue % different page
          \fi
          \ifdone
-           \!!counta\!!countb
-           \!!dimena\!!dimenb
-           \advance\!!countc\plusone
-           \edef\!!stringa{[#1][\the\!!countc]:=}%
-           \edef\!!stringc{\s!syncpos:#1:\the\!!countc}%
+           \scratchcounterone\scratchcountertwo
+           \scratchdimenone\scratchdimentwo
+           \advance\scratchcounterthree\plusone
+           \edef\!!stringa{[#1][\the\scratchcounterthree]:=}%
+           \edef\!!stringc{\s!syncpos:#1:\the\scratchcounterthree}%
            \edef\!!stringd{\MPplus\!!stringc{1}{0}}%
            \setxvalue{\s!syncpos:#1}%
              {\getsyncpositions{#1}%
@@ -102,11 +102,13 @@
               sync_w \!!stringa \MPw \!!stringc ;
               sync_h \!!stringa \MPh \!!stringc ;
               sync_d \!!stringa \MPd \!!stringc ;
-              \ifx\!!stringd\empty \else sync_t \!!stringa \MPplus\!!stringc{1}{0} ; \fi}%
+            \ifx\!!stringd\empty \else
+              sync_t \!!stringa \!!stringd;
+            \fi}%
           \fi}
         {\setxvalue{\s!syncpos:#1}%
            {\getsyncpositions{#1}%
-            sync_n[#1] := \the\!!countc ;}
+            sync_n[#1] := \the\scratchcounterthree ;}
          \exitloop}}%
    \stopnointerference}
 
@@ -138,7 +140,6 @@
    \setbox\scratchbox\hbox{\the#1}%
    \ifvoid\scratchbox\else
      \prewordbreak
-    %\let\prewordbreak\relax % only once
      \smashbox\scratchbox
      \box\scratchbox
    \fi
@@ -163,26 +164,39 @@
 
 \starttext
 
+% \setuppapersize[A4][A3]
+
+\setuplayout[location=middle]
+
 \setupbodyfont[dejavu]
 
 \definesyncpositions[1]
 
+\startMPinclusions
+%     input "mp-core.mpiv";
+    input "mp-asnc.mpiv";
+\stopMPinclusions
+
 \startuseMPgraphic{sync}
   StartPage ;
+vardef PlainTextArea = Field[Text][Text] enddef ;
     \getsyncpositions{1} ;
     SyncThreshold := 2LineHeight ;
     SyncLeftOffset := -.5LeftMarginDistance ;
-  % SetSyncThreshold(1,3,3LineHeight) ;
+    SetSyncThreshold(1,3,3LineHeight) ;
     SyncWidth := - (BackSpace + SyncLeftOffset) ;
     SetSyncColor(1,1,\MPcolor{red}) ;
     SetSyncColor(1,2,\MPcolor{green}) ;
     SetSyncColor(1,3,\MPcolor{blue}) ;
     SetSyncColor(1,4,\MPcolor{yellow}) ;
     PrepareSyncTasks(1,true,true,false) ;
+%     PrepareSyncTasks(1,true,true,true) ;
     for i = 1 upto NOfSyncPaths :
-      fill SyncPaths[i]
-        withcolor TheSyncColor(CurrentSyncClass,sync_t[CurrentSyncClass][SyncTasks[i]]) ;
+        fill SyncPaths[i]
+            withcolor TheSyncColor(CurrentSyncClass,sync_t[CurrentSyncClass][SyncTasks[i]]) ;
     endfor ;
+    clip
+    currentpicture to Page ;
     setbounds currentpicture to Page ;
   StopPage ;
 \stopuseMPgraphic
@@ -194,10 +208,10 @@
 \dorecurse {10} {
 
     \startchapter[title={Test #1}]
-        \syncposition[1][1] \dorecurse{10}{\input ward \endgraf}
-        \syncposition[1][2] \dorecurse {4}{\input ward \endgraf}
-        \syncposition[1][3] \dorecurse {7}{\input ward \endgraf}
-        \syncposition[1][4] \dorecurse {3}{\input ward \endgraf}
+        \syncposition[1][1] \dorecurse{10}{\samplefile{ward}\endgraf}
+        \syncposition[1][2] \dorecurse {4}{\samplefile{ward}\endgraf}
+        \syncposition[1][3] \dorecurse {7}{\samplefile{ward}\endgraf}
+        \syncposition[1][4] \dorecurse {3}{\samplefile{ward}\endgraf}
     \stopchapter
 }
 

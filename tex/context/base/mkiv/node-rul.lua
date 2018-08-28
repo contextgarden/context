@@ -535,7 +535,7 @@ local function find_attr(head,attr)
 end
 
 function nodes.linefillers.handler(head) -- traverse_list
-    for current in nexthlist, head do -- LUATEXVERSION >= 1.090
+    for current in nexthlist, head do -- LUATEXVERSION >= 1.080
         if getsubtype(current) == line_code then
             local list = getlist(current)
             if list then
@@ -659,10 +659,10 @@ function nodes.linefillers.handler(head) -- traverse_list
     return head
 end
 
-if LUATEXVERSION >= 1.090  then
+if LUATEXVERSION >= 1.080  then
 
     function nodes.linefillers.handler(head) -- traverse_list
-        for current, subtype, list in nexthlist, head do -- LUATEXVERSION >= 1.090
+        for current, subtype, list in nexthlist, head do -- LUATEXVERSION >= 1.080
             if list and subtype == line_code then
                 -- why doesn't leftskip take the attributes
                 -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)

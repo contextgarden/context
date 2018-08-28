@@ -3313,7 +3313,7 @@ end
         return false
     end
 
-    if LUATEXVERSION >= 1.090 then
+    if LUATEXVERSION >= 1.080 then
 
         function builders.paragraphs.tag(head) -- traverse_list
             noftextblocks = noftextblocks + 1

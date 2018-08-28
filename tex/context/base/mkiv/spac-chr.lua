@@ -169,7 +169,7 @@ function characters.replacenbspaces(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function characters.replacenbspaces(head)
         local wipe = false
@@ -376,7 +376,7 @@ function characters.handler(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function characters.handler(head)
         local wipe = false

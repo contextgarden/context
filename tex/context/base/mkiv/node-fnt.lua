@@ -553,7 +553,7 @@ function handlers.characters(head,groupcode,size,packtype,direction)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     do
 

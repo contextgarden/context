@@ -170,7 +170,7 @@ function colorschemes.coloring(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function colorschemes.coloring(head)
         local lastfont   = nil

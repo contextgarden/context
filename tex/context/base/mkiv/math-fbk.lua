@@ -127,6 +127,8 @@ function fallbacks.apply(target,original)
     }
     target.mathrelation = data
     --
+    local fullname = trace_fallbacks and target.properties.fullname
+    --
     for k, v in sortedhash(virtualcharacters) do
         if not characters[k] then
             local tv = type(v)
@@ -144,7 +146,7 @@ function fallbacks.apply(target,original)
                 -- something else
             end
             if trace_fallbacks and characters[k] then
-                report_fallbacks("extending math font %a with %U",target.properties.fullname,k)
+                report_fallbacks("extending math font %a with %U",fullname,k)
             end
         end
     end

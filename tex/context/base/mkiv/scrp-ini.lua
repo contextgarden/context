@@ -933,7 +933,7 @@ function autofontfeature.handler(head)
     return head
 end
 
-if LUATEXVERSION >= 1.090 then
+if LUATEXVERSION >= 1.080 then
 
     function autofontfeature.handler(head)
         for n, font, char in nextchar, head do
