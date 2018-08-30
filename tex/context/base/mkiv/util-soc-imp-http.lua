@@ -34,6 +34,8 @@ local pumpall          = ltn12.pump.all
 local sinknull         = ltn12.sink.null
 local sinktable        = ltn12.sink.table
 
+local lowerheaders     = headers.lower
+
 local mimeb64          = mime.b64
 
 -- todo: localize ltn12

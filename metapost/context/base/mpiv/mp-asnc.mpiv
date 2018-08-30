@@ -15,163 +15,103 @@ if known context_asnc : endinput ; fi ;
 
 boolean context_asnc ; context_asnc := true ;
 
-% will be replaced
+%D This is a rather old mechanism that we once needed in an actually nice
+%D design. Those were the times that processing a rather complex xml file
+%D with pdftex  into a 400 page document took 45 minutes (a few runs) while
+%D nowadays with luatex and mkiv we express runtime in seconds.
+%D
+%D The logic is mostly the same but some work is delegated to Lua so that
+%D we save memory and also run faster. As this was not really a used module
+%D the interface also was upgraded. As we know the bottlenecks in mp we also
+%D work around it a bit.
 
-numeric sync_n[], sync_p[][], sync_w[][], sync_h[][], sync_d[][], sync_t[][] ;
-pair sync_xy[][] ; color sync_c[][] ;
+numeric mfun_sync_count ;
+numeric mfun_sync_page ;
 
-def ResetSyncTasks =
-    path SyncPaths[] ; numeric SyncTasks[], NOfSyncPaths, CurrentSyncClass ;
-    NOfSyncPaths := CurrentSyncClass := 0 ;
-    if unknown SyncLeftOffset : numeric SyncLeftOffset ; SyncLeftOffset := 0          ; fi ;
-    if unknown SyncWidth      : numeric SyncWidth      ; SyncWidth      := 0          ; fi ;
-    if unknown SyncThreshold  : numeric SyncThreshold  ; SyncThreshold  := LineHeight ; fi ;
-    if unknown SyncColor      : color   SyncColor      ; SyncColor      := .5white    ; fi ;
-    if (SyncLeftOffset = 0) and (SyncWidth = 0) :
-        SyncWidth := if known TextWidth : TextWidth else : -1cm fi ;
+vardef StartSync(expr n) =
+    numeric CurrentSyncClass ; CurrentSyncClass := n ;
+    numeric SyncHOffset      ; SyncHOffset      := 0 ;
+    numeric SyncVOffset      ; SyncVOffset      := 0 ;
+    numeric SyncWidth        ; SyncWidth        := 0 ;
+    path    SyncPaths[] ;
+    numeric SyncTasks[] ;
+    numeric SyncKinds[] ;
+    %
+    mfun_sync_page   := RealPageNumber ;
+    mfun_sync_count  := 0 ;
+enddef ;
+
+def StopSync =
+    % maybe some cleanup
+enddef ;
+
+vardef CollectSyncDataPage =
+    mfun_sync_count := lua.mp.sync_collect(CurrentSyncClass,mfun_sync_page) ;
+enddef ;
+
+vardef CollectSyncDataRegion(expr region) =
+    mfun_sync_count := lua.mp.sync_collect(CurrentSyncClass,mfun_sync_page,region) ;
+enddef ;
+
+vardef MakeSyncPaths =
+    if mfun_sync_count > 0 :
+        save k, t, b ;
+        save l ; l := SyncHOffset ;
+        save r ; r := SyncHOffset +  SyncWidth ;
+        save y ; y := lua.mp.sync_get_y() + SyncVOffset ;
+        for i=1 upto mfun_sync_count :
+            k := lua.mp.sync_get_kind(i) ;
+            t := lua.mp.sync_get_top(i)    - y ;
+            b := lua.mp.sync_get_bottom(i) - y ;
+            SyncPaths[i] = ((l,t) -- (r,t) -- (r,b) -- (l,b) -- cycle) ;
+            SyncTasks[i] = lua.mp.sync_get_task(i) ;
+            SyncKinds[i] = k ;
+        endfor ;
     fi ;
 enddef ;
 
-ResetSyncTasks ;
+% Extend to the top of the text area.
 
-vardef SyncBox(expr n, i, leftoffset, width, topoffset, bottomoffset) =
-    save o ; pair o ; o := (xpart llcorner PlainTextArea,ypart sync_xy[n][i]) ;
-    o shifted (leftoffset,sync_h[n][i]+topoffset) --
-    o shifted (width+leftoffset,sync_h[n][i]+topoffset) --
-    o shifted (width+leftoffset,bottomoffset) --
-    o shifted (leftoffset,bottomoffset) -- cycle
+vardef ExtendSyncPaths =
+    mfun_sync_count := lua.mp.sync_extend() ;
+enddef ;
+
+% Clip to the text area.
+
+vardef PruneSyncPaths =
+    mfun_sync_count := lua.mp.sync_prune() ;
+enddef ;
+
+% Remove duplicate tasks
+
+vardef CollapseSyncPaths =
+    mfun_sync_count := lua.mp.sync_collapse() ;
 enddef ;
 
 def SetSyncColor(expr n, i, c) =
-    sync_c[n][i] := c ;
-enddef ;
-
-def SetSyncThreshold(expr n, i, th) =
-    sync_th[n][i] := th ;
+    lua.mp.sync_set_color(n,i,c) ;
 enddef ;
 
 vardef TheSyncColor(expr n, i) =
-    if known sync_c[n][i] : sync_c[n][i] else : SyncColor fi
+    lua.mp.sync_get_color(n,i)
 enddef ;
 
-vardef TheSyncThreshold(expr n, i) =
-    if known sync_th[n][i] : sync_th[n][i] else : SyncThreshold fi
+vardef SyncPathColor(expr i) =
+    lua.mp.sync_get_color(CurrentSyncClass,SyncTasks[i])
 enddef ;
 
-vardef PrepareSyncTasks(expr n, collapse, extendtop, prestartnext) =
-    ResetSyncTasks ;
-    if known sync_n[n] :
-        CurrentSyncClass := n ;
-        save ok, l, d ; boolean ok ; ok := false ; NOfSyncPaths := l := 0 ;
-        for i=1 upto sync_n[n] :
-            if RealPageNumber > sync_p[n][i] :
-                l := i ;
-            elseif RealPageNumber = sync_p[n][i] :
-                NOfSyncPaths := NOfSyncPaths + 1 ;
-                if not ok :
-                    if i>1 :
-                        if sync_t[n][i-1] = sync_t[n][i] :
-                            SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
-                            SyncTasks[NOfSyncPaths] := i ;
-                        else :
-                            SyncPaths[NOfSyncPaths] := SyncBox(n, i-1, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
-                            SyncTasks[NOfSyncPaths] := i-1 ;
-                            NOfSyncPaths := NOfSyncPaths + 1 ;
-                            SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, 0, -PaperHeight) ;
-                            SyncTasks[NOfSyncPaths] := i ;
-                        fi ;
-                    else :
-                        SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, 0, -PaperHeight) ;
-                        SyncTasks[NOfSyncPaths] := i ;
-                    fi ;
-                else :
-                    SyncPaths[NOfSyncPaths] := SyncBox(n, i, SyncLeftOffset, SyncWidth, 0, -PaperHeight) ;
-                    SyncTasks[NOfSyncPaths] := i ;
-                fi ;
-                ok := true ;
-            fi ;
-        endfor ;
-        if (NOfSyncPaths = 0) and (l > 0) :
-            NOfSyncPaths := 1 ;
-            SyncPaths[NOfSyncPaths] := SyncBox(n, l, SyncLeftOffset, SyncWidth, PaperHeight, -PaperHeight) ;
-            SyncTasks[NOfSyncPaths] := l ;
-        fi ;
-        if NOfSyncPaths > 0 :
-            for i = 1 upto NOfSyncPaths-1 :
-                SyncPaths[i] := topboundary SyncPaths[i] -- reverse topboundary SyncPaths[i+1] -- cycle ;
-            endfor ;
-            if unknown SyncThresholdMethod :
-                numeric SyncThresholdMethod ; SyncThresholdMethod := 2 ;
-            fi ;
-            if extendtop :
-                if SyncThresholdMethod = 1 :
-                    if NOfSyncPaths>1 :
-                        d := ypart (ulcorner PlainTextArea - sync_xy[n][SyncTasks[2]]) ;
-                        if (SyncTasks[2]>1) and (d > 0pt) and (d <= TheSyncThreshold(n,sync_t[n][SyncTasks[2]])) and (sync_p[n][SyncTasks[2]] = RealPageNumber) :
-                            SyncPaths[2] := SyncPaths[2] topenlarged PaperHeight ;
-                        fi ;
-                    fi ;
-                else :
-                    for i = 1 upto NOfSyncPaths :
-                        d := ypart (ulcorner PlainTextArea - sync_xy[n][SyncTasks[i]]) ;
-                        if (d > 0) and (d <= TheSyncThreshold(n,sync_t[n][SyncTasks[i]])) and (sync_p[n][SyncTasks[i]] = RealPageNumber) :
-                            SyncPaths[i] := SyncPaths[i] topenlarged PaperHeight ;
-                        fi ;
-                    endfor ;
-                fi ;
-            fi ;
-            if prestartnext :
-                if NOfSyncPaths>1 :
-                    if SyncTasks[NOfSyncPaths] < sync_n[n] : % there is a next one
-                        d := ypart (ulcorner PlainTextArea - sync_xy[n][SyncTasks[NOfSyncPaths]+1]) ;
-                        if (d > 0) and (d <= TheSyncThreshold(n, sync_t[n][SyncTasks[i]])) and (sync_p[n][SyncTasks[NOfSyncPaths]+1] = RealPageNumber+1) :
-                            SyncPaths[NOfSyncPaths+1] :=
-                                (xpart ulcorner SyncPaths[NOfSyncPaths],ypart llcorner PlainTextArea) --
-                                (xpart urcorner SyncPaths[NOfSyncPaths],ypart llcorner PlainTextArea) --
-                                lrcorner SyncPaths[NOfSyncPaths] --
-                                llcorner SyncPaths[NOfSyncPaths] -- cycle ;
-                            SyncTasks[NOfSyncPaths+1] := SyncTasks[NOfSyncPaths]+1 ;
-                            NOfSyncPaths := NOfSyncPaths + 1 ;
-                        fi ;
-                    fi ;
-                fi ;
-            else :
-                if NOfSyncPaths>1 :
-                    d := ypart (sync_xy[n][SyncTasks[NOfSyncPaths]] - llcorner PlainTextArea) ;
-                    if (d < TheSyncThreshold(n, SyncTasks[NOfSyncPaths])) :
-                        NOfSyncPaths := NOfSyncPaths - 1 ;
-                        SyncPaths[NOfSyncPaths] := SyncPaths[NOfSyncPaths] bottomenlarged PaperHeight ;
-                    fi ;
-                fi ;
-            fi ;
-            if (NOfSyncPaths>1) and collapse :
-                save j ; numeric j ; j := 1 ;
-                for i = 2 upto NOfSyncPaths :
-                    if sync_t[n][SyncTasks[i]] = sync_t[n][SyncTasks[j]] :
-                        SyncPaths[j] := boundingbox image (draw SyncPaths[i] ; draw SyncPaths[j] ; ) ;
-                        SyncTasks[j] := SyncTasks[i] ;
-                    else :
-                        j := j + 1 ;
-                        SyncPaths[j] := SyncPaths[i] ;
-                        SyncTasks[j] := SyncTasks[i] ;
-                    fi ;
-                endfor ;
-                NOfSyncPaths := j ;
-            fi ;
-        fi ;
-    fi ;
-enddef ;
-
-def SyncTask(expr n) =
-    if known SyncTasks[n] : SyncTasks[n] else : 0 fi
-enddef ;
-
-def FlushSyncTasks =
-    for i = 1 upto NOfSyncPaths :
-        ProcessSyncTask(SyncPaths[i], TheSyncColor(CurrentSyncClass,sync_t[CurrentSyncClass][SyncTasks[i]])) ;
+def DrawSyncPaths =
+    for i=1 upto NOfSyncPaths :
+        draw SyncPaths[i] withcolor SyncPathColor(i) ;
     endfor ;
 enddef ;
 
-def ProcessSyncTask(expr p, c) =
-    fill p withcolor c ;
+def FillSyncPaths =
+    for i=1 upto NOfSyncPaths :
+        fill SyncPaths[i] withcolor SyncPathColor(i) ;
+    endfor ;
+enddef ;
+
+vardef NOfSyncPaths =
+    mfun_sync_count
 enddef ;

@@ -198,13 +198,19 @@ function moduledata.evohome.history(specification)
                                             local m = 0
                                             for minute, d in next, hour do
                                                 local v = d[where]
-                                                a = a + v
-                                                n = n + 1
-                                                if v > m then
-                                                    m = v
+                                                if v then
+                                                    a = a + v
+                                                    n = n + 1
+                                                    if v > m then
+                                                        m = v
+                                                    end
                                                 end
                                             end
-                                            a = a / n
+                                            if n > 0 then
+                                                a = a / n
+                                            else
+                                                a = 0
+                                            end
                                             local dx = xoffset + h
                                             local dy = a/scale
                                             local dm = m/scale

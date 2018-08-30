@@ -321,6 +321,7 @@ vardef OverlayHeight     = lua.mp.OverlayHeight   ()  enddef ;
 vardef OverlayDepth      = lua.mp.OverlayDepth    ()  enddef ;
 vardef OverlayLineWidth  = lua.mp.OverlayLineWidth()  enddef ;
 vardef OverlayOffset     = lua.mp.OverlayOffset   ()  enddef ;
+vardef OverlayRegion     = lua.mp.OverlayRegion   ()  enddef ;
 
 vardef defaultcolormodel = lua.mp.mf_default_color_model() enddef ;
 

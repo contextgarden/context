@@ -535,6 +535,8 @@ end
 jobpositions.b_region = b_region
 jobpositions.e_region = e_region
 
+local lastregion
+
 local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     if not tag or tag == "" then
         nofregions = nofregions + 1
@@ -556,6 +558,7 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
         to = to ~= 0 and to or nil,
         bo = bo ~= 0 and bo or nil,
     }
+    lastregion = tag
     return tag, box
 end
 
@@ -566,10 +569,11 @@ local function markregionbox(n,tag,correct,...) -- correct needs checking
     local pop  = new_latelua(function() e_region(correct) end)
     -- maybe we should construct a hbox first (needs experimenting) so that we can avoid some at the tex end
     local head = getlist(box)
-    if getid(box) ~= hlist_code then
-     -- report("mark region box assumes a hlist, fix this for %a",tag)
-        head = hpack(head)
-    end
+    -- no, this fails with \framed[region=...] .. needs thinking
+ -- if getid(box) ~= hlist_code then
+ --  -- report("mark region box assumes a hlist, fix this for %a",tag)
+ --     head = hpack(head)
+ -- end
     if head then
         local tail = find_tail(head)
         setlink(push,head)
@@ -1396,6 +1400,11 @@ end
 scanners.markregionboxtaggedkind = function() -- box tag kind
     markregionbox(scaninteger(),scanstring(),nil,
         scaninteger(),scandimen(),scandimen(),scandimen(),scandimen())
+end
+
+scanners.reservedautoregiontag = function()
+    nofregions = nofregions + 1
+    context(f_region(nofregions))
 end
 
 -- statistics (at least for the moment, when testing)

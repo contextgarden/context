@@ -239,7 +239,6 @@
 \let\p_framed_backgroundcolor \empty
 \let\p_framed_framecolor      \empty
 \let\p_framed_component       \empty
-\let\p_framed_region          \empty
 \let\p_framed_background      \empty
 \let\p_framed_rulethickness   \empty
 \let\p_framed_foregroundcolor \empty
@@ -443,6 +442,8 @@
 \newdimen\d_overlay_offset
 \newdimen\d_overlay_linewidth
 
+\let\m_overlay_region\empty
+
 % expandable ... in a future version the space will go (in my one can use Overlay*)
 
 \def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
@@ -450,6 +451,7 @@
 \def\overlaydepth        {\the\d_overlay_depth    \space} % values.
 \def\overlayoffset       {\the\d_overlay_offset   \space} % of the frame can be (are)
 \def\overlaylinewidth    {\the\d_overlay_linewidth\space} % set somewhere else.
+\def\overlayregion       {\m_overlay_region}
 
 % public but kind of protected
 
@@ -602,12 +604,20 @@
 \def\pack_framed_background_box_content% fuzzy but needed hack, this \vss, otherwise
   {\vpack to \framedbackgroundheight{\vss\box\b_framed_normal\vss}} % vertical shift \backgroundheight
 
-\def\pack_framed_add_region % experiment
-  {\ifx\p_framed_region\v!yes
-     \anch_mark_region_box\b_framed_normal
-   \else
-     \anch_mark_tagged_box\b_framed_normal\p_framed_region
+\def\pack_framed_set_region % experiment
+  {\ifx\m_overlay_region\v!yes
+     \edef\m_overlay_region{\reservedautoregiontag}%
    \fi}
+
+% \def\pack_framed_add_region % experiment
+%   {\ifx\m_overlay_region\v!yes
+%      \anch_mark_region_box\b_framed_normal
+%    \else
+%      \anch_mark_tagged_box\b_framed_normal\m_overlay_region
+%    \fi}
+
+\def\pack_framed_add_region % experiment
+  {\anch_mark_tagged_box\b_framed_normal\m_overlay_region}
 
 \def\pack_framed_add_background
   {\setbox\b_framed_normal\hpack % was vbox % see also *1*
@@ -995,9 +1005,11 @@
    \edef\currentframed{#1}%
    \pack_framed_initialize
    \setbox\b_framed_normal\hbox{#4}%
-   \edef\p_framed_region{\framedparameter\c!region}%
-   \ifx\p_framed_region\v!yes % maybe later named
-     \pack_framed_add_region
+   \iftrialtypesetting \else
+     \edef\m_overlay_region{\framedparameter\c!region}%
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_set_region
+     \fi
    \fi
    \setupcurrentframed[#3]%
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
@@ -1024,6 +1036,11 @@
      \pack_framed_add_background
    \fi
    \pack_framed_restore_depth
+   \iftrialtypesetting \else
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_add_region
+     \fi
+   \fi
    \box\b_framed_normal
    \egroup}
 
@@ -1032,9 +1049,9 @@
 
 \unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
   {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
-   \edef\p_framed_region{\framedparameter\c!region}%
-   \ifx\p_framed_region\empty\else
-     \pack_framed_add_region
+   \edef\m_overlay_region{\framedparameter\c!region}%
+   \ifx\m_overlay_region\empty\else
+     \pack_framed_set_region
    \fi
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
@@ -1056,6 +1073,9 @@
        \fi
      \edef\p_framed_component{#1}%
      \pack_framed_add_background
+   \fi
+   \ifx\m_overlay_region\empty\else
+     \pack_framed_add_region
    \fi
    \box\b_framed_normal
    \egroup}
@@ -1605,9 +1625,9 @@
    \fi
    \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
-     \edef\p_framed_region{\framedparameter\c!region}%
-     \ifx\p_framed_region\empty\else
-       \pack_framed_add_region
+     \edef\m_overlay_region{\framedparameter\c!region}%
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_set_region
      \fi
    \fi
    \d_framed_applied_offset
@@ -1645,6 +1665,11 @@
      \fi
    \fi
    \pack_framed_locator_after\p_framed_location
+   \iftrialtypesetting \else
+     \ifx\m_overlay_region\empty\else
+       \pack_framed_add_region
+     \fi
+   \fi
    \box\b_framed_normal
    \global\frameddimensionstate % global so to be used directly afterwards !
      \ifconditional\c_framed_has_width

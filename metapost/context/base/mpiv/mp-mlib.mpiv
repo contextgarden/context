@@ -1528,14 +1528,14 @@ vardef mfun_path_to_table(expr p) =
     "{" & mfun_point_to_table(p,0) for i=1 upto length(p) : & "," & mfun_point_to_table(p,i) endfor & "}"
 enddef ;
 
-vardef mfun_rgbcolor_to_table(expr c) =
+vardef mfun_rgb_to_table(expr c) =
     "{" & decimal redpart   c &
     "," & decimal greenpart c &
     "," & decimal bluepart  c &
     "}"
 enddef ;
 
-vardef mfun_cmykcolor_to_table(expr c) =
+vardef mfun_cmyk_to_table(expr c) =
     "{" & decimal cyanpart    c &
     "," & decimal magentapart c &
     "," & decimal yellowpart  c &
@@ -1543,7 +1543,7 @@ vardef mfun_cmykcolor_to_table(expr c) =
     "}"
 enddef ;
 
-vardef mfun_greycolor_to_string(expr n) =
+vardef mfun_grey_to_string(expr n) =
     decimal n
 enddef ;
 

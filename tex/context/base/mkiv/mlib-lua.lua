@@ -148,51 +148,90 @@ do
 
     mp.cleaned = function(s) return lpegmatch(p,s) or s end
 
-    local function mpprint(...) -- we can optimize for n=1
-        for i=1,select("#",...) do
-            local value = select(i,...)
-            if value ~= nil then
-                n = n + 1
-                local t = type(value)
-                if t == "number" then
-                    buffer[n] = f_numeric(value)
-                elseif t == "string" then
-                    buffer[n] = value
-                elseif t == "table" then
-                    buffer[n] = "(" .. concat(value,",") .. ")"
-                else -- boolean or whatever
-                    buffer[n] = tostring(value)
+ -- local function mpprint(...) -- we can optimize for n=1
+ --     for i=1,select("#",...) do
+ --         local value = (select(i,...))
+ --         if value ~= nil then
+ --             n = n + 1
+ --             local t = type(value)
+ --             if t == "number" then
+ --                 buffer[n] = f_numeric(value)
+ --             elseif t == "string" then
+ --                 buffer[n] = value
+ --             elseif t == "table" then
+ --                 buffer[n] = "(" .. concat(value,",") .. ")"
+ --             else -- boolean or whatever
+ --                 buffer[n] = tostring(value)
+ --             end
+ --         end
+ --     end
+ -- end
+
+    local function mpp(value)
+        n = n + 1
+        local t = type(value)
+        if t == "number" then
+            buffer[n] = f_numeric(value)
+        elseif t == "string" then
+            buffer[n] = value
+        elseif t == "table" then
+            buffer[n] = "(" .. concat(value,",") .. ")"
+        else -- boolean or whatever
+            buffer[n] = tostring(value)
+        end
+    end
+
+    local function mpprint(first,second,...)
+        if second == nil then
+            if first ~= nil then
+                mpp(first)
+            end
+        else
+            for i=1,select("#",first,second,...) do
+                local value = (select(i,first,second,...))
+                if value ~= nil then
+                    mpp(value)
                 end
             end
         end
     end
 
-    local function mpvprint(...) -- variable print
-        for i=1,select("#",...) do
-            local value = select(i,...)
-            if value ~= nil then
-                n = n + 1
-                local t = type(value)
-                if t == "number" then
-                    buffer[n] = f_numeric(value)
-                elseif t == "string" then
-                    buffer[n] = lpegmatch(p,value)
-                elseif t == "table" then
-                    local m = #t
-                    if m == 2 then
-                        buffer[n] = f_pair(unpack(t))
-                    elseif m == 3 then
-                        buffer[n] = f_triplet(unpack(t))
-                    elseif m == 4 then
-                        buffer[n] = f_quadruple(unpack(t))
-                    else -- error
-                        buffer[n] = ""
-                    end
-                else -- boolean or whatever
-                    buffer[n] = tostring(value)
+    local function mpp(value)
+        n = n + 1
+        local t = type(value)
+        if t == "number" then
+            buffer[n] = f_numeric(value)
+        elseif t == "string" then
+            buffer[n] = lpegmatch(p,value)
+        elseif t == "table" then
+            if #t > 4 then
+                buffer[n] = ""
+            else
+                buffer[n] = "(" .. concat(value,",") .. ")"
+            end
+        else -- boolean or whatever
+            buffer[n] = tostring(value)
+        end
+    end
+
+    local function mpvprint(first,second,...) -- variable print
+        if second == nil then
+            if first ~= nil then
+                mpp(first)
+            end
+        else
+            for i=1,select("#",first,second,...) do
+                local value = (select(i,first,second,...))
+                if value ~= nil then
+                    mpp(value)
                 end
             end
         end
+    end
+
+    local function mpstring(value)
+        n = n + 1
+        buffer[n] = lpegmatch(p,value)
     end
 
     local function mpboolean(b)
@@ -202,7 +241,11 @@ do
 
     local function mpnumeric(f)
         n = n + 1
-        buffer[n] = f and f_numeric(f) or "0"
+        if not f or f == 0 then
+            buffer[n] = "0"
+        else
+            buffer[n] = f_numeric(f)
+        end
     end
 
     local function mpinteger(i)
@@ -213,7 +256,11 @@ do
 
     local function mppoints(i)
         n = n + 1
-        buffer[n] = i and f_points(i) or "0pt"
+        if not i or i == 0 then
+            buffer[n] = "0pt"
+        else
+            buffer[n] = f_points(i)
+        end
     end
 
     local function mppair(x,y)
@@ -366,14 +413,15 @@ do
     end
 
     local function mpquoted(fmt,s,...)
-        n = n + 1
         if s then
+            n = n + 1
             if not find(fmt,"%",1,true) then
                 fmt = lpegmatch(replacer,fmt)
             end
          -- buffer[n] = '"' .. formatters[fmt](s,...) .. '"'
             buffer[n] = lpegmatch(p,formatters[fmt](s,...))
         elseif fmt then
+            n = n + 1
          -- buffer[n] = '"' .. fmt .. '"'
             buffer[n] = lpegmatch(p,fmt)
         else
@@ -384,6 +432,7 @@ do
     aux.print           = mpprint
     aux.vprint          = mpvprint
     aux.boolean         = mpboolean
+    aux.string          = mpstring
     aux.numeric         = mpnumeric
     aux.number          = mpnumeric
     aux.integer         = mpinteger
@@ -406,23 +455,9 @@ do
         return runs
     end
 
-    -- there is no gain in:
-    --
-    -- local cache = table.makeweak()
-    --
-    -- f = cache[code]
-    -- if not f then
-    --  -- f = loadstring(f_code(code))
-    --     f = loadstring(code .. " return mp._f_()")
-    --     if f then
-    --         cache[code] = f
-    --     elseif be_tolerant then
-    --         f = loadstring(code)
-    --         if f then
-    --             cache[code] = f
-    --         end
-    --     end
-    -- end
+    -- sometimes we gain (e.g. .5 sec on the sync test)
+
+    local cache = table.makeweak()
 
     function metapost.runscript(code)
         nesting = nesting + 1
@@ -431,10 +466,18 @@ do
             report_luarun("%i: code: %s",nesting,code)
         end
         runs = runs + 1
-        ----- f = loadstring(f_code(code))
-        local f = loadstring(code .. " return mp._f_()")
-        if not f and be_tolerant then
-            f = loadstring(code)
+        local f = cache[code]
+        if not f then
+         -- f = loadstring(f_code(code))
+            f = loadstring(code .. " return mp._f_()")
+            if f then
+                cache[code] = f
+            elseif be_tolerant then
+                f = loadstring(code)
+                if f then
+                    cache[code] = f
+                end
+            end
         end
         if f then
             local _buffer_, _n_ = buffer, n
