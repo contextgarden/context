@@ -1453,15 +1453,15 @@ do  -- else too many locals
          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
             --
-            local fallbacks = specification.fallbacks
+            local fallbacks = specification.fallbacks or ""
             local mathsize  = (mathsize == 1 or mathsize == 2 or mathsize == 3) and mathsize or nil -- can be unset so we test 1 2 3
-            if fallbacks and fallbacks ~= "" and mathsize and not busy then
+            if fallbacks ~= "" and mathsize and not busy then
                 busy = true
                 -- We need this ugly hack in order to resolve fontnames (at the \TEX end). Originally
                 -- math was done in Lua after loading (plugged into aftercopying).
                 --
                 -- After tl 2017 I'll also do text fallbacks this way (although backups there are done
-                -- in a completely different way.
+                -- in a completely different way.)
                 if trace_defining then
                     report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
                         name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,1)

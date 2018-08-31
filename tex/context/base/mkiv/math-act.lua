@@ -738,9 +738,9 @@ function mathematics.finishfallbacks(target,specification,fallbacks)
                             done[unic] = true
                         end
                     end
+                    local step = offset - start
                     for unicode = start, stop do
-                        local unic = unicode + offset - start
-                        remap(unic,unicode,false)
+                        remap(unicode + step,unicode,false)
                     end
                     if gaps then
                         for unic, unicode in next, gaps do

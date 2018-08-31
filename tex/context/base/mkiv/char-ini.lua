@@ -645,22 +645,19 @@ function characters.getrange(name,expression) -- used in font fallback definitio
         local first, rest = lpegmatch(splitter2,name)
         local range = rawget(blocks,lower(gsub(first,"[^a-zA-Z0-9]","")))
         if range then
-            start = range.first
-            stop  = range.last
             local s = loadstring("return 0 " .. rest)
             if type(s) == "function" then
                 local d = s()
                 if type(d) == "number" then
-                    start = start + d
-                    stop  = stop  + d
-                    return start, stop, nil
+                    return range.first + d, range.last + d, nil
                 end
             end
         end
     end
-    start, stop = lpegmatch(splitter1,name)
+    local start, stop = lpegmatch(splitter1,name)
     if start and stop then
-        start, stop = tonumber(start,16) or tonumber(start), tonumber(stop,16) or tonumber(stop)
+        start = tonumber(start,16) or tonumber(start)
+        stop  = tonumber(stop, 16) or tonumber(stop)
         if start and stop then
             return start, stop, nil
         end

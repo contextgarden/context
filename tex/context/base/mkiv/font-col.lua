@@ -58,6 +58,7 @@ local fontdata           = hashes.identifiers
 local fontquads          = hashes.quads
 local chardata           = hashes.characters
 local propdata           = hashes.properties
+local mathparameters     = hashes.mathparameters
 
 local currentfont        = font.current
 local addcharacters      = font.addcharacters
@@ -67,6 +68,15 @@ local implement          = interfaces.implement
 local list               = { }
 local current            = 0
 local enabled            = false
+
+local validvectors       = table.setmetatableindex(function(t,k)
+    local v = false
+    if not mathparameters[k] then
+        v = vectors[k]
+    end
+    t[k] = v
+    return v
+end)
 
 local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
@@ -112,6 +122,18 @@ function collections.define(name,font,ranges,details)
     end
     details = settings_to_hash(details)
     -- todo, combine per font start/stop as arrays
+    local offset = details.offset
+    if type(offset) == "string" then
+        local start = characters.getrange(offset,true)
+        offset = start or false
+    else
+        offset = tonumber(offset) or false
+    end
+    local rscale   = tonumber (details.rscale) or 1
+    local force    = toboolean(details.force,true)
+    local check    = toboolean(details.check,true)
+    local factor   = tonumber(details.factor)
+    local features = details.features
     for s in gmatch(ranges,"[^, ]+") do
         local start, stop, description, gaps = characters.getrange(s,true)
         if start and stop then
@@ -126,24 +148,17 @@ function collections.define(name,font,ranges,details)
                     end
                 end
             end
-            local offset = details.offset
-            if type(offset) == "string" then
-                local start = characters.getrange(offset,true)
-                offset = start or false
-            else
-                offset = tonumber(offset) or false
-            end
             d[#d+1] = {
                 font     = font,
                 start    = start,
                 stop     = stop,
                 gaps     = gaps,
                 offset   = offset,
-                rscale   = tonumber (details.rscale) or 1,
-                force    = toboolean(details.force,true),
-                check    = toboolean(details.check,true),
-                factor   = tonumber(details.factor),
-                features = details.features,
+                rscale   = rscale,
+                force    = force,
+                check    = check,
+                factor   = factor,
+                features = features,
             }
         end
     end
@@ -218,8 +233,11 @@ function collections.clonevector(name)
     if trace_collecting then
         report_fonts("activating collection %a for font %a",name,current)
     end
-    checkenabled()
     statistics.stoptiming(fonts)
+    -- for WS: needs checking
+    if validvectors[current] then
+        checkenabled()
+    end
 end
 
 -- we already have this parser
@@ -312,7 +330,7 @@ end
 function collections.process(head) -- this way we keep feature processing
     for n in nextchar, head do
         local font   = getfont(n)
-        local vector = vectors[font]
+        local vector = validvectors[font]
         if vector then
             local char = getchar(n)
             local vect = vector[char]
@@ -349,7 +367,7 @@ if LUATEXVERSION >= 1.080 then
 
     function collections.process(head) -- this way we keep feature processing
         for n, char, font in nextchar, head do
-            local vector = vectors[font]
+            local vector = validvectors[font]
             if vector then
                 local vect = vector[char]
                 if not vect then

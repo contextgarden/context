@@ -114,13 +114,23 @@
      \expandafter\symb_place_normal_b
    \fi}
 
+% \def\symb_place_normal_a[#1][#2]%
+%   {\edef\currentsymbol{#2}%
+%    \ifcsname\??symbol#1:#2\endcsname
+%       \symb_place_indeed{#1:#2}%
+%    \else
+%      \symb_place_normal_c
+%    \fi}
+
 \def\symb_place_normal_a[#1][#2]%
   {\edef\currentsymbol{#2}%
    \ifcsname\??symbol#1:#2\endcsname
-      \symb_place_indeed{#1:#2}%
+      \symb_place_indeed{#1:#2}% maybe use \lastnamescs
+   \else\ifcsname\??symboldefault#1\endcsname
+      \symb_place_named{#1}% maybe use \lastnamescs
    \else
      \symb_place_normal_c
-   \fi}
+   \fi\fi}
 
 \def\symb_place_normal_b[#1][#2]%
   {\edef\currentsymbol{#1}%

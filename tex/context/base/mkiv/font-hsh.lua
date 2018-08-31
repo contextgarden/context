@@ -18,48 +18,50 @@ fonts.hashes        = hashes
 
 -- todo: autoallocate ... just create on the fly .. use constructors.keys (problem: plurals)
 
-local identifiers   = hashes.identifiers  or allocate()
-local characters    = hashes.characters   or allocate() -- chardata
-local descriptions  = hashes.descriptions or allocate()
-local parameters    = hashes.parameters   or allocate()
-local properties    = hashes.properties   or allocate()
-local resources     = hashes.resources    or allocate()
-local spacings      = hashes.spacings     or allocate()
-local spaces        = hashes.spaces       or allocate()
-local quads         = hashes.quads        or allocate() -- maybe also spacedata
-local xheights      = hashes.xheights     or allocate()
-local csnames       = hashes.csnames      or allocate() -- namedata
-local features      = hashes.features     or allocate()
-local marks         = hashes.marks        or allocate()
-local classes       = hashes.classes      or allocate()
-local italics       = hashes.italics      or allocate()
-local lastmathids   = hashes.lastmathids  or allocate()
-local dynamics      = hashes.dynamics     or allocate()
-local unicodes      = hashes.unicodes     or allocate()
-local originals     = hashes.originals    or allocate()
-local modes         = hashes.modes        or allocate()
-local variants      = hashes.variants     or allocate()
+local identifiers    = hashes.identifiers    or allocate()
+local characters     = hashes.characters     or allocate() -- chardata
+local descriptions   = hashes.descriptions   or allocate()
+local parameters     = hashes.parameters     or allocate()
+local mathparameters = hashes.mathparameters or allocate()
+local properties     = hashes.properties     or allocate()
+local resources      = hashes.resources      or allocate()
+local spacings       = hashes.spacings       or allocate()
+local spaces         = hashes.spaces         or allocate()
+local quads          = hashes.quads          or allocate() -- maybe also spacedata
+local xheights       = hashes.xheights       or allocate()
+local csnames        = hashes.csnames        or allocate() -- namedata
+local features       = hashes.features       or allocate()
+local marks          = hashes.marks          or allocate()
+local classes        = hashes.classes        or allocate()
+local italics        = hashes.italics        or allocate()
+local lastmathids    = hashes.lastmathids    or allocate()
+local dynamics       = hashes.dynamics       or allocate()
+local unicodes       = hashes.unicodes       or allocate()
+local originals      = hashes.originals      or allocate()
+local modes          = hashes.modes          or allocate()
+local variants       = hashes.variants       or allocate()
 
-hashes.characters   = characters
-hashes.descriptions = descriptions
-hashes.parameters   = parameters
-hashes.properties   = properties
-hashes.resources    = resources
-hashes.spacings     = spacings
-hashes.spaces       = spaces
-hashes.quads        = quads                 hashes.emwidths  = quads
-hashes.xheights     = xheights              hashes.exheights = xheights
-hashes.csnames      = csnames
-hashes.features     = features
-hashes.marks        = marks
-hashes.classes      = classes
-hashes.italics      = italics
-hashes.lastmathids  = lastmathids
-hashes.dynamics     = dynamics
-hashes.unicodes     = unicodes
-hashes.originals    = originals
-hashes.modes        = modes
-hashes.variants     = variants
+hashes.characters     = characters
+hashes.descriptions   = descriptions
+hashes.parameters     = parameters
+hashes.mathparameters = mathparameters
+hashes.properties     = properties
+hashes.resources      = resources
+hashes.spacings       = spacings
+hashes.spaces         = spaces
+hashes.quads          = quads                 hashes.emwidths  = quads
+hashes.xheights       = xheights              hashes.exheights = xheights
+hashes.csnames        = csnames
+hashes.features       = features
+hashes.marks          = marks
+hashes.classes        = classes
+hashes.italics        = italics
+hashes.lastmathids    = lastmathids
+hashes.dynamics       = dynamics
+hashes.unicodes       = unicodes
+hashes.originals      = originals
+hashes.modes          = modes
+hashes.variants       = variants
 
 local nodepool      = nodes and nodes.pool
 local dummyglyph    = nodepool and nodepool.register(nodepool.glyph())
@@ -145,6 +147,16 @@ setmetatableindex(parameters, function(t,k)
         local parameters = identifiers[k].parameters
         t[k] = parameters
         return parameters
+    end
+end)
+
+setmetatableindex(mathparameters, function(t,k)
+    if k == true then
+        return mathparameters[currentfont()]
+    else
+        local mathparameters = identifiers[k].mathparameters
+        t[k] = mathparameters
+        return mathparameters
     end
 end)
 

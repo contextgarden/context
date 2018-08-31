@@ -618,6 +618,10 @@ setmetatableindex(reverse, function(t,name)
     return r
 end)
 
+-- use char and font hash
+--
+-- commands  = { { "font", slot }, { "char", unicode } },
+
 local function copy_glyph(main,target,original,unicode,slot)
     local addprivate = fonts.helpers.addprivate
     local olddata    = original[unicode]
