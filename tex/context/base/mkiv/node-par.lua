@@ -13,44 +13,36 @@ local sequencers  = utilities.sequencers
 
 -- This are called a lot!
 
-if LUATEXFUNCTIONALITY > 6857 then
+local actions = nodes.tasks.actions("everypar")
 
-    local actions = nodes.tasks.actions("everypar")
+local function everypar(head)
+    starttiming(builders)
+    head = actions(head)
+    stoptiming(builders)
+    return head
+end
 
-    local function everypar(head)
+callbacks.register("insert_local_par",everypar,"after paragraph start")
+
+local actions = sequencers.new {
+    name         = "newgraf",
+    arguments    = "mode,indented",
+    returnvalues = "indented",
+    results      = "indented",
+}
+
+sequencers.appendgroup(actions,"before") -- user
+sequencers.appendgroup(actions,"system") -- private
+sequencers.appendgroup(actions,"after" ) -- user
+
+local function newgraf(mode,indented)
+    local runner = actions.runner
+    if runner then
         starttiming(builders)
-        head = actions(head)
+        indent = runner(mode,indented)
         stoptiming(builders)
-        return head
     end
-
-    callbacks.register("insert_local_par",everypar,"after paragraph start")
-
+    return indented
 end
 
-if LUATEXFUNCTIONALITY > 6870 then
-
-    local actions = sequencers.new {
-        name         = "newgraf",
-        arguments    = "mode,indented",
-        returnvalues = "indented",
-        results      = "indented",
-    }
-
-    sequencers.appendgroup(actions,"before") -- user
-    sequencers.appendgroup(actions,"system") -- private
-    sequencers.appendgroup(actions,"after" ) -- user
-
-    local function newgraf(mode,indented)
-        local runner = actions.runner
-        if runner then
-            starttiming(builders)
-            indent = runner(mode,indented)
-            stoptiming(builders)
-        end
-        return indented
-    end
-
-    callbacks.register("new_graf",newgraf,"before paragraph start")
-
-end
+callbacks.register("new_graf",newgraf,"before paragraph start")

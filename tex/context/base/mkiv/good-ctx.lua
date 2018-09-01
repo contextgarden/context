@@ -147,10 +147,9 @@ function colorschemes.coloring(head)
     local lastattr   = nil
     local lastcache  = nil
     local lastscheme = nil
-    for n in nextglyph, head do
+    for n, f, char in nextglyph, head do
         local a = getattr(n,a_colorscheme)
         if a then
-            local f = getfont(n)
             if f ~= lastfont then
                 lastfont   = f
                 lastscheme = fontproperties[f].colorscheme
@@ -160,7 +159,7 @@ function colorschemes.coloring(head)
                 lastcache = cache[a]
             end
             if lastscheme then
-                local sc = lastscheme[getchar(n)]
+                local sc = lastscheme[char]
                 if sc then
                     setnodecolor(n,lastcache[sc]) -- we could inline this one
                 end
@@ -168,37 +167,6 @@ function colorschemes.coloring(head)
         end
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function colorschemes.coloring(head)
-        local lastfont   = nil
-        local lastattr   = nil
-        local lastcache  = nil
-        local lastscheme = nil
-        for n, f, char in nextglyph, head do
-            local a = getattr(n,a_colorscheme)
-            if a then
-                if f ~= lastfont then
-                    lastfont   = f
-                    lastscheme = fontproperties[f].colorscheme
-                end
-                if a ~= lastattr then
-                    lastattr  = a
-                    lastcache = cache[a]
-                end
-                if lastscheme then
-                    local sc = lastscheme[char]
-                    if sc then
-                        setnodecolor(n,lastcache[sc]) -- we could inline this one
-                    end
-                end
-            end
-        end
-        return head
-    end
-
 end
 
 function colorschemes.enable()

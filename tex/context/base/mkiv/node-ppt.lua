@@ -318,207 +318,102 @@ table.setmetatableindex(anchored,function(t,k)
     return v
 end)
 
--- function properties.attach(head)
---
---     if nofslots <= 0 then
---         return head
---     end
---
---     local last = nil
---
---     starttiming(properties)
---
---     for source in nextwhatsit, head do
---         if getsubtype(source) == userdefined_code then
---             if last then
---                 removenode(head,last,true)
---                 last = nil
---             end
---             if getfield(source,"user_id") == property_id then
---                 local slot = getdata(source)
---                 local data = cache[slot]
---                 if data then
---                     cache[slot] = nil
---                     local where  = data[1]
---                     local target = anchored[where](source)
---                     if target then
---                         local first    = data[2]
---                         local method   = type(first)
---                         local p_target = propertydata[target]
---                         local p_source = propertydata[source]
---                         if p_target then
---                             if p_source then
---                                 for k, v in next, p_source do
---                                     p_target[k] = v
---                                 end
---                             end
---                             if method == "table" then
---                                 for k, v in next, first do
---                                     p_target[k] = v
---                                 end
---                             elseif method == "function" then
---                                 first(target,head,where,p_target,unpack(data,3))
---                             elseif method == "string" then
---                                 actions[first](target,head,where,p_target,unpack(data,3))
---                             end
---                         elseif p_source then
---                             if method == "table" then
---                                 propertydata[target] = p_source
---                                 for k, v in next, first do
---                                     p_source[k] = v
---                                 end
---                             elseif method == "function" then
---                                 propertydata[target] = p_source
---                                 first(target,head,where,p_source,unpack(data,3))
---                             elseif method == "string" then
---                                 propertydata[target] = p_source
---                                 actions[first](target,head,where,p_source,unpack(data,3))
---                             end
---                         else
---                             if method == "table" then
---                                 propertydata[target] = first
---                             elseif method == "function" then
---                                 local t = { }
---                                 propertydata[target] = t
---                                 first(target,head,where,t,unpack(data,3))
---                             elseif method == "string" then
---                                 local t = { }
---                                 propertydata[target] = t
---                                 actions[first](target,head,where,t,unpack(data,3))
---                             end
---                         end
---                         if trace_setting then
---                             report_setting("node %i, id %s, data %s",
---                                 target,nodecodes[getid(target)],serialize(propertydata[target],false))
---                         end
---                     end
---                     if nofslots == 1 then
---                         nofslots = 0
---                         last = source
---                         break
---                     else
---                         nofslots = nofslots - 1
---                     end
---                 end
---                 last = source
---             end
---         end
---     end
---
---     if last then
---         removenode(head,last,true)
---     end
---
---     stoptiming(properties)
---
---     return head
---
--- end
+function properties.attach(head)
 
-if LUATEXVERSION >= 1.080 then
-
-    function properties.attach(head)
-
-        if nofslots <= 0 then
-            return head
-        end
-
-        local last = nil
-
-        starttiming(properties)
-
-        for source, subtype in nextwhatsit, head do
-            if subtype == userdefined_code then
-                if last then
-                    removenode(head,last,true)
-                    last = nil
-                end
-                if getfield(source,"user_id") == property_id then
-                    local slot = getdata(source)
-                    local data = cache[slot]
-                    if data then
-                        cache[slot] = nil
-                        local where  = data[1]
-                        local target = anchored[where](source)
-                        if target then
-                            local first    = data[2]
-                            local method   = type(first)
-                            local p_target = propertydata[target]
-                            local p_source = propertydata[source]
-                            if p_target then
-                                if p_source then
-                                    for k, v in next, p_source do
-                                        p_target[k] = v
-                                    end
-                                end
-                                if method == "table" then
-                                    for k, v in next, first do
-                                        p_target[k] = v
-                                    end
-                                elseif method == "function" then
-                                    first(target,head,where,p_target,unpack(data,3))
-                                elseif method == "string" then
-                                    actions[first](target,head,where,p_target,unpack(data,3))
-                                end
-                            elseif p_source then
-                                if method == "table" then
-                                    propertydata[target] = p_source
-                                    for k, v in next, first do
-                                        p_source[k] = v
-                                    end
-                                elseif method == "function" then
-                                    propertydata[target] = p_source
-                                    first(target,head,where,p_source,unpack(data,3))
-                                elseif method == "string" then
-                                    propertydata[target] = p_source
-                                    actions[first](target,head,where,p_source,unpack(data,3))
-                                end
-                            else
-                                if method == "table" then
-                                    propertydata[target] = first
-                                elseif method == "function" then
-                                    local t = { }
-                                    propertydata[target] = t
-                                    first(target,head,where,t,unpack(data,3))
-                                elseif method == "string" then
-                                    local t = { }
-                                    propertydata[target] = t
-                                    actions[first](target,head,where,t,unpack(data,3))
-                                end
-                            end
-                            if trace_setting then
-                                report_setting("node %i, id %s, data %s",
-                                    target,nodecodes[getid(target)],serialize(propertydata[target],false))
-                            end
-                        end
-                        if nofslots == 1 then
-                            nofslots = 0
-                            last = source
-                            break
-                        else
-                            nofslots = nofslots - 1
-                        end
-                    end
-                    last = source
-                end
-            end
-        end
-
-        if last then
-            removenode(head,last,true)
-        end
-
-        stoptiming(properties)
-
+    if nofslots <= 0 then
         return head
-
     end
 
-local tasks = nodes.tasks
+    local last = nil
+
+    starttiming(properties)
+
+    for source, subtype in nextwhatsit, head do
+        if subtype == userdefined_code then
+            if last then
+                removenode(head,last,true)
+                last = nil
+            end
+            if getfield(source,"user_id") == property_id then
+                local slot = getdata(source)
+                local data = cache[slot]
+                if data then
+                    cache[slot] = nil
+                    local where  = data[1]
+                    local target = anchored[where](source)
+                    if target then
+                        local first    = data[2]
+                        local method   = type(first)
+                        local p_target = propertydata[target]
+                        local p_source = propertydata[source]
+                        if p_target then
+                            if p_source then
+                                for k, v in next, p_source do
+                                    p_target[k] = v
+                                end
+                            end
+                            if method == "table" then
+                                for k, v in next, first do
+                                    p_target[k] = v
+                                end
+                            elseif method == "function" then
+                                first(target,head,where,p_target,unpack(data,3))
+                            elseif method == "string" then
+                                actions[first](target,head,where,p_target,unpack(data,3))
+                            end
+                        elseif p_source then
+                            if method == "table" then
+                                propertydata[target] = p_source
+                                for k, v in next, first do
+                                    p_source[k] = v
+                                end
+                            elseif method == "function" then
+                                propertydata[target] = p_source
+                                first(target,head,where,p_source,unpack(data,3))
+                            elseif method == "string" then
+                                propertydata[target] = p_source
+                                actions[first](target,head,where,p_source,unpack(data,3))
+                            end
+                        else
+                            if method == "table" then
+                                propertydata[target] = first
+                            elseif method == "function" then
+                                local t = { }
+                                propertydata[target] = t
+                                first(target,head,where,t,unpack(data,3))
+                            elseif method == "string" then
+                                local t = { }
+                                propertydata[target] = t
+                                actions[first](target,head,where,t,unpack(data,3))
+                            end
+                        end
+                        if trace_setting then
+                            report_setting("node %i, id %s, data %s",
+                                target,nodecodes[getid(target)],serialize(propertydata[target],false))
+                        end
+                    end
+                    if nofslots == 1 then
+                        nofslots = 0
+                        last = source
+                        break
+                    else
+                        nofslots = nofslots - 1
+                    end
+                end
+                last = source
+            end
+        end
+    end
+
+    if last then
+        removenode(head,last,true)
+    end
+
+    stoptiming(properties)
+
+    return head
 
 end
-
-local tasks = nodes.tasks
 
 -- maybe better hard coded in-place
 
@@ -528,6 +423,8 @@ end)
 
 -- only for development
 
+-- local tasks = nodes.tasks
+--
 -- local function show(head,level,report)
 --     for target in nextnode, head do
 --         local p = propertydata[target]

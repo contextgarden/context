@@ -397,24 +397,20 @@ function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them 
     return n
 end
 
-if LUATEXFUNCTIONALITY > 6738 then
+local outlinerule = register_nut(new_nut(nodecodes.rule,rulecodes.outline)) setdir(rule, "TLT")
 
-    local outlinerule = register_nut(new_nut(nodecodes.rule,rulecodes.outline)) setdir(rule, "TLT")
-
-    function nutpool.outlinerule(width,height,depth,line,dir) -- w/h/d == nil will let them adapt
-        local n = copy_nut(outlinerule)
-        if width or height or depth then
-            setwhd(n,width,height,depth)
-        end
-        if line then
-            setfield(n,"transform",line)
-        end
-        if dir then
-            setdir(n,dir)
-        end
-        return n
+function nutpool.outlinerule(width,height,depth,line,dir) -- w/h/d == nil will let them adapt
+    local n = copy_nut(outlinerule)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
-
+    if line then
+        setfield(n,"transform",line)
+    end
+    if dir then
+        setdir(n,dir)
+    end
+    return n
 end
 
 function nutpool.leader(width,list)

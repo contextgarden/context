@@ -328,11 +328,9 @@ local function monoslot(font,char,parent,factor)
 end
 
 function collections.process(head) -- this way we keep feature processing
-    for n in nextchar, head do
-        local font   = getfont(n)
+    for n, char, font in nextchar, head do
         local vector = validvectors[font]
         if vector then
-            local char = getchar(n)
             local vect = vector[char]
             if not vect then
                 -- keep it
@@ -361,44 +359,6 @@ function collections.process(head) -- this way we keep feature processing
         end
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function collections.process(head) -- this way we keep feature processing
-        for n, char, font in nextchar, head do
-            local vector = validvectors[font]
-            if vector then
-                local vect = vector[char]
-                if not vect then
-                    -- keep it
-                elseif type(vect) == "table" then
-                    local newfont = vect[1]
-                    local newchar = vect[2]
-                    if trace_collecting then
-                        report_fonts("remapping character %C in font %a to character %C in font %a%s",
-                            char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
-                        )
-                    end
-                    setfont(n,newfont,newchar)
-                else
-                    local fakemono = vector.factor
-                    if trace_collecting then
-                        report_fonts("remapping font %a to %a for character %C%s",
-                            font,vect,char,not chardata[vect][char] and " (missing)" or ""
-                        )
-                    end
-                    if fakemono then
-                        setfont(n,vect,monoslot(vect,char,font,fakemono))
-                    else
-                        setfont(n,vect)
-                    end
-                end
-            end
-        end
-        return head
-    end
-
 end
 
 function collections.found(font,char) -- this way we keep feature processing

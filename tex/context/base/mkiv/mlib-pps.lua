@@ -1126,6 +1126,7 @@ local tx_reset, tx_analyze, tx_process  do
                 if trace_btexetex then
                     report_metapost("handling btex ... etex: [[%s]]",s)
                 end
+             -- madetext = utilities.strings.collapse(s)
                 madetext = s
                 return "rawmadetext"
             end

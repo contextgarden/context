@@ -252,8 +252,8 @@ function paragraphs.normalize(head,islocal)
     if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
         local last = nil -- a nut
         local done = false
-        for line in nexthlist, head do -- LUATEXVERSION >= 1.080
-            if getsubtype(line) == line_code and not getprop(line,"line") then
+        for line, subtype in nexthlist, head do
+            if subtype == line_code and not getprop(line,"line") then
                 if done then
                     last = line
                 else
@@ -280,8 +280,8 @@ function paragraphs.normalize(head,islocal)
         end
     end
     -- normalizer
-    for line in nexthlist, head do -- LUATEXVERSION >= 1.080
-        if getsubtype(line) == line_code and not getprop(line,"line") then
+    for line, subtype in nexthlist, head do
+        if subtype == line_code and not getprop(line,"line") then
             normalize(line)
             if done then
                 last = line

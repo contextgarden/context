@@ -284,8 +284,8 @@ end
 
 local function listisnumbered(list)
     if list then
-        for n in nexthlist, list do -- LUATEXVERSION >= 1.080
-            if getsubtype(n) == line_code then
+        for n, subtype in nexthlist, list do
+            if subtype == line_code then
                 local a = getattr(n,a_linenumber)
                 if a then
                     -- a quick test for lines (only valid when \par before \stoplinenumbering)
@@ -384,8 +384,7 @@ function boxed.stage_one(n,nested)
     local skip   = false
 
     local function check()
-        for n in nexthlist, list do -- LUATEXVERSION >= 1.080
-            local subtype = getsubtype(n)
+        for n, subtype in nexthlist, list do
             if subtype ~= line_code then
                 -- go on
             elseif getheight(n) == 0 and getdepth(n) == 0 then
@@ -451,7 +450,7 @@ function boxed.stage_one(n,nested)
         if not list then
             return
         end
-        for n in nextvlist, list do -- LUATEXVERSION >= 1.080
+        for n in nextvlist, list do
             local p = properties[n]
             if p and p.columngap then
                 if trace_numbers then
@@ -474,7 +473,7 @@ function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
         local t, tn = { }, 0
-        for l in nexthlist, getlist(getbox(m)) do -- LUATEXVERSION >= 1.080
+        for l in nexthlist, getlist(getbox(m)) do
             tn = tn + 1
             t[tn] = copy_node(l) -- use take_box instead
         end

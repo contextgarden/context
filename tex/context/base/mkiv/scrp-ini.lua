@@ -889,15 +889,13 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 -- playing nice
 
 function autofontfeature.handler(head)
-    for n in nextchar, head do
+    for n, font, char in nextchar, head do
      -- if getattr(n,a_scriptinjection) then
      --     -- already tagged by script feature, maybe some day adapt
      -- else
-            local char   = getchar(n)
             local script = otfscripts[char]
             if script then
                 local dynamic = getattr(n,0) or 0
-                local font = getfont(n)
                 if dynamic > 0 then
                     local slot = cache_yes[font]
                     local attr = slot[script]
@@ -931,53 +929,6 @@ function autofontfeature.handler(head)
      -- end
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function autofontfeature.handler(head)
-        for n, font, char in nextchar, head do
-         -- if getattr(n,a_scriptinjection) then
-         --     -- already tagged by script feature, maybe some day adapt
-         -- else
-                local script = otfscripts[char]
-                if script then
-                    local dynamic = getattr(n,0) or 0
-                    if dynamic > 0 then
-                        local slot = cache_yes[font]
-                        local attr = slot[script]
-                        if not attr then
-                            attr = mergecontext(dynamic,name,2)
-                            slot[script] = attr
-                            if trace_scripts then
-                                report_scripts("script: %s, trigger %C, dynamic: %a, variant: %a",script,char,attr,"extended")
-                            end
-                        end
-                        if attr ~= 0 then
-                            n[0] = attr
-                            -- maybe set scriptinjection when associated
-                        end
-                    else
-                        local slot = cache_nop[font]
-                        local attr = slot[script]
-                        if not attr then
-                            attr = registercontext(font,script,2)
-                            slot[script] = attr
-                            if trace_scripts then
-                                report_scripts("script: %s, trigger %C, dynamic: %s, variant: %a",script,char,attr,"normal")
-                            end
-                        end
-                        if attr ~= 0 then
-                            setattr(n,0,attr)
-                            -- maybe set scriptinjection when associated
-                        end
-                    end
-                end
-         -- end
-        end
-        return head
-    end
-
 end
 
 function autofontfeature.enable()

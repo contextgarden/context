@@ -900,10 +900,13 @@
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%
-  {\setbox\strutbox\hbox{#1}% hm, maybe hpack i.e. why apply fonts .. conceptual choice
+  {\setbox\strutbox\hbox{#1}% no \hpack, in case we have smallcaps
    \strutht\ht\strutbox
    \strutdp\dp\strutbox
    \dosetstrut}
+
+\unexpanded\def\settightstrut
+  {\setcharstrut{(}}
 
 \unexpanded\def\setfontstrut
   {\setcharstrut{(gplQT}}

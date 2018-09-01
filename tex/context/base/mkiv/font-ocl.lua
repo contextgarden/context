@@ -134,7 +134,7 @@ local start = { "pdf", "mode", "font" } -- force text mode (so get q Q right)
 local push  = { "pdf", "page", "q" }
 local pop   = { "pdf", "page", "Q" }
 
-if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY < 6472 then
+if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY < 6472 then -- for outside context (till tl 2019)
     start = { "nop" }
     ----- = stop
 end

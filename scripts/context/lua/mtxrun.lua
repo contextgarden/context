@@ -711,7 +711,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-package"] = package.loaded["l-package"] or true
 
--- original size: 11562, stripped down to: 8625
+-- original size: 11605, stripped down to: 8663
 
 if not modules then modules={} end modules ['l-package']={
   version=1.001,
@@ -1022,6 +1022,9 @@ function helpers.unload(name)
   package.loaded[name]=nil
 end
 table.insert(searchers,1,helpers.loaded)
+if context then
+  package.path=""
+end
 
 
 end -- of closure
@@ -6250,7 +6253,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 42387, stripped down to: 23340
+-- original size: 42927, stripped down to: 23750
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -6290,9 +6293,14 @@ local stripzero=patterns.stripzero
 local stripzeros=patterns.stripzeros
 local newline=patterns.newline
 local endofstring=patterns.endofstring
+local anything=patterns.anything
 local whitespace=patterns.whitespace
+local space=patterns.space
 local spacer=patterns.spacer
 local spaceortab=patterns.spaceortab
+local digit=patterns.digit
+local sign=patterns.sign
+local period=patterns.period
 local ptf=1/65536
 local bpf=(7200/7227)/65536
 local function points(n)
@@ -6327,7 +6335,6 @@ number.points=points
 number.basepoints=basepoints
 local rubish=spaceortab^0*newline
 local anyrubish=spaceortab+newline
-local anything=patterns.anything
 local stripped=(spaceortab^1/"")*newline
 local leading=rubish^0/""
 local trailing=(anyrubish^1*endofstring)/""
@@ -6378,7 +6385,7 @@ local pattern=Carg(1)/function(t)
      end
    end+newline*Cp()/function(position)
      extra,start=0,position
-   end+patterns.anything
+   end+anything
  )^1)
 function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
@@ -6394,19 +6401,23 @@ function string.utfpadding(s,n)
     return nspaces[-n-l]
   end
 end
-local space=spacer^0
-local nospace=space/""
+local optionalspace=spacer^0
+local nospace=optionalspace/""
 local endofline=nospace*newline
 local stripend=(whitespace^1*endofstring)/""
-local normalline=(nospace*((1-space*(newline+endofstring))^1)*nospace)
+local normalline=(nospace*((1-optionalspace*(newline+endofstring))^1)*nospace)
 local stripempty=endofline^1/""
 local normalempty=endofline^1
 local singleempty=endofline*(endofline^0/"")
 local doubleempty=endofline*endofline^-1*(endofline^0/"")
 local stripstart=stripempty^0
+local intospace=whitespace^1/" "
+local noleading=whitespace^1/""
+local notrailing=noleading*endofstring
 local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
 local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
 local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
+local p_prune_intospace=Cs (noleading*(notrailing+intospace+1      )^0 )
 local p_retain_normal=Cs ((normalline+normalempty )^0 )
 local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
 local p_retain_noempty=Cs ((normalline+singleempty )^0 )
@@ -6414,6 +6425,7 @@ local striplinepatterns={
   ["prune"]=p_prune_normal,
   ["prune and collapse"]=p_prune_collapse,
   ["prune and no empty"]=p_prune_noempty,
+  ["prune and to space"]=p_prune_intospace,
   ["retain"]=p_retain_normal,
   ["retain and collapse"]=p_retain_collapse,
   ["retain and no empty"]=p_retain_noempty,
@@ -6423,6 +6435,9 @@ setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse e
 strings.striplinepatterns=striplinepatterns
 function strings.striplines(str,how)
   return str and lpegmatch(striplinepatterns[how],str) or str
+end
+function strings.collapse(str) 
+  return str and lpegmatch(p_prune_intospace,str) or str
 end
 strings.striplong=strings.striplines
 function strings.nice(str)
@@ -6481,16 +6496,14 @@ function number.signed(i)
     return "-",-i
   end
 end
-local digit=patterns.digit
-local period=patterns.period
 local two=digit*digit
 local three=two*digit
 local prefix=(Carg(1)*three)^1
 local splitter=Cs (
-  (((1-(three^1*period))^1+C(three))*prefix+C((1-period)^1))*(P(1)/""*Carg(2))*C(2)
+  (((1-(three^1*period))^1+C(three))*prefix+C((1-period)^1))*(anything/""*Carg(2))*C(2)
 )
 local splitter3=Cs (
-  three*prefix*P(-1)+two*prefix*P(-1)+digit*prefix*P(-1)+three+two+digit
+  three*prefix*endofstring+two*prefix*endofstring+digit*prefix*endofstring+three+two+digit
 )
 patterns.formattednumber=splitter
 function number.formatted(n,sep1,sep2)
@@ -6515,7 +6528,7 @@ function number.formatted(n,sep1,sep2)
   end
 end
 local p=Cs(
-    P("-")^0*(P("0")^1/"")^0*(1-P("."))^0*(P(".")*P("0")^1*P(-1)/""+P(".")^0)*P(1-P("0")^1*P(-1))^0
+    P("-")^0*(P("0")^1/"")^0*(1-period)^0*(period*P("0")^1*endofstring/""+period^0)*P(1-P("0")^1*endofstring)^0
   )
 function number.compactfloat(n,fmt)
   if n==0 then
@@ -6532,12 +6545,11 @@ end
 local zero=P("0")^1/""
 local plus=P("+")/""
 local minus=P("-")
-local separator=S(".")
-local digit=R("09")
+local separator=period
 local trailing=zero^1*#S("eE")
-local exponent=(S("eE")*(plus+Cs((minus*zero^0*P(-1))/"")+minus)*zero^0*(P(-1)*Cc("0")+P(1)^1))
+local exponent=(S("eE")*(plus+Cs((minus*zero^0*endofstring)/"")+minus)*zero^0*(endofstring*Cc("0")+anything^1))
 local pattern_a=Cs(minus^0*digit^1*(separator/""*trailing+separator*(trailing+digit)^0)*exponent)
-local pattern_b=Cs((exponent+P(1))^0)
+local pattern_b=Cs((exponent+anything)^0)
 function number.sparseexponent(f,n)
   if not n then
     n=f
@@ -6642,8 +6654,8 @@ setmetatable(arguments,{ __index=function(t,k)
     return v
   end
 })
-local prefix_any=C((S("+- .")+R("09"))^0)
-local prefix_sub=(C((S("+-")+R("09"))^0)+Cc(0))*P(".")*(C((S("+-")+R("09"))^0)+Cc(0))
+local prefix_any=C((sign+space+period+digit)^0)
+local prefix_sub=(C((sign+digit)^0)+Cc(0))*period*(C((sign+digit)^0)+Cc(0))
 local prefix_tab=P("{")*C((1-P("}"))^0)*P("}")+C((1-R("az","AZ","09","%%"))^0)
 local format_s=function(f)
   n=n+1
@@ -6957,7 +6969,7 @@ local builder=Cs { "start",
 +V(">") 
 +V("<")
       )+V("*")
-    )*(P(-1)+Carg(1))
+    )*(endofstring+Carg(1))
   )^0,
   ["s"]=(prefix_any*P("s"))/format_s,
   ["q"]=(prefix_any*P("q"))/format_q,
@@ -7012,7 +7024,7 @@ local preset={
   ["%02x"]=function(n) return xx[n] end,
   ["%02X"]=function(n) return XX[n] end,
 }
-local direct=P("%")*(S("+- .")+R("09"))^0*S("sqidfgGeExXo")*P(-1)/[[local format = string.format return function(str) return format("%0",str) end]]
+local direct=P("%")*(sign+space+period+digit)^0*S("sqidfgGeExXo")*endofstring/[[local format = string.format return function(str) return format("%0",str) end]]
 local function make(t,str)
   local f=preset[str]
   if f then
@@ -7071,8 +7083,8 @@ local function add(t,name,template,preamble)
   end
 end
 strings.formatters.add=add
-patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+P(1))^0)
-patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+P(1))^0)
+patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
+patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
 if oldfashioned then
@@ -7086,7 +7098,6 @@ else
 end
 local dquote=patterns.dquote 
 local equote=patterns.escaped+dquote/'\\"'+1
-local space=patterns.space
 local cquote=Cc('"')
 local pattern=Cs(dquote*(equote-P(-2))^0*dquote)          
 +Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
@@ -24583,8 +24594,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 982444
--- stripped bytes    : 347119
+-- original bytes    : 983027
+-- stripped bytes    : 347254
 
 -- end library merge
 

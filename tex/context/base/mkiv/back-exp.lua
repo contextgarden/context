@@ -3300,10 +3300,9 @@ end
         return p
     end
 
-    function builders.paragraphs.tag(head) -- traverse_list
+    function builders.paragraphs.tag(head)
         noftextblocks = noftextblocks + 1
-        for n in nexthlist, head do
-            local subtype = getsubtype(n)
+        for n, subtype in nexthlist, head do
             if subtype == line_code then
                 setattr(n,a_textblock,noftextblocks)
             elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
@@ -3311,22 +3310,6 @@ end
             end
         end
         return false
-    end
-
-    if LUATEXVERSION >= 1.080 then
-
-        function builders.paragraphs.tag(head) -- traverse_list
-            noftextblocks = noftextblocks + 1
-            for n, subtype in nexthlist, head do
-                if subtype == line_code then
-                    setattr(n,a_textblock,noftextblocks)
-                elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
-                    setattr(n,a_textblock,0)
-                end
-            end
-            return false
-        end
-
     end
 
 end

@@ -36577,6 +36577,7 @@
    </cd:arguments>
   </cd:command>
   <cd:command file="spac-ver.mkiv" level="system" name="setfontstrut"/>
+  <cd:command file="spac-ver.mkiv" level="system" name="settightstrut"/>
   <cd:command file="spac-ver.mkiv" level="system" name="setcapstrut"/>
   <cd:command file="spac-ver.mkiv" level="system" name="setnostrut"/>
   <cd:command file="spac-ver.mkiv" level="document" name="showstruts"/>

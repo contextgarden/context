@@ -52,6 +52,8 @@
 
     <cd:command name="setfontstrut" level="system" file="spac-ver.mkiv"/>
 
+    <cd:command name="settightstrut" level="system" file="spac-ver.mkiv"/>
+
     <cd:command name="setcapstrut" level="system" file="spac-ver.mkiv"/>
 
     <cd:command name="setnostrut" level="system" file="spac-ver.mkiv"/>

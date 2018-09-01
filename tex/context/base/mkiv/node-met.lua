@@ -62,26 +62,6 @@ end
 -- statistics.tracefunction(node,       "node",       "getfield","setfield")
 -- statistics.tracefunction(node.direct,"node.direct","getfield","setfield")
 
-if LUATEXFUNCTIONALITY < 6695 then
-
-    local getnext = node.getnext
-    local getid   = node.getid
-
-    local function iterate(h,n)
-        if n then
-            local n = getnext(n)
-            return n, getid(n)
-        elseif h then
-            return h, getid(h), getnext(h)
-        end
-    end
-
-    function node.traverse(h)
-        return iterate, h
-    end
-
-end
-
 -- We start with some helpers and provide all relevant basic functions in the
 -- node namespace as well.
 
@@ -645,7 +625,7 @@ local messyhack    = table.tohash { -- temporary solution
     nodecodes.action,
 }
 
-table.setmetatableindex(keys,function(t,k)
+setmetatableindex(keys,function(t,k)
     local v = (k == "attributelist" or k == nodecodes.attributelist) and { } or getfields(k)
     if messyhack[k] then
         for i=1,#v do
@@ -662,7 +642,7 @@ table.setmetatableindex(keys,function(t,k)
     return v
 end)
 
-table.setmetatableindex(whatsitkeys,function(t,k)
+setmetatableindex(whatsitkeys,function(t,k)
     local v = getfields(whatsit_code,k)
     if v[ 0] then v[#v+1] = "next" v[ 0] = nil end
     if v[-1] then v[#v+1] = "prev" v[-1] = nil end
@@ -683,45 +663,3 @@ end
 
 nodes.keys   = keys       -- [id][subtype]
 nodes.fields = nodefields -- (n)
-
--- for the moment (pre 6380)
-
-if not nodes.unprotect_glyph then
-
-    local protect_glyph    = nodes.protect_glyph
-    local protect_glyphs   = nodes.protect_glyphs
-    local unprotect_glyph  = nodes.unprotect_glyph
-    local unprotect_glyphs = nodes.unprotect_glyphs
-
-    local getnext          = nodes.getnext
-    local setnext          = nodes.setnext
-
-    function nodes.protectglyphs(first,last)
-        if first == last then
-            return protect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = protect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return protect_glyphs(first)
-        end
-    end
-
-    function nodes.unprotectglyphs(first,last)
-        if first == last then
-            return unprotect_glyph(first)
-        elseif last then
-            local nxt = getnext(last)
-            setnext(last)
-            local f, b = unprotect_glyphs(first)
-            setnext(last,nxt)
-            return f, b
-        else
-            return unprotect_glyphs(first)
-        end
-    end
-
-end

@@ -58,8 +58,7 @@ local resetter = { -- this will become an entry in char-def
 
 function cleaners.handler(head)
     local inline = false
-    for n in nextglyph, head do
-        local char = getchar(n)
+    for n, font, char in nextglyph, head do
         if resetter[char] then
             inline = false
         elseif not inline then
@@ -79,34 +78,6 @@ function cleaners.handler(head)
         end
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function cleaners.handler(head)
-        local inline = false
-        for n, font, char in nextglyph, head do
-            if resetter[char] then
-                inline = false
-            elseif not inline then
-                local a = getattr(n,a_cleaner)
-                if a == 1 then -- currently only one cleaner so no need to be fancy
-                    local upper = uccodes[char]
-                    if type(upper) == "table" then
-                        -- some day, not much change that \SS ends up here
-                    else
-                        setchar(n,upper)
-                        if trace_autocase then
-                            report_autocase("")
-                        end
-                    end
-                end
-                inline = true
-            end
-        end
-        return head
-    end
-
 end
 
 -- see typo-cap for a more advanced settings handler .. not needed now

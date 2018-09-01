@@ -78,7 +78,7 @@ if environment.initex then
             dumped = concat({ definition, comment, dumped },"\n")
             local code = nil
             local name = formatters["slot %s (%s)"](max,name)
-            if LUAVERSION >= 5.3 and LUATEXFUNCTIONALITY >= 6454 then
+            if LUAVERSION >= 5.3 then
                 local code = loadstring(dumped,name)
                 setbytecode(max,code,strip)
             else

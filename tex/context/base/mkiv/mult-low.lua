@@ -60,6 +60,7 @@ return {
         "spaceasciicode", "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
         "colonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
         "leftbraceasciicode", "barasciicode", "rightbraceasciicode", "tildeasciicode", "delasciicode",
+        "leftparentasciicode", "rightparentasciicode",
         "lessthanasciicode", "morethanasciicode", "doublecommentsignal",
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",

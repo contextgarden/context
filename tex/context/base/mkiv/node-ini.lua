@@ -498,30 +498,3 @@ end
 if node.fix_node_lists then
     node.fix_node_lists(false)
 end
-
--- a temp hack
-
-if LUATEXFUNCTIONALITY < 6866 then
-
-    local texnest = tex.nest
-    local texlist = tex.list
-
-    function tex.getnest(k)
-        if not k or k == "top" then
-            return texnest[texnest.ptr]
-        end
-        if k == "ptr" then
-            return texnest.ptr
-        end
-        return texnest[k]
-    end
-
-    function tex.getlist(k)
-        return texlist[k]
-    end
-
-    function tex.setlist(k,v)
-        texlist[k] = v
-    end
-
-end

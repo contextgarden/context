@@ -151,8 +151,8 @@ end
 
 function characters.replacenbspaces(head)
     local wipe = false
-    for current in nextglyph, head do -- can be anytime so no traverse_char
-        if getchar(current) == 0x00A0 then
+    for current, font, char in nextglyph, head do -- can be anytime so no traverse_char
+        if char == 0x00A0 then
             if wipe then
                 head = remove_node(h,current,true)
                 wipe = false
@@ -167,30 +167,6 @@ function characters.replacenbspaces(head)
         head = remove_node(head,current,true)
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function characters.replacenbspaces(head)
-        local wipe = false
-        for current, font, char in nextglyph, head do -- can be anytime so no traverse_char
-            if char == 0x00A0 then
-                if wipe then
-                    head = remove_node(h,current,true)
-                    wipe = false
-                end
-                local h = nbsp(head,current)
-                if h then
-                    wipe = current
-                end
-            end
-        end
-        if wipe then
-            head = remove_node(head,current,true)
-        end
-        return head
-    end
-
 end
 
 -- This initialization might move someplace else if we need more of it. The problem is that
@@ -353,8 +329,7 @@ characters.methods = methods
 
 function characters.handler(head)
     local wipe = false
-    for current in nextchar, head do
-        local char   = getchar(current)
+    for current, char in nextchar, head do
         local method = methods[char]
         if method then
             if wipe then
@@ -374,32 +349,4 @@ function characters.handler(head)
         head = remove_node(head,wipe,true)
     end
     return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    function characters.handler(head)
-        local wipe = false
-        for current, char in nextchar, head do
-            local method = methods[char]
-            if method then
-                if wipe then
-                    head = remove_node(head,wipe,true)
-                    wipe = false
-                end
-                if trace_characters then
-                    report_characters("replacing character %C, description %a",char,lower(chardata[char].description))
-                end
-                local h = method(head,current)
-                if h then
-                    wipe = current
-                end
-            end
-        end
-        if wipe then
-            head = remove_node(head,wipe,true)
-        end
-        return head
-    end
-
 end

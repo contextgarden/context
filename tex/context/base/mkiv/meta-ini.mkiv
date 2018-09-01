@@ -97,7 +97,7 @@
    \ifx\currentMPinstance\empty
      \let\currentMPinstance\defaultMPinstance
    \fi
-   \global\t_meta_definitions\expandafter{\the\t_meta_definitions#2}%
+   \gtoksapp\t_meta_definitions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPdefinitions\relax
@@ -111,7 +111,7 @@
 \let\stopMPextensions\relax
 
 \unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enabled
-  {\global\t_meta_initializations\expandafter{\the\t_meta_initializations#1}}
+  {\gtoksapp\t_meta_initializations{#1}}
 
 \let\stopMPinitializations\relax
 
@@ -131,7 +131,7 @@
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_inclusions\emptytoks
    \fi
-   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \gtoksapp\t_meta_inclusions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \let\stopMPinclusions\relax
@@ -152,7 +152,7 @@
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_inclusions\emptytoks
    \fi
-   \global\t_meta_inclusions\expandafter{\the\t_meta_inclusions#2}%
+   \gtoksapp\t_meta_inclusions{#2}%
    \let\currentMPinstance\m_meta_saved_instance}
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance

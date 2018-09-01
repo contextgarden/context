@@ -394,3 +394,7 @@ end
 -- front ..
 
 table.insert(searchers,1,helpers.loaded)
+
+if context then
+    package.path = ""
+end

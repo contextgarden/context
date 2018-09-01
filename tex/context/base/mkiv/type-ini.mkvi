@@ -208,19 +208,15 @@
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
    \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescript#definitions\stoptypescript}%
-  %\normalexpanded{\global\t_font_typescripts{\the\expandafter\t_font_typescripts\noexpand\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}}
-   \global\t_font_typescripts\expandafter\expandafter\expandafter
-     {\expandafter\the\expandafter\t_font_typescripts
-      \csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
+   \gtoksapp\t_font_typescripts\expandafter
+     {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
 
 \def\font_typescripts_collection_start_store#definitions\stoptypescriptcollection
   {\global\advance\c_font_typescripts_n_of_preloaded\plusone
    \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
      {\starttypescriptcollection#definitions\stoptypescriptcollection}%
-  %\normalexpanded{\global\t_font_typescripts{\the\expandafter\t_font_typescripts\noexpand\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}}
-   \global\t_font_typescripts\expandafter\expandafter\expandafter
-     {\expandafter\the\expandafter\t_font_typescripts
-      \csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
+   \gtoksapp\t_font_typescripts\expandafter
+     {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
 
 \def\font_typescripts_load_file#filename%
   {\setfalse\c_font_typescripts_quit

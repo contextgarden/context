@@ -143,21 +143,18 @@ local enabled    = false
 local alignments = false
 
 local function add_alignbackgrounds(head,list)
-    for current in nexthlist, list do
-        if getsubtype(current) == cell_code then
-            local list = getlist(current)
-            if list then
-                for template in nexthlist, list do
-                    local background = getattr(template,a_alignbackground)
-                    if background then
-                        local list = colored_a(current,list,template)
-                        if list then
-                            setlist(current,list)
-                        end
-                        setattr(template,a_alignbackground,unsetvalue) -- or property
+    for current, id, subtype, list in nextlist, list do
+        if list and id == hlist_code and subtype == cell_code then
+            for template in nexthlist, list do
+                local background = getattr(template,a_alignbackground)
+                if background then
+                    local list = colored_a(current,list,template)
+                    if list then
+                        setlist(current,list)
                     end
-                    break
+                    setattr(template,a_alignbackground,unsetvalue) -- or property
                 end
+                break
             end
         end
     end
@@ -172,22 +169,19 @@ end
 
 local function add_backgrounds(head,id,list)
     if list then
-        for current, id, subtype in nextnode, list do
-            if id == hlist_code or id == vlist_code then
-                local list = getlist(current)
-                if list then
-                    if alignments and subtype == alignment_code then
-                        local l = add_alignbackgrounds(current,list)
-                        if l then
-                            list = l
-                            setlist(current,list)
-                        end
-                    end
-                    local l = add_backgrounds(current,id,list)
+    for current, id, subtype, list in nextlist, list do
+            if list then
+                if alignments and subtype == alignment_code then
+                    local l = add_alignbackgrounds(current,list)
                     if l then
                         list = l
-                        setlist(current,l)
+                        setlist(current,list)
                     end
+                end
+                local l = add_backgrounds(current,id,list)
+                if l then
+                    list = l
+                    setlist(current,l)
                 end
             end
         end
@@ -201,67 +195,6 @@ local function add_backgrounds(head,id,list)
             return list
         end
     end
-end
-
-if LUATEXVERSION >= 1.080 then
-
- -- local function add_alignbackgrounds(head,list)
-    add_alignbackgrounds = function(head,list)
-        for current, id, subtype, list in nextlist, list do
-            if list and id == hlist_code and subtype == cell_code then
-                for template in nexthlist, list do
-                    local background = getattr(template,a_alignbackground)
-                    if background then
-                        local list = colored_a(current,list,template)
-                        if list then
-                            setlist(current,list)
-                        end
-                        setattr(template,a_alignbackground,unsetvalue) -- or property
-                    end
-                    break
-                end
-            end
-        end
-        local template = getprop(head,"alignmentchecked")
-        if template then
-            list = colored_b(head,list,template[1],hlist_code,template[2])
-            flush_node_list(template)
-            templates[currentrow] = false
-            return list
-        end
-    end
-
- -- local function add_backgrounds(head,id,list)
-    add_backgrounds = function(head,id,list)
-        if list then
-        for current, id, subtype, list in nextlist, list do
-                if list then
-                    if alignments and subtype == alignment_code then
-                        local l = add_alignbackgrounds(current,list)
-                        if l then
-                            list = l
-                            setlist(current,list)
-                        end
-                    end
-                    local l = add_backgrounds(current,id,list)
-                    if l then
-                        list = l
-                        setlist(current,l)
-                    end
-                end
-            end
-        end
-        if id == hlist_code or id == vlist_code then
-            local background = getattr(head,a_background)
-            if background then
-                list = colored_a(head,list,head,id)
-                -- not needed
-                setattr(head,a_background,unsetvalue) -- or property
-                return list
-            end
-        end
-    end
-
 end
 
 function nodes.handlers.backgrounds(head)

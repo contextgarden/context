@@ -203,31 +203,23 @@ local function stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expa
     report_fonts()
 end
 
-function handlers.characters(head,groupcode,size,packtype,direction)
-    -- either next or not, but definitely no already processed list
-    starttiming(nodes)
 
-    local usedfonts = { }
-    local attrfonts = { }
-    local basefonts = { }
-    local basefont  = nil
-    local prevfont  = nil
-    local prevattr  = 0
-    local variants  = nil
-    local redundant = nil
-    local firstnone = nil
-    local lastfont  = nil
-    local lastproc  = nil
-    local lastnone  = nil
+do
 
-    local a, u, b, r, e = 0, 0, 0, 0, 0
+    local usedfonts
+    local attrfonts
+    local basefonts
+    local basefont
+    local prevfont
+    local prevattr
+    local variants
+    local redundant
+    local firstnone
+    local lastfont
+    local lastproc
+    local lastnone
 
-    if trace_fontrun then
-        start_trace(head)
-    end
-
-    -- There is no gain in checking for a single glyph and then having a fast path. On the
-    -- metafun manual (with some 2500 single char lists) the difference is just noise.
+    local a, u, b, r, e
 
     local function protectnone()
         protect_glyphs(firstnone,lastnone)
@@ -262,7 +254,7 @@ function handlers.characters(head,groupcode,size,packtype,direction)
         end
     end
 
-    local function setnode(n,font,attr) -- we could use prevfont and prevattr when we set them first
+    local function setnode(n,font,attr) -- we could use prevfont and prevattr when we set then first
         if firstnone then
             protectnone()
         end
@@ -296,632 +288,287 @@ function handlers.characters(head,groupcode,size,packtype,direction)
         end
     end
 
-    for n in nextchar, head do
-        local font = getfont(n)
-     -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-        local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-        if font ~= prevfont or attr ~= prevattr then
-            prevfont = font
-            prevattr = attr
-            variants = fontvariants[font]
-            local fontmode = fontmodes[font]
-            if fontmode == "none" then
-                setnone(n)
-            elseif fontmode == "base" then
-                setbase(n)
-            else
-                setnode(n,font,attr)
-            end
-        elseif firstnone then
-            lastnone = n
+    function handlers.characters(head,groupcode,size,packtype,direction)
+        -- either next or not, but definitely no already processed list
+        starttiming(nodes)
+
+        usedfonts = { }
+        attrfonts = { }
+        basefonts = { }
+        basefont  = nil
+        prevfont  = nil
+        prevattr  = 0
+        variants  = nil
+        redundant = nil
+        firstnone = nil
+        lastfont  = nil
+        lastproc  = nil
+        lastnone  = nil
+
+        a, u, b, r, e = 0, 0, 0, 0, 0
+
+        if trace_fontrun then
+            start_trace(head)
         end
-        if variants then
-            local char = getchar(n)
-            if char >= 0xFE00 and (char <= 0xFE0F or (char >= 0xE0100 and char <= 0xE01EF)) then
-                local hash = variants[char]
-                if hash then
-                    local p = getprev(n)
-                    if p then
-                        local char    = ischar(p) -- checked
-                        local variant = hash[char]
-                        if variant then
-                            if trace_variants then
-                                report_fonts("replacing %C by %C",char,variant)
+
+        -- There is no gain in checking for a single glyph and then having a fast path. On the
+        -- metafun manual (with some 2500 single char lists) the difference is just noise.
+
+        for n, char, font in nextchar, head do
+         -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+            local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
+            if font ~= prevfont or attr ~= prevattr then
+                prevfont = font
+                prevattr = attr
+                variants = fontvariants[font]
+                local fontmode = fontmodes[font]
+                if fontmode == "none" then
+                    setnone(n)
+                elseif fontmode == "base" then
+                    setbase(n)
+                else
+                    setnode(n,font,attr)
+                end
+            elseif firstnone then
+                lastnone = n
+            end
+            if variants then
+                if (char >= 0xFE00 and char <= 0xFE0F) or (char >= 0xE0100 and char <= 0xE01EF) then
+                    local hash = variants[char]
+                    if hash then
+                        local p = getprev(n)
+                        if p then
+                            local char    = ischar(p) -- checked
+                            local variant = hash[char]
+                            if variant then
+                                if trace_variants then
+                                    report_fonts("replacing %C by %C",char,variant)
+                                end
+                                setchar(p,variant)
+                                if redundant then
+                                    r = r + 1
+                                    redundant[r] = n
+                                else
+                                    r = 1
+                                    redundant = { n }
+                                end
                             end
-                            setchar(p,variant)
-                            if redundant then
-                                r = r + 1
-                                redundant[r] = n
+                        end
+                    elseif keep_redundant then
+                        -- go on, can be used for tracing
+                    elseif redundant then
+                        r = r + 1
+                        redundant[r] = n
+                    else
+                        r = 1
+                        redundant = { n }
+                    end
+                end
+            end
+        end
+
+        if firstnone then
+            protectnone()
+        end
+
+        if force_boundaryrun then
+
+            -- we can inject wordboundaries and then let the hyphenator do its work
+            -- but we need to get rid of those nodes in order to build ligatures
+            -- and kern (a rather context thing)
+
+            for b, subtype in nextboundary, head do
+                if subtype == word_boundary then
+                    if redundant then
+                        r = r + 1
+                        redundant[r] = b
+                    else
+                        r = 1
+                        redundant = { b }
+                    end
+                end
+            end
+
+        end
+
+        if redundant then
+            for i=1,r do
+                local r = redundant[i]
+                local p, n = getboth(r)
+                if r == head then
+                    head = n
+                    setprev(n)
+                else
+                    setlink(p,n)
+                end
+                if b > 0 then
+                    for i=1,b do
+                        local bi = basefonts[i]
+                        local b1 = bi[1]
+                        local b2 = bi[2]
+                        if b1 == b2 then
+                            if b1 == r then
+                                bi[1] = false
+                                bi[2] = false
+                            end
+                        elseif b1 == r then
+                            bi[1] = n
+                        elseif b2 == r then
+                            bi[2] = p
+                        end
+                    end
+                end
+                flush_node(r)
+            end
+        end
+
+        if force_discrun then
+
+            -- basefont is not supported in disc only runs ... it would mean a lot of
+            -- ranges .. we could try to run basemode as a separate processor run but
+            -- not for now (we can consider it when the new node code is tested
+            for d in nextdisc, head do
+                -- we could use first_glyph, only doing replace is good enough because
+                -- pre and post are normally used for hyphens and these come from fonts
+                -- that part of the hyphenated word
+                local _, _, r = getdisc(d)
+                if r then
+                    local prevfont = nil
+                    local prevattr = nil
+                    local none     = false
+                    for n, char, font in nextchar, r do
+                        local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
+                        if font ~= prevfont or attr ~= prevattr then
+                            prevfont = font
+                            prevattr = attr
+                            local fontmode = fontmodes[font]
+                            if fontmode == "none" then
+                                setnone(n)
+                            elseif fontmode == "base" then
+                                setbase(n)
                             else
-                                r = 1
-                                redundant = { n }
+                                setnode(n,font,attr)
                             end
+                        elseif firstnone then
+                         -- lastnone = n
+                            lastnone = nil
                         end
+                        -- we assume one font for now (and if there are more and we get into issues then
+                        -- we can always remove the break)
+                        break
                     end
-                elseif keep_redundant then
-                    -- go on, can be used for tracing
-                elseif redundant then
-                    r = r + 1
-                    redundant[r] = n
-                else
-                    r = 1
-                    redundant = { n }
-                end
-            end
-        end
-    end
-
-    if firstnone then
-        protectnone()
-    end
-
-    if force_boundaryrun then
-
-        -- we can inject wordboundaries and then let the hyphenator do its work
-        -- but we need to get rid of those nodes in order to build ligatures
-        -- and kern (a rather context thing)
-
-        for b in nextboundary, head do
-            if getsubtype(b) == word_boundary then
-                if redundant then
-                    r = r + 1
-                    redundant[r] = b
-                else
-                    r = 1
-                    redundant = { b }
-                end
-            end
-        end
-
-    end
-
-    if redundant then
-        for i=1,r do
-            local r = redundant[i]
-            local p, n = getboth(r)
-            if r == head then
-                head = n
-                setprev(n)
-            else
-                setlink(p,n)
-            end
-            if b > 0 then
-                for i=1,b do
-                    local bi = basefonts[i]
-                    local b1 = bi[1]
-                    local b2 = bi[2]
-                    if b1 == b2 then
-                        if b1 == r then
-                            bi[1] = false
-                            bi[2] = false
-                        end
-                    elseif b1 == r then
-                        bi[1] = n
-                    elseif b2 == r then
-                        bi[2] = p
+                    if firstnone then
+                        protectnone()
                     end
+             -- elseif expanders then
+             --     local subtype = getsubtype(d)
+             --     if subtype == automatic_code or subtype == explicit_code then
+             --         expanders[subtype](d)
+             --         e = e + 1
+             --     end
                 end
             end
-            flush_node(r)
+
         end
-    end
 
-    if force_discrun then
+        if trace_fontrun then
+            stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
+        end
 
-        -- basefont is not supported in disc only runs ... it would mean a lot of
-        -- ranges .. we could try to run basemode as a separate processor run but
-        -- not for now (we can consider it when the new node code is tested
-        for d in nextdisc, head do
-            -- we could use first_glyph, only doing replace is good enough because
-            -- pre and post are normally used for hyphens and these come from fonts
-            -- that part of the hyphenated word
-            local _, _, r = getdisc(d)
-            if r then
-                local prevfont = nil
-                local prevattr = nil
-                local none     = false
-                for n in nextchar, r do
-                    local font = getfont(n)
-                    local attr = getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                    if font ~= prevfont or attr ~= prevattr then
-                        prevfont = font
-                        prevattr = attr
-                        local fontmode = fontmodes[font]
-                        if fontmode == "none" then
-                            setnone(n)
-                        elseif fontmode == "base" then
-                            setbase(n)
-                        else
-                            setnode(n,font,attr)
-                        end
-                    elseif firstnone then
-                     -- lastnone = n
-                        lastnone = nil
-                    end
-                    -- we assume one font for now (and if there are more and we get into issues then
-                    -- we can always remove the break)
-                    break
+        -- in context we always have at least 2 processors
+        if u == 0 then
+            -- skip
+        elseif u == 1 then
+            local attr = a > 0 and 0 or false -- 0 is the savest way
+            for i=1,#lastproc do
+                head = lastproc[i](head,lastfont,attr,direction)
+            end
+        else
+         -- local attr = a == 0 and false or 0 -- 0 is the savest way
+            local attr = a > 0 and 0 or false -- 0 is the savest way
+            for font, processors in next, usedfonts do -- unordered
+                for i=1,#processors do
+                    head = processors[i](head,font,attr,direction,u)
                 end
-                if firstnone then
-                    protectnone()
-                end
-         -- elseif expanders then
-         --     local subtype = getsubtype(d)
-         --     if subtype == automatic_code or subtype == explicit_code then
-         --         expanders[subtype](d)
-         --         e = e + 1
-         --     end
             end
         end
-
-    end
-
-    if trace_fontrun then
-        stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
-    end
-
-    -- in context we always have at least 2 processors
-    if u == 0 then
-        -- skip
-    elseif u == 1 then
-        local attr = a > 0 and 0 or false -- 0 is the savest way
-        for i=1,#lastproc do
-            head = lastproc[i](head,lastfont,attr,direction)
-        end
-    else
-     -- local attr = a == 0 and false or 0 -- 0 is the savest way
-        local attr = a > 0 and 0 or false -- 0 is the savest way
-        for font, processors in next, usedfonts do -- unordered
-            for i=1,#processors do
-                head = processors[i](head,font,attr,direction,u)
-            end
-        end
-    end
-    if a == 0 then
-        -- skip
-    elseif a == 1 then
-        local font, dynamics = next(attrfonts)
-        for attribute, processors in next, dynamics do -- unordered, attr can switch in between
-            for i=1,#processors do
-                head = processors[i](head,font,attribute,direction)
-            end
-        end
-    else
-        for font, dynamics in next, attrfonts do
+        if a == 0 then
+            -- skip
+        elseif a == 1 then
+            local font, dynamics = next(attrfonts)
             for attribute, processors in next, dynamics do -- unordered, attr can switch in between
                 for i=1,#processors do
-                    head = processors[i](head,font,attribute,direction,a)
+                    head = processors[i](head,font,attribute,direction)
+                end
+            end
+        else
+            for font, dynamics in next, attrfonts do
+                for attribute, processors in next, dynamics do -- unordered, attr can switch in between
+                    for i=1,#processors do
+                        head = processors[i](head,font,attribute,direction,a)
+                    end
                 end
             end
         end
-    end
-    if b == 0 then
-        -- skip
-    elseif b == 1 then
-        -- only one font
-        local range = basefonts[1]
-        local start = range[1]
-        local stop  = range[2]
-        if (start or stop) and (start ~= stop) then
-            local front = head == start
-            if stop then
-                start = ligaturing(start,stop)
-                start = kerning(start,stop)
-            elseif start then -- safeguard
-                start = ligaturing(start)
-                start = kerning(start)
-            end
-            if front and head ~= start then
-                head = start
-            end
-        end
-    else
-        -- multiple fonts
-        for i=1,b do
-            local range = basefonts[i]
+        if b == 0 then
+            -- skip
+        elseif b == 1 then
+            -- only one font
+            local range = basefonts[1]
             local start = range[1]
             local stop  = range[2]
-            if start then -- and start ~= stop but that seldom happens
+            if (start or stop) and (start ~= stop) then
                 local front = head == start
-                local prev  = getprev(start)
-                local next  = getnext(stop)
                 if stop then
-                    start, stop = ligaturing(start,stop)
-                    start, stop = kerning(start,stop)
-                else
+                    start = ligaturing(start,stop)
+                    start = kerning(start,stop)
+                elseif start then -- safeguard
                     start = ligaturing(start)
                     start = kerning(start)
                 end
-                -- is done automatically
-                if prev then
-                    setlink(prev,start)
-                end
-                if next then
-                    setlink(stop,next)
-                end
-                -- till here
                 if front and head ~= start then
                     head = start
                 end
             end
-        end
-    end
-    stoptiming(nodes)
-    if trace_characters then
-        nodes.report(head)
-    end
-    return head
-end
-
-if LUATEXVERSION >= 1.080 then
-
-    do
-
-        local usedfonts
-        local attrfonts
-        local basefonts
-        local basefont
-        local prevfont
-        local prevattr
-        local variants
-        local redundant
-        local firstnone
-        local lastfont
-        local lastproc
-        local lastnone
-
-        local a, u, b, r, e
-
-        local function protectnone()
-            protect_glyphs(firstnone,lastnone)
-            firstnone = nil
-        end
-
-        local function setnone(n)
-            if firstnone then
-                protectnone()
-            end
-            if basefont then
-                basefont[2] = getprev(n)
-                basefont = false
-            end
-            if not firstnone then
-                firstnone = n
-            end
-            lastnone = n
-        end
-
-        local function setbase(n)
-            if firstnone then
-                protectnone()
-            end
-            if force_basepass then
-                if basefont then
-                    basefont[2] = getprev(n)
-                end
-                b = b + 1
-                basefont = { n, false }
-                basefonts[b] = basefont
-            end
-        end
-
-        local function setnode(n,font,attr) -- we could use prevfont and prevattr when we set then first
-            if firstnone then
-                protectnone()
-            end
-            if basefont then
-                basefont[2] = getprev(n)
-                basefont = false
-            end
-            if attr > 0 then
-                local used = attrfonts[font]
-                if not used then
-                    used = { }
-                    attrfonts[font] = used
-                end
-                if not used[attr] then
-                    local fd = setfontdynamics[font]
-                    if fd then
-                        used[attr] = fd[attr]
-                        a = a + 1
-                    end
-                end
-            else
-                local used = usedfonts[font]
-                if not used then
-                    lastfont = font
-                    lastproc = fontprocesses[font]
-                    if lastproc then
-                        usedfonts[font] = lastproc
-                        u = u + 1
-                    end
-                end
-            end
-        end
-
-        function handlers.characters(head,groupcode,size,packtype,direction)
-            -- either next or not, but definitely no already processed list
-            starttiming(nodes)
-
-            usedfonts = { }
-            attrfonts = { }
-            basefonts = { }
-            basefont  = nil
-            prevfont  = nil
-            prevattr  = 0
-            variants  = nil
-            redundant = nil
-            firstnone = nil
-            lastfont  = nil
-            lastproc  = nil
-            lastnone  = nil
-
-            a, u, b, r, e = 0, 0, 0, 0, 0
-
-            if trace_fontrun then
-                start_trace(head)
-            end
-
-            -- There is no gain in checking for a single glyph and then having a fast path. On the
-            -- metafun manual (with some 2500 single char lists) the difference is just noise.
-
-            for n, char, font in nextchar, head do
-             -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
-                local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
-                if font ~= prevfont or attr ~= prevattr then
-                    prevfont = font
-                    prevattr = attr
-                    variants = fontvariants[font]
-                    local fontmode = fontmodes[font]
-                    if fontmode == "none" then
-                        setnone(n)
-                    elseif fontmode == "base" then
-                        setbase(n)
-                    else
-                        setnode(n,font,attr)
-                    end
-                elseif firstnone then
-                    lastnone = n
-                end
-                if variants then
-                    if (char >= 0xFE00 and char <= 0xFE0F) or (char >= 0xE0100 and char <= 0xE01EF) then
-                        local hash = variants[char]
-                        if hash then
-                            local p = getprev(n)
-                            if p then
-                                local char    = ischar(p) -- checked
-                                local variant = hash[char]
-                                if variant then
-                                    if trace_variants then
-                                        report_fonts("replacing %C by %C",char,variant)
-                                    end
-                                    setchar(p,variant)
-                                    if redundant then
-                                        r = r + 1
-                                        redundant[r] = n
-                                    else
-                                        r = 1
-                                        redundant = { n }
-                                    end
-                                end
-                            end
-                        elseif keep_redundant then
-                            -- go on, can be used for tracing
-                        elseif redundant then
-                            r = r + 1
-                            redundant[r] = n
-                        else
-                            r = 1
-                            redundant = { n }
-                        end
-                    end
-                end
-            end
-
-            if firstnone then
-                protectnone()
-            end
-
-            if force_boundaryrun then
-
-                -- we can inject wordboundaries and then let the hyphenator do its work
-                -- but we need to get rid of those nodes in order to build ligatures
-                -- and kern (a rather context thing)
-
-                for b, subtype in nextboundary, head do
-                    if subtype == word_boundary then
-                        if redundant then
-                            r = r + 1
-                            redundant[r] = b
-                        else
-                            r = 1
-                            redundant = { b }
-                        end
-                    end
-                end
-
-            end
-
-            if redundant then
-                for i=1,r do
-                    local r = redundant[i]
-                    local p, n = getboth(r)
-                    if r == head then
-                        head = n
-                        setprev(n)
-                    else
-                        setlink(p,n)
-                    end
-                    if b > 0 then
-                        for i=1,b do
-                            local bi = basefonts[i]
-                            local b1 = bi[1]
-                            local b2 = bi[2]
-                            if b1 == b2 then
-                                if b1 == r then
-                                    bi[1] = false
-                                    bi[2] = false
-                                end
-                            elseif b1 == r then
-                                bi[1] = n
-                            elseif b2 == r then
-                                bi[2] = p
-                            end
-                        end
-                    end
-                    flush_node(r)
-                end
-            end
-
-            if force_discrun then
-
-                -- basefont is not supported in disc only runs ... it would mean a lot of
-                -- ranges .. we could try to run basemode as a separate processor run but
-                -- not for now (we can consider it when the new node code is tested
-                for d in nextdisc, head do
-                    -- we could use first_glyph, only doing replace is good enough because
-                    -- pre and post are normally used for hyphens and these come from fonts
-                    -- that part of the hyphenated word
-                    local _, _, r = getdisc(d)
-                    if r then
-                        local prevfont = nil
-                        local prevattr = nil
-                        local none     = false
-                        for n, char, font in nextchar, r do
-                            local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
-                            if font ~= prevfont or attr ~= prevattr then
-                                prevfont = font
-                                prevattr = attr
-                                local fontmode = fontmodes[font]
-                                if fontmode == "none" then
-                                    setnone(n)
-                                elseif fontmode == "base" then
-                                    setbase(n)
-                                else
-                                    setnode(n,font,attr)
-                                end
-                            elseif firstnone then
-                             -- lastnone = n
-                                lastnone = nil
-                            end
-                            -- we assume one font for now (and if there are more and we get into issues then
-                            -- we can always remove the break)
-                            break
-                        end
-                        if firstnone then
-                            protectnone()
-                        end
-                 -- elseif expanders then
-                 --     local subtype = getsubtype(d)
-                 --     if subtype == automatic_code or subtype == explicit_code then
-                 --         expanders[subtype](d)
-                 --         e = e + 1
-                 --     end
-                    end
-                end
-
-            end
-
-            if trace_fontrun then
-                stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
-            end
-
-            -- in context we always have at least 2 processors
-            if u == 0 then
-                -- skip
-            elseif u == 1 then
-                local attr = a > 0 and 0 or false -- 0 is the savest way
-                for i=1,#lastproc do
-                    head = lastproc[i](head,lastfont,attr,direction)
-                end
-            else
-             -- local attr = a == 0 and false or 0 -- 0 is the savest way
-                local attr = a > 0 and 0 or false -- 0 is the savest way
-                for font, processors in next, usedfonts do -- unordered
-                    for i=1,#processors do
-                        head = processors[i](head,font,attr,direction,u)
-                    end
-                end
-            end
-            if a == 0 then
-                -- skip
-            elseif a == 1 then
-                local font, dynamics = next(attrfonts)
-                for attribute, processors in next, dynamics do -- unordered, attr can switch in between
-                    for i=1,#processors do
-                        head = processors[i](head,font,attribute,direction)
-                    end
-                end
-            else
-                for font, dynamics in next, attrfonts do
-                    for attribute, processors in next, dynamics do -- unordered, attr can switch in between
-                        for i=1,#processors do
-                            head = processors[i](head,font,attribute,direction,a)
-                        end
-                    end
-                end
-            end
-            if b == 0 then
-                -- skip
-            elseif b == 1 then
-                -- only one font
-                local range = basefonts[1]
+        else
+            -- multiple fonts
+            for i=1,b do
+                local range = basefonts[i]
                 local start = range[1]
                 local stop  = range[2]
-                if (start or stop) and (start ~= stop) then
+                if start then -- and start ~= stop but that seldom happens
                     local front = head == start
+                    local prev  = getprev(start)
+                    local next  = getnext(stop)
                     if stop then
-                        start = ligaturing(start,stop)
-                        start = kerning(start,stop)
-                    elseif start then -- safeguard
+                        start, stop = ligaturing(start,stop)
+                        start, stop = kerning(start,stop)
+                    else
                         start = ligaturing(start)
                         start = kerning(start)
                     end
+                    -- is done automatically
+                    if prev then
+                        setlink(prev,start)
+                    end
+                    if next then
+                        setlink(stop,next)
+                    end
+                    -- till here
                     if front and head ~= start then
                         head = start
                     end
                 end
-            else
-                -- multiple fonts
-                for i=1,b do
-                    local range = basefonts[i]
-                    local start = range[1]
-                    local stop  = range[2]
-                    if start then -- and start ~= stop but that seldom happens
-                        local front = head == start
-                        local prev  = getprev(start)
-                        local next  = getnext(stop)
-                        if stop then
-                            start, stop = ligaturing(start,stop)
-                            start, stop = kerning(start,stop)
-                        else
-                            start = ligaturing(start)
-                            start = kerning(start)
-                        end
-                        -- is done automatically
-                        if prev then
-                            setlink(prev,start)
-                        end
-                        if next then
-                            setlink(stop,next)
-                        end
-                        -- till here
-                        if front and head ~= start then
-                            head = start
-                        end
-                    end
-                end
             end
-
-            stoptiming(nodes)
-
-            if trace_characters then
-                nodes.report(head)
-            end
-
-            return head
         end
 
+        stoptiming(nodes)
+
+        if trace_characters then
+            nodes.report(head)
+        end
+
+        return head
     end
 
 end

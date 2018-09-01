@@ -116,21 +116,10 @@ local report_cld        = logs.reporter("cld","stack")
 
 local processlines      = true -- experiments.register("context.processlines", function(v) processlines = v end)
 
-local tokenflushmode    = false
-local nodeflushmode     = false
-local scannerdefmode    = false
+local tokenflushmode    = true
+local nodeflushmode     = true
+local scannerdefmode    = true
 local maxflushnodeindex = 0x10FFFF - 1
-
-if LUATEXFUNCTIONALITY > 6780 then
-
-    -- The gain in performance is neglectable.
-
-    tokenflushmode    = true
-    nodeflushmode     = true
-    scannerdefmode    = true
-    maxflushnodeindex = token.biggest_char() - 1
-
-end
 
 -- tokenflushmode    = false
 -- scannerdefmode    = false
@@ -710,14 +699,11 @@ local s_cldl_option_b   = "[\\cldl"
 local s_cldl_option_f   = "[\\cldl" -- add space (not needed)
 local s_cldl_option_e   = "]"
 local s_cldl_option_s   = "\\cldl"
-local s_cldl_option_d   = "\\cldd"
+----- s_cldl_option_d   = "\\cldd"
+local s_cldl_option_d   = s_cldl_option_s
 local s_cldl_argument_b = "{\\cldl"
 local s_cldl_argument_f = "{\\cldl "
 local s_cldl_argument_e = "}"
-
-if LUATEXFUNCTIONALITY < 6898 then
-    s_cldl_option_d = s_cldl_option_s
-end
 
 -- local s_cldl_option_b   = "["
 -- local s_cldl_option_f   = "" -- add space (not needed)

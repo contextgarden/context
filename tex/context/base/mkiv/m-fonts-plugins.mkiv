@@ -186,6 +186,7 @@
 \definefontfeature
   [arabic-node]
   [arabic]
+  [salt=yes] % seems to be needed for husayni
 
 \definefontfeature
   [arabic-native]
@@ -224,7 +225,7 @@
             \getbuffer[#5-definitions]
             \showfontkerns
             \showmakeup[discretionary]
-            \enabletrackers[fonts.plugins.hb.colors]%
+          % \enabletrackers[fonts.plugins.hb.colors]%
             \testfeatureonce{1}{
                 \getbuffer[#5-text]
             }
@@ -263,7 +264,7 @@
         \title{#1 #3 #4}
         \start
             \getbuffer[#5-definitions]
-            \enabletrackers[fonts.plugins.hb.colors]%
+          % \enabletrackers[fonts.plugins.hb.colors]%
             \testfeatureonce{1}{
                 \setupalign[flushleft] % easier to compare
                 \getbuffer[#5-text]
