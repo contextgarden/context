@@ -12,6 +12,7 @@
 -- code has disappeared already.
 
 local rawset, rawget, loadfile = rawset, rawget, loadfile
+local gsub = string.gsub
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
@@ -174,3 +175,18 @@ function environment.loadluafile(filename, version)
     end
     return false
 end
+
+environment.filenames = setmetatable( { }, {
+    __index = function(t,k)
+        local v = environment.files[k]
+        if v then
+            return (gsub(v,"%.+$",""))
+        end
+    end,
+    __newindex = function(t,k)
+        -- nothing
+    end,
+    __len = function(t)
+        return #environment.files
+    end,
+} )

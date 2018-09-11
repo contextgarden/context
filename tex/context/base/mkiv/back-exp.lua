@@ -46,6 +46,7 @@ local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
+local trace_detail  = false  trackers.register  ("export.trace.detail",  function(v) trace_detail  = v end)
 
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
@@ -2552,8 +2553,8 @@ do
                             local cd = currentdata[j]
                             if not cd or cd == "" then
                                 -- skip
-elseif cd.skip == "ignore" then
-    -- skip
+                            elseif cd.skip == "ignore" then
+                                -- skip
                             elseif cd.content then
                                 if not currentpar then
                                     -- add space ?
@@ -2860,6 +2861,8 @@ local collectresults  do -- too many locals otherwise
     local listcodes         = nodes.listcodes
     local whatsitcodes      = nodes.whatsitcodes
 
+    local subtypes          = nodes.subtypes
+
     local hlist_code        = nodecodes.hlist
     local vlist_code        = nodecodes.vlist
     local glyph_code        = nodecodes.glyph
@@ -2913,7 +2916,7 @@ local collectresults  do -- too many locals otherwise
 
     local function addtomaybe(maybewrong,c,case)
         if trace_export then
-            report_export("%w<!-- possible paragraph mixup at %C case %i -->",currentdepth,c,at,case)
+            report_export("%w<!-- possible paragraph mixup at %C case %i -->",currentdepth,c,case)
         else
             local s = formatters["%C"](c)
             if maybewrong then
@@ -2931,15 +2934,26 @@ local collectresults  do -- too many locals otherwise
         end
     end
 
+    local function showdetail(n,id,subtype)
+        local a = getattr(n,a_tagged)
+        local t = taglist[a]
+        local c = nodecodes[id]
+        local s = subtypes[id][subtype]
+        if a and t then
+            report_export("node %a, subtype %a, tag %a, element %a, tree '% t'",c,s,a,t.tagname,t.taglist)
+        else
+            report_export("node %a, subtype %a, untagged",c,s)
+        end
+    end
+
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
         local p
         local localparagraph
         local maybewrong
         for n, id, subtype in nextnode, head do
--- can go :
-if not subtype then
-    subtype = getsubtype(n)
-end
+            if trace_detail then
+                showdetail(n,id,subtype)
+            end
             if id == glyph_code then
                 local c  = getchar(n)
                 local at = getattr(n,a_tagged) or pat
@@ -3214,6 +3228,7 @@ end
                     -- we need to determine an end-of-line
                     local list = getlist(n)
                     if list then
+                        -- todo: no par checking needed in math
                         local at = getattr(n,a_tagged) or pat
                         collectresults(list,n,at)
                     end

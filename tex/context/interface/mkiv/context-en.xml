@@ -38395,6 +38395,13 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command file="syst-aux.mkiv" level="system" name="firstinlist">
+   <cd:arguments>
+    <cd:keywords list="yes">
+     <cd:constant type="cd:command"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command file="syst-aux.mkiv" level="system" name="dogetcommacommandelement">
    <cd:arguments>
     <cd:keywords delimiters="none">
@@ -46964,6 +46971,16 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="tables" file="tabl-xtb.mkvi" level="document" name="xrow" type="environment">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupxtable"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="tables" file="tabl-xtb.mkvi" level="document" name="xcolumn" type="environment">
    <cd:arguments>
     <cd:keywords optional="yes">
      <cd:constant type="cd:name"/>

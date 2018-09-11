@@ -82,10 +82,12 @@ local ctx_startregisterpages    = context.startregisterpages
 local ctx_stopregisterpages     = context.stopregisterpages
 local ctx_startregisterseewords = context.startregisterseewords
 local ctx_stopregisterseewords  = context.stopregisterseewords
+
 local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
+
 local ctx_registerpacked        = context.registerpacked
 
 -- possible export, but ugly code (overloads)
@@ -517,6 +519,7 @@ local function storeregister(rawdata) -- metadata, references, entries
         metadata.kind = "entry"
     end
     --
+    --
     if not metadata.catcodes then
         metadata.catcodes = tex.catcodetable -- get
     end
@@ -915,8 +918,46 @@ function registers.finalize(data,options) -- maps character to index (order)
     data.result = split
 end
 
+-- local function analyzeregister(class,options)
+--     local data = collected[class]
+--     if data and data.entries then
+--         options = options or { }
+--         sorters.setlanguage(options.language,options.method,options.numberorder)
+--         registers.filter(data,options)   -- filter entries into results (criteria)
+--         registers.prepare(data,options)  -- adds split table parallel to list table
+--         registers.sort(data,options)     -- sorts results
+--         registers.unique(data,options)   -- get rid of duplicates
+--         registers.finalize(data,options) -- split result in ranges
+--         data.metadata.sorted = true
+--         return data.metadata.nofsorted or 0
+--     else
+--         return 0
+--     end
+-- end
+
 local function analyzeregister(class,options)
-    local data = collected[class]
+    local data = rawget(collected,class)
+    if not data then
+        local list     = utilities.parsers.settings_to_array(class)
+        local entries  = { }
+        local metadata = false
+        for i=1,#list do
+            local l = list[i]
+            local d = collected[l]
+            local e = d.entries
+            for i=1,#e do
+                entries[#entries+1] = e[i]
+            end
+            if not metadata then
+                metadata = d.metadata
+            end
+        end
+        data = {
+            metadata = metadata or { },
+            entries  = entries,
+        }
+        collected[class] = data
+    end
     if data and data.entries then
         options = options or { }
         sorters.setlanguage(options.language,options.method,options.numberorder)
@@ -968,6 +1009,7 @@ implement {
 local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
     local fer, ter = f_entry.references, t_entry.references
     ctx_registerpagerange(
+        f_entry.metadata.name or "",
         f_entry.processors and f_entry.processors[2] or "",
         fer.internal or 0,
         fer.realpage or 0,
@@ -989,6 +1031,7 @@ end
 local function pagenumber(entry,prefixspec,pagespec)
     local er = entry.references
     ctx_registeronepage(
+        entry.metadata.name or "",
         entry.processors and entry.processors[2] or "",
         er.internal or 0,
         er.realpage or 0,
@@ -1180,10 +1223,10 @@ function registers.flush(data,options,prefixspec,pagespec)
                     ctx_startregisterentry(0) -- will become a counter
                     started = true
                     if metadata then
-                        ctx_registerentry(processor,internal,seeparent,function() h_title(e[i],metadata) end)
+                        ctx_registerentry(metadata.name or "",processor,internal,seeparent,function() h_title(e[i],metadata) end)
                     else
                         -- can this happen?
-                        ctx_registerentry(processor,internal,seeindex,e[i])
+                        ctx_registerentry("",processor,internal,seeindex,e[i])
                     end
                 end
             end
@@ -1323,7 +1366,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                    ctx_registerseeword(i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
+                    ctx_registerseeword(metadata.name or "",i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
                 end
             end
 

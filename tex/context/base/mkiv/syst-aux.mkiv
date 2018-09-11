@@ -965,6 +965,7 @@
 \unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
 \unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
 \unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
+         % \let\firstinset        \clf_firstinset
 
 \let\doifinsetelse\doifelseinset
 
@@ -1401,7 +1402,7 @@
 %D
 %D Sometimes the action to be undertaken depends on the
 %D next character. This macro get this character and puts it in
-%D \type{\firstcharacter}.
+%D \type {\firstcharacter}.
 %D
 %D \starttyping
 %D \getfirstcharacter {string}

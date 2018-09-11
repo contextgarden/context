@@ -621,6 +621,20 @@ implement {
     arguments = "2 strings",
 }
 
+-- done elsewhere:
+--
+-- local function firstinset(a)
+--     local aa = hash[a]
+--     context(aa and aa[1] or a)
+-- end
+--
+-- implement {
+--     name      = "firstinset",
+--     actions   = firstinset,
+--     arguments = "string",
+--     private   = false,
+-- }
+
 -- implement {
 --     name      = "stringcompare",
 --     arguments = "2 strings",

@@ -102,6 +102,10 @@
 \newcount\c_tabl_x_nesting
 \newcount\c_tabl_x_skip_mode    % 1 = skip
 \newdimen\d_tabl_x_textwidth
+\newcount\c_tabl_x_swapped
+\newcount\c_tabl_x_swapped_max
+
+\let\m_tabl_x_swapped_settings\empty
 
 \let\currentxtablerow   \clf_x_table_r
 \let\currentxtablecolumn\clf_x_table_c
@@ -112,6 +116,7 @@
 
 \installcorenamespace{xtable}
 \installcorenamespace{xtablecheck}
+\installcorenamespace{xtableswap}
 
 \installframedautocommandhandler \??xtable {xtable} \??xtable
 
@@ -296,6 +301,7 @@
    % not so nice but needed as we use this in the setup
    \linewidth\xtableparameter\c!rulethickness\relax
    % so we freeze it
+   \c_tabl_x_swapped_max\zerocount
    \begingroup
      \let\tabl_x_start_row_yes \tabl_x_start_row_reflow_width_yes
      \let\tabl_x_start_row_nop \tabl_x_start_row_reflow_width_nop
@@ -305,6 +311,10 @@
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_reflow_width
      \settrialtypesetting
      \tabl_x_get_buffer
+     \ifcase\c_tabl_x_swapped_max
+     \else
+       \tabl_x_flush_swapped
+     \fi
      \clf_x_table_reflow_width
    \endgroup
    \begingroup
@@ -315,7 +325,11 @@
      \let\tabl_x_start_cell_nop\tabl_x_start_cell_reflow_height_nop
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_reflow_height
      \settrialtypesetting
-     \tabl_x_get_buffer
+     \ifcase\c_tabl_x_swapped_max
+       \tabl_x_get_buffer
+     \else
+       \tabl_x_flush_swapped
+     \fi
      \clf_x_table_reflow_height
    \endgroup
    \begingroup
@@ -325,7 +339,11 @@
      \let\tabl_x_start_cell_yes\tabl_x_start_cell_construct_yes
      \let\tabl_x_start_cell_nop\tabl_x_start_cell_construct_nop
      \let\tabl_x_stop_cell     \tabl_x_stop_cell_construct
-     \tabl_x_get_buffer
+     \ifcase\c_tabl_x_swapped_max
+       \tabl_x_get_buffer
+     \else
+       \tabl_x_flush_swapped
+     \fi
      \clf_x_table_construct
    \endgroup
    \endgroup % *
@@ -476,10 +494,6 @@
 
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell}
-
-\unexpanded\def\dummyxcell#1%
-  {\tabl_x_start_cell_nop
-   \tabl_x_stop_cell}
 
 \unexpanded\def\dummyxcell
   {\tabl_x_start_cell_nop
@@ -878,5 +892,96 @@
    \let\NC\tabl_x_nc
    \let\NR\tabl_x_nr
 \to \everypreparextable
+
+%D Another bonus, suggested by Taco at the 2018 \CONTEXT\ meeting.
+
+\unexpanded\def\tabl_x_c_cell_start#settings%
+  {\begingroup
+   \tabl_x_set_checked{#settings}%
+   \doifelsenextoptionalcs\tabl_x_start_cell_yes\tabl_x_start_cell_nop}
+
+\unexpanded\def\tabl_x_c_cell_stop
+  {\tabl_x_stop_cell
+   \endgroup}
+
+% \unexpanded\def\dummyxcell
+%   {\tabl_x_start_cell_nop
+%    \tabl_x_stop_cell}
+
+\def\tabl_x_flush_swapped
+  {\dorecurse\c_tabl_x_swapped
+     {\expandafter
+      \startxrow
+        \the\csname\??xtableswap##1\endcsname\relax
+      \stopxrow}}
+
+\def\tabl_x_collect_allocate
+  {\expandafter\newtoks\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
+   \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname}
+
+\unexpanded\def\tabl_x_collect_cell_start#content\stopxcell
+ {\global\advance\c_tabl_x_swapped\plusone
+  \ifnum\c_tabl_x_swapped>\c_tabl_x_swapped_max
+    \global\c_tabl_x_swapped_max\c_tabl_x_swapped
+  \fi
+  \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
+  \ifx\t_tabl_x_swapped\relax
+    \tabl_x_collect_allocate
+  \fi
+  \ifx\m_tabl_x_swapped_settings\empty
+    \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start#content\tabl_x_c_cell_stop}
+  \else
+    \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}#content\tabl_x_c_cell_stop}%
+  \fi}
+
+\unexpanded\def\startxcolumn % todo: arguments
+  {\begingroup
+   \global\c_tabl_x_swapped\zerocount
+   \let\startxcell\tabl_x_collect_cell_start
+   \let\stopxcell \relax
+   \doifelsenextoptionalcs\tabl_x_start_column_yes\relax}
+
+\def\tabl_x_start_column_yes[#1]%
+  {\xdef\m_tabl_x_swapped_settings{#1}}
+
+\unexpanded\def\stopxcolumn
+  {\endgroup}
+
+%D \stopbuffer
+%D \setupxtable[one][foregroundcolor=red]
+%D \setupxtable[two][foregroundcolor=blue]
+%D
+%D \startlinecorrection
+%D \startxtable
+%D    \startxrow[one]
+%D        \startxcell[width=5cm] Row 1, Column 1 \stopxcell
+%D        \startxcell Row 1, Column 2 \stopxcell
+%D        \startxcell Row 1, Column 3 \stopxcell
+%D    \stopxrow
+%D    \startxrow[two]
+%D        \startxcell Row 2, Column 1 \stopxcell
+%D        \startxcell Row 2, Column 2 \stopxcell
+%D        \startxcell Row 2, Column 3 \stopxcell
+%D    \stopxrow
+%D \stopxtable
+%D \stoplinecorrection
+%D
+%D \startlinecorrection
+%D \startxtable
+%D    \startxcolumn[one]
+%D        \startxcell[width=5cm] Row 1, Column 1 \stopxcell
+%D        \startxcell Row 1, Column 2 \stopxcell
+%D        \startxcell Row 1, Column 3 \stopxcell
+%D    \stopxcolumn
+%D    \startxcolumn[two]
+%D        \startxcell Row 2, Column 1 \stopxcell
+%D        \startxcell Row 2, Column 2 \stopxcell
+%D        \startxcell Row 2, Column 3 \stopxcell
+%D    \stopxcolumn
+%D \stopxtable
+%D \stoplinecorrection
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
 
 \protect \endinput

@@ -370,9 +370,8 @@
   [medium]
 
 \startuniqueMPgraphic{EnglishRule}{height,width,color}
-    height = \MPvar{height} ;
     x1 = 0 ; x3 = \MPvar{width} ; x2 = x4 = .5x3 ;
-    y1 = y3 = 0 ; y2 = -y4 = height/2 ;
+    y1 = y3 = 0 ; y2 = -y4 = \MPvar{height}/2 ;
     fill z1..z2..z3 & z3..z4..z1 & cycle withcolor \MPvar{color} ;
 \stopuniqueMPgraphic
 

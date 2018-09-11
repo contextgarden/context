@@ -99,18 +99,20 @@ function nodes.showlist(head, message)
 end
 
 function nodes.handlers.checkglyphs(head,message)
-    local h = tonut(head)
+    local h = tonut(head) -- tonut needed?
     local t = { }
+    local n = 0
     local f = formatters["%U:%s"]
-    for g in nextglyph, h do
-        t[#t+1] = f(getchar(g),getsubtype(g))
+    for g, font, char in nextglyph, h do
+        n = n + 1
+        t[n] = f(char,getsubtype(g))
     end
-    if #t > 0 then
-        if message and message ~= "" then
-            report_nodes("%s, %s glyphs: % t",message,#t,t)
-        else
-            report_nodes("%s glyphs: % t",#t,t)
-        end
+    if n == 0 then
+        -- nothing to report
+    elseif message and message ~= "" then
+        report_nodes("%s, %s glyphs: % t",message,n,t)
+    else
+        report_nodes("%s glyphs: % t",n,t)
     end
     return false
 end

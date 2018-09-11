@@ -15,7 +15,6 @@ local type, next = type, next
 local insert, remove, unpack, concat, merge = table.insert, table.remove, table.unpack, table.concat, table.merge
 local find, topattern, format = string.find, string.topattern, string.format
 local lpegmatch, P, S, C, Cc = lpeg.match, lpeg.P, lpeg.S, lpeg.C, lpeg.Cc
-local texattribute = tex.attribute
 local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
 local setmetatableindex = table.setmetatableindex
@@ -24,35 +23,45 @@ local trace_tags = false  trackers.register("structures.tags", function(v) trace
 
 local report_tags = logs.reporter("structure","tags")
 
-local attributes     = attributes
-local structures     = structures
-local implement      = interfaces.implement
+local attributes      = attributes
+local structures      = structures
+local implement       = interfaces.implement
 
-local a_tagged       = attributes.private('tagged')
+local a_tagged        = attributes.private('tagged')
 
-local unsetvalue     = attributes.unsetvalue
-local codeinjections = backends.codeinjections
+local unsetvalue      = attributes.unsetvalue
+local codeinjections  = backends.codeinjections
 
-local taglist        = allocate() -- access by attribute
-local specifications = allocate() -- access by fulltag
-local labels         = allocate()
-local stack          = { }
-local chain          = { }
-local ids            = { }
-local enabled        = false
-local tagcontext     = { }
-local tagpatterns    = { }
-local lasttags       = { }
-local stacksize      = 0
-local metadata       = nil -- applied to the next element
-local documentdata   = { }
-local extradata      = false
+local texgetattribute = tex.getattribute
+local texsetattribute = tex.setattribute
 
-local tags           = structures.tags
-tags.taglist         = taglist -- can best be hidden
-tags.labels          = labels
-tags.patterns        = tagpatterns
-tags.specifications  = specifications
+local taglist         = allocate() -- access by attribute
+local specifications  = allocate() -- access by fulltag
+local labels          = allocate()
+local stack           = { }
+local chain           = { }
+local ids             = { }
+local enabled         = false
+local tagcontext      = { }
+local tagpatterns     = { }
+local lasttags        = { }
+local stacksize       = 0
+local metadata        = nil -- applied to the next element
+local documentdata    = { }
+local extradata       = false
+
+local tags            = structures.tags
+tags.taglist          = taglist -- can best be hidden
+tags.labels           = labels
+tags.patterns         = tagpatterns
+tags.specifications   = specifications
+
+
+function tags.current()
+    if stacksize > 0 then
+        return stack[stacksize] -- maybe copy or proxy
+    end
+end
 
 -- Tags are internally stored as:
 --
@@ -227,7 +236,7 @@ local patterns = setmetatableindex(function(t,tag)
 end)
 
 function tags.locatedtag(tag)
-    local attribute = texattribute[a_tagged]
+    local attribute = texgetattribute(a_tagged)
     if attribute >= 0 then
         local specification = taglist[attribute]
         if specification then
@@ -247,7 +256,7 @@ function tags.locatedtag(tag)
 end
 
 function structures.atlocation(str)
-    local specification = taglist[texattribute[a_tagged]]
+    local specification = taglist[texgetattribute(a_tagged)]
     if specification then
         if list then
             local taglist = specification.taglist
@@ -375,7 +384,7 @@ function tags.start(tag,specification)
         specification.metadata = documentdata
     end
     --
-    texattribute[a_tagged] = attribute
+    texsetattribute(a_tagged,attribute)
     return attribute
 end
 
@@ -390,7 +399,7 @@ function tags.restart(attribute)
         taglist[attribute] = { taglist = { unpack(chain,1,stacksize) } }
     end
     stack[stacksize] = attribute
-    texattribute[a_tagged] = attribute
+    texsetattribute(a_tagged,attribute)
     return attribute
 end
 
@@ -405,7 +414,7 @@ function tags.stop()
      -- end
         t = unsetvalue
     end
-    texattribute[a_tagged] = t
+    texsetattribute(a_tagged,t)
     return t
 end
 

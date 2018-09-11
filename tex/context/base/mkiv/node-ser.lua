@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['node-ser'] = {
 -- beware, some field names will change in a next releases
 -- of luatex; this is pretty old code that needs an overhaul
 
-local type = type
+local type, tostring = type, tostring
 local concat, tohash, sortedkeys, printtable, serialize = table.concat, table.tohash, table.sortedkeys, table.print, table.serialize
 local formatters, format, rep = string.formatters, string.format, string.rep
 
@@ -28,12 +28,14 @@ local noadcodes   = nodes.noadcodes
 local getfields   = nodes.fields
 
 local tonode      = nodes.tonode
+local tonut       = nodes.tonut
 
 local hlist_code  = nodecodes.hlist
 local vlist_code  = nodecodes.vlist
 
 ----- utfchar     = utf.char
 local f_char      = formatters["%U"]
+local f_attr      = formatters["<%i>"]
 ----- fontchars   = { } table.setmetatableindex(fontchars,function(t,k) fontchars = fonts.hashes.characters return fontchars[k] end)
 
 ----- f_char      = utilities.strings.chkuni -- formatters["%!chkuni!"]
@@ -145,6 +147,7 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
                 if ignore[v] then
                     -- skip
                 elseif noattributes and v == "attr" then
+                    tt[v] = f_attr(tonut(nv))
                     -- skip
                 elseif v == "prev" then
                     tt[v] = "<node>"

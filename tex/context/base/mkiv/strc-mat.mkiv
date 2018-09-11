@@ -899,7 +899,7 @@
        {\edef\p_option{\formulaparameter\c!option}%
         \edef\p_option{\ifx\p_option\empty\else\p_option,\fi#2}}%
    \else
-     \edef\p_option{\formulaparameter\c!option}
+     \edef\p_option{\formulaparameter\c!option}%
    \fi
    \ifx\p_option\empty \else
      \rawprocesscommacommand[\p_option]\strc_formulas_option

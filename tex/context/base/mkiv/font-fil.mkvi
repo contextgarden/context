@@ -111,7 +111,7 @@
   {\if]#key%
      \font_basics_get_font_parameter_nop_finish
    \else
-     \expandafter\normaldef\csname p_#key\endcsname{#value}%
+     \expandafter\normaledef\csname p_#key\endcsname{#value}%
      \expandafter\font_basics_get_font_parameter_nop
    \fi}
 
@@ -119,7 +119,7 @@
   {\if]#key%
      \font_basics_get_font_parameter_yes_finish
    \else
-     \expandafter\normaldef\csname p_#key\endcsname{#value}%
+     \expandafter\normaledef\csname p_#key\endcsname{#value}%
      \expandafter\font_basics_get_font_parameter_yes
    \fi}
 

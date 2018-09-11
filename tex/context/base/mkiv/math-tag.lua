@@ -29,6 +29,7 @@ local getfield            = nuts.getfield
 local getdisc             = nuts.getdisc
 local getsubtype          = nuts.getsubtype
 local getattr             = nuts.getattr
+local getattrlist         = nuts.getattrlist
 local setattr             = nuts.setattr
 local getcomponents       = nuts.getcomponents
 local getwidth            = nuts.getwidth
@@ -178,18 +179,25 @@ end
 
 --------------------
 
-local function showtag(n,id)
-    local attr = getattr(n,a_tagged)
-    report_tags("%s = %s",nodecodes[id or getid(n)],attr and taglist[attr].tagname or "?")
-end
+-- todo: use properties
+
+-- local function showtag(n,id,old)
+--     local attr = getattr(n,a_tagged)
+--     local curr = tags.current()
+--     report_tags("%s, node %s, attr %s:%s (%s), top %s (%s)",
+--         old and "before" or "after ",
+--         nodecodes[id],
+--         getattrlist(n),
+--         attr or "?",attr and taglist[attr].tagname or "?",
+--         curr or "?",curr and taglist[curr].tagname or "?"
+--     )
+-- end
 
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     while start do
         local id = getid(start)
-
--- showtag(start,id)
-
+-- showtag(start,id,true)
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -226,6 +234,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged(tag)) -- todo: a_mathcategory
                 end
                 stop_tagged()
+-- showtag(start,id,false)
                 break -- okay?
             elseif id == math_textchar_code then -- or id == glyph_code
                 -- check for code
@@ -236,15 +245,18 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged("ms")) -- mtext
                 end
                 stop_tagged()
+-- showtag(start,id,false)
                 break
             elseif id == math_delim_code then
                 -- check for code
                 setattr(start,a_tagged,start_tagged("mo"))
                 stop_tagged()
+-- showtag(start,id,false)
                 break
             elseif id == math_style_code then
                 -- has a next
             elseif id == math_noad_code then
+-- setattr(start,a_tagged,tags.current())
                 processsubsup(start)
             elseif id == math_box_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on math_box_code and see what ends up in there
@@ -544,6 +556,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
             end
         end
+-- showtag(start,id,false)
         start = getnext(start)
     end
     if mtexttag then
@@ -552,8 +565,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
 end
 
 function noads.handlers.tags(head,style,penalties)
-    local v_mode = getattr(head,a_mathmode)
-    local v_math = start_tagged("math", { mode = v_mode == 1 and "display" or "inline" })
+    start_tagged("math", { mode = (getattr(head,a_mathmode) == 1) and "display" or "inline" })
+--     start_tagged("mrow")
     setattr(head,a_tagged,start_tagged("mrow"))
     process(head)
     stop_tagged()

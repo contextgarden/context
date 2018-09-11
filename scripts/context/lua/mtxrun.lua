@@ -10955,7 +10955,7 @@ package.loaded["util-soc-imp-tp"] = package.loaded["util-soc-imp-tp"] or true
 
 
 local setmetatable,next,type,tonumber=setmetatable,next,type,tonumber
-local find,upper=string.find,string,upper
+local find,upper=string.find,string.upper
 local socket=socket or require("socket")
 local ltn12=ltn12 or require("ltn12")
 local skipsocket=socket.skip
@@ -11834,12 +11834,12 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-smtp"] = package.loaded["util-soc-imp-smtp"] or true
 
--- original size: 7013, stripped down to: 6090
+-- original size: 7018, stripped down to: 6095
 
 
 local type,setmetatable,next=type,setmetatable,next
 local find,lower,format=string.find,string.lower,string.format
-local osdate,osgetenv=os.data,os.getenv
+local osdate,osgetenv=os.date,os.getenv
 local random=math.random
 local socket=socket     or require("socket")
 local headers=socket.headers or require("socket.headers")
@@ -12058,7 +12058,7 @@ function smtp.message(message)
   end
 end
 smtp.send=protectsocket(function(mail)
-  local snd=opensmtp(mail.server,mail.port,mail.create)
+  local snd=opensmtp(smtp,mail.server,mail.port,mail.create)
   local ext=snd:greet(mail.domain)
   snd:auth(mail.user,mail.password,ext)
   snd:send(mail)
@@ -15128,7 +15128,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 5788, stripped down to: 4125
+-- original size: 6134, stripped down to: 4402
 
  if not modules then modules={} end modules ['luat-env']={
   version=1.001,
@@ -15138,6 +15138,7 @@ package.loaded["luat-env"] = package.loaded["luat-env"] or true
   license="see context related readme files"
 }
 local rawset,rawget,loadfile=rawset,rawget,loadfile
+local gsub=string.gsub
 local trace_locating=false trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_lua=logs.reporter("resolvers","lua")
 local luautilities=utilities.lua
@@ -15273,6 +15274,19 @@ function environment.loadluafile(filename,version)
   end
   return false
 end
+environment.filenames=setmetatable({},{
+  __index=function(t,k)
+    local v=environment.files[k]
+    if v then
+      return (gsub(v,"%.+$",""))
+    end
+  end,
+  __newindex=function(t,k)
+  end,
+  __len=function(t)
+    return #environment.files
+  end,
+} )
 
 
 end -- of closure
@@ -23259,7 +23273,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 8479, stripped down to: 5580
+-- original size: 8478, stripped down to: 5611
 
 if not modules then modules={} end modules ['data-tre']={
   version=1.001,
@@ -23336,7 +23350,9 @@ function resolvers.locators.tree(specification)
 end
 function resolvers.hashers.tree(specification)
   local name=specification.filename
+  if trace_locating then
     report_trees("analyzing %a",name)
+  end
   resolvers.methodhandler("hashers",name)
   resolvers.generators.file(specification)
 end
@@ -24594,8 +24610,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 983027
--- stripped bytes    : 347254
+-- original bytes    : 983377
+-- stripped bytes    : 347291
 
 -- end library merge
 

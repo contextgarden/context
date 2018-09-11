@@ -15,6 +15,7 @@ local tonumber, tostring, type = tonumber, tostring, type
 
 local context          = context
 local commands         = commands
+local ctx_latelua      = context.latelua
 
 local trace_datasets   = false  trackers.register("job.datasets" ,  function(v) trace_datasets   = v end)
 local trace_pagestates = false  trackers.register("job.pagestates", function(v) trace_pagestates = v end)
@@ -244,13 +245,15 @@ end
 
 pagestates.setstate = setstate
 
-function pagestates.extend(name,tag)
+local function extend(name,tag)
     local realpage = texgetcount("realpageno")
     if trace_pagestates then
         report_pagestate("action %a, name %a, tag %a, preset %a","synchronize",name,tag,realpage)
     end
     tobesaved[name][tag] = realpage
 end
+
+pagestates.extend = extend
 
 function pagestates.realpage(name,tag,default)
     local t = collected[name]
@@ -267,21 +270,47 @@ function pagestates.realpage(name,tag,default)
     return default
 end
 
+-- local function setpagestate(settings)
+--     local name, tag = setstate(settings)
+--     if type(tag) == "number" then
+--         context(new_latelua(formatters["job.pagestates.extend(%q,%i)"](name,tag)))
+--     else
+--         context(new_latelua(formatters["job.pagestates.extend(%q,%q)"](name,tag)))
+--     end
+-- end
+
 local function setpagestate(settings)
-    local name, tag, data = setstate(settings)
-    if type(tag) == "number" then
-        context(new_latelua(formatters["job.pagestates.extend(%q,%i)"](name,tag)))
-    else
-        context(new_latelua(formatters["job.pagestates.extend(%q,%q)"](name,tag)))
-    end
+    local name, tag = setstate(settings)
+ -- context(new_latelua(function() extend(name,tag) end))
+    ctx_latelua(function() extend(name,tag) end)
 end
 
 local function pagestaterealpage(name,tag)
     local t = collected[name]
-    t = t and (t[tag] or t[tonumber(tag)])
     if t then
-        context(t)
+        t = t[tag] or t[tonumber(tag)]
+        if t then
+            context(t)
+        end
     end
+end
+
+local function pagestaterealpageorder(name,tag)
+    local t = collected[name]
+    if t then
+        local p = t[tag]
+        if p then
+            local n = 1
+            for i=tag-1,1,-1 do
+                if t[i] == p then
+                    n = n  +1
+                end
+            end
+            context(n)
+            return
+        end
+    end
+    context(0)
 end
 
 local function setpagestaterealpageno(name,tag)
@@ -312,4 +341,10 @@ implement {
     name      = "setpagestaterealpageno",
     actions   = setpagestaterealpageno,
     arguments = "2 strings",
+}
+
+implement {
+    name      = "pagestaterealpageorder",
+    actions   = pagestaterealpageorder,
+    arguments = { "string", "integer" }
 }

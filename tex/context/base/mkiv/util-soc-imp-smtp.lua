@@ -3,7 +3,7 @@
 
 local type, setmetatable, next = type, setmetatable, next
 local find, lower, format = string.find, string.lower, string.format
-local osdate, osgetenv = os.data, os.getenv
+local osdate, osgetenv = os.date, os.getenv
 local random = math.random
 
 local socket           = socket         or require("socket")
@@ -254,7 +254,7 @@ function smtp.message(message)
 end
 
 smtp.send = protectsocket(function(mail)
-    local snd = opensmtp(mail.server, mail.port, mail.create)
+    local snd = opensmtp(smtp,mail.server, mail.port, mail.create)
     local ext = snd:greet(mail.domain)
     snd:auth(mail.user, mail.password, ext)
     snd:send(mail)

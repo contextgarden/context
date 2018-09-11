@@ -105,7 +105,8 @@ local p_first = C((1-P(",")-P(-1))^0)
 implement {
     name      = "firstinset",
     arguments = "string",
-    actions   = function(str) context(lpegmatch(p_first,str or "")) end
+    actions   = function(str) context(lpegmatch(p_first,str or "")) end,
+    public    = true,
 }
 
 implement {

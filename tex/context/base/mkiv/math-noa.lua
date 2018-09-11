@@ -823,8 +823,8 @@ do
     local dummyfencechar  = 0x2E
 
     local function makefence(what,char)
-        local d = new_delimiter()
-        local f = new_fence()
+        local d = new_delimiter() -- todo: attr
+        local f = new_fence()     -- todo: attr
         if char then
             local sym = getnucleus(char)
             local chr = getchar(sym)
@@ -847,8 +847,8 @@ do
     -- will become
 
     -- local function makefence(what,char)
-    --     local d = new_delimiter()
-    --     local f = new_fence()
+    --     local d = new_delimiter() -- todo: attr
+    --     local f = new_fence()     -- todo: attr
     --     if char then
     --         local sym = getnucleus(char)
     --         local chr = getchar(sym)
@@ -1407,8 +1407,8 @@ do
     local c_negative_d = "trace:dr"
 
     local function insert_kern(current,kern)
-        local sub  = new_submlist()
-        local noad = new_noad()
+        local sub  = new_submlist() -- todo: attr
+        local noad = new_noad()     -- todo: attr
         setlist(sub,kern)
         setnext(kern,noad)
         setnucleus(noad,current)
@@ -1418,7 +1418,7 @@ do
     registertracker("math.italics.visualize", function(v)
         if v then
             italic_kern = function(k)
-                local n = new_kern(k)
+                local n = new_kern(k) -- todo: attr
                 set_visual(n,"italic")
                 return n
             end
@@ -1627,7 +1627,7 @@ do
                                     if trace_kernpairs then
                                         report_kernpairs("adding %p kerning between %C and %C",kern,first,second)
                                     end
-                                    setlink(parent,new_kern(kern),getnext(parent))
+                                    setlink(parent,new_kern(kern),getnext(parent)) -- todo: attr
                                 end
                             end
                         end
@@ -2211,6 +2211,12 @@ do
     function builders.kernel.mlist_to_hlist(head,style,penalties)
         return mlist_to_hlist(head,style,force_penalties or penalties)
     end
+
+ -- function builders.kernel.mlist_to_hlist(head,style,penalties)
+ --     local h = mlist_to_hlist(head,style,force_penalties or penalties)
+ --     inspect(nodes.totree(h,true,true,true))
+ --     return h
+ -- end
 
     implement {
         name      = "setmathpenalties",

@@ -155,6 +155,15 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="xcolumn" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupxtable"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="xcell" type="environment" level="document" category="tables" file="tabl-xtb.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>

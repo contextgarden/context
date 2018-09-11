@@ -100,11 +100,10 @@ end
 
 function resolvers.hashers.tree(specification)
     local name = specification.filename
- -- if trace_locating then
+    if trace_locating then
         report_trees("analyzing %a",name)
- -- end
+    end
     resolvers.methodhandler("hashers",name)
-
     resolvers.generators.file(specification)
 end
 

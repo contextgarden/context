@@ -2,7 +2,7 @@
 -- for more into : see util-soc.lua
 
 local setmetatable, next, type, tonumber = setmetatable, next, type, tonumber
-local find, upper = string.find, string,upper
+local find, upper = string.find, string.upper
 
 local socket     = socket or require("socket")
 local ltn12      = ltn12  or require("ltn12")

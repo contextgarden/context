@@ -1744,8 +1744,8 @@
   {\begingroup
    \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
    \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
-    %\hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
-     \hpack \thealignbackgroundcolorattr{\lastnamedcs}{}% pack ?
+   % \hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
+     \hpack \expandafter\thealignbackgroundcolorattr\expandafter{\lastnamedcs}{}% pack ?
    \fi
    \endgroup}
 

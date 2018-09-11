@@ -596,7 +596,7 @@ function scripts.context.run(ctxdata,filename)
     local a_nofile = getargument("nofile")
     local a_engine = getargument("engine")
     --
-    local files    = environment.files or { }
+    local files    = environment.filenames or { }
     --
     local filelist, mainfile
     --
@@ -1185,7 +1185,7 @@ function scripts.context.make(name)
     if not getargument("fast") then -- as in texexec
         scripts.context.generate()
     end
-    local list = (name and { name }) or (environment.files[1] and environment.files) or defaultformats
+    local list = (name and { name }) or (environment.filenames[1] and environment.filenames) or defaultformats
     local engine = getargument("engine") or "luatex"
     if getargument("jit") or getargument("jiton") then
         engine = "luajittex"
@@ -1205,7 +1205,7 @@ end
 
 function scripts.context.ctx()
     local ctxdata = ctxrunner.new()
-    ctxdata.jobname = environment.files[1]
+    ctxdata.jobname = environment.filenames[1]
     ctxrunner.checkfile(ctxdata,getargument("ctx"))
     ctxrunner.checkflags(ctxdata)
     scripts.context.run(ctxdata)
@@ -1213,7 +1213,7 @@ end
 
 function scripts.context.autoctx()
     local ctxdata   = nil
-    local files     = environment.files
+    local files     = environment.filenames
     local firstfile = #files > 0 and files[1]
     if firstfile then
         local suffix  = filesuffix(firstfile)
@@ -1248,7 +1248,7 @@ end
 -- local loaded = false
 --
 -- function scripts.context.metapost()
---     local filename = environment.files[1] or ""
+--     local filename = environment.filenames[1] or ""
 --     if not loaded then
 --         dofile(resolvers.findfile("mlib-run.lua"))
 --         loaded = true
@@ -1265,7 +1265,7 @@ end
 --         local jobname = "mtx-context-metapost"
 --         local tempname = fileaddsuffix(jobname,"tex")
 --         io.savedata(tempname,format(template,"metafun",filename))
---         environment.files[1] = tempname
+--         environment.filenames[1] = tempname
 --         setargument("result",resultname)
 --         setargument("once",true)
 --         scripts.context.run()
@@ -1792,14 +1792,14 @@ elseif getargument("expert") then
 elseif getargument("showmodules") or getargument("modules") then
     scripts.context.modules()
 elseif getargument("showextras") or getargument("extras") then
-    scripts.context.extras(environment.files[1] or getargument("extras"))
+    scripts.context.extras(environment.filenames[1] or getargument("extras"))
 elseif getargument("extra") then
     scripts.context.extra()
 elseif getargument("exporthelp") then
- -- application.export(getargument("exporthelp"),environment.files[1])
+ -- application.export(getargument("exporthelp"),environment.filenames[1])
     application.export()
 elseif getargument("help") then
-    if environment.files[1] == "extras" then
+    if environment.filenames[1] == "extras" then
         scripts.context.extras()
     else
         application.help("basic")
@@ -1810,7 +1810,7 @@ elseif getargument("showdirectives") or getargument("directives") == true then
     scripts.context.directives()
 elseif getargument("showlogcategories") then
     scripts.context.logcategories()
-elseif environment.files[1] or getargument("nofile") then
+elseif environment.filenames[1] or getargument("nofile") then
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("pipe") then
     scripts.context.timed(scripts.context.pipe)

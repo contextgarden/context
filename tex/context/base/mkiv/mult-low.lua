@@ -254,6 +254,7 @@ return {
         "scratchleftskip", "scratchrightskip", "scratchtopskip", "scratchbottomskip",
         --
         "doif", "doifnot", "doifelse",
+        "firstinset",
         "doifinset", "doifnotinset",
         "doifelseinset", "doifinsetelse",
         "doifelsenextchar", "doifnextcharelse",

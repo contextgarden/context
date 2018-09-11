@@ -221,14 +221,14 @@
    \dowithnextboxcs\spac_postponed_data_finish\hbox}
 
 \def\spac_postponed_data_finish
-  {\global\setbox\b_spac_postponed_data\hbox % to\zeropoint
+  {\global\setbox\b_spac_postponed_data\hpack % to\zeropoint
      {\box\b_spac_postponed_data\box\nextbox}%
    \endgroup}
 
 \def\spac_postponed_data_flush
   {%\iftrialtypesetting \else
      \ifvoid\b_spac_postponed_data\else
-       \hbox{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
+       \hpack{\smashedbox\b_spac_postponed_data}% \box\b_spac_postponed_data
      \fi
      \glet\flushpostponednodedata\relax
    }%\fi}
