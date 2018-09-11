@@ -691,6 +691,7 @@ end
 -- mtxrun --script pattern --check   hyph-*.tex
 -- mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns
 -- mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
+-- mtxrun --script pattern --convert --path=c:/repositories/tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns
 --
 -- use this call:
 --

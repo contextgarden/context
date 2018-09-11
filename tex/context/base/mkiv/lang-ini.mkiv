@@ -15,10 +15,10 @@
 
 % \cldcontext{languages.numbers[tex.count.mainlanguagenumber]}
 
-%D This module implements the (for the moment still simple)
-%D multi||language support of \CONTEXT, which should not be
-%D confused with the multi||lingual interface. This support
-%D will be extended when needed.
+%D This module implements multi||language support of \CONTEXT, which should not be
+%D confused with the multi||lingual interface. This support will be extended when
+%D needed. Properties of languages are defined in \TEX\ files as well as \LUA\
+%D files.
 
 \writestatus{loading}{ConTeXt Language Macros / Initialization}
 
@@ -28,41 +28,27 @@
 
 \unprotect
 
-% \def\testlanguage[#1]%
-%   {\start
-%    \language[#1]
-%    \number\normallanguage/\the\lefthyphenmin/\the\righthyphenmin:
-%    \input tufte
-%    \hyphenatedword{effetestenofditwerkt}
-%    \par
-%    \stop}
-%
-% \testlanguage[de] \testlanguage[de-de] \testlanguage[de-at] \testlanguage[de-ch] \page
-% \testlanguage[en] \testlanguage[us] \testlanguage[en-us] \testlanguage[uk] \testlanguage[en-gb] \page
-
 \ifdefined\nonfrenchspacing\else \let\nonfrenchspacing\relax \fi
 \ifdefined\frenchspacing   \else \let\frenchspacing   \relax \fi
 
-%D When loading hyphenation patterns, \TEX\ assign a number to
-%D each loaded table, starting with~0. Switching to a specific
-%D table is done by assigning the relevant number to the
-%D predefined \COUNTER\ \type{\language}.
+%D When loading hyphenation patterns, \TEX\ assign a number to each loaded table,
+%D starting with~0. Switching to a specific table is done by assigning the relevant
+%D number to the predefined \COUNTER\ \type {\language}. However, in \MKIV\ a lot
+%D of management is delegated to \LUA.
 
-%D We keep track of the last loaded patterns by means of a
-%D pseudo \COUNTER. This just one of those situations in which
-%D we don't want to spent a real one. Language zero has no
-%D patterns, first of all because I like to start numbering
-%D at one. It may come in handy for special purposes as well.
+%D We keep track of the last loaded patterns by means of a pseudo \COUNTER. This
+%D just one of those situations in which we don't want to spent a real one. Language
+%D zero has no patterns, first of all because I like to start numbering at one. It
+%D may come in handy for special purposes as well.
 
 \normallanguage\zerocount \def\loadedlanguage{1}
 
 %D \macros
 %D   {currentlanguage, setupcurrentlanguage}
 %D
-%D Instead of numbers,we are going to use symbolic names for
-%D the languages. The current langage is saved in the macro
-%D \type {\currentlanguage}. The setup macro is mainly used
-%D for cosmetic purposes.
+%D Instead of numbers,we are going to use symbolic names for the languages. The
+%D current langage is saved in the macro \type {\currentlanguage}. The setup macro
+%D is mainly used for cosmetic purposes.
 %D
 %D \starttyping
 %D \dorecurse{3}
@@ -79,10 +65,9 @@
 
 %D \macros
 %D   {defaultlanguage,languageparameter,specificlanguageparameter}
-
-%D We don't use the commandhandler here (yet) because we have
-%D a rather special fallback mechanism so quite some compatibility
-%D testing is needed.
+%D
+%D We don't use the commandhandler here (yet) because we have a rather special
+%D fallback mechanism so quite some compatibility testing is needed.
 
 \installcorenamespace{language}
 \installcorenamespace{languagelinked}
@@ -95,33 +80,6 @@
    \else
      #1%
    \fi}
-
-% \def\languageparameter#1%
-%   {\ifcsname\??language\currentlanguage#1\endcsname
-%      \csname\??language\currentlanguage#1\endcsname
-%    \else\ifcsname\??language\currentlanguage\s!default\endcsname
-%      \expandafter\specificlanguageparameter\csname\??language\currentlanguage\s!default\endcsname{#1}%
-%    \else\ifcsname\??language\s!default#1\endcsname
-%      \csname\??language\s!default#1\endcsname
-%    \fi\fi\fi}
-%
-% \def\specificlanguageparameter#1#2%
-%   {\ifcsname\??language#1#2\endcsname
-%      \csname\??language#1#2\endcsname
-%    \else\ifcsname\??language#1\s!default\endcsname
-%      \expandafter\specificlanguageparameter\csname\??language#1\s!default\endcsname{#2}%
-%    \else\ifcsname\??language\s!default#2\endcsname
-%      \csname\??language\s!default#2\endcsname
-%    \fi\fi\fi}
-%
-% \def\mainlanguageparameter#1%
-%   {\ifcsname\??language\currentmainlanguage#1\endcsname
-%      \csname\??language\currentmainlanguage#1\endcsname
-%    \else\ifcsname\??language\currentmainlanguage\s!default\endcsname
-%      \expandafter\specificlanguageparameter\csname\??language\currentmainlanguage\s!default\endcsname{#1}%
-%    \else\ifcsname\??language\s!default#1\endcsname
-%      \csname\??language\s!default#1\endcsname
-%    \fi\fi\fi}
 
 \def\languageparameter#1%
   {\ifcsname\??language\currentlanguage#1\endcsname
@@ -152,15 +110,6 @@
 
 \let\usedlanguageparameter\languageparameter
 
-% \def\askedlanguageparameter#1% assumes \currentusedlanguage being set
-%   {\ifcsname\??language\currentusedlanguage#1\endcsname
-%      \csname\??language\currentusedlanguage#1\endcsname
-%    \else\ifcsname\??language\currentusedlanguage\s!default\endcsname
-%      \expandafter\specificlanguageparameter\csname\??language\currentusedlanguage\s!default\endcsname{#1}%
-%    \else\ifcsname\??language\s!default#1\endcsname
-%      \csname\??language\s!default#1\endcsname
-%    \fi\fi\fi}
-
 \def\askedlanguageparameter#1% assumes \currentusedlanguage being set
   {\ifcsname\??language\currentusedlanguage#1\endcsname
      \lastnamedcs
@@ -171,7 +120,6 @@
    \fi\fi\fi}
 
 \unexpanded\def\setusedlanguage#1%
-% {\edef\currentusedlanguage{\reallanguagetag{#1\c!language}}%
   {\edef\currentusedlanguage{\reallanguagetag{#1}}%
    \ifx\currentusedlanguage\empty
      \let\currentusedlanguage  \currentlanguage
@@ -208,43 +156,23 @@
 %D \macros
 %D   {installlanguage}
 %D
-%D Hyphenation patterns can only be loaded when the format file
-%D is prepared. The next macro takes care of this loading. A
-%D language is specified with
+%D Hyphenation patterns can only be loaded when the format file is prepared. The
+%D next macro takes care of this loading. A language is specified with
 %D
 %D \showsetup{installlanguage}
 %D
-%D When \type {state} equals \type {start}, both patterns
-%D and additional hyphenation specifications are loaded. These
-%D files are seached for on the system path and are to be
-%D named:
+%D When \type {state} equals \type {start}, both patterns and additional hyphenation
+%D specifications are loaded. These files are seached for in the patterns path
+%D have names like \type {lang-nl.lua}.
 %D
-%D \starttyping
-%D lang-identifier.\f!patternsextension
-%D lang-identifier.\f!hyhensextension
-%D \stoptyping
+%D The \type {spacing} variable specifies how the spaces after punctuation has to be
+%D handled. English is by tradition more tolerant to inter||sentence spacing than
+%D other languages.
 %D
-%D The \type{spacing} variable specifies how the spaces after
-%D punctuation has to be handled. English is by tradition more
-%D tolerant to inter||sentence spacing than other languages.
-%D
-%D This macro also defines \type {\identifier} as a shortcut
-%D switch to the language. Furthermore the command defined as
-%D being language specific, are executed. With
-%D \type {default} we can default to another language
-%D (patterns) at format generation time. This default language
-%D is overruled when the appropriate patterns are loaded (some
-%D implementations support run time addition of patterns to a
-%D preloaded format).
-
-%D \macros
-%D   {preloadlanguages}
-%D
-%D We first try to load the files defined as file synonym
-%D for \type {lang-*.pat} and \type {lang-*.hyp}. After that we
-%D fall back on those files. The macro \type {\preloadpatterns}
-%D reports which patterns are loaded and what hyphenmin
-%D values are set.
+%D This macro also defines \type {\identifier} as a shortcut switch to the language.
+%D Furthermore the command defined as being language specific, are executed. With
+%D \type {default} we can default to another language (patterns) at format
+%D generation time. Patterns are loaded at runtime.
 
 \newtoks \everysetuplanguage
 
@@ -260,7 +188,6 @@
 \let\doiflanguageelse\doifelselanguage
 
 \def\reallanguagetag#1%
- %{\ifcsname\??languagelinked#1\endcsname\csname\??languagelinked#1\endcsname\else#1\fi}
   {\ifcsname\??languagelinked#1\endcsname\lastnamedcs\else#1\fi}
 
 % \language[#1] gave unwanted side effect of loading language specifics
@@ -285,10 +212,9 @@
 \def\lang_basics_install_indeed#1#2%
   {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}
 
-%D When the second argument is a language identifier, a
-%D synonym is created. This feature is present because we
-%D used dutch mnemonics in the dutch version, but nowadays
-%D conform a standard.
+%D When the second argument is a language identifier, a synonym is created. This
+%D feature is present because we used dutch mnemonics in the dutch version, but
+%D nowadays conform a standard.
 
 \unexpanded\def\doifelsepatterns#1%
   {\begingroup % will change
@@ -376,26 +302,20 @@
 %   [\s!default]
 %   [\c!righthyphenchar="AD]
 
-%D The values \type {leftsentence} and \type
-%D {rightsentence} can be (and are) used to implement
-%D automatic subsentence boundary glyphs, like in {\fr
-%D |<|french guillemots|>|} or {\de |<|german guillemots|>|} or
-%D {\nl |<|dutch dashes|>|} like situations. Furthermore \type
-%D {leftquotation} and \type {leftquote} come into view
-%D \quotation {when we quote} or \quote {quote} something.
+%D The values \type {leftsentence} and \type {rightsentence} can be (and are) used
+%D to implement automatic subsentence boundary glyphs, like in {\fr |<|french
+%D guillemots|>|} or {\de |<|german guillemots|>|} or {\nl |<|dutch dashes|>|} like
+%D situations. Furthermore \type {leftquotation} and \type {leftquote} come into
+%D view \quotation {when we quote} or \quote {quote} something.
 
 %D \macros
 %D  {currentdatespecification}
 %D
-%D Just to make things easy we can ask for the current date
-%D specification by saying:
+%D Just to make things easy we can ask for the current date specification by saying:
 
 \def\currentdatespecification{\languageparameter\c!date}
 
-%D This command is not meant for users.
-
-%D Carefull reading of these macros shows that it's legal to
-%D say
+%D Carefull reading of these macros shows that it's legal to say
 %D
 %D \starttyping
 %D \installlanguage [du] [de]
@@ -404,47 +324,32 @@
 %D \macros
 %D   {language,mainlanguage}
 %D
-%D Switching to another language (actually another hyphenation
-%D pattern) is done with:
+%D Switching to another language (actually another hyphenation pattern) is done
+%D with:
 %D
 %D \starttyping
 %D \language[identifier]
 %D \stoptyping
 %D
-%D or with \type{\identifier}. Just to be compatible with
-%D \PLAIN\ \TEX, we still support the original meaning, so
+%D or with \type {\identifier}. Just to be compatible with \PLAIN\ \TEX, we still
+%D support the original meaning, so
 %D
 %D \starttyping
 %D \language=1
 %D \stoptyping
 %D
-%D is a valid operation, where the relation between number
-%D and language depends on the order in installing languages.
+%D is a valid operation, where the relation between number and language depends on
+%D the order in installing languages.
 %D
 %D \showsetup{language}
 %D \showsetup{mainlanguage}
 %D
-%D Both commands take a predefined language identifier as
-%D argument. We can use \type{\mainlanguage[identifier]} for
-%D setting the (indeed) main language. This is the language
-%D used for translating labels like {\em figure} and {\em
-%D table}. The main language defaults to the current language.
-%D
-%D We take care of local as well as standardized language
-%D switching (fr and fa, de and du, but nl and nl).
+%D Both commands take a predefined language identifier as argument. We can use \type
+%D {\mainlanguage[identifier]} for setting the (indeed) main language. This is the
+%D language used for translating labels like {\em figure} and {\em table}. The main
+%D language defaults to the current language.
 
 \newtoks \everylanguage
-
-% \def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
-%   {\normallanguage\ctxcommand{languagenumber(%
-%      "\currentlanguage",%
-%      "\defaultlanguage\currentlanguage",%
-%      "\languageparameter\s!patterns"%
-%    )}\relax
-%    \the\everylanguage\relax}
-
-% (some 20%) faster but code jungle (the publication code can have excessive
-% switching
 
 \installcorenamespace{languagenumbers}
 
@@ -473,7 +378,7 @@
     \letvalue{\??languagenumbers}\lang_basics_synchronize_yes % runtime
 \to \everydump
 
-\def\lang_basics_synchronize% assumes that \currentlanguage is set                   % % % use different name as complex
+\def\lang_basics_synchronize
   {\normallanguage\csname\??languagenumbers
      \ifcsname\??languagenumbers\currentlanguage\endcsname
        \currentlanguage
@@ -483,12 +388,7 @@
    \the\everylanguage
    \relax}
 
-% experimental
-
 \newcount\hyphenstate
-
-% so far
-
 \newcount\hyphenminoffset
 
 \unexpanded\def\lesshyphens
@@ -532,7 +432,7 @@
 %     \setups[\languageparameter\c!setups]%
 % \to \everylanguage
 
-%D You can setup the 'default' language to reset settings.
+%D You can setup the default language to reset settings.
 
 \appendtoks
     \edef\currentlanguagesetups{\languageparameter\c!setups}%
@@ -583,11 +483,6 @@
     \fi
 \to \everylanguage
 
-% The following may be a solution for the fact that one cannot
-% change catcodes of characters like : and ; inside an environment.
-
-% we will also permit access by the other names
-
 %D Fast switcher
 
 \def\lang_basics_switch_asked
@@ -628,24 +523,6 @@
 
 \let\stoplanguage\endgroup
 
-% \unexpanded\def\mainlanguage[#1]%
-%   {\edef\askedlanguage{#1}%
-%    \ifx\askedlanguage\empty \else
-%      \ifcsname\??languagelinked\askedlanguage\endcsname
-%        \edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-%        \ifx\currentlanguage\askedlanguage
-%          \ifx\currentmainlanguage\askedlanguage \else
-%            \setcurrentlanguage\askedlanguage\askedlanguage
-%            \lang_basics_synchronize
-%          \fi
-%        \else
-%          \setcurrentlanguage\askedlanguage\askedlanguage
-%          \lang_basics_synchronize
-%        \fi
-%      \fi
-%    \fi
-%    \mainlanguagenumber\normallanguage}
-
 \unexpanded\def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
    \ifx\askedlanguage\empty \else
@@ -677,9 +554,8 @@
 \def\splitsymbol#1%
   {\splitsequence{#1}{\languageparameter\c!limittext}}
 
-%D Just like with subsentence boundary symbols, quotes
-%D placement depends on the current language, therefore we show
-%D the defaults here.
+%D Just like with subsentence boundary symbols, quotes placement depends on the
+%D current language, therefore we show the defaults here.
 %D
 %D \def\ShowLanguageValues [#1] [#2] #3 #4
 %D   {\blank
@@ -701,6 +577,7 @@
 %D \ShowLanguageValues [da] [danish]     deense ...
 %D \ShowLanguageValues [de] [german]     duitse degelijkheid
 %D \ShowLanguageValues [en] [english]    engelse humor
+%D \ShowLanguageValues [et] [estonian]   ...
 %D \ShowLanguageValues [fi] [finnish]    finse ...
 %D \ShowLanguageValues [fr] [french]     franse slag
 %D \ShowLanguageValues [it] [italian]    italiaanse ...
@@ -714,10 +591,9 @@
 %D \ShowLanguageValues [sv] [swedish]    zweedse ...
 %D \ShowLanguageValues [tr] [turkish]    turks fruit
 
-%D We support a lot of languages. These are specified and
-%D loaded in separate files, according to their roots. Here
-%D we only take care of (postponed) setting of the current
-%D language.
+%D We support a lot of languages. These are specified and loaded in separate files,
+%D according to their roots. Here we only take care of (postponed) setting of the
+%D current language.
 %D
 %D \unprotect
 %D \placetable{The germanic languages (\type{lang-ger})}
@@ -788,9 +664,8 @@
 
 \unexpanded\def\nopatterns{\normallanguage\minusone}
 
-%D We default to the language belonging to the interface. This
-%D is one of the few places outside the interface modules where
-%D \type{\startinterface} is used.
+%D We default to the language belonging to the interface. This is one of the few
+%D places outside the interface modules where \type {\startinterface} is used.
 
 \setupcurrentlanguage[\s!en]
 

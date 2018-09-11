@@ -383,10 +383,10 @@
    \fi}
 
 \def\strc_registers_insert_entry_nop_par#1#2%
-  {\doflushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}}
+  {\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}}
 
 \def\strc_registers_insert_entry_yes_par#1#2#3%
-  {\doflushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}}}
+  {\flushatnextpar{\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!alternative=#2,\c!entries={#3}}{}}}
 
 \def\strc_registers_insert_entry_nop_txt#1#2%
   {\strc_registers_register_page_entry\currentregister{\c!keys={#1},\c!entries={#2}}{}}
@@ -1005,7 +1005,7 @@
    \else
      \let\currentregisterseeindex\empty
    \fi
-   \ifnum#1=\plusone
+   \ifnum#2=\plusone
      \labeltexts\v!see{\doapplyregisterseecommand{#4}{#7}}%
    \else\ifnum#2=#3\relax
      \labeltexts\v!and{\doapplyregisterseecommand{#4}{#7}}%
