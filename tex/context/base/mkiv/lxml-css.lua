@@ -958,7 +958,7 @@ local someaction   = skipspace * colon * skipspace * (somevalue/ctx_sprint)
 
 -- -- cache patterns (2.13):
 
-local patterns= setmetatableindex(function(t,k)
+local patterns = setmetatableindex(function(t,k)
     local v = P(k * someaction + 1)^0
     t[k] = v
     return v
