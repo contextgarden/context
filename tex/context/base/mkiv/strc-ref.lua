@@ -1826,8 +1826,7 @@ local nofidentified = 0
 
 local function identify(prefix,reference)
     if not reference then
-        prefix    = ""
-        reference = prefix
+        prefix, reference = "", prefix
     end
     local set = resolve(prefix,reference)
     local bug = false

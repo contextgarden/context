@@ -84,26 +84,29 @@
 
 \def\strc_floats_facing_flush
   {\ifnum\c_strc_floats_flushed<\c_strc_floats_saved
-     \global\advance\c_strc_floats_flushed\plusone
-     \floatingpenalty\zerocount
-     \insert\namedinsertionnumber\s!topfloat\bgroup
-       \forgetall
-       \ifconditional\c_page_one_top_of_insert
-         \ifconditional\c_page_one_correct_top_insert
-           \topskipcorrection % [xx] new: see icare topbleed
-           \kern-\lineskip
-           \par
-           \prevdepth\maxdimen
-         \fi
+     \strc_floats_facing_flush_indeed % less tracing
+   \fi}
+
+\def\strc_floats_facing_flush_indeed
+  {\global\advance\c_strc_floats_flushed\plusone
+   \floatingpenalty\zerocount
+   \insert\namedinsertionnumber\s!topfloat\bgroup
+     \forgetall
+     \ifconditional\c_page_one_top_of_insert
+       \ifconditional\c_page_one_correct_top_insert
+         \topskipcorrection % [xx] new: see icare topbleed
+         \kern-\lineskip
+         \par
+         \prevdepth\maxdimen
        \fi
-       \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_flushed}%
-       \vskip\s_page_one_between_top_insert
-     \egroup
-     \ifnum\c_strc_floats_saved=\c_strc_floats_flushed
-       \global\c_strc_floats_saved  \zerocount
-       \global\c_strc_floats_flushed\zerocount
-       \resetboxesincache{\currentfacingfloat}%
      \fi
+     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_flushed}%
+     \vskip\s_page_one_between_top_insert
+   \egroup
+   \ifnum\c_strc_floats_saved=\c_strc_floats_flushed
+     \global\c_strc_floats_saved  \zerocount
+     \global\c_strc_floats_flushed\zerocount
+     \resetboxesincache{\currentfacingfloat}%
    \fi}
 
 \unexpanded\def\strc_floats_facing_setup

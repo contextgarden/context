@@ -76,51 +76,51 @@
 \starttext
 
 \startasymptote[demo-1]
-settings.prc=true;
+settings.prc = true ;
 
-import graph3;
-import palette;
+import graph3 ;
+import palette ;
 
-size(6cm,6cm);
-size3(5cm,0);
+size(6cm,6cm) ;
+size3(5cm,0) ;
 
-currentprojection=orthographic(3,-6,12);
-currentlight=light(8,10,2);
+currentprojection = orthographic(3,-6,12) ;
+currentlight = light(8,10,2) ;
 
-real g(pair z) {return 1-z.x^2-z.y^2;}
-real f(pair z) {return -2z.x+2;}
+real g(pair z) { return 1-z.x^2-z.y^2 ; }
+real f(pair z) { return -2z.x+2 ; }
 
-real x(real t) {return t;}
-real y(real t) {return 0;}
-real z(real t) {return 1-t^2;}
-real a(real t) {return 1;}
-real b(real t) {return t;}
-real c(real t) {return -t^2;}
+real x(real t) { return t ; }
+real y(real t) { return 0 ; }
+real z(real t) { return 1-t^2 ; }
+real a(real t) { return 1 ; }
+real b(real t) { return t ; }
+real c(real t) { return -t^2 ; }
 
-path3 p=graph(x,y,z,-2,2,operator ..);
-path3 o=graph(a,b,c,-2,2,operator ..);
+path3 p=graph(x,y,z,-2,2,operator ..) ;
+path3 o=graph(a,b,c,-2,2,operator ..) ;
 
-surface r=surface(f,(0,-1),(2,1),nx=3,Spline);
-surface s=surface(g,(-2,-2),(2,2),nx=5,Spline);
+surface r = surface(f, (0,-1), (2,1), nx = 3, Spline) ;
+surface s = surface(g, (-2,-2), (2,2), nx = 5, Spline) ;
 
-path3 q=(-2,-2,-7)--(2,-2,-7)--(2,2,-7)--(-2,2,-7)--cycle;
+path3 q = (-2,-2,-7) -- (2,-2,-7) -- (2,2,-7) -- (-2,2,-7) -- cycle ;
 
-draw(q);
+draw(q) ;
 
-draw(p,blue+thick(),Arrow3);
-draw(o,blue+thick(),Arrow3);
+draw(p, blue+thick(), Arrow3) ;
+draw(o, blue+thick(), Arrow3) ;
 
-draw(s,lightgray+opacity(0.8),nolight,meshpen=black+thick());
-draw(r,lightgray+opacity(0.8),nolight,meshpen=black+thick());
+draw(s, lightgray + opacity(0.8), nolight, meshpen = black + thick()) ;
+draw(r, lightgray + opacity(0.8), nolight, meshpen = black + thick()) ;
 
-draw((1,0,0)--(2,0,-2),black,Arrow3);
-draw((1,0,0)--(1,1,0),black,Arrow3);
+draw((1,0,0) -- (2,0,-2), black, Arrow3) ;
+draw((1,0,0) -- (1,1,0), black, Arrow3) ;
 \stopasymptote
 
 \startasymptote[demo-2]
-size(6cm,6cm);
+size(6cm,6cm) ;
 
-fill((1cm,2cm)--(3cm,3cm)--(4cm,0cm)--cycle);
+fill((1cm,2cm) -- (3cm,3cm) -- (4cm,0cm) -- cycle);
 \stopasymptote
 
 % see end of grph-inc.mkiv for some more options:

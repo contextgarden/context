@@ -105,6 +105,22 @@ function interfaces.getnamespace(n)
     return usednamespaces[n] .. ">"
 end
 
+if documentdata then
+
+    local prefix, getmacro
+
+    function documentdata.variable(name)
+        if not prefix then
+            prefix = usednamespaces.variables .. ">document:"
+        end
+        if not getmacro then
+            getmacro = tokens.getters.macro
+        end
+        return getmacro(prefix..name)
+    end
+
+end
+
 local function resolve(t,k)
     local v = logs.reporter(k)
     t[k] = v

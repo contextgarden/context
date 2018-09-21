@@ -1,0 +1,56 @@
+\startenvironment interaction-style
+
+\usemodule[abr-02]
+\usemodule[scite]
+\usemodule[setups-basics]
+
+\loadsetups[context-en]
+
+\setupbodyfont[plex,rm]
+
+\setupwhitespace
+  [big]
+
+\setuptolerance
+  [verytolerant,stretch]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuplayout
+  [footer=0cm,
+   backspace=3cm,
+   cutspace=2cm,
+   width=middle,
+   height=middle,
+   margin=1.75cm,
+   margindistance=5mm]
+
+\setupfloats
+  [ntop=100]
+
+\setupinteraction
+  [state=start,
+   style=,
+   color=,
+   contrastcolor=]
+
+\setuphead
+  [chapter]
+  [header=high,
+   style=\bfd]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+% \definecolor[backcolor][r=.8,b=.7,g=.8]
+\definecolor[backcolor][s=.8]
+
+\setupframedtext
+  [setuptext]
+  [frame=off,
+   background=color,
+   backgroundcolor=backcolor]
+
+\stopenvironment

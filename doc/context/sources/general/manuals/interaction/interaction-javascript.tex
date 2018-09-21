@@ -1,0 +1,82 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-javascript
+
+\startchapter[title={JavaScript}]
+
+Annotations can be controlled with \JAVASCRIPT\ but it really depends on the
+viewer if it works out well. Using these scripts is a multi||step process where
+common functions and data structures can be shared and collected in preambles:
+
+\starttyping
+\startJSpreamble {name}
+  MyCounter = 0 ;
+\stopJSpreamble
+\stoptyping
+
+The more action oriented scripts are defined as:
+
+\starttyping
+\startJScode {increment}
+  MyCounter = MyCounter + 1 ; // or: ++MyCounter ;
+\stopJScode
+\stoptyping
+
+This script is executed with:
+
+\starttyping
+\goto {advance by one} [JS(increment)]
+\stoptyping
+
+Nicer is to define a function:
+
+\starttyping
+\startJSpreamble {helpers} used now
+    function Increment(n) {
+        MyCounter = MyCounter + n ;
+    }
+\stopJSpreamble
+\stoptyping
+
+and then say:
+
+\starttyping
+\goto {advance by one} [JS(Increment{5})]
+\stoptyping
+
+The distribution contains a collection of scripts that can be preloaded and used
+when needed. You can recognize the files by the \type {java-imp-} prefix. To
+prevent all preambles ending up in the \PDF\ file, we can say:
+
+\starttyping
+\startJSpreamble {something} used later
+\stopJSpreamble
+\stoptyping
+
+We already saw that one can also say \type {used now} and there's also a way
+to filter specific preambles on usage:
+
+\starttyping
+\startJScode {mything} uses {something}
+\stopJScode
+\stoptyping
+
+One should be aware of the fact that there is no decent way to check if every
+script is all right! Even worse, the \JAVASCRIPT\ interpreter currently used in
+the \ACROBAT\ tools is not reentrant, and breaks down on typos
+
+The full repertoire of commands is:
+
+\showsetup{startJScode}
+
+\showsetup{startJSpreamble}
+
+\showsetup{addtoJSpreamble}
+
+\showsetup{setJSpreamble}
+
+\stopchapter
+
+\stopcomponent

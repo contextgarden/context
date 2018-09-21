@@ -1,0 +1,99 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-annotations
+
+\startchapter[title=Annotations]
+
+Before we discuss interactive features (in following chapter) a few words will be
+spent on so called annotations. This term is used in Acrobat and is somewhat
+confusing as hyperlinks conceptually are not really annotations while comments
+are. The term relates to the way \PDF\ files can have added functionality. It
+might help understand the following chanters better when you know what model is
+used inside a \PDF.
+
+If you open a \PDF\ file in an editor you will finds lots of objects. Numbers are
+an object, as are strings and booleans. Symbols (represented as strings with a
+leading slash) are also objects. Objects can be collected in indexed tables
+(arrays) and hash tables (dictionaries). Serialized arrays are bounded by square
+brackets:
+
+\starttyping
+[ (value1) (value2) ]
+[ 1 2 3 ]
+[ 1 2 (value1) (value3) true /foo ]
+\stoptyping
+
+and hashes by double angle brackets:
+
+\starttyping
+<<
+    /Key1 (value1)
+    /Key2 (value2)
+    /Key3 123
+    /Key4 true
+    /Key5 [ 1 2 3 4 ]
+>>
+\stoptyping
+
+A \PDF\ file is a collection of objects:
+
+\starttyping
+1 0 obj
+
+endobj
+\stoptyping
+
+Instead of a number, string, boolean, array or dictionary an object can also be
+a stream of bytes:
+
+\starttyping
+1 0 obj << /Length 123 >>
+stream
+... 123 bytes ...
+endstream
+endobj
+\stoptyping
+
+Objects can refer to each other and can be looked up via a so called xref table.
+We refer to object with number one and revision zero as follows:
+
+\starttyping
+/foo 1 0 R
+\stoptyping
+
+When an object is updated it can be added to the end of the file and the version
+number can get bumped. A program that does something with the \PDF\ is supposed
+to do something clever with these numbers. More often the revision stays zero.
+
+A document is normally a sequence of pages. When a file is opened the cross
+reference table is loaded and the so called catalog is looked up. From there
+pages can be found. Pages have a content stream and can refer to resources, like
+fonts, special color spaces, complex objects (xforms) and among other things
+annotations.
+
+The page is rendered from the content stream but that stream has no information
+about hyperlinks and such. The \type {/Link} annotation objects that implement
+interactivity are independent and kind of layered over the rendered page. They
+describe rectangular areas that a viewer can use to intercept mouse clicks. If
+you want to see where the actions happens, search for \type {/Dest} and \type
+{/Annot} in an (uncompressed) \PDF file.
+
+The main reason for mentioning these details is that when you are checking a file
+for problems you need to look for annotation objects instead of the page stream.
+You also need to realize that these annotations in no way interfere with the page
+stream. They only exist because a viewer can use that information to add
+functionality. Their reference point is the lower lefty corner of the page. This
+is a conceptual difference with \HTML\ where hyperlinks are often in|-|line and
+part of the content stream. Both approaches have their advantages and
+disadvantages. From the perspective of quality typesetting it makes much sense to
+have them overlayed and explicitly defined (in terms of dimensions) but users
+will of course in most cases define them inline. This means that in order to make
+the \PDF\ some analyzing and juggling has to take place. In \CONTEXT\ we always
+have done as much as possible at the \TEX\ (therefore bypassing some limitations
+in the engine) end in \MKIV\ we don't use the engine's features at all.
+
+\stopchapter
+
+\stopcomponent

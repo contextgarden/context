@@ -1,0 +1,69 @@
+%D \module
+%D   [      file=s-references-identity,
+%D        version=2018.09.15,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Analyze References,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% begin info
+%
+% title   : analyze reference
+%
+% comment : show the building blocks of a reference (list)
+%
+% end info
+
+\startmodule[references-identify]
+
+\startluacode
+
+moduledata.references = moduledata.references or { }
+
+local context = context
+local NC, NR = context.NC, context.NR
+local bold = context.bold
+local text = context
+
+function moduledata.references.show(str)
+    local t = structures.references.identify(str)
+    context.starttabulate { "|T|T|T|" }
+    for i=1,#t do
+        if i == 1 then
+            context.FL()
+        else
+            context.ML()
+        end
+        local ti = t[i]
+        NC() bold(i) NC() bold("reference") NC() bold(ti.reference)      NC() NR()
+        NC()         NC() text("kind")      NC() text(ti.kind)           NC() NR()
+        NC()         NC() text("operation") NC() text(ti.operation)      NC() NR()
+        NC()         NC() text("arguments") NC() text(ti.arguments)      NC() NR()
+        NC()         NC() text("special")   NC() text(ti.special)        NC() NR()
+    end
+    context.LL()
+    context.stoptabulate()
+end
+
+\stopluacode
+
+\installmodulecommandluasingle \showreference {moduledata.references.show}
+
+\stopmodule
+
+\continueifinputfile{s-references-identify.mkiv}
+
+\usemodule[art-01]
+
+\starttext
+
+    \showreference[page(123),StartMovie{mymovie}]
+    \showreference[JS(Forget_Changes),CloseDocument]
+    \showreference[manual::contents]
+
+\stoptext

@@ -64,12 +64,19 @@ local f_cmyk   = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
 local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
 local f_tr     = formatters["Tr%s"]
 local f_cm     = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
-local f_effect = formatters["%s Tc %s w %s Tr"]
+local f_effect = formatters["%s Tc %s w %s Tr"] -- %.3F ?
 local f_tr_gs  = formatters["/Tr%s gs"]
 local f_num_1  = tostring
 local f_num_2  = formatters["%s %s"]
 local f_num_3  = formatters["%s %s %s"]
 local f_num_4  = formatters["%s %s %s %s"]
+
+directives.register("pdf.stripzeros",function()
+    f_gray = formatters["%.3N g %.3N G"]
+    f_rgb  = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
+    f_cmyk = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+    f_cm   = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
+end)
 
 local report_color = logs.reporter("colors","backend")
 
@@ -716,6 +723,10 @@ do
     local pdftransparency = lpdf.transparency
 
     local f_slant = formatters["q 1 0 %.6F 1 0 0 cm"]
+
+    directives.register("pdf.stripzeros",function()
+        f_slant = formatters["q 1 0 %.6N 1 0 0 cm"]
+    end)
 
  -- local fillcolors = {
  --     red        = { "pdf", "origin", "1 0 0 rg" },

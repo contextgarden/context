@@ -40,9 +40,15 @@
       \normalsettextpagecontent_normal{#1}%
    \fi}
 
+% \def\normalsettextpagecontent_normal#1%
+%   {\setbox#1\hbox to \makeupwidth
+%      {\hss\box#1\hss}} % never change the \hss's
+
 \def\normalsettextpagecontent_normal#1%
-  {\setbox#1\hbox to \makeupwidth
-     {\hss\box#1\hss}} % never change the \hss's
+  {\ifdim\wd#1=\makeupwidth\else
+     \setbox#1\hbox to \makeupwidth
+       {\hss\box#1\hss}% never change the \hss's
+   \fi}
 
 \def\normalsettextpagecontent_spread#1%
   {\setbox#1\hbox to \makeupwidth

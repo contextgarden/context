@@ -1,0 +1,64 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-transitions
+
+\startchapter[title={Page transitions}]
+
+I'm not sure if this feature is still used but in the early days of \PDF\ support
+in \TEX, users loved it. I never really used it myself. Page transitions only
+make sense in presentations, and unfortunately the ones provided by the Acrobat
+viewers are just ugly. Anyhow, one automatically gets them by saying:
+
+\starttyping
+\setuppagetransitions[random]
+\stoptyping
+
+This way one gets random transitions. Resetting transitions is done by:
+
+\starttyping
+\setuppagetransitions[reset]
+\stoptyping
+
+If needed one can specify transitions but I strongly advice against this, because
+these commands are very viewer dependant, therefore: if in despair, use numbers!
+By default, the next set is used, and one can access them by number,
+
+\starttabulate[|c|l|]
+\HL
+\NC \bf number              \NC \bf transition effects        \NC\NR
+\HL
+\NC  1\quad 2               \NC \type{{split,in,vertical}}
+                                \type{{split,in,horizontal}}  \NC\NR
+\NC  3\quad 4               \NC \type{{split,out,vertical}}
+                                \type{{split,out,horizontal}} \NC\NR
+\NC  5\quad 6               \NC \type{{blinds,horizontal}}
+                                \type{{blinds,vertical}}      \NC\NR
+\NC  7\quad 8               \NC \type{{box,in}}
+                                \type{{box,out}}              \NC\NR
+\NC  9\quad10\quad11\quad12 \NC \type{{wipe,east}}
+                                \type{{wipe,west}}
+                                \type{{wipe,north}}
+                                \type{{wipe,south}}           \NC\NR
+\NC 13                      \NC \type{dissolve}               \NC\NR
+\NC 14\quad15               \NC \type{{glitter,east}}
+                                \type{{glitter,south}}        \NC\NR
+\HL
+\stoptabulate
+
+The next settings are all valid:
+
+\starttyping
+\setuppagetransitions
+\setuppagetransitions[1]
+\setuppagetransitions[3,5,8,random]
+\stoptyping
+
+Valid setups are:
+
+\setup{setuppagetransitions}
+
+\stopchapter
+
+\stopcomponent

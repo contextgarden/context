@@ -292,9 +292,9 @@ otf.loadshapes      = loadshapes
 
 -- experimental code, for me only ... unsupported (todo: use %N)
 
-local f_c = string.formatters["%F %F %F %F %F %F c"]
-local f_l = string.formatters["%F %F l"]
-local f_m = string.formatters["%F %F m"]
+local f_c = formatters["%F %F %F %F %F %F c"]
+local f_l = formatters["%F %F l"]
+local f_m = formatters["%F %F m"]
 
 local function segmentstopdf(segments,factor,bt,et)
     local t = { }

@@ -457,8 +457,8 @@ do
     local f_dictionary     = formatters["<< % t >>"]
     local f_key_array      = formatters["/%s [ % t ]"]
     local f_array          = formatters["[ % t ]"]
-    local f_key_number     = formatters["/%s %N"]
-    local f_tonumber       = formatters["%N"]
+    local f_key_number     = formatters["/%s %N"]  -- always with max 9 digits and integer is possible
+    local f_tonumber       = formatters["%N"]      -- always with max 9 digits and integer is possible
 
     tostring_d = function(t,contentonly,key)
         if next(t) then

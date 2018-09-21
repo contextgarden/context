@@ -27358,6 +27358,18 @@
   </cd:command>
  </cd:interface>
  <cd:interface file="i-pagestate.xml">
+  <cd:command file="spac-pag.mkiv" level="system" name="signalrightpage"/>
+  <cd:command file="spac-pag.mkiv" level="system" name="doifelserightpage">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-pag.mkiv" level="system" name="rightpageorder"/>
   <cd:command file="core-dat.mkiv" level="system" name="definepagestate">
    <cd:arguments>
     <cd:keywords>
@@ -27414,6 +27426,38 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:name"/>
      <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="core-dat.mkiv" level="system" name="pagestaterealpageorder">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="core-dat.mkiv" level="system" name="autopagestaterealpage">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="core-dat.mkiv" level="system" name="setautopagestaterealpageno">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="core-dat.mkiv" level="system" name="autopagestaterealpageorder">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>

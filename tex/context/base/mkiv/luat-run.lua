@@ -115,6 +115,27 @@ local function wrapup_synctex()
     synctex.wrapup()
 end
 
+-- For Taco ...
+
+local sequencers    = utilities.sequencers
+local appendgroup   = sequencers.appendgroup
+local appendaction  = sequencers.appendaction
+local wrapupactions = sequencers.new { }
+
+appendgroup(wrapupactions,"system")
+appendgroup(wrapupactions,"user")
+
+local function wrapup_run()
+    local runner = wrapupactions.runner
+    if runner then
+        runner()
+    end
+end
+
+function luatex.wrapup(action)
+    appendaction(wrapupactions,"user",action)
+end
+
 -- this can be done later
 
 callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
@@ -135,7 +156,7 @@ callbacks.register('process_output_buffer',   false,               "actions perf
 callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
 
 callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
-callbacks.register('wrapup_run',              false,               "actions performed after closing files")
+callbacks.register('wrapup_run',              wrapup_run,          "actions performed after closing files")
 
 -- temp hack for testing:
 

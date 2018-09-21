@@ -1159,11 +1159,7 @@ vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n :
-            fill   i shifted(x,y) mfun_do_outline_options_f withpen pencircle scaled 0
-        else :
-            nofill i shifted(x,y)
-        fi ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withpen pencircle scaled 0 ;
     endfor ;
 enddef ;
 
@@ -1171,11 +1167,7 @@ vardef mfun_do_outline_text_u (expr n, x, y) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n :
-            fillup i shifted(x,y) mfun_do_outline_options_f
-        else :
-            nofill i shifted(x,y)
-        fi ;
+        if mfun_do_outline_n = n : fillup else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
     endfor ;
 enddef ;
 
@@ -1195,11 +1187,7 @@ vardef mfun_do_outline_text_b (expr n, x, y) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n :
-            fill   i shifted(x,y) mfun_do_outline_options_f
-        else :
-            nofill i shifted(x,y)
-        fi ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
     endfor ;
     for i=t :
         draw i shifted(x,y) mfun_do_outline_options_d ;
@@ -1213,11 +1201,7 @@ vardef mfun_do_outline_text_r (expr n, x, y) (text t) =
     endfor ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n :
-            fill   i shifted(x,y) mfun_do_outline_options_f
-        else :
-            nofill i shifted(x,y)
-        fi ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
     endfor ;
 enddef ;
 
@@ -1225,7 +1209,7 @@ vardef mfun_do_outline_text_n (expr n, x, y) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n : fill else : nofill fi i shifted(x,y) ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) ;
     endfor ;
 enddef ;
 

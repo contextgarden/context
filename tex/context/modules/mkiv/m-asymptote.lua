@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['m-asymptote'] = {
     version   = 1.001,
-    comment   = "companion to m-pstricks.mkiv",
+    comment   = "companion to m-asymptote.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"

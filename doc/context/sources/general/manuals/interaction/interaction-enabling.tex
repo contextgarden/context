@@ -1,0 +1,118 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-enabling
+
+\startchapter[title=Enabling]
+
+Interaction is turned off by default. Of course cross referencing
+work without interaction but there are no hyperlinks. You turn on
+interaction with the \type {\setupinteraction} command:
+
+\showsetup {setupinteraction}
+
+The \type {state} key is the switch you need to use. In addition you might want
+to setup the style and color.
+
+\starttyping
+\setupinteraction
+  [state=start,
+   style=,
+   color=,
+   contrastcolor=]
+\stoptyping
+
+This is the least intrusive way to get interaction in your document. By default
+the style is bold and the \type {color} defaults to green. The \type
+{contrastcolor} is used when a hyperlink refers to the same page and defaults to
+red. A neutral setup makes sense because nowadays the reader kind of knows what
+can be clicked on.
+
+The \type {title}, \type {subtitle}, \type {author}, \type {date} and \type
+{keyword} parameters are passed to the document and will show up when you request
+document information.
+
+The \type {openaction} parameter can for instance be used to start at a specific
+page, while the \type {closeaction} can for instance trigger a \JAVASCRIPT\
+cleanup script. The \type {openpageaction} and \type {closepageaction} can for
+instance initialize and reset states, something we do in some presentation
+styles.
+
+The \type {click} parameter controls how a viewer responds to pressing a mouse
+button on an annotation: highlight or not. The \type {display} parameter
+determines if a cross document link opens in the current window.
+
+The \type {menu} parameter is a quick way to disable menus, of which there can be
+many: at each side of the page, stacked or not, etc. The \type {symbolset}
+determines the look and feel of symbols used in for instance navigational buttons
+and status bars.
+
+The \type {page} parameters is a bit special, and it function is an inheritance
+from the early days. Some \DVI\ and \PDF\ viewers supported named destinations,
+others only page references. This parameter can be used to force one or the
+other. There was a time that there was a limit on the number of named references,
+so going page was the only option \footnote {We're talking of 1995 when we made
+documents of many thousands of pages with tens of thousands of hyperlinks, cross
+linked tables of contents, registers, active graphics, etc.\ Think of
+dictionaries used in very specific projects, or quality assurance manuals.}
+
+Personally I consider an electronic document an entity to be seen full screen on
+a dedicated device. However some users prefer the target of a link to fit the
+width of the screen and alike. The \type {focus} parameter can (within)
+reasonable bounds provide this. The \type {focusoffset} is then used to keep
+things a bit visual convenient.
+
+The \type {height} and \type{depth} parameters are sort of special and probably never
+used. When we go back in time, to when we started adding interactivity, there were
+a few issues that needed to be dealt with:
+
+\startitemize[packed]
+\startitem
+    We need to make sure that we have something to click on, so we need to add
+    some offset if needed.
+\stopitem
+\startitem
+    We need to handle nested hyperlinks, which is why \CONTEXT\ didn't use the
+    link features of for instance \PDFTEX\ but built its own.
+\stopitem
+\startitem
+    Hyperlinks should break properly across lines without side effects, again a
+    reason for bypassing some of the \TEX\ engine's behaviour.
+\stopitem
+\startitem
+    We have to make sure that there is at least a consistent height and depth
+    of hyperlinks. These tight links with viewer supplied bounding boxes to
+    click on just look real bad! So, we had to do better.
+\stopitem
+\stopitemize
+
+Normally the two mentioned parameters are not used. However, their value will
+kick in when we say \type {\setfalse \locationstrut}, in which case the given
+height and depth will be used. Some advice: don't mess with this. We only have
+this because it permits special effects.
+
+If you want to see what the target (destinations) and sources (references) of
+links are, you can say:
+
+\starttyping
+\enabletrackers[nodes.references,nodes.destinations]
+\stoptyping
+
+The \type {fieldlayer} parameter can be used to set a so called viewer layer, so
+that you can hide them (given that a viewer supports that). The \type {calculate}
+parameter can associate a calculator (initializer) with the fields.
+
+You can create an interaction environment with:
+
+\showsetup {defineinteraction}
+
+which then can be used with:
+
+\showsetup {startinteraction}
+
+\stopchapter
+
+\stopcomponent
+
+

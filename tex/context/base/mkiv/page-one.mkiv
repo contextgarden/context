@@ -313,37 +313,43 @@
 
 \unexpanded\def\page_one_command_flush_top_insertions
   {\ifvoid\namedinsertionnumber\s!topfloat\else
-     \ifgridsnapping
-       \box\namedinsertionnumber\s!topfloat
-       \vskip-\topskip
-       \vskip\strutheight % [xx] new: see icare topbleed
-     \else
-       \ifcase\c_page_floats_insertions_topskip_mode
-         % 0: default, do nothing
-       \or
-         % 1: no topskip (crossed fingers)
-         \vskip-\topskip
-         \vskip\strutheight
-       \fi
-       \unvbox\namedinsertionnumber\s!topfloat
-     \fi
+     \page_one_command_flush_top_insertions_indeed % less tracing
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
 
+\def\page_one_command_flush_top_insertions_indeed
+  {\ifgridsnapping
+     \box\namedinsertionnumber\s!topfloat
+     \vskip-\topskip
+     \vskip\strutheight % [xx] new: see icare topbleed
+   \else
+     \ifcase\c_page_floats_insertions_topskip_mode
+       % 0: default, do nothing
+     \or
+       % 1: no topskip (crossed fingers)
+       \vskip-\topskip
+       \vskip\strutheight
+     \fi
+     \unvbox\namedinsertionnumber\s!topfloat
+   \fi}
+
 \unexpanded\def\page_one_command_flush_bottom_insertions
   {\ifvoid\namedinsertionnumber\s!bottomfloat\else
-     \ifgridsnapping
-     % \floatparameter\c!bottombefore
-       \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
-     % \floatparameter\c!bottomafter
-     \else
-       \floatparameter\c!bottombefore
-       \unvbox\namedinsertionnumber\s!bottomfloat
-       \floatparameter\c!bottomafter
-     \fi
+     \page_one_command_flush_bottom_insertions_indeed
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint
    \global\setfalse\c_page_floats_not_permitted}
+
+\def\page_one_command_flush_bottom_insertions_indeed
+  {\ifgridsnapping
+   % \floatparameter\c!bottombefore
+     \snaptogrid\hbox{\box\namedinsertionnumber\s!bottomfloat}%
+   % \floatparameter\c!bottomafter
+   \else
+     \floatparameter\c!bottombefore
+     \unvbox\namedinsertionnumber\s!bottomfloat
+     \floatparameter\c!bottomafter
+   \fi}
 
 \unexpanded\def\page_one_command_flush_floats
   {\global\settrue\c_page_floats_flushing

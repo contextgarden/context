@@ -63,6 +63,15 @@ function nodepool.pdfrestore()
     return copy_node(pdfrestore)
 end
 
+local s_matrix_0 = "1 0 0 1"
+local f_matrix_2 = formatters["%.6F 0 0 %.6F"]
+local f_matrix_4 = formatters["%.6F %.6F %.6F %.6F"]
+
+directives.register("pdf.stripzeros",function()
+    f_matrix_2 = formatters["%.6N 0 0 %.6N"]
+    f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
+end)
+
 function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
     local t = copy_node(pdfsetmatrix)
     if type(rx) == "string" then
@@ -86,12 +95,12 @@ function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
         end
         if sx == 0 and sy == 0 then
             if rx == 1 and ry == 1 then
-                setdata(t,"1 0 0 1")
+                setdata(t,s_matrix_0)
             else
-                setdata(t,formatters["%0.6F 0 0 %0.6F"](rx,ry))
+                setdata(t,f_matrix_2(rx,ry))
             end
         else
-            setdata(t,formatters["%0.6F %0.6F %0.6F %0.6F"](rx,sx,sy,ry))
+            setdata(t,f_matrix_4(rx,sx,sy,ry))
         end
     end
     return t

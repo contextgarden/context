@@ -1,0 +1,914 @@
+\environment interaction-style
+
+\startcomponent interaction-widgets
+
+\startchapter[title={Widgets}]
+
+\stopchapter
+
+\stopcomponent
+
+
+
+
+\def\fillinfield#1{}
+
+% \useJSscripts[fld]
+% \setupinteraction[state=start,closeaction=ForgetAll]
+
+\section{Fill||in fields}
+
+Fields come in many disguises. Currently \CONTEXT\ supports
+the field types provided by \PDF, which in turn are derived
+from \HTML. Being a static format and not a programming
+language, \PDF\ only provides the interface. Entering data
+is up to the viewer and validation to the built in
+\JAVASCRIPT\ interpreter. The next paragraph shows an
+application.
+
+\startbuffer
+A few years back, \TEX\ could only produce \fillinfield [dvi]
+{\DVI} output, but nowadays, thanks to \fillinfield {Han The
+Thanh}, we can also directly produce \fillinfield [pdf] {\PDF}!
+Nice eh? Actually, while the first field module was prototyped
+in \ACROBAT, the current implementation was debugged in
+\fillinfield [pdfTeX] {\PDFTEX}. Field support in \fillinfield
+[ConTeXt] {\CONTEXT} is rather advanced and complete and all
+kind of fields are supported. One can hook in appearances, and
+validation \fillinfield [JavaScripts] {\JAVASCRIPT}'s. Fields
+can be cloned and copied, where the latter saves some space. By
+using \fillinfield {objects} when suited, this module saves
+space anyway.
+\stopbuffer
+
+\getbuffer
+
+This paragraph is entered in the source file as:
+
+\typebuffer
+
+I leave it to the imagination of the user how
+\type{\fillinfield} is implemented, but trust me, the
+definition is rather simple and is based on the macros
+mentioned below.
+
+Because I envision documents with many thousands of fields,
+think for instance of tutorials, I rather early decided to
+split the definition from the setup. Due to the fact that
+while typesetting a field upto three independant instances
+of \type{\framed} are called, we would end up with about
+150~hash entries per field, while in the current
+implementation we only need a few. Each field can inherit
+its specific settings from the setup group it belongs to.
+
+Let's start with an example of a {\em radio} field. In fact
+this is a collection of fields. Such a field is defined
+with:
+
+\startbuffer
+\definefield
+  [Logos] [radio] [LogoSetup]
+  [ConTeXt,PPCHTEX,TeXUtil] [PPCHTEX]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Here the fourth argument specifies the subfields and the
+last argument tells which one to use as default. We have to
+define the subfields separately:
+
+\startbuffer
+\definesubfield [ConTeXt] [] [ConTeXtLogo]
+\definesubfield [PPCHTEX] [] [PPCHTEXLogo]
+\definesubfield [TeXUtil] [] [TeXUtilLogo]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The second argument specifies the setup. In this example
+the setup (\type {LogoSetup}) is inherited from the main
+field. The third arguments tells \CONTEXT\ how the fields
+look like when turned on. These appearances are to be
+defined as symbols:
+
+\startbuffer
+\definesymbol [ConTeXtLogo] [{\externalfigure[mp-cont.502]}]
+\definesymbol [PPCHTEXLogo] [{\externalfigure[mp-cont.503]}]
+\definesymbol [TeXUtilLogo] [{\externalfigure[mp-cont.504]}]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Before we typeset the fields, we specify some settings to use:
+
+\startbuffer
+\setupfield [LogoSetup]
+  [width=4cm,
+   height=4cm,
+   frame=off,
+   background=screen]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Finally we can typeset the fields:
+
+\startbuffer
+\hbox to \hsize
+  {\hss\field[ConTeXt]\hss\field[PPCHTEX]\hss\field[TeXUtil]\hss}
+\stopbuffer
+
+\typebuffer
+
+This shows up as:
+
+\startbaselinecorrection
+\getbuffer
+\stopbaselinecorrection
+
+An important characteristic of field is cloning cq.\
+copying, as demonstrated below:
+
+% \tracefieldstrue
+
+\startbuffer[symbol]
+\definesymbol [yes-a] [$\times$]
+\definesymbol [yes-b] [$\star$]
+\definesymbol [nop-a] [$\bullet$]
+\definesymbol [nop-b] [$-$]
+\stopbuffer
+
+\getbuffer[symbol]
+
+\startbuffer[define]
+\definefield [example-1] [radio] [setup 1] [ex-a,ex-b,ex-c] [ex-c]
+\definesubfield [ex-a,ex-b,ex-c] [setup 1] [yes-a,nop-a]
+\stopbuffer
+
+\getbuffer[define]
+
+\startbuffer[clone]
+\clonefield [ex-a] [ex-p] [setup 2] [yes-b,nop-b]
+\clonefield [ex-b] [ex-q] [setup 2] [yes-b,nop-b]
+\clonefield [ex-c] [ex-r] [setup 2] [yes-b,nop-b]
+\stopbuffer
+
+\getbuffer[clone]
+
+\startbuffer[copy]
+\copyfield [ex-a] [ex-x]
+\copyfield [ex-b] [ex-y]
+\copyfield [ex-c] [ex-z]
+\stopbuffer
+
+\getbuffer[copy]
+
+\startbuffer[setup]
+\setupfield [setup 1] [width=1cm,height=1cm,framecolor=red]
+\setupfield [setup 2] [width=.75cm,height=.75cm]
+\stopbuffer
+
+\getbuffer[setup]
+
+\startbuffer[field]
+\hbox to \hsize
+  {\field[ex-a]\hfil\field[ex-b]\hfil\field[ex-c]\hfil\hfil
+   \field[ex-p]\hfil\field[ex-q]\hfil\field[ex-r]\hfil\hfil
+   \field[ex-x]\hfil\field[ex-y]\hfil\field[ex-z]}
+\stopbuffer
+
+\startbaselinecorrection \getbuffer[field] \stopbaselinecorrection
+
+The next table shows the relations between these fields of type radio:
+
+\startbaselinecorrection
+\showfields
+\stopbaselinecorrection
+
+This table is generated by \type {\showfields} and can be
+used to check the relations between fields, but only when
+we have set \type {\tracefieldstrue}. Radio fields have the
+most complicated relationships of fields, due to the fact
+that only one of them can be activated (on). By saying
+\type {\logfields} one can write the current field
+descriptions to the file \type {fields.log}.
+
+Here we used some \TEX\ mathematical symbols. These are
+functional but sort of dull, so later we will define a more
+suitable visualization.
+
+\typebuffer[symbol]
+
+The parent fields were defined by:
+
+\typebuffer[define]
+
+and the clones, which can have their own appearance, by:
+
+\typebuffer[clone]
+
+The copies are defined using:
+
+\typebuffer[copy]
+
+using the setups
+
+\typebuffer[setup]
+
+Finally all these fields are called using \type {\field}:
+
+\typebuffer[field]
+
+Now we will define a so called {\em check} field. This
+field looks like a radio field but is independant of
+others. First we define some suitable symbols:
+
+\startbuffer
+\definesymbol [yes] [{\externalfigure[mp-cont.502]}]
+\definesymbol [no]  []
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+A check field is defined as:
+
+\startbuffer
+\definefield [check-me] [check] [setup 3] [yes,no] [no]
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+This time we say \type{\field[check-me]} and get:
+
+\startbuffer
+\setupfield
+  [setup 3]
+  [width=2cm, height=2cm,
+   rulethickness=3pt, corner=round, framecolor=red]
+\stopbuffer
+
+\getbuffer
+
+\startlinecorrection
+\hbox to \hsize{\hss\field[check-me]\hss}
+\stoplinecorrection
+
+As setup we used:
+
+\typebuffer
+
+We already saw an example of a {\em line} field. By default
+such a line field looks like:
+
+\startbuffer[define]
+\definefield [Email] [line] [ShortLine] [] [pragma@wxs.nl]
+\stopbuffer
+
+\getbuffer[define]
+
+\startbuffer[field]
+\field [Email] [your email]
+\stopbuffer
+
+\startbaselinecorrection \getbuffer[field] \stopbaselinecorrection
+
+We defined this field as:
+
+\typebuffer[define]
+
+and called it using a second, optional, argument:
+
+\typebuffer[field]
+
+As shown, we can influence the way such a field is typeset.
+It makes for instance sense to use a monospaced typeface
+and limit the height. When we set up a field, apart from
+the setup class we pass some general characteristics, and
+three more detailed definitions, concerning the
+surrounding, the label and the field itself.
+
+\startbuffer
+\setupfield
+  [ShortLine]
+  [label,frame,horizontal]
+  [offset=4pt,height=fit,framecolor=green,
+   background=screen,backgroundscreen=.80]
+  [height=18pt,width=80pt,align=middle,
+   background=screen,backgroundscreen=.90,frame=off]
+  [height=18pt,width=80pt,color=red,align=right,style=type,
+   background=screen,backgroundscreen=.90,frame=off]
+\stopbuffer
+
+\typebuffer
+
+So now we get:
+
+\getbuffer
+
+\startbuffer[mainmail]
+\definemainfield [MainMail] [line] [ShortLine] [] [pragma@wxs.nl]
+\stopbuffer
+
+\getbuffer[mainmail]
+
+\startlinecorrection
+\field [MainMail] [your email]
+\stoplinecorrection
+
+Such rather long definitions can be more sparse when we set
+up all fields at once, like:
+
+\startbuffer
+\setupfields
+  [label,frame,horizontal]
+  [offset=4pt,height=fit,framecolor=green,
+   background=screen,backgroundscreen=.80]
+  [height=18pt,width=80pt,
+   background=screen,backgroundscreen=.90,frame=off]
+  [height=18pt,width=80pt,color=red,align=middle,
+   background=screen,backgroundscreen=.90,frame=off]
+\stopbuffer
+
+\typebuffer
+
+So given that we have defined field \type {MainMail} we can
+say:
+
+\startbuffer[MP]
+\startuniqueMPgraphic{button}
+  path p ; p := fullcircle xyscaled (OverlayWidth,OverlayHeight) ;
+  fill p withcolor (.8,.8,.8) ;
+  draw p withcolor OverlayColor withpen pencircle scaled 3 ;
+\stopuniqueMPgraphic
+
+\defineoverlay [normalbutton] [\uniqueMPgraphic{button}]
+\stopbuffer
+
+\getbuffer[MP]
+
+\startbuffer
+\setupfield [LeftLine]
+  [background=normalbutton, backgroundcolor=darkgreen,
+   offset=2ex, height=7ex, width=.25\hsize,
+   style=type, frame=off, align=left]
+\setupfield [MiddleLine]
+  [background=normalbutton, backgroundcolor=darkgreen,
+   offset=2ex, height=7ex, width=.25\hsize,
+   style=type, frame=off, align=middle]
+\setupfield [RightLine]
+  [background=normalbutton, backgroundcolor=darkgreen,
+   offset=2ex, height=7ex, width=.25\hsize,
+   style=type, frame=off, align=right]
+
+\clonefield [MainMail] [LeftMail]   [LeftLine]
+\clonefield [MainMail] [MiddleMail] [MiddleLine]
+\clonefield [MainMail] [RightMail]  [RightLine]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We get get three connected fields:
+
+\startlinecorrection
+\hbox to \hsize
+  {\field[LeftMail]\hss\field[MiddleMail]\hss\field[RightMail]}
+\stoplinecorrection
+
+(Keep in mind that in \CONTEXT\ left aligned comes down to
+using \type {\raggedleft}, which can be confusing, but
+history cannot be replayed.)
+
+By the way, this shape was generated by \METAPOST\ using
+the overlay mechanism:
+
+\typebuffer[MP]
+
+Due to the fact that a field can have several modes (loner,
+parent, clone or copy), one cannot define a clone or copy
+when the parent field is already typeset. When one knows in
+advance that there will be clones or copies, one should
+use:
+
+\typebuffer[mainmail]
+
+Now we can define copies, clones and even fields with the
+same name, also when the original already is typeset. Use
+\type {\showfields} to check the status of fields. When in
+this table the mode is typeset slanted, the field is not
+yet typeset.
+
+The values set up with \type {\setupfield} are inherited by
+all following setup commands. One can reset these default
+values by:
+
+\startbuffer
+\setupfields[reset]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+When we want more than one line, we use a {\em text} field.
+Like the previous fields, text must be entered in the
+viewer specific encoding, in our case, \PDF\ document
+encoding. To free users from thinking of encoding,
+\CONTEXT\ provides a way to force at least the accented
+glyphs into a text field in a for \TEX\ users familiar way:
+
+\setupfields
+  [horizontal]
+  [offset=4pt,height=fit,framecolor=green,
+   background=screen,backgroundscreen=.80]
+  [height=18pt,width=80pt,
+   background=screen,backgroundscreen=.90,frame=off]
+  [height=18pt,width=80pt,color=red,align=middle,
+   background=screen,backgroundscreen=.90,frame=off]
+
+\definefield
+  [SomeField] [text] [TextSetup]
+  [hi there, try \string\\ \string " e or
+   \string\\ \string~ n to get \"e or \~n]
+
+\setupfield
+  [TextSetup]
+  [label,frame,horizontal][framecolor=green][]
+  [height=80pt,width=240pt,style=\sl,align=middle,
+   enterregion=JS(Initialize_TeX_Key),
+   afterkey=JS(Convert_TeX_Key),
+   validate=JS(Convert_TeX_String)]
+
+\startbaselinecorrection
+\field[SomeField][Just Some Text]
+\stopbaselinecorrection
+
+Now, how is this done? Defining the field is not that hard:
+
+\starttyping
+\definefield [SomeField] [text] [TextSetup] [default text]
+\stoptyping
+
+The conversion is taken care of by a \JAVASCRIPT's. We can assign such
+scripts to mouse and keyboard events, like in:
+
+\starttyping
+\setupfield
+  [TextSetup][...][...][...]
+  [....,
+   regionin=JS(Initialize_TeX_Key),
+   afterkey=JS(Convert_TeX_Key),
+   validate=JS(Convert_TeX_String)]
+\stoptyping
+
+The main reason for using the \type{JS(...)} method here is
+that this permits future extensions and looks familiar at
+the same time. Depending on the assignments, one can
+convert after each keypress and|/|or after all text is
+entered.
+
+\startbuffer
+\definefield
+  [Ugly] [choice] [UglySetup]
+  [ugly,awful,bad] [ugly]
+\setupfield
+  [UglySetup]
+  [width=6em,
+   height=1.2\lineheight,
+   location=low]
+\stopbuffer
+
+\getbuffer
+
+We've arrived at another class of fields: {\em choice},
+{\em pop||up} and {\em combo} fields. All those are menu
+based (and \vbox{\field[Ugly]}). This in||line menu was
+defined as:
+
+\typebuffer
+
+\startbuffer
+\definefield
+  [Ugly2] [popup] [UglySetup]
+  [ugly,awful,bad] [ugly]
+\definefield
+  [Ugly3] [combo] [UglySetup]
+  [ugly,{AWFUL=>awful},bad] [ugly]
+\stopbuffer
+
+\getbuffer
+
+Pop||up fields look like: \vbox{\field[Ugly2]} and combo
+fields permit the user to enter his or her own option:
+\vbox{\field[Ugly3]}. The amount of typographic control
+over these three type of fields is minimal, but one can
+specify what string to show and what string results:
+
+\typebuffer
+
+Here \type{AWFUL} is shown and when selected becomes the
+choice \type{awful}. Just in case one wonders why we use
+\type{=>}, well, it just looks better and the direction
+shows what value will be output.
+
+\startbuffer[uglies]
+\definefieldset [AllUglies] [Ugly, Ugly2, Ugly3]
+\stopbuffer
+
+\getbuffer[uglies]
+
+\startbuffer
+One can for instance \goto {reset the form} [ResetForm] or
+\goto {part of the form} [ResetForm{AllUglies}]. This last
+sentence was typed in as:
+\stopbuffer
+
+A special case of the check type field is a pure {\em push}
+field. Such a field has no export value and has only use as
+a pure interactive element. For the moment, let's forget
+about that one.
+
+Before we demonstrate our last type of fields and show some
+more tricky things, we need to discuss what to do with the
+information provided by filling in the fields. There are
+several actions available related to fields.
+
+\getbuffer
+
+\typebuffer
+
+Hereby \type {AllUglies} is a set of fields to be defined
+on forehand, using
+
+\typebuffer[uglies]
+
+In a similar way one can \goto {submit some or all fields}
+[SubmitForm] using the \type {SubmitForm} directive. This
+action optionally can take two arguments, the first being
+the destination, the second a list of fields to submit, for
+instance:
+
+\starttyping
+\button{submit}[SubmitForm{mailto::pragma@wxs.nl,AllUglies}]
+\stoptyping
+
+Once the fields are submitted (or saved in a file), we can
+convert the resulting \FDF\ file into something \TEX\ with
+the perl program \type{fdf2tex}. One can use \type
+{\ShowFDFFields{filename}} to typeset the values. If you do
+not want to run the \PERL\ converter from within \TEX, say
+\type {\runFDFconverterfalse}. In that case, the (stil)
+less robust \TEX\ based converter will be used.
+
+I already demonstrated how to attach scripts to events, but
+how about changing the appearance of the button itself?
+Consider the next definitions:
+
+\startbuffer
+\definesymbol [my-y] [$\times$]
+\definesymbol [my-r] [?]
+\definesymbol [my-d] [!]
+
+\definefield
+  [my-check] [check] [my-setup]
+  [{my-y,my-r,my-d},{,my-r,my-d}]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Here we omitted the default value, which always is {\em no}
+by default. The setup can look like this:
+
+\startbuffer
+\setupfield
+  [my-setup]
+  [width=1.5cm, height=1.5cm,
+   frame=on, framecolor=red, rulethickness=1pt,
+   backgroundoffset=2pt, background=screen, backgroundscreen=.85]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Now when this field shows up, watch what happens when the
+mouse enters the region and what when we click.
+
+\startbaselinecorrection
+\hbox to \hsize{\hss\field[my-check]\hss}
+\stopbaselinecorrection
+
+So, when instead of something \type{[yes,no]} we give
+triplets, the second element of such a triplet declares the
+roll||over appearance and the third one the push||down
+appearance. The braces are needed!
+
+One application of appearances is to provide help or
+additional information. Consider the next definition:
+
+\startbuffer
+\definefield [Help] [check] [HelpSetup] [helpinfo] [helpinfo]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+This means as much as: define a check field, typeset this
+field using the help specific setup and let \type{helpinfo}
+be the on||value as well as the default. Here we use the
+next setup:
+
+\startbuffer
+\setupfields
+  [reset]
+\setupfield
+  [HelpSetup]
+  [width=fit,height=fit,frame=off,option={readonly,hidden}]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We didn't use options before, but here we have to make sure
+that users don't change the content of the field and by
+default we don't want to show this field at all. The actual
+text is defined as a symbol:
+
+\startbuffer
+\definesymbol [helpinfo] [\SomeHelpText]
+
+\def\SomeHelpText%
+  {\framed
+     [width=\leftmarginwidth,height=fit,align=middle,style=small,
+      frame=on,background=color,backgroundcolor=white,framecolor=red]
+     {Click on the hide button to remove this screen}}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+\inmargin {\fitfield[Help]} Now we can put the button somewhere and
+turn the help on or off by saying \goto {Hide Help} [HideField{Help}]
+or \goto {Show Help} [ShowField{Help}]. Although it's better to put
+these commands in a dedicated part of the screen. And try \goto
+{Help} [JS(Toggle_Hide{Help})].
+\stopbuffer
+
+\getbuffer
+
+We can place a field anywhere on the page, for instance by
+using the \type {\setup...texts} commands. Here we simply
+said:
+
+\typebuffer
+
+When one uses for instance \type {\setup...texts}, one
+often wants the help text to show up on every next page.
+This can be accomplished by saying:
+
+\starttyping
+\definemainfield [Help] [check] [HelpSetup] [helpinfo] [helpinfo]
+\stoptyping
+
+Every time such a field is called again, a new copy is
+generated automatically. Because fields use the
+objectreference mechanism and because such copies need to
+be known to their parent, field inclusion is a multi||pass
+typesetting job (upto 4 passes can be needed!).
+
+When possible, appearances are shared between fields,
+mainly because this saves space, but at the cost of extra
+object references. This feature is not that important for
+straight forward forms, but has some advantages when
+composing more complicated (educational) documents.
+
+Let us now summarize the commands we have available for
+defining and typesetting fields. The main definition macro
+is:
+
+\setup{definefield}
+
+and for radiofields we need to define the components by:
+
+\setup{definesubfield}
+
+Fields can be cloned and copied, where the latter can not
+be set up independently.
+
+\setup{clonefield}
+
+\setup{copyfield}
+
+Fields can be grouped, and such a group can have its own
+settings. Apart from copied fields, we can define the
+layout of a field and set options using:
+
+\setup{setupfield}
+
+Such a group inherits its settings from the general setup
+command:
+
+\setup{setupfields}
+
+Fields are placed using one of:
+
+\setup{field}
+
+or
+
+\setup{fitfield}
+
+Some pages back I showed an example of:
+
+\setup{fillinfield}
+
+Finally there are two commands to trace fields. These
+commands only make sense when one already has said: \type
+{\tracefieldstrue}.
+
+\setup{showfields}
+
+\setup{logfields}
+
+\section{Tooltips}
+
+\startbuffer
+Chinese people seem to have no problems in recognizing their many
+different pictorial glyphs. \tooltip [left] {Western} {European
+and American} people however seem to have problems in understanding
+what all those \tooltip [middle] {icons} {small graphics} on their
+computer screens represent. But, instead of standardizing on a set
+of icons, computer programmers tend to fill the screen with so
+called tooltips. Well, \tooltip {\CONTEXT} {a \TEX\ macro package}
+can do tooltips too, and although a good design can do without them,
+\TEX\ at least can typeset them correctly.
+\stopbuffer
+
+\getbuffer
+
+The previous paragraph has three of such tooltips under
+{\em western}, {\em icons} and {\em \CONTEXT}, each aligned
+differently. We just typed:
+
+\typebuffer
+
+This is an official command, and thereby we can show its
+definition:
+
+\setup{tooltip}
+
+\section{Fieldstacks}
+
+In due time I will provide more dedicated field commands.
+Currently apart from \type {\fillinfield} and \type
+{\tooltip} we have \type {\fieldstack}. Let's spend a few
+words on those now.
+
+\startbuffer[somemap1]
+\useexternalfigure [map -- -- --] [euro-10] [width=.3\hsize]
+\useexternalfigure [map nl -- --] [euro-11] [map -- -- --]
+\useexternalfigure [map nl de --] [euro-12] [map -- -- --]
+\useexternalfigure [map nl de en] [euro-13] [map -- -- --]
+
+\definesymbol [map -- -- --] [{\externalfigure[map -- -- --]}]
+\definesymbol [map nl -- --] [{\externalfigure[map nl -- --]}]
+\definesymbol [map nl de --] [{\externalfigure[map nl de --]}]
+\definesymbol [map nl de en] [{\externalfigure[map nl de en]}]
+
+\stopbuffer
+
+\startbuffer[somemap2]
+\definefieldstack
+  [somemap]
+  [map -- -- --, map nl -- --, map nl de --, map nl de en]
+  [frame=on]
+\stopbuffer
+
+\startbuffer[somemap3]
+\placefigure
+  [left][fig:somemap]
+  {Do you want to see what interfaces
+   are available? Just click \goto
+   {here} [JS(Walk_Field{somemap})]
+   a few times!}
+  {\fieldstack[somemap]}
+\stopbuffer
+
+\getbuffer[somemap1,somemap2,somemap3]
+
+One can abuse field for educational purposes. Take for
+instance \in{figure}[fig:somemap]. In this figure we can
+sort of walk over different alternatives of the same
+graphic. This illustration was typeset by saying:
+
+\typebuffer[somemap3]
+
+However, before we can ask for such a map, we need to
+define a field set, which in fact is a list of symbols to
+show. This list is defined using:
+
+\typebuffer[somemap2]
+
+which in turn is preceded by:
+
+\typebuffer[somemap1]
+
+\startbuffer
+\placefigure
+  [here][fig:anothermap]
+  {Choose \goto {one} [JS(Set_Field{anothermap,2})] country,
+   \goto {two} [JS(Set_Field{anothermap,3})] countries,
+   \goto {three} [JS(Set_Field{anothermap,4})] countries or
+   \goto {no} [JS(Set_Field{anothermap,1})] countries at all.}
+  {\fieldstack
+     [anothermap]
+     [map -- -- --, map nl -- --, map nl de --, map nl de en]
+     [frame=on]}
+\stopbuffer
+
+\getbuffer
+
+A slightly different illustration is shown in
+\in{figure}[fig:anothermap]. Here we use the same symbols
+but instead say:
+
+\typebuffer
+
+As one can see, we can can skip the definition and pass it
+directly, but I wouldn't call that beautiful.
+
+The formal definitions are:
+
+\setup{definefieldstack}
+
+\setup{fieldstack}
+
+Instead if stacking fields, you can of course also put them
+alongside. This makes sense when you want to use dedicated
+(visible) captions for each image.
+
+\startbuffer
+\useexternalfigure [europe]  [euro-10] [width=.3\hsize]
+\useexternalfigure [holland] [euro-nl] [europe]
+\useexternalfigure [germany] [euro-de] [europe]
+\useexternalfigure [england] [euro-en] [europe]
+
+\definesymbol [europe]  [{\externalfigure[europe]}]
+\definesymbol [holland] [{\externalfigure[holland]}]
+\definesymbol [germany] [{\externalfigure[germany]}]
+\definesymbol [england] [{\externalfigure[england]}]
+
+\definefield
+  [interface] [radio] [map]
+  [england,germany,holland] [holland]
+
+\definesubfield [holland] [] [holland,europe]
+\definesubfield [germany] [] [germany,europe]
+\definesubfield [england] [] [england,europe]
+
+\setupfield[map][frame=off]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We can for instance typeset the fields by saying:
+
+\startbuffer
+\startcombination[3]
+  {\fitfield[holland]} {Dutch Interface}
+  {\fitfield[germany]} {German Interface}
+  {\fitfield[england]} {English Interface}
+\stopcombination
+\stopbuffer
+
+\typebuffer
+
+\startbaselinecorrection
+\getbuffer
+\stopbaselinecorrection
+
+
+\stopchapter
+
+\stopcomponent

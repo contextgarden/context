@@ -65,14 +65,8 @@
 
 \newconstant\c_pack_objects_offset_mode % 0=tex 1=box
 
-\unexpanded\def\pack_objects_temp_check % this will go away
-  {\ifnum\texenginefunctionality<6401\relax
-     \c_pack_objects_offset_mode\zerocount
-   \fi}
-
 \unexpanded\def\pack_objects_set_yes#1#2%
-  {\pack_objects_temp_check % this will go away
-   \ifcase\c_pack_objects_offset_mode
+  {\ifcase\c_pack_objects_offset_mode
      \ifzeropt\objectoff
        \pack_objects_package_nop\nextbox
      \else
@@ -86,8 +80,7 @@
    \endgroup}
 
 \unexpanded\def\pack_objects_set_nop#1#2%
-  {\pack_objects_temp_check % this will go away
-   \ifcase\c_pack_objects_offset_mode
+  {\ifcase\c_pack_objects_offset_mode
      \ifzeropt\objectoff
        \pack_objects_package_nop\nextbox
      \else

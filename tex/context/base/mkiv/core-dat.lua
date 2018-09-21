@@ -36,6 +36,7 @@ local v_yes            = interfaces.variables.yes
 local new_latelua      = nodes.pool.latelua
 
 local implement        = interfaces.implement
+local getnamespace     = interfaces.getnamespace
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -243,8 +244,6 @@ local function setstate(settings)
     return name, tag, data
 end
 
-pagestates.setstate = setstate
-
 local function extend(name,tag)
     local realpage = texgetcount("realpageno")
     if trace_pagestates then
@@ -253,9 +252,7 @@ local function extend(name,tag)
     tobesaved[name][tag] = realpage
 end
 
-pagestates.extend = extend
-
-function pagestates.realpage(name,tag,default)
+local function realpage(name,tag,default)
     local t = collected[name]
     if t then
         t = t[tag] or t[tonumber(tag)]
@@ -270,32 +267,7 @@ function pagestates.realpage(name,tag,default)
     return default
 end
 
--- local function setpagestate(settings)
---     local name, tag = setstate(settings)
---     if type(tag) == "number" then
---         context(new_latelua(formatters["job.pagestates.extend(%q,%i)"](name,tag)))
---     else
---         context(new_latelua(formatters["job.pagestates.extend(%q,%q)"](name,tag)))
---     end
--- end
-
-local function setpagestate(settings)
-    local name, tag = setstate(settings)
- -- context(new_latelua(function() extend(name,tag) end))
-    ctx_latelua(function() extend(name,tag) end)
-end
-
-local function pagestaterealpage(name,tag)
-    local t = collected[name]
-    if t then
-        t = t[tag] or t[tonumber(tag)]
-        if t then
-            context(t)
-        end
-    end
-end
-
-local function pagestaterealpageorder(name,tag)
+local function realpageorder(name,tag)
     local t = collected[name]
     if t then
         local p = t[tag]
@@ -306,11 +278,25 @@ local function pagestaterealpageorder(name,tag)
                     n = n  +1
                 end
             end
-            context(n)
-            return
+            return n
         end
     end
-    context(0)
+    return 0
+end
+
+pagestates.setstate      = setstate
+pagestates.extend        = extend
+pagestates.realpage      = realpage
+pagestates.realpageorder = realpageorder
+
+function pagestates.countervalue(name)
+    return name and texgetcount(getnamespace("pagestatecounter") .. name) or 0
+end
+
+local function setpagestate(settings)
+    local name, tag = setstate(settings)
+ -- context(new_latelua(function() extend(name,tag) end))
+    ctx_latelua(function() extend(name,tag) end)
 end
 
 local function setpagestaterealpageno(name,tag)
@@ -333,7 +319,7 @@ implement {
 
 implement {
     name      = "pagestaterealpage",
-    actions   = pagestaterealpage,
+    actions   = { realpage, context },
     arguments = "2 strings",
 }
 
@@ -345,6 +331,6 @@ implement {
 
 implement {
     name      = "pagestaterealpageorder",
-    actions   = pagestaterealpageorder,
+    actions   = { realpageorder, context },
     arguments = { "string", "integer" }
 }

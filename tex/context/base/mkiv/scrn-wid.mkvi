@@ -212,11 +212,10 @@
      name              {\attachmentparameter\c!name}%
      buffer            {\attachmentparameter\c!buffer}%
    \relax
-   \setbox\b_scrn_attachment_link\hbox{\scrn_attachment_place}%
    \wd\b_scrn_attachment_link\currentattachmentwidth
    \ht\b_scrn_attachment_link\currentattachmentheight
    \dp\b_scrn_attachment_link\currentattachmentdepth
-   \box\b_scrn_attachment_link}
+   \expandnamespaceparameter\??attachmentlocation\attachmentparameter\c!location\s!unknown}
 
 \setvalue{\??attachmentmethod\v!hidden}%
   {\clf_insertattachment
@@ -231,28 +230,47 @@
      buffer     {\attachmentparameter\c!buffer}%
    \relax}
 
-\def\scrn_attachment_place
-  {\executeifdefined
-     {\??attachmentlocation\attachmentparameter\c!location}\hbox
-     {\box\b_scrn_attachment_link}}
+\unexpanded\def\scrn_attachment_flush_traced
+  {\hpack\bgroup
+     \blackrule % can be a fast one
+       [ \c!color=trace:r,
+         \c!width=\wd\b_scrn_attachment_link,
+        \c!height=\ht\b_scrn_attachment_link,
+         \c!depth=\dp\b_scrn_attachment_link]%
+     \kern-\wd\b_scrn_attachment_link
+     \box\b_scrn_attachment_link
+   \egroup}
 
-\setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     }
-\setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   }
-\setvalue{\??attachmentlocation\v!rightedge  }{\inrightedge  }
-\setvalue{\??attachmentlocation\v!leftmargin }{\inleftmargin }
-\setvalue{\??attachmentlocation\v!rightmargin}{\inrightmargin}
-\setvalue{\??attachmentlocation\v!high       }{\high}
-\setvalue{\??attachmentlocation\v!none       }{\scrn_attachment_collect}
-%setvalue{\??attachmentlocation\v!text       }{\gobblenextargument} % gobbles the box
+\unexpanded\def\scrn_attachment_flush_normal
+  {\box\b_scrn_attachment_link}
 
-\def\scrn_attachment_collect#content%
+\installtextracker
+  {attachments.anchors}
+  {\let\scrn_attachment_flush\scrn_attachment_flush_traced}
+  {\let\scrn_attachment_flush\scrn_attachment_flush_normal}
+
+\let\scrn_attachment_flush\scrn_attachment_flush_normal
+
+\setvalue{\??attachmentlocation\v!inmargin   }{\inmargin     {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!leftedge   }{\inleftedge   {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!rightedge  }{\inrightedge  {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!leftmargin }{\inleftmargin {\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!rightmargin}{\inrightmargin{\scrn_attachment_flush}}
+\setvalue{\??attachmentlocation\v!high       }{\high         {\scrn_attachment_flush}}
+
+\setvalue{\??attachmentlocation\v!none}%
   {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
      \ifvoid\b_scrn_attachment_collect\else
        \box\b_scrn_attachment_collect
        \hskip\attachmentparameter\c!distance\relax
      \fi
-     #content%
+     \scrn_attachment_flush
    \egroup}
+
+\setvalue{\??attachmentlocation\s!unknown}%
+  {\ifvoid\b_scrn_attachment_collect\else
+     \box\b_scrn_attachment_collect
+   \fi}
 
 \unexpanded\def\placeattachments
   {\ifvoid\b_scrn_attachment_collect\else
@@ -317,7 +335,7 @@
 %
 % test
 %
-% \startcomment[symbol=Balloon]
+% \startcomment[symbol=Help]
 %   Do we want this kind of rubish?
 % \stopcomment
 %
@@ -359,6 +377,9 @@
 % \stopcomment
 %
 % test
+
+%D The implementation is mostly the same as for attachments but sharing code
+%D will not make it cleaner.
 
 \installcorenamespace{comment}
 \installcorenamespace{commentlocation}
@@ -489,17 +510,37 @@
    \dp\b_scrn_comment_link\currentcommentdepth
    \expandnamespaceparameter\??commentlocation\commentparameter\c!location\s!unknown}
 
-\setvalue{\??commentmethods\v!hidden}%
-  {}
+\letvalue{\??commentmethods\v!hidden}\donothing
+
+\unexpanded\def\scrn_comment_flush_traced
+  {\hpack\bgroup
+     \blackrule % can be a fast one
+       [ \c!color=trace:y,
+         \c!width=\wd\b_scrn_comment_link,
+        \c!height=\ht\b_scrn_comment_link,
+         \c!depth=\dp\b_scrn_comment_link]%
+     \kern-\wd\b_scrn_comment_link
+     \box\b_scrn_comment_link
+   \egroup}
+
+\unexpanded\def\scrn_comment_flush_normal
+  {\box\b_scrn_comment_link}
+
+\installtextracker
+  {comments.anchors}
+  {\let\scrn_comment_flush\scrn_comment_flush_traced}
+  {\let\scrn_comment_flush\scrn_comment_flush_normal}
+
+\let\scrn_comment_flush\scrn_comment_flush_normal
 
 % todo: dedicated margin classes
 
-\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\box\b_scrn_comment_link}}
-\setvalue{\??commentlocation\v!high       }{\high         {\box\b_scrn_comment_link}}
+\setvalue{\??commentlocation\v!inmargin   }{\inmargin     {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!leftedge   }{\inleftedge   {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!rightedge  }{\inrightedge  {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!leftmargin }{\inleftmargin {\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!rightmargin}{\inrightmargin{\scrn_comment_flush}}
+\setvalue{\??commentlocation\v!high       }{\high         {\scrn_comment_flush}}
 
 \setvalue{\??commentlocation\v!none}%
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
@@ -507,7 +548,7 @@
        \box\b_scrn_comment_collect
        \hskip\commentparameter\c!distance\relax
      \fi
-     \box\b_scrn_comment_link
+     \scrn_comment_flush
    \egroup}
 
 \setvalue{\??commentlocation\s!unknown}%

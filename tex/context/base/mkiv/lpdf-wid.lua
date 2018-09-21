@@ -29,7 +29,7 @@ local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, strin
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 
 local report_media             = logs.reporter("backend","media")
 local report_attachment        = logs.reporter("backend","attachment")
@@ -141,6 +141,10 @@ local attachment_symbols = {
 attachment_symbols.PushPin = attachment_symbols.Pushpin
 attachment_symbols.Default = attachment_symbols.Pushpin
 
+function lpdf.attachmentsymbols()
+    return sortedkeys(comment_symbols)
+end
+
 local comment_symbols = {
     Comment      = pdfconstant("Comment"),
     Help         = pdfconstant("Help"),
@@ -153,6 +157,10 @@ local comment_symbols = {
 
 comment_symbols.NewParagraph = Newparagraph
 comment_symbols.Default      = Note
+
+function lpdf.commentsymbols()
+    return sortedkeys(comment_symbols)
+end
 
 local function analyzesymbol(symbol,collection)
     if not symbol or symbol == "" then
@@ -419,7 +427,8 @@ function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
 end
 
-local nofcomments, usepopupcomments = 0, false
+local nofcomments      = 0
+local usepopupcomments = false
 
 local defaultattributes = {
     ["xmlns"]           = "http://www.w3.org/1999/xhtml",

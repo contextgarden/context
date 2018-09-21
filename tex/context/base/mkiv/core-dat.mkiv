@@ -119,6 +119,6 @@
 
 \def\autopagestaterealpage     #1{\clf_pagestaterealpage     {#1}{\number\autopagestatenumber{#1}}}
 \def\setautopagestaterealpageno#1{\clf_setpagestaterealpageno{#1}{\number\autopagestatenumber{#1}}}
-\def\autopagestaterealpageorder#1{\clf_pagestaterealpageorder{#1}\autopagestatenumber{#1}\relax}
+\def\autopagestaterealpageorder#1{\clf_pagestaterealpageorder{#1}\numexpr\autopagestatenumber{#1}\relax}
 
 \protect

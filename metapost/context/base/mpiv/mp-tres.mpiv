@@ -96,14 +96,14 @@ primarydef p XYZscaled q =
   (q*Xpart p,q*Ypart p,q*Zpart p)
 enddef ;
 
-vardef projection expr t =
-    if triplet t :
+vardef projection primary t =
+    (if triplet t :
         (Xpart t, Ypart t) transformed Txy shifted (0,Zpart t)
-    elseif pair t :
+     elseif pair t :
         t transformed Txy
-    else :
+     else :
         origin transformed Txy
-    fi
+     fi)
 enddef ;
 
 %D This overloads the plain macro \type {abs} (being \type {length}):
@@ -164,6 +164,59 @@ vardef draw_vector@# (expr v, s) text t =
             label@#(s, projection(v)) t ;
         fi
     fi
+enddef ;
+
+%D Transform a (2D) path to a 3D plane
+
+def XYpath primary p =
+    (for i=0 upto (length p) if cycle p: -1 fi :
+        if i>0 : .. fi
+        projection (xpart point i of p,
+                    ypart point i of p,
+                    0)
+        ..controls
+        projection (xpart postcontrol i of p,
+                    ypart postcontrol i of p,
+                    0)
+        and
+        projection (xpart precontrol (i+1) of p,
+                    ypart precontrol (i+1) of p,
+                    0)
+        endfor if cycle p: ..cycle fi)
+enddef ;
+
+def XZpath primary p =
+    (for i=0 upto (length p) if cycle p: -1 fi :
+        if i>0 : .. fi
+        projection (xpart point i of p,
+                    0,
+                    ypart point i of p)
+        ..controls
+        projection (xpart postcontrol i of p,
+                    0,
+                    ypart postcontrol i of p)
+        and
+        projection (xpart precontrol (i+1) of p,
+                    0,
+                    ypart precontrol (i+1) of p)
+        endfor if cycle p: ..cycle fi)
+enddef ;
+
+def YZpath primary p =
+    (for i=0 upto (length p) if cycle p: -1 fi :
+        if i>0 : .. fi
+        projection (0,
+                    xpart point i of p,
+                    ypart point i of p)
+        ..controls
+        projection (0,
+                    xpart postcontrol i of p,
+                    ypart postcontrol i of p)
+        and
+        projection (0,
+                    xpart precontrol (i+1) of p,
+                    ypart precontrol (i+1) of p)
+        endfor if cycle p: ..cycle fi)
 enddef ;
 
 %D Some constants...

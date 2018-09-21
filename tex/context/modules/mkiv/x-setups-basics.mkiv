@@ -517,7 +517,8 @@
    \fi}
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
-  {\registersort[texcommand][#1]%
+  {\begingroup
+   \registersort[texcommand][#1]%
    \ifconditional\c_cmd_show_setup
      \writestatus{setup}{#1 / \rawsynonymname{texcommand}{#1}}%
    \fi
@@ -534,7 +535,8 @@
          \let\m_cmd_instance\empty
        \fi
      \stopelement
-   \stopelement}
+   \stopelement
+   \endgroup}
 
 \unexpanded\def\placesetup    {\placelistofsorts[texcommand][\c!criterium=\v!used]}
 \unexpanded\def\placeallsetups{\placelistofsorts[texcommand][\c!criterium=\v!all ]}

@@ -7,6 +7,10 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
     history   = "this one replaces the poppler/pdfe binding",
 }
 
+-- \enabledirectives[graphics.pdf.uselua]
+-- \enabledirectives[graphics.pdf.recompress]
+-- \enabledirectives[graphics.pdf.stripmarked]
+
 -- maximum integer : +2^32
 -- maximum real    : +2^15
 -- minimum real    : 1/(2^16)
@@ -78,6 +82,8 @@ local getfromreference  = pdfe.getfromreference
 local report_epdf       = logs.reporter("epdf")
 
 local allocate          = utilities.storage.allocate
+
+local bpfactor          = number.dimenfactors.bp
 
 local objectcodes = {
      [0] = "none",
@@ -434,6 +440,7 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword)
             end
             if getstatus(__data__) < 0 then
                 report_epdf("the document is encrypted, provide proper passwords",getstatus(__data__))
+                __data__ = false
             end
             if __data__ then
                 document = {
@@ -500,26 +507,65 @@ lpdf_epdf.expanded = expanded
 -- we could resolve the text stream in one pass if we directly handle the
 -- font but why should we complicate things
 
-local hexdigit  = R("09","AF")
-local numchar   = ( P("\\") * ( (R("09")^3/tonumber) + C(1) ) ) + C(1)
-local number    = lpegpatterns.number / tonumber
 local spaces    = lpegpatterns.whitespace^1
 local optspaces = lpegpatterns.whitespace^0
-local keyword   = P("/") * C(R("AZ","az","09")^1)
-local operator  = C((R("AZ","az")+P("'")+P('"'))^1)
+local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(tonumber(s,8)) end)
+                + P("\\") * P(1)
+local key       = P("/") * C(R("AZ","az","09","__")^1)
+local number    = Ct(Cc("number") * (lpegpatterns.number/tonumber))
+local keyword   = Ct(Cc("name") * key)
+local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
 local grammar   = P { "start",
-    start      = (keyword + number + V("dictionary") + V("unicode") + V("string") + V("unicode")+ V("array") + spaces)^1,
- -- keyvalue   = (keyword * spaces * V("start") + spaces)^1,
-    keyvalue   = optspaces * Cf(Ct("") * Cg(keyword * optspaces * V("start") * optspaces)^1,rawset),
-    array      = P("[")  * Ct(V("start")^1) * P("]"),
-    dictionary = P("<<") *    V("keyvalue") * P(">>"),
-    unicode    = P("<")  * Ct(Cc("hex") * C((1-P(">"))^1))            * P(">"),
-    string     = P("(")  * Ct(Cc("dec") * C((V("string")+numchar)^1)) * P(")"), -- untested
+    start      = (keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    keyvalue   = key * optspaces * V("start"),
+    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1)         * P("]")),
+    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1)      * P(">>")),
+    hexstring  = Ct(Cc("hex")   * P("<")  * Cs((        1-P(">"))^1) * P(">")),
+    decstring  = Ct(Cc("dec")   * P("(")  * Cs((numchar+1-(P")"))^1) * P(")")), -- untested
 }
 
 local operation = Ct(grammar^1 * operator)
 local parser    = Ct((operation + P(1))^1)
+
+-- todo: speed this one up
+
+local numchar   = P("\\") * (R("09")^3 + P(1))
+local number    = lpegpatterns.number
+local keyword   = P("/") * R("AZ","az","09","__")^1
+local operator  = (R("AZ","az")+P("*")+P("'")+P('"'))^1
+
+local skipstart = P("BDC") + P("BMC") + P("DP") + P("MP")
+local skipstop  = P("EMC")
+local skipkeep  = P("/ActualText")
+
+local grammar   = P { "skip",
+    start      = keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces,
+    keyvalue   = optspaces * (keyword * optspaces * V("start") * optspaces)^1,
+    xeyvalue   = optspaces * ((keyword - skipkeep) * optspaces * V("start") * optspaces)^1,
+    array      = P("[")  * V("start")^0         * P("]"),
+    dictionary = P("<<") * V("keyvalue")^0      * P(">>"),
+    xictionary = P("<<") * V("xeyvalue")^0      * P(">>"),
+    hexstring  = P("<")  * (        1-P(">"))^0 * P(">"),
+    decstring  = P("(")  * (numchar+1-(P")"))^0 * P(")"),
+    skip       = (optspaces * ( keyword * optspaces * V("xictionary") * optspaces * skipstart + skipstop) / "")
+               + V("start")
+               + operator
+}
+
+local stripper = Cs((grammar + P(1))^1)
+
+function lpdf_epdf.parsecontent(str)
+    return lpegmatch(parser,str)
+end
+
+function lpdf_epdf.stripcontent(str)
+    if find(str,"EMC") then
+        return lpegmatch(stripper,str)
+    else
+        return str
+    end
+end
 
 -- beginbfrange : <start> <stop> <firstcode>
 --                <start> <stop> [ <firstsequence> <firstsequence> <firstsequence> ]
@@ -742,8 +788,8 @@ if img then do
     -- This can be made a bit faster (just get raw data and pass it) but I will
     -- do that later. In the end the benefit is probably neglectable.
 
-    local recompress           = true
     local recompress           = false
+    local stripmarked          = false
 
     local copydictionary       = nil
     local copyarray            = nil
@@ -765,9 +811,20 @@ if img then do
 
     local newimage             = img.new
 
+    directives.register("graphics.pdf.recompress",  function(v) recompress  = v end)
+    directives.register("graphics.pdf.stripmarked", function(v) stripmarked = v end)
+
     local function scaledbbox(b)
         return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
     end
+
+    local codecs = {
+        ASCIIHexDecode  = true,
+        ASCII85Decode   = true,
+        RunLengthDecode = true,
+        FlateDecode     = true,
+        LZWDecode       = true,
+    }
 
     local function deepcopyobject(xref,copied,value)
         -- no need for tables, just nested loop with obj
@@ -789,11 +846,12 @@ if img then do
                     pdfflushobject(usednum,tostring(d))
                 elseif kind == stream_code then
                     local d = copydictionary(xref,copied,entry)
-                    if recompress then
+                    local filter = d.Filter
+                    if filter and codecs[filter] and recompress then
                         -- recompress
                         d.Filter      = nil
                         d.Length      = nil
-                        d.DecodeParms = nil -- not relevant
+                        d.DecodeParms = nil -- relates to filter
                         d.DL          = nil -- needed?
                         local s = entry()                        -- get uncompressed stream
                         pdfflushstreamobject(s,d,true,usednum)   -- compress stream
@@ -952,6 +1010,7 @@ if img then do
                     bleedbox    = page.BleedBox or cropbox,
                     trimbox     = page.TrimBox or cropbox,
                     artbox      = page.ArtBox or cropbox,
+                    rotation    = page.Rotate or 0,
                 }
             end
         end
@@ -987,7 +1046,14 @@ if img then do
             -- we always recompress because image object streams can not be
             -- influenced (yet)
             if ctype == stream_code then
-                if recompress then
+                if stripmarked then
+                    content = contents() -- uncompressed
+                    local stripped = lpdf_epdf.stripcontent(content)
+                    if stripped ~= content then
+                     -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
+                        content = stripped
+                    end
+                elseif recompress then
                     content = contents() -- uncompressed
                 else
                     local Filter = copyobject(xref,copied,contents,"Filter")
@@ -1010,11 +1076,24 @@ if img then do
             end
             -- still not nice: we double wrap now
             plugins = nil
+            local rotation    = pageinfo.rotation
+            local boundingbox = pageinfo.boundingbox
+            local transform   = nil
+            if rotation == 90 then
+                transform = 3
+            elseif rotation == 180 then
+                transform = 2
+            elseif rotation == 270 then
+                transform = 1
+            elseif rotation > 1 and rotation < 4 then
+                transform = rotation
+            end
             return newimage {
-                bbox     = pageinfo.boundingbox,
-                nolength = nolength,
-                stream   = content, -- todo: no compress, pass directly also length, filter etc
-                attr     = xobject(),
+                bbox      = boundingbox,
+                transform = transform,
+                nolength  = nolength,
+                stream    = content, -- todo: no compress, pass directly also length, filter etc
+                attr      = xobject(),
             }
         end
     end

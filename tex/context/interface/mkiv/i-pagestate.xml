@@ -4,6 +4,17 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <cd:command name="signalrightpage" level="system" file="spac-pag.mkiv"/>
+
+    <cd:command name="doifelserightpage" level="system" file="spac-pag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightpageorder" level="system" file="spac-pag.mkiv"/>
+
     <cd:command name="definepagestate" level="system" file="core-dat.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
@@ -53,6 +64,34 @@
                 <cd:constant type="cd:name"/>
                 <cd:constant type="cd:number"/>
             </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="pagestaterealpageorder" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="autopagestaterealpage" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setautopagestaterealpageno" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="autopagestaterealpageorder" level="system" file="core-dat.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 

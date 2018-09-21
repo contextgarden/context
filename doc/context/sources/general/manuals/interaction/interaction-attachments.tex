@@ -1,0 +1,189 @@
+% language=uk
+
+% Written while intermittently watching those always positive "Walk off the Earth"
+% videos to keep me in the mood. They make what's normally not my kind of music
+% into something very interesting. I hope that this chapter is kind of interesting
+% in the end too.
+
+\environment interaction-style
+
+\enabletrackers[attachments.anchors]
+
+\setupattachment
+  [location=inmargin]
+
+\startcomponent interaction-attachments
+
+\startchapter[title=Attachments]
+
+Attachments are (normally) embedded files that the reader can extract. A viewer
+can decide to just show the content or call an associated program (which one
+depends on the operating system) to deal with the file. As with other annotations
+they started out depicted by symbols but then browsers started showing them in
+lists next to the displayed page.
+
+\startbuffer
+\attachment
+  [attachment 1]
+  [file=interaction-attached-001.txt,
+   title=Just some text,
+   width=2em,
+   height=2em,
+   author=Hans,
+   subtitle=Plain text]
+
+\attachment
+  [attachment 2]
+  [file=cow.mp,
+   title=Just a graphic,
+   author=Hans,
+   subtitle=Some MetaPost,
+   method=hidden]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These two attachments differ in one aspect: the second ons is hidden, i.e. it has
+no icon in the text. However, the attachment is in the file and is (often)
+visible in the side bar. The symbol for the visible one is in the margin, which
+is achieved with:
+
+\starttyping
+\setupattachment
+  [location=inmargin]
+\stoptyping
+
+You can use your own icon, for instance:
+
+\startbuffer
+\startuniqueMPgraphic{cow}{height,s:color}
+    loadfigure "cow.mp" number 1 ;
+    refill currentpicture withcolor "\MPvar{color}"    ;
+    currentpicture := currentpicture ysized \MPvar{height} ;
+\stopuniqueMPgraphic
+
+\definesymbol
+  [attachment-normal]
+  [\uniqueMPgraphic{cow}{height=4ex,color=darkblue}]
+\definesymbol
+  [attachment-down]
+  [\uniqueMPgraphic{cow}{height=4ex,color=darkyellow}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+% \startattachment[hello][symbol={attachment-normal,attachment-down}]
+%     oeps
+% \stopattachment
+
+\attachment
+  [symbol={attachment-normal,attachment-down},
+   file=cow.pdf,
+   title=A cow,
+   author=Hans,
+   subtitle=graphic]
+
+This time we get a cow as icon and the cow is also embedded as image. When
+writing this manual a click in Sumatra just opens the \PDF\ file, but when I
+embed an mp3 file, a save-as window pops up.
+
+The previous examples directly injected the attachment using the \type
+{\attachment} commands with the appropriate arguments. You can add titles, define
+a name that will be used when the attachment is saved:
+
+\starttyping
+\attachment[sometag][extra specs]
+\attachment[test.tex]
+\attachment[file=test.tex]
+\attachment[file=test.tex,method=hidden]
+\attachment[name=newname,file=test.tex]
+\attachment[title=mytitle,name=newname,file=test.tex]
+\stoptyping
+
+but there's also a more indirect way, for instance here we define some
+attachments:
+
+\starttyping
+\defineattachment[whatever-1][file=test.tex]
+\defineattachment[whatever-2][file=test.tex,method=hidden]
+\stoptyping
+
+that later can be called up with:
+
+\starttyping
+\attachment[whatever-1][method=hidden]
+\attachment[whatever-2]
+\stoptyping
+
+where of course hidden is to be omitted when you want an icon. The commands that
+are used to define and tune an instance are:
+
+\showsetup{defineattachment}
+
+\showsetup{setupattachment}
+
+There is one predefined instance:
+
+\starttyping
+\defineattachment[attachment]
+\stoptyping
+
+So we have:
+
+\showsetup{startattachment:instance}
+
+\showsetup{attachment:instance}
+
+Yet another level of abstraction can be achieved with:
+
+\showsetup{registerattachment}
+
+For example:
+
+\starttyping
+\registerattachment
+  [sometag]
+  [name=fool.txt,
+   file=foo.txt,
+   title=Fool me,
+   subtitle=Not you,
+   author= Joker]
+\stoptyping
+
+This is the \MKIV\ replacement for the \MKII\ method:
+
+\starttyping
+\useattachment[test.tex]
+\useattachment[whatever][test.tex]
+\useattachment[whatever][newname][test.tex]
+\useattachment[whatever][title][newname][test.tex]
+\stoptyping
+
+or with all options:
+
+\starttyping
+\useattachment[name][file][author][title][subtitle]
+\stoptyping
+
+This variant stays around for old times sake and just maps onto \type
+{\registerattachment}, you can better use that one because it frees you from
+remembering which arguments is what for.
+
+\stopchapter
+
+\stopcomponent
+
+
+
+% old but stil valid method:
+%
+% \useattachment[test.tex]
+% \useattachment[whatever][test.tex]
+% \useattachment[whatever][newname][test.tex]
+% \useattachment[whatever][title][newname][test.tex]
+%
+% new method:
+%
+% \registerattachment[sometag][specification] % name file author title subtitle
+%
+% \attachment[sometag][extra specs]

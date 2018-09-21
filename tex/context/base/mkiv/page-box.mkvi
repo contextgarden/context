@@ -15,7 +15,7 @@
 
 \unprotect
 
-%D The often two step approach (_indeed) saves skippign tokens
+%D The often two step approach (_indeed) saves skipping tokens
 %D which is nicer for tracing.
 
 %D Centering the paper area on the print area is determined
@@ -252,10 +252,7 @@
   {\setbox#1\vpack to \paperheight
      {\hsize\paperwidth
       \vskip\topspace
-      \doifbothsides
-        {\hskip\backspace}
-        {\hskip\backspace}
-        {\hskip\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
+      \hskip\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
       \box#1}%
    \dp#1\zeropoint}
 

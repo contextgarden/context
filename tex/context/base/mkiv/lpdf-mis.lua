@@ -81,6 +81,10 @@ local negative             = register(pdfpageliteral("/GSnegative gs"))
 local overprint            = register(pdfpageliteral("/GSoverprint gs"))
 local knockout             = register(pdfpageliteral("/GSknockout gs"))
 
+local omitextraboxes       = false
+
+directives.register("backend.omitextraboxes", function(v) omitextraboxes = v end)
+
 local function initializenegative()
     local a = pdfarray { 0, 1 }
     local g = pdfconstant("ExtGState")
@@ -495,17 +499,22 @@ end
 -- temp hack: the mediabox is not under our control and has a precision of 5 digits
 
 local factor  = number.dimenfactors.bp
-local f_value = formatters["%0.6F"]
+local f_value = formatters["%.6F"]
+
+directives.register("pdf.stripzeros",function()
+    local f_value = formatters["%.6N"]
+end)
 
 local function boxvalue(n) -- we could share them
     return pdfverbose(f_value(factor * n))
 end
 
 local function pagespecification()
+    local pht = texget("pageheight")
     local llx = leftoffset
-    local lly = texget("pageheight") + topoffset - height
+    local lly = pht + topoffset - height
     local urx = width - leftoffset
-    local ury = texget("pageheight") - topoffset
+    local ury = pht - topoffset
     -- boxes can be cached
     local function extrabox(WhatBox,offset,always)
         if offset ~= 0 or always then
@@ -517,10 +526,14 @@ local function pagespecification()
             })
         end
     end
-    extrabox("CropBox",cropoffset,true) -- mandate for rendering
-    extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
-    extrabox("BleedBox",bleedoffset)    -- optional
- -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
+    if omitextraboxes then
+        -- only useful for testing / comparing
+    else
+        extrabox("CropBox",cropoffset,true) -- mandate for rendering
+        extrabox("TrimBox",trimoffset,true) -- mandate for pdf/x
+        extrabox("BleedBox",bleedoffset)    -- optional
+     -- extrabox("ArtBox",artoffset)        -- optional .. unclear what this is meant to do
+    end
 end
 
 lpdf.registerpagefinalizer(pagespecification,"page specification")

@@ -1,0 +1,51 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-introduction
+
+\startchapter[title=Introduction]
+
+This document introduces the cross reference mechanism, viewer control, fill||in
+fields, \JAVASCRIPT\ support, comments, attachments and more. It is a rewrite of
+the \MKII\ widgets manual. There is (always) more than discussed in manuals so if
+you miss something, take a look at test suite or when you're brave, peek into the
+source code as there can be examples there.
+
+Interactivity has always been available in \CONTEXT\ and in fact it was one of
+the reasons for writing it. In for instance the YandY \WINDOWS\ previewer, one
+could have hyperlinks and we used that for a while when checking documents. Later
+Acrobat showed up and \PDF\ stepwise added interactive features that we always
+supported right from the start. Unfortunately there is a viewer dependency and
+the documentation of \PDF\ lagged behind so solutions based on trial and error
+could not work well in a follow up on \PDF. Some features disappeared or became
+so limited that they effectively became useless. Especially multi||media have a
+reputation of unreliability. Because open source viewers never really catched up
+(at least not in this area) the momentum was lost to make sure that documents
+could have audio and video embedded in reliable ways. Even forms and basic
+\JAVASCRIPT\ control of for instance layers is often missing.
+
+That said, we do support a lot and can support more when it makes sense. Deep
+down in \CONTEXT\ we always had the mechanisms to deal with this, so extensions
+are not that hard to program. We always thought that publishers would like these
+features but that never really was the cases, so there was no pressure from that
+end. Most features are user driven or just there because at some point we wanted
+to make some fancy presentation.
+
+The original \PDF\ was a couple of hundred pages and looked quite nice. A later
+print has manu more pages and still looks ok, but nowadays we have to do with a
+\PDF\ document. If you want to see what \PDF\ supports you can study this (now
+about) 750 \PDF\ standard. It is, being an \ISO\ standard, not public, but you
+can probably find a (maybe older) copy someplace on the web.
+
+When reading this manual you need to keep in mind that we assume that you design
+a decent layout and when you make something for an electronic medium, we assume
+that you pay attention to the way you can enhance accessibility.
+
+If you miss something here, don't hesitate to ask for clarification, or even
+better, provide an example that we then can use to discuss (an aspect of) some
+mechanism.
+
+\stopchapter
+
+\stopcomponent

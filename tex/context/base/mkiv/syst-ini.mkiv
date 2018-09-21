@@ -1008,6 +1008,12 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
+%D Sometimes kerns make more sense than glue but we need to be in the
+%D right mode:
+
+\normalprotected\def\vkern{\ifhmode\par           \fi\kern}
+\normalprotected\def\hkern{\ifvmode\dontleavehmode\fi\kern}
+
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but
 %D are probably not used in \CONTEXT.
 

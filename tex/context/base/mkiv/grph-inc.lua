@@ -2090,22 +2090,35 @@ local function pdf_checker(data)
                 --
                 pdfdoc.nofcopiedpages = 0
                 --
-                local info = querypdf(pdfdoc,request.page)
-                local bbox = info and info.boundingbox or { 0, 0, 0, 0 }
+                local info     = querypdf(pdfdoc,request.page)
+                local bbox     = info and info.boundingbox or { 0, 0, 0, 0 }
+                local height   = bbox[4] - bbox[2]
+                local width    = bbox[3] - bbox[1]
+                local rotation = info.rotation or 0
+                if rotation == 90 then
+                    rotation, height, width = 3, width, height
+                elseif rotation == 180 then
+                    rotation = 2
+                elseif rotation == 270 then
+                    rotation, height, width = 1, width, height
+                elseif rotation == 1 or rotation == 3 then
+                    height, width = width, height
+                else
+                    rotation = 0
+                end
                 return {
                     filename    = filename,
                  -- page        = 1,
                     pages       = pdfdoc.nofpages,
-                    width       = bbox[3] - bbox[1],
-                    height      = bbox[4] - bbox[2],
+                    width       = width,
+                    height      = height,
                     depth       = 0,
                     colordepth  = 0,
                     xres        = 0,
                     yres        = 0,
-                    xsize       = 0,
-                    ysize       = 0,
-                    rotation    = 0,
-                    orientation = 0,
+                    xsize       = width,
+                    ysize       = height,
+                    rotation    = rotation,
                 }
             end
         end

@@ -2461,7 +2461,7 @@ end
 
 -- parameters
 
-function lxml.setatt(id,name,value)
+local function setatt(id,name,value)
     local e = getid(id)
     if e then
         local a = e.at
@@ -2473,7 +2473,7 @@ function lxml.setatt(id,name,value)
     end
 end
 
-function lxml.setpar(id,name,value)
+local function setpar(id,name,value)
     local e = getid(id)
     if e then
         local p = e.pa
@@ -2484,6 +2484,9 @@ function lxml.setpar(id,name,value)
         end
     end
 end
+
+lxml.setatt = setatt
+lxml.setpar = setpar
 
 function lxml.setattribute(id,pattern,name,value)
     local collected = xmlapplylpath(getid(id),pattern)

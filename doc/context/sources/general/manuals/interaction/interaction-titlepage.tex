@@ -1,0 +1,44 @@
+% language=uk
+
+\environment interaction-style
+
+\startcomponent interaction-titlepage
+
+\startMPpage
+
+    StartPage ;
+        numeric w, h, sh ; transform t ; path p ; pair c ;
+        w := PaperWidth ;
+        h := PaperHeight ;
+        p := Page ;
+        fill p withcolor .4white ;
+        sh := define_linear_shade(llcorner p, urcorner p, .6yellow, .6blue) ;
+        c := center boundingbox outlinetext.p("\ss\bf INTERACTIVITY") ;
+        set_grid(w, h, w/8, h/8) ;
+        forever :
+            if new_on_grid(uniformdeviate w,uniformdeviate h) :
+                t := identity
+                    scaled (3+uniformdeviate 3)
+                    shifted ((dx,dy) - c)
+                ;
+                draw outlinetext.b
+                    ("\bf\ss INTERACTIVITY")
+                    (transformed t withshade sh)
+                    (transformed t withpen pencircle scaled 3 withcolor .6white)
+                ;
+            fi ;
+            exitif grid_full ;
+        endfor ;
+        draw anchored.lrt (
+            textext("\bf\ss \ConTeXt") xsized .6PaperWidth,
+            lrcorner p shifted (-10mm,40mm)
+        ) withcolor white ;
+        draw anchored.lrt (
+            textext("\bf\ss Hans Hagen") xsized .6PaperWidth,
+            lrcorner p shifted (-10mm,15mm)
+        ) withcolor white ;
+    StopPage;
+
+\stopMPpage
+
+\stopcomponent

@@ -1,0 +1,192 @@
+\environment interaction-style
+
+\enabletrackers[comments.anchors]
+
+\startcomponent interaction-comments
+
+\setupcomment
+  [location=inmargin]
+
+\startchapter[title={Comments}]
+
+Many \PDF\ viewers support text annotations. These are small notes that can be
+popped up. In \CONTEXT\ we call them comments, because often that's what they are
+used for. Comments evolved from simple ones using a limited encoding into more
+advanced ones with representations. A comment looks like:
+
+\startbuffer
+\startcomment
+  Hello beautiful world!
+\stopcomment
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+When you open a document with comment you will likely see some symbol depicting
+it. But, it's one of those features that is viewer dependent so when it looks odd
+or unexpected, check in \ACROBAT\ first. The position and size can differ per
+viewer and when you zoom in teh size can either stay the same or scale. The
+viewer can show the pop up text at the same location or someplace else. Although
+in principle there is control over this, my experience is that viwers (also
+Acrobat) keep changing this (not always for the best). Just assume the worst: it
+will never look good and although for a while we kept up with viewers, the
+inconsistency (and accumulated waste of time) led us to the current minimalistic
+approach.
+
+By default, in \CONTEXT\ comments are placed at the spot a bit raised. In this
+document we put them in the margin, by saying:
+
+\starttyping
+\setupcomment
+  [location=inmargin]
+\stoptyping
+
+Comments can have titles and properties but not all viewers support properties.
+Contrary to other environments, the first argument is not a category but a title.
+This because we are compatible with \MKII.
+
+\startbuffer
+\startcomment[french]
+  In France they use «these angle bracket glyphs» in subsentences.
+\stopcomment
+
+\startcomment[accents][color=darkgreen]
+  You can used an àçéñţêð character too.
+\stopcomment
+
+And normally empty lines are also supported (again this can differ per viewer):
+
+\startcomment[lines][color=darkblue]
+  How about an
+
+  empty line?
+\stopcomment
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+As we can see here, comments are sort of stacked. These examples also show that
+we can pass an optional title and set up some characteristics. An inline comment
+is defined with \type {\comment}:
+
+\startbuffer
+\comment {How I hate those notes spoiling the layout.} Maybe some day
+I can convince myself to add some features \comment {Think of comment classes
+that can be turned on and off and get their own colors.} related to version
+control.
+\stopbuffer
+
+\typebuffer
+
+\inlinebuffer\ Comments hide part of the text and thereby are to be used with
+care. Until now I never used them. Anyhow, from now on, one can happily use:
+
+You can use other symbols than the default, and a couple are predefined in
+the standard: {\tt \cldcontext {table.concat (lpdf.commentsymbols(), ", ")}}.
+
+\startbuffer
+\startcomment[symbol=Help]
+  Do we want this kind of rubish?
+\stopcomment
+\stopbuffer
+
+You can also use your own symbols:
+
+% \definesymbol [comment-normal][{\externalfigure[cow.pdf]}]
+% \definesymbol [comment-down]  [{\externalfigure[cow.pdf]}]
+%
+% \unexpanded\def\CowSymbol#1#2%
+%   {\scale
+%     [height=#1]
+%     {\startMPcode
+%        loadfigure "cow.mp" number 1 ;
+%        refill currentpicture withcolor #2 ;
+%      \stopMPcode}}
+%
+% \definesymbol [comment-normal] [\CowSymbol{4ex}{darkred}]
+% \definesymbol [comment-down]   [\CowSymbol{4ex}{darkgreen}]
+
+\startbuffer
+\startuniqueMPgraphic{cow}{height,s:color}
+    loadfigure "cow.mp" number 1 ;
+    refill currentpicture withcolor "\MPvar{color}"    ;
+    currentpicture := currentpicture ysized \MPvar{height} ;
+\stopuniqueMPgraphic
+
+\definesymbol
+  [comment-normal]
+  [\uniqueMPgraphic{cow}{height=4ex,color=darkred}]
+\definesymbol
+  [comment-down]
+  [\uniqueMPgraphic{cow}{height=4ex,color=darkgreen}]
+
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
+\startcomment[hello][symbol={comment-normal,comment-down}]
+    oeps
+\stopcomment
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Again the way this shows up depends on the viewer capabilities so there might be
+a fallback on the normal comment symbol. You can influence the size of the image
+(icon):
+
+\startbuffer
+\startcomment[hello]
+    [symbol={comment-normal,comment-down},width=\marginwidth]
+    oeps
+\stopcomment
+\stopbuffer
+
+\typebuffer \getbuffer
+
+There are some options that you can use for finetuning the comments.
+
+\showsetup{setupcomment}
+
+A new instance is defined with:
+
+\showsetup{definecomment}
+
+The default instance is predefined by
+
+\starttyping
+\definecomment[comment]
+\stoptyping
+
+You can define your own instances:
+
+\starttyping
+\definecomment[mycomment]
+\stoptyping
+
+The generated commands have a syntax like:
+
+\showsetup{startcomment:instance}
+
+and:
+
+\showsetup{comment:instance}
+
+Most fields explain themselves. With \type {state} you can disable this feature.
+Comments can be hidden in which there is no icon shown. The \type {nx} and \type
+{ny} fields determine the size of the popup.
+
+In case you wonder where the yellow backgrounds come from, here is the trick:
+
+\starttyping
+\enabletrackers[comments.anchors]
+\stoptyping
+
+\stopchapter
+
+\stopcomponent

@@ -8,6 +8,8 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 
 -- Links can also have quadpoint
 
+-- embedded files ... not bound to a page
+
 local type, tonumber, next = type, tonumber, next
 local format, gsub, lower, find = string.format, string.gsub, string.lower, string.find
 local formatters = string.formatters
@@ -908,8 +910,8 @@ function codeinjections.getbookmarks(filename)
                         end
                     end
                 end
-            else
-                -- maybe
+         -- elseif subtype then
+         --     report("unsupported bookmark action %a",subtype)
             end
         else
             local destination = current.Dest
@@ -924,6 +926,8 @@ function codeinjections.getbookmarks(filename)
                     local pagedata = destination and destination[1]
                     if pagedata and pagedata.Type == "Page" then
                         entry.realpage =  pagedata.number
+                 -- else
+                 --     report("unsupported bookmark destination (no page)")
                     end
                 end
             end

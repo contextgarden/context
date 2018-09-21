@@ -308,7 +308,7 @@ local function prepareddata(data,collapse)
     end
 end
 
-metapost.use_one_pass    = true -- Some day I will priune the code (still testing).
+metapost.use_one_pass    = true -- Some day I will prune the code (still testing).
 
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
