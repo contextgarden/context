@@ -24,17 +24,6 @@
 %
 % comment   : The cover images are from the NASA website.
 
-
-% Alan      : There is no need for % before \startfootnote .. the less such crap the better
-%             (as it might give disappearing content if one wraps).
-%
-% Alan      : ḻṯ  What is this? An editor glitch?
-%
-% Alan      : $≠$ -> just use ≠ (also, soon the gyre fonts will have more symbols in text
-%             that match text.
-%
-% Alan      : You can use \typ {x = 0} for something that breaks accross lines.
-
 %\enabletrackers[metapost.showlog]
 
 \definemeasure [layout:margin] [\paperheight/20]
@@ -89,6 +78,7 @@
 % \definesymbol [1] [$\cdot$]
 
 % Dot rather than bullet ... Alan hates bullets! Hans hates too small dots.
+% So, a dash is OK? ;-)
 
 \setupitemize
   [symbol=2] % dash rather than bullet, I hate bullets!
@@ -160,12 +150,13 @@
 
 \startbuffer [bib]
     @ARTICLE{Krebs1946,
-        author  = {Krebs, H. A.},
-        title   = {Cyclic processes in living matter},
-        journal = {Enzymologia},
-        year    = {1946},
-        volume  = {12},
-        pages   = {88--100}
+        author   = {Krebs, H. A.},
+        title    = {Cyclic processes in living matter},
+        journal  = {Enzymologia},
+        year     = {1946},
+        volume   = {12},
+        pages    = {88--100}
+        language = {english},
     }
 
     @ARTICLE{Bethe1939a,
@@ -180,6 +171,7 @@
         issue     = {1},
         publisher = {American Physical Society},
         XXurl     = {http://link.aps.org/doi/10.1103/PhysRev.55.103}
+        language  = {english},
     }
 
     @ARTICLE{Bethe1939b,
@@ -194,6 +186,7 @@
         issue     = {5},
         publisher = {American Physical Society},
         XXurl     = {http://link.aps.org/doi/10.1103/PhysRev.55.434}
+        language  = {english},
     }
 
     @BOOK{Lawvere2009,
@@ -204,6 +197,20 @@
         publisher = {Cambridge University Press},
         address   = {Cambridge, UK},
         year      = {2009}
+        language  = {english},
+    }
+
+    @ARTICLE{Braslau2018,
+        title     = {ConTeXt nodes},
+        subtitle  = {commutative diagrams and related graphics},
+        author    = {Braslau, Alan and Hamid, Idris Samawi and Hagen, Hans},
+        year      = {2018},
+        journal   = {TUGboat},
+        volume    = {39},
+        number    = {1},
+        ISSN      = {0896-3207},
+        url       = {https://www.tug.org/TUGboat/Contents/contents39-1.html},
+        language  = {english},
     }
 \stopbuffer
 
@@ -355,6 +362,11 @@
    version=1.0]
 
 \startsubject [title=Introduction]
+
+A draft version of this manual was published in \cite[journal] [Braslau2018].
+\cite [Braslau2018]
+
+\blank
 
 The graphical representation of textual diagrams is a very useful tool in the
 communication of ideas. In category and topos theory, for example, many key
@@ -683,7 +695,7 @@ The \CONTEXT\ syntax for the current example looks like this:
   \stopnodes
 \stopbuffer
 
-\startplacefigure [location=right,
+\startplacefigure [location=right,reference=fig:ConTeXt,
     title={Drawn using \CONTEXT\ interface}]
   \getbuffer
 \stopplacefigure
@@ -692,10 +704,9 @@ The \CONTEXT\ syntax for the current example looks like this:
 
 \startplacefigure [reference=fig:indices,
   location=right,
-  title={Coordinates and indices.\footnote{For variety, a rectangular oblique
-         lattice is drawn in \in{Figure} [fig:indices].}
-  }]
-\stopfootnote
+  title={Coordinates and indices.\footnote {For variety, a rectangular oblique
+         lattice is drawn in \in{Figure} [fig:indices].}}
+  ]
   \startframed [frame=off,width=.33\textwidth,align=flushright]
   \startnodes [dx=3cm,dy=2cm,rotation=60]
     \placenode [0,0] {\node{(0,0)}}
@@ -716,13 +727,46 @@ The \CONTEXT\ syntax for the current example looks like this:
 
 This follows the more classic (and limited) approach of placing nodes on the
 coordinates of a regular lattice, here defined as a 3~cm square network.
-\footnote {The lattice can be square (\type {dx} $=$ \type {dy}), rectangular
-(\type {dx} $≠$ \type {dy}), or oblique (through \type {rotation} $≠$ 90).} The
-arguments are then $(x,y)$ coordinates of this lattice and the nodes are indexed
+\startfootnote
+    The lattice can be square (\type {dx} $=$ \type {dy}), rectangular
+    (\type {dx} ≠ \type {dy}), or oblique (through \type {rotation} ≠ 90).
+\stopfootnote
+The arguments are then $(x,y)$ coordinates of this lattice and the nodes are indexed
 0, 1, 2, … in the order that they are drawn. These are used as reference indices
 in the commands \type {\connectnodes} (rather than requiring two \emph {pairs} of
 coordinates); see \in {Figure} [fig:indices]. This might seem a bit confusing at
 first view, but it simplifies things in the end, really!
+
+To avoid such confusion, in particular when drawing complicated diagrams
+containing many nodes, the \CONTEXT\ interface allows the use of a \type
+{reference} or tag, assigning a symbolic name to a numbered node. The example of 
+\in{Figure} [fig:ConTeXt] can be redrawn a little more verbosely as:
+
+\startbuffer
+  \startnodes [dx=3cm,dy=3cm]
+    \placenode [0,0] [reference=GX] {\node{$G(X)$}}
+    \placenode [1,0] [reference=GY] {\node{$G(Y)$}}
+    \placenode [1,1] [reference=FY] {\node{$F(Y)$}}
+    \placenode [0,1] [reference=FX] {\node{$F(X)$}}
+    \connectnodes [GX,GY] [alternative=arrow,
+      label={\nodeSmall{$G(f)$}},position=bottom]
+    \connectnodes [FX,FY] [alternative=arrow,
+      label={\nodeSmall{$F(f)$}},position=top]
+    \connectnodes [FY,GY] [alternative=arrow,
+      label={\nodeSmall{$η_Y$}}, position=right]
+    \connectnodes [FX,GX] [alternative=arrow,
+      label={\nodeSmall{$η_X$}}, position=left]
+  \stopnodes
+\stopbuffer
+
+\typebuffer [option=TEX]
+
+Notice that, like for all \CONTEXT\ macros, one never mixes a
+comma|-|separated list of arguments (\type {[0,0]}) with a key=value list
+(i.e. \type {[reference=GX]}). Symbolic references are very useful for longer,
+more complicated diagrams; additionally, this easily allows modification such as
+the addition of nodes without having to keep track of counting the order in
+which they were drawn.
 
 An identity map, as shown in \in {Figure} [fig:ID], earlier, and, below, in \in
 {Figure} [fig:Me] is achieved by connecting a node to itself:
@@ -751,8 +795,6 @@ The scale (diameter) of the circular loop|-|back is set by the keyword \type
 {offset=} (normally used to curve or bow|-|away a path connecting nodes from the
 straight|-|line segment between them), and the \type {position=} keyword sets its
 orientation.
-
-\page [yes]
 
 \startbuffer
 \startMPcode
@@ -839,8 +881,6 @@ the interior of this first circle for the input, and a third circular path at th
 exterior for the output.
 
 The code is as follows:
-
-\page [yes]
 
 \startbuffer
 \startMPcode
@@ -1145,7 +1185,7 @@ path:
 save p ; % path p ;
 \stopTEX
 
-The \type {save p ;} assures that the path is undefined. This path will later ḻṯ
+The \type {save p ;} assures that the path is undefined. This path will later be
 defined based on the contents of the nodes and a desired relative placement. In
 fact, it is not even necessary to declare that the suffix will be a path, as the
 path will be declared and automatically built once the positions of all the nodes
@@ -1489,8 +1529,6 @@ drawings. The \type {Z} coordinate is taken to be \type {up} and the \type {Y}
 coordinate taken to be \type {right}, both in the page of the paper. The third
 coordinate \type {X} is an oblique projection in a right|-|hand coordinate
 system.
-
-\page [yes]
 
 \startbuffer
 \startMPcode{three}

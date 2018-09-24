@@ -1246,6 +1246,39 @@ def mfun_do_outline_options_d = enddef ;
 def mfun_do_outline_options_f = enddef ;
 def mfun_do_outline_options_r = enddef ;
 
+def outlinetexttopath(text o, p, n) =
+    scantokens("numeric " & str n &   ";") ;
+    scantokens("path "    & str p & "[];") ;
+    n := 0 ;
+    for i within o : p[incr(n)] := pathpart i ; endfor ;
+enddef ;
+
+def filloutlinetext(expr o) =
+    draw image (
+        save n, m ; numeric n, m ; n := m := 0 ;
+        for i within o :
+            n := n + 1 ;
+        endfor ;
+        for i within o :
+            m := m + 1 ;
+            if n = m :
+                eofill
+            else :
+                nofill
+            fi pathpart i ;
+        endfor ;
+    )
+enddef ;
+
+def drawoutlinetext(expr o) =
+    draw image (
+        % nicer for properties
+        for i within o :
+            draw pathpart i ;
+        endfor ;
+    )
+enddef ;
+
 if mfun_use_one_pass :
 
     vardef outlinetext@# (expr t) text rest =

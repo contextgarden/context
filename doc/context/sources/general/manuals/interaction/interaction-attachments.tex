@@ -17,8 +17,8 @@
 \startchapter[title=Attachments]
 
 Attachments are (normally) embedded files that the reader can extract. A viewer
-can decide to just show the content or call an associated program (which one
-depends on the operating system) to deal with the file. As with other annotations
+can decide to just show the content or call an associated program to deal with
+the file (which one depends on the operating system). As with other annotations
 they started out depicted by symbols but then browsers started showing them in
 lists next to the displayed page.
 
@@ -43,7 +43,7 @@ lists next to the displayed page.
 
 \typebuffer \getbuffer
 
-These two attachments differ in one aspect: the second ons is hidden, i.e. it has
+These two attachments differ in one aspect: the second one is hidden, i.e. it has
 no icon in the text. However, the attachment is in the file and is (often)
 visible in the side bar. The symbol for the visible one is in the margin, which
 is achieved with:
@@ -165,25 +165,10 @@ or with all options:
 \useattachment[name][file][author][title][subtitle]
 \stoptyping
 
-This variant stays around for old times sake and just maps onto \type
-{\registerattachment}, you can better use that one because it frees you from
-remembering which arguments is what for.
+The \type {\use...} variant stays around for old times sake and just maps onto
+\type {\registerattachment}, you can better use that one because it frees you
+from remembering which arguments is what for.
 
 \stopchapter
 
 \stopcomponent
-
-
-
-% old but stil valid method:
-%
-% \useattachment[test.tex]
-% \useattachment[whatever][test.tex]
-% \useattachment[whatever][newname][test.tex]
-% \useattachment[whatever][title][newname][test.tex]
-%
-% new method:
-%
-% \registerattachment[sometag][specification] % name file author title subtitle
-%
-% \attachment[sometag][extra specs]

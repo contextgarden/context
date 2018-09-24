@@ -56,7 +56,6 @@ tags.labels           = labels
 tags.patterns         = tagpatterns
 tags.specifications   = specifications
 
-
 function tags.current()
     if stacksize > 0 then
         return stack[stacksize] -- maybe copy or proxy

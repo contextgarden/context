@@ -11,20 +11,16 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% \restorestandardblank
-% better namespace for pos
-
 \writestatus{loading}{ConTeXt Screen Macros / Buttons}
 
 \registerctxluafile{scrn-but}{}
 
 \unprotect
 
-%D Buttons are just what their names says: things that can be
-%D clicked (pushed) on. They are similar to \type{\goto},
-%D except that the text argument is not interpreted.
-%D Furthermore one can apply anything to them that can be done
-%D with \type{\framed}.
+%D Buttons are just what their names says: things that can be clicked (pushed) on.
+%D They are similar to \type{\goto}, except that the text argument is not
+%D interpreted. Furthermore one can apply anything to them that can be done with
+%D \type {\framed}.
 %D
 %D \startbuffer
 %D \button[width=3cm,height=1.5cm]{Exit}[ExitViewer]
@@ -119,8 +115,8 @@
 %D \overlaybutton[reference]
 %D \stoptyping
 %D
-%D This command can be used to define overlays an/or can be
-%D used in the whatevertext areas, like:
+%D This command can be used to define overlays an/or can be used in the whatevertext
+%D areas, like:
 %D
 %D \starttyping
 %D \defineoverlay[PrevPage][\overlaybutton{PrevPage}]
@@ -128,8 +124,7 @@
 %D \setuptexttexts[\overlaybutton{NextPage}]
 %D \stoptyping
 %D
-%D For practical reasons, this macro accepts square brackets
-%D as well as braces.
+%D For practical reasons, this macro accepts square brackets as well as braces.
 
 \unexpanded\def\overlaybutton
   {\dosingleempty\scrn_button_overlay}

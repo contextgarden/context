@@ -296,6 +296,12 @@ local f_c = formatters["%F %F %F %F %F %F c"]
 local f_l = formatters["%F %F l"]
 local f_m = formatters["%F %F m"]
 
+directives.register("pdf.stripzeros",function()
+    f_c = formatters["%N %N %N %N %N %N c"]
+    f_l = formatters["%N %N l"]
+    f_m = formatters["%N %N m"]
+end)
+
 local function segmentstopdf(segments,factor,bt,et)
     local t = { }
     local m = 0
@@ -382,7 +388,7 @@ otf.features.register {
     }
 }
 
--- In the end it is easier to just provide the new charstring (cff) and points (ttdf). First
+-- In the end it is easier to just provide the new charstring (cff) and points (ttf). First
 -- of all we already have the right information so there is no need to patch the already complex
 -- backend code (we only need to make sure the cff is valid). Also, I prototyped support for
 -- these fonts using (converted to) normal postscript shapes, a functionality that was already

@@ -6,6 +6,21 @@
 
 \startchapter[title=Tagging]
 
+In a tagged \PDF\ document the page stream is enriched (or polluted) by marks
+that indicate what kind of content is involved.
+
+\starttyping
+\setuptagging[state=start]
+\stoptyping
+
+Only the \type {state} parameters is of general use.
+
+\showsetup {setuptagging}
+
+The \TEX\ end of this mechanism overlaps with the export related tagging so when
+you add your own elements that will be reflected in the tagging. And indeed: the
+keyword here is structure. The worse the structure, the worse the tagging.
+
 \stopchapter
 
 \stopcomponent

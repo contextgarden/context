@@ -6,10 +6,24 @@
 
 \startchapter[title=Hyperlinks]
 
+A hyperlink is something that you click on and that brings you to nother spot in
+the document. The regular links are a side effect of references. The most commonly
+used references are:
 
-% component:inner     prefix
-% component::inner    always external
-% component:::inner   internal (for products) or external (for components)
+\starttyping
+\in{figure}[fig:foo]
+\at{page}[fig:foo]
+\about[fig:foo]
+\stoptyping
+
+The first argument is what gets prepended to the number and the while can be
+clicked on. Here we create a namespace with \type {fig:}. This can be somewhat
+confusing with respect to prefixes but normally the resolver does a direct lookup
+first.
+
+\showsetup{at}
+\showsetup{in}
+\showsetup{about}
 
 \stopchapter
 

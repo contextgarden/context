@@ -325,7 +325,7 @@ let pop_boundingbox  = popboundingbox  ; % downward compatible
 
 vardef boundingbox primary p =
     if (path p) or (picture p) :
-        llcorner p -- lrcorner p -- urcorner p -- ulcorner  p
+        llcorner p -- lrcorner p -- urcorner p -- ulcorner p
     else :
         origin
     fi -- cycle
@@ -3409,8 +3409,7 @@ primarydef p crossingunder q =
                 a := hold[hold] ; hold := hold - 1 ;
             fi
             if i = crossingnumbermax :
-                message("crossingunder reached maximum " & decimal i &
-                        " intersections.");
+                message("crossingunder reached maximum " & decimal i & " intersections.");
             fi
         endfor
 

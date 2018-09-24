@@ -16,17 +16,18 @@ local report = logs.reporter("backend","merging")
 
 local function mergegoodies(optionlist)
     local options = settings_to_hash(optionlist)
-    local all     = options[variables.all] or options[variables.yes]
+    local yes     = options[variables.yes]
+    local all     = options[variables.all]
     if next(options) then
         report("% t",table.sortedkeys(options))
     end
-    if all or options[variables.reference] then
+    if all or yes or options[variables.reference] then
         codeinjections.mergereferences()
     end
     if all or options[variables.comment] then
         codeinjections.mergecomments()
     end
-    if all or options[variables.bookmark] then
+    if all or yes or options[variables.bookmark] then
         codeinjections.mergebookmarks()
     end
     if all or options[variables.field] then

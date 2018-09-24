@@ -4,6 +4,95 @@
 
 \startchapter[title={Buttons}]
 
+There is not much to tell about buttons. They are clickable areas on the screen
+that when clicked on bring you some location or invoke some action in the viewer,
+for instance triggered by a \JAVASCRIPT. As usual with many commands, you can
+define categories of buttons and set them up globally or per category.
+
+\showsetup{definebutton}
+
+\showsetup{setupbutton}
+
+The default button command is:
+
+\showsetup{button}
+
+Buttons are an example of a construct that builds upon \type {\framed} so the
+keys that apply there also apply to buttons. You can enable or disable buttons
+with the \type {state} parameter. As usual there are a \type {style} and \type
+{color} parameters and an additional \type {contrastcolor} option for tuning the
+color of a button which action let you stay on the same page. Actually, when you
+do stay on the same page, the \type {samepage} parameter let you control if the
+button should be empty, hidden or whatever.
+
+\starttabulate[|B|c|c|c|]
+\NC                 \BC frame \BC text \BC shown \NC \NR
+\NC \type {yes}     \NC +     \NC +    \NC +     \NC \NR % 0
+\NC \type {empty}   \NC +     \NC -    \NC +     \NC \NR % 1
+\NC \type {no}      \NC -     \NC -    \NC +     \NC \NR % 2
+\NC \type {none}    \NC -     \NC -    \NC -     \NC \NR % 3
+\NC \type {normal}  \NC +     \NC +    \NC +     \NC \NR % 1
+\NC \type {default} \NC +     \NC +    \NC +     \NC \NR % 1
+\stoptabulate
+
+Here is an example of a button:
+
+\startbuffer
+\button
+  [background=color,backgroundcolor=darkred,
+   style=bold,color=white,
+   framecolor=blue,rulethickness=2pt,
+   width=3cm,height=1.5cm]
+  {go to the next page}
+  [nexpage]
+\stopbuffer
+
+\typebuffer
+
+This colorful button shows up as:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+When you use interaction in presentations you might want to make the page
+and|/|or text area active. Here is an example.
+
+\starttyping
+\defineoverlay
+  [PrevPage]
+  [\overlaybutton{PrevPage}]
+
+\setupbackgrounds
+  [page]
+  [background=PrevPage]
+
+\setuptexttexts
+  [\overlaybutton{NextPage}]
+\stoptyping
+
+We provide two variants: the normal one with square brackets, but also a more
+direct one that accepts curly braces, which is handy when you pass an overlay
+button as argument.
+
+\showsetup {overlaybutton}
+\showsetup {overlaybutton:direct}
+
+The difference in usage is shown here:
+
+\starttyping
+\setuptexttexts [\overlaybutton{NextPage}]
+\setuptexttexts[{\overlaybutton[NextPage]}]
+\stoptyping
+
+An overlay button adapts its size to the current overlay so you don't need to
+worry about passing dimensions.
+
+It is possible to define more complex buttons, like roll|-|over buttons or
+buttons that change appearance when you clock on them. These are more resource
+hungry and also depend on the viewer. These will discussed in the chapter about
+widgets.
+
 \stopchapter
 
 \stopcomponent

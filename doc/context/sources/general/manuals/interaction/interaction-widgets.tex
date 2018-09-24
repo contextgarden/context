@@ -4,12 +4,13 @@
 
 \startchapter[title={Widgets}]
 
+    {\em This chapter will discuss forms and special buttons.}
+
 \stopchapter
 
 \stopcomponent
 
-
-
+% Below comes from the old widgets manual:
 
 \def\fillinfield#1{}
 
@@ -909,6 +910,68 @@ We can for instance typeset the fields by saying:
 \stopbaselinecorrection
 
 
-\stopchapter
 
-\stopcomponent
+%D \starttyping
+%D \defineviewerlayer[test]
+%D
+%D \startviewerlayer[test]Hide Me\stopviewerlayer
+%D
+%D \defineoverlay
+%D   [WithTest]
+%D   [{\overlayrollbutton[HideLayer{test}][VideLayer{test}]}]
+%D
+%D \framed[background=WithTest]{toggle}
+%D \stoptyping
+
+
+
+% \setupinteraction[state=start]
+%
+% \definepushbutton [reset]
+%
+% \startuniqueMPgraphic{whatever}{color}
+%     fill fullcircle xysized (OverlayWidth,OverlayHeight) withcolor \MPvar{color} ;
+% \stopuniqueMPgraphic
+%
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=red}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [d] [\uniqueMPgraphic{whatever}{color=blue}]
+%
+% \starttext
+%     \startTEXpage
+%         \pushbutton [reset] [page(2)]
+%     \stopTEXpage
+%     \startTEXpage
+%         \pushbutton [reset] [page(1)]
+%     \stopTEXpage
+% \stoptext
+
+
+% \setupinteraction[state=start]
+%
+% \definepushbutton [reset]
+%
+% \startuniqueMPgraphic{whatever}{color}
+%     fill fullcircle xysized (OverlayWidth,OverlayHeight) withcolor \MPvar{color} ;
+% \stopuniqueMPgraphic
+%
+% \definepushsymbol [reset] [n] [\uniqueMPgraphic{whatever}{color=red}]
+% \definepushsymbol [reset] [r] [\uniqueMPgraphic{whatever}{color=green}]
+% \definepushsymbol [reset] [d] [\uniqueMPgraphic{whatever}{color=blue}]
+%
+% \starttext
+%     \startTEXpage
+%         \pushbutton [reset] [page(2)]
+%     \stopTEXpage
+%     \startTEXpage
+%         \pushbutton [reset] [page(1)]
+%     \stopTEXpage
+% \stoptext
+
+% \appendtoks
+%     \let\startrob\scrn_menu_rob_start
+%     \let\stoprob \relax
+%     \let\rob     \scrn_menu_rob_direct
+% \to \everysetmenucommands
+
+% \protect \endinput

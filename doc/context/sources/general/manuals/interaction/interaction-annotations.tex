@@ -10,7 +10,7 @@ Before we discuss interactive features (in following chapter) a few words will b
 spent on so called annotations. This term is used in Acrobat and is somewhat
 confusing as hyperlinks conceptually are not really annotations while comments
 are. The term relates to the way \PDF\ files can have added functionality. It
-might help understand the following chanters better when you know what model is
+might help understand the following chapters better when you know what model is
 used inside a \PDF.
 
 If you open a \PDF\ file in an editor you will finds lots of objects. Numbers are
@@ -41,7 +41,7 @@ A \PDF\ file is a collection of objects:
 
 \starttyping
 1 0 obj
-
+    ...
 endobj
 \stoptyping
 
@@ -78,13 +78,20 @@ about hyperlinks and such. The \type {/Link} annotation objects that implement
 interactivity are independent and kind of layered over the rendered page. They
 describe rectangular areas that a viewer can use to intercept mouse clicks. If
 you want to see where the actions happens, search for \type {/Dest} and \type
-{/Annot} in an (uncompressed) \PDF file.
+{/Annot} in an (uncompressed) \PDF file. When you process a file with
+
+\starttyping
+\nopdfcompression
+\stoptyping
+
+you get an uncompressed file and with an appropriate editor you can see where
+annotations end up.
 
 The main reason for mentioning these details is that when you are checking a file
 for problems you need to look for annotation objects instead of the page stream.
 You also need to realize that these annotations in no way interfere with the page
 stream. They only exist because a viewer can use that information to add
-functionality. Their reference point is the lower lefty corner of the page. This
+functionality. Their reference point is the lower left corner of the page. This
 is a conceptual difference with \HTML\ where hyperlinks are often in|-|line and
 part of the content stream. Both approaches have their advantages and
 disadvantages. From the perspective of quality typesetting it makes much sense to

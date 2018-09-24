@@ -6,6 +6,68 @@
 
 \startchapter[title=Importing]
 
+This is a very short chapter that deals with external figures. Normally an image
+is a graphic with possible some text. There are however workflows where one
+includes pages from other documents. Such documents can contain cross references,
+bookmarks, comments and|/|or fields. Normally annotations of any kind are ignored
+and for good reason: they assume the whole document to be the, not just one or a
+few pages. Merging references for instance is a source for clashes, not only for
+named ones but also for page references.
+
+But when you {\em know} what you're doing, as for instance Taco (who requested
+this feature) does, there is a way to merge annotations. This is controlled by
+the interaction keys in \type {externalfigure}:
+
+\starttyping
+\externalfigure[somedoc][page=1,interaction=yes]
+\externalfigure[somedoc][page=2,interaction={reference,bookmark}]
+\stoptyping
+
+However, only references and bookmarks are officially supported! The other
+annotations are possible but the code is experimental and will be finished
+when we find a good reason for it.
+
+\starttabulate[|B|p|]
+\FL
+\NC \type {reference} \NC named and page references and urls \NC \NR
+\NC \type {comment}   \NC comments if possible with relevant icon \NC \NR
+\NC \type {bookmark}  \NC text bookmarks that refer to pages \NC \NR
+\NC \type {field}     \NC widgets but only within reason \NC \NR
+\NC \type {layer}     \NC viewer layers \NC \NR
+\ML
+\NC \type {yes}       \NC named and page references, urls and bookmarks \NC \NR
+\NC \type {all}       \NC all annotations \NC \NR
+\LL
+\stoptabulate
+
+If things don't work out well, imagine for a while what is involved in supporting
+this: analyzing a page from a document, remapping the annotations onto some
+\CONTEXT\ mechanism, making sure that we don't get clashes, keeping overhead
+acceptable.
+
+Because this is a somewhat tricky feature, tracing can help you to identify
+problems: \typ {figures.merging}, \typ {figures.links}, \typ {figures.comments},
+\typ {figures.fields} and \typ {figures.outlines}.
+
+Another complication when including pages can be the presence of so called marked
+content in the page stream. There is experimental support for removing those but
+right now (2018) you need to explicitly enable this explicitly:
+
+\starttyping
+\enabledirectives[graphics.pdf.uselua]
+\enabledirectives[graphics.pdf.stripmarked]
+%enabledirectives[graphics.pdf.recompress]
+\stoptyping
+
+This will delegate inclusion from the backend to \LUA. This might become the
+default as it is just as efficient as using the backend. That way we can filter
+the content stream. \footnote {We might add a callback to \LUATEX\ for filtering
+the content stream (no hard todo but post version 1.10).}
+
 \stopchapter
 
 \stopcomponent
+
+
+
+

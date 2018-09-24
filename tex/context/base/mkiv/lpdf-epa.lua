@@ -541,154 +541,154 @@ end
 -- testing we end up with less code that we started with.
 
 function codeinjections.mergecomments(specification)
- -- local specification, fullname, document = validdocument(specification)
- -- if not document then
- --     return ""
- -- end
- -- local pagenumber  = specification.page or 1
- -- local pagedata    = document.pages[pagenumber]
- -- local annotations = pagedata and pagedata.Annots
- -- if annotations and #annotations > 0 then
- --     local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
- --     initializelayer(height,width)
- --     --
- --     local lockflags  = specification.lock -- todo: proper parameter
- --     local references = { }
- --     local usedpopups = { }
- --     for i=1,#annotations do
- --         local annotation = annotations[i]
- --         if annotation then
- --             local subtype = annotation.Subtype
- --             if commentlike[subtype] then
- --                 references[annotation] = pdfreserveobject()
- --                 local p = annotation.Popup
- --                 if p then
- --                     usedpopups[p] = true
- --                 end
- --             end
- --         end
- --     end
- --     --
- --     for i=1,#annotations do
- --         -- we keep the order
- --         local annotation = annotations[i]
- --         if annotation then
- --             local reference = references[annotation]
- --             if reference then
- --                 local subtype = annotation.Subtype
- --                 local kind    = commentlike[subtype]
- --                 if kind ~= "popup" or usedpopups[annotation] then
- --                     local x, y, w, h, a_llx, a_lly, a_urx, a_ury = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_comment)
- --                     if x then
- --                         local voffset    = h
- --                         local dictionary = pdfdictionary {
- --                             Subtype      = pdfconstant   (subtype),
- --                             -- common (skipped: P AP AS OC AF BM StructParent)
- --                             Contents     = pdfcopyunicode(annotation.Contents),
- --                             NM           = pdfcopystring (annotation.NM),
- --                             M            = pdfcopystring (annotation.M),
- --                             F            = copyF         (annotation.F,lockflags),
- --                             C            = copyC         (annotation.C),
- --                             ca           = pdfcopynumber (annotation.ca),
- --                             CA           = pdfcopynumber (annotation.CA),
- --                             Lang         = pdfcopystring (annotation.Lang),
- --                             -- also common
- --                             CreationDate = pdfcopystring (annotation.CreationDate),
- --                             T            = pdfcopyunicode(annotation.T),
- --                             Subj         = pdfcopyunicode(annotation.Subj),
- --                             -- border
- --                             Border       = pdfcopyarray  (annotation.Border),
- --                             BS           = copyBS        (annotation.BS),
- --                             BE           = copyBE        (annotation.BE),
- --                             -- sort of common
- --                             Popup        = copyPopup     (annotation.Popup,references),
- --                             RC           = pdfcopyunicode(annotation.RC) -- string or stream
- --                         }
- --                         if kind == "markup" then
- --                             dictionary.IRT          = copyIRT          (annotation.IRT,references)
- --                             dictionary.RT           = pdfconstant      (annotation.RT)
- --                             dictionary.IT           = pdfcopyconstant  (annotation.IT)
- --                             dictionary.QuadPoints   = pdfcopyarray     (annotation.QuadPoints)
- --                          -- dictionary.RD           = pdfcopyarray     (annotation.RD)
- --                         elseif kind == "text" then
- --                             -- somehow F fails to view : /F 24 : bit4=nozoom bit5=norotate
- --                             dictionary.F            = nil
- --                             dictionary.Open         = pdfcopyboolean   (annotation.Open)
- --                             dictionary.Name         = pdfcopyunicode   (annotation.Name)
- --                             dictionary.State        = pdfcopystring    (annotation.State)
- --                             dictionary.StateModel   = pdfcopystring    (annotation.StateModel)
- --                             dictionary.IT           = pdfcopyconstant  (annotation.IT)
- --                             dictionary.QuadPoints   = pdfcopyarray     (annotation.QuadPoints)
- --                             dictionary.RD           = pdfcopyarray     (annotation.RD) -- caret
- --                             dictionary.Sy           = pdfcopyconstant  (annotation.Sy) -- caret
- --                             voffset = 0
- --                         elseif kind == "freetext" then
- --                             dictionary.DA           = pdfcopystring    (annotation.DA)
- --                             dictionary.Q            = pdfcopyinteger   (annotation.Q)
- --                             dictionary.DS           = pdfcopystring    (annotation.DS)
- --                             dictionary.CL           = pdfcopyarray     (annotation.CL)
- --                             dictionary.IT           = pdfcopyconstant  (annotation.IT)
- --                             dictionary.LE           = pdfcopyconstant  (annotation.LE)
- --                          -- dictionary.RC           = pdfcopystring    (annotation.RC)
- --                         elseif kind == "line" then
- --                             dictionary.LE           = pdfcopyarray     (annotation.LE)
- --                             dictionary.IC           = pdfcopyarray     (annotation.IC)
- --                             dictionary.LL           = pdfcopynumber    (annotation.LL)
- --                             dictionary.LLE          = pdfcopynumber    (annotation.LLE)
- --                             dictionary.Cap          = pdfcopyboolean   (annotation.Cap)
- --                             dictionary.IT           = pdfcopyconstant  (annotation.IT)
- --                             dictionary.LLO          = pdfcopynumber    (annotation.LLO)
- --                             dictionary.CP           = pdfcopyconstant  (annotation.CP)
- --                             dictionary.Measure      = pdfcopydictionary(annotation.Measure) -- names
- --                             dictionary.CO           = pdfcopyarray     (annotation.CO)
- --                             voffset = 0
- --                         elseif kind == "shape" then
- --                             dictionary.IC           = pdfcopyarray     (annotation.IC)
- --                          -- dictionary.RD           = pdfcopyarray     (annotation.RD)
- --                             voffset = 0
- --                         elseif kind == "stamp" then
- --                             local name, appearance  = validStamp(annotation.Name)
- --                             dictionary.Name         = name
- --                             dictionary.AP           = appearance
- --                             voffset = 0
- --                         elseif kind == "ink" then
- --                             dictionary.InkList      = pdfcopyarray     (annotation.InkList)
- --                         elseif kind == "poly" then
- --                             dictionary.Vertices     = pdfcopyarray     (annotation.Vertices)
- --                          -- dictionary.LE           = pdfcopyarray     (annotation.LE) -- todo: names in array
- --                             dictionary.IC           = pdfcopyarray     (annotation.IC)
- --                             dictionary.IT           = pdfcopyconstant  (annotation.IT)
- --                             dictionary.Measure      = pdfcopydictionary(annotation.Measure)
- --                             dictionary.Path         = pdfcopyarray     (annotation.Path)
- --                          -- dictionary.RD           = pdfcopyarray     (annotation.RD)
- --                         elseif kind == "popup" then
- --                             dictionary.Open         = pdfcopyboolean   (annotation.Open)
- --                             dictionary.Parent       = copyParent       (annotation.Parent,references)
- --                             voffset = 0
- --                         end
- --                         if dictionary then
- --                             local locationspec = {
- --                                 x       = x .. "bp",
- --                                 y       = y .. "bp",
- --                                 voffset = voffset .. "bp",
- --                                 preset  = "leftbottom",
- --                             }
- --                             local finalize = finalizer(dictionary,xscale,yscale,a_llx,a_ury)
- --                             context.setlayer(layerspec,locationspec,function()
- --                                 context(hpack_node(nodeinjections.annotation(w/bpfactor,h/bpfactor,0,finalize,reference)))
- --                             end)
- --                         end
- --                     end
- --                 else
- --                  -- report_comment("skipping annotation, index %a",i)
- --                 end
- --             end
- --         elseif trace_comments then
- --             report_comment("broken annotation, index %a",i)
- --         end
- --     end
- -- end
- -- return namespace
+    local specification, fullname, document = validdocument(specification)
+    if not document then
+        return ""
+    end
+    local pagenumber  = specification.page or 1
+    local pagedata    = document.pages[pagenumber]
+    local annotations = pagedata and pagedata.Annots
+    if annotations and #annotations > 0 then
+        local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
+        initializelayer(height,width)
+        --
+        local lockflags  = specification.lock -- todo: proper parameter
+        local references = { }
+        local usedpopups = { }
+        for i=1,#annotations do
+            local annotation = annotations[i]
+            if annotation then
+                local subtype = annotation.Subtype
+                if commentlike[subtype] then
+                    references[annotation] = pdfreserveobject()
+                    local p = annotation.Popup
+                    if p then
+                        usedpopups[p] = true
+                    end
+                end
+            end
+        end
+        --
+        for i=1,#annotations do
+            -- we keep the order
+            local annotation = annotations[i]
+            if annotation then
+                local reference = references[annotation]
+                if reference then
+                    local subtype = annotation.Subtype
+                    local kind    = commentlike[subtype]
+                    if kind ~= "popup" or usedpopups[annotation] then
+                        local x, y, w, h, a_llx, a_lly, a_urx, a_ury = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_comment)
+                        if x then
+                            local voffset    = h
+                            local dictionary = pdfdictionary {
+                                Subtype      = pdfconstant   (subtype),
+                                -- common (skipped: P AP AS OC AF BM StructParent)
+                                Contents     = pdfcopyunicode(annotation.Contents),
+                                NM           = pdfcopystring (annotation.NM),
+                                M            = pdfcopystring (annotation.M),
+                                F            = copyF         (annotation.F,lockflags),
+                                C            = copyC         (annotation.C),
+                                ca           = pdfcopynumber (annotation.ca),
+                                CA           = pdfcopynumber (annotation.CA),
+                                Lang         = pdfcopystring (annotation.Lang),
+                                -- also common
+                                CreationDate = pdfcopystring (annotation.CreationDate),
+                                T            = pdfcopyunicode(annotation.T),
+                                Subj         = pdfcopyunicode(annotation.Subj),
+                                -- border
+                                Border       = pdfcopyarray  (annotation.Border),
+                                BS           = copyBS        (annotation.BS),
+                                BE           = copyBE        (annotation.BE),
+                                -- sort of common
+                                Popup        = copyPopup     (annotation.Popup,references),
+                                RC           = pdfcopyunicode(annotation.RC) -- string or stream
+                            }
+                            if kind == "markup" then
+                                dictionary.IRT          = copyIRT          (annotation.IRT,references)
+                                dictionary.RT           = pdfconstant      (annotation.RT)
+                                dictionary.IT           = pdfcopyconstant  (annotation.IT)
+                                dictionary.QuadPoints   = pdfcopyarray     (annotation.QuadPoints)
+                             -- dictionary.RD           = pdfcopyarray     (annotation.RD)
+                            elseif kind == "text" then
+                                -- somehow F fails to view : /F 24 : bit4=nozoom bit5=norotate
+                                dictionary.F            = nil
+                                dictionary.Open         = pdfcopyboolean   (annotation.Open)
+                                dictionary.Name         = pdfcopyunicode   (annotation.Name)
+                                dictionary.State        = pdfcopystring    (annotation.State)
+                                dictionary.StateModel   = pdfcopystring    (annotation.StateModel)
+                                dictionary.IT           = pdfcopyconstant  (annotation.IT)
+                                dictionary.QuadPoints   = pdfcopyarray     (annotation.QuadPoints)
+                                dictionary.RD           = pdfcopyarray     (annotation.RD) -- caret
+                                dictionary.Sy           = pdfcopyconstant  (annotation.Sy) -- caret
+                                voffset = 0
+                            elseif kind == "freetext" then
+                                dictionary.DA           = pdfcopystring    (annotation.DA)
+                                dictionary.Q            = pdfcopyinteger   (annotation.Q)
+                                dictionary.DS           = pdfcopystring    (annotation.DS)
+                                dictionary.CL           = pdfcopyarray     (annotation.CL)
+                                dictionary.IT           = pdfcopyconstant  (annotation.IT)
+                                dictionary.LE           = pdfcopyconstant  (annotation.LE)
+                             -- dictionary.RC           = pdfcopystring    (annotation.RC)
+                            elseif kind == "line" then
+                                dictionary.LE           = pdfcopyarray     (annotation.LE)
+                                dictionary.IC           = pdfcopyarray     (annotation.IC)
+                                dictionary.LL           = pdfcopynumber    (annotation.LL)
+                                dictionary.LLE          = pdfcopynumber    (annotation.LLE)
+                                dictionary.Cap          = pdfcopyboolean   (annotation.Cap)
+                                dictionary.IT           = pdfcopyconstant  (annotation.IT)
+                                dictionary.LLO          = pdfcopynumber    (annotation.LLO)
+                                dictionary.CP           = pdfcopyconstant  (annotation.CP)
+                                dictionary.Measure      = pdfcopydictionary(annotation.Measure) -- names
+                                dictionary.CO           = pdfcopyarray     (annotation.CO)
+                                voffset = 0
+                            elseif kind == "shape" then
+                                dictionary.IC           = pdfcopyarray     (annotation.IC)
+                             -- dictionary.RD           = pdfcopyarray     (annotation.RD)
+                                voffset = 0
+                            elseif kind == "stamp" then
+                                local name, appearance  = validStamp(annotation.Name)
+                                dictionary.Name         = name
+                                dictionary.AP           = appearance
+                                voffset = 0
+                            elseif kind == "ink" then
+                                dictionary.InkList      = pdfcopyarray     (annotation.InkList)
+                            elseif kind == "poly" then
+                                dictionary.Vertices     = pdfcopyarray     (annotation.Vertices)
+                             -- dictionary.LE           = pdfcopyarray     (annotation.LE) -- todo: names in array
+                                dictionary.IC           = pdfcopyarray     (annotation.IC)
+                                dictionary.IT           = pdfcopyconstant  (annotation.IT)
+                                dictionary.Measure      = pdfcopydictionary(annotation.Measure)
+                                dictionary.Path         = pdfcopyarray     (annotation.Path)
+                             -- dictionary.RD           = pdfcopyarray     (annotation.RD)
+                            elseif kind == "popup" then
+                                dictionary.Open         = pdfcopyboolean   (annotation.Open)
+                                dictionary.Parent       = copyParent       (annotation.Parent,references)
+                                voffset = 0
+                            end
+                            if dictionary then
+                                local locationspec = {
+                                    x       = x .. "bp",
+                                    y       = y .. "bp",
+                                    voffset = voffset .. "bp",
+                                    preset  = "leftbottom",
+                                }
+                                local finalize = finalizer(dictionary,xscale,yscale,a_llx,a_ury)
+                                context.setlayer(layerspec,locationspec,function()
+                                    context(hpack_node(nodeinjections.annotation(w/bpfactor,h/bpfactor,0,finalize,reference)))
+                                end)
+                            end
+                        end
+                    else
+                     -- report_comment("skipping annotation, index %a",i)
+                    end
+                end
+            elseif trace_comments then
+                report_comment("broken annotation, index %a",i)
+            end
+        end
+    end
+    return namespace
 end
 
 local widgetflags = lpdf.flags.widgets
@@ -725,130 +725,130 @@ end
 -- Q  : quadding (0=left 1=middle 2=right)
 
 function codeinjections.mergefields(specification)
- -- local specification, fullname, document = validdocument(specification)
- -- if not document then
- --     return ""
- -- end
- -- local pagenumber  = specification.page or 1
- -- local pagedata    = document.pages[pagenumber]
- -- local annotations = pagedata and pagedata.Annots
- -- if annotations and #annotations > 0 then
- --     local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
- --     initializelayer(height,width)
- --     --
- --     for i=1,#annotations do
- --         -- we keep the order
- --         local annotation = annotations[i]
- --         if annotation then
- --             local subtype = annotation.Subtype
- --             if subtype == "Widget" then
- --                 local parent = annotation.Parent or { }
- --                 local name   = annotation.T or parent.T
- --                 local what   = annotation.FT or parent.FT
- --                 if name and what then
- --                     local x, y, w, h, a_llx, a_lly, a_urx, a_ury = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_field)
- --                     if x then
- --                         x = x .. "bp"
- --                         y = y .. "bp"
- --                         local W, H = w, h
- --                         w = w .. "bp"
- --                         h = h .. "bp"
- --                         if trace_fields then
- --                             report_field("field %a, type %a, dx %s, dy %s, wd %s, ht %s",name,what,x,y,w,h)
- --                         end
- --                         local locationspec = {
- --                             x      = x,
- --                             y      = y,
- --                             preset = "leftbottom",
- --                         }
- --                         --
- --                         local aflags = flagstoset(annotation.F or parent.F, annotationflags)
- --                         local wflags = flagstoset(annotation.Ff or parent.Ff, widgetflags)
- --                         if what == "Tx" then
- --                             -- DA DV F FT MaxLen MK Q T V | AA OC
- --                             if wflags.MultiLine then
- --                                 wflags.MultiLine = nil
- --                                 what = "text"
- --                             else
- --                                 what = "line"
- --                             end
- --                             -- via context
- --                             local fieldspec = {
- --                                 width  = w,
- --                                 height = h,
- --                                 offset = variables.overlay,
- --                                 frame  = trace_links and variables.on or variables.off,
- --                                 n      = annotation.MaxLen or (parent and parent.MaxLen),
- --                                 type   = what,
- --                                 option = concat(merged(aflags,wflags),","),
- --                             }
- --                             context.setlayer (layerspec,locationspec,function()
- --                                 context.definefieldbody ( { name } , fieldspec )
- --                                 context.fieldbody ( { name } )
- --                             end)
- --                             --
- --                         elseif what == "Btn" then
- --                             if wflags.Radio or wflags.RadiosInUnison then
- --                                 -- AP AS DA F Ff FT H MK T V | AA OC
- --                                 wflags.Radio = nil
- --                                 wflags.RadiosInUnison = nil
- --                                 what = "radio"
- --                             elseif wflags.PushButton then
- --                                 -- AP DA F Ff FT H MK T | AA OC
- --                                 --
- --                                 -- Push buttons only have an appearance and some associated
- --                                 -- actions so they are not worth copying.
- --                                 --
- --                                 wflags.PushButton = nil
- --                                 what = "push"
- --                             else
- --                                 -- AP AS DA F Ff FT H MK T V | OC AA
- --                                 what = "check"
- --                                 -- direct
- --                                 local AP = annotation.AP or (parent and parent.AP)
- --                                 if AP then
- --                                     local im = img.new { filename = fullname }
- --                                     AP = img.immediatewriteobject(im,document.__xrefs__[AP])
- --                                 end
- --                                 local dictionary = pdfdictionary {
- --                                     Subtype = pdfconstant("Widget"),
- --                                     FT      = pdfconstant("Btn"),
- --                                     T       = pdfcopyunicode(annotation.T or parent.T),
- --                                     F       = pdfcopyinteger(annotation.F or parent.F),
- --                                     Ff      = pdfcopyinteger(annotation.Ff or parent.Ff),
- --                                     AS      = pdfcopyconstant(annotation.AS or (parent and parent.AS)),
- --                                     AP      = AP and pdfreference(AP),
- --                                 }
- --                                 local finalize = dictionary()
- --                                 context.setlayer(layerspec,locationspec,function()
- --                                     context(hpack_node(nodeinjections.annotation(W/bpfactor,H/bpfactor,0,finalize)))
- --                                 end)
- --                                 --
- --                             end
- --                         elseif what == "Ch" then
- --                             -- F Ff FT Opt T | AA OC (rest follows)
- --                             if wflags.PopUp then
- --                                 wflags.PopUp = nil
- --                                 if wflags.Edit then
- --                                     wflags.Edit = nil
- --                                     what = "combo"
- --                                 else
- --                                     what = "popup"
- --                                 end
- --                             else
- --                                 what = "choice"
- --                             end
- --                         elseif what == "Sig" then
- --                             what = "signature"
- --                         else
- --                             what = nil
- --                         end
- --                     end
- --                 end
- --             end
- --         end
- --     end
- -- end
+    local specification, fullname, document = validdocument(specification)
+    if not document then
+        return ""
+    end
+    local pagenumber  = specification.page or 1
+    local pagedata    = document.pages[pagenumber]
+    local annotations = pagedata and pagedata.Annots
+    if annotations and #annotations > 0 then
+        local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
+        initializelayer(height,width)
+        --
+        for i=1,#annotations do
+            -- we keep the order
+            local annotation = annotations[i]
+            if annotation then
+                local subtype = annotation.Subtype
+                if subtype == "Widget" then
+                    local parent = annotation.Parent or { }
+                    local name   = annotation.T or parent.T
+                    local what   = annotation.FT or parent.FT
+                    if name and what then
+                        local x, y, w, h, a_llx, a_lly, a_urx, a_ury = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_field)
+                        if x then
+                            x = x .. "bp"
+                            y = y .. "bp"
+                            local W, H = w, h
+                            w = w .. "bp"
+                            h = h .. "bp"
+                            if trace_fields then
+                                report_field("field %a, type %a, dx %s, dy %s, wd %s, ht %s",name,what,x,y,w,h)
+                            end
+                            local locationspec = {
+                                x      = x,
+                                y      = y,
+                                preset = "leftbottom",
+                            }
+                            --
+                            local aflags = flagstoset(annotation.F or parent.F, annotationflags)
+                            local wflags = flagstoset(annotation.Ff or parent.Ff, widgetflags)
+                            if what == "Tx" then
+                                -- DA DV F FT MaxLen MK Q T V | AA OC
+                                if wflags.MultiLine then
+                                    wflags.MultiLine = nil
+                                    what = "text"
+                                else
+                                    what = "line"
+                                end
+                                -- via context
+                                local fieldspec = {
+                                    width  = w,
+                                    height = h,
+                                    offset = variables.overlay,
+                                    frame  = trace_links and variables.on or variables.off,
+                                    n      = annotation.MaxLen or (parent and parent.MaxLen),
+                                    type   = what,
+                                    option = concat(merged(aflags,wflags),","),
+                                }
+                                context.setlayer (layerspec,locationspec,function()
+                                    context.definefieldbody ( { name } , fieldspec )
+                                    context.fieldbody ( { name } )
+                                end)
+                                --
+                            elseif what == "Btn" then
+                                if wflags.Radio or wflags.RadiosInUnison then
+                                    -- AP AS DA F Ff FT H MK T V | AA OC
+                                    wflags.Radio = nil
+                                    wflags.RadiosInUnison = nil
+                                    what = "radio"
+                                elseif wflags.PushButton then
+                                    -- AP DA F Ff FT H MK T | AA OC
+                                    --
+                                    -- Push buttons only have an appearance and some associated
+                                    -- actions so they are not worth copying.
+                                    --
+                                    wflags.PushButton = nil
+                                    what = "push"
+                                else
+                                    -- AP AS DA F Ff FT H MK T V | OC AA
+                                    what = "check"
+                                    -- direct
+                                    local AP = annotation.AP or (parent and parent.AP)
+                                    if AP then
+                                        local im = img.new { filename = fullname }
+                                        AP = img.immediatewriteobject(im,document.__xrefs__[AP])
+                                    end
+                                    local dictionary = pdfdictionary {
+                                        Subtype = pdfconstant("Widget"),
+                                        FT      = pdfconstant("Btn"),
+                                        T       = pdfcopyunicode(annotation.T or parent.T),
+                                        F       = pdfcopyinteger(annotation.F or parent.F),
+                                        Ff      = pdfcopyinteger(annotation.Ff or parent.Ff),
+                                        AS      = pdfcopyconstant(annotation.AS or (parent and parent.AS)),
+                                        AP      = AP and pdfreference(AP),
+                                    }
+                                    local finalize = dictionary()
+                                    context.setlayer(layerspec,locationspec,function()
+                                        context(hpack_node(nodeinjections.annotation(W/bpfactor,H/bpfactor,0,finalize)))
+                                    end)
+                                    --
+                                end
+                            elseif what == "Ch" then
+                                -- F Ff FT Opt T | AA OC (rest follows)
+                                if wflags.PopUp then
+                                    wflags.PopUp = nil
+                                    if wflags.Edit then
+                                        wflags.Edit = nil
+                                        what = "combo"
+                                    else
+                                        what = "popup"
+                                    end
+                                else
+                                    what = "choice"
+                                end
+                            elseif what == "Sig" then
+                                what = "signature"
+                            else
+                                what = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- Beware, bookmarks can be in pdfdoc encoding or in unicode. However, in mkiv we

@@ -27,9 +27,9 @@ advanced ones with representations. A comment looks like:
 When you open a document with comment you will likely see some symbol depicting
 it. But, it's one of those features that is viewer dependent so when it looks odd
 or unexpected, check in \ACROBAT\ first. The position and size can differ per
-viewer and when you zoom in teh size can either stay the same or scale. The
+viewer and when you zoom in the size can either stay the same or scale. The
 viewer can show the pop up text at the same location or someplace else. Although
-in principle there is control over this, my experience is that viwers (also
+in principle there is control over this, my experience is that viewers (also
 Acrobat) keep changing this (not always for the best). Just assume the worst: it
 will never look good and although for a while we kept up with viewers, the
 inconsistency (and accumulated waste of time) led us to the current minimalistic
@@ -49,15 +49,19 @@ This because we are compatible with \MKII.
 
 \startbuffer
 \startcomment[french]
-  In France they use «these angle bracket glyphs» in subsentences.
+  In France they use «angle bracket glyphs» in subsentences.
 \stopcomment
 
 \startcomment[accents][color=darkgreen]
   You can used an àçéñţêð character too.
 \stopcomment
+\stopbuffer
+
+\typebuffer \getbuffer
 
 And normally empty lines are also supported (again this can differ per viewer):
 
+\startbuffer
 \startcomment[lines][color=darkblue]
   How about an
 
@@ -65,9 +69,7 @@ And normally empty lines are also supported (again this can differ per viewer):
 \stopcomment
 \stopbuffer
 
-\typebuffer
-
-\getbuffer
+\typebuffer \getbuffer
 
 As we can see here, comments are sort of stacked. These examples also show that
 we can pass an optional title and set up some characteristics. An inline comment

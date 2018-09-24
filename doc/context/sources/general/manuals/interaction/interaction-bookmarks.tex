@@ -6,6 +6,69 @@
 
 \startchapter[title=Bookmarks]
 
+Bookmarks are a sort of table of contents displayed by the viewer and as such
+they take up extra space on the screen. You need to turn on interaction in
+order to get bookmark data embedded in the document.
+
+\starttyping
+\placebookmarks
+  [chapter,section,subsection,mylist]
+  [chapter]
+\stoptyping
+
+A bookmark list is added to the document only when interaction is enabled. The
+list in the first argument are bookmarked while the second argument specifies
+what bookmark (sub)trees are opened. if you don't get what you expect, check your
+document structure! Also, use the \type {\start}|-|\type {stop} alternatives.
+
+Bookmarks are taken from the section title, but you can overload the title
+as follows:
+
+\starttyping
+\startchapter[title=Foot,bookmark=food]
+    ...
+\stopchapter
+\stoptyping
+
+If you have a more complex typeset title you can also try:
+
+\starttyping
+\enabledirectives[references.bookmarks.preroll]
+\stoptyping
+
+From \MKII\ we inherit the option to overload the last set bookmark but the
+previously mentioned approach is better.
+
+\starttyping
+\chapter {the first chapter}
+\bookmark {the first bookmark}
+\stoptyping
+
+You can add entries to a bookmark list:
+
+\starttyping
+\bookmark[mylist]{whatever}
+\stoptyping
+
+This assumes that you have defined the list.
+
+\showsetup {bookmark}
+
+If you want to have the bookmark tab open when you start a document, you
+can say:
+
+\starttyping
+\setupinteractionscreen[option=bookmark]
+\stoptyping
+
+There are only a few options that you can use. The \type {number} parameter can
+be used to hide section numbers. The \type {sectionblock} parameter controls the
+addition of section block entries, something that can be handy when you have
+multiple section blocks with similar section titles. With \type {force} you force
+an entry to the file, bypassing mechanisms that to be clever.
+
+\showsetup{setupbookmark}
+
 \stopchapter
 
 \stopcomponent

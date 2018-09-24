@@ -6,6 +6,70 @@
 
 \startchapter[title=Structure]
 
+There is a lot of structure in \CONTEXT:
+
+\startitemize[packed]
+\startitem document structure: projects, products, components, environments \stopitem
+\startitem sectioning, with or without numbers (visible), support for lists and userdata \stopitem
+\startitem lists, most often related to sections, but there are more \stopitem
+\startitem registers \stopitem
+\startitem itemized lists \stopitem
+\startitem images, \METAPOST\ graphics, different types of tables \stopitem
+\startitem typographical objects: constructions, descriptions and enumerations \stopitem
+\startitem notes, like footnotes, endnotes, linenotes \stopitem
+\startitem marginal notes \stopitem
+\startitem formulas (and subformulas) \stopitem
+\startitem text areas, layers, overlays \stopitem
+\startitem graphic placement with captions and references \stopitem
+\startitem cross references to most structural components \stopitem
+\startitem bibliographic databases and citations \stopitem
+\blank
+\startitem \unknown\ and more \unknown \stopitem
+\stopitemize
+
+Most of them in some way carry information about their location in the document
+and on the page, and sometimes their exact position. This also means that we can
+use that information for annotations. But most users will use the standard
+functionality.
+
+\starttyping
+\startsection[title=Whatever]
+    ...
+\stopsection
+\stoptyping
+
+In addition to typesetting this will add the title to a list. In order to do that
+some anchor has to be placed in the text, because we need to register the exact
+location in order to get the right pagenumber after \TEX\ has broken the flow into
+pages.
+
+\starttyping
+\placelist[section][criterium=text]
+\stoptyping
+
+This will place a list of all sections. If you want the whole entry to be a
+clickable areas, you can say:
+
+\starttyping
+\placelist[section][interaction=all]
+\stoptyping
+
+Otherwise only clicking on the title will bring you to the spot. If you also say:
+
+\starttyping
+\setuphead[interaction=list]
+\stoptyping
+
+Clicking on the head will bring you back to the table of contents. There are
+special list rendering alternatives for interactive documents (\typ
+{alternative=e} onwards). You can use the \type {list} and \type {bookmark}
+parameters to a section head to deviate from the given \type {title}.
+
+Many commands accept a \type {reference} as optional argument and when you use
+an alternative with key|/|values a \type {reference} key will do the job.
+
+{\em What should go into this chapter.}
+
 \stopchapter
 
 \stopcomponent

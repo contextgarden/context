@@ -9,11 +9,11 @@
 \startchapter[title=Actions]
 
 The reference mechanism not only deals with the more traditional cross
-references, but also takes care of navigational, launching applications (although
+references, but also takes care of navigation, launching applications (although
 that is often limited by viewers), running \JAVASCRIPT, etc. By integrating these
-features in one mechanism, we limit the number of commands needed for
-hyperreferences, menus and buttons. Normally such actions are driven by the \type
-{\goto} command, but you can also use buttons:
+features in one mechanism, we limit the number of commands needed for hyperlinks,
+menus and buttons. Normally such actions are driven by the \type {\goto} command,
+but you can also use buttons:
 
 \starttyping
 \goto[inner reference]
@@ -26,7 +26,7 @@ named location like a chapter or figure. The outer reference refers to a file or
 \URL and is normally defined at the document level and is accessed by the \type
 {::}. By using symbolic names updating them becomes easier.
 
-There are also predefined references, like \type {previouspage} to go to the next
+There are also predefined references, like \type {nextpage} to go to the next
 page or \type {forward} to cycle, \type {nextcontents} for the next level table
 of contents in a linked list of such tables, etc. Some keywords are actually
 shortcuts to actions that are delegated to the viewer. Here you need to keep in
@@ -38,10 +38,10 @@ by their capitals.
 When we speak of a reference, we actually refer to a whole bunch of possible
 references. We already mentioned inner and outer references, but special actions
 are also possible. These are actually plugins. Examples are the \JAVASCRIPT\ and
-\URL\ plugins. The interface evolved over a few decades but most has been there
-right from the start, which is why we keep it as is. Actually, there is not that
-much new functionality added in \MKIV, although the implementation was mostly
-rewritten. Here is a overview of the syntax, just to give you an idea.
+\URL\ plugins. The interface evolved a bit over a few decades but most has been
+there right from the start, which is why we keep it as is. Actually, there is not
+that much new functionality added in \MKIV, although the implementation was
+mostly rewritten. Here is a overview of the syntax, just to give you an idea.
 
 \starttyping
 \goto[inner]
@@ -62,8 +62,6 @@ rewritten. Here is a overview of the syntax, just to give you an idea.
 \goto[special(operation(whatever))]
 \goto[special(operation{argument,argument{whatever}})]
 \goto[special(operation{argument{whatever}})]
-\goto[special(operation{"argument,argument{whatever"})]
-\goto[special(operation{"argument{whatever"})]
 \stoptyping
 
 There can be multiple actions, separated by a comma, think of: go to the page
@@ -72,10 +70,12 @@ with label \quote {foo} and start video \quote {bar}.
 \showsetup{goto}
 
 Examples of operations are \type {page}, \type {program}, \type {action}, \type
-{url} and \type {JS}. The \type {page} operation accepts a pagenumber as well as
-relevant keywords. One can prefix a pagenumber by a file or \URL\ tag. The \type
-{program} operation starts up a program. It is an example of an old feature that
-has proven to be unstable, simply because viewers change behaviour over time.
+{url} and \type {JS}. \footnote {There are a few more operations but not all make
+sense at the user level.} The \type {page} operation accepts a pagenumber as
+well as relevant keywords. One can prefix a pagenumber by a file or \URL\ tag.
+The \type {program} operation starts up a program. It is an example of an old
+feature that has proven to be unstable, simply because viewers change behaviour
+over time.
 
 \showsetup{definereference}
 
@@ -165,7 +165,17 @@ a command:
 
 \startbuffer
 \showreference[page(123),StartMovie{mymovie}]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
 \showreference[JS(Forget_Changes),CloseDocument]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startbuffer
 \showreference[manual::contents]
 \stopbuffer
 
