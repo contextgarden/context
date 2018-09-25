@@ -225,6 +225,15 @@ local specifications = allocate {
         ["variant"] = "fi",
     },
     {
+        ["description"] = "Estonian",
+        ["script"] = "latn",
+        ["bibliographical"] = "est",
+        ["terminological"] = "est",
+        ["context"] = "et",
+        ["opentype"] = "est",
+        ["variant"] = "et",
+    },
+    {
         ["description"] = "French",
         ["script"] = "latn",
         ["bibliographical"] = "fre",

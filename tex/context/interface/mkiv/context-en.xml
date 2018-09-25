@@ -18646,6 +18646,9 @@
      <cd:parameter name="date">
       <cd:inherit name="currentdate"/>
      </cd:parameter>
+     <cd:parameter name="time">
+      <cd:inherit name="currenttime"/>
+     </cd:parameter>
      <cd:parameter name="patterns">
       <cd:constant type="cd:file"/>
      </cd:parameter>
@@ -26561,6 +26564,9 @@
      </cd:parameter>
      <cd:parameter name="setups">
       <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="page">
+      <cd:inherit name="page"/>
      </cd:parameter>
      <cd:inherit name="setupframed"/>
     </cd:assignments>

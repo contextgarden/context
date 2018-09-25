@@ -59,6 +59,9 @@
                 <cd:parameter name="setups">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="page">
+                    <cd:inherit name="page"/>
+                </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>

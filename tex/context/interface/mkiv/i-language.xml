@@ -37,6 +37,9 @@
                 <cd:parameter name="date">
                     <cd:inherit name="currentdate"/>
                 </cd:parameter>
+                <cd:parameter name="time">
+                    <cd:inherit name="currenttime"/>
+                </cd:parameter>
                 <cd:parameter name="patterns">
                     <cd:constant type="cd:file"/>
                 </cd:parameter>

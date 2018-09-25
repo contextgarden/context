@@ -7503,6 +7503,10 @@ return {
    ["pe"]="تاریخ",
    ["ro"]="data",
   },
+  ["time"]={
+   ["en"]="time",
+   ["nl"]="tijd",
+  },
   ["deepnumbercommand"]={
    ["cs"]="deepnumbercommand",
    ["de"]="deepnumbercommand",

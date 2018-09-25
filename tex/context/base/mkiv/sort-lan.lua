@@ -134,7 +134,7 @@ definitions['de-AT'] = {
     },
 }
 
--- finish (by Wolfgang Schuster)
+-- finnish (by Wolfgang Schuster)
 
 definitions['fi'] = {
     entries = {
@@ -905,22 +905,24 @@ definitions["hu"] = {
     },
 }
 
---- Estonian
+-- Estonian
 
 definitions["et"] = {
-    entries = { -- w x y are used for foreign words only
-        ["a"] = "a", ["b"] = "b", ["d"] = "d", ["e"] = "e", ["f"] = "f",
-        ["g"] = "g", ["h"] = "h", ["i"] = "i", ["j"] = "j", ["k"] = "k",
-        ["l"] = "l", ["m"] = "m", ["n"] = "n", ["o"] = "o", ["p"] = "p",
-        ["r"] = "r", ["s"] = "s", ["š"] = "š", ["z"] = "z", ["ž"] = "ž",
-        ["t"] = "t", ["u"] = "u", ["v"] = "v", ["w"] = "v", ["õ"] = "õ",
-        ["ä"] = "ä", ["ö"] = "ö", ["ü"] = "ü", ["x"] = "x", ["y"] = "y",
+    entries = { -- f š z ž are used in estonian words of foreign origin, c č q w x y are used for foreign words only
+        ["a"] = "a", ["b"] = "b", ["c"] = "c", ["č"] = "č", ["d"] = "d",
+        ["e"] = "e", ["f"] = "f", ["g"] = "g", ["h"] = "h", ["i"] = "i",
+        ["j"] = "j", ["k"] = "k", ["l"] = "l", ["m"] = "m", ["n"] = "n",
+        ["o"] = "o", ["p"] = "p", ["q"] = "q", ["r"] = "r", ["s"] = "s",
+        ["š"] = "š", ["z"] = "z", ["ž"] = "ž", ["t"] = "t", ["u"] = "u",
+        ["v"] = "v", ["w"] = "w", ["õ"] = "õ", ["ä"] = "ä", ["ö"] = "ö",
+        ["ü"] = "ü", ["x"] = "x", ["y"] = "y",
     },
     orders = {
-        "a", "b", "d", "e", "f", "g", "h", "i", "j", "k",
-        "l", "m", "n", "o", "p", "r", "s", "š", "z", "ž",
-        "t", "u", "v", "w", "õ", "ä", "ö", "ü", "x", "y",
-    }
+        "a", "b", "c", "č", "d", "e", "f", "g", "h", "i",
+        "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+        "š", "z", "ž", "t", "u", "v", "w", "õ", "ä", "ö",
+        "ü", "x", "y",
+    },
 }
 
 --- Korean

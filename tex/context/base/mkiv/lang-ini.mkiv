@@ -292,6 +292,7 @@
    \c!middlespeech=,
    \c!rightspeech=\languageparameter\c!rightquotation,
    \c!limittext=\unknown,
+   \c!time={h,:,m},
    \c!date={\v!year,\ ,\v!month,\ ,\v!day},
    \c!text=Ag,
    \s!font=] % \v!auto : experimental !
@@ -309,11 +310,12 @@
 %D view \quotation {when we quote} or \quote {quote} something.
 
 %D \macros
-%D  {currentdatespecification}
+%D  {currentdatespecification, currenttimespecification}
 %D
 %D Just to make things easy we can ask for the current date specification by saying:
 
 \def\currentdatespecification{\languageparameter\c!date}
+\def\currenttimespecification{\languageparameter\c!time}
 
 %D Carefull reading of these macros shows that it's legal to say
 %D

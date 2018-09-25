@@ -761,7 +761,7 @@
          \page_mul_set_n_of_lines
          \advance\c_page_mul_n_of_lines \minustwo
          \scratchdimen\dimexpr\c_page_mul_n_of_lines\lineheight+\topskip\relax
-         \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+         \setbox\b_page_mul_notes\hpack{\lower\scratchdimen\box\b_page_mul_notes}%
          \ht\b_page_mul_notes\openstrutheight
          \dp\b_page_mul_notes\openstrutdepth
          \wd\b_page_mul_notes\zeropoint
@@ -784,7 +784,7 @@
          \getnoflines\scratchdimen
          \advance\noflines \minustwo
          \scratchdimen\dimexpr\noflines\lineheight+\topskip\relax
-         \setbox\b_page_mul_notes\hbox{\lower\scratchdimen\box\b_page_mul_notes}%
+         \setbox\b_page_mul_notes\hpack{\lower\scratchdimen\box\b_page_mul_notes}%
          \ht\b_page_mul_notes\openstrutheight
          \dp\b_page_mul_notes\openstrutdepth
          \wd\b_page_mul_notes\zeropoint

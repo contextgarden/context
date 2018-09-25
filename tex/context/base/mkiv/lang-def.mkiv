@@ -22,19 +22,6 @@
 % Frisian, Plattdeutsch
 
 \installlanguage
-  [\s!nl]
-  [\c!spacing=\v!packed,
-   \c!leftsentence=\emdash,
-   \c!rightsentence=\emdash,
-   \c!leftsubsentence=\emdash,
-   \c!rightsubsentence=\emdash,
-   \c!leftquote=\lowerleftsingleninequote,
-   \c!rightquote=\upperrightsingleninequote,
-   \c!leftquotation=\lowerleftdoubleninequote,
-   \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!day,\space,\v!month,\space,\v!year}]
-
-\installlanguage
   [\s!en]
   [\c!spacing=\v!broad,
    \c!leftsentence=\emdash,
@@ -49,6 +36,19 @@
    \s!patterns=\s!us,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=3]
+
+\installlanguage
+  [\s!nl]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\lowerleftsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!day,\space,\v!month,\space,\v!year}]
 
 \installlanguage
   [\s!de]
@@ -329,8 +329,19 @@
 
 \installlanguage
   [\s!et]
-  [\s!patterns=\s!et,
-   \c!default=\s!fi]
+  [\c!default=\s!en,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\leftguillemot,
+   \c!rightquote=\rightguillemot,
+   \c!leftquotation=\lowerrightdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
+   \c!time={h,{.},m},
+   \c!date={\v!day,.,\space,\v!month,\space,\v!year},
+   \s!patterns=\s!et]
 
 \installlanguage
   [\s!hu]
@@ -586,6 +597,7 @@
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
+   \c!time={h,{\Uchar104 },m},% we need to cheat in order to get the h
    \c!date={\v!day:mnem,\v!space,\v!month,\v!space,\v!year}]
 
 \installlanguage
