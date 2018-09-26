@@ -1131,59 +1131,59 @@ enddef ;
 
 numeric currentoutlinetext ; currentoutlinetext := 0 ;
 
-vardef mfun_do_outline_text_flush (expr kind, n, x, y) (text t) =
+vardef mfun_do_outline_text_flush (expr kind, n, x, y, c) (text t) =
     if kind = "f" :
-        mfun_do_outline_text_f (n, x, y) (t)
+        mfun_do_outline_text_f (n, x, y, c) (t)
     elseif kind = "d" :
-        mfun_do_outline_text_d (n, x, y) (t)
+        mfun_do_outline_text_d (n, x, y, c) (t)
     elseif kind = "b" :
-        mfun_do_outline_text_b (n, x, y) (t)
+        mfun_do_outline_text_b (n, x, y, c) (t)
     elseif kind = "r" :
-        mfun_do_outline_text_r (n, x, y) (t)
+        mfun_do_outline_text_r (n, x, y, c) (t)
     elseif kind = "p" :
-        mfun_do_outline_text_p (n, x, y) (t)
+        mfun_do_outline_text_p (n, x, y, c) (t)
     elseif kind = "u" :
-        mfun_do_outline_text_u (n, x, y) (t)
+        mfun_do_outline_text_u (n, x, y, c) (t)
     else :
-        mfun_do_outline_text_n (n, x, y) (t)
+        mfun_do_outline_text_n (n, x, y, c) (t)
     fi ;
 enddef ;
 
 vardef mfun_do_outline_rule_flush (expr kind, x, y, w, h) =
-    mfun_do_outline_text_flush (kind, 1, x, y) (fullsquare xyscaled(w,h))
+    mfun_do_outline_text_flush (kind, 1, x, y, "") (fullsquare xyscaled(w,h))
 enddef ;
 
 numeric mfun_do_outline_n ; mfun_do_outline_n := 0 ;
 
-vardef mfun_do_outline_text_f (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_f (expr n, x, y, c) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withpen pencircle scaled 0 ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withpen pencircle scaled 0 withprescript c ;
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_u (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_u (expr n, x, y, c) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n : fillup else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
+        if mfun_do_outline_n = n : fillup else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f withprescript c ;
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_d (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_d (expr n, x, y, c) (text t) =
     for i=t :
         draw i shifted(x,y) mfun_do_outline_options_d ;
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_p (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_p (expr n, x, y, c) (text t) =
     for i=t :
-        draw i shifted(x,y) ;
+        draw i shifted(x,y) withprescript c ;
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_b (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_b (expr n, x, y, c) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
@@ -1194,18 +1194,18 @@ vardef mfun_do_outline_text_b (expr n, x, y) (text t) =
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_r (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_r (expr n, x, y, c) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         draw i shifted(x,y) mfun_do_outline_options_d ;
     endfor ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;
-        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f ;
+        if mfun_do_outline_n = n : fill else : nofill fi (i shifted(x,y)) mfun_do_outline_options_f;
     endfor ;
 enddef ;
 
-vardef mfun_do_outline_text_n (expr n, x, y) (text t) =
+vardef mfun_do_outline_text_n (expr n, x, y, c) (text t) =
     mfun_do_outline_n := 0 ;
     for i=t :
         mfun_do_outline_n := mfun_do_outline_n + 1 ;

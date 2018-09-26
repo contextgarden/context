@@ -869,6 +869,9 @@
 
 \ifdefined\triggerautostructurelevel \else \let\triggerautostructurelevel\relax \fi
 
+\newtoks\everybeforesectionheadhandle
+\newtoks\everyaftersectionheadhandle
+
 \def\strc_sectioning_handle#1#2#3% name data userdata (we can move #1 to the caller)
   {\xdef\currenthead        {#1}%
    \xdef\currentheadcoupling{\sectionheadcoupling\currenthead}%
@@ -882,7 +885,7 @@
    \strc_sectioning_initialize_placement
    \strc_sectioning_initialize_number
    %
-   \flushingcolumnfloatsfalse
+   \the\everybeforesectionheadhandle
    %
    % todo: also mark (for header)
    %
@@ -968,7 +971,9 @@
        \strc_sectioning_after_nop
      \fi\fi
    \fi
-   \flushingcolumnfloatstrue
+   %
+   \the\everyaftersectionheadhandle
+   %
    \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty

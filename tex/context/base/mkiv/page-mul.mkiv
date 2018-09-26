@@ -1848,4 +1848,17 @@
    \s!page_otr_command_test_column            =\page_mul_command_test_column
   ]
 
+\installfloatmethod \s!multicolumn  \v!here   \page_mul_place_float_here
+\installfloatmethod \s!multicolumn  \v!force  \page_mul_place_float_force
+\installfloatmethod \s!multicolumn  \v!top    \page_mul_place_float_top
+\installfloatmethod \s!multicolumn  \v!bottom \page_mul_place_float_bottom
+
+\appendtoks
+    \flushingcolumnfloatsfalse
+\to \everybeforesectionheadhandle
+
+\appendtoks
+   \flushingcolumnfloatstrue
+\to \everyaftersectionheadhandle
+
 \protect \endinput

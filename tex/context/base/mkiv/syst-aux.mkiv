@@ -573,7 +573,7 @@
 \def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
 \def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
 \def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
-\def\getvalue     #1{\csname#1\endcsname}
+\def\getvalue     #1{\csname#1\endcsname} % maybe: \begincsname#1\endcsname
 \def\letvalue     #1{\expandafter\let \csname#1\endcsname}
 \def\letgvalue    #1{\expandafter\glet\csname#1\endcsname}
 \def\resetvalue   #1{\expandafter\let \csname#1\endcsname\empty}
@@ -4395,28 +4395,6 @@
    \expandafter\let\expandafter\recurselevel\csname\??recurseindex\the\outerrecurse\endcsname
    \global\advance\outerrecurse \minusone}
 
-\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
-  {\global\advance\outerrecurse \plusone
-   \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
-   \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
-   \ifnum#3>\zerocount\relax
-     \ifnum#2<#1\relax
-       \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
-     \else
-       \let\syst_helpers_stepwise_next\syst_helpers_stepwise_recurse
-     \fi
-   \else
-     \ifnum#3<\zerocount\relax
-       \ifnum#1<#2\relax
-         \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
-       \else
-         \let\syst_helpers_stepwise_next\syst_helpers_stepwise_reverse
-       \fi
-     \else
-       \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
-     \fi
-   \fi\normalexpanded{\syst_helpers_stepwise_next{\number#1}{\number#2}{\number#3}}}
-
 \unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone
    \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#1}%
@@ -4424,8 +4402,32 @@
    \let\endofloop\syst_helpers_loop
    \syst_helpers_loop1} % no \plusone else \recurselevel wrong
 
-% faster
-
+% for instance:
+%
+% \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+%   {\global\advance\outerrecurse \plusone
+%    \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
+%    \expandafter\glet\csname\??recurseindex \the\outerrecurse\endcsname\recurselevel
+%    \ifnum#3>\zerocount\relax
+%      \ifnum#2<#1\relax
+%        \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
+%      \else
+%        \let\syst_helpers_stepwise_next\syst_helpers_stepwise_recurse
+%      \fi
+%    \else
+%      \ifnum#3<\zerocount\relax
+%        \ifnum#1<#2\relax
+%          \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
+%        \else
+%          \let\syst_helpers_stepwise_next\syst_helpers_stepwise_reverse
+%        \fi
+%      \else
+%        \let\syst_helpers_stepwise_next\syst_helpers_stepwise_exit
+%      \fi
+%    \fi\normalexpanded{\syst_helpers_stepwise_next{\number#1}{\number#2}{\number#3}}}
+%
+% faster:
+%
 % \unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
 %   {\global\advance\outerrecurse \plusone
 %    \expandafter\gdef\csname\??recurseaction\the\outerrecurse\endcsname##1##2{#4}%
@@ -4437,10 +4439,12 @@
 %        \ifnum#1<#2\else r\fi
 %      \fi\fi
 %    \expandafter\endcsname\normalexpanded{{\number#1}{\number#2}{\number#3}}}
-
+%
 % \let\@swr \syst_helpers_stepwise_exit
 % \let\@swrd\syst_helpers_stepwise_recurse
 % \let\@swrr\syst_helpers_stepwise_reverse
+%
+% nicer:
 
 \installsystemnamespace{recursestepwise}
 

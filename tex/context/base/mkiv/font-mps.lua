@@ -6,6 +6,7 @@ if not modules then modules = { } end modules ['font-mps'] = {
     license   = "see context related readme files"
 }
 
+local tostring   = tostring
 local concat     = table.concat
 local formatters = string.formatters
 
@@ -34,6 +35,17 @@ local f_draw        = formatters["draw %s;"]
 
 local f_boundingbox = formatters["((%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--cycle)"]
 local f_vertical    = formatters["((%.6F,%.6F)--(%.6F,%.6F))"]
+
+directives.register("metapost.stripzeros", function()
+
+    f_moveto      = formatters["(%.6N,%.6N)"]
+    f_lineto      = formatters["--(%.6N,%.6N)"]
+    f_curveto     = formatters["..controls(%.6N,%.6N)and(%.6N,%.6N)..(%.6N,%.6N)"]
+
+    f_boundingbox = formatters["((%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--cycle)"]
+    f_vertical    = formatters["((%.6N,%.6N)--(%.6N,%.6N))"]
+
+end)
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -276,10 +288,16 @@ local parameters     = fonts.hashes.parameters
 local shapes         = fonts.hashes.shapes
 local topaths        = metapost.paths
 
-local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F)(%,t);"]
+local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F,%q)(%,t);"]
 local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
 local f_bounds       = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
 local s_nothing      = "(origin scaled 10)"
+
+directives.register("metapost.stripzeros", function()
+    f_code   = formatters["mfun_do_outline_text_flush(%q,%i,%.6N,%.6N,%q)(%,t);"]
+    f_rule   = formatters["mfun_do_outline_rule_flush(%q,%.6N,%.6N,%.6N,%.6N);"]
+    f_bounds = formatters["checkbounds(%.6N,%.6N,%.6N,%.6N);"]
+end)
 
 local sc             = 10
 local fc             = number.dimenfactors.bp * sc / 10
@@ -303,13 +321,14 @@ function metapost.output(kind,font,char,advance,shift,ex)
                     local advance   = advance or 0
                     local exfactor  = ex or 0
                     local wfactor   = 1
+                    local detail    = kind == "p" and tostring(char) or ""
                     if exfactor ~= 0 then
                         wfactor = (1+(ex/units)/1000)
                         xfactor = xfactor * wfactor
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
-                        local code = f_code(kind,#paths,advance,shift,paths)
+                        local code = f_code(kind,#paths,advance,shift,detail,paths)
                         return code, character.width * fc * wfactor
                     else
                         return "", 0

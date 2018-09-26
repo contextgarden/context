@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.09.25 14:14}
+\edef\contextversion{2018.09.26 14:26}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -320,9 +320,11 @@
 
 \loadmarkfile{page-pst}
 \loadmkvifile{page-mbk}
-\loadmarkfile{page-mul} % partly overloaded
-\loadmarkfile{page-mix} % new
-\loadmarkfile{page-set}
+%loadmarkfile{page-mul} % \usecolumns[old-multicolumns]
+\loadmarkfile{page-mix}
+\loadmarkfile{page-smp}
+%loadmarkfile{page-set} % \usecolumns[old-columnsets]
+\loadmarkfile{page-cst}
 \loadmarkfile{page-pcl} % new
 \loadmarkfile{pack-lyr}
 \loadmarkfile{pack-pos}

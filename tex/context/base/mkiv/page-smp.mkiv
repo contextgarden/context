@@ -1,0 +1,59 @@
+%D \module
+%D   [       file=page-smp,  % was: core-mul, page-mul
+%D        version=1998.03.15,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Simple Multi Column Output,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D The old one:
+
+\definemixedcolumns
+  [\v!columns]
+  % compatible with columns default :
+  [\c!balance=\v!yes,
+   \c!blank={\v!line,\v!fixed}]
+
+\unexpanded\def\setupcolumns
+  {\setupmixedcolumns[\v!columns]}
+
+%D This will be replaced by mixed box.
+
+\unexpanded\def\startsimplecolumns
+  {\dosingleempty\page_simple_start}
+
+\def\page_simple_start[#1]%
+  {\bgroup
+   \setsimplecolumnshsize[#1]%
+   \nopenalties
+   \setbox\scratchbox\vbox\bgroup
+   \forgetall} % \blank[\v!disable]
+
+\unexpanded\def\stopsimplecolumns
+  {\removebottomthings
+   \egroup
+   \rigidcolumnbalance\scratchbox
+   \egroup}
+
+\unexpanded\def\setsimplecolumnshsize[#1]%
+  {\getdummyparameters
+     [\c!width=\hsize,
+      \c!distance=1.5\bodyfontsize,
+      \c!n=2,
+      \c!lines=0,
+      #1]%
+   \edef\rigidcolumnlines
+     {\directdummyparameter\c!lines}%
+   \setrigidcolumnhsize
+     {\directdummyparameter\c!width}%
+     {\directdummyparameter\c!distance}%
+     {\directdummyparameter\c!n}}
+
+\protect \endinput
