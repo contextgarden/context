@@ -252,6 +252,14 @@ end
 
 -- temp hack
 
+local f_image   = formatters["%.6F 0 0 %.6F 0 0 cm /%s Do"]
+local f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6F %.6F re f Q"] -- q Q is not really needed
+
+directives.register("pdf.stripzeros",function()
+    f_image   = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
+    f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q"]
+end)
+
 function img.package(image) -- see lpdf-u3d **
     local boundingbox = image.bbox
     local imagetag    = "Im" .. image.index
@@ -270,7 +278,7 @@ function img.package(image) -- see lpdf-u3d **
     local height = boundingbox[4]
     local xform = img.scan {
         attr   = resources(),
-        stream = formatters["%.6F 0 0 %.6F 0 0 cm /%s Do"](width,height,imagetag),
+        stream = f_image(width,height,imagetag),
         bbox   = { 0, 0, width/basepoints, height/basepoints },
     }
     img.immediatewrite(xform)
@@ -280,7 +288,6 @@ end
 -- experimental
 
 local nofpatterns = 0
-local f_pattern   = formatters["q /Pattern cs /%s scn 0 0 %.6F %.6F re f Q"] -- q Q is not really needed
 
 local texsavebox  = tex.saveboxresource
 

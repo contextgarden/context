@@ -103,7 +103,7 @@ local pdf_tx                  = pdfconstant("Tx")
 local pdf_sig                 = pdfconstant("Sig")
 local pdf_ch                  = pdfconstant("Ch")
 local pdf_btn                 = pdfconstant("Btn")
------ pdf_yes                 = pdfconstant("Yes")
+local pdf_yes                 = pdfconstant("Yes")
 local pdf_off                 = pdfconstant("Off")
 local pdf_p                   = pdfconstant("P") -- None Invert Outline Push
 local pdf_n                   = pdfconstant("N") -- None Invert Outline Push
@@ -341,10 +341,10 @@ local function fieldsurrounding(specification)
         alternative, a = "tf", s.tf
     end
     local tag = fontstyle .. fontalternative
-    fontsize = todimen(fontsize)
-    fontsize = fontsize and (bpfactor * fontsize) or 12
+    fontsize  = todimen(fontsize)
+    fontsize  = fontsize and (bpfactor * fontsize) or 12
     fontraise = 0.1 * fontsize -- todo: figure out what the natural one is and compensate for strutdp
-    local fontcode  = formatters["%0.4f Tf %0.4f Ts"](fontsize,fontraise)
+    local fontcode  = formatters["%0.4F Tf %0.4F Ts"](fontsize,fontraise)
     -- we could test for colorvalue being 1 (black) and omit it then
     local colorcode = pdfcolor(3,colorvalue) -- we force an rgb color space
     if trace_fields then
@@ -367,9 +367,9 @@ codeinjections.fieldsurrounding = fieldsurrounding
 local function registerfonts()
     if next(usedfonts) then
         checkpdfdocencoding() -- already done
-        local d = pdfdictionary()
-        local pdffonttype, pdffontsubtype = pdfconstant("Font"), pdfconstant("Type1")
-     -- for tag, name in next, usedfonts do
+        local pdffontlist    = pdfdictionary()
+        local pdffonttype    = pdfconstant("Font")
+        local pdffontsubtype = pdfconstant("Type1")
         for tag, name in sortedhash(usedfonts) do
             local f = pdfdictionary {
                 Type     = pdffonttype,
@@ -378,9 +378,9 @@ local function registerfonts()
                 BaseFont = pdfconstant(name),
                 Encoding = pdfdocencodingvector,
             }
-            d[tag] = pdfreference(pdfflushobject(f))
+            pdffontlist[tag] = pdfreference(pdfflushobject(f))
         end
-        return d
+        return pdffontlist
     end
 end
 
@@ -388,7 +388,7 @@ end
 
 local function fieldappearances(specification)
     -- todo: caching
-    local values = specification.values
+    local values  = specification.values
     local default = specification.default -- todo
     if not values then
         -- error
@@ -404,22 +404,117 @@ local function fieldappearances(specification)
         n, r, d = v[1], v[2], v[3]
     end
     local appearance = pdfdictionary {
-        N = registeredsymbol(n), R = registeredsymbol(r), D = registeredsymbol(d),
+        N = registeredsymbol(n),
+        R = registeredsymbol(r),
+        D = registeredsymbol(d),
     }
     return pdfshareobjectreference(appearance)
 --     return pdfreference(pdfflushobject(appearance))
 end
 
-local YesorOn = "Yes" -- somehow On is not always working out well any longer (why o why this change)
+-- local YesorOn = "Yes" -- somehow On is not always working out well any longer (why o why this change)
 
 -- beware ... maybe we should have unique /Yes1 ... we will probably
 -- change this one too.
 --
 -- TODO: the same as radio .. play safe and use different names.
 
+-- local function fieldstates_check(specification,forceyes,values,default,yesdefault)
+--     -- we don't use Opt here (too messy for radio buttons)
+--     local values, default = values or specification.values, default or specification.default
+--     if not values or values == "" then
+--         -- error
+--         return
+--     end
+--     local v = settings_to_array(values)
+--     local yes, off, yesn, yesr, yesd, offn, offr, offd
+--     if #v == 1 then
+--         yes, off = v[1], v[1]
+--     else
+--         yes, off = v[1], v[2]
+--     end
+--     local yesshown, yesvalue = lpegmatch(splitter,yes)
+--     if not (yesshown and yesvalue) then
+--         yesshown = yes, yes
+--     end
+--     yes = settings_to_array(yesshown)
+--     local offshown, offvalue = lpegmatch(splitter,off)
+--     if not (offshown and offvalue) then
+--         offshown = off, off
+--     end
+--     off = settings_to_array(offshown)
+--     if #yes == 1 then
+--         yesn, yesr, yesd = yes[1], yes[1], yes[1]
+--     elseif #yes == 2 then
+--         yesn, yesr, yesd = yes[1], yes[1], yes[2]
+--     else
+--         yesn, yesr, yesd = yes[1], yes[2], yes[3]
+--     end
+--     if #off == 1 then
+--         offn, offr, offd = off[1], off[1], off[1]
+--     elseif #off == 2 then
+--         offn, offr, offd = off[1], off[1], off[2]
+--     else
+--         offn, offr, offd = off[1], off[2], off[3]
+--     end
+--     if forceyes == true then
+--         forceyes = YesorOn -- spec likes Yes more but we've used On for ages now
+--     else
+--         -- false or string
+--     end
+--     if not yesvalue then
+--         yesvalue = yesdefault or yesn
+--     end
+--     if not offvalue then
+--         offvalue = offn
+--     end
+--     if default == yesn then
+--         default = pdfconstant(forceyes or yesn)
+--     else
+--         default = pdf_off
+--     end
+--     local appearance
+--     if false then -- needs testing
+--         appearance = pdfdictionary { -- maybe also cache components
+--             N = pdfshareobjectreference(pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
+--             R = pdfshareobjectreference(pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
+--             D = pdfshareobjectreference(pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
+--         }
+--     else
+--         appearance = pdfdictionary { -- maybe also cache components
+--             N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
+--             R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
+--             D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
+--         }
+--     end
+--     local appearanceref = pdfshareobjectreference(appearance)
+--  -- local appearanceref = pdfreference(pdfflushobject(appearance))
+--     return appearanceref, default, yesvalue
+-- end
+
+-- The rendering part of form support has always been crappy and didn't really
+-- improve over time. Did bugs become features? Who knows. Why provide for instance
+-- control over appearance and then ignore it when the mouse clicks someplace else.
+-- Strangely enough a lot of effort went into JavaScript support while basic
+-- appearance control of checkboxes stayed poor. I found this link when googling for
+-- conformation after the n^th time looking into this behaviour:
+--
+-- https://stackoverflow.com/questions/15479855/pdf-appearance-streams-checkbox-not-shown-correctly-after-focus-lost
+--
+-- ... "In particular check boxes, therefore, whenever not interacting with the user, shall
+-- be displayed using their normal captions, not their appearances."
+--
+-- So: don't use check boxes. In fact, even radio buttons can have these funny "flash some
+-- funny symbol" side effect when clocking on them. I tried all combinations if /H and /AP
+-- and /AS and ... Because (afaiks) the acrobat interface assumes that one uses dingbats no
+-- one really cared about getting custom appeances done well. This erratic behaviour might
+-- as well be the reason why no open source viewer ever bothered implementing forms. It's
+-- probably also why most forms out there look kind of bad.
+
 local function fieldstates_check(specification,forceyes,values,default,yesdefault)
     -- we don't use Opt here (too messy for radio buttons)
-    local values, default = values or specification.values, default or specification.default
+    local values  = values  or specification.values
+    local default = default or specification.default
     if not values or values == "" then
         -- error
         return
@@ -461,28 +556,28 @@ local function fieldstates_check(specification,forceyes,values,default,yesdefaul
     if not offvalue then
         offvalue = offn
     end
-    if forceyes == true then
-        forceyes = YesorOn -- spec likes Yes more but we've used On for ages now
-    else
-        -- false or string
-    end
     if default == yesn then
-        default = pdfconstant(forceyes or yesn)
+        default = pdf_yes
     else
         default = pdf_off
+    end
+    if yesvalue == yesn then
+        yesvalue = "Yes"
+    else
+        yesvalue = "Off"
     end
     local appearance
     if false then -- needs testing
         appearance = pdfdictionary { -- maybe also cache components
-            N = pdfshareobjectreference(pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
-            R = pdfshareobjectreference(pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
-            D = pdfshareobjectreference(pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
+            N = pdfshareobjectreference(pdfdictionary { Yes = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
+            R = pdfshareobjectreference(pdfdictionary { Yes = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
+            D = pdfshareobjectreference(pdfdictionary { Yes = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
         }
     else
         appearance = pdfdictionary { -- maybe also cache components
-            N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
-            R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
-            D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
+            N = pdfdictionary { Yes = registeredsymbol(yesn), Off = registeredsymbol(offn) },
+            R = pdfdictionary { Yes = registeredsymbol(yesr), Off = registeredsymbol(offr) },
+            D = pdfdictionary { Yes = registeredsymbol(yesd), Off = registeredsymbol(offd) }
         }
     end
     local appearanceref = pdfshareobjectreference(appearance)
@@ -490,12 +585,11 @@ local function fieldstates_check(specification,forceyes,values,default,yesdefaul
     return appearanceref, default, yesvalue
 end
 
--- It looks like there is always a (MK related) symbol used and that
--- the appearances are only used as ornaments behind a symbol. So,
--- contrary to what we did when widgets showed up, we now limit
--- ourself to more dumb definitions. Especially when highlighting is
--- enabled weird interferences happen. So, we play safe (some nice code
--- has been removed that worked well till recently).
+-- It looks like there is always a (MK related) symbol used and that the appearances
+-- are only used as ornaments behind a symbol. So, contrary to what we did when
+-- widgets showed up, we now limit ourself to more dumb definitions. Especially when
+-- highlighting is enabled weird interferences happen. So, we play safe (some nice
+-- code has been removed that worked well till recently).
 
 local function fieldstates_radio(specification,name,parent)
     local values  = values  or specification.values
@@ -574,7 +668,7 @@ local function fieldstates_radio(specification,name,parent)
     return appearanceref, default, yesvalue
 end
 
-local function fielddefault(field)
+local function fielddefault(field,pdf_yes)
     local default = field.default
     if not default or default == "" then
         local values = settings_to_array(field.values)
@@ -583,12 +677,12 @@ local function fielddefault(field)
     if not default or default == "" then
         return pdf_off
     else
-        return pdfconstant(default)
+        return pdf_yes or pdfconstant(default)
     end
 end
 
 local function fieldoptions(specification)
-    local values = specification.values
+    local values  = specification.values
     local default = specification.default
     if values then
         local v = settings_to_array(values)
@@ -792,7 +886,9 @@ function codeinjections.definefield(specification)
 end
 
 function codeinjections.clonefield(specification) -- obsolete
-    local p, c, v = specification.parent, specification.children, specification.alternative
+    local p = specification.parent
+    local c = specification.children
+    local v = specification.alternative
     if not p or not c then
         if trace_fields then
             report_fields("invalid clone, children %a, parent %a, alternative %a",c,p,v)
@@ -876,7 +972,8 @@ local function enhance(specification,option)
     return specification
 end
 
--- finish
+-- finish (if we also collect parents we can inline the kids which is
+-- more efficient ... but hardly anyone used widgets so ...)
 
 local collected     = pdfarray()
 local forceencoding = false
@@ -951,14 +1048,14 @@ end
 
 local function save_parent(field,specification,d,hasopt)
     local kidsnum = pdfreserveobject()
-    d.Kids = pdfreference(kidsnum)
+    d.Kids        = pdfreference(kidsnum)
     field.kidsnum = kidsnum
-    field.kids = pdfarray()
+    field.kids    = pdfarray()
     if hasopt then
         local optnum = pdfreserveobject()
-        d.Opt = pdfreference(optnum)
+        d.Opt        = pdfreference(optnum)
         field.optnum = optnum
-        field.opt = pdfarray()
+        field.opt    = pdfarray()
     end
     local pnum = pdfflushobject(d)
     field.pobj = pnum
@@ -974,16 +1071,21 @@ local function save_kid(field,specification,d,optname)
             opt[#opt+1] = optname
         end
     end
-    local width, height, depth = specification.width or 0, specification.height or 0, specification.depth
+    local width  = specification.width  or 0
+    local height = specification.height or 0
+    local depth  = specification.depth  or 0
     local box = hpack_node(nodeinjections.annotation(width,height,depth,d(),kn))
-    box.width, box.height, box.depth = width, height, depth -- redundant
+    -- redundant
+    box.width  = width
+    box.height = height
+    box.depth  = depth
     return box
 end
 
 local function makelineparent(field,specification)
-    local text = pdfunicode(field.default)
+    local text   = pdfunicode(field.default)
     local length = tonumber(specification.length or 0) or 0
-    local d = pdfdictionary {
+    local d      = pdfdictionary {
         Subtype  = pdf_widget,
         T        = pdfunicode(specification.title),
         F        = fieldplus(specification),
@@ -1001,7 +1103,8 @@ local function makelineparent(field,specification)
 end
 
 local function makelinechild(name,specification)
-    local field, parent = clones[name], nil
+    local field  = clones[name]
+    local parent = nil
     if field then
         parent = fields[field.parent]
         if not parent.pobj then
@@ -1012,7 +1115,7 @@ local function makelinechild(name,specification)
         end
     else
         parent = fields[name]
-        field = parent
+        field  = parent
         if not parent.pobj then
             if trace_fields then
                 report_fields("using parent text %a",name)
@@ -1049,9 +1152,9 @@ end
 -- copy of line ... probably also needs a /Lock
 
 local function makesignatureparent(field,specification)
-    local text = pdfunicode(field.default)
+    local text   = pdfunicode(field.default)
     local length = tonumber(specification.length or 0) or 0
-    local d = pdfdictionary {
+    local d      = pdfdictionary {
         Subtype  = pdf_widget,
         T        = pdfunicode(specification.title),
         F        = fieldplus(specification),
@@ -1069,7 +1172,8 @@ local function makesignatureparent(field,specification)
 end
 
 local function makesignaturechild(name,specification)
-    local field, parent = clones[name], nil
+    local field  = clones[name]
+    local parent = nil
     if field then
         parent = fields[field.parent]
         if not parent.pobj then
@@ -1080,7 +1184,7 @@ local function makesignaturechild(name,specification)
         end
     else
         parent = fields[name]
-        field = parent
+        field  = parent
         if not parent.pobj then
             if trace_fields then
                 report_fields("using parent text %a",name)
@@ -1126,7 +1230,8 @@ local function makechoiceparent(field,specification)
 end
 
 local function makechoicechild(name,specification)
-    local field, parent = clones[name], nil
+    local field  = clones[name]
+    local parent = nil
     if field then
         parent = fields[field.parent]
         if not parent.pobj then
@@ -1137,7 +1242,7 @@ local function makechoicechild(name,specification)
         end
     else
         parent = fields[name]
-        field = parent
+        field  = parent
         if not parent.pobj then
             if trace_fields then
                 report_fields("using parent choice %a",name)
@@ -1176,15 +1281,16 @@ local function makecheckparent(field,specification)
         F  = fieldplus(specification),
         Ff = fieldflag(specification),
         OC = fieldlayer(specification),
-        AA = fieldactions(specification),
+        AA = fieldactions(specification), -- can be shared
         FT = pdf_btn,
-        V  = fielddefault(field),
+        V  = fielddefault(field,pdf_yes),
     }
     save_parent(field,specification,d,true)
 end
 
 local function makecheckchild(name,specification)
-    local field, parent = clones[name], nil
+    local field  = clones[name]
+    local parent = nil
     if field then
         parent = fields[field.parent]
         if not parent.pobj then
@@ -1195,7 +1301,7 @@ local function makecheckchild(name,specification)
         end
     else
         parent = fields[name]
-        field = parent
+        field  = parent
         if not parent.pobj then
             if trace_fields then
                 report_fields("using parent check %a",name)
@@ -1211,7 +1317,7 @@ local function makecheckchild(name,specification)
         Parent  = pdfreference(parent.pobj),
         F       = fieldplus(specification),
         OC      = fieldlayer(specification),
-        AA      = fieldactions(specification),
+        AA      = fieldactions(specification), -- can be shared
         H       = pdf_n,
     }
     local fontsymbol = specification.fontsymbol
@@ -1241,7 +1347,7 @@ local function makepushparent(field,specification) -- check if we can share with
         F       = fieldplus(specification),
         Ff      = fieldflag(specification),
         OC      = fieldlayer(specification),
-        AA      = fieldactions(specification),
+        AA      = fieldactions(specification), -- can be shared
         FT      = pdf_btn,
         AP      = fieldappearances(field),
         H       = pdf_p,
@@ -1278,7 +1384,7 @@ local function makepushchild(name,specification)
         Parent  = pdfreference(field.pobj),
         F       = fieldplus(specification),
         OC      = fieldlayer(specification),
-        AA      = fieldactions(specification),
+        AA      = fieldactions(specification), -- can be shared
         H       = pdf_p,
     }
     if fontsymbol and fontsymbol ~= "" then
@@ -1313,7 +1419,7 @@ end
 local function makeradiochild(name,specification)
     local field, parent = clones[name], nil
     if field then
-        field = radios[field.parent]
+        field  = radios[field.parent]
         parent = fields[field.parent]
         if not parent.pobj then
             if trace_fields then

@@ -77,6 +77,17 @@ The full repertoire of commands is:
 
 \showsetup{setJSpreamble}
 
+As we're into \LUA\ and because \LUA\ is so lightweight I've wondered several
+times now if it would make sense to embed \LUA\ in \PDF\ viewers. After all,
+annotations are an extension mechanism. In the early days of \PDF\ this was
+actually quite doable because \ACROBAT\ reader (and exchange) had a plugin model.
+However, the more functionality ended up in the program, the least interesting
+(and popular) the plugins mechanism became. Some open source viewers have an
+\API\ so in principle adding the lightweight \LUA\ interpreter (of course with
+\LPEG, and quite probably without file \IO) is possible. It has been discussed at
+a recent \CONTEXT\ meeting, so who knows \unknown For now we're stuck with
+\JAVASCRIPT.
+
 \stopchapter
 
 \stopcomponent

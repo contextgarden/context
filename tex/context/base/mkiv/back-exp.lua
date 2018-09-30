@@ -2701,9 +2701,9 @@ local function pop()
         currentdepth = currentdepth - 1
         if trace_export then
             if top then
-                report_export("%w</%s>",currentdepth,top)
+                report_export("%w</%s>",currentdepth,tree.tg)
             else
-                report_export("</%s>",top)
+                report_export("</%s>",tree.tg)
             end
         end
     else

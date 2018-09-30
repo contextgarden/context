@@ -15,11 +15,11 @@
 
 \unprotect
 
-\definestartstop
-    [DefaultSnippet]
-    [\c!before=\blank,
-     \c!after=\blank,
-     \c!style=\tt]
+\setupstartstop
+  [DefaultSnippet]
+  [\c!before={\typingparameter\c!before},
+   \c!after={\typingparameter\c!after},
+   \c!style={\typingparameter\c!style}]
 
 % Name
 %     NamePrimitive

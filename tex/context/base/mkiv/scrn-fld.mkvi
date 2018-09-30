@@ -627,11 +627,13 @@
 
 %D Common stuff (obsolete)
 
+
 \newcount\c_scrn_field_system_n
 
-\def\nextsystemfield
-  {\global\advance\c_scrn_field_system_n\plusone
-   \def\currentsystemfield{sys::\number\c_scrn_field_system_n}}
+\def\currentsystemfield{sys::\number\c_scrn_field_system_n}
+
+\unexpanded\def\nextsystemfield
+  {\global\advance\c_scrn_field_system_n\plusone}
 
 %D \CONTEXT\ had tooltips right from the moment that it
 %D supported fields. Due to the at that moment somewhat
@@ -822,21 +824,56 @@
 \unexpanded\def\overlayrollbutton
   {\dodoubleargument\scrn_rollbutton_overlay}
 
-\def\scrn_rollbutton_overlay[#regionin][#regionout]%
+\unexpanded\def\scrn_rollbutton_overlay[#regionin][#regionout]%
+  {\iffirstargument
+     \scrn_rollbutton_overlay_indeed[#regionin][#regionout]%
+   \else
+     \expandafter\scrn_rollbutton_overlay_indeed
+   \fi}
+
+% \def\scrn_rollbutton_overlay_indeed#regionin#regionout%
+%   {\iflocation
+%      \bgroup
+%      \global\advance\c_scrn_rollbutton_n\plusone
+%      \definesymbol
+%        [rollbutton:\number\c_scrn_rollbutton_n]
+%        [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
+%      \definefieldbody
+%        [rollbutton:\number\c_scrn_rollbutton_n]
+%        [\c!type=push,
+%         \c!regionin={#regionin},
+%         \c!regionout={#regionout},
+%         \c!values=\currentsystemfield,
+%         \c!default=\currentsystemfield]%
+%      \fitfield[\currentsystemfield]%
+%      \egroup
+%    \fi}
+
+\def\scrn_rollbutton_overlay_indeed#regionin#regionout%
   {\iflocation
      \bgroup
-     \global\advance\c_scrn_rollbutton_n\plusone
+     \global\advance\c_scrn_rollbutton_n_button\plusone
+     \global\advance\c_scrn_rollbutton_n_symbol\plusone
      \definesymbol
-       [rollbutton:\number\c_scrn_rollbutton_n]
+       [rollsymbol:\number\c_scrn_rollbutton_n_symbol]
        [{\framed[\c!frame=\v!off,\c!width=\overlaywidth,\c!height=\overlayheight]{}}]%
-     \definefieldbody
-       [rollbutton:\number\c_scrn_rollbutton_n]
-       [\c!type=push,
-        \c!regionin={#regionin},
-        \c!regionout={#regionout},
-        \c!values=\currentsystemfield,
-        \c!default=\currentsystemfield]%
-     \fitfield[\currentsystemfield]%
+   % \definefieldbody
+   %   [rollbutton:\number\c_scrn_rollbutton_n_button]
+   %   [\c!type=push,
+   %    \c!values=rollsymbol:\number\c_scrn_rollbutton_n_symbol,
+   %    \c!default=rollsymbol:\number\c_scrn_rollbutton_n_symbol]%
+   % \fitfield
+   %   [rollbutton:\number\c_scrn_rollbutton_n_button]%
+   %   [\c!regionin={#regionin},
+   %    \c!regionout={#regionout}]%
+     %
+     \definefield
+       [rollbutton:\number\c_scrn_rollbutton_n_button][push][rollbutton]
+       [rollsymbol:\number\c_scrn_rollbutton_n_symbol]%
+     \fitfield
+       [rollbutton:\number\c_scrn_rollbutton_n_button]%
+       [\c!regionin={#regionin},\c!regionout={#regionout}]%
+     %
      \egroup
    \fi}
 
@@ -914,7 +951,7 @@
 %D We plug into the menu system
 
 \unexpanded\def\scrn_menu_psh_start[#reference]#text\stoppsh
-  {\starttxt\pushbutton[\currentmenu][#reference]\stoptxt}
+  {\starttxt\pushbutton[\currentinteractionmenu][#reference]\stoptxt}
 
 \unexpanded\def\scrn_menu_psh_direct[#reference]#text\\
   {\scrn_menu_psh_start[#reference]\stoprob}
@@ -956,6 +993,8 @@
 \newcount\c_scrn_rollbutton_n_button
 \newcount\c_scrn_rollbutton_n_symbol
 
+\def\lastrollbuttonindex{\the\c_scrn_rollbutton_n_button}
+
 \unexpanded\def\rollbutton
   {\dodoubleempty\scrn_rollbutton}
 
@@ -973,11 +1012,16 @@
      \setbuttonparameter
      \usebuttonstyleandcolor}
 
+\setupfield
+  [rollbutton]
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay]
+
 \def\scrn_rollbutton[#tag][#settings]#text[#reference]%
   {\dontleavehmode
    \bgroup
-   \advance\c_scrn_rollbutton_n_button\plusone
-   \advance\c_scrn_rollbutton_n_symbol\plusone
+   \global\advance\c_scrn_rollbutton_n_button\plusone
+   \global\advance\c_scrn_rollbutton_n_symbol\plusone
    \iffirstargument
      \ifsecondargument
        \edef\currentinteractionmenu{#tag}%
@@ -994,21 +1038,18 @@
    \else
      \let\scrn_rollbutton_symbol\scrn_rollbutton_symbol_b
    \fi
-   % todo: share symbols, tricky since different dimensions
+   % todo: share symbols, tricky since different dimensions (maybe \unique...)
    \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:n][\scrn_rollbutton_symbol{n}{#text}]%
    \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:r][\scrn_rollbutton_symbol{r}{#text}]%
    \definesymbol[rollsymbol:\number\c_scrn_rollbutton_n_symbol:d][\scrn_rollbutton_symbol{d}{#text}]%
-   \setupfield
-     [rollbutton]
-     [\c!frame=\v!off,
-      \c!offset=\v!overlay,
-      \c!clickout={#reference}]%
    \definefield
      [rollbutton:\number\c_scrn_rollbutton_n_button][push][rollbutton]
      [rollsymbol:\number\c_scrn_rollbutton_n_symbol:n,%
       rollsymbol:\number\c_scrn_rollbutton_n_symbol:r,%
       rollsymbol:\number\c_scrn_rollbutton_n_symbol:d]%
-   \fitfield[rollbutton:\number\c_scrn_rollbutton_n_button]%
+   \fitfield
+     [rollbutton:\number\c_scrn_rollbutton_n_button]%
+     [\c!clickout={#reference}]%
    \egroup}
 
 \unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#usestyleandcolor#what#text%
@@ -1023,7 +1064,7 @@
 %D We plug into the menu system
 
 \unexpanded\def\scrn_menu_rob_start[#reference]#text\stoprob
-  {\starttxt\rollbutton[\currentmenu]{\ignorespaces#text\unskip}[#reference]\stoptxt}
+  {\starttxt\rollbutton[\currentinteractionmenu]{\ignorespaces#text\unskip}[#reference]\stoptxt}
 
 \unexpanded\def\scrn_menu_rob_direct[#reference]#text\\
   {\scrn_menu_rob_start[#reference]#text\stoprob}

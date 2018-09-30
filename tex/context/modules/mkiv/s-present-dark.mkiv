@@ -1,0 +1,357 @@
+%D \module
+%D   [      file=s-present-dark, % tug-2001
+%D        version=2018.09.25, % 2000.*.*
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Dark,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[present-dark]
+
+%D The original document dates from 2000 and was meant for a presentation at \TUG\
+%D 2001. It used widgets and in particular check fields and push buttons.
+%D \JAVASCRIPT\ was used to show or hide them when rolling over, and appearances
+%D changed in a subtle way. It actually worked quite well at that time.
+%D
+%D However, over time these widgets proved to be sort of unstable. For instance we
+%D used the parent|-|child model of which (inheritance and appearance) behaviour
+%D changed over time. We're talking of a few decades ago when \TEX\ was one of the
+%D few (maybe only) tools that could actually support everything that the manual
+%D introduced: the \quote {standard} seemed to be ahead of the viewer. Anyway, we
+%D adapted but it meant that old document in principle were not always future proof.
+%D
+%D We used in this document a push button in the background of the menu so that it
+%D could become visible when rolled over. There were no layers in \PDF\ at that
+%D time! Nowadays such a trick doesn't work well because of the way a viewer
+%D intercepts regions. One gets kind of erratic behaviour when applying \JAVASCRIPT.
+%D
+%D I spent quite some time to test if we could still do the same without side
+%D effects and in the process also noticed that some functionality in \JAVASCRIPT\
+%D seems broken (or changed due to maybe security issues). So, in the end I decided
+%D to simplify the approach and use layers to pop up the menu when the mouse goes
+%D over it but no longer hide it when the mouse leaves that area. It just doesn't
+%D work too well otherwise.
+
+%D We start with the layout. We basically have three areas: edge, margin and text.
+%D Each are more or less the same width.
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [backspace=380pt,
+   topspace=20pt,
+   leftedge=100pt,
+   leftedgedistance=10pt,
+   leftmargin=230pt,
+   leftmargindistance=20pt,
+   header=0pt,
+   footer=0pt,
+   width=200pt,
+   backspace=360pt,
+   width=220pt,
+   leftmargin=210pt,
+   height=middle]
+
+%D The bodyfont is the Latin Modern Variable (of course at that time we used
+%D the Computer Modern predecessors). We still apply protrusion and expansion.
+%D The new \quotation {Modern Latin} look also works ok on screen.
+
+\definefontfeature
+  [default]
+  [default]
+  [expansion=pure,
+   protrusion=pure]
+
+\setupalign
+  [verytolerant,stretch,hanging] % space
+
+\setupbodyfont
+  [modernvariable,11pt]
+
+% \setupbodyfont
+%   [modernlatin,11pt]
+
+\setupinmargin
+  [style=,
+   color=]
+
+%D We use some predefined \JAVASCRIPT\ functions. These are rather old helpers.
+%D Normally only the libraries (sets of functions) that are used will be
+%D embedded.
+
+\useJSscripts[fld]
+\useJSscripts[nav]
+
+%D The remarks that will pop up. By default they are not visible. Clicking
+%D on the page (or menu item) will show them step by step.
+
+\newcounter\bofremarks
+\newcounter\nofremarks
+
+\setupfield
+  [remark]
+  [offset=overlay,
+   option={readonly,hidden},
+   color=,
+   style=,
+   frame=off]
+
+\defineframed
+  [remarkable]
+  [frame=off,
+   backgroundcolor=white,
+   background=RollBackground]
+
+\starttexdefinition unexpanded remark #1#2
+
+    \doglobal\increment\nofremarks
+
+    \definesymbol
+        [remark:x:\nofremarks]
+        [\remarkable{#1}]
+
+    \definesymbol
+        [remark:y:\nofremarks]
+        [\remarkable{#2}]
+
+    \definefield
+        [remark:x:\nofremarks][check][remark]
+        [remark:x:\nofremarks]
+        [remark:x:\nofremarks]
+
+    \definefield
+        [remark:y:\nofremarks][check][remark]
+        [remark:y:\nofremarks]
+        [remark:y:\nofremarks]
+
+    \inleft
+        [scope=local]
+        {
+            \hpack to \hsize {
+                \hss
+                \linebox {
+                    \fitfield[remark:y:\nofremarks]
+                }
+            }
+        }
+
+    \bgroup
+
+    \setbox\scratchbox\hbox {
+        #1
+    }
+
+    \hpack to \wd\scratchbox {
+        \wd\scratchbox\zeropoint
+        \box\scratchbox
+        \hss
+        \linebox {
+            \fitfield[remark:x:\nofremarks]
+        }
+        \hss
+    }
+
+    \egroup
+
+\stoptexdefinition
+
+%D We use lots of backgrounds. The \METAPOST\ graphics are a bit overkill
+%D but we keep them.
+
+\setupbackgrounds
+  [text]
+  [background=StepFields]
+
+\defineoverlay
+  [StepFields]
+  [\directsetup{syncrefs}\overlaybutton{ShowRemark}]
+
+\setupbackgrounds
+  [page]
+  [background=PageBackground]
+
+%D Just look in \type {java-imp-fld.mkiv} how \type {HideFields} and
+%D alike are defined. They are defined references to \JAVASCRIPT\ calls.
+
+\setupinteraction
+  [state=start,
+   click=no,
+   menu=on,
+   style=,
+   color=,
+   frame=off,
+   contrastcolor=]
+
+\setupinteractionscreen
+  [option=max]
+
+\setupbackgrounds
+  [paper]
+  [background=color,
+   backgroundcolor=black]
+
+\defineoverlay
+  [PageBackground]
+  [\useMPgraphic{PageBackground}]
+
+\startuseMPgraphic{PageBackground}
+    StartPage ;
+        numeric w ; w := 1.25 * PaperWidth ;
+        numeric n ; n := 2.50 * PageNumber ;
+        numeric d ; d := (1 + (PageNumber-1)/5) * 5pt ;
+        fill Page
+            withcolor black ;
+        for i=1 upto 500 :
+            draw
+                center Page
+                    randomized w
+                    rotatedaround(center Page,n)
+                withpen pencircle
+                    scaled (uniformdeviate d)
+                withcolor
+                    (yellow randomized (.3,.8))
+            ;
+        endfor ;
+    StopPage ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [TextBackground]
+  [\uniqueMPgraphic{TextBackground}]
+
+\startuniqueMPgraphic{TextBackground}
+    fill
+        OverlayBox
+        withcolor black ;
+    draw
+        OverlayBox
+        withpen pencircle scaled 1pt
+        withcolor OverlayColor ;
+\stopuniqueMPgraphic
+
+\defineoverlay
+  [RollBackground]
+  [\uniqueMPgraphic{RollBackground}]
+
+\startuniqueMPgraphic{RollBackground}
+    fill
+        OverlayBox
+        withcolor black ;
+    draw
+        OverlayBox
+        withpen pencircle scaled 1pt
+        withcolor OverlayColor ;
+\stopuniqueMPgraphic
+
+\setupinteractionmenu
+  [left]
+  [state=start,
+   width=\leftedgewidth,
+   frame=on,
+   framecolor=white,
+   rulethickness=1pt,
+   foregroundcolor=white,
+   background=RollBackground]
+
+\startsetups syncrefs
+    \normalexpanded {
+        \definereference
+           [ShowRemark]
+           [StepFields{remark:x,\bofremarks,\nofremarks},
+            StepFields{remark:y,\bofremarks,\nofremarks}]
+    }
+\stopsetups
+
+%D The menu buttons used to be rollover buttons but are now normal simple
+%D ones (more predictable).
+
+\defineviewerlayer
+  [buttons]
+
+\startinteractionmenu[left]
+    \vfill
+    \directsetup{syncrefs}
+    \startviewerlayer[buttons]
+        \startbut [previouspage,HideFields]  Previous \stopbut
+        \startbut [nextpage,HideFields]      Next     \stopbut
+        \startbut [ShowRemark]               Remark   \stopbut
+        \startbut [HideFields]               Reset    \stopbut
+        \startbut [CloseDocument,HideFields] Quit     \stopbut
+    \stopviewerlayer
+\stopinteractionmenu
+
+\setupinteraction
+  [closeaction=ForgetChanges,
+   openpageaction={HideFields,HideLayer{buttons}},
+   closepageaction={HideFields,HideLayer{buttons}}]
+
+\defineoverlay
+  [ShowMenu]
+  [\overlayrollbutton{VideLayer{buttons}}{}]
+
+\setupbackgrounds
+  [text][leftedge]
+  [backgroundoffset=10pt,
+   background=ShowMenu]
+
+%D The environment has been adapted a bit. Instead of taking two
+%D arguments we now use a key|-|value approach. The remark is shown
+%D when one rolls over the title (author).
+
+\defineframedtext
+  [MainText]
+  [frame=off,
+   offset=10pt,
+   width=\textwidth,
+   before=,
+   after=,
+   color=,
+   foregroundcolor=white,
+   background=TextBackground,
+   backgroundcolor=white]
+
+\starttexdefinition unexpanded StartIdea
+    \dosingleempty{\texdefinition{StartIdeaIndeed}}
+\stoptexdefinition
+
+\starttexdefinition StartIdeaIndeed [#1]
+    \let\bofremarks\nofremarks
+    \increment\bofremarks
+    \startstandardmakeup
+    \setvariables[Idea][#1]
+    \startMainText
+    \setupalign[verytolerant,stretch,hanging]
+\stoptexdefinition
+
+\starttexdefinition unexpanded StopIdea
+    \doifvariable {Idea} {text} {
+        \blank
+        \rightaligned {
+            \doifelsevariable {Idea} {remark} {
+                \tooltip
+                    [left]
+                    {\getvariable{Idea}{title}}
+                    {\getvariable{Idea}{remark}}
+            } {
+                \getvariable{Idea}{title}
+            }
+        }
+    }
+    \stopMainText
+    \vfill
+    \stopstandardmakeup
+\stoptexdefinition
+
+\stopmodule
+
+\continueifinputfile{s-present-dark.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{tug/2001/tug-2001-ideas.tex}

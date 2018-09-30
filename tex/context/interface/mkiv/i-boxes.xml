@@ -246,6 +246,19 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="linebox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shiftbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:dimension/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="inlinedbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>

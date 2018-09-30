@@ -304,7 +304,7 @@ def newpair      text v = forsuffixes i=v : save i ; pair      i ; endfor ; endd
 %D set_inner_boundingbox p
 %D \stoptyping
 
-path    mfun_boundingbox_stack ;
+path    mfun_boundingbox_stack[] ;
 numeric mfun_boundingbox_stack_depth ;
 
 mfun_boundingbox_stack_depth := 0 ;
@@ -316,7 +316,7 @@ enddef ;
 
 def popboundingbox text p =
     setbounds p to mfun_boundingbox_stack[mfun_boundingbox_stack_depth] ;
-    mfun_boundingbox_stack[mfun_boundingbox_stack_depth] := origin ;
+    mfun_boundingbox_stack[mfun_boundingbox_stack_depth] := origin -- cycle ;
     mfun_boundingbox_stack_depth := mfun_boundingbox_stack_depth - 1 ;
 enddef ;
 

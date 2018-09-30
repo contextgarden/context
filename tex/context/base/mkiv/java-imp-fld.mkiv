@@ -262,9 +262,28 @@ function Forget_Changes() {
 function ForgetChanges() {
     this.dirty = false ;
 }
+
+function Step_Fields (Name, First, Last) {
+    for (var i = Number(First) ; i <= Number(Last) ; i++) {
+        var s = Name + ":" + i ;
+        var v = this.getField(s) ;
+        if (v) {
+            ++visible_fields ;
+            visible_field[visible_fields] = s ;
+            if (v.hidden) {
+                v.hidden   = false ;
+                this.dirty = false ;
+                return ;
+            }
+        }
+    }
+}
 \stopJSpreamble
 
+\definereference[VideFields]   [JS(Vide_Fields)]
+\definereference[HideFields]   [JS(Hide_Fields)]
 \definereference[ForgetChanges][JS(Forget_Changes)]
+\definereference[StepFields]   [JS(Step_Fields)]
 
 % This can be done more efficient, by keeping track of the
 % current top of the stack.

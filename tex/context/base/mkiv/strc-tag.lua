@@ -408,9 +408,9 @@ function tags.stop()
     end
     local t = stack[stacksize]
     if not t then
-     -- if trace_tags then
+        if trace_tags then
             report_tags("ignoring end tag, previous chain: %s",stacksize > 0 and concat(chain," ",1,stacksize) or "none")
-     -- end
+        end
         t = unsetvalue
     end
     texsetattribute(a_tagged,t)

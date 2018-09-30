@@ -1,0 +1,1871 @@
+%D The calculator
+%D
+%D This document was made in 1998 as demonstration of widgets in \CONTEXT in \MKII.
+%D It has been adapted to run in \MKIV. Not many changes were needed. The macro
+%D definitions are layout a bit more readable and we use official scratch variables.
+%D
+%D The \JAVASCRIPT\ interpeter has changes and also became more strict. So, I
+%D reformatted the code bit and added some more semicolons and vars.
+%D
+%D We changed to font from a Helvetica lookalike to Dejavu but kept the colors as
+%D in the original. We also kept the \JAVASCRIPT\ and \METAPOST\ code (although
+%D we had to add some initalizations for \METAPOST\ due to the runtime graphic
+%D generation. I didn't check the functionality.
+%D
+%D Should I do it different nowaways? For sure. I might use layers of make nicer
+%D \METAPOST\ code but it's also a demonstration of how thinsg were done in 1998.
+
+% acrobat 3->4 : different field initialization
+% acrobat 4->5 : typecasting fails [switch"2" vs 2]
+% acrobat 6->  : more strict interpreter
+
+\starttext
+
+\dontcomplain
+
+\setuppapersize
+  [S6][S6]
+
+\setupwhitespace
+  [medium]
+
+\setupbodyfont
+  [dejavu,9pt]
+
+\setuptyping
+  [margin=standard]
+
+\setuplayout
+  [backspace=1cm,
+   topspace=1cm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupinteraction
+  [page=yes,
+   state=start,
+   author=Hans Hagen,
+   title=The Calculator,
+   color=keyboard]
+
+\setupinteractionscreen
+  [option=max]
+
+\definecolor [action]   [r= 1, g=.9, b=.5]
+\definecolor [keyboard] [r= 0, g=.7, b=.7]
+\definecolor [stack]    [r=.7, g=.6, b=.8]
+
+\useURL[pragma-mail][mailto:pragma@xs4all.nl][][pragma@xs4all.nl]
+
+%D We have to use \type {String(...)=""} otherwise zero is regarded
+%D as non|-|entry (empty). This is a bit fuzzy.
+
+\def\MinLevel{50}
+\def\MaxLevel {8}
+
+\startJSpreamble {variables} used now
+
+    var Growing        = false ;
+    var MinLevel       = -50 ;
+    var MaxLevel       = 8 ;
+    var Level          = 1 ;
+    var NoErrorFound   = ">ok" ;
+    var NoValueError   = ">invalid" ;
+    var WhateverError  = ">error" ;
+    var OverflowError  = ">overflow" ;
+    var ExhaustedError = ">exhausted" ;
+
+    var Stack          = new Array() ;
+    var Stats          = new Array() ;
+
+ // console.clear() ;
+
+ // console.println("preamble loaded: variables") ;
+
+\stopJSpreamble
+
+\startJSpreamble {housekeeping} used now
+
+    function do_reset_all () {
+        if (Growing) {
+            Level = 1 ;
+        } else {
+            Level = MaxLevel ;
+        }
+        for (var i=MinLevel ; i<=MaxLevel ; i++) {
+            Stack[i] = "" ;
+        }
+        do_mark (NoErrorFound) ;
+    }
+
+    function do_refresh (i) {
+        var vv = this.getField("Stack." + String(i)) ;
+        if (vv) {
+            vv.value    = Stack[i] ;
+            vv.readonly = (i != Level) ;
+            this.dirty  = false ;
+        }
+    }
+
+    function do_refresh_all () {
+        for (var i=1 ; i<=MaxLevel ; i++) {
+            do_refresh(i) ;
+        }
+    }
+
+    function do_update_A () {
+        if (Stack[1] == "") {
+            for (var i=1 ; i<=MaxLevel ; i++) {
+                vv = this.getField("Stack." + String(i)) ;
+                if (vv) {
+                    Level = i ;
+                    if (valid_number(vv.value)) {
+                        Stack[Level] = String(vv.value)
+                    } else {
+                        vv.value = "" ;
+                        this.dirty = false ;
+                        return ;
+                    }
+                }
+            }
+        }
+    }
+
+    function do_update_B () {
+        if (String(Stack[MaxLevel-1]) == "") {
+            for (var i=1 ; i<=MaxLevel ; i++) {
+                vv = this.getField("Stack." + String(i)) ;
+                if (vv) {
+                    if (valid_number(vv.value)) {
+                        Stack[Level] = String(vv.value) ;
+                    } else {
+                        vv.value = "" ;
+                        this.dirty = false ;
+                        return ;
+                    }
+                }
+            }
+        }
+    }
+
+    function do_update () {
+        if (Growing) {
+            do_update_A() ;
+        } else {
+            do_update_B() ;
+        }
+    }
+
+    function do_mark (s) {
+        var vv = this.getField("Stack." + String(Level)) ;
+        if (vv) {
+            vv.value = s ;
+            this.dirty = false ;
+        }
+    }
+
+ // console.println("preamble loaded: housekeeping") ;
+\stopJSpreamble
+
+\startJSpreamble {handling} used now
+
+    function do_enter () {
+        do_update() ;
+        var vv = this.getField("Stack." + String(Level)) ;
+        if ((vv.value!=Stack[Level]) && (String(vv.value).search(/>/)==-1)) {
+            do_push (vv.value) ;
+        } else {
+            do_push (Stack[Level]) ;
+        }
+    }
+
+    function do_push_A (Value) {
+        do_update() ;
+        Stack[Level] = String(Value) ;
+        do_parse(Level) ;
+        if (String(Stack[Level])!="") {
+            if (Level<MaxLevel) {
+                ++Level ;
+                do_mark (ErrorString) ;
+            } else {
+                for (var i=MinLevel ; i<MaxLevel ; i++) {
+                    Stack[i] = Stack[i+1] ;
+                }
+                Stack[MaxLevel] = "" ;
+                do_refresh_all() ;
+                if (String(Stack[MinLevel])!="") {
+                    ErrorString = ExhaustedError ;
+                }
+                do_mark (ErrorString) ;
+            }
+        }
+    }
+
+    function do_push_B (Value) {
+        do_update() ;
+        Stack[MaxLevel] = String(Value) ;
+        do_parse(MaxLevel) ;
+        if (String(Stack[MaxLevel])!="") {
+            for (var i=MinLevel ; i<MaxLevel ; i++) {
+                Stack[i] = Stack[i+1] ;
+            }
+            Stack[MaxLevel] = "" ;
+            do_refresh_all() ;
+            if (Stack[MinLevel]!="") {
+                ErrorString = ExhaustedError ;
+            }
+            do_mark (ErrorString) ;
+        }
+    }
+
+    function do_push (Value) {
+        if (Growing) {
+            do_push_A (Value) ;
+        } else {
+            do_push_B (Value) ;
+        }
+    }
+
+    function do_pop_A () {
+        do_update() ;
+        if (String(Stack[0])!="") {
+            for (var i=MaxLevel ; i>MinLevel ; i--) {
+                Stack[i] = Stack[i-1] ;
+            }
+            Stack[MinLevel] = "" ;
+            do_refresh_all() ;
+            Level = MaxLevel ;
+        } else {
+            while ((Level>1) && (String(Stack[Level])=="")) {
+                do_refresh(Level) ;
+                --Level ;
+            }
+        }
+        if (String(Stack[Level])=="") {
+            return("") ;
+        } else {
+            Value = Number(Stack[Level]) ;
+            Stack[Level] = "" ;
+            do_refresh(Level) ;
+            return(Value) ;
+        }
+    }
+
+    function do_pop_B () {
+        do_update() ;
+        if (String(Stack[MaxLevel])=="") {
+            for (var i=MaxLevel ; i>MinLevel ; i--) {
+                Stack[i] = Stack[i-1] ;
+            }
+            Stack[MinLevel] = "" ;
+            do_refresh_all() ;
+        }
+        if (String(Stack[MaxLevel])=="") {
+            return("") ;
+        } else {
+            Value = Number(Stack[MaxLevel]) ;
+            Stack[MaxLevel] = "" ;
+            return(Value) ;
+        }
+    }
+
+    function do_pop () {
+        if (Growing) {
+            return(do_pop_A()) ;
+        } else {
+            return(do_pop_B()) ;
+        }
+    }
+
+    function do_dup () {
+        var X = do_pop() ;
+        if (valid_number(X)) {
+            do_push(X) ;
+            do_push(X) ;
+        } else {
+            do_mark (ErrorString) ;
+        }
+    }
+
+    function do_parse ( i ) {
+        if (valid_number(Stack[i])) {
+            Stack[i] = parseFloat(Stack[i]) ;
+            do_refresh(i) ;
+        } else {
+            Stack[i] = "" ;
+            do_refresh(i) ;
+            do_mark (ErrorString) ;
+        }
+    }
+
+    function do_digit ( d ) {
+        Stack[Level] += String(d) ;
+        do_refresh(Level) ;
+    }
+
+    function valid_number ( x ) {
+        if (String(x) == "") {
+            ErrorString = NoValueError ;
+            return(false) ;
+        } else if (isNaN(x)) {
+            ErrorString = NoValueError ;
+            return(false) ;
+        } else if (isFinite(x)) {
+            ErrorString = NoErrorFound ;
+            return(true) ;
+        } else {
+            ErrorString = OverflowError ;
+            return(false) ;
+        }
+    }
+
+ // console.println("preamble loaded: handling") ;
+
+\stopJSpreamble
+
+\startJSpreamble {operations} used now
+
+    function do_calculate (Operator) {
+        do_enter() ;
+        var Y = do_pop() ;
+        var X = 0 ;
+        if (valid_number(Y)) {
+            X = do_pop() ;
+            if (valid_number(X)) {
+                switch (Number(Operator)) {
+                    case 1 :
+                        if (Y) {
+                            X /= Y ;
+                        }
+                        break ;
+                    case 2 :
+                        X *= Y ;
+                        break ;
+                    case 3 :
+                        X -= Y ;
+                        break ;
+                    case 4 :
+                        X += Y ;
+                        break ;
+                    case 5 :
+                        X = Math.max(X,Y) ;
+                        break ;
+                    case 6 :
+                        X = Math.min(X,Y) ;
+                        break ;
+                    case 7 :
+                        X = Math.pow(X,Y) ;
+                        break
+                }
+                do_push(X) ;
+            } else {
+                do_push(Y) ;
+                ErrorString = NoValueError ;
+            }
+        }
+        do_mark(ErrorString) ;
+    }
+
+ // console.println("preamble loaded: operations") ;
+\stopJSpreamble
+
+\startJSpreamble {functions} used now
+
+    function do_facultate (Value) {
+        var n = Math.min(Math.round(Value),500) ;
+        if (n <= 1) {
+            return(1) ;
+        } else {
+            var m = 1 ;
+            for (m=1, i=1 ; i<=n ; i++) {
+                m = m * i ;
+            }
+            return(m) ;
+        }
+    }
+
+    function do_constant (Operation) {
+        do_update() ;
+        switch (Number(Operation)) {
+            case 1 :
+                do_push(Math.PI) ;
+                break ;
+            case 2 :
+                do_push(Math.E) ;
+                break ;
+            case 3 :
+                do_push(Math.random(1)) ;
+                break ;
+            case 4 :
+                do_dup() ;
+                break ;
+        }
+    }
+
+    function do_do_memory (mv, Sign) {
+        var X = do_pop() ;
+        if (valid_number(X)) {
+            mv.value += Sign*X ;
+            if (!valid_number(mv.value)) {
+                mv.value = "" ;
+            }
+            this.dirty = false ;
+        }
+        do_mark(ErrorString) ;
+    }
+
+    function do_memory (Operation) {
+        var mv = this.getField("Stats.mem") ;
+        if (mv) {
+            switch (Number(Operation)) {
+                case 1 :
+                    mv.value = "" ;
+                    break ;
+                case 2 :
+                    do_do_memory(mv, 1) ;
+                    break ;
+                case 3 :
+                    do_do_memory(mv, -1) ;
+                    break ;
+                case 4 :
+                    if (mv.value == "") {
+                        ErrorString = NoValueError ;
+                        do_mark(ErrorString) ;
+                    } else {
+                        do_push(mv.value) ;
+                    }
+                   break ;
+               }
+            this.dirty = false ;
+        }
+    }
+
+    function do_operation (Operator) {
+        do_enter() ;
+        var X = do_pop() ;
+        if (valid_number(X)) {
+            switch (Number(Operator)) {
+                case  1 :
+                    do_push(Math.sin(X)) ;
+                    break ;
+                case  2 :
+                    do_push(Math.cos(X)) ;
+                    break ;
+                case  3 :
+                    do_push(Math.tan(X)) ;
+                    break ;
+                case  4 :
+                    do_push(Math.exp(X)) ;
+                    break ;
+                case  5 :
+                    do_push(Math.ceil(X)) ;
+                    break ;
+                case  6 :
+                    do_push(Math.pow(X,2)) ;
+                    break ;
+                case  7 :
+                    do_push(do_facultate(X)) ;
+                        break ;
+                case  8 :
+                    do_push(Math.asin(X)) ;
+                        break ;
+                case  9 :
+                    do_push(Math.acos(X)) ;
+                    break ;
+                case 10 :
+                    do_push(Math.atan(X)) ;
+                    break ;
+                case 11 :
+                    do_push(Math.log(X)) ;
+                    break ;
+                case 12 :
+                    do_push(Math.floor(X)) ;
+                    break ;
+                case 13 :
+                    do_push(Math.sqrt(X)) ;
+                    break ;
+                case 14 :
+                    do_push(Math.round(X)) ;
+                    break ;
+                case 15 :
+                    do_push(Math.pow(X,-1)) ;
+                    break ;
+                case 16 :
+                    do_push(X*(2*Math.PI/360)) ;
+                    break ;
+                case 17 :
+                    do_push(X/(2*Math.PI/360)) ;
+                    break ;
+                case 18 :
+                    do_push(-X) ;
+                    break ;
+            }
+        }
+        do_mark(ErrorString) ;
+    }
+
+ // console.println("preamble loaded: functions") ;
+\stopJSpreamble
+
+\startJSpreamble {statistics} used now
+
+    var s_min_max = 1 ;
+    var s_sqrt    = 0 ;
+
+    function do_statcalcs (Sign, X) {
+        s_n.value     += Sign ;
+        s_sqrt        += Sign*X*X ;
+        s_total.value += Sign*X ;
+        s_mean.value   = s_total.value / s_n.value ;
+        s_temp         = Math.max(s_sqrt - 2*s_total.value*s_mean.value +
+                         s_n.value*s_mean.value*s_mean.value, 0) ;
+        s_sdev.value   = Math.sqrt(s_temp/s_n.value) ;
+        if (!(valid_number(X) && valid_number(s_sqrt) &&
+            valid_number(s_sdev.value) && valid_number(s_total.value) &&
+            valid_number(s_mean.value))) {
+                do_statistics(1) ;
+            }
+        this.dirty = false ;
+    }
+
+    function do_statistics(Operator) {
+        var s_n     = this.getField("Stats.n")     ;
+        var s_min   = this.getField("Stats.min")   ;
+        var s_max   = this.getField("Stats.max")   ;
+        var s_total = this.getField("Stats.total") ;
+        var s_mean  = this.getField("Stats.mean")  ;
+        var s_sdev  = this.getField("Stats.sdev")  ;
+        if ((s_sqrt==0) && (s_n.value!="") && (s_n.value>0)) {
+            s_min_max = 1 ;
+            s_sqrt = s_n.value*s_sdev.value*s_sdev.value +
+                     2*s_total.value*s_mean.value -
+                     s_n.value*s_mean.value*s_mean.value ;
+         }
+        switch (Number(Operator)) {
+            case 1 :
+                s_min_max     =  1 ;
+                s_n.value     = "" ;
+                s_min.value   = "" ;
+                s_max.value   = "" ;
+                s_total.value = "" ;
+                s_mean.value  = "" ;
+                s_sdev.value  = "" ;
+                s_sqrt        =  0 ;
+                break ;
+          case 2 :
+                do_enter() ;
+                var X = do_pop() ;
+                if (valid_number(X)) {
+                    if (s_n.value=="") {
+                        s_n.value     = 0 ;
+                        s_total.value = 0 ;
+                        s_mean.value  = 0 ;
+                        if (s_min_max) {
+                            s_min.value = X ;
+                            s_max.value = X ;
+                       }
+                    } else {
+                        if ((s_min_max) && (X<s_min.value)) {
+                            s_min.value = X ;
+                        }
+                        if ((s_min_max) && (X>s_max.value)) {
+                            s_max.value = X ;
+                        }
+                    }
+                   do_statcalcs(1,X) ;
+                }
+                break ;
+          case 3 :
+                do_enter() ;
+                var X = do_pop() ;
+                if (valid_number(X)) {
+                    s_min.value = "" ;
+                    s_max.value = "" ;
+                    s_min_max   =  0 ;
+                    if (s_n.value>0) {
+                        do_statcalcs(-1,X) ;
+                    } else {
+                        do_statistics(1) ;
+                    }
+                }
+                break ;
+        }
+        do_mark(ErrorString) ;
+        this.dirty = false ;
+    }
+
+    function do_copystat (Field) {
+        var sv = this.getField("Stats.".concat(Field)) ;
+        do_push(sv.value) ;
+    }
+
+ // console.println("preamble loaded: statistics") ;
+\stopJSpreamble
+
+\startJSpreamble {initialization} used now
+    do_reset_all() ;
+    do_update() ;
+    do_refresh_all() ;
+    do_mark (NoErrorFound) ;
+
+ // console.println("preamble loaded: initialization") ;
+\stopJSpreamble
+
+%D We could use functions instead but this demonstrates inline
+%D code. We also could use predefined references.
+
+\startJScode{period}
+    if (Stack[Level].search(/[.|e]/)==-1) {
+        do_digit(".") ;
+    }
+\stopJScode
+
+\startJScode{sign}
+    L = Stack[Level].length ;
+    if ((L==0) || (Stack[Level].charAt(L-1)=="e")) {
+        do_digit("-") ;
+    }
+\stopJScode
+
+\startJScode{exponent}
+    L = Stack[Level].length ;
+    if ((L>0) && valid_number(Stack[Level]) && (Stack[Level].search(/[e]/)==-1)) {
+        do_digit("e") ;
+    }
+\stopJScode
+
+\startJScode{reset}
+    do_reset_all() ;
+    do_refresh_all() ;
+    do_mark (NoErrorFound) ;
+\stopJScode
+
+\startJScode{clear}
+    do_update() ;
+    Stack[Level] = String(Stack[Level]).substring(0,String(Stack[Level]).length-1) ;
+    do_refresh(Level) ;
+\stopJScode
+
+\startJScode{pop}
+    X = do_pop() ;
+    do_mark(NoErrorFound) ;
+\stopJScode
+
+\startJScode{push}
+    do_enter() ;
+\stopJScode
+
+\startJScode{grow}
+    Growing = !Growing ;
+    do_reset_all() ;
+    do_refresh_all() ;
+    do_mark (NoErrorFound) ;
+\stopJScode
+
+% graphics
+
+\startuniqueMPgraphic{page}
+    fill OverlayBox
+        withcolor .4white ;
+    draw OverlayBox enlarged -10pt
+        withpen pencircle scaled 5pt
+        withcolor .8white ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{shape}
+    path p ; color c ;
+    p := OverlayBox ;
+    c := \overlaycolor ;
+    fill p withcolor c ;
+    draw p withpen pencircle scaled 1.5pt withcolor .8c ;
+\stopuniqueMPgraphic
+
+\defineoverlay [page]  [\uniqueMPgraphic{page}]
+\defineoverlay [shape] [\uniqueMPgraphic{shape}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\definemeasure[ButtonWidth][\makeupwidth/15]
+
+\setupbuttons
+  [width=\measured{ButtonWidth},
+   height=\measured{ButtonWidth},
+   background=shape,
+   backgroundcolor=\MPcolor{keyboard},
+   frame=off,
+   style=,
+   color=]
+
+\setupfield
+  [Results]
+  [horizontal,frame]
+  [width=fit,
+   align={lohi},
+   height=.5\measured{ButtonWidth},
+   background=shape,
+   backgroundcolor=\MPcolor{stack},
+   frame=off]
+  [width=3.5\measured{ButtonWidth},
+   frame=off]
+  [width=3.5\measured{ButtonWidth},
+   height=.45\measured{ButtonWidth},
+   option=readonly,
+   frame=off]
+
+\starttexdefinition unexpanded Star
+    \lower.65ex\hbox {
+        *
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded InfoButton #1
+    \setbox\scratchbox\hbox {
+        \lower .5cm \hbox {
+            \button [
+                     width=\dimexpr\overlaywidth  + .5cm\relax,
+                    height=\dimexpr\overlayheight + .5cm\relax,
+                     strut=no,
+                     frame=off,
+                background=
+            ] {
+            } [
+                info:#1
+            ]
+        }
+    }
+    \wd\scratchbox\overlaywidth
+    \ht\scratchbox\overlayheight
+    \box\scratchbox
+\stoptexdefinition
+
+\starttexdefinition unexpanded SomeKey #1#2#3
+
+    \bgroup
+
+    \doifelsenothing {#2} {
+        \button[background=]{#2}[#3]
+    } {
+        \defineoverlay
+            [infobutton]
+            [\InfoButton{#1}]
+      % \button
+      %   [background={infobutton,shape}]
+      %   {#2}
+      %   [#3]
+        \framed
+           [offset=overlay,
+            frame=off,
+            background=infobutton,
+            backgroundcolor=red]
+           {\button{#2}[#3]}
+    }
+
+    \egroup
+
+    \ignorespaces
+
+\stoptexdefinition
+
+\starttexdefinition unexpanded StatField #1
+    \hbox \bgroup
+        \doifelsenothing {#1} {
+            \framed [
+                height=.5\measured{ButtonWidth},
+                width=3.5\measured{ButtonWidth},
+                frame=off
+            ] {
+            }
+        } {
+            \definefield[Stats.#1][line][Results]
+            \field[Stats.#1][option=readonly]
+        }
+    \egroup
+    \ignorespaces
+\stoptexdefinition
+
+\setbox\scratchboxone=\hbox to .4\makeupwidth \bgroup
+    \ss
+    \SomeKey {7}      {\ssb 7}     {JS(do_digit{7})}     \hss
+    \SomeKey {8}      {\ssb 8}     {JS(do_digit{8})}     \hss
+    \SomeKey {9}      {\ssb 9}     {JS(do_digit{9})}     \hss
+    \SomeKey {div}    {\ssb /}     {JS(do_calculate{1})} \hss
+    \SomeKey {del}    {del}        {JS(clear)}
+\egroup
+
+\setbox\scratchboxtwo=\hbox to \wd\scratchboxone \bgroup
+    \ss
+    \SomeKey {4}      {\ssb 4}     {JS(do_digit{4})}     \hss
+    \SomeKey {5}      {\ssb 5}     {JS(do_digit{5})}     \hss
+    \SomeKey {6}      {\ssb 6}     {JS(do_digit{6})}     \hss
+    \SomeKey {mul}    {\ssb \Star} {JS(do_calculate{2})} \hss
+    \SomeKey {E}      {E}          {JS(exponent)}
+\egroup
+
+\setbox\scratchboxthree=\hbox to \wd\scratchboxone \bgroup
+    \ss
+    \SomeKey {1}      {\ssb 1}     {JS(do_digit{1})}     \hss
+    \SomeKey {2}      {\ssb 2}     {JS(do_digit{2})}     \hss
+    \SomeKey {3}      {\ssb 3}     {JS(do_digit{3})}     \hss
+    \SomeKey {sub}    {\ssb --}    {JS(do_calculate{3})} \hss
+    \SomeKey {pop}    {pop}        {JS(pop)}
+\egroup
+
+\setbox\scratchboxfour=\hbox to \wd\scratchboxone \bgroup
+    \ss
+    \SomeKey {0}      {\ssb 0}     {JS(do_digit{0})}     \hss
+    \SomeKey {period} {\ssb .}     {JS(period)}          \hss
+    \SomeKey {sign}   {\ssb -}     {JS(sign)}            \hss
+    \SomeKey {add}    {\ssb +}     {JS(do_calculate{4})} \hss
+    \SomeKey {push}   {push}       {JS(push)}
+\egroup
+
+\setbox\scratchboxone=\vbox to .8\wd\scratchboxone \bgroup
+    \box\scratchboxone  \vss
+    \box\scratchboxtwo  \vss
+    \box\scratchboxthree\vss
+    \box\scratchboxfour
+\egroup
+
+\setbox\scratchboxtwo=\vbox to \ht\scratchboxone \bgroup
+    \dostepwiserecurse {\MaxLevel} {1} {-1} {
+        \definefield[Stack.\recurselevel][line][Results]
+        \hbox \bgroup
+            \field[Stack.\recurselevel][option=readonly]%
+        \egroup
+        \vfill
+    }
+    \unskip
+\egroup
+
+\setbox\scratchboxthree=\vbox to \ht\scratchboxone \bgroup
+    \StatField {n}     \vfill
+    \StatField {min}   \vfill
+    \StatField {max}   \vfill
+    \StatField {total} \vfill
+    \StatField {mean}  \vfill
+    \StatField {sdev}  \vfill
+    \StatField {}      \vfill
+    \StatField {}
+\egroup
+
+\setbox\scratchboxfour=\vbox to \ht\scratchboxone \bgroup
+   \ss\setstrut
+   \setupbuttons
+     [width=\measured{ButtonWidth},
+      height=.5\measured{ButtonWidth},
+      backgroundcolor=\MPcolor{action}]%
+   \SomeKey {sn}     {n}     {JS(do_copystat{n})}     \vfill
+   \SomeKey {smin}   {min}   {JS(do_copystat{min})}   \vfill
+   \SomeKey {smax}   {max}   {JS(do_copystat{max})}   \vfill
+   \SomeKey {stotal} {total} {JS(do_copystat{total})} \vfill
+   \SomeKey {smean}  {mean}  {JS(do_copystat{mean})}  \vfill
+   \SomeKey {ssdev}  {sdev}  {JS(do_copystat{sdev})}  \vfill
+   \SomeKey {}       {}      {}                       \vfill
+   \SomeKey {}       {}      {}
+\egroup
+
+\setbox\scratchboxone=\hbox to \hsize \bgroup
+    \box\scratchboxone  \hss
+    \box\scratchboxtwo  \hss
+    \box\scratchboxthree\hss
+    \box\scratchboxfour
+\egroup
+
+\setupbuttons
+  [width=1.5cm,
+   height=1cm,
+   backgroundcolor=\MPcolor{action}]
+
+\setbox\scratchboxtwo=\hbox to \wd\scratchboxone \bgroup
+    \ss\setstrut
+    \SomeKey {sin}  {sin}       {JS(do_operation{1})}  \hss
+    \SomeKey {cos}  {cos}       {JS(do_operation{2})}  \hss
+    \SomeKey {tan}  {tan}       {JS(do_operation{3})}  \hss
+    \SomeKey {max}  {max}       {JS(do_calculate{5})}  \hss
+    \SomeKey {exp}  {exp}       {JS(do_operation{4})}  \hss
+    \SomeKey {ceil} {ceil}      {JS(do_operation{5})}  \hss
+    \SomeKey {sqr}  {x\high{2}} {JS(do_operation{6})}  \hss
+    \SomeKey {fac}  {x!}        {JS(do_operation{7})}  \hss
+    \SomeKey {pow}  {x\high{y}} {JS(do_calculate{7})}  \hss
+    \SomeKey {rad}  {rad}       {JS(do_operation{16})}
+\egroup
+
+\setbox\scratchboxthree=\hbox to \wd\scratchboxone \bgroup
+    \ss\setstrut
+    \SomeKey {asin} {asin}   {JS(do_operation{8})}     \hss
+    \SomeKey {acos} {acos}   {JS(do_operation{9})}     \hss
+    \SomeKey {atan} {atan}   {JS(do_operation{10})}    \hss
+    \SomeKey {min}  {min}    {JS(do_calculate{6})}     \hss
+    \SomeKey {ln}   {ln}     {JS(do_operation{11})}    \hss
+    \SomeKey {floor}{floor}  {JS(do_operation{12})}    \hss
+    \SomeKey {sqrt} {sqrt}   {JS(do_operation{13})}    \hss
+    \SomeKey {round}{round}  {JS(do_operation{14})}    \hss
+    \SomeKey {inv}  {1/x}    {JS(do_operation{15})}    \hss
+    \SomeKey {deg}  {deg}    {JS(do_operation{17})}
+\egroup
+
+\setbox\scratchboxfour=\hbox to \wd\scratchboxone \bgroup
+   \ss\setstrut
+   \SomeKey {}     {}       {}                     \hss
+   \SomeKey {}     {}       {}                     \hss
+   \setupbuttons
+     [backgroundcolor=\MPcolor{keyboard}]%
+   \SomeKey {new}  {new}    {JS(reset)}            \hss
+   \SomeKey {}     {}       {}                     \hss
+   \SomeKey {}     {}       {}                     \hss
+   \SomeKey {}     {}       {}                     \hss
+   \SomeKey {}     {}       {}                     \hss
+   \SomeKey {newn} {new}    {JS(do_statistics{1})} \hss
+   \SomeKey {addn} {+n}     {JS(do_statistics{2})} \hss
+   \SomeKey {subn} {--n}    {JS(do_statistics{3})}
+\egroup
+
+\setbox\scratchboxfive=\hbox to \wd\scratchboxone \bgroup
+    \ss\setstrut
+    \SomeKey {neg}   {--x}    {JS(do_operation{18})} \hss
+    \SomeKey {random}{random} {JS(do_constant{3})}   \hss
+    \SomeKey {pi}    {pi}     {JS(do_constant{1})}   \hss
+    \SomeKey {e}     {e}      {JS(do_constant{2})}   \hss
+    \SomeKey {dup}   {dup}    {JS(do_constant{4})}   \hss
+    \SomeKey {}      {}       {}                     \hss
+    \SomeKey {}      {}       {}                     \hss
+    \setupbuttons
+      [backgroundcolor=\MPcolor{keyboard}]%
+    \SomeKey {}      {}       {}                     \hss
+    \SomeKey {exit}  {exit}   {CloseDocument}        \hss
+    \SomeKey {help}  {info}   {info:help}
+\egroup
+
+\setbox\scratchboxsix=\hbox to \wd\scratchboxone \bgroup
+    \ss\setstrut
+    \setupbuttons
+      [width=\measured{ButtonWidth},
+       height=.5\measured{ButtonWidth},
+       backgroundcolor=\MPcolor{keyboard}]%
+    \SomeKey   {newmem} {new}  {JS(do_memory{1})} \hss
+    \SomeKey   {addmem} {+m}   {JS(do_memory{2})} \hss
+    \SomeKey   {submem} {--m}  {JS(do_memory{3})} \hss
+    \StatField {mem}                              \hss
+    \setupbuttons
+      [backgroundcolor=\MPcolor{action}]%
+    \SomeKey   {copmem} {mem}  {JS(do_memory{4})} \hss
+    \SomeKey   {} {}    {}                        \hss
+    \setupbuttons
+      [backgroundcolor=\MPcolor{stack}]%
+    \SomeKey   {grow}   {grow} {JS(grow)}         \hss
+    \StatField {}
+\egroup
+
+\startstandardmakeup
+
+    \pagereference[calculator]
+
+    \vfill
+
+    \hbox to \hsize \bgroup
+        \hss
+        \vbox to \vsize \bgroup
+            \box\scratchboxtwo  \vss
+            \box\scratchboxthree\vss
+            \box\scratchboxone  \vss
+            \box\scratchboxfour \vss
+            \box\scratchboxfive \vss
+            \box\scratchboxsix
+        \egroup
+        \hss
+    \egroup
+
+    \vfill
+
+\stopstandardmakeup
+
+\starttexdefinition unexpanded BackgroundButton
+    \button [
+              background=screen,
+        backgroundscreen=.8,
+        backgroundoffset=5pt,
+                  height=\vsize,
+                   width=\hsize
+    ] {
+    } [
+        calculator
+    ]
+\stoptexdefinition
+
+\setuptexttexts
+  [\BackgroundButton]
+  []
+
+\starttexdefinition unexpanded Key #1#2
+    \goto {
+        \ss#1
+    } [
+        info:#2
+    ]
+\stoptexdefinition
+
+\startstandardmakeup[top=,bottom=]
+
+    \switchtobodyfont[8pt]
+
+    \start
+
+    \setupwhitespace[big]
+
+    \midaligned{\ssd The Calculator}
+
+    \blank[2*big]
+
+    \pagereference[info:help]
+    This calculator is stack based, which means that one enters values and
+    invokes an action that acts on the value(s) last entered. Subtracting 10 from
+    20 using (\Key {--} {sub}) for instance comes down to clicking:
+
+    \startnarrower\ss
+        10\quad in\quad 20\quad --
+    \stopnarrower
+
+    while calculating a sinus (\Key {sin} {sin}) results from entering:
+
+    \startnarrower\ss
+        .89\quad sin
+    \stopnarrower
+
+    The left column of fields (numbers) shows the Stack. One uses \Key {push}
+    {push} to push a value on the stack and \Key {pop} {pop} to remove a value.
+    Clicking \Key {new} {new} removes them all and the \Key {del} {del} button
+    can be used to undo the last entered digit. When a dyadic operation is
+    applied, the top value is used as~y. The \Key {grow} {grow} key toggles
+    between two different visualizations of the stack.
+
+    The stack is considerably larger than the screen representation suggests. In
+    the rare occasion that one encounters the message {\ss exhausted}, the amount
+    of stack entries already has totaled far beyond \MinLevel\ and one probably
+    already has forgotten what the values first entered represent.
+
+    The right column of fields reports the statistic calculations. By clicking on
+    the tag, one pushes the value on the Stack. The lower buttons are used to
+    reset~(\Key {new} {newn}), enter~(\Key {+} {addn}) and remove~(\Key {--}
+    {subn}) values to be taken into account when calculating those statistics.
+
+    This document is produced by \ConTeXt, a macro package written in \TeX. The
+    graphics are METAPOST graphics. The graphics, the PDF objects and the form
+    fields as well as JavaScript code were generated and inserted at run time.
+    Originally we used PDF\TeX\ and \MKII\ to process this document but this one
+    is done by \LUATEX\ and \MKIV. We kept the design and code original so that
+    it reflects how things were done (for readability we updated some \TEX\
+    definitions).
+
+    \stop
+
+    \vfilll
+
+    \startMPrun
+        logo_type := 302 ; % force single logo type
+        mpgraph := 302 ;   % and use this number
+        input mp-prag ;    % calculate logo of type
+    \stopMPrun
+
+    \startlinecorrection
+        \midaligned{\externalfigure[mprun.302][height=1.5cm]}
+    \stoplinecorrection
+
+    \midaligned{\strut Hans Hagen, PRAGMA ADE, \ConTeXt\ 18/2/1998--25/9/2018}
+
+    \blank
+
+    \midaligned{\strut\url[pragma-mail]}
+
+\stopstandardmakeup
+
+\starttexdefinition unexpanded BackgroundButton
+    \button [
+        background=screen,
+        backgroundscreen=.8,
+        backgroundoffset=5pt,
+        height=\vsize,
+        width=\hsize
+    ] {
+    } [
+        firstpage
+    ]
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowInfo #1#2
+    \startstandardmakeup
+        \pagereference[info:#1]
+        \vfill
+        \hbox to \hsize \bgroup
+            \hss
+            \useMPgraphic{#1}
+            \hss
+        \egroup
+        \blank[2*big]
+        \midaligned{#2}
+        \vfill
+    \stopstandardmakeup
+\stoptexdefinition
+
+\startMPinclusions
+
+    path ax, ay, p[] ;
+    color c ; c := \MPcolor{action} ;
+    pmax := 0 ;
+
+    let normalpow = pow ;
+
+    def draw_function (text fun) (expr xmin, xmax, xstep) =
+        pmax := pmax+1 ;
+        p[pmax] := for x=xmin step xstep until xmax:
+            (x,fun(x)) ..
+        endfor (xmax,fun(xmax)) ;
+    enddef ;
+
+    def draw_axis = % should sort of snap, to-do
+        pickup pencircle scaled 0 ;
+        for i=1 upto pmax:
+            draw p[i] ;
+        endfor ;
+        xmin := xpart llcorner currentpicture ;
+        xmax := xpart urcorner currentpicture ;
+        ymin := ypart llcorner currentpicture ;
+        ymax := ypart urcorner currentpicture ;
+        ax := (xmin,0)--(0,0)--(xmax,0) ;
+        ay := (0,ymin)--(0,0)--(0,ymax) ;
+        currentpicture := nullpicture ;
+        sx := 400/(xmax-xmin) ;
+        sy := 250/(ymax-ymin) ;
+        pickup pencircle xscaled (10/sx) yscaled (10/sy) ;
+        draw ax withcolor .4white ;
+        draw ay withcolor .4white ;
+        for i=1 upto pmax:
+            draw p[i] withcolor c ;
+        endfor ;
+        currentpicture := currentpicture xscaled sx yscaled sy ;
+        pmax := 0 ;
+  enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{sin}
+    draw_function(sind)(-360,360,60) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{sin}{Calculate the sine of the topmost stack entry.}
+
+\startuseMPgraphic{cos}
+    draw_function(cosd)(-360,360,60) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{cos}{Calculate the cosine of the topmost stack entry.}
+
+\startuseMPgraphic{tan}
+    draw_function(tand)(-240,-120,30) ;
+    draw_function(tand)( -60,  60,30) ;
+    draw_function(tand)( 120, 240,30) ;
+    draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{tan}{Calculate the tangent of the topmost stack entry.}
+
+\startuseMPgraphic{asin}
+    draw_function(asin)(-1,1,.2) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{asin}{Calculate the arcsine of the topmost stack entry.}
+
+\startuseMPgraphic{acos}
+    draw_function(acos)(-1,1,.2) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{acos}{Calculate the arccosine of the topmost stack entry.}
+
+\startuseMPgraphic{atan}
+    draw_function(atan)(-1,1,.2) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{atan}{Calculate the arctangent of the topmost stack entry.}
+
+\startuseMPgraphic{sqr}
+    draw_function(sqr)(-3,3,1) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{sqr}{Calculate the square of the topmost stack entry.}
+
+\startuseMPgraphic{sqrt}
+    draw_function(sqrt)(0,5,1) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{sqrt}{Calculate the square root of the topmost stack entry.}
+
+\startuseMPgraphic{exp}
+    draw_function(exp)(0,5,1) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{exp}{Calculate the exponential function of the topmost stack entry.}
+
+\startuseMPgraphic{ln}
+    draw_function(ln)(0,50,5) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{ln}{Calculate the natural logaritm of the topmost stack entry.}
+
+\startuseMPgraphic{pow}
+    vardef mypow(expr n) = 3**n enddef ;
+    draw_function(mypow)(-3,3,.5) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{pow}{Calculate x\high{y} where y is the topmost stack entry.}
+
+\startuseMPgraphic{inv}
+    draw_function(inv)(-10,10,1) ; draw_axis ;
+\stopuseMPgraphic
+
+\ShowInfo{inv}{Calculate 1/x using the topmost stack entry.}
+
+\startMPinclusions
+
+    def draw_statistics (expr ShowNew, ShowAdd, ShowSubtract, ShowN, ShowSum, ShowMin, ShowMax, ShowMean, ShowSdev) =
+        color c ; c := \MPcolor{action} ;
+        Delta := 20 ;
+        Total := 100 ;
+        Range := 24 ;
+        Sum   := 0 ;
+        Sqr   := 0 ;
+        randomseed := .5 ;
+        pickup pencircle scaled .5Delta ;
+        for r := 0 upto Range:
+            Value[r] := 0 ;
+        endfor ;
+        for i=1 upto Total:
+            r := uniformdeviate 1 ;
+            Sum := Sum + r ;
+            Sqr := Sqr + r*r ;
+            r := round(r*Range) ;
+            Value[r] := Value[r]+1 ;
+        endfor ;
+        Mean := Sum/Total ;
+        Sdev := sqrt((Sqr-2*Sum*Mean+Total*Mean*Mean)/Total) ;
+        Mean := Mean*Range ;
+        Sdev := Sdev*Range ;
+        SdevMin := Mean-Sdev ;
+        SdevMax := Mean+Sdev ;
+        for r := 0 upto Range:
+            draw (r*Delta,0)--(r*Delta,Value[r]*Delta)
+                withcolor
+                    if (ShowSdev and (r>SdevMin) and (r<SdevMax)) or ShowSum or
+                        (ShowMin and (r=0)) or (ShowMax and (r=Range)) or
+                        (ShowMean and (r=round(Mean)) or ShowSubtract) :
+                        c
+                    else :
+                        .4white
+                    fi ;
+            if ShowN:
+                draw (r*Delta,0) withcolor c
+            fi ;
+        endfor ;
+        if ShowAdd or ShowNew:
+            pushboundingbox currentpicture ;
+            currentpicture := nullpicture ;
+            for r := 0 upto Range:
+                draw (r*Delta,0) withcolor .4white ;
+            endfor ;
+            if ShowAdd:
+                draw (5*Delta,0) withcolor c ;
+            fi ;
+            popboundingbox currentpicture ;
+        elseif ShowSubtract:
+            draw (5*Delta,0) withcolor .4white ;
+        fi ;
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{addn}
+    draw_statistics (false, true, false, false, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{addn}{Add an observation to the statistics.}
+
+\startuseMPgraphic{subn}
+    draw_statistics (false, false, true, false, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{subn}{Remove an observation from the statistics.}
+
+\startuseMPgraphic{newn}
+    draw_statistics (true, false, false, false, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{newn}{Reset the statistics.}
+
+\startuseMPgraphic{sn}
+    draw_statistics (false, false, false, true, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{sn}{Push the number of observations to the stack.}
+
+\startuseMPgraphic{stotal}
+    draw_statistics (false, false, false, false, true, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{stotal}{Push the sum of encountered values to the stack.}
+
+\startuseMPgraphic{smin}
+    draw_statistics (false, false, false, false, false, true, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{smin}{Push the lowest encountered value to the stack.}
+
+\startuseMPgraphic{smax}
+    draw_statistics (false, false, false, false, false, false, true,  false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{smax}{Push the highest encountered value to the stack.}
+
+\startuseMPgraphic{smean}
+    draw_statistics (false, false, false, false, false, false, false, true,  false) ;
+\stopuseMPgraphic
+
+\ShowInfo{smean}{Push the mean value to the stack.}
+
+\startuseMPgraphic{ssdev}
+    draw_statistics (false, false, false, false, false, false, false, false, true) ;
+\stopuseMPgraphic
+
+\ShowInfo{ssdev}{Push the standard deviation to the stack.}
+
+\startMPinclusions
+
+    def draw_ranges (expr ShowNegate, ShowCeiling, ShowFloor, ShowRound, ShowMin, ShowMax, ShowE) =
+
+        color c ; c := \MPcolor{action} ;
+
+        Tics   := 5 ;
+        Gap    := 5Tics ;
+        Height := .5Gap ;
+        Place  := 3 ;
+
+        pickup pencircle scaled 10 ;
+
+        for i=-Tics upto Tics:
+            draw (i*Gap,-Height)--(i*Gap,Height) withcolor .4white ;
+        endfor ;
+
+        draw (-Tics*Gap,0)--(Tics*Gap,0) withcolor .4white ;
+        draw (0,-2Height)--(0,2Height) withcolor .4white ;
+
+        z1 = (Place*Gap,0) ;
+        z2 = ((Place+1)*Gap,0) ;
+
+        if ShowNegate:
+            draw (x1,-Height)--(x1,Height) withcolor c ;
+            draw (-x1,-0)--(-x1,0) withcolor c ;
+        elseif ShowCeiling:
+            draw (x2,-Height)--(x2,Height) withcolor c ;
+            linecap := butt ;
+            draw z1--z2 withcolor c ;
+        elseif ShowFloor:
+            draw (x1,-Height)--(x1,Height) withcolor c ;
+            linecap := butt ;
+            draw z1--z2 withcolor c ;
+        elseif ShowRound:
+            draw (x2,-Height)--(x2,Height) withcolor c ;
+            linecap := butt ;
+            draw .5[z1,z2]--z2 withcolor c ;
+        elseif ShowMin:
+            draw (x1,-Height)--(x1,Height) withcolor c ;
+            draw (x2,0)--(x2,0) withcolor c ;
+        elseif ShowMax:
+            draw (x2,-Height)--(x2,Height) withcolor c ;
+            draw (x1,0)--(x1,0) withcolor c ;
+        elseif ShowE:
+            e := Gap*mexp256 ;
+            draw (e,-3Height)--(e,3Height) withcolor c ;
+        fi ;
+
+enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{neg}
+    draw_ranges (true, false, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{neg}{Negate the topmost stack entry.}
+
+\startuseMPgraphic{ceil}
+    draw_ranges (false, true, false, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{ceil}{Set the topmost stack entry to the next integer.}
+
+\startuseMPgraphic{floor}
+    draw_ranges (false, false, true, false, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{floor}{Set the topmost stack entry to the previous integer.}
+
+\startuseMPgraphic{round}
+    draw_ranges (false, false, false, true, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{round}{Set the topmost stack entry to the nearest integer.}
+
+\startuseMPgraphic{min}
+    draw_ranges (false, false, false, false, true, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{min}{Take the minumum of the two topmost stack entries.}
+
+\startuseMPgraphic{max}
+    draw_ranges (false, false, false, false, false, true, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{max}{Take the maximum of the two topmost stack entries.}
+
+\startuseMPgraphic{e}
+    draw_ranges (false, false, false, false, false, false, true) ;
+\stopuseMPgraphic
+
+\ShowInfo{e}{Push 2.71828182845905 onto the stack.}
+
+\startuseMPgraphic{pi}
+    pickup pencircle scaled 10 ;
+    draw fullcircle scaled 150 withcolor .4white ;
+    linecap := butt ;
+    ahlength := 25 ;
+    drawarrow halfcircle scaled 150 withcolor \MPcolor{action} ;
+\stopuseMPgraphic
+
+\ShowInfo{pi}{Push 3.14159265358979 onto the stack.}
+
+\startMPinclusions
+
+    def draw_degrees(expr DrawInner, DrawOuter) =
+        pickup pencircle scaled .02 ;
+        path p ; p := fullcircle ;
+        path q ; q := subpath(0,1) of fullcircle ;
+        path r ; r := (0,0)--q--(0,0)--cycle ;
+        filldraw p withcolor .4white ;
+        filldraw r withcolor \MPcolor{action} ;
+        ahlength := .04 ;
+        if DrawInner:
+            drawarrow q scaled .30 withcolor .4white ;
+        elseif DrawOuter:
+            drawarrow q scaled .90 withcolor .4white ;
+        fi ;
+        currentpicture := currentpicture scaled 200 ;
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{deg}
+    draw_degrees (true, false)
+\stopuseMPgraphic
+
+\ShowInfo{deg}{Convert radians into degrees.}
+
+\startuseMPgraphic{rad}
+    draw_degrees (false, true)
+\stopuseMPgraphic
+
+\ShowInfo{rad}{Convert degrees into radians.}
+
+\startuseMPgraphic{random}
+
+    pickup pencircle scaled 5 ;
+    color c ; c := \MPcolor{action} ;
+    draw unitsquare scaled 100 withcolor .4white ;
+    for i=1 upto 250:
+    draw (uniformdeviate 90, uniformdeviate 90)
+        shifted (5,5) withcolor (.4+uniformdeviate .6)*c ;
+    endfor ;
+    currentpicture := currentpicture scaled 2 ;
+
+\stopuseMPgraphic
+
+\ShowInfo{random}{Generate a random number in the range 0--1.}
+
+\startMPinclusions
+
+    def do_draw_number (expr n, drift, s, c) =
+        numeric Height, Delta, Drift, x_max, y_max, x_pos, y_pos ;
+        Height := 11 ;
+        Delta :=  5 ;
+        Drift :=  if drift: 1.5 else: 0 fi ;
+        x_max :=  8 ;
+        def d = (uniformdeviate Drift) enddef ;
+        if n=0:
+            draw ((-d-4.5Delta,d)--(+d-0.5Delta,Height-d))
+                withpen pencircle scaled 2
+                withcolor c ;
+        else:
+            for i := 1 upto n :
+                x_pos := ((i-1) mod (5*x_max))*Delta ;
+                y_pos := ((i-1) div (5*x_max))*(Height+Delta) ;
+                draw
+                    if (i mod 5)=0 :
+                        ((-d-4.5Delta,d)--(+d-0.5Delta,Height-d))
+                    else :
+                        ((-d,+d)--(+d,Height-d))
+                    fi
+                    shifted (x_pos,-y_pos)
+                    withpen pencircle scaled 2
+                    withcolor c ;
+            endfor ;
+        fi ;
+        currentpicture := currentpicture scaled s ;
+    enddef ;
+
+    def draw_number (expr n, s) =
+        do_draw_number(n,false,s,\MPcolor{keyboard}) ;
+        push_boundingbox currentpicture ;
+        currentpicture := nullpicture ;
+        do_draw_number(n,true,s,\MPcolor{keyboard}) ;
+        pop_boundingbox currentpicture ;
+    enddef ;
+
+\stopMPinclusions
+
+\dostepwiserecurse {0}{9}{1} {
+    \startuseMPgraphic{\recurselevel}
+        draw_number(\recurselevel,10)
+    \stopuseMPgraphic
+    \expanded {
+        \ShowInfo
+            {\recurselevel}
+            {Add a digit \recurselevel\ to the current stack entry.}%
+    }
+}
+
+\startuseMPgraphic{fac}
+
+    def facultate (expr n) =
+        if n=1: 1 else: n*facultate(n-1) fi
+    enddef ;
+    picture pic[] ;
+    for m := 1 upto 5:
+        do_draw_number(facultate(m),true,1,\MPcolor{action}) ;
+        pic[m] := currentpicture ;
+        currentpicture := nullpicture ;
+    endfor ;
+    xmax := xpart urcorner pic[5] - xpart llcorner pic[5] ;
+    for m = 1 upto 5:
+        xmin := xpart urcorner pic[m] - xpart llcorner pic[m] ;
+        addto currentpicture also pic[m] shifted (.5(xmax-xmin),-m*25) ;
+    endfor ;
+    currentpicture := currentpicture scaled 2 ;
+
+\stopuseMPgraphic
+
+\ShowInfo{fac}{Calculate the recursive multiplication of n, n--1, n--2, etc.}
+
+\startMPinclusions
+
+    def draw_template (expr ShowSign, ShowPeriod, ShowExponent, ShowDel) =
+        pickup pencircle scaled 10 ;
+        color ca ; ca := if (ShowDel): .4white else: \MPcolor{stack} fi ;
+        color cb ; cb := \MPcolor{keyboard} ;
+        Delta := 20 ;
+        Width := 10 ;
+        Position :=  6 ;
+        Max := 15 ;
+        path p ; p := (0,0)--(Width,0) ;
+        draw (-2Width,0)--(0,0) withcolor if ShowSign: cb else: ca fi ;
+        for i=1 upto Position-1:
+            draw p shifted (i*Delta,0) withcolor ca ;
+        endfor ;
+        draw (Position*Delta+.5Width,0)
+            withcolor if ShowPeriod: cb else: ca fi ;
+        for i=Position+1 upto Max:
+            if i=Max-3:
+                draw ((Width,0)--(0,0)--(0,2Width)--(Width,2Width))
+                    shifted (i*Delta,-2.5)
+                    withpen pencircle scaled 5
+                    withcolor if ShowExponent: cb else: ca fi ;
+                draw ((0,Width)--(Width,Width))
+                    shifted (i*Delta,-2.5)
+                    withpen pencircle scaled 5
+                    withcolor if ShowExponent: cb else: ca fi ;
+            else:
+                draw p shifted (i*Delta,0) withcolor ca ;
+            fi ;
+        endfor ;
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{sign}
+    draw_template(true, false, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{sign}{Add a sign to the current stack entry.}
+
+\startuseMPgraphic{period}
+    draw_template(false, true, false, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{period}{Add a period to the current stack entry.}
+
+\startuseMPgraphic{E}
+    draw_template(false, false, true, false) ;
+\stopuseMPgraphic
+
+\ShowInfo{E}{Start setting the exponent part of the current stack entry.}
+
+\startuseMPgraphic{del}
+    draw_template(false, false, false, true) ;
+\stopuseMPgraphic
+
+\ShowInfo{del}{Delete the last entered digit of the current stack entry.}
+
+\startMPinclusions
+
+    u := 50 ;
+    logo_type := 0 ;
+    input mp-prag ;
+    set_phead(u) ;
+
+    def draw_memory (expr DrawErase, DrawAdd, DrawSubtract, DrawCopy) =
+        pickup pencircle scaled .1u ;
+        color ca ; ca := \MPcolor{stack} ;
+        color cb ; cb := \MPcolor{keyboard} ;
+        draw phead withcolor .4white ;
+        if DrawErase:
+            stripe_path_n
+                (withcolor .4white)
+                (fill) pbrain scaled .8 shifted (.5u,.5u) withcolor .8cb ;
+        else:
+            fill pbrain scaled .8 shifted (.5u,.5u)
+                if DrawCopy: withcolor .8ca else: withcolor .8cb fi ;
+        fi ;
+        draw pbrain scaled .8 shifted (.5u,.5u) withcolor cb ;
+        push_boundingbox currentpicture ;
+        ahlength:=.2u ;
+        path drain ; drain := (4.5u,2u){dir 120}..(2.25u,2.75u) ;
+        if DrawAdd:
+            drawarrow drain withcolor ca ;
+        elseif DrawSubtract or DrawCopy:
+            drawarrow reverse drain withcolor ca ;
+        fi ;
+        pop_boundingbox currentpicture ;
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{newmem}
+    draw_memory (true,false,false,false) ;
+\stopuseMPgraphic
+
+\ShowInfo{newmem}{Erase the memory buffer.}
+
+\startuseMPgraphic{addmem}
+    draw_memory (false,true,false,false) ;
+\stopuseMPgraphic
+
+\ShowInfo{addmem}{Add to the memory buffer.}
+
+\startuseMPgraphic{submem}
+    draw_memory (false,false,true,false) ;
+\stopuseMPgraphic
+
+\ShowInfo{submem}{Substract from the memory buffer.}
+
+\startuseMPgraphic{copmem}
+    draw_memory (false,false,false,true) ;
+\stopuseMPgraphic
+
+\ShowInfo{copmem}{Copy the memory buffer to the stack.}
+
+\startMPinclusions
+
+    def erase_stack =
+        stripe_path_n
+            (withcolor .4white)
+            (fill) p withcolor .8cb ;
+    enddef ;
+
+    def draw_stack (expr ShowNew, ShowPush, ShowPop, ShowDup) =
+        path p ;
+        color ca ; ca := \MPcolor{stack} ;
+        color cb ; cb := \MPcolor{keyboard} ;
+        for i=8 downto 1:
+            j := i-1 ;
+            pickup pencircle scaled 1.5 ;
+            p := unitsquare
+                shifted(-.5,-.5)
+                xscaled 100 yscaled 40
+                shifted(20*j,j*15)
+                scaled (1-j*.04) ;
+            if i<3:
+                fill p withcolor .4white ;
+            elseif ShowPush:
+                fill p withcolor if i=3: .8cb else : .8ca fi ;
+            elseif ShowPop:
+                if i=3: erase_stack else: fill p withcolor .8ca fi ;
+            elseif ShowNew:
+                erase_stack ;
+            elseif ShowDup:
+                fill p withcolor if i>4: .8ca else: .8cb fi ;
+            else:
+                fill p withcolor .4white ;
+            fi ;
+            draw p withcolor ca ;
+        endfor ;
+        currentpicture := currentpicture scaled 1.5 ;
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{push}
+    draw_stack (false, true, false, false)
+\stopuseMPgraphic
+
+\ShowInfo{push}{Push a new entry to the stack.}
+
+\startuseMPgraphic{pop}
+    draw_stack (false, false, true, false)
+\stopuseMPgraphic
+
+\ShowInfo{pop}{Remove the topmost entry from the stack.}
+
+\startuseMPgraphic{new}
+    draw_stack (true, false, false, false)
+\stopuseMPgraphic
+
+\ShowInfo{new}{Erase the whole stack.}
+
+\startuseMPgraphic{dup}
+    draw_stack (false, false, false, true)
+\stopuseMPgraphic
+
+\ShowInfo{dup}{Duplicate the topmost stack entry.}
+
+\startMPinclusions
+
+    def draw_funcalc (expr p, q, r, action) =
+
+        color b ; b := \MPcolor{keyboard} ;
+        color c ; c := \MPcolor{stack} ;
+
+        draw ((-2.25max(p,q,r))-1,0)--(-1,0) withcolor .4white ;
+
+        pickup pencircle scaled 2 ;
+        for i=1 upto p: draw (-i*2.25, 3.75) withcolor c ; endfor ;
+        for i=1 upto q: draw (-i*2.25, 1.50) withcolor c ; endfor ;
+        for i=1 upto r: draw (-i*2.25,-1.50) withcolor c ; endfor ;
+        pickup pencircle scaled .5 ;
+
+        push_boundingbox currentpicture ;
+
+        pair w ;   w := (1.125,0) ;
+        path ww ; ww := -w -- w ;
+
+        if action=1:
+            draw ww shifted             w withcolor b ;
+            draw ww rotated  90 shifted w withcolor b ;
+        elseif action=2:
+            draw ww shifted             w withcolor b ;
+        elseif action=3:
+            draw ww rotated  45 shifted w withcolor b ;
+            draw ww rotated 135 shifted w withcolor b ;
+        elseif action=4:
+            draw ww rotated  45 shifted w withcolor b ;
+        fi ;
+
+        pop_boundingbox currentpicture ;
+
+        currentpicture := currentpicture scaled 15 ;
+
+    enddef ;
+
+\stopMPinclusions
+
+\startuseMPgraphic{add}
+    draw_funcalc (6, 6, 7, 1)
+\stopuseMPgraphic
+
+\ShowInfo{add}{Add the two topmost stack entries.}
+
+\startuseMPgraphic{sub}
+    draw_funcalc (5, 4, 5, 2)
+\stopuseMPgraphic
+
+\ShowInfo{sub}{Subtract the topmost stack entry from the one below.}
+
+\startuseMPgraphic{mul}
+    draw_funcalc (3, 4, 7, 3)
+\stopuseMPgraphic
+
+\ShowInfo{mul}{Multiply the two topmost stack entries.}
+
+\startuseMPgraphic{div}
+    draw_funcalc (5, 2, 4, 4)
+\stopuseMPgraphic
+
+\ShowInfo{div}{Divide the pre-last stack entry by the topmost one.}
+
+\startuseMPgraphic{grow}
+
+    pickup pencircle scaled 5 ;
+    ahlength := 10 ;
+
+    path p ; p := (0,0)--(60,0) ;
+    path q ; q := (30,2*15)--(30,7*15) ;
+    path r ; r := (30,0)--(30,7*15) ;
+
+    for i=0 upto 7:
+        draw p shifted (0,i*15) withcolor
+            if i<3: \MPcolor{stack} else: .4white fi ;
+    endfor ;
+
+    addto currentpicture also currentpicture
+    rotatedaround (center currentpicture, 180)
+    shifted (90, 0) ;
+
+    drawarrow q withcolor \MPcolor{keyboard} ;
+    drawarrow reverse r shifted (90, 0) withcolor \MPcolor{keyboard} ;
+
+    currentpicture := currentpicture scaled 2 ;
+
+\stopuseMPgraphic
+
+\ShowInfo{grow}{Toggle grow mode, another way of stacking.}
+
+\startuseMPgraphic{exit}
+
+    path p ; p := (100,30)--(100,0)--(0,0)--(0,100)--(100,100)--(100,70) ;
+    pickup pencircle scaled 10 ;
+    linecap := butt ;
+    ahlength := 60 ;
+    ahangle  := 75 ;
+    filldraw
+        p--cycle
+        withcolor \MPcolor{action} ;
+    draw
+        p
+        withcolor \MPcolor{stack} ;
+    push_boundingbox currentpicture ;
+    pickup pencircle scaled 30 ;
+    draw
+        center currentpicture --
+        (xpart lrcorner currentpicture+.75ahlength, ypart center currentpicture)
+        withcolor \MPcolor{keyboard} ;
+    pickup pencircle scaled 5 ;
+    drawarrow
+        center currentpicture --
+        (xpart lrcorner currentpicture, ypart center currentpicture)
+        withcolor \MPcolor{keyboard} ;
+    pop_boundingbox currentpicture ;
+    currentpicture := currentpicture scaled 1.75 ;
+
+\stopuseMPgraphic
+
+\ShowInfo{exit}{Close this document.}
+
+\stoptext

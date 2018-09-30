@@ -197,37 +197,43 @@
 
 \installsetuponlycommandhandler \??tagging {tagging}
 
+% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
+% which might be more efficient then ... okay, we now cannot overload but who cares
+
 \unexpanded\def\strc_tags_element_start_yes{\dodoubleempty\strc_tags_element_start_yes_indeed}
 \unexpanded\def\strc_tags_element_start_nop{\dodoubleempty\strc_tags_element_start_nop_indeed}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed
   {\iftrialtypesetting
-     \expandafter\strc_tags_element_start_nop_indeed
+     \expandafter\strc_tags_element_start_yes_indeed_nop
    \else
      \expandafter\strc_tags_element_start_yes_indeed_yes
    \fi}
 
-\unexpanded\def\strc_tags_element_stop
-  {\iftrialtypesetting
-     \expandafter\strc_tags_element_stop_nop
-   \else
-     \expandafter\strc_tags_element_stop_yes
-   \fi}
-
-% it makes no sense to have labels ... maybe some day as a last 'replace' in the export
-% which might be more efficient then ... okay, we now cannot overload but who cares
+\unexpanded\def\strc_tags_element_start_yes_indeed_nop[#1][#2]%
+  {}
 
 \unexpanded\def\strc_tags_element_start_yes_indeed_yes[#1][#2]%
   {\clf_starttag_u{#1}{#2}}
 
 \unexpanded\def\strc_tags_element_stop_yes
-  {\clf_stoptag}
-
-\unexpanded\def\strc_tags_element_start_nop_indeed[#1][#2]%
-  {}
+  {\iftrialtypesetting
+     \expandafter\strc_tags_element_stop_yes_indeed_nop
+   \else
+     \expandafter\strc_tags_element_stop_yes_indeed_yes
+   \fi}
 
 \unexpanded\def\strc_tags_element_stop_nop
   {}
+
+\unexpanded\def\strc_tags_element_stop_yes_indeed_nop
+  {}
+
+\unexpanded\def\strc_tags_element_stop_yes_indeed_yes
+  {\clf_stoptag}
+
+\let\strc_tags_element_start_nop_indeed\strc_tags_element_start_yes_indeed_nop
+\let\strc_tags_element_stop_nop_indeed \strc_tags_element_stop_yes_indeed_nop
 
 \def\strc_tags_report_hyphen#1%
   {\writestatus\m!languages{setting #1 to U+00AD}}

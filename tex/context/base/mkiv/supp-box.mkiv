@@ -3002,6 +3002,19 @@
 
 \unexpanded\def\shiftbox{\clf_shiftbox}
 
+%D This one has been moved from a 2 decade old file. It makes something boxed
+%D sit on the baseline.
+
+\unexpanded\def\linebox
+  {\hpack\bgroup\dowithnextbox
+     {\scratchdimen\dimexpr\dimexpr\htdp\nextbox-\lineheight\relax/2+\dp\strutbox\relax
+      \setbox\nextbox\hpack{\lower\scratchdimen\box\nextbox}%
+      \ht\nextbox\ht\strutbox
+      \dp\nextbox\dp\strutbox
+      \box\nextbox
+      \egroup}
+     \hbox}
+
 \protect \endinput
 
 % a bit of test code:
