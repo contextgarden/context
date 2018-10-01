@@ -156,4 +156,10 @@
   {\clf_usejavascriptscripts {#1}%  two steps as this one calls tex code
    \clf_usejavascriptpreamble{#2}}% so this one comes later
 
+\unexpanded\def\useJSpreamble
+  {\dosingleempty\java_use_preamble}
+
+\def\java_use_preamble[#1]%
+  {\clf_usejavascriptpreamble{#1}}% so this one comes later
+
 \protect \endinput

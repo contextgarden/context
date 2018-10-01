@@ -38,6 +38,7 @@ local v_auto              = variables.auto
 local v_strict            = variables.strict
 local v_all               = variables.all
 local v_positive          = variables.positive
+local v_current           = variables.current
 
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
 local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
@@ -718,7 +719,10 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
         end
         --
         local firstprefix, lastprefix = 0, 16 -- too much, could max found level
-        if segments then
+        if segments == v_current then
+            firstprefix = data.depth
+            lastprefix  = firstprefix
+        elseif segments then
             local f, l = match(tostring(segments),"^(.-):(.+)$")
             if l == "*" or l == v_all then
                 l = 100 -- new

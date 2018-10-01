@@ -124,8 +124,9 @@ function javascripts.usepreamblenow(name) -- now later
         local names = settings_to_array(name)
         for i=1,#names do
             local somename = names[i]
-            if not preambled[somename] then
-                preambles[preambled[somename]][2] = "now"
+            local preamble = preambled[somename]
+            if preamble  then
+                preambles[preamble][2] = "now"
                 if trace_javascript then
                     report_javascripts("used preamble %a, state %a, order %a",somename,"now","auto")
                 end

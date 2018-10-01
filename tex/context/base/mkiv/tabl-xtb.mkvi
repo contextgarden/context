@@ -929,7 +929,7 @@
     \tabl_x_collect_allocate
   \fi
   \ifx\m_tabl_x_swapped_settings\empty
-    \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start#content\tabl_x_c_cell_stop}
+    \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start{}#content\tabl_x_c_cell_stop}
   \else
     \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}#content\tabl_x_c_cell_stop}%
   \fi}

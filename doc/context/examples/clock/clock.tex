@@ -1,0 +1,156 @@
+%D This example dates from late 2001, and ws probaby made for some \TEX\ related
+%D meeting. It's a relative simple example that uses a few function from a general
+%D \JAVASCRIPT\ preamble. In fact forcing the \type {FieldStack} code into the
+%D is the only adaptation from \MKII\ to \MKIV\ (because we load on demand and here
+%D the code is ude sindirectly).
+%D
+%D Nowadays we could layers instead which is probably a bit more ligthweight than
+%D widgets. Also, we should actually synchronize the time but on the other hand, but
+%D on the other hand, now it's a sort of stopwatch.
+
+% \nopdfcompression
+
+\starttext
+
+\useJSscripts[fld]
+
+\useJSpreamble[FieldStack]
+
+\definepapersize
+  [clock]
+  [width=2.5cm,
+   height=2.5cm]
+
+\setuppapersize
+  [clock][clock]
+
+\setuplayout
+  [header=0pt,
+   footer=0pt,
+   backspace=.25cm,
+   topspace=.25cm,
+   width=middle,
+   height=middle]
+
+\startJSpreamble stepper used now
+
+    var state = 0 ;
+    var more  = 0 ;
+    var step  = 0 ;
+
+    function step_clock() {
+        try {
+            if (more == 60) {
+                more = 0 ;
+                Walk_Field("more") ;
+            } else {
+            }
+            more += 1 ;
+            Walk_Field("clock") ;
+            this.dirty = false ;
+        } catch (e) {
+        }
+    }
+
+    function start_clock() {
+        try {
+            if (state == 0) {
+                step = app.setInterval ("step_clock()", 1000) ;
+                step.count = 0 ;
+                state = 1 ;
+            } else if (state == 1) {
+                app.clearInterval (step) ;
+                state = 2 ;
+            } else if (state == 2) {
+                app.clearInterval (step) ;
+                Reset_Fields("more") ;
+                Reset_Fields("clock") ;
+                Set_Field("more", "1") ;
+                Set_Field("clock", "1") ;
+                more = 0 ;
+                state = 0 ;
+            }
+        } catch(e) {
+        }
+    }
+
+    function stop_clock () {
+        try {
+            app.clearInterval(step) ;
+        } catch(e) {
+        }
+    }
+
+\stopJSpreamble
+
+\definereference[StopClock] [JS(stop_clock)]
+\definereference[StartClock][JS(start_clock)]
+
+\setupinteraction
+  [state=start,
+   closeaction={StopClock,ForgetChanges},
+   closepageaction={StopClock}]
+
+\startreusableMPgraphic{common}
+    drawoptions(withpen pencircle scaled 1mm withcolor .4white) ;
+    fill fullsquare scaled 2.5cm ;
+    drawoptions(withpen pencircle scaled 1mm withcolor .6green) ;
+    draw fullsquare scaled 2.5cm ;
+    drawoptions(withpen pencircle scaled 1mm withcolor .6red) ;
+    draw fullcircle scaled 2cm ;
+    drawoptions(withpen pencircle scaled 2mm withcolor .6yellow) ;
+    for i=1 upto 12 :
+        draw (0,1cm) rotated ((i-1)*(360/12)) ;
+    endfor ;
+\stopreusableMPgraphic
+
+\startuseMPgraphic{clock}
+    numeric stp ; stp := (\MPvar{n}-1)*(360/60) ;
+    pair p ; p := (0,\MPvar{l}-.5mm) ;
+    drawoptions(withpen pencircle scaled 1mm withcolor .6\MPvar{c}) ;
+    draw (origin -- p) rotated -stp ;
+    draw (p shifted (-2mm,-2.5mm)--p--p shifted (2mm,-2.5mm)) rotated -stp ;
+    setbounds currentpicture to fullsquare scaled 2cm ;
+    drawoptions(withpen pencircle scaled 2mm withcolor .6white) ;
+    draw origin ;
+\stopuseMPgraphic
+
+\defineoverlay [common] [\reuseMPgraphic{common}]
+\defineoverlay [start]  [\overlaybutton{StartClock}]
+
+\setupbackgrounds
+  [page]
+  [background={common,start}]
+
+\let\clocklist\empty
+\let\morelist \empty
+
+\dorecurse {60} {
+    \appendtocommalist{step:#1}\clocklist
+    \definesymbol
+        [step:#1]
+        [\useMPgraphic{clock}{n=#1,l=1cm,c=blue}]
+    \appendtocommalist{more:#1}\morelist
+    \definesymbol
+        [more:#1]
+        [\useMPgraphic{clock}{n=#1,l=.75cm,c=green}]
+}
+
+\definefieldstack
+    [clock]
+    [\clocklist]
+    [width=2cm,height=2cm,offset=overlay,frame=off]
+
+\definefieldstack
+    [more]
+    [\morelist]
+    [width=2cm,height=2cm,offset=overlay,frame=off]
+
+\starttext
+
+    \startoverlay
+        {\fieldstack[more]}
+        {\fieldstack[clock]}
+    \stopoverlay
+
+\stoptext

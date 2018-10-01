@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/30/18 19:32:19
+-- merge date  : 10/01/18 19:47:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -20764,6 +20764,17 @@ local function unifymissing(fontdata)
   fonts.mappings.addtounicode(fontdata,fontdata.filename,checklookups)
   resources.unicodes=nil
 end
+local p_bogusname=(
+  (P("uni")+P("UNI")+P("Uni")+P("U")+P("u"))*S("Xx")^0*R("09","AF")^1+(P("identity")+P("Identity")+P("IDENTITY"))*R("09","AF")^1+(P("index")+P("Index")+P("INDEX"))*R("09")^1
+)*P(-1)
+local normalize=true
+local firstprivate=0xE000
+local lastprivate=0xF8FF
+if not context then
+  normalize=false
+  firstprivate=0xFFFFFF
+  lastprivate=0x000000
+end
 local function unifyglyphs(fontdata,usenames)
   local private=fontdata.private or privateoffset
   local glyphs=fontdata.glyphs
@@ -20773,6 +20784,7 @@ local function unifyglyphs(fontdata,usenames)
   local resources=fontdata.resources
   local zero=glyphs[0]
   local zerocode=zero.unicode
+  local nofprivate=0
   if not zerocode then
     zerocode=private
     zero.unicode=zerocode
@@ -20789,13 +20801,21 @@ local function unifyglyphs(fontdata,usenames)
   for index=1,#glyphs do
     local glyph=glyphs[index]
     local unicode=glyph.unicode
-    if not unicode or unicode>=private or (unicode>=0xE000 and unicode<=0xF8FF) or unicode==0xFFFE or unicode==0xFFFF then
-      unicode=private
+    if not unicode or unicode>=private or (unicode>=firstprivate and unicode<=lastprivate) or unicode==0xFFFE or unicode==0xFFFF then
       if names then
+        unicode=private
         local name=glyph.name or f_private(unicode)
         indices[index]=name
         names[name]=unicode
       else
+        if normalize and unicode then
+          local name=glyph.name
+          if not name or lpegmatch(p_bogusname,name) then
+            glyph.name=f_private(unicode)
+            nofprivate=nofprivate+1
+          end
+        end
+        unicode=private
         indices[index]=unicode
       end
       private=private+1
@@ -20820,6 +20840,9 @@ local function unifyglyphs(fontdata,usenames)
       end
     end
     descriptions[unicode]=glyph
+  end
+  if nofprivate>0 then
+    report("%i private names assigned (PXXXXX)",nofprivate)
   end
   for index=1,#glyphs do
     local math=glyphs[index].math
@@ -20861,23 +20884,38 @@ local function unifyglyphs(fontdata,usenames)
   fontdata.hashmethod=hashmethod
   return indices,names
 end
-local p_bogusname=(
-  (P("uni")+P("UNI")+P("Uni")+P("U")+P("u"))*S("Xx")^0*R("09","AF")^1+(P("identity")+P("Identity")+P("IDENTITY"))*R("09","AF")^1+(P("index")+P("Index")+P("INDEX"))*R("09")^1
-)*P(-1)
+local firstprivate=0xE000
+local lastprivate=0xF8FF
 local function stripredundant(fontdata)
   local descriptions=fontdata.descriptions
   if descriptions then
     local n=0
     local c=0
-    for unicode,d in next,descriptions do
-      local name=d.name
-      if name and lpegmatch(p_bogusname,name) then
-        d.name=nil
-        n=n+1
+    if normalize then
+      for unicode,d in next,descriptions do
+        local name=d.name
+        if name and lpegmatch(p_bogusname,name) then
+          d.name=nil
+          n=n+1
+        end
+        if d.class=="base" then
+          d.class=nil
+          c=c+1
+        end
       end
-      if d.class=="base" then
-        d.class=nil
-        c=c+1
+    else
+      for unicode,d in next,descriptions do
+        if unicode<firstprivate or unicode>lastprivate then
+          local name=d.name
+          if name and lpegmatch(p_bogusname,name) then
+            d.name=nil
+            n=n+1
+          end
+        end
+        if d.class=="base" then
+          d.class=nil
+          c=c+1
+        end
       end
     end
     if n>0 then
@@ -22600,7 +22638,7 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.105 
+otf.version=3.106 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.sbixcache=containers.define("fonts","sbix",otf.version,true)

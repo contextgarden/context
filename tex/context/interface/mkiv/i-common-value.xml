@@ -100,6 +100,7 @@
         <cd:constant type="cd:section" prefix="cd:section" method="range"/>
         <cd:constant type="*" prefix="cd:section" method="range"/>
         <cd:constant type="all" prefix="cd:section" method="range"/>
+        <cd:constant type="current"/>
     </cd:define>
 
     <!-- numbersegments = ... -->

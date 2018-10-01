@@ -1595,6 +1595,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="sectionblock">
       <cd:constant type="yes"/>
@@ -6734,6 +6735,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="numberorder">
       <cd:constant type="reverse"/>
@@ -20422,6 +20424,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="pageprefixconnector">
       <cd:constant type="cd:command"/>
@@ -33248,6 +33251,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="numberconversion">
       <cd:constant type="cd:name"/>
@@ -33462,6 +33466,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="pageprefixconnector">
       <cd:constant type="cd:command"/>
@@ -33675,6 +33680,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="pageprefixconnector">
       <cd:constant type="cd:command"/>
@@ -34750,6 +34756,7 @@
       <cd:constant method="range" prefix="cd:section" type="cd:section"/>
       <cd:constant method="range" prefix="cd:section" type="*"/>
       <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
      </cd:parameter>
      <cd:parameter name="referenceprefix">
       <cd:constant type="+"/>

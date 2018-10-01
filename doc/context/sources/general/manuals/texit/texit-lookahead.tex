@@ -21,7 +21,7 @@ or maybe:
 \stopTEX
 
 Normally the percentage symbol is used to indicate a comment, but here
-are no comments. In these cases it makes the definition effectively
+are no comments. In these cases, it makes the definition effectively
 
 \startTEX
 \def\foo#1{do something with "#1"!}
@@ -57,7 +57,7 @@ A different use of the percent is seen in cases like this:
 
 This time we want to preserve the space after \type {something} because an
 end|-|of|-|line would either or not collapse it with \type {with} depending on
-how the endofline character is set up. Normally:
+how the endofline character is set up. Normally
 
 \startTEX
 \def\foo#1%
@@ -65,7 +65,7 @@ how the endofline character is set up. Normally:
    with "#1".}
 \stopTEX
 
-Will also add a space after something but when \TEX\ is set up to ignore lines
+will also add a space after something but when \TEX\ is set up to ignore lines
 you get a collapse. So the explicit space is a robust way out. Both cases of
 using or omitting the comment symbol are easy to spot as they trigger an error
 or result in weird typeset results.

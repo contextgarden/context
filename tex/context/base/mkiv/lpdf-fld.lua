@@ -412,86 +412,6 @@ local function fieldappearances(specification)
 --     return pdfreference(pdfflushobject(appearance))
 end
 
--- local YesorOn = "Yes" -- somehow On is not always working out well any longer (why o why this change)
-
--- beware ... maybe we should have unique /Yes1 ... we will probably
--- change this one too.
---
--- TODO: the same as radio .. play safe and use different names.
-
--- local function fieldstates_check(specification,forceyes,values,default,yesdefault)
---     -- we don't use Opt here (too messy for radio buttons)
---     local values, default = values or specification.values, default or specification.default
---     if not values or values == "" then
---         -- error
---         return
---     end
---     local v = settings_to_array(values)
---     local yes, off, yesn, yesr, yesd, offn, offr, offd
---     if #v == 1 then
---         yes, off = v[1], v[1]
---     else
---         yes, off = v[1], v[2]
---     end
---     local yesshown, yesvalue = lpegmatch(splitter,yes)
---     if not (yesshown and yesvalue) then
---         yesshown = yes, yes
---     end
---     yes = settings_to_array(yesshown)
---     local offshown, offvalue = lpegmatch(splitter,off)
---     if not (offshown and offvalue) then
---         offshown = off, off
---     end
---     off = settings_to_array(offshown)
---     if #yes == 1 then
---         yesn, yesr, yesd = yes[1], yes[1], yes[1]
---     elseif #yes == 2 then
---         yesn, yesr, yesd = yes[1], yes[1], yes[2]
---     else
---         yesn, yesr, yesd = yes[1], yes[2], yes[3]
---     end
---     if #off == 1 then
---         offn, offr, offd = off[1], off[1], off[1]
---     elseif #off == 2 then
---         offn, offr, offd = off[1], off[1], off[2]
---     else
---         offn, offr, offd = off[1], off[2], off[3]
---     end
---     if forceyes == true then
---         forceyes = YesorOn -- spec likes Yes more but we've used On for ages now
---     else
---         -- false or string
---     end
---     if not yesvalue then
---         yesvalue = yesdefault or yesn
---     end
---     if not offvalue then
---         offvalue = offn
---     end
---     if default == yesn then
---         default = pdfconstant(forceyes or yesn)
---     else
---         default = pdf_off
---     end
---     local appearance
---     if false then -- needs testing
---         appearance = pdfdictionary { -- maybe also cache components
---             N = pdfshareobjectreference(pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
---             R = pdfshareobjectreference(pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
---             D = pdfshareobjectreference(pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }),
---         }
---     else
---         appearance = pdfdictionary { -- maybe also cache components
---             N = pdfdictionary { [forceyes or yesn] = registeredsymbol(yesn), Off = registeredsymbol(offn) },
---             R = pdfdictionary { [forceyes or yesr] = registeredsymbol(yesr), Off = registeredsymbol(offr) },
---             D = pdfdictionary { [forceyes or yesd] = registeredsymbol(yesd), Off = registeredsymbol(offd) }
---         }
---     end
---     local appearanceref = pdfshareobjectreference(appearance)
---  -- local appearanceref = pdfreference(pdfflushobject(appearance))
---     return appearanceref, default, yesvalue
--- end
-
 -- The rendering part of form support has always been crappy and didn't really
 -- improve over time. Did bugs become features? Who knows. Why provide for instance
 -- control over appearance and then ignore it when the mouse clicks someplace else.
@@ -511,10 +431,24 @@ end
 -- as well be the reason why no open source viewer ever bothered implementing forms. It's
 -- probably also why most forms out there look kind of bad.
 
-local function fieldstates_check(specification,forceyes,values,default,yesdefault)
+local function fieldstates_precheck(specification)
+    local values  = specification.values
+    local default = specification.default
+    if not values or values == "" then
+        return
+    end
+    local yes = settings_to_array(values)[1]
+    local yesshown, yesvalue = lpegmatch(splitter,yes)
+    if not (yesshown and yesvalue) then
+        yesshown = yes
+    end
+    return default == settings_to_array(yesshown)[1] and pdf_yes or pdf_off
+end
+
+local function fieldstates_check(specification)
     -- we don't use Opt here (too messy for radio buttons)
-    local values  = values  or specification.values
-    local default = default or specification.default
+    local values  = specification.values
+    local default = specification.default
     if not values or values == "" then
         -- error
         return
@@ -557,17 +491,16 @@ local function fieldstates_check(specification,forceyes,values,default,yesdefaul
         offvalue = offn
     end
     if default == yesn then
-        default = pdf_yes
+        default  = pdf_yes
+        yesvalue = yesvalue == yesn and "Yes" or "Off"
     else
-        default = pdf_off
-    end
-    if yesvalue == yesn then
-        yesvalue = "Yes"
-    else
+        default  = pdf_off
         yesvalue = "Off"
     end
     local appearance
-    if false then -- needs testing
+ -- if false then
+    if true then
+        -- needs testing
         appearance = pdfdictionary { -- maybe also cache components
             N = pdfshareobjectreference(pdfdictionary { Yes = registeredsymbol(yesn), Off = registeredsymbol(offn) }),
             R = pdfshareobjectreference(pdfdictionary { Yes = registeredsymbol(yesr), Off = registeredsymbol(offr) }),
@@ -1276,6 +1209,7 @@ function methods.combo(name,specification)
 end
 
 local function makecheckparent(field,specification)
+    local default = fieldstates_precheck(field)
     local d = pdfdictionary {
         T  = pdfunicode(specification.title), -- todo: when tracing use a string
         F  = fieldplus(specification),
@@ -1283,7 +1217,7 @@ local function makecheckparent(field,specification)
         OC = fieldlayer(specification),
         AA = fieldactions(specification), -- can be shared
         FT = pdf_btn,
-        V  = fielddefault(field,pdf_yes),
+        V  = fielddefault(field,default),
     }
     save_parent(field,specification,d,true)
 end
@@ -1329,10 +1263,10 @@ local function makecheckchild(name,specification)
         d.MK = fieldrendering(specification)
         return save_kid(parent,specification,d)
     else
-        local appearance, default, value = fieldstates_check(field,true)
+        local appearance, default, value = fieldstates_check(field)
         d.AS = default
         d.AP = appearance
-        return save_kid(parent,specification,d,value)
+        return save_kid(parent,specification,d)
     end
 end
 

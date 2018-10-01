@@ -756,7 +756,8 @@
   {\ifcsname\??fieldstack#tag\endcsname
      % already done
    \else
-     \setgvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
+     %setgvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
+     \setxvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][\normalunexpanded{#settings}]}%
    \fi}
 
 \unexpanded\def\fieldstack
@@ -770,26 +771,28 @@
 
 \newbox\b_scrn_fieldstack_box
 
+\definesymbol[\s!empty][]
+
 \def\scrn_fieldstack_add#tag#settings#symbol%
   {\advance\scratchcounter\plusone
    \edef\currentfieldstackname{#tag:\number\scratchcounter}%
    \ifnum\scratchcounter=\fieldcategoryparameter\c!start\relax
-     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default={#symbol}]%
+     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\s!empty},\c!default={#symbol}]%
    \else
-     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\empty},\c!default=]%
+     \definefieldbody[\currentfieldstackname][\c!type=check,\c!values={#symbol,\s!empty},\c!default=\s!empty]%
    \fi
    \setbox\b_scrn_fieldstack_box\hbox{\symbol[#symbol]}%
    \setcollector
      [fieldstack]
      {\fieldbody
         [\currentfieldstackname]
-        [\c!option=\v!readonly,
+        [\c!option={\v!readonly},
          \c!width=\wd\b_scrn_fieldstack_box,
          \c!height=\ht\b_scrn_fieldstack_box,
          \c!depth=\dp\b_scrn_fieldstack_box,
          #settings]}}
 
-\def\scrn_fieldstack_construct[#tag][#symbols][#settings]% start=n, 0 == leeg
+\unexpanded\def\scrn_fieldstack_construct[#tag][#symbols][#settings]% start=n, 0 == leeg
   {\iflocation
      \dontleavehmode
      \begingroup

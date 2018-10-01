@@ -1247,6 +1247,7 @@
 		<cd:constant name='textstyle' value='stiltext'/>
 		<cd:constant name='textwidth' value='latimetext'/>
 		<cd:constant name='threshold' value='threshold'/>
+		<cd:constant name='time' value='time'/>
 		<cd:constant name='title' value='titlu'/>
 		<cd:constant name='titlecolor' value='culoaretitlu'/>
 		<cd:constant name='titlecommand' value='titlecommand'/>

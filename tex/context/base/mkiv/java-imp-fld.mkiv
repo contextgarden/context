@@ -297,7 +297,7 @@ function Field_Name(FieldSet,i) {
 function Reset_Fields(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = Field_Name(FieldSet,i) ;
+        var v = Field_Name(FieldSet,i) ;
         if (!v) {
             break ;
         } else {
@@ -311,7 +311,7 @@ function Reset_Fields(FieldSet) {
 function Set_Fields(FieldSet) {
     var i = 1 ;
     while (true) {
-        v = Field_Name(FieldSet,i) ;
+        var v = Field_Name(FieldSet,i) ;
         if (!v) {
             break ;
         } else {
@@ -324,7 +324,7 @@ function Set_Fields(FieldSet) {
 
 function Set_Field(FieldSet, FieldName) {
     Reset_Fields(FieldSet) ;
-    v = Field_Name(FieldSet,FieldName) ;
+    var v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Yes" ;
         this.dirty = false ;
@@ -333,7 +333,7 @@ function Set_Field(FieldSet, FieldName) {
 
 function Reset_Field(FieldSet, FieldName) {
     Set_Fields(FieldSet) ;
-    v = Field_Name(FieldSet,FieldName) ;
+    var v = Field_Name(FieldSet,FieldName) ;
     if (v) {
         v.value = "Off" ;
         this.dirty = false ;
@@ -342,16 +342,16 @@ function Reset_Field(FieldSet, FieldName) {
 
 function Walk_Field(FieldSet) {
     var i = 1 ;
+    this.syncAnnotScan();
     while (true) {
-        v = Field_Name(FieldSet,i) ;
+        var v = Field_Name(FieldSet,i) ;
         if (v) {
             if (v.value != "Off") {
                 v.value = "Off" ;
-                var ii = i ;
-                ii++ ;
-                v = Field_Name(FieldSet,ii) ;
+                v = Field_Name(FieldSet,i + 1) ;
                 if (! v) {
                     v = Field_Name(FieldSet,1) ;
+                } else {
                 }
                 if (v) {
                     v.value = "Yes" ;
@@ -360,6 +360,10 @@ function Walk_Field(FieldSet) {
             }
             i++ ;
         } else {
+            v = Field_Name(FieldSet,1) ;
+            if (v) {
+                v.value = "Yes" ;
+            }
             break ;
         }
     }

@@ -2071,7 +2071,7 @@ implement {
 -- new (lightweight, small and statically compiled) library. More on that later.
 --
 -- The method implemented below has the same performance as the hard coded inclusion
--- but opens up some possibilities (like merhing fonts) that I will look into some
+-- but opens up some possibilities (like merging fonts) that I will look into some
 -- day.
 
 local function pdf_checker(data)
