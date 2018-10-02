@@ -30,7 +30,7 @@ local mathplus        = { }
 
 local function addextra(unicode)
     local min = mathematics.extrabase
-    local max = mathematics.privatebase - 1
+    local max = min + 0xFFF
     if unicode >= min and unicode <= max then
         if chardata[unicode] then
             mathplus[unicode] = true

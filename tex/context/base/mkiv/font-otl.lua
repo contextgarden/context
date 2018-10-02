@@ -155,7 +155,7 @@ function otf.load(filename,sub,instance)
      if reload then
         report_otf("loading %a, hash %a",filename,hash)
         --
-        starttiming(otfreaders)
+        starttiming(otfreaders,true)
         data = otfreaders.loadfont(filename,sub or 1,instance) -- we can pass the number instead (if it comes from a name search)
         if data then
             -- todo: make this a plugin
@@ -242,6 +242,7 @@ function otf.load(filename,sub,instance)
                 checkmemory(used,threshold,tracememory)
             end
         else
+            stoptiming(otfreaders)
             data = nil
             report_otf("loading failed due to read error")
         end

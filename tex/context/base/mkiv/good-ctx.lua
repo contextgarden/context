@@ -99,10 +99,10 @@ local function setcolorscheme(tfmdata,scheme)
                     end
                 end
                 if privatestoo then
-                    local private      = fonts.constructors.privateoffset
-                    local descriptions = tfmdata.descriptions
+                    local privateoffset = fonts.constructors.privateoffset
+                    local descriptions  = tfmdata.descriptions
                     for unicode, data in next, characters do
-                        if unicode >= private then
+                        if unicode >= privateoffset then
                             if not reverse[unicode] then
                                 local d = descriptions[unicode]
                                 if d then

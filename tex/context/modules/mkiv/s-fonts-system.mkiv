@@ -24,7 +24,8 @@
 
 \registerctxluafile{s-fonts-system}{}
 
-\installmodulecommandluasingle \showinstalledfonts {moduledata.fonts.system.showinstalled}
+\installmodulecommandluasingle \showinstalledfonts  {moduledata.fonts.system.showinstalled}
+\installmodulecommandluasingle \cacheinstalledfonts {moduledata.fonts.system.cacheinstalled}
 
 \stopmodule
 
@@ -34,6 +35,7 @@
 
 \starttext
 
-    \showinstalledfonts
+%     \showinstalledfonts
+    \cacheinstalledfonts[threshold=4000000]
 
 \stoptext

@@ -15,8 +15,8 @@ local fontdata          = fonts.hashes.identifiers
 
 local setmetatableindex = table.setmetatableindex
 
-local currentprivate    = 0xE000
-local maximumprivate    = 0xEFFF
+local currentprivate    = fonts.privateoffsets.textextrabase
+local maximumprivate    = currentprivate + 0xFFF
 
 local extraprivates     = { }
 helpers.extraprivates   = extraprivates

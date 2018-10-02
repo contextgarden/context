@@ -276,6 +276,8 @@
 \let\tabl_x_start_cell_nop\relax
 \let\tabl_x_stop_cell     \relax
 
+\newtoks\t_table_x_cleanup
+
 \unexpanded\def\tabl_x_process
   {\begingroup % *
    \forgetall % moved here
@@ -358,6 +360,7 @@
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
    \resetcharacteralign
+   \the\t_table_x_cleanup
    \egroup}
 
 % text flow split modes
@@ -946,6 +949,11 @@
 
 \unexpanded\def\stopxcolumn
   {\endgroup}
+
+\appendtoks
+    \dorecurse\c_tabl_x_swapped_max
+      {\global\csname\??xtableswap\number#1\endcsname\emptytoks}%
+\to \t_table_x_cleanup
 
 %D \stopbuffer
 %D \setupxtable[one][foregroundcolor=red]

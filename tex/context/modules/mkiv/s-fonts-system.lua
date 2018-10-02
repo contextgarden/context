@@ -36,8 +36,7 @@ local context = context
 local NC, NR, HL = context.NC, context.NR, context.HL
 local bold = context.bold
 
-function moduledata.fonts.system.showinstalled(specification)
-    specification = interfaces.checkedspecification(specification)
+local function allfiles(specification)
     local pattern = lower(specification.pattern or "")
     local list    = fonts.names.list(pattern,false,true)
     if list then
@@ -45,6 +44,14 @@ function moduledata.fonts.system.showinstalled(specification)
         for k, v in next, list do
             files[file.basename(string.lower(v.filename))] = v
         end
+        return files
+    end
+end
+
+function moduledata.fonts.system.showinstalled(specification)
+    specification = interfaces.checkedspecification(specification)
+    local files = allfiles(specification)
+    if files then
         context.starttabulate { "|Tl|Tl|Tl|Tl|Tl|Tl|" }
             HL()
             NC() bold("filename")
@@ -65,5 +72,33 @@ function moduledata.fonts.system.showinstalled(specification)
                 NC() NR()
             end
         context.stoptabulate()
+    end
+end
+
+function moduledata.fonts.system.cacheinstalled(specification)
+    specification = interfaces.checkedspecification(specification)
+    local files = allfiles(specification)
+    if files then
+        local threshold = tonumber(specification.threshold)
+        for filename, data in table.sortedpairs(files) do
+            if string.find(filename," ") then
+                -- skip this one
+            else
+                local s = file.suffix(filename)
+                if s == "otf" or s == "ttf" then
+                    local fullname = resolvers.findfile(filename)
+                    context.start()
+                    context.type(fullname)
+                    context.par()
+                    if threshold and file.size(fullname) > threshold then
+                        logs.report("fonts","ignoring : %s",fullname)
+                    else
+                        logs.report("fonts","caching  : %s",fullname)
+                        context.definedfont { filename }
+                    end
+                    context.stop()
+                end
+            end
+        end
     end
 end

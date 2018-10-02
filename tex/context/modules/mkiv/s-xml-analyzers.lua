@@ -230,6 +230,12 @@ local f_template = formatters [ [[
 
 %% setups
 
+\xmlregistersetup{xml:presets:all}
+
+\starttext
+    \xmlprocessfile{main}{somefile.xml}{}
+\stoptext
+
 %s
 ]] ]
 

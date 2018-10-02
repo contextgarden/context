@@ -36,8 +36,15 @@ local report_math           = logs.reporter("mathematics","initializing")
 mathematics                 = mathematics or { }
 local mathematics           = mathematics
 
-mathematics.extrabase       = 0xFE000 -- here we push some virtuals
-mathematics.privatebase     = 0xFF000 -- here we push the ex
+mathematics.extrabase       = fonts.privateoffsets.mathextrabase -- here we push some virtuals
+mathematics.privatebase     = fonts.privateoffsets.mathbase      -- here we push the ex
+
+fonts.privateoffsets = {
+    textbase      = 0xF0000, -- used for hidden (opentype features)
+    textextrabase = 0xFD000, -- used for visible by name
+    mathextrabase = 0xFE000, -- used for visible by code
+    mathbase      = 0xFF000, -- used for hidden (virtual math)
+}
 
 local unsetvalue            = attributes.unsetvalue
 local allocate              = utilities.storage.allocate

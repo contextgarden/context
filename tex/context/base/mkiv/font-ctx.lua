@@ -1903,7 +1903,11 @@ implement {
 
 -- => commands
 
-local function nametoslot(name)
+local pattern = P("P")
+              * (lpeg.patterns.hexdigit^4 / function(s) return tonumber(s,16) end)
+              * P(-1)
+
+local function nametoslot(name) -- also supports PXXXXX (4+ positions)
     local t = type(name)
     if t == "string" then
         local unic = unicodes[true]
@@ -1924,7 +1928,11 @@ local function nametoslot(name)
         end
         local char = characters[true]
         local slot = aglunicodes[name]
-        if char[slot] then
+        if slot and char[slot] then
+            return slot
+        end
+        local slot = lpegmatch(pattern,name)
+        if slot and char[slot] then
             return slot
         end
         -- not in font

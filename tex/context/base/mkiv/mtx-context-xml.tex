@@ -76,6 +76,11 @@
             if template then
                 moduledata.xml.analyzers.allsetups(files,type(template) == "string" and template or nil)
             end
+            context.page()
+            for i=1,#files do
+                context.type(files[i])
+                context.par()
+            end
         else
             context("no action given")
         end
