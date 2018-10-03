@@ -912,7 +912,7 @@
 %    \tabl_x_stop_cell}
 
 \def\tabl_x_flush_swapped
-  {\dorecurse\c_tabl_x_swapped
+  {\dorecurse\c_tabl_x_swapped_max
      {\expandafter
       \startxrow
         \the\csname\??xtableswap##1\endcsname\relax
@@ -922,30 +922,54 @@
   {\expandafter\newtoks\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
    \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname}
 
-\unexpanded\def\tabl_x_collect_cell_start#content\stopxcell
- {\global\advance\c_tabl_x_swapped\plusone
-  \ifnum\c_tabl_x_swapped>\c_tabl_x_swapped_max
-    \global\c_tabl_x_swapped_max\c_tabl_x_swapped
-  \fi
-  \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
-  \ifx\t_tabl_x_swapped\relax
-    \tabl_x_collect_allocate
-  \fi
-  \ifx\m_tabl_x_swapped_settings\empty
-    \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start{}#content\tabl_x_c_cell_stop}
-  \else
-    \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}#content\tabl_x_c_cell_stop}%
-  \fi}
+\def\tabl_x_collect_advance
+  {\global\advance\c_tabl_x_swapped\plusone
+   \ifnum\c_tabl_x_swapped>\c_tabl_x_swapped_max
+     \global\c_tabl_x_swapped_max\c_tabl_x_swapped
+   \fi
+   \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
+   \ifx\t_tabl_x_swapped\relax
+     \tabl_x_collect_allocate
+   \fi}
+
+\unexpanded\def\tabl_x_collect_cell_start
+  {\doifelsenextoptionalcs
+     \tabl_x_collect_cell_start_yes
+     \tabl_x_collect_cell_start_nop}
+
+\def\tabl_x_collect_cell_start_nop#content\stopxcell
+  {\tabl_x_collect_advance
+   \ifx\m_tabl_x_swapped_settings\empty
+     \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start{}#content\tabl_x_c_cell_stop}%
+   \else
+     \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}#content\tabl_x_c_cell_stop}%
+   \fi}
+
+\def\tabl_x_collect_cell_start_yes[#settings]#content\stopxcell
+  {\tabl_x_collect_advance
+   \ifx\m_tabl_x_swapped_settings\empty
+     \gtoksapp\t_tabl_x_swapped{\tabl_x_c_cell_start{}[#settings]#content\tabl_x_c_cell_stop}%
+   \else
+     \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}[#settings]#content\tabl_x_c_cell_stop}%
+   \fi
+   \getdummyparameters[\c!ny=1,#settings]%
+   \scratchcounter\numexpr\dummyparameter\c!ny-\plusone\relax
+   \ifcase\scratchcounter\else
+     \dorecurse\scratchcounter\tabl_x_collect_advance
+   \fi}
 
 \unexpanded\def\startxcolumn % todo: arguments
   {\begingroup
    \global\c_tabl_x_swapped\zerocount
    \let\startxcell\tabl_x_collect_cell_start
    \let\stopxcell \relax
-   \doifelsenextoptionalcs\tabl_x_start_column_yes\relax}
+   \doifelsenextoptionalcs\tabl_x_start_column_yes\tabl_x_start_column_nop}
 
 \def\tabl_x_start_column_yes[#1]%
   {\xdef\m_tabl_x_swapped_settings{#1}}
+
+\def\tabl_x_start_column_nop
+  {\glet\m_tabl_x_swapped_settings\empty}
 
 \unexpanded\def\stopxcolumn
   {\endgroup}

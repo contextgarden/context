@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/02/18 23:17:57
+-- merge date  : 10/03/18 16:02:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -306,10 +306,18 @@ function lpeg.instringchecker(p)
   end
 end
 function lpeg.splitter(pattern,action)
-  return (((1-P(pattern))^1)/action+1)^0
+  if action then
+    return (((1-P(pattern))^1)/action+1)^0
+  else
+    return (Cs((1-P(pattern))^1)+1)^0
+  end
 end
 function lpeg.tsplitter(pattern,action)
-  return Ct((((1-P(pattern))^1)/action+1)^0)
+  if action then
+    return Ct((((1-P(pattern))^1)/action+1)^0)
+  else
+    return Ct((Cs((1-P(pattern))^1)+1)^0)
+  end
 end
 local splitters_s,splitters_m,splitters_t={},{},{}
 local function splitat(separator,single)

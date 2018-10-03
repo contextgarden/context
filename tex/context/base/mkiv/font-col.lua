@@ -124,10 +124,15 @@ function collections.define(name,font,ranges,details)
     -- todo, combine per font start/stop as arrays
     local offset = details.offset
     if type(offset) == "string" then
-        local start = characters.getrange(offset,true)
-        offset = start or false
+        offset = characters.getrange(offset,true) or false
     else
         offset = tonumber(offset) or false
+    end
+    local target = details.target
+    if type(target) == "string" then
+        target = characters.getrange(target,true) or false
+    else
+        target = tonumber(target) or false
     end
     local rscale   = tonumber (details.rscale) or 1
     local force    = toboolean(details.force,true)
@@ -154,9 +159,11 @@ function collections.define(name,font,ranges,details)
                 stop     = stop,
                 gaps     = gaps,
                 offset   = offset,
+                target   = target,
                 rscale   = rscale,
                 force    = force,
                 check    = check,
+                method   = details.method,
                 factor   = factor,
                 features = features,
             }
@@ -177,6 +184,32 @@ end
 -- check: when true, only set when present in font
 -- force: when false, then not set when already set
 
+local uccodes = characters.uccodes
+local lccodes = characters.lccodes
+
+local methods = {
+    lowercase = function(oldchars,newchars,vector,start,stop,cloneid)
+        for k, v in next, oldchars do
+            if k >= start and k <= stop then
+                local lccode = lccodes[k]
+                if k ~= lccode and newchars[lccode] then
+                    vector[k] = { cloneid, lccode }
+                end
+            end
+        end
+    end,
+    uppercase = function(oldchars,newchars,vector,start,stop,cloneid)
+        for k, v in next, oldchars do
+            if k >= start and k <= stop then
+                local uccode = uccodes[k]
+                if k ~= uccode and newchars[uccode] then
+                    vector[k] = { cloneid, uccode }
+                end
+            end
+        end
+    end,
+}
+
 function collections.clonevector(name)
     statistics.starttiming(fonts)
     if trace_collecting then
@@ -193,7 +226,9 @@ function collections.clonevector(name)
         local check      = definition.check
         local force      = definition.force
         local offset     = definition.offset or start
-        local remap      = definition.remap
+        local remap      = definition.remap -- not used
+        local target     = definition.target
+        local method     = definition.method
         local cloneid    = list[i]
         local oldchars   = fontdata[current].characters
         local newchars   = fontdata[cloneid].characters
@@ -202,28 +237,60 @@ function collections.clonevector(name)
             vector.factor = factor
         end
         if trace_collecting then
-            report_fonts("remapping font %a to %a for range %U - %U",current,cloneid,start,stop)
+            if target then
+                report_fonts("remapping font %a to %a for range %U - %U, offset %X, target %U",current,cloneid,start,stop,offset,target)
+            else
+                report_fonts("remapping font %a to %a for range %U - %U, offset %X",current,cloneid,start,stop,offset)
+            end
         end
-        if check then
-            for unicode = start, stop do
-                local unic = unicode + offset - start
-                if not newchars[unicode] then
-                    -- not in font
-                elseif force or (not vector[unic] and not oldchars[unic]) then
-                    if remap then
-                        vector[unic] = { cloneid, remap[unicode] }
-                    else
+        if method then
+            method = methods[method]
+        end
+        if method then
+            method(oldchars,newchars,vector,start,stop,cloneid)
+        elseif check then
+            if target then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if not newchars[target] then
+                        -- not in font
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
+                        vector[unic] = { cloneid, target }
+                    end
+                    target = target + 1
+                end
+            elseif remap then
+                -- not used
+            else
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if not newchars[unicode] then
+                        -- not in font
+                    elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
                     end
                 end
             end
         else
-            for unicode = start, stop do
-                local unic = unicode + offset - start
-                if force or (not vector[unic] and not oldchars[unic]) then
-                    if remap then
+            if target then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
+                        vector[unic] = { cloneid, target }
+                    end
+                    target = target + 1
+                end
+            elseif remap then
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, remap[unicode] }
-                    else
+                    end
+                end
+            else
+                for unicode = start, stop do
+                    local unic = unicode + offset - start
+                    if force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
                     end
                 end

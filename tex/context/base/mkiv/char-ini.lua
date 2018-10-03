@@ -642,14 +642,19 @@ function characters.getrange(name,expression) -- used in font fallback definitio
     name = gsub(name,'"',"0x") -- goodie: tex hex notation
     local start, stop
     if expression then
-        local first, rest = lpegmatch(splitter2,name)
-        local range = rawget(blocks,lower(gsub(first,"[^a-zA-Z0-9]","")))
-        if range then
-            local s = loadstring("return 0 " .. rest)
-            if type(s) == "function" then
-                local d = s()
-                if type(d) == "number" then
-                    return range.first + d, range.last + d, nil
+        local n = tonumber(name)
+        if n then
+            return n, n, nil
+        else
+            local first, rest = lpegmatch(splitter2,name)
+            local range = rawget(blocks,lower(gsub(first,"[^a-zA-Z0-9]","")))
+            if range then
+                local s = loadstring("return 0 " .. rest)
+                if type(s) == "function" then
+                    local d = s()
+                    if type(d) == "number" then
+                        return range.first + d, range.last + d, nil
+                    end
                 end
             end
         end

@@ -150,13 +150,21 @@ function ctxcore.flushboxregister(n)
     context(type(n) == "number" and [[\box%s ]] or [[\box\%s]],n)
 end
 
-function ctxcore.beginhbox() context([[\hbox{]]) end
-function ctxcore.beginvbox() context([[\vbox{]]) end
-function ctxcore.beginvtop() context([[\vtop{]]) end
+-- function ctxcore.beginhbox() context([[\hbox\bgroup]]) end
+-- function ctxcore.beginvbox() context([[\vbox\bgroup]]) end
+-- function ctxcore.beginvtop() context([[\vtop\bgroup]]) end
 
-ctxcore.endhbox = ctx_egroup
-ctxcore.endvbox = ctx_egroup
-ctxcore.endvtop = ctx_egroup
+local ctx_hbox = context.cs.hbox
+local ctx_vbox = context.cs.vbox
+local ctx_vtop = context.cs.vtop
+
+function ctxcore.beginhbox() ctx_hbox() ctx_bgroup() end
+function ctxcore.beginvbox() ctx_vbox() ctx_bgroup() end
+function ctxcore.beginvtop() ctx_vtop() ctx_bgroup() end
+
+ctxcore.endhbox = ctx_egroup -- \egroup
+ctxcore.endvbox = ctx_egroup -- \egroup
+ctxcore.endvtop = ctx_egroup -- \egroup
 
 local function allocate(name,what,cmd)
     local a = format("c_syst_last_allocated_%s",what)

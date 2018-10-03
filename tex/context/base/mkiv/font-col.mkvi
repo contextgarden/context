@@ -23,6 +23,11 @@
 % \definefontfallback [whatever] [Slanted]     [0x0060-0x007F] [force=yes]
 % \definefontfallback [whatever] [Bold]        [0x0080-0x00FF,0x00A0-0x00AF] [rscale=1.2]
 % \definefontfallback [whatever] [BoldSlanted] [0x00C0-0x00C7] [check=yes,force=yes]
+%
+% \definefontfeature [emboldened]     [effect={width=0.1,delta=0.4,factor=0.3}]
+% \definefontsynonym [SansEmboldened] [Sans]                           [features=emboldened]
+% \definefontfallback[FakeSansCaps]   [SansEmboldened] [0x0000-0xFFFF] [rscale=.8,method=uppercase]
+% \definefontsynonym [SansCaps]       [file:MyriadPro-Regular.otf]     [fallbacks=FakeSansCaps]
 
 \writestatus{loading}{ConTeXt Font Macros / Collections}
 

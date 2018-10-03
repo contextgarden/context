@@ -1250,6 +1250,101 @@ you're lucky.
 
 \stopsection
 
+\startsection[title={Swapping}]
+
+The next two examples demonstrate a feature added for Taco, who wanted to input
+vertical instead of horizontal. It's a bit of a hack but it works okay for
+simple cases. We assume these settings:
+
+\startbuffer[settings]
+\setupxtable[one]  [foregroundcolor=darkred]
+\setupxtable[two]  [foregroundcolor=darkgreen]
+\setupxtable[three][foregroundcolor=darkblue]
+\setupxtable[four] [foregroundcolor=darkorange]
+\stopbuffer
+
+\startbuffer[demo-1]
+\startxtable[frame=on]
+    \startxcolumn[one]
+        \startxcell A1 \stopxcell
+        \startxcell B1 \stopxcell
+        \startxcell C1 \stopxcell
+        \startxcell D1 \stopxcell
+        \startxcell E1 \stopxcell
+    \stopxcolumn
+    \startxcolumn[two]
+        \startxcell A2 \stopxcell
+        \startxcell B2 \stopxcell
+        \startxcell C2 \stopxcell
+        \startxcell D2 \stopxcell
+        \startxcell E2 \stopxcell
+    \stopxcolumn
+    \startxcolumn[three]
+        \startxcell A3 \stopxcell
+        \startxcell B3 \stopxcell
+        \startxcell C3 \stopxcell
+        \startxcell D3 \stopxcell
+        \startxcell E3 \stopxcell
+    \stopxcolumn
+    \startxcolumn[four]
+        \startxcell A4 \stopxcell
+        \startxcell B4 \stopxcell
+        \startxcell C4 \stopxcell
+        \startxcell D4 \stopxcell
+        \startxcell E4 \stopxcell
+    \stopxcolumn
+\stopxtable
+\stopbuffer
+
+\startbuffer[demo-2]
+\startxtable[frame=on]
+    \startxcolumn[one]
+        \startxcell A \stopxcell
+        \startxcell B \stopxcell
+        \startxcell C \stopxcell
+        \startxcell D \stopxcell
+        \startxcell E \stopxcell
+    \stopxcolumn
+    \startxcolumn[two]
+        \startxcell       A  \stopxcell
+        \startxcell[ny=2] BC \stopxcell
+        \startxcell[ny=2] DE \stopxcell
+    \stopxcolumn
+    \startxcolumn[three]
+        \startxcell       A    \stopxcell
+        \startxcell[ny=4] BCDE \stopxcell
+    \stopxcolumn
+    \startxcolumn[four]
+        \startxcell       A \stopxcell
+        \startxcell       B \stopxcell
+        \startxcell[ny=2] CD \stopxcell
+        \startxcell       E  \stopxcell
+    \stopxcolumn
+\stopxtable
+\stopbuffer
+
+\typebuffer[settings]
+
+The first example has no spans:
+
+\typebuffer[demo-1]
+
+while the second one has:
+
+\typebuffer[demo-2]
+
+The results are shown in \in {figure} [fig:swapped].
+
+\startplacefigure[title={Entering columns instead of rows.},reference=fig:swapped]
+    \getbuffer[settings]
+    \startcombination
+        {\getbuffer[demo-1]} {no spans}
+        {\getbuffer[demo-2]} {some spans}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
 \startsection[title={Examples}]
 
 On the following pages we show some examples of (experimental) features. For this
