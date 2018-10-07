@@ -23,6 +23,8 @@
 
 \startluacode
 
+local tonumber, type = tonumber, type
+
 local settings_to_hash = utilities.parsers.settings_to_hash
 local formatters       = string.formatters
 local copy             = table.copy
@@ -114,7 +116,7 @@ function matrix.typeset(m,options)
             if type(m[1]) ~= "table" then
                 m = { copy(m) }
             end
-            for i=1, #m do
+            for i=1,#m do
                 local mi = m[i]
                 for j=1,#mi do
                     context.NC()
@@ -164,9 +166,11 @@ function matrix.swapcolumns(t, i, j)
     return t
 end
 
-matrix.swapC = matrix.swapcolumns
-matrix.swapR = matrix.swaprows
-matrix.swap  = matrix.swaprows
+matrix.swapC       = matrix.swapcolumns
+matrix.swapR       = matrix.swaprows
+matrix.swapcolumns = matrix.swapcolumns
+matrix.swaprows    = matrix.swaprows
+matrix.swap        = matrix.swaprows
 
 -- replace i-th row with factor * (i-th row)
 
@@ -299,7 +303,7 @@ local function determinant(m)
         end
         return s*d
     else
-        return "error: not a square matrix" -- not context(..)
+        return "error: not a square matrix"
     end
 end
 
@@ -371,7 +375,7 @@ matrix.rowEchelon = rowechelon
 
 -- make matrices until its determinant is not 0
 
-function matrix.make(m,n,low,high) -- m and n swapped
+local function make(m,n,low,high) -- m and n swapped
     if not n then
         n = 10
     end
@@ -401,6 +405,9 @@ function matrix.make(m,n,low,high) -- m and n swapped
     end
 end
 
+matrix.make  = make
+matrix.makeR = matrix.make
+
 -- extract submatrix by using
 
 local function submatrix(t,i,j)
@@ -420,10 +427,11 @@ local function submatrix(t,i,j)
 end
 
 matrix.submatrix = submatrix
+matrix.subMatrix = submatrix
 
 -- calculating determinant using Laplace Expansion
 
-function matrix.laplace(t) -- not sure if this is the most effient but
+local function laplace(t) -- not sure if this is the most effient but
     local factors = { 1 }  -- it's not used for number crunching anyway
     local data    = copy(t)
     local det     = 0
@@ -460,6 +468,8 @@ function matrix.laplace(t) -- not sure if this is the most effient but
     end
     return det
 end
+
+matrix.laplace = laplace
 
 --  solve the linear equation m X = c
 
@@ -518,6 +528,74 @@ end
 
 matrix.inverse = inverse
 
+-- create zero and identity matrix
+
+local function makeM(k,v)
+    local tt = { }
+    for i=1,k do
+        local temp = { }
+        for j=1,k do
+            temp[j] = 0
+        end
+        tt[i] = temp
+    end
+    if v and v > 0 then
+        for i=1,k do
+            tt[i][i] = 1
+        end
+    end
+    return tt
+end
+
+matrix.makeM        = makeM
+matrix.makeidentity = makeM
+matrix.makezero     = makeM
+
+-- append the rows of the second matrix  to the bottom of the first matrix
+
+local function joinrows(t1, t2)
+    local nt1 = #t1
+    local nt2 = #t2
+    if (nt1*nt2 > 0) and (#t1[1] ~= #t2[1]) then
+        return "error: different number of columns"
+    else
+        for i=1,nt2 do
+            t1[nt1+i] = t2[i]
+        end
+        return t1
+    end
+end
+
+matrix.joinrows = joinrows
+matrix.joinRows = joinrows
+
+-- append the columns of the second matrix  to the right of the first matrix
+
+local function joincolumns(t1, t2)
+    local nt1 = #t1
+    local nt2 = #t2
+    if nt1 == 0 then
+        return t2
+    end
+    if nt2 == 0 then
+        return t1
+    end
+    if nt1 ~= nt2 then
+        return "error: different number of rows"
+    end
+    nt3 = #t2[1]
+    for i=1,nt1 do
+        local temp = t2[i]
+        for j= 1, nt3 do
+            insert(t1[i],temp[j])
+        end
+    end
+    return t1
+end
+
+matrix.joincolumns = joincolumns
+matrix.joinColumns = joincolumns
+
 \stopluacode
 
 \stopmodule
@@ -570,6 +648,7 @@ document.DemoMatrixC = {
 
 \startbuffer
 \ctxmodulematrix{typeset(moduledata.matrix.symbolic("a", "m", "n"))}
+$\qquad\qquad$
 \ctxmodulematrix{typeset(moduledata.matrix.symbolic("a", "m", "n", 4, 8))}
 \stopbuffer
 
@@ -581,9 +660,10 @@ document.DemoMatrixC = {
 
 \startbuffer
 \startluacode
-    moduledata.matrix.typeset(moduledata.matrix.make(4,3, 0,5))
+    moduledata.matrix.typeset(moduledata.matrix.makeR(4,3, 0,5))
     context.qquad()
-    moduledata.matrix.typeset(moduledata.matrix.make(5,5,-1,5))
+    context("\\qquad")
+    moduledata.matrix.typeset(moduledata.matrix.makeR(5,5,-1,5))
 \stopluacode
 \stopbuffer
 
@@ -591,7 +671,7 @@ document.DemoMatrixC = {
 
 \stopsubject
 
-\startsubject[title={Swap two rows (2 and 4)}]
+\startsubject[title={Swap two rows (ex: 2 and 4)}]
 
 \startbuffer
 \startluacode
@@ -605,13 +685,13 @@ document.DemoMatrixC = {
 
 \stopsubject
 
-\startsubject[title={Swap two columns (2 and 4)}]
+\startsubject[title={Swap two columns (ex: 1 and 3)}]
 
 \startbuffer
 \startluacode
     moduledata.matrix.typeset(document.DemoMatrixA)
     context("$\\qquad \\Rightarrow \\qquad$")
-    moduledata.matrix.typeset(moduledata.matrix.swapcolumns(document.DemoMatrixA,2, 4))
+    moduledata.matrix.typeset(moduledata.matrix.swapcolumns(document.DemoMatrixA,1, 3))
 \stopluacode
 \stopbuffer
 
@@ -726,7 +806,7 @@ context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
     }
     moduledata.matrix.typeset(m, {fences="bars"})
     context("$\\qquad = \\qquad$")
-    moduledata.matrix.determinant(m)
+    context(moduledata.matrix.determinant(m))
 \stopluacode
 \stopbuffer
 
@@ -857,6 +937,53 @@ context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
     moduledata.matrix.typeset(moduledata.matrix.inverse(m))
     context("$ = $")
     moduledata.matrix.typeset(moduledata.matrix.product(m, moduledata.matrix.inverse(m)))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={make matrices(zero, identiry, random}]
+
+\startbuffer
+\startluacode
+    moduledata.matrix.typeset(moduledata.matrix.makeM(3, 0))
+    context.qquad()
+    moduledata.matrix.typeset(moduledata.matrix.makeM(3, 1))
+    context.qquad()
+    moduledata.matrix.typeset(moduledata.matrix.makeR(4,3))
+\stopluacode
+\stopbuffer
+
+\getbuffer[demo]
+
+\stopsubject
+
+\startsubject[title={join rows, join columns}]
+
+\startbuffer
+\startluacode
+    local mat1 = moduledata.matrix.makeR(3, 4)
+    local mat2 = moduledata.matrix.makeR(4, 3)
+
+    context("Appending as columns: ")
+    context.blank()
+    moduledata.matrix.typeset(mat1)
+    context("$\\&$")
+    moduledata.matrix.typeset(mat1)
+    context("\\quad $\\Rightarrow$ \\quad")
+    moduledata.matrix.joinColumns(mat1, mat1)
+    moduledata.matrix.typeset(mat1)
+    context.blank()
+    context("Appending as rows: ")
+    context.blank()
+    moduledata.matrix.typeset(mat2)
+    context("$\\&$")
+    moduledata.matrix.typeset(mat2)
+    context("\\quad $\\Rightarrow$ \\quad")
+    moduledata.matrix.joinRows(mat2, mat2)
+    moduledata.matrix.typeset(mat2)
 \stopluacode
 \stopbuffer
 

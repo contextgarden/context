@@ -132,7 +132,6 @@ setmetatable(cache, {
 local f_preamble = formatters[ [[
 ATTACH `%s` AS `%s` ;
 PRAGMA `%s`.synchronous = normal ;
-PRAGMA journal_mode = truncate ;
 ]] ]
 
 local function execute(specification)
@@ -211,17 +210,19 @@ local function execute(specification)
         else
             local column = { }
             callback = function(data,nofcolumns,values,fields)
-                for i=0,nofcolumns-1 do
+                for i=1,nofcolumns do
                     local field
                     if keysdone then
-                        field = keys[i+1]
+                        field = keys[i]
                     else
                      -- field = get_list_item(fields,i)
-                        field = ffi_tostring(fields[i])
+                        field = ffi_tostring(fields[i-1])
                         keys[i+1] = field
                     end
-                 -- column[field] = get_list_item(values,i)
-                    column[field] = ffi_tostring(values[i])
+                    if field then
+                     -- column[field] = get_list_item(values,i)
+                        column[field] = ffi_tostring(values[i-1])
+                    end
                 end
                 nofrows  = nofrows + 1
                 keysdone = true

@@ -24,8 +24,9 @@
 
 \registerctxluafile{s-fonts-system}{}
 
-\installmodulecommandluasingle \showinstalledfonts  {moduledata.fonts.system.showinstalled}
-\installmodulecommandluasingle \cacheinstalledfonts {moduledata.fonts.system.cacheinstalled}
+\installmodulecommandluasingle \showinstalledfonts      {moduledata.fonts.system.showinstalled}
+\installmodulecommandluasingle \cacheinstalledfonts     {moduledata.fonts.system.cacheinstalled}
+\installmodulecommandluasingle \showinstalledglyphnames {moduledata.fonts.system.showinstalledglyphnames}
 
 \stopmodule
 
@@ -36,6 +37,12 @@
 \starttext
 
 %     \showinstalledfonts
-    \cacheinstalledfonts[threshold=4000000]
+
+%     \enabletrackers[otf.keepnames]
+
+%     \cacheinstalledfonts[threshold=4000000,suffixes={otf,ttf,afm,pfb}]
+%     \cacheinstalledfonts[threshold=2000000,suffixes={otf,ttf,afm,pfb}]
+
+    \showinstalledglyphnames
 
 \stoptext

@@ -181,7 +181,7 @@ function languages.nofflattened()
     return wiped -- handy for testing
 end
 
--- experiment
+-- experiment: for now not in not in export mode!
 
 local flatten = languages.flatten
 local getlist = nodes.getlist
@@ -196,6 +196,7 @@ function nodes.handlers.flatten(head,where)
 end
 
 directives.register("hyphenator.flatten",function(v)
+    -- use with care
     setaction("processors","nodes.handlers.flatten",v)
     setaction("contributers","nodes.handlers.flattenline",v)
 end)

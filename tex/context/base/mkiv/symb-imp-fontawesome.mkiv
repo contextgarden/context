@@ -749,7 +749,26 @@
 
 \stopsymbolset
 
+
+\definefontsynonym [FontAwesomeBrands]  [file:fontawesome5brandsregular400.otf]
+\definefontsynonym [FontAwesomeRegular] [file:fontawesome5freeregular400.otf]
+\definefontsynonym [FontAwesomeSolid]   [file:fontawesome5freesolid900.otf]
+
+\startsymbolset [fontawesome-brands] [font=FontAwesomeBrands]
+    % Font Awesome Brands
+\stopsymbolset
+
+\startsymbolset [fontawesome-regular] [font=FontAwesomeRegular]
+    % Font Awesome Regular
+\stopsymbolset
+
+\startsymbolset [fontawesome-solid] [font=FontAwesomeSolid]
+    % Font Awesome Solid
+\stopsymbolset
+
 \continueifinputfile{symb-imp-fontawesome.mkiv}
+
+\usemodule[article-basic]
 
 \starttext
 
@@ -760,6 +779,18 @@
   % \symbol[fontawesome][angle right]
   % \symbol[fontawesome][angle_right]
 
-    \showsymbolset[fontawesome]
+  % \showsymbolset[fontawesome]
+
+    \startnamedsection [title] [title={Font Awesome Brands}]
+        \showsymbolset [fontawesome-brands]
+    \stopnamedsection
+
+    \startnamedsection [title] [title={Font Awesome Regular}]
+        \showsymbolset [fontawesome-regular]
+    \stopnamedsection
+
+    \startnamedsection [title] [title={Font Awesome Solid}]
+        \showsymbolset [fontawesome-solid]
+    \stopnamedsection
 
 \stoptext

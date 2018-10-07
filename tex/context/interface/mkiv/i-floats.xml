@@ -186,10 +186,10 @@
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="ntop">
-                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="nbottom">
-                    <cd:constant type="cd:dimension"/>
+                    <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="step">
                     <cd:constant type="small"/>

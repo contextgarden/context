@@ -2950,6 +2950,7 @@ local collectresults  do -- too many locals otherwise
         local p
         local localparagraph
         local maybewrong
+        local pid
         for n, id, subtype in nextnode, head do
             if trace_detail then
                 showdetail(n,id,subtype)
@@ -3180,6 +3181,8 @@ end
                             if not keephyphens then
                                 nofcurrentcontent = nofcurrentcontent - 1
                             end
+                        elseif pid == disc_code then
+                            -- go on .. tricky: we should mark the glyhs as coming from a disc
                         elseif not somespace[r] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
@@ -3288,7 +3291,8 @@ end
             elseif id == localpar_code then
                 localparagraph = getattr(n,a_taggedpar)
             end
-            p = n
+            p   = n
+            pid = id
         end
         if maybewrong then
             showmaybe(maybewrong)

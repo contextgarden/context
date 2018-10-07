@@ -52,7 +52,13 @@ local setmetatableindex = table.setmetatableindex
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs, lpeg.Cf, lpeg.Cg
 
-if not lpdf then require("lpdf-aux") end
+if not lpdf then
+    require("lpdf-aux")
+end
+
+if not (number and number.dimenfactors) then
+    require("util-dim")
+end
 
 local epdf              = pdfe
       lpdf              = lpdf or { }
@@ -343,12 +349,12 @@ end
 
 function resolvers.javascripts(document)
     local Names = document.Catalog.Names
-    return getnames(document,Names and Names.JS)
+    return getnames(document,Names and Names.JavaScript)
 end
 
 function resolvers.widgets(document)
-    local Names = document.Catalog.Names
-    return getnames(document,Names and Names.AcroForm)
+    local Names = document.Catalog.AcroForm
+    return Names and Names.Fields
 end
 
 function resolvers.embeddedfiles(document)

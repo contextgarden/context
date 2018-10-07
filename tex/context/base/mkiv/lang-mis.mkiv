@@ -145,7 +145,11 @@
 %D modules these can be tuned by a setup command. Watch the (maybe) better looking
 %D compound hyphen.
 
-\ifx\compoundhyphen    \undefined \unexpanded\def\compoundhyphen    {\hbox{-\kern-.25ex-}} \fi
+% hm why ex
+
+\ifx\compoundhyphen    \undefined
+    \unexpanded\def\compoundhyphen {\hbox{-\kern-.10775\emwidth-}} % .25\exheight
+\fi
 
 %D The last two variables are needed for subsentences |<|like this one|>| which we
 %D did not yet mention. We want to enable breaking but at the same time don't want

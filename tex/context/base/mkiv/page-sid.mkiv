@@ -81,6 +81,9 @@
 
 \newdimen       \d_page_sides_progression
 
+\newcount       \c_page_sides_m_of_lines
+\newconditional \c_page_sides_delayed
+
 \newif          \iftracesidefloats % public (might change)
 
 %D Defaults:
@@ -764,7 +767,7 @@
    \prevdepth\strutdp}
   %\ignoreparskip}
 
-\def\page_sides_handle_float#1% grid (4) is rather experimental
+\def\page_sides_handle_float#1%
   {\page_sides_initialize_checker
    \page_sides_check_horizontal_skips
    \page_sides_check_vertical_skips
@@ -776,8 +779,11 @@
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
    \ifconditional\c_page_floats_room
+     \global\setfalse\c_page_sides_delayed
      % we're ok
    \else
+     \global\settrue\c_page_sides_delayed
+     \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
      \ifcase\c_page_sides_page_method
        \page_otr_fill_and_eject_page
      \or
@@ -785,11 +791,13 @@
      \else
        \page_otr_fill_and_eject_page
      \fi
+     \global\c_page_sides_n_of_lines\c_page_sides_m_of_lines
      \page_sides_analyse_space
     %\page_sides_inject_before
      \page_sides_inject_dummy_lines
    \fi
    \page_sides_place_float
+   \global\setfalse\c_page_sides_delayed
    \page_sides_check_floats_reset
    \page_sides_wrapup}
 
@@ -797,8 +805,7 @@
   {% we need to do this aftergroup
    \aftergroup\par
    \aftergroup\ignoreparskip
-   \aftergroup\ignorespaces
-   }
+   \aftergroup\ignorespaces}
 
 \def\page_sides_check_floats_indeed
   {\page_sides_analyse_progress
@@ -857,6 +864,10 @@
 
 \unexpanded\def\page_sides_check_floats_set
   {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
+   \ifconditional\c_page_sides_delayed
+     % For Alan's hanging right float that moved to the next page.
+     \d_page_sides_progress\zeropoint
+   \fi
    \ifx\p_sidethreshold\v!old
      \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
      \c_page_sides_n_of_hang\d_page_sides_progression

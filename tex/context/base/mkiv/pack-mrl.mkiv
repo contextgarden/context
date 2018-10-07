@@ -39,7 +39,7 @@
 \installsimplecommandhandler \??blackrules {blackrules}
 
 \unexpanded\def\blackrule
-  {\hbox\bgroup
+  {\hpack\bgroup
    \doifelsenextoptionalcs\pack_black_rule_pickup\pack_black_rule_indeed}
 
 \def\pack_black_rule_pickup[#1]%
@@ -99,7 +99,7 @@
 %D would probably have taken more tokens.
 
 \unexpanded\def\blackrules % probably never used
-  {\hbox\bgroup
+  {\hpack\bgroup
    \doifelsenextoptionalcs\pack_black_rules_pickup\pack_black_rules_indeed}
 
 \def\pack_black_rules_pickup[#1]%
@@ -121,22 +121,24 @@
      \fi
    \fi
    \useblackrulesstyleandcolor\c!style\c!color
-   \edef\brule
-     {\ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
-        \lastnamedcs
-      \else
-        \vrule
-      \fi}%
-   \dorecurse\scratchcounter % a typical case of where we can use a simple loop
-     {\brule
-        \s!width \scratchwidth
-        \s!height\scratchheight
-        \s!depth \scratchdepth
-      \ifzeropt\scratchdistance\else
-        \hskip\scratchdistance
-      \fi}%
+   % a typical case of where we can use a simple loop or even a leaders
+   \dorecurse\scratchcounter\pack_black_rules_step
    \unskip
    \egroup}
+
+\def\pack_black_rules_step
+  {\ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
+     \lastnamedcs
+   \else
+     \vrule
+   \fi
+   \s!width \scratchwidth
+   \s!height\scratchheight
+   \s!depth \scratchdepth
+   \relax
+   \ifzeropt\scratchdistance\else
+     \hskip\scratchdistance
+   \fi}
 
 \installcorenamespace{blackruletype}
 
@@ -578,14 +580,14 @@
   {\page[\v!preference] % interferes
    \directtextrulesparameter\c!before\relax
    \blank[\v!samepage,\v!nowhite]%
-   \pack_textrule_with_text{#1}%
+   \pack_textrule_with_text_yes{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \endgraf}
 
 \setvalue{\??textrulealternatives\v!bottom}#1%
   {\blank[\v!samepage,\v!nowhite]%
-   \pack_textrule_following{#1}%
+   \pack_textrule_following_yes{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!after\relax
    \page[\v!preference]}
@@ -593,14 +595,15 @@
 \setvalue{\??textrulealternatives\v!middle}#1%
   {\blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
-   \pack_textrule_following{#1}%
+   \pack_textrule_following_yes{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \page[\v!preference]}
 
-\def\pack_textrule_with_text#1%
-  {\bgroup
-   \setbox\scratchbox\hbox to \availablehsize
+\def\pack_textrule_with_text_yes#1%
+  {\noindent % this will force side floats to be calculated
+   \bgroup
+   \setbox\scratchbox\hpack to \availablehsize
      {\scratchwidth \directtextrulesparameter\c!rulethickness\relax
       \scratchheight\dimexpr .5\exheight+.5\scratchwidth\relax
       \scratchdepth \dimexpr-.5\exheight+.5\scratchwidth\relax
@@ -611,18 +614,40 @@
                #1%
                \hskip\leftmargindistance}}
            {\color[\directtextrulesparameter\c!rulecolor]
-              {\vrule\s!height\scratchheight\s!depth\scratchdepth\s!width\directtextrulesparameter\c!width}%
+              {\vrule
+                 \s!height\scratchheight
+                 \s!depth \scratchdepth
+                 \s!width \directtextrulesparameter\c!width}%
             \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
               {\hss
                \usetextrulesstyleandcolor\c!style\c!color
                \strut#1%
                \hss}}}%
       \color[\directtextrulesparameter\c!rulecolor]
-        {\leaders\hrule\s!height\scratchheight\s!depth\scratchdepth\hfill}}%
+        {\leaders\hrule
+           \s!height\scratchheight
+           \s!depth \scratchdepth
+           \hfill}}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
-   \noindent\box\scratchbox
+   \box\scratchbox
+  %\carryoverpar
    \egroup}
+
+\def\pack_textrule_with_text_nop#1%
+  {\ifhmode
+     \endgraf
+   \fi
+   \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on
+     \pack_textrule_correct_depth_yes
+     \pack_textrule_correct_depth_nop
+   \nointerlineskip
+   \noindent\vpack % was \dontleavehmode
+     {\color[\directtextrulesparameter\c!rulecolor]
+        {\hrule
+           \s!depth \directtextrulesparameter\c!rulethickness
+           \s!height\zeropoint
+           \s!width \availablehsize}}}
 
 \def\pack_textrule_correct_depth_yes
   {\vskip\dimexpr
@@ -643,15 +668,9 @@
 
 \def\pack_textrule_following#1%
   {\doifelsenothing{#1}
-     {\ifhmode
-        \endgraf
-      \fi
-      \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on\pack_textrule_correct_depth_yes\pack_textrule_correct_depth_nop
-      \nointerlineskip
-      \noindent\vbox % was \dontleavehmode
-        {\color[\directtextrulesparameter\c!rulecolor]
-           {\hrule\s!depth\directtextrulesparameter\c!rulethickness\s!height\zeropoint\s!width\availablehsize}}}
-     {\pack_textrule_with_text{#1}}%
+     \pack_textrule_with_text_nop
+     \pack_textrule_with_text_yes
+     {#1}%
    \ifvmode
      \prevdepth\zeropoint
    \fi}

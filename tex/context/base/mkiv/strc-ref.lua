@@ -1496,7 +1496,7 @@ local function identify_inner(set,var,prefix,collected,derived)
         end
     end
     -- we now ignore the split prefix and treat the whole inner as a potential
-    -- referenice into the global list
+    -- reference into the global list
     local i = collected[prefix]
     if i then
         i = i[inner]
@@ -1552,6 +1552,17 @@ local function identify_outer(set,var,i)
             end
             return v
         end
+-- weird too (we really need to check how this table is build
+        local v = identify_inner(set,var,var.outer,external)
+        if v then
+            v.kind = "outer with inner"
+            set.external = true
+            if trace_identifying then
+                report_identify_outer(set,v,i,"2c")
+            end
+            return v
+        end
+--
         -- somewhat rubish: we use outer as first step in the externals table so it makes no
         -- sense to have it as prefix so the next could be an option
         local external = external[""]
@@ -2556,10 +2567,19 @@ local function referencepagestate(position,detail,spread)
     if not actions then
         return 0
     else
-        if not actions.pagestate then
-            references.analyze(actions,position,spread) -- delayed unless explicitly asked for
-        end
         local pagestate = actions.pagestate
+        for i=1,#actions do
+            local a = actions[i]
+            if a.outer then
+                pagestate = 0
+                actions.pagestate = pagestate
+                break
+            end
+        end
+        if not pagestate then
+            references.analyze(actions,position,spread) -- delayed unless explicitly asked for
+            pagestate = actions.pagestate
+        end
         if detail then
             return pagestate
         elseif pagestate == 4 then

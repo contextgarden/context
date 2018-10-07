@@ -14,10 +14,12 @@
 % Taco will make a special (more verbose) one for the ConTeXt journal! That setup will also have
 % adapted interline spacing matching the larger ascenders.
 
-% [IBMPlexMono|IBMPlexSans|IBMPlexSerif|IBMPlexSansCondensed]-[Thin|Light|Text||Medium|SemiBold|Bold|Extra].otf
-% [IBMPlexMono|IBMPlexSans|IBMPlexSerif|IBMPlexSansCondensed]-[Thin|Light|Text||Medium|SemiBold|Bold|Extra]Italic.otf
+%  thin, extralight, light, regular, text, medium, semibold, bold
 
-% [IBMPlexSans][Hebrew]-[Thin|Light|Text||Medium|SemiBold|Bold|].otf
+% [IBMPlexMono|IBMPlexSans|IBMPlexSerif|IBMPlexSansCondensed]-[Thin|ExtraLight|Light||Text|Medium|SemiBold|Bold].otf
+% [IBMPlexMono|IBMPlexSans|IBMPlexSerif|IBMPlexSansCondensed]-[Thin|ExtraLight|Light||Text|Medium|SemiBold|Bold]Italic.otf
+
+% [IBMPlexSans][Hebrew]-[Thin|Light||Text|Medium|SemiBold|Bold|].otf
 
 \loadtypescriptfile[bookman]
 
@@ -27,59 +29,69 @@
     \definetypescriptprefix [n:plexsans]        [IBMPlexSans]
     \definetypescriptprefix [n:plexmono]        [IBMPlexMono]
 
-    \definetypescriptprefix [n:plexserifnarrow] [IBMPlexSerif]
-    \definetypescriptprefix [n:plexsansnarrow]  [IBMPlexSansCondensed]
-    \definetypescriptprefix [n:plexmonnarrow]   [IBMPlexMono]
+    \definetypescriptprefix [n:narrowplexserif] [IBMPlexSerif]
+    \definetypescriptprefix [n:narrowplexsans]  [IBMPlexSansCondensed]
+    \definetypescriptprefix [n:narrowplexmono]  [IBMPlexMono]
 
     \definetypescriptprefix [f:plexserif]       [\s!default]
     \definetypescriptprefix [f:plexsans]        [\s!default]
     \definetypescriptprefix [f:plexmono]        [\s!none]
 
-    \definetypescriptprefix [f:plexserifnarrow] [\s!default]
-    \definetypescriptprefix [f:plexsansnarrow]  [\s!default]
-    \definetypescriptprefix [f:plexmononarrow]  [\s!none]
+    \definetypescriptprefix [f:narrowplexserif] [\s!default]
+    \definetypescriptprefix [f:narrowplexsans]  [\s!default]
+    \definetypescriptprefix [f:narrowplexmono]  [\s!none]
 
-    % [THIN|light|TEXT||medium|semibold|bold|extra]
+    % thin
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-thin,plex-hairline] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-thin] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-thinitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-text]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-text]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-light]      [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-light]      [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
-    % [thin|LIGHT|text||medium|semibold|bold|extra]
+    % extralight
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-extralight] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-extralightitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]          [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]           [\s!features=\typescriptprefix{f:plex\typescriptone}]
+    \stoptypescript
+
+    % light
 
     \starttypescript [\s!sans,\s!serif,\s!mono] [plex-light] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-light]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-lightitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]     [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]      [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-text]        [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-textitalic]  [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
-    % [thin|light|TEXT||MEDIUM|semibold|bold|extra]
+    % regular
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]      [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-mediumitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+    \stoptypescript
+
+    % text
 
     \starttypescript [\s!sans,\s!serif,\s!mono] [plex-text] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-text]         [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-textitalic]   [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-mediumitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
-    \stoptypescript
-
-    % [thin|light|text||medium|SEMIBOLD|bold|extra]
-
-    \starttypescript [\s!sans,\s!serif,\s!mono] [plex] [\s!name]
-        \setups[\s!font:\s!fallback:\typescriptone]
-        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]        [\s!features=\typescriptprefix{f:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]         [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
-    % [thin|light|text||MEDIUM|semibold|BOLD|extra]
+    % medium
 
     \starttypescript [\s!sans,\s!serif,\s!mono] [plex-medium] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
@@ -89,9 +101,9 @@
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic]   [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
-    % [thin|light|text||medium|SEMIBOLD|bold|EXTRA]
+    % semibold
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-semibold,plex-dark,plex-black] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-semibold] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
@@ -99,7 +111,19 @@
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-extraitalic]    [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
-    \starttypescript[plex,plex-thin,plex-hairline,plex-light,plex-text,plex-medium,plex-semibold,plex-dark,plex-black]
+    % bold
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex-bold] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+    \stoptypescript
+
+    % done
+
+    \starttypescript[plex,plex-thin,plex-extralight,plex-light,plex,plex-text,plex-medium,plex-semibold,plex-bold]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
@@ -108,37 +132,106 @@
 
     % Here's Taco's variant as used in the ConTeXt Group Journal.
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-thin,ibmplexnarrow-thin] [\s!name]
+    \definefontfeature[plexwidened][extend=\luaexpr{1/0.85}] % An odd floating point number to correct monospace.
+
+    \definetypescriptprefix [f:scplexserif]       [\s!default,plexwidened]
+    \definetypescriptprefix [f:scplexsans]        [\s!default,plexwidened]
+    \definetypescriptprefix [f:scplexmono]        [plexwidened]
+
+    \definetypescriptprefix [f:scnarrowplexserif] [\s!default,plexwidened]
+    \definetypescriptprefix [f:scnarrowplexsans]  [\s!default,plexwidened]
+    \definetypescriptprefix [f:scnarrowplexmono]  [plexwidened]
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-thin] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-thinitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-text]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-textitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:scplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-extralight,ibmplexnarrow-extralight] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-extralight] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-extralightitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]           [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-mediumitalic]     [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:scplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-light,ibmplexnarrow-light] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-light] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-light]          [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-lightitalic]    [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-light]          [\s!features=\typescriptprefix{f:scplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]       [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-light]          [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex,ibmplexnarrow-light] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]     [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \definefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:scplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]    [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
+
+    % narrow
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplexnarrow-thin] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thinitalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-text]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-textitalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
+    \stoptypescript
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplexnarrow-extralight] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralightitalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-medium]           [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-mediumitalic]     [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]               [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
+    \stoptypescript
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplexnarrow-light] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]          [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-lightitalic]    [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]          [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]             [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]          [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
+    \stoptypescript
+
+    \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplexnarrow] [\s!name]
+        \setups[\s!font:\s!fallback:\typescriptone]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-italic]     [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
+    \stoptypescript
+
 
     % For now, as some day plex will have cjk, hebrew, devanagari and arabic. The abstraction is not needed but
     % this way we can add more id needed without much code.
@@ -152,19 +245,6 @@
     \definefontfallback [SansHebrewFallbackBold] [SansHebrewBold] [0x0590-0x05ff] [check=yes,force=no]
 
     \starttypescript [\s!sans] [ibmplex-thin] [\s!name]
-        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]
-                                                                            [\s!features=\typescriptprefix{f:plex\typescriptone},
-                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]
-                                                                            [\s!features=\typescriptprefix{f:plex\typescriptone},
-                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
-        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-extralight]
-                                                                            [\s!features=hebrew]
-        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-medium]
-                                                                            [\s!features=hebrew]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [ibmplex-extralight] [\s!name]
         \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]
                                                                             [\s!features=\typescriptprefix{f:plex\typescriptone},
                                                                              \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
@@ -174,6 +254,19 @@
         \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-thin]
                                                                             [\s!features=hebrew]
         \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-text]
+                                                                            [\s!features=hebrew]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ibmplex-extralight] [\s!name]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]
+                                                                            [\s!features=\typescriptprefix{f:plex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]
+                                                                            [\s!features=\typescriptprefix{f:plex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-extralight]
+                                                                            [\s!features=hebrew]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-medium]
                                                                             [\s!features=hebrew]
     \stoptypescript
 
@@ -200,6 +293,60 @@
         \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-regular]
                                                                             [\s!features=hebrew]
         \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:plex\typescriptone-hebrew}-bold]
+                                                                            [\s!features=hebrew]
+    \stoptypescript
+
+    % narrow
+
+    \starttypescript [\s!sans] [ibmplexnarrow-thin] [\s!name]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-text]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-thin]
+                                                                            [\s!features=hebrew]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-text]
+                                                                            [\s!features=hebrew]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ibmplexnarrow-extralight] [\s!name]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-medium]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-extralight]
+                                                                            [\s!features=hebrew]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-medium]
+                                                                            [\s!features=hebrew]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ibmplexnarrow-light] [\s!name]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-semibold]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-light]
+                                                                            [\s!features=hebrew]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-semibold]
+                                                                            [\s!features=hebrew]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [ibmplexnarrow] [\s!name]
+        \definefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{tf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-bold]
+                                                                            [\s!features=\typescriptprefix{f:narrowplex\typescriptone},
+                                                                             \s!fallbacks=\typescriptprefix{bf:plex\typescriptone}]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew]        [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-regular]
+                                                                            [\s!features=hebrew]
+        \definefontsynonym [\typescriptprefix{\typescriptone}Hebrew\s!Bold] [\s!file:\typescriptprefix{n:narrowplex\typescriptone-hebrew}-bold]
                                                                             [\s!features=hebrew]
     \stoptypescript
 

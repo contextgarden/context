@@ -405,6 +405,15 @@ if runningtex then
     setlogfile  = ignore
     settimedlog = ignore
 
+ -- settimedlog = function()
+ --     local localtime = os.localtime
+ --     local writeline = write_nl
+ --     write_nl = function(f,...)
+ --         writeline(f,localtime() .. " | " .. concat { ... })
+ --     end
+ --     settimedlog = ignore
+ -- end
+
 else
 
     local report_yes, subreport_yes, status_yes
