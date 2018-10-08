@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D The question is: should I still document this in interaction.tex or just
+%D assume it's obsolete technology \unknown
+
 %D This is only a placeholder that demonstrates the usage of swf resources.
 %D There is no need to include this file into the format. The module was
 %D tested by Luigi and Willi and based on their suggestions the functionality
@@ -58,6 +61,8 @@
 %D   [file=test.mp4,
 %D    label=foo]
 %D
+%D \useJSscripts[vplayer] % or \useJSscripts[videoplayer]
+%D
 %D \goto{START} [JS(StartShockwave{foo})]
 %D \goto{REWIND}[JS(RewindShockwave{foo})]
 %D \goto{PAUSE} [JS(PauseShockwave{foo})]
@@ -84,100 +89,8 @@
 
 \unprotect
 
-\startluaparameterset[shockwave:display]
-    toolbar  = true,
- -- preview  = "somefile",
-    open     = "click",
-    close    = "focus",
-\stopluaparameterset
-
-% using vplayer9.swf from ctan:
-
-\useexternalfigure
-  [shockwave]
-  [vplayer9.swf]
-% [arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file",source="\externalfigureparameter\v!file"},
-  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file",autoPlay=true},
-   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
-   \c!display=shockwave:display]
-
-\startJSpreamble shockwave used now
-    function StartShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            // ok
-        } else {
-            rm.activated = true ;
-        }
-        rm.callAS("rewind") ;
-        rm.callAS("playPause") ;
-    }
-    function StopShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("pause") ;
-            rm.callAS("rewind") ;
-        }
-    }
-    function RewindShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("rewind") ;
-        }
-    }
-    function PauseShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("playPause") ;
-        }
-    }
-\stopJSpreamble
-
-% using videoplayer.swf from adobe or strobemediaplayback.swf from sourceforge:
-
-%\useexternalfigure
-%  [shockwave]
-%  [videoplayer.swf]
-%  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file"},
-%   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
-%   \c!display=shockwave:display]
-
-\startJSpreamble shockwave used now
-    function StartShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("multimedia_play") ;
-        } else {
-            rm.activated = true ;
-        }
-    }
-    function StopShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("multimedia_pause") ;
-            rm.callAS("multimedia_rewind") ;
-        }
-    }
-    function RewindShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("multimedia_rewind") ;
-        }
-    }
-    function PauseShockwave(label) {
-        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
-        if (rm.activated) {
-            rm.callAS("multimedia_pause") ;
-        }
-    }
-\stopJSpreamble
-
-% \useexternalfigure
-%   [shockwave]
-%   [strobemediaplayback.swf]
-%   [arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file"},
-%    resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
-%    display=shockwave:display]
+%D The code has moved to the (explicitly loaded) \JAVASCRIPT\ modules. See there
+%D for more info.
 
 \protect \endinput
 

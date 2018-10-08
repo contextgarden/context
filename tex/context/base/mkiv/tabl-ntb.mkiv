@@ -1161,13 +1161,11 @@
 
 \def\tabl_ntb_row_stop_boxed
   {% \noindent % no, else double leftskip in narrower
-   \normalexpanded
-     {\t_tabl_ntb
-        {\the\t_tabl_ntb
-         % no need for init
-         \tabl_ntb_row_align_start
-         \the\t_tabl_ntb_row
-         \tabl_ntb_row_align_stop}}}
+   \etoksapp\t_tabl_ntb
+     {% no need for init
+      \tabl_ntb_row_align_start
+      \the\t_tabl_ntb_row
+      \tabl_ntb_row_align_stop}}
 
 \def\tabl_ntb_row_stop_split
   {\ifcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
@@ -1177,13 +1175,11 @@
    \fi}
 
 \def\tabl_ntb_row_stop_split_nop
-  {\normalexpanded
-     {\t_tabl_ntb
-        {\the\t_tabl_ntb
-         \tabl_ntb_row_align_reset
-         \tabl_ntb_row_align_start
-         \the\t_tabl_ntb_row
-         \tabl_ntb_row_align_stop}}}
+  {\etoksapp\t_tabl_ntb
+     {\tabl_ntb_row_align_reset
+      \tabl_ntb_row_align_start
+      \the\t_tabl_ntb_row
+      \tabl_ntb_row_align_stop}}
 
 \def\tabl_ntb_row_stop_split_yes
   {\begingroup
@@ -1192,13 +1188,11 @@
    \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after}% to be checked
    \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
    \endgroup
-   \normalexpanded
-     {\t_tabl_ntb
-        {\the\t_tabl_ntb
-         \tabl_ntb_row_align_set{\m_tabl_ntb_before_split}{\m_tabl_ntb_after_split}{\m_tabl_ntb_same_page}%
-         \tabl_ntb_row_align_start
-         \the\t_tabl_ntb_row
-         \tabl_ntb_row_align_stop}}}
+   \etoksapp\t_tabl_ntb
+     {\tabl_ntb_row_align_set{\m_tabl_ntb_before_split}{\m_tabl_ntb_after_split}{\m_tabl_ntb_same_page}%
+      \tabl_ntb_row_align_start
+      \the\t_tabl_ntb_row
+      \tabl_ntb_row_align_stop}}
 
 \unexpanded\def\tabl_ntb_row_align_set#1#2#3%
   {\xdef\m_tabl_ntb_before_split{#1}%
@@ -1225,12 +1219,10 @@
         \tabl_ntb_prelocate_error
       \fi}%
    \def\tabl_ntb_row_stop
-     {\normalexpanded
-        {\t_tabl_ntb
-           {\the\t_tabl_ntb
-            \tabl_ntb_row_align_start
-            \the\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname
-            \tabl_ntb_row_align_stop}}}%
+     {\etoksapp\t_tabl_ntb
+        {\tabl_ntb_row_align_start
+         \the\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname
+         \tabl_ntb_row_align_stop}}%
    \global\c_tabl_prelocated_rows#1\relax}
 
 \def\tabl_ntb_prelocate_okay
@@ -1344,37 +1336,23 @@
   {\global\advance\c_tabl_ntb_col\plusone
    \kern\d_tabl_ntb_columndistance}
 
-% \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
-%   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
-%    \ifnum\scratchcounter>\zerocount
-%      \normalexpanded
-%        {\t_tabl_ntb_row
-%           {\the\t_tabl_ntb_row
-%            \tabl_ntb_span{\the\scratchcounter}%
-%            \tabl_ntb_plus}}%
-%    \fi}
-
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_none}#1#2%
   {\scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
-     \normalexpanded
-       {\t_tabl_ntb_row
-          {\the\t_tabl_ntb_row
-           \tabl_ntb_span{\the\scratchcounter}}}%
+     \etoksapp\t_tabl_ntb_row
+       {\tabl_ntb_span{\the\scratchcounter}}%
    \fi}
 
 \setvalue{\??naturaltablecell\the\c_tabl_ntb_cell}#1#2%
   {\toksapp\t_tabl_ntb_row{\tabl_ntb_pass #1 #2 }% space delimited -> less tokens
    \scratchcounter\tabl_ntb_get_col{#1}{#2}\relax
    \ifnum\scratchcounter>\zerocount
-     \normalexpanded
-       {\t_tabl_ntb_row
-          {\the\t_tabl_ntb_row
-           \ifnum\scratchcounter=\plusone
-             \tabl_ntb_plus
-           \else
-             \tabl_ntb_skip{\the\scratchcounter}%
-           \fi}}%
+     \etoksapp\t_tabl_ntb_row
+        {\ifnum\scratchcounter=\plusone
+           \tabl_ntb_plus
+         \else
+           \tabl_ntb_skip{\the\scratchcounter}%
+         \fi}%
    \fi}
 
 \unexpanded\def\tabl_ntb_cell#1#2%

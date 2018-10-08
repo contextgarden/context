@@ -925,14 +925,14 @@ local p_crappyname  do
     local p_ALPHA = R("AZ")
 
     p_crappyname = (
---         (P("uni") + P("UNI") + P("Uni") + P("U") + P("u"))
+    -- (P("uni") + P("UNI") + P("Uni") + P("U") + P("u"))
         lpeg.utfchartabletopattern({ "uni", "u" },true)
       * S("Xx_")^0
       * p_hex^1
---       + (P("identity") + P("Identity") + P("IDENTITY") + P("glyph") + P("jamo"))
+   -- + (P("identity") + P("Identity") + P("IDENTITY") + P("glyph") + P("jamo"))
       + lpeg.utfchartabletopattern({ "identity", "glyph", "jamo" },true)
       * p_hex^1
---       + (P("index") + P("Index") + P("INDEX")+ P("afii"))
+   -- + (P("index") + P("Index") + P("INDEX")+ P("afii"))
       + lpeg.utfchartabletopattern({ "index", "afii" }, true)
       * p_digit^1
       -- also happens l
@@ -948,6 +948,8 @@ local p_crappyname  do
       + (1-P("_"))^1
       * P("_uni")
       * p_hex^1
+      + P("_")
+      * P(1)^1
     ) * p_done
 
 end

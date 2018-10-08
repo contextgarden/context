@@ -267,8 +267,12 @@ function codeinjections.embedfile(specification)
     local keepdir  = specification.keepdir -- can change
     local usedname = specification.usedname
     local filetype = specification.filetype
+    local compress = specification.compress
     if filename == "" then
         filename = nil
+    end
+    if compress == nil then
+        compress = true
     end
     if data then
         local r = filestreams[hash]
@@ -324,7 +328,7 @@ function codeinjections.embedfile(specification)
         specification.data = true -- signal that still data but already flushed
     else
         local foundname = specification.foundname or filename
-        f = pdfflushstreamfileobject(foundname,a)
+        f = pdfflushstreamfileobject(foundname,a,compress)
     end
     local d = pdfdictionary {
         Type = pdfconstant("Filespec"),
@@ -663,6 +667,7 @@ local function insertrendering(specification)
             descriptor.EF = codeinjections.embedfile {
                 file     = filename,
                 mimetype = mimetype, -- yes or no
+                compress = false,
             }
         end
         local clip = pdfdictionary {

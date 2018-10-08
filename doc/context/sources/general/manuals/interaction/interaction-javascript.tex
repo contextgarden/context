@@ -88,6 +88,49 @@ However, the more functionality ended up in the program, the least interesting
 a recent \CONTEXT\ meeting, so who knows \unknown For now we're stuck with
 \JAVASCRIPT.
 
+An example of \JAVASCRIPT\ usage is the following, where we load a video and add
+some controls. Beware that this kind of functionality is very viewer dependent
+and therefore also very unstable over time. Even worse, if you look at the loaded
+\JAVASCRIPT\ file you will notice a dependency on soon obsolete (in \ACROBAT\ at
+least) shockwave support. First we load a library that will predefine a video
+graphic: and then create an instance:
+
+\starttyping
+\useJSscripts[vplayer]
+
+\setupinteraction
+  [state=start]
+
+\externalfigure
+  [shockwave]
+  [frame=on,
+   width=480pt,
+   height=270pt,
+   file=test.mp4,
+   label=foo]
+\stoptyping
+
+The controls are defined with:
+
+\starttyping
+\goto{START} [JS(StartShockwave{foo})]
+\goto{REWIND}[JS(RewindShockwave{foo})]
+\goto{PAUSE} [JS(PauseShockwave{foo})]
+\goto{STOP}  [JS(StopShockwave{foo})]
+\stoptyping
+
+or, as we have some defined reference shortcuts:
+
+\starttyping
+\goto{START} [StartShockwave{foo}]
+\goto{REWIND}[RewindShockwave{foo}]
+\goto{PAUSE} [PauseShockwave{foo}]
+\goto{STOP}  [StopShockwave{foo}]
+\stoptyping
+
+It's actually not that hard to add all kind of functionality if only we could be
+sure of stable support and continuity.
+
 \stopchapter
 
 \stopcomponent

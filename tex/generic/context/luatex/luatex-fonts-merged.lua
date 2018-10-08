@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/07/18 20:05:37
+-- merge date  : 10/08/18 17:44:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -21051,7 +21051,7 @@ local p_crappyname do
 +lpeg.utfchartabletopattern({ "identity","glyph","jamo" },true)*p_hex^1
 +lpeg.utfchartabletopattern({ "index","afii" },true)*p_digit^1
 +p_digit*p_hex^3+p_alpha*p_digit^1
-+P("aj")*p_digit^1+P("eh_")*(p_digit^1+p_ALPHA*p_digit^1)+(1-P("_"))^1*P("_uni")*p_hex^1
++P("aj")*p_digit^1+P("eh_")*(p_digit^1+p_ALPHA*p_digit^1)+(1-P("_"))^1*P("_uni")*p_hex^1+P("_")*P(1)^1
   )*p_done
 end
 local forcekeep=false 

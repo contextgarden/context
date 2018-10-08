@@ -1,0 +1,82 @@
+%D \module
+%D   [       file=java-imp-videoplayer,
+%D        version=2009.12.31,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Shockwave Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D As part of the interaction manual writing this code was moved here. It's
+%D kind of obsolete as shockwave is obsolete.
+
+% using videoplayer.swf from adobe or strobemediaplayback.swf from sourceforge:
+
+\startluaparameterset[shockwave:display]
+    toolbar  = true,
+ -- preview  = "somefile",
+    open     = "click",
+    close    = "focus",
+\stopluaparameterset
+
+\startJSpreamble shockwave used now
+
+    function StartShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_play") ;
+        } else {
+            rm.activated = true ;
+        }
+    }
+
+    function StopShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_pause") ;
+            rm.callAS("multimedia_rewind") ;
+        }
+    }
+
+    function RewindShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_rewind") ;
+        }
+    }
+
+    function PauseShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("multimedia_pause") ;
+        }
+    }
+
+\stopJSpreamble
+
+\definereference[StartShockwave] [JS(StartShockwave)]
+\definereference[StopShockwave]  [JS(StopShockwave)]
+\definereference[RewindShockwave][JS(RewindShockwave)]
+\definereference[PauseShockwave] [JS(PauseShockwave)]
+
+\unprotect
+
+\doglobal \useexternalfigure
+  [shockwave]
+  [videoplayer.swf]
+  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file"},
+   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+   \c!display=shockwave:display]
+
+% \doglobal \useexternalfigure
+%   [shockwave]
+%   [strobemediaplayback.swf]
+%   [arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file"},
+%    resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+%    display=shockwave:display]
+
+\protect \endinput

@@ -204,7 +204,7 @@
            {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
 
 \def\grph_include_use_indeed#1#2#3#4%
-  {\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
+  {\dodoglobal\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
    \grph_include_analyze_collection[#2][#4]}
 
 % inclusion

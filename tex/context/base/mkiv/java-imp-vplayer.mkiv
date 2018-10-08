@@ -1,0 +1,105 @@
+%D \module
+%D   [       file=java-imp-vplayer,
+%D        version=2009.12.31,
+%D          title=\CONTEXT\ JavaScript Macros,
+%D       subtitle=Shockwave Support,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D As part of the interaction manual writing this code was moved here. It's
+%D kind of obsolete as shockwave is obsolete. Anywaym, here's how it works.
+%D One can actually set all kind of properties but let's not waste time on
+%D that. Maybe some day \PDF\ will have proper native video support.
+%D
+%D \starttyping
+%D \starttext
+%D
+%D     \useJSscripts[vplayer]
+%D
+%D     \setupinteraction
+%D       [state=start]
+%D
+%D     \externalfigure
+%D       [shockwave]
+%D       [frame=on,
+%D        width=480pt,
+%D        height=270pt,
+%D       %file=mathematics.mp4, % Hollie McNish, Martin Pyper & Jules Buckley (Metropole Orchestra)
+%D        file=bathtub.mp4,     % Jacob Collier & Becca Stevens
+%D        label=foo]
+%D
+%D     \goto{START} [JS(StartShockwave{foo})]
+%D     \goto{REWIND}[JS(RewindShockwave{foo})]
+%D     \goto{PAUSE} [JS(PauseShockwave{foo})]
+%D     \goto{STOP}  [JS(StopShockwave{foo})]
+%D
+%D \stoptext
+%D \stoptyping
+
+% using vplayer9.swf from ctan:
+
+\startluaparameterset[shockwave:display]
+    toolbar  = true,
+ -- preview  = "somefile",
+    open     = "click",
+    close    = "focus",
+\stopluaparameterset
+
+\startJSpreamble shockwave used now
+
+    function StartShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            // ok
+        } else {
+            rm.activated = true ;
+        }
+        rm.callAS("rewind") ;
+        rm.callAS("playPause") ;
+    }
+
+    function StopShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("pause") ;
+            rm.callAS("rewind") ;
+        }
+    }
+
+    function RewindShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("rewind") ;
+        }
+    }
+
+    function PauseShockwave(label) {
+        var rm = this.getAnnotsRichMedia(this.pageNum,label)[0] ;
+        if (rm.activated) {
+            rm.callAS("playPause") ;
+        }
+    }
+
+\stopJSpreamble
+
+\definereference[StartShockwave] [JS(StartShockwave)]
+\definereference[StopShockwave]  [JS(StopShockwave)]
+\definereference[RewindShockwave][JS(RewindShockwave)]
+\definereference[PauseShockwave] [JS(PauseShockwave)]
+
+\unprotect
+
+\doglobal \useexternalfigure
+  [shockwave]
+  [vplayer9.swf]
+ %[arguments=\luaparameterset{shockwave:arguments}{src="\externalfigureparameter\v!file",source="\externalfigureparameter\v!file"},
+  [\c!arguments=\luaparameterset{shockwave:arguments}{source="\externalfigureparameter\v!file",autoPlay=true},
+   \c!resources=\luaparameterset{shockwave:resources}{files={"\externalfigureparameter\v!file"}},
+   \c!display=shockwave:display]
+
+\protect \endinput

@@ -1,7 +1,8 @@
 % interface=en modes=icon,screen language=uk
 
-\usemodule[art-01]
-\usemodule[abr-02]
+\usemodule[article-basic]
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
 
 \unexpanded\def\METAPOST{MetaPost}
 \unexpanded\def\METAFUN {MetaFun}
@@ -60,21 +61,21 @@
 
 \startmode[icon,screen]
 
-  \setuppapersize[S66][S66]
+    \setuppapersize[S66][S66]
 
-  \setupbodyfont[10pt]
+    \setupbodyfont[10pt]
 
 \stopmode
 
 \startmode[icon]
 
-  \starttext
+    \starttext
 
-  \startTEXpage
-     \useMPgraphic{TitlePage}{darkness=0.4}
-  \stopTEXpage
+        \startTEXpage
+            \useMPgraphic{TitlePage}{darkness=0.4}
+        \stopTEXpage
 
-  \stoptext
+    \stoptext
 
 \stopmode
 
@@ -104,12 +105,12 @@
    \definedfont[SerifBold sa 2.48]IN CONTEXT MkIV\kern.25\bodyfontsize}
 
 \startTEXpage
-  \tightlayer[TitlePage]
+    \tightlayer[TitlePage]
 \stopTEXpage
 
 % main text
 
-\subject{Warning}
+\startsubject[title={Warning}]
 
 \SCITE\ version 3.61 works ok but 3.62 crashes. It'a a real pity that \SCITE\
 doesn't have the scintillua lexer built in, which would also make integration a
@@ -117,7 +118,7 @@ bit nicer by sharing the \LUA\ instance. The \CONTEXT\ lexing discussed here is
 the lexing I assume when using \CONTEXT\ \MKIV, but alas it's not easy to get it
 running on \UNIX\ and on \MACOSX\ there is no \LUA\ lexing available.
 
-\subject{About \SCITE}
+\startsubject[title={About \SCITE}]
 
 For a long time at \PRAGMA\ we used \TEXEDIT, an editor we'd written in \MODULA.
 It had some project management features and recognized the project structure in
@@ -154,7 +155,9 @@ under:
 Normally a user will not have to dive into the implementation details but in
 principle you can tweak the properties files to suit your purpose.
 
-\subject{The look and feel}
+\stopsubject
+
+\startsubject[title={The look and feel}]
 
 The color scheme that we use is consistent over the lexers but we use more colors
 that in the traditional lexing. For instance, \TEX\ primitives, low level \TEX\
@@ -175,7 +178,9 @@ for instance because they have an uppercase character. In \in {figure}
         [maxheight=1.2\textwidth,
          maxwidth=.9\textheight]}}
 
-\subject{Installing \SCITE}
+\stopsubject
+
+\startsubject[title={Installing \SCITE}]
 
 Installing \SCITE\ is straightforward. We are most familiar with \MSWINDOWS\ but
 for other operating systems installation is not much different. First you need to
@@ -220,7 +225,9 @@ On \LINUX\ the files end up in:
 
 Where the second path is the path we will put more files.
 
-\subject{Installing \type {scintillua}}
+\stopsubject
+
+\startsubject[title={Installing \type {scintillua}}]
 
 Next you need to install the lpeg lexers. \footnote {Versions later than 2.11
 will not run on \MSWINDOWS\ 2K. In that case you need to comment the external
@@ -258,7 +265,9 @@ a case you should downgrade or use \type {wine} with the \MSWINDOWS\ binaries
 instead. After installation you need to restart \SCITE\ in order to see if things
 work out as expected.
 
-\subject{Installing the \CONTEXT\ lexers}
+\stopsubject
+
+\startsubject[title={Installing the \CONTEXT\ lexers}]
 
 When we started using this nice extension, we ran into issues and as a
 consequence shipped a patched \LUA\ code. We also needed some more control as we
@@ -321,7 +330,9 @@ as well).
 % \item rxvt (a console, only needed on \UNIX)
 % \stopitemize
 
-\subject{Fonts}
+\stopsubject
+
+\startsubject[title={Fonts}]
 
 The configuration file defaults to the Dejavu fonts. These free fonts are part of
 the \CONTEXT\ suite (also known as the standalone distribution). Of course you
@@ -333,13 +344,17 @@ in:
 <contextroot>/tex/texmf/fonts/truetype/public/dejavu
 \stoptyping
 
-\subject{Extensions}
+\stopsubject
+
+\startsubject[title={Extensions}]
 
 Just a quick note to some extensions. If you select a part of the text (normally
 you do this with the shift key pressed) and you hit \type {Shift-F11}, you get a
 menu with some options. More (robust) ones will be provided at some point.
 
-\subject{Spell checking}
+\stopsubject
+
+\startsubject[title={Spell checking}]
 
 If you want to have spell checking, you need have files with correct words on
 each line. The first line of a file determines the language:
@@ -427,7 +442,9 @@ usual \XML\ marker line:
 <?context-directive editor language uk ?>
 \stoptyping
 
-\subject{Interface selection}
+\stopsubject
+
+\startsubject[title={Interface selection}]
 
 In a similar fashion you can drive the interface checking:
 
@@ -435,7 +452,9 @@ In a similar fashion you can drive the interface checking:
 % interface=nl
 \stoptyping
 
-\subject{Property files}
+\stopsubject
+
+\startsubject[title={Property files}]
 
 The internal lexers are controlled by the property files while the external ones
 are steered with themes. Unfortunately there is hardly any access to properties
@@ -444,7 +463,9 @@ programs like \type {mtxrun}. This means that we cannot use configuration files
 in the \CONTEXT\ distribution directly. Hopefully this changes with future
 releases.
 
-\subject{The external lexers}
+\stopsubject
+
+\startsubject[title={The external lexers}]
 
 These are the more advanced lexers. They provide more detail and the \CONTEXT\
 lexer also supports nested \METAPOST\ and \LUA. Currently there is no detailed
@@ -475,7 +496,9 @@ indicates that there is a special space character there, for instance \type
 {0xA0}, the nonbreakable space. Of course we assume that you use \UTF8 as input
 encoding.
 
-\subject{The internal lexers}
+\stopsubject
+
+\startsubject[title={The internal lexers}]
 
 \SCITE\ has quite some built in lexers. A lexer is responsible for highlighting
 the syntax of your document. The way a \TEX\ file is treated is configured in the
@@ -563,7 +586,9 @@ seen as a command. When set to zero, only the primitive \type {\if}'s will be
 treated. In order not to confuse you, when this property is set to one, the lexer
 will not color an \type {\ifwhatever} that follows an \type {\newif}.
 
-\subject{The \METAPOST\ lexer}
+\stopsubject
+
+\startsubject[title={The \METAPOST\ lexer}]
 
 The \METAPOST\ lexer is set up slightly different from its \TEX\ counterpart,
 first of all because \METAPOST\ is more a language that \TEX. As with the \TEX\
@@ -626,7 +651,9 @@ The lexer is able to recognize \type {btex}||\type {etex} and will treat anythin
 in between as just text. The same happens with strings (between \type {"}). Both
 act on a per line basis.
 
-\subject{Using \ConTeXt}
+\stopsubject
+
+\startsubject[title={Using \ConTeXt}]
 
 When \type {mtxrun} is in your path, \CONTEXT\ should run out of the box. You can
 find \type {mtxrun} in:
@@ -640,7 +667,9 @@ or in a similar path that suits the operating system that you use.
 When you hit \type{CTRL-12} your document will be processed. Take a look at the
 \type {Tools} menu to see what more is provided.
 
-\subject{Extensions (using \LUA)}
+\stopsubject
+
+\startsubject[title={Extensions (using \LUA)}]
 
 When the \LUA\ extensions are loaded, you will see a message in the log pane that
 looks like:
@@ -676,79 +705,38 @@ in a (chosen) language. This is handy when you occasionally have to key in (snip
 a language you're not familiar with. More alphabets will be added (we take data from some
 \CONTEXT\ language relates files).
 
-\subject{Templates}
+\stopsubject
 
-There is an experimental template mechanism. One option is to define templates in
-a properties file. The property file \type {scite-ctx-context} contains
-definitions like:
+\startsubject[title={Templates}]
 
-\starttyping
-command.25.$(file.patterns.context)=insert_template \
-$(ctx.template.list.context)
+It is possible to define (and use) templates. There is a demo file in the distribution called
+\type {scite-ctx-templates.lua}. You can put a similar file in your working path or one or two
+levels up from there. If not found, the default (demo) file will be used. a manu is called up
+with \type {ctrl-i}.
 
-ctx.template.list.context=\
-    itemize=structure.itemize.context|\
-    tabulate=structure.tabulate.context|\
-    natural TABLE=structure.TABLE.context|\
-    use MP graphic=graphics.usemp.context|\
-    reuse MP graphic=graphics.reusemp.context|\
-    typeface definition=fonts.typeface.context
+A template file is a \LUA\ file and looks like this:
 
-ctx.template.structure.itemize.context=\
-\startitemize\n\
-\item ?\n\
-\item ?\n\
-\item ?\n\
-\stopitemize\n
-\stoptyping
+\typefile{../scite-ctx-templates.lua}
 
-The file \type {scite-ctx-example} defines \XML\ variants:
+In \XML\ sources you can add a line:
 
 \starttyping
-command.25.$(file.patterns.example)=insert_template \
-$(ctx.template.list.example)
-
-ctx.template.list.example=\
-    bold=font.bold.example|\
-    emphasized=font.emphasized.example|\
-    |\
-    inline math=math.inline.example|\
-    display math=math.display.example|\
-    |\
-    itemize=structure.itemize.example
-
-ctx.template.structure.itemize.example=\
-<itemize>\n\
-<item>?</item>\n\
-<item>?</item>\n\
-<item>?</item>\n\
-</itemize>\n
+<?context-directive job ctxtemplate mytemplates.lua ?>
 \stoptyping
 
-For larger projects it makes sense to keep templates with the project. In one of
-our projects we have a directory in the path where the project files are kept
-which holds template files:
+The file will be searched for in the current direct and upto two levels higher. When no file
+is found the \TEX\ distribution is checked.
+
+The files \type {scite-ctx-example} and \type {scite-ctx-context} define the menu commands,
+like:
 
 \starttyping
-..../ctx-templates/achtergronden.xml
-..../ctx-templates/bewijs.xml
+command.25.$(file.patterns.example)=insert_template
 \stoptyping
 
-One could define a template menu like we did previously:
+\stopsubject
 
-\starttyping
-ctx.templatelist.example=\
-    achtergronden=mathadore.achtergronden|\
-    bewijs=mathadore.bewijs|\
-
-ctx.template.mathadore.achtergronden.file=smt-achtergronden.xml
-ctx.template.mathadore.bewijs.file=smt-bewijs.xml
-\stoptyping
-
-However, when no such menu is defined, we will automatically scan the directory
-and build the menu without user intervention.
-
-\subject{Using \SCITE}
+\startsubject[title={Using \SCITE}]
 
 The following keybindings are available in \SCITE. Most of this list is taken
 from the on|-|line help pages.
@@ -821,7 +809,9 @@ from the on|-|line help pages.
 
 \page
 
-\subject{Affiliation}
+\stopsubject
+
+\startsubject[title={Affiliation}]
 
 \starttabulate[|l|l|]
 \NC author    \NC Hans Hagen                    \NC \NR

@@ -65,7 +65,10 @@ local function insertswf(spec)
     local preview   = checkedkey(display,"preview","string")
     local toolbar   = checkedkey(display,"toolbar","boolean")
 
-    local embeddedreference = codeinjections.embedfile { file = filename }
+    local embeddedreference = codeinjections.embedfile {
+        file     = filename,
+        compress = false,
+    }
 
     local flash = pdfdictionary {
         Subtype   = pdfconstant("RichMediaConfiguration"),
@@ -122,6 +125,7 @@ local function insertswf(spec)
                 file     = fullname,
                 usedname = usedname,
                 keepdir  = true,
+                compress = false,
             }
             names[#names+1] = pdfstring(filename)
             names[#names+1] = embeddedreference
