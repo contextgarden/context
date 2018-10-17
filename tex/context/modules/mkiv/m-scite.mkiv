@@ -227,7 +227,7 @@ local function lexdata(data,lexname)
         end
         data = indent(data)
     end
-io.savedata("temp.logs ",data)
+ -- io.savedata("temp.log",data)
     assignbuffer("lex",data)
 end
 
@@ -324,11 +324,11 @@ visualizers.register("json",  visualizer)
 
 \unexpanded\def\buff_scite_slxb#1%
   {\hangindent\numexpr#1+2\relax\scitespaceskip
-   \hskip#1\scitespaceskip
+   \begstrut\hskip#1\scitespaceskip
    \hangafter 1\relax}
 
 \unexpanded\def\buff_scite_slxe
-  {\par}
+  {\endstrut\par}
 
 \unexpanded\def\buff_scite_slxs  {\hskip\scitespaceskip\relax}
 \unexpanded\def\buff_scite_slxf#1{\hskip#1\scitespaceskip\relax}

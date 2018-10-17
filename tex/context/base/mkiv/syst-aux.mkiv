@@ -594,10 +594,6 @@
 %D tokens will save us some $300\times4=1200$ bytes of format file on a 32~bit
 %D system. Not that it matters much today. This shortcut is already defined:
 
-\ifdefined\glet\else
-    \unexpanded\def\glet{\global\let}
-\fi
-
 \let\globallet\glet
 
 %D \macros

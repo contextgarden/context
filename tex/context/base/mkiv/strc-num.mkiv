@@ -578,9 +578,9 @@
        \xdef\currentstructurecomponentlist    {#2\c!list}%
      \xmlstopraw
      \ifx\currentstructurecomponentlist\empty
-       \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
+       \glet\currentstructurecomponentlist\currentstructurecomponenttitle
      \fi
-     \globallet\currentstructurecomponentcoding\s!xml
+     \glet\currentstructurecomponentcoding\s!xml
    \else
      \ifx\currentstructurecomponentexpansion\v!yes
        \xdef\currentstructurecomponenttitle   {#2\c!title}%
@@ -600,9 +600,9 @@
        \fi \fi
      \fi
      \ifx\currentstructurecomponentlist\empty
-       \globallet\currentstructurecomponentlist\currentstructurecomponenttitle
+       \glet\currentstructurecomponentlist\currentstructurecomponenttitle
      \fi
-     \globallet\currentstructurecomponentcoding\s!tex
+     \glet\currentstructurecomponentcoding\s!tex
    \fi
    %
    \setnextinternalreference

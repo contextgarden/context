@@ -610,10 +610,6 @@
 
 %D A few shortcuts:
 
-\ifdefined\glet \else
-    \normalprotected\def\glet{\global\let}
-\fi
-
 \normalprotected\def\udef {\normalprotected\def }
 \normalprotected\def\ugdef{\normalprotected\gdef}
 \normalprotected\def\uedef{\normalprotected\edef}
@@ -940,12 +936,12 @@
 % \bgroup
 %     \catcode`\^^M=\activecatcode%
 %     \gdef\obeylines{\catcode`\^^M\activecatcode \let^^M\par}%
-%     \global\let^^M\par%
+%     \glet^^M\par%
 % \egroup
 %
 % \bgroup
 %     \gdef\obeyspaces{\catcode`\ \activecatcode}%
-%     \obeyspaces\global\let =\space%
+%     \obeyspaces\glet =\space%
 % \egroup
 
 \def\obeylines {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\par}
@@ -1251,10 +1247,6 @@
 \let\normalstopimath    \Ustopmath
 \let\normalstartdmath   \Ustartdisplaymath
 \let\normalstopdmath    \Ustopdisplaymath
-
-%D For now:
-
-\ifdefined\glet                   \else \normalprotected\def\glet{\global\let} \fi
 
 \ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
 \ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi

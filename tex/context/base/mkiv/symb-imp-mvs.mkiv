@@ -254,10 +254,16 @@
 
 \stopsymbolset
 
-%D \showsymbolset[astronomic]
-%D \showsymbolset[zodiac]
-%D \showsymbolset[europe]
-%D \showsymbolset[martinvogel 1]
-%D \showsymbolset[martinvogel 2]
+\continueifinputfile{symb-imp-mvs.mkiv}
 
-\endinput
+\usemodule[article-basic]
+
+\starttext
+
+\startsubject[title={Astronomic}]    \showsymbolset[astronomic]    \stopsubject
+\startsubject[title={Zodiac}]        \showsymbolset[zodiac]        \stopsubject
+\startsubject[title={Europe}]        \showsymbolset[europe]        \stopsubject
+\startsubject[title={Martinvogel 1}] \showsymbolset[martinvogel 1] \stopsubject
+\startsubject[title={Martinvogel 2}] \showsymbolset[martinvogel 2] \stopsubject
+
+\stoptext

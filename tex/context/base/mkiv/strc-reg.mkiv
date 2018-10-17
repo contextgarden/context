@@ -176,33 +176,33 @@
      \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
      \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
    \xmlstopraw
-   \globallet\currentregistercoding\s!xml}
+   \glet\currentregistercoding\s!xml}
 
 \def\strc_registers_register_page_expand_yes_entries
   {\xdef\currentregisterentriesa{\registerparameter{\c!entries:1}}%
    \xdef\currentregisterentriesb{\registerparameter{\c!entries:2}}%
    \xdef\currentregisterentriesc{\registerparameter{\c!entries:3}}%
-   \globallet\currentregistercoding\s!tex}
+   \glet\currentregistercoding\s!tex}
 
 \def\strc_registers_register_page_expand_nop_entries
   {\xdef\currentregisterentriesa{\detokenizedregisterparameter{\c!entries:1}}%
    \xdef\currentregisterentriesb{\detokenizedregisterparameter{\c!entries:2}}%
    \xdef\currentregisterentriesc{\detokenizedregisterparameter{\c!entries:3}}%
-   \globallet\currentregistercoding\s!tex}
+   \glet\currentregistercoding\s!tex}
 
 \def\strc_registers_register_page_expand_xml
   {\xmlstartraw
      \xdef\currentregisterentries{\registerparameter\c!entries}%
    \xmlstopraw
-   \globallet\currentregistercoding\s!xml}
+   \glet\currentregistercoding\s!xml}
 
 \def\strc_registers_register_page_expand_yes
   {\xdef\currentregisterentries{\registerparameter\c!entries}%
-   \globallet\currentregistercoding\s!tex}
+   \glet\currentregistercoding\s!tex}
 
 \def\strc_registers_register_page_expand_nop
   {\xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
-   \globallet\currentregistercoding\s!tex}
+   \glet\currentregistercoding\s!tex}
 
 \def\strc_registers_register_page_expand_xml_keys
   {\xmlstartraw
@@ -434,14 +434,14 @@
      \xmlstartraw
        \xdef\currentregisterentries{\registerparameter\c!entries}%
      \xmlstopraw
-     \globallet\currentregistercoding\s!xml
+     \glet\currentregistercoding\s!xml
    \else
      \ifx\currentregisterexpansion\v!yes
        \xdef\currentregisterentries{\registerparameter\c!entries}%
      \else
        \xdef\currentregisterentries{\detokenizedregisterparameter\c!entries}%
      \fi
-     \globallet\currentregistercoding\s!tex
+     \glet\currentregistercoding\s!tex
    \fi
    % I hate this kind of mess ... but it's a user request.
    \ifx\currentregisterentries\empty
@@ -524,7 +524,7 @@
        \xdef\currentregisterentries{\detokenize{#3}}% not ok yet
        \xdef\currentregisterseeword{\detokenize{#4}}% not ok yet
      \xmlstopraw
-     \globallet\currentregistercoding\s!xml
+     \glet\currentregistercoding\s!xml
    \else
      \ifx\currentregisterexpansion\v!yes
        \xdef\currentregisterentries{#3}% not ok yet
@@ -533,7 +533,7 @@
        \xdef\currentregisterentries{\detokenize{#3}}% not ok yet
        \xdef\currentregisterseeword{\detokenize{#4}}% not ok yet
      \fi
-     \globallet\currentregistercoding\s!tex
+     \glet\currentregistercoding\s!tex
    \fi
    \setnextinternalreference
    % we could consider storing register entries in list

@@ -21,6 +21,10 @@ function streams.open(filename,zerobased)
     return { f, 1, #f, zerobased or false }
 end
 
+function streams.openstring(f,zerobased)
+    return { f, 1, #f, zerobased or false }
+end
+
 function streams.close()
     -- dummy
 end
@@ -389,8 +393,32 @@ end
 
 if sio and sio.readcardinaltable then
 
-    streams.readcardinaltable = sio.readcardinaltable
-    streams.readintegertable  = sio.readintegertable
+    local readcardinaltable = sio.readcardinaltable
+    local readintegertable  = sio.readintegertable
+
+    function utilities.streams.readcardinaltable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readcardinaltable(f[1],i,n,b)
+    end
+
+    function utilities.streams.readintegertable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i +  n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
+        return readintegertable(f[1],i,n,b)
+    end
 
 else
 
@@ -400,11 +428,19 @@ else
     local readcardinal4 = streams.readcardinal4
 
     function streams.readcardinaltable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
         local t = { }
-            if b == 1 then for i=1,n do t[i] = readcardinal1(f) end
-        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f) end
-        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f) end
-        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f) end end
+            if b == 1 then for i=1,n do t[i] = readcardinal1(f[1],i) end
+        elseif b == 2 then for i=1,n do t[i] = readcardinal2(f[1],i) end
+        elseif b == 3 then for i=1,n do t[i] = readcardinal3(f[1],i) end
+        elseif b == 4 then for i=1,n do t[i] = readcardinal4(f[1],i) end end
         return t
     end
 
@@ -414,11 +450,19 @@ else
     local readinteger4 = streams.readinteger4
 
     function streams.readintegertable(f,n,b)
+        local i = f[2]
+        local s = f[3]
+        local p = i + n * b
+        if p > s then
+            f[2] = s + 1
+        else
+            f[2] = p
+        end
         local t = { }
-            if b == 1 then for i=1,n do t[i] = readinteger1(f) end
-        elseif b == 2 then for i=1,n do t[i] = readinteger2(f) end
-        elseif b == 3 then for i=1,n do t[i] = readinteger3(f) end
-        elseif b == 4 then for i=1,n do t[i] = readinteger4(f) end end
+            if b == 1 then for i=1,n do t[i] = readinteger1(f[1],i) end
+        elseif b == 2 then for i=1,n do t[i] = readinteger2(f[1],i) end
+        elseif b == 3 then for i=1,n do t[i] = readinteger3(f[1],i) end
+        elseif b == 4 then for i=1,n do t[i] = readinteger4(f[1],i) end end
         return t
     end
 

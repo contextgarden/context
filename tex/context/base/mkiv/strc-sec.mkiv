@@ -116,7 +116,7 @@
  % \settrialtypesetting
    \the\everypreroll
    \nodestostring\tempstring{#1}%
-   \globallet\currentstructurebookmark\tempstring
+   \glet\currentstructurebookmark\tempstring
    \endgroup}
 
 % zeros:
@@ -156,9 +156,9 @@
        \strc_sectioning_autobookmark\currentstructuretitle
      \fi \fi \fi
      \ifx\currentstructurelist\empty
-       \globallet\currentstructurelist\currentstructuretitle
+       \glet\currentstructurelist\currentstructuretitle
      \fi
-     \globallet\currentstructurecoding\s!xml
+     \glet\currentstructurecoding\s!xml
    \else
      \ifx\currentstructureexpansion\v!yes
        \xdef\currentstructuretitle   {\structureparameter\c!title}%
@@ -185,9 +185,9 @@
        \fi \fi
      \fi
      \ifx\currentstructurelist\empty
-       \globallet\currentstructurelist\currentstructuretitle
+       \glet\currentstructurelist\currentstructuretitle
      \fi
-     \globallet\currentstructurecoding\s!tex
+     \glet\currentstructurecoding\s!tex
    \fi
    \setnextinternalreference
    \storeinternalreference\currentstructurename{\the\locationcount}%
@@ -1206,7 +1206,7 @@
    \else
      \strc_sectioning_check_layout
    \fi
-   \globallet\previoushead\currenthead}
+   \glet\previoushead\currenthead}
 
 \def\strc_sectioning_handle_page_yes
   {\ifconditional\c_strc_sectioning_ignore_page
@@ -1230,7 +1230,7 @@
      \fi
      \global\c_strc_sectioning_preceding_level\currentheadlevel
    \fi
-   \globallet\previoushead\currenthead}
+   \glet\previoushead\currenthead}
 
 \unexpanded\def\strc_sectioning_prevent_page_break#1% see strc-con
   {\ifconditional\c_strc_sectioning_auto_break

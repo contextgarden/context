@@ -27,12 +27,13 @@
 \installmodulecommandluasingle \showinstalledfonts      {moduledata.fonts.system.showinstalled}
 \installmodulecommandluasingle \cacheinstalledfonts     {moduledata.fonts.system.cacheinstalled}
 \installmodulecommandluasingle \showinstalledglyphnames {moduledata.fonts.system.showinstalledglyphnames}
+%installmodulecommandluasingle \showprivateglyphnames   {moduledata.fonts.system.showprivateglyphnames}
 
 \stopmodule
 
 \continueifinputfile{s-fonts-system.mkiv}
 
-\usemodule[art-01] \setuplayout[overview] \setupbodyfont[7pt]
+\usemodule[art-01] \setuplayout[overview] \setupbodyfont[6pt]
 
 \starttext
 
@@ -40,8 +41,9 @@
 
 %     \enabletrackers[otf.keepnames]
 
-%     \cacheinstalledfonts[threshold=4000000,suffixes={otf,ttf,afm,pfb}]
-%     \cacheinstalledfonts[threshold=2000000,suffixes={otf,ttf,afm,pfb}]
+%     \cacheinstalledfonts[suffixes={otf,ttf,afm}]
+%     \cacheinstalledfonts[threshold=4000000,suffixes={otf,ttf,afm}]
+%     \cacheinstalledfonts[threshold=2000000,suffixes={otf,ttf,afm}]
 
     \showinstalledglyphnames
 

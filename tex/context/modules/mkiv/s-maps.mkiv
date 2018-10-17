@@ -135,11 +135,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% 3 versions of layout with matching headers
 
-\definepapersize 
+\definepapersize
   [maps]
   [width=21cm,height=26.5cm]
 
-\setuppapersize 
+\setuppapersize
   [maps][maps]
 
 \setuplayout[
@@ -360,9 +360,9 @@
       \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2+1\relax}%
     \fi }%
   \doifnothing\MapsRunningAuthor
-    {\global\let\MapsRunningAuthor\MapsAuthor}%
+    {\glet\MapsRunningAuthor\MapsAuthor}%
   \doifnothing\MapsRunningTitle
-    {\global\let\MapsRunningTitle\MapsTitle}}%
+    {\glet\MapsRunningTitle\MapsTitle}}%
 
 \def\dostartArticle[#1]{%
   \MapsBibData[#1]

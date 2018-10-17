@@ -170,9 +170,9 @@
    \fi
    \ifpagechanged
      \letgvalue{\??pagechanges#2:#1}\m_spac_pagestates_realpage
-     \globallet\lastchangedpage\m_spac_pagestates_realpage
+     \glet\lastchangedpage\m_spac_pagestates_realpage
    \else
-     \globallet\lastchangedpage\realfolio
+     \glet\lastchangedpage\realfolio
    \fi}
 
 \def\changedpagestate#1#2%

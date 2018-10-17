@@ -1122,6 +1122,8 @@
 \unexpanded\def\spac_spaces_checked_normal {\mathortext\normalspace{\dontleavehmode\normalspace}}%
 \unexpanded\def\spac_spaces_checked_fixed  {\mathortext\normalspace{\dontleavehmode\fixedspace}}%
 
+% hm, order matters when we \let in \obeyspaces
+
 \installspacemethod \v!on
   {\obeyspaces
    \let\obeyedspace\spac_spaces_checked_control

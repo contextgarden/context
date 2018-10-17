@@ -57,6 +57,7 @@ lua.macros.resolvestring [[
 #define extract(a,b)   ((a>>b)&0x1)
 #define lshift(a,b)    ((a<<b)&0xFFFFFFFF)
 #define rshift(a,b)    ((a>>b)&0xFFFFFFFF)
+#define intdiv(a,b)    (a//b)
 ]]
 
 end

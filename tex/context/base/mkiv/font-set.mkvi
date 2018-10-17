@@ -46,7 +46,7 @@
 % \def\font_preloads_reset_nullfont % this is needed because some macro packages (tikz) misuse \nullfont
 %   {\dorecurse\plusseven{\fontdimen\recurselevel\nullfont\zeropoint}% keep en eye on this as:
 %    \clf_resetnullfont % in luatex 0.70 this will also do the previous
-%    \globallet\font_preloads_reset_nullfont\relax}
+%    \glet\font_preloads_reset_nullfont\relax}
 
 \def\font_preload_check_mode
   {\doifelsemode{lmmath}

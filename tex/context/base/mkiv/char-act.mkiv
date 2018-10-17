@@ -50,7 +50,7 @@
 %     \unexpanded\gdef\setcontrolspaces{\catcode\spaceasciicode\activecatcode\def {\controlspace}}
 % \egroup
 
-\unexpanded\def\obeyspaces      {\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\obeyedspace }
+%unexpanded\def\obeyspaces      {\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\obeyedspace }
 \unexpanded\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\controlspace}
 
 %D \macros
@@ -78,12 +78,16 @@
 % \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 % \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
 
+% but ... as we don't want to freeze to \obeyedspace etc which can be set after \obeyspaces, we
+% use an idirectness
+
 \def\_obeyed_space_{\obeyedspace}
 \def\_obeyed_tab_  {\obeyedtab}
 \def\_obeyed_line_ {\obeyedline}
 \def\_obeyed_page_ {\obeyedpage}
 
-\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \_obeyed_tab_ }
+\unexpanded\def\obeyspaces {\catcode\spaceasciicode    \activecatcode\letcharcode\spaceasciicode    \_obeyed_space_}
+\unexpanded\def\obeytabs   {\catcode\tabasciicode      \activecatcode\letcharcode\tabasciicode      \_obeyed_tab_}
 \unexpanded\def\obeylines  {\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\_obeyed_line_}
 \unexpanded\def\obeypages  {\catcode\formfeedasciicode \activecatcode\letcharcode\formfeedasciicode \_obeyed_page_}
 
@@ -91,6 +95,8 @@
 \unexpanded\def\ignorelines{\catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\_obeyed_space_}
 \unexpanded\def\ignorepages{\catcode\formfeedasciicode \ignorecatcode}
 \unexpanded\def\ignoreeofs {\catcode\endoffileasciicode\ignorecatcode}
+
+\unexpanded\def\setcontrolspaces{\catcode\spaceasciicode\activecatcode\letcharcode\spaceasciicode\_control_space_}
 
 %D \macros
 %D   {naturaltextext}

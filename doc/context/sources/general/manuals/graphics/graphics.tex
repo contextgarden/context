@@ -1,0 +1,286 @@
+% language=uk
+
+\usemodule[article-basic]
+\usemodule[abbreviations-smallcaps]
+\usemodule[setups-basics]
+\usemodule[scite]
+
+% \setupbodyfont
+%   [dejavu]
+
+\loadsetups[context-en]
+
+\definecolor
+  [mysetupscolora]
+  [a=1,
+   t=.25,
+   r=.5,
+   g=.5]
+
+\definecolor
+  [mysetupscolorb]
+  [a=1,
+   t=.25,
+   g=.25,
+   b=.25]
+
+\definetextbackground
+  [mysetups]
+  [before=\blank,
+   after=\blank,
+   topoffset=10pt,
+   leftoffset=10pt,
+   location=paragraph,
+   backgroundcolor=mysetupscolora,
+   backgroundcolor=mysetupscolorb,
+   frame=off]
+
+\startsetups xml:setups:start
+    \starttextbackground[mysetups]
+\stopsetups
+
+\startsetups xml:setups:stop
+    \stoptextbackground
+\stopsetups
+
+\starttext
+
+\startbuffer[image]
+    \startluacode
+
+        local min, max, random = math.min, math.max, math.random
+
+        -- kind of self-explaining:
+
+        local xsize      = 210
+        local ysize      = 297
+        local colordepth = 1
+        local usemask    = true
+        local colorspace = "rgb"
+
+        -- initialization:
+
+        local bitmap = graphics.bitmaps.new(xsize,ysize,colorspace,colordepth,usemask)
+
+        -- filling the bitmap:
+
+        local data    = bitmap.data
+        local mask    = bitmap.mask
+        local minmask = 100
+        local maxmask = 200
+
+        for i=1,ysize do
+            local d = data[i]
+            local m = mask[i]
+            for j=1,xsize do
+                d[j] = { i, max(i,j), j, min(i,j) }
+                m[j] = random(minmask,maxmask)
+            end
+        end
+
+        -- flushing the lot:
+
+        graphics.bitmaps.tocontext(bitmap)
+
+    \stopluacode
+\stopbuffer
+
+\definelayer
+   [page]
+   [width=\paperwidth,
+    height=\paperheight]
+
+\setlayer
+   [page]
+   {\scale
+      [width=\paperwidth]
+      {\ignorespaces
+       \getbuffer[image]%
+       \removeunwantedspaces}}
+
+\setlayer
+   [page]
+   [preset=rightbottom,
+    hoffset=10mm,
+    voffset=45mm]
+   {\scale
+      [width=.6\paperwidth]
+      {Graphics}}
+
+% \setlayer
+%    [page]
+%    [preset=righttop,
+%     hoffset=10mm,
+%     voffset=20mm]
+%    {\rotate{\scale
+%       [width=.3\paperheight]
+%       {\ConTeXt\ MkIV}}}
+
+\setlayer
+   [page]
+   [preset=rightbottom,
+    hoffset=10mm,
+    voffset=20mm]
+   {\scale
+      [width=.6\paperwidth]
+      {Hans Hagen}}
+
+\startpagemakeup
+    \flushlayer[page]
+    \vfill
+\stoppagemakeup
+
+\startsubject[title=Introduction]
+
+This manual is about integrating graphics your document. Doing this is not really
+that complex so this manual will be short. Because graphic inclusion is related
+to the backend some options will discussed. It's typical one of these manuals
+that can grow over time.
+
+\stopsubject
+
+\startsubject[title=Inclusion]
+
+The command to include an image is:
+
+\showsetup{externalfigure}
+
+and its related settings are:
+
+\showsetup{setupexternalfigure}
+
+So you can say:
+
+\starttyping[option=TEX]
+\externalfigure[cow.pdf][width=4cm]
+\stoptyping
+
+The suffix is optional, which means that this will also work:
+
+\starttyping[option=TEX]
+\externalfigure[cow][width=4cm]
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=Defining]
+
+{\em todo}
+
+\showsetup{useexternalfigure}
+\showsetup{defineexternalfigure}
+\showsetup{registerexternalfigure}
+
+\stopsubject
+
+\startsubject[title=Analyzing]
+
+{\em todo}
+
+\showsetup{getfiguredimensions}
+
+\showsetup{figurefilename}
+\showsetup{figurefilepath}
+\showsetup{figurefiletype}
+\showsetup{figurefullname}
+\showsetup{figureheight}
+\showsetup{figurenaturalheight}
+\showsetup{figurenaturalwidth}
+\showsetup{figuresymbol}
+\showsetup{figurewidth}
+
+\showsetup{noffigurepages}
+
+\stopsubject
+
+\startsubject[title=Collections]
+
+{\em todo}
+
+\showsetup{externalfigurecollectionmaxheight}
+\showsetup{externalfigurecollectionmaxwidth}
+\showsetup{externalfigurecollectionminheight}
+\showsetup{externalfigurecollectionminwidth}
+\showsetup{externalfigurecollectionparameter}
+\showsetup{startexternalfigurecollection}
+
+\stopsubject
+
+\startsubject[title=Conversion]
+
+{\em todo}
+
+\stopsubject
+
+\startsubject[title=Figure databases]
+
+{\em todo}
+
+\showsetup{usefigurebase}
+
+\stopsubject
+
+\startsubject[title=Overlays]
+
+{\em todo}
+
+\showsetup{overlayfigure}
+\showsetup{pagefigure}
+
+\stopsubject
+
+\startsubject[title=Scaling]
+
+Images are normally scaled proportionally but if needed you can give an
+explicit height and width. The \type {\scale} command shares this property
+and can be used to scale in the same way as \type {\externalfigure}. I will
+illustrate this with an example.
+
+You can define your own bitmaps, like I did with the cover of this manual:
+
+\typebuffer[image][option=LUA]
+
+The actually inclusion of this image happened with:
+
+\starttyping[option=TEX]
+\scale
+  [width=\paperwidth]
+  {\getbuffer[image]}
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=The backend]
+
+Traditionally \TEX\ sees an image as just a box with dimensions and in \LUATEX\
+it is actually a special kind of rule that carries information about what to
+inject in the final (\PDF) file. In regular \LUATEX\ the core formats \type
+{pdf}, \type {png}, \type {jpg} and \type {jp2} are dealt with by the backend but
+in \CONTEXT\ we can use \LUA\ instead. We might default to that method at some
+point but for now you need to enable that explicitly:
+
+\starttyping[option=TEX]
+\enabledirectrive[graphics.pdf.uselua]
+\enabledirectrive[graphics.jpg.uselua]
+\enabledirectrive[graphics.jp2.uselua]
+\enabledirectrive[graphics.png.uselua]
+\stoptyping
+
+All four can be enabled with:
+
+\starttyping[option=TEX]
+\enabledirectrive[graphics.uselua]
+\stoptyping
+
+Performance|-|wise only \PNG\ inclusion can be less efficient, but only when you
+use interlaced images or large images with masks. It makes no real sense in a
+professional workflow to use the (larger) interlaced images, and masks are seldom
+used at high resolutions, so in practice one will not really notice loss of
+performance.
+
+The advantage of this method is that we can provide more options, intercept bad
+images that make the backend abort and lessen the dependency on libraries.
+
+\stopsubject
+
+\stoptext

@@ -456,7 +456,7 @@
        \edef\currentnotenumber{\clf_storenote{\currentnote}\currentconstructionlistentry}%
        \settrue\processingnote
        \ifconditional\c_strc_notes_skip
-         \globallet\lastnotesymbol\strc_notes_inject_symbol_nop
+         \glet\lastnotesymbol\strc_notes_inject_symbol_nop
        \else
          \iftypesettinglines % otherwise problems with \type <crlf> {xxx}
            \ignorelines % makes footnotes work in \startlines ... \stoplines
@@ -465,7 +465,7 @@
            \strc_notes_inject_symbol_yes
          \else
            \unskip\unskip
-           \globallet\lastnotesymbol\strc_notes_inject_symbol_yes
+           \glet\lastnotesymbol\strc_notes_inject_symbol_yes
          \fi
        \fi
        \ifconditional\postponingnotes % todo: per note class
@@ -734,7 +734,7 @@
      \dostoptagged
    \egroup
    \endgroup
-   \globallet\lastnotesymbol\relax}
+   \glet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_dummy % temp hack
   {\removeunwantedspaces
@@ -745,7 +745,7 @@
    \fi
    \nobreak
    \hpack to .5\emwidth{}%
-   \globallet\lastnotesymbol\relax}
+   \glet\lastnotesymbol\relax}
 
 \unexpanded\def\strc_notes_inject_separator % patch by WS due to request on list
   {\edef\p_textseparator{\noteparameter\c!textseparator}%

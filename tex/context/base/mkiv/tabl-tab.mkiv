@@ -688,7 +688,7 @@
 % extensions
 
 \newtableformatkey q%
-  {\letempty\!tqStyle
+  {\let\!tqStyle\empty
    \futurelet\!tnext\!tqTestForBracket}
 
 \newtableformatkey Q%
@@ -1691,8 +1691,8 @@
    \starttablenoalign
      \nobreak
      \tabl_table_set_action\tableunknownstate
-     \globalletempty\tabl_tables_check_auto_row
-     \globalletempty\tabl_tables_chuck_auto_row
+     \glet\tabl_tables_check_auto_row\empty
+     \glet\tabl_tables_chuck_auto_row\empty
      \global\currenttablecolumn\zerocount
    \stoptablenoalign}
 
@@ -1816,21 +1816,21 @@
 %D the last row.
 
 \unexpanded\def\tabl_table_AR
-  {\globallet\tabl_tables_check_auto_row\tabl_tables_check_auto_row_indeed
-   \globallet\tabl_tables_chuck_auto_row\tabl_tables_chuck_auto_row_indeed}
+  {\glet\tabl_tables_check_auto_row\tabl_tables_check_auto_row_indeed
+   \glet\tabl_tables_chuck_auto_row\tabl_tables_chuck_auto_row_indeed}
 
 \let\tabl_tables_check_auto_row\empty
 \let\tabl_tables_chuck_auto_row\empty
 
 \def\tabl_tables_check_auto_row_indeed
-  {\globallet\tabl_tables_check_auto_row\empty
+  {\glet\tabl_tables_check_auto_row\empty
    \ifnum\tableactionstate=\tablerulestate   \FR\else
    \ifnum\tableactionstate=\tableunknownstate\FR\else
                                              \MR\fi\fi}
 
 \def\tabl_tables_chuck_auto_row_indeed
-  {\globalletempty\tabl_tables_check_auto_row
-   \globalletempty\tabl_tables_chuck_auto_row
+  {\glet\tabl_tables_check_auto_row\empty
+   \glet\tabl_tables_chuck_auto_row\empty
    \ifnum\tableactionstate=\tablerulestate   \SR\else
    \ifnum\tableactionstate=\tableunknownstate\SR\else
                                              \LR\fi\fi}

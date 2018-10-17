@@ -47,8 +47,8 @@
 
 % \catcode`=\activecatcode \let\luafunction % saves 10% on the call
 
-% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode1=\activecatcode \global\let^^A=\cldf
-% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode2=\activecatcode \global\let^^B=\cldn
+% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode1=\activecatcode \glet^^A=\cldf
+% \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode2=\activecatcode \glet^^B=\cldn
 
 \normalprotected\def\cldprocessfile#1{\directlua{context.runfile("#1")}}
                 \def\cldloadfile   #1{\directlua{context.loadfile("#1")}}

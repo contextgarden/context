@@ -487,7 +487,7 @@
 \let\OTRSETbalht\zeropoint
 
 \def\OTRSETreducegridbox % for the moment no difference between methods
-  {\globallet\OTRSETbalht\zeropoint
+  {\glet\OTRSETbalht\zeropoint
    \ifcase\OTRSETbalancemethod
      % no balancing
    \else
@@ -578,7 +578,7 @@
      \else
        \page_otr_construct_and_shipout\box\OTRfinalpagebox\zerocount % three arguments
      \fi \fi
-     \globallet\OTRSETbalht\zeropoint
+     \glet\OTRSETbalht\zeropoint
      \egroup
    \fi}
 
@@ -1624,12 +1624,12 @@
    \ifnum\columnsetlevel=\plusone
      \bgroup
      \saveinterlinespace
-     \globallet\columnsetpage\!!plusone
+     \glet\columnsetpage\!!plusone
      \def\currentcolumnset{#2}%
      \insidecolumnstrue % will be different flag in addition
      \setupoutputroutine[\s!columnset]%
      \doifelsenothing{#1}
-       {\globallet\OTRSETlist\s!default}
+       {\glet\OTRSETlist\s!default}
        {\xdef\OTRSETlist{#1}}%
      \OTRSETstartnextpage
      \OTRSETassignwidths
@@ -1659,7 +1659,7 @@
       \global\setbox\OTRfinalpagebox\OTRSETmakegridbox
       \ht\OTRfinalpagebox\textheight % signals output that there is content
       \OTRSETdofinaloutput
-      \globallet\OTRSETbalht\zeropoint
+      \glet\OTRSETbalht\zeropoint
       \egroup}
      {}}
 

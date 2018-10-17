@@ -29,23 +29,36 @@
             local descriptions = tfmdata.descriptions or { }
             local data = characters.data
          -- context.setuptabulate { header = "repeat" }
-            context.starttabulatehead()
-                NC() bold("unicode")
-                NC() bold("visual")
-                NC() bold("index")
-                NC() bold("glyph")
-                NC() bold("adobe")
-                NC() bold("context")
-                NC() NR()
-            context.stoptabulatehead()
-            context.starttabulate { "|l|c|l|p|p|p|" }
+         -- context.starttabulatehead()
+         --     NC() bold("unicode")
+         --     NC() bold("visual")
+         --     NC() bold("index")
+         --     NC() bold("tounicode")
+         --     NC() bold("unicodes")
+         --     NC() bold("glyph")
+         --     NC() bold("adobe")
+         --     NC() bold("context")
+         --     NC() NR()
+         -- context.stoptabulatehead()
+            context.starttabulate { "|l|c|p(8em)|l|l|p|p|p|" }
+            NC() bold("unicode")
+            NC() bold("visual")
+            NC() bold("unicodes")
+            NC() bold("tounicode")
+            NC() bold("index")
+            NC() bold("glyph")
+            NC() bold("adobe")
+            NC() bold("context")
+            NC() NR()
             for unicode, chr in fonts.iterators.characters(tfmdata) do
                 local des, dat = descriptions[unicode], data[unicode]
-                local index = chr.index or 0
-                local cname = (dat and dat.contextname) or ""
-                local aname = (dat and dat.adobename) or ""
-                local gname = (des and des.name) or ""
-                local mname = dat and dat.mathname
+                local index     = chr.index or 0
+                local tounicode = chr.tounicode
+                local isunicode = chr.unicode
+                local cname     = (dat and dat.contextname) or ""
+                local aname     = (dat and dat.adobename) or ""
+                local gname     = (des and des.name) or ""
+                local mname     = dat and dat.mathname
                 if type(mname) ~= "string" then
                     mname = ""
                 end
@@ -70,12 +83,52 @@
                         cname = mname
                     end
                 end
-                NC() tttf() context("U+%05X",unicode)
-                NC()        char(unicode)
-                NC() tttf() context("%05X",index)
-                NC() if gname ~= "" then tttf() escaped(gname) end
-                NC() if aname ~= "" then tttf() context(aname) end
-                NC() if cname ~= "" then tttf() context(cname) end
+                NC()
+                    tttf()
+                    context("%05X",unicode)
+                NC()
+                    char(unicode)
+                NC()
+                    if isunicode then
+                        tttf()
+                        if type(isunicode) == "table" then
+                            for i=1,#isunicode do
+                                if i > 1 then
+                                    if i % 2 ~= 0 then
+                                        context.crlf()
+                                    else
+                                        context.space()
+                                    end
+                                end
+                                context("%05X",isunicode[i])
+                            end
+                        else
+                            context("%05X",isunicode)
+                        end
+                    end
+                NC()
+                    if tounicode then
+                        tttf()
+                        context(tounicode)
+                    end
+                NC()
+                    tttf()
+                    context("%05X",index)
+                NC()
+                if gname ~= "" then
+                    tttf()
+                    escaped(gname)
+                end
+                NC()
+                if aname ~= "" then
+                    tttf()
+                    context(aname)
+                end
+                NC()
+                if cname ~= "" then
+                    tttf()
+                    context(cname)
+                end
                 NC() NR()
             end
             context.stoptabulate()
@@ -100,14 +153,13 @@
    \font\TestFont=#1 at #2
    \setuplayout[style=\TestFont]
    \setupheadertexts[]
-   \setupfootertexts[#1 -- \pagenumber]
-   \setupfootertexts[pagenumber]
+   \setupfootertexts[#1\space\endash\space\pagenumber]
    \setuplayout[width=middle,height=middle,topspace=1cm,backspace=1cm]
    \TestFont
    \nonknuthmode
    \startcolumns[n=#3]
-   \TestFont
-   \ctxlua { moduledata.fonts.complete.all() }
+       \TestFont
+       \ctxlua { moduledata.fonts.complete.all() }
    \stopcolumns
    \page
    \endgroup}
@@ -125,13 +177,15 @@
    \TestFontB \setupinterlinespace[line=1.2\dimexpr#2\relax] \raggedcenter
    \nonknuthmode
    \startcolumns[n=#3]
-   \TestFontB
-   \ctxlua { moduledata.fonts.complete.glyphs() }
+       \TestFontB
+       \ctxlua { moduledata.fonts.complete.glyphs() }
    \stopcolumns
    \page
    \endgroup}
 
 \continueifinputfile{s-fonts-complete.mkiv}
+
+\usemodule[art-01] \setuplayout[overview] \setupbodyfont[8pt]
 
 \starttext
 
@@ -140,7 +194,7 @@
 % \ShowCompleteFont{name:officinasansbookitcregular}{10pt}{2}
 % \ShowCompleteFont{name:officinaserifbookitcregular}{10pt}{2}
 % \ShowCompleteFont{name:serpentineserifeflight}{10pt}{2}
-\ShowCompleteFont{name:lmroman10-regular}{10pt}{1}
+% \ShowCompleteFont{name:lmroman10-regular}{10pt}{1}
 % \ShowCompleteFont{name:lmtypewriter10-regular}{10pt}{2}
 % \ShowCompleteFont{lt55485}{10pt}{2}
 % \ShowCompleteFont{lmr10}{10pt}{2}
@@ -156,5 +210,14 @@
 % \ShowCompleteFont{name:palatinosansinformalcombold}{20pt}{2}
 % \ShowCompleteFont{name:palatinonovaregular}{11pt}{2}
 % \ShowCompleteFont{pirat.ttf}{12pt}{1}
+
+\setuplayout[overview][footer=1cm] \setuplayout[overview]%  \setupheadertexts[aegean.ttf]
+
+\ShowCompleteFont{file:aegean}               {8pt}{1}
+% \ShowCompleteFont{file:tsukurimashouminchops}{8pt}{1}
+% \ShowCompleteFont{file:tsukurimashoumincho}  {8pt}{1}
+% \ShowCompleteFont{file:tsukurimashoukakups}  {8pt}{1}
+% \ShowCompleteFont{file:tsukurimashoukaku}    {8pt}{1}
+% \ShowCompleteFont{file:akkadian}             {8pt}{1}
 
 \stoptext

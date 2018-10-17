@@ -343,8 +343,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                 if v == true then
                                     -- zero
                                 else
-                                --  local p = - v[3] / descriptions[k].width-- or 1 ~= 0 too but the same
-                                    local p = - (v[1] / 1000) * factor * left
+                                    local p = - (v[3] / 1000) * factor * left
                                     characters[k].left_protruding = p
                                     if trace_protrusion then
                                         report_protrusions("lfbd -> %C -> %p",k,p)
@@ -376,8 +375,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                 if v == true then
                                     -- zero
                                 else
-                                --  local p = v[3] / descriptions[k].width -- or 3
-                                    local p = (v[1] / 1000) * factor * right
+                                    local p = (v[1] / 1000) * factor * right -- or [3] ?
                                     characters[k].right_protruding = p
                                     if trace_protrusion then
                                         report_protrusions("rtbd -> %C -> %p",k,p)

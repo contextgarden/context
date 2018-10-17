@@ -3461,7 +3461,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 5645, stripped down to: 2253
+-- original size: 5713, stripped down to: 2304
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -3571,6 +3571,9 @@ function number.decimaltobyte(d)
   else
     return b
   end
+end
+function number.idiv(i,d)
+  return floor(i/d) 
 end
 
 
@@ -8064,7 +8067,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 9987, stripped down to: 7878
+-- original size: 11000, stripped down to: 8650
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -8080,6 +8083,9 @@ local streams={}
 utilities.streams=streams
 function streams.open(filename,zerobased)
   local f=io.loaddata(filename)
+  return { f,1,#f,zerobased or false }
+end
+function streams.openstring(f,zerobased)
   return { f,1,#f,zerobased or false }
 end
 function streams.close()
@@ -8398,19 +8404,49 @@ if sio and sio.readcardinal2 then
   streams.readinteger=streams.readinteger1
 end
 if sio and sio.readcardinaltable then
-  streams.readcardinaltable=sio.readcardinaltable
-  streams.readintegertable=sio.readintegertable
+  local readcardinaltable=sio.readcardinaltable
+  local readintegertable=sio.readintegertable
+  function utilities.streams.readcardinaltable(f,n,b)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n*b
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
+    return readcardinaltable(f[1],i,n,b)
+  end
+  function utilities.streams.readintegertable(f,n,b)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n*b
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
+    return readintegertable(f[1],i,n,b)
+  end
 else
   local readcardinal1=streams.readcardinal1
   local readcardinal2=streams.readcardinal2
   local readcardinal3=streams.readcardinal3
   local readcardinal4=streams.readcardinal4
   function streams.readcardinaltable(f,n,b)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n*b
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
     local t={}
-      if b==1 then for i=1,n do t[i]=readcardinal1(f) end
-    elseif b==2 then for i=1,n do t[i]=readcardinal2(f) end
-    elseif b==3 then for i=1,n do t[i]=readcardinal3(f) end
-    elseif b==4 then for i=1,n do t[i]=readcardinal4(f) end end
+      if b==1 then for i=1,n do t[i]=readcardinal1(f[1],i) end
+    elseif b==2 then for i=1,n do t[i]=readcardinal2(f[1],i) end
+    elseif b==3 then for i=1,n do t[i]=readcardinal3(f[1],i) end
+    elseif b==4 then for i=1,n do t[i]=readcardinal4(f[1],i) end end
     return t
   end
   local readinteger1=streams.readinteger1
@@ -8418,11 +8454,19 @@ else
   local readinteger3=streams.readinteger3
   local readinteger4=streams.readinteger4
   function streams.readintegertable(f,n,b)
+    local i=f[2]
+    local s=f[3]
+    local p=i+n*b
+    if p>s then
+      f[2]=s+1
+    else
+      f[2]=p
+    end
     local t={}
-      if b==1 then for i=1,n do t[i]=readinteger1(f) end
-    elseif b==2 then for i=1,n do t[i]=readinteger2(f) end
-    elseif b==3 then for i=1,n do t[i]=readinteger3(f) end
-    elseif b==4 then for i=1,n do t[i]=readinteger4(f) end end
+      if b==1 then for i=1,n do t[i]=readinteger1(f[1],i) end
+    elseif b==2 then for i=1,n do t[i]=readinteger2(f[1],i) end
+    elseif b==3 then for i=1,n do t[i]=readinteger3(f[1],i) end
+    elseif b==4 then for i=1,n do t[i]=readinteger4(f[1],i) end end
     return t
   end
 end
@@ -24622,8 +24666,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 984519
--- stripped bytes    : 348231
+-- original bytes    : 985600
+-- stripped bytes    : 348489
 
 -- end library merge
 

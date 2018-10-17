@@ -441,6 +441,35 @@
       \exitloop
    \fi\fi}
 
+%D Maybe handy:
+%D
+%D \starttyping
+%D \splitfloat
+%D   {\placefigure{some caption}}
+%D   {\startsplittext
+%D    \typefile[option=TEX,before=,after=]{oeps.tex}
+%D    \stopsplittext}
+%D \stoptyping
+
+\def\handlesplittext#1%
+  {\setbox\tsplitresult\vbox
+     {\vsplit\tsplitcontent to \dimexpr#1-\lineheight\relax}}
+
+\unexpanded\def\startsplittext
+  {\begingroup
+   \resettsplit
+   \let\tsplitminimumfreelines\!!zerocount
+   \let\tsplitminimumfreespace\!!zeropoint
+   \let\extrasplitfloatlines  \!!plusone
+   \let\tsplitdirectsplitter  \handlesplittext
+   \setbox\tsplitcontent\vbox\bgroup
+   \insidefloattrue}
+
+\unexpanded\def\stopsplittext
+  {\egroup
+   \handledirecttsplit
+   \endgroup}
+
 \protect \endinput
 
 % test cases

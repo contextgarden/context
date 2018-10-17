@@ -425,7 +425,7 @@
 %D   {\global\advance\c_strc_floats_n\plusone
 %D    \xdef\strc_float_realpage{\datasetvariable\s!float{\number\c_strc_floats_n}\s!page}%
 %D    \ifx\strc_float_realpage\empty
-%D      \globallet\strc_float_realpage\realpageno % \realfolio
+%D      \glet\strc_float_realpage\realpageno % \realfolio
 %D    \fi}
 %D \stoptyping
 %D
@@ -444,7 +444,7 @@
   {\global\advance\c_strc_floats_n\plusone
    \xdef\strc_float_realpage{\pagestaterealpage\s!float{\number\c_strc_floats_n}}%
    \ifx\strc_float_realpage\empty
-     \globallet\strc_float_realpage\realpageno % \realfolio
+    \glet\strc_float_realpage\realpageno % \realfolio
    \fi}
 
 %D test case:
@@ -955,9 +955,9 @@
 \def\strc_floats_place_packaged_boxes_indeed#userdata%
   {\bgroup
    \ifconditional\usesamefloatnumber
-     \globallet\currentfloatnumber     \previousfloatnumber
-     \globallet\currentfloatattribute  \empty
-     \globallet\currentfloatsynchronize\relax
+     \glet\currentfloatnumber     \previousfloatnumber
+     \glet\currentfloatattribute  \empty
+     \glet\currentfloatsynchronize\relax
    \else
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
      \edef\currentfloatgroup  {\floatcaptionparameter\c!group}%
@@ -989,10 +989,10 @@
         \s!hasnumber=\ifnofloatnumber   \v!no\else\v!yes\fi,%
         \s!hastitle=\ifemptyfloatcaption\v!no\else\v!yes\fi]%
        [#userdata]%
-     \globallet\previousfloatnumber    \m_strc_counters_last_registered_index
-     \globallet\currentfloatnumber     \m_strc_counters_last_registered_index
-     \globallet\currentfloatattribute  \m_strc_counters_last_registered_attribute
-     \globallet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
+     \glet\previousfloatnumber    \m_strc_counters_last_registered_index
+     \glet\currentfloatnumber     \m_strc_counters_last_registered_index
+     \glet\currentfloatattribute  \m_strc_counters_last_registered_attribute
+     \glet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
    \fi
    %
    \global\setfalse\usesamefloatnumber % one shot

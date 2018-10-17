@@ -217,7 +217,7 @@
      \doglobal\newcounter\formatlinesubcounter
      \reshapebox
        {\doglobal\increment\formatlinesubcounter}
-     \global\let\formatlinemaxcounter\formatlinesubcounter
+     \glet\formatlinemaxcounter\formatlinesubcounter
      \reshapebox
        {\doglobal\decrement\formatlinesubcounter
         \ifnum\formatlinesubcounter=\zerocount
@@ -303,7 +303,7 @@
    \doglobal\newcounter\formatlinesubcounter
    \reshapebox
      {\doglobal\increment\formatlinesubcounter}%
-   \global\let\formatlinemaxcounter\formatlinesubcounter
+   \glet\formatlinemaxcounter\formatlinesubcounter
    \reshapebox
      {\doglobal\decrement\formatlinesubcounter
       \ifnum\formatlinesubcounter=\zerocount

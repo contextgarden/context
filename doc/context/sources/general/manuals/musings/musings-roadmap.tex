@@ -1,0 +1,372 @@
+% language=uk
+
+% \showfontkerns
+
+\startcomponent musings-roadmap
+
+\environment musings-style
+
+\startchapter[title={\METATEX, a roadmap}]
+
+% \startlines \setupalign[flushright]
+% Hans Hagen
+% Hasselt NL
+% September 2018
+% \stoplines
+
+\startsection[title={Introduction}]
+
+Here I will shortly wrap up the state of \LUATEX\ and \CONTEXT\ in fall 2018. I
+made the first draft of this article as preparation for the \CONTEXT\ meeting
+where we also discussed the future. I updated the text afterwards to match the
+decisions made there. It's also a personal summary of thoughts and discussions
+with team members about where to move next.
+
+\stopsection
+
+\startsection[title={The state of affairs}]
+
+After a dozen years the development of \LUATEX\ has reached a state where adding
+more functionality and|/|or opening up more of the internals makes not much
+sense. Apart from fixes and maybe some minor extensions, version 1.10 is what you
+get. Users can do enough in \LUA\ and there is not much to gain in convenience
+and performance. Of course some of the code can and will be cleaned up, as we
+still see the effects of going from \PASCAL\ to \CWEB\ to \CCODE. In the process
+consistency is on the radar so we might occasionally add a helper. But we also
+don't want to move too far away from the original code, which is for instance why
+we keep names, keys and other properties found in original \TEX, which in turn
+leads to some inconsistencies with extensions added over time. We have to accept
+that.
+
+Because \LUATEX\ development is closely related to \CONTEXT\ development,
+especially \MKIV, we've also reached the moment that we can get rid of some older
+code and assume the latest \LUATEX\ to be used. Because we do so much in \LUA\
+the question is always to what extent the benefits outweigh the drawbacks. Just
+in case you wonder why we use \LUA\ extensively, the main reason is that it is
+easier and more efficient to manage data in this language and modern typesetting
+needs much data. It also permits us to extend regular \TEX\ functionality. But,
+one should not overrate the impact: we still let \TEX\ do what \TEX\ is best at!
+
+Performance is quite important. It doesn't make sense to create a powerful
+typesetting system where processing a page takes a second. We have discussed
+performance before since one of the complaints about \LUATEX\ is that it is slow.
+A simple, basic test is this:
+
+\starttyping
+\starttext
+    \dorecurse{1000}{\input tufte \par}
+\stoptext
+\stoptyping
+
+This involves 1000 times loading a file (and reporting that on the console, which
+can influence runtime), typesetting paragraphs, splitting of a page and of course
+loading fonts and saving to the \PDF\ file. When I run this on a modest machine,
+I get these (relative) timings for the (about) 225 pages:
+
+\starttabulate[|l|c|c|c|c|]
+\BC \TEX\ engine used  \BC \PDFTEX \BC \LUATEX \BC \LUAJITTEX \BC \XETEX \NC \NR
+\BC runtime in seconds \NC 2.0     \NC  3.9    \NC 3.0        \NC 8.4    \NC \NR
+\stoptabulate
+
+Now, as expected the 8 bit \PDFTEX\ is the winner here but \LUATEX\ is not doing
+that bad. I don't know why \XETEX\ is so much slower, maybe because its 64 bit
+binary is less optimal. I once noticed that a 64 bit \PDFTEX\ performed worse on
+such a test than \LUATEX, for which I always use 64 bit binaries.
+
+If you consider that often much more is done than in this example, you can take
+my word that \LUATEX\ quickly outpaces \PDFTEX\ on more complex tasks. In that
+sense it is now our benchmark. It must be said that the \MKIV\ code is probably a
+bit more efficient than the \MKII\ code but that doesn't matter much in this
+simple test because hardly any macro magic happens here; it mostly tests basic
+font processing, paragraph building and page construction. I don't think that I
+can squeeze out more pages per second, at least not without users telling me
+where they encounter bottlenecks that don't result from their style coding. It's
+no problem to write inefficient macros (or styles) so normally a user should
+first carefully check her|/|his own work. Using a more modern \CPU\ with proper
+caching and an \SSD\ helps too.
+
+So, to summarize, we can say that with version 1.10 \LUATEX\ is sort of finished.
+Our mission is now to make \LUATEX\ robust and stable. Things can be added and
+improved, but these are small and mostly consistency related.
+
+\stopsection
+
+\startsection[title={More in \LUA}]
+
+Till now I always managed to add functionality to \CONTEXT\ without hampering
+performance too much. Of course the biggest challenge is always in handling fonts
+and common features like color because that all happens in \LUA. So, the question
+is, what if we delegate more of the core functionality to \LUA ? I will discuss a
+few options because the \CONTEXT\ developers and users need to agree on the path
+to follow. One question there is, are the possible performance hits (which can be
+an inconvenience) compensated by better and easier typesetting.
+
+Fonts, colors, special typesetting features like spaced kerning, protrusion,
+expansion, but also dropped caps, line numbering, marginal notes, tables,
+structure related things, floats and spacing are not open for much discussion.
+All the things that happen in \LUA\ combined with macros is there and will stay.
+But how about hyphenation, paragraph building and page building? And how about a
+leaner and meaner, future safe engine?
+
+Hyphenation is handled in the \TEX\ core. But in \CONTEXT\ already for years one
+can also use a \LUA\ based variant. There is room for extensions and improvements
+there. Interesting is that performance is more or less the same, so this is an
+area where we might switch to the \LUA\ method eventually. It compares to fonts,
+where node mode is more or less the standard and base mode the old way.
+
+Building the paragraphs in \LUA\ is also available in \MKIV, although it needs an
+update. Again performance is not that bad, so when we add features not possible
+(or hard to do) in regular \TEX, it might actually pay of to default to the
+par builder written in \LUA.
+
+The page builder is also doable in \LUA\ but so far I only played a bit with a
+\LUA\ based variant. I might pick up that thread. However, when we would switch to
+\LUA\ there, it might have a bit of a penalty, unless we combine it with some
+other mechanisms which is not entirely trivial, as it would mean a diversion from
+the way \TEX\ does it normally.
+
+How about math? We could at some point do math rendering in \LUA\ but because the
+core mechanism is the standard, it doesn't really makes much sense. It would also
+touch the soul of \TEX. But, I might give it a try, just for fun, so that I can
+play with it a bit. It's typically something for cold and rainy days with some
+music in the background.
+
+We already use \LUA\ in the frontend: locating and reading files in \TEX,
+\XML, \LUA\ and whatever input format. Normalization and manipulation is all
+active and available. The backend is also depending on \LUA, like support for
+special \PDF\ features and exporting to \XML . The engine still handles the page
+stream conversion, font inclusion and object management.
+
+The inclusion of images is also handled by the engine, although in \CONTEXT\ we
+can delegate \PDF\ inclusion to \LUA. Interesting is that this has no performance
+hit.
+
+With some juggling the page stream conversion can also be done in \LUA, and I
+might move that code into the \CONTEXT\ distribution. Here we do have a
+performance hit: about one second more runtime on the 14 seconds needed for the
+300 page \LUATEX\ manual and just over more than half a second on a 11 second
+\LUAJITTEX\ run. The manual has lots of tables, verbatim, indices and uses color
+as well as a more than average number of fonts and much time is spent in \LUA. So
+there is a price to pay there. I tried to speed that up but there is not much to
+gain there.
+
+So, say that we default to \LUA\ based hyphenation, which enables some new
+functionality, \LUA\ based par building, which permits some heuristics for corner
+cases, and \LUA\ based page building, which might result in more control over
+tricky cases. A total performance hit of some 5\% is probably acceptable,
+especially because by that time I might have replaced my laptop and won't notice
+the degrade. This still fits in the normal progress and doesn't really demand a
+roadmap or wider acceptance. And of course we would still use the same strategies
+as implemented in traditional \TEX\ as default anyway.
+
+\stopsection
+
+\startsection[title={A more drastic move}]
+
+More fundamental is the question whether we delegate more backend activity to
+\LUA\ code. If we decide to handle the page stream in \LUA, then the next
+question is, why not also delegate object management and font inclusion to
+\LUA. Now, keep in mind that this is all very \CONTEXT\ specific! Already for
+more than a decade we delegate a lot to \LUA, and also we have a rather tight
+control over this core functionality. This would mean that \CONTEXT\ doesn't
+really need the backend code in the engine. \footnote {For generic packages like
+TikZ we (can) provide some primitive emulators, which is rather trivial to
+implement.}
+
+That situation is actually not unique. For instance, already for a while we don't
+need the \LUATEX\ font loader either, as loading the \OPENTYPE\ files is done in
+\LUA. So, we could also get rid of the font loader code. Currently some code is
+shared with the font inclusion in the backend but that can be isolated.
+
+You can see a \TEX\ engine as being made from several parts, but the core really
+concerns only two processes: reading, storing and expanding macros on the one
+hand, and converting a stream of characters into lines, paragraphs, pages etc.
+Fonts are mostly an abstraction: they are visible in so called glyph nodes as
+font identifier (a number) and character code (also a number) properties. The
+result, nowadays being \PDF, is also an abstraction: at some point the engine
+converts the to be shipped out box in \PDF\ instructions, and in our case,
+relatively simple ones. The backend registers which characters and fonts are used
+and also includes the right resources. But, the backend is not part of the core
+as such! It has been introduced in \PDFTEX\ and is a so called extension.
+
+So, what does that all mean for a future version of \CONTEXT\ and \LUATEX ? It
+means that we can decide to follow up with a \CONTEXT\ that does more in \LUA,
+which means not hard coded in a binary, on the one hand, but that we can also
+decide to strip the engine from non|-|core code. But, given that \LUATEX\ is also
+used in other macro packages, this would mean a different engine. We cannot say
+that \LUATEX\ is stable when we also experiment with core components.
+
+We've seen folks picking up experimental versions assuming that it is a precursor
+to official code. So, in order to move on we need to avoid confusion: we need to
+use another name. Choosing a name is always tricky but as Taco already registered
+the \METATEX\ domain, and because in the \CONTEXT\ distribution you will find
+references to \METATEX, we will use that name for the future engine. Adding \LUA\
+to that name makes sense but then the name would become too long.
+
+The main difference between \METATEX\ and \LUATEX\ would be that the former has
+no file lookup library, no hardcoded font loader, and no backend generator (but
+possibly some helpers, and these need time to evolve). We're basically back where
+\TEX\ started but instead of coding these extensions in \PASCAL\ or \CCODE\ we
+use \LUA. We're also kind of back to when we first started experimenting with
+\LUATEX\ in \CONTEXT\ where test, write and rewrite were going in parallel. But,
+as said, we cannot impose that on a wide audience.
+
+If we go for such a lean and mean follow up, then we can also do a more drastic
+cleanup of obsolete code in \CONTEXT\ (dating from \ETEX, \PDFTEX, \ALEPH, etc.).
+We then are sort of back to where it all started: we go back to the basics. This
+might mean dropping some primitives (one can define them as dummy). Of course we
+could generalize some of the \CONTEXT\ code to provide the kicked out
+functionality but would that pay of? Probably not.
+
+Just for the record: replacing the handling of macros, registers, grouping, etc.\
+to \LUA\ is not really an option as the performance hit would make a large system
+like \CONTEXT\ sort of unusable: it's no option and not even considered (although
+I must admit that I have some experimental \LUA\ based \TEX\ parser code around).
+
+It is quite likely that building \METATEX\ from source for the moment will be an
+option to the build script. But we can also decide to simplify that process,
+which is possible because we only need one binary. But in general we can assume
+that one can generate \METATEX\ and \LUATEX\ from the same source. A first step
+probably is a further isolation of the backend code. The fontloader and file
+handling code already can be made optional.
+
+Given that we only need one binary (it being \LUATEX\ or \METATEX) and nowadays
+only use \OPENTYPE\ fonts, one can even start thinking of a mini distribution,
+possibly with a zipped resource tree, something we experimented with in the early
+days of \LUATEX.
+
+Another though I have been playing with is a better separation between low level
+and high level \CONTEXT\ commands, and whether the low level layer should be more
+generic in nature (so that one can run specific packages on top of it instead of
+the whole of \CONTEXT) but that might not be worth the trouble.
+
+\stopsection
+
+\startsection[title={Interlude}]
+
+If we look at the future, it's good to also look at the past. Opening up \TEX\
+the way we did has many advantages but also potential drawbacks. It works quite
+well in \CONTEXT\ because we ship an integrated package. I don't think that there
+are many users who kick in their own callbacks. It is possible but completely up
+to the user to make sure things work out well. Performance hits, interference,
+crashes: those who interfere with the internals can sort that out themselves. I'm
+not sure how well that works out in other macro packages but it is a time bomb if
+users start doing that. Of course the documented interfaces to use \LUA\ in
+\CONTEXT\ are supported. So far I think we're not yet bitten in the tail. We keep
+this aspect out of the discussion.
+
+Another important aspect is stability of the engine. Sometimes we get suggestions
+for changes or patches that works for a specific case but for sure will have side
+effects on \CONTEXT. Just as we don't test \LATEX\ side effects, \LATEX\ users
+don't check \CONTEXT. And we're not even talking of users who expect their code
+to keep working. A tight control over the source is important but cannot be we
+will not be around for ever. This means that at some point \LUATEX\ should not be
+changed any more, even when we observe side effects we want to get rid of,
+because these side effects can be in use. This is another argument for a stripped
+down engine. The less there is to mess with, the less the mess.
+
+\stopsection
+
+\startsection[title={Audience}]
+
+So how about \CONTEXT\ itself? Of course we can make it better. We can add more
+examples and more documentation. We can try to improve support. The main question
+for us (as developers) is who actually is our audience. From the mails coming to
+the \CONTEXT\ support list it looks like a rather diverse group of users.
+
+At \TEX\ meetings there are often discussions about promoting \TEX. I can agree
+on the fact that even for simple documents it makes a lot of sense to use \TEX,
+but who will take the first hurdles? How many people really produce a lot of
+documents? And how many need \TEX\ after maybe a short period of (enforced) usage
+at the university?
+
+It's not trivial to recognize the possibilities and power of the
+\LUATEX|-|\CONTEXT\ combination. We never got any serious requests for support
+from large organizations. In fact, we do use this combination in a few projects
+for educational publishers, but there it's actually the authors and editors doing
+the work. It's seldom company policy to use tools that efficiently automate
+typesetting. I dare to say that publishers are not really an audience at all:
+they normally delegate the task. They might accept \TEX\ documents but let them
+rekey or adapt far|-|far|-|away and as cheap as possible. Thinking of it, the
+main reason for Don Knuth for writing \TEX\ in the first place was the ability to
+control the look and feel and quality. It were developments at typesetters and
+publishers that triggered development of \TEX . It was user demand. And the
+success of \TEX\ was largely due to the unique personality and competence of the
+author.
+
+System integrators qualify as audience but I fear that \TEX\ is not considered
+hip and modern. It doesn't seem to matter if you can demonstrate that it can do a
+wonderful job efficiently and relatively cheap. Also the fact that an
+installation can be very stable on the long run is of no importance. Maybe that
+audience (market place) is all about \quotation {The more we have to program and
+update regularly, the merrier.}. Marketing \TEX\ is difficult.
+
+Those who render multiple products, maintain manuals, have to render many
+documents automatically qualify as audience. But often company policies,
+preferred suppliers, so called standard tools etc.\ are used as argument against
+\TEX. It's a missed opportunity.
+
+One needs a certain mindset to recognize the potential and the question is, how
+do we reach that audience. Drawing a roadmap for that is not easy but worth
+discussing. We're open for suggestions.
+
+% \footnote {It's kind of interesting that recently the \TEX\ User Group announced
+% its presence on Facebook and Twitter. Apart from wondering how that gets updated,
+% one can also wonder how many potential (or even current) users go there, given
+% that these platforms are subjected to rise and fall. I'm on neither of them and
+% don't plan to. Kids (our future users) that I know already said goodbye to them.
+% We'll see how that works out.}
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+At the \CONTEXT\ user meeting those present agreed that moving forward this way
+makes sense. This means that we will explore a lean and mean \METATEX\ alongside
+\LUATEX. There is no rush and it's all volunteer work so we will take our time
+for this. It boils down to some reshuffling of code so that we can remove the
+built|-|in font loader, file handling, and probably also \SYNCTEX\ because we can
+emulate that. Then the backend with its font inclusion code will be cleaned up a
+bit (we even discussed only supporting modern wide fonts). It's no big deal to
+adapt \CONTEXT\ to this (so it can and will support both \LUATEX\ and \METATEX).
+Eventually the backend might go away but now we're talking years ahead. By then
+we can also explore the option to make \METATEX\ start out as a \LUA\ function
+call (the main control loop) and become reentrant. There will probably not be
+many changes to the opened up \TEX\ kernel, but we might extend the \METAPOST\
+part a bit (some of that was discussed at the meeting) especially because it is a
+nice tool to visualize big data.
+
+As with \LUATEX\ development we will go in small steps so that we keep a working
+system. Of course \LUATEX\ is always there as stable fallback. The experiments
+will mostly happen in the experimental branch and binaries will be generated
+using the compile farm on the \CONTEXT\ garden, just as happens now. This also
+limits testing and exploring to the \CONTEXT\ community so that there are no side
+effects for mainstream \LUATEX\ usage.
+
+Nowadays, instead if roadmaps, we tend to use navigational gadgets that adapt
+themselves to the situation. On the road by car this can mean a detour and when
+walking around it can be going to suggested points of interest. During the
+excursion at the meeting, we noticed that after the drivers (navigators)
+synchronized their gadget with Jano, the routes that were followed differed a
+bit. We saw cars in front of going a different direction and cars behind us
+arriving from a different direction. So, even when we talk about roadmaps, our
+route can be adapted to the situation.
+
+Now here is something to think about. If you look at the \TEX\ community you will
+notice that it's an aging community. User groups seem to loose members, although
+the \CONTEXT\ group is currently still growing. Fortunately we see a new
+generation taking interest and the \CONTEXT\ users are a pleasant mix and it
+makes me stay around. I see it as an \quote {old timers} responsibility to have
+\TEX\ and its environment in a healthy state by the time I retire from it
+(although I have no plans in that direction). In parallel to the upcoming
+development I think we will also see a change in \TEX\ use and usage. This aspect
+was also discussed at the meeting and for sure will get a follow up on the
+mailing lists and future meetings. It might as well influence the decisions we
+make the upcoming years. So far \TEX\ has never failed us in it's flexibility and
+capacity to adapt, so let's end on that positive note.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

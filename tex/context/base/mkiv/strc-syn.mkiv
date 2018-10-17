@@ -114,14 +114,14 @@
      \xmlstartraw
        \xdef#2{#4}%
      \xmlstopraw
-     \globallet#3\s!xml
+     \glet#3\s!xml
    \else
      \ifx#1\v!yes
        \xdef#2{#4}%
      \else
        \xdef#2{\detokenize{#4}}%
      \fi
-     \globallet#3\s!tex
+     \glet#3\s!tex
    \fi}
 
 %D We now use a simple list variant:

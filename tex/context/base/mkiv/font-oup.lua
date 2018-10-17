@@ -970,7 +970,7 @@ local function stripredundant(fontdata)
         local n = 0
         local c = 0
         -- in context we always strip
-        if not context and fonts.privateoffsets.keepnames then
+        if (not context and fonts.privateoffsets.keepnames) or forcekeep then
             for unicode, d in next, descriptions do
                 if d.class == "base" then
                     d.class = nil

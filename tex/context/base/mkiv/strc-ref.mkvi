@@ -212,14 +212,14 @@
          \xmlstartraw
            \xdef\currentreferencedata{#text}% data, no text else conflict
          \xmlstopraw
-         \globallet\currentreferencecoding\s!xml
+         \glet\currentreferencecoding\s!xml
        \else
          \ifx\currentreferenceexpansion\v!yes
            \xdef\currentreferencedata{#text}%
          \else
            \xdef\currentreferencedata{\detokenize{#text}}%
          \fi
-         \globallet\currentreferencecoding\s!tex
+         \glet\currentreferencecoding\s!tex
        \fi
        % beware, the structures.references.set writes a
        \setnextinternalreference
