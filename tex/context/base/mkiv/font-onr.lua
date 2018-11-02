@@ -26,7 +26,7 @@ local match, lower, gsub, strip, find = string.match, string.lower, string.gsub,
 local char, byte, sub = string.char, string.byte, string.sub
 local abs = math.abs
 local bxor, rshift = bit32.bxor, bit32.rshift
-local P, S, R, Cmt, C, Ct, Cs, Carg, Cf, Cg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cf, lpeg.Cg
+local P, S, R, V, Cmt, C, Ct, Cs, Carg, Cf, Cg, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.V, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cf, lpeg.Cg, lpeg.Cc
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local trace_indexing     = false  trackers.register("afm.indexing",   function(v) trace_indexing = v end)
@@ -83,17 +83,17 @@ do
 
     end
 
-    local charstrings   = P("/CharStrings")
-    local subroutines   = P("/Subrs")
-    local encoding      = P("/Encoding")
-    local dup           = P("dup")
-    local put           = P("put")
-    local array         = P("array")
-    local name          = P("/") * C((R("az","AZ","09")+S("-_."))^1)
-    local digits        = R("09")^1
-    local cardinal      = digits / tonumber
-    local spaces        = P(" ")^1
-    local spacing       = patterns.whitespace^0
+    local charstrings = P("/CharStrings")
+    local subroutines = P("/Subrs")
+    local encoding    = P("/Encoding")
+    local dup         = P("dup")
+    local put         = P("put")
+    local array       = P("array")
+    local name        = P("/") * C((R("az","AZ","09")+S("-_."))^1)
+    local digits      = R("09")^1
+    local cardinal    = digits / tonumber
+    local spaces      = P(" ")^1
+    local spacing     = patterns.whitespace^0
 
     local routines, vector, chars, n, m
 
@@ -175,7 +175,33 @@ do
 
     -- if one of first 4 not 0-9A-F then binary else hex
 
-    local function loadpfbvector(filename,shapestoo)
+    local key = spacing * P("/") * R("az","AZ")
+    local str = spacing * Cs { (P("(")/"") * ((1 - P("\\(") - P("\\)") - S("()")) + V(1))^0 * (P(")")/"") }
+    local num = spacing * (R("09") + S("+-."))^1 / tonumber
+    local arr = spacing * Ct (S("[{") * (num)^0 * spacing * S("]}"))
+    local boo = spacing * (P("true") * Cc(true) + P("false") * Cc(false))
+    local nam = spacing * P("/") * Cs(R("az","AZ")^1)
+
+    local p_filtermetadata = (
+        P("/") * Carg(1) * ( (
+            C("version")            * str
+          + C("Copyright")          * str
+          + C("Notice")             * str
+          + C("FullName")           * str
+          + C("FamilyName")         * str
+          + C("Weight")             * str
+          + C("ItalicAngle")        * num
+          + C("isFixedPitch")       * boo
+          + C("UnderlinePosition")  * num
+          + C("UnderlineThickness") * num
+          + C("FontName")           * nam
+          + C("FontMatrix")         * arr
+          + C("FontBBox")           * arr
+        ) ) / function(t,k,v) t[lower(k)] = v end
+      + P(1)
+    )^0 * Carg(1)
+
+    local function loadpfbvector(filename,shapestoo,streams)
         -- for the moment limited to encoding only
 
         local data = io.loaddata(resolvers.findfile(filename))
@@ -202,10 +228,11 @@ do
         local names    = { }
 
         local encoding = lpegmatch(p_filterencoding,ascii)
+        local metadata = lpegmatch(p_filtermetadata,ascii,1,{})
         local glyphs   = { }
 
         routines, vector, chars = { }, { }, { }
-        if shapestoo then
+        if shapestoo or streams then
             lpegmatch(p_filterroutines,binary,1,filename)
             lpegmatch(p_filtershapes,binary,1,filename)
             local data = {
@@ -217,7 +244,7 @@ do
                     }
                 },
             }
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,true,streams)
         else
             lpegmatch(p_filternames,binary,1,filename)
         end
@@ -226,7 +253,7 @@ do
 
         routines, vector, chars = nil, nil, nil
 
-        return names, encoding, glyphs
+        return names, encoding, glyphs, metadata
 
     end
 

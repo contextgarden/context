@@ -142,6 +142,7 @@ trackers.register("sandbox.tracecalls",sandbox.logcalls)
 trackers.register("sandbox.tracefiles",sandbox.logfiles)
 
 local sandboxing = environment.arguments.sandbox
+local debugging  = environment.arguments.debug
 
 if sandboxing then
 
@@ -169,6 +170,22 @@ if sandboxing then
         \let\primitive      \relax
         \let\normalprimitive\relax
     ]]
+
+    debug = {
+        traceback = traceback,
+    }
+
+elseif debugging then
+
+    -- we keep debug
+
+else
+
+    debug = {
+        traceback = traceback,
+        getinfo   = getinfo,
+        sethook   = sethook,
+    }
 
 end
 

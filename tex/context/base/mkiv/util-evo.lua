@@ -535,27 +535,29 @@ local function gettemperatures(presets)
             for i=1,#data do
                 local gateways     = data[i].gateways
                 local locationinfo = data[i].locationInfo
-                local locationid   = locationinfo.locationId
-                if gateways then
-                    local status = getstatus(presets,locationid,locationinfo.name)
-                    if status then
-                        for i=1,#gateways do
-                            local g = status.gateways[i]
-                            local gateway = gateways[i]
-                            local systems = gateway.temperatureControlSystems
-                            if systems then
-                                local s = g.temperatureControlSystems
-                                for i=1,#systems do
-                                    local zones = systems[i].zones
-                                    if zones then
-                                        local z = s[i].zones
-                                        for i=1,#zones do
-                                            local zone = zones[i]
-                                            if validzonetypes[zone.zoneType] then
-                                                local z = z[i]
-                                                if z.name == zone.name then
-                                                    zone.temperatureStatus = z.temperatureStatus
-                                                    updated = true
+                if locationinfo then
+                    local locationid = locationinfo.locationId
+                    if gateways then
+                        local status = getstatus(presets,locationid,locationinfo.name)
+                        if status then
+                            for i=1,#gateways do
+                                local g = status.gateways[i]
+                                local gateway = gateways[i]
+                                local systems = gateway.temperatureControlSystems
+                                if systems then
+                                    local s = g.temperatureControlSystems
+                                    for i=1,#systems do
+                                        local zones = systems[i].zones
+                                        if zones then
+                                            local z = s[i].zones
+                                            for i=1,#zones do
+                                                local zone = zones[i]
+                                                if validzonetypes[zone.zoneType] then
+                                                    local z = z[i]
+                                                    if z.name == zone.name then
+                                                        zone.temperatureStatus = z.temperatureStatus
+                                                        updated = true
+                                                    end
                                                 end
                                             end
                                         end
@@ -563,7 +565,11 @@ local function gettemperatures(presets)
                                 end
                             end
                         end
+                    else
+                        report("no gateways")
                     end
+                else
+                    report("no location info")
                 end
             end
             if updated then

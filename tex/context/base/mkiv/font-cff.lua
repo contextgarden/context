@@ -34,6 +34,8 @@ local P, C, R, S, C, Cs, Ct = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, l
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 local bytetable = string.bytetable
+local idiv = number.idiv
+local rshift, band = bit32.rshift, bit32.band
 
 local readers           = fonts.handlers.otf.readers
 local streamreader      = readers.streamreader
@@ -1230,7 +1232,7 @@ do
         if trace_charstrings then
             showstate("stem")
         end
-        stems = stems + top/2
+        stems = stems + idiv(top,2)
         top   = 0
     end
 
@@ -1251,14 +1253,15 @@ do
         if trace_charstrings then
             showstate(operator == 19 and "hintmark" or "cntrmask")
         end
-        stems = stems + top/2
+        stems = stems + idiv(top,2)
         top   = 0
         if stems == 0 then
             -- forget about it
         elseif stems <= 8 then
             return 1
         else
-            return floor((stems+7)/8)
+         -- return floor((stems+7)/8)
+            return idiv(stems+7,8)
         end
     end
 
@@ -1528,89 +1531,76 @@ do
         [037] = flex1,
     }
 
-    local c_endchar = char(14)
+    local chars = setmetatableindex(function (t,k)
+        local v = char(k)
+        t[k] = v
+        return v
+    end)
 
-    local passon  do
+    local c_endchar = chars[14]
 
-        -- todo: round in blend
-        -- todo: delay this hash
+    -- todo: round in blend
 
-        local rshift = bit32.rshift
-        local band = bit32.band
-        local round = math.round
-
-        local encode = table.setmetatableindex(function(t,i)
-            for i=-2048,-1130 do
-                t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
-            end
-            for i=-1131,-108 do
-                local v = 0xFB00 - i - 108
-                t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
-            end
-            for i=-107,107 do
-                t[i] = char(i + 139)
-            end
-            for i=108,1131 do
-                local v = 0xF700 + i - 108
-                t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
-            end
-            for i=1132,2048 do
-                t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
-            end
-            return t[i]
+    local encode = setmetatableindex(function(t,i)
+        for i=-2048,-1130 do
+            t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
+        end
+        for i=-1131,-108 do
+            local v = 0xFB00 - i - 108
+            t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
+        end
+        for i=-107,107 do
+            t[i] = chars[i + 139]
+        end
+        for i=108,1131 do
+            local v = 0xF700 + i - 108
+            t[i] = char(band(rshift(v,8),0xFF),band(v,0xFF))
+        end
+        for i=1132,2048 do
+            t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
+        end
+        setmetatableindex(t,function(t,i)
+            report("error in encoder: %i",i)
+            return t[0]
         end)
+        return t[i]
+    end)
 
-        local function setvsindex()
-            local vsindex = stack[top]
-            updateregions(vsindex)
-            top = top - 1
-        end
+    readers.cffencoder = encode
 
-        local function blend()
-            -- leaves n values on stack
-            local n = stack[top]
-            top = top - 1
-            if not axis then
-                -- fatal error
-            elseif n == 1 then
-                top = top - nofregions
-                local v = stack[top]
+    local function p_setvsindex()
+        local vsindex = stack[top]
+        updateregions(vsindex)
+        top = top - 1
+    end
+
+    local function p_blend()
+        -- leaves n values on stack
+        local n = stack[top]
+        top = top - 1
+        if not axis then
+            -- fatal error
+        elseif n == 1 then
+            top = top - nofregions
+            local v = stack[top]
+            for r=1,nofregions do
+                v = v + stack[top+r] * factors[r]
+            end
+            stack[top] = round(v)
+        else
+            top = top - nofregions * n
+            local d = top
+            local k = top - n
+            for i=1,n do
+                k = k + 1
+                local v = stack[k]
                 for r=1,nofregions do
-                    v = v + stack[top+r] * factors[r]
+                    v = v + stack[d+r] * factors[r]
                 end
-                stack[top] = round(v)
-            else
-                top = top - nofregions * n
-                local d = top
-                local k = top - n
-                for i=1,n do
-                    k = k + 1
-                    local v = stack[k]
-                    for r=1,nofregions do
-                        v = v + stack[d+r] * factors[r]
-                    end
-                    stack[k] = round(v)
-                    d = d + nofregions
-                end
+                stack[k] = round(v)
+                d = d + nofregions
             end
         end
-
-        passon = function(operation)
-            if operation == 15 then
-                setvsindex()
-            elseif operation == 16 then
-                blend()
-            else
-                for i=1,top do
-                    r = r + 1
-                    result[r] = encode[stack[i]]
-                end
-                r = r + 1
-                result[r] = char(operation) -- maybe use a hash
-                top = 0
-            end
-        end
-
     end
 
     -- end of experiment
@@ -1670,9 +1660,9 @@ do
                     local n = 0x100 * tab[i+1] + tab[i+2]
                     if n  >= 0x8000 then
                      -- stack[top] = n - 0xFFFF - 1 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
-                        stack[top] = n - 0x10000 + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
+                        stack[top] = n - 0x10000 + (0x100 * tab[i+3] + idiv(tab[i+4],0xFFFF))
                     else
-                        stack[top] = n           + (0x100 * tab[i+3] + tab[i+4])/0xFFFF
+                        stack[top] = n           + (0x100 * tab[i+3] + idiv(tab[i+4],0xFFFF))
                     end
                     i = i + 5
                 end
@@ -1716,19 +1706,56 @@ do
             elseif t == 12 then
                 i = i + 1
                 local t = tab[i]
-                local a = subactions[t]
-                if a then
-                    a(t)
-                else
-                    if trace_charstrings then
-                        showvalue("<subaction>",t)
+                if justpass then
+                    if t >= 34 or t <= 37 then -- flexes
+                        for i=1,top do
+                            r = r + 1 ; result[r] = encode[stack[i]]
+                        end
+                        r = r + 1 ; result[r] = chars[12]
+                        r = r + 1 ; result[r] = chars[t]
+                        top = 0
+                    else
+                        local a = subactions[t]
+                        if a then
+                            a(t)
+                        else
+                            top = 0
+                        end
                     end
-                    top = 0
+                else
+                    local a = subactions[t]
+                    if a then
+                        a(t)
+                    else
+                        if trace_charstrings then
+                            showvalue("<subaction>",t)
+                        end
+                        top = 0
+                    end
                 end
                 i = i + 1
             elseif justpass then
-                passon(t)
-                i = i + 1
+                if t == 15 then
+                    p_setvsindex()
+                elseif t == 16 then
+                    local s = p_blend() or 0
+                    i = i + s + 1
+                -- cff 1:
+                elseif t == 1 or t == 3 or t == 18 or operation == 23 then
+                    local s = getstem() or 0
+                    i = i + s + 1
+                -- cff 1:
+                elseif t == 19 or t == 20 then
+                    local s = getmask() or 0
+                    i = i + s + 1
+                else
+                    for i=1,top do
+                        r = r + 1 ; result[r] = encode[stack[i]]
+                    end
+                    r = r + 1 ; result[r] = chars[t]
+                    top = 0
+                    i = i + 1
+                end
             else
                 local a = actions[t]
                 if a then
@@ -1795,8 +1822,8 @@ do
         else
             local g, l = #globals, #locals
             return
-                ((g <  1240 and 107) or (g < 33900 and 1131) or 32768) + 1,
-                ((l <  1240 and 107) or (l < 33900 and 1131) or 32768) + 1
+                ((g < 1240 and 107) or (g < 33900 and 1131) or 32768) + 1,
+                ((l < 1240 and 107) or (l < 33900 and 1131) or 32768) + 1
         end
     end
 
@@ -1937,19 +1964,20 @@ do
         globalbias,   localbias    = setbias(globals,locals)
         nominalwidth, defaultwidth = setwidths(dictionary.private)
 
-        startparsing(fontdata,data,streams)
-
-        for index=1,#charstrings do
-            processshape(charstrings[index],index-1)
-            charstrings[index] = nil -- free memory (what if used more often?)
+        if charstrings then
+            startparsing(fontdata,data,streams)
+            for index=1,#charstrings do
+                processshape(charstrings[index],index-1)
+                charstrings[index] = nil -- free memory (what if used more often?)
+            end
+            stopparsing(fontdata,data)
+        else
+            report("no charstrings")
         end
-
-        stopparsing(fontdata,data)
-
         return glyphs
     end
 
-    parsecharstring = function(fontdata,data,dictionary,tab,glphs,index,doshapes,tversion)
+    parsecharstring = function(fontdata,data,dictionary,tab,glphs,index,doshapes,tversion,streams)
 
         keepcurve = doshapes
         version   = tversion
@@ -1959,6 +1987,8 @@ do
         charset   = false
         vsindex   = dictionary.vsindex or 0
         glyphs    = glphs or { }
+
+ justpass = streams == true
 
         globalbias,   localbias    = setbias(globals,locals)
         nominalwidth, defaultwidth = setwidths(dictionary.private)
@@ -2134,7 +2164,7 @@ local function readfdselect(f,fontdata,data,glyphs,doshapes,version,streams)
     local format       = readbyte(f)
     if format == 1 then
         for i=0,nofglyphs do -- notdef included (needs checking)
-            local index = readbyte(i)
+            local index = readbyte(f)
             fdindex[i] = index
             if index > maxindex then
                 maxindex = index
@@ -2165,23 +2195,27 @@ local function readfdselect(f,fontdata,data,glyphs,doshapes,version,streams)
     -- hm, always
     if maxindex >= 0 then
         local cidarray = cid.fdarray
-        setposition(f,header.offset+cidarray)
-        local dictionaries = readlengths(f)
-        for i=1,#dictionaries do
-            dictionaries[i] = readstring(f,dictionaries[i])
+        if cidarray then
+            setposition(f,header.offset+cidarray)
+            local dictionaries = readlengths(f)
+            for i=1,#dictionaries do
+                dictionaries[i] = readstring(f,dictionaries[i])
+            end
+            parsedictionaries(data,dictionaries)
+            cid.dictionaries = dictionaries
+            readcidprivates(f,data)
+            for i=1,#dictionaries do
+                readlocals(f,data,dictionaries[i])
+            end
+            startparsing(fontdata,data,streams)
+            for i=1,#charstrings do
+                parsecharstring(fontdata,data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version,streams)
+                charstrings[i] = nil
+            end
+            stopparsing(fontdata,data)
+        else
+            report("no cid array")
         end
-        parsedictionaries(data,dictionaries)
-        cid.dictionaries = dictionaries
-        readcidprivates(f,data)
-        for i=1,#dictionaries do
-            readlocals(f,data,dictionaries[i])
-        end
-        startparsing(fontdata,data,streams)
-        for i=1,#charstrings do
-            parsecharstring(fontdata,data,dictionaries[fdindex[i]+1],charstrings[i],glyphs,i,doshapes,version)
-            charstrings[i] = nil
-        end
-        stopparsing(fontdata,data)
     end
 end
 
@@ -2200,7 +2234,7 @@ local function cleanup(data,dictionaries)
 end
 
 function readers.cff(f,fontdata,specification)
-    local tableoffset = gotodatatable(f,fontdata,"cff",specification.details)
+    local tableoffset = gotodatatable(f,fontdata,"cff",specification.details or specification.glyphs)
     if tableoffset then
         local header = readheader(f)
         if header.major ~= 1 then
@@ -2223,14 +2257,17 @@ function readers.cff(f,fontdata,specification)
         --
         local dic = dictionaries[1]
         local cid = dic.cid
-        fontdata.cffinfo = {
-            familynamename     = dic.familyname,
+        --
+        local cffinfo = {
+            familyname         = dic.familyname,
             fullname           = dic.fullname,
             boundingbox        = dic.boundingbox,
             weight             = dic.weight,
             italicangle        = dic.italicangle,
             underlineposition  = dic.underlineposition,
             underlinethickness = dic.underlinethickness,
+            defaultwidth       = dic.defaultwidthx,
+            nominalwidth       = dic.nominalwidthx,
             monospaced         = dic.monospaced,
         }
         fontdata.cidinfo = cid and {
@@ -2238,13 +2275,22 @@ function readers.cff(f,fontdata,specification)
             ordering   = cid.ordering,
             supplement = cid.supplement,
         }
+        fontdata.cffinfo = cffinfo
         --
-        if specification.glyphs then
-            local all = specification.shapes or false
+        local all = specification.shapes or specification.streams or false
+        if specification.glyphs or all then
             if cid and cid.fdselect then
-                readfdselect(f,fontdata,data,glyphs,all,"cff")
+                readfdselect(f,fontdata,data,glyphs,all,"cff",specification.streams)
             else
-                readnoselect(f,fontdata,data,glyphs,all,"cff")
+                readnoselect(f,fontdata,data,glyphs,all,"cff",specification.streams)
+            end
+        end
+        local private = dic.private
+        if private then
+            local data = private.data
+            if type(data) == "table" then
+                cffinfo.defaultwidth = data.defaultwidth or cffinfo.defaultwidth
+                cffinfo.nominalwidth = data.nominalwidth or cffinfo.nominalwidth
             end
         end
         cleanup(data,dictionaries)
@@ -2283,7 +2329,7 @@ function readers.cff2(f,fontdata,specification)
         data.factors  = specification.factors
         --
         local cid = data.dictionaries[1].cid
-        local all = specification.shapes or false
+        local all = specification.shapes or specification.streams or false
         if cid and cid.fdselect then
             readfdselect(f,fontdata,data,glyphs,all,"cff2",specification.streams)
         else
@@ -2316,7 +2362,7 @@ function readers.cffcheck(filename)
             dictionaries = dictionaries,
             strings      = strings,
             glyphs       = glyphs,
-            nofglyphs    = 4,
+            nofglyphs    = 0,
         }
         --
         parsedictionaries(data,dictionaries,"cff")

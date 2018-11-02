@@ -68,6 +68,14 @@
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \lastnamedcs\disabledmode}
 
+\unexpanded\def\globalsetmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \global\lastnamedcs\enabledmode}
+
+\unexpanded\def\globalresetmode#1%
+  {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
+   \global\lastnamedcs\disabledmode}
+
 \unexpanded\def\newsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi}
 
@@ -78,6 +86,14 @@
 \unexpanded\def\resetsystemmode#1%
   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
    \lastnamedcs\disabledmode}
+
+\unexpanded\def\globalsetsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \global\lastnamedcs\enabledmode}
+
+\unexpanded\def\globalresetsystemmode#1%
+  {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
+   \global\lastnamedcs\disabledmode}
 
 % \def\dosetsystemmode#1%
 %   {\csname\??mode\systemmodeprefix#1\endcsname\enabledmode}

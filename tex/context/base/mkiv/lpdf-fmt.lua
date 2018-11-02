@@ -753,7 +753,9 @@ function codeinjections.setformat(s)
                     majorversion,minorversion)
             end
             --
-            pdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
+            -- cid sets are always omitted now:
+            --
+            -- pdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,

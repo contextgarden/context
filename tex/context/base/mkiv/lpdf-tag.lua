@@ -71,14 +71,12 @@ local tosequence          = nuts.tosequence
 
 local nextnode            = nuts.traversers.node
 
-local structure_stack     = { }
-local structure_kids      = pdfarray()
-local structure_ref       = pdfreserveobject()
-local parent_ref          = pdfreserveobject()
-local root                = { pref = pdfreference(structure_ref), kids = structure_kids }
+local structure_kids   -- delayed
+local structure_ref    -- delayed
+local parent_ref       -- delayed
+local root             -- delayed
 local tree                = { }
 local elements            = { }
-local names               = pdfarray()
 
 local structurestags      = structures.tags
 local taglist             = structurestags.taglist
@@ -112,7 +110,7 @@ local usedmapping         = { }
 -- end
 
 local function finishstructure()
-    if #structure_kids > 0 then
+    if root and #structure_kids > 0 then
         local nums, n = pdfarray(), 0
         for i=1,#tree do
             n = n + 1 ; nums[n] = i - 1
@@ -328,6 +326,13 @@ function nodeinjections.addtags(head)
     local last   = nil
     local ranges = { }
     local range  = nil
+
+    if not root then
+        structure_kids = pdfarray()
+        structure_ref  = pdfreserveobject()
+        parent_ref     = pdfreserveobject()
+        root           = { pref = pdfreference(structure_ref), kids = structure_kids }
+    end
 
     local function collectranges(head,list)
         for n, id in nextnode, head do

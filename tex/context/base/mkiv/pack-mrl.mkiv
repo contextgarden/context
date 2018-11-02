@@ -587,7 +587,7 @@
 
 \setvalue{\??textrulealternatives\v!bottom}#1%
   {\blank[\v!samepage,\v!nowhite]%
-   \pack_textrule_following_yes{#1}%
+   \pack_textrule_following{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!after\relax
    \page[\v!preference]}
@@ -595,7 +595,7 @@
 \setvalue{\??textrulealternatives\v!middle}#1%
   {\blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
-   \pack_textrule_following_yes{#1}%
+   \pack_textrule_following{#1}%
    \blank[\v!samepage,\v!nowhite]%
    \directtextrulesparameter\c!inbetween\relax
    \page[\v!preference]}

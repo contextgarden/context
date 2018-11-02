@@ -61,9 +61,11 @@
 \installcorenamespace{float}
 \installcorenamespace{floatbuilder}
 \installcorenamespace{floatcaption}
+\installcorenamespace{floatframed}
 
 \installframedcommandhandler \??float        {float}        \??float
 \installframedcommandhandler \??floatcaption {floatcaption} \??floatcaption
+\installframedcommandhandler \??floatframed  {floatframed}  \??floatframed
 
 \let\setupfloats  \setupfloat
 \let\setupcaption \setupfloatcaption
@@ -97,6 +99,8 @@
    \c!textcolor=,
    \c!align=,
    \c!number=\v!yes,
+   \c!offset=\v!overlay,
+   \c!frame=\v!off,
  % \c!expansion=,
  % \c!prefix=,
  % \c!prefixconnector=,
@@ -171,6 +175,11 @@
    \c!sidethreshold=.5\strutdp, % set to "old" to check with old method
    \c!numbering=\v!yes]
 
+\setupfloatframed
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!strut=\v!no]
+
 %D Individial settings:
 
 \installcounterassociation{floatcaption}
@@ -207,6 +216,7 @@
 
 \def\strc_floats_define_a[#1][#2][#3]% name names parent
   {\definefloatcaption[#1][#3]%
+   \definefloatframed[#1][#3]%
    \definecounter[#1][#3]%
    \definelist[#1][#3]%
    \copylabeltext[#1=#3]%
@@ -215,6 +225,7 @@
 
 \def\strc_floats_define_b[#1][#2][#3]% name parent settings
   {\definefloatcaption[#1][#2]%
+   \definefloatframed[#1][#2]%
    \definecounter[#1][#2]%
    \definelist[#1][#2]%
    \copylabeltext[#1=#2]%
@@ -224,6 +235,7 @@
 \def\strc_floats_define_c[#1][#2]% name names
   {\registerfloatcaptioncounter{#1}%
    \definefloatcaption[#1]%
+   \definefloatframed[#1]%
    \definecounter[#1]%
    \definelist[#1]%
    \presetlabeltext[#1=\Word{#1}~]%
@@ -332,6 +344,7 @@
 
 \def\strc_floats_make_complete_caption
   {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
+   \strc_floats_make_complete_caption_before
    \synchronizedisplaydirection % temp hack, till we have a proper model
    \noindent
    \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
@@ -361,7 +374,25 @@
        \thecurrentfloatcaption\endgraf
      \fi
    \endgroup
+   \strc_floats_make_complete_caption_after
    \doifsomething{\floatcaptionparameter\c!spaceafter}{\blank[\floatcaptionparameter\c!spaceafter]}}
+
+% \let\strc_floats_make_complete_caption_before\relax
+% \let\strc_floats_make_complete_caption_after \relax
+
+\def\strc_floats_make_complete_caption_before
+  {\doifelseframed\floatcaptionparameter\strc_floats_make_complete_caption_before_indeed\relax}
+
+\def\strc_floats_make_complete_caption_before_indeed
+  {\edef\m_strc_align{\floatcaptionparameter\c!align}%
+   \edef\m_strc_strut{\floatcaptionparameter\c!strut}%
+   \letfloatcaptionparameter\c!align\v!normal
+   \letfloatcaptionparameter\c!strut\v!no
+   \inheritedfloatcaptionframed
+   \bgroup
+   \letfloatcaptionparameter\c!align\m_strc_align
+   \letfloatcaptionparameter\c!strut\m_strc_strut
+   \let\strc_floats_make_complete_caption_after\egroup}
 
 % \definefloat  [figure-1] [figure]
 % \definefloat  [figure-2] [figure]
@@ -1953,10 +1984,9 @@
 
 \unexpanded\def\installfloatboxbuilder#1#2{\setvalue{\??floatbuilder#1}{#2}}
 
-\let\strc_floats_mark_box_as_free\relax
-
 \def\strc_floats_build_box
-  {\global\setbox\floatbox\vbox % pack ? probably not
+  {\strc_floats_build_box_before
+   \global\setbox\floatbox\vbox % pack ? probably not
      {\strc_floats_set_local_hsize
       \forgetall
       \ifconditional\c_floats_store_minimal_package
@@ -1970,7 +2000,34 @@
         \else
           \strc_floats_build_box_default
         \fi
-      \fi}}
+      \fi}%
+   \strc_floats_build_box_after}
+
+% \let\strc_floats_build_box_before\relax
+% \let\strc_floats_build_box_after \relax
+
+\def\strc_floats_build_box_before
+  {\let\currentfloatframed\currentfloat
+   \floatwidth\wd
+     \ifdim\wd\b_strc_floats_content>\wd\b_strc_floats_caption
+       \b_strc_floats_content\else\b_strc_floats_caption
+     \fi}
+
+\def\strc_floats_build_box_after
+  {\doifelseframed\floatframedparameter\strc_floats_build_box_after_indeed\relax}
+
+\def\strc_floats_build_box_after_indeed
+  {\global\setbox\floatbox\hpack
+     {\edef\m_width{\floatframedparameter\c!width}%
+      \ifx\m_width\v!fit
+        \let\m_width\floatwidth
+      \else\ifx\m_width\v!broad
+        \let\m_width\v!fit
+      \fi\fi
+      \letfloatframedparameter\c!strut\v!no
+      \letfloatframedparameter\c!width\m_width
+      \inheritedfloatframedframed
+        {\box\floatbox}}}
 
 % special purpose: used in floatcombinations
 

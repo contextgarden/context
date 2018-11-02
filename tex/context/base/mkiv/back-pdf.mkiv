@@ -32,14 +32,8 @@
 \registerctxluafile{lpdf-swf}{} % this will become a module
 \registerctxluafile{lpdf-tag}{}
 \registerctxluafile{lpdf-fmt}{}
-
-\ifnum\texenginefunctionality<6802
-    \registerctxluafile{lpdf-epd}{}
-\else
-    \registerctxluafile{lpdf-pde}{}
-    \registerctxluafile{lpdf-img}{optimize}
-\fi
-
+\registerctxluafile{lpdf-pde}{}
+\registerctxluafile{lpdf-img}{optimize}
 \registerctxluafile{lpdf-epa}{}
 
 \ifnum\texenginefunctionality>6856

@@ -605,7 +605,7 @@ enddef;
 
 vardef thelabel@#(expr p,z) =
     if numeric p :
-        thelabel@#(decimal p)
+        thelabel@#(decimal p,z)
     elseif string p :
         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
     else :

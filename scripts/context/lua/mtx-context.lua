@@ -665,11 +665,11 @@ function scripts.context.run(ctxdata,filename)
     -- side effects (so no bug reports please) .. we provide --sandbox that
     -- does similar things but tries to ensure that context works as expected
 
-    local a_safer       = getargument("safer")
-
-    if a_safer then
-        report("warning: using the luatex safer options, processing is not guaranteed")
-    end
+ -- local a_safer       = getargument("safer")
+ --
+ -- if a_safer then
+ --     report("warning: using the luatex safer options, processing is not guaranteed")
+ -- end
 
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
@@ -810,7 +810,7 @@ function scripts.context.run(ctxdata,filename)
                     ["interaction"]           = a_batchmode,
                  -- ["synctex"]               = false,       -- context has its own way
                     ["no-parse-first-line"]   = true,        -- obsolete
-                    ["safer"]                 = a_safer,     -- better use --sandbox
+                 -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
                     ["fmt"]                   = formatfile,

@@ -325,6 +325,16 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     else
         factor = tonumber(value) or 1
     end
+    local lfactor = left  * factor
+    local rfactor = right * factor
+    if trace_protrusion then
+        report_protrusions("left factor %0.3F, right factor %0.3F",lfactor,rfactor)
+    end
+    tfmdata.parameters.protrusion = {
+        factor = factor,
+        left   = left,
+        right  = right,
+    }
     if opbd ~= "right" then
         local validlookups, lookuplist = otf.collectlookups(rawdata,"lfbd",script,language)
         if validlookups then
@@ -343,10 +353,16 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                 if v == true then
                                     -- zero
                                 else
-                                    local p = - (v[3] / 1000) * factor * left
-                                    characters[k].left_protruding = p
-                                    if trace_protrusion then
-                                        report_protrusions("lfbd -> %C -> %p",k,p)
+                                    local w = descriptions[k].width
+                                    local d = - v[1]
+                                    if w == 0 or d == 0 then
+                                        -- ignored
+                                    else
+                                        local p = lfactor * ((w+d)/d)/100
+                                        characters[k].left_protruding = p
+                                        if trace_protrusion then
+                                            report_protrusions("lfbd -> %0.3F %C",p,k)
+                                        end
                                     end
                                 end
                             end
@@ -375,10 +391,16 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                 if v == true then
                                     -- zero
                                 else
-                                    local p = (v[1] / 1000) * factor * right -- or [3] ?
-                                    characters[k].right_protruding = p
-                                    if trace_protrusion then
-                                        report_protrusions("rtbd -> %C -> %p",k,p)
+                                    local w = descriptions[k].width
+                                    local d = - v[3]
+                                    if w == 0 or d == 0 then
+                                        -- ignored
+                                    else
+                                        local p = rfactor * ((w+d)/d)/100
+                                        characters[k].right_protruding = p
+                                        if trace_protrusion then
+                                            report_protrusions("rtbd -> %0.3F %C",p,k)
+                                        end
                                     end
                                 end
                             end
@@ -414,6 +436,11 @@ local function initialize(tfmdata,value)
                     end
                     local data = characters.data
                     local emwidth = tfmdata.parameters.quad
+                    local lfactor = left  * factor
+                    local rfactor = right * factor
+                    if trace_protrusion then
+                        report_protrusions("left factor %0.3F, right factor %0.3F",lfactor,rfactor)
+                    end
                     tfmdata.parameters.protrusion = {
                         factor = factor,
                         left   = left,
@@ -442,10 +469,18 @@ local function initialize(tfmdata,value)
                             end
                         end
                         if pl and pl ~= 0 then
-                            chr.left_protruding  = left *pl*factor
+                            local p = pl * lfactor
+                            chr.left_protruding  = p
+                            if trace_protrusion then
+                                report_protrusions("left  -> %0.3F %C ",p,i)
+                            end
                         end
                         if pr and pr ~= 0 then
-                            chr.right_protruding = right*pr*factor
+                            local p = pr * rfactor
+                            chr.right_protruding = p
+                            if trace_protrusion then
+                                report_protrusions("right -> %0.3F %C",p,i)
+                            end
                         end
                     end
                 elseif trace_protrusion then

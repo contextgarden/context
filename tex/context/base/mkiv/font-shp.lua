@@ -12,6 +12,7 @@ local formatters = string.formatters
 
 local otf          = fonts.handlers.otf
 local afm          = fonts.handlers.afm
+local pfb          = fonts.handlers.pfb
 
 local hashes       = fonts.hashes
 local identifiers  = hashes.identifiers
@@ -39,7 +40,8 @@ local function packoutlines(data,makesequence)
         return
     end
     if makesequence then
-        for index=1,#glyphs do
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
             local glyph = glyphs[index]
             local segments = glyph.segments
             if segments then
@@ -48,6 +50,7 @@ local function packoutlines(data,makesequence)
                 for i=1,#segments do
                     local segment    = segments[i]
                     local nofsegment = #segment
+                    -- why last first ... needs documenting
                     nofsequence = nofsequence + 1
                     sequence[nofsequence] = segment[nofsegment]
                     for i=1,nofsegment-1 do
@@ -64,7 +67,8 @@ local function packoutlines(data,makesequence)
         local common  = { }
         local reverse = { }
         local last    = 0
-        for index=1,#glyphs do
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
             local segments = glyphs[index].segments
             if segments then
                 for i=1,#segments do
@@ -73,7 +77,8 @@ local function packoutlines(data,makesequence)
                 end
             end
         end
-        for index=1,#glyphs do
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
             local segments = glyphs[index].segments
             if segments then
                 for i=1,#segments do
@@ -114,7 +119,8 @@ local function unpackoutlines(data)
     if not glyphs then
         return
     end
-    for index=1,#glyphs do
+--     for index=1,#glyphs do
+    for index=0,#glyphs-1 do
         local segments = glyphs[index].segments
         if segments then
             for i=1,#segments do
@@ -131,7 +137,7 @@ end
 -- todo: loaders per format
 
 local readers   = otf.readers
-local cleanname = readers.helpers.cleanname
+local cleanname = otf.readers.helpers.cleanname
 
 local function makehash(filename,sub,instance)
     local name = cleanname(file.basename(filename))
@@ -157,7 +163,7 @@ local function loadoutlines(cache,filename,sub,instance)
         local hash = makehash(filename,sub,instance)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
-            data = readers.loadshapes(filename,sub,instance)
+            data = otf.readers.loadshapes(filename,sub,instance)
             if data then
                 data.size   = size
                 data.format = data.format or (kind == "otf" and "opentype") or "truetype"
@@ -204,19 +210,16 @@ local function loadstreams(cache,filename,sub,instance)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
     local sub  = tonumber(sub)
-
-    -- fonts.formats
-
     if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then
         local hash = makehash(filename,sub,instance)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
-            data = readers.loadshapes(filename,sub,instance,true)
+            data = otf.readers.loadshapes(filename,sub,instance,true)
             if data then
                 local glyphs  = data.glyphs
                 local streams = { }
                 if glyphs then
-                    for i=0,#glyphs do
+                    for i=0,#glyphs-1 do
                         streams[i] = glyphs[i].stream or ""
                     end
                 end
@@ -229,13 +232,68 @@ local function loadstreams(cache,filename,sub,instance)
                 data = containers.read(cache,hash) -- frees old mem
             end
         end
+    elseif size > 0 and (kind == "pfb") then
+        local hash = makehash(filename,sub,instance)
+        data = containers.read(cache,hash)
+        if not data or data.time ~= time or data.size  ~= size then
+            local names, encoding, streams, metadata = pfb.loadvector(filename,false,true)
+            if streams then
+                local fontbbox = metadata.fontbbox or { 0, 0, 0, 0 }
+                for i=0,#streams do
+                    streams[i] = streams[i].stream or "\14"
+                end
+                data = {
+                    filename   = filename,
+                    size       = size,
+                    time       = time,
+                    format     = "type1",
+                    streams    = streams,
+                    fontheader = {
+                        fontversion = metadata.version,
+                        units       = 1000, -- can this be different?
+                        max         = fontbbox[1],
+                        min         = fontbbox[2],
+                        max         = fontbbox[3],
+                        min         = fontbbox[4],
+                    },
+                    horizontalheader = {
+                        ascender  = 0,
+                        descender = 0,
+                    },
+                    maximumprofile = {
+                        nofglyphs = #streams + 1,
+                    },
+                    names = {
+                        copyright = metadata.copyright,
+                        family    = metadata.familyname,
+                        fullname  = metadata.fullname,
+                        fontname  = metadata.fontname,
+                        subfamily = metadata.subfamilyname,
+                        trademark = metadata.trademark,
+                        notice    = metadata.notice,
+                        version   = metadata.version,
+                    },
+                    cffinfo = {
+                        familyname         = metadata.familyname,
+                        fullname           = metadata.fullname,
+                        italicangle        = metadata.italicangle,
+                        monospaced         = metadata.isfixedpitch and true or false,
+                        underlineposition  = metadata.underlineposition,
+                        underlinethickness = metadata.underlinethickness,
+                        weight             = metadata.weight,
+                    },
+                }
+                containers.write(cache,hash,data)
+                data = containers.read(cache,hash) -- frees old mem
+            end
+        end
     else
         data = {
             filename = filename,
             size     = 0,
             time     = time,
             format   = "unknown",
-            glyphs   = { }
+            streams  = { }
         }
     end
     return data
@@ -265,7 +323,15 @@ hashes.shapes = table.setmetatableindex(function(t,k)
     end
 end)
 
-local function loadstreamdata(fontdata,streams)
+local function getstreamhash(fontid)
+    local fontdata = identifiers[fontid]
+    if fontdata then
+        local properties = fontdata.properties
+        return makehash(properties.filename,fontdata.subindex,properties.instance)
+    end
+end
+
+local function loadstreamdata(fontdata)
     local properties = fontdata.properties
     local filename   = properties.filename
     local subindex   = fontdata.subindex
@@ -289,6 +355,7 @@ end)
 otf.loadoutlinedata = loadoutlinedata -- not public
 otf.loadstreamdata  = loadstreamdata  -- not public
 otf.loadshapes      = loadshapes
+otf.getstreamhash   = getstreamhash -- not public, might move to other namespace
 
 -- experimental code, for me only ... unsupported (todo: use %N)
 

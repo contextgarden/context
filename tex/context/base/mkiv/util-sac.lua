@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['util-sac'] = {
 -- with bytes)
 
 local byte, sub = string.byte, string.sub
-local extract = bit32 and bit32.extract
+local tonumber = tonumber
 
 utilities         = utilities or { }
 local streams     = { }
@@ -237,31 +237,31 @@ function streams.readinteger4le(f)
     end
 end
 
-function streams.readfixed4(f)
-    local i = f[2]
-    local j = i + 3
-    f[2] = j + 1
-    local a, b, c, d = byte(f[1],i,j)
-    if a >= 0x80 then
-        return (0x100 * a + b - 0x10000) + (0x100 * c + d)/0x10000
-    else
-        return (0x100 * a + b          ) + (0x100 * c + d)/0x10000
-    end
-end
-
 function streams.readfixed2(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
     local a, b = byte(f[1],i,j)
     if a >= 0x80 then
-        return (a - 0x100) + b/0x100
+        tonumber((a - 0x100) .. "." .. b)
     else
-        return (a        ) + b/0x100
+        tonumber((a        ) .. "." .. b)
     end
 end
 
-if extract then
+function streams.readfixed4(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local a, b, c, d = byte(f[1],i,j)
+    if a >= 0x80 then
+        tonumber((0x100 * a + b - 0x10000) .. "." .. (0x100 * c + d))
+    else
+        tonumber((0x100 * a + b          ) .. "." .. (0x100 * c + d))
+    end
+end
+
+if bit32 then
 
     local extract = bit32.extract
     local band    = bit32.band

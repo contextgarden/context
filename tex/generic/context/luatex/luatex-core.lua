@@ -54,7 +54,7 @@ local function luatex_io_open(name,how)
 end
 
 local function luatex_io_open_readonly(name,how)
-    if how then
+    if not how then
         how = 'r'
     else
         how = gsub(how,'[^rb]','')
@@ -173,6 +173,8 @@ if saferoption == 1 then
     lfs.touch  = installdummy("lfs.touch")
     lfs.rmdir  = installdummy("lfs.rmdir")
     lfs.mkdir  = installdummy("lfs.mkdir")
+
+    debug = nil
 
 end
 

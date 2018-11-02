@@ -354,19 +354,80 @@ do
  --     end
  -- end
 
+ -- local function mp_path(f2,f6,t,connector,cycle)
+ --     if type(t) == "table" then
+ --         local tn = #t
+ --         if tn > 0 then
+ --             if cycle == nil and t.cycle ~= nil then
+ --                 cycle = t.cycle
+ --             fi
+ --             if connector == true then
+ --                 connector = "--"
+ --                 cycle     = true
+ --             elseif not connector then
+ --                 connector = "--"
+ --             end
+ --             local controls = false
+ --             local straight = connector == "--"
+ --             local ti = t[1]
+ --             n = n + 1 ;
+ --             if not straight and #ti == 6 then
+ --                 buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+ --                 controls = true
+ --             else
+ --                 buffer[n] = f2(ti[1],ti[2])
+ --             end
+ --             for i=2,tn do
+ --                 local ti = t[i]
+ --                 n = n + 1 ; buffer[n] = controls and ".." or connector
+ --                 n = n + 1 ;
+ --                 if not straight and #ti == 6 and (i < tn or cycle) then
+ --                     buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+ --                     controls = true
+ --                 else
+ --                     buffer[n] = f2(ti[1],ti[2])
+ --                     controls = false
+ --                 end
+ --             end
+ --             if cycle then
+ --                 n = n + 1 ; buffer[n] = controls and ".." or connector
+ --                 n = n + 1 ; buffer[n] = "cycle"
+ --             end
+ --         end
+ --     end
+ -- end
+
+    -- we have three kind of connectors:
+    --
+    -- .. ... -- (true)
+
     local function mp_path(f2,f6,t,connector,cycle)
         if type(t) == "table" then
             local tn = #t
             if tn > 0 then
+                if cycle == nil then
+                    cycle = t.cycle
+                end
                 if connector == true then
                     connector = "--"
-                    cycle     = true
-                elseif not connector then
+                    if cycle == nil then
+                        cycle = true
+                    end
+                elseif connector == false then
                     connector = "--"
+                    if cycle == nil then
+                        cycle = true
+                    end
+                else
+                    connector = ".."
+                    if cycle == nil then
+                        cycle = true
+                    end
                 end
-                local ti = t[1]
-                n = n + 1 ;
-                if #ti == 6 then
+                local six = connector == ".."
+                local ti  = t[1]
+                n = n + 1
+                if six and #ti == 6 then
                     buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
                 else
                     buffer[n] = f2(ti[1],ti[2])
@@ -374,8 +435,8 @@ do
                 for i=2,tn do
                     local ti = t[i]
                     n = n + 1 ; buffer[n] = connector
-                    n = n + 1 ;
-                    if #ti == 6 then
+                    n = n + 1
+                    if six and #ti == 6 and (i < tn or cycle) then
                         buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
                     else
                         buffer[n] = f2(ti[1],ti[2])
@@ -390,11 +451,11 @@ do
     end
 
     local function mppath(...)
-        mp_path(f_pair,f_pair_ctrl,...)
+        mp_path(f_pair,f_ctrl,...)
     end
 
     local function mppathpoints(...)
-        mp_path(f_pair_pt,f_pair_pt_ctrl,...)
+        mp_path(f_pair_pt,f_ctrl_pt,...)
     end
 
     local function mpsize(t)

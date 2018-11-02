@@ -9,6 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="collect"><short>collect data from device</short></flag>
+    <flag name="update"><short>update data from device</short></flag>
     <flag name="presets"><short>file with authenciation data</short></flag>
     <flag name="auto"><short>fetch temperature data every hour</short></flag>
     <flag name="port"><short>server port when running the service, default: 8068</short></flag>

@@ -3153,4 +3153,16 @@
 
 \let\themaxboxwidth\clf_themaxboxwidth
 
+%D New: slow but ok for most cases:
+
+\unexpanded\def\doifelseframed#1%
+  {\ifcase\numexpr\zerocount
+     \immediateassignment\edef\tempstring{#1\c!frame      }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!topframe   }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!bottomframe}\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!leftframe  }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!rightframe }\ifx\tempstring\v!on      +\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!background }\ifx\tempstring\empty\else+\plusone\fi
+   \relax\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
+
 \protect \endinput

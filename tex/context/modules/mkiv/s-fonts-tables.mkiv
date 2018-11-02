@@ -17,10 +17,28 @@
 
 \registerctxluafile{s-fonts-tables}{}
 
-\installmodulecommandluasingle \showfonttables         {moduledata.fonts.tables.showall}
+\definetabulate[Pair]      [|T|cw(3em)|T|cw(3em)|Tw(10em)|Tw(10em)|cw(4em)|cw(4em)|]
+\definetabulate[Single]    [|T|cw(3em)|Tw(10em)|cw(4em)|cw(4em)|]
+\definetabulate[SingleKern][|T|cw(3em)|Trw(5em)|cw(4em)|cw(4em)|]
+\definetabulate[PairKern]  [|T|cw(3em)|T|cw(3em)|Trw(5em)|cw(4em)|cw(4em)|]
+
+\definehead
+  [sequence]
+  [subsubject]
+  [style=\ttbf]
+
+\definecolor
+  [bbcolor]
+  [t=.5,a=1,s=.5]
+
+\definefontfeature
+  [boundingbox]
+  [boundingbox={background,bbcolor}]
+
 \installmodulecommandluasingle \showfontproperties     {moduledata.fonts.tables.showproperties}
 \installmodulecommandluasingle \showfontparameters     {moduledata.fonts.tables.showparameters}
 \installmodulecommandluasingle \showfontpositionings   {moduledata.fonts.tables.showpositionings}
+\installmodulecommandluasingle \showfontligatures      {moduledata.fonts.tables.showligatures}
 \installmodulecommandluasingle \showfontsubstitutions  {moduledata.fonts.tables.showsubstitutions}
 \installmodulecommandluasingle \showfontunicodevariants{moduledata.fonts.tables.showunicodevariants}
 
@@ -34,5 +52,5 @@
   [cambria]
 
 \starttext
-    \showfonttables[title=Cambria]
+    \showfontproperties[name=cambria]
 \stoptext

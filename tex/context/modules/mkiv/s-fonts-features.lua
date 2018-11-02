@@ -11,7 +11,7 @@ moduledata.fonts.features = moduledata.fonts.features or { }
 
 -- for the moment only otf
 
-local sortedhash = table.sortedhash
+local insert, remove, sortedhash = table.insert, table.remove, table.sortedhash
 
 local v_yes  = interfaces.variables.yes
 local v_no   = interfaces.variables.no
@@ -87,66 +87,35 @@ local function collectkerns(tfmdata,feature)
     local lookuphash   = resources.lookuphash
     local feature      = feature or "kern"
     if sequences then
-
-        if true then
-
-            for i=1,#sequences do
-                local sequence = sequences[i]
-                if sequence.features and sequence.features[feature] then
-                    local steps = sequence.steps
-                    for i=1,#steps do
-                        local step   = steps[i]
-                        local format = step.format
-                        for unicode, hash in table.sortedhash(step.coverage) do
-                            local kerns = combinations[unicode]
-                            if not kerns then
-                                kerns = { }
-                                combinations[unicode] = kerns
-                            end
-                            for otherunicode, kern in table.sortedhash(hash) do
-                                if format == "pair" then
-                                    local f = kern[1]
-                                    local s = kern[2]
-                                    if f then
-                                        if s then
-                                            -- todo
-                                        else
-                                            if not kerns[otherunicode] and f[3] ~= 0 then
-                                                kerns[otherunicode] = f[3]
-                                            end
-                                        end
-                                    elseif s then
-                                        -- todo
-                                    end
-                                elseif format == "kern" then
-                                    if not kerns[otherunicode] and kern ~= 0 then
-                                        kerns[otherunicode] = kern
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
-
-    else -- old loader
-
         for i=1,#sequences do
             local sequence = sequences[i]
             if sequence.features and sequence.features[feature] then
-                local lookuplist = sequence.subtables
-                if lookuplist then
-                    for l=1,#lookuplist do
-                        local lookupname = lookuplist[l]
-                        local lookupdata = lookuphash[lookupname]
-                        for unicode, data in next, lookupdata do
-                            local kerns = combinations[unicode]
-                            if not kerns then
-                                kerns = { }
-                                combinations[unicode] = kerns
-                            end
-                            for otherunicode, kern in next, data do
+                local steps = sequence.steps
+                for i=1,#steps do
+                    local step   = steps[i]
+                    local format = step.format
+                    for unicode, hash in table.sortedhash(step.coverage) do
+                        local kerns = combinations[unicode]
+                        if not kerns then
+                            kerns = { }
+                            combinations[unicode] = kerns
+                        end
+                        for otherunicode, kern in table.sortedhash(hash) do
+                            if format == "pair" then
+                                local f = kern[1]
+                                local s = kern[2]
+                                if f then
+                                    if s then
+                                        -- todo
+                                    else
+                                        if not kerns[otherunicode] and f[3] ~= 0 then
+                                            kerns[otherunicode] = f[3]
+                                        end
+                                    end
+                                elseif s then
+                                    -- todo
+                                end
+                            elseif format == "kern" then
                                 if not kerns[otherunicode] and kern ~= 0 then
                                     kerns[otherunicode] = kern
                                 end
@@ -156,7 +125,6 @@ local function collectkerns(tfmdata,feature)
                 end
             end
         end
-
     end
 
     return combinations
@@ -228,5 +196,92 @@ function moduledata.fonts.features.showfeatureset(specification)
                 context.stoptabulate()
             end
         end
+    end
+end
+
+local function collectligatures(tfmdata)
+    local sequences = tfmdata.resources.sequences
+
+    if not sequences then
+        return
+    end
+
+    local series = { }
+    local stack  = { }
+    local max    = 0
+
+    local function make(tree)
+        for k, v in sortedhash(tree) do
+            if k == "ligature" then
+                local n = #stack
+                if n > max then
+                    max = n
+                end
+                series[#series+1] = { v, unpack(stack) }
+            else
+                insert(stack,k)
+                make(v)
+                remove(stack)
+            end
+        end
+    end
+
+    for i=1,#sequences do
+        local sequence = sequences[i]
+        if sequence.type == "gsub_ligature" then
+            local steps = sequence.steps
+            for i=1,#steps do
+                local step     = steps[i]
+                local coverage = step.coverage
+                if coverage then
+                    make(coverage)
+                end
+            end
+        end
+    end
+
+    return series, max
+end
+
+function moduledata.fonts.features.showallligatures(specification)
+    specification      = interfaces.checkedspecification(specification)
+    local id, cs       = fonts.definers.internal(specification,"<module:fonts:features:font>")
+    local tfmdata      = fonts.hashes.identifiers[id]
+    local allligatures,
+          max          = collectligatures(tfmdata)
+    local characters   = tfmdata.characters
+    local descriptions = tfmdata.descriptions
+    if #allligatures > 0 then
+        context.starttabulate { "|T|" .. string.rep("|",max) .. "|T|T|" }
+        for i=1,#allligatures do
+            local s = allligatures[i]
+            local n = #s
+            local u = s[1]
+            local c = characters[u]
+            local d = descriptions[u]
+            NC()
+            context("%U",u)
+            NC()
+            context("\\setfontid%i\\relax",id)
+            context.char(u)
+            NC()
+            context("\\setfontid%i\\relax",id)
+            for i=2,n do
+                context.char(s[i])
+                NC()
+            end
+            for i=n+1,max do
+                NC()
+            end
+            context(d.name)
+            NC()
+            context(c.tounicode)
+            NC()
+            NR()
+        end
+        context.stoptabulate()
+    else
+        context("no ligatures found")
+        context.par()
     end
 end

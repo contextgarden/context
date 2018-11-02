@@ -190,6 +190,9 @@ end
 
 function sandbox.enable()
     if not sandboxed then
+        debug = {
+            traceback = debug.traceback,
+        }
         for i=1,#initializers do
             initializers[i].action()
         end

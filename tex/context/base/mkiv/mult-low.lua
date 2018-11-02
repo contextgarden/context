@@ -162,6 +162,7 @@ return {
         --
         "newmode", "setmode", "resetmode",
         "newsystemmode", "setsystemmode", "resetsystemmode", "pushsystemmode", "popsystemmode",
+        "globalsetmode", "globalresetmode", "globalsetsystemmode", "globalresetsystemmode",
         "booleanmodevalue",
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif",

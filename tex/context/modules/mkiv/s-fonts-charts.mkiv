@@ -87,7 +87,7 @@
 
         local settings = utilities.parsers.settings_to_hash(settings)
 
-        local filename = settings.filename or ""
+        local filename = settings.filename or settings.name or ""
         local fontid   = true
         local newpage  = settings.page == interfaces.variables.yes
 
@@ -169,8 +169,9 @@
 
 \starttext
 
+    \showfontchart[filename=aegean,page=yes]
 %     \showfontchart[filename=veramono.ttf,page=yes]
-    \showfontchart[filename=CoelacanthSubhdHeavy.otf,page=yes]
+%     \showfontchart[filename=CoelacanthSubhdHeavy.otf,page=yes]
 
 %     \showfontchart[filename=LucidaBrightOT.otf,page=yes]
 %     \showfontchart[filename=LucidaBrightOT-Demi.otf,page=yes]

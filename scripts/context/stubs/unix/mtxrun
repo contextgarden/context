@@ -444,7 +444,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
 
--- original size: 9678, stripped down to: 6688
+-- original size: 9747, stripped down to: 6739
 
 if not modules then modules={} end modules ['l-sandbox']={
   version=1.001,
@@ -610,6 +610,9 @@ function blockrequire(name,lib)
 end
 function sandbox.enable()
   if not sandboxed then
+    debug={
+      traceback=debug.traceback,
+    }
     for i=1,#initializers do
       initializers[i].action()
     end
@@ -2015,7 +2018,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40802, stripped down to: 24000
+-- original size: 40960, stripped down to: 24090
 
 if not modules then modules={} end modules ['l-table']={
   version=1.001,
@@ -2029,7 +2032,6 @@ local table,string=table,string
 local concat,sort,insert,remove=table.concat,table.sort,table.insert,table.remove
 local format,lower,dump=string.format,string.lower,string.dump
 local getmetatable,setmetatable=getmetatable,setmetatable
-local getinfo=debug.getinfo
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
 local stripper=patterns.stripper
@@ -2591,20 +2593,23 @@ local function do_serialize(root,name,depth,level,indexed)
         end
       elseif tv=="function" then
         if functions then
-          local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
-          if tk=="number" then
-            if hexify then
-              handle(format("%s [0x%X]=load(%q),",depth,k,f))
+          local getinfo=debug and debug.getinfo
+          if getinfo then
+            local f=getinfo(v).what=="C" and dump(dummy) or dump(v)
+            if tk=="number" then
+              if hexify then
+                handle(format("%s [0x%X]=load(%q),",depth,k,f))
+              else
+                handle(format("%s [%s]=load(%q),",depth,k,f))
+              end
+            elseif tk=="boolean" then
+              handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
+            elseif tk~="string" then
+            elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
+              handle(format("%s %s=load(%q),",depth,k,f))
             else
-              handle(format("%s [%s]=load(%q),",depth,k,f))
+              handle(format("%s [%q]=load(%q),",depth,k,f))
             end
-          elseif tk=="boolean" then
-            handle(format("%s [%s]=load(%q),",depth,k and "true" or "false",f))
-          elseif tk~="string" then
-          elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
-            handle(format("%s %s=load(%q),",depth,k,f))
-          else
-            handle(format("%s [%q]=load(%q),",depth,k,f))
           end
         end
       else
@@ -3461,7 +3466,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-number"] = package.loaded["l-number"] or true
 
--- original size: 5713, stripped down to: 2304
+-- original size: 5720, stripped down to: 2392
 
 if not modules then modules={} end modules ['l-number']={
   version=1.001,
@@ -3485,11 +3490,14 @@ if bit32 then
     "0","0","0","0","0","0","0","0",
     "0","0","0","0","0","0","0","0",
   }
-  function number.tobitstring(b,m)
-    local n=32
-    for i=0,31 do
+  function number.tobitstring(b,m,w)
+    if not w then
+      w=32
+    end
+    local n=w
+    for i=0,w-1 do
       local v=bextract(b,i)
-      local k=32-i
+      local k=w-i
       if v==1 then
         n=k
         t[k]="1"
@@ -3497,12 +3505,14 @@ if bit32 then
         t[k]="0"
       end
     end
-    if m then
+    if w then
+      return concat(t,"",1,w)
+    elseif m then
       m=33-m*8
       if m<1 then
         m=1
       end
-      return concat(t,"",m)
+      return concat(t,"",1,m)
     elseif n<8 then
       return concat(t)
     elseif n<16 then
@@ -6264,7 +6274,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 43376, stripped down to: 23750
+-- original size: 43481, stripped down to: 23845
 
 if not modules then modules={} end modules ['util-str']={
   version=1.001,
@@ -7134,6 +7144,10 @@ function strings.newcollector()
       end
     end
 end
+local f_16_16=formatters["%0.5N"]
+function number.to16dot16(n)
+  return f_16_16(n/65536.0)
+end
 
 
 end -- of closure
@@ -7768,7 +7782,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fil"] = package.loaded["util-fil"] or true
 
--- original size: 9034, stripped down to: 6958
+-- original size: 8607, stripped down to: 6990
 
 if not modules then modules={} end modules ['util-fil']={
   version=1.001,
@@ -7777,6 +7791,7 @@ if not modules then modules={} end modules ['util-fil']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
+local tonumber=tonumber
 local byte=string.byte
 local char=string.char
 utilities=utilities or {}
@@ -7935,17 +7950,17 @@ end
 function files.readfixed2(f)
   local a,b=byte(f:read(2),1,2)
   if a>=0x80 then
-    return (a-0x100)+b/0x100
+    tonumber((a-0x100).."."..b)
   else
-    return (a    )+b/0x100
+    tonumber((a    ).."."..b)
   end
 end
 function files.readfixed4(f)
   local a,b,c,d=byte(f:read(4),1,4)
   if a>=0x80 then
-    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
+    tonumber((0x100*a+b-0x10000).."."..(0x100*c+d))
   else
-    return (0x100*a+b     )+(0x100*c+d)/0x10000
+    tonumber((0x100*a+b     ).."."..(0x100*c+d))
   end
 end
 if bit32 then
@@ -8067,7 +8082,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 11000, stripped down to: 8650
+-- original size: 11000, stripped down to: 8642
 
 if not modules then modules={} end modules ['util-sac']={
   version=1.001,
@@ -8077,7 +8092,7 @@ if not modules then modules={} end modules ['util-sac']={
   license="see context related readme files"
 }
 local byte,sub=string.byte,string.sub
-local extract=bit32 and bit32.extract
+local tonumber=tonumber
 utilities=utilities or {}
 local streams={}
 utilities.streams=streams
@@ -8272,29 +8287,29 @@ function streams.readinteger4le(f)
     return 0x1000000*a+0x10000*b+0x100*c+d
   end
 end
-function streams.readfixed4(f)
-  local i=f[2]
-  local j=i+3
-  f[2]=j+1
-  local a,b,c,d=byte(f[1],i,j)
-  if a>=0x80 then
-    return (0x100*a+b-0x10000)+(0x100*c+d)/0x10000
-  else
-    return (0x100*a+b     )+(0x100*c+d)/0x10000
-  end
-end
 function streams.readfixed2(f)
   local i=f[2]
   local j=i+1
   f[2]=j+1
   local a,b=byte(f[1],i,j)
   if a>=0x80 then
-    return (a-0x100)+b/0x100
+    tonumber((a-0x100).."."..b)
   else
-    return (a    )+b/0x100
+    tonumber((a    ).."."..b)
   end
 end
-if extract then
+function streams.readfixed4(f)
+  local i=f[2]
+  local j=i+3
+  f[2]=j+1
+  local a,b,c,d=byte(f[1],i,j)
+  if a>=0x80 then
+    tonumber((0x100*a+b-0x10000).."."..(0x100*c+d))
+  else
+    tonumber((0x100*a+b     ).."."..(0x100*c+d))
+  end
+end
+if bit32 then
   local extract=bit32.extract
   local band=bit32.band
   function streams.read2dot14(f)
@@ -13875,7 +13890,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 9387, stripped down to: 6861
+-- original size: 9956, stripped down to: 7311
 
 if not modules then modules={} end modules ['util-deb']={
   version=1.001,
@@ -13884,8 +13899,6 @@ if not modules then modules={} end modules ['util-deb']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-local debug=require "debug"
-local getinfo,sethook=debug.getinfo,debug.sethook
 local type,next,tostring,tonumber=type,next,tostring,tonumber
 local format,find,sub,gsub=string.format,string.find,string.sub,string.gsub
 local insert,remove,sort=table.insert,table.remove,table.sort
@@ -14090,6 +14103,28 @@ function debugger.showstats(printer,threshold)
   printer(format("calls     : %i",calls))
   printer(format("overhead  : %f",seconds(overhead/1000)))
 end
+local getinfo=nil
+local sethook=nil
+local function getdebug()
+  if sethook and getinfo then
+    return
+  end
+  if not debug then
+    local okay
+    okay,debug=pcall(require,"debug")
+  end
+  if type(debug)~="table" then
+    return
+  end
+  getinfo=debug.getinfo
+  sethook=debug.sethook
+  if type(getinfo)~="function" then
+    getinfo=nil
+  end
+  if type(sethook)~="function" then
+    sethook=nil
+  end
+end
 function debugger.savestats(filename,threshold)
   local f=io.open(filename,'w')
   if f then
@@ -14098,7 +14133,8 @@ function debugger.savestats(filename,threshold)
   end
 end
 function debugger.enable()
-  if nesting==0 then
+  getdebug()
+  if sethook and getinfo and nesting==0 then
     running=true
     if initialize then
       initialize()
@@ -14119,23 +14155,26 @@ function debugger.disable()
   if nesting>0 then
     nesting=nesting-1
   end
-  if nesting==0 then
+  if sethook and getinfo and nesting==0 then
     sethook()
   end
 end
 local function showtraceback(rep) 
-  local level=2 
-  local reporter=rep or report
-  while true do
-    local info=getinfo(level,"Sl")
-    if not info then
-      break
-    elseif info.what=="C" then
-      reporter("%2i : %s",level-1,"C function")
-    else
-      reporter("%2i : %s : %s",level-1,info.short_src,info.currentline)
+  getdebug()
+  if getinfo then
+    local level=2 
+    local reporter=rep or report
+    while true do
+      local info=getinfo(level,"Sl")
+      if not info then
+        break
+      elseif info.what=="C" then
+        reporter("%2i : %s",level-1,"C function")
+      else
+        reporter("%2i : %s : %s",level-1,info.short_src,info.currentline)
+      end
+      level=level+1
     end
-    level=level+1
   end
 end
 debugger.showtraceback=showtraceback
@@ -24666,8 +24705,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 985600
--- stripped bytes    : 348489
+-- original bytes    : 986081
+-- stripped bytes    : 348172
 
 -- end library merge
 

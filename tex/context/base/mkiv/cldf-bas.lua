@@ -49,6 +49,11 @@ local texsetcount   = tex.setcount
 
 -- a set of basic fast ones
 
+function context.setfontid(n)
+    -- isn't there a setter?
+    context("\\setfontid%i\\relax",n)
+end
+
 function context.char(k) -- used as escape too, so don't change to utf
     if type(k) == "table" then
         local n = #k

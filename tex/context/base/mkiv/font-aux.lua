@@ -185,6 +185,7 @@ end
 local getters = { -- maybe better getters[format][...]
     kern = {
         ["type1"]    = afm.getkern,
+        ["type3"]    = afm.getkern,
         ["opentype"] = otf.getkern,
     },
     substitution = {

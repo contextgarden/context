@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.10.18 00:07}
+\edef\contextversion{2018.11.02 12:28}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -570,8 +570,6 @@
 
 \loadmarkfile{back-pdf} % actually, this one should load the next three using document.arguments.backend
 
-\doifelsefileexists{back-shp.mkiv}{\loadmarkfile{back-shp}}{}
-
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
@@ -584,6 +582,8 @@
 \loadmarkfile{task-ini}
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
+
+\doifelsefileexists{back-shp.mkiv}{\loadmarkfile{back-shp}}{}
 
 \setupcurrentlanguage[\defaultlanguagetag]
 

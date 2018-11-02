@@ -220,6 +220,8 @@ update.platforms = {
     --
     ["solaris-sparc"]  = "solaris-sparc",
     ["solaris"]        = "solaris-sparc",
+    --
+    ["unknown"]        = "unknown",
 }
 
 local windowsplatform = {

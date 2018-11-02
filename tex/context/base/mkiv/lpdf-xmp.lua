@@ -11,6 +11,7 @@ local tostring, type = tostring, type
 local format, gsub = string.format, string.gsub
 local utfchar = utf.char
 local xmlfillin = xml.fillin
+local md5HEX = md5.HEX
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
 local trace_info = false  trackers.register("backend.info", function(v) trace_info = v end)
@@ -104,16 +105,13 @@ pdf.setsuppressoptionalinfo(
 )
 
 local included = backends.included
-
-local pdfsettrailerid = pdf.settrailerid
-
-local lpdfid = lpdf.id
+local lpdfid   = lpdf.id
 
 function lpdf.id() -- overload of ini
     return lpdfid(included.date)
 end
 
-pdf.disablecommand("settrailerid")
+local pdfsettrailerid = lpdf.settrailerid -- this is the wrapped one
 
 function lpdf.settrailerid(v)
     if v then
@@ -123,7 +121,7 @@ function lpdf.settrailerid(v)
         else
             v = tostring(v)
         end
-        local h = md5.HEX(v)
+        local h = md5HEX(v)
         if b then
             report_info("using frozen trailer id")
         else
@@ -313,7 +311,7 @@ local function flushxmpinfo()
     commands.poprandomseed() -- hack
 end
 
---  his will be enabled when we can inhibit compression for a stream at the lua end
+--  this will be enabled when we can inhibit compression for a stream at the lua end
 
 lpdf.registerdocumentfinalizer(flushxmpinfo,1,"metadata")
 

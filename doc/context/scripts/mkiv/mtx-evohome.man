@@ -14,6 +14,9 @@
 .B --collect
 collect data from device
 .TP
+.B --update
+update data from device
+.TP
 .B --presets
 file with authenciation data
 .TP

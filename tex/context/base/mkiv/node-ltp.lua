@@ -995,7 +995,7 @@ local function initialize_line_break(head,display)
         double_hyphen_demerits       = tex.doublehyphendemerits or 0,
         final_hyphen_demerits        = tex.finalhyphendemerits  or 0,
 
-        first_line                   = 0, -- tex.nest[tex.nest.ptr].modeline, -- 0, -- cur_list.pg_field
+        first_line                   = 0, -- texnest[texnest.ptr].modeline, -- 0, -- cur_list.pg_field
 
      -- each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
      -- each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away

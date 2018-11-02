@@ -225,8 +225,23 @@ vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
 %     endfor cycle ;
 % \stopMPcode
 
-def inpath suffix p =
-    = 1 step 1 until lua.mp.mf_path_length(str p)
+% def inpath suffix p =
+%     = 1 step 1 until lua.mp.mf_path_length(str p)
+% enddef ;
+
+% def inpath suffix p =
+%  %  = 1 step 1 until lua.mp.mf_path_length(str p)
+%     = 1 step 1 until (begingroup save n ; n := lua.mp.mf_path_length(str p) ; if n = 0 : 1 else : n fi endgroup)
+% enddef ;
+
+def inpath suffix p = % permits p[0]
+    = 1 step 1 until
+    begingroup
+    save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
+    mfun_inpath_r = p ;
+    mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
+    if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
+    endgroup
 enddef ;
 
 vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
