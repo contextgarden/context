@@ -67,6 +67,7 @@ local lpdf_epdf         = { }
 lpdf.epdf               = lpdf_epdf
 
 local openPDF           = epdf.open
+local newPDF            = epdf.new
 local closePDF          = epdf.close
 
 local getcatalog        = epdf.getcatalog
@@ -430,14 +431,17 @@ end
 local loaded    = { }
 local nofloaded = 0
 
-function lpdf_epdf.load(filename,userpassword,ownerpassword)
+function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
     local document = loaded[filename]
     if not document then
         statistics.starttiming(lpdf_epdf)
-        local __data__ = openPDF(filename) -- maybe resolvers.find_file
+        local __data__
+        if fromstring then
+            __data__ = newPDF(filename,#filename)
+        else
+            __data__ = openPDF(filename)
+        end
         if __data__ then
--- nofloaded = nofloaded + 1
--- report_epdf("%04i opened: %s",nofloaded,filename)
             if userpassword and getstatus(__data__) < 0 then
                 unencrypt(__data__,userpassword,nil)
             end
@@ -815,7 +819,7 @@ if img then do
 
     local factor               = 65536 / (7200/7227) -- 1/number.dimenfactors.bp
 
-    local newimage             = img.new
+    local createimage          = images.create
 
     directives.register("graphics.pdf.recompress",  function(v) recompress  = v end)
     directives.register("graphics.pdf.stripmarked", function(v) stripmarked = v end)
@@ -995,6 +999,10 @@ if img then do
     local openpdf  = lpdf_epdf.load
     local closepdf = lpdf_epdf.unload
 
+    local function newpdf(str,userpassword,ownerpassword)
+        return openpdf(str,userpassword,ownerpassword,true)
+    end
+
     local function querypdf(pdfdoc,pagenumber)
         if pdfdoc then
             if not pagenumber then
@@ -1017,12 +1025,14 @@ if img then do
                     trimbox     = page.TrimBox or cropbox,
                     artbox      = page.ArtBox or cropbox,
                     rotation    = page.Rotate or 0,
+                    xsize       = cropbox[3] - cropbox[1],
+                    ysize       = cropbox[4] - cropbox[2],
                 }
             end
         end
     end
 
-    local function copypage(pdfdoc,pagenumber,attributes,compact)
+    local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr)
         if pdfdoc then
             local root     = pdfdoc.Catalog
             local page     = pdfdoc.pages[pagenumber or 1]
@@ -1033,14 +1043,17 @@ if img then do
             if compact and lpdf_epdf.plugin then
                 plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
             end
-            local xobject  = pdfdictionary {
+            local xobject = pdfdictionary {
+                Type           = pdfconstant("XObject"),
+                Subtype        = pdfconstant("Form"),
+                FormType       = 1,
                 Group          = copyobject(xref,copied,page,"Group"),
                 LastModified   = copyobject(xref,copied,page,"LastModified"),
                 Metadata       = copyobject(xref,copied,page,"Metadata"),
                 PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
                 Resources      = copyresources(pdfdoc,xref,copied,page),
                 SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
-            }
+            } + attr
             if attributes then
                 for k, v in expanded(attributes) do
                     page[k] = v -- maybe nested
@@ -1094,12 +1107,22 @@ if img then do
             elseif rotation > 1 and rotation < 4 then
                 transform = rotation
             end
-            return newimage {
+            xobject.BBox = pdfarray {
+                boundingbox[1] * bpfactor,
+                boundingbox[2] * bpfactor,
+                boundingbox[3] * bpfactor,
+                boundingbox[4] * bpfactor,
+            }
+            -- maybe like bitmaps
+            return createimage { -- beware: can be a img.new or a dummy
                 bbox      = boundingbox,
                 transform = transform,
                 nolength  = nolength,
+                nobbox    = true,
+                notype    = true,
                 stream    = content, -- todo: no compress, pass directly also length, filter etc
                 attr      = xobject(),
+             -- type      = images.types.stream,
             }
         end
     end
@@ -1107,9 +1130,16 @@ if img then do
     lpdf_epdf.image = {
         open  = openpdf,
         close = closepdf,
+        new   = newpdf,
         query = querypdf,
         copy  = copypage,
     }
+
+--     lpdf.injectors.pdf = function(specification)
+--         local d = lpdf_epdf.load(specification.filename)
+--         print(d)
+--     end
+
 
 end end
 

@@ -99,15 +99,24 @@ do
 
     local initialize = function(str,position,size)
         n = 0
-        m = size -- % tonumber(size)
+        m = size
         return position + 1
     end
 
     local setroutine = function(str,position,index,size,filename)
-        local forward = position + tonumber(size)
+        if routines[index] then
+            -- we have passed the end
+            return false
+        end
+        local forward = position + size
         local stream  = decrypt(sub(str,position+1,forward),4330,4)
         routines[index] = { byte(stream,1,#stream) }
-        return forward
+        n = n + 1
+        if n >= m then
+            -- m should be index now but can we assume ordering?
+            return #str
+        end
+        return forward + 1
     end
 
     local setvector = function(str,position,name,size,filename)
@@ -152,7 +161,7 @@ do
 
     local p_filterroutines = -- dup <i> <n> RD or -| <n encrypted bytes> NP or |
         (1-subroutines)^0 * subroutines * spaces * Cmt(cardinal,initialize)
-      * (Cmt(cardinal * spaces * cardinal * p_rd * Carg(1), setroutine) * p_np + P(1))^1
+      * (Cmt(cardinal * spaces * cardinal * p_rd * Carg(1), setroutine) * p_np + (1-p_nd))^1
 
     local p_filtershapes = -- /foo <n> RD <n encrypted bytes> ND
         (1-charstrings)^0 * charstrings * spaces * Cmt(cardinal,initialize)
@@ -233,6 +242,7 @@ do
 
         routines, vector, chars = { }, { }, { }
         if shapestoo or streams then
+         -- io.savedata("foo.txt",binary)
             lpegmatch(p_filterroutines,binary,1,filename)
             lpegmatch(p_filtershapes,binary,1,filename)
             local data = {
@@ -244,7 +254,8 @@ do
                     }
                 },
             }
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,true,streams)
+            -- only cff 1 in type 1 fonts
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams)
         else
             lpegmatch(p_filternames,binary,1,filename)
         end

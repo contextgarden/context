@@ -892,7 +892,7 @@ function xtables.construct()
                     size,
                     i < nofrange and rowdistance > 0 and rowdistance or false, -- might move
                     false,
-                    rp and rp.samepage or false,
+                    rp or false,
                 }
             end
         end
@@ -901,7 +901,7 @@ function xtables.construct()
             result[1]   [5] = false
             result[nofr][5] = false
             for i=2,nofr-1 do
-                local r = result[i]
+                local r = result[i][5]
                 if r == v_both or r == v_before then
                     result[i-1][5] = true
                 elseif r == v_after then

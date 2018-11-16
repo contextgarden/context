@@ -251,10 +251,10 @@ local function loadstreams(cache,filename,sub,instance)
                     fontheader = {
                         fontversion = metadata.version,
                         units       = 1000, -- can this be different?
-                        max         = fontbbox[1],
-                        min         = fontbbox[2],
-                        max         = fontbbox[3],
-                        min         = fontbbox[4],
+                        xmin        = fontbbox[1],
+                        ymin        = fontbbox[2],
+                        xmax        = fontbbox[3],
+                        ymax        = fontbbox[4],
                     },
                     horizontalheader = {
                         ascender  = 0,

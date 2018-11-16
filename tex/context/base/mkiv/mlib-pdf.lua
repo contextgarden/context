@@ -46,7 +46,8 @@ metapost.optimize     = true  -- false
 
 local experiment      = true -- uses context(node) that already does delayed nodes
 local savedliterals   = nil  -- needs checking
-local mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral)) -- pdfliteral.mode  = 1
+----- mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral))
+local mpsliteral      = nodes.pool.pdforiginliteral
 
 local f_f  = formatters["%.6F"]
 local f_m  = formatters["%.6F %.6F m"]
@@ -86,11 +87,11 @@ trackers.register("metapost.forcestroke",function(v)
     force_stroke = v
 end)
 
-local pdfliteral = function(pdfcode)
-    local literal = copy_node(mpsliteral)
-    literal.data = pdfcode
-    return literal
-end
+-- local pdfliteral = function(pdfcode)
+--     local literal = copy_node(mpsliteral)
+--     literal.data = pdfcode
+--     return literal
+-- end
 
 -- Because in MKiV we always have two passes, we save the objects. When an extra
 -- mp run is done (due to for instance texts identifier in the parse pass), we
@@ -142,9 +143,10 @@ end
 
 function metapost.flushliteral(d)
     if savedliterals then
-        local literal = copy_node(mpsliteral)
-        literal.data = savedliterals[d]
-        write_node(literal)
+--         local literal = copy_node(mpsliteral)
+--         literal.data = savedliterals[d]
+--         write_node(literal)
+        write_node(mpsliteral(savedliterals[d]))
     else
         report_metapost("problem flushing literal %a",d)
     end
@@ -158,7 +160,8 @@ function pdfflusher.comment(message)
     if message then
         message = formatters["%% mps graphic %s: %s"](metapost.n,message)
         if experiment then
-            context(pdfliteral(message))
+         -- context(pdfliteral(message))
+            context(mpsliteral(message))
         elseif savedliterals then
             local last = #savedliterals + 1
             savedliterals[last] = message
@@ -187,7 +190,8 @@ function pdfflusher.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
         if experiment then
-            context(pdfliteral(pdfliterals))
+         -- context(pdfliteral(pdfliterals))
+            context(mpsliteral(pdfliterals))
         else
             if savedliterals then
                 local last = #savedliterals + 1

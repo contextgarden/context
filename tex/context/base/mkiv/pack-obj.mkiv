@@ -51,7 +51,8 @@
 \newdimen\objectht   \def\objectheight{\the\objectht}
 \newdimen\objectdp   \def\objectdepth {\the\objectdp}
 
-%D If I have time I will use the unreferenced variant for e.g. mp reuse.
+%D If I have time I will use the unreferenced variant for e.g. mp reuse. This can be
+%D rewritten in \LUA\ anyway.
 
 \unexpanded\def\setreferencedobject       #1#2{\begingroup\synctexpause\objectoff\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
 \unexpanded\def\settightreferencedobject  #1#2{\begingroup\synctexpause\objectoff\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}

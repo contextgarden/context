@@ -32,8 +32,27 @@ local context           = context
 -- encoded utf16 string type between <>. We could probably save some bytes by using
 -- strings between () but then we end up with escaped ()\ too.
 
-local pdf    = pdf
-local factor = number.dimenfactors.bp
+local pdf               = pdf
+local factor            = number.dimenfactors.bp
+
+local codeinjections    = { }
+local nodeinjections    = { }
+
+local backends          = backends
+
+local pdfbackend        = {
+    comment        = "backend for directly generating pdf output",
+    nodeinjections = nodeinjections,
+    codeinjections = codeinjections,
+    registrations  = { },
+    tables         = { },
+}
+
+backends.pdf = pdfbackend
+
+lpdf         = lpdf or { }
+local lpdf   = lpdf
+lpdf.flags   = lpdf.flags or { } -- will be filled later
 
 local pdfsetinfo             = pdf.setinfo
 local pdfsetcatalog          = pdf.setcatalog
@@ -46,13 +65,6 @@ local pdfsetpageresources    = pdf.setpageresources
 local pdfsetpageattributes   = pdf.setpageattributes
 local pdfsetpagesattributes  = pdf.setpagesattributes
 
-local pdfgetpos              = pdf.getpos
-local pdfgethpos             = pdf.gethpos
-local pdfgetvpos             = pdf.getvpos
-local pdfgetmatrix           = pdf.getmatrix
-local pdfhasmatrix           = pdf.hasmatrix
-local pdfprint               = pdf.print
-
 local pdfreserveobject       = pdf.reserveobj
 local pdfimmediateobject     = pdf.immediateobj
 local pdfdeferredobject      = pdf.obj
@@ -60,8 +72,11 @@ local pdfreferenceobject     = pdf.refobj
 
 local pdfgetfontname         = pdf.getfontname
 local pdfgetfontobjnum       = pdf.getfontobjnum
-
+local pdfgetxformname        = pdf.getxformname
+local pdfincludeimage        = pdf.includeimage
+local pdfincludechar         = pdf.includechar
 local pdfgetpagereference    = pdf.getpageref or pdf.pageref -- tex.pdfpageref is obsolete
+local pdfsetfontattributes   = pdf.setfontattributes
 
 local setmajorversion        = pdf.setmajorversion
 local setminorversion        = pdf.setminorversion
@@ -101,10 +116,15 @@ updaters.register("backend.update.lpdf",function()
     pdfimmediateobject     = pdf.immediateobj
     pdfdeferredobject      = pdf.obj
     pdfreferenceobject     = pdf.refobj
+    pdfsetfontattributes   = pdf.setfontattributes
 
     pdfgetfontname         = pdf.getfontname
     pdfgetfontobjnum       = pdf.getfontobjnum
+    pdfgetxformname        = pdf.getxformname
+    pdfincludeimage        = pdf.includeimage
+    pdfincludechar         = pdf.includechar
     pdfgetpagereference    = pdf.getpageref
+
 
     setmajorversion        = pdf.setmajorversion
     setminorversion        = pdf.setminorversion
@@ -130,19 +150,6 @@ local trace_resources  = false  trackers.register("backend.resources",  function
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
-local backends   = backends
-local pdfbackend = {
-    comment        = "backend for directly generating pdf output",
-    nodeinjections = { },
-    codeinjections = { },
-    registrations  = { },
-    tables         = { },
-}
-backends.pdf = pdfbackend
-lpdf         = lpdf or { }
-local lpdf   = lpdf
-lpdf.flags   = lpdf.flags or { } -- will be filled later
-
 function lpdf.settrailerid(id)
     pdfsettrailerid(id)
 end
@@ -162,6 +169,12 @@ function lpdf.minorversion() return getminorversion() end
 function lpdf.getfontname     (id) return pdfgetfontname  (id) end
 function lpdf.getfontobjnumber(id) return pdfgetfontobjnum(id) end
 
+function lpdf.getxformname(id) return pdfgetxformname(id) end
+function lpdf.includeimage(id) return pdfincludeimage(id) end
+
+function lpdf.includechar    (f,c) pdfincludechar(f,c) end
+function lpdf.includecharlist(f,c) pdfincludechar(f,c) end -- can be disabled
+
 local frozen = false
 
 function lpdf.setcompression(level,objectlevel,freeze)
@@ -179,92 +192,110 @@ end
 function lpdf.compresslevel      () return getcompresslevel      () end
 function lpdf.objectcompresslevel() return getobjectcompresslevel() end
 
-local codeinjections = pdfbackend.codeinjections
-local nodeinjections = pdfbackend.nodeinjections
+do
 
--- can change:
+    local pdfgetpos     = pdf.getpos
+    local pdfgethpos    = pdf.gethpos
+    local pdfgetvpos    = pdf.getvpos
+    local pdfgetmatrix  = pdf.getmatrix
+    local pdfhasmatrix  = pdf.hasmatrix
+    local pdfprint      = pdf.print
 
-pdfbackend.codeinjections.getpos  = pdfgetpos
-pdfbackend.codeinjections.gethpos = pdfgethpos
-pdfbackend.codeinjections.getvpos = pdfgetvpos
-
-lpdf.getpos        = pdfgetpos
-lpdf.gethpos       = pdfgethpos
-lpdf.getvpos       = pdfgetvpos
-lpdf.print         = pdfprint
-
-updaters.register("backend.update.lpdf",function()
-
-    pdfgetpos    = pdf.getpos
-    pdfgethpos   = pdf.gethpos
-    pdfgetvpos   = pdf.getvpos
-    pdfhasmatrix = pdf.hasmatrix
-    pdfgetmatrix = pdf.getmatrix
-    pdfprint     = pdf.print
-
-    pdfbackend.codeinjections.getpos  = pdfgetpos
-    pdfbackend.codeinjections.gethpos = pdfgethpos
-    pdfbackend.codeinjections.getvpos = pdfgetvpos
-
-    lpdf.getpos  = pdfgetpos
-    lpdf.gethpos = pdfgethpos
-    lpdf.getvpos = pdfgetvpos
-    lpdf.print   = pdfprint
-
-end)
-
--- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
---     local x1 = llx * rx + lly * sy
---     local y1 = llx * sx + lly * ry
---     local x2 = llx * rx + ury * sy
---     local y2 = llx * sx + ury * ry
---     local x3 = urx * rx + lly * sy
---     local y3 = urx * sx + lly * ry
---     local x4 = urx * rx + ury * sy
---     local y4 = urx * sx + ury * ry
---     llx = min(x1,x2,x3,x4);
---     lly = min(y1,y2,y3,y4);
---     urx = max(x1,x2,x3,x4);
---     ury = max(y1,y2,y3,y4);
---     return llx, lly, urx, ury
--- end
---
--- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
---     if pdfhasmatrix() then
---         local sx, rx, ry, sy = pdfgetmatrix()
---         local w, h = urx - llx, ury - lly
---         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
---      -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
---     else
---         return llx, lly, urx, ury
---     end
--- end
-
--- funny values for tx and ty
-
-function lpdf.rectangle(width,height,depth,offset)
-    local tx, ty = pdfgetpos()
-    if offset then
-        tx     = tx     -   offset
-        ty     = ty     +   offset
-        width  = width  + 2*offset
-        height = height +   offset
-        depth  = depth  +   offset
+    function lpdf.getpos()
+        return pdfgetpos()
     end
-    if pdfhasmatrix() then
-        local rx, sx, sy, ry = pdfgetmatrix()
-        return
-            factor *  tx,
-            factor * (ty - ry*depth  + sx*width),
-            factor * (tx + rx*width  - sy*height),
-            factor * (ty + ry*height - sx*width)
-    else
-        return
-            factor *  tx,
-            factor * (ty - depth),
-            factor * (tx + width),
-            factor * (ty + height)
+
+    function lpdf.gethpos()
+        return pdfgethpos()
     end
+
+    function lpdf.getvpos()
+        return pdfgetvpos()
+    end
+
+    pdfbackend.codeinjections.getpos  = lpdf.getpos
+    pdfbackend.codeinjections.gethpos = lpdf.gethpos
+    pdfbackend.codeinjections.getvpos = lpdf.getvpos
+
+    updaters.register("backend.update.lpdf",function()
+        pdfgetpos  = pdf.getpos
+        pdfgethpos = pdf.gethpos
+        pdfgetvpos = pdf.getvpos
+    end)
+
+    -- todo
+
+    function lpdf.print(...)
+        return pdfprint(...)
+    end
+
+    pdfbackend.codeinjections.print = lpdf.print
+
+    updaters.register("backend.update.lpdf",function()
+        pdfprint     = pdf.print
+    end)
+
+    -- todo
+
+    updaters.register("backend.update.lpdf",function()
+        pdfhasmatrix = pdf.hasmatrix
+        pdfgetmatrix = pdf.getmatrix
+    end)
+
+    -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
+    --     local x1 = llx * rx + lly * sy
+    --     local y1 = llx * sx + lly * ry
+    --     local x2 = llx * rx + ury * sy
+    --     local y2 = llx * sx + ury * ry
+    --     local x3 = urx * rx + lly * sy
+    --     local y3 = urx * sx + lly * ry
+    --     local x4 = urx * rx + ury * sy
+    --     local y4 = urx * sx + ury * ry
+    --     llx = min(x1,x2,x3,x4);
+    --     lly = min(y1,y2,y3,y4);
+    --     urx = max(x1,x2,x3,x4);
+    --     ury = max(y1,y2,y3,y4);
+    --     return llx, lly, urx, ury
+    -- end
+    --
+    -- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
+    --     if pdfhasmatrix() then
+    --         local sx, rx, ry, sy = pdfgetmatrix()
+    --         local w, h = urx - llx, ury - lly
+    --         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
+    --      -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
+    --     else
+    --         return llx, lly, urx, ury
+    --     end
+    -- end
+
+    -- funny values for tx and ty
+
+    function lpdf.rectangle(width,height,depth,offset)
+        local tx, ty = pdfgetpos()
+        if offset then
+            tx     = tx     -   offset
+            ty     = ty     +   offset
+            width  = width  + 2*offset
+            height = height +   offset
+            depth  = depth  +   offset
+        end
+        if pdfhasmatrix() then
+            local rx, sx, sy, ry = pdfgetmatrix()
+            return
+                factor *  tx,
+                factor * (ty - ry*depth  + sx*width),
+                factor * (tx + rx*width  - sy*height),
+                factor * (ty + ry*height - sx*width)
+        else
+            return
+                factor *  tx,
+                factor * (ty - depth),
+                factor * (tx + width),
+                factor * (ty + height)
+        end
+    end
+
 end
 
 -- we could use a hash of predefined unicodes
@@ -458,10 +489,14 @@ do
 
     tostring_d = function(t,contentonly,key)
         if next(t) then
-            local r, n = { }, 0
-            for k in next, t do
-                n = n + 1
-                r[n] = k
+            local r, n, e = { }, 0
+            for k, v in next, t do
+                if k == "__extra__" then
+                    e = v
+                else
+                    n = n + 1
+                    r[n] = k
+                end
             end
             sort(r)
             for i=1,n do
@@ -490,6 +525,9 @@ do
                 else
                     r[i] = f_key_value(k,tostring(v))
                 end
+            end
+            if e then
+                r[n+1] = e
             end
             if contentonly then
                 return concat(r," ")
@@ -535,6 +573,10 @@ do
                 else
                     r[k] = tostring(v)
                 end
+            end
+            local e = t.__extra__
+            if e then
+                r[tn+1] = e
             end
             if contentonly then
                 return concat(r, " ")
@@ -601,11 +643,45 @@ local function value_r(t) return t[1] or 0          end -- null
 local function value_v(t) return t[1]               end
 local function value_l(t) return t[1]               end
 
+local function add_to_d(t,v)
+    local k = type(v)
+    if k == "string" then
+        if t.__extra__ then
+            t.__extra__ = t.__extra__ .. " " .. v
+        else
+            t.__extra__ = v
+        end
+    elseif k == "table" then
+        for k, v in next, v do
+            t[k] = v
+        end
+    end
+    return t
+end
+
+local function add_to_a(t,v)
+    local k = type(v)
+    if k == "string" then
+        if t.__extra__ then
+            t.__extra__ = t.__extra__ .. " " .. v
+        else
+            t.__extra__ = v
+        end
+    elseif k == "table" then
+        local n = #t
+        for i=1,#v do
+            n = n + 1
+            t[n] = v[i]
+        end
+    end
+    return t
+end
+
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
 local mt_x = { __lpdftype = "stream",     __tostring = tostring_x, __call = value_x, __newindex = add_x }
-local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d }
-local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a }
+local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d, __add = add_to_d }
+local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a, __add = add_to_a }
 local mt_u = { __lpdftype = "unicode",    __tostring = tostring_u, __call = value_u }
 local mt_s = { __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
 local mt_p = { __lpdftype = "docstring",  __tostring = tostring_p, __call = value_p }
@@ -662,60 +738,66 @@ local function pdfliteral(str,hex) -- can also produce a hex <> instead of () li
     return setmetatable({ str, hex },mt_l)
 end
 
-local cache = { } -- can be weak
+local pdfnumber, pdfconstant
 
-local function pdfnumber(n,default) -- 0-10
-    if not n then
-        n = default
+do
+
+    local cache = { } -- can be weak
+
+    pdfnumber = function(n,default) -- 0-10
+        if not n then
+            n = default
+        end
+        local c = cache[n]
+        if not c then
+            c = setmetatable({ n },mt_n)
+        --  cache[n] = c -- too many numbers
+        end
+        return c
     end
-    local c = cache[n]
-    if not c then
-        c = setmetatable({ n },mt_n)
-    --  cache[n] = c -- too many numbers
+
+    for i=-1,9 do cache[i] = pdfnumber(i) end
+
+    local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
+        ["\00"]="#00",
+        ["\09"]="#09",
+        ["\10"]="#0a",
+        ["\12"]="#0c",
+        ["\13"]="#0d",
+        [ " " ]="#20",
+        [ "#" ]="#23",
+        [ "%" ]="#25",
+        [ "(" ]="#28",
+        [ ")" ]="#29",
+        [ "/" ]="#2f",
+        [ "[" ]="#5b",
+        [ "\\"]="#5c",
+        [ "]" ]="#5d",
+        [ "{" ]="#7b",
+        [ "}" ]="#7d",
+    } + P(1)
+
+    local escaped = Cs(Cc("/") * replacer^0)
+
+    local cache = table.setmetatableindex(function(t,k)
+        local v = setmetatable({ lpegmatch(escaped,k) }, mt_c)
+        t[k] = v
+        return v
+    end)
+
+    pdfconstant = function(str,default)
+        if not str then
+            str = default or "none"
+        end
+        return cache[str]
     end
-    return c
-end
 
-for i=-1,9 do cache[i] = pdfnumber(i) end
+    local escaped = Cs(replacer^0)
 
-local replacer = S("\0\t\n\r\f ()[]{}/%%#\\") / {
-    ["\00"]="#00",
-    ["\09"]="#09",
-    ["\10"]="#0a",
-    ["\12"]="#0c",
-    ["\13"]="#0d",
-    [ " " ]="#20",
-    [ "#" ]="#23",
-    [ "%" ]="#25",
-    [ "(" ]="#28",
-    [ ")" ]="#29",
-    [ "/" ]="#2f",
-    [ "[" ]="#5b",
-    [ "\\"]="#5c",
-    [ "]" ]="#5d",
-    [ "{" ]="#7b",
-    [ "}" ]="#7d",
-} + P(1)
-
-local escaped = Cs(Cc("/") * replacer^0)
-
-local cache = table.setmetatableindex(function(t,k)
-    local v = setmetatable({ lpegmatch(escaped,k) }, mt_c)
-    t[k] = v
-    return v
-end)
-
-local function pdfconstant(str,default)
-    if not str then
-        str = default or "none"
+    function lpdf.escaped(str)
+        return lpegmatch(escaped,str) or str
     end
-    return cache[str]
-end
 
-local escaped = Cs(replacer^0)
-
-function lpdf.escaped(str)
-    return lpegmatch(escaped,str) or str
 end
 
 local pdfnull, pdfboolean, pdfreference, pdfverbose
@@ -814,6 +896,14 @@ end
 
 function lpdf.nofpages()
     return structures.pages.nofpages
+end
+
+function lpdf.obj(...)
+    pdfdeferredobject(...)
+end
+
+function lpdf.immediateobj(...)
+    pdfimmediateobject(...)
 end
 
 function lpdf.delayedobject(data,n)
@@ -1051,18 +1141,16 @@ do
     local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
     ----- names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
 
-    local function flushcatalog()
+    local function checkcatalog()
         if not environment.initex then
             trace_flush("catalog")
-            catalog.Type = nil
-            pdfsetcatalog(catalog())
+            return true
         end
     end
 
-    local function flushinfo()
+    local function checkinfo()
         if not environment.initex then
             trace_flush("info")
-            info.Type = nil
             if lpdf.majorversion() > 1 then
                 for k, v in next, info do
                     if k == "CreationDate" or k == "ModDate" then
@@ -1072,7 +1160,33 @@ do
                     end
                 end
             end
+            return true
+        end
+    end
+
+    local function flushcatalog()
+        if checkcatalog() then
+            catalog.Type = nil
+            pdfsetcatalog(catalog())
+        end
+    end
+
+    local function flushinfo()
+        if checkinfo() then
+            info.Type = nil
             pdfsetinfo(info())
+        end
+    end
+
+    function lpdf.getcatalog()
+        if checkcatalog() then
+            return pdfreference(pdfimmediateobject(tostring(catalog)))
+        end
+    end
+
+    function lpdf.getinfo()
+        if checkinfo() then
+            return pdfreference(pdfimmediateobject(tostring(info)))
         end
     end
 
@@ -1157,7 +1271,11 @@ do
                 return collected()
             end
         else
-            return ""
+            if options and options.serialize == false then
+                return pdfdictionary { }
+            else
+                return ""
+            end
         end
     end
 
@@ -1504,5 +1622,57 @@ function lpdf.copystring(v)
     end
 end
 
-lpdf.includechar = pdf.includechar
-lpdf.includefont = pdf.includefont
+do
+
+    local pdf_includechar = pdf.includechar
+    local pdf_includefont = pdf.includefont
+    local pdf_setmapfile  = pdf.mapfile
+    local pdf_setmapline  = pdf.mapline
+
+    updaters.register("backend.update.lpdf",function()
+        pdf_includechar = pdf.includechar
+        pdf_includefont = pdf.includefont
+        pdf_setmapfile  = pdf.mapfile
+        pdf_setmapline  = pdf.mapline
+    end)
+
+    function lpdf.includechar(...) pdf_includechar(...) end
+    function lpdf.includefont(...) pdf_includefont(...) end
+
+    function lpdf.setmapfile(...) pdf_setmapfile(...) end
+    function lpdf.setmapline(...) pdf_setmapline(...) end
+
+end
+
+do
+
+    -- This is obsolete but old viewers might still use it as directive
+    -- for what to send to a postscript printer.
+
+    local a_procset, d_procset
+
+    function lpdf.procset(dict)
+        if not a_procset then
+            a_procset = pdfreference(pdfimmediateobject(pdfarray {
+                pdfconstant("PDF"),
+                pdfconstant("Text"),
+                pdfconstant("ImageB"),
+                pdfconstant("ImageC"),
+                pdfconstant("ImageI"),
+            }))
+        end
+        if dict then
+            if not d_procset then
+                d_procset = pdfreference(pdfimmediateobject(pdfdictionary {
+                    ProcSet = a_procset
+                }))
+            end
+            return d_procset
+        else
+            return a_procset
+        end
+    end
+
+end
+
+

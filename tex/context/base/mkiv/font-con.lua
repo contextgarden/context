@@ -592,6 +592,7 @@ function constructors.scale(tfmdata,specification)
         targetparameters.descender = delta * descender
     end
     --
+-- inspect(targetparameters)
     constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0

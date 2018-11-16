@@ -17,12 +17,15 @@ local setlist         = nuts.setlist
 
 local new_hlist       = nuts.pool.hlist
 
-local saveboxresource = tex.saveboxresource
-local useboxresource  = tex.useboxresource
-local getboxresource  = tex.getboxresourcedimensions
+local boxresources             = tex.boxresources
+local saveboxresource          = boxresources.save
+local useboxresource           = boxresources.use
+local getboxresourcedimensions = boxresources.getdimensions
+
+local pdfcollectedresources    = lpdf.collectedresources
 
 function codeinjections.registerboxresource(n,offset)
-    local r = saveboxresource(n,nil,lpdf.collectedresources(),true,0,offset or 0) -- direct, todo: accept functions as attr/resources
+    local r = saveboxresource(n,nil,pdfcollectedresources(),true,0,offset or 0) -- direct, todo: accept functions as attr/resources
     return r
 end
 
@@ -35,5 +38,5 @@ function codeinjections.restoreboxresource(index)
 end
 
 function codeinjections.boxresourcedimensions(index)
-    return getboxresource(index)
+    return getboxresourcedimensions(index)
 end

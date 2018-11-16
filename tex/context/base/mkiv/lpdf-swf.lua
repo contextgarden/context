@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['lpdf-swf'] = {
 
 local format, gsub = string.format, string.gsub
 local concat = table.concat
+local formatters = string.formatters
 
 local backends        = backends
 local lpdf            = lpdf
@@ -32,6 +33,43 @@ local nodeinjections = backends.pdf.nodeinjections
 local trace_swf = false  trackers.register("backend.swf", function(v) trace_swf = v end)
 
 local report_swf = logs.reporter("backend","swf")
+
+--------------------------------------------------------------------------------------
+
+local createimage = images.create
+local embedimage  = images.embed
+
+local basepoints  = number.dimenfactors.bp
+
+local f_image     = formatters["%.6F 0 0 %.6F 0 0 cm /%s Do"]
+
+directives.register("pdf.stripzeros",function()
+    f_image = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
+end)
+
+local function package(image) -- see lpdf-u3d **
+    local boundingbox = image.bbox
+    local imagetag    = "Im" .. image.index -- this is not ok
+    local resources   = pdfdictionary {
+        ProcSet   = lpdf.procset(),
+        Resources = pdfdictionary {
+            XObject = pdfdictionary {
+                [imagetag] = pdfreference(image.objnum)
+            }
+        }
+    }
+    local width  = boundingbox[3]
+    local height = boundingbox[4]
+    local xform = createimage {
+        attr   = resources(),
+        stream = f_image(width,height,imagetag),
+        bbox   = { 0, 0, width/basepoints, height/basepoints },
+    }
+    embedimage(xform)
+    return xform
+end
+
+--------------------------------------------------------------------------------------
 
 local activations = {
     click = "XA",
@@ -279,7 +317,7 @@ local function insertswf(spec)
             end
         end
         if figure then
-            local image = img.package(figure.status.private)
+            local image = package(figure.status.private)
             appearance = pdfdictionary { N = pdfreference(image.objnum) }
             if trace_swf then
                 report_swf("using preview %s",preview)

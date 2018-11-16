@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['grph-inc'] = {
     license   = "see context related readme files"
 }
 
+-- todo: in pdfe: pdfe.copyappearance(document,objnum)
+--
+-- local im = createimage { filename = fullname }
+-- local on = images.flushobject(im,document.__xrefs__[AP])
+
 -- todo: files are sometimes located twice
 -- todo: empty filename or only suffix always false (not found)
 -- lowercase types
@@ -40,11 +45,11 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 -- todo: store loaded pages per pdf file someplace
 
-local tonumber, tostring, next = tonumber, tostring, next
+local tonumber, tostring, next, unpack = tonumber, tostring, next, unpack
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local longtostring = string.longtostring
 local contains = table.contains
-local sortedhash = table.sortedhash
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local concat, insert, remove = table.concat, table.insert, table.remove
 local todimen = string.todimen
 local collapsepath = file.collapsepath
@@ -62,7 +67,8 @@ local replacetemplate   = utilities.templates.replace
 
 -- local bpfactor          = number.dimenfactors.bp
 
-local images            = img
+images                  = images or { }
+local images            = images
 
 local hasscheme         = url.hasscheme
 local urlhashed         = url.hashed
@@ -152,14 +158,108 @@ function checkimage(figure)
     end
 end
 
---- some extra img functions --- can become luat-img.lua
+--- begin of mapping / this will become graphics & code|nodeinjections but not this year
 
-local allimagekeys = images.keys()
+local  __img__ = img or setmetatableindex(function() report_inclusion("no img lib present") end)
+images.__img__ = img
+
+local img_new   = img.new
+local img_scan  = img.scan
+local img_copy  = img.copy
+local img_wrap  = img.node
+local img_embed = img.immediatewrite
+
+updaters.register("backend.update",function()
+    local img = images.__img__
+    img_new   = img.new
+    img_scan  = img.scan
+    img_copy  = img.copy
+    img_wrap  = img.wrap
+    img_embed = img.embed
+end)
+
+local imagekeys  = { -- only relevant ones
+    "width", "height", "depth", "bbox",
+    "colordepth", "colorspace",
+    "filename", "filepath", "visiblefilename",
+    "imagetype", "stream",
+    "index", "objnum",
+    "pagebox", "page", "pages",
+    "rotation", "transform",
+    "xsize", "ysize", "xres", "yres",
+}
+
+local imagesizes = {
+    art   = true, bleed = true,  crop = true,
+    media = true, none  = true,  trim = true,
+}
+
+local imagetypes = { [0] =
+    "none",
+    "pdf", "png", "jpg", "jp2", "jbig2",
+    "stream", "memstream",
+}
+
+imagetypes   = table.swapped(imagetypes,imagetypes)
+
+images.keys  = imagekeys
+images.types = imagetypes
+images.sizes = imagesizes
+
+-- new interface
+
+local function createimage(specification)
+    return img_new(specification)
+end
+
+local function copyimage(specification)
+    return img_copy(specification)
+end
+
+local function scanimage(specification)
+    return img_scan(specification)
+end
+
+local function embedimage(specification)
+    -- write the image to file
+    return img_embed(specification)
+end
+
+local function wrapimage(specification)
+    -- create an image rule
+    return img_wrap(specification)
+end
+
+images.create = createimage
+images.scan   = scanimage
+images.copy   = copyimage
+images.wrap   = wrapimage
+images.embed  = embedimage
+
+-- now we reimplement img:
+
+img = {
+    new                  = createimage,
+    scan                 = scanimage,
+    copy                 = copyimage,
+    node                 = wrapimage,
+    write                = function(specification) context(wrapimage(specification)) end,
+    immediatewrite       = embedimage,
+    immediatewriteobject = function() end, -- not upported, experimental anyway
+    boxes                = function() return sortedkeys(imagesizes) end,
+    fields               = function() return imagekeys end,
+    types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
+}
+
+-- end of copies / mapping
 
 local function imagetotable(imgtable)
+    if type(imgtable) == "table" then
+        return copy(imgtable)
+    end
     local result = { }
-    for k=1,#allimagekeys do
-        local key = allimagekeys[k]
+    for k=1,#imagekeys do
+        local key   = imagekeys[k]
         result[key] = imgtable[key]
     end
     return result
@@ -173,35 +273,18 @@ function images.print(i,...)
     return table.print(imagetotable(i),...)
 end
 
-function images.clone(i,data)
-    i.width  = data.width  or i.width
-    i.height = data.height or i.height
-    -- attr etc
-    return i
-end
-
-local validsizes = table.tohash(images.boxes())
-local validtypes = table.tohash(images.types())
-
 local function checkimagesize(size)
     if size then
         size = gsub(size,"box","")
-        return validsizes[size] and size or "crop"
+        return imagesizes[size] and size or "crop"
     else
         return "crop"
     end
 end
 
-local newimage       = images.new
-local scanimage      = images.scan
-local copyimage      = images.copy
-local cloneimage     = images.clone
-local imagetonode    = images.node
-
-images.check         = checkimage
-images.checksize     = checkimagesize
-images.tonode        = imagetonode
-images.totable       = imagetotable
+images.check     = checkimage
+images.checksize = checkimagesize
+images.totable   = imagetotable
 
 local indexed = { }
 
@@ -829,7 +912,7 @@ local function register(askedname,specification)
                     end
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
-                    if format and validtypes[format] then
+                    if format and imagetypes[format] then
                         specification.fullname = oldname
                     end
                     specification.converted = false
@@ -838,13 +921,13 @@ local function register(askedname,specification)
             end
         end
         if format then
-            local found = figures_suffixes[format] -- validtypes[format]
+            local found = figures_suffixes[format]
             if not found then
                 specification.found = false
                 if trace_figures then
                     report_inclusion("format %a is not supported",format)
                 end
-            elseif validtypes[format] then
+            elseif imagetypes[format] then
                 specification.found = true
                 if trace_figures then
                     report_inclusion("format %a natively supported by backend",format)
@@ -1407,7 +1490,7 @@ function checkers.generic(data)
     --
     local figure = figures_loaded[hash]
     if figure == nil then
-        figure = newimage {
+        figure = createimage {
             filename        = name,
             page            = page,
             pagebox         = dr.size,
@@ -1419,14 +1502,14 @@ function checkers.generic(data)
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            -- new, bonus check
+            -- new, bonus check (a bogus check in lmtx)
             if page and page > 1 then
-                local f = scanimage{
+                local f = scanimage {
                     filename      = name,
                     userpassword  = userpassword,
                     ownerpassword = ownerpassword,
                 }
-                if f.page and f.pages < page then
+                if f and f.page and f.pages < page then
                     report_inclusion("no page %i in %a, using page 1",page,name)
                     page        = 1
                     figure.page = page
@@ -1438,6 +1521,10 @@ function checkers.generic(data)
                 ds.comment = comment
                 ds.found   = false
                 ds.error   = true
+            end
+            if figure.attr and not f.attr then
+                -- tricky as img doesn't allow it
+                f.attr = figure.attr
             end
             figure = f
         end
@@ -1492,13 +1579,14 @@ function includers.generic(data)
  --     width    = dr.width,
  --     height   = dr.height,
  -- }
-    local copyimage  = dr.copyimage  or copyimage
-    local cloneimage = dr.cloneimage or cloneimage
     if figure == nil then
-        figure = ds.private
+        figure = ds.private -- the img object
         if figure then
-            figure = copyimage(figure)
-            figure = figure and cloneimage(figure,data.request) or false
+            figure = (dr.copyimage or copyimage)(figure)
+            if figure then
+                figure.width  = dr.width  or figure.width
+                figure.height = dr.height or figure.height
+            end
         end
         figures_used[hash] = figure
     end
@@ -1506,16 +1594,17 @@ function includers.generic(data)
         local nr     = figures.boxnumber
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
-        local image  = imagetonode(figure)
+        local image  = wrapimage(figure)
         local pager  = new_latelua(function()
             pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
         end)
         image.next = pager
         pager.prev = image
-        local box  = hpack(image) -- imagetonode(figure) not longer valid
-
+        local box  = hpack(image)
         indexed[figure.index] = figure
-        box.width, box.height, box.depth = figure.width, figure.height, 0 -- new, hm, tricky, we need to do that in tex (yet)
+        box.width  = figure.width
+        box.height = figure.height
+        box.depth  = 0
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
         ctx_relocateexternalfigure()
@@ -2092,45 +2181,52 @@ local function pdf_checker(data)
                 --
                 pdfdoc.nofcopiedpages = 0
                 --
-                local info     = querypdf(pdfdoc,request.page)
-                local bbox     = info and info.boundingbox or { 0, 0, 0, 0 }
-                local height   = bbox[4] - bbox[2]
-                local width    = bbox[3] - bbox[1]
-                local rotation = info.rotation or 0
-                if rotation == 90 then
-                    rotation, height, width = 3, width, height
-                elseif rotation == 180 then
-                    rotation = 2
-                elseif rotation == 270 then
-                    rotation, height, width = 1, width, height
-                elseif rotation == 1 or rotation == 3 then
-                    height, width = width, height
-                else
-                    rotation = 0
+                local info = querypdf(pdfdoc,request.page)
+                if info then
+                    local bbox     = info and info.boundingbox or { 0, 0, 0, 0 }
+                    local height   = bbox[4] - bbox[2]
+                    local width    = bbox[3] - bbox[1]
+                    local rotation = info.rotation or 0
+                    if rotation == 90 then
+                        rotation, height, width = 3, width, height
+                    elseif rotation == 180 then
+                        rotation = 2
+                    elseif rotation == 270 then
+                        rotation, height, width = 1, width, height
+                    elseif rotation == 1 or rotation == 3 then
+                        height, width = width, height
+                    else
+                        rotation = 0
+                    end
+                    return {
+                        filename    = filename,
+                     -- page        = 1,
+                        pages       = pdfdoc.nofpages,
+                        width       = width,
+                        height      = height,
+                        depth       = 0,
+                        colordepth  = 0,
+                        xres        = 0,
+                        yres        = 0,
+                        xsize       = width,
+                        ysize       = height,
+                        rotation    = rotation,
+                        pdfdoc      = pdfdoc,
+                    }
                 end
-                return {
-                    filename    = filename,
-                 -- page        = 1,
-                    pages       = pdfdoc.nofpages,
-                    width       = width,
-                    height      = height,
-                    depth       = 0,
-                    colordepth  = 0,
-                    xres        = 0,
-                    yres        = 0,
-                    xsize       = width,
-                    ysize       = height,
-                    rotation    = rotation,
-                }
             end
         end
         request.copyimage = function(t)
+            if not pdfdoc then
+                pdfdoc = t.pdfdoc
+            end
             if pdfdoc then
-                local result = copypage(pdfdoc,request.page,nil,request.compact)
+                local result = copypage(pdfdoc,request.page,nil,request.compact,request.width,request.height,request.attr)
                 pdfdoc.nofcopiedpages = pdfdoc.nofcopiedpages + 1
                 if pdfdoc.nofcopiedpages >= pdfdoc.nofpages then
                     closepdf(pdfdoc)
                     pdfdoc = nil
+                    t.pdfdoc = nil
                 end
                 return result
             else
@@ -2331,19 +2427,29 @@ function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
 end
 
 local function flush(bitmap)
-    return img.node(lpdf.injectors.bitmap(bitmap))
+    return wrapimage(lpdf.injectors.bitmap(bitmap))
 end
 
 bitmaps.flush = flush
 
-function bitmaps.tocontext(bitmap)
-    context.scale (
-        {
-            width  = bitmap.xsize .. "bp",
-            height = bitmap.ysize .. "bp",
-        },
-        flush(bitmap)
-    )
+function bitmaps.tocontext(bitmap,width,height)
+    if type(width) == "number" then
+        width = width .. "sp"
+    end
+    if type(height) == "number" then
+        height = height .. "sp"
+    end
+    if width or height then
+        context.scale (
+            {
+                width  = width,
+                height = height,
+            },
+            flush(bitmap)
+        )
+    else
+        context(flush(bitmap))
+    end
 end
 
 

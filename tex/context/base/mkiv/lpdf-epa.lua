@@ -52,6 +52,9 @@ local pdfcopyinteger    = lpdf.copyinteger
 local pdfcopystring     = lpdf.copystring
 local pdfcopyconstant   = lpdf.copyconstant
 
+local createimage       = images.create
+local embedimage        = images.embed
+
 local hpack_node        = nodes.hpack
 
 local loadpdffile       = lpdf.epdf.load
@@ -74,13 +77,7 @@ local layerspec = { -- predefining saves time
     "epdfcontent"
 }
 
--- can change:
-
-local pdfgetpos = lpdf.getpos
-
-updaters.register("backend.update",function()
-    pdfgetpos = lpdf.getpos
-end)
+local getpos = function() getpos = backends.codeinjections.getpos  return getpos () end
 
 local collected = allocate()
 local tobesaved = allocate()
@@ -807,8 +804,13 @@ function codeinjections.mergefields(specification)
                                     -- direct
                                     local AP = annotation.AP or (parent and parent.AP)
                                     if AP then
-                                        local im = img.new { filename = fullname }
-                                        AP = img.immediatewriteobject(im,document.__xrefs__[AP])
+                                        local a = document.__xrefs__[AP]
+                                        if a and pdfe.copyappearance then
+                                            local o = pdfe.copyappearance(document,a)
+                                            if o then
+                                                AP = pdfreference(o)
+                                            end
+                                        end
                                     end
                                     local dictionary = pdfdictionary {
                                         Subtype = pdfconstant("Widget"),

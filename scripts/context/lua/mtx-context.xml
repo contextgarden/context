@@ -190,6 +190,9 @@
                 <flag name="keeplog">
                     <short>keep previous log files (jobname-log-[run].tmp)</short>
                 </flag>
+                <flag name="lmtx">
+                    <short>force lmtx mode (when available)</short>
+                </flag>
             </subcategory>
             <subcategory>
                 <flag name="extra=name">

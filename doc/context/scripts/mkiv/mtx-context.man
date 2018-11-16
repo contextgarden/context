@@ -168,6 +168,9 @@ keep previous tuc files (jobname-tuc-[run].tmp)
 .B --keeplog
 keep previous log files (jobname-log-[run].tmp)
 .TP
+.B --lmtx
+force lmtx mode (when available)
+.TP
 .B --extra=name
 process extra (mtx-context-... in distribution)
 .TP

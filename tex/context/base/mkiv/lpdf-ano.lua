@@ -18,6 +18,7 @@ local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
+local sortedkeys = table.sortedkeys
 
 local backends, lpdf = backends, lpdf
 
@@ -70,7 +71,10 @@ local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
 
--- can change:
+-- local codeinjections          = backends.codeinjections
+-- local getpos                  = codeinjections.getpos
+-- local gethpos                 = codeinjections.gethpos
+-- local getvpos                 = codeinjections.getvpos
 
 local getpos  = lpdf.getpos
 local gethpos = lpdf.gethpos
@@ -147,9 +151,9 @@ end
 -- thin without dashing lines. This is as far as I'm prepared to go. This way
 -- it can also be used as a debug feature.
 
-local pdf_border_style        = pdfarray { 0, 0, 0 } -- radius radius linewidth
-local pdf_border_color        = nil
-local set_border              = false
+local pdf_border_style = pdfarray { 0, 0, 0 } -- radius radius linewidth
+local pdf_border_color = nil
+local set_border       = false
 
 local function pdfborder()
     set_border = true
@@ -264,7 +268,7 @@ local function pdfnametree(destinations)
     if not next(destinations) then
         return
     end
-    local sorted = table.sortedkeys(destinations)
+    local sorted = sortedkeys(destinations)
     local size   = #sorted
 
     if size <= 1.5*maxslice then
@@ -274,11 +278,12 @@ local function pdfnametree(destinations)
     for i=1,size,maxslice do
         local amount = min(i+maxslice-1,size)
         local names  = pdfarray { }
+        local n      = 0
         for j=i,amount do
             local destination = sorted[j]
             local pagenumber  = destinations[destination]
-            names[#names+1] = tostring(destination) -- tostring is a safeguard
-            names[#names+1] = pdfreference(pagenumber)
+            n = n + 1 ; names[n] = tostring(destination) -- tostring is a safeguard
+            n = n + 1 ; names[n] = pdfreference(pagenumber)
         end
         local first = sorted[i]
         local last  = sorted[amount]
@@ -300,6 +305,7 @@ local function pdfnametree(destinations)
         local l = slices[last]
         if f and l then
             local k = pdfarray()
+            local n = 0
             local d = pdfdictionary {
                 Kids   = k,
                 Limits = pdfarray {
@@ -308,7 +314,7 @@ local function pdfnametree(destinations)
                 },
             }
             for i=first,last do
-                k[#k+1] = slices[i].reference
+                n = n + 1 ; k[n] = slices[i].reference
             end
             return d
         end
@@ -626,7 +632,7 @@ local function pdffilelink(filename,destination,page,actions)
     end
     filename = file.addsuffix(filename,"pdf")
     if (not destination or destination == "") or (references.outermethod == v_page) then
-        destination = pdfarray { (page or 0) - 1, pdf_fit }
+        destination = pdfarray { (page or 1) - 1, pdf_fit }
     end
     return pdfdictionary {
         S = pdf_gotor, -- can also be pdf_launch

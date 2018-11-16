@@ -194,3 +194,9 @@ else
 end
 
 lpdf.registerdocumentfinalizer(lpdf.finalizefonts)
+
+-- already defined in font-ocl but the context variatn will go here
+--
+-- function lpdf.vfimage(wd,ht,dp,data,name)
+--     return { "image", { filename = name, width = wd, height = ht, depth = dp } }
+-- end

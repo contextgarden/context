@@ -73,7 +73,8 @@ function backends.install(what)
             end
             backends.current = what
             for category, default in next, defaults do
-                local target, plugin = backends[category], backend[category]
+                local target = backends[category]
+                local plugin = backend [category]
                 setmetatableindex(plugin, default)
                 setmetatableindex(target, plugin)
             end

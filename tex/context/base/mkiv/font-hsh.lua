@@ -70,7 +70,9 @@ local nulldata = allocate {
     name         = "nullfont",
     characters   = { },
     descriptions = { },
-    properties   = { },
+    properties   = {
+        designsize = 786432,
+    },
     parameters   = { -- lmromanregular @ 12pt
         slantperpoint =      0,
         spacing       = {
@@ -89,6 +91,7 @@ local nulldata = allocate {
         x_height      = 338952, -- 5
         quad          = 786432, -- 6
         extra_space   =  85459, -- 7
+        size          = 786432,
     },
 }
 

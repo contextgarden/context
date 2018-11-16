@@ -404,7 +404,10 @@ do
     local function mp_path(f2,f6,t,connector,cycle)
         if type(t) == "table" then
             local tn = #t
-            if tn > 0 then
+            if tn == 1 then
+                local t1 = t[1]
+                n = n + 1 ; buffer[n] = f2(t1[1],t1[2])
+            elseif tn > 0 then
                 if cycle == nil then
                     cycle = t.cycle
                 end

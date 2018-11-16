@@ -37,9 +37,10 @@ local function getheader(name)
         buffer = f:read(20) -- ('*a')
     end
     f:close()
+    -- can be done better now that we have stream readers
     buffer = { match(buffer,"(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)(.)") }
     for i=1,9 do
-        buffer[i] = tobitstring(byte(buffer[i]))
+        buffer[i] = tobitstring(byte(buffer[i]),8,8)
     end
     local framebits = concat(buffer,"",1,9)
     local n = tonumber(sub(framebits,1,5),2)

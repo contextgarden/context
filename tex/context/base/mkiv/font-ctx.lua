@@ -1852,7 +1852,7 @@ function mappings.loadfile(name)
         if trace_mapfiles then
             report_mapfiles("loading map file %a",name)
         end
-        pdf.mapfile(name)
+        lpdf.setmapfile(name)
         loaded[name] = true
     end
 end
@@ -1870,16 +1870,14 @@ function mappings.loadline(how,line)
         if trace_mapfiles then
             report_mapfiles("processing map line %a",line)
         end
-        pdf.mapline(how)
+        lpdf.setmapline(how)
         loaded[how] = true
     end
 end
 
 function mappings.reset()
-    pdf.mapfile("")
+    lpdf.setmapfile("") -- tricky ... backend related
 end
-
-mappings.reset() -- resets the default file
 
 implement {
     name      = "loadmapfile",

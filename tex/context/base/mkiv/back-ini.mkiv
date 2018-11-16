@@ -17,6 +17,7 @@
 \writestatus{loading}{ConTeXt Backend Macros / Initialization}
 
 \registerctxluafile{back-ini}{}
+\registerctxluafile{back-res}{}
 
 %D We currently have a curious mix between tex and lua backend
 %D handling but eventually most will move to lua.
@@ -111,6 +112,12 @@
 
 \appendtoks
     \clf_setrealspaces{\backendparameter\c!space}%
+\to \everysetupbackend
+
+\appendtoks
+    \ifdefined\clf_resetmapfile
+        \clf_resetmapfile
+    \fi
 \to \everysetupbackend
 
 %D For older styles:

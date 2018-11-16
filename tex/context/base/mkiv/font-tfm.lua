@@ -470,7 +470,7 @@ do
                 indices[index]      = unicode
                 original.name       = name -- so one can lookup weird names
                 if backmap then
-                    original.index     = backmap[name]
+                    original.index = backmap[name]
                 else -- probably bitmap
                     original.commands = { parentfont, charcommand[index] } -- or "slot"
                     original.oindex   = index
@@ -556,24 +556,18 @@ end
 end
 ]]
 
-    local flushstreamobject = lpdf and lpdf.flushstreamobject
-    local setfontattributes = pdf.setfontattributes
+    local flushstreamobject = lpdf and lpdf.flushstreamobject -- context
+    local setfontattributes = lpdf and lpdf.setfontattributes -- context
 
-    if flushstreamobject then
-        -- we're in context
-    else
+    if not flushstreamobject then
         flushstreamobject = function(data)
-            return pdf.obj {
-                immediate = true,
-                type      = "stream",
-                string    = data,
-            }
+            return pdf.obj { immediate = true, type = "stream", string = data } -- generic
         end
     end
 
     if not setfontattributes then
         setfontattributes = function(id,data)
-            print(format("not adding tounicode data to bitmap font %i",id))
+            return pdf.setfontattributes(id,data) -- generic
         end
     end
 

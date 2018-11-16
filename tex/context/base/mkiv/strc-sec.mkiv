@@ -773,8 +773,15 @@
 
 \newtoks\everyheadsynchronization
 
+% \appendtoks
+%     \currentstructuresynchronize
+% \to \everyheadsynchronization
+
+\let\currentstructuresynchronize\donothing
+
 \appendtoks
     \currentstructuresynchronize
+    \glet\currentstructuresynchronize\donothing
 \to \everyheadsynchronization
 
 \unexpanded\def\theheadsynchonization

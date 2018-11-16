@@ -112,14 +112,44 @@
                         </rdf:li>
                         <rdf:li rdf:parseType="Resource">
                            <pdfaProperty:category>external</pdfaProperty:category>
+                           <pdfaProperty:description>ConTeXt support</pdfaProperty:description>
+                           <pdfaProperty:name>ConTeXt.Support</pdfaProperty:name>
+                           <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                        </rdf:li>
+                        <rdf:li rdf:parseType="Resource">
+                           <pdfaProperty:category>external</pdfaProperty:category>
                            <pdfaProperty:description>ConTeXt version</pdfaProperty:description>
                            <pdfaProperty:name>ConTeXt.Version</pdfaProperty:name>
                            <pdfaProperty:valueType>Text</pdfaProperty:valueType>
                         </rdf:li>
                         <rdf:li rdf:parseType="Resource">
                            <pdfaProperty:category>external</pdfaProperty:category>
-                           <pdfaProperty:description>Banner of pdftex or one of its successors</pdfaProperty:description>
-                           <pdfaProperty:name>PTEX.Fullbanner</pdfaProperty:name>
+                           <pdfaProperty:description>TeX support</pdfaProperty:description>
+                           <pdfaProperty:name>TeX.Support</pdfaProperty:name>
+                           <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                        </rdf:li>
+                        <rdf:li rdf:parseType="Resource">
+                           <pdfaProperty:category>external</pdfaProperty:category>
+                           <pdfaProperty:description>LuaTeX version</pdfaProperty:description>
+                           <pdfaProperty:name>LuaTeX.Version</pdfaProperty:name>
+                           <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                        </rdf:li>
+                        <rdf:li rdf:parseType="Resource">
+                           <pdfaProperty:category>external</pdfaProperty:category>
+                           <pdfaProperty:description>LuaTeX functionality</pdfaProperty:description>
+                           <pdfaProperty:name>LuaTeX.Functionality</pdfaProperty:name>
+                           <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                        </rdf:li>
+                        <rdf:li rdf:parseType="Resource">
+                           <pdfaProperty:category>external</pdfaProperty:category>
+                           <pdfaProperty:description>LuaTeX Lua version</pdfaProperty:description>
+                           <pdfaProperty:name>LuaTeX.LuaVersion</pdfaProperty:name>
+                           <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                        </rdf:li>
+                        <rdf:li rdf:parseType="Resource">
+                           <pdfaProperty:category>external</pdfaProperty:category>
+                           <pdfaProperty:description>LuaTeX platform</pdfaProperty:description>
+                           <pdfaProperty:name>LuaTeX.Platform</pdfaProperty:name>
                            <pdfaProperty:valueType>Text</pdfaProperty:valueType>
                         </rdf:li>
                         <rdf:li rdf:parseType="Resource">

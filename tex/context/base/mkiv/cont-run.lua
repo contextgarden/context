@@ -197,6 +197,10 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
+    if arguments.lmtx then
+        context.enablelmtx()
+    end
+
     if arguments.nosynctex then
         luatex.synctex.setup {
             state  = interfaces.variables.never,

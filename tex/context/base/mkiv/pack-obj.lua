@@ -13,8 +13,10 @@ reusable components.</p>
 
 local context         = context
 local codeinjections  = backends.codeinjections
-
 local ctx_doifelse    = commands.doifelse
+
+local report          = logs.reporter("objects")
+local trace           = false  trackers.register("objects",function(v) trace = v end)
 
 local nuts            = nodes.nuts
 
@@ -125,7 +127,8 @@ objects = {
 local objects = objects
 
 function objects.register(ns,id,b,referenced,offset,mode)
-    objects.n = objects.n + 1
+    local n = objects.n + 1
+    objects.n = n
     nodes.handlers.finalizebox(b)
     if mode == 0 then
         -- tex
@@ -143,6 +146,9 @@ function objects.register(ns,id,b,referenced,offset,mode)
             referenced,
             mode,
         }
+    end
+    if trace then
+        report("registering object %a (n=%i)",id,n)
     end
 end
 
@@ -166,6 +172,9 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
     else
         setbox("objectbox",nil)
         settexdimen("objectoff",0) -- for good old times
+    end
+    if trace then
+        report("restoring object %a",id)
     end
 end
 

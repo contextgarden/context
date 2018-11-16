@@ -34,7 +34,7 @@ local pdfgetmetadata       = lpdf.getmetadata
 -- XMP-Toolkit-SDK-CC201607.zip. So we hardcode the id.
 
 local xpacket = format ( [[
-<?xpacket begin="﻿%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<?xpacket begin="%s" id="W5M0MpCehiHzreSzNTczkc9d"?>
 
 %%s
 

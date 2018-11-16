@@ -62,6 +62,12 @@
 
 \registerctxluafile{font-tfm}{}
 
+\doifelsefileexists {font-tpk.lua} {
+    \registerctxluafile{font-tpk}{optimize}
+} {
+    % nothing
+}
+
 % name database
 
 \registerctxluafile{font-syn}{}

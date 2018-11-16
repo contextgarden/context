@@ -36,6 +36,14 @@
 \registerctxluafile{lpdf-img}{optimize}
 \registerctxluafile{lpdf-epa}{}
 
+\doifelsefileexists {lpdf-emb.lua} {
+    \registerctxluafile{lpdf-emb}{optimize}
+} {
+    % nothing
+}
+
+\registerctxluafile{back-pdp}{}
+
 \ifnum\texenginefunctionality>6856
     \registerctxluafile{lpdf-fnt}{}
 \fi
@@ -58,6 +66,26 @@
 %D \PDFTEX\ primitives. Of course one can always use the \type {\pdfvariable},
 %D \type {\pdfextension} and \type {\pdffeedback} primitives but it will probably
 %D have bad side effects.
+
+%D For the moment we put these here as they are pdf related but they might move to
+%D a better place. We overload the primitives with our own but use a bit of indirection
+%D for the purpose of tracing.
+
+\unexpanded\def\saveboxresource            {\clf_saveboxresource}
+\unexpanded\def\lastsavedboxresourceindex  {\numexpr\clf_lastsavedboxresourceindex\relax}
+\unexpanded\def\useboxresource             {\clf_useboxresource}
+
+\unexpanded\def\saveimageresource          {\clf_saveimageresource}
+\unexpanded\def\lastsavedimageresourceindex{\numexpr\clf_lastsavedimageresourceindex\relax}
+\unexpanded\def\lastsavedimageresourcepages{\numexpr\clf_lastsavedimageresourcepages\relax}
+\unexpanded\def\useimageresource           {\clf_useimageresource}
+
+\unexpanded\def\savepos                    {\clf_savepos}
+           \def\lastxpos                   {\clf_lastxpos}
+           \def\lastypos                   {\clf_lastypos}
+
+\unexpanded\def\pdfextension               {\clf_pdfextension}
+           \def\pdffeedback                {\clf_pdffeedback}
 
 %D These are no-ops and don't even intercept what comes next. Maybe some day
 %D I'll write a parser that maps onto \CONTEXT.
@@ -114,11 +142,11 @@
 %D We don't support these directives, at least not this way. If they are needed
 %D by third party modules we can provide some interface.
 
-%   \pdfcreationdate
+%pdfcreationdate
 \let\pdfdecimaldigits          \relax \newcount\pdfdecimaldigits
 \let\pdfdestmargin             \relax \newdimen\pdfdestmargin
-%   \pdffontname
-%   \pdffontobjnum
+%    pdffontname
+%    pdffontobjnum
 \let\pdffontsize               \relax \newcount\pdffontsize
 \let\pdfgamma                  \relax \newcount\pdfgamma
 \let\pdfgentounicode           \relax \newcount\pdfgentounicode
@@ -133,21 +161,21 @@
 \let\pdfinclusioncopyfonts     \relax \newcount\pdfinclusioncopyfonts
 \let\pdfinclusionerrorlevel    \relax \newcount\pdfinclusionerrorlevel
 \let\pdfinfoomitdate           \relax \newcount\pdfinfoomitdate
-%   \pdflastannot
-%   \pdflastlink
+%    pdflastannot
+%    pdflastlink
 \let\pdflinkmargin             \relax \newdimen\pdflinkmargin
 \let\pdfmajorversion           \relax \newcount\pdfmajorversion
 \let\pdfminorversion           \relax \newcount\pdfminorversion
 \let\pdfpagebox                \relax \newcount\pdfpagebox
-%   \pdfpageref
+%    pdfpageref
 \let\pdfpkfixeddpi             \relax \newcount\pdfpkfixeddpi
 \let\pdfpkmode                 \relax \newtoks \pdfpkmode
 \let\pdfpkresolution           \relax \newcount\pdfpkresolution
-%   \pdfretval
+%    pdfretval
 \let\pdfsuppressoptionalinfo   \relax \newcount\pdfsuppressoptionalinfo
 \let\pdfsuppressptexinfo       \relax \newcount\pdfsuppressptexinfo
-%   \pdftexrevision
-%   \pdftexversion
+%    pdftexrevision
+%    pdftexversion
 \let\pdfthreadmargin           \relax \newdimen\pdfthreadmargin
 \let\pdftrailerid              \relax \newtoks \pdftrailerid
 \let\pdfuniqueresname          \relax \newcount\pdfuniqueresname
@@ -157,27 +185,33 @@
 
 %D These are still accepted but are normally not needed.
 
-\let\pdflastxform              \lastsavedboxresourceindex
-\let\pdflastximage             \lastsavedimageresourceindex
-\let\pdflastximagepages        \lastsavedimageresourcepages
-\let\pdflastxpos               \lastxpos
-\let\pdflastypos               \lastypos
-\let\pdfrefxform               \useboxresource
-\let\pdfrefximage              \useimageresource
-\let\pdfsavepos                \savepos
 \let\pdfxform                  \saveboxresource
 \let\pdfximage                 \saveimageresource
+
+\let\pdflastxform              \lastsavedboxresourceindex
+\let\pdflastximage             \lastsavedimageresourceindex
+
+\let\pdfrefxform               \useboxresource
+\let\pdfrefximage              \useimageresource
+
+\let\pdflastximagepages        \lastsavedimageresourcepages
+
+\let\pdfsavepos                \savepos
+\let\pdflastxpos               \lastxpos
+\let\pdflastypos               \lastypos
 
 %D For the moment we keep these as they are but they will become \LUA\ calls
 %D eventually, after which we will nil the three \type {\pdf} interface primitives.
 
-\normalprotected\def\pdfliteral  {\pdfextension literal }
-\normalprotected\def\pdfobj      {\pdfextension obj }
-                \def\pdflastobj  {\numexpr\pdffeedback  lastobj\relax}
+\normalprotected\def\pdfliteral  {\clf_pdfliteral}%
+
+\normalprotected\def\pdfobj      {\clf_pdfobj}%
+\normalprotected\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}%
+
 \normalprotected\def\pdfrefobj   {\pdfextension refobj }
-\normalprotected\def\pdfrestore  {\pdfextension restore\relax}
-\normalprotected\def\pdfsave     {\pdfextension save\relax}
-\normalprotected\def\pdfsetmatrix{\pdfextension setmatrix }
+\normalprotected\def\pdfrestore  {\clf_restore}
+\normalprotected\def\pdfsave     {\clf_save}
+\normalprotected\def\pdfsetmatrix{\clf_setmatrix}
 
 %D This one can be consulted by users although the suffix is also a system mode.
 

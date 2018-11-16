@@ -39,6 +39,8 @@ local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 local checkedkey               = lpdf.checkedkey
 local limited                  = lpdf.limited
 
+local embedimage               = images.embed
+
 local schemes = table.tohash {
     "Artwork", "None", "White", "Day", "Night", "Hard",
     "Primary", "Blue", "Red", "Cube", "CAD", "Headlamp",
@@ -437,7 +439,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
         local tag = formatters["%s:%s:%s"](label,stream,preview)
         local ref = stored_pr[tag]
         if not ref then
-            local figure = img.immediatewrite {
+            local figure = embedimage {
                 filename = preview,
                 width    = width,
                 height   = height
@@ -453,6 +455,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                 FormType  = one,
                 BBox      = pdfarray { zero, zero, pdfnumber(factor*width), pdfnumber(factor*height) },
                 Matrix    = pdfarray { one, zero, zero, one, zero, zero },
+                ProcSet   = lpdf.procset(),
                 Resources = pdfdictionary {
                                 XObject = pdfdictionary {
                                     IM = pdfreference(ref)
@@ -465,7 +468,6 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                                     ca   = one,
                                 }
                             },
-                ProcSet    = pdfarray { pdfconstant("PDF"), pdfconstant("ImageC") },
             }
             local pwd = pdfflushstreamobject(f_image(factor*width,factor*height),pw)
             annot.AP = pdfdictionary {

@@ -405,7 +405,7 @@
    \c!entities=\v!no]    % load big entity file
 
 \appendtoks
-    \doif{\directxmlparameter\c!entities}\clf_xmlloadentities
+    \doif{\directxmlparameter\c!entities}\v!yes\clf_xmlloadentities
 \to \everysetupxml
 
 \def\xmlmapvalue    #1#2#3{\setvalue{\??xmlmapvalue#1:#2}{#3}} % keep #3 to grab spaces

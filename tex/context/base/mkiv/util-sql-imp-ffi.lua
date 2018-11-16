@@ -17,6 +17,7 @@ local format, byte = string.format, string.byte
 local lpegmatch = lpeg.match
 local setmetatable, type = setmetatable, type
 local sleep = os.sleep
+local formatters = string.formatters
 
 local trace_sql     = false  trackers.register("sql.trace",  function(v) trace_sql     = v end)
 local trace_queries = false  trackers.register("sql.queries",function(v) trace_queries = v end)

@@ -29,6 +29,10 @@ local pdfboolean     = lpdf.boolean
 local pdfreference   = lpdf.reference
 local pdfflushobject = lpdf.flushobject
 
+local createimage    = images.create
+local wrapimage      = images.wrap
+local embedimage     = images.embed
+
 -- can also be done indirectly:
 --
 -- 12 : << /AntiAlias false /ColorSpace  8 0 R /Coords [ 0.0 0.0 1.0 0.0 ] /Domain [ 0.0 1.0 ] /Extend [ true true ] /Function 22 0 R /ShadingType 2 >>
@@ -153,13 +157,18 @@ function nodeinjections.injectbitmap(t)
     elseif height == 0 then
         height = width  * yresolution / xresolution
     end
-    local image = img.new {
+    local a = pdfdictionary {
+        BBox = pdfarray { 0, 0, urx * basepoints, ury * basepoints }
+    }
+    local image = createimage {
         stream = formatters[template](d(),t.data),
         width  = width,
         height = height,
         bbox   = { 0, 0, urx, ury },
+        attr   = a(),
+        nobbox = true,
     }
-    return img.node(image)
+    return wrapimage(image)
 end
 
 -- general graphic helpers
@@ -181,7 +190,7 @@ function codeinjections.setfigurealternative(data,figure)
         local displayfigure = figures.check()
         if displayfigure then
         --  figure.aform = true
-            img.immediatewrite(figure)
+            embedimage(figure)
             local a = pdfarray {
                 pdfdictionary {
                     Image              = pdfreference(figure.objnum),
@@ -215,14 +224,14 @@ function codeinjections.getpreviewfigure(request)
     end
     local image = figure.status.private
     if image then
-        img.immediatewrite(image)
+        embedimage(image)
     end
     return figure
 end
 
 function codeinjections.setfiguremask(data,figure) -- mark
     local request = data.request
-    local mask = request.mask
+    local mask    = request.mask
     if mask and mask ~= ""  then
         figures.push {
             name   = mask,
@@ -233,15 +242,16 @@ function codeinjections.setfiguremask(data,figure) -- mark
             width  = request.width,
             height = request.height,
         }
-        figures.identify()
-        local maskfigure = figures.check()
-        if maskfigure then
-            local image = maskfigure.status.private
+        mask = figures.identify()
+        mask = figures.check(mask)
+        if mask then
+            local image = mask.status.private
             if image then
-                img.immediatewrite(image)
+                figures.include(mask)
+                embedimage(image)
                 local d = pdfdictionary {
                     Interpolate  = false,
-                    SMask        = pdfreference(image.objnum),
+                    SMask        = pdfreference(mask.status.objectnumber),
                 }
                 figure.attr = d()
             end
@@ -250,46 +260,16 @@ function codeinjections.setfiguremask(data,figure) -- mark
     end
 end
 
--- temp hack
+-- experimental (q Q is not really needed)
 
-local f_image   = formatters["%.6F 0 0 %.6F 0 0 cm /%s Do"]
-local f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6F %.6F re f Q"] -- q Q is not really needed
+local f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6F %.6F re f Q"]
 
 directives.register("pdf.stripzeros",function()
-    f_image   = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
     f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q"]
 end)
 
-function img.package(image) -- see lpdf-u3d **
-    local boundingbox = image.bbox
-    local imagetag    = "Im" .. image.index
-    local resources   = pdfdictionary {
-        ProcSet = pdfarray {
-            pdfconstant("PDF"),
-            pdfconstant("ImageC")
-        },
-        Resources = pdfdictionary {
-            XObject = pdfdictionary {
-                [imagetag] = pdfreference(image.objnum)
-            }
-        }
-    }
-    local width = boundingbox[3]
-    local height = boundingbox[4]
-    local xform = img.scan {
-        attr   = resources(),
-        stream = f_image(width,height,imagetag),
-        bbox   = { 0, 0, width/basepoints, height/basepoints },
-    }
-    img.immediatewrite(xform)
-    return xform
-end
-
--- experimental
-
-local nofpatterns = 0
-
-local texsavebox  = tex.saveboxresource
+local saveboxresource  = tex.boxresources.save
+local nofpatterns      = 0
 
 function lpdf.registerpattern(specification)
     nofpatterns = nofpatterns + 1
@@ -306,10 +286,11 @@ function lpdf.registerpattern(specification)
             (specification.voffset or 0) * basepoints,
         },
     }
+
     local resources  = lpdf.collectedresources{ patterns = false }
     local attributes = d()
     local onlybounds = 1
-    local patternobj = texsavebox(specification.number,attributes,resources,true,onlybounds)
+    local patternobj = saveboxresource(specification.number,attributes,resources,true,onlybounds)
     lpdf.adddocumentpattern("Pt" .. nofpatterns,lpdf.reference(patternobj ))
     return nofpatterns
 end

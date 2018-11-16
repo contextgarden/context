@@ -1103,7 +1103,7 @@ if img then do
 
     local factor               = 65536 / (7200/7227) -- 1/number.dimenfactors.bp
 
-    local newimage             = img.new
+    local createimage          = images.create
 
     local function scaledbbox(b)
         return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
@@ -1293,7 +1293,7 @@ if img then do
                     page[k] = v -- maybe nested
                 end
             end
-            return newimage {
+            return createimage {
                 bbox   = pageinfo.boundingbox,
                 stream = contents(),
                 attr   = xobject(),

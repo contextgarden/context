@@ -31,7 +31,7 @@ local pdfreference         = lpdf.reference
 local pdfmajorversion      = lpdf.majorversion
 local pdfminorversion      = lpdf.minorversion
 
-local newimage             = img.new
+local createimage          = images.create
 
 local trace                = false
 
@@ -61,7 +61,6 @@ do
             return
         end
         local colorspace  = specification.colorspace or jpg_gray
-        local attributes  = specification.attr
         local decodearray = nil
         ----- procset     = colorspace == 0 and "image b" or "image c"
         if colorspace == 1 then
@@ -80,7 +79,7 @@ do
         local xobject    = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
-            BBox             = pdfarray { 0, 0, xsize, ysize },
+         -- BBox             = pdfarray { 0, 0, xsize, ysize },
             Width            = xsize,
             Height           = ysize,
             BitsPerComponent = colordepth,
@@ -88,14 +87,11 @@ do
             ColorSpace       = pdfconstant(colorspace),
             Decode           = decodearray,
             Length           = #content, -- specification.length
-        }
-        if attributes then
-            -- todo: add attributes to d
-        end
+        } + specification.attr
         if trace then
             report_jpg("%s: width %i, height %i, colordepth %i, size %i",filename,xsize,ysize,colordepth,#content)
         end
-        return newimage {
+        return createimage {
             bbox     = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
             nolength = true,
             nobbox   = true,
@@ -117,7 +113,6 @@ do
         if not filename then
             return
         end
-        local attributes  = specification.attr
         -- todo: set filename
         local xsize   = specification.xsize
         local ysize   = specification.ysize
@@ -130,14 +125,11 @@ do
             Height  = ysize,
             Filter  = pdfconstant("JPXDecode"),
             Length  = #content, -- specification.length
-        }
-        if attributes then
-            -- todo: add attributes to d
-        end
+        } + specification.attr
         if trace then
             report_jp2("%s: width %i, height %i, size %i",filename,xsize,ysize,#content)
         end
-        return newimage {
+        return createimage {
             bbox     = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
             nolength = true,
             nobbox   = true,
@@ -918,14 +910,14 @@ t[n] = 0 -- not needed
         local xobject = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
-            BBox             = pdfarray { 0, 0, xsize, ysize },
+         -- BBox             = pdfarray { 0, 0, xsize, ysize },
             Width            = xsize,
             Height           = ysize,
             BitsPerComponent = colordepth,
             Filter           = pdfconstant("FlateDecode"),
             ColorSpace       = palette or pdfconstant(colorspace),
             Length           = #content,
-        }
+        } + specification.attr
         if mask then
             local d = pdfdictionary {
                 Type             = pdfconstant("XObject"),
@@ -945,13 +937,10 @@ t[n] = 0 -- not needed
                 Predictor        = 15,
             }
         end
-        if attributes then
-            -- todo: add attributes to d
-        end
         if trace then
             report_png("%s: width %i, height %i, colordepth: %i, size: %i, palette %l, mask: %l, transparent %l, decode %l",filename,xsize,ysize,colordepth,#content,palette,mask,transparent,decode)
         end
-        return newimage {
+        return createimage {
             bbox     = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
             nolength = true,
             nobbox   = true,
@@ -1050,7 +1039,7 @@ do
             }
             xobject.SMask = pdfreference(pdfflushstreamobject(pack(specification,"mask"),d()))
         end
-        return newimage {
+        return createimage {
             bbox     = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
          -- nolength = true,
             nobbox   = true,

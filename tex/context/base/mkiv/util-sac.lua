@@ -17,12 +17,16 @@ local streams     = { }
 utilities.streams = streams
 
 function streams.open(filename,zerobased)
-    local f = io.loaddata(filename)
-    return { f, 1, #f, zerobased or false }
+    local f = filename and io.loaddata(filename)
+    if f then
+        return { f, 1, #f, zerobased or false }
+    end
 end
 
 function streams.openstring(f,zerobased)
-    return { f, 1, #f, zerobased or false }
+    if f then
+        return { f, 1, #f, zerobased or false }
+    end
 end
 
 function streams.close()
