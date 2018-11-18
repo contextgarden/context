@@ -317,86 +317,6 @@ do
         end
     end
 
- -- local function mp_path(f2,f6,t,connector,cycle)
- --     if type(t) == "table" then
- --         local tn = #t
- --         if tn > 0 then
- --             if connector == true then
- --                 connector = "--"
- --                 cycle     = true
- --             elseif not connector then
- --                 connector = "--"
- --             end
- --             local ti = t[1]
- --             n = n + 1 ;
- --             if #ti == 6 then
- --                 local tn = t[2] or t[1]
- --                 buffer[n] = f6(ti[1],ti[2],ti[5],ti[6],tn[3],tn[4])
- --             else
- --                 buffer[n] = f2(ti[1],ti[2])
- --             end
- --             for i=2,tn do
- --                 local ti = t[i]
- --                 n = n + 1 ; buffer[n] = connector
- --                 n = n + 1 ;
- --                 if #ti == 6 and (i < tn or cycle) then
- --                     local tn = t[i+1] or t[1]
- --                     buffer[n] = f6(ti[1],ti[2],ti[5],ti[6],tn[3],tn[4])
- --                 else
- --                     buffer[n] = f2(ti[1],ti[2])
- --                 end
- --             end
- --             if cycle then
- --                 n = n + 1 ; buffer[n] = connector
- --                 n = n + 1 ; buffer[n] = "cycle"
- --             end
- --         end
- --     end
- -- end
-
- -- local function mp_path(f2,f6,t,connector,cycle)
- --     if type(t) == "table" then
- --         local tn = #t
- --         if tn > 0 then
- --             if cycle == nil and t.cycle ~= nil then
- --                 cycle = t.cycle
- --             fi
- --             if connector == true then
- --                 connector = "--"
- --                 cycle     = true
- --             elseif not connector then
- --                 connector = "--"
- --             end
- --             local controls = false
- --             local straight = connector == "--"
- --             local ti = t[1]
- --             n = n + 1 ;
- --             if not straight and #ti == 6 then
- --                 buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
- --                 controls = true
- --             else
- --                 buffer[n] = f2(ti[1],ti[2])
- --             end
- --             for i=2,tn do
- --                 local ti = t[i]
- --                 n = n + 1 ; buffer[n] = controls and ".." or connector
- --                 n = n + 1 ;
- --                 if not straight and #ti == 6 and (i < tn or cycle) then
- --                     buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
- --                     controls = true
- --                 else
- --                     buffer[n] = f2(ti[1],ti[2])
- --                     controls = false
- --                 end
- --             end
- --             if cycle then
- --                 n = n + 1 ; buffer[n] = controls and ".." or connector
- --                 n = n + 1 ; buffer[n] = "cycle"
- --             end
- --         end
- --     end
- -- end
-
     -- we have three kind of connectors:
     --
     -- .. ... -- (true)
@@ -408,46 +328,62 @@ do
                 local t1 = t[1]
                 n = n + 1 ; buffer[n] = f2(t1[1],t1[2])
             elseif tn > 0 then
-                if cycle == nil then
-                    cycle = t.cycle
-                end
-                if connector == true then
-                    connector = "--"
-                    if cycle == nil then
-                        cycle = true
-                    end
+                if connector == true or connector == nil then
+                    connector = ".."
                 elseif connector == false then
                     connector = "--"
-                    if cycle == nil then
-                        cycle = true
-                    end
-                else
-                    connector = ".."
+                end
+                if cycle == nil then
+                    cycle = t.cycle
                     if cycle == nil then
                         cycle = true
                     end
                 end
-                local six = connector == ".."
-                local ti  = t[1]
+                local six      = connector == ".." -- otherwise we use whatever gets asked for
+                local controls = connector         -- whatever
+                local a = t[1]
+                local b = t[2]
                 n = n + 1
-                if six and #ti == 6 then
-                    buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+                if six and #a == 6 and #b == 6 then
+                    buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                    controls  = ".."
                 else
-                    buffer[n] = f2(ti[1],ti[2])
+                    buffer[n] = f2(a[1],a[2])
+                    controls  = connector
                 end
-                for i=2,tn do
-                    local ti = t[i]
-                    n = n + 1 ; buffer[n] = connector
+                for i=2,tn-1 do
+                    a = b
+                    b = t[i+1]
                     n = n + 1
-                    if six and #ti == 6 and (i < tn or cycle) then
-                        buffer[n] = f6(ti[1],ti[2],ti[3],ti[4],ti[5],ti[6])
+                    buffer[n] = connector
+                    n = n + 1
+                    if six and #a == 6 and #b == 6 then
+                        buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                        controls  = ".."
                     else
-                        buffer[n] = f2(ti[1],ti[2])
+                        buffer[n] = f2(a[1],a[2])
+                        controls  = connector
                     end
                 end
+                n = n + 1
+                buffer[n] = connector
+                a = b
+                b = t[1]
+                n = n + 1
                 if cycle then
-                    n = n + 1 ; buffer[n] = connector
-                    n = n + 1 ; buffer[n] = "cycle"
+                    if six and #a == 6 and #b == 6 then
+                        buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
+                        controls  = ".."
+                    else
+                        buffer[n] = f2(a[1],a[2])
+                        controls  = connector
+                    end
+                    n = n + 1
+                    buffer[n] = connector
+                    n = n + 1
+                    buffer[n] = "cycle"
+                else
+                    buffer[n] = f2(a[1],a[2])
                 end
             end
         end

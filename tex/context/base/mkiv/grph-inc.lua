@@ -112,7 +112,7 @@ local v_local           = variables["local"]
 local v_default         = variables.default
 local v_auto            = variables.auto
 
-local maxdimen          = 0x3FFFFFFF -- 2^30-1
+local maxdimen          = tex.magicconstants.maxdimen -- 0x3FFFFFFF -- 2^30-1
 
 local ctx_doscalefigure            = context.doscalefigure
 local ctx_relocateexternalfigure   = context.relocateexternalfigure
@@ -286,11 +286,11 @@ images.check     = checkimage
 images.checksize = checkimagesize
 images.totable   = imagetotable
 
-local indexed = { }
-
-function images.ofindex(n)
-    return indexed[n]
-end
+-- local indexed = { }
+--
+-- function images.ofindex(n)
+--     return indexed[n]
+-- end
 
 --- we can consider an grph-ini file
 
@@ -1601,7 +1601,7 @@ function includers.generic(data)
         image.next = pager
         pager.prev = image
         local box  = hpack(image)
-        indexed[figure.index] = figure
+     -- indexed[figure.index] = figure
         box.width  = figure.width
         box.height = figure.height
         box.depth  = 0

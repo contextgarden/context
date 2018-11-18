@@ -199,6 +199,7 @@ local function processjob()
 
     if arguments.lmtx then
         context.enablelmtx()
+        environment.lmtxmode = true
     end
 
     if arguments.nosynctex then

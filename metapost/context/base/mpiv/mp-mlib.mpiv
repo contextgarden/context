@@ -1771,8 +1771,8 @@ enddef ;
 vardef strfmt(expr f, x) = "\MPgraphformat{" & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
 vardef varfmt(expr f, x) = "\MPformatted{"   & escaped_format(f) & "}{" & mfun_tagged_string(x) & "}" enddef ;
 
-vardef format   (expr f, x) = textext(strfmt(f, x)) enddef ;
-vardef formatted(expr f, x) = textext(varfmt(f, x)) enddef ;
+vardef format@#   (expr f, x) = textext@#(strfmt(f, x)) enddef ;
+vardef formatted@#(expr f, x) = textext@#(varfmt(f, x)) enddef ;
 
 % could be this (something to discuss with alan as it involves graph):
 %
