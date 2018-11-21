@@ -12,12 +12,9 @@ local formatters       = string.formatters
 
 local nodecodes        = nodes.nodecodes
 local whatsit_code     = nodecodes.whatsit
-
 local whatsitcodes     = nodes.whatsitcodes
-local pdfliteralcode   = whatsitcodes.pdfliteral
-local pdfsavecode      = whatsitcodes.pdfsave
-local pdfrestorecode   = whatsitcodes.pdfrestore
-local pdfsetmatrixcode = whatsitcodes.pdfsetmatrix
+local latelua_code     = whatsitcodes.latelua
+local literal_code     = whatsitcodes.literal
 
 local nodeinjections   = backends.nodeinjections
 
@@ -39,25 +36,65 @@ local pageliteral      = literalvalues.page
 local directliteral    = literalvalues.direct
 local rawliteral       = literalvalues.raw
 
-local pdforiginliteral = register(new_node(whatsit_code, pdfliteralcode))  setfield(pdforiginliteral,"mode",originliteral)
-local pdfpageliteral   = register(new_node(whatsit_code, pdfliteralcode))  setfield(pdfpageliteral,  "mode",pageliteral)
-local pdfdirectliteral = register(new_node(whatsit_code, pdfliteralcode))  setfield(pdfdirectliteral,"mode",directliteral)
-local pdfrawliteral    = register(new_node(whatsit_code, pdfliteralcode))  setfield(pdfrawliteral,   "mode",rawliteral)
+local literalcode      = whatsitcodes.literal
+local savecode         = whatsitcodes.save
+local restorecode      = whatsitcodes.restore
+local setmatrixcode    = whatsitcodes.setmatrix
 
-local pdfsave          = register(new_node(whatsit_code, pdfsavecode))
-local pdfrestore       = register(new_node(whatsit_code, pdfrestorecode))
-local pdfsetmatrix     = register(new_node(whatsit_code, pdfsetmatrixcode))
+local s_matrix_0 = "1 0 0 1"
+local f_matrix_2 = formatters["%.6F 0 0 %.6F"]
+local f_matrix_4 = formatters["%.6F %.6F %.6F %.6F"]
 
-local variables        = interfaces.variables
+directives.register("pdf.stripzeros",function()
+    f_matrix_2 = formatters["%.6N 0 0 %.6N"]
+    f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
+end)
+
+local function tomatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
+    if type(rx) == "string" then
+        return rx
+    else
+        if not rx then
+            rx = 1
+        elseif rx == 0 then
+            rx = 0.0001
+        end
+        if not ry then
+            ry = 1
+        elseif ry == 0 then
+            ry = 0.0001
+        end
+        if not sx then
+            sx = 0
+        end
+        if not sy then
+            sy = 0
+        end
+        if sx == 0 and sy == 0 then
+            if rx == 1 and ry == 1 then
+                return s_matrix_0
+            else
+                return f_matrix_2(rx,ry)
+            end
+        else
+            return f_matrix_4(rx,sx,sy,ry)
+        end
+    end
+end
+
+local pdforiginliteral = register(new_node(whatsit_code, literalcode))  setfield(pdforiginliteral,"mode",originliteral)
+local pdfpageliteral   = register(new_node(whatsit_code, literalcode))  setfield(pdfpageliteral,  "mode",pageliteral)
+local pdfdirectliteral = register(new_node(whatsit_code, literalcode))  setfield(pdfdirectliteral,"mode",directliteral)
+local pdfrawliteral    = register(new_node(whatsit_code, literalcode))  setfield(pdfrawliteral,   "mode",rawliteral)
+
+local pdfsave          = register(new_node(whatsit_code, savecode))
+local pdfrestore       = register(new_node(whatsit_code, restorecode))
+local pdfsetmatrix     = register(new_node(whatsit_code, setmatrixcode))
 
 function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setdata(t,str) return t end
 function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setdata(t,str) return t end
 function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setdata(t,str) return t end
 function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setdata(t,str) return t end
-
--- best is to use a specific one: origin | page | direct | raw
-
--- nodepool.pdfliteral = nodepool.pdfpageliteral -- or is origin the default ?
 
 local pdfliterals = {
     -- by number
@@ -92,48 +129,14 @@ function nodepool.pdfrestore()
     return copy_node(pdfrestore)
 end
 
-local s_matrix_0 = "1 0 0 1"
-local f_matrix_2 = formatters["%.6F 0 0 %.6F"]
-local f_matrix_4 = formatters["%.6F %.6F %.6F %.6F"]
-
-directives.register("pdf.stripzeros",function()
-    f_matrix_2 = formatters["%.6N 0 0 %.6N"]
-    f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
-end)
-
-function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
+function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
     local t = copy_node(pdfsetmatrix)
-    if type(rx) == "string" then
-        setdata(t,rx)
-    else
-        if not rx then
-            rx = 1
-        elseif rx == 0 then
-            rx = 0.0001
-        end
-        if not ry then
-            ry = 1
-        elseif ry == 0 then
-            ry = 0.0001
-        end
-        if not sx then
-            sx = 0
-        end
-        if not sy then
-            sy = 0
-        end
-        if sx == 0 and sy == 0 then
-            if rx == 1 and ry == 1 then
-                setdata(t,s_matrix_0)
-            else
-                setdata(t,f_matrix_2(rx,ry))
-            end
-        else
-            setdata(t,f_matrix_4(rx,sx,sy,ry))
-        end
-    end
+    setdata(t,tomatrix(rx,sx,sy,ry,tx,ty))
     return t
 end
+
+
+-- best is to use a specific one: origin | page | direct | raw
 
 nodeinjections.save      = nodepool.pdfsave
 nodeinjections.restore   = nodepool.pdfrestore

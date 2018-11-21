@@ -151,7 +151,7 @@ end
 
 environment.luatexengine        = LUATEXENGINE
 environment.luatexversion       = LUATEXVERSION
-environment.luatexfuncitonality = LUATEXFUNCTIONALITY
+environment.luatexfunctionality = LUATEXFUNCTIONALITY
 environment.jitsupported        = JITSUPPORTED
 environment.initex              = INITEXMODE
 environment.initexmode          = INITEXMODE

@@ -58,7 +58,7 @@ local removables     = {
     [whatsitcodes.write]   = true,
     [whatsitcodes.savepos] = true,
     [whatsitcodes.latelua] = true,
-    [whatsitcodes.pdfdest] = true,
+ -- [whatsitcodes.pdfdest] = true,
 }
 
 -- About 10% of the nodes make no sense for the backend. By (at least)

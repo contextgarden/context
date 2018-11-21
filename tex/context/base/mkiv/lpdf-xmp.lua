@@ -90,7 +90,7 @@ local mapping = {
     ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
 }
 
-pdf.setsuppressoptionalinfo(
+lpdf.setsuppressoptionalinfo (
         0 --
     +   1 -- pdfnofullbanner
     +   2 -- pdfnofilename

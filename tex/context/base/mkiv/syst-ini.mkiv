@@ -1042,6 +1042,8 @@
 % module after which the official interfaces have to be used. This is needed for
 % modules not made by ctx developers.
 
+\ifdefined\pdfextension
+
 \normalprotected\def\pdfliteral        {\pdfextension literal }
 \normalprotected\def\pdfcolorstack     {\pdfextension colorstack }
 \normalprotected\def\pdfsetmatrix      {\pdfextension setmatrix }
@@ -1148,7 +1150,17 @@
 \normalprotected\def\maximumpdfcompression{\pdfobjcompresslevel\plusnine  \pdfcompresslevel\plusnine }
 \normalprotected\def\normalpdfcompression {\pdfobjcompresslevel\plusthree \pdfcompresslevel\plusthree}
 
+\else
+    \let\nopdfcompression     \relax
+    \let\maximumpdfcompression\relax
+    \let\normalpdfcompression \relax
+\fi
+
 \normalpdfcompression
+
+\ifdefined\outputmode \else
+    \newcount\outputmode
+\fi
 
 \outputmode \zerocount % we generate the format in this mode
 
@@ -1191,8 +1203,13 @@
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 
-\voffset\zeropoint \let\voffset\relax \newdimen\voffset % prevent messing up
-\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset % prevent messing up
+\voffset\zeropoint \let\voffset\relax \newdimen\voffset
+\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset
+
+\let\pageleftoffset  \hoffset
+\let\pagerightoffset \hoffset
+\let\pagetopoffset   \voffset
+\let\pagebottomoffset\voffset
 
 %D Handy.
 

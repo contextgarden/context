@@ -813,7 +813,7 @@
  %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
-     \expandafter\firstoffourarguments
+     \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}

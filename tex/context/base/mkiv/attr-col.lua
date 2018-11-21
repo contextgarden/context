@@ -114,11 +114,15 @@ local data        = colors.data
 local values      = colors.values
 local registered  = colors.registered
 
+local cmykrgbmode = 0 -- only for testing, already defined colors are not affected
+
 local numbers     = attributes.numbers
 local list        = attributes.list
 
 registerstorage("attributes/colors/values",     values,     "attributes.colors.values")
 registerstorage("attributes/colors/registered", registered, "attributes.colors.registered")
+
+directives.register("colors.cmykrgbmode", function(v) cmykrgbmode = tonumber(v) or 0 end)
 
 local f_colors = {
     rgb  = formatters["r:%s:%s:%s"],
@@ -148,8 +152,11 @@ end
 local function cmyktorgb(c,m,y,k)
     if not c then
         return 0, 0, 0, 1
+    elseif cmykrgbmode == 1 then
+        local d = 1.0 - k
+        return 1.0 - min(1.0,c*d+k), 1.0 - min(1.0,m*d+k), 1.0 - min(1.0,y*d+k)
     else
-        return 1.0 - min(1.0,c+k), 1.0 - min(1.0,m+k), 1.0 - min(1.0,y+k)
+        return 1.0 - min(1.0,c  +k), 1.0 - min(1.0,m  +k), 1.0 - min(1.0,y  +k)
     end
 end
 

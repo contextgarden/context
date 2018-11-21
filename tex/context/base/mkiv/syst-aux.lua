@@ -323,9 +323,47 @@ end
 implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "string" }
 implement { name = "texdefinition_two", actions = texdefinition_two, scope = "private" }
 
-implement { name = "upper", arguments = "string", actions = { utf.upper,    context } }
-implement { name = "lower", arguments = "string", actions = { utf.lower,    context } }
-implement { name = "strip", arguments = "string", actions = { string.strip, context } } -- or utf.strip
+do
+
+    -- Quite probably we don't yet have characters loaded so we delay some
+    -- aliases.
+
+    local _lower_, _upper_, _strip_
+
+    _lower_ = function(s)
+        if characters and characters.lower then
+            _lower_ = characters.lower
+            return _lower_(s)
+        end
+        return string.lower(s)
+    end
+
+    _upper_ = function(s)
+        if characters and characters.upper then
+            _upper_ = characters.upper
+            return _upper_(s)
+        end
+        return string.upper(s)
+    end
+
+    _strip_ = function(s)
+        -- or utf.strip
+        if string.strip then
+            _strip_ = string.strip
+            return _strip_(s)
+        end
+        return s
+    end
+
+    local function lower() context(_lower_(s)) end
+    local function upper() context(_upper_(s)) end
+    local function strip() context(_strip_(s)) end
+
+    implement { name = "upper", arguments = "string", actions = upper }
+    implement { name = "lower", arguments = "string", actions = lower }
+    implement { name = "strip", arguments = "string", actions = strip }
+
+end
 
 implement {
     name      = "converteddimen",

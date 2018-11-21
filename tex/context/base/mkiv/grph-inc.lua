@@ -160,14 +160,14 @@ end
 
 --- begin of mapping / this will become graphics & code|nodeinjections but not this year
 
-local  __img__ = img or setmetatableindex(function() report_inclusion("no img lib present") end)
-images.__img__ = img
+local  __img__ = type(img) == "table" and img or { }
+images.__img__ =__img__
 
-local img_new   = img.new
-local img_scan  = img.scan
-local img_copy  = img.copy
-local img_wrap  = img.node
-local img_embed = img.immediatewrite
+local img_new   = __img__.new
+local img_scan  = __img__.scan
+local img_copy  = __img__.copy
+local img_wrap  = __img__.node
+local img_embed = __img__.immediatewrite
 
 updaters.register("backend.update",function()
     local img = images.__img__

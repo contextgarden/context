@@ -171,7 +171,6 @@ local glyph             = register_nut(new_nut(glyphcode,0))
 local textdir           = register_nut(new_nut(nodecodes.dir))
 
 local latelua           = register_nut(new_nut(whatsitcode,whatsitcodes.latelua))
-local special           = register_nut(new_nut(whatsitcode,whatsitcodes.special))
 local savepos           = register_nut(new_nut(whatsitcode,whatsitcodes.savepos))
 
 local user_node         = new_nut(whatsitcode,whatsitcodes.userdefined)
@@ -605,13 +604,6 @@ function nutpool.userattributes(id,attr)
      -- setfield(n,"value",id)
         setvalue(n,id)
     end
-    return n
-end
-
-function nutpool.special(str)
-    local n = copy_nut(special)
- -- setfield(n,"data",str)
-    setdata(n,str)
     return n
 end
 

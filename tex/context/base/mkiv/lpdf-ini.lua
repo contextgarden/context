@@ -32,7 +32,7 @@ local context           = context
 -- encoded utf16 string type between <>. We could probably save some bytes by using
 -- strings between () but then we end up with escaped ()\ too.
 
-local pdf               = pdf
+pdf                     = type(pdf) == "table" and pdf or { }
 local factor            = number.dimenfactors.bp
 
 local codeinjections    = { }
@@ -54,42 +54,46 @@ lpdf         = lpdf or { }
 local lpdf   = lpdf
 lpdf.flags   = lpdf.flags or { } -- will be filled later
 
-local pdfsetinfo             = pdf.setinfo
-local pdfsetcatalog          = pdf.setcatalog
------ pdfsetnames            = pdf.setnames
------ pdfsettrailer          = pdf.settrailer
-local pdfsettrailerid        = pdf.settrailerid
------ pdfsetomitcidset       = pdf.setomitcidset
+local pdfsetinfo              = pdf.setinfo
+local pdfsetcatalog           = pdf.setcatalog
+----- pdfsetnames             = pdf.setnames
+----- pdfsettrailer           = pdf.settrailer
+local pdfsettrailerid         = pdf.settrailerid
+----- pdfsetomitcidset        = pdf.setomitcidset
 
-local pdfsetpageresources    = pdf.setpageresources
-local pdfsetpageattributes   = pdf.setpageattributes
-local pdfsetpagesattributes  = pdf.setpagesattributes
+local pdfsetpageresources     = pdf.setpageresources
+local pdfsetpageattributes    = pdf.setpageattributes
+local pdfsetpagesattributes   = pdf.setpagesattributes
 
-local pdfreserveobject       = pdf.reserveobj
-local pdfimmediateobject     = pdf.immediateobj
-local pdfdeferredobject      = pdf.obj
-local pdfreferenceobject     = pdf.refobj
+local pdfreserveobject        = pdf.reserveobj
+local pdfimmediateobject      = pdf.immediateobj
+local pdfdeferredobject       = pdf.obj
+local pdfreferenceobject      = pdf.refobj
 
-local pdfgetfontname         = pdf.getfontname
-local pdfgetfontobjnum       = pdf.getfontobjnum
-local pdfgetxformname        = pdf.getxformname
-local pdfincludeimage        = pdf.includeimage
-local pdfincludechar         = pdf.includechar
-local pdfgetpagereference    = pdf.getpageref or pdf.pageref -- tex.pdfpageref is obsolete
-local pdfsetfontattributes   = pdf.setfontattributes
+local pdfgetfontname          = pdf.getfontname
+local pdfgetfontobjnum        = pdf.getfontobjnum
+local pdfgetxformname         = pdf.getxformname
+local pdfincludeimage         = pdf.includeimage
+local pdfincludechar          = pdf.includechar
+local pdfgetpagereference     = pdf.getpageref or pdf.pageref -- tex.pdfpageref is obsolete
+local pdfsetfontattributes    = pdf.setfontattributes
 
-local setmajorversion        = pdf.setmajorversion
-local setminorversion        = pdf.setminorversion
-local getmajorversion        = pdf.getmajorversion
-local getminorversion        = pdf.getminorversion
+local setmajorversion         = pdf.setmajorversion
+local setminorversion         = pdf.setminorversion
+local getmajorversion         = pdf.getmajorversion
+local getminorversion         = pdf.getminorversion
 
-local setcompresslevel       = pdf.setcompresslevel
-local setobjectcompresslevel = pdf.setobjcompresslevel
-local getcompresslevel       = pdf.getcompresslevel
-local getobjectcompresslevel = pdf.getobjcompresslevel
+local setcompresslevel        = pdf.setcompresslevel
+local setobjectcompresslevel  = pdf.setobjcompresslevel
+local getcompresslevel        = pdf.getcompresslevel
+local getobjectcompresslevel  = pdf.getobjcompresslevel
+
+local setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
 
 local function pdfdisablecommand(command)
-    pdf[command] = function() report_blocked("'pdf.%s' is not supported",command) end
+    pdf[command] = function()
+--         report_blocked("'pdf.%s' is not supported",command)
+    end
 end
 
 pdfdisablecommand("setinfo")
@@ -108,33 +112,38 @@ pdf.disablecommand = pdfdisablecommand
 
 updaters.register("backend.update.lpdf",function()
 
-    pdfsetinfo             = pdf.setinfo
-    pdfsetcatalog          = pdf.setcatalog
-    pdfsettrailerid        = pdf.settrailerid
+    pdfsetinfo              = pdf.setinfo
+    pdfsetcatalog           = pdf.setcatalog
+    pdfsettrailerid         = pdf.settrailerid
 
-    pdfreserveobject       = pdf.reserveobj
-    pdfimmediateobject     = pdf.immediateobj
-    pdfdeferredobject      = pdf.obj
-    pdfreferenceobject     = pdf.refobj
-    pdfsetfontattributes   = pdf.setfontattributes
+    pdfreserveobject        = pdf.reserveobj
+    pdfimmediateobject      = pdf.immediateobj
+    pdfdeferredobject       = pdf.obj
+    pdfreferenceobject      = pdf.refobj
+    pdfsetfontattributes    = pdf.setfontattributes
 
-    pdfgetfontname         = pdf.getfontname
-    pdfgetfontobjnum       = pdf.getfontobjnum
-    pdfgetxformname        = pdf.getxformname
-    pdfincludeimage        = pdf.includeimage
-    pdfincludechar         = pdf.includechar
-    pdfgetpagereference    = pdf.getpageref
+    pdfgetfontname          = pdf.getfontname
+    pdfgetfontobjnum        = pdf.getfontobjnum
+    pdfgetxformname         = pdf.getxformname
+    pdfincludeimage         = pdf.includeimage
+    pdfincludechar          = pdf.includechar
+    pdfgetpagereference     = pdf.getpageref
 
+    setmajorversion         = pdf.setmajorversion
+    setminorversion         = pdf.setminorversion
+    getmajorversion         = pdf.getmajorversion
+    getminorversion         = pdf.getminorversion
 
-    setmajorversion        = pdf.setmajorversion
-    setminorversion        = pdf.setminorversion
-    getmajorversion        = pdf.getmajorversion
-    getminorversion        = pdf.getminorversion
+    setcompresslevel        = pdf.setcompresslevel
+    setobjectcompresslevel  = pdf.setobjcompresslevel
+    getcompresslevel        = pdf.getcompresslevel
+    getobjectcompresslevel  = pdf.getobjcompresslevel
 
-    setcompresslevel       = pdf.setcompresslevel
-    setobjectcompresslevel = pdf.setobjcompresslevel
-    getcompresslevel       = pdf.getcompresslevel
-    getobjectcompresslevel = pdf.getobjcompresslevel
+    pdfsetpageresources     = pdf.setpageresources
+    pdfsetpageattributes    = pdf.setpageattributes
+    pdfsetpagesattributes   = pdf.setpagesattributes
+
+    setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
 
     pdfdisablecommand("setinfo")
     pdfdisablecommand("setcatalog")
@@ -176,21 +185,51 @@ function lpdf.includechar    (f,c) pdfincludechar(f,c) end
 function lpdf.includecharlist(f,c) pdfincludechar(f,c) end -- can be disabled
 
 local frozen = false
+local clevel = 3
+local olevel = 1
 
 function lpdf.setcompression(level,objectlevel,freeze)
     if not frozen then
-        setcompresslevel(level or 3)
-        setobjectcompresslevel(objectlevel or level or 3)
+        if setcompresslevel then
+            setcompresslevel(level or 3)
+            setobjectcompresslevel(objectlevel or level or 3)
+        else
+            clevel = level
+            olevel = objectlevel
+        end
         frozen = freeze
     end
 end
 
 function lpdf.getcompression()
-    return getcompresslevel(), getobjectcompresslevel()
+    if getcompresslevel then
+        return getcompresslevel(), getobjectcompresslevel()
+    else
+        return clevel, olevel
+    end
 end
 
-function lpdf.compresslevel      () return getcompresslevel      () end
-function lpdf.objectcompresslevel() return getobjectcompresslevel() end
+function lpdf.compresslevel()
+    if getcompresslevel then
+        return getcompresslevel()
+    else
+        return clevel
+    end
+end
+
+function lpdf.objectcompresslevel()
+    if getobjectcompresslevel then
+        return getobjectcompresslevel()
+    else
+        return olevel
+    end
+end
+
+function lpdf.setsuppressoptionalinfo(n)
+    if setsuppressoptionalinfo then
+        setsuppressoptionalinfo(n) -- todo
+    end
+end
 
 do
 

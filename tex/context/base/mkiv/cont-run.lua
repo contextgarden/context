@@ -197,7 +197,7 @@ local function processjob()
     local suffix    = environment.suffix
     local filename  = environment.filename -- hm, not inputfilename !
 
-    if arguments.lmtx then
+    if arguments.lmtx or not status.obj_ptr then
         context.enablelmtx()
         environment.lmtxmode = true
     end

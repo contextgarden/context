@@ -311,7 +311,7 @@ local noadoptions = allocate {
 
 -- local directionvalues  = mark(getvalues("dir"))
 -- local gluevalues       = mark(getvalues("glue"))
--- local pdfliteralvalues = mark(getvalues("pdf_literal"))
+-- local literalvalues    = mark(getvalues("literal"))
 
 local dirvalues = allocate {
     [0] = "TLT",
@@ -328,7 +328,7 @@ local gluevalues = allocate {
     [4] = "filll",
 }
 
-local pdfliteralvalues = allocate {
+local literalvalues = allocate {
     [0] = "origin",
     [1] = "page",
     [2] = "always",
@@ -361,7 +361,7 @@ usercodes        = allocate(swapped(usercodes,usercodes))
 noadoptions      = allocate(swapped(noadoptions,noadoptions))
 dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
-pdfliteralvalues = allocate(swapped(pdfliteralvalues,pdfliteralvalues))
+literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
 nodes.gluecodes            = gluecodes
 nodes.dircodes             = dircodes
@@ -386,7 +386,20 @@ nodes.usercodes            = usercodes
 nodes.noadoptions          = noadoptions
 nodes.dirvalues            = dirvalues
 nodes.gluevalues           = gluevalues
-nodes.pdfliteralvalues     = pdfliteralvalues
+nodes.literalvalues        = literalvalues
+
+if whatcodes.literal then
+    -- temporary hack
+    whatcodes.pdfliteral   = whatcodes.literal
+    whatcodes.pdfsave      = whatcodes.save
+    whatcodes.pdfrestore   = whatcodes.restore
+    whatcodes.pdfsetmatrix = whatcodes.setmatrix
+else
+    whatcodes.literal   = whatcodes.pdfliteral
+    whatcodes.save      = whatcodes.pdfsave
+    whatcodes.restore   = whatcodes.pdfrestore
+    whatcodes.setmatrix = whatcodes.pdfsetmatrix
+end
 
 dirvalues.lefttoright = 0
 dirvalues.righttoleft = 1
@@ -417,14 +430,14 @@ table.setmetatableindex(nodes.subtypes,function(t,k)
     return v
 end)
 
-nodes.skipcodes            = gluecodes        -- more friendly
-nodes.directioncodes       = dircodes         -- more friendly
-nodes.whatsitcodes         = whatcodes        -- more official
+nodes.skipcodes            = gluecodes     -- more friendly
+nodes.directioncodes       = dircodes      -- more friendly
+nodes.whatsitcodes         = whatcodes     -- more official
 nodes.marginkerncodes      = margincodes
 nodes.discretionarycodes   = disccodes
-nodes.directionvalues      = dirvalues        -- more friendly
-nodes.skipvalues           = gluevalues       -- more friendly
-nodes.literalvalues        = pdfliteralvalues -- more friendly
+nodes.directionvalues      = dirvalues     -- more friendly
+nodes.skipvalues           = gluevalues    -- more friendly
+nodes.literalvalues        = literalvalues -- more friendly
 
 glyphcodes.glyph           = glyphcodes.character
 
@@ -435,7 +448,7 @@ kerncodes.kerning          = kerncodes.fontkern
 
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1 -- new
 
-pdfliteralvalues.direct    = pdfliteralvalues.always
+literalvalues.direct       = literalvalues.always
 
 nodes.codes = allocate { -- mostly for listing
     glue        = skipcodes,

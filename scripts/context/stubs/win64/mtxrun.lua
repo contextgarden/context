@@ -1036,7 +1036,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 40126, stripped down to: 21515
+-- original size: 40146, stripped down to: 21485
 
 if not modules then modules={} end modules ['l-lpeg']={
   version=1.001,
@@ -1464,7 +1464,7 @@ function lpeg.counter(pattern,action)
     return function(str) n=0;lpegmatch(pattern,str);return n end
   end
 end
-utf=utf or (unicode and unicode.utf8) or {}
+utf=utf or {}
 local utfcharacters=utf and utf.characters or string.utfcharacters
 local utfgmatch=utf and utf.gmatch
 local utfchar=utf and utf.char
@@ -5480,7 +5480,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 40036, stripped down to: 17837
+-- original size: 40179, stripped down to: 17768
 
 if not modules then modules={} end modules ['l-unicode']={
   version=1.001,
@@ -5489,7 +5489,8 @@ if not modules then modules={} end modules ['l-unicode']={
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
 }
-utf=utf or (unicode and unicode.utf8) or {}
+utf=utf or {}
+unicode=nil
 utf.characters=utf.characters or string.utfcharacters
 utf.values=utf.values   or string.utfvalues
 local type=type
@@ -5512,9 +5513,6 @@ local p_utf8byte=patterns.utf8byte
 local p_utfbom=patterns.utfbom
 local p_newline=patterns.newline
 local p_whitespace=patterns.whitespace
-if not unicode then
-  unicode={ utf=utf } 
-end
 if not utf.char then
   utf.char=string.utfcharacter or (utf8 and utf8.char)
   if not utf.char then
@@ -6135,7 +6133,7 @@ end
 if bit32 then
   local extract=bit32.extract
   local char=string.char
-  function unicode.toutf32string(n)
+  function utf.toutf32string(n)
     if n<=0xFF then
       return
         char(n).."\000\000\000"
@@ -24709,8 +24707,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 986146
--- stripped bytes    : 348184
+-- original bytes    : 986309
+-- stripped bytes    : 348446
 
 -- end library merge
 

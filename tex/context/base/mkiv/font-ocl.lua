@@ -244,7 +244,7 @@ local function initialize(tfmdata,kind,value) -- hm, always value
             }
             --
             local getactualtext = otf.getactualtext
-            local default       = colorvalues[#colorvalues]
+            local default       = colorvalues[#colorvalues] -- or 1 or ... maybe make it an option
             local b, e          = getactualtext(tounicode(0xFFFD))
             local actualb       = { "pdf", "page", b } -- saves tables
             local actuale       = { "pdf", "page", e } -- saves tables

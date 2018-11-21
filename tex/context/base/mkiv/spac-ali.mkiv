@@ -333,7 +333,8 @@
 \newconstant\c_spac_align_state_par_fill
 
 \def\v_spac_align_fill_amount          {\plusone  fil}
-\def\v_spac_align_fill_amount_hard     {\plusone  fill}
+\def\v_spac_align_fill_amount_hard     {\plusone fill}
+\def\v_spac_align_fill_amount_extreme  {\plustenthousand  filll}
 \def\v_spac_align_fill_amount_negative {\minusone fil}
 \def\v_spac_align_fill_amount_double   {\plustwo  fil}
 \def\v_spac_align_fill_amount_space    {\plustwo  fil} % can be added to xspace if we have a key
@@ -457,7 +458,8 @@
    \spaceskip      \zeropoint\relax
    \xspaceskip     \zeropoint\relax
    \parfillskip    \zeropoint
-   \parfillleftskip\zeropoint\s!plus\v_spac_align_fill_amount_hard\relax
+   \parfillleftskip\zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
+   \parfillleftmode\plustwo % \plusone checks for multiple lines
    \parindent      \zeropoint
    \relax}
 

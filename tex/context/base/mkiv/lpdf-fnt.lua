@@ -58,7 +58,7 @@ local function finalizefont(v)
         local n  = 0
         for i in next, v.indices do
             local u = indextoslot(id,i)
-            pdfincludechar(id,u)
+         -- pdfincludechar(id,u)
             n = n + 1
         end
         v.n = n

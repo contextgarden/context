@@ -248,33 +248,36 @@ function paragraphs.normalize(head,islocal)
         return head, false
     end
     -- this can become a separate handler but it makes sense to integrate it here
-    local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
-    if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
-        local last = nil -- a nut
-        local done = false
-        for line, subtype in nexthlist, head do
-            if subtype == line_code and not getprop(line,"line") then
-                if done then
-                    last = line
-                else
-                    done = true
+    local mode = texgetcount("parfillleftmode")
+    if mode > 0 then
+        local l_width, l_stretch, l_shrink = texgetglue("parfillleftskip")
+        if l_width ~= 0 or l_stretch ~= 0 or l_shrink ~= 0 then
+            local last = nil -- a nut
+            local done = mode == 2 -- false
+            for line, subtype in nexthlist, head do
+                if subtype == line_code and not getprop(line,"line") then
+                    if done then
+                        last = line
+                    else
+                        done = true
+                    end
                 end
             end
-        end
-        if last then -- only if we have more than one line
-            local head    = getlist(last)
-            local current = head
-            if current then
-                if getid(current) == glue_code and getsubtype(current,leftskip_code) then
-                    current = getnext(current)
-                end
+            if last then -- only if we have more than one line
+                local head    = getlist(last)
+                local current = head
                 if current then
-                    head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
-                    if head == current then
-                        setlist(last,head)
+                    if getid(current) == glue_code and getsubtype(current,leftskip_code) then
+                        current = getnext(current)
                     end
-                    -- can be a 'rehpack(h  )'
-                    rehpack(last)
+                    if current then
+                        head, current = insert_before(head,current,new_glue(l_width,l_stretch,l_shrink))
+                        if head == current then
+                            setlist(last,head)
+                        end
+                        -- can be a 'rehpack(h  )'
+                        rehpack(last)
+                    end
                 end
             end
         end
@@ -283,14 +286,9 @@ function paragraphs.normalize(head,islocal)
     for line, subtype in nexthlist, head do
         if subtype == line_code and not getprop(line,"line") then
             normalize(line)
-            if done then
-                last = line
-            else
-                done = true
-            end
         end
     end
-    return head, true
+    return head, true -- true is obsolete
 end
 
 -- print(nodes.idstostring(head))
