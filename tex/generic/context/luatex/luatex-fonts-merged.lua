@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/21/18 19:54:01
+-- merge date  : 11/22/18 15:29:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -21134,7 +21134,7 @@ local function unifymissing(fontdata)
   fonts.mappings.addtounicode(fontdata,fontdata.filename,checklookups)
   resources.unicodes=nil
 end
-local firstprivate=fonts.privateoffsets.textbase or 0xF0000
+local firstprivate=fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
 local puafirst=0xE000
 local pualast=0xF8FF
 local function unifyglyphs(fontdata,usenames)
@@ -31695,7 +31695,7 @@ local function initialize(tfmdata,kind,value)
         { id=0 }
       }
       local getactualtext=otf.getactualtext
-      local default=colorvalues[#colorvalues] 
+      local default=false 
       local b,e=getactualtext(tounicode(0xFFFD))
       local actualb={ "pdf","page",b } 
       local actuale={ "pdf","page",e }

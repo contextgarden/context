@@ -2382,7 +2382,7 @@ directives.register("graphics.uselua",function(v)
     checkers.jpg = v and jpg_checker or nil
     checkers.jp2 = v and jp2_checker or nil
     checkers.png = v and png_checker or nil
-    report("%s Lua based PDF, PNG, JPG and JP2 inclusion",v and "enabling" or "disabling")
+ -- report("%s Lua based PDF, PNG, JPG and JP2 inclusion",v and "enabling" or "disabling")
 end)
 
 -- directives.enable("graphics.pdf.uselua")

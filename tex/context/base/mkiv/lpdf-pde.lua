@@ -1122,7 +1122,7 @@ if img then do
                 notype    = true,
                 stream    = content, -- todo: no compress, pass directly also length, filter etc
                 attr      = xobject(),
-             -- type      = images.types.stream,
+                kind      = images.types.stream,
             }
         end
     end

@@ -59,7 +59,6 @@ local pdfsetcatalog           = pdf.setcatalog
 ----- pdfsetnames             = pdf.setnames
 ----- pdfsettrailer           = pdf.settrailer
 local pdfsettrailerid         = pdf.settrailerid
------ pdfsetomitcidset        = pdf.setomitcidset
 
 local pdfsetpageresources     = pdf.setpageresources
 local pdfsetpageattributes    = pdf.setpageattributes
@@ -89,6 +88,7 @@ local getcompresslevel        = pdf.getcompresslevel
 local getobjectcompresslevel  = pdf.getobjcompresslevel
 
 local setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
+local setomitcidset           = pdf.setomitcidset
 
 local function pdfdisablecommand(command)
     pdf[command] = function()
@@ -144,6 +144,7 @@ updaters.register("backend.update.lpdf",function()
     pdfsetpagesattributes   = pdf.setpagesattributes
 
     setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
+    setomitcidset           = pdf.setomitcidset
 
     pdfdisablecommand("setinfo")
     pdfdisablecommand("setcatalog")
@@ -229,6 +230,10 @@ function lpdf.setsuppressoptionalinfo(n)
     if setsuppressoptionalinfo then
         setsuppressoptionalinfo(n) -- todo
     end
+end
+
+function lpdf.setomitcidset(v)
+    return pdfsetomitcidset(v)
 end
 
 do

@@ -753,9 +753,10 @@ function codeinjections.setformat(s)
                     majorversion,minorversion)
             end
             --
-            -- cid sets are always omitted now:
+            -- cid sets can always omitted now, but those validators still complain so let's
+            -- for a while keep it (for luigi):
             --
-            -- pdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
+            lpdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,

@@ -75,9 +75,9 @@ local structure_kids   -- delayed
 local structure_ref    -- delayed
 local parent_ref       -- delayed
 local root             -- delayed
+local names            -- delayed
 local tree                = { }
 local elements            = { }
-local names               = false -- delayed
 
 local structurestags      = structures.tags
 local taglist             = structurestags.taglist
@@ -111,7 +111,7 @@ local usedmapping         = { }
 -- end
 
 local function finishstructure()
-    if root and names and #structure_kids > 0 then
+    if root and #structure_kids > 0 then
         local nums, n = pdfarray(), 0
         for i=1,#tree do
             n = n + 1 ; nums[n] = i - 1
@@ -257,14 +257,10 @@ local function makeelement(fulltag,parent)
         AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
-    if id then
-        if names then
-            local size = #names
-            names[size+1] = id
-            names[size+2] = s
-        else
-            names= { id, s }
-        end
+    if id and names then
+        local size = #names
+        names[size+1] = id
+        names[size+2] = s
     end
     local kids = parent.kids
     kids[#kids+1] = s
@@ -338,6 +334,7 @@ function nodeinjections.addtags(head)
         structure_ref  = pdfreserveobject()
         parent_ref     = pdfreserveobject()
         root           = { pref = pdfreference(structure_ref), kids = structure_kids }
+        names          = pdfarray()
     end
 
     local function collectranges(head,list)

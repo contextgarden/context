@@ -130,9 +130,10 @@
 
 %D But we still provide:
 
-\unexpanded\def\nopdfcompression      {\clf_setpdfcompression\zerocount\zerocount}
-\unexpanded\def\maximumpdfcompression {\clf_setpdfcompression\plusnine \plusnine }
-\unexpanded\def\normalpdfcompression  {\clf_setpdfcompression\plusthree\plusthree}
+\unexpanded\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
+\unexpanded\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
+\unexpanded\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
+\unexpanded\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
 
 %D These might even become no-ops as we don't need them in \CONTEXT:
 
