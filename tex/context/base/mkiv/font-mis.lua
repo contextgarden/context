@@ -8,20 +8,20 @@ if not modules then modules = { } end modules ['font-mis'] = {
 
 fonts          = fonts or { }
 
-fonts.helpers  = fonts.helpers or { }
-local helpers  = fonts.helpers
+local helpers  = fonts.helpers or { }
+fonts.helpers  = helpers
 
-fonts.handlers = fonts.handlers or { }
-local handlers = fonts.handlers
+local handlers = fonts.handlers or { }
+fonts.handlers = handlers
 
-handlers.otf   = handlers.otf or { }
-local otf      = handlers.otf
+local otf      = handlers.otf or { }
+handlers.otf   = otf
 
 local readers  = otf.readers
 
 if readers then
 
-    otf.version = otf.version or 3.106
+    otf.version = otf.version or 3.107
     otf.cache   = otf.cache   or containers.define("fonts", "otl", otf.version, true)
 
     function fonts.helpers.getfeatures(name,save)

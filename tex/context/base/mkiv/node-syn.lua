@@ -361,6 +361,7 @@ end
 function synctex.wrapup()
     if tmpfile then
         renamefile(tmpfile,logfile)
+        tmpfile = nil
     end
 end
 

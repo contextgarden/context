@@ -136,6 +136,8 @@ function luatex.wrapup(action)
     appendaction(wrapupactions,"user",action)
 end
 
+appendaction(wrapupactions,"system",synctex.wrapup)
+
 -- this can be done later
 
 callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
@@ -154,6 +156,8 @@ callbacks.register('process_input_buffer',    false,               "actions perf
 callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
 callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
+
+-- finish_synctex might go away (move to wrapup_run)
 
 callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
 callbacks.register('wrapup_run',              wrapup_run,          "actions performed after closing files")

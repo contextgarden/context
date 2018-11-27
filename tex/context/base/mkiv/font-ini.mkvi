@@ -2757,7 +2757,26 @@
      \expandafter\getprivatechar
    \fi}
 
-% new
+%D Some fonts can have color specifiers:
+%D
+%D \starttyping
+%D \definefontfeature[seguiemj-cl][default][colr=yes,ccmp=yes,dist=yes]
+%D \definefontsynonym[emoji][seguiemj*seguiemj-cl]
+%D
+%D \definecolor[emoji-red] [r=.4]
+%D \definecolor[emoji-gray][s=1,t=.5,a=1]
+%D
+%D %definefontcolorpalette [emoji-r] [emoji-red,emoji-gray,textcolor] % bad
+%D \definefontcolorpalette [emoji-r] [emoji-red,emoji-gray]           % okay
+%D
+%D \definefontfeature[seguiemj-r][ccmp=yes,dist=yes,colr=emoji-r]
+%D
+%D \definefont[MyEmojiR][seguiemj*seguiemj-r @ 100pt]
+%D
+%D \startTEXpage[offset=10pt]
+%D     \MyEmojiR\resolvedemoji{triangular ruler}
+%D \stopTEXpage
+%D \stoptyping
 
 \unexpanded\def\definefontcolorpalette
   {\dodoubleargument\font_define_color_palette}

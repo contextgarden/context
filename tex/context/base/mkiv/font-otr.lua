@@ -2346,11 +2346,11 @@ local function loadfont(specification,n,instance)
     local function message(str)
         report("fatal error in file %a: %s\n%s",specification.filename,str,debug and debug.traceback())
     end
-    local ok, result = xpcall(loadfontdata,message,specification)
-    if ok then
-        return result
-    end
---     return loadfontdata(specification)
+--     local ok, result = xpcall(loadfontdata,message,specification)
+--     if ok then
+--         return result
+--     end
+    return loadfontdata(specification)
 end
 
 -- we need even less, but we can have a 'detail' variant
@@ -2447,7 +2447,7 @@ function readers.loadfont(filename,n,instance)
                 mathconstants = fontdata.mathconstants,
                 colorpalettes = fontdata.colorpalettes,
                 svgshapes     = fontdata.svgshapes,
-                sbixshapes    = fontdata.sbixshapes,
+                pngshapes     = fontdata.pngshapes,
                 variabledata  = fontdata.variabledata,
                 foundtables   = fontdata.foundtables,
             },

@@ -296,9 +296,7 @@ checkers.placeholder = placeholder
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
-    for n in nextglyph, head do -- faster than while loop so we delay removal
-        local font = getfont(n)
-        local char = getchar(n)
+    for n, font, char in nextglyph, head do -- faster than while loop so we delay removal
         if font ~= lastfont then
             characters = fontcharacters[font]
             lastfont   = font

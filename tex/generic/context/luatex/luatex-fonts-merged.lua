@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/22/18 15:29:45
+-- merge date  : 11/27/18 16:41:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -12888,10 +12888,7 @@ local function loadfont(specification,n,instance)
   local function message(str)
     report("fatal error in file %a: %s\n%s",specification.filename,str,debug and debug.traceback())
   end
-  local ok,result=xpcall(loadfontdata,message,specification)
-  if ok then
-    return result
-  end
+  return loadfontdata(specification)
 end
 function readers.loadshapes(filename,n,instance,streams)
   local fontdata=loadfont {
@@ -12978,7 +12975,7 @@ function readers.loadfont(filename,n,instance)
         mathconstants=fontdata.mathconstants,
         colorpalettes=fontdata.colorpalettes,
         svgshapes=fontdata.svgshapes,
-        sbixshapes=fontdata.sbixshapes,
+        pngshapes=fontdata.pngshapes,
         variabledata=fontdata.variabledata,
         foundtables=fontdata.foundtables,
       },
@@ -17463,10 +17460,11 @@ local readers=fonts.handlers.otf.readers
 local streamreader=readers.streamreader
 local setposition=streamreader.setposition
 local getposition=streamreader.getposition
-local readushort=streamreader.readcardinal2 
-local readulong=streamreader.readcardinal4 
+local readuinteger=streamreader.readcardinal1
+local readushort=streamreader.readcardinal2
+local readulong=streamreader.readcardinal4
 local readinteger=streamreader.readinteger1
-local readshort=streamreader.readinteger2  
+local readshort=streamreader.readinteger2
 local readstring=streamreader.readstring
 local readtag=streamreader.readtag
 local readbytes=streamreader.readbytes
@@ -17486,6 +17484,7 @@ directives.register("fonts.streamreader",function()
   streamreader=utilities.streams
   setposition=streamreader.setposition
   getposition=streamreader.getposition
+  readuinteger=streamreader.readcardinal1
   readushort=streamreader.readcardinal2
   readulong=streamreader.readcardinal4
   readinteger=streamreader.readinteger1
@@ -20082,59 +20081,269 @@ function readers.sbix(f,fontdata,specification)
     for i=1,nofstrikes do
       strikes[i]=readulong(f)
     end
+    local shapes={}
+    local done=0
+    for i=1,nofstrikes do
+      local strikeoffset=strikes[i]+tableoffset
+      setposition(f,strikeoffset)
+      strikes[i]={
+        ppem=readushort(f),
+        ppi=readushort(f),
+        offset=strikeoffset
+      }
+    end
+    sort(strikes,function(a,b)
+      if b.ppem==a.ppem then
+        return b.ppi<a.ppi
+      else
+        return b.ppem<a.ppem
+      end
+    end)
+    local glyphs={}
+    for i=1,nofstrikes do
+      local strike=strikes[i]
+      local strikeppem=strike.ppem
+      local strikeppi=strike.ppi
+      local strikeoffset=strike.offset
+      setposition(f,strikeoffset)
+      for i=0,nofglyphs do
+        glyphs[i]=readulong(f)
+      end
+      local glyphoffset=glyphs[0]
+      for i=0,nofglyphs-1 do
+        local nextoffset=glyphs[i+1]
+        if not shapes[i] then
+          local datasize=nextoffset-glyphoffset
+          if datasize>0 then
+            setposition(f,strikeoffset+glyphoffset)
+            shapes[i]={
+              x=readshort(f),
+              y=readshort(f),
+              tag=readtag(f),
+              data=readstring(f,datasize-8),
+              ppem=strikeppem,
+              ppi=strikeppi,
+            }
+            done=done+1
+            if done==nofglyphs then
+              break
+            end
+          end
+        end
+        glyphoffset=nextoffset
+      end
+    end
+    fontdata.pngshapes=shapes
+  end
+end
+do
+  local function getmetrics(f)
+    return {
+      ascender=readinteger(f),
+      descender=readinteger(f),
+      widthmax=readuinteger(f),
+      caretslopedumerator=readinteger(f),
+      caretslopedenominator=readinteger(f),
+      caretoffset=readinteger(f),
+      minorigin=readinteger(f),
+      minadvance=readinteger(f),
+      maxbefore=readinteger(f),
+      minafter=readinteger(f),
+      pad1=readinteger(f),
+      pad2=readinteger(f),
+    }
+  end
+  local function getbigmetrics(f)
+    return {
+      height=readuinteger(f),
+      width=readuinteger(f),
+      horiBearingX=readinteger(f),
+      horiBearingY=readinteger(f),
+      horiAdvance=readuinteger(f),
+      vertBearingX=readinteger(f),
+      vertBearingY=readinteger(f),
+      vertAdvance=readuinteger(f),
+    }
+  end
+  local function getsmallmetrics(f)
+    return {
+      height=readuinteger(f),
+      width=readuinteger(f),
+      bearingX=readinteger(f),
+      bearingY=readinteger(f),
+      advance=readuinteger(f),
+    }
+  end
+  function readers.cblc(f,fontdata,specification)
+    local ctdttableoffset=gotodatatable(f,fontdata,"cbdt",specification.glyphs)
+    if not ctdttableoffset then
+      return
+    end
+    local cblctableoffset=gotodatatable(f,fontdata,"cblc",specification.glyphs)
+    if cblctableoffset then
+      local majorversion=readushort(f)
+      local minorversion=readushort(f)
+      local nofsizetables=readulong(f)
+      local sizetables={}
       local shapes={}
-      local done=0
-      for i=1,nofstrikes do
-        local strikeoffset=strikes[i]+tableoffset
-        setposition(f,strikeoffset)
-        strikes[i]={
-          ppem=readushort(f),
-          ppi=readushort(f),
-          offset=strikeoffset
+      local subtables={}
+      for i=1,nofsizetables do
+        sizetables[i]={
+          subtables=readulong(f),
+          indexsize=readulong(f),
+          nofsubtables=readulong(f),
+          colorref=readulong(f),
+          hormetrics=getmetrics(f),
+          vermetrics=getmetrics(f),
+          firstindex=readushort(f),
+          lastindex=readushort(f),
+          ppemx=readbyte(f),
+          ppemy=readbyte(f),
+          bitdepth=readbyte(f),
+          flags=readbyte(f),
         }
       end
-      sort(strikes,function(a,b)
-        if b.ppem==a.ppem then
-          return b.ppi<a.ppi
+      sort(sizetables,function(a,b)
+        if b.ppemx==a.ppemx then
+          return b.bitdepth<a.bitdepth
         else
-          return b.ppem<a.ppem
+          return b.ppemx<a.ppemx
         end
       end)
-      local glyphs={}
-      for i=1,nofstrikes do
-        local strike=strikes[i]
-        local strikeppem=strike.ppem
-        local strikeppi=strike.ppi
-        local strikeoffset=strike.offset
-        setposition(f,strikeoffset)
-        for i=0,nofglyphs do
-          glyphs[i]=readulong(f)
+      for i=1,nofsizetables do
+        local s=sizetables[i]
+        local d=false
+        for j=s.firstindex,s.lastindex do
+          if not shapes[j] then
+            shapes[j]=i
+            d=true
+          end
         end
-        local glyphoffset=glyphs[0]
-        for i=0,nofglyphs-1 do
-          local nextoffset=glyphs[i+1]
-          if not shapes[i] then
-            local datasize=nextoffset-glyphoffset
-            if datasize>0 then
-              setposition(f,strikeoffset+glyphoffset)
-              shapes[i]={
-                x=readshort(f),
-                y=readshort(f),
-                tag=readtag(f),
-                data=readstring(f,datasize-8),
-                ppem=strikeppem,
-                ppi=strikeppi,
-              }
-              done=done+1
-              if done==nofglyphs then
-                break
+        if d then
+          s.used=true
+        end
+      end
+      for i=1,nofsizetables do
+        local s=sizetables[i]
+        if s.used then
+          local offset=s.subtables
+          setposition(f,cblctableoffset+offset)
+          for j=1,s.nofsubtables do
+            local firstindex=readushort(f)
+            local lastindex=readushort(f)
+            local tableoffset=readulong(f)+offset
+            for k=firstindex,lastindex do
+              if shapes[k]==i then
+                local s=subtables[tableoffset]
+                if not s then
+                  s={
+                    firstindex=firstindex,
+                    lastindex=lastindex,
+                  }
+                  subtables[tableoffset]=s
+                end
+                shapes[k]=s
               end
             end
           end
-          glyphoffset=nextoffset
         end
       end
-      fontdata.sbixshapes=shapes
+      for offset,subtable in sortedhash(subtables) do
+        local tabletype=readushort(f)
+        subtable.format=readushort(f)
+        local baseoffset=readulong(f)+ctdttableoffset
+        local offsets={}
+        local metrics=nil
+        if tabletype==1 then
+          for i=subtable.firstindex,subtable.lastindex do
+            offsets[i]=readulong(f)+baseoffset
+          end
+          skipbytes(f,4)
+        elseif tabletype==2 then
+          local size=readulong(f)
+          local done=baseoffset
+          metrics=getbigmetrics(f)
+          for i=subtable.firstindex,subtable.lastindex do
+            offsets[i]=done
+            done=done+size
+          end
+        elseif tabletype==3 then
+          local n=subtable.lastindex-subtable.firstindex+2
+          for i=subtable.firstindex,subtable.lastindex do
+            offsets[i]=readushort(f)+baseoffset
+          end
+          if math.odd(n) then
+            skipbytes(f,4)
+          else
+            skipbytes(f,2)
+          end
+        elseif tabletype==4 then
+          for i=1,readulong(f) do
+            offsets[readushort(f)]=readushort(f)+baseoffset
+          end
+        elseif tabletype==5 then
+          local size=readulong(f)
+          local done=baseoffset
+          metrics=getbigmetrics(f)
+          local n=readulong(f)
+          for i=1,n do
+            offsets[readushort(f)]=done
+            done=done+size
+          end
+          if math.odd(n) then
+            skipbytes(f,2)
+          end
+        else
+          return 
+        end
+        subtable.offsets=offsets
+        subtable.metrics=metrics
+      end
+      local default={ width=0,height=0 }
+      local glyphs=fontdata.glyphs
+      for index,subtable in sortedhash(shapes) do
+        if type(subtable)=="table" then
+          local data=nil
+          local metrics=default
+          local format=subtable.format
+          local offset=subtable.offsets[index]
+          setposition(f,offset)
+          if format==17 then
+            metrics=getsmallmetrics(f)
+            data=readstring(f,readulong(f))
+          elseif format==18 then
+            metrics=getbigmetrics(f)
+            data=readstring(f,readulong(f))
+          elseif format==19 then
+            metrics=subtable.metrics
+            data=readstring(f,readulong(f))
+          else
+          end
+          local x=metrics.width
+          local y=metrics.height
+          shapes[index]={
+            x=x,
+            y=y,
+            data=data,
+          }
+          local glyph=glyphs[index]
+          if not glyph.boundingbox then
+            local width=glyph.width
+            local height=width*y/x
+            glyph.boundingbox={ 0,0,width,height }
+          end
+        else
+          shapes[index]={
+            x=0,
+            y=0,
+            data="",
+          }
+        end
+      end
+      fontdata.pngshapes=shapes 
+    end
+  end
+  function readers.cbdt(f,fontdata,specification)
   end
 end
 function readers.stat(f,fontdata,specification)
@@ -23089,13 +23298,13 @@ local trace_defining=false registertracker("fonts.defining",function(v) trace_de
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.106 
+otf.version=3.107 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
-otf.sbixcache=containers.define("fonts","sbix",otf.version,true)
+otf.pngcache=containers.define("fonts","png",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
 otf.svgenabled=false
-otf.sbixenabled=false
+otf.pngenabled=false
 local otfreaders=otf.readers
 local hashes=fonts.hashes
 local definers=fonts.definers
@@ -23163,7 +23372,7 @@ function otf.load(filename,sub,instance)
     report_otf("forced reload of %a due to hard coded flag",filename)
     reload=true
   end
-   if reload then
+  if reload then
     report_otf("loading %a, hash %a",filename,hash)
     starttiming(otfreaders,true)
     data=otfreaders.loadfont(filename,sub or 1,instance) 
@@ -23171,7 +23380,7 @@ function otf.load(filename,sub,instance)
       local used=checkmemory()
       local resources=data.resources
       local svgshapes=resources.svgshapes
-      local sbixshapes=resources.sbixshapes
+      local pngshapes=resources.pngshapes
       if cleanup==0 then
         checkmemory(used,threshold,tracememory)
       end
@@ -23194,15 +23403,15 @@ function otf.load(filename,sub,instance)
           checkmemory(used,threshold,tracememory)
         end
       end
-      if sbixshapes then
-        resources.sbixshapes=nil
-        if otf.sbixenabled then
+      if pngshapes then
+        resources.pngshapes=nil
+        if otf.pngenabled then
           local timestamp=os.date()
-          containers.write(otf.sbixcache,hash,{
-            sbixshapes=sbixshapes,
+          containers.write(otf.pngcache,hash,{
+            pngshapes=pngshapes,
             timestamp=timestamp,
           })
-          data.properties.sbix={
+          data.properties.png={
             hash=hash,
             timestamp=timestamp,
           }
@@ -31644,11 +31853,13 @@ else
     sharedpalettes[name]=values
     for i=1,#values do
       local v=values[i]
-      values[i]=hash[f_color(
-        max(round((v.r or 0)*255),255)/255,
-        max(round((v.g or 0)*255),255)/255,
-        max(round((v.b or 0)*255),255)/255
-      )]
+      if v then
+        values[i]=hash[f_color(
+          max(round((v.r or 0)*255),255)/255,
+          max(round((v.g or 0)*255),255)/255,
+          max(round((v.b or 0)*255),255)/255
+        )]
+      end
     end
   end
 end
@@ -31672,7 +31883,7 @@ local pop={ "pdf","page","Q" }
 if not LUATEXFUNCTIONALITY or LUATEXFUNCTIONALITY<6472 then 
   start={ "nop" }
 end
-local function initialize(tfmdata,kind,value) 
+local function initialize(tfmdata,kind,value)
   if value then
     local resources=tfmdata.resources
     local palettes=resources.colorpalettes
@@ -31682,7 +31893,13 @@ local function initialize(tfmdata,kind,value)
         converted=setmetatableindex(convert)
         resources.converted=converted
       end
-      local colorvalues=sharedpalettes[value] or converted[palettes[tonumber(value) or 1] or palettes[1]] or {}
+      local colorvalues=sharedpalettes[value]
+      local default=false 
+      if colorvalues then
+        default=colorvalues[#colorvalues]
+      else
+        colorvalues=converted[palettes[tonumber(value) or 1] or palettes[1]] or {}
+      end
       local classes=#colorvalues
       if classes==0 then
         return
@@ -31695,7 +31912,6 @@ local function initialize(tfmdata,kind,value)
         { id=0 }
       }
       local getactualtext=otf.getactualtext
-      local default=false 
       local b,e=getactualtext(tounicode(0xFFFD))
       local actualb={ "pdf","page",b } 
       local actuale={ "pdf","page",e }
@@ -31726,6 +31942,12 @@ local function initialize(tfmdata,kind,value)
                 f=true
                 n=n+1 t[n]=v
                 l=v
+              else
+if f then
+  n=n+1 t[n]=pop
+end
+f=false
+l=nil
               end
               n=n+1 t[n]=charcommand[entry.slot]
               if s>1 and i<s and goback then
@@ -31951,40 +32173,40 @@ fonts.handlers.otf.features.register {
     node=initializesvg,
   }
 }
-local otfsbix=otf.sbix or {}
-otf.sbix=otfsbix
-otf.sbixenabled=true
+local otfpng=otf.png or {}
+otf.png=otfpng
+otf.pngenabled=true
 do
-  local report_sbix=logs.reporter("fonts","sbix conversion")
+  local report_png=logs.reporter("fonts","png conversion")
   local loaddata=io.loaddata
   local savedata=io.savedata
   local remove=os.remove
   local runner=sandbox and sandbox.registerrunner {
-    name="otfsbix",
+    name="otfpng",
     program="gm",
-    template="convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log",
+    template="convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log",
   }
   if not runner then
     runner=function()
-      return os.execute("gm convert -quality 100 temp-otf-sbix-shape.sbix temp-otf-sbix-shape.pdf > temp-otf-svg-shape.log")
+      return os.execute("gm convert -quality 100 temp-otf-png-shape.png temp-otf-png-shape.pdf > temp-otf-svg-shape.log")
     end
   end
-  function otfsbix.topdf(sbixshapes)
+  function otfpng.topdf(pngshapes)
     local pdfshapes={}
-    local sbixfile="temp-otf-sbix-shape.sbix"
-    local pdffile="temp-otf-sbix-shape.pdf"
+    local pngfile="temp-otf-png-shape.png"
+    local pdffile="temp-otf-png-shape.pdf"
     local nofdone=0
-    local indices=sortedkeys(sbixshapes) 
+    local indices=sortedkeys(pngshapes) 
     local nofindices=#indices
-    report_sbix("processing %i sbix containers",nofindices)
+    report_png("processing %i png containers",nofindices)
     statistics.starttiming()
     for i=1,nofindices do
       local index=indices[i]
-      local entry=sbixshapes[index]
-      local data=entry.data
+      local entry=pngshapes[index]
+      local data=entry.data 
       local x=entry.x
       local y=entry.y
-      savedata(sbixfile,data)
+      savedata(pngfile,data)
       runner()
       pdfshapes[index]={
         x=x~=0 and x or nil,
@@ -31993,47 +32215,55 @@ do
       }
       nofdone=nofdone+1
       if nofdone%100==0 then
-        report_sbix("%i shapes processed",nofdone)
+        report_png("%i shapes processed",nofdone)
       end
     end
-    report_sbix("processing %i pdf results",nofindices)
-    remove(sbixfile)
+    report_png("processing %i pdf results",nofindices)
+    remove(pngfile)
     remove(pdffile)
     statistics.stoptiming()
     if statistics.elapsedseconds then
-      report_sbix("sbix conversion time %s",statistics.elapsedseconds() or "-")
+      report_png("png conversion time %s",statistics.elapsedseconds() or "-")
     end
     return pdfshapes
   end
 end
-local function initializesbix(tfmdata,kind,value) 
-  if value and otf.sbixenabled then
-    local sbix=tfmdata.properties.sbix
-    local hash=sbix and sbix.hash
-    local timestamp=sbix and sbix.timestamp
+local function initializepng(tfmdata,kind,value) 
+  if value and otf.pngenabled then
+    local png=tfmdata.properties.png
+    local hash=png and png.hash
+    local timestamp=png and png.timestamp
     if not hash then
       return
     end
     local pdffile=containers.read(otf.pdfcache,hash)
     local pdfshapes=pdffile and pdffile.pdfshapes
     if not pdfshapes or pdffile.timestamp~=timestamp then
-      local sbixfile=containers.read(otf.sbixcache,hash)
-      local sbixshapes=sbixfile and sbixfile.sbixshapes
-      pdfshapes=sbixshapes and otfsbix.topdf(sbixshapes) or {}
+      local pngfile=containers.read(otf.pngcache,hash)
+      local pngshapes=pngfile and pngfile.pngshapes
+      pdfshapes=pngshapes and otfpng.topdf(pngshapes) or {}
       containers.write(otf.pdfcache,hash,{
         pdfshapes=pdfshapes,
         timestamp=timestamp,
       })
     end
-    pdftovirtual(tfmdata,pdfshapes,"sbix")
+    pdftovirtual(tfmdata,pdfshapes,"png")
   end
 end
 fonts.handlers.otf.features.register {
   name="sbix",
   description="sbix glyphs",
   manipulators={
-    base=initializesbix,
-    node=initializesbix,
+    base=initializepng,
+    node=initializepng,
+  }
+}
+fonts.handlers.otf.features.register {
+  name="cblc",
+  description="cblc glyphs",
+  manipulators={
+    base=initializepng,
+    node=initializepng,
   }
 }
 
@@ -34083,6 +34313,7 @@ function tfm.setfeatures(tfmdata,features)
   end
 end
 local depth={}
+local loadtfmvf=tfm.readers and tfm.readers.loadtfmvf
 local function read_from_tfm(specification)
   local filename=specification.filename
   local size=specification.size
@@ -34090,7 +34321,16 @@ local function read_from_tfm(specification)
   if trace_defining then
     report_defining("loading tfm file %a at size %s",filename,size)
   end
-  local tfmdata=font.read_tfm(filename,size) 
+  local tfmdata
+  if loadtfmvf then
+    tfmdata=loadtfmvf(filename)
+    if tfmdata then
+      tfmdata.characters=tfmdata.glyphs
+      tfmdata.glyphs=nil
+    end
+  else
+    tfmdata=font.read_tfm(filename,size) 
+  end
   if tfmdata then
     local features=specification.features and specification.features.normal or {}
     local features=constructors.checkedfeatures("tfm",features)
@@ -34155,9 +34395,9 @@ local function read_from_tfm(specification)
       end
     end
     shared.processes=next(features) and tfm.setfeatures(tfmdata,features) or nil
-if size<0 then
-  size=idiv(65536*-size,100)
-end
+    if size<0 then
+      size=idiv(65536*-size,100)
+    end
     parameters.factor=1 
     parameters.size=size
     parameters.slant=parameters.slant     or parameters[1] or 0
@@ -34170,6 +34410,26 @@ end
     constructors.enhanceparameters(parameters)
     properties.private=properties.private or tfmdata.private or privateoffset
     if newtfmdata then
+    elseif loadtfmvf then
+      local fonts=tfmdata.fonts
+      if fonts then
+        for i=1,#fonts do
+          local font=fonts[i]
+          local id=font.id
+          if not id then
+            local name=font.name
+            local size=font.size
+            if name and size then
+              local data,id=constructors.readanddefine(name,size)
+              if id then
+                font.id=id
+                font.name=nil
+                font.size=nil
+              end
+            end
+          end
+        end
+      end
     elseif constructors.resolvevirtualtoo then
       fonts.loggers.register(tfmdata,file.suffix(filename),specification) 
       local vfname=findbinfile(specification.name,'ovf')
@@ -34197,7 +34457,7 @@ end
               report_defining("virtual font %a exceeds size %s",n,s)
               fontlist[i]={ id=0 }
             else
-              local t,id=fonts.constructors.readanddefine(n,s)
+              local t,id=constructors.readanddefine(n,s)
               fontlist[i]={ id=id }
             end
           end
@@ -34209,6 +34469,9 @@ end
     resources.unicodes={}
     resources.lookuptags={}
     depth[filename]=depth[filename]-1
+    if loadtfmvf then
+      tfmdata=constructors.scale(tfmdata,size)
+    end
     return tfmdata
   else
     depth[filename]=depth[filename]-1
@@ -34287,7 +34550,7 @@ do
     local encoding=false
     local vector=false
     if type(pfbfile)=="string" then
-      local pfb=fonts.constructors.handlers.pfb
+      local pfb=constructors.handlers.pfb
       if pfb and pfb.loadvector then
         local v,e=pfb.loadvector(pfbfile)
         if v then
@@ -34315,7 +34578,7 @@ do
     local originals=tfmdata.characters
     local indices={}
     local parentfont={ "font",1 }
-    local private=tfmdata.privateoffset or fonts.constructors.privateoffset
+    local private=tfmdata.privateoffset or constructors.privateoffset
     local reported=encdone[tfmfile][encfile]
     local backmap=vector and table.swapped(vector)
     local done={} 

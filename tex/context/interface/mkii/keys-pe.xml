@@ -1247,6 +1247,7 @@
 		<cd:constant name='textstyle' value='سبک‌متن'/>
 		<cd:constant name='textwidth' value='عرض‌متن'/>
 		<cd:constant name='threshold' value='threshold'/>
+		<cd:constant name='time' value='time'/>
 		<cd:constant name='title' value='عنوان'/>
 		<cd:constant name='titlecolor' value='رنگ‌عنوان'/>
 		<cd:constant name='titlecommand' value='فرمان‌عنوان'/>

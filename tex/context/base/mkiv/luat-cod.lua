@@ -254,6 +254,15 @@ local function open_read_file(name)
     }
 end
 
+local function find_data_file(name)
+    return source_file(name)
+end
+
+local open_data_file = open_read_file
+
 callback.register('find_read_file' , find_read_file )
 callback.register('open_read_file' , open_read_file )
 callback.register('find_write_file', find_write_file)
+
+callback.register('find_data_file' , find_data_file )
+callback.register('open_data_file' , open_data_file )

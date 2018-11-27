@@ -310,12 +310,14 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
     local characters   = tfmdata.characters
     local descriptions = tfmdata.descriptions
     local properties   = tfmdata.properties
+    local parameters   = tfmdata.parameters
     local resources    = tfmdata.resources
     local rawdata      = tfmdata.shared.rawdata
     local lookuphash   = rawdata.lookuphash
     local lookuptags   = resources.lookuptags
     local script       = properties.script
     local language     = properties.language
+    local units        = parameters.units
     local done, factor, left, right = false, 1, 1, 1
     local class = classes[value]
     if class then
@@ -358,7 +360,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                     if w == 0 or d == 0 then
                                         -- ignored
                                     else
-                                        local p = lfactor * ((w+d)/d)/100
+                                        local p = lfactor * d/units
                                         characters[k].left_protruding = p
                                         if trace_protrusion then
                                             report_protrusions("lfbd -> %0.3F %C",p,k)
@@ -396,7 +398,7 @@ local function map_opbd_onto_protrusion(tfmdata,value,opbd)
                                     if w == 0 or d == 0 then
                                         -- ignored
                                     else
-                                        local p = rfactor * ((w+d)/d)/100
+                                        local p = rfactor * d/units
                                         characters[k].right_protruding = p
                                         if trace_protrusion then
                                             report_protrusions("rtbd -> %0.3F %C",p,k)

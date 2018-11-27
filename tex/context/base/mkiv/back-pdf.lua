@@ -153,7 +153,7 @@ local function pdfstartmirroring()
 end
 
 implement { name = "pdfstartmirroring", actions = pdfstartmirroring }
-implement { name = "pdfstopmirroring",  actions = pdfstopsomething }
+implement { name = "pdfstopmirroring",  actions = pdfstartmirroring } -- not: pdfstopsomething
 
 if environment.arguments.nocompression then
     lpdf.setcompression(0,0,true)

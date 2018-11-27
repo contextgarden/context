@@ -60,12 +60,11 @@
 
 % tfm
 
-\registerctxluafile{font-tfm}{}
-
 \doifelsefileexists {font-tpk.lua} {
     \registerctxluafile{font-tpk}{optimize}
+    \registerctxluafile{font-tfm}{}
 } {
-    % nothing
+    \registerctxluafile{font-tfm}{}
 }
 
 % name database

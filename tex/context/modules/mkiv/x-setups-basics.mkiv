@@ -517,11 +517,7 @@
   {\doifelsenextoptionalcs\cmd_show_setup_yes\cmd_show_setup_nop}
 
 \def\cmd_show_setup_yes[#1]%
-  {\iffirstargument
-     \cmd_show_setup_nop{#1}%
-   \else
-     \expandafter\cmd_show_setup_nop
-   \fi}
+  {\cmd_show_setup_nop{#1}}
 
 \def\cmd_show_setup_nop#1% this will trigger 'used'
   {\begingroup
