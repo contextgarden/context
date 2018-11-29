@@ -294,11 +294,11 @@ local function initialize(tfmdata,kind,value)
                                 n = n + 1 t[n] = v
                                 l = v
                             else
-if f then
-    n = n + 1 t[n] = pop
-end
-f = false
-l = nil
+                                if f then
+                                    n = n + 1 t[n] = pop
+                                end
+                                f = false
+                                l = nil
                             end
                             n = n + 1 t[n] = charcommand[entry.slot]
                             if s > 1 and i < s and goback then

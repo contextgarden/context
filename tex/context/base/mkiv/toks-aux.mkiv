@@ -1,0 +1,51 @@
+%D \module
+%D   [       file=toks-aux,
+%D        version=2018.11.29,
+%D          title=\CONTEXT\ Token Support,
+%D       subtitle=Helpers,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Token Support / Helpers}
+
+\unprotect
+
+\installcorenamespace {tokenlist}
+
+\unexpanded\def\definetokenlist[#1]%
+  {\ifcsname\??tokenlist#1\endcsname
+     \global\lastnamedcs\emptytoks
+   \else
+     \expandafter\newtoks\csname\??tokenlist#1\endcsname
+   \fi}
+
+\unexpanded\def\starttokenlist[#1]#2\stoptokenlist
+  {\ifcsname\??tokenlist#1\endcsname \else
+     \expandafter\newtoks\csname\??tokenlist#1\endcsname
+   \fi
+   \toksapp\lastnamedcs{#2}}
+
+\let\stoptokenlist\relax
+
+\def\gettokenlist[#1]%
+  {\ifcsname\??tokenlist#1\endcsname
+     \the\lastnamedcs
+   \fi}
+
+\def\settokenlist[#1]#2%
+  {\ifcsname\??tokenlist#1\endcsname \else
+     \expandafter\newtoks\csname\??tokenlist#1\endcsname
+   \fi
+   \toksapp\lastnamedcs{#2}}
+
+\unexpanded\def\resettokenlist[#1]%
+  {\ifcsname\??tokenlist#1\endcsname
+     \lastnamedcs\emptytoks
+   \fi}
+
+\protect

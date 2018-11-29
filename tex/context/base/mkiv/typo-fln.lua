@@ -204,7 +204,7 @@ actions[v_line] = function(head,setting)
         while start do
             local id = getid(start)
             if id == glyph_code then
-                n = n + 1
+                -- go on
             elseif id == disc_code then
                 -- this could be an option
                 n = n + 1
@@ -216,7 +216,8 @@ actions[v_line] = function(head,setting)
                 end
             elseif id == kern_code then -- todo: fontkern
                 -- this could be an option
-            elseif n > 0 then
+            elseif id == glue_code then
+                n = n + 1
                 if try() then
                     break
                 end
@@ -253,7 +254,6 @@ actions[v_line] = function(head,setting)
             local id = getid(start)
             local ok = false
             if id == glyph_code then
-                n = n + 1
                 update(start)
             elseif id == disc_code then
                 n = n + 1
@@ -297,18 +297,26 @@ actions[v_line] = function(head,setting)
                 setdisc(disc,pre,post,replace)
                 flush_node(disc)
             elseif id == glue_code then
-                head = insert_node_before(head,start,newpenalty(10000)) -- nobreak
-            end
-            if linebreak == n then
-                if trace_firstlines then
-                    head, start = insert_node_after(head,start,newpenalty(10000)) -- nobreak
-                    head, start = insert_node_after(head,start,newkern(-65536))
-                    head, start = insert_node_after(head,start,tracerrule(65536,4*65536,2*65536,"darkblue"))
+                n = n + 1
+                if linebreak ~= n then
+                    head = insert_node_before(head,start,newpenalty(10000)) -- nobreak
                 end
-                head, start = insert_node_after(head,start,newpenalty(-10000)) -- break
+            end
+            local next = getnext(start)
+            if linebreak == n then
+                if start ~= head then
+                    local where = id == glue_code and getprev(start) or start
+                    if trace_firstlines then
+                        head, where = insert_node_after(head,where,newpenalty(10000)) -- nobreak
+                        head, where = insert_node_after(head,where,newkern(-65536))
+                        head, where = insert_node_after(head,where,tracerrule(65536,4*65536,2*65536,"darkblue"))
+                    end
+                    head, where = insert_node_after(head,where,newpenalty(-10000)) -- break
+                end
+                start = next
                 break
             end
-            start = getnext(start)
+            start = next
         end
     end
 

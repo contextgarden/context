@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/27/18 16:41:42
+-- merge date  : 11/29/18 19:46:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -11755,7 +11755,7 @@ readers["os/2"]=function(f,fontdata)
     if version>=1 then
       windowsmetrics.codepageranges={ readulong(f),readulong(f) }
     end
-    if version>=3 then
+    if version>=2 then
       windowsmetrics.xheight=readshort(f)
       windowsmetrics.capheight=readshort(f)
       windowsmetrics.defaultchar=readushort(f)
@@ -12888,7 +12888,10 @@ local function loadfont(specification,n,instance)
   local function message(str)
     report("fatal error in file %a: %s\n%s",specification.filename,str,debug and debug.traceback())
   end
-  return loadfontdata(specification)
+  local ok,result=xpcall(loadfontdata,message,specification)
+  if ok then
+    return result
+  end
 end
 function readers.loadshapes(filename,n,instance,streams)
   local fontdata=loadfont {
@@ -31943,11 +31946,11 @@ local function initialize(tfmdata,kind,value)
                 n=n+1 t[n]=v
                 l=v
               else
-if f then
-  n=n+1 t[n]=pop
-end
-f=false
-l=nil
+                if f then
+                  n=n+1 t[n]=pop
+                end
+                f=false
+                l=nil
               end
               n=n+1 t[n]=charcommand[entry.slot]
               if s>1 and i<s and goback then
@@ -34314,6 +34317,12 @@ function tfm.setfeatures(tfmdata,features)
 end
 local depth={}
 local loadtfmvf=tfm.readers and tfm.readers.loadtfmvf
+directives.register("fonts.tfm.builtin",function(v)
+  loadtfmvf=tfm.readers and tfm.readers.loadtfmvf
+  if v and font.read_tfm then
+    loadtfmvf=false
+  end
+end)
 local function read_from_tfm(specification)
   local filename=specification.filename
   local size=specification.size
@@ -34323,11 +34332,7 @@ local function read_from_tfm(specification)
   end
   local tfmdata
   if loadtfmvf then
-    tfmdata=loadtfmvf(filename)
-    if tfmdata then
-      tfmdata.characters=tfmdata.glyphs
-      tfmdata.glyphs=nil
-    end
+    tfmdata=loadtfmvf(filename,size)
   else
     tfmdata=font.read_tfm(filename,size) 
   end
@@ -34466,12 +34471,10 @@ local function read_from_tfm(specification)
     end
     properties.haskerns=true
     properties.hasligatures=true
+    properties.hasitalics=true
     resources.unicodes={}
     resources.lookuptags={}
     depth[filename]=depth[filename]-1
-    if loadtfmvf then
-      tfmdata=constructors.scale(tfmdata,size)
-    end
     return tfmdata
   else
     depth[filename]=depth[filename]-1

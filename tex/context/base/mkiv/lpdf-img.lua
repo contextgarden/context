@@ -759,7 +759,7 @@ t[n] = 0 -- not needed
         if not idat then
             return
         end
-        local pngfile = io.open(filename,"rb")
+        local pngfile = io.open(filename,"rb") -- todo: in-mem too
         if not pngfile then
             return
         end

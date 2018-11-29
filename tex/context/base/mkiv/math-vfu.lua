@@ -160,9 +160,9 @@ local function make(main,characters,id,size,n,m)
         local dnrule    = 0xFF400 + m
         local xu        = main.parameters.x_height + 0.3*size
         local xd        = 0.3*size
-        local w         = c.width
-        local h         = c.height
-        local d         = c.depth
+        local w         = c.width or 0
+        local h         = c.height or 0
+        local d         = c.depth or 0
         local thickness = h - d
         local rulewidth = step*size -- we could use an overlap
         local slot      = { "slot", id, old }

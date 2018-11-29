@@ -1697,19 +1697,21 @@ do
 
     function lpdf.procset(dict)
         if not a_procset then
-            a_procset = pdfreference(pdfimmediateobject(pdfarray {
+            a_procset = pdfarray {
                 pdfconstant("PDF"),
                 pdfconstant("Text"),
                 pdfconstant("ImageB"),
                 pdfconstant("ImageC"),
                 pdfconstant("ImageI"),
-            }))
+            }
+            a_procset = pdfreference(pdfimmediateobject(tostring(a_procset)))
         end
         if dict then
             if not d_procset then
-                d_procset = pdfreference(pdfimmediateobject(pdfdictionary {
+                d_procset = pdfdictionary {
                     ProcSet = a_procset
-                }))
+                }
+                d_procset = pdfreference(pdfimmediateobject(tostring(d_procset)))
             end
             return d_procset
         else

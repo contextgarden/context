@@ -231,6 +231,8 @@ interfaces.implement {
 -- optimized already but we can assume a cycle i.e. prune the last point and then
 -- even less code .. we could merge some loops but his is more robust
 
+-- use idiv here
+
 local function topairs(t,n)
     local r = { }
     for i=1,n do
@@ -240,7 +242,7 @@ local function topairs(t,n)
     return concat(r," ")
 end
 
-local eps = 65536 / 4 -- 2
+local eps = 65536 / 4
 local pps =   eps
 local nps = - pps
 
@@ -743,7 +745,7 @@ local function calculatemultipar(tag)
     local bp = b.p -- page
     if trace_shapes then
         report_shapes("tag %a, left %p, right %p, par %s, page %s, column %s",
-            left,right,bn or "-",bp or "-",bc or "-")
+            tag,left,right,bn or "-",bp or "-",bc or "-")
     end
     --
     if bindex == eindex then

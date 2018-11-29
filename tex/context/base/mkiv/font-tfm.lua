@@ -120,6 +120,13 @@ local depth = { } -- table.setmetatableindex("number")
 
 local loadtfmvf = tfm.readers and tfm.readers.loadtfmvf
 
+directives.register("fonts.tfm.builtin",function(v)
+    loadtfmvf = tfm.readers and tfm.readers.loadtfmvf
+    if v and font.read_tfm then
+        loadtfmvf = false
+    end
+end)
+
 local function read_from_tfm(specification)
     local filename  = specification.filename
     local size      = specification.size
@@ -127,15 +134,9 @@ local function read_from_tfm(specification)
     if trace_defining then
         report_defining("loading tfm file %a at size %s",filename,size)
     end
- -- local tfmdata = font.read_tfm(filename,size) -- not cached, fast enough
     local tfmdata
     if loadtfmvf then
-        tfmdata = loadtfmvf(filename)
-        if tfmdata then
-            -- todo: boundayrychar etc
-            tfmdata.characters = tfmdata.glyphs
-            tfmdata.glyphs     = nil
-        end
+        tfmdata = loadtfmvf(filename,size)
     else
         tfmdata = font.read_tfm(filename,size) -- not cached, fast enough
     end
@@ -247,7 +248,7 @@ local function read_from_tfm(specification)
             end
         end
         --
-        shared.processes    = next(features) and tfm.setfeatures(tfmdata,features) or nil
+        shared.processes = next(features) and tfm.setfeatures(tfmdata,features) or nil
         --
         if size < 0 then
             size = idiv(65536 * -size,100)
@@ -342,15 +343,11 @@ local function read_from_tfm(specification)
         --
         properties.haskerns     = true
         properties.hasligatures = true
+        properties.hasitalics   = true
         resources.unicodes      = { }
         resources.lookuptags    = { }
         --
         depth[filename] = depth[filename] - 1
-        --
-        if loadtfmvf then
-            tfmdata = constructors.scale(tfmdata,size)
--- inspect(tfmdata)
-        end
         --
         return tfmdata
     else

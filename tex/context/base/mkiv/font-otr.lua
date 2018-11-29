@@ -1008,7 +1008,7 @@ readers["os/2"] = function(f,fontdata)
         if version >= 1 then
             windowsmetrics.codepageranges = { readulong(f), readulong(f) }
         end
-        if version >= 3 then
+        if version >= 2 then
             windowsmetrics.xheight               = readshort(f)
             windowsmetrics.capheight             = readshort(f)
             windowsmetrics.defaultchar           = readushort(f)
@@ -2346,11 +2346,11 @@ local function loadfont(specification,n,instance)
     local function message(str)
         report("fatal error in file %a: %s\n%s",specification.filename,str,debug and debug.traceback())
     end
---     local ok, result = xpcall(loadfontdata,message,specification)
---     if ok then
---         return result
---     end
-    return loadfontdata(specification)
+    local ok, result = xpcall(loadfontdata,message,specification)
+    if ok then
+        return result
+    end
+--     return loadfontdata(specification)
 end
 
 -- we need even less, but we can have a 'detail' variant

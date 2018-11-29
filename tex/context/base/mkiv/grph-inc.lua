@@ -65,7 +65,7 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
--- local bpfactor          = number.dimenfactors.bp
+local bpfactor          = number.dimenfactors.bp
 
 images                  = images or { }
 local images            = images
@@ -131,8 +131,8 @@ function checkimage(figure)
             report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename or "?",width,height)
             return false, "bad dimensions"
         end
-        local xres    = figure.xres
-        local yres    = figure.yres
+     -- local xres    = figure.xres
+     -- local yres    = figure.yres
         local changes = false
         if height > width then
             if height > maxdimen then
@@ -1658,7 +1658,7 @@ function checkers.mov(data)
         nodeinjections.insertmovie {
             width      = width,
             height     = height,
-            factor     = number.dimenfactors.bp,
+            factor     = bpfactor,
             ["repeat"] = dr["repeat"],
             controls   = dr.controls,
             preview    = dr.preview,
@@ -2240,7 +2240,30 @@ end
 local function wrappedidentify(identify,filename)
     local wrapup    = function() report_inclusion("fatal error reading %a",filename) end
     local _, result = xpcall(identify,wrapup,filename)
-    return result or { error = "fatal error" }
+    if result then
+        local xsize = result.xsize or 0
+        local ysize = result.ysize or 0
+        local xres  = result.xres or 0
+        local yres  = result.yres or 0
+        if xres == 0 or yres == 0 then
+            xres = 300
+            yres = 300
+        end
+        result.xsize      = xsize
+        result.ysize      = ysize
+        result.xres       = xres
+        result.yres       = yres
+        result.width      = result.width  or ((72/xres) * xsize / bpfactor)
+        result.height     = result.height or ((72/yres) * ysize / bpfactor)
+        result.depth      = result.depth  or 0
+        result.filename   = filename
+        result.colordepth = result.colordepth or 0
+        result.rotation   = result.rotation or 0
+        result.colorspace = result.colorspace or 0
+        return result
+    else
+        return { error = "fatal error" }
+    end
 end
 
 local function jpg_checker(data)
@@ -2251,23 +2274,20 @@ local function jpg_checker(data)
         local inject   = lpdf.injectors.jpg
         local found    = false
         request.scanimage = function(t)
-            local filename = t.filename
-            local result   = wrappedidentify(identify,filename)
-            local xsize    = result.xsize or 0
-            local ysize    = result.ysize or 0
+            local result = wrappedidentify(identify,t.filename)
             found = not result.error
             return {
-                filename    = filename,
-                width       = xsize * 65536,
-                height      = ysize * 65536,
-                depth       = 0,
-                colordepth  = result.colordepth or 0,
+                filename    = result.filename,
+                width       = result.width,
+                height      = result.height,
+                depth       = result.depth,
+                colordepth  = result.colordepth,
                 xres        = result.xres,
                 yres        = result.yres,
-                xsize       = xsize,
-                ysize       = ysize,
-                rotation    = result.rotation or 0,
-                colorspace  = result.colorspace or 0,
+                xsize       = result.xsize,
+                ysize       = result.ysize,
+                rotation    = result.rotation,
+                colorspace  = result.colorspace,
             }
         end
         request.copyimage = function(t)
@@ -2288,23 +2308,20 @@ local function jp2_checker(data) -- idem as jpg
         local inject   = lpdf.injectors.jp2
         local found    = false
         request.scanimage = function(t)
-            local filename = t.filename
-            local result   = wrappedidentify(identify,filename)
-            local xsize    = result.xsize or 0
-            local ysize    = result.ysize or 0
+            local result = wrappedidentify(identify,t.filename)
             found = not result.error
             return {
-                filename    = filename,
-                width       = xsize * 65536,
-                height      = ysize * 65536,
-                depth       = 0,
-                colordepth  = result.colordepth or 0,
+                filename    = result.filename,
+                width       = result.width,
+                height      = result.height,
+                depth       = result.depth,
+                colordepth  = result.colordepth,
                 xres        = result.xres,
                 yres        = result.yres,
-                xsize       = xsize,
-                ysize       = ysize,
-                rotation    = result.rotation or 0,
-                colorspace  = result.colorspace or 0,
+                xsize       = result.xsize,
+                ysize       = result.ysize,
+                rotation    = result.rotation,
+                colorspace  = result.colorspace,
             }
         end
         request.copyimage = function(t)
@@ -2325,23 +2342,20 @@ local function png_checker(data) -- same as jpg (for now)
         local inject   = lpdf.injectors.png
         local found    = false
         request.scanimage = function(t)
-            local filename = t.filename
-            local result   = wrappedidentify(identify,filename)
-            local xsize    = result.xsize or 0
-            local ysize    = result.ysize or 0
+            local result = wrappedidentify(identify,t.filename)
             found = not result.error
             return {
-                filename    = filename,
-                width       = xsize * 65536,
-                height      = ysize * 65536,
-                depth       = 0,
-                colordepth  = result.colordepth or 0,
+                filename    = result.filename,
+                width       = result.width,
+                height      = result.height,
+                depth       = result.depth,
+                colordepth  = result.colordepth,
                 xres        = result.xres,
                 yres        = result.yres,
-                xsize       = xsize,
-                ysize       = ysize,
-                rotation    = result.rotation or 0,
-                colorspace  = result.colorspace or 0,
+                xsize       = result.xsize,
+                ysize       = result.ysize,
+                rotation    = result.rotation,
+                colorspace  = result.colorspace,
                 tables      = result.tables,
                 interlace   = result.interlace,
                 filter      = result.filter,

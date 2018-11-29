@@ -516,19 +516,20 @@ local function b_region(tag)
     last.x = x ~= 0 and x or nil
     last.y = y ~= 0 and y or nil
     last.p = texgetcount("realpageno")
-    insert(regions,tag)
+    insert(regions,tag) -- todo: fast stack
     region = tag
 end
 
 local function e_region(correct)
     local last = tobesaved[region]
     local y = getvpos()
+    local x, y = getpos()
     if correct then
         local h = (last.y or 0) - y
         last.h = h ~= 0 and h or nil
     end
     last.y = y ~= 0 and y or nil
-    remove(regions)
+    remove(regions) -- todo: fast stack
     region = regions[#regions]
 end
 
@@ -544,15 +545,14 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
     end
     local box = getbox(n)
     local w, h, d = getwhd(box)
-    local x, y = getpos() -- hm, makes no sense here as not in shipout
     tobesaved[tag] = {
-     -- p = texgetcount("realpageno"), -- we copy them
-        x = x ~= 0 and x or nil,       -- was true
-        y = y ~= 0 and y or nil,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        k = k ~= 0 and k or nil,
+     -- p  = texgetcount("realpageno"), -- we copy them
+        x  = 0,
+        y  = 0,
+        w  = w  ~= 0 and w  or nil,
+        h  = h  ~= 0 and h  or nil,
+        d  = d  ~= 0 and d  or nil,
+        k  = k  ~= 0 and k  or nil,
         lo = lo ~= 0 and lo or nil,
         ro = ro ~= 0 and ro or nil,
         to = to ~= 0 and to or nil,

@@ -38,6 +38,17 @@ local nodecodes          = nodes.nodecodes
 local whatcodes          = nodes.whatcodes
 local rulecodes          = nodes.rulecodes
 
+-- local normal_rule_code   = rulecodes.normal
+local box_rule_code      = rulecodes.box
+local image_rule_code    = rulecodes.image
+local empty_rule_code    = rulecodes.empty
+-- local user_rule_code     = rulecodes.user
+-- local over_rule_code     = rulecodes.over
+-- local under_rule_code    = rulecodes.under
+-- local fraction_rule_code = rulecodes.fraction
+-- local radical_rule_code  = rulecodes.radical
+-- local outline_rule_code  = rulecodes.outline
+
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local glue_code          = nodecodes.glue
@@ -167,103 +178,6 @@ end
 
 -- we need to deal with literals too (reset as well as oval)
 
--- local function process(attribute,head,inheritance,default) -- one attribute
---     local stack  = head
---     local check  = false
---     local leader = nil
---     while stack do
---         local id = getid(stack)
---         if id == glyph_code or id == disc_code then
---             check = true -- disc no longer needed as we flatten replace
---         elseif id == glue_code then
---             leader = getleader(stack)
---             if leader then
---                 check = true
---             end
---         elseif id == hlist_code or id == vlist_code then
---             local content = getlist(stack)
---             if content then
---                 -- begin nested --
---                 local list
---                 if nstrigger and getattr(stack,nstrigger) then
---                     local outer = getattr(stack,attribute)
---                     if outer ~= inheritance then
---                         list = process(attribute,content,inheritance,outer)
---                     else
---                         list = process(attribute,content,inheritance,default)
---                     end
---                 else
---                     list = process(attribute,content,inheritance,default)
---                 end
---                 if content ~= list then
---                     setlist(stack,list)
---                 end
---                 -- end nested --
---             end
---         elseif id == rule_code then
---             check = getwidth(stack) ~= 0
---         end
---         -- much faster this way than using a check() and nested() function
---         if check then
---             local c = getattr(stack,attribute)
---             if c then
---                 if default and c == inheritance then
---                     if current ~= default then
---                         head    = insert_node_before(head,stack,copy_node(nsdata[default]))
---                         current = default
---                     end
---                 elseif current ~= c then
---                     head    = insert_node_before(head,stack,copy_node(nsdata[c]))
---                     current = c
---                 end
---                 if leader then
---                     local savedcurrent = current
---                     local ci = getid(leader)
---                     if ci == hlist_code or ci == vlist_code then
---                         -- else we reset inside a box unneeded, okay, the downside is
---                         -- that we trigger color in each repeated box, so there is room
---                         -- for improvement here
---                         current = 0
---                     end
---                     -- begin nested --
---                     local list
---                     if nstrigger and getattr(stack,nstrigger) then
---                         local outer = getattr(stack,attribute)
---                         if outer ~= inheritance then
---                             list = process(attribute,leader,inheritance,outer)
---                         else
---                             list = process(attribute,leader,inheritance,default)
---                         end
---                     else
---                         list = process(attribute,leader,inheritance,default)
---                     end
---                     if leader ~= list then
---                         setleader(stack,list)
---                     end
---                     -- end nested --
---                     current = savedcurrent
---                     leader = false
---                 end
---             elseif default and inheritance then
---                 if current ~= default then
---                     head    = insert_node_before(head,stack,copy_node(nsdata[default]))
---                     current = default
---                 end
---             elseif current > 0 then
---                 head    = insert_node_before(head,stack,copy_node(nsnone))
---                 current = 0
---             end
---             check = false
---         end
---         stack = getnext(stack)
---     end
---     return head
--- end
---
--- states.process = function(namespace,attribute,head,default)
---     return process(attribute,head,default)
--- end
-
 local function process(attribute,head,inheritance,default) -- one attribute
     local check  = false
     local leader = nil
@@ -296,9 +210,8 @@ local function process(attribute,head,inheritance,default) -- one attribute
                 -- end nested --
             end
         elseif id == rule_code then
---             check = getwidth(stack) ~= 0
-local wd, ht, dp = getwhd(stack)
-check = wd ~= 0 or (ht+dp) ~= 0
+            local wd, ht, dp = getwhd(stack)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -366,106 +279,10 @@ end
 -- state changes while the main state stays the same (like two glyphs following
 -- each other with the same color but different color spaces e.g. \showcolor)
 
--- local function selective(attribute,head,inheritance,default) -- two attributes
---     local stack  = head
---     local check  = false
---     local leader = nil
---     while stack do
---         local id = getid(stack)
---         if id == glyph_code or id == disc_code then
---             check = true -- disc no longer needed as we flatten replace
---         elseif id == glue_code then
---             leader = getleader(stack)
---             if leader then
---                 check = true
---             end
---         elseif id == hlist_code or id == vlist_code then
---             local content = getlist(stack)
---             if content then
---                 -- begin nested
---                 local list
---                 if nstrigger and getattr(stack,nstrigger) then
---                     local outer = getattr(stack,attribute)
---                     if outer ~= inheritance then
---                         list = selective(attribute,content,inheritance,outer)
---                     else
---                         list = selective(attribute,content,inheritance,default)
---                     end
---                 else
---                     list = selective(attribute,content,inheritance,default)
---                 end
---                 if content ~= list then
---                     setlist(stack,list)
---                 end
---                 -- end nested
---             end
---         elseif id == rule_code then
---             check = getwidth(stack) ~= 0
---         end
---
---         if check then
---             local c = getattr(stack,attribute)
---             if c then
---                 if default and c == inheritance then
---                     if current ~= default then
---                         local data = nsdata[default]
---                         head = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                         current = default
---                     end
---                 else
---                     local s = getattr(stack,nsselector)
---                  -- local s = nsforced or getattr(stack,nsselector)
---                     if current ~= c or current_selector ~= s then
---                         local data = nsdata[c]
---                         head = insert_node_before(head,stack,copy_node(data[nsforced or s or nsselector]))
---                         current = c
---                         current_selector = s
---                     end
---                 end
---                 if leader then
---                     -- begin nested
---                     local list
---                     if nstrigger and getattr(stack,nstrigger) then
---                         local outer = getattr(stack,attribute)
---                         if outer ~= inheritance then
---                             list = selective(attribute,leader,inheritance,outer)
---                         else
---                             list = selective(attribute,leader,inheritance,default)
---                         end
---                     else
---                         list = selective(attribute,leader,inheritance,default)
---                     end
---                     if leader ~= list then
---                         setleader(stack,list)
---                     end
---                     -- end nested
---                     leader = false
---                 end
---             elseif default and inheritance then
---                 if current ~= default then
---                     local data = nsdata[default]
---                     head    = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
---                     current = default
---                 end
---             elseif current > 0 then
---                 head = insert_node_before(head,stack,copy_node(nsnone))
---                 current, current_selector = 0, 0
---             end
---             check = false
---         end
---         stack = getnext(stack)
---     end
---     return head
--- end
---
--- states.selective = function(namespace,attribute,head,default)
---     return selective(attribute,head,default)
--- end
-
 local function selective(attribute,head,inheritance,default) -- two attributes
     local check  = false
     local leader = nil
-    for stack, id  in nextnode, head do
+    for stack, id, subtype in nextnode, head do
         if id == glyph_code or id == disc_code then
             check = true -- disc no longer needed as we flatten replace
         elseif id == glue_code then
@@ -494,9 +311,13 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 -- end nested
             end
         elseif id == rule_code then
---             check = getwidth(stack) ~= 0
-local wd, ht, dp = getwhd(stack)
-check = wd ~= 0 or (ht+dp) ~= 0
+if subtype == box_rule_code or subtype == image_rule_code or subtype == empty_rule_code then
+    -- so no redundant color stuff (only here, layers for instance should obey)
+    check = false
+else
+            local wd, ht, dp = getwhd(stack)
+            check = wd ~= 0 or (ht+dp) ~= 0
+end
         end
 
         if check then
@@ -606,9 +427,8 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
---             check = getwidth(stack) ~= 0
-local wd, ht, dp = getwhd(stack)
-check = wd ~= 0 or (ht+dp) ~= 0
+            local wd, ht, dp = getwhd(stack)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
         if check then
             local a = getattr(stack,attribute)
@@ -693,9 +513,8 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
---             check = getwidth(current) ~= 0
-local wd, ht, dp = getwhd(current)
-check = wd ~= 0 or (ht+dp) ~= 0
+            local wd, ht, dp = getwhd(current)
+            check = wd ~= 0 or (ht+dp) ~= 0
         end
 
         if check then
