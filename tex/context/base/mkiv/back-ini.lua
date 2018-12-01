@@ -87,7 +87,13 @@ end
 statistics.register("used backend", function()
     local bc = backends.current
     if bc ~= "unknown" then
-        return format("%s (%s)",bc,backends[bc].comment or "no comment")
+        local lmtx = environment.lmtxmode and drivers and drivers.lmtxversion
+        local cmnt = backends[bc].comment or "no comment"
+        if lmtx then
+            return format("lmtx version %0.2f, %s (%s)",lmtx,bc,cmnt)
+        else
+            return format("%s (%s)",bc,cmnt)
+        end
     else
         return nil
     end
@@ -103,12 +109,6 @@ tables.vfspecials = allocate {
     startslant = comment,
     stopslant  = comment,
 }
-
--- we'd better have this return something (defaults)
-
-function codeinjections.getpos () return 0, 0 end
-function codeinjections.gethpos() return 0 end
-function codeinjections.getvpos() return 0 end
 
 -- can best be here
 

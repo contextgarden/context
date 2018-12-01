@@ -169,6 +169,15 @@ local img_copy  = __img__.copy
 local img_wrap  = __img__.node
 local img_embed = __img__.immediatewrite
 
+if img_new then
+    -- catch (actually we should be less picky in img)
+    local __img__new__ = img_new
+    img_new = function(t)
+        t.kind = nil
+        return __img__new__(t)
+    end
+end
+
 updaters.register("backend.update",function()
     local img = images.__img__
     img_new   = img.new

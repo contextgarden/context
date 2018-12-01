@@ -233,39 +233,23 @@ function lpdf.setsuppressoptionalinfo(n)
 end
 
 function lpdf.setomitcidset(v)
-    return pdfsetomitcidset(v)
+    return setomitcidset(v)
 end
+
+local jobpositions = job.positions
+local getpos       = jobpositions.getpos
+
+jobpositions.registerhandlers {
+    getpos  = pdf.getpos,
+    gethpos = pdf.gethpos,
+    getvpos = pdf.getvpos,
+}
 
 do
 
-    local pdfgetpos     = pdf.getpos
-    local pdfgethpos    = pdf.gethpos
-    local pdfgetvpos    = pdf.getvpos
-    local pdfgetmatrix  = pdf.getmatrix
-    local pdfhasmatrix  = pdf.hasmatrix
-    local pdfprint      = pdf.print
-
-    function lpdf.getpos()
-        return pdfgetpos()
-    end
-
-    function lpdf.gethpos()
-        return pdfgethpos()
-    end
-
-    function lpdf.getvpos()
-        return pdfgetvpos()
-    end
-
-    pdfbackend.codeinjections.getpos  = lpdf.getpos
-    pdfbackend.codeinjections.gethpos = lpdf.gethpos
-    pdfbackend.codeinjections.getvpos = lpdf.getvpos
-
-    updaters.register("backend.update.lpdf",function()
-        pdfgetpos  = pdf.getpos
-        pdfgethpos = pdf.gethpos
-        pdfgetvpos = pdf.getvpos
-    end)
+    local pdfgetmatrix = pdf.getmatrix
+    local pdfhasmatrix = pdf.hasmatrix
+    local pdfprint     = pdf.print
 
     -- todo
 
@@ -276,7 +260,7 @@ do
     pdfbackend.codeinjections.print = lpdf.print
 
     updaters.register("backend.update.lpdf",function()
-        pdfprint     = pdf.print
+        pdfprint = pdf.print
     end)
 
     -- todo
@@ -316,7 +300,7 @@ do
     -- funny values for tx and ty
 
     function lpdf.rectangle(width,height,depth,offset)
-        local tx, ty = pdfgetpos()
+        local tx, ty = getpos()
         if offset then
             tx     = tx     -   offset
             ty     = ty     +   offset

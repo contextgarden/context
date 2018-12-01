@@ -30,6 +30,7 @@
             <pdfx:ConTeXt.Url/>
             <pdfx:ConTeXt.Support/>
             <pdfx:ConTeXt.Version/>
+            <pdfx:ConTeXt.LMTX/>
             <pdfx:TeX.Support/>
             <pdfx:LuaTeX.Version/>
             <pdfx:LuaTeX.Functionality/>
@@ -127,6 +128,12 @@
                                    <pdfaProperty:category>external</pdfaProperty:category>
                                    <pdfaProperty:description>ConTeXt version</pdfaProperty:description>
                                    <pdfaProperty:name>ConTeXt.Version</pdfaProperty:name>
+                                   <pdfaProperty:valueType>Text</pdfaProperty:valueType>
+                                </rdf:li>
+                                <rdf:li rdf:parseType="Resource">
+                                   <pdfaProperty:category>external</pdfaProperty:category>
+                                   <pdfaProperty:description>ConTeXt LMTX version</pdfaProperty:description>
+                                   <pdfaProperty:name>ConTeXt.LMTX</pdfaProperty:name>
                                    <pdfaProperty:valueType>Text</pdfaProperty:valueType>
                                 </rdf:li>
                                 <rdf:li rdf:parseType="Resource">

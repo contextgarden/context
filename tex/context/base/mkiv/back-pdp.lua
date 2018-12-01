@@ -13,17 +13,20 @@ local context          = context
 
 local lpdfreserveobject = lpdf.reserveobject
 local lpdfcompresslevel = lpdf.compresslevel
-local lpdfgethpos       = lpdf.gethpos
-local lpdfgetvpos       = lpdf.getvpos
 local lpdfobj           = lpdf.obj
 local lpdfpagereference = lpdf.pagereference
 local lpdfxformname     = lpdf.xformname
 
-local scanword          = tokens.scanners.word
-local scankeyword       = tokens.scanners.keyword
-local scanstring        = tokens.scanners.string
-local scaninteger       = tokens.scanners.integer
-local scandimension     = tokens.scanners.dimension
+local jobpositions      = job.positions
+local gethpos           = jobpositions.gethpos
+local getvpos           = jobpositions.getvpos
+
+local tokenscanners     = tokens.scanners
+local scanword          = tokenscanners.word
+local scankeyword       = tokenscanners.keyword
+local scanstring        = tokenscanners.string
+local scaninteger       = tokenscanners.integer
+local scandimension     = tokenscanners.dimension
 
 local trace             = false  trackers.register("commands", function(v) trace = v end)
 local report            = logs.reporter("command")
@@ -68,11 +71,11 @@ local function savepos()
 end
 
 local function lastxpos()
-    context(lpdfgethpos())
+    context(gethpos())
 end
 
 local function lastypos()
-    context(lpdfgetvpos())
+    context(getvpos())
 end
 
 implement { name = "savepos",  actions = savepos }

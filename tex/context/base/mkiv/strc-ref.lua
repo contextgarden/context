@@ -74,6 +74,7 @@ local lists              = structures.lists
 local counters           = structures.counters
 
 local jobpositions       = job.positions
+local getpos             = jobpositions.getpos
 
 -- some might become local
 
@@ -423,12 +424,6 @@ end
 --         l.references.realpage = texgetcount("realpageno")
 --     end
 -- end
-
-local getpos = function() getpos = backends.codeinjections.getpos  return getpos () end
-
-updaters.register("backend.update",function()
-    getpos = backends.codeinjections.getpos
-end)
 
 local function synchronizepage(reference) -- non public helper
     reference.realpage = texgetcount("realpageno")

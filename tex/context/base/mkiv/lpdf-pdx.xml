@@ -29,6 +29,7 @@
             <pdfx:ConTeXt.Url/>
             <pdfx:ConTeXt.Support/>
             <pdfx:ConTeXt.Version/>
+            <pdfx:ConTeXt.LMTX/>
             <pdfx:TeX.Support/>
             <pdfx:LuaTeX.Version/>
             <pdfx:LuaTeX.Functionality/>

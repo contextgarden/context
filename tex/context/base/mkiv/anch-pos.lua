@@ -333,15 +333,19 @@ local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
 
-local getpos  = function() getpos  = backends.codeinjections.getpos  return getpos () end
-local gethpos = function() gethpos = backends.codeinjections.gethpos return gethpos() end
-local getvpos = function() getvpos = backends.codeinjections.getvpos return getvpos() end
+local getpos, gethpos, getvpos
 
-updaters.register("backend.update",function()
-    getpos  = backends.codeinjections.getpos
-    gethpos = backends.codeinjections.gethpos
-    getvpos = backends.codeinjections.getvpos
-end)
+function jobpositions.registerhandlers(t)
+    getpos  = t and t.getpos  or function() return 0, 0 end
+    gethpos = t and t.gethpos or function() return 0    end
+    getvpos = t and t.getvpos or function() return    0 end
+end
+
+function jobpositions.getpos () return getpos () end
+function jobpositions.gethpos() return gethpos() end
+function jobpositions.getvpos() return getvpos() end
+
+jobpositions.registerhandlers()
 
 local function setall(name,p,x,y,w,h,d,extra)
     tobesaved[name] = {

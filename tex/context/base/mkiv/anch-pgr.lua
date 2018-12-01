@@ -84,19 +84,12 @@ local processranges     = nuts.processranges
 local unsetvalue        = attributes.unsetvalue
 
 local jobpositions      = job.positions
+local getpos            = jobpositions.getpos
 
 local data              = { }
 local realpage          = 1
 local recycle           = 1000 -- only tables can overflow this
 local enabled           = false
-
--- can change:
-
-local getpos = function() getpos = backends.codeinjections.getpos return getpos() end
-
-updaters.register("backend.update",function()
-    getpos = backends.codeinjections.getpos
-end)
 
 -- Freeing the data is somewhat tricky as we can have backgrounds spanning
 -- many pages but for an arbitrary background shape that is not so common.

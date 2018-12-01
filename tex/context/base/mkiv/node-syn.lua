@@ -179,12 +179,6 @@ local force_synctex_line = tex.force_synctex_line
 local get_synctex_line   = tex.get_synctex_line
 local set_synctex_mode   = tex.set_synctex_mode
 
-local getpos = function() getpos = backends.codeinjections.getpos return getpos() end
-
-updaters.register("backend.update",function()
-    getpos = backends.codeinjections.getpos
-end)
-
 local foundintree        = resolvers.foundintree
 
 local eol                = "\010"
@@ -207,6 +201,8 @@ local f_vlist_2          = formatters["v%i,%i:%i,%s:%i,%i,%i\010"]
 
 local synctex            = luatex.synctex or { }
 luatex.synctex           = synctex
+
+local getpos ; getpos = function() getpos = job.positions.getpos return getpos() end
 
 -- status stuff
 

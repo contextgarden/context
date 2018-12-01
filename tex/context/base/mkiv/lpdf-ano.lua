@@ -71,20 +71,10 @@ local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount
 
--- local codeinjections          = backends.codeinjections
--- local getpos                  = codeinjections.getpos
--- local gethpos                 = codeinjections.gethpos
--- local getvpos                 = codeinjections.getvpos
-
-local getpos  = lpdf.getpos
-local gethpos = lpdf.gethpos
-local getvpos = lpdf.getvpos
-
-updaters.register("backend.update",function()
-    getpos  = lpdf.getpos
-    gethpos = lpdf.gethpos
-    getvpos = lpdf.getvpos
-end)
+local jobpositions            = job.positions
+local getpos                  = jobpositions.getpos
+local gethpos                 = jobpositions.gethpos
+local getvpos                 = jobpositions.getvpos
 
 local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
