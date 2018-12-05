@@ -363,6 +363,9 @@ local function getmissing(id)
             local messages = shared and shared.messages
             if messages then
                 local filename = d.properties.filename
+                if not filename then
+                    filename = tostring(d)
+                end
                 local tf = t[filename] or { }
                 for i=1,#relevant do
                     local tm = messages[relevant[i]]

@@ -772,10 +772,10 @@ local function off(presets,name)
     end
 end
 
-local function on(presets,name)
+local function on(presets,name,temperature)
     local zone = presets and getzonestate(presets,name)
     if zone then
-        setzonestate(presets,name,zone.highest)
+        setzonestate(presets,name,temperature or zone.highest)
     end
 end
 
@@ -979,10 +979,10 @@ end
 
 evohome = {
     helpers = {
-        getaccesstoken     = getaccesstoken,    -- presets
-        getuserinfo        = getuserinfo,       -- presets
-        getlocationinfo    = getlocationinfo,   -- presets
-        getschedule        = getschedule,       -- presets, name
+        getaccesstoken     = getaccesstoken,     -- presets
+        getuserinfo        = getuserinfo,        -- presets
+        getlocationinfo    = getlocationinfo,    -- presets
+        getschedule        = getschedule,        -- presets, name
         --
         geteverything      = geteverything,      -- presets, noschedules
         gettemperatures    = gettemperatures,    -- presets

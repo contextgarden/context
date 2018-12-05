@@ -110,6 +110,13 @@
 \registerctxluafile{font-imp-quality}{}
 \registerctxluafile{font-imp-italics}{}
 \registerctxluafile{font-imp-dimensions}{}
+
+\doifelsefileexists{font-imp-scripts.lua} {
+    \registerctxluafile{font-imp-scripts}{}
+} {
+    % not yet, lmtx feature
+}
+
 \registerctxluafile{font-imp-tracing}{} % comes last!
 
 \registerctxluafile{font-fbk}{}

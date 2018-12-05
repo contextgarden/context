@@ -718,6 +718,8 @@ the comma also pulls the preceding character into the margin.
     \getbuffer [example]
 \stopplacefigure
 
+\stopsubsubject
+
 \stopsection
 
 \startsection[title=Expansion]
@@ -821,6 +823,8 @@ You can see what happens in \in {figure} [expansion:visualized].
 \startplacefigure[reference=expansion:visualized,title=The injected expansion kerns.]
     \getbuffer [example]
 \stopplacefigure
+
+\stopsubsubject
 
 \startsubsubject[title=Expansion and kerning]
 
@@ -1763,7 +1767,6 @@ only when we touch a space:
             },
         },
     }
-
 \stopluacode
 \stopbuffer
 
@@ -2220,9 +2223,11 @@ fonts.handlers.otf.addfeature {
         {
             type = "pair",
             data = {
-                [<char|code>] = { [<char|code>] = {
-                    false | { <value>, <value>, <value>, <value> },
-                    false | { <value>, <value>, <value>, <value> }
+                [<char|code>] = {
+                    [<char|code>] = {
+                        false | { <value>, <value>, <value>, <value> },
+                        false | { <value>, <value>, <value>, <value> }
+                    }
                 }
             }
         },

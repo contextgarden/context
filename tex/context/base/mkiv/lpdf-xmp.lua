@@ -144,15 +144,17 @@ local function update()
             settrailerid(false)
             return
         end
-    end
-    dates = toboolean(dates)
-    included.date = dates
-    if dates then
-        included.id = true
-    else
-        report_info("no date/time but fake id information will be added")
-        settrailerid(true)
-        included.id = "fake"
+        if t == "string" then
+            dates = toboolean(dates)
+            included.date = dates
+            if dates ~= false then
+                included.id = true
+            else
+                report_info("no date/time but fake id information will be added")
+                settrailerid(true)
+                included.id = "fake"
+            end
+        end
     end
 end
 

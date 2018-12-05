@@ -109,38 +109,6 @@
    \textdirection\directionrighttoleft
    \pardirection \directionrighttoleft}
 
-% % keep this as reference
-%
-% \unexpanded\def\spac_directions_lefttoright_hmode
-%   {\textdir TLT\relax
-%    \settrue\inlinelefttoright}
-%
-% \unexpanded\def\spac_directions_righttoleft_hmode
-%   {\textdir TRT\relax
-%    \setfalse\inlinelefttoright}
-%
-% \unexpanded\def\spac_directions_lefttoright_hmode
-%   {\ifzeropt\lastskip
-%      \textdir TLT\relax
-%    \else
-%      \scratchskip\lastskip
-%      \unskip
-%      \textdir TLT\relax
-%      \hskip\scratchskip
-%    \fi
-%    \settrue\inlinelefttoright}
-%
-% \unexpanded\def\spac_directions_righttoleft_hmode
-%   {\ifzeropt\lastskip
-%      \textdir TRT\relax
-%    \else
-%      \scratchskip\lastskip
-%      \unskip
-%      \textdir TRT\relax
-%      \hskip\scratchskip
-%    \fi
-%    \setfalse\inlinelefttoright}
-
 \unexpanded\def\spac_directions_lefttoright_hmode
   {\linedirection\directionlefttoright % linedir keeps subtype of skip
    \settrue\inlinelefttoright}
@@ -148,14 +116,6 @@
 \unexpanded\def\spac_directions_righttoleft_hmode
   {\linedirection\directionrighttoleft % linedir keeps subtype of skip
    \setfalse\inlinelefttoright}
-
-% \def\currentdirectionparameters
-%   {\ifconditional\inlinelefttoright \else
-%       idir {r2l}%
-%    \fi
-%    \ifconditional\displaylefttoright \else
-%       ddir {r2l}%
-%    \fi}
 
 \unexpanded\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright

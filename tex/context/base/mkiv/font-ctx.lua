@@ -18,7 +18,7 @@ local format, gmatch, match, find, lower, upper, gsub, byte, topattern = string.
 local concat, serialize, sort, fastcopy, mergedtable = table.concat, table.serialize, table.sort, table.fastcopy, table.merged
 local sortedhash, sortedkeys, sequenced = table.sortedhash, table.sortedkeys, table.sequenced
 local parsers = utilities.parsers
-local settings_to_hash, settings_to_hash_colon_too, hash_to_string, settings_to_array = parsers.settings_to_hash, parsers.settings_to_hash_colon_too, parsers.hash_to_string, parsers.settings_to_array
+local settings_to_hash, hash_to_string, settings_to_array = parsers.settings_to_hash, parsers.hash_to_string, parsers.settings_to_array
 local formatcolumns = utilities.formatters.formatcolumns
 local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
@@ -586,9 +586,11 @@ local function presetcontext(name,parent,features) -- will go to con and shared
         features = { }
     elseif type(features) == "string" then
         features = normalize_features(settings_to_hash(features))
-            for key, value in next, features do
-            if type(value) == "string" and find(value,"[=:]") then
-                local t = settings_to_hash_colon_too(value)
+     -- if type(value) == "string" and find(value,"[=:]") then
+     --     local t = settings_to_hash_colon_too(value) -- clashes with foo=file:bar
+        for key, value in next, features do
+            if type(value) == "string" and find(value,"[=]") then
+                local t = settings_to_hash(value)
                 if next(t) then
                     features[key] = sequenced(normalize_features(t),",")
                 end

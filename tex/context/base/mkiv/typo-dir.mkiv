@@ -156,21 +156,21 @@
 %      \tttf\ctxlua{documentdata.split_tokens([[\detokenize{#3}]])}}}
 %
 % \startbuffer[bidi-sample]
-% \biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
-% \biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
-% \biditest\Arabic{LATIN ARAB}{\textdir TLT{\bidilro \LATIN\ \ARAB}}\par % right -> left
-% \biditest\Arabic{LATIN ARAB}{\textdir TRT{\bidilro \LATIN\ \ARAB}}\par % right -> left
-% \biditest\Arabic{BARA NITAL}{\textdir TLT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
-% \biditest\Arabic{BARA NITAL}{\textdir TRT{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+% \biditest\Arabic{LATIN BARA}{\lefttoright\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{BARA LATIN}{\righttoleft\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{LATIN ARAB}{\lefttoright{\bidilro \LATIN\ \ARAB}}\par % right -> left
+% \biditest\Arabic{LATIN ARAB}{\righttoleft{\bidilro \LATIN\ \ARAB}}\par % right -> left
+% \biditest\Arabic{BARA NITAL}{\lefttoright{\bidirlo \LATIN\ \ARAB}}\par % left -> right
+% \biditest\Arabic{BARA NITAL}{\righttoleft{\bidirlo \LATIN\ \ARAB}}\par % left -> right
 % \stopbuffer
 %
 % \startbuffer[bidi-sample]
-% \biditest\Arabic{LATIN BARA}{\textdir TLT\relax   \LATIN\ \ARAB}\par
-% \biditest\Arabic{BARA LATIN}{\textdir TRT\relax   \LATIN\ \ARAB}\par
-% \biditest\Arabic{LATIN ARAB}{\textdir TLT\bidilro \LATIN\ \ARAB}\par % right -> left
-% \biditest\Arabic{LATIN ARAB}{\textdir TRT\bidilro \LATIN\ \ARAB}\par % right -> left
-% \biditest\Arabic{BARA NITAL}{\textdir TLT\bidirlo \LATIN\ \ARAB}\par % left -> right
-% \biditest\Arabic{BARA NITAL}{\textdir TRT\bidirlo \LATIN\ \ARAB}\par % left -> right
+% \biditest\Arabic{LATIN BARA}{\lefttoright\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{BARA LATIN}{\righttoleft\relax   \LATIN\ \ARAB}\par
+% \biditest\Arabic{LATIN ARAB}{\lefttoright\bidilro \LATIN\ \ARAB}\par % right -> left
+% \biditest\Arabic{LATIN ARAB}{\righttoleft\bidilro \LATIN\ \ARAB}\par % right -> left
+% \biditest\Arabic{BARA NITAL}{\lefttoright\bidirlo \LATIN\ \ARAB}\par % left -> right
+% \biditest\Arabic{BARA NITAL}{\righttoleft\bidirlo \LATIN\ \ARAB}\par % left -> right
 % \stopbuffer
 %
 % \startbuffer[bidi-setup]

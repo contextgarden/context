@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/01/18 13:20:11
+-- merge date  : 12/05/18 11:49:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -34961,9 +34961,6 @@ function resolvers.name(specification)
           features.normal=normal
         end
         normal.instance=instance
-        if not callbacks.supported.glyph_stream_provider then
-          normal.variableshapes=true 
-        end
       end
       local suffix=lower(suffixonly(resolved))
       if fonts.formats[suffix] then
@@ -35821,7 +35818,7 @@ do -- begin closure to overcome local limits and interference
 
 if not modules then modules={} end modules ['font-imp-effects']={
   version=1.001,
-  comment="companion to font-ini.mkiv and hand-ini.mkiv",
+  comment="companion to font-ini.mkiv",
   author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
   copyright="PRAGMA ADE / ConTeXt Development Team",
   license="see context related readme files"
