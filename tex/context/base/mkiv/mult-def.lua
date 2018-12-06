@@ -15556,7 +15556,7 @@ return {
    ["ro"]="postscript",
   },
   ["precedingpage"]={
-   ["en"]="followingpage",
+   ["en"]="precedingpage",
    ["nl"]="voorafgaandepagina",
   },
   ["preference"]={

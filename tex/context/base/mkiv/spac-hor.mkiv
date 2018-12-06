@@ -568,6 +568,13 @@
      \fi
    \fi}
 
+\unexpanded\def\onlynonbreakablespace
+  {\ifdim\lastskip=\interwordspace
+     \unskip
+     \nonbreakablespace
+   \fi
+   \ignorespaces}
+
 % \startbuffer
 % \startlines \tt \fixedspaces
 %  0~1~~2~~~3~~~~4~~~~~5

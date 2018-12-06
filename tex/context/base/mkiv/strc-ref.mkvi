@@ -1163,10 +1163,15 @@
 \newtoks\defaultleftreferencetoks
 \newtoks\defaultrightreferencetoks
 
-\def\leftofreferencecontent {\nobreakspace} % we cannot do \definereferenceformat[at] .. so we need this
+%def\leftofreferencecontent {\nobreakspace} % we cannot do \definereferenceformat[at] .. so we need this
 \let\rightofreferencecontent \empty
 \let\leftofreference         \empty
 \let\rightofreference        \empty
+
+\unexpanded\def\leftofreferencecontent
+  {\removeunwantedspaces
+   \nonbreakablespace
+   \ignorespaces}
 
 \installcorenamespace{referencinginteraction}
 
@@ -1174,6 +1179,7 @@
   {\the\leftreferencetoks
    \doifelsesometoks\leftreferencetoks \leftofreferencecontent \donothing
    \leftofreference
+   \doifelsesometoks\leftreferencetoks\onlynonbreakablespace\relax % new, replace space by nonbreakable if present
    \currentreferencecontent
    \rightofreference
    \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
@@ -1852,7 +1858,7 @@
 \def\strc_references_define_program[#name][#program][#description]%
   {\clf_defineprogram{#name}{#program}{#description}}
 
-\def\program[#name]% incompatible, more consistent, hardy used anyway
+\unexpanded\def\program[#name]% incompatible, more consistent, hardy used anyway
   {\dontleavehmode
    \begingroup
    \useprogramsstyleandcolor\c!style\c!color

@@ -297,7 +297,7 @@ return {
         "singleexpandafter", "doubleexpandafter", "tripleexpandafter",
         --
         "dontleavehmode", "removelastspace", "removeunwantedspaces", "keepunwantedspaces",
-        "removepunctuation", "ignoreparskip", "forcestrutdepth",
+        "removepunctuation", "ignoreparskip", "forcestrutdepth", "onlynonbreakablespace",
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --

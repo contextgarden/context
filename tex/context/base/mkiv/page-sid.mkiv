@@ -689,7 +689,8 @@
 % \stoptext
 
 \def\page_sides_analyse_progress
-  {\d_page_sides_progress\d_page_sides_vsize
+  {\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
+   \d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
      \advance\d_page_sides_progress-\d_page_sides_page_total
      \global\setfalse\c_page_sides_flag
