@@ -245,7 +245,7 @@ local function check_number(n,a,skip,sameline)
         end
         local p = checkline(n)
         if p then
-            ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and "TRT" or "TLT")
+            ctx_makelinenumber(tag,skipflag,s,p.hsize,p.reverse and 1 or 0)
         else
             report_lines("needs checking")
         end

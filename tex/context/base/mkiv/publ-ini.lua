@@ -32,7 +32,7 @@ local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local lpegmatch = lpeg.match
 local P, S, C, Ct, Cs, R, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.R, lpeg.Carg
-local upper = utf.upper
+local upper = characters.upper
 
 local report             = logs.reporter("publications")
 local report_cite        = logs.reporter("publications","cite")
@@ -3463,7 +3463,7 @@ do
 
     implement {
         name    = "btxcmdstring",
-        actions = function() context(btxstring) end,
+        actions = function() if btxstring ~= "" then context(btxstring) end end,
     }
 
     function publications.prerollcmdstring(str)

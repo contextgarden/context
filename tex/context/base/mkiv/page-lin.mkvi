@@ -349,7 +349,7 @@
      \d_page_lines_distance\linenumberingparameter\c!distance\relax
      \edef\p_align{\linenumberingparameter\c!align}%
      \edef\p_location{\linenumberingparameter\c!location}%
-     \ifcase\istltdir#dir\relax
+     \ifcase#dir\relax
        \settrue \c_page_lines_dir_left_to_right
      \else
        \setfalse\c_page_lines_dir_left_to_right

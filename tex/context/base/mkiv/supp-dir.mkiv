@@ -40,24 +40,4 @@
 %   {\inleft{\normalexpanded{\noexpand\hbox bdir\directionlefttoright
 %      {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
 
-% obsolete:
-%
-% \bgroup
-%     \catcode`L=\othercatcode \gdef\istltdir#1#2#3{\if#2L0\else1\fi}
-%     \catcode`R=\othercatcode \gdef\istrtdir#1#2#3{\if#2R0\else1\fi}
-% \egroup
-%
-% \def\istlttextdir{\expandafter\istltdir\the\textdir}
-% \def\istrttextdir{\expandafter\istrtdir\the\textdir}
-%
-% \def\istltpardir {\expandafter\istltdir\the\pardir }
-% \def\istrtpardir {\expandafter\istrtdir\the\pardir }
-
-% in 1.10 but obsolete helpers anyway
-
-\def\istlttextdir{\ifnum\textdirection=\plusone \zerocount\else \plusone  \fi}
-\def\istrttextdir{\ifnum\textdirection=\plusone \plusone  \else \zerocount\fi}
-\def\istltpardir {\ifnum\pardirection =\plusone \zerocount\else \plusone  \fi}
-\def\istrtpardir {\ifnum\pardirection =\plusone \plusone  \else \zerocount\fi}
-
 \protect \endinput

@@ -89,6 +89,7 @@
                     <cd:constant type="off"/>
                     <cd:constant type="overlay"/>
                     <cd:constant type="none"/>
+                    <cd:constant type="closed"/>
                 </cd:parameter>
                 <cd:parameter name="background">
                     <cd:resolve name="value-background"/>

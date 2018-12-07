@@ -140,6 +140,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='color' value='couleur'/>
 		<cd:variable name='column' value='colonne'/>
 		<cd:variable name='columns' value='colonnes'/>
@@ -421,7 +422,7 @@
 		<cd:variable name='positive' value='positif'/>
 		<cd:variable name='postponing' value='postponing'/>
 		<cd:variable name='postscript' value='postscript'/>
-		<cd:variable name='precedingpage' value='followingpage'/>
+		<cd:variable name='precedingpage' value='precedingpage'/>
 		<cd:variable name='preference' value='preference'/>
 		<cd:variable name='preview' value='previsualisation'/>
 		<cd:variable name='previous' value='precedent'/>

@@ -403,7 +403,8 @@
      \endgroup
    \else
      \forcestrutdepth
-   \fi}
+   \fi
+   \page_otr_command_set_vsize} % new
 
 \def\page_sides_flush_floats
   {\par
@@ -689,7 +690,7 @@
 % \stoptext
 
 \def\page_sides_analyse_progress
-  {\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
+  {%\page_otr_command_set_vsize % this is new, otherwise topfloats are not taken into account
    \d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
      \advance\d_page_sides_progress-\d_page_sides_page_total
@@ -705,7 +706,12 @@
 
 \def\page_sides_analyse_space
   {\global\settrue\c_page_sides_flag
-   \page_sides_force_depth
+\ifdim\pagegoal=\maxdimen
+    \pagegoal\textheight
+\fi
+\ifdim\pagetotal<\zeropoint
+    \pagetotal\textheight
+\fi
    \global\d_page_sides_page_total \pagetotal % global
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_width \zeropoint

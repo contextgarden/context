@@ -730,7 +730,7 @@
 %    \dp\scratchbox\d_framed_target_dp
 %    \box\scratchbox}
 
-\def\pack_framed_stroked_box_normal
+\def\pack_framed_stroked_box_normal_opened
   {\setbox\scratchbox\vpack \bgroup
      \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
      \nointerlineskip % new (needed for fences)
@@ -749,6 +749,25 @@
    \ht\scratchbox\d_framed_target_ht
    \dp\scratchbox\d_framed_target_dp
    \box\scratchbox}
+
+\def\pack_framed_stroked_box_normal_closed
+  {\hpack\bgroup
+     \scratchdimen.5\d_framed_linewidth
+     \hskip\scratchdimen
+     \clf_framedoutline
+       \dimexpr\d_framed_target_wd-\d_framed_linewidth\relax
+       \dimexpr\d_framed_target_ht-\scratchdimen\relax
+       \dimexpr\d_framed_target_dp-\scratchdimen\relax
+       \d_framed_linewidth
+     \relax
+   \egroup}
+
+\def\pack_framed_stroked_box_normal
+  {\ifx\p_framed_frame\v!closed
+     \pack_framed_stroked_box_normal_closed
+   \else
+     \pack_framed_stroked_box_normal_opened
+   \fi}
 
 \def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
 \def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}

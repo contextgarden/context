@@ -517,7 +517,6 @@ else
 
     function lxml.withindex(name,n,command) -- will change as name is always there now
         local i, p = lpegmatch(splitter,n)
-
         if p then
             contextsprint(ctxcatcodes,"\\xmlw{",command,"}{",n,"}")
         else

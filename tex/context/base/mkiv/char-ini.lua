@@ -1283,9 +1283,9 @@ lpegpatterns.utf8lower = utf8lower -- string
 lpegpatterns.utf8upper = utf8upper -- string
 lpegpatterns.utf8shape = utf8shape -- string
 
-function characters.lower (str) return lpegmatch(utf8lower,str) end
-function characters.upper (str) return lpegmatch(utf8upper,str) end
-function characters.shaped(str) return lpegmatch(utf8shape,str) end
+function characters.lower (str) return str and lpegmatch(utf8lower,str) or "" end
+function characters.upper (str) return str and lpegmatch(utf8upper,str) or "" end
+function characters.shaped(str) return str and lpegmatch(utf8shape,str) or "" end
 
 -- local str = [[
 --     ÀÁÂÃÄÅàáâãäå àáâãäåàáâãäå ÀÁÂÃÄÅÀÁÂÃÄÅ AAAAAAaaaaaa

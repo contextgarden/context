@@ -16,6 +16,7 @@ local bpfactor       = number.dimenfactors.bp
 
 local nuts           = nodes.nuts
 local userrule       = nuts.rules.userrule
+local outlinerule    = nuts.pool.outlinerule
 local ruleactions    = nuts.rules.ruleactions
 
 local setattrlist    = nuts.setattrlist
@@ -245,6 +246,33 @@ interfaces.implement {
             setattr(rule,a_color,ca)
             setattr(rule,a_transparency,ta)
         end
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "outlinerule",
+    public    = true,
+    protected = true,
+    arguments = { {
+        { "width",  "dimension" },
+        { "height", "dimension" },
+        { "depth",  "dimension" },
+        { "line",   "dimension" },
+    } } ,
+    actions = function(t)
+        local rule = outlinerule(t.width,t.height,t.depth,t.line)
+        setattrlist(rule,true)
+        context(tonode(rule)) -- will become context.nodes.flush
+    end
+}
+
+interfaces.implement {
+    name      = "framedoutline",
+    arguments = { "dimension", "dimension", "dimension", "dimension" },
+    actions   = function(w,h,d,l)
+        local rule = outlinerule(w,h,d,l)
+        setattrlist(rule,true)
         context(tonode(rule)) -- will become context.nodes.flush
     end
 }

@@ -13038,6 +13038,10 @@ return {
   ["cite"]={
    ["en"]="cite",
   },
+  ["closed"]={
+   ["en"]="closed",
+   ["nl"]="gesloten",
+  },
   ["color"]={
    ["cs"]="barevne",
    ["de"]="farbe",

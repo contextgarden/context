@@ -355,9 +355,9 @@ do
         return s
     end
 
-    local function lower() context(_lower_(s)) end
-    local function upper() context(_upper_(s)) end
-    local function strip() context(_strip_(s)) end
+    local function lower(s) context(_lower_(s)) end
+    local function upper(s) context(_upper_(s)) end
+    local function strip(s) context(_strip_(s)) end
 
     implement { name = "upper", arguments = "string", actions = upper }
     implement { name = "lower", arguments = "string", actions = lower }

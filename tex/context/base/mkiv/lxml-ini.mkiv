@@ -36,11 +36,11 @@
 
 % for now indirect
 
-\def\xmlconcat          #1#2#3{\clf_xmlconcat           {#1}{#2}{\detokenize{#3}}}
-\def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange      {#1}{#2}{#3}{#4}{\detokenize{#5}}}
-\def\xmlload              #1#2{\clf_xmlload             {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloadbuffer        #1#2{\clf_xmlloadbuffer       {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloaddata          #1#2{\clf_xmlloaddata         {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlconcat          #1#2#3{\clf_xmlconcat     {#1}{#2}{\detokenize{#3}}}
+\def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange{#1}{#2}{#3}{#4}{\detokenize{#5}}}
+\def\xmlload              #1#2{\clf_xmlload       {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloadbuffer        #1#2{\clf_xmlloadbuffer {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloaddata          #1#2{\clf_xmlloaddata   {#1}{#2}{\directxmlparameter\c!compress}}
 
 % aliased
 
@@ -261,8 +261,8 @@
    %xmlpushdocument{#3}%
    #2{#3}{#4}%
    \setcatcodetable\notcatcodes
-   \doifelsenothing{#5}
-     {\xmlsetup{#3}{xml:process}}
+   \doifelsenothing{#5}%
+     {\xmlsetup{#3}{xml:process}}%
      {\xmlsetup{#3}{#5}}%
    %xmlpopdocument
    \endgroup}
@@ -327,7 +327,7 @@
    \fi
    \unexpanded\def\stopxmldisplayverbatim
      {\endofverbatimlines
-      \stoppacked}
+      \stoppacked}%
    \doinitializeverbatim
    \beginofverbatimlines}
 

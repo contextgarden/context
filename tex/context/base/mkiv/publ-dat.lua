@@ -1138,7 +1138,7 @@ do
     \ifdefined\btxcmd
         % we're probably in context
     \else
-        \def\btxcmd#1{\csname#1\endcsname}
+        \def\btxcmd#1{\begincsname#1\endcsname}
     \fi
 }
 

@@ -348,7 +348,7 @@ return {
         "dosinglegroupempty", "dodoublegroupempty", "dotriplegroupempty", "doquadruplegroupempty", "doquintuplegroupempty",
         "permitspacesbetweengroups", "dontpermitspacesbetweengroups",
         --
-        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression", "onlypdfobjectcompression",
+        "nopdfcompression", "maximumpdfcompression", "normalpdfcompression", "onlypdfobjectcompression", "nopdfobjectcompression",
         --
         "modulonumber", "dividenumber",
         --

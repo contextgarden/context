@@ -142,6 +142,8 @@
     tex.enableprimitives("normal",texprimitives)
     tex.enableprimitives("normal",etexprimitives)
     tex.enableprimitives("normal",luatexprimitives)
+
+    function tex.enableprimitives() end
 }
 
 \def\space{ }
@@ -463,35 +465,35 @@
 
 %D And even more: (todo: countdefs 60+)
 
-%newcount   \minusone \minusone    -1
-\newcount   \minustwo \minustwo    -2
-%chardef    \zerocount              0
-%chardef    \plusone                1
-\chardef    \plustwo                2
-\chardef    \plusthree              3
-\chardef    \plusfour               4
-\chardef    \plusfive               5
-\chardef    \plussix                6
-\chardef    \plusseven              7
-\chardef    \pluseight              8
-\chardef    \plusnine               9
-\chardef    \plusten               10
-\chardef    \plussixteen           16
-\chardef    \plusfifty             50
-\chardef    \plushundred          100
-\chardef    \plusonehundred       100
-\chardef    \plustwohundred       200
-\chardef    \plusfivehundred      500
-\chardef    \pluscxxvii           127
-\chardef    \pluscxxviii          128
-\chardef    \pluscclv             255
-\chardef    \pluscclvi            256
-\chardef    \plusthousand        1000
-\chardef    \plustenthousand    10000
-\chardef    \plustwentythousand 20000
-\chardef    \medcard            32768
-\chardef    \maxcard            65536 % pdftex has less mathchars
-\chardef    \maxcardminusone    65535
+%newcount\minusone \minusone    -1
+\newcount\minustwo \minustwo    -2
+%chardef \zerocount              0
+%chardef \plusone                1
+\chardef \plustwo                2
+\chardef \plusthree              3
+\chardef \plusfour               4
+\chardef \plusfive               5
+\chardef \plussix                6
+\chardef \plusseven              7
+\chardef \pluseight              8
+\chardef \plusnine               9
+\chardef \plusten               10
+\chardef \plussixteen           16
+\chardef \plusfifty             50
+\chardef \plushundred          100
+\chardef \plusonehundred       100
+\chardef \plustwohundred       200
+\chardef \plusfivehundred      500
+\chardef \pluscxxvii           127
+\chardef \pluscxxviii          128
+\chardef \pluscclv             255
+\chardef \pluscclvi            256
+\chardef \plusthousand        1000
+\chardef \plustenthousand    10000
+\chardef \plustwentythousand 20000
+\chardef \medcard            32768
+\chardef \maxcard            65536 % pdftex has less mathchars
+\chardef \maxcardminusone    65535
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
@@ -1142,7 +1144,6 @@
 \edef\pdfpkmode              {\pdfvariable pkmode}
 
 \edef\pdfsuppressoptionalinfo{\pdfvariable suppressoptionalinfo }
-\let \pdfsuppressptexinfo              \pdfsuppressoptionalinfo
 \edef\pdftrailerid           {\pdfvariable trailerid }
 \edef\pdfinfoomitdate        {\pdfvariable suppressoptionalinfo \numexpr32+64\relax}
 
@@ -1157,10 +1158,6 @@
 \fi
 
 \normalpdfcompression
-
-\ifdefined\outputmode \else
-    \newcount\outputmode
-\fi
 
 \outputmode \zerocount % we generate the format in this mode
 
@@ -1203,22 +1200,27 @@
 
 %D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
 
-\voffset\zeropoint \let\voffset\relax \newdimen\voffset
-\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset
+\voffset\zeropoint \let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
+\hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
 
-\let\pageleftoffset  \hoffset
-\let\pagerightoffset \hoffset
-\let\pagetopoffset   \voffset
-\let\pagebottomoffset\voffset
+\let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
+\let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
+\let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
+\let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
 
 %D Handy.
 
-\suppresslongerror    \plusone % \let\suppresslongerror    \relax
-\suppressoutererror   \plusone % \let\suppressoutererror   \relax
-\suppressmathparerror \plusone % \let\suppressmathparerror \relax
-\suppressifcsnameerror\plusone % \let\suppressifcsnameerror\relax
+\suppresslongerror    \plusone
+\suppressoutererror   \plusone
+\suppressmathparerror \plusone
+\suppressifcsnameerror\plusone
 
-\matheqnogapstep      \zerocount % fr now
+\newcount\suppresslongerror                       \let\normalsuppresslongerror    \suppresslongerror
+\let     \suppressoutererror   \suppresslongerror \let\normalsuppressoutererror   \suppresslongerror
+\let     \suppressmathparerror \suppresslongerror \let\normalsuppressmathparerror \suppresslongerror
+\let     \suppressifcsnameerror\suppresslongerror \let\normalsuppressifcsnameerror\suppresslongerror
+
+\matheqnogapstep\zerocount % for now
 
 %D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
 %D The first song on that \CD\ ends with a few lines suitable for ending this
@@ -1264,35 +1266,5 @@
 \let\normalstopimath    \Ustopmath
 \let\normalstartdmath   \Ustartdisplaymath
 \let\normalstopdmath    \Ustopdisplaymath
-
-\ifdefined\protrusionboundary     \else \let\protrusionboundary\boundary   \fi
-\ifdefined\wordboundary           \else \let\wordboundary      \noboundary \fi
-
-\ifdefined\mathrulesfam           \else \newcount\mathrulesfam          \fi
-\ifdefined\mathrulesmode          \else \newcount\mathrulesmode         \fi
-\ifdefined\mathsurroundmode       \else \newcount\mathsurroundmode      \fi
-\ifdefined\mathitalicsmode        \else \newcount\mathitalicsmode       \fi
-\ifdefined\mathdelimitersmode     \else \newcount\mathdelimitersmode    \fi
-\ifdefined\mathscriptboxmode      \else \newcount\mathscriptboxmode     \fi
-\ifdefined\mathscriptcharmode     \else \newcount\mathscriptcharmode    \fi
-\ifdefined\mathrulethicknessmode  \else \newcount\mathrulethicknessmode \fi
-
-\ifdefined\hyphenpenaltymode      \else \newcount\hyphenpenaltymode      \fi
-\ifdefined\automatichyphenpenalty \else \newcount\automatichyphenpenalty \fi
-\ifdefined\automatichyphenmode    \else \newcount\automatichyphenmode    \fi
-\ifdefined\explicithyphenpenalty  \else \newcount\explicithyphenpenalty  \fi
-
-\ifdefined\explicitdiscretionary  \else \let\explicitdiscretionary  \-                   \fi
-\ifdefined\automaticdiscretionary \else \def\automaticdiscretionary{\Uchar\exhyphenchar} \fi
-
-\ifdefined\mathpenaltiesmode      \else \newcount\mathpenaltiesmode \fi
-\ifdefined\mathflattenmode        \else \newcount\mathflattenmode   \fi
-\ifdefined\prebinoppenalty        \else \newcount\prebinoppenalty   \fi
-\ifdefined\prerelpenalty          \else \newcount\prerelpenalty     \fi
-
-\ifdefined\breakafterdirmode      \else \newcount\breakafterdirmode \fi
-\ifdefined\exceptionpenalty       \else \newcount\exceptionpenalty  \fi
-\ifdefined\luacopyinputnodes      \else \newcount\luacopyinputnodes \fi
-\ifdefined\fixupboxesmode         \else \newcount\fixupboxesmode    \fi
 
 \protect \endinput

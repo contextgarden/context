@@ -220,7 +220,13 @@ function tracers.printerror(specification)
     else
         report_nl()
         if luaerrorline then
-            report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+            if linenumber == 0 or not filename or filename == "" then
+                print("\nfatal lua error:\n\n",lastluaerror,"\n")
+                os.exit(1)
+                return
+            else
+                report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+            end
         elseif lastmpserror then
             report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
         else
