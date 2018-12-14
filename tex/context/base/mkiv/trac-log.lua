@@ -1028,7 +1028,7 @@ end
 
 if tex and tex.error then
     function logs.texerrormessage(...) -- for the moment we put this function here
-        tex.error(format(...), { })
+        tex.error(format(...))
     end
 else
     function logs.texerrormessage(...)

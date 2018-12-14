@@ -129,9 +129,6 @@ local factors = kerns.factors
 
 local gluefactor = 4 -- assumes quad = .5 enspace
 
-kerns.keepligature = false -- just for fun (todo: control setting with key/value)
-kerns.keeptogether = false -- just for fun (todo: control setting with key/value)
-
 -- red   : kept by dynamic feature
 -- green : kept by static feature
 -- blue  : keep by goodie

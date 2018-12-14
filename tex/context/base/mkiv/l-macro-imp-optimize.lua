@@ -47,17 +47,22 @@ if LUAVERSION >= 5.3 and lua.macros then
  -- ]]
 
 lua.macros.resolvestring [[
-#define band(a,b)      (a&b)
-#define bnot(a)        (~a&0xFFFFFFFF)
-#define bor(a,b)       ((a|b)&0xFFFFFFFF)
-#define btest(a,b)     ((a&b)~=0)
-#define bxor(a,b)      ((a~b)&0xFFFFFFFF)
-#define rshift(a,b)    ((a&b)~=0)
-#define extract(a,b,c) ((a>>b)&~(-1<<c))
-#define extract(a,b)   ((a>>b)&0x1)
-#define lshift(a,b)    ((a<<b)&0xFFFFFFFF)
-#define rshift(a,b)    ((a>>b)&0xFFFFFFFF)
-#define intdiv(a,b)    (a//b)
+#define band(a,b)      ((a)&(b))
+#define bnot(a)        (~(a)&0xFFFFFFFF)
+#define bor(a,b)       (((a)|(b))&0xFFFFFFFF)
+#define btest(a,b)     (((a)&(b))~=0)
+#define bxor(a,b)      (((a)~(b))&0xFFFFFFFF)
+#define rshift(a,b)    (((a)&(b))~=0)
+#define extract(a,b,c) (((a)>>(b))&~(-1<<(c)))
+#define extract(a,b)   (((a)>>(b))&0x1)
+#define extract1(a,b)  (((a)>>(b))&0x1)
+#define extract2(a,b)  (((a)>>(b))&0x2)
+#define extract4(a,b)  (((a)>>(b))&0x4)
+#define extract8(a,b)  (((a)>>(b))&0x8)
+#define lshift(a,b)    (((a)<<(b))&0xFFFFFFFF)
+#define rshift(a,b)    (((a)>>(b))&0xFFFFFFFF)
+#define intdiv(a,b)    ((a)//(b))
+#define idiv(a,b)      ((a)//(b))
 ]]
 
 end

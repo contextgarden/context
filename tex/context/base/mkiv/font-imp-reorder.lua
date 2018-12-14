@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-reorder'] = {
     license   = "see context related readme files"
 }
 
+if not context then return end
+
 local next = next
 local find = string.find
 local sortedhash, sortedkeys, sort = table.sortedhash, table.sortedkeys, table.sort

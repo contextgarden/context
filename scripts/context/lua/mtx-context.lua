@@ -795,6 +795,7 @@ function scripts.context.run(ctxdata,filename)
                     ctx            = validstring(ctxname),
                     export         = a_export and true or nil,
                     nocompression  = a_nocompression and true or nil,
+                    texmfbinpath   = os.selfdir,
                 }
                 --
                 for k, v in next, environment.arguments do

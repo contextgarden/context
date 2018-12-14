@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-dimensions'] = {
     license   = "see context related readme files"
 }
 
+if not context then return end
+
 local next, type, tonumber = next, type, tonumber
 
 local fonts              = fonts

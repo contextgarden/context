@@ -141,6 +141,7 @@
 \setupframed
   [\c!width=\v!fit,
    \c!height=\v!broad,
+  %\c!minheight=\zeropoint,
   %\c!lines=,
    \c!offset=.25\exheight,  % \defaultframeoffset
    \c!empty=\v!no,
@@ -1637,6 +1638,13 @@
    \fi
    \ifconditional\c_framed_has_height
      \ht\b_framed_normal\d_framed_height
+   \else
+     \edef\p_framed_minheight{\framedparameter\c!minheight}%
+     \ifx\p_framed_minheight\empty \else
+       \ifdim\ht\b_framed_normal<\p_framed_minheight
+         \ht\b_framed_normal\p_framed_minheight
+       \fi
+     \fi
    \fi
    \edef\p_framed_empty{\framedparameter\c!empty}%
    \ifx\p_framed_empty\v!yes

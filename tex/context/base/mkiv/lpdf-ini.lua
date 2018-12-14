@@ -1208,6 +1208,7 @@ do
 
     function lpdf.getcatalog()
         if checkcatalog() then
+            catalog.Type = pdfconstant("Catalog")
             return pdfreference(pdfimmediateobject(tostring(catalog)))
         end
     end

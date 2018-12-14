@@ -45,7 +45,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 -- todo: store loaded pages per pdf file someplace
 
-local tonumber, tostring, next, unpack = tonumber, tostring, next, unpack
+local tonumber, tostring, next, unpack, pcall = tonumber, tostring, next, unpack, pcall
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
 local longtostring = string.longtostring
 local contains = table.contains
@@ -55,7 +55,7 @@ local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local formatcolumns = utilities.formatters.formatcolumns
-local max, odd = math.max, math.odd
+local max, odd, random = math.max, math.odd, math.random
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -2165,6 +2165,81 @@ implement {
     end
 }
 
+-- This is experimental, for the moment here:
+
+local bitmaps       = { }
+graphics.bitmaps    = bitmaps
+
+local report_bitmap = logs.reporter("graphics","bitmap")
+
+function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
+    if not xsize or not ysize or xsize == 0 or ysize == 0 then
+        report_bitmap("provide 'xsize' and 'ysize' larger than zero")
+        return
+    end
+    if not colorspace then
+        report_bitmap("provide 'colorspace' (1, 2, 3, 'gray', 'rgb', 'cmyk'")
+        return
+    end
+    if not colordepth then
+        report_bitmap("provide 'colordepth' (1, 2)")
+        return
+    end
+    return graphics.identifiers.bitmap {
+        colorspace = colorspace,
+        colordepth = colordepth,
+        xsize      = xsize,
+        ysize      = ysize,
+        mask       = mask and true or nil,
+    }
+end
+
+local function flush(bitmap)
+    return wrapimage(lpdf.injectors.bitmap(bitmap))
+end
+
+bitmaps.flush = flush
+
+function bitmaps.tocontext(bitmap,width,height)
+    if type(width) == "number" then
+        width = width .. "sp"
+    end
+    if type(height) == "number" then
+        height = height .. "sp"
+    end
+    if width or height then
+        context.scale (
+            {
+                width  = width,
+                height = height,
+            },
+            flush(bitmap)
+        )
+    else
+        context(flush(bitmap))
+    end
+end
+
+local function placeholder(nx,ny)
+
+    local nx     = nx or 8
+    local ny     = ny or nx
+    local bitmap = bitmaps.new(nx,ny,"gray",1)
+    local data   = bitmap.data
+
+    for i=1,ny do
+        local d = data[i]
+        for j=1,nx do
+            d[j] = random(100,199)
+        end
+    end
+
+    return lpdf.injectors.bitmap(bitmap)
+
+end
+
+bitmaps.placeholder = placeholder
+
 -- This is an experiment. The following method uses Lua to handle the embedding
 -- using the epdf library. This feature will be used when we make the transition
 -- from the pre 1.10 epdf library (using an unsuported low level poppler api) to a
@@ -2373,7 +2448,14 @@ local function png_checker(data) -- same as jpg (for now)
         request.copyimage = function(t)
             if found then
                 found = false
-                return inject(t)
+return inject(t)
+--                 local ok, result = pcall(inject,t)
+--                 if ok then
+--                     return result
+--                 else
+--                     report_inclusion("bad bitmap image")
+--                     return placeholder()
+--                 end
             end
         end
     end
@@ -2419,60 +2501,3 @@ end)
 --         context.stopTEXpage()
 --     end)
 -- end
-
--- This is experimental, for the moment here:
-
-local bitmaps       = { }
-graphics.bitmaps    = bitmaps
-
-local report_bitmap = logs.reporter("graphics","bitmap")
-
-function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
-    if not xsize or not ysize or xsize == 0 or ysize == 0 then
-        report_bitmap("provide 'xsize' and 'ysize' larger than zero")
-        return
-    end
-    if not colorspace then
-        report_bitmap("provide 'colorspace' (1, 2, 3, 'gray', 'rgb', 'cmyk'")
-        return
-    end
-    if not colordepth then
-        report_bitmap("provide 'colordepth' (1, 2)")
-        return
-    end
-    return graphics.identifiers.bitmap {
-        colorspace = colorspace,
-        colordepth = colordepth,
-        xsize      = xsize,
-        ysize      = ysize,
-        mask       = mask and true or nil,
-    }
-end
-
-local function flush(bitmap)
-    return wrapimage(lpdf.injectors.bitmap(bitmap))
-end
-
-bitmaps.flush = flush
-
-function bitmaps.tocontext(bitmap,width,height)
-    if type(width) == "number" then
-        width = width .. "sp"
-    end
-    if type(height) == "number" then
-        height = height .. "sp"
-    end
-    if width or height then
-        context.scale (
-            {
-                width  = width,
-                height = height,
-            },
-            flush(bitmap)
-        )
-    else
-        context(flush(bitmap))
-    end
-end
-
-

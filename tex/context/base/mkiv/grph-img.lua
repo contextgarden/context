@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['grph-img'] = {
+    if not modules then modules = { } end modules ['grph-img'] = {
     version   = 1.001,
     comment   = "companion to grph-inc.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -546,6 +546,7 @@ do
                 t[i] = readstring(f,l.length)
             end
             local data = concat(t)
+            -- t wiped in caller
             return data
         else
             local data = { }

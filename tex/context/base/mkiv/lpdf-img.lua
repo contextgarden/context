@@ -6,7 +6,18 @@ if not modules then modules = { } end modules ['lpdf-img'] = {
     license   = "see context related readme files"
 }
 
-local concat, remove, insert = table.concat, table.remove, table.insert
+-- This started as an experiment but has potential for some (cached) optimizations.
+-- At some point we can also use it for fonts. For small images performance is ok
+-- with pure lua but for bigger images we can use some helpers. Normally in a
+-- typesetting workflow non-interlaced images are used. One should convert
+-- interlaced images to more efficient non-interlaced ones (ok, we can cache
+-- them if needed).
+--
+-- The \LUA\ code is slightly optimized so we could have done with less lines if
+-- we wanted but best gain a little. The idea is that we collect striped (in stages)
+-- so that we can play with substitutions.
+
+local concat, move = table.concat, table.move
 local ceil = math.ceil
 local char, find = string.char, string.find
 local idiv = number.idiv
@@ -19,6 +30,8 @@ local streams              = utilities.streams
 local openstring           = streams.openstring
 local readstring           = streams.readstring
 local readbytetable        = streams.readbytetable
+
+local tobytetable          = string.bytetable
 
 local lpdf                 = lpdf or { }
 local pdfdictionary        = lpdf.dictionary
@@ -150,43 +163,41 @@ do
     -- The amount of code is larger that I like and looks somewhat redundant but we sort of
     -- optimize a few combinations that happen often.
 
-    local function convert(t,len)
-        if len then
-local n = 0
-            for i=1,#t,len do
-                t[i] = ""
-n = n + 1
-            end
-        end
+    local applypngfilter = pdfe.applypngfilter
+    local splitpngmask   = pdfe.splitpngmask
+
+    local filtermask, decodemask, decodestrip
+
+    local function convert(t)
         for i=1,#t do
             local ti = t[i]
-            if ti ~= "" then
+            if ti ~= "" then -- soon gone
                 t[i] = chars[ti]
             end
         end
         return concat(t)
     end
 
+ -- local function wipefilter(input,xsize,ysize,bytes)
+ --     local l = xsize * bytes + 1
+ --     local n = 1
+ --     for i=1,ysize do
+ --         input[n] = ""
+ --         n = n + l
+ --     end
+ -- end
+
     local function zero(t,k)
         return 0
     end
 
-    local function bump(txt,t,xsize,ysize,bpp)
-        local l = xsize * bpp + 1
-        print(txt,">",xsize,ysize,bpp,l)
-        for i=1,ysize do
-            local f = (i-1) * l + 1
-            print(txt,i,":",concat(t," ",f,f+l-1))
-        end
-    end
-
-    local function decodeall(t,xsize,ysize,bpp)
-        local len  = xsize * bpp + 1
-        local n    = 1
-        local m    = len - 1
+    local function applyfilter(t,xsize,ysize,bpp)
+        local len = xsize * bpp + 1
+        local n   = 1
+        local m   = len - 1
         for i=1,ysize do
             local filter = t[n]
-t[n] = 0 -- not needed
+            t[n] = ""
             if filter == 0 then
             elseif filter == 1 then
                 for j=n+bpp+1,n+m do
@@ -207,9 +218,6 @@ t[n] = 0 -- not needed
                 for j=n+1,n+bpp do
                     local p = j - len
                     local b = t[p]
-                    if b < 0 then
-                        b = - b
-                    end
                     if b > 0 then
                         t[j] = (t[j] + b) % 256
                     end
@@ -232,6 +240,151 @@ t[n] = 0 -- not needed
         end
     end
 
+    local filtermask_l = function (content,xsize,ysize,colordepth,colorspace,hasfilter)
+        local mask   = { }
+        local bytes  = colordepth == 16 and 2 or 1
+        local bpp    = colorspace == "DeviceRGB" and 3 or 1
+        local length = #content
+        local size   = ysize * xsize * ((bpp+1)*bytes + (hasfilter and 1 or 0))
+        local n     = 1
+        local l     = 1
+        if bytes == 2 then
+            if bpp == 1 then
+                for i=1,ysize do
+                    if hasfilter then
+                        content[n] = "" ; n = n + 1
+                    end
+                    for j=1,xsize do
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                    end
+                end
+            elseif bpp == 3 then
+                for i=1,ysize do
+                    if hasfilter then
+                        content[n] = "" ; n = n + 1
+                    end
+                    for j=1,xsize do
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                    end
+                end
+            else
+                return "", ""
+            end
+        else
+            if bpp == 1 then
+                for i=1,ysize do
+                    if hasfilter then
+                        content[n] = "" ; n = n + 1
+                    end
+                    for j=1,xsize do
+                        content[n] = chars[content[n]] ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                    end
+                end
+            elseif bpp == 3 then
+                for i=1,ysize do
+                    if hasfilter then
+                        content[n] = "" ; n = n + 1
+                    end
+                    for j=1,xsize do
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        content[n] = chars[content[n]] ; n = n + 1
+                        mask[l]    = chars[content[n]] ; l = l + 1
+                        content[n] = ""                ; n = n + 1
+                    end
+                end
+            else
+                return "", ""
+            end
+        end
+        return concat(content), concat(mask)
+    end
+
+    local decodemask_l = function(content,xsize,ysize,colordepth,colorspace)
+        local bytes  = colordepth == 16 and 2 or 1
+        local bpp    = colorspace == "DeviceRGB" and 3 or 1
+        local slice  = bytes*(bpp+1)
+        local length = #content
+        local size   = ysize * xsize * ((bpp+1)*bytes + 1) -- assume filter
+        content = openstring(content)
+        content = readbytetable(content,length)
+        setmetatableindex(content,zero)
+        applyfilter(content,xsize,ysize,slice)
+        content, mask = filtermask(content,xsize,ysize,colordepth,colorspace,true)
+        return content, mask
+    end
+
+    local filtermask_c = splitpngmask and function(content,xsize,ysize,bpp,colordepth,colorspace,n)
+        if type(content) == "table" then
+            return filtermask_l(content,xsize,ysize,bpp,colordepth,colorspace,n)
+        end
+        local mask   = true
+        local filter = false
+        local bytes  = colordepth == 16 and 2 or 1
+        local bpp    = colorspace == "DeviceRGB" and 3 or 1
+        return splitpngmask(content,xsize,ysize,bpp,bytes,mask,filter)
+    end or filtermask_l
+
+    local decodemask_c = splitpngmask and function(content,xsize,ysize,colordepth,colorspace)
+        if type(content) == "table" then
+            return decodemask_l(content,xsize,ysize,colordepth,colorspace)
+        end
+        local mask   = true
+        local filter = false
+        local bytes  = colordepth == 16 and 2 or 1
+        local bpp    = colorspace == "DeviceRGB" and 3 or 1
+        local slice  = bytes * (bpp + 1) -- always a mask
+        content      = applypngfilter(content,xsize,ysize,slice)
+        return splitpngmask(content,xsize,ysize,bpp,bytes,mask,filter)
+    end or decodemask_l
+
+    local function decodestrip_l(s,nx,ny,slice)
+        local input = readbytetable(s,ny*(nx*slice+1))
+        setmetatableindex(input,zero)
+        applyfilter(input,nx,ny,slice)
+        return input, true
+    end
+
+    local function decodestrip_c(s,nx,ny,slice)
+        local input = readstring(s,ny*(nx*slice+1))
+        input = applypngfilter(input,nx,ny,slice)
+        input = tobytetable(input)
+setmetatableindex(input,zero)
+        return input, false
+    end
+
+    filtermask  = filtermask_c
+    decodemask  = decodemask_c
+    decodestrip = decodestrip_c
+
+    directives.register("graphics.png.purelua",function(v)
+        if v then
+            filtermask  = filtermask_l
+            decodemask  = decodemask_l
+            decodestrip = decodestrip_l
+        else
+            filtermask  = filtermask_c
+            decodemask  = decodemask_c
+            decodestrip = decodestrip_c
+        end
+    end)
+
     local xstart = { 0, 4, 0, 2, 0, 1, 0 }
     local xstep  = { 8, 8, 4, 4, 2, 2, 1 }
     local ystart = { 0, 0, 4, 0, 2, 0, 1 }
@@ -239,100 +392,142 @@ t[n] = 0 -- not needed
     ----- xmax   = { 8, 4, 4, 2, 2, 1, 1 } -- for block fill
     ----- ymax   = { 8, 8, 4, 4, 2, 2, 1 } -- for block fill
 
-    local function newoutput(width,height)
-        local t = { }
-        for i=1,height*width do
+    local newindex = lua.newindex
+    local newtable = lua.newtable
+
+    local function newoutput(size)
+        if newindex then
+            return newindex(size,0)
+        end
+        local t = newtable and newtable(size,0) or { }
+        for i=1,size do
             t[i] = 0
         end
         return t
     end
 
-    local function expand(t,xsize,ysize,parts,factor) -- we don't compact
-        local o = { }
-        local k = 0
-        local l = ceil(xsize*parts/8) + 1
-        local n = 1
+ -- print(band(rshift(v,4),0x03),extract(v,4,2))
+ -- print(band(rshift(v,6),0x03),extract(v,6,2))
+
+    local function expand(t,xsize,ysize,parts,run,factor,filter)
+        local size  = ysize * (xsize+1) -- a bit of overshoot, needs testing
+        local xline = filter and (run+1) or run
+        local f     = filter and 1 or 0
+        local l     = xline - 1
+        local n     = 1
+        local o     = newoutput(size)
+        local k     = 0
         if factor then
             if parts == 4 then
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,4),0x0F) * 0x11 ; k = k + 1 ; o[k] = band(rshift(v,0),0x0F) * 0x11
+                        if v == 0 then
+                            k = k + 2
+                        else
+                            k = k + 1 ; o[k] = extract(v,4,4) * 0x11
+                            k = k + 1 ; o[k] = extract(v,0,4) * 0x11
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             elseif parts == 2 then
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,6),0x03) * 0x55 ; k = k + 1 ; o[k] = band(rshift(v,4),0x03) * 0x55
-                        k = k + 1 ; o[k] = band(rshift(v,2),0x03) * 0x55 ; k = k + 1 ; o[k] = band(rshift(v,0),0x03) * 0x55
+                        if v == 0 then
+                            k = k + 4
+                        else
+                            k = k + 1 ; o[k] = extract(v,6,2) * 0x55
+                            k = k + 1 ; o[k] = extract(v,4,2) * 0x55
+                            k = k + 1 ; o[k] = extract(v,2,2) * 0x55
+                            k = k + 1 ; o[k] = extract(v,0,2) * 0x55
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             else
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,7),0x01) * 0xFF ; k = k + 1 ; o[k] = band(rshift(v,6),0x01) * 0xFF
-                        k = k + 1 ; o[k] = band(rshift(v,5),0x01) * 0xFF ; k = k + 1 ; o[k] = band(rshift(v,4),0x01) * 0xFF
-                        k = k + 1 ; o[k] = band(rshift(v,3),0x01) * 0xFF ; k = k + 1 ; o[k] = band(rshift(v,2),0x01) * 0xFF
-                        k = k + 1 ; o[k] = band(rshift(v,1),0x01) * 0xFF ; k = k + 1 ; o[k] = band(rshift(v,0),0x01) * 0xFF
+                        if v == 0 then
+                            k = k + 8
+                        else
+                            k = k + 1 ; if band(v,0x80) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,7) * 0xFF
+                            k = k + 1 ; if band(v,0x40) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,6) * 0xFF
+                            k = k + 1 ; if band(v,0x20) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,5) * 0xFF
+                            k = k + 1 ; if band(v,0x10) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,4) * 0xFF
+                            k = k + 1 ; if band(v,0x08) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,3) * 0xFF
+                            k = k + 1 ; if band(v,0x04) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,2) * 0xFF
+                            k = k + 1 ; if band(v,0x02) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,1) * 0xFF
+                            k = k + 1 ; if band(v,0x01) ~= 0 then o[k] = 0xFF end -- o[k] = extract(v,0) * 0xFF
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             end
         else
             if parts == 4 then
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,4),0x0F) ; k = k + 1 ; o[k] = band(rshift(v,0),0x0F)
+                        if v == 0 then
+                            k = k + 2
+                        else
+                            k = k + 1 ; o[k] = extract(v,4,4)
+                            k = k + 1 ; o[k] = extract(v,0,4)
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             elseif parts == 2 then
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,6),0x03) ; k = k + 1 ; o[k] = band(rshift(v,4),0x03)
-                        k = k + 1 ; o[k] = band(rshift(v,2),0x03) ; k = k + 1 ; o[k] = band(rshift(v,0),0x03)
+                        if v == 0 then
+                            k = k + 4
+                        else
+                            k = k + 1 ; o[k] = extract(v,6,2)
+                            k = k + 1 ; o[k] = extract(v,4,2)
+                            k = k + 1 ; o[k] = extract(v,2,2)
+                            k = k + 1 ; o[k] = extract(v,0,2)
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             else
                 for i=1,ysize do
-                    k = k + 1 ; o[k] = t[n]
-                    for j=n+1,n+l do
+                    for j=n+f,n+l do
                         local v = t[j]
-                        k = k + 1 ; o[k] = band(rshift(v,7),0x01) ; k = k + 1 ; o[k] = band(rshift(v,6),0x01)
-                        k = k + 1 ; o[k] = band(rshift(v,5),0x01) ; k = k + 1 ; o[k] = band(rshift(v,4),0x01)
-                        k = k + 1 ; o[k] = band(rshift(v,3),0x01) ; k = k + 1 ; o[k] = band(rshift(v,2),0x01)
-                        k = k + 1 ; o[k] = band(rshift(v,1),0x01) ; k = k + 1 ; o[k] = band(rshift(v,0),0x01)
+                        if v == 0 then
+                            k = k + 8
+                        else
+                            k = k + 1 ; if band(v,0x80) ~= 0 then o[k] = 1 end -- o[k] = extract(v,7)
+                            k = k + 1 ; if band(v,0x40) ~= 0 then o[k] = 1 end -- o[k] = extract(v,6)
+                            k = k + 1 ; if band(v,0x20) ~= 0 then o[k] = 1 end -- o[k] = extract(v,5)
+                            k = k + 1 ; if band(v,0x10) ~= 0 then o[k] = 1 end -- o[k] = extract(v,4)
+                            k = k + 1 ; if band(v,0x08) ~= 0 then o[k] = 1 end -- o[k] = extract(v,3)
+                            k = k + 1 ; if band(v,0x04) ~= 0 then o[k] = 1 end -- o[k] = extract(v,2)
+                            k = k + 1 ; if band(v,0x02) ~= 0 then o[k] = 1 end -- o[k] = extract(v,1)
+                            k = k + 1 ; if band(v,0x01) ~= 0 then o[k] = 1 end -- o[k] = extract(v,0)
+                        end
                     end
-                    k = i * (xsize + 1)
-                    n = n + l
+                    k = i * xsize
+                    n = n + xline
                 end
             end
         end
-        for i=#o,k+1,-1 do
-            o[i] = nil
-        end
-        return o
+        return o, false
     end
 
-    local function deinterlaceXX(s,xsize,ysize,bytes,parts,factor)
-        local output = newoutput(xsize*bytes,ysize)
+    local function deinterlaceXX(s,xsize,ysize,slice,parts,factor,colordepth,colorspace,mask)
+        local filter = false
+        local output = newoutput(xsize*(parts or slice)*ysize) -- todo
         for pass=1,7 do
             local ystart = ystart[pass]
             local ystep  = ystep[pass]
@@ -341,68 +536,102 @@ t[n] = 0 -- not needed
             local nx     = idiv(xsize + xstep - xstart - 1,xstep)
             local ny     = idiv(ysize + ystep - ystart - 1,ystep)
             if nx > 0 and ny > 0 then
-                local input
+                local input, filter
                 if parts then
                     local nxx = ceil(nx*parts/8)
-                    input = readbytetable(s,ny*(nxx+1))
-                    setmetatableindex(input,zero)
-                    decodeall(input,nxx,ny,bytes)
-                    input = expand(input,nx,ny,parts,factor)
+                    input, filter = decodestrip(s,nxx,ny,slice)
+                    input, filter = expand(input,nx,ny,parts,nxx,factor,filter)
                 else
-                    input = readbytetable(s,ny*(nx*bytes+1))
-                    setmetatableindex(input,zero)
-                    decodeall(input,nx,ny,bytes)
+                    input, filter = decodestrip(s,nx,ny,slice)
                 end
-                local l = nx*bytes + 1
-                for i=ny,1,-1 do
-                    remove(input,(i-1)*l+1)
-                end
-                local xstep  = xstep * bytes
-                local xstart = xstart * bytes
-                local xsize  = xsize * bytes
+                local offset = filter and 1 or 0
+                local xstep  = xstep * slice
+                local xstart = xstart * slice
+                local xsize  = xsize * slice
                 local target = ystart * xsize + xstart + 1
                 local ystep  = ystep * xsize
                 local start  = 1
-                local blobs  = bytes - 1
-                for j=0,ny-1 do
-                    local target = target + j * ystep
-                    for i=1,nx do
-                        for i=0,blobs do
-                            output[target+i] = input[start]
-                            start= start + 1
+                local plus   = nx * xstep
+                local step   = plus - xstep
+                if slice == 1 then
+                    for j=0,ny-1 do
+                        start = start + offset
+                        local target = target + j * ystep
+                        for target=target,target+step,xstep do
+                            output[target] = input[start]
+                            start = start + slice
                         end
-                        target = target + xstep
+                    end
+                elseif slice == 2 then
+                    for j=0,ny-1 do
+                        start = start + offset
+                        local target = target + j * ystep
+                        for target=target,target+step,xstep do
+                            output[target]   = input[start]
+                            output[target+1] = input[start+1]
+                            start = start + slice
+                        end
+                    end
+                elseif slice == 3 then
+                    for j=0,ny-1 do
+                        start = start + offset
+                        local target = target + j * ystep
+                        for target=target,target+step,xstep do
+                            output[target]   = input[start]
+                            output[target+1] = input[start+1]
+                            output[target+2] = input[start+2]
+                            start = start + slice
+                        end
+                    end
+                elseif slice == 4 then
+                    for j=0,ny-1 do
+                        start = start + offset
+                        local target = target + j * ystep
+                        for target=target,target+step,xstep do
+                            output[target]   = input[start]
+                            output[target+1] = input[start+1]
+                            output[target+2] = input[start+2]
+                            output[target+3] = input[start+3]
+                            start = start + slice
+                        end
+                    end
+                else
+                    local delta = slice - 1
+                    for j=0,ny-1 do
+                        start = start + offset
+                        local target = target + j * ystep
+                        for target=target,target+step,xstep do
+                            move(input,start,start+delta,target,output)
+                            start = start + slice
+                        end
                     end
                 end
             end
         end
+        -- todo: prune overflow bytes
         return output
     end
 
-    local function deinterlaceYY(s,xsize,ysize,bytes,parts,factor)
+    local function deinterlaceYY(s,xsize,ysize,bytes,parts,factor) -- todo
         local input
         if parts then
             local nxx = ceil(xsize*parts/8)
             input = readbytetable(s,ysize*(nxx+1))
             setmetatableindex(input,zero)
-            decodeall(input,nxx,ysize,bytes)
-            input = expand(input,xsize,ysize,parts,factor)
+            applyfilter(input,nxx,ysize,bytes)
+            input = expand(input,xsize,ysize,parts,nxx,factor,true)
         else
             input = readbytetable(s,ysize*(xsize*bytes+1))
             setmetatableindex(input,zero)
-            decodeall(input,xsize,ysize,bytes)
-        end
-        local l = xsize*bytes + 1
-        local n = 1
-        for i=1,ysize do
-            input[n] = ""
-            n = n + l
+            applyfilter(input,xsize,ysize,bytes)
+            -- we still have filter bytes, already wiped
+            -- wipefilter(input,xsize,ysize)
         end
         return input
     end
 
     local function analyze(colordepth,colorspace,palette,mask)
-        local bytes, parts, factor
+     -- return bytes, parts, factor
         if palette then
             if colordepth == 16 then
                 return 2, false, false
@@ -448,12 +677,12 @@ t[n] = 0 -- not needed
         if bytes then
             content = zlib.decompress(content)
             local s = openstring(content)
-            local r = deinterlaceXX(s,xsize,ysize,bytes,parts,factor)
+            local r = deinterlaceXX(s,xsize,ysize,bytes,parts,factor,colordepth,colorspace,mask)
             return r, parts and 8 or false
         end
     end
 
-    local function decompose(content,xsize,ysize,colordepth,colorspace,palette,mask)
+    local function decompose(content,ysize,xsize,colordepth,colorspace,palette,mask)
         local bytes, parts, factor = analyze(colordepth,colorspace,palette,mask)
         if bytes then
             content = zlib.decompress(content)
@@ -472,156 +701,6 @@ t[n] = 0 -- not needed
     -- pb = abs(p - b) => a + b - c - b => a - c
     -- pc = abs(p - c) => a + b - c - c => a + b - c - c => a - c + b - c => pa + pb
 
-    local function prepareimage(content,xsize,ysize,depth,colorspace,mask)
-        local bpp = (depth == 16 and 2 or 1) * ((colorspace == "DeviceRGB" and 3 or 1) + mask)        local len = bpp * xsize + 1
-        local s   = openstring(content)
-        local t   = readbytetable(s,#content)
-        setmetatableindex(t,zero)
-        return t, bpp, len
-    end
-
-    local function filtermask08(xsize,ysize,t,bpp,len,n)
-        local mask = { }
-        local l = 0
-        local m = len - n
-        for i=1,ysize do
-            for j=n+bpp,n+m,bpp do
-                l = l + 1 ; mask[l] = chars[t[j]] ; t[j] = ""
-            end
-            n = n + len
-        end
-        return concat(mask)
-    end
-
-    local function filtermask16(xsize,ysize,t,bpp,len,n)
-        local mask = { }
-        local l = 0
-        local m = len - n
-        for i=1,ysize do
-            for j=n+bpp-1,n+m-1,bpp do
-                l = l + 1 ; mask[l] = chars[t[j]] ; t[j] = ""
-                j = j + 1
-                l = l + 1 ; mask[l] = chars[t[j]] ; t[j] = ""
-            end
-            n = n + len
-        end
-        return concat(mask)
-    end
-
-    local function decodemask08(content,xsize,ysize,depth,colorspace)
-        local t, bpp, len = prepareimage(content,xsize,ysize,depth,colorspace,1)
-        local bpp2 = mask and (bpp + bpp) or bpp
-        local n = 1
-        local m = len - 1
-        for i=1,ysize do
-            local filter = t[n]
-            if filter == 0 then
-            elseif filter == 1 then
-                for j=n+bpp2,n+m,bpp do
-                    t[j] = (t[j] + t[j-bpp]) % 256
-                end
-            elseif filter == 2 then
-                for j=n+bpp,n+m,bpp do
-                    t[j] = (t[j] + t[j-len]) % 256
-                end
-            elseif filter == 3 then
-                local j = n + bpp
-                t[j] = (t[j] + idiv(t[j-len],2)) % 256
-                for j=n+bpp2,n+m,bpp do
-                    t[j] = (t[j] + idiv(t[j-bpp] + t[j-len],2)) % 256
-                end
-            elseif filter == 4 then
-                local j = n + bpp
-                local p = j - len
-                local b = t[p]
-                if b < 0 then
-                    b = - b
-                end
-                if b > 0 then
-                    t[j] = (t[j] + b) % 256
-                end
-                for j=n+bpp2,n+m,bpp do
-                    local p = j - len
-                    local a = t[j-bpp]
-                    local b = t[p]
-                    local c = t[p-bpp]
-                    local pa = b - c
-                    local pb = a - c
-                    local pc = pa + pb
-                    if pa < 0 then pa = - pa end
-                    if pb < 0 then pb = - pb end
-                    if pc < 0 then pc = - pc end
-                    t[j] = (t[j] + ((pa <= pb and pa <= pc and a) or (pb <= pc and b) or c)) % 256
-                end
-            end
-            n = n + len
-        end
-        local mask = filtermask08(xsize,ysize,t,bpp,len,1)
-        return convert(t), mask
-    end
-
-    local function decodemask16(content,xsize,ysize,depth,colorspace)
-        local t, bpp, len = prepareimage(content,xsize,ysize,depth,colorspace,1)
-        local bpp2 = bpp + bpp
-        local n = 1
-        local m = len - 1
-        for i=1,ysize do
-            local filter = t[n]
-            if filter == 0 then
-            elseif filter == 1 then
-                for j=n+bpp2,n+m,bpp do
-                    local k = j - 1
-                    t[j] = (t[j] + t[j-bpp]) % 256
-                    t[k] = (t[k] + t[k-bpp]) % 256
-                end
-            elseif filter == 2 then
-                for j=n+bpp,n+m,bpp do
-                    local k = j - 1
-                    t[j] = (t[j] + t[j-len]) % 256
-                    t[k] = (t[k] + t[k-len]) % 256
-                end
-            elseif filter == 3 then
-                local j = n + bpp
-                local k = j - 1
-                t[j] = (t[j] + idiv(t[j-len],2)) % 256
-                t[k] = (t[k] + idiv(t[k-len],2)) % 256
-                for j=n+bpp2,n+m,bpp do
-                    local k = j - 1
-                    t[j] = (t[j] + idiv(t[j-bpp] + t[j-len],2)) % 256
-                    t[k] = (t[k] + idiv(t[k-bpp] + t[k-len],2)) % 256
-                end
-            elseif filter == 4 then
-                for i=-1,0 do
-                    local j = n + bpp + i
-                    local p = j - len
-                    local b = t[p]
-                    if b < 0 then
-                        b = - b
-                    end
-                    if b > 0 then
-                        t[j] = (t[j] + b) % 256
-                    end
-                    for j=n+i+bpp2,n+i+m,bpp do
-                        local p = j - len
-                        local a = t[j-bpp]
-                        local b = t[p]
-                        local c = t[p-bpp]
-                        local pa = b - c
-                        local pb = a - c
-                        local pc = pa + pb
-                        if pa < 0 then pa = - pa end
-                        if pb < 0 then pb = - pb end
-                        if pc < 0 then pc = - pc end
-                        t[j] = (t[j] + ((pa <= pb and pa <= pc and a) or (pb <= pc and b) or c)) % 256
-                    end
-                end
-            end
-            n = n + len
-        end
-        local mask = filtermask16(xsize,ysize,t,bpp,len,1)
-        return convert(t), mask
-    end
-
     local function full(t,k) local v = "\xFF" t[k] = v return v end
 
     local function create(content,palette,transparent,xsize,ysize,colordepth,colorspace)
@@ -638,7 +717,7 @@ t[n] = 0 -- not needed
             local c = zlib.decompress(content)
             local s = openstring(c)
             --
-            local o = { }
+            local o = { } -- create
             local len = ceil(xsize*colordepth/8) + 1
             local m = len - 1
             local u = setmetatableindex(zero)
@@ -694,28 +773,28 @@ t[n] = 0 -- not needed
                 elseif colordepth == 4 then
                     for j=2,len do
                         local v = t[j]
-                        k = k + 1 ; o[k] = r[band(rshift(v,4),0x0F)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,0),0x0F)]
+                        k = k + 1 ; o[k] = r[extract(v,4,4)]
+                        k = k + 1 ; o[k] = r[extract(v,0,4)]
                     end
                 elseif colordepth == 2 then
                     for j=2,len do
                         local v = t[j]
-                        k = k + 1 ; o[k] = r[band(rshift(v,6),0x03)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,4),0x03)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,2),0x03)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,0),0x03)]
+                        k = k + 1 ; o[k] = r[extract(v,6,2)]
+                        k = k + 1 ; o[k] = r[extract(v,4,2)]
+                        k = k + 1 ; o[k] = r[extract(v,2,2)]
+                        k = k + 1 ; o[k] = r[extract(v,0,2)]
                     end
                 else
                     for j=2,len do
                         local v = t[j]
-                        k = k + 1 ; o[k] = r[band(rshift(v,7),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,6),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,5),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,4),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,3),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,2),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,2),0x01)]
-                        k = k + 1 ; o[k] = r[band(rshift(v,1),0x01)]
+                        k = k + 1 ; o[k] = r[extract(v,7,1)]
+                        k = k + 1 ; o[k] = r[extract(v,6,1)]
+                        k = k + 1 ; o[k] = r[extract(v,5,1)]
+                        k = k + 1 ; o[k] = r[extract(v,4,1)]
+                        k = k + 1 ; o[k] = r[extract(v,3,1)]
+                        k = k + 1 ; o[k] = r[extract(v,2,1)]
+                        k = k + 1 ; o[k] = r[extract(v,1,1)]
+                        k = k + 1 ; o[k] = r[extract(v,0,1)]
                     end
                 end
                 u = t
@@ -843,6 +922,7 @@ t[n] = 0 -- not needed
             end
         end
         --
+-- inspect(specification)
         if interlace then
             local r, p = deinterlace(content,xsize,ysize,colordepth,colorspace,palette,mask)
             if not r then
@@ -852,35 +932,26 @@ t[n] = 0 -- not needed
                 colordepth = p
             end
             if mask then
-                local bpp = (colordepth == 16 and 2 or 1) * ((colorspace == "DeviceRGB" and 3 or 1) + 1)
-                local len = bpp * xsize -- + 1
-                if colordepth == 8 then -- bpp == 1
-                    mask = filtermask08(xsize,ysize,r,bpp,len,0)
-                elseif colordepth == 16 then -- bpp == 2
-                    mask = filtermask16(xsize,ysize,r,bpp,len,0)
-                else
+                if not (colordepth == 8 or colordepth == 16) then
                     report_png("mask can't be split from the image")
                     return
                 end
+                content, mask = filtermask(r,xsize,ysize,colordepth,colorspace,false)
+            else
+                content = convert(r) -- can be in deinterlace if needed
             end
-            decode  = true
-            content = convert(r)
             content = zlib.compress(content)
+            decode  = true
         elseif mask then
-            local decoder
-            if colordepth == 8 then
-                decoder = decodemask08
-            elseif colordepth == 16 then
-                decoder = decodemask16
-            end
-            if not decoder then
+            if not (colordepth == 8 or colordepth == 16) then
                 report_png("mask can't be split from the image")
                 return
             end
             content = zlib.decompress(content)
-            content, mask = decoder(content,xsize,ysize,colordepth,colorspace)
+            content, mask = decodemask(content,xsize,ysize,colordepth,colorspace)
             content = zlib.compress(content)
-            decode  = false
+         -- decode  = false
+            decode  = true -- we don't copy the filter byte
         elseif transparent then
             if palette then
                 mask = create(content,palette,transparent,xsize,ysize,colordepth,colorspace)
@@ -888,7 +959,7 @@ t[n] = 0 -- not needed
                 pallette = false
             end
         elseif decode then
-            local r, p = decompose(content,xsize,ysize,colordepth,colorspace,palette)
+            local r, p = decompose(content,ysize,xsize,colordepth,colorspace,palette)
             if not r then
                 return
             end
@@ -1050,3 +1121,26 @@ do
     end
 
 end
+
+-- local function validcompression(data)
+--     local d  = utilities.streams.openstring(data)
+--     local b1 = utilities.streams.readbyte(d)
+--     local b2 = utilities.streams.readbyte(d)
+--     print(b1,b2)
+--     if (b1 * 256 + b2) % 31 ~= 0 then
+--         return false, "no zlib compressed file"
+--     end
+--     local method = band(b1,15)
+--     if method ~= 8 then
+--         return false, "method 8 expected"
+--     end
+--     local detail = band(rshift(b1,4),15)
+--     if detail > 7 then
+--         return false, "window 32 expected"
+--     end
+--     local preset = band(rshift(b2,5),1)
+--     if preset ~= 0 then
+--         return false, "unexpected preset dictionary"
+--     end
+--     return true
+-- end

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-properties'] = {
     license   = "see context related readme files"
 }
 
+if not context then return end
+
 local next, type, tonumber, select = next, type, tonumber, select
 local byte, find, formatters = string.byte, string.find, string.formatters
 local utfchar = utf.char

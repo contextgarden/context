@@ -1280,7 +1280,7 @@ if img then do
              -- image attributes
                 FormType       = 1,
                 BBox           = pageinfo.cropbox,
-             -- MetaData       = copy(xref,copied,root,"MetaData"),
+             -- Metadata       = copy(xref,copied,root,"Metadata"),
              -- Group          = copy(xref,copied,page,"Group"),
              -- LastModified   = copy(xref,copied,page,"LastModified"),
              -- Metadata       = copy(xref,copied,page,"Metadata"),

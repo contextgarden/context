@@ -1287,6 +1287,8 @@ function characters.lower (str) return str and lpegmatch(utf8lower,str) or "" en
 function characters.upper (str) return str and lpegmatch(utf8upper,str) or "" end
 function characters.shaped(str) return str and lpegmatch(utf8shape,str) or "" end
 
+lpeg.setutfcasers(characters.lower,characters.upper)
+
 -- local str = [[
 --     ÀÁÂÃÄÅàáâãäå àáâãäåàáâãäå ÀÁÂÃÄÅÀÁÂÃÄÅ AAAAAAaaaaaa
 --     ÆÇæç         æçæç         ÆÇÆÇ         AECaec

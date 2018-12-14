@@ -2460,52 +2460,56 @@ end
 
 -- parameters
 
-local function setatt(id,name,value)
-    local e = getid(id)
-    if e then
-        local a = e.at
-        if a then
-            a[name] = value
-        else
-            e.at = { [name] = value }
+do
+
+    local function setatt(id,name,value)
+        local e = getid(id)
+        if e then
+            local a = e.at
+            if a then
+                a[name] = value
+            else
+                e.at = { [name] = value }
+            end
         end
     end
-end
 
-local function setpar(id,name,value)
-    local e = getid(id)
-    if e then
-        local p = e.pa
-        if p then
-            p[name] = value
-        else
-            e.pa = { [name] = value }
+    local function setpar(id,name,value)
+        local e = getid(id)
+        if e then
+            local p = e.pa
+            if p then
+                p[name] = value
+            else
+                e.pa = { [name] = value }
+            end
         end
     end
-end
 
-lxml.setatt = setatt
-lxml.setpar = setpar
+    lxml.setatt = setatt
+    lxml.setpar = setpar
 
-function lxml.setattribute(id,pattern,name,value)
-    local collected = xmlapplylpath(getid(id),pattern)
-    if collected then
-        for i=1,#collected do
-            setatt(collected[i],name,value)
+    function lxml.setattribute(id,pattern,name,value)
+        local collected = xmlapplylpath(getid(id),pattern)
+        if collected then
+            for i=1,#collected do
+                setatt(collected[i],name,value)
+            end
         end
     end
-end
 
-function lxml.setparameter(id,pattern,name,value)
-    local collected = xmlapplylpath(getid(id),pattern)
-    if collected then
-        for i=1,#collected do
-            setpar(collected[i],name,value)
+    function lxml.setparameter(id,pattern,name,value)
+        local collected = xmlapplylpath(getid(id),pattern)
+        if collected then
+            for i=1,#collected do
+                setpar(collected[i],name,value)
+            end
         end
     end
-end
 
-lxml.setparam = lxml.setparameter
+    lxml.setparam = lxml.setparameter
+
+end
 
 -- relatively new:
 
@@ -2734,4 +2738,60 @@ function texfinalizers.xml(collected,name,setup)
     name = "lmx:" .. name
     buffers.assign(name,strip(xmltostring(root)))
     context.xmlprocessbuffer(name,name,setup or (name..":setup"))
+end
+
+-- experiment
+
+do
+
+    local xmltoelement = xml.toelement
+    local xmlreindex   = xml.reindex
+
+    function lxml.replace(root,pattern,whatever)
+        if type(root) == "string" then
+            root = lxml.getid(root)
+        end
+        local collected = xmlapplylpath(root,pattern)
+        if collected then
+            local isstring = type(whatever) == "string"
+            for c=1,#collected do
+                local e = collected[c]
+                local p = e.__p__
+                if p then
+                    local d = p.dt
+                    local n = e.ni
+                    local w = isstring and whatever or whatever(e)
+                    if w then
+                        local t = xmltoelement(w,root).dt
+                        if t then
+                            t.__p__ = p
+                            if type(t) == "table" then
+                                local t1 = t[1]
+                                d[n] = t1
+                                t1.at.type = e.at.type or t1.at.type
+                                for i=2,#t do
+                                    n = n + 1
+                                    insert(d,n,t[i])
+                                end
+                            else
+                                d[n] = t
+                            end
+                            xmlreindex(d) -- probably not needed
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- function document.mess_around(root)
+    --     lxml.replace(
+    --         root,
+    --         "p[@variant='foo']",
+    --         function(c)
+    --             return (string.gsub(tostring(c),"foo","<bar>%1</bar>"))
+    --         end
+    --     )
+    -- end
+
 end

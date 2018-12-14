@@ -140,6 +140,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='color' value='barevne'/>
 		<cd:variable name='column' value='column'/>
 		<cd:variable name='columns' value='sloupce'/>

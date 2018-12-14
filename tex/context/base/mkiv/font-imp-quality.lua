@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-quality'] = {
     license   = "see context related readme files"
 }
 
+if not context then return end
+
 local next, type, tonumber = next, type, tonumber
 local byte = string.byte
 local insert = table.insert

@@ -347,6 +347,8 @@ directives.register("system.showerror", lmx.overloaderror)
 --     trace_calls(n)
 -- end) -- indirect is needed for nilling
 
+-- I'll make this obsolete soon.
+
 local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
 
 directives.register("system.editor",function(v)

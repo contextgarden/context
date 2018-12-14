@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['font-imp-notused'] = {
     license   = "see context related readme files"
 }
 
+if not context then return end
+
 -- local next = next
 -- local utfbyte = utf.byte
 --

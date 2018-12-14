@@ -122,7 +122,7 @@ local function showglyphshape(specification)
                             l[i] = formatters["((%s,%s) shifted (%s,%s))"](xsign*k*factor,ysign*h*factor,dx,dy)
                         end
                         context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[1].kern*factor,lly,dx,dy,l[1])
-                        context("draw laddered (%..t) withcolor .5white ;",l)
+                        context("draw laddered (%..t) withcolor .5white ;",l) -- why not "--"
                         context("draw ((%s,%s) shifted (%s,%s))--%s dashed (evenly scaled 1/16) withcolor .5white;", xsign*v[#v].kern*factor,ury,dx,dy,l[#l])
                         for i=1,n do
                             context("draw %s withcolor blue withpen pencircle scaled 2lw ;",l[i])
