@@ -32,7 +32,10 @@
 
         <cd:command name="setuppagegrid" level="style" category="layout" file="page-cst.mkiv">
             <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:keywords list="yes" optional="yes">
+                    <cd:constant type="cd:name"/>
+                    <cd:constant type="cd:number" prefix="cd:name" method="range"/>
+                </cd:keywords>
                 <cd:assignments list="yes">
                     <cd:parameter name="n">
                         <cd:constant type="cd:number"/>
@@ -75,7 +78,10 @@
 
     <cd:command name="setupcolumnset" level="style" category="layout" file="page-cst.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number" prefix="cd:name" method="range"/>
+            </cd:keywords>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
@@ -86,6 +92,7 @@
                 <cd:parameter name="nright">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <!-- begin of values which can be set for each column -->
                 <cd:parameter name="width">
                     <cd:constant type="cd:dimension"/>
                     <cd:constant type="auto"/>
@@ -93,6 +100,7 @@
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <!-- end of values which can be set for each column -->
                 <cd:parameter name="lines">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>

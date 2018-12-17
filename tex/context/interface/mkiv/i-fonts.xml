@@ -340,7 +340,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subtractfeature" variant="direct" clevel="style" ategory="fonts" file="font-fea.mkvi">
+    <cd:command name="subtractfeature" variant="direct" level="style" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
@@ -965,7 +965,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="switchstyleonly" clevel="style" ategory="fonts" file="font-ini.mkiv">
+    <cd:command name="switchstyleonly" level="style" category="fonts" file="font-ini.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="rm"/>

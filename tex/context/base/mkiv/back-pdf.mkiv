@@ -33,7 +33,13 @@
 \registerctxluafile{lpdf-tag}{}
 \registerctxluafile{lpdf-fmt}{}
 \registerctxluafile{lpdf-pde}{}
-\registerctxluafile{lpdf-img}{optimize}
+
+\doifelsefileexists {lpdf-emb.lua} {
+    \registerctxluafile{lpdf-img}{optimize}
+} {
+    % nothing
+}
+
 \registerctxluafile{lpdf-epa}{}
 
 \doifelsefileexists {lpdf-emb.lua} {

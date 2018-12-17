@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnspan" type="environment" category="columns" file="page-mul.mkiv">
+    <cd:command name="columnspan" type="environment" level="document" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcolumnspan"/>

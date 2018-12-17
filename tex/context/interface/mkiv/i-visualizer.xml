@@ -112,19 +112,19 @@
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="makeup" default="yes"/>
-                <cd:constant type="all"/>
+                <cd:constant type="reset"/>
                 <cd:constant type="boxes"/>
-                <cd:constant type="line"/>
-                <cd:constant type="glyph"/>
-                <cd:constant type="fontkern"/>
+                <cd:constant type="all"/>
                 <cd:constant type="hbox"/>
                 <cd:constant type="vbox"/>
                 <cd:constant type="vtop"/>
                 <cd:constant type="kern"/>
                 <cd:constant type="glue"/>
                 <cd:constant type="penalty"/>
+                <cd:constant type="fontkern"/>
                 <cd:constant type="strut"/>
                 <cd:constant type="whatsit"/>
+                <cd:constant type="glyph"/>
                 <cd:constant type="simple"/>
                 <cd:constant type="simplehbox"/>
                 <cd:constant type="simplevbox"/>
@@ -133,7 +133,11 @@
                 <cd:constant type="math"/>
                 <cd:constant type="italic"/>
                 <cd:constant type="origin"/>
-                <cd:constant type="reset"/>
+                <cd:constant type="discretionary"/>
+                <cd:constant type="expansion"/>
+                <cd:constant type="line"/>
+                <cd:constant type="space"/>
+                <cd:constant type="depth"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

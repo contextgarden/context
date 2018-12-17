@@ -22,6 +22,11 @@
 
 \registerctxluafile{grph-img}{}
 \registerctxluafile{grph-inc}{}
+
+\doifelsefileexists {grph-chk.lua} {
+    \registerctxluafile{grph-chk}{}
+} {}
+
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}
 \registerctxluafile{grph-mem}{}

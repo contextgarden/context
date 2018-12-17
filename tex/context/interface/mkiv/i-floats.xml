@@ -206,6 +206,7 @@
                     <cd:constant type="no"/>
                 </cd:parameter>
                 <!-- end root only -->
+                <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -495,6 +496,7 @@
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:inherit name="setupcounter"/>
+                <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -504,6 +506,29 @@
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcaption"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="definefloatframed" level="style" category="structure background" file="strc-flt.mkvi">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setupfloatframed"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupfloatframed" level="style" category="structure background" file="strc-flt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -974,5 +999,7 @@
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="splittext" type="environment" level="document" category="structure" file="tabl-tsp.mkiv"/>
 
 </cd:interface>

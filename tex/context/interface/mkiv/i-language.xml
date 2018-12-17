@@ -64,6 +64,7 @@
                 </cd:parameter>
                 <cd:parameter name="font">
                     <cd:constant type="auto"/>
+                    <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="bidi">
                     <cd:constant type="left"/>
@@ -172,6 +173,12 @@
     </cd:command>
 
     <cd:command name="language" level="document" category="language" file="lang-ini.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-language"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="language" type="environment" level="document" category="language" file="lang-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-language"/>
         </cd:arguments>

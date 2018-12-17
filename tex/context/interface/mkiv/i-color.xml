@@ -263,7 +263,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="transparent" type="environment" category="colors" file="colo-ini.mkiv">
+    <cd:command name="transparent" type="environment" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-color"/>
         </cd:arguments>
@@ -366,7 +366,7 @@
 
     <cd:command name="color" type="environment" begin="save" end="restore" level="system" category="colors" file="colo-ini.mkiv"/>
 
-    <cd:command name="definepalet" category="colors" file="colo-ini.mkiv">
+    <cd:command name="definepalet" level="style" category="colors" file="colo-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes">

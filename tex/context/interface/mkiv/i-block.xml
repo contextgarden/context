@@ -63,6 +63,7 @@
                 <cd:constant type="-"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
+            <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -116,6 +117,12 @@
                     <cd:constant type="cd:section"/>
                 </cd:parameter>
             </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blockuservariable" level="document" category="structure" file="strc-blk.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 

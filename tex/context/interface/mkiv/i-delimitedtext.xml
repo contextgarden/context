@@ -16,7 +16,10 @@
 
     <cd:command name="setupdelimitedtext" level="style" category="language" file="typo-del.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number" prefix="cd:name" method="range"/>
+            </cd:keywords>
             <cd:assignments list="yes">
                 <cd:parameter name="before">
                     <cd:constant type="cd:command"/>

@@ -28,4 +28,35 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="definetokenlist" level="style" file="toks-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tokenlist" type="environment" level="style" file="toks-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="gettokenlist" level="style" file="toks-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resettokenlist" level="style" file="toks-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="settokenlist" level="style" file="toks-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

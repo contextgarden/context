@@ -57,21 +57,25 @@
                 <cd:parameter name="topframe">
                     <cd:constant type="on" default="yes"/>
                     <cd:constant type="off"/>
+                    <cd:constant type="small"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="bottomframe">
                     <cd:constant type="on" default="yes"/>
                     <cd:constant type="off"/>
+                    <cd:constant type="small"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="leftframe">
                     <cd:constant type="on" default="yes"/>
                     <cd:constant type="off"/>
+                    <cd:constant type="small"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="rightframe">
                     <cd:constant type="on" default="yes"/>
                     <cd:constant type="off"/>
+                    <cd:constant type="small"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="region">
@@ -88,8 +92,9 @@
                     <cd:constant type="on" default="yes"/>
                     <cd:constant type="off"/>
                     <cd:constant type="overlay"/>
-                    <cd:constant type="none"/>
+                    <cd:constant type="small"/>
                     <cd:constant type="closed"/>
+                    <cd:constant type="none"/>
                 </cd:parameter>
                 <cd:parameter name="background">
                     <cd:resolve name="value-background"/>
@@ -131,6 +136,9 @@
                     <cd:constant type="fit"/>
                     <cd:constant type="max"/>
                     <cd:constant type="broad" default="yes"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="minheight">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="align">
@@ -625,6 +633,14 @@
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelseframed" level="system" category="background rules">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 

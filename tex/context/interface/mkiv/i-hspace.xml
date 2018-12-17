@@ -35,6 +35,7 @@
                 <cd:constant type="quotation"/>
                 <cd:constant type="sentence"/>
                 <cd:constant type="intersentence"/>
+                <cd:constant type="final"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
         </cd:arguments>

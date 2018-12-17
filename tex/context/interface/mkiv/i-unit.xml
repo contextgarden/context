@@ -125,4 +125,16 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="spaceddigitsmethod" level="style" category="symbols" file="core-con.mkiv"/>   <!-- alternative methods   : 1 default, 2 and 3 only when > 4 -->
+
+    <cd:command name="spaceddigitssymbol" level="style" category="symbols" file="core-con.mkiv"/>   <!-- extra splitter symbol : {,} -->
+
+    <cd:command name="spaceddigitsseparator" level="style" category="symbols" file="core-con.mkiv"/><!-- separator symbol      : {\Uchar{"2008}} -->
+
+    <cd:command name="spaceddigits" level="document" category="symbols" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

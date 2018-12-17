@@ -101,7 +101,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buffer" type="environment" generated="yes" variant="instance" lcategory="buffer" evel="document" file="buff-ini.mkiv">
+    <cd:command name="buffer" type="environment" generated="yes" variant="instance" category="buffer" level="document" file="buff-ini.mkiv">
         <cd:sequence>
             <cd:instance value="buffer"/>
         </cd:sequence>

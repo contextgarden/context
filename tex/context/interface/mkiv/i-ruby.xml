@@ -22,6 +22,7 @@
                     <cd:constant type="top" default="yes"/>
                     <cd:constant type="left"/>
                     <cd:constant type="right"/>
+                    <cd:constant type="none"/>
                 </cd:parameter>
                 <cd:parameter name="align">
                     <cd:constant type="auto"/>

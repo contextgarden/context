@@ -227,6 +227,7 @@
     <cd:interfacefile filename="i-twopassdata.xml"/>
     <cd:interfacefile filename="i-typography.xml"/>
     <cd:interfacefile filename="i-unit.xml"/>
+    <cd:interfacefile filename="i-userdata.xml"/>
     <cd:interfacefile filename="i-variables.xml"/>
     <cd:interfacefile filename="i-verbatim.xml"/>
     <cd:interfacefile filename="i-version.xml"/>

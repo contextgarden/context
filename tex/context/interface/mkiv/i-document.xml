@@ -218,4 +218,34 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="doifelsedocumentvariable" level="style" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifdocumentvariableelse" level="style" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifdocumentvariable" level="style" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifnotdocumentvariable" level="style" category="structure" file="file-job.mkvi">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

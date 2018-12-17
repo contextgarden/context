@@ -39,7 +39,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="unpacked" type="environment" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="unpacked" type="environment" level="document" category="whitespace" file="spac-ver.mkiv"/>
 
     <cd:command name="linecorrection" type="environment" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
@@ -50,7 +50,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="locallinecorrection" type="environment" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="locallinecorrection" type="environment" level="document" category="whitespace" file="spac-ver.mkiv">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="blank"/>

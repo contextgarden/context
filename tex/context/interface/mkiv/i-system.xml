@@ -1840,6 +1840,22 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="doifelseassignmentcs" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifassignmentelsecs" level="system" file="syst-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:csname/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="convertargument" level="system" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="string-text"/>

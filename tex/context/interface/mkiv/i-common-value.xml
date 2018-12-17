@@ -315,6 +315,41 @@
         <cd:constant type="de-AT"/>
         <cd:constant type="ru-iso9"/>
         <cd:constant type="ocs-scn"/>
+        <!--
+            <cd:constant type="en"/>
+            <cd:constant type="nl"/>
+            <cd:constant type="fr"/>
+            <cd:constant type="de"/>
+            <cd:constant type="deo"/>
+            <cd:constant type="fi"/>
+            <cd:constant type="sl"/>
+            <cd:constant type="ru"/>
+            <cd:constant type="uk"/>
+            <cd:constant type="be"/>
+            <cd:constant type="bg"/>
+            <cd:constant type="cu"/>
+            <cd:constant type="pl"/>
+            <cd:constant type="cz"/>
+            <cd:constant type="cs"/>
+            <cd:constant type="sk"/>
+            <cd:constant type="hr"/>
+            <cd:constant type="sr"/>
+            <cd:constant type="no"/>
+            <cd:constant type="da"/>
+            <cd:constant type="sv"/>
+            <cd:constant type="is"/>
+            <cd:constant type="gr"/>
+            <cd:constant type="la"/>
+            <cd:constant type="it"/>
+            <cd:constant type="ro"/>
+            <cd:constant type="es"/>
+            <cd:constant type="pt"/>
+            <cd:constant type="lt"/>
+            <cd:constant type="hu"/>
+            <cd:constant type="et"/>
+            <cd:constant type="kr"/>
+            <cd:constant type="jp"/>
+        -->
         <cd:constant type="cd:language"/>
     </cd:define>
 

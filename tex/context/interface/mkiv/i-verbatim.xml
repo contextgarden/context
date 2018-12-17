@@ -321,7 +321,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetypingfile" category="verbatim" level="system conditional" file="buff-ver.mkiv">
+    <cd:command name="doifelsetypingfile" category="verbatim conditional" level="system" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -329,7 +329,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftypingfileelse" category="verbatim" level="system conditional" file="buff-ver.mkiv">
+    <cd:command name="doiftypingfileelse" category="verbatim conditional" level="system" file="buff-ver.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
