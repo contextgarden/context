@@ -20,7 +20,10 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\registerctxluafile{grph-img}{}
+\doifelsefileexists {grph-img.lua} {
+    \registerctxluafile{grph-img}{}
+} {}
+
 \registerctxluafile{grph-inc}{}
 
 \doifelsefileexists {grph-chk.lua} {
