@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.12.18 10:18}
+\edef\contextversion{2018.12.19 19:22}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -133,6 +133,8 @@
 \loadmkvifile{file-ini}
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
+
+\doifelsefileexists{core-lmt.mkiv}{\loadmarkfile{core-lmt}}{}
 
 \loadmarkfile{supp-dir}
 

@@ -123,6 +123,7 @@
 \definesystemattribute[mathbidi]       [public]
 \definesystemattribute[mathdomain]     [public]
 \definesystemattribute[mathcollapsing] [public]
+\definesystemattribute[mathunstack]    [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -2866,6 +2867,20 @@
 %     \let\f\math_f
 %     \let\b\math_b
 % \to \everymathematics
+
+%D Experiment
+
+\unexpanded\def\math_scripts_stack
+  {\attribute\mathunstackattribute\attributeunsetvalue}
+
+\unexpanded\def\math_scripts_unstack
+  {\clf_enablescriptunstacking
+   \attribute\mathunstackattribute\plusone}
+
+\appendtoks
+    \let\stackscripts  \math_scripts_stack
+    \let\unstackscripts\math_scripts_unstack
+\to \everymathematics
 
 \protect \endinput
 

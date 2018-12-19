@@ -95,6 +95,36 @@ which gives:
 
 \stopsection
 
+\startsection [title=Scripts]
+
+With \UNICODE\ providing math symbols and a limited set of super- and subscripts,
+it made sense to add yet another feature. The scripts were already supported for
+a long time, but at some point on the mailing list sequential scripts were
+mentioned. So here is an example of both (some fonts, like the one used for
+verbatim, don't have all symbols but you get the idea anyway):
+
+\startbuffer
+\startformula
+    𝑷₂₀(0), ∀²𝑥⁰⁺²₂₀: 𝑷₂₀(𝑥⁰⁺²₂₀) ⇒ 𝑷₂₀(s(𝑥⁰⁺²₂₀)) ⊢ ∀¹𝑦⁰⁺¹₂₀ 𝑷₂₀(𝑦⁰⁺¹₂₀)
+\stopformula
+
+\startformula
+    \unstackscripts
+    𝑷₂₀(0), ∀²𝑥⁰⁺²₂₀: 𝑷₂₀(𝑥⁰⁺²₂₀) ⇒ 𝑷₂₀(s(𝑥⁰⁺²₂₀)) ⊢ ∀¹𝑦⁰⁺¹₂₀ 𝑷₂₀(𝑦⁰⁺¹₂₀)
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+which renders the clueless formulas:
+
+\getbuffer
+
+The \type {\unstackscripts} macro triggers the unstacking of super and
+subscripts.
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent
