@@ -24,7 +24,6 @@ local is_node     = nodes.is_node
 
 local nodecodes   = nodes.nodecodes
 local subtcodes   = nodes.codes
-local noadcodes   = nodes.noadcodes
 local getfields   = nodes.fields
 
 local tonode      = nodes.tonode

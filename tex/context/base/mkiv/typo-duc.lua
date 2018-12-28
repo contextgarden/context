@@ -7,8 +7,6 @@ if not modules then modules = { } end modules ['typo-duc'] = {
     comment   = "Unicode bidi (sort of) variant c",
 }
 
--- Will be replaced by typo-duc-new.lua!
-
 -- This is a follow up on typo-uda which itself is a follow up on t-bidi by Khaled Hosny which
 -- in turn is based on minibidi.c from Arabeyes. This is a further optimizations, as well as
 -- an update on some recent unicode bidi developments. There is (and will) also be more control
@@ -58,6 +56,7 @@ local mirrordata          = characters.mirrors
 local textclassdata       = characters.textclasses
 
 local nuts                = nodes.nuts
+local tonut               = nuts.tonut
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -66,11 +65,11 @@ local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local getprop             = nuts.getprop
-local getdir              = nuts.getdir
+local getdirection        = nuts.getdirection
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
-local setdir              = nuts.setdir
+local setdirection        = nuts.setdirection
 local setattrlist         = nuts.setattrlist
 
 local properties          = nodes.properties.data
@@ -80,10 +79,10 @@ local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 
 local nodepool            = nuts.pool
-local new_textdir         = nodepool.textdir
+local new_direction       = nodepool.direction
 
 local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
+local gluecodes           = nodes.gluecodes
 
 local glyph_code          = nodecodes.glyph
 local glue_code           = nodecodes.glue
@@ -92,7 +91,12 @@ local vlist_code          = nodecodes.vlist
 local math_code           = nodecodes.math
 local dir_code            = nodecodes.dir
 local localpar_code       = nodecodes.localpar
-local parfillskip_code    = skipcodes.parfillskip
+
+local parfillskip_code    = gluecodes.parfillskip
+
+local dirvalues           = nodes.dirvalues
+local lefttoright_code    = dirvalues.lefttoright
+local righttoleft_code    = dirvalues.righttoleft
 
 local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
 
@@ -290,13 +294,11 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             list[size] = setmetatable({ },mt_space)
             current    = getnext(current)
         elseif id == dir_code then
-            local dir = getdir(current)
-            if dir == "+TLT" then
-                list[size] = setmetatable({ },mt_lre)
-            elseif dir == "+TRT" then
-                list[size] = setmetatable({ },mt_rle)
-            elseif dir == "-TLT" or dir == "-TRT" then
-                list[size] = setmetatable({ },mt_pdf)
+            local dir, pop = getdirection(current)
+            if dir == lefttoright_code then
+                list[size] = setmetatable({ },swap and mt_pdf or mt_lre)
+            elseif dir == righttoleft_code then
+                list[size] = setmetatable({ },swap and mt_pdf or mt_rle)
             else
                 list[size] = setmetatable({ id = id },mt_object)
             end
@@ -405,25 +407,31 @@ end
 -- the action
 
 local function get_baselevel(head,list,size,direction)
-    if not direction and getid(head) == localpar_code then
-        direction = getdir(head)
+    if direction == lefttoright_code or direction == righttoleft_code then
+        return direction, true
+    elseif getid(head) == localpar_code then
+        direction = getdirection(head)
+        if direction == righttoleft_code or direction == lefttoright_code then
+            return direction, true
+        end
     end
-    if direction == "TRT" then
-        return 1, "TRT", true
-    elseif direction == "TLT" then
-        return 0, "TLT", true
+    -- for old times sake we we handle strings too
+    if direction == "TLT" then
+        return righttoleft_code, true
+    elseif direction == "TRT" then
+        return lefttoright_code, true
     end
     -- P2, P3:
     for i=1,size do
         local entry     = list[i]
         local direction = entry.direction
         if direction == "r" or direction == "al" then -- and an ?
-            return 1, "TRT", true
+            return righttoleft_code, true
         elseif direction == "l" then
-            return 0, "TLT", true
+            return lefttoright_code, true
         end
     end
-    return 0, "TLT", false
+    return lefttoright_code, false
 end
 
 local function resolve_explicit(list,size,baselevel)
@@ -724,33 +732,6 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     end
 end
 
--- local function resolve_implicit(list,size,start,limit,orderbefore,orderafter)
---     -- I1
---     for i=start,limit do
---         local entry = list[i]
---         local level = entry.level
---         if level % 2 ~= 1 then -- not odd(level)
---             local direction = entry.direction
---             if direction == "r" then
---                 entry.level = level + 1
---             elseif direction == "an" or direction == "en" then
---                 entry.level = level + 2
---             end
---         end
---     end
---     -- I2
---     for i=start,limit do
---         local entry = list[i]
---         local level = entry.level
---         if level % 2 == 1 then -- odd(level)
---             local direction = entry.direction
---             if direction == "l" or direction == "en" or direction == "an" then
---                 entry.level = level + 1
---             end
---         end
---     end
--- end
-
 local function resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
     for i=start,limit do
         local entry     = list[i]
@@ -850,60 +831,6 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
     end
 end
 
--- local function insert_dir_points(list,size)
---     -- L2, but no actual reversion is done, we simply annotate where
---     -- begindir/endddir node will be inserted.
---     local maxlevel = 0
---     local finaldir = false
---     local toggle   = true
---     for i=1,size do
---         local level = list[i].level
---         if level > maxlevel then
---             maxlevel = level
---         end
---     end
---     for level=0,maxlevel do
---         local started  -- = false
---         local begindir -- = nil
---         local enddir   -- = nil
---         local prev     -- = nil
---         if toggle then
---             begindir = "+TLT"
---             enddir   = "-TLT"
---             toggle   = false
---         else
---             begindir = "+TRT"
---             enddir   = "-TRT"
---             toggle   = true
---         end
---         for i=1,size do
---             local entry = list[i]
---             if entry.level >= level then
---                 if not started then
---                     entry.begindir = begindir
---                     started        = true
---                 end
---             else
---                 if started then
---                     prev.enddir = enddir
---                     started     = false
---                 end
---             end
---             prev = entry
---         end
---         -- make sure to close the run at end of line
---         if started then
---             finaldir = enddir
---         end
---     end
---     if finaldir then
---         list[size].enddir = finaldir
---     end
---     for i=1,size do
---         print("<",i,list[i].level,list[i].begindir,list[i].enddir)
---     end
--- end
-
 local stack = { }
 
 local function insert_dir_points(list,size)
@@ -923,12 +850,12 @@ local function insert_dir_points(list,size)
         local enddir   -- = nil
         local prev     -- = nil
         if toggle then
-            begindir = "+TLT"
-            enddir   = "-TLT"
+            begindir = lefttoright_code
+            enddir   = lefttoright_code
             toggle   = false
         else
-            begindir = "+TRT"
-            enddir   = "-TRT"
+            begindir = righttoleft_code
+            enddir   = righttoleft_code
             toggle   = true
         end
         for i=1,size do
@@ -967,7 +894,7 @@ local function insert_dir_points(list,size)
             if trace_list and n > 1 then
                 report_directions("unbalanced list")
             end
-            last.enddir = stack[n] == "+TRT" and "-TRT" or "-TLT"
+            last.enddir = stack[n]
         end
     end
 end
@@ -1008,11 +935,11 @@ local function apply_to_list(list,size,head,pardir)
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            setdir(current,pardir) -- is this really needed?
+            setdirection(current,pardir) -- is this really needed?
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
-                local d = new_textdir(enddir)
+                local d = new_direction(enddir,true)
                 local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
@@ -1021,7 +948,7 @@ local function apply_to_list(list,size,head,pardir)
         elseif begindir then
             if id == localpar_code then
                 -- localpar should always be the 1st node
-                local d = new_textdir(begindir)
+                local d = new_direction(begindir)
                 local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
@@ -1029,7 +956,7 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if begindir then
-            local d = new_textdir(begindir)
+            local d = new_direction(begindir)
             local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
@@ -1042,7 +969,7 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            local d = new_textdir(enddir)
+            local d = new_direction(enddir,true)
             local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
@@ -1075,9 +1002,9 @@ local function process(head,direction,only_one)
     local analyze_fences = getfences(attr)
     --
     local list, size = build_list(head)
-    local baselevel, pardir, dirfound = get_baselevel(head,list,size,direction) -- we always have an inline dir node in context
+    local baselevel, dirfound = get_baselevel(head,list,size,direction) -- we always have an inline dir node in context
     if trace_details then
-        report_directions("analyze: direction %a, baselevel %a",dirfound and pardir or "unknown",baselevel or 1)
+        report_directions("analyze: baselevel %a",baselevel == righttoleft_code and "r2l" or "l2r")
         report_directions("before : %s",show_list(list,size,"original"))
     end
     resolve_explicit(list,size,baselevel)
@@ -1087,7 +1014,7 @@ local function process(head,direction,only_one)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    return apply_to_list(list,size,head,pardir)
+    return apply_to_list(list,size,head,baselevel)
 end
 
 directions.installhandler(interfaces.variables.three,process)

@@ -48,7 +48,9 @@ local vlist_code         = nodecodes.vlist
 
 local nodepool           = nuts.pool
 
-local new_textdir        = nodepool.textdir
+local new_direction      = nodepool.direction
+
+local lefttoright_code   = nodes.dirvalues.lefttoright
 
 local chardirections     = characters.directions
 local charmirrors        = characters.mirrors
@@ -63,8 +65,8 @@ local function processmath(head)
     local start   = nil
     local stop    = nil
     local function capsulate()
-        head = insert_node_before(head,start,new_textdir("+TLT"))
-        insert_node_after(head,stop,new_textdir("-TLT"))
+        head = insert_node_before(head,start,new_direction(lefttoright_code))
+        insert_node_after(head,stop,new_direction(lefttoright_code,true))
         if trace_directions then
             report_directions("reversed: %s",nodes.listtoutf(start,false,false,stop))
         end

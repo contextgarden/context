@@ -24,9 +24,8 @@ local setlist            = nuts.setlist
 local end_of_math        = nuts.end_of_math
 
 local nodecodes          = nodes.nodecodes
-local rulecodes          = nodes.rulecodes
+local leadercodes        = nodes.leadercodes
 local gluecodes          = nodes.gluecodes
-local listcodes          = nodes.listcodes
 local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
@@ -44,7 +43,8 @@ local vlist_code         = nodecodes.vlist
 local userskip_code      = gluecodes.userskip
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
-local leader_code        = gluecodes.leaders
+
+local leaders_code       = leadercodes.leaders
 
 local fontkern_code      = kerncodes.fontkern
 
@@ -203,7 +203,7 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leader_code)) then
+                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leaders_code)) then
                             l = n
                         else
                             head, done = flush(head,f,l,d,level,parent,strip), true

@@ -50,10 +50,7 @@ local disccodes          = nodes.disccodes
 local disc_code          = nodecodes.disc
 local glyph_code         = nodecodes.glyph
 
-local discretionary_code = disccodes.discretionary
-local explicit_code      = disccodes.explicit
-local automatic_code     = disccodes.automatic
-local regular_code       = disccodes.regular
+local explicitdisc_code  = disccodes.explicit
 
 local a_visualize        = attributes.private("visualizediscretionary")
 local setattribute       = tex.setattribute
@@ -222,6 +219,6 @@ function languages.explicithyphen(template)
             end
         end
     end
-    setdisc(disc,pre,post,nil,explicit_code,tex.exhyphenpenalty)
+    setdisc(disc,pre,post,nil,explicitdisc_code,tex.exhyphenpenalty)
     return disc
 end

@@ -37,6 +37,8 @@ local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
 local nodecodes         = nodes.nodecodes
+local boundarycodes     = nodes.boundarycodes
+
 local handlers          = nodes.handlers
 
 local nuts              = nodes.nuts
@@ -70,7 +72,8 @@ local flush_node        = nuts.flush
 
 local disc_code         = nodecodes.disc
 local boundary_code     = nodecodes.boundary
-local word_boundary     = nodes.boundarycodes.word
+
+local wordboundary_code = boundarycodes.word
 
 local protect_glyphs    = nuts.protect_glyphs
 local unprotect_glyphs  = nuts.unprotect_glyphs
@@ -145,10 +148,10 @@ local kerning    = nuts.kerning
 
 -- -- -- this will go away
 --
--- local disccodes        = nodes.disccodes
--- local explicit_code    = disccodes.explicit
--- local automatic_code   = disccodes.automatic
--- local expanders        = nil
+-- local disccodes          = nodes.disccodes
+-- local explicitdisc_code  = disccodes.explicit
+-- local automaticdisc_code = disccodes.automatic
+-- local expanders          = nil
 --
 -- function fonts.setdiscexpansion(v)
 --     if v == nil or v == true then
@@ -378,7 +381,7 @@ do
             -- and kern (a rather context thing)
 
             for b, subtype in nextboundary, head do
-                if subtype == word_boundary then
+                if subtype == wordboundary_code then
                     if redundant then
                         r = r + 1
                         redundant[r] = b
@@ -462,7 +465,7 @@ do
                     end
              -- elseif expanders then
              --     local subtype = getsubtype(d)
-             --     if subtype == automatic_code or subtype == explicit_code then
+             --     if subtype == automaticdisc_code or subtype == explicitdisc_code then
              --         expanders[subtype](d)
              --         e = e + 1
              --     end

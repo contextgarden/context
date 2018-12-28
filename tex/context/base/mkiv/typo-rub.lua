@@ -66,11 +66,8 @@ local vlist_code      = nodecodes.vlist
 local whatsit_code    = nodecodes.whatsit
 local localpar_code   = nodecodes.localpar
 
-local whatsitcodes    = nodes.whatsitcodes
------ late_luacode    = whatsitcodes.latelua
-
 local kerncodes       = nodes.kerncodes
-local font_code       = kerncodes.font
+local fontkern_code   = kerncodes.font
 
 local nodepool        = nuts.pool
 local new_kern        = nodepool.kern
@@ -246,7 +243,7 @@ function rubies.check(head)
                 start = current
                 stop  = current
             end
-        elseif id == kern_code and getsubtype(current,font_code) then
+        elseif id == kern_code and getsubtype(current,fontkern_code) then
             -- go on
         elseif found and id == disc_code then
             -- go on (todo: look into disc)

@@ -53,7 +53,7 @@ end)
 local m_path, m_stack, m_texts, m_version, m_date, m_shortcuts = { }, { }, { }, 0, 0, false
 
 local m_stack_close, m_stack_path, m_stack_concat = false, { }, nil
-local extra_path_code, ignore_path = nil, false
+local extra_path_data, ignore_path = nil, false
 local specials = { }
 
 local function resetpath()
@@ -62,7 +62,7 @@ end
 
 local function resetall()
     m_path, m_stack, m_texts, m_version, m_shortcuts = { }, { }, { }, 0, false
-    extra_path_code, ignore_path = nil, false
+    extra_path_data, ignore_path = nil, false
     specials = { }
     resetpath()
 end
@@ -81,9 +81,9 @@ local pdfcode = context.pdfliteral
 local function mpscode(str)
     if ignore_path then
         pdfcode("h W n")
-        if extra_path_code then
-            pdfcode(extra_path_code)
-            extra_path_code = nil
+        if extra_path_data then
+            pdfcode(extra_path_data)
+            extra_path_data = nil
         end
         ignore_path = false
     else
@@ -284,7 +284,7 @@ local function linearshade(colorspace,domain,ca,cb,coordinates)
     nofshades = nofshades + 1
     local name = formatters["MpsSh%s"](nofshades)
     lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
+    extra_path_data, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 
@@ -293,7 +293,7 @@ local function circularshade(colorspace,domain,ca,cb,coordinates)
     nofshades = nofshades + 1
     local name = formatters["MpsSh%s"](nofshades)
     lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates)
-    extra_path_code, ignore_path = formatters["/%s sh Q"](name), true
+    extra_path_data, ignore_path = formatters["/%s sh Q"](name), true
     pdfcode("q /Pattern cs")
 end
 

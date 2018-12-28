@@ -240,8 +240,8 @@ local math_code          = nodecodes.math
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
-local discretionary_code = disccodes.discretionary
-local ligature_code      = glyphcodes.ligature
+local discretionarydisc_code = disccodes.discretionary
+local ligatureglyph_code     = glyphcodes.ligature
 
 local a_state            = attributes.private('state')
 local a_noligature       = attributes.private("noligature")
@@ -465,7 +465,7 @@ local set_components  = setcomponents -- we overload here (for now)
 local function count_components(start,marks)
     if getid(start) ~= glyph_code then
         return 0
-    elseif getsubtype(start) == ligature_code then
+    elseif getsubtype(start) == ligatureglyph_code then
         local i = 0
         local components = getcomponents(start)
         while components do
@@ -494,7 +494,7 @@ local function markstoligature(head,start,stop,char)
         end
         resetinjection(base)
         setchar(base,char)
-        setsubtype(base,ligature_code)
+        setsubtype(base,ligatureglyph_code)
         set_components(base,start)
         setlink(prev,base,next)
         return head, base
@@ -530,7 +530,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     end
     resetinjection(base)
     setchar(base,char)
-    setsubtype(base,ligature_code)
+    setsubtype(base,ligatureglyph_code)
     set_components(base,comp)
     setlink(prev,base,next)
     if not discfound then
@@ -612,7 +612,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 set_components(base,copied)
                 replace = base
                 if forcediscretionaries then
-                    setdisc(discfound,pre,post,replace,discretionary_code)
+                    setdisc(discfound,pre,post,replace,discretionarydisc_code)
                 else
                     setdisc(discfound,pre,post,replace)
                 end
@@ -3648,126 +3648,58 @@ end
 -- to be checked, nowadays we probably can assume properly matched directions
 -- so maybe we no longer need a stack
 
--- local function txtdirstate(start,stack,top,rlparmode)
---     local dir = getdir(start)
---     local new = 1
---     if dir == "+TRT" then
---         top = top + 1
---         stack[top] = dir
---         new = -1
---     elseif dir == "+TLT" then
---         top = top + 1
---         stack[top] = dir
---     elseif dir == "-TRT" or dir == "-TLT" then
---         if top == 1 then
---             top = 0
---             new = rlparmode
---         else
---             top = top - 1
---             if stack[top] == "+TRT" then
---                 new = -1
---             end
---         end
---     else
---         new = rlparmode
---     end
---     return getnext(start), top, new
--- end
---
--- local function pardirstate(start)
---     local dir = getdir(start)
---     local new = 0
---     if dir == "TLT" then
---         new = 1
---     elseif dir == "TRT" then
---         new = -1
---     end
---     return getnext(start), new, new
--- end
+local txtdirstate, pardirstate  do
 
-local function txtdirstate(start,stack,top,rlparmode)
-    local nxt = getnext(start)
-    local dir = getdir(start)
-    if dir == "+TRT" then
-        top = top + 1
-        stack[top] = dir
-        return nxt, top, -1
-    elseif dir == "+TLT" then
-        top = top + 1
-        stack[top] = dir
-        return nxt, top, 1
-    elseif dir == "-TRT" or dir == "-TLT" then
-        if top == 1 then
-            return nxt, 0, rlparmode
-        else
-            top = top - 1
-            if stack[top] == "+TRT" then
-                return nxt, top, -1
+    local getdirection = nuts.getdirection
+    local lefttoright  = 0
+    local rightoleft   = 1
+
+    txtdirstate = function(start,stack,top,rlparmode)
+        local nxt = getnext(start)
+        local dir, pop = getdirection(start)
+        if pop then
+            if top == 1 then
+                return nxt, 0, rlparmode
             else
-                return nxt, top, 1
+                top = top - 1
+                if stack[top] == righttoleft then
+                    return nxt, top, -1
+                else
+                    return nxt, top, 1
+                end
             end
+        elseif dir == lefttoright then
+            top = top + 1
+            stack[top] = 0
+            return nxt, top, 1
+        elseif dir == righttoleft then
+            top = top + 1
+            stack[top] = 1
+            return nxt, top, -1
+        else
+            return nxt, top, rlparmode
         end
-    else
-        return nxt, top, rlparmode
     end
-end
 
-local function pardirstate(start)
-    local nxt = getnext(start)
-    local dir = getdir(start)
-    if dir == "TLT" then
-        return nxt, 1, 1
-    elseif dir == "TRT" then
-        return nxt, -1, -1
-    else
-        return nxt, 0, 0
+    pardirstate = function(start)
+        local nxt = getnext(start)
+        local dir = getdirection(start)
+        if dir == lefttoright then
+            return nxt, 1, 1
+        end
+        if dir == righttoleft then
+            return nxt, -1, -1
+        -- for old times sake we we handle strings too
+        elseif dir == "TRT" then
+            return nxt, 1, 1
+        elseif dir == "TLT" then
+            return nxt, -1, -1
+        else
+            return nxt, 0, 0
+        end
     end
-end
 
--- -- this will become:
---
--- local getdirection = nuts.getdirection
---
--- local function txtdirstate1(start,stack,top,rlparmode)
---     local nxt = getnext(start)
---     local dir, sub = getdirection(start)
---     if sub then
---         if top == 1 then
---             return nxt, 0, rlparmode
---         elseif dir < 2 then
---             top = top - 1
---             if stack[top] == 1 then
---                 return nxt, top, -1
---             else
---                 return nxt, top, 1
---             end
---         else
---             return nxt, top, rlparmode
---         end
---     elseif dir == 1 then
---         top = top + 1
---         stack[top] = 1
---         return nxt, top, -1
---     elseif dir == 0 then
---         top = top + 1
---         stack[top] = 0
---         return nxt, top, 1
---     else
---         return nxt, top, rlparmode
---     end
--- end
---
--- local function pardirstate1(start)
---     local nxt = getnext(start)
---     local dir = getdirection(start)
---     if dir == 0 then
---         return nxt, 1, 1
---     elseif dir == 1 then
---         return nxt, -1, -1
---     else
---         return nxt, 0, 0
---     end
--- end
+end
 
 otf.helpers             = otf.helpers or { }
 otf.helpers.txtdirstate = txtdirstate
@@ -3875,8 +3807,7 @@ do
             checkstep(head)
         end
 
-        local initialrl = direction == "TRT" and -1 or 0
-     -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
+        local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
 
      -- local done      = false
         local datasets  = otfdataset(tfmdata,font,attr)
@@ -4165,8 +4096,7 @@ do
         local done      = false
         local dirstack  = { nil } -- could move outside function but we can have local runs (maybe a few more nils)
         local start     = head
-        local initialrl = direction == "TRT" and -1 or 0
-     -- local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
+        local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
         local rlmode    = initialrl
         local rlparmode = initialrl
         local topstack  = 0

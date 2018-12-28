@@ -22,20 +22,20 @@ nodes.pool          = nodes.pool or { }
 local nodepool      = nodes.pool
 
 local whatsitcodes  = nodes.whatsitcodes
-local skipcodes     = nodes.skipcodes
+local gluecodes     = nodes.gluecodes
 local kerncodes     = nodes.kerncodes
 local rulecodes     = nodes.rulecodes
 local nodecodes     = nodes.nodecodes
-local gluecodes     = nodes.gluecodes
+local leadercodes   = nodes.leadercodes
 local boundarycodes = nodes.boundarycodes
 local usercodes     = nodes.usercodes
 
 
-local glyphcode     = nodecodes.glyph
-local rulecode      = nodecodes.rule
-local kerncode      = nodecodes.kern
-local gluecode      = nodecodes.glue
-local whatsitcode   = nodecodes.whatsit
+local glyph_code    = nodecodes.glyph
+local rule_code     = nodecodes.rule
+local kern_code     = nodecodes.kern
+local glue_code     = nodecodes.glue
+local whatsit_code  = nodecodes.whatsit
 
 local currentfont   = font.current
 
@@ -159,21 +159,20 @@ nutpool.register  = register_node -- could be register_nut
 -- so far
 
 local disc              = register_nut(new_nut(nodecodes.disc))
-local kern              = register_nut(new_nut(kerncode,kerncodes.userkern))
-local fontkern          = register_nut(new_nut(kerncode,kerncodes.fontkern))
-local italickern        = register_nut(new_nut(kerncode,kerncodes.italiccorrection))
+local kern              = register_nut(new_nut(kern_code,kerncodes.userkern))
+local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
+local italickern        = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
 local penalty           = register_nut(new_nut(nodecodes.penalty))
-local glue              = register_nut(new_nut(gluecode)) -- glue.spec = nil
+local glue              = register_nut(new_nut(glue_code)) -- glue.spec = nil
 local glue_spec         = register_nut(new_nut(nodecodes.gluespec))
-local glyph             = register_nut(new_nut(glyphcode,0))
-
+local glyph             = register_nut(new_nut(glyph_code,0))
 
 local textdir           = register_nut(new_nut(nodecodes.dir))
 
-local latelua           = register_nut(new_nut(whatsitcode,whatsitcodes.latelua))
-local savepos           = register_nut(new_nut(whatsitcode,whatsitcodes.savepos))
+local latelua           = register_nut(new_nut(whatsit_code,whatsitcodes.latelua))
+local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos))
 
-local user_node         = new_nut(whatsitcode,whatsitcodes.userdefined)
+local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
 local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
 local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
@@ -185,10 +184,10 @@ local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attrib
 local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
 local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
 
-local lineskip          = register_nut(new_nut(gluecode,skipcodes.lineskip))
-local baselineskip      = register_nut(new_nut(gluecode,skipcodes.baselineskip))
-local leftskip          = register_nut(new_nut(gluecode,skipcodes.leftskip))
-local rightskip         = register_nut(new_nut(gluecode,skipcodes.rightskip))
+local lineskip          = register_nut(new_nut(glue_code,gluecodes.lineskip))
+local baselineskip      = register_nut(new_nut(glue_code,gluecodes.baselineskip))
+local leftskip          = register_nut(new_nut(glue_code,gluecodes.leftskip))
+local rightskip         = register_nut(new_nut(glue_code,gluecodes.rightskip))
 
 local temp              = register_nut(new_nut(nodecodes.temp,0))
 
@@ -207,15 +206,18 @@ local choice            = register_nut(new_nut(nodecodes.choice))
 local boundary          = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
 local wordboundary      = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
 
-local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
+local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,leadercodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
-local rule              = register_nut(new_nut(rulecode))                   setdir(rule, "TLT")
-local emptyrule         = register_nut(new_nut(rulecode,rulecodes.empty))   setdir(rule, "TLT")
-local userrule          = register_nut(new_nut(rulecode,rulecodes.user))    setdir(rule, "TLT")
-local hlist             = register_nut(new_nut(nodecodes.hlist))            setdir(hlist,"TLT")
-local vlist             = register_nut(new_nut(nodecodes.vlist))            setdir(vlist,"TLT")
+local lefttoright_code  = nodes.dirvalues.lefttoright
+
+local rule              = register_nut(new_nut(rule_code))                   setdirection(rule, lefttoright_code)
+local emptyrule         = register_nut(new_nut(rule_code,rulecodes.empty))   setdirection(rule, lefttoright_code)
+local userrule          = register_nut(new_nut(rule_code,rulecodes.user))    setdirection(rule, lefttoright_code)
+local outlinerule       = register_nut(new_nut(rule_code,rulecodes.outline)) setdirection(rule, lefttoright_code)
+local hlist             = register_nut(new_nut(nodecodes.hlist))             setdirection(hlist,lefttoright_code)
+local vlist             = register_nut(new_nut(nodecodes.vlist))             setdirection(vlist,lefttoright_code)
 
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
@@ -347,7 +349,7 @@ function nutpool.disc(pre,post,replace)
     return d
 end
 
-function nutpool.textdir(dir)
+function nutpool.textdir(dir) -- obsolete !
     local t = copy_nut(textdir)
     if dir then
         setdir(t,dir)
@@ -367,42 +369,40 @@ function nutpool.direction(dir,swap)
     return t
 end
 
-function nutpool.rule(width,height,depth,dir) -- w/h/d == nil will let them adapt
+function nutpool.rule(width,height,depth,direction) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if dir then
-        setdir(n,dir)
+    if direction then
+        setdirection(n,direction)
     end
     return n
 end
 
-function nutpool.emptyrule(width,height,depth,dir) -- w/h/d == nil will let them adapt
+function nutpool.emptyrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
     local n = copy_nut(emptyrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if dir then
-        setdir(n,dir)
+    if direction then
+        setdirection(n,direction)
     end
     return n
 end
 
-function nutpool.userrule(width,height,depth,dir) -- w/h/d == nil will let them adapt
+function nutpool.userrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
     local n = copy_nut(userrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if dir then
-        setdir(n,dir)
+    if direction then
+        setdirection(n,direction)
     end
     return n
 end
 
-local outlinerule = register_nut(new_nut(rulecode,rulecodes.outline)) setdir(rule, "TLT")
-
-function nutpool.outlinerule(width,height,depth,line,dir) -- w/h/d == nil will let them adapt
+function nutpool.outlinerule(width,height,depth,line,direction) -- w/h/d == nil will let them adapt
     local n = copy_nut(outlinerule)
     if width or height or depth then
         setwhd(n,width,height,depth)
@@ -410,8 +410,8 @@ function nutpool.outlinerule(width,height,depth,line,dir) -- w/h/d == nil will l
     if line then
         setfield(n,"transform",line)
     end
-    if dir then
-        setdir(n,dir)
+    if direction then
+        setdirection(n,direction)
     end
     return n
 end
@@ -443,7 +443,7 @@ function nutpool.leftmarginkern(glyph,width)
     local n = copy_nut(left_margin_kern)
     if not glyph then
         report_nodes("invalid pointer to left margin glyph node")
-    elseif getid(glyph) ~= glyphcode then
+    elseif getid(glyph) ~= glyph_code then
         report_nodes("invalid node type %a for %s margin glyph node",nodecodes[glyph],"left")
     else
         setfield(n,"glyph",glyph)
@@ -458,7 +458,7 @@ function nutpool.rightmarginkern(glyph,width)
     local n = copy_nut(right_margin_kern)
     if not glyph then
         report_nodes("invalid pointer to right margin glyph node")
-    elseif getid(glyph) ~= glyphcode then
+    elseif getid(glyph) ~= glyph_code then
         report_nodes("invalid node type %a for %s margin glyph node",nodecodes[p],"right")
     else
         setfield(n,"glyph",glyph)

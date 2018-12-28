@@ -64,7 +64,7 @@ local listcodes         = nodes.listcodes
 local hlist_code        = nodecodes.hlist
 local glue_code         = nodecodes.glue
 local kern_code         = nodecodes.kern
-local line_code         = listcodes.line
+local linelist_code     = listcodes.line
 ----- localpar_code     = nodecodes.localpar
 local leftskip_code     = gluecodes.leftskip
 local rightskip_code    = gluecodes.rightskip
@@ -90,7 +90,7 @@ local getboth           = nuts.getboth
 local setlink           = nuts.setlink
 local setkern           = nuts.setkern
 local getkern           = nuts.getkern
-local getdir            = nuts.getdir
+local getdirection      = nuts.getdirection
 local getshift          = nuts.getshift
 local setshift          = nuts.setshift
 local getwidth          = nuts.getwidth
@@ -108,6 +108,8 @@ local new_rightskip     = nodepool.rightskip
 local new_hlist         = nodepool.hlist
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
+
+local righttoleft_code  = nodes.dirvalues.righttoleft
 
 local texgetcount       = tex.getcount
 local texgetglue        = tex.getglue
@@ -127,22 +129,12 @@ local noflines          = 0
 -- This is the third version, a mix between immediate (prestice lines) and delayed
 -- as we don't want anchors that are not used.
 
--- if reverse then delta = - delta end
--- head = insert_before(head,head,nodepool.textdir("-TLT"))
--- ....
--- head = insert_before(head,head,nodepool.textdir("TLT"))
-
--- todo: figure out metatable mess ... when we copy we also need to copy
--- anchors ... use rawgets
-
--- problem: what if a box is copied ... we could check an attribute
-
 local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
     local width    = prop.width
     local shift    = getshift(line) -- dangerous as it can be vertical as well
-    local reverse  = getdir(line) == "TRT" or false
+    local reverse  = getdirection(line) == righttoleft_code or false
     local pack     = new_hlist()
     local head     = getlist(line)
     local delta    = 0
@@ -255,7 +247,7 @@ function paragraphs.normalize(head,islocal)
             local last = nil -- a nut
             local done = mode == 2 -- false
             for line, subtype in nexthlist, head do
-                if subtype == line_code and not getprop(line,"line") then
+                if subtype == linelist_code and not getprop(line,"line") then
                     if done then
                         last = line
                     else
@@ -284,7 +276,7 @@ function paragraphs.normalize(head,islocal)
     end
     -- normalizer
     for line, subtype in nexthlist, head do
-        if subtype == line_code and not getprop(line,"line") then
+        if subtype == linelist_code and not getprop(line,"line") then
             normalize(line)
         end
     end

@@ -42,7 +42,8 @@ local whatsitcodes     = nodes.whatsitcodes
 local whatsit_code     = nodecodes.whatsit
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
-local userdefined_code = whatsitcodes.userdefined
+
+local userdefinedwhatsit_code = whatsitcodes.userdefined
 
 local nodepool         = nodes.pool
 local new_usernumber   = nodepool.usernumber
@@ -297,7 +298,7 @@ local anchored = {
             n = getnext(n)
             if getid(n) == whatsit_code then
                 local subtype = getsubtype(n)
-                if (subtype == userdefined_code and getfield(n,"user_id") == property_id) then
+                if (subtype == userdefinedwhatsit_code and getfield(n,"user_id") == property_id) then
                     -- continue
                 else
                     return n
@@ -329,7 +330,7 @@ function properties.attach(head)
     starttiming(properties)
 
     for source, subtype in nextwhatsit, head do
-        if subtype == userdefined_code then
+        if subtype == userdefinedwhatsit_code then
             if last then
                 removenode(head,last,true)
                 last = nil

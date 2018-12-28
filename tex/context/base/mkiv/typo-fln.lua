@@ -65,7 +65,7 @@ local copy_node_list     = nuts.copy_list
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
-local list_dimensions    = nuts.dimensions
+local getdimensions      = nuts.dimensions
 local hpack_node_list    = nuts.hpack
 
 local nodepool           = nuts.pool
@@ -179,9 +179,7 @@ actions[v_line] = function(head,setting)
          --        nodes.handlers.protectglyphs(temp)  -- not needed as we discard
          -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
          -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
-            temp = hpack_node_list(temp)
-            local width = getwidth(temp)
-            flush_node_list(temp)
+            local width = getdimensions(temp)
             return width
         end
 

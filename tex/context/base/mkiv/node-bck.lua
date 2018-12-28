@@ -14,63 +14,64 @@ if not modules then modules = { } end modules ['node-bck'] = {
 
 local attributes, nodes, node = attributes, nodes, node
 
-local enableaction      = nodes.tasks.enableaction
+local enableaction       = nodes.tasks.enableaction
 
-local nodecodes         = nodes.nodecodes
-local listcodes         = nodes.listcodes
+local nodecodes          = nodes.nodecodes
+local listcodes          = nodes.listcodes
 
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local alignment_code    = listcodes.alignment
-local cell_code         = listcodes.cell
+local hlist_code         = nodecodes.hlist
+local vlist_code         = nodecodes.vlist
 
-local nuts              = nodes.nuts
-local nodepool          = nuts.pool
+local alignmentlist_code = listcodes.alignment
+local celllist_code      = listcodes.cell
 
-local getnext           = nuts.getnext
-local getprev           = nuts.getprev
-local getid             = nuts.getid
-local getlist           = nuts.getlist
-local getattr           = nuts.getattr
-local getsubtype        = nuts.getsubtype
-local getwhd            = nuts.getwhd
-local getwidth          = nuts.getwidth
-local getprop           = nuts.getprop
+local nuts               = nodes.nuts
+local nodepool           = nuts.pool
 
-local setattr           = nuts.setattr
-local setlink           = nuts.setlink
-local setlist           = nuts.setlist
-local setattributelist  = nuts.setattributelist
-local setprop           = nuts.setprop
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getid              = nuts.getid
+local getlist            = nuts.getlist
+local getattr            = nuts.getattr
+local getsubtype         = nuts.getsubtype
+local getwhd             = nuts.getwhd
+local getwidth           = nuts.getwidth
+local getprop            = nuts.getprop
 
-local takebox           = nuts.takebox
-local findtail          = nuts.tail
+local setattr            = nuts.setattr
+local setlink            = nuts.setlink
+local setlist            = nuts.setlist
+local setattributelist   = nuts.setattributelist
+local setprop            = nuts.setprop
 
-local nextnode          = nuts.traversers.node
-local nexthlist         = nuts.traversers.hlist
-local nextlist          = nuts.traversers.list
+local takebox            = nuts.takebox
+local findtail           = nuts.tail
 
-local flush_node_list   = nuts.flush_list
+local nextnode           = nuts.traversers.node
+local nexthlist          = nuts.traversers.hlist
+local nextlist           = nuts.traversers.list
 
-local new_rule          = nodepool.rule
-local new_kern          = nodepool.kern
-local new_hlist         = nodepool.hlist
+local flush_node_list    = nuts.flush_list
 
-local privateattributes = attributes.private
-local unsetvalue        = attributes.unsetvalue
+local new_rule           = nodepool.rule
+local new_kern           = nodepool.kern
+local new_hlist          = nodepool.hlist
 
-local linefillers       = nodes.linefillers
+local privateattributes  = attributes.private
+local unsetvalue         = attributes.unsetvalue
 
-local a_color           = privateattributes("color")
-local a_transparency    = privateattributes("transparency")
-local a_colormodel      = privateattributes("colormodel")
-local a_background      = privateattributes("background")
-local a_alignbackground = privateattributes("alignbackground")
-local a_linefiller      = privateattributes("linefiller")
-local a_ruled           = privateattributes("ruled")
+local linefillers        = nodes.linefillers
 
-local trace_alignment   = false
-local report_alignment  = logs.reporter("backgrounds","alignment")
+local a_color            = privateattributes("color")
+local a_transparency     = privateattributes("transparency")
+local a_colormodel       = privateattributes("colormodel")
+local a_background       = privateattributes("background")
+local a_alignbackground  = privateattributes("alignbackground")
+local a_linefiller       = privateattributes("linefiller")
+local a_ruled            = privateattributes("ruled")
+
+local trace_alignment    = false
+local report_alignment   = logs.reporter("backgrounds","alignment")
 
 trackers.register("backgrounds.alignments",function(v) trace_alignment = v end)
 
@@ -144,7 +145,7 @@ local alignments = false
 
 local function add_alignbackgrounds(head,list)
     for current, id, subtype, list in nextlist, list do
-        if list and id == hlist_code and subtype == cell_code then
+        if list and id == hlist_code and subtype == celllist_code then
             for template in nexthlist, list do
                 local background = getattr(template,a_alignbackground)
                 if background then
@@ -171,7 +172,7 @@ local function add_backgrounds(head,id,list)
     if list then
     for current, id, subtype, list in nextlist, list do
             if list then
-                if alignments and subtype == alignment_code then
+                if alignments and subtype == alignmentlist_code then
                     local l = add_alignbackgrounds(current,list)
                     if l then
                         list = l
@@ -206,7 +207,7 @@ function nodes.handlers.backgroundspage(head,where)
     if head and where == "alignment" then
         for n in nexthlist, head do
             local p = getprop(n,"alignmentchecked")
-            if not p and getsubtype(n) == alignment_code then
+            if not p and getsubtype(n) == alignmentlist_code then
                 currentrow = currentrow + 1
                 local template = templates[currentrow]
                 if trace_alignment then
@@ -225,7 +226,7 @@ function nodes.handlers.backgroundsvbox(head,where)
         if list then
             for n in nexthlist, list do
                 local p = getprop(n,"alignmentchecked")
-                if not p and getsubtype(n) == alignment_code then
+                if not p and getsubtype(n) == alignmentlist_code then
                     currentrow = currentrow + 1
                     local template = templates[currentrow]
                     if trace_alignment then

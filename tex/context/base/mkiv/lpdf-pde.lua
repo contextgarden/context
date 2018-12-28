@@ -92,18 +92,18 @@ local allocate          = utilities.storage.allocate
 
 local bpfactor          = number.dimenfactors.bp
 
-local objectcodes = {
-     [0] = "none",
-           "null",
-           "bool",
-           "integer",
-           "number",
-           "name",
-           "string",
-           "array",
-           "dictionary",
-           "stream",
-           "reference",
+local objectcodes = { [0] =
+    "none",
+    "null",
+    "bool",
+    "integer",
+    "number",
+    "name",
+    "string",
+    "array",
+    "dictionary",
+    "stream",
+    "reference",
 }
 
 local encryptioncodes = {
@@ -113,26 +113,26 @@ local encryptioncodes = {
     [-2] = "failure",
 }
 
-objectcodes           = allocate(swapped(objectcodes,objectcodes))
-encryptioncodes       = allocate(swapped(encryptioncodes,encryptioncodes))
+objectcodes                  = allocate(swapped(objectcodes,objectcodes))
+encryptioncodes              = allocate(swapped(encryptioncodes,encryptioncodes))
 
-pdfe.objectcodes      = objectcodes
-pdfe.encryptioncodes  = encryptioncodes
+pdfe.objectcodes             = objectcodes
+pdfe.encryptioncodes         = encryptioncodes
 
-local null_code       = objectcodes.null
-local reference_code  = objectcodes.reference
+local null_object_code       = objectcodes.null
+local reference_object_code  = objectcodes.reference
 
-local none_code       = objectcodes.none
-local null_code       = objectcodes.null
-local bool_code       = objectcodes.bool
-local integer_code    = objectcodes.integer
-local number_code     = objectcodes.number
-local name_code       = objectcodes.name
-local string_code     = objectcodes.string
-local array_code      = objectcodes.array
-local dictionary_code = objectcodes.dictionary
-local stream_code     = objectcodes.stream
-local reference_code  = objectcodes.reference
+local none_object_code       = objectcodes.none
+local null_object_code       = objectcodes.null
+local bool_object_code       = objectcodes.bool
+local integer_object_code    = objectcodes.integer
+local number_object_code     = objectcodes.number
+local name_object_code       = objectcodes.name
+local string_object_code     = objectcodes.string
+local array_object_code      = objectcodes.array
+local dictionary_object_code = objectcodes.dictionary
+local stream_object_code     = objectcodes.stream
+local reference_object_code  = objectcodes.reference
 
 local checked_access
 local get_flagged     -- from pdfe -> lpdf
@@ -209,17 +209,17 @@ local function get_value(document,t,key)
     end
     -- we can assume names to be simple and strings to be tables
     local kind = value[1]
-    if kind == name_code then
+    if kind == name_object_code then
         return value[2]
-    elseif kind == string_code then
+    elseif kind == string_object_code then
         return some_string(value[2],value[3])
-    elseif kind == array_code then
+    elseif kind == array_object_code then
         return some_array(value[2],document)
-    elseif kind == dictionary_code then
+    elseif kind == dictionary_object_code then
         return some_dictionary(value[2],document)
-    elseif kind == stream_code then
+    elseif kind == stream_object_code then
         return some_stream(value,document)
-    elseif kind == reference_code then
+    elseif kind == reference_object_code then
         return some_reference(value,document)
     end
     return value
@@ -227,7 +227,7 @@ end
 
 some_dictionary = function (d,document)
     local f = dictionarytotable(d,true)
-    local t = setmetatable({ __raw__ = f, __type__ = dictionary_code }, {
+    local t = setmetatable({ __raw__ = f, __type__ = dictionary_object_code }, {
        __index = function(t,k)
            return get_value(document,f,k)
        end,
@@ -241,7 +241,7 @@ end
 some_array = function (a,document)
     local f = arraytotable(a,true)
     local n = #f
-    local t = setmetatable({ __raw__ = f, __type__ = array_code, n = n }, {
+    local t = setmetatable({ __raw__ = f, __type__ = array_object_code, n = n }, {
         __index = function(t,k)
             return get_value(document,f,k)
         end,
@@ -257,7 +257,7 @@ end
 
 some_stream = function(s,d,document)
     local f = dictionarytotable(d,true)
-    local t = setmetatable({ __raw__ = f, __type__ = stream_code }, {
+    local t = setmetatable({ __raw__ = f, __type__ = stream_object_code }, {
         __index = function(t,k)
             return get_value(document,f,k)
         end,
@@ -277,11 +277,11 @@ some_reference = function(r,document)
     local cached = document.__cache__[objnum]
     if not cached then
         local kind, object, b, c = getfromreference(r[2])
-        if kind == dictionary_code then
+        if kind == dictionary_object_code then
             cached = some_dictionary(object,document)
-        elseif kind == array_code then
+        elseif kind == array_object_code then
             cached = some_array(object,document)
-        elseif kind == stream_code then
+        elseif kind == stream_object_code then
             cached = some_stream(object,b,document)
         else
             cached = { kind, object, b, c }
@@ -848,13 +848,13 @@ if img then do
                 copied[objnum] = usednum
                 local entry = value
                 local kind  = entry.__type__
-                if kind == array_code then
+                if kind == array_object_code then
                     local a = copyarray(xref,copied,entry)
                     pdfflushobject(usednum,tostring(a))
-                elseif kind == dictionary_code then
+                elseif kind == dictionary_object_code then
                     local d = copydictionary(xref,copied,entry)
                     pdfflushobject(usednum,tostring(d))
-                elseif kind == stream_code then
+                elseif kind == stream_object_code then
                     local d = copydictionary(xref,copied,entry)
                     local filter = d.Filter
                     if filter and codecs[filter] and recompress then
@@ -879,13 +879,13 @@ if img then do
                     elseif t == "table" then
                         local kind  = value[1]
                         local entry = value[2]
-                        if kind == name_code then
+                        if kind == name_object_code then
                             value = pdfconstant(entry)
-                        elseif kind == string_code then
+                        elseif kind == string_object_code then
                             value = pdfliteral(entry,value[3])
-                        elseif kind == null_code then
+                        elseif kind == null_object_code then
                             value = pdfnull()
-                        elseif kind == reference_code then
+                        elseif kind == reference_object_code then
                             value = deepcopyobject(xref,copied,entry)
                         else
                             value = tostring(entry)
@@ -895,7 +895,7 @@ if img then do
                 end
             end
             return pdfreference(usednum)
-        elseif kind == stream_code then
+        elseif kind == stream_object_code then
             report("stream not done: %s", objectcodes[kind] or "?")
         else
             report("object not done: %s", objectcodes[kind] or "?")
@@ -913,17 +913,17 @@ if img then do
             return value
         end
         local kind = value[1]
-        if kind == name_code then
+        if kind == name_object_code then
             return pdfconstant(value[2])
-        elseif kind == string_code then
+        elseif kind == string_object_code then
             return pdfliteral(value[2],value[3])
-        elseif kind == array_code then
+        elseif kind == array_object_code then
             return copyarray(xref,copied,object[key])
-        elseif kind == dictionary_code then
+        elseif kind == dictionary_object_code then
             return copydictionary(xref,copied,object[key])
-        elseif kind == null_code then
+        elseif kind == null_object_code then
             return pdfnull()
-        elseif kind == reference_code then
+        elseif kind == reference_object_code then
             -- expand
             return deepcopyobject(xref,copied,object[key])
         else
@@ -982,7 +982,7 @@ if img then do
      --
      -- if not Resources then
      --     local Parent = page.Parent
-     --     while (Parent and (Parent.__type__ == dictionary_code or Parent.__type__ == reference_code) do
+     --     while (Parent and (Parent.__type__ == dictionary_object_code or Parent.__type__ == reference_object_code) do
      --         Resources = Parent.Resources
      --         if Resources then
      --             break
@@ -1064,7 +1064,7 @@ if img then do
             local ctype    = contents.__type__
             -- we always recompress because image object streams can not be
             -- influenced (yet)
-            if ctype == stream_code then
+            if ctype == stream_object_code then
                 if stripmarked then
                     content = contents() -- uncompressed
                     local stripped = lpdf_epdf.stripcontent(content)
@@ -1086,7 +1086,7 @@ if img then do
                         content = contents() -- uncompressed
                     end
                 end
-            elseif ctype == array_code then
+            elseif ctype == array_object_code then
                 content = { }
                 for i=1,#contents do
                     content[i] = contents[i]() -- uncompressed

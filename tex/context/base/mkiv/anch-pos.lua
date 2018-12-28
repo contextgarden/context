@@ -69,7 +69,7 @@ local getbox            = nuts.getbox
 local getid             = nuts.getid
 local getwhd            = nuts.getwhd
 
-local hlist_code        = nodes.listcodes.hlist
+local hlist_code        = nodes.nodecodes.hlist
 
 local find_tail         = nuts.tail
 local hpack             = nuts.hpack

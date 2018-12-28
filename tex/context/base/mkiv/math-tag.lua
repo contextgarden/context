@@ -14,92 +14,92 @@ if not modules then modules = { } end modules ['math-tag'] = {
 local find, match = string.find, string.match
 local insert, remove, concat = table.insert, table.remove, table.concat
 
-local attributes          = attributes
-local nodes               = nodes
+local attributes        = attributes
+local nodes             = nodes
 
-local nuts                = nodes.nuts
-local tonut               = nuts.tonut
+local nuts              = nodes.nuts
+local tonut             = nuts.tonut
 
-local getnext             = nuts.getnext
-local getid               = nuts.getid
-local getchar             = nuts.getchar
-local getfont             = nuts.getfont
-local getlist             = nuts.getlist
-local getfield            = nuts.getfield
-local getdisc             = nuts.getdisc
-local getsubtype          = nuts.getsubtype
-local getattr             = nuts.getattr
-local getattrlist         = nuts.getattrlist
-local setattr             = nuts.setattr
-local getcomponents       = nuts.getcomponents
-local getwidth            = nuts.getwidth
+local getnext           = nuts.getnext
+local getid             = nuts.getid
+local getchar           = nuts.getchar
+local getfont           = nuts.getfont
+local getlist           = nuts.getlist
+local getfield          = nuts.getfield
+local getdisc           = nuts.getdisc
+local getsubtype        = nuts.getsubtype
+local getattr           = nuts.getattr
+local getattrlist       = nuts.getattrlist
+local setattr           = nuts.setattr
+local getcomponents     = nuts.getcomponents
+local getwidth          = nuts.getwidth
 
-local getnucleus          = nuts.getnucleus
-local getsub              = nuts.getsub
-local getsup              = nuts.getsup
+local getnucleus        = nuts.getnucleus
+local getsub            = nuts.getsub
+local getsup            = nuts.getsup
 
-local set_attributes      = nuts.setattributes
+local set_attributes    = nuts.setattributes
 
-local nextnode            = nuts.traversers.node
+local nextnode          = nuts.traversers.node
 
-local nodecodes           = nodes.nodecodes
+local nodecodes         = nodes.nodecodes
 
-local math_noad_code      = nodecodes.noad           -- attr nucleus sub sup
-local math_accent_code    = nodecodes.accent         -- attr nucleus sub sup accent
-local math_radical_code   = nodecodes.radical        -- attr nucleus sub sup left degree
-local math_fraction_code  = nodecodes.fraction       -- attr nucleus sub sup left right
-local math_box_code       = nodecodes.subbox         -- attr list
-local math_sub_code       = nodecodes.submlist       -- attr list
-local math_char_code      = nodecodes.mathchar       -- attr fam char
-local math_textchar_code  = nodecodes.mathtextchar   -- attr fam char
-local math_delim_code     = nodecodes.delim          -- attr small_fam small_char large_fam large_char
-local math_style_code     = nodecodes.style          -- attr style
-local math_choice_code    = nodecodes.choice         -- attr display text script scriptscript
-local math_fence_code     = nodecodes.fence          -- attr subtype
+local noad_code         = nodecodes.noad           -- attr nucleus sub sup
+local accent_code       = nodecodes.accent         -- attr nucleus sub sup accent
+local radical_code      = nodecodes.radical        -- attr nucleus sub sup left degree
+local fraction_code     = nodecodes.fraction       -- attr nucleus sub sup left right
+local subbox_code       = nodecodes.subbox         -- attr list
+local submlist_code     = nodecodes.submlist       -- attr list
+local mathchar_code     = nodecodes.mathchar       -- attr fam char
+local mathtextchar_code = nodecodes.mathtextchar   -- attr fam char
+local delim_code        = nodecodes.delim          -- attr small_fam small_char large_fam large_char
+local style_code        = nodecodes.style          -- attr style
+local choice_code       = nodecodes.choice         -- attr display text script scriptscript
+local fence_code        = nodecodes.fence          -- attr subtype
 
-local accentcodes         = nodes.accentcodes
+local accentcodes       = nodes.accentcodes
 
-local math_fixed_top      = accentcodes.fixedtop
-local math_fixed_bottom   = accentcodes.fixedbottom
-local math_fixed_both     = accentcodes.fixedboth
+local fixedtopaccent_code    = accentcodes.fixedtop
+local fixedbottomaccent_code = accentcodes.fixedbottom
+local fixedbothaccent_code   = accentcodes.fixedboth
 
-local kerncodes           = nodes.kerncodes
+local kerncodes         = nodes.kerncodes
 
-local fontkern_code       = kerncodes.fontkern
-local italickern_code     = kerncodes.italickern
+local fontkern_code     = kerncodes.fontkern
+local italickern_code   = kerncodes.italickern
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glyph_code          = nodecodes.glyph
-local disc_code           = nodecodes.disc
-local glue_code           = nodecodes.glue
-local kern_code           = nodecodes.kern
-local math_code           = nodecodes.math
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local glyph_code        = nodecodes.glyph
+local disc_code         = nodecodes.disc
+local glue_code         = nodecodes.glue
+local kern_code         = nodecodes.kern
+local math_code         = nodecodes.math
 
-local processnoads        = noads.process
+local processnoads      = noads.process
 
-local a_tagged            = attributes.private('tagged')
-local a_mathcategory      = attributes.private('mathcategory')
-local a_mathmode          = attributes.private('mathmode')
+local a_tagged          = attributes.private('tagged')
+local a_mathcategory    = attributes.private('mathcategory')
+local a_mathmode        = attributes.private('mathmode')
 
-local tags                = structures.tags
+local tags              = structures.tags
 
-local start_tagged        = tags.start
-local restart_tagged      = tags.restart
-local stop_tagged         = tags.stop
-local taglist             = tags.taglist
+local start_tagged      = tags.start
+local restart_tagged    = tags.restart
+local stop_tagged       = tags.stop
+local taglist           = tags.taglist
 
-local chardata            = characters.data
+local chardata          = characters.data
 
-local getmathcodes        = tex.getmathcodes
-local mathcodes           = mathematics.codes
-local ordinary_code       = mathcodes.ordinary
-local variable_code       = mathcodes.variable
+local getmathcodes      = tex.getmathcodes
+local mathcodes         = mathematics.codes
+local ordinary_mathcode = mathcodes.ordinary
+local variable_mathcode = mathcodes.variable
 
-local fromunicode16       = fonts.mappings.fromunicode16
-local fontcharacters      = fonts.hashes.characters
+local fromunicode16     = fonts.mappings.fromunicode16
+local fontcharacters    = fonts.hashes.characters
 
-local report_tags         = logs.reporter("structure","tags")
+local report_tags       = logs.reporter("structure","tags")
 
 local process
 
@@ -169,7 +169,7 @@ end
 local content = { }
 local found   = false
 
-content[math_char_code] = function() found = true end
+content[mathchar_code] = function() found = true end
 
 local function hascontent(head)
     found = false
@@ -210,11 +210,11 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
                 mtexttag = nil
             end
-            if id == math_char_code then
+            if id == mathchar_code then
                 local char = getchar(start)
                 local code = getmathcodes(char)
                 local tag
-                if code == ordinary_code or code == variable_code then
+                if code == ordinary_mathcode or code == variable_mathcode then
                     local ch = chardata[char]
                     local mc = ch and ch.mathclass
                     if mc == "number" then
@@ -236,7 +236,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
 -- showtag(start,id,false)
                 break -- okay?
-            elseif id == math_textchar_code then -- or id == glyph_code
+            elseif id == mathtextchar_code then -- or id == glyph_code
                 -- check for code
                 local a = getattr(start,a_mathcategory)
                 if a then
@@ -247,19 +247,19 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 stop_tagged()
 -- showtag(start,id,false)
                 break
-            elseif id == math_delim_code then
+            elseif id == delim_code then
                 -- check for code
                 setattr(start,a_tagged,start_tagged("mo"))
                 stop_tagged()
 -- showtag(start,id,false)
                 break
-            elseif id == math_style_code then
+            elseif id == style_code then
                 -- has a next
-            elseif id == math_noad_code then
+            elseif id == noad_code then
 -- setattr(start,a_tagged,tags.current())
                 processsubsup(start)
-            elseif id == math_box_code or id == hlist_code or id == vlist_code then
-                -- keep an eye on math_box_code and see what ends up in there
+            elseif id == dubbox_code or id == hlist_code or id == vlist_code then
+                -- keep an eye on subbox_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
                 if not attr then
                     -- just skip
@@ -356,7 +356,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         end
                     end
                 end
-            elseif id == math_sub_code then -- normally a hbox
+            elseif id == submlistcode then -- normally a hbox
                 local list = getlist(start)
                 if list then
                     local attr = getattr(start,a_tagged)
@@ -397,7 +397,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         stop_tagged()
                     end
                 end
-            elseif id == math_fraction_code then
+            elseif id == fraction_code then
                 local num   = getfield(start,"num")
                 local denom = getfield(start,"denom")
                 local left  = getfield(start,"left")
@@ -416,7 +416,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(right)
                     stop_tagged()
                 end
-            elseif id == math_choice_code then
+            elseif id == choice_code then
                 local display      = getfield(start,"display")
                 local text         = getfield(start,"text")
                 local script       = getfield(start,"script")
@@ -433,7 +433,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 if scriptscript then
                     process(scriptscript)
                 end
-            elseif id == math_fence_code then
+            elseif id == fence_code then
                 local delim   = getfield(start,"delim")
                 local subtype = getfield(start,"subtype")
                 if subtype == 1 then
@@ -490,7 +490,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 else
                     -- can't happen
                 end
-            elseif id == math_radical_code then
+            elseif id == radical_code then
                 local left   = getfield(start,"left")
                 local degree = getfield(start,"degree")
                 if left then
@@ -508,7 +508,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     processsubsup(start)
                     stop_tagged()
                 end
-            elseif id == math_accent_code then
+            elseif id == accent_code then
                 local accent     = getfield(start,"accent")
                 local bot_accent = getfield(start,"bot_accent")
                 local subtype    = getsubtype(start)
@@ -518,8 +518,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             accent      = true,
                             top         = getunicode(accent),
                             bottom      = getunicode(bot_accent),
-                            topfixed    = subtype == math_fixed_top or subtype == math_fixed_both,
-                            bottomfixed = subtype == math_fixed_bottom or subtype == math_fixed_both,
+                            topfixed    = subtype == fixedtopaccent_code or subtype == fixedbothaccent_code,
+                            bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
                         process(bot_accent)
@@ -529,7 +529,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         setattr(start,a_tagged,start_tagged("munder", {
                             accent      = true,
                             bottom      = getunicode(bot_accent),
-                            bottomfixed = subtype == math_fixed_bottom or subtype == math_fixed_both,
+                            bottomfixed = subtype == fixedbottomaccent_code or subtype == fixedbothaccent_code,
                         }))
                         processsubsup(start)
                         process(bot_accent)
@@ -539,7 +539,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged("mover", {
                         accent   = true,
                         top      = getunicode(accent),
-                        topfixed = subtype == math_fixed_top or subtype == math_fixed_both,
+                        topfixed = subtype == fixedtopaccent_code or subtype == fixedbothaccent_code,
                     }))
                     processsubsup(start)
                     process(accent)

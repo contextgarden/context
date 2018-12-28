@@ -81,12 +81,12 @@ function context.utfchar(k)
     end
 end
 
-function context.rule(w,h,d,dir)
+function context.rule(w,h,d,direction)
     local rule
     if type(w) == "table" then
-        rule = new_rule(w.width,w.height,w.depth,w.dir)
+        rule = new_rule(w.width,w.height,w.depth,w.direction)
     else
-        rule = new_rule(w,h,d,dir)
+        rule = new_rule(w,h,d,direction)
     end
     setattrlist(rule,true)
     context(tonode(rule))

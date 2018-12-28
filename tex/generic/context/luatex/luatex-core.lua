@@ -376,6 +376,8 @@ do
     if not loaded.socket then loaded.socket = loaded["socket.core"] end
     if not loaded.mime   then loaded.mime   = loaded["mime.core"]   end
 
+    if not loaded.lfs then loaded.lfs = lfs end
+
 end
 
 do

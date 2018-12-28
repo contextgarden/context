@@ -13,46 +13,46 @@ local format = string.format
 local concat, sortedpairs = table.concat, table.sortedpairs
 local setmetatableindex = table.setmetatableindex
 
-local nodecodes      = nodes.nodecodes
-local whatsitcodes   = nodes.whatsitcodes
-local disccodes      = nodes.disccodes
+local nodecodes    = nodes.nodecodes
+local whatsitcodes = nodes.whatsitcodes
+local disccodes    = nodes.disccodes
 
-local tasks          = nodes.tasks
-local handlers       = nodes.handlers
+local tasks        = nodes.tasks
+local handlers     = nodes.handlers
 
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
-local disc_code      = nodecodes.disc
-local whatsit_code   = nodecodes.whatsit
+local hlist_code   = nodecodes.hlist
+local vlist_code   = nodecodes.vlist
+local disc_code    = nodecodes.disc
+local whatsit_code = nodecodes.whatsit
 
-local fulldisc_code  = disccodes.discretionary
+local discretionarydisc_code = disccodes.discretionary
 
-local implement      = interfaces.implement
+local implement    = interfaces.implement
 
-local nuts           = nodes.nuts
-local tonut          = nuts.tonut
-local tonode         = nuts.tonode
-local remove_node    = nuts.remove
+local nuts         = nodes.nuts
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
+local remove_node  = nuts.remove
 
-local nextnode       = nuts.traversers.node
+local nextnode     = nuts.traversers.node
 
-local setfield       = nuts.setfield
-local setlink        = nuts.setlink
-local setprev        = nuts.setprev
-local setnext        = nuts.setnext
-local getid          = nuts.getid
-local getdisc        = nuts.getdisc
-local getboth        = nuts.getboth
-local getnext        = nuts.getnext
-local getlist        = nuts.getlist
-local getsubtype     = nuts.getsubtype
+local setfield     = nuts.setfield
+local setlink      = nuts.setlink
+local setprev      = nuts.setprev
+local setnext      = nuts.setnext
+local getid        = nuts.getid
+local getdisc      = nuts.getdisc
+local getboth      = nuts.getboth
+local getnext      = nuts.getnext
+local getlist      = nuts.getlist
+local getsubtype   = nuts.getsubtype
 
-local setlist        = nuts.setlist
+local setlist      = nuts.setlist
 
-local getbox         = nuts.getbox
-local getboxnode     = nodes.getbox
+local getbox       = nuts.getbox
+local getboxnode   = nodes.getbox
 
-local removables     = {
+local removables   = {
     [whatsitcodes.open]    = true,
     [whatsitcodes.close]   = true,
     [whatsitcodes.write]   = true,
@@ -74,7 +74,7 @@ local function cleanup_redundant(head) -- better name is: flatten_page
     while start do
         local id = getid(start)
         if id == disc_code then
-            if getsubtype(start) == fulldisc_code then
+            if getsubtype(start) == discretionarydisc_code then
                 local _, _, replace, _, _ tail = getdisc(start,true)
                 if replace then
                     local prev, next = getboth(start)

@@ -257,61 +257,8 @@ function builders.buildpage_filter(groupcode)
     end
 end
 
-------------------------
-
--- do
---
---     local nuts        = nodes.nuts
---     local getglue     = tex.getglue
---     local getwhd      = nuts.getwhd
---     local new_b_skip  = nuts.pool.baselineskip
---     local new_l_skip  = nuts.pool.lineskip
---     local find_tail   = nuts.tail
---     local setlink     = nuts.setlink
---     local is_mirrored = nodes.is_mirrored
---
---     function nuts.setprevdepth(head,prevdepth) -- this will become a helper
---         local wd, ht, dp = getwhd(head)
---         local mirrored = false -- getid(box) == hlist_code and is_mirrored(getdir(box)) -- never mirrored
---         if prevdepth > -65536000 then
---             local b_width, b_stretch, b_shrink = getglue("baselineskip")
---             local l_width, l_stretch, l_shrink = getglue("lineskip")
---             local correction = b_width - prevdepth - (mirrored and dp or ht)
---             if correction < l_width then
---                 head = setlink(new_l_skip(l_width,l_stretch,l_shrink),head)
---             else
---                 head = setlink(new_b_skip(correction,b_stretch,b_shrink),head)
---             end
---         end
---         return head, mirrored and ht or dp
---     end
---
---     function nodes.setprevdepth(box,prevdepth)
---         local h, p = nodes.prepend_prevdepth(box,prevdepth)
---         if h then
---             return h, p
---         else
---             return head, prevdepth
---         end
---     end
---
--- end
---
--- local setprevdepth  = nodes.setprevdepth
--- local appendactions = nodes.tasks.actions("listbuilders")
---
--- function builders.append_filter(box,location,prevdepth,mirrored)
---     starttiming(builders)
---     box, prevdepth = appendactions(box,location,prevdepth,mirrored)
---     box, prevdepth = setprevdepth(box,prevdepth)
---     stoptiming(builders)
---     return box, prevdepth
--- end
-
 registercallback('vpack_filter',          builders.vpack_filter,      "vertical spacing etc")
 registercallback('buildpage_filter',      builders.buildpage_filter,  "vertical spacing etc (mvl)")
-----------------("append_to_vlist_filter",builders.append_filter,     "add content to the vlist")
-----------------('contribute_filter',     builders.contribute_filter, "adding content to lists")
 
 statistics.register("v-node processing time", function()
     return statistics.elapsedseconds(builders)

@@ -63,7 +63,7 @@ local getattr            = nuts.getattr
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
-local getdir             = nuts.getdir
+local getdirection       = nuts.getdirection
 local getwidth           = nuts.getwidth
 local getdata            = nuts.getdata
 
@@ -110,12 +110,12 @@ local whatsit_code       = nodecodes.whatsit
 
 local fontkern_code      = kerncodes.fontkern
 
-local userdefined_code   = whatsitcodes.userdefined
+local userdefinedwhatsit_code = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 local usernodeids        = nodepool.userids
 
-local new_textdir        = nodepool.textdir
+local new_direction      = nodepool.direction
 local new_usernumber     = nodepool.usernumber
 local new_glue           = nodepool.glue
 local new_leftskip       = nodepool.leftskip
@@ -345,15 +345,14 @@ directives.register("builders.paragraphs.solutions.splitters.encapsulate", funct
     encapsulate = v
 end)
 
-function splitters.split(head)
-    local current, rlmode, start, stop, attribute = head, false, nil, nil, 0
+function splitters.split(head) -- best also pass the direction
+    local current, r2l, start, stop, attribute = head, false, nil, nil, 0
     cache, max_less, max_more = { }, 0, 0
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
---         local list = last and copy_node_list(start,last) or copy_node_list(start)
         local list = last and copy_node_list(start,stop) or copy_node_list(start)
-        local n = #cache + 1
+        local n    = #cache + 1
         if encapsulate then
             local user_one = new_usernumber(splitter_one,n)
             local user_two = new_usernumber(splitter_two,n)
@@ -370,9 +369,8 @@ function splitters.split(head)
                 end
             end
         end
-        local r2l = rlmode == "TRT" or rlmode == "+TRT"
         if r2l then
-            local dirnode = new_textdir("+TRT")
+            local dirnode = new_direction(righttoleft) -- brrr, we don't pop ... to be done (when used at all)
             setlink(dirnode,list)
             list = dirnode
         end
@@ -421,11 +419,19 @@ function splitters.split(head)
             else
                 start, stop = nil, nil
             end
-        elseif id == dir_code or id == localpar_code then
+        elseif id == dir_code then
+            -- not tested (to be done by idris when font is ready)
             if start then
                 flush()
             end
-            rlmode = getdir(current)
+            local direction, pop = getdirection(current)
+            r2l = not pop and direction == righttoleft
+        elseif id == localpar_code then
+            if start then
+                flush() -- very unlikely as this starts a paragraph
+            end
+            local direction = getdirection(current)
+            r2l = direction == righttoleft or direction == "TRT" -- for old times sake
         else
             if start then
                 flush()
@@ -445,7 +451,7 @@ local function collect_words(list) -- can be made faster for attributes
     local words, w, word = { }, 0, nil
     if encapsulate then
         for current, subtype in nextwhatsit, list do
-            if subtype == userdefined_code then -- hm
+            if subtype == userdefinedwhatsit_code then -- hm
                 local user_id = getfield(current,"user_id")
                 if user_id == splitter_one then
                     word = { getdata(current), current, current }
@@ -752,17 +758,17 @@ function splitters.optimize(head)
     end
     for current in nexthlist, head do
         line = line + 1
-        local sign  = getfield(current,"glue_sign")
-        local dir   = getdir(current)
-        local width = getwidth(current)
-        local list  = getlist(current)
+        local sign      = getfield(current,"glue_sign")
+        local direction = getdirection(current)
+        local width     = getwidth(current)
+        local list      = getlist(current)
         if not encapsulate and getid(list) == glyph_code then
             -- nasty .. we always assume a prev being there .. future luatex will always have a leftskip set
             -- is this assignment ok ? .. needs checking
             list = insert_node_before(list,list,new_leftskip(0)) -- new_glue(0)
             setlist(current,list)
         end
-        local temp, badness = repack_hlist(list,width,'exactly',dir) -- it would be nice if the badness was stored in the node
+        local temp, badness = repack_hlist(list,width,"exactly",direction) -- it would be nice if the badness was stored in the node
         if badness > 0 then
             if sign == 0 then
                 if trace_optimize then

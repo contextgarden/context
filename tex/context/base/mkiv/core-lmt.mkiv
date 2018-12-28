@@ -13,7 +13,9 @@
 
 \writestatus{loading}{ConTeXt System Macros / Primitives}
 
-\registerctxluafile{core-lmt}{}
+\ifdefined\textdir \else
+    \registerctxluafile{core-lmt}{}
+\fi
 
 \unprotect
 

@@ -626,10 +626,8 @@ if context then
     local math_code          = nodecodes.math
     local hlist_code         = nodecodes.hlist
 
-    local discretionary_code = disccodes.discretionary
-    local explicit_code      = disccodes.explicit
-    local automatic_code     = disccodes.automatic
-    local regular_code       = disccodes.regular
+    local automaticdisc_code = disccodes.automatic
+    local regulardisc_code   = disccodes.regular
 
     local nuts               = nodes.nuts
     local tonode             = nodes.tonode
@@ -1288,7 +1286,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                     if leftchar then
                         post = serialize(true,leftchar)
                     end
-                    setdisc(disc,pre,post,nil,regular_code,hyphenpenalty)
+                    setdisc(disc,pre,post,nil,regulardisc_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1323,7 +1321,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                         end
                     end
                     -- maybe regular code
-                    setdisc(disc,pre,post,replace,regular_code,hyphenpenalty)
+                    setdisc(disc,pre,post,replace,regulardisc_code,hyphenpenalty)
                     if attrnode then
                         setattrlist(disc,attrnode)
                     end
@@ -1363,7 +1361,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
                 end
                 pre = copy_node(glyph)
                 setchar(pre,rightchar and rightchar > 0 and rightchar or code)
-                setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
+                setdisc(disc,pre,post,replace,automaticdisc_code,hyphenpenalty) -- ex ?
                 if attrnode then
                     setattrlist(disc,attrnode)
                 end
@@ -1385,7 +1383,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
             local pre     = copy_list(start)
             local post    = nil
             local replace = start
-            setdisc(disc,pre,post,replace,automatic_code,hyphenpenalty) -- ex ?
+            setdisc(disc,pre,post,replace,automaticdisc_code,hyphenpenalty) -- ex ?
             if attrnode then
                 setattrlist(disc,attrnode)
             end

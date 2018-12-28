@@ -2856,63 +2856,63 @@ end
 
 local collectresults  do -- too many locals otherwise
 
-    local nodecodes         = nodes.nodecodes
-    local skipcodes         = nodes.skipcodes
-    local listcodes         = nodes.listcodes
-    local whatsitcodes      = nodes.whatsitcodes
+    local nodecodes        = nodes.nodecodes
+    local gluecodes        = nodes.gluecodes
+    local listcodes        = nodes.listcodes
+    local whatsitcodes     = nodes.whatsitcodes
 
-    local subtypes          = nodes.subtypes
+    local subtypes         = nodes.subtypes
 
-    local hlist_code        = nodecodes.hlist
-    local vlist_code        = nodecodes.vlist
-    local glyph_code        = nodecodes.glyph
-    local glue_code         = nodecodes.glue
-    local kern_code         = nodecodes.kern
-    local disc_code         = nodecodes.disc
-    local whatsit_code      = nodecodes.whatsit
-    local localpar_code     = nodecodes.localpar
+    local hlist_code       = nodecodes.hlist
+    local vlist_code       = nodecodes.vlist
+    local glyph_code       = nodecodes.glyph
+    local glue_code        = nodecodes.glue
+    local kern_code        = nodecodes.kern
+    local disc_code        = nodecodes.disc
+    local whatsit_code     = nodecodes.whatsit
+    local localpar_code    = nodecodes.localpar
 
-    local userskip_code     = skipcodes.userskip
-    local rightskip_code    = skipcodes.rightskip
-    local parfillskip_code  = skipcodes.parfillskip
-    local spaceskip_code    = skipcodes.spaceskip
-    local xspaceskip_code   = skipcodes.xspaceskip
+    local userskip_code    = gluecodes.userskip
+    local rightskip_code   = gluecodes.rightskip
+    local parfillskip_code = gluecodes.parfillskip
+    local spaceskip_code   = gluecodes.spaceskip
+    local xspaceskip_code  = gluecodes.xspaceskip
 
-    local line_code         = listcodes.line
+    local linelist_code    = listcodes.line
 
-    local userdefined_code  = whatsitcodes.userdefined
+    local userdefinedwhatsit_code  = whatsitcodes.userdefined
 
-    local privateattribute  = attributes.private
-    local a_image           = privateattribute('image')
-    local a_reference       = privateattribute('reference')
-    local a_destination     = privateattribute('destination')
-    local a_characters      = privateattribute('characters')
-    local a_exportstatus    = privateattribute('exportstatus')
-    local a_tagged          = privateattribute('tagged')
-    local a_taggedpar       = privateattribute("taggedpar")
-    local a_textblock       = privateattribute("textblock")
+    local privateattribute = attributes.private
+    local a_image          = privateattribute('image')
+    local a_reference      = privateattribute('reference')
+    local a_destination    = privateattribute('destination')
+    local a_characters     = privateattribute('characters')
+    local a_exportstatus   = privateattribute('exportstatus')
+    local a_tagged         = privateattribute('tagged')
+    local a_taggedpar      = privateattribute("taggedpar")
+    local a_textblock      = privateattribute("textblock")
 
-    local inline_mark       = nodes.pool.userids["margins.inline"]
+    local inline_mark      = nodes.pool.userids["margins.inline"]
 
-    local nuts              = nodes.nuts
+    local nuts             = nodes.nuts
 
-    local getnext           = nuts.getnext
-    local getsubtype        = nuts.getsubtype
-    local getfont           = nuts.getfont
-    local getchar           = nuts.getchar
-    local getdisc           = nuts.getdisc
-    local getcomponents     = nuts.getcomponents
-    local getlist           = nuts.getlist
-    local getid             = nuts.getid
-    local getattr           = nuts.getattr
-    local setattr           = nuts.setattr -- maybe use properties
-    local isglyph           = nuts.isglyph
-    local getkern           = nuts.getkern
-    local getwidth          = nuts.getwidth
-    local getfield          = nuts.getfield
+    local getnext          = nuts.getnext
+    local getsubtype       = nuts.getsubtype
+    local getfont          = nuts.getfont
+    local getchar          = nuts.getchar
+    local getdisc          = nuts.getdisc
+    local getcomponents    = nuts.getcomponents
+    local getlist          = nuts.getlist
+    local getid            = nuts.getid
+    local getattr          = nuts.getattr
+    local setattr          = nuts.setattr -- maybe use properties
+    local isglyph          = nuts.isglyph
+    local getkern          = nuts.getkern
+    local getwidth         = nuts.getwidth
+    local getfield         = nuts.getfield
 
-    local nexthlist         = nuts.traversers.hlist
-    local nextnode          = nuts.traversers.node
+    local nexthlist        = nuts.traversers.hlist
+    local nextnode         = nuts.traversers.node
 
     local function addtomaybe(maybewrong,c,case)
         if trace_export then
@@ -3274,7 +3274,7 @@ end
                     end
                 end
             elseif id == whatsit_code then
-                if subtype == userdefined_code then
+                if subtype == userdefinedwhatsit_code then
                     -- similar to images, see above
                     local at = getattr(n,a_tagged)
                     if nofcurrentcontent > 0 then
@@ -3322,7 +3322,7 @@ end
     function builders.paragraphs.tag(head)
         noftextblocks = noftextblocks + 1
         for n, subtype in nexthlist, head do
-            if subtype == line_code then
+            if subtype == linelist_code then
                 setattr(n,a_textblock,noftextblocks)
             elseif subtype == glue_code or subtype == kern_code then -- no need to set fontkerns
                 setattr(n,a_textblock,0)

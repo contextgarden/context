@@ -68,7 +68,7 @@ local getdisc          = nuts.getdisc
 local getcomponents    = nuts.getcomponents
 local isglyph          = nuts.isglyph
 local getkern          = nuts.getkern
-local getdir           = nuts.getdir
+local getdirection     = nuts.getdirection
 local getwidth         = nuts.getwidth
 
 local setbox           = nuts.setbox
@@ -409,7 +409,7 @@ function step_tracers.codes(i,command,space)
         if id == glyph_code then
             showchar(c)
         elseif id == dir_code or id == localpar_code then
-            context("[%s]",getdir(c) or "unset")
+            context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
             if pre or post or replace then

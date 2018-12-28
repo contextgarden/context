@@ -24,6 +24,7 @@ local getleader          = nuts.getleader
 local getattr            = nuts.getattr
 local getwidth           = nuts.getwidth
 local getwhd             = nuts.getwhd
+local gettransform       = nuts.gettransform
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -35,19 +36,18 @@ local insert_node_after  = nuts.insert_after
 local nextnode           = nuts.traversers.node
 
 local nodecodes          = nodes.nodecodes
-local whatcodes          = nodes.whatcodes
 local rulecodes          = nodes.rulecodes
 
--- local normal_rule_code   = rulecodes.normal
-local box_rule_code      = rulecodes.box
-local image_rule_code    = rulecodes.image
-local empty_rule_code    = rulecodes.empty
--- local user_rule_code     = rulecodes.user
--- local over_rule_code     = rulecodes.over
--- local under_rule_code    = rulecodes.under
--- local fraction_rule_code = rulecodes.fraction
--- local radical_rule_code  = rulecodes.radical
--- local outline_rule_code  = rulecodes.outline
+----- normalrule_code    = rulecodes.normal
+local boxrule_code       = rulecodes.box
+local imagerule_code     = rulecodes.image
+local emptyrule_code     = rulecodes.empty
+----- userrule_code      = rulecodes.user
+----- overrule_code      = rulecodes.over
+----- underrule_code     = rulecodes.under
+----- fractionrule_code  = rulecodes.fraction
+----- radicalrule_code   = rulecodes.radical
+----- outlinerule_code   = rulecodes.outline
 
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
@@ -192,10 +192,36 @@ local function process(attribute,head,inheritance,default) -- one attribute
         elseif id == hlist_code or id == vlist_code then
             local content = getlist(stack)
             if content then
+                -- tricky checking
+                local outer
+                if gettransform(stack) then
+                    outer = getattr(stack,attribute)
+                    if outer then
+                        if default and outer == inheritance then
+                            if current ~= default then
+                                head    = insert_node_before(head,stack,copy_node(nsdata[default]))
+                                current = default
+                            end
+                        elseif current ~= outer then
+                            head    = insert_node_before(head,stack,copy_node(nsdata[c]))
+                            current = outer
+                        end
+                    elseif default and inheritance then
+                        if current ~= default then
+                            head    = insert_node_before(head,stack,copy_node(nsdata[default]))
+                            current = default
+                        end
+                    elseif current > 0 then
+                        head    = insert_node_before(head,stack,copy_node(nsnone))
+                        current = 0
+                    end
+                end
                 -- begin nested --
                 local list
                 if nstrigger and getattr(stack,nstrigger) then
-                    local outer = getattr(stack,attribute)
+                    if not outer then
+                        outer = getattr(stack,attribute)
+                    end
                     if outer ~= inheritance then
                         list = process(attribute,content,inheritance,outer)
                     else
@@ -293,10 +319,44 @@ local function selective(attribute,head,inheritance,default) -- two attributes
         elseif id == hlist_code or id == vlist_code then
             local content = getlist(stack)
             if content then
+                -- tricky checking
+                local outer
+                if gettransform(stack) then
+                    outer = getattr(stack,attribute)
+                    if outer then
+                        if default and outer == inheritance then
+                            if current ~= default then
+                                local data = nsdata[default]
+                                head = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
+                                current = default
+                            end
+                        else
+                            local s = getattr(stack,nsselector)
+                         -- local s = nsforced or getattr(stack,nsselector)
+                            if current ~= outer or current_selector ~= s then
+                                local data = nsdata[outer]
+                                head = insert_node_before(head,stack,copy_node(data[nsforced or s or nsselector]))
+                                current = outer
+                                current_selector = s
+                            end
+                        end
+                    elseif default and inheritance then
+                        if current ~= default then
+                            local data = nsdata[default]
+                            head    = insert_node_before(head,stack,copy_node(data[nsforced or getattr(stack,nsselector) or nsselector]))
+                            current = default
+                        end
+                    elseif current > 0 then
+                        head = insert_node_before(head,stack,copy_node(nsnone))
+                        current, current_selector = 0, 0
+                    end
+                end
                 -- begin nested
                 local list
                 if nstrigger and getattr(stack,nstrigger) then
-                    local outer = getattr(stack,attribute)
+                    if not outer then
+                        outer = getattr(stack,attribute)
+                    end
                     if outer ~= inheritance then
                         list = selective(attribute,content,inheritance,outer)
                     else
@@ -311,15 +371,14 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 -- end nested
             end
         elseif id == rule_code then
-if subtype == box_rule_code or subtype == image_rule_code or subtype == empty_rule_code then
-    -- so no redundant color stuff (only here, layers for instance should obey)
-    check = false
-else
-            local wd, ht, dp = getwhd(stack)
-            check = wd ~= 0 or (ht+dp) ~= 0
-end
+            if subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+                -- so no redundant color stuff (only here, layers for instance should obey)
+                check = false
+            else
+                local wd, ht, dp = getwhd(stack)
+                check = wd ~= 0 or (ht+dp) ~= 0
+            end
         end
-
         if check then
             local c = getattr(stack,attribute)
             if c then

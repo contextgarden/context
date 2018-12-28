@@ -50,7 +50,7 @@ local setattr          = nuts.setattr
 local getglue          = nuts.getglue
 local isglyph          = nuts.isglyph
 local getcomponents    = nuts.getcomponents
-local getdir           = nuts.getdir
+local getdirection     = nuts.getdirection
 local getwidth         = nuts.getwidth
 
 local flush_list       = nuts.flush_list
@@ -66,8 +66,7 @@ local nutpool          = nuts.pool
 local new_rule         = nutpool.rule
 
 local nodecodes        = nodes.nodecodes
-local whatcodes        = nodes.whatcodes
-local skipcodes        = nodes.skipcodes
+local whatsitcodes     = nodes.whatsitcodes
 local fillcodes        = nodes.fillcodes
 
 local subtypes         = nodes.subtypes
@@ -84,7 +83,6 @@ local localpar_code    = nodecodes.localpar
 local whatsit_code     = nodecodes.whatsit
 
 local dimenfactors     = number.dimenfactors
-local fillorders       = nodes.fillcodes
 local formatters       = string.formatters
 
 -- this will be reorganized:
@@ -130,7 +128,6 @@ function nodes.handlers.checkforleaks(sparse)
     end
 end
 
-
 local function tosequence(start,stop,compact)
     if start then
         local f_sequence = formatters["U+%04X:%s"]
@@ -160,13 +157,11 @@ local function tosequence(start,stop,compact)
                 else
                     t[#t+1] = nodecodes[id]
                 end
-            elseif id == dir_code or id == localpar_code then
-                local d = getdir(start)
-                if d then
-                    t[#t+1] = "[" .. d .. "]"
-                else
-                    t[#t+1] = "[]"
-                end
+            elseif id == dir_code then
+                local d, p = getdirection(start)
+                t[#t+1] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
+            elseif id == localpar_code then
+                t[#t+1] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
                 t[#t+1] = "[]"
             else
@@ -213,7 +208,7 @@ function nodes.idstostring(head,tail)
     local f_one   = formatters["[%s]"]
     for n, id, subtype in nextnode, head do
         if id == whatsit_code then
-            id = whatcodes[subtype]
+            id = whatsitcodes[subtype]
         else
             id = nodecodes[id]
         end
@@ -428,17 +423,17 @@ local function nodetodimen(n)
     width   = width   / 65536
     if stretch_order ~= 0 then
         if shrink_order ~= 0 then
-            return f_f_f(width,stretch,fillorders[stretch_order],shrink,fillorders[shrink_order])
+            return f_f_f(width,stretch,fillcodes[stretch_order],shrink,fillcodes[shrink_order])
         elseif shrink ~= 0 then
-            return f_f_m(width,stretch,fillorders[stretch_order],shrink)
+            return f_f_m(width,stretch,fillcodes[stretch_order],shrink)
         else
-            return f_f_z(width,stretch,fillorders[stretch_order])
+            return f_f_z(width,stretch,fillcodes[stretch_order])
         end
     elseif shrink_order ~= 0 then
         if stretch ~= 0 then
-            return f_p_f(width,stretch,shrink,fillorders[shrink_order])
+            return f_p_f(width,stretch,shrink,fillcodes[shrink_order])
         else
-            return f_z_f(width,shrink,fillorders[shrink_order])
+            return f_z_f(width,shrink,fillcodes[shrink_order])
         end
     elseif stretch ~= 0 then
         if shrink ~= 0 then

@@ -31,6 +31,8 @@ local expanders -- this will go away
 
 if LUATEXVERSION < 1.005 then -- not loaded any more
 
+    -- some shortcuts go here
+
     expanders = {
         [discretionary_code] = function(d,template)
             -- \discretionary

@@ -75,11 +75,11 @@ local getsubtype          = nuts.getsubtype
 local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getprop             = nuts.getprop
-local getdir              = nuts.getdir
+local getdirection        = nuts.getdirection
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
-local setdir              = nuts.setdir
+local setdirection        = nuts.setdirection
 ----- setattrlist         = nuts.setattrlist
 
 local remove_node         = nuts.remove
@@ -87,10 +87,10 @@ local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
 
 local nodepool            = nuts.pool
-local new_textdir         = nodepool.textdir
+local new_direction       = nodepool.direction
 
 local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
+local gluecodes           = nodes.gluecodes
 
 local glyph_code          = nodecodes.glyph
 local glue_code           = nodecodes.glue
@@ -99,7 +99,12 @@ local vlist_code          = nodecodes.vlist
 local math_code           = nodecodes.math
 local dir_code            = nodecodes.dir
 local localpar_code       = nodecodes.localpar
-local parfillskip_code    = skipcodes.parfillskip
+
+local parfillskip_code    = gluecodes.parfillskip
+
+local dirvalues           = nodes.dirvalues
+local lefttoright_code    = dirvalues.lefttoright
+local righttoleft_code    = dirvalues.righttoleft
 
 ----- object_replacement  = 0xFFFC -- object replacement character
 local maximum_stack       = 60     -- probably spec but not needed
@@ -232,13 +237,19 @@ local function build_list(head) -- todo: store node pointer ... saves loop
             list[size] = { char = 0x0020, direction = "ws", original = "ws", level = 0 }
             current = getnext(current)
         elseif id == dir_code then
-            local dir = getdir(current)
-            if dir == "+TLT" then
-                list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
-            elseif dir == "+TRT" then
-                list[size] = { char = 0x202B, direction = "rle", original = "rle", level = 0 }
-            elseif dir == "-TLT" or dir == "-TRT" then
-                list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+            local direction, pop = getdirection(current)
+            if direction == lefttoright_code then
+                if pop then
+                    list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+                else
+                    list[size] = { char = 0x202A, direction = "lre", original = "lre", level = 0 }
+                end
+            elseif direction == righttoleft_code then
+                if pop then
+                    list[size] = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 }
+                else
+                    list[size] = { char = 0x202B, direction = "rle", original = "rle", level = 0 }
+                end
             else
                 list[size] = { char = 0xFFFC, direction = "on", original = "on", level = 0, id = id } -- object replacement character
             end
@@ -324,10 +335,11 @@ end
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
     if id == localpar_code then
-        if getdir(head) == "TRT" then
-            return 1, "TRT", true
+        local direction = getdirection(head)
+        if direction == righttoleft_code or direction == "TRT" then -- for old times sake we we handle strings too
+            return 1, righttoleft_code, true
         else
-            return 0, "TLT", true
+            return 0, lefttoright_code, true
         end
     else
         -- P2, P3
@@ -335,12 +347,12 @@ local function get_baselevel(head,list,size) -- todo: skip if first is object (o
             local entry     = list[i]
             local direction = entry.direction
             if direction == "r" or direction == "al" then
-                return 1, "TRT", true
+                return 1, righttoleft_code, true
             elseif direction == "l" then
-                return 0, "TLT", true
+                return 0, lefttoright_code, true
             end
         end
-        return 0, "TLT", false
+        return 0, lefttoright_code, false
     end
 end
 
@@ -695,11 +707,11 @@ local function insert_dir_points(list,size)
         local begindir = nil
         local enddir   = nil
         if level % 2 == 1 then
-            begindir = "+TRT"
-            enddir   = "-TRT"
+            begindir = righttoleft_code
+            enddir   = righttoleft_code
         else
-            begindir = "+TLT"
-            enddir   = "-TLT"
+            begindir = righttoleft_code
+            enddir   = righttoleft_code
         end
         for i=1,size do
             local entry = list[i]
@@ -748,11 +760,11 @@ local function apply_to_list(list,size,head,pardir)
                 setcolor(current,direction,false,mirror)
             end
         elseif id == hlist_code or id == vlist_code then
-            setdir(current,pardir) -- is this really needed?
+            setdirection(current,pardir) -- is this really needed?
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
-                local d = new_textdir(enddir)
+                local d = new_direction(enddir,true)
                 setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
@@ -761,7 +773,7 @@ local function apply_to_list(list,size,head,pardir)
         elseif begindir then
             if id == localpar_code then
                 -- localpar should always be the 1st node
-                local d = new_textdir(begindir)
+                local d = new_direction(begindir)
                 setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
@@ -769,7 +781,7 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if begindir then
-            local d = new_textdir(begindir)
+            local d = new_direction(begindir)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
@@ -782,7 +794,7 @@ local function apply_to_list(list,size,head,pardir)
             end
         end
         if enddir then
-            local d = new_textdir(enddir)
+            local d = new_direction(enddir,true)
             setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)

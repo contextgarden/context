@@ -711,8 +711,8 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_b = "{"
 -- local s_cldl_argument_f = "{ "
 
-local t_cldl_luafunction       = createtoken("luafunctioncall")
-local lua_expandable_call_code = token.command_id and token.command_id("lua_expandable_call")
+local t_cldl_luafunction             = createtoken("luafunctioncall")
+local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
 
 local function writer(parent,command,...) -- already optimized before call
 
@@ -830,7 +830,7 @@ local function writer(parent,command,...) -- already optimized before call
                 ti = storefunction(ti)
                 if tokenflushmode then
                     if newtoken then
-                        flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_code),"}")
+                        flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_token_code),"}")
                     else
                         flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
                     end
@@ -1035,7 +1035,7 @@ local caller = function(parent,f,a,...)
             f = storefunction(f)
             if tokenflushmode then
                 if newtoken then
-                    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_code),"}")
+                    flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_token_code),"}")
                 else
                     flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
                 end

@@ -59,7 +59,7 @@ local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
-local skipcodes          = nodes.skipcodes
+local gluecodes          = nodes.gluecodes
 local disccodes          = nodes.disccodes
 local listcodes          = nodes.listcodes
 
@@ -71,17 +71,18 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local math_code          = nodecodes.math
 
-local box_list_code      = listcodes.box
-local user_list_code     = listcodes.unknown
+local boxlist_code       = listcodes.box
+local unknownlist_code   = listcodes.unknown
 
-local discretionary_code = disccodes.discretionary
-local automatic_code     = disccodes.automatic
+local discretionarydisc_code = disccodes.discretionary
+local automaticdisc_code     = disccodes.automatic
 
 local fontkern_code      = kerncodes.fontkern
 local userkern_code      = kerncodes.userkern
-local userskip_code      = skipcodes.userskip
-local spaceskip_code     = skipcodes.spaceskip
-local xspaceskip_code    = skipcodes.xspaceskip
+
+local userskip_code      = gluecodes.userskip
+local spaceskip_code     = gluecodes.spaceskip
+local xspaceskip_code    = gluecodes.xspaceskip
 
 local fonthashes         = fonts.hashes
 local chardata           = fonthashes.characters
@@ -435,14 +436,14 @@ function kerns.handler(head)
             elseif id == disc_code then
                 local prev, next, pglyph, nglyph -- delayed till needed
                 local subtype = getsubtype(start)
-             -- if subtype == automatic_code then
+             -- if subtype == automaticdisc_code then
              --     -- this is kind of special, as we have already injected the
              --     -- previous kern
              --     local prev   = getprev(start)
              --     local pglyph = prev and getid(prev) == glyph_code
              --     languages.expand(start,pglyph and prev)
              --     -- we can have a different start now
-             -- elseif subtype ~= discretionary_code then
+             -- elseif subtype ~= discretionarydisc_code then
              --     prev    = getprev(start)
              --     pglyph  = prev and getid(prev) == glyph_code
              --     languages.expand(start,pglyph and prev)
@@ -529,7 +530,7 @@ function kerns.handler(head)
                 bound = false
             elseif id == hlist_code or id == vlist_code then
                 local subtype = getsubtype(start)
-                if subtype == user_list_code or subtype == box_list_code then
+                if subtype == unknownlist_code or subtype == boxlist_code then
                     -- special case
                     local b, f = closest_bound(start,getprev)
                     if b then

@@ -217,9 +217,10 @@ local kerncodes       = nodes.kerncodes
 
 local glue_code       = nodecodes.glue
 local kern_code       = nodecodes.kern
-local c_userkern      = kerncodes.userkern
-local c_fontkern      = kerncodes.fontkern
-local c_italickern    = kerncodes.italickern
+
+local fontkern_code   = kerncodes.fontkern
+local italickern_code = kerncodes.italickern
+
 local a_fontkern      = attributes.private("fontkern")
 
 local takebox         = tex.takebox
@@ -230,7 +231,7 @@ local flush_node      = nodes.flush
 local addblob         = mp.mf_blob_add
 local newblob         = mp.mf_blob_new
 
-local visible_code = {
+local visible_codes = {
     [nodecodes.glyph] = true,
     [nodecodes.glue]  = true,
     [nodecodes.hlist] = true,
@@ -251,13 +252,13 @@ local function initialize(category,box)
             local current = head
             while current do
                 local id = current.id
-                if visible_code[id] then
+                if visible_codes[id] then
                     head, current, tail = remove_node(head,current)
                     s = s + 1
                     n[s] = tail
                 elseif id == kern_code then
                     local subtype = current.subtype
-                    if subtype == c_fontkern or subtype == italickern then -- or current[a_fontkern]
+                    if subtype == fontkern_code or subtype == italickern_code then -- or current[a_fontkern]
                         head, current, temp = remove_node(head,current)
                         tail.next = temp
                         temp.prev = tail

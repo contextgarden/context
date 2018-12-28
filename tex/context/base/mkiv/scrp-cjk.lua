@@ -39,12 +39,14 @@ local new_kern           = nodepool.kern
 local new_penalty        = nodepool.penalty
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
+local gluecodes          = nodes.gluecodes
+
 local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue
-local userskip_code      = skipcodes.userskip
-local spaceskip_code     = skipcodes.spaceskip
-local xspaceskip_code    = skipcodes.xspaceskip
+
+local userskip_code      = gluecodes.userskip
+local spaceskip_code     = gluecodes.spaceskip
+local xspaceskip_code    = gluecodes.xspaceskip
 
 local a_scriptstatus     = attributes.private('scriptstatus')
 local a_scriptinjection  = attributes.private('scriptinjection')

@@ -19,8 +19,10 @@ local next, load, type = next, load, type
 
 local newline       = S("\n\r")^1
 local continue      = P("\\") * newline
+local whitespace    = S(" \t\n\r")
 local spaces        = S(" \t") + continue
-local name          = R("az","AZ","__","09")^1
+local nametoken     = R("az","AZ","__","09")
+local name          = nametoken^1
 local body          = ((continue/"" + 1) - newline)^1
 local lparent       = P("(")
 local rparent       = P(")")
@@ -53,7 +55,9 @@ end
 
 -- todo: zero case
 
-resolve = C(C(name) * arguments^-1) / function(raw,s,a)
+local safeguard = P("local") * whitespace^1 * name * (whitespace + P("="))
+
+resolve = safeguard + C(C(name) * (arguments^-1)) / function(raw,s,a)
     local d = definitions[s]
     if d then
         if a then

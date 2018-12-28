@@ -135,12 +135,9 @@ implement { name = "useboxresource",            actions = useboxresource }
 
 -- image resources (messy: will move)
 
-local newrule         = nodes.pool.rule
-local image_rule_code = nodes.rulecodes.image
-
-local imageresources  = { }
-local lastindex       = 0
-local lastpages       = 1
+local imageresources = { }
+local lastindex      = 0
+local lastpages      = 1
 
 local function saveimageresource()
     local width, height, depth = scanwhd()

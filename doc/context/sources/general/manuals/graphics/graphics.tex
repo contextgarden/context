@@ -250,36 +250,41 @@ The actually inclusion of this image happened with:
 
 \stopsubject
 
-\startsubject[title=The backend]
+% \startsubject[title=The backend]
+%
+% Traditionally \TEX\ sees an image as just a box with dimensions and in \LUATEX\
+% it is actually a special kind of rule that carries information about what to
+% inject in the final (\PDF) file. In regular \LUATEX\ the core formats \type
+% {pdf}, \type {png}, \type {jpg} and \type {jp2} are dealt with by the backend but
+% in \CONTEXT\ we can use \LUA\ instead. We might default to that method at some
+% point but for now you need to enable that explicitly:
+%
+% \starttyping[option=TEX]
+% \enabledirectrive[graphics.pdf.uselua]
+% \enabledirectrive[graphics.jpg.uselua]
+% \enabledirectrive[graphics.jp2.uselua]
+% \enabledirectrive[graphics.png.uselua]
+% \stoptyping
+%
+% All four can be enabled with:
+%
+% \starttyping[option=TEX]
+% \enabledirectrive[graphics.uselua]
+% \stoptyping
+%
+% Performance|-|wise only \PNG\ inclusion can be less efficient, but only when you
+% use interlaced images or large images with masks. It makes no real sense in a
+% professional workflow to use the (larger) interlaced images, and masks are seldom
+% used at high resolutions, so in practice one will not really notice loss of
+% performance.
+%
+% The advantage of this method is that we can provide more options, intercept bad
+% images that make the backend abort and lessen the dependency on libraries.
+%
+% \stopsubject
 
-Traditionally \TEX\ sees an image as just a box with dimensions and in \LUATEX\
-it is actually a special kind of rule that carries information about what to
-inject in the final (\PDF) file. In regular \LUATEX\ the core formats \type
-{pdf}, \type {png}, \type {jpg} and \type {jp2} are dealt with by the backend but
-in \CONTEXT\ we can use \LUA\ instead. We might default to that method at some
-point but for now you need to enable that explicitly:
+\startsubject[title=Basic formats]
 
-\starttyping[option=TEX]
-\enabledirectrive[graphics.pdf.uselua]
-\enabledirectrive[graphics.jpg.uselua]
-\enabledirectrive[graphics.jp2.uselua]
-\enabledirectrive[graphics.png.uselua]
-\stoptyping
-
-All four can be enabled with:
-
-\starttyping[option=TEX]
-\enabledirectrive[graphics.uselua]
-\stoptyping
-
-Performance|-|wise only \PNG\ inclusion can be less efficient, but only when you
-use interlaced images or large images with masks. It makes no real sense in a
-professional workflow to use the (larger) interlaced images, and masks are seldom
-used at high resolutions, so in practice one will not really notice loss of
-performance.
-
-The advantage of this method is that we can provide more options, intercept bad
-images that make the backend abort and lessen the dependency on libraries.
 
 \stopsubject
 

@@ -20,67 +20,67 @@ local nodes           = nodes
 
 local implement       = interfaces.implement
 
-local nodecodes       = nodes.nodecodes
+local nodecodes     = nodes.nodecodes
 
-local disc_code       = nodecodes.disc
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
-local glue_code       = nodecodes.glue
-local glyph_code      = nodecodes.glyph
+local disc_code     = nodecodes.disc
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local glue_code     = nodecodes.glue
+local glyph_code    = nodecodes.glyph
 
-local nuts            = nodes.nuts
-local tonut           = nuts.tonut
-local tonode          = nuts.tonode
+local nuts          = nodes.nuts
+local tonut         = nuts.tonut
+local tonode        = nuts.tonode
 
------ getfield        = nuts.getfield
-local getnext         = nuts.getnext
-local getprev         = nuts.getprev
-local getboth         = nuts.getboth
-local getdisc         = nuts.getdisc
-local getid           = nuts.getid
-local getlist         = nuts.getlist
-local getattribute    = nuts.getattribute
-local getbox          = nuts.getbox
-local getdirection    = nuts.getdirection
-local getwidth        = nuts.getwidth
-local takebox         = nuts.takebox
+----- getfield      = nuts.getfield
+local getnext       = nuts.getnext
+local getprev       = nuts.getprev
+local getboth       = nuts.getboth
+local getdisc       = nuts.getdisc
+local getid         = nuts.getid
+local getlist       = nuts.getlist
+local getattribute  = nuts.getattribute
+local getbox        = nuts.getbox
+local getdirection  = nuts.getdirection
+local getwidth      = nuts.getwidth
+local takebox       = nuts.takebox
 
------ setfield        = nuts.setfield
-local setlink         = nuts.setlink
-local setboth         = nuts.setboth
-local setnext         = nuts.setnext
-local setbox          = nuts.setbox
-local setlist         = nuts.setlist
-local setdisc         = nuts.setdisc
-local setwidth        = nuts.setwidth
-local setheight       = nuts.setheight
-local setdepth        = nuts.setdepth
-local setshift        = nuts.setshift
+----- setfield      = nuts.setfield
+local setlink       = nuts.setlink
+local setboth       = nuts.setboth
+local setnext       = nuts.setnext
+local setbox        = nuts.setbox
+local setlist       = nuts.setlist
+local setdisc       = nuts.setdisc
+local setwidth      = nuts.setwidth
+local setheight     = nuts.setheight
+local setdepth      = nuts.setdepth
+local setshift      = nuts.setshift
 
-local flush_node      = nuts.flush_node
-local flush_list      = nuts.flush_list
-local copy_node       = nuts.copy
-local copy_list       = nuts.copy_list
-local find_tail       = nuts.tail
-local list_dimensions = nuts.dimensions
-local hpack           = nuts.hpack
+local flush_node    = nuts.flush_node
+local flush_list    = nuts.flush_list
+local copy_node     = nuts.copy
+local copy_list     = nuts.copy_list
+local find_tail     = nuts.tail
+local getdimensions = nuts.dimensions
+local hpack         = nuts.hpack
 
-local nextdisc        = nuts.traversers.disc
-local nextdir         = nuts.traversers.dir
-local nexthlist       = nuts.traversers.hlist
+local nextdisc      = nuts.traversers.disc
+local nextdir       = nuts.traversers.dir
+local nexthlist     = nuts.traversers.hlist
 
-local listtoutf       = nodes.listtoutf
+local listtoutf     = nodes.listtoutf
 
-local nodepool        = nuts.pool
-local new_penalty     = nodepool.penalty
-local new_hlist       = nodepool.hlist
-local new_glue        = nodepool.glue
+local nodepool      = nuts.pool
+local new_penalty   = nodepool.penalty
+local new_hlist     = nodepool.hlist
+local new_glue      = nodepool.glue
 
-local setlistcolor    = nodes.tracers.colors.setlist
+local setlistcolor  = nodes.tracers.colors.setlist
 
-local texget          = tex.get
-local texgetbox       = tex.getbox
-local texsetdimen     = tex.setdimen
+local texget        = tex.get
+local texgetbox     = tex.getbox
+local texsetdimen   = tex.setdimen
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -368,7 +368,7 @@ local function getnaturaldimensions(n)
     local w, h, d = 0, 0, 0
     local l = getlist(getbox(n))
     if l then
-        w, h, d = list_dimensions(l)
+        w, h, d = getdimensions(l)
     end
     texsetdimen("lastnaturalboxwd",w)
     texsetdimen("lastnaturalboxht",h)
@@ -398,7 +398,7 @@ interfaces.implement {
         local w, h, d = 0, 0, 0
         local l = getlist(getbox(n))
         if l then
-            w, h, d = list_dimensions(l)
+            w, h, d = getdimensions(l)
         end
         context("\\dimexpr%i\\scaledpoint\\relax",w)
     end
@@ -424,9 +424,9 @@ local doifelse = commands.doifelse
 
 do
 
-    local dirvalues   = nodes.dirvalues
-    local righttoleft = dirvalues.righttoleft
-    local lefttoright = dirvalues.lefttoright
+    local dirvalues        = nodes.dirvalues
+    local lefttoright_code = dirvalues.lefttoright
+    local righttoleft_code = dirvalues.righttoleft
 
     local function firstdirinbox(n)
         local b = getbox(n)
@@ -441,7 +441,7 @@ do
                 end
             end
         end
-        return lefttoright
+        return lefttoright_code
     end
 
     nodes.firstdirinbox = firstdirinbox
@@ -450,7 +450,7 @@ do
         name      = "doifelserighttoleftinbox",
         arguments = "integer",
         actions   = function(n)
-            doifelse(firstdirinbox(n) == righttoleft)
+            doifelse(firstdirinbox(n) == righttoleft_code)
         end
     }
 
@@ -613,7 +613,7 @@ do
         actions = function()
             local head = tex.lists.page_head
             -- list dimensions returns 3 value but we take the first
-            context(head and list_dimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
+            context(head and getdimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
         end
     }
 

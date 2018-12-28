@@ -8,24 +8,23 @@ if not modules then modules = { } end modules ['math-spa'] = {
 
 -- for the moment (when testing) we use a penalty 1
 
-local penalty_code   = nodes.nodecodes.penalty
-local glue_code      = nodes.nodecodes.glue
+local penalty_code  = nodes.nodecodes.penalty
+local glue_code     = nodes.nodecodes.glue
 
-local nuts           = nodes.nuts
-local tonut          = nodes.tonut
-local tonode         = nodes.tonode
-local getid          = nuts.getid
-local getnext        = nuts.getnext
-local getwidth       = nuts.getwidth
-local setglue        = nuts.setglue
-local getpenalty     = nuts.getpenalty
-local setpenalty     = nuts.setpenalty
+local nuts          = nodes.nuts
+local tonut         = nodes.tonut
+local tonode        = nodes.tonode
 
-local get_dimensions = nuts.dimensions
+local getid         = nuts.getid
+local getnext       = nuts.getnext
+local getwidth      = nuts.getwidth
+local setglue       = nuts.setglue
+local getpenalty    = nuts.getpenalty
+local setpenalty    = nuts.setpenalty
+local getdimensions = nuts.dimensions
+local nextglue      = nuts.traversers.glue
 
-local nextglue       = nuts.traversers.glue
-
-local texsetdimen    = tex.setdimen
+local texsetdimen   = tex.setdimen
 
 local v_none = interfaces.variables.none
 local v_auto = interfaces.variables.auto
@@ -46,7 +45,7 @@ function noads.handlers.align(h)
                         s = n
                         n = getnext(s)
                     end
-                    local w = get_dimensions(h,n) + distance
+                    local w = getdimensions(h,n) + distance
                     texsetdimen("global","d_strc_math_indent",w)
                     break
                 end

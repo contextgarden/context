@@ -10,7 +10,7 @@ local nodes, node = nodes, node
 
 local chardata                   = characters.data
 local nodecodes                  = nodes.nodecodes
-local skipcodes                  = nodes.skipcodes
+local gluecodes                  = nodes.gluecodes
 
 local glue_code                  = nodecodes.glue
 local penalty_code               = nodecodes.penalty
@@ -19,10 +19,10 @@ local glyph_code                 = nodecodes.glyph
 local whatsit_code               = nodecodes.whatsit
 local hlist_code                 = nodecodes.hlist
 
-local leftskip_code              = skipcodes.leftskip
-local rightskip_code             = skipcodes.rightskip
-local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
-local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
+local leftskip_code              = gluecodes.leftskip
+local rightskip_code             = gluecodes.rightskip
+local abovedisplayshortskip_code = gluecodes.abovedisplayshortskip
+local belowdisplayshortskip_code = gluecodes.belowdisplayshortskip
 
 local nuts                       = nodes.nuts
 

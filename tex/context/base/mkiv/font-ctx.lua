@@ -577,6 +577,12 @@ local function definecontext(name,t) -- can be shared
     return number, t
 end
 
+-- {a,b,c} as table (so we don' need to parse again when it gets applied)
+-- we will update this ... when we have foo={a,b,c} then we can keep the table
+
+-- \definefontfeature[demo][a={b,c}]
+-- \definefontfeature[demo][a={b=12,c={34,35}}]
+
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=",1,true) then
         features = parent
@@ -592,7 +598,7 @@ local function presetcontext(name,parent,features) -- will go to con and shared
             if type(value) == "string" and find(value,"[=]") then
                 local t = settings_to_hash(value)
                 if next(t) then
-                    features[key] = sequenced(normalize_features(t),",")
+                    features[key] = sequenced(normalize_features(t,true),",")
                 end
             end
         end

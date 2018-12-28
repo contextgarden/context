@@ -8,38 +8,37 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
 
 local type = type
 
-local formatters       = string.formatters
+local formatters            = string.formatters
 
-local nodecodes        = nodes.nodecodes
-local whatsit_code     = nodecodes.whatsit
-local whatsitcodes     = nodes.whatsitcodes
-local latelua_code     = whatsitcodes.latelua
-local literal_code     = whatsitcodes.literal
+local nodecodes             = nodes.nodecodes
+local whatsitcodes          = nodes.whatsitcodes
 
-local nodeinjections   = backends.nodeinjections
+local nodeinjections        = backends.nodeinjections
 
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
+local nuts                  = nodes.nuts
+local tonut                 = nuts.tonut
 
-local setfield         = nuts.setfield
-local setdata          = nuts.setdata
+local setfield              = nuts.setfield
+local setdata               = nuts.setdata
 
-local copy_node        = nuts.copy
-local new_node         = nuts.new
+local copy_node             = nuts.copy
+local new_node              = nuts.new
 
-local nodepool         = nuts.pool
-local register         = nodepool.register
+local nodepool              = nuts.pool
+local register              = nodepool.register
 
-local literalvalues    = nodes.literalvalues
-local originliteral    = literalvalues.origin
-local pageliteral      = literalvalues.page
-local directliteral    = literalvalues.direct
-local rawliteral       = literalvalues.raw
+local whatsit_code          = nodecodes.whatsit
 
-local literalcode      = whatsitcodes.literal
-local savecode         = whatsitcodes.save
-local restorecode      = whatsitcodes.restore
-local setmatrixcode    = whatsitcodes.setmatrix
+local savewhatsit_code      = whatsitcodes.save
+local restorewhatsit_code   = whatsitcodes.restore
+local setmatrixwhatsit_code = whatsitcodes.setmatrix
+local literalwhatsit_code   = whatsitcodes.literal
+
+local literalvalues         = nodes.literalvalues
+local originliteral_code    = literalvalues.origin
+local pageliteral_code      = literalvalues.page
+local directliteral_code    = literalvalues.direct
+local rawliteral_code       = literalvalues.raw
 
 local s_matrix_0 = "1 0 0 1"
 local f_matrix_2 = formatters["%.6F 0 0 %.6F"]
@@ -82,14 +81,14 @@ local function tomatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
     end
 end
 
-local pdforiginliteral = register(new_node(whatsit_code, literalcode))  setfield(pdforiginliteral,"mode",originliteral)
-local pdfpageliteral   = register(new_node(whatsit_code, literalcode))  setfield(pdfpageliteral,  "mode",pageliteral)
-local pdfdirectliteral = register(new_node(whatsit_code, literalcode))  setfield(pdfdirectliteral,"mode",directliteral)
-local pdfrawliteral    = register(new_node(whatsit_code, literalcode))  setfield(pdfrawliteral,   "mode",rawliteral)
+local pdforiginliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdforiginliteral,"mode",originliteral_code)
+local pdfpageliteral   = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfpageliteral,  "mode",pageliteral_code)
+local pdfdirectliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfdirectliteral,"mode",directliteral_code)
+local pdfrawliteral    = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfrawliteral,   "mode",rawliteral_code)
 
-local pdfsave          = register(new_node(whatsit_code, savecode))
-local pdfrestore       = register(new_node(whatsit_code, restorecode))
-local pdfsetmatrix     = register(new_node(whatsit_code, setmatrixcode))
+local pdfsave          = register(new_node(whatsit_code, savewhatsit_code))
+local pdfrestore       = register(new_node(whatsit_code, restorewhatsit_code))
+local pdfsetmatrix     = register(new_node(whatsit_code, setmatrixwhatsit_code))
 
 function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setdata(t,str) return t end
 function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setdata(t,str) return t end
@@ -98,15 +97,15 @@ function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) se
 
 local pdfliterals = {
     -- by number
-    [originliteral] = pdforiginliteral,
-    [pageliteral]   = pdfpageliteral,
-    [directliteral] = pdfdirectliteral,
-    [rawliteral]    = pdfrawliteral,
+    [originliteral_code] = pdforiginliteral,
+    [pageliteral_code]   = pdfpageliteral,
+    [directliteral_code] = pdfdirectliteral,
+    [rawliteral_code]    = pdfrawliteral,
     -- by name
-    [literalvalues[originliteral]] = pdforiginliteral,
-    [literalvalues[pageliteral]]   = pdfpageliteral,
-    [literalvalues[directliteral]] = pdfdirectliteral,
-    [literalvalues[rawliteral]]    = pdfrawliteral,
+    [literalvalues[originliteral_code]] = pdforiginliteral,
+    [literalvalues[pageliteral_code]]   = pdfpageliteral,
+    [literalvalues[directliteral_code]] = pdfdirectliteral,
+    [literalvalues[rawliteral_code]]    = pdfrawliteral,
 }
 
 function nodepool.pdfliteral(mode,str)

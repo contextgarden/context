@@ -38,7 +38,8 @@ local listcodes        = nodes.listcodes
 
 local hlist_code       = nodecodes.hlist
 local vlist_code       = nodecodes.vlist
-local line_code        = listcodes.line
+
+local linelist_code    = listcodes.line
 
 local new_stretch      = nodepool.stretch
 
@@ -68,7 +69,7 @@ local function handler(head,leftpage,realpageno) -- traverse_list
     while current do
         local id = getid(current)
         if id == hlist_code then
-            if getsubtype(current) == line_code then
+            if getsubtype(current) == linelist_code then
                 local a = takeattr(current,a_realign)
                 if not a or a == 0 then
                     -- skip

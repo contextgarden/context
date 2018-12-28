@@ -27,7 +27,7 @@ local findtail        = nuts.tail
 
 local nexthlist       = nuts.traversers.hlist
 
-local list_dimensions = nuts.dimensions
+local getdimensions   = nuts.dimensions
 local copy_list       = nuts.copy_list
 
 local tracedrule      = nodes.tracers.pool.nuts.rule
@@ -84,7 +84,7 @@ function checkers.handler(head)
             if width > 0 then
                 local list = getlist(current)
                 if list then
-                    local naturalwidth, naturalheight, naturaldepth = list_dimensions(list)
+                    local naturalwidth, naturalheight, naturaldepth = getdimensions(list)
                     local delta = naturalwidth - width
                     if naturalwidth == 0 or delta == 0 then
                         -- special box

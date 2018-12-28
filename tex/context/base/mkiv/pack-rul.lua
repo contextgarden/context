@@ -20,46 +20,50 @@ if not modules then modules = { } end modules ['pack-rul'] = {
 
 local type = type
 
-local context         = context
+local context           = context
 
-local hlist_code      = nodes.nodecodes.hlist
-local vlist_code      = nodes.nodecodes.vlist
-local box_code        = nodes.listcodes.box
-local line_code       = nodes.listcodes.line
-local equation_code   = nodes.listcodes.equation
+local nodecodes         = nodes.nodecodes
+local listcodes         = nodes.listcodes
 
-local texsetdimen     = tex.setdimen
-local texsetcount     = tex.setcount
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
 
-local implement       = interfaces.implement
+local boxlist_code      = listcodes.box
+local linelist_code     = listcodes.line
+local equationlist_code = listcodes.equation
 
-local nuts            = nodes.nuts
+local texsetdimen       = tex.setdimen
+local texsetcount       = tex.setcount
 
-local getnext         = nuts.getnext
-local getprev         = nuts.getprev
-local getlist         = nuts.getlist
-local setlist         = nuts.setlist
-local getwhd          = nuts.getwhd
-local getid           = nuts.getid
-local getsubtype      = nuts.getsubtype
-local getbox          = nuts.getbox
-local getdir          = nuts.getdir
-local getdirection    = nuts.getdirection
-local setshift        = nuts.setshift
-local setwidth        = nuts.setwidth
-local getwidth        = nuts.getwidth
-local setboxglue      = nuts.setboxglue
-local getboxglue      = nuts.getboxglue
+local implement         = interfaces.implement
 
-local hpack           = nuts.hpack
-local list_dimensions = nuts.dimensions
-local flush_node      = nuts.flush
+local nuts              = nodes.nuts
 
-local nexthlist       = nuts.traversers.hlist
-local nextvlist       = nuts.traversers.vlist
-local nextlist        = nuts.traversers.list
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getlist           = nuts.getlist
+local setlist           = nuts.setlist
+local getwhd            = nuts.getwhd
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getbox            = nuts.getbox
+local getdirection      = nuts.getdirection
+local setshift          = nuts.setshift
+local setwidth          = nuts.setwidth
+local getwidth          = nuts.getwidth
+local setboxglue        = nuts.setboxglue
+local getboxglue        = nuts.getboxglue
 
-local checkformath    = false
+local hpack             = nuts.hpack
+local getdimensions     = nuts.dimensions
+local flush_node        = nuts.flush
+
+local traversers        = nuts.traversers
+local nexthlist         = traversers.hlist
+local nextvlist         = traversers.vlist
+local nextlist          = traversers.list
+
+local checkformath      = false
 
 directives.register("framed.checkmath",function(v) checkformath = v end) -- experiment
 
@@ -90,9 +94,8 @@ local function doreshapeframedbox(n)
                 noflines  = noflines + 1
                 if list then
                     if id == hlist_code then
-                        if subtype == box_code or subtype == line_code then
-                         -- lastlinelength = list_dimensions(list,getdir(n))
-                            lastlinelength = list_dimensions(list,getdirection(n))
+                        if subtype == boxlist_code or subtype == linelist_code then
+                            lastlinelength = getdimensions(list)
                         else
                             lastlinelength = width
                         end
@@ -119,13 +122,13 @@ local function doreshapeframedbox(n)
                 if hdone then
                     for h, id, subtype, list in nextlist, list do
                         if list and id == hlist_code then
-                            if subtype == box_code or subtype == line_code then
-                                local p = hpack(list,maxwidth,'exactly',getdir(h)) -- multiple return value
+                            if subtype == boxlist_code or subtype == linelist_code then
+                                local p = hpack(list,maxwidth,'exactly',getdirection(h)) -- multiple return value
                                 local set, order, sign = getboxglue(p)
                                 setboxglue(h,set,order,sign)
                                 setlist(p)
                                 flush_node(p)
-                            elseif checkformath and subtype == equation_code then
+                            elseif checkformath and subtype == equationlist_code then
                              -- display formulas use a shift
                                 if nofnonzero == 1 then
                                     setshift(h,0)
@@ -209,8 +212,8 @@ local function maxboxwidth(box)
     for n, subtype in nexthlist, list do -- no dir etc needed
         local l = getlist(n)
         if l then
-            if subtype == box_code or subtype == line_code then
-                lastlinelength = list_dimensions(l,getdir(n))
+            if subtype == boxlist_code or subtype == linelist_code then
+                lastlinelength = getdimensions(l)
             else
                 lastlinelength = getwidth(n)
             end

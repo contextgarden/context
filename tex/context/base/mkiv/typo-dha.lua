@@ -55,7 +55,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
-local getdir            = nuts.getdir
+local getdirection       = nuts.getdir
 local isglyph            = nuts.isglyph -- or ischar
 
 local setprop            = nuts.setprop
@@ -69,7 +69,7 @@ local end_of_math        = nuts.end_of_math
 local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
+local gluecodes          = nodes.gluecodes
 
 local glyph_code         = nodecodes.glyph
 local math_code          = nodecodes.math
@@ -78,9 +78,13 @@ local glue_code          = nodecodes.glue
 local dir_code           = nodecodes.dir
 local localpar_code      = nodecodes.localpar
 
-local parfillskip_code   = skipcodes.parfillskip
+local dirvalues          = nodes.dirvalues
+local lefttoright_code   = dirvalues.lefttoright
+local righttoleft_code   = dirvalues.righttoleft
 
-local new_textdir        = nodepool.textdir
+local parfillskip_code   = gluecodes.parfillskip
+
+local new_direction      = nodepool.direction
 
 local insert             = table.insert
 
@@ -102,14 +106,14 @@ local strip              = false
 
 local s_isol             = fonts.analyzers.states.isol
 
-local function stopdir(finish)
-    local n = new_textdir(finish == "TRT" and "-TRT" or "-TLT")
+local function stopdir(finish) -- we could use finish directly
+    local n = new_direction(finish == righttoleft_code and righttoleft_code or lefttoright_code,true)
     setprop(n,"direction",true)
     return n
 end
 
-local function startdir(finish)
-    local n = new_textdir(finish == "TRT" and "+TRT" or "+TLT")
+local function startdir(finish) -- we could use finish directly
+    local n = new_direction(finish == righttoleft_code and righttoleft_code or lefttoright_code)
     setprop(n,"direction",true)
     return n
 end
@@ -307,27 +311,31 @@ local function process(start)
             elseif id == kern_code then
                 setprop(current,"direction",'k')
             elseif id == dir_code then
-                local dir = getdir(current)
-                if dir == "+TRT" then
-                    autodir = -1
-                elseif dir == "+TLT" then
-                    autodir = 1
-                elseif dir == "-TRT" or dir == "-TLT" then
-                    if embedded and embedded~= 0 then
+                local direction, pop = getdirection(current)
+                if direction == righttoleft_code then
+                    if not pop then
+                        autodir = -1
+                    elseif embedded and embedded~= 0 then
                         autodir = embedded
                     else
                         autodir = 0
                     end
-                else
-                    -- message
+                elseif direction == lefttoright_code then
+                    if not pop then
+                        autodir = 1
+                    elseif embedded and embedded~= 0 then
+                        autodir = embedded
+                    else
+                        autodir = 0
+                    end
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
             elseif id == localpar_code then
-                local dir = getdir(current)
-                if dir == 'TRT' then
+                local direction = getdirection(current)
+                if direction == righttoleft_code then
                     autodir = -1
-                elseif dir == 'TLT' then
+                elseif direction == lefttoright_code then
                     autodir = 1
                 end
                 pardir  = autodir

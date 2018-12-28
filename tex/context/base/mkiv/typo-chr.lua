@@ -8,29 +8,31 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 
 -- This module can be optimized.
 
--- local nodecodes      = nodes.nodecodes
--- local whatsitcodes   = nodes.whatsitcodes
--- local glyph_code     = nodecodes.glyph
--- local whatsit_code   = nodecodes.whatsit
--- local user_code      = whatsitcodes.userdefined
+-- local nodecodes        = nodes.nodecodes
+-- local whatsitcodes     = nodes.whatsitcodes
 --
--- local stringusernode = nodes.pool.userstring
+-- local glyph_code       = nodecodes.glyph
+-- local whatsit_code     = nodecodes.whatsit
 --
--- local nuts           = nodes.nuts
--- local pool           = nuts.pool
+-- local userwhatsit_code = whatsitcodes.userdefined
 --
--- local getid          = nuts.getid
--- local getprev        = nuts.getprev
--- local getchar        = nuts.getchar
--- local getdata        = nuts.getdata
--- local getfield       = nuts.getfield
+-- local stringusernode   = nodes.pool.userstring
 --
--- local remove_node    = nuts.remove
--- local nextwhatsit    = nuts.traversers.whatsit
+-- local nuts             = nodes.nuts
+-- local pool             = nuts.pool
 --
--- local signal         = pool.userids.signal
+-- local getid            = nuts.getid
+-- local getprev          = nuts.getprev
+-- local getchar          = nuts.getchar
+-- local getdata          = nuts.getdata
+-- local getfield         = nuts.getfield
 --
--- local is_punctuation = characters.is_punctuation
+-- local remove_node      = nuts.remove
+-- local nextwhatsit      = nuts.traversers.whatsit
+--
+-- local signal           = pool.userids.signal
+--
+-- local is_punctuation   = characters.is_punctuation
 --
 -- local actions = {
 --     removepunctuation = function(head,n)
@@ -51,7 +53,7 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 -- function typesetters.signals.handler(head)
 --     local done = false
 --     for n, subtype in nextwhatsit, head do
---         if subtype == user_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
+--         if subtype == userwhatsit_code and getfield(n,"user_id") == signal and getfield(n,"type") == 115 then
 --             local action = actions[getdata(n)]
 --             if action then
 --                 head = action(h,n)
@@ -81,41 +83,41 @@ if not modules then modules = { } end modules ['typo-chr'] = {
 
 local insert, remove = table.insert, table.remove
 
-local context         = context
-local ctx_doifelse    = commands.doifelse
+local context           = context
+local ctx_doifelse      = commands.doifelse
 
-local nodecodes       = nodes.nodecodes
-local subtypes        = nodes.subtypes
+local nodecodes         = nodes.nodecodes
+local boundarycodes     = nodes.boundarycodes
+local subtypes          = nodes.subtypes
 
-local glyph_code      = nodecodes.glyph
-local localpar_code   = nodecodes.localpar
-local boundary_code   = nodecodes.boundary
+local glyph_code        = nodecodes.glyph
+local localpar_code     = nodecodes.localpar
+local boundary_code     = nodecodes.boundary
 
-local word_code       = nodes.boundarycodes.word
+local wordboundary_code = boundarycodes.word
 
-local texgetnest      = tex.getnest -- to be used
+local texgetnest        = tex.getnest -- to be used
+local texsetcount       = tex.setcount
 
-local texsetcount     = tex.setcount
+local flush_node        = node.flush_node
+local flush_list        = node.flush_list
 
-local flush_node      = node.flush_node
-local flush_list      = node.flush_list
+local settexattribute   = tex.setattribute
+local punctuation       = characters.is_punctuation
 
-local settexattribute = tex.setattribute
-local punctuation     = characters.is_punctuation
+local variables         = interfaces.variables
+local v_all             = variables.all
+local v_reset           = variables.reset
 
-local variables       = interfaces.variables
-local v_all           = variables.all
-local v_reset         = variables.reset
+local stack             = { }
 
-local a_marked        = attributes.numbers['marked']
-local lastmarked      = 0
-local marked          = {
+local a_marked          = attributes.numbers['marked']
+local lastmarked        = 0
+local marked            = {
     [v_all]   = 1,
     [""]      = 1,
     [v_reset] = attributes.unsetvalue,
 }
-
-local stack           = { }
 
 local function pickup()
     local list = texgetnest()
@@ -340,7 +342,7 @@ interfaces.implement {
 interfaces.implement {
     name    = "atwordboundary",
     actions = function()
-        lastnodeequals(boundary_code,word_code)
+        lastnodeequals(boundary_code,wordboundary_code)
     end,
 }
 

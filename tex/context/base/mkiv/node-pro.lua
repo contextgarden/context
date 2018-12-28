@@ -184,22 +184,22 @@ end
 
 do
 
-    local texnest    = tex.nest
+    local texnest       = tex.nest
 
-    local getlist    = nodes.getlist
-    local setlist    = nodes.setlist
-    local getsubtype = nodes.getsubtype
+    local getlist       = nodes.getlist
+    local setlist       = nodes.setlist
+    local getsubtype    = nodes.getsubtype
 
-    local line_code  = nodes.listcodes.line
+    local linelist_code = nodes.listcodes.line
 
-    local actions    = tasks.actions("contributers")
+    local actions       = tasks.actions("contributers")
 
     function processors.contribute_filter(groupcode)
         if groupcode == "box" then -- "pre_box"
             local whatever = texnest[texnest.ptr]
             if whatever then
                 local line = whatever.tail
-                if line and getsubtype(line) == line_code then
+                if line and getsubtype(line) == linelist_code then
                     local head = getlist(line)
                     if head then
                         local result = actions(head,groupcode,line)

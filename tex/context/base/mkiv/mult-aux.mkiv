@@ -227,7 +227,8 @@
   {\ifx#2\relax\let#2\empty\fi                                           % it is hardly faster but produces less expansion tracing
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-   \def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
+  %\def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
+   \def#5##1##2{\ifx##1\relax\??empty\else#4##1{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \def#8##1{\begincsname#1#2:##1\endcsname}}
@@ -259,7 +260,8 @@
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
    \def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
-   \def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}%
+  %\def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
    \def#6{#1#2:}%
    \def#7##1{#1##1:}%
    \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}%

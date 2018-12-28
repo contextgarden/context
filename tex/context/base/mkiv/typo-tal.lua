@@ -50,7 +50,7 @@ local setchar              = nuts.setchar
 local insert_node_before   = nuts.insert_before
 local insert_node_after    = nuts.insert_after
 local nextglyph            = nuts.traversers.glyph
-local list_dimensions      = nuts.dimensions
+local getdimensions        = nuts.dimensions
 local first_glyph          = nuts.first_glyph
 
 local setglue              = nuts.setglue
@@ -320,16 +320,16 @@ function characteralign.handler(head,where)
     local predefined = dataset.predefined
     local before, after
     if predefined then
-        before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0
-        after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0
+        before = b_start and getdimensions(b_start,getnext(b_stop)) or 0
+        after  = a_start and getdimensions(a_start,getnext(a_stop)) or 0
     else
         local entry = list[row]
         if entry then
             before = entry.before or 0
             after  = entry.after  or 0
         else
-            before = b_start and list_dimensions(b_start,getnext(b_stop)) or 0
-            after  = a_start and list_dimensions(a_start,getnext(a_stop)) or 0
+            before = b_start and getdimensions(b_start,getnext(b_stop)) or 0
+            after  = a_start and getdimensions(a_start,getnext(a_stop)) or 0
             list[row] = {
                 before = before,
                 after  = after,

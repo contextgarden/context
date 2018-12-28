@@ -13,81 +13,82 @@ local insert, concat = table.insert, table.concat
 local tostring, next, rawget, type = tostring, next, rawget, type
 local lpegmatch = lpeg.match
 
-local context            = context
-local commands           = commands
+local context             = context
+local commands            = commands
 
-local implement          = interfaces.implement
+local implement           = interfaces.implement
 
-local allocate           = utilities.storage.allocate
-local setmetatableindex  = table.setmetatableindex
+local allocate            = utilities.storage.allocate
+local setmetatableindex   = table.setmetatableindex
 
-local nuts               = nodes.nuts
-local tonut              = nuts.tonut
+local nuts                = nodes.nuts
+local tonut               = nuts.tonut
 
-local getid              = nuts.getid
-local getlist            = nuts.getlist
-local getattr            = nuts.getattr
-local getbox             = nuts.getbox
+local getid               = nuts.getid
+local getlist             = nuts.getlist
+local getattr             = nuts.getattr
+local getbox              = nuts.getbox
 
-local nextnode           = nuts.traversers.node
+local nextnode            = nuts.traversers.node
 
-local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
+local nodecodes           = nodes.nodecodes
+local whatsitcodes        = nodes.whatsitcodes
 
-local whatsit_code       = nodecodes.whatsit
-local whatsitcodes       = nodes.whatsitcodes
-local latelua_code       = whatsitcodes.latelua
+local glyph_code          = nodecodes.glyph
+local hlist_code          = nodecodes.hlist
+local vlist_code          = nodecodes.vlist
+local whatsit_code        = nodecodes.whatsit
 
-local texsetattribute    = tex.setattribute
+local lateluawhatsit_code = whatsitcodes.latelua
 
-local a_marks            = attributes.private("structure","marks")
+local texsetattribute     = tex.setattribute
 
-local trace_marks_set    = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
-local trace_marks_get    = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
-local trace_marks_all    = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
+local a_marks             = attributes.private("structure","marks")
 
-local report_marks       = logs.reporter("structure","marks")
+local trace_marks_set     = false  trackers.register("marks.set",    function(v) trace_marks_set = v end)
+local trace_marks_get     = false  trackers.register("marks.get",    function(v) trace_marks_get = v end)
+local trace_marks_all     = false  trackers.register("marks.detail", function(v) trace_marks_all = v end)
 
-local variables          = interfaces.variables
+local report_marks        = logs.reporter("structure","marks")
 
-local v_first            = variables.first
-local v_last             = variables.last
-local v_previous         = variables.previous
-local v_next             = variables.next
-local v_top              = variables.top
-local v_bottom           = variables.bottom
-local v_current          = variables.current
-local v_default          = variables.default
-local v_page             = variables.page
-local v_all              = variables.all
-local v_keep             = variables.keep
+local variables           = interfaces.variables
 
-local v_nocheck_suffix   = ":" .. variables.nocheck
+local v_first             = variables.first
+local v_last              = variables.last
+local v_previous          = variables.previous
+local v_next              = variables.next
+local v_top               = variables.top
+local v_bottom            = variables.bottom
+local v_current           = variables.current
+local v_default           = variables.default
+local v_page              = variables.page
+local v_all               = variables.all
+local v_keep              = variables.keep
 
-local v_first_nocheck    = variables.first    .. v_nocheck_suffix
-local v_last_nocheck     = variables.last     .. v_nocheck_suffix
-local v_previous_nocheck = variables.previous .. v_nocheck_suffix
-local v_next_nocheck     = variables.next     .. v_nocheck_suffix
-local v_top_nocheck      = variables.top      .. v_nocheck_suffix
-local v_bottom_nocheck   = variables.bottom   .. v_nocheck_suffix
+local v_nocheck_suffix    = ":" .. variables.nocheck
 
-local structures         = structures
-local marks              = structures.marks
-local lists              = structures.lists
+local v_first_nocheck     = variables.first    .. v_nocheck_suffix
+local v_last_nocheck      = variables.last     .. v_nocheck_suffix
+local v_previous_nocheck  = variables.previous .. v_nocheck_suffix
+local v_next_nocheck      = variables.next     .. v_nocheck_suffix
+local v_top_nocheck       = variables.top      .. v_nocheck_suffix
+local v_bottom_nocheck    = variables.bottom   .. v_nocheck_suffix
 
-local settings_to_array  = utilities.parsers.settings_to_array
+local structures          = structures
+local marks               = structures.marks
+local lists               = structures.lists
 
-local boxes_too          = false -- at some point we can also tag boxes or use a zero char
+local settings_to_array   = utilities.parsers.settings_to_array
+
+local boxes_too           = false -- at some point we can also tag boxes or use a zero char
 
 directives.register("marks.boxestoo", function(v) boxes_too = v end)
 
-marks.data               = marks.data or allocate()
+local data = marks.data or allocate()
+marks.data = data
 
 storage.register("structures/marks/data", marks.data, "structures.marks.data")
 
-local data = marks.data
 local stack, topofstack = { }, 0
 
 local ranges = {
@@ -121,7 +122,7 @@ end
 local function sweep(head,first,last)
     for n, id, subtype in nextnode, head do
         -- we need to handle empty heads so we test for latelua
-        if id == glyph_code or (id == whatsit_code and subtype == latelua_code) then
+        if id == glyph_code or (id == whatsit_code and subtype == lateluawhatsit_code) then
             local a = getattr(n,a_marks)
             if not a then
                 -- next

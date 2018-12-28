@@ -95,7 +95,6 @@ local getprop            = nuts.getprop
 
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
-local gluecodes          = nodes.gluecodes
 local whatsitcodes       = nodes.whatsitcodes
 
 local hlist_code         = nodecodes.hlist

@@ -36,7 +36,7 @@ local insert_after       = nuts.insert_after
 local copy_no_components = nuts.copy_no_components
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
+local gluecodes          = nodes.gluecodes
 
 local glue_code          = nodecodes.glue
 ----- kern_code          = nodecodes.kern
@@ -44,9 +44,9 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 
-local userskip_code      = skipcodes.user
-local spaceskip_code     = skipcodes.spaceskip
-local xspaceskip_code    = skipcodes.xspaceskip
+local userskip_code      = gluecodes.user
+local spaceskip_code     = gluecodes.spaceskip
+local xspaceskip_code    = gluecodes.xspaceskip
 
 local a_characters       = attributes.private("characters")
 

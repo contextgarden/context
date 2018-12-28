@@ -146,9 +146,7 @@ end
 
 -- we're done with library shortcuts
 
-local report_epdf      = logs.reporter("epdf")
-
-local typenames        = { [0] =
+local typenames = { [0] =
     "boolean",
     "integer",
     "real",
@@ -166,10 +164,12 @@ local typenames        = { [0] =
     "integer64",
 }
 
-local typenumbers    = table.swapped(typenames)
+local typenumbers = table.swapped(typenames)
 
-local null_code      = typenumbers.null
-local ref_code       = typenumbers.ref
+local null_object_code = typenumbers.null
+local ref_object_code  = typenumbers.ref
+
+local report_epdf = logs.reporter("epdf")
 
 local function fatal_error(...)
     report_epdf(...)
@@ -242,11 +242,11 @@ local function prepare(document,d,t,n,k,mt,flags)
         if v then
             local r = dictGetValNF(d,i)
             local kind = getType(v)
-            if kind == null_code then
+            if kind == null_object_code then
                 -- ignore
             elseif kind then
                 local key = dictGetKey(d,i)
-                if r and getType(r) == ref_code then
+                if r and getType(r) == ref_object_code then
                     local objnum = getRefNum(r)
                     local cached = document.__cache__[objnum]
                     if not cached then
@@ -285,7 +285,7 @@ end
 --             if v then
 --                 local key  = dictGetKey(d,i)
 --                 local kind = getType(v)
---                 if kind == ref_code then
+--                 if kind == ref_object_code then
 --                     local objnum = getRefNum(v)
 --                     local cached = document.__cache__[objnum]
 --                     if not cached then
@@ -363,11 +363,11 @@ local function prepare(document,a,t,n,k)
         local v = arrayGet(a,i)
         if v then
             local kind = getType(v)
-            if kind == null_code then
+            if kind == null_object_code then
                 -- ignore
             elseif kind then
                 local r = arrayGetNF(a,i)
-                if r and getType(r) == ref_code then
+                if r and getType(r) == ref_object_code then
                     local objnum = getRefNum(r)
                     local cached = document.__cache__[objnum]
                     if not cached then
@@ -401,7 +401,7 @@ end
 --             local v = arrayGetNF(a,i)
 --             if v then
 --                 local kind = getType(v)
---                 if kind == ref_code then
+--                 if kind == ref_object_code then
 --                     local objnum = getRefNum(v)
 --                     local cached = document.__cache__[objnum]
 --                     if not cached then
@@ -1073,46 +1073,46 @@ end
 
 if img then do
 
-    local copydictionary       = nil
-    local copyarray            = nil
+    local copydictionary          = nil
+    local copyarray               = nil
 
-    local ref_code             = typenumbers.ref
-    local boolean_code         = typenumbers.boolean
-    local integer_code         = typenumbers.integer
-    local real_code            = typenumbers.real
-    local string_code          = typenumbers.string
-    local name_code            = typenumbers.name
-    local null_code            = typenumbers.null
-    local array_code           = typenumbers.array
-    local dictionary_code      = typenumbers.dictionary
-    local stream_code          = typenumbers.stream
-    local cmd_code             = typenumbers.cmd
+    local ref_object_code         = typenumbers.ref
+    local boolean_object_code     = typenumbers.boolean
+    local integer_object_code     = typenumbers.integer
+    local real_object_code        = typenumbers.real
+    local string_object_code      = typenumbers.string
+    local name_object_code        = typenumbers.name
+    local null_object_code        = typenumbers.null
+    local array_object_code       = typenumbers.array
+    local dictionary_object_code  = typenumbers.dictionary
+    local stream_object_code      = typenumbers.stream
+    local cmd_object_code         = typenumbers.cmd
 
-    local pdfreserveobject     = lpdf.reserveobject
-    local pdfflushobject       = lpdf.flushobject
-    local pdfflushstreamobject = lpdf.flushstreamobject
-    local pdfreference         = lpdf.reference
-    local pdfconstant          = lpdf.constant
-    local pdfarray             = lpdf.array
-    local pdfdictionary        = lpdf.dictionary
-    local pdfunicode           = lpdf.unicode
-    local pdfstring            = lpdf.string
-    local pdfnull              = lpdf.null
+    local pdfreserveobject        = lpdf.reserveobject
+    local pdfflushobject          = lpdf.flushobject
+    local pdfflushstreamobject    = lpdf.flushstreamobject
+    local pdfreference            = lpdf.reference
+    local pdfconstant             = lpdf.constant
+    local pdfarray                = lpdf.array
+    local pdfdictionary           = lpdf.dictionary
+    local pdfunicode              = lpdf.unicode
+    local pdfstring               = lpdf.string
+    local pdfnull                 = lpdf.null
 
-    local report               = logs.reporter("backend","xobjects")
+    local report                  = logs.reporter("backend","xobjects")
 
-    local factor               = 65536 / (7200/7227) -- 1/number.dimenfactors.bp
+    local factor                  = 65536 / (7200/7227) -- 1/number.dimenfactors.bp
 
-    local createimage          = images.create
+    local createimage             = images.create
 
     local function scaledbbox(b)
         return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
     end
 
     local function copyobject(xref,copied,kind,r,v)
-        if kind == null_code then
+        if kind == null_object_code then
             return pdfnull()
-        elseif r and getType(r) == ref_code then
+        elseif r and getType(r) == ref_object_code then
             local objnum = getRefNum(r)
             local r = copied[objnum]
             if r then
@@ -1121,13 +1121,13 @@ if img then do
                 local o
                 r = pdfreserveobject()
                 copied[objnum] = r
-                if kind == array_code then
+                if kind == array_object_code then
                     local a = copyarray(xref,copied,fetch(xref,objnum,0))
                     pdfflushobject(r,tostring(a))
-                elseif kind == dictionary_code then
+                elseif kind == dictionary_object_code then
                     local d = copydictionary(xref,copied,fetch(xref,objnum,0))
                     pdfflushobject(r,tostring(d))
-                elseif kind == stream_code then
+                elseif kind == stream_object_code then
                     local f = fetch(xref,objnum,0)
                     local d = copydictionary(xref,copied,false,streamGetDict(f))
                     local s = getstream(f)
@@ -1143,17 +1143,17 @@ if img then do
                 end
             end
             return pdfreference(r)
-        elseif kind == array_code then
+        elseif kind == array_object_code then
             return copyarray(xref,copied,v)
-        elseif kind == dictionary_code then
+        elseif kind == dictionary_object_code then
             return copydictionary(xref,copied,v)
-        elseif kind == integer_code then
+        elseif kind == integer_object_code then
             return getInt(v)
-        elseif kind == real_code then
+        elseif kind == real_object_code then
             return getReal(v)
-        elseif kind == name_code then
+        elseif kind == name_object_code then
             return pdfconstant(getName(v))
-        elseif kind == string_code then
+        elseif kind == string_object_code then
             local s = getString(v)
             if not s or s == "" then
                 return ""
@@ -1163,9 +1163,9 @@ if img then do
                 return pdfunicode(s)
             end
             return pdfstring(s)
-        elseif kind == boolean_code then
+        elseif kind == boolean_object_code then
             return getBool(v)
-        elseif kind == stream_code then
+        elseif kind == stream_object_code then
             -- hm ...
             return getStream(v)
         else

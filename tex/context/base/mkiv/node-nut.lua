@@ -257,6 +257,8 @@ nuts.getdepth              = direct.getdepth
 nuts.setdepth              = direct.setdepth
 nuts.getshift              = direct.getshift
 nuts.setshift              = direct.setshift
+nuts.gettransform          = direct.gettransform or function() end
+nuts.settransform          = direct.settransform or function() end
 
 nuts.getnucleus            = direct.getnucleus
 nuts.setnucleus            = direct.setnucleus

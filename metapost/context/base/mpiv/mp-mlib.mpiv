@@ -608,6 +608,8 @@ vardef thelabel@#(expr p,z) =
         thelabel@#(decimal p,z)
     elseif string p :
         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+    elseif pair p :
+        thelabel@#("(" & decimal(xpart p) & "," & decimal(ypart p) & ")",z)
     else :
         p shifted (theoffset@#(z)
             + labeloffset*mfun_laboff@#

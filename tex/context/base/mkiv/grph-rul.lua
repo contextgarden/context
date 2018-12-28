@@ -8,36 +8,38 @@ if not modules then modules = { } end modules ['grph-rul'] = {
 
 local tonumber, next, type = tonumber, next, type
 
-local attributes     = attributes
-local nodes          = nodes
-local context        = context
+local attributes       = attributes
+local nodes            = nodes
+local context          = context
 
-local bpfactor       = number.dimenfactors.bp
+local bpfactor         = number.dimenfactors.bp
 
-local nuts           = nodes.nuts
-local userrule       = nuts.rules.userrule
-local outlinerule    = nuts.pool.outlinerule
-local ruleactions    = nuts.rules.ruleactions
+local nuts             = nodes.nuts
+local userrule         = nuts.rules.userrule
+local outlinerule      = nuts.pool.outlinerule
+local ruleactions      = nuts.rules.ruleactions
 
-local setattrlist    = nuts.setattrlist
-local setattr        = nuts.setattr
-local tonode         = nuts.tonode
+local setattrlist      = nuts.setattrlist
+local setattr          = nuts.setattr
+local tonode           = nuts.tonode
 
-local getattribute   = tex.getattribute
+local getattribute     = tex.getattribute
 
-local a_color        = attributes.private('color')
-local a_transparency = attributes.private('transparency')
-local a_colormodel   = attributes.private('colormodel')
+local lefttoright_code = nodes.dirvalues.lefttoright
 
-local mpcolor        = attributes.colors.mpcolor
+local a_color          = attributes.private('color')
+local a_transparency   = attributes.private('transparency')
+local a_colormodel     = attributes.private('colormodel')
 
-local trace_mp       = false  trackers.register("rules.mp", function(v) trace_mp = v end)
+local mpcolor          = attributes.colors.mpcolor
 
-local report_mp      = logs.reporter("rules","mp")
+local trace_mp         = false  trackers.register("rules.mp", function(v) trace_mp = v end)
 
-local floor          = math.floor
-local getrandom      = utilities.randomizer.get
-local formatters     = string.formatters
+local report_mp        = logs.reporter("rules","mp")
+
+local floor            = math.floor
+local getrandom        = utilities.randomizer.get
+local formatters       = string.formatters
 
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 
@@ -119,7 +121,7 @@ def RuleColor = %color% enddef ;
             line      = (p.line or 65536) * bpfactor,
             color     = mpcolor(p.ma,p.ca,p.ta),
             option    = p.option or "",
-            direction = p.direction or "TLT",
+            direction = p.direction or lefttoright_code,
             h         = h * bpfactor,
             v         = v * bpfactor,
         }

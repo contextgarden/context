@@ -67,20 +67,24 @@ local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
-local getdir               = nuts.getdir
+local getdirection         = nuts.getdirection
 local setshift             = nuts.setshift
 local getboxglue           = nuts.getboxglue
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
-local list_dimensions      = nuts.dimensions
-local list_rangedimensions = nuts.rangedimensions
+local getdimensions        = nuts.dimensions
+local getrangedimensions   = nuts.rangedimensions
 local traverse             = nuts.traverse
 local find_node_tail       = nuts.tail
 
 local nodecodes            = nodes.nodecodes
-local skipcodes            = nodes.skipcodes
+local gluecodes            = nodes.gluecodes
 local listcodes            = nodes.listcodes
+
+local dirvalues            = nodes.dirvalues
+local lefttoright_code     = dirvalues.lefttoright
+local righttoleft_code     = dirvalues.righttoleft
 
 local hlist_code           = nodecodes.hlist
 local vlist_code           = nodecodes.vlist
@@ -90,11 +94,11 @@ local rule_code            = nodecodes.rule
 local dir_code             = nodecodes.dir
 local localpar_code        = nodecodes.localpar
 
-local leftskip_code        = skipcodes.leftskip
-local rightskip_code       = skipcodes.rightskip
-local parfillskip_code     = skipcodes.parfillskip
+local leftskip_code        = gluecodes.leftskip
+local rightskip_code       = gluecodes.rightskip
+local parfillskip_code     = gluecodes.parfillskip
 
-local line_code            = listcodes.line
+----- linelist_code        = listcodes.line
 
 local new_rule             = nodepool.rule
 local new_kern             = nodepool.kern
@@ -113,9 +117,9 @@ local implement            = interfaces.implement
 local function hlist_dimensions(start,stop,parent)
     local last = stop and getnext(stop)
     if parent then
-        return list_rangedimensions(parent,start,last)
+        return getrangedimensions(parent,start,last)
     else
-        return list_dimensions(start,last)
+        return getdimensions(start,last)
     end
 end
 
@@ -250,11 +254,13 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
     end
 end
 
--- is pardir important at all?
-
 local function inject_range(head,first,last,reference,make,stack,parent,pardir,txtdir)
     local width, height, depth, line = dimensions(parent,first,last)
-    if txtdir == "+TRT" or (txtdir == "===" and pardir == "TRT") then -- KH: textdir == "===" test added
+    if txtdir == righttoleft_code then
+        width = - width
+    elseif textdir == lefttoright_code then
+        -- go on
+    elseif pardir == righttoleft_code then
         width = - width
     end
     local result, resolved = make(width,height,depth,reference)
@@ -264,7 +270,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
             local l = getlist(line)
             if trace_areas then
                 report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","line",
-                    reference,pardir or "---",txtdir or "---",
+                    reference,pardir or "?",txtdir or "?",
                     tosequence(l,nil,true),width,height,depth)
             end
             setlist(line,result)
@@ -273,7 +279,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
         elseif head == first then
             if trace_areas then
                 report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","head",
-                    reference,pardir or "---",txtdir or "---",
+                    reference,pardir or "?",txtdir or "?",
                     tosequence(first,last,true),width,height,depth)
             end
             setlink(result,first)
@@ -281,7 +287,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
         else
             if trace_areas then
                 report_area("%s: %i : %s %s %s => w=%p, h=%p, d=%p","middle",
-                    reference,pardir or "---",txtdir or "---",
+                    reference,pardir or "?",txtdir or "?",
                     tosequence(first,last,true),width,height,depth)
             end
             if first == last and getid(parent) == vlist_code and getid(first) == hlist_code then
@@ -306,7 +312,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     local correction = 0
     local moveright  = false
     local first      = getlist(current)
-    if id == hlist_code then -- box_code line_code
+    if id == hlist_code then -- boxlist_code linelist_code
         -- can be either an explicit hbox or a line and there is no way
         -- to recognize this; anyway only if ht/dp (then inline)
         local sr = stack[reference]
@@ -337,7 +343,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
         correction = height + depth
         height, depth = depth, height -- ugly hack, needed because pdftex backend does something funny
     end
-    if pardir == "TRT" then
+    if pardir == righttoleft_code then
         width = - width
     end
     local result, resolved = make(width,height,depth,reference)
@@ -345,7 +351,7 @@ local function inject_list(id,current,reference,make,stack,pardir,txtdir)
     if result and resolved then
         if trace_areas then
             report_area("%s: %04i %s %s %s: w=%p, h=%p, d=%p, c=%S","box",
-                reference,pardir or "---",txtdir or "----","[]",width,height,depth,resolved)
+                reference,pardir or "?",txtdir or "?","[]",width,height,depth,resolved)
         end
         if not first then
             setlist(current,result)
@@ -370,12 +376,6 @@ end
 
 local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
     local first, last, firstdir, reference
-    if not pardir then
-        pardir = "==="
-    end
-    if not texdir then
-        txtdir = "==="
-    end
     local current = head
     while current do
         local id = getid(current)
@@ -416,9 +416,10 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
             --
         elseif id == dir_code then
-            txtdir = getdir(current)
+            local direction, pop = getdirection(current)
+            txtdir = not pop and direction -- we might need a stack
         elseif id == localpar_code then -- only test at begin
-            pardir = getdir(current)
+            pardir = getdirection(current)
         else
             local r = getattr(current,attribute)
             if not r then
@@ -450,12 +451,6 @@ end
 --
 -- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
 --     local first, last, firstdir, reference
---     if not pardir then
---         pardir = "==="
---     end
---     if not texdir then
---         txtdir = "==="
---     end
 --     local someatt = findattr(head,attribute)
 --     if someatt then
 --         local current = head
@@ -496,9 +491,10 @@ end
 --                     done[r] = done[r] - 1
 --                 end
 --             elseif id == dir_code then
---                 txtdir = getdir(current)
+--                 local direction, pop = getdirection(current)
+--                 txtdir = not pop and direction -- we might need a stack
 --             elseif id == localpar_code then -- only test at begin
---                 pardir = getdir(current)
+--                 pardir = getdirection(current)
 --             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
 --                 --
 --             else
@@ -536,9 +532,10 @@ end
 --                     end
 --                 end
 --             elseif id == dir_code then
---                 txtdir = getdir(current)
+--                 local direction, pop = getdirection(current)
+--                 txtdir = not pop and direction -- we might need a stack
 --             elseif id == localpar_code then -- only test at begin
---                 pardir = getdir(current)
+--                 pardir = getdirection(current)
 --             end
 --             current = getnext(current)
 --         end
@@ -550,12 +547,6 @@ end
 --
 -- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
 --     local first, last, firstdir, reference
---     if not pardir then
---         pardir = "==="
---     end
---     if not texdir then
---         txtdir = "==="
---     end
 --     local current = head
 --     while current do
 --         local id = getid(current)
@@ -599,9 +590,10 @@ end
 --         elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
 --             --
 --         elseif id == dir_code then
---             txtdir = getdir(current)
+--             local direction, pop = getdirection(current)
+--             txtdir = not pop and direction -- we might need a stack
 --         elseif id == localpar_code then -- only test at begin
---             pardir = getdir(current)
+--             pardir = getdirection(current)
 --         end
 --         goto next
 --         ::rest::

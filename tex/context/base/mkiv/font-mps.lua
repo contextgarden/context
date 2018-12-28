@@ -252,46 +252,47 @@ end
 -- right time. It's probably why I like watching https://www.youtube.com/watch?v=c5FqpddnJmc
 -- so much: precisely (and perfectly) timed too.
 
-local nodecodes      = nodes.nodecodes -- no nuts yet
+local nodecodes       = nodes.nodecodes -- no nuts yet
+local rulecodes       = nodes.rulecodes
 
-local glyph_code     = nodecodes.glyph
-local disc_code      = nodecodes.disc
-local kern_code      = nodecodes.kern
-local glue_code      = nodecodes.glue
-local hlist_code     = nodecodes.hlist
-local vlist_code     = nodecodes.vlist
-local rule_code      = nodecodes.rule
+local glyph_code      = nodecodes.glyph
+local disc_code       = nodecodes.disc
+local kern_code       = nodecodes.kern
+local glue_code       = nodecodes.glue
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local rule_code       = nodecodes.rule
 
-local normal_rule    = nodes.rulecodes.normal
+local normalrule_code = rulecodes.normal
 
-local nuts           = nodes.nuts
-local getnext        = nuts.getnext
-local getid          = nuts.getid
-local getlist        = nuts.getlist
-local getchar        = nuts.getchar
-local getfont        = nuts.getfont
-local getsubtype     = nuts.getsubtype
-local getfield       = nuts.getfield
-local getbox         = nuts.getbox
-local getwhd         = nuts.getwhd
-local getkern        = nuts.getkern
-local getshift       = nuts.getshift
-local getwidth       = nuts.getwidth
-local getheight      = nuts.getheight
-local getdepth       = nuts.getdepth
-local getexpansion   = nuts.getexpansion
+local nuts            = nodes.nuts
+local getnext         = nuts.getnext
+local getid           = nuts.getid
+local getlist         = nuts.getlist
+local getchar         = nuts.getchar
+local getfont         = nuts.getfont
+local getsubtype      = nuts.getsubtype
+local getfield        = nuts.getfield
+local getbox          = nuts.getbox
+local getwhd          = nuts.getwhd
+local getkern         = nuts.getkern
+local getshift        = nuts.getshift
+local getwidth        = nuts.getwidth
+local getheight       = nuts.getheight
+local getdepth        = nuts.getdepth
+local getexpansion    = nuts.getexpansion
 
-local effective_glue = nuts.effective_glue
+local effective_glue  = nuts.effective_glue
 
-local characters     = fonts.hashes.characters
-local parameters     = fonts.hashes.parameters
-local shapes         = fonts.hashes.shapes
-local topaths        = metapost.paths
+local characters      = fonts.hashes.characters
+local parameters      = fonts.hashes.parameters
+local shapes          = fonts.hashes.shapes
+local topaths         = metapost.paths
 
-local f_code         = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F,%q)(%,t);"]
-local f_rule         = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
-local f_bounds       = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
-local s_nothing      = "(origin scaled 10)"
+local f_code          = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F,%q)(%,t);"]
+local f_rule          = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
+local f_bounds        = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
+local s_nothing       = "(origin scaled 10)"
 
 directives.register("metapost.stripzeros", function()
     f_code   = formatters["mfun_do_outline_text_flush(%q,%i,%.6N,%.6N,%q)(%,t);"]
@@ -394,7 +395,7 @@ function fonts.metapost.boxtomp(n,kind)
                         dp = getdepth(parent)
                     end
                     local hd = (ht + dp) * fc
-                    if hd ~= 0 and getsubtype(current) == normal_rule then
+                    if hd ~= 0 and getsubtype(current) == normalrule_code then
                         result[#result+1] = f_rule(kind,xoffset+dx+wd/2,yoffset+hd/2,wd,hd)
                     end
                     dx = dx + wd

@@ -60,12 +60,10 @@ local new_rule           = nodepool.rule
 local new_disc           = nodepool.disc
 
 local nodecodes          = nodes.nodecodes
-local skipcodes          = nodes.skipcodes
-local disccodes          = nodes.disccodes
+local gluecodes          = nodes.gluecodes
 
 local glyph_code         = nodecodes.glyph
-local space_skip_code    = skipcodes.spaceskip
-local explicit_code      = disccodes.explicit
+local spaceskip_code     = gluecodes.spaceskip
 
 local chardata           = characters.data
 local is_punctuation     = characters.is_punctuation
@@ -134,10 +132,10 @@ local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     if getattr(current,a_alignstate) == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-        setsubtype(current,space_skip_code)
+        setsubtype(current,spaceskip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
-        setsubtype(current,space_skip_code)
+        setsubtype(current,spaceskip_code)
     end
     return head, current
 end

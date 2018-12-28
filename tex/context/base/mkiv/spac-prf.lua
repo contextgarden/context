@@ -17,6 +17,7 @@ local formatters        = string.formatters
 local nodecodes         = nodes.nodecodes
 local gluecodes         = nodes.gluecodes
 local listcodes         = nodes.listcodes
+local leadercodes       = nodes.leadercodes
 
 local glyph_code        = nodecodes.glyph
 local disc_code         = nodecodes.disc
@@ -30,10 +31,12 @@ local math_code         = nodecodes.math
 local rule_code         = nodecodes.rule
 local marginkern_code   = nodecodes.marginkern
 
-local leaders_code      = gluecodes.leaders
+local leaders_code      = leadercodes.leaders
+
 local lineskip_code     = gluecodes.lineskip
 local baselineskip_code = gluecodes.baselineskip
-local line_code         = listcodes.line
+
+local linelist_code     = listcodes.line
 
 local texlists          = tex.lists
 local settexattribute   = tex.setattribute
@@ -668,7 +671,7 @@ local function profilelist(line,mvl)
                 local id = getid(current)
                 if id == hlist_code then
                     local subtype = getsubtype(current)
-                    if subtype == line_code then
+                    if subtype == linelist_code then
                         t_profile = hasprofile(current)
                         if t_profile then
                             top = current
@@ -710,7 +713,7 @@ local function profilelist(line,mvl)
 
             if id == hlist_code then -- check subtype
                 local subtype = getsubtype(current)
-                if subtype == line_code then
+                if subtype == linelist_code then
                     if top == current then
                         -- skip
                         bot = nil -- to be sure
@@ -819,7 +822,7 @@ function profiling.profilebox(specification)
         local id = getid(current)
         if id == hlist_code then
             local subtype = getsubtype(current)
-            if subtype == line_code then
+            if subtype == linelist_code then
                 if top then
                     bot       = current
                     b_profile = setprofile(bot)

@@ -19,87 +19,86 @@ local trace_cells  = false  trackers.register("columnsets.cells",  function(v) t
 
 local report       = logs.reporter("column sets")
 
-local setmetatableindex   = table.setmetatableindex
+local setmetatableindex = table.setmetatableindex
 
-local properties          = nodes.properties
+local properties        = nodes.properties
 
-local nodecodes           = nodes.nodecodes
-local rulecodes           = nodes.rulecodes
+local nodecodes         = nodes.nodecodes
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local kern_code           = nodecodes.kern
-local glue_code           = nodecodes.glue
-local penalty_code        = nodecodes.penalty
-local rule_code           = nodecodes.rule
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local kern_code         = nodecodes.kern
+local glue_code         = nodecodes.glue
+local penalty_code      = nodecodes.penalty
+local rule_code         = nodecodes.rule
 
-local nuts                = nodes.nuts
-local tonode              = nuts.tonode
-local tonut               = nuts.tonut
+local nuts              = nodes.nuts
+local tonode            = nuts.tonode
+local tonut             = nuts.tonut
 
-local hpack               = nuts.hpack
-local vpack               = nuts.vpack
-local flushlist           = nuts.flush_list
------ removenode          = nuts.remove
+local hpack             = nuts.hpack
+local vpack             = nuts.vpack
+local flushlist         = nuts.flush_list
+----- removenode        = nuts.remove
 
-local setlink             = nuts.setlink
-local setlist             = nuts.setlist
-local setnext             = nuts.setnext
-local setprev             = nuts.setprev
-local setsubtype          = nuts.setsubtype
-local setbox              = nuts.setbox
-local getwhd              = nuts.getwhd
-local setwhd              = nuts.setwhd
-local getkern             = nuts.getkern
-local getpenalty          = nuts.getpenalty
-local getwidth            = nuts.getwidth
-local getheight           = nuts.getheight
+local setlink           = nuts.setlink
+local setlist           = nuts.setlist
+local setnext           = nuts.setnext
+local setprev           = nuts.setprev
+local setsubtype        = nuts.setsubtype
+local setbox            = nuts.setbox
+local getwhd            = nuts.getwhd
+local setwhd            = nuts.setwhd
+local getkern           = nuts.getkern
+local getpenalty        = nuts.getpenalty
+local getwidth          = nuts.getwidth
+local getheight         = nuts.getheight
 
-local getnext             = nuts.getnext
-local getprev             = nuts.getprev
-local getid               = nuts.getid
-local getlist             = nuts.getlist
-local getsubtype          = nuts.getsubtype
-local takebox             = nuts.takebox
-local takelist            = nuts.takelist
-local splitbox            = nuts.splitbox
-local getattribute        = nuts.getattribute
-local copylist            = nuts.copy_list
+local getnext           = nuts.getnext
+local getprev           = nuts.getprev
+local getid             = nuts.getid
+local getlist           = nuts.getlist
+local getsubtype        = nuts.getsubtype
+local takebox           = nuts.takebox
+local takelist          = nuts.takelist
+local splitbox          = nuts.splitbox
+local getattribute      = nuts.getattribute
+local copylist          = nuts.copy_list
 
-local getbox              = nuts.getbox
-local getcount            = tex.getcount
-local getdimen            = tex.getdimen
+local getbox            = nuts.getbox
+local getcount          = tex.getcount
+local getdimen          = tex.getdimen
 
-local texsetbox           = tex.setbox
-local texsetcount         = tex.setcount
-local texsetdimen         = tex.setdimen
+local texsetbox         = tex.setbox
+local texsetcount       = tex.setcount
+local texsetdimen       = tex.setdimen
 
-local theprop             = nuts.theprop
+local theprop           = nuts.theprop
 
-local nodepool            = nuts.pool
+local nodepool          = nuts.pool
 
-local new_vlist           = nodepool.vlist
-local new_trace_rule      = nodepool.rule
-local new_empty_rule      = nodepool.emptyrule
+local new_vlist         = nodepool.vlist
+local new_trace_rule    = nodepool.rule
+local new_empty_rule    = nodepool.emptyrule
 
-local context             = context
-local implement           = interfaces.implement
+local context           = context
+local implement         = interfaces.implement
 
-local variables           = interfaces.variables
-local v_here              = variables.here
-local v_fixed             = variables.fixed
-local v_top               = variables.top
-local v_bottom            = variables.bottom
-local v_repeat            = variables["repeat"]
-local v_yes               = variables.yes
-local v_page              = variables.page
-local v_first             = variables.first
-local v_last              = variables.last
------ v_wide              = variables.wide
+local variables         = interfaces.variables
+local v_here            = variables.here
+local v_fixed           = variables.fixed
+local v_top             = variables.top
+local v_bottom          = variables.bottom
+local v_repeat          = variables["repeat"]
+local v_yes             = variables.yes
+local v_page            = variables.page
+local v_first           = variables.first
+local v_last            = variables.last
+----- v_wide            = variables.wide
 
-pagebuilders              = pagebuilders or { } -- todo: pages.builders
-pagebuilders.columnsets   = pagebuilders.columnsets or { }
-local columnsets          = pagebuilders.columnsets
+pagebuilders            = pagebuilders or { } -- todo: pages.builders
+pagebuilders.columnsets = pagebuilders.columnsets or { }
+local columnsets        = pagebuilders.columnsets
 
 local data = { [""] = { } }
 

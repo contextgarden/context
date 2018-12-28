@@ -37,7 +37,7 @@ local setlink            = nuts.setlink
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
-local getdir             = nuts.getdir
+local getdirection       = nuts.getdirection
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getfont            = nuts.getfont
@@ -56,7 +56,7 @@ local insert_node_after  = nuts.insert_after
 local insert_node_before = nuts.insert_before
 local find_tail          = nuts.tail
 local setglue            = nuts.setglue
-local list_dimensions    = nuts.rangedimensions
+local getrangedimensions = nuts.rangedimensions
 local hpack_nodes        = nuts.hpack
 local copy_list          = nuts.copy_list
 
@@ -66,7 +66,6 @@ local nodecodes          = nodes.nodecodes
 local rulecodes          = nodes.rulecodes
 local gluecodes          = nodes.gluecodes
 local listcodes          = nodes.listcodes
-local kerncodes          = nodes.kerncodes
 
 local glyph_code         = nodecodes.glyph
 local localpar_code      = nodecodes.localpar
@@ -74,8 +73,8 @@ local dir_code           = nodecodes.dir
 local glue_code          = nodecodes.glue
 local hlist_code         = nodecodes.hlist
 
-local indent_code        = listcodes.indent
-local line_code          = listcodes.line
+local indentlist_code    = listcodes.indent
+local linelist_code      = listcodes.line
 
 local leftskip_code      = gluecodes.leftskip
 local rightskip_code     = gluecodes.rightskip
@@ -265,7 +264,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local w, ht, dp     = list_dimensions(parent,f,getnext(l))
+    local w, ht, dp     = getrangedimensions(parent,f,getnext(l))
     local method        = d.method
     local empty         = d.empty == v_yes
     local offset        = d.offset
@@ -410,7 +409,7 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     local next = getnext(last)
     setprev(first)
     setnext(last)
-    local width, height, depth = list_dimensions(parent,first,next)
+    local width, height, depth = getrangedimensions(parent,first,next)
     local list = hpack_nodes(first,width,"exactly") -- we can use a simple pack
     if first == head then
         head = list
@@ -471,7 +470,7 @@ local function linefiller(current,data,width,location)
             ca        = ca,
             ta        = ta,
             option    = location,
-            direction = getdir(current),
+            direction = getdirection(current),
         }
     else
         local rule = new_rule(width,height,depth)
@@ -507,7 +506,7 @@ function nodes.linefillers.filler(current,data,width,height,depth)
                     ca        = ca,
                     ta        = ta,
                     option    = location,
-                    direction = getdir(current),
+                    direction = getdirection(current),
                 }
             else
                 local rule = new_rule(width,height,depth)
@@ -536,7 +535,7 @@ end
 
 function nodes.linefillers.handler(head)
     for current, subtype, list in nexthlist, head do
-        if list and subtype == line_code then
+        if list and subtype == linelist_code then
             -- why doesn't leftskip take the attributes
             -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)
             local a = getattr(current,a_linefiller)
@@ -575,7 +574,7 @@ function nodes.linefillers.handler(head)
                             elseif id == localpar_code or id == dir_code then
                                 -- go on
                             elseif id == hlist_code then
-                                if getsubtype(head) == indent_code then
+                                if getsubtype(head) == indentlist_code then
                                     iskip = head
                                 end
                                 break

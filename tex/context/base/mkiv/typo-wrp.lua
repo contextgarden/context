@@ -17,13 +17,13 @@ local glue_code              = nodecodes.glue
 local penalty_code           = nodecodes.penalty
 local boundary_code          = nodecodes.boundary
 
-local parfill_skip_code      = gluecodes.parfillskip
+local parfillskip_code       = gluecodes.parfillskip
 
-local user_penalty_code      = penaltycodes.userpenalty
-local line_penalty_code      = penaltycodes.linepenalty
-local linebreak_penalty_code = penaltycodes.linebreakpenalty
+local userpenalty_code       = penaltycodes.userpenalty
+local linepenalty_code       = penaltycodes.linepenalty
+local linebreakpenalty_code  = penaltycodes.linebreakpenalty
 
-local word_boundary_code     = boundarycodes.word
+local wordboundary_code      = boundarycodes.word
 
 local nuts                   = nodes.nuts
 
@@ -54,15 +54,15 @@ local report                 = logs.reporter("paragraphs","wrappers")
 -- use attributes.
 
 local function remove_dangling_crlf(head,tail)
-    if head and tail and getid(tail) == glue_code and getsubtype(tail) == parfill_skip_code then
+    if head and tail and getid(tail) == glue_code and getsubtype(tail) == parfillskip_code then
         tail = getprev(tail)
         if tail and getid(tail) == penalty_code then
             local subtype = getsubtype(tail)
-            if subtype == line_penalty_code or subtype == linebreak_penalty_code then
+            if subtype == linepenalty_code or subtype == linebreakpenalty_code then
                 tail = getprev(tail)
-                if tail and getid(tail) == boundary_code and getsubtype(tail) == word_boundary_code then
+                if tail and getid(tail) == boundary_code and getsubtype(tail) == wordboundary_code then
                     tail = getprev(tail)
-                    if tail ~= head and getid(tail) == penalty_code and getsubtype(tail) == user_penalty_code and getpenalty(tail) == -10000 then
+                    if tail ~= head and getid(tail) == penalty_code and getsubtype(tail) == userpenalty_code and getpenalty(tail) == -10000 then
                         if trace_wrappers then
                             report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
                         end

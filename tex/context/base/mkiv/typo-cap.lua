@@ -41,7 +41,6 @@ local find_attribute  = nuts.find_attribute
 local nextglyph       = nuts.traversers.glyph
 
 local nodecodes       = nodes.nodecodes
-local skipcodes       = nodes.skipcodes
 local kerncodes       = nodes.kerncodes
 
 local glyph_code      = nodecodes.glyph

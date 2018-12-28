@@ -171,7 +171,7 @@ local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes
-local skipcodes           = nodes.skipcodes
+local gluecodes           = nodes.gluecodes
 ----- penaltycodes        = nodes.penaltycodes
 ----- listcodes           = nodes.listcodes
 
@@ -184,21 +184,19 @@ local vlist_code          = nodecodes.vlist
 local rule_code           = nodecodes.rule
 local localpar_code       = nodecodes.localpar
 
-local linebreak_code      = nodes.penaltycodes.linebreakpenalty
+local userskip_code       = gluecodes.userskip
+local lineskip_code       = gluecodes.lineskip
+local baselineskip_code   = gluecodes.baselineskip
+local parskip_code        = gluecodes.parskip
+local topskip_code        = gluecodes.topskip
+local splittopskip_code   = gluecodes.splittopskip
 
-local userskip_code       = skipcodes.userskip
-local lineskip_code       = skipcodes.lineskip
-local baselineskip_code   = skipcodes.baselineskip
-local parskip_code        = skipcodes.parskip
-local topskip_code        = skipcodes.topskip
-local splittopskip_code   = skipcodes.splittopskip
+local linelist_code       = nodes.listcodes.line
 
-local line_code           = nodes.listcodes.line
-
-local abovedisplayskip_code      = skipcodes.abovedisplayskip
-local belowdisplayskip_code      = skipcodes.belowdisplayskip
-local abovedisplayshortskip_code = skipcodes.abovedisplayshortskip
-local belowdisplayshortskip_code = skipcodes.belowdisplayshortskip
+local abovedisplayskip_code      = gluecodes.abovedisplayskip
+local belowdisplayskip_code      = gluecodes.belowdisplayskip
+local abovedisplayshortskip_code = gluecodes.abovedisplayshortskip
+local belowdisplayshortskip_code = gluecodes.belowdisplayshortskip
 
 local properties          = nodes.properties.data
 
@@ -886,7 +884,7 @@ local function nodes_to_string(head)
         if id == penalty_code then
             t[#t+1] = formatters["%s:%s"](ty,getpenalty(current))
         elseif id == glue_code then
-            t[#t+1] = formatters["%s:%s:%p"](ty,skipcodes[getsubtype(current)],getwidth(current))
+            t[#t+1] = formatters["%s:%s:%p"](ty,gluecodes[getsubtype(current)],getwidth(current))
         elseif id == kern_code then
             t[#t+1] = formatters["%s:%p"](ty,getkern(current))
         else
@@ -1403,7 +1401,7 @@ do
                         end
                         head = insert_node_before(head,current,glue_data)
                     else
-                     -- report_vspacing("needs checking (%s): %p",skipcodes[getsubtype(glue_data)],w)
+                     -- report_vspacing("needs checking (%s): %p",gluecodes[getsubtype(glue_data)],w)
                         flush_node(glue_data)
                     end
                 end
@@ -1821,7 +1819,7 @@ do
                     if snap and trace_vsnapping then
                         local w = getwidth(current)
                         if w ~= 0 then
-                            report_snapper("glue %p of type %a kept",w,skipcodes[subtype])
+                            report_snapper("glue %p of type %a kept",w,gluecodes[subtype])
                         end
                     end
                     if trace then
@@ -2085,7 +2083,7 @@ do
                 while tail do
                     local id = getid(tail)
                     if id == hlist_code then
-                        if getsubtype(tail) == line_code then
+                        if getsubtype(tail) == linelist_code then
                             noflines = noflines + 1
                         else
                             break

@@ -70,7 +70,7 @@ local getbox              = nuts.getbox
 local getwhd              = nuts.getwhd
 
 local setlink             = nuts.setlink
-local setdir              = nuts.setdir
+local setdirection        = nuts.setdirection
 local setshift            = nuts.setshift
 
 local copy_node_list      = nuts.copy_list
@@ -83,6 +83,8 @@ local nodepool            = nuts.pool
 local new_glue            = nodepool.glue
 local new_kern            = nodepool.kern
 local new_hlist           = nodepool.hlist
+
+local lefttoright_code    = nodes.dirvalues.lefttoright
 
 local v_stretch           = variables.stretch
 local v_normal            = variables.normal
@@ -886,7 +888,7 @@ function xtables.construct()
                 -- we have a direction issue here but hpack_node_list(list,0,"exactly","TLT") cannot be used
                 -- due to the fact that we need the width
                 local hbox = hpack_node_list(list)
-                setdir(hbox,"TLT")
+                setdirection(hbox,lefttoright_code)
                 result[nofr] = {
                     hbox,
                     size,

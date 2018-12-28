@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 
 -- we could do \pdfmatrix sx <> sy <> etc
 
-local sind, cosd = math.sind, math.cosd
+local sind, cosd, abs = math.sind, math.cosd, math.abs
 local insert, remove = table.insert, table.remove
 
 local codeinjections = backends.pdf.codeinjections
@@ -80,6 +80,12 @@ local function pdfstartrotation()
         insert(stack,false)
     else
         local s, c = sind(a), cosd(a)
+        if abs(s) < 0.000001 then
+            s = 0 -- otherwise funny -0.00000
+        end
+        if abs(c) < 0.000001 then
+            c = 0 -- otherwise funny -0.00000
+        end
         context(pdfsave())
         context(pdfsetmatrix(c,s,-s,c))
         insert(stack,restore and { c, -s, s, c } or true)
