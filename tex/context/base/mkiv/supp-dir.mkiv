@@ -11,33 +11,15 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D We no longer have the \ETEX\ direction primitives.
-
 \unprotect
 
-% \expanded{\defineactivecharacter \number"2000E} {\textdir TRT\relax}
-% \expanded{\defineactivecharacter \number"2000F} {\textdir TLT\relax}
+% \expanded{\defineactivecharacter \number"2000E} {\textdirection TRT\relax}
+% \expanded{\defineactivecharacter \number"2000F} {\textdirection TLT\relax}
 
-%D As we have less directions now we can use something
-
-% \chardef\@@D@@TLT0
-% \chardef\@@D@@TRT1
-% \chardef\@@D@@RTT0
-% \chardef\@@D@@LRL1
-%
-% \def\thetextdir{\csname @@D@@\the\textdir\endcsname}
-%
-% \ifnum\thetextdir=0 L\else R\fi \textdir TRT \ifnum\thetextdir=0 L\else R\fi
+\def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 
 \unexpanded\def\showdirsinmargin
-  {\inleft{\normalexpanded{\noexpand\hbox bdir\directionlefttoright{\ttxx[\the\pardir,\the\textdir]}}}}
-
-% this will become:
-
-% \def\syst_direction_string#1{\ifnum#1=\plusone r2l\else l2r\fi}
-%
-% \unexpanded\def\showdirsinmargin
-%   {\inleft{\normalexpanded{\noexpand\hbox bdir\directionlefttoright
-%      {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
+  {\normalexpanded{\inleft{\naturalhbox
+     {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
 
 \protect \endinput

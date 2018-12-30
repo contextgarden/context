@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/28/18 11:01:18
+-- merge date  : 12/30/18 19:28:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -4748,7 +4748,7 @@ end
 for k,v in next,glyphcodes do
   glyphcodes[v]=k
 end
-for k,v in next,glyphcodes do
+for k,v in next,disccodes do
   disccodes[v]=k
 end
 nodes.nodecodes=nodecodes
@@ -4759,15 +4759,6 @@ local remove_node=node.remove
 local traverse_id=node.traverse_id
 nodes.handlers.protectglyphs=node.protect_glyphs  
 nodes.handlers.unprotectglyphs=node.unprotect_glyphs 
-local math_code=nodecodes.math
-local end_of_math=node.end_of_math
-function node.end_of_math(n)
-  if n.id==math_code and n.subtype==1 then
-    return n
-  else
-    return end_of_math(n)
-  end
-end
 function nodes.remove(head,current,free_too)
   local t=current
   head,current=remove_node(head,current)
@@ -4844,7 +4835,7 @@ nuts.setprev=direct.setprev
 nuts.getboth=direct.getboth
 nuts.setboth=direct.setboth
 nuts.getid=direct.getid
-nuts.getattr=direct.get_attribute or direct.has_attribute or getfield
+nuts.getattr=direct.get_attribute
 nuts.setattr=setfield
 nuts.getfont=direct.getfont
 nuts.setfont=direct.setfont
@@ -4858,61 +4849,8 @@ nuts.setlink=direct.setlink
 nuts.setsplit=direct.setsplit
 nuts.getlist=direct.getlist
 nuts.setlist=direct.setlist
-nuts.getoffsets=direct.getoffsets or
-  function(n)
-    return getfield(n,"xoffset"),getfield(n,"yoffset")
-  end
-nuts.setoffsets=direct.setoffsets or
-  function(n,x,y)
-    if x then setfield(n,"xoffset",x) end
-    if y then setfield(n,"xoffset",y) end
-  end
-nuts.getleader=direct.getleader   or function(n)  return getfield(n,"leader")    end
-nuts.setleader=direct.setleader   or function(n,l)    setfield(n,"leader",l)   end
-nuts.getcomponents=direct.getcomponents or function(n)  return getfield(n,"components")  end
-nuts.setcomponents=direct.setcomponents or function(n,c)    setfield(n,"components",c) end
-nuts.getkern=direct.getkern    or function(n)  return getfield(n,"kern")     end
-nuts.setkern=direct.setkern    or function(n,k)    setfield(n,"kern",k)    end
-nuts.getdir=direct.getdir    or function(n)  return getfield(n,"dir")     end
-nuts.setdir=direct.setdir    or function(n,d)    setfield(n,"dir",d)    end
-nuts.getwidth=direct.getwidth   or function(n)  return getfield(n,"width")    end
-nuts.setwidth=direct.setwidth   or function(n,w) return setfield(n,"width",w)   end
-nuts.getheight=direct.getheight   or function(n)  return getfield(n,"height")    end
-nuts.setheight=direct.setheight   or function(n,h) return setfield(n,"height",h)   end
-nuts.getdepth=direct.getdepth   or function(n)  return getfield(n,"depth")    end
-nuts.setdepth=direct.setdepth   or function(n,d) return setfield(n,"depth",d)   end
-if not direct.is_glyph then
-  local getchar=direct.getchar
-  local getid=direct.getid
-  local getfont=direct.getfont
-  local glyph_code=nodes.nodecodes.glyph
-  function direct.is_glyph(n,f)
-    local id=getid(n)
-    if id==glyph_code then
-      if f and getfont(n)==f then
-        return getchar(n)
-      else
-        return false
-      end
-    else
-      return nil,id
-    end
-  end
-  function direct.is_char(n,f)
-    local id=getid(n)
-    if id==glyph_code then
-      if getsubtype(n)>=256 then
-        return false
-      elseif f and getfont(n)==f then
-        return getchar(n)
-      else
-        return false
-      end
-    else
-      return nil,id
-    end
-  end
-end
+nuts.getoffsets=direct.getoffsets
+nuts.setoffsets=direct.setoffsets
 nuts.ischar=direct.is_char
 nuts.is_char=direct.is_char
 nuts.isglyph=direct.is_glyph
@@ -4976,70 +4914,6 @@ local flush_node=nuts.flush_node
 local traverse_id=nuts.traverse_id
 local copy_node=nuts.copy_node
 local glyph_code=nodes.nodecodes.glyph
-function nuts.set_components(target,start,stop)
-  local head=getcomponents(target)
-  if head then
-    flush_list(head)
-    head=nil
-  end
-  if start then
-    setprev(start)
-  else
-    return nil
-  end
-  if stop then
-    setnext(stop)
-  end
-  local tail=nil
-  while start do
-    local c=getcomponents(start)
-    local n=getnext(start)
-    if c then
-      if head then
-        setlink(tail,c)
-      else
-        head=c
-      end
-      tail=find_tail(c)
-      setcomponents(start)
-      flush_node(start)
-    else
-      if head then
-        setlink(tail,start)
-      else
-        head=start
-      end
-      tail=start
-    end
-    start=n
-  end
-  setcomponents(target,head)
-  return head
-end
-nuts.get_components=nuts.getcomponents
-function nuts.take_components(target)
-  local c=getcomponents(target)
-  setcomponents(target)
-  return c
-end
-function nuts.count_components(n,marks)
-  local components=getcomponents(n)
-  if components then
-    if marks then
-      local i=0
-      for g in traverse_id(glyph_code,components) do
-        if not marks[getchar(g)] then
-          i=i+1
-        end
-      end
-      return i
-    else
-      return count(glyph_code,components)
-    end
-  else
-    return 0
-  end
-end
 function nuts.copy_no_components(g,copyinjection)
   local components=getcomponents(g)
   if components then
@@ -5073,35 +4947,6 @@ function nuts.copy_only_glyphs(current)
   return head
 end
 nuts.uses_font=direct.uses_font
-if not nuts.uses_font then
-  local getdisc=nuts.getdisc
-  local getfont=nuts.getfont
-  function nuts.uses_font(n,font)
-    local pre,post,replace=getdisc(n)
-    if pre then
-      for n in traverse_id(glyph_code,pre) do
-        if getfont(n)==font then
-          return true
-        end
-      end
-    end
-    if post then
-      for n in traverse_id(glyph_code,post) do
-        if getfont(n)==font then
-          return true
-        end
-      end
-    end
-    if replace then
-      for n in traverse_id(glyph_code,replace) do
-        if getfont(n)==font then
-          return true
-        end
-      end
-    end
-    return false
-  end
-end
 do
   local dummy=tonut(node.new("glyph"))
   nuts.traversers={
@@ -25683,11 +25528,6 @@ local find_node_tail=nuts.tail
 local flush_node_list=nuts.flush_list
 local flush_node=nuts.flush_node
 local end_of_math=nuts.end_of_math
-local set_components=nuts.set_components
-local take_components=nuts.take_components
-local count_components=nuts.count_components
-local copy_no_components=nuts.copy_no_components
-local copy_only_glyphs=nuts.copy_only_glyphs
 local setmetatable=setmetatable
 local setmetatableindex=table.setmetatableindex
 local nextnode=nuts.traversers.node
@@ -25863,24 +25703,27 @@ local function appenddisc(disc,list)
   end
   setdisc(disc,pre,post,replace)
 end
-local take_components=getcomponents 
+local copy_no_components=nuts.copy_no_components
+local copy_only_glyphs=nuts.copy_only_glyphs
 local set_components=setcomponents
+local take_components=getcomponents
+local isglyph=nuts.isglyph
 local function count_components(start,marks)
-  if getid(start)~=glyph_code then
-    return 0
-  elseif getsubtype(start)==ligatureglyph_code then
-    local i=0
-    local components=getcomponents(start)
-    while components do
-      i=i+count_components(components,marks)
-      components=getnext(components)
+  local char=isglyph(start)
+  if char then
+    if getsubtype(start)==ligatureglyph_code then
+      local i=0
+      local components=getcomponents(start)
+      while components do
+        i=i+count_components(components,marks)
+        components=getnext(components)
+      end
+      return i
+    elseif not marks[char] then
+      return 1
     end
-    return i
-  elseif not marks[getchar(start)] then
-    return 1
-  else
-    return 0
   end
+  return 0
 end
 local function markstoligature(head,start,stop,char)
   if start==stop and getchar(start)==char then
@@ -28567,7 +28410,7 @@ end
 local txtdirstate,pardirstate do
   local getdirection=nuts.getdirection
   local lefttoright=0
-  local rightoleft=1
+  local righttoleft=1
   txtdirstate=function(start,stack,top,rlparmode)
     local nxt=getnext(start)
     local dir,pop=getdirection(start)
@@ -28584,11 +28427,11 @@ local txtdirstate,pardirstate do
       end
     elseif dir==lefttoright then
       top=top+1
-      stack[top]=0
+      stack[top]=lefttoright
       return nxt,top,1
     elseif dir==righttoleft then
       top=top+1
-      stack[top]=1
+      stack[top]=righttoleft
       return nxt,top,-1
     else
       return nxt,top,rlparmode
@@ -28599,12 +28442,11 @@ local txtdirstate,pardirstate do
     local dir=getdirection(start)
     if dir==lefttoright then
       return nxt,1,1
-    end
-    if dir==righttoleft then
+    elseif dir==righttoleft then
       return nxt,-1,-1
-    elseif dir=="TRT" then
-      return nxt,1,1
     elseif dir=="TLT" then
+      return nxt,1,1
+    elseif dir=="TRT" then
       return nxt,-1,-1
     else
       return nxt,0,0

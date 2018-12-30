@@ -30,7 +30,5 @@ end
 
 implement { name = "textdir", public = true, protected = true, actions = function() scandir(settextdir) end }
 implement { name = "linedir", public = true, protected = true, actions = function() scandir(setlinedir) end }
-implement { name = "pagedir", public = true, protected = true, actions = function() scandir(setpagedir) end }
 implement { name = "pardir",  public = true, protected = true, actions = function() scandir(setpardir)  end }
-implement { name = "bodydir", public = true, protected = true, actions = function() scandir(setbodydir) end }
 implement { name = "boxdir",  public = true, protected = true, actions = function() scandir(setboxdir)  end }

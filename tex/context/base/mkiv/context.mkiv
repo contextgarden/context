@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2018.12.28 11:01}
+\edef\contextversion{2018.12.30 19:28}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -137,6 +137,8 @@
 \doifelsefileexists{core-lmt.mkiv}{\loadmarkfile{core-lmt}}{}
 
 % needs more checking for clashes:
+%
+% no need to register, just execute once, slightly faster
 %
 % \doifelsefileexists{l-macro-imp-codes.lua}{\registerctxluafile{l-macro-imp-codes}{}}{}
 

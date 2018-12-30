@@ -448,7 +448,8 @@ return {
         --
         "nospace", "nospacing", "dospacing",
         --
-        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack",
+        "naturalhbox", "naturalvbox", "naturalvtop", "naturalhpack", "naturalvpack", "naturaltpack",
+        "reversehbox", "reversevbox", "reversevtop", "reversehpack", "reversevpack", "reversetpack",
         --
         "frule",
         --

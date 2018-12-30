@@ -915,6 +915,8 @@ local function splitprescript(script)
     return hash
 end
 
+metapost.splitprescript = splitprescript
+
 -- -- not used:
 --
 -- local function splitpostscript(script)

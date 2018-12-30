@@ -7891,6 +7891,12 @@
 
 \unexpanded\def\signalcharacter{\char\zerocount} % \zwj
 
+% \unexpanded\def\signalcharacter
+%   {\scratchcounter\normallanguage
+%    \normallanguage\zerocount
+%    \char\zerocount
+%    \normallanguage\scratchcounter}
+
 %D A few secial variants of commands defined here. Some more will be moved here (e.g.
 %D from table modules.
 

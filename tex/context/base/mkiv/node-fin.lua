@@ -24,7 +24,7 @@ local getleader          = nuts.getleader
 local getattr            = nuts.getattr
 local getwidth           = nuts.getwidth
 local getwhd             = nuts.getwhd
-local gettransform       = nuts.gettransform
+local getorientation     = nuts.getorientation
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -194,7 +194,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
             if content then
                 -- tricky checking
                 local outer
-                if gettransform(stack) then
+                if getorientation(stack) then
                     outer = getattr(stack,attribute)
                     if outer then
                         if default and outer == inheritance then
@@ -321,7 +321,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
             if content then
                 -- tricky checking
                 local outer
-                if gettransform(stack) then
+                if getorientation(stack) then
                     outer = getattr(stack,attribute)
                     if outer then
                         if default and outer == inheritance then

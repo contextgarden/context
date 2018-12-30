@@ -67,15 +67,12 @@
 \chardef\directionlefttoright\zerocount
 \chardef\directionrighttoleft\plusone
 
-\unexpanded\def\syst_fatal_dir_error#1%
-  {\writestatus{fatal error}{\string#1\space is forbidden}%
-   \wait}
-
-\def\pagedir      {\syst_fatal_dir_error\pagedir}        \let\normalpagedir\pagedir
-\def\bodydir      {\syst_fatal_dir_error\bodydir}        \let\normalbodydir\bodydir
-
-\def\pagedirection{\syst_fatal_dir_error\pagedirection}  \let\normalpagedirection\pagedirection
-\def\bodydirection{\syst_fatal_dir_error\bodydirection}  \let\normalbodydirection\bodydirection
+\ifdefined\pagedir
+    \let\pagedir      \undefined \let\normalpagedir      \undefined
+    \let\bodydir      \undefined \let\normalbodydir      \undefined
+    \let\pagedirection\undefined \let\normalpagedirection\undefined
+    \let\bodydirection\undefined \let\normalbodydirection\undefined
+\fi
 
 % This will become a more advanced layout controller soon:
 
@@ -185,12 +182,12 @@
    inline:  \ifconditional\inlinelefttoright  l2r\else r2l\fi\space
    ]\endgroup}
 
-\unexpanded\def\righttolefthbox#1#{\hbox bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
-\unexpanded\def\lefttorighthbox#1#{\hbox bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
-\unexpanded\def\righttoleftvbox#1#{\vbox bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
-\unexpanded\def\lefttorightvbox#1#{\vbox bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
-\unexpanded\def\righttoleftvtop#1#{\vtop bdir\plusone  #1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
-\unexpanded\def\lefttorightvtop#1#{\vtop bdir\zerocount#1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
+\unexpanded\def\righttolefthbox#1#{\reversehbox#1\bgroup\righttoleft\let\next} \let\rtlhbox\righttolefthbox
+\unexpanded\def\lefttorighthbox#1#{\naturalhbox#1\bgroup\lefttoright\let\next} \let\ltrhbox\lefttorighthbox
+\unexpanded\def\righttoleftvbox#1#{\reversevbox#1\bgroup\righttoleft\let\next} \let\rtlvbox\righttoleftvbox
+\unexpanded\def\lefttorightvbox#1#{\naturalvbox#1\bgroup\lefttoright\let\next} \let\ltrvbox\lefttorightvbox
+\unexpanded\def\righttoleftvtop#1#{\reversevtop#1\bgroup\righttoleft\let\next} \let\rtlvtop\righttoleftvtop
+\unexpanded\def\lefttorightvtop#1#{\naturalvtop#1\bgroup\lefttoright\let\next} \let\ltrvtop\lefttorightvtop
 
 \unexpanded\def\autodirhbox#1#{\hbox#1\bgroup\synchronizeinlinedirection\let\next}
 \unexpanded\def\autodirvbox#1#{\vbox#1\bgroup\synchronizeinlinedirection\let\next} % maybe also pardir or maybe just a \vbox

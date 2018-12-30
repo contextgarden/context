@@ -253,7 +253,6 @@ local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
 local getglue              = nuts.getglue
 local getwhd               = nuts.getwhd
-local getcomponents        = nuts.getcomponents
 local getkern              = nuts.getkern
 local getpenalty           = nuts.getpenalty
 local getdirection         = nuts.getdirection
@@ -280,8 +279,6 @@ local setkern              = nuts.setkern
 local setdirection         = nuts.setdirection
 local setshift             = nuts.setshift
 local setwidth             = nuts.setwidth
------ setheight            = nuts.setheight
------ setdepth             = nuts.setdepth
 local setexpansion         = nuts.setexpansion
 
 local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
@@ -2575,16 +2572,18 @@ do
         while a do
             local char, id = isglyph(a)
             if char then
-                local font = getfont(a)
-                if font ~= font_in_short_display then
-                    write(target,tex.fontidentifier(font) .. ' ')
-                    font_in_short_display = font
+                if id ~= font_in_short_display then
+                    write(target,tex.fontidentifier(id) .. ' ')
+                    font_in_short_display = id
                 end
-                -- todo: instead of components the split tounicode string
-                if getsubtype(a) == ligatureglyph_code then
-                    font_in_short_display = short_display(target,getcomponents(a),font_in_short_display)
+                local u = chardata[id][char]
+                local u = u.unicode or char
+                if type(u) == "table" then
+                    for i=1,#u do
+                        write(target,utfchar(u[i]))
+                    end
                 else
-                    write(target,utfchar(char))
+                    write(target,utfchar(u))
                 end
             elseif id == disc_code then
                 local pre, post, replace = getdisc(a)

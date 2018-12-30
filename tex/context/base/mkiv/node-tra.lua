@@ -21,69 +21,68 @@ local report_nodes = logs.reporter("nodes","tracing")
 
 local nodes, node, context = nodes, node, context
 
-local texgetattribute  = tex.getattribute
+local texgetattribute = tex.getattribute
 
-local tracers          = nodes.tracers or { }
-nodes.tracers          = tracers
+local tracers         = nodes.tracers or { }
+nodes.tracers         = tracers
 
-local tasks            = nodes.tasks or { }
-nodes.tasks            = tasks
+local tasks           = nodes.tasks or { }
+nodes.tasks           = tasks
 
-local handlers         = nodes.handlers or {}
-nodes.handlers         = handlers
+local handlers        = nodes.handlers or {}
+nodes.handlers        = handlers
 
-local injections       = nodes.injections or { }
-nodes.injections       = injections
+local injections      = nodes.injections or { }
+nodes.injections      = injections
 
-local nuts             = nodes.nuts
-local tonut            = nuts.tonut
-local tonode           = nuts.tonode
+local nuts            = nodes.nuts
+local tonut           = nuts.tonut
+local tonode          = nuts.tonode
 
-local getnext          = nuts.getnext
-local getprev          = nuts.getprev
-local getid            = nuts.getid
-local getchar          = nuts.getchar
-local getsubtype       = nuts.getsubtype
-local getlist          = nuts.getlist
-local getdisc          = nuts.getdisc
-local setattr          = nuts.setattr
-local getglue          = nuts.getglue
-local isglyph          = nuts.isglyph
-local getcomponents    = nuts.getcomponents
-local getdirection     = nuts.getdirection
-local getwidth         = nuts.getwidth
+local getnext         = nuts.getnext
+local getprev         = nuts.getprev
+local getid           = nuts.getid
+local getchar         = nuts.getchar
+local getsubtype      = nuts.getsubtype
+local getlist         = nuts.getlist
+local getdisc         = nuts.getdisc
+local setattr         = nuts.setattr
+local getglue         = nuts.getglue
+local isglyph         = nuts.isglyph
+local getdirection    = nuts.getdirection
+local getwidth        = nuts.getwidth
 
-local flush_list       = nuts.flush_list
-local count_nodes      = nuts.countall
-local used_nodes       = nuts.usedlist
+local flush_list      = nuts.flush_list
+local count_nodes     = nuts.countall
+local used_nodes      = nuts.usedlist
 
-local nextnode         = nuts.traversers.node
-local nextglyph        = nuts.traversers.glyph
+local nextnode        = nuts.traversers.node
+local nextglyph       = nuts.traversers.glyph
 
-local d_tostring       = nuts.tostring
+local d_tostring      = nuts.tostring
 
-local nutpool          = nuts.pool
-local new_rule         = nutpool.rule
+local nutpool         = nuts.pool
+local new_rule        = nutpool.rule
 
-local nodecodes        = nodes.nodecodes
-local whatsitcodes     = nodes.whatsitcodes
-local fillcodes        = nodes.fillcodes
+local nodecodes       = nodes.nodecodes
+local whatsitcodes    = nodes.whatsitcodes
+local fillcodes       = nodes.fillcodes
 
-local subtypes         = nodes.subtypes
+local subtypes        = nodes.subtypes
 
-local glyph_code       = nodecodes.glyph
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local disc_code        = nodecodes.disc
-local glue_code        = nodecodes.glue
-local kern_code        = nodecodes.kern
-local rule_code        = nodecodes.rule
-local dir_code         = nodecodes.dir
-local localpar_code    = nodecodes.localpar
-local whatsit_code     = nodecodes.whatsit
+local glyph_code      = nodecodes.glyph
+local hlist_code      = nodecodes.hlist
+local vlist_code      = nodecodes.vlist
+local disc_code       = nodecodes.disc
+local glue_code       = nodecodes.glue
+local kern_code       = nodecodes.kern
+local rule_code       = nodecodes.rule
+local dir_code        = nodecodes.dir
+local localpar_code   = nodecodes.localpar
+local whatsit_code    = nodecodes.whatsit
 
-local dimenfactors     = number.dimenfactors
-local formatters       = string.formatters
+local dimenfactors    = number.dimenfactors
+local formatters      = string.formatters
 
 -- this will be reorganized:
 
@@ -128,44 +127,51 @@ function nodes.handlers.checkforleaks(sparse)
     end
 end
 
+local fontcharacters -- = fonts.hashes.descriptions
+
 local function tosequence(start,stop,compact)
     if start then
+        if not fontcharacters then
+            fontcharacters = fonts.hashes.descriptions
+            if not fontcharacters then
+                return "[no char data]"
+            end
+        end
         local f_sequence = formatters["U+%04X:%s"]
         local f_subrange = formatters["[[ %s ][ %s ][ %s ]]"]
         start = tonut(start)
         stop = stop and tonut(stop)
         local t = { }
+        local n = 0
         while start do
             local c, id = isglyph(start)
             if c then
-                if compact then
-                    local components = getcomponents(start)
-                    if components then
-                        t[#t+1] = tosequence(components,nil,compact)
-                    else
-                        t[#t+1] = utfchar(c)
+                local u = fontcharacters[id][c] -- id == font id
+                u = u and u.unicode or c
+                if type(u) == "table" then
+                    local tt = { }
+                    for i=1,#u do
+                        local c = u[i]
+                        tt[i] = compact and utfchar(c) or f_sequence(c,utfchar(c))
                     end
+                    n = n + 1 ; t[n] = "(" .. concat(tt," ") .. ")"
                 else
-                    t[#t+1] = f_sequence(c,utfchar(c))
+                    n = n + 1 ; t[n] = compact and utfchar(c) or f_sequence(c,utfchar(c))
                 end
             elseif id == disc_code then
                 local pre, post, replace = getdisc(start)
                 t[#t+1] = f_subrange(pre and tosequence(pre),post and tosequence(post),replace and tosequence(replace))
             elseif id == rule_code then
-                if compact then
-                    t[#t+1] = "|"
-                else
-                    t[#t+1] = nodecodes[id]
-                end
+                n = n + 1 ; t[n] = compact and "|" or nodecodes[id] or "?"
             elseif id == dir_code then
                 local d, p = getdirection(start)
-                t[#t+1] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
+                n = n + 1 ; t[n] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
             elseif id == localpar_code then
-                t[#t+1] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
+                n = n + 1 ; t[n] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
-                t[#t+1] = "[]"
+                n = n + 1 ; t[n] = "[]"
             else
-                t[#t+1] = nodecodes[id]
+                n = n + 1 ; t[n] = nodecodes[id]
             end
             if start == stop then
                 break

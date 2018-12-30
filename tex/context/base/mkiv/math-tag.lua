@@ -31,8 +31,10 @@ local getsubtype        = nuts.getsubtype
 local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
-local getcomponents     = nuts.getcomponents
+local getcomponents     = nuts.getcomponents -- not really needed
 local getwidth          = nuts.getwidth
+
+local isglyph           = nuts.isglyph
 
 local getnucleus        = nuts.getnucleus
 local getsub            = nuts.getsub
@@ -156,12 +158,18 @@ local fencesstack = { }
 
 -- glyph nodes and such can happen in under and over stuff
 
+-- local function getunicode(n) -- instead of getchar
+--     local char = getchar(n)
+--  -- local font = font_of_family(getfield(n,"fam")) -- font_of_family
+--     local font = getfont(n)
+--     local data = fontcharacters[font][char]
+--     return data.unicode or char
+-- end
+
 local function getunicode(n) -- instead of getchar
-    local char = getchar(n)
- -- local font = font_of_family(getfield(n,"fam")) -- font_of_family
-    local font = getfont(n)
+    local char, font = isglyph(n)
     local data = fontcharacters[font][char]
-    return data.unicode or char
+    return data.unicode or char -- can be a table but unlikely for math characters
 end
 
 -------------------
@@ -197,7 +205,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
     local mtexttag = nil
     while start do
         local id = getid(start)
--- showtag(start,id,true)
+     -- showtag(start,id,true)
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -234,7 +242,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged(tag)) -- todo: a_mathcategory
                 end
                 stop_tagged()
--- showtag(start,id,false)
+             -- showtag(start,id,false)
                 break -- okay?
             elseif id == mathtextchar_code then -- or id == glyph_code
                 -- check for code
@@ -245,18 +253,18 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     setattr(start,a_tagged,start_tagged("ms")) -- mtext
                 end
                 stop_tagged()
--- showtag(start,id,false)
+             -- showtag(start,id,false)
                 break
             elseif id == delim_code then
                 -- check for code
                 setattr(start,a_tagged,start_tagged("mo"))
                 stop_tagged()
--- showtag(start,id,false)
+             -- showtag(start,id,false)
                 break
             elseif id == style_code then
                 -- has a next
             elseif id == noad_code then
--- setattr(start,a_tagged,tags.current())
+             -- setattr(start,a_tagged,tags.current())
                 processsubsup(start)
             elseif id == dubbox_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on subbox_code and see what ends up in there
@@ -335,12 +343,21 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                             runner(getlist(n),depth+1)
                                         elseif id == glyph_code then
                                             -- this should not be needed (todo: use tounicode info)
-                                            runner(getcomponents(n),depth+1)
+                                            local components = getcomponents(n)
+                                            if components then
+                                                runner(getcomponent,depth+1)
+                                            end
                                         elseif id == disc_code then
                                             local pre, post, replace = getdisc(n)
-                                            runner(pre,depth+1)     -- idem
-                                            runner(post,depth+1)    -- idem
-                                            runner(replace,depth+1) -- idem
+                                            if pre then
+                                                runner(pre,depth+1)     -- idem
+                                            end
+                                            if post then
+                                                runner(post,depth+1)    -- idem
+                                            end
+                                            if replace then
+                                                runner(replace,depth+1) -- idem
+                                            end
                                         end
                                         if mth == 1 then
                                             stop_tagged()
@@ -382,7 +399,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             end
                         elseif tag == "mstacker" then -- or tag == "mstackertop" or tag == "mstackermid" or tag == "mstackerbot" then
                             -- looks like it gets processed twice
--- do we still end up here ?
+                            -- do we still end up here ?
                             setattr(start,a_tagged,restart_tagged(attr)) -- so we just reuse the attribute
                             process(list)
                             stop_tagged()

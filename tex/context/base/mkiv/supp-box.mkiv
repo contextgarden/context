@@ -2770,12 +2770,41 @@
 
 %D And even rawer:
 
-           \let\naturalvtop   \normalvtop
-           \let\naturalvcenter\normalvtop
-\unexpanded\def\naturalhbox  {\hbox  bdir\directionlefttoright}
-\unexpanded\def\naturalvbox  {\vbox  bdir\directionlefttoright}
-\unexpanded\def\naturalhpack {\hpack bdir\directionlefttoright}
-\unexpanded\def\naturalvpack {\vpack bdir\directionlefttoright}
+           \let\naturalvcenter\normalvtop % will go away
+
+\ifdefined\bodydir
+
+    \unexpanded\def\naturalhbox  {\hbox  bdir\directionlefttoright}
+    \unexpanded\def\naturalvbox  {\vbox  bdir\directionlefttoright}
+    \unexpanded\def\naturalvtop  {\vtop  bdir\directionlefttoright}
+    \unexpanded\def\naturalhpack {\hpack bdir\directionlefttoright}
+    \unexpanded\def\naturalvpack {\vpack bdir\directionlefttoright}
+    \unexpanded\def\naturaltpack {\tpack bdir\directionlefttoright}
+
+    \unexpanded\def\reversehbox  {\hbox  bdir\directionrighttoleft}
+    \unexpanded\def\reversevbox  {\vbox  bdir\directionrighttoleft}
+    \unexpanded\def\reversevtop  {\vtop  bdir\directionrighttoleft}
+    \unexpanded\def\reversehpack {\hpack bdir\directionrighttoleft}
+    \unexpanded\def\reversevpack {\vpack bdir\directionrighttoleft}
+    \unexpanded\def\reversetpack {\tpack bdir\directionrighttoleft}
+
+\else
+
+    \unexpanded\def\naturalhbox  {\hbox  direction\directionlefttoright}
+    \unexpanded\def\naturalvbox  {\vbox  direction\directionlefttoright}
+    \unexpanded\def\naturalvtop  {\vtop  direction\directionlefttoright}
+    \unexpanded\def\naturalhpack {\hpack direction\directionlefttoright}
+    \unexpanded\def\naturalvpack {\vpack direction\directionlefttoright}
+    \unexpanded\def\naturaltpack {\tpack direction\directionlefttoright}
+
+    \unexpanded\def\reversehbox  {\hbox  direction\directionrighttoleft}
+    \unexpanded\def\reversevbox  {\vbox  direction\directionrighttoleft}
+    \unexpanded\def\reversevtop  {\vtop  direction\directionrighttoleft}
+    \unexpanded\def\reversehpack {\hpack direction\directionrighttoleft}
+    \unexpanded\def\reversevpack {\vpack direction\directionrighttoleft}
+    \unexpanded\def\reversetpack {\tpack direction\directionrighttoleft}
+
+\fi
 
 %D \macros
 %D   {vcenter}

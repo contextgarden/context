@@ -480,7 +480,7 @@
    \page_mul_calculate_column_result_dimensions
    \overlaycolumnfootnotes
    \setbox\columnpagebox\vpack % \vbox
-     {\hpack \ifconditional\c_page_mul_reverse bdir \plusone \fi to \makeupwidth
+     {\ifconditional\c_page_mul_reverse\reversehpack\else\naturalhpack\fi to \makeupwidth
         {\hskip\ifconditional\c_page_mul_reverse\d_page_mul_rightskip\else\d_page_mul_leftskip\fi\relax
          \dohandleallcolumns
            {\finishcolumnbox

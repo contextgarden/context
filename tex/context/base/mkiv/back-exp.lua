@@ -2897,11 +2897,8 @@ local collectresults  do -- too many locals otherwise
     local nuts             = nodes.nuts
 
     local getnext          = nuts.getnext
-    local getsubtype       = nuts.getsubtype
-    local getfont          = nuts.getfont
-    local getchar          = nuts.getchar
     local getdisc          = nuts.getdisc
-    local getcomponents    = nuts.getcomponents
+    ----- getcomponents    = nuts.getcomponents
     local getlist          = nuts.getlist
     local getid            = nuts.getid
     local getattr          = nuts.getattr
@@ -2956,24 +2953,24 @@ local collectresults  do -- too many locals otherwise
                 showdetail(n,id,subtype)
             end
             if id == glyph_code then
-                local c  = getchar(n)
-                local at = getattr(n,a_tagged) or pat
+                local c, f = isglyph(n)
+                local at   = getattr(n,a_tagged) or pat
                 if not at then
                  -- we need to tag the pagebody stuff as being valid skippable
                  --
                  -- report_export("skipping character: %C (no attribute)",n.char)
                 else
                     -- we could add tonunicodes for ligatures (todo)
-                    local components = getcomponents(n)
-                    if components and (not characterdata[c] or overloads[c]) then -- we loose data
-                        collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
-                    else
+                 -- local components = getcomponents(n)
+                 -- if components and (not characterdata[c] or overloads[c]) then -- we loose data
+                 --     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
+                 -- else
                         if last ~= at then
                             local tl = taglist[at]
                             local ap = getattr(n,a_taggedpar) or pap
-if localparagraph and (not ap or ap < localparagraph) then
-    maybewrong = addtomaybe(maybewrong,c,1)
-end
+                            if localparagraph and (not ap or ap < localparagraph) then
+                                maybewrong = addtomaybe(maybewrong,c,1)
+                            end
                             pushcontent()
                             currentnesting   = tl
                             currentparagraph = ap
@@ -3007,9 +3004,9 @@ end
                                 currentattribute = last
                                 currentparagraph = ap
                             end
-if localparagraph and (not ap or ap < localparagraph) then
-    maybewrong = addtomaybe(maybewrong,c,2)
-end
+                            if localparagraph and (not ap or ap < localparagraph) then
+                                maybewrong = addtomaybe(maybewrong,c,2)
+                            end
                             if trace_export then
                                 report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
                             end
@@ -3038,7 +3035,7 @@ end
                                 currentcontent[nofcurrentcontent] = " "
                             end
                         else
-                            local fc = fontchar[getfont(n)]
+                            local fc = fontchar[f]
                             if fc then
                                 fc = fc and fc[c]
                                 if fc then
@@ -3068,7 +3065,7 @@ end
                                 -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                             end
                         end
-                    end
+                 -- end
                 end
             elseif id == disc_code then -- probably too late
                 local pre, post, replace = getdisc(n)
@@ -3240,8 +3237,11 @@ end
                 local kern = getkern(n)
                 if kern > 0 then
                     local limit = threshold
-                    if p and getid(p) == glyph_code then
-                        limit = fontquads[getfont(p)] / 4
+                    if p then
+                        local c, f = isglyph(p)
+                        if c then
+                            limit = fontquads[f] / 4
+                        end
                     end
                     if kern > limit then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then

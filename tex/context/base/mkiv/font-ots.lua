@@ -82,7 +82,7 @@ mechanisms. Both put some constraints on the code here.</p>
 -- Todo: check if we copy attributes to disc nodes if needed.
 --
 -- Todo: it would be nice if we could get rid of components. In other places we can use
--- the unicode properties.
+-- the unicode properties. We can just keep a lua table.
 --
 -- Remark: We do some disc juggling where we need to keep in mind that the pre, post and
 -- replace fields can have prev pointers to a nesting node ... I wonder if that is still
@@ -213,13 +213,6 @@ local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
------ traverse_nodes     = nuts.traverse
------ traverse_id        = nuts.traverse_id
-local set_components     = nuts.set_components
-local take_components    = nuts.take_components
-local count_components   = nuts.count_components
-local copy_no_components = nuts.copy_no_components
-local copy_only_glyphs   = nuts.copy_only_glyphs
 
 local setmetatable       = setmetatable
 local setmetatableindex  = table.setmetatableindex
@@ -458,26 +451,50 @@ end
 
 -- start is a mark and we need to keep that one
 
-local take_components = getcomponents -- we overload here (for now)
-local set_components  = setcomponents -- we overload here (for now)
------ get_components  = getcomponents -- we overload here (for now)
+local copy_no_components = nuts.copy_no_components
+local copy_only_glyphs   = nuts.copy_only_glyphs
+
+local set_components     = setcomponents
+local take_components    = getcomponents
+
+local isglyph            = nuts.isglyph
+
+-- local function count_components(start,marks)
+-- print("!")
+--     if getid(start) ~= glyph_code then
+--         return 0
+--     elseif getsubtype(start) == ligatureglyph_code then
+--         local i = 0
+--         local components = getcomponents(start)
+--         while components do
+--             i = i + count_components(components,marks)
+--             components = getnext(components)
+--         end
+--         return i
+--     elseif not marks[getchar(start)] then
+-- print("YES")
+--         return 1
+--     else
+--         return 0
+--     end
+-- end
 
 local function count_components(start,marks)
-    if getid(start) ~= glyph_code then
-        return 0
-    elseif getsubtype(start) == ligatureglyph_code then
-        local i = 0
-        local components = getcomponents(start)
-        while components do
-            i = i + count_components(components,marks)
-            components = getnext(components)
+    local char = isglyph(start)
+    if char then
+        if getsubtype(start) == ligatureglyph_code then
+            local i = 0
+            local components = getcomponents(start)
+            while components do
+                i = i + count_components(components,marks)
+                components = getnext(components)
+            end
+            return i
+        elseif not marks[char] then
+            return 1
         end
-        return i
-    elseif not marks[getchar(start)] then
-        return 1
-    else
-        return 0
     end
+    return 0
 end
 
 local function markstoligature(head,start,stop,char)
@@ -3645,14 +3662,11 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     end
 end
 
--- to be checked, nowadays we probably can assume properly matched directions
--- so maybe we no longer need a stack
-
 local txtdirstate, pardirstate  do
 
     local getdirection = nuts.getdirection
     local lefttoright  = 0
-    local rightoleft   = 1
+    local righttoleft  = 1
 
     txtdirstate = function(start,stack,top,rlparmode)
         local nxt = getnext(start)
@@ -3670,11 +3684,11 @@ local txtdirstate, pardirstate  do
             end
         elseif dir == lefttoright then
             top = top + 1
-            stack[top] = 0
+            stack[top] = lefttoright
             return nxt, top, 1
         elseif dir == righttoleft then
             top = top + 1
-            stack[top] = 1
+            stack[top] = righttoleft
             return nxt, top, -1
         else
             return nxt, top, rlparmode
@@ -3686,13 +3700,12 @@ local txtdirstate, pardirstate  do
         local dir = getdirection(start)
         if dir == lefttoright then
             return nxt, 1, 1
-        end
-        if dir == righttoleft then
+        elseif dir == righttoleft then
             return nxt, -1, -1
         -- for old times sake we we handle strings too
-        elseif dir == "TRT" then
-            return nxt, 1, 1
         elseif dir == "TLT" then
+            return nxt, 1, 1
+        elseif dir == "TRT" then
             return nxt, -1, -1
         else
             return nxt, 0, 0
