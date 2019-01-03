@@ -3,7 +3,7 @@ return {
         --
         "nocolormodel", "greycolormodel", "graycolormodel", "rgbcolormodel", "cmykcolormodel",
         "shadefactor",
-        "textextoffset",
+        "textextoffset", "textextanchor",
         "normaltransparent", "multiplytransparent", "screentransparent", "overlaytransparent",
         "softlighttransparent", "hardlighttransparent", "colordodgetransparent", "colorburntransparent",
         "darkentransparent", "lightentransparent", "differencetransparent", "exclusiontransparent",
@@ -170,5 +170,7 @@ return {
         "isarray", "prefix", "isobject",
         --
         "comment", "report", "lua", "mp", "MP", "luacall",
+        --
+        "mirrored", "mirroredabout",
     },
 }

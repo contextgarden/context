@@ -1,4 +1,4 @@
-.TH "textools" "1" "01-01-2018" "version 1.3.1" "TeXTools"
+.TH "textools" "1" "01-01-2019" "version 1.3.1" "TeXTools"
 .SH NAME
 .B textools
 .SH SYNOPSIS

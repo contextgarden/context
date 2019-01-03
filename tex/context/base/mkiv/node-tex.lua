@@ -6,35 +6,40 @@ if not modules then modules = { } end modules ['node-tex'] = {
     license   = "see context related readme files"
 }
 
-builders         = builders        or { }
-local kernel     = builders.kernel or { }
-builders.kernel  = kernel
+builders          = builders        or { }
+local kernel      = builders.kernel or { }
+builders.kernel   = kernel
 
-local nuts       = nodes.nuts
+local nuts        = nodes.nuts
 
-local hyphenate  = lang.hyphenate
-local ligaturing = nuts.ligaturing
-local kerning    = nuts.kerning
-
-kernel.originals = {
-    hyphenate  = hyphenate,
-    ligaturing = ligaturing,
-    kerning    = kerning,
-}
+local hyphenate   = lang.hyphenate
+local hyphenating = nuts.hyphenating
+local ligaturing  = nuts.ligaturing
+local kerning     = nuts.kerning
+local cleanup     = nuts.flush_components
 
 function kernel.hyphenation(head)
-    hyphenate(head)
-    return head
+    return (hyphenate(head)) -- nodes !
+end
+
+function kernel.hyphenating(head)
+    return (hyphenating(head))
 end
 
 function kernel.ligaturing(head)
-    local head, tail = ligaturing(head)
-    return head
+    return (ligaturing(head))
 end
 
 function kernel.kerning(head)
-    local head, tail = kerning(head)
-    return head
+    return (kerning(head))
+end
+
+if cleanup then
+
+    function kernel.cleanup(head)
+        return (cleanup(head))
+    end
+
 end
 
 callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")

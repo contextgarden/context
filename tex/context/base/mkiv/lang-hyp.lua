@@ -1611,16 +1611,23 @@ featureset.hyphenonly   = hyphenonly == v_yes
     -- local replaceaction = nodes.tasks.replaceaction -- no longer overload this way (too many local switches)
 
     local hyphenate    = lang.hyphenate
-    local has_language = lang.has_language
+    local hyphenating  = nuts.hyphenating
     local methods      = { }
     local usedmethod   = false
     local stack        = { }
 
-    local function original(head) -- kernel.hyphenation(head)
-        hyphenate(tonode(head))
-        return head
-    end
+    local original = hyphenating and
+        function(head)
+            return (hyphenating(head))
+        end
+    or
+        function(head)
+            hyphenate(tonode(head))
+            return head -- a nut
+        end
 
+ -- local has_language = lang.has_language
+ --
  -- local function original(head) -- kernel.hyphenation(head)
  --     local h = tonode(head)
  --     if has_language(h) then

@@ -2898,7 +2898,6 @@ local collectresults  do -- too many locals otherwise
 
     local getnext          = nuts.getnext
     local getdisc          = nuts.getdisc
-    ----- getcomponents    = nuts.getcomponents
     local getlist          = nuts.getlist
     local getid            = nuts.getid
     local getattr          = nuts.getattr
@@ -2960,103 +2959,92 @@ local collectresults  do -- too many locals otherwise
                  --
                  -- report_export("skipping character: %C (no attribute)",n.char)
                 else
-                    -- we could add tonunicodes for ligatures (todo)
-                 -- local components = getcomponents(n)
-                 -- if components and (not characterdata[c] or overloads[c]) then -- we loose data
-                 --     collectresults(components,nil,at) -- this assumes that components have the same attribute as the glyph ... we should be more tolerant (see math)
-                 -- else
-                        if last ~= at then
-                            local tl = taglist[at]
-                            local ap = getattr(n,a_taggedpar) or pap
-                            if localparagraph and (not ap or ap < localparagraph) then
-                                maybewrong = addtomaybe(maybewrong,c,1)
-                            end
-                            pushcontent()
-                            currentnesting   = tl
-                            currentparagraph = ap
-                            currentattribute = at
-                            last = at
+                    if last ~= at then
+                        local tl = taglist[at]
+                        local ap = getattr(n,a_taggedpar) or pap
+                        if localparagraph and (not ap or ap < localparagraph) then
+                            maybewrong = addtomaybe(maybewrong,c,1)
+                        end
+                        pushcontent()
+                        currentnesting   = tl
+                        currentparagraph = ap
+                        currentattribute = at
+                        last = at
+                        pushentry(currentnesting)
+                        if trace_export then
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
+                        end
+                        -- We need to intercept this here; maybe I will also move this
+                        -- to a regular setter at the tex end.
+                        local r = getattr(n,a_reference)
+                        if r then
+                            local t = tl.taglist
+                            referencehash[t[#t]] = r -- fulltag
+                        end
+                        local d = getattr(n,a_destination)
+                        if d then
+                            local t = tl.taglist
+                            destinationhash[t[#t]] = d -- fulltag
+                        end
+                        --
+                    elseif last then
+                        -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
+                        -- information unless we inject a special node (but even then we can run into nesting
+                        -- issues)
+                        local ap = getattr(n,a_taggedpar) or pap
+                        if ap ~= currentparagraph then
+                            pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
-                            if trace_export then
-                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
-                            end
-                            -- We need to intercept this here; maybe I will also move this
-                            -- to a regular setter at the tex end.
-                            local r = getattr(n,a_reference)
-                            if r then
-                                local t = tl.taglist
-                                referencehash[t[#t]] = r -- fulltag
-                            end
-                            local d = getattr(n,a_destination)
-                            if d then
-                                local t = tl.taglist
-                                destinationhash[t[#t]] = d -- fulltag
-                            end
-                            --
-                        elseif last then
-                            -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
-                            -- information unless we inject a special node (but even then we can run into nesting
-                            -- issues)
-                            local ap = getattr(n,a_taggedpar) or pap
-                            if ap ~= currentparagraph then
-                                pushcontent(currentparagraph,ap)
-                                pushentry(currentnesting)
-                                currentattribute = last
-                                currentparagraph = ap
-                            end
-                            if localparagraph and (not ap or ap < localparagraph) then
-                                maybewrong = addtomaybe(maybewrong,c,2)
-                            end
-                            if trace_export then
-                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
-                            end
-                        else
-                            if trace_export then
-                                report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
-                            end
+                            currentattribute = last
+                            currentparagraph = ap
                         end
-                        local s = getattr(n,a_exportstatus)
-                        if s then
-                            c = s
+                        if localparagraph and (not ap or ap < localparagraph) then
+                            maybewrong = addtomaybe(maybewrong,c,2)
                         end
-                        if c == 0 then
+                        if trace_export then
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
+                        end
+                    else
+                        if trace_export then
+                            report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,at)
+                        end
+                    end
+                    local s = getattr(n,a_exportstatus)
+                    if s then
+                        c = s
+                    end
+                    if c == 0 then
+                        if trace_export then
+                            report_export("%w<!-- skipping last glyph -->",currentdepth)
+                        end
+                    elseif c == 0x20 then
+                        local a = getattr(n,a_characters)
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        if a then
                             if trace_export then
-                                report_export("%w<!-- skipping last glyph -->",currentdepth)
+                                report_export("%w<!-- turning last space into special space %U -->",currentdepth,a)
                             end
-                        elseif c == 0x20 then
-                            local a = getattr(n,a_characters)
-                            nofcurrentcontent = nofcurrentcontent + 1
-                            if a then
-                                if trace_export then
-                                    report_export("%w<!-- turning last space into special space %U -->",currentdepth,a)
-                                end
-                                currentcontent[nofcurrentcontent] = specialspaces[a] -- special space
-                            else
-                                currentcontent[nofcurrentcontent] = " "
-                            end
+                            currentcontent[nofcurrentcontent] = specialspaces[a] -- special space
                         else
-                            local fc = fontchar[f]
+                            currentcontent[nofcurrentcontent] = " "
+                        end
+                    else
+                        local fc = fontchar[f]
+                        if fc then
+                            fc = fc and fc[c]
                             if fc then
-                                fc = fc and fc[c]
-                                if fc then
-                                    local u = fc.unicode
-                                    if not u then
-                                        nofcurrentcontent = nofcurrentcontent + 1
-                                        currentcontent[nofcurrentcontent] = utfchar(c)
-                                    elseif type(u) == "table" then
-                                        for i=1,#u do
-                                            nofcurrentcontent = nofcurrentcontent + 1
-                                            currentcontent[nofcurrentcontent] = utfchar(u[i])
-                                        end
-                                    else
-                                        nofcurrentcontent = nofcurrentcontent + 1
-                                        currentcontent[nofcurrentcontent] = utfchar(u)
-                                    end
-                                elseif c > 0 then
+                                local u = fc.unicode
+                                if not u then
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(c)
+                                elseif type(u) == "table" then
+                                    for i=1,#u do
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = utfchar(u[i])
+                                    end
                                 else
-                                    -- we can have -1 as side effect of an explicit hyphen (unless we expand)
+                                    nofcurrentcontent = nofcurrentcontent + 1
+                                    currentcontent[nofcurrentcontent] = utfchar(u)
                                 end
                             elseif c > 0 then
                                 nofcurrentcontent = nofcurrentcontent + 1
@@ -3064,8 +3052,13 @@ local collectresults  do -- too many locals otherwise
                             else
                                 -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                             end
+                        elseif c > 0 then
+                            nofcurrentcontent = nofcurrentcontent + 1
+                            currentcontent[nofcurrentcontent] = utfchar(c)
+                        else
+                            -- we can have -1 as side effect of an explicit hyphen (unless we expand)
                         end
-                 -- end
+                    end
                 end
             elseif id == disc_code then -- probably too late
                 local pre, post, replace = getdisc(n)

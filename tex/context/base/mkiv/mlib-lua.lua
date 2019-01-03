@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['mlib-lua'] = {
 
 -- maybe we need mplib.model, but how with instances
 
-local type, tostring, select, loadstring = type, tostring, select, loadstring
+local type, tostring, tonumber, select, loadstring = type, tostring, tonumber, select, loadstring
 local find, match, gsub, gmatch = string.find, string.match, string.gsub, string.gmatch
 local concat, insert, remove = table.concat, table.insert, table.remove
 
@@ -857,6 +857,21 @@ do
 
     function mp.positionanchor()
         qprint(getmacro("MPanchorid"))
+    end
+
+end
+
+do
+
+    local mppair = mp.pair
+
+    function mp.textextanchor(s)
+        local x, y = match(s,"tx_anchor=(%S+) (%S+)") -- todo: make an lpeg
+        if x and y then
+            x = tonumber(x)
+            y = tonumber(y)
+        end
+        mppair(x or 0,y or 0)
     end
 
 end

@@ -379,6 +379,21 @@ local function findzone(presets,name)
     return usedzones and usedzones[name]
 end
 
+local function getzonenames(presets)
+    if not presets then
+        return { }
+    end
+    local data = presets.data
+    if not data then
+        return { }
+    end
+    local t = sortedkeys(data.zones or { })
+    for i=1,#t do
+        t[i] = lower(t[i])
+    end
+    return t
+end
+
 local function gettargets(zone) -- maybe also for a day
     local schedule = zone.schedule
     local min      = false
@@ -990,6 +1005,7 @@ evohome = {
         setzonestate       = setzonestate,       -- presets, name, temperature
         resetzonestate     = resetzonestate,     -- presets, name
         getzonedata        = findzone,           -- presets, name
+        getzonenames       = getzonenames,       -- presets
         --
         loadpresets        = loadpresets,        -- filename
         loadhistory        = loadhistory,        -- presets | filename

@@ -1,4 +1,4 @@
-.TH "mtx-watch" "1" "01-01-2018" "version 1.00" "ConTeXt Request Watchdog"
+.TH "mtx-watch" "1" "01-01-2019" "version 1.00" "ConTeXt Request Watchdog"
 .SH NAME
 .B mtx-watch
 .SH SYNOPSIS

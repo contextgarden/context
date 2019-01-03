@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/30/18 19:28:22
+-- merge date  : 01/03/19 19:27:26
 
 do -- begin closure to overcome local limits and interference
 
@@ -25519,6 +25519,7 @@ local setcomponents=nuts.setcomponents
 local getdir=nuts.getdir
 local getwidth=nuts.getwidth
 local ischar=nuts.is_char
+local isglyph=nuts.isglyph
 local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
@@ -25707,7 +25708,6 @@ local copy_no_components=nuts.copy_no_components
 local copy_only_glyphs=nuts.copy_only_glyphs
 local set_components=setcomponents
 local take_components=getcomponents
-local isglyph=nuts.isglyph
 local function count_components(start,marks)
   local char=isglyph(start)
   if char then

@@ -527,10 +527,10 @@
         \page_layouts_place_text_line_right
         \page_layouts_place_text_line_left
       \namedlayoutelementparameter\currentlayouttextline\c!after
-      \kern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+      \vkern\zeropoint}% keep the \dp, beware of \vtops, never change this!
    \dp\b_page_layouts_element\zeropoint
    \box\b_page_layouts_element
-   \vskip-#height\relax}
+   \vkern-#height\relax}
 
 \let\page_layouts_extra_at_margin_left \plusone
 \let\page_layouts_extra_at_margin_right\plustwo
@@ -831,21 +831,21 @@
       \calculatereducedvsizes
       \swapmargins
       \offinterlineskip
-      \vskip\dimexpr-\topheight-\topdistance\relax
+      \vkern\dimexpr-\topheight-\topdistance\relax
       \the\toptextcontent
-      \vskip\dimexpr\topheight+\topdistance\relax
+      \vkern\dimexpr\topheight+\topdistance\relax
       \the\headertextcontent
-      \vskip\dimexpr\headerheight+\headerdistance+\textdistance\relax
+      \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \anch_positions_place_anchors
-      \vskip\dimexpr-\textdistance-\textheight\relax
+      \vkern\dimexpr-\textdistance-\textheight\relax
       \the\texttextcontent
-      \vskip\textheight
+      \vkern\textheight
       \the\everyendoftextbody
-      \vskip\footerdistance
+      \vkern\footerdistance
       \the\footertextcontent
-      \vskip\dimexpr\footerheight+\bottomdistance\relax
+      \vkern\dimexpr\footerheight+\bottomdistance\relax
       \the\bottomtextcontent
-      \vskip\bottomheight
+      \vkern\bottomheight
       \vfilll}%
   \smashbox\b_page_layouts_element
   \box\b_page_layouts_element}
@@ -864,7 +864,7 @@
       \calculatereducedvsizes
       \calculatehsizes
       \swapmargins
-      \vskip\dimexpr\headerheight+\headerdistance+\textdistance\relax
+      \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
       \dontleavehmode
      %\page_prepare_backgrounds{#2}%
       \hpack to \makeupwidth

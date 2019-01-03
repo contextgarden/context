@@ -125,6 +125,7 @@ nodes.unprotect_glyph         = node.unprotect_glyph
 nodes.unprotect_glyphs        = node.unprotect_glyphs
 nodes.kerning                 = node.kerning
 nodes.ligaturing              = node.ligaturing
+nodes.hyphenating             = node.hyphenating
 nodes.mlist_to_hlist          = node.mlist_to_hlist
 
 nodes.effective_glue          = node.effective_glue

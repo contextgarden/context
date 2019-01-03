@@ -203,6 +203,7 @@ local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
 
 local ischar             = nuts.is_char
+local isglyph            = nuts.isglyph
 local usesfont           = nuts.uses_font
 
 local insert_node_after  = nuts.insert_after
@@ -456,28 +457,6 @@ local copy_only_glyphs   = nuts.copy_only_glyphs
 
 local set_components     = setcomponents
 local take_components    = getcomponents
-
-local isglyph            = nuts.isglyph
-
--- local function count_components(start,marks)
--- print("!")
---     if getid(start) ~= glyph_code then
---         return 0
---     elseif getsubtype(start) == ligatureglyph_code then
---         local i = 0
---         local components = getcomponents(start)
---         while components do
---             i = i + count_components(components,marks)
---             components = getnext(components)
---         end
---         return i
---     elseif not marks[getchar(start)] then
--- print("YES")
---         return 1
---     else
---         return 0
---     end
--- end
 
 local function count_components(start,marks)
     local char = isglyph(start)

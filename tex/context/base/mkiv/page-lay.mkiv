@@ -1260,7 +1260,7 @@
 % \to \everybeforeshipout
 
 \def\goleftonpage % name will change (we could cache)
-  {\hskip-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}
+  {\hkern-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}
 
 \def\doifelsemarginswap#1#2%
   {\doifbothsides{#1}{#1}{#2}}

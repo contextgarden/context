@@ -338,25 +338,25 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                         else
                                             setattr(n,a_tagged,text)
                                         end
-
                                         if id == hlist_code or id == vlist_code then
                                             runner(getlist(n),depth+1)
                                         elseif id == glyph_code then
-                                            -- this should not be needed (todo: use tounicode info)
-                                            local components = getcomponents(n)
+                                            -- this should not be needed
+                                            local components = getcomponents(n) -- unlikely set
                                             if components then
                                                 runner(getcomponent,depth+1)
                                             end
                                         elseif id == disc_code then
+                                            -- this should not be needed
                                             local pre, post, replace = getdisc(n)
                                             if pre then
-                                                runner(pre,depth+1)     -- idem
+                                                runner(pre,depth+1)
                                             end
                                             if post then
-                                                runner(post,depth+1)    -- idem
+                                                runner(post,depth+1)
                                             end
                                             if replace then
-                                                runner(replace,depth+1) -- idem
+                                                runner(replace,depth+1)
                                             end
                                         end
                                         if mth == 1 then

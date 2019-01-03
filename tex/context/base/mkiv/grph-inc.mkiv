@@ -656,45 +656,46 @@
 \unexpanded\def\docheckfiguremps     #1{\global\setbox\foundexternalfigure\vpack{\convertMPtoPDF{#1}11}}
 \unexpanded\def\docheckfiguremprun #1#2{\global\setbox\foundexternalfigure\vpack{\useMPrun{#1}{#2}}}
 
-\unexpanded\def\relocateexternalfigure % easier here than in lua
-  {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
-     \vss
-     \ht\foundexternalfigure\zeropoint
-     \hpack to \wd\foundexternalfigure\bgroup
-        \box\foundexternalfigure
-        \hss
-     \egroup
-   \egroup}
-
-% \unexpanded\def\relocateexternalfigure
+% \unexpanded\def\relocateexternalfigure % easier here than in lua
 %   {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
-%      %
-%      % The \vss can (!) introduce 1 sp excess visible in xform which in itself
-%      % is not that important but some don't like these cosmetic side effects, for
-%      % instance we can get:
-%      %
-%      % vss   : \vbox(845.1575+0.0)x597.23125, glue set 845.15747fil, direction TLT
-%      % vskip : \vbox(845.1575+0.0)x597.23125, direction TLT
-%      %
-%      % or
-%      %
-%      % 1 0 0 1 0 0.00003 cm
-%      % 1 0 0 1 0 0       cm
-%      %
-%      % This is a known property of using glue and can even depend on the architecture
-%      % (float implementation). Anyway, let's for now use a skip. Of course this can
-%      % shift the issue elsewhere, as vss is used a lot elsewhere.
-%      %
-%    % \vss
-%      \vskip\ht\foundexternalfigure
-%      %
+%      \vss
 %      \ht\foundexternalfigure\zeropoint
-%      \dp\foundexternalfigure\zeropoint
 %      \hpack to \wd\foundexternalfigure\bgroup
 %         \box\foundexternalfigure
 %         \hss
 %      \egroup
 %    \egroup}
+
+\unexpanded\def\relocateexternalfigure
+  {\global\setbox\foundexternalfigure\vpack to \ht\foundexternalfigure\bgroup
+     %
+     % The \vss can (!) introduce 1 sp excess visible in xform which in itself
+     % is not that important but some don't like these cosmetic side effects, for
+     % instance we can get:
+     %
+     % vss   : \vbox(845.1575+0.0)x597.23125, glue set 845.15747fil, direction TLT
+     % vskip : \vbox(845.1575+0.0)x597.23125, direction TLT
+     %
+     % or
+     %
+     % 1 0 0 1 0 0.00003 cm
+     % 1 0 0 1 0 0       cm
+     %
+     % This is a known property of using glue and can even depend on the architecture
+     % (float implementation). Anyway, let's for now use a skip. Of course this can
+     % shift the issue elsewhere, as vss is used a lot elsewhere.
+     %
+   % \vss
+     \vkern\ht\foundexternalfigure
+     %
+   % \parfillskip\zeropoint
+     \ht\foundexternalfigure\zeropoint
+     \dp\foundexternalfigure\zeropoint
+     \hpack to \wd\foundexternalfigure\bgroup
+        \box\foundexternalfigure
+        \hss
+     \egroup
+   \egroup}
 
 \unexpanded\def\startfoundexternalfigure#1#2% ht wd
   {\global\setbox\foundexternalfigure\vbox to #2\bgroup\vss\hbox to #1\bgroup}

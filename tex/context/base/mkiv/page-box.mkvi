@@ -251,10 +251,24 @@
 \def\page_boxes_apply_offsets#1%
   {\setbox#1\vpack to \paperheight
      {\hsize\paperwidth
-      \vskip\topspace
-      \hskip\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
+      \vkern\topspace
+% \parfillskip\zeropoint
+      \hkern\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
       \box#1}%
    \dp#1\zeropoint}
+
+% \def\page_boxes_apply_offset#box%
+%   {\scratchwidth \wd#box%
+%    \scratchheight\ht#box%
+%    \scratchdepth \dp#box%
+%    \setbox#box\vpack
+%      {\offinterlineskip
+%       \vkern\topoffset
+%       \hkern\doifbothsides\backoffset\backoffset{-\backoffset}%
+%       \box#box}%
+%    \wd#box\scratchwidth
+%    \ht#box\scratchheight
+%    \dp#box\scratchdepth}
 
 % \let\page_boxes_apply_clip_paper      \gobbleoneargument
 % \let\page_boxes_apply_clip_print_left \gobbleoneargument

@@ -406,13 +406,25 @@ vardef installlabel@# (expr type, x, y, offset) =
     numeric labyf  @# ; labyf  @# := y ;
 enddef ;
 
+vardef mfun_labshift@#(expr p) =
+    (labxf@#*lrcorner p +
+     labyf@#*ulcorner p +
+     (1-labxf@#-labyf@#)*llcorner p)
+enddef ;
+
+vardef mfun_picshift@#(expr p) =
+    (labxf@#*ulcorner p +
+     labyf@#*lrcorner p +
+     (1-labxf@#-labyf@#)*urcorner p)
+enddef ;
+
 % we save the plain variant
 
 vardef plain_thelabel@#(expr p,z) =
     if string p :
         plain_thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
     else :
-        p shifted (z + labeloffset*laboff@# - (labxf@#*lrcorner p + labyf@#*ulcorner p + (1-labxf@#-labyf@#)*llcorner p))
+        p shifted (z + labeloffset*laboff@# - mfun_labshift@#(p))
     fi
 enddef;
 
@@ -441,18 +453,41 @@ enddef ;
 
 plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" & "useplainlabels ;" ;
 
+% vardef thetextext@#(expr p,z) =
+%   % interim labeloffset := textextoffset ;
+%     if string p :
+%         thetextext@#(rawtextext(p),z)
+%     elseif numeric p :
+%         thetextext@#(rawtextext(decimal p),z)
+%     else :
+%         p
+%             if (mfun_labtype@# >= 10) :
+%                 shifted (0,ypart center p)
+%             fi
+%             shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
+%     fi
+% enddef ;
+
+newinternal anchortextexts ; anchortextexts := 1 ; % so we can disable it
+
 vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
     if string p :
         thetextext@#(rawtextext(p),z)
     elseif numeric p :
         thetextext@#(rawtextext(decimal p),z)
+    elseif pair p :
+        thetextext@#(rawtextext(ddecimal p),z)
     else :
-        p
-            if (mfun_labtype@# >= 10) :
-                shifted (0,ypart center p)
-            fi
-            shifted (z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        if anchortextexts = 1 :
+            image(draw p withprescript "tx_anchor=" & ddecimal z)
+        else :
+            p
+        fi
+        if (mfun_labtype@# >= 10) :
+            shifted (0,ypart center p)
+        fi
+        shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
     fi
 enddef ;
 
@@ -546,7 +581,7 @@ vardef thefmttext@#(text t) =
         if (mfun_labtype@# >= 10) :
             shifted (0,ypart center p)
         fi
-        shifted (mfun_tt_z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        shifted (mfun_tt_z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
 enddef ;
 
 vardef fmttext@#(text t) = % no draw here
@@ -568,7 +603,7 @@ vardef thetexbox@#(expr category, name, z) =
         if (mfun_labtype@# >= 10) :
             shifted (0,ypart center p)
         fi
-        shifted (z + textextoffset*mfun_laboff@# - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        shifted (z + textextoffset*mfun_laboff@# - mfun_labshift@#(p))
 enddef ;
 
 vardef texbox@#(expr category, name) = % no draw here
@@ -589,17 +624,11 @@ vardef theoffset@#(expr z) =
     elseif path z :
         if mfun_laboff@# = origin :
             center z
-        elseif cycle z :
-            ((center z         )--
-             (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z))
-                intersectionpoint z
         else :
-            ((center z)--
-             (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z))
-                intersectionpoint (z--cycle)
+            ((center z)-- mfun_picshift@#(z)) intersectionpoint (z if not cycle z: --cycle fi)
         fi
     else : % picture
-        (mfun_labxf@#*ulcorner z + mfun_labyf@#*lrcorner z + (1-mfun_labxf@#-mfun_labyf@#)*urcorner z)
+        mfun_picshift@#(z)
     fi
 enddef;
 
@@ -611,10 +640,7 @@ vardef thelabel@#(expr p,z) =
     elseif pair p :
         thelabel@#("(" & decimal(xpart p) & "," & decimal(ypart p) & ")",z)
     else :
-        p shifted (theoffset@#(z)
-            + labeloffset*mfun_laboff@#
-            - (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p +
-                (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        p shifted (theoffset@#(z) + labeloffset*mfun_laboff@# - mfun_labshift@#(p))
     fi
 enddef;
 
@@ -627,7 +653,7 @@ vardef anchored@#(expr p, z) = % beware: no "+ mfun_laboff@#" here (never!)
         if (mfun_labtype@# >= 10) :
             shifted (0,ypart center p)
         fi
-        shifted (z + (mfun_labxf@#*lrcorner p + mfun_labyf@#*ulcorner p + (1-mfun_labxf@#-mfun_labyf@#)*llcorner p))
+        shifted (z + mfun_labshift@#(p))
 enddef ;
 
 let normalinfont = infont ;

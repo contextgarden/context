@@ -65,7 +65,6 @@ local getsubtype       = nuts.getsubtype
 local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
------ getcomponents    = nuts.getcomponents
 local isglyph          = nuts.isglyph
 local getkern          = nuts.getkern
 local getdirection     = nuts.getdirection
@@ -81,7 +80,7 @@ local flush_node_list  = nuts.flush_list
 local protect_glyphs   = nuts.protect_glyphs
 
 local nextnode         = nuts.traversers.node
-local nextglyph        = nuts.traversers.glyph
+----- nextglyph        = nuts.traversers.glyph
 
 local nodepool         = nuts.pool
 local new_glyph        = nodepool.glyph
@@ -501,10 +500,7 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
         for n, id in nextnode, tonut(list) do
             if id == glyph_code then
                 local c = getchar(n)
-             -- local components = getcomponents(n)
-             -- if components then
-             --     result, nofresult = toutf(components,result,nofresult,false,true)
-             -- elseif c > 0 then
+                if c > 0 then
                     local fc = fontcharacters[getfont(n)]
                     if fc then
                         local fcc = fc[c]
@@ -530,10 +526,10 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
                         nofresult = nofresult + 1
                         result[nofresult] = f_unicode(c)
                     end
-             -- else
-             --     nofresult = nofresult + 1
-             --     result[nofresult] = f_badcode(c)
-             -- end
+                else
+                    nofresult = nofresult + 1
+                    result[nofresult] = f_badcode(c)
+                end
             elseif id == disc_code then
                 result, nofresult = toutf(getfield(n,"replace"),result,nofresult,false,true) -- needed?
             elseif id == hlist_code or id == vlist_code then

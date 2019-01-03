@@ -397,6 +397,14 @@ vardef boundingpoint@#(expr p) =
     fi
 enddef ;
 
+def mirrored primary a =
+    a scaled -1
+enddef ;
+
+primarydef a mirroredabout b =
+    (a shifted -b) scaled -1 shifted b
+enddef ;
+
 %D Some missing functions can be implemented rather straightforward (thanks to
 %D Taco and others):
 

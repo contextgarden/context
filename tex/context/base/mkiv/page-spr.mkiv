@@ -23,15 +23,32 @@
 
 % beware, ugly overload, to be redone
 
+% \def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
+%   {\setbox#1\hbox
+%      {\setlayoutcomponentattribute{\v!page:\v!text}%
+%       \vbox \layoutcomponentboxattribute to \textheight
+%         {\offinterlineskip
+%          \freezetextwidth
+%          \hsize\textwidth   % local variant of \sethsize
+%          \boxmaxdepth\maxdepth
+%          \noindent             % content can be < \hsize
+%          \page_otr_command_package_contents#2#3}}%
+%    \dp#1\zeropoint
+%    \ifconditional\c_page_spread_busy
+%       \normalsettextpagecontent_spread{#1}%
+%    \else
+%       \normalsettextpagecontent_normal{#1}%
+%    \fi}
+
 \def\normalsettextpagecontent#1#2#3% #2 and #3 will disappear
-  {\setbox#1\hbox
+  {\setbox#1\hpack
      {\setlayoutcomponentattribute{\v!page:\v!text}%
-      \vbox \layoutcomponentboxattribute to \textheight
+      \vpack \layoutcomponentboxattribute to \textheight
         {\offinterlineskip
          \freezetextwidth
          \hsize\textwidth   % local variant of \sethsize
          \boxmaxdepth\maxdepth
-         \noindent             % content can be < \hsize
+         \noindent          % content can be < \hsize
          \page_otr_command_package_contents#2#3}}%
    \dp#1\zeropoint
    \ifconditional\c_page_spread_busy

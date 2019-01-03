@@ -112,12 +112,12 @@
      {\vfill
       \settexthoffset
       \hsize\dimexpr\scratchdimen-2\texthoffset\relax
-      \hskip\texthoffset % brrrr
+      \hkern\texthoffset % brrrr
       \vbox to \zeropoint{\vss\page_info_place_info}%
-      \vskip\bodyfontsize}%
+      \vkern\bodyfontsize}%
    \dp\b_page_versions\zeropoint
    \wd\b_page_versions\scratchdimen
-   \setbox#1\hpack{\box#1\hskip-\scratchdimen\box\b_page_versions}}
+   \setbox#1\hpack{\box#1\hkern-\scratchdimen\box\b_page_versions}}
 
 \setupversion % resets
   [\v!final]

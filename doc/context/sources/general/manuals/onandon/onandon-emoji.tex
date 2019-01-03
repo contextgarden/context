@@ -75,8 +75,8 @@ mentions twice that amount. Currently in \CONTEXT\ we resolve such combinations
 when requested.} so imagine what will happen in the future. But, instead of
 making a picture for each variant, a different solution has been chosen. For
 coloring this seguiemj font uses the (very flexible) stacking technology: a color
-shape is an overlay of colored symbols. The colors are organized in pallets and
-it's no big deal to add additional pallets if needed. Instead of adding
+shape is an overlay of colored symbols. The colors are organized in palettes and
+it's no big deal to add additional palettes if needed. Instead of adding
 pre|-|composed shapes (as is needed with bitmaps and \SVG) snippets are used to
 build alternative glyphs and these can be combined into new shapes by
 substitution and positioning (for that kerns, mark anchoring and distance
@@ -186,11 +186,11 @@ account:
     scale too.
 \stopitem
 \startitem
-    How efficient is a shape constructed. In that respect a bitmap or \SVG\ image
+    How efficiently is a shape constructed? In that respect a bitmap or \SVG\ image
     is just one entity.
 \stopitem
 \startitem
-    How well can (semi) arbitrary combinations of emoji be provided. Here the
+    How well can a (semi)arbitrary combinations of emoji be provided? Here the
     glyph approach wins.
 \stopitem
 \startitem
@@ -203,17 +203,17 @@ account:
     social political reasons.
 \stopitem
 \startitem
-    Are black and white shapes provided alongside color shapes.
+    Are black and white shapes provided alongside color shapes?
 \stopitem
 \stopitemize
 
 Maybe an \SVG\ or bitmap image can have a lot of detail compared to a stacked
-glyph but, when we're just using pictographic representations, the later is the
+glyph but, when we're just using pictographic representations, the latter is the
 best choice.
 
 When I was playing a bit with the skin tone variants and other combinations that
 should result in some composed shape, I used the \UNICODE\ test files but I got
-the impression that there are some errors in the test suite, for instance with
+the impression that there were some errors in the test suite, for instance with
 respect to modifiers. Maybe the fonts are just doing the wrong thing or maybe
 some implement these sequences a bit inconsistent. This will probably improve
 over time but the question is if we should intercept issues. I'm not in favour of
@@ -409,7 +409,7 @@ In case you wonder how some of the details above were typeset, there is a module
 \NC \type {\ShowEmojiSnippets}        \NC show the snippets of a given emoji \NC \NR
 \NC \type {\ShowEmojiSnippetsOverlay} \NC show the overlayed snippets of a given emoji \NC \NR
 \NC \type {\ShowEmojiGlyphs}          \NC show the snippets of a typeset emoji \NC \NR
-\NC \type {\ShowEmojiPalettes}        \NC show the color pallets in the current font \NC \NR
+\NC \type {\ShowEmojiPalettes}        \NC show the color palletes in the current font \NC \NR
 \stoptabulate
 
 Examples of usage are:

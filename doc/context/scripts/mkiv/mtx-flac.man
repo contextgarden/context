@@ -1,4 +1,4 @@
-.TH "mtx-flac" "1" "01-01-2018" "version 0.10" "ConTeXt Flac Helpers"
+.TH "mtx-flac" "1" "01-01-2019" "version 0.10" "ConTeXt Flac Helpers"
 .SH NAME
 .B mtx-flac
 .SH SYNOPSIS

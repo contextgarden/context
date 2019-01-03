@@ -164,11 +164,38 @@
    \box\nextbox
    \egroup}
 
+% \def\grph_scale_apply
+%   {\d_grph_scale_wd\finalscaleboxxscale\d_grph_scale_wd
+%    \d_grph_scale_ht\finalscaleboxyscale\d_grph_scale_ht
+%    \d_grph_scale_dp\finalscaleboxyscale\d_grph_scale_dp
+%    \setbox\nextbox\hpack
+%      {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
+%       \smashedbox\nextbox
+%       \dostopscaling}%
+%    \wd\nextbox\d_grph_scale_wd
+%    \ht\nextbox\d_grph_scale_ht
+%    \dp\nextbox\d_grph_scale_dp}
+
 \def\grph_scale_apply
   {\d_grph_scale_wd\finalscaleboxxscale\d_grph_scale_wd
    \d_grph_scale_ht\finalscaleboxyscale\d_grph_scale_ht
    \d_grph_scale_dp\finalscaleboxyscale\d_grph_scale_dp
-   \setbox\nextbox\hpack
+   \ifdim\d_grph_scale_wd=\wd\nextbox
+     \ifdim\d_grph_scale_ht=\ht\nextbox
+       \ifdim\d_grph_scale_dp=\dp\nextbox
+        % \grph_scale_apply_nop
+       \else
+          \grph_scale_apply_yes
+       \fi
+     \else
+       \grph_scale_apply_yes
+     \fi
+   \else
+     \grph_scale_apply_yes
+   \fi}
+
+\def\grph_scale_apply_yes
+  {\setbox\nextbox\hpack
      {\dostartscaling \finalscaleboxxscale \finalscaleboxyscale
       \smashedbox\nextbox
       \dostopscaling}%

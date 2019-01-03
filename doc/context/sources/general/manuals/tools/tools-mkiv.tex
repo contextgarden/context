@@ -37,11 +37,17 @@
 \setuptyping
   [color=DocumentColor]
 
-\usetypescript
-  [iwona]
+\setupalign
+  [tolerant,stretch]
+
+% \usetypescript
+%   [iwona]
+%
+% \setupbodyfont
+%   [iwona]
 
 \setupbodyfont
-  [iwona]
+  [ibmplex,rm]
 
 \setuphead
   [chapter]
@@ -51,6 +57,11 @@
 \setuphead
   [section]
   [style=\bfb,
+   color=DocumentColor]
+
+\setuphead
+  [sub  section]
+  [style=\bfa,
    color=DocumentColor]
 
 \setupinteraction
@@ -130,7 +141,7 @@ This manual is work in progress. Feel free to submit additions or corrections.
 Before you start reading, it is good to know that in order to get starting with
 \CONTEXT, the easiest way to do that is to download the standalone distribution
 from \type {contextgarden.net}. After that you only need to make sure that \type
-{luatex} is in your path. The main command you use is then \type {context} and
+{luatex} is in your path. The main command you use is then \sCONTEXT\ and
 normally it does all the magic it needs itself.
 
 \stopsection
@@ -488,13 +499,908 @@ You can copy \type {mtxrun.exe} to for instance \type {context.exe} and it will
 still use \sMTXRUN\ for locating the right script. It also takes care of mapping
 \sTEXMFSTART\ to \sMTXRUN. So we've removed the intermediate \type {cmd} step,
 can not run the script as any program, and most of all, we're as efficient as can
-be.
-
-Of course this program is only meaningful for the \CONTEXT\ approach to tools.
+be. Of course this program is only meaningful for the \CONTEXT\ approach to
+tools.
 
 It may all sound more complex than it is but once it works users will not notice
 those details. Als, in practice not that much has changed in running the tools
 between \MKII\ and \MKIV\ as we've seen no reason to change the methods.
+
+\stopsection
+
+\startsection[title={A detailed look at \sMTXRUN}]
+
+This section is derived from Taco Hoekwaters presentation and article for the
+2018 \CONTEXT\ meeting. You might want to read this is you want to benefit from
+even the most obscure features. There is a bit of repetition with the previous
+sections but so be it.
+
+% macros specific to this section
+
+\def\highlighted#1#2#3%
+  {\testpage[4]
+   \dontleavehmode
+   \backgroundline[gray]{\tt\strut #1}
+   \nowhitespace
+   \startnarrower[left]
+   \veryraggedright
+   #2\par
+   \doifsomething{#3}{{\it #3}}
+   \stopnarrower}
+
+\definestartstop
+  [options]
+  [before=\blank,
+   after=\blank]
+
+\def\option#1#2%
+  {\highlighted{--#1}{#2}{}}
+
+\definestartstop
+  [mtxrunscripts]
+  [before=\blank,after=\blank]
+
+\def\mtxrunscriptv#1#2#3#4%
+  {\highlighted{#1}{#3}{#4}}
+
+\def\mtxrunscript#1#2#3%
+  {\highlighted{#1}{#3}{}}
+
+\definestartstop
+  [mtxrunenvironment]
+  [before=\blank,
+   after=\blank]
+
+\def\mtxrunenv#1#2%
+  {\highlighted{#1}{#2}{}}
+
+\startsubsection[title=Common flags]
+
+Much of the code inside \MKIV\ can alter its behaviour based on either \quote
+{trackers} (which add debugging information to the terminal and log output) or
+\quote {directives} or \quote {experiments} (for getting code to perform some
+alternate behaviour). Since this also affects the \LUA\ code within \sMTXRUN\
+itself, it makes sense to list these options first.
+
+Getting information on trackers, directives and experiments. Trackers enable more
+extensive status messages on the console or in \CONTEXT\ additional visual clues.
+Directives change behaviour that are not part of the official interface and have
+no corresponding commands. Experiments are like directives but not official
+(yet).
+
+\startoptions
+    \option
+        {trackers}
+        {show (known) trackers}
+    \option
+        {directives}
+        {show (known) directives}
+    \option
+        {experiments}
+        {show (known) experiments}
+\stopoptions
+
+Enabling directives, trackers and experiments:
+
+\startoptions
+    \option
+        {trackers=list}
+        {enable given trackers}
+    \option
+        {directives=list}
+        {enable given directives}
+    \option
+        {experiments=list}
+        {enable given experiments}
+\stopoptions
+
+The next tree (hidden) options are converted into \quote {directives} entries,
+that are then enabled. These are just syntactic sugar for the relevant directive.
+
+\startoptions
+    \option
+        {silent[=...]}
+        {sets \type {logs.blocked={\%s}}}
+    \option
+        {errors[=...]}
+        {sets \type {logs.errors={\%s}}}
+    \option
+        {noconsole}
+        {sets \type {logs.target=file}}
+\stopoptions
+
+As you can see here, various directives (and even some trackers) have optional
+arguments, which can make specifying such directives on the command line a bit of
+a challenge. Explaining the details of all the directives is outside of the scope
+of this article, but you can look them up in the \CONTEXT\ source by searching
+for \typ {directives.register} and \typ {trackers.register}.
+
+In verbose mode, \sMTXRUN\ itself gives more messages, and it also \typ
+{resolvers.locating}, which is a tracker itself:
+
+\startoptions
+    \option
+        {verbose}
+        {give a bit more info}
+\stopoptions
+
+The \type {--timedlog} (hidden) option starts the \sMTXRUN\ output with a
+timestamp line:
+
+\startoptions
+    \option
+        {timedlog}
+        {prepend output with a timestamp}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Setup for finding files and configurations]
+
+The next block of options deals with the setup of \sMTXRUN\ itself. You do not
+need to deal with these options unless you are messing with the \CONTEXT\
+distribution yourself instead of relying on a prepackaged solution, or you need
+to use kpathsea for some reason (typically in a \MKII\ environment). In
+particular, \type {--progname} and \type {--tree} are often needed as well when
+using the \type {kpse} options.
+
+\startoptions
+    \option
+        {configurations}
+        {show configuration order, alias \type {--show-configurations}}
+    \option
+        {resolve}
+        {resolve prefixed arguments, see \type {--prefixes}, below}
+\stopoptions
+
+and:
+
+\startoptions
+    \option
+        {usekpse}
+        {use kpse as fallback (when no \MKIV\ and cache installed, often slower)}
+    \option
+        {forcekpse}
+        {force using kpse (handy when no \MKIV\ and cache installed but less
+         functionality)}
+    \option
+        {progname=str}
+        {format or backend}
+    \option
+        {tree=pathtotree}
+        {use given texmf tree (default file: \type {setuptex.tmf})}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Options for finding files and reporting configurations]
+
+Once the configuration setup is done, it makes sense to have a bunch or options
+to use and|/|or query the configuration.
+
+\startoptions
+    \option
+        {locate}
+        {locate given filename in database (default) or system (uses the
+         sub||options \type {--first}, \type {--all} and \type {--detail})}
+    \option
+        {autogenerate}
+        {regenerate databases if needed (handy when used to run context in an
+         editor)}
+    \option
+        {generate}
+        {generate file database}
+    \option
+        {prefixes}
+        {show supported prefixes for file searches}
+    \option
+        {variables}
+        {show configuration variables (uses the sub||option \type {--pattern},
+         and an alias is \type {--show-variables})}
+    \option
+        {expansions}
+        {show configuration variable expansion (uses the sub||options
+         \type{--pattern}, alias \type {--show-expansions})}
+    \option
+        {expand-braces}
+        {expand complex variable}
+    \option
+        {resolve-path}
+        {expand variable (completely resolve paths)}
+    \option
+        {expand-path}
+        {expand variable (resolve paths)}
+    \option
+        {expand-var}
+        {expand variable (resolves references inside variables, alias
+         \type{--expand-variable})}
+    \option
+        {show-path}
+        {show path expansion of \type {...} (alias \type {--path-value})}
+    \option
+        {var-value}
+        {report value of variable (alias \type {--show-value})}
+    \option
+        {find-file}
+        {report file location; it uses the sub||options \type {--all}, \type
+         {--pattern}, and \type {--format}}
+    \option
+        {find-path}
+        {report path of file}
+\stopoptions
+
+Hidden option:
+
+\startoptions
+    \option
+        {format-path}
+        {report format path}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Running code]
+
+Here we come to the core functionality of \sMTXRUN: running scripts. First
+there are few options that trigger how the running takes place:
+
+\startoptions
+    \option
+        {path=runpath}
+        {go to given path before execution}
+    \option
+        {ifchanged=filename}
+        {only execute when given file has changed (this loads and saves an md5
+         checksum from \type {filename.md5})}
+    \option
+        {iftouched=old,new}
+        {only execute when given file has changed (time stamp)}
+    \option
+        {timedrun}
+        {run a script or program and time its run (external)}
+\stopoptions
+
+Specifying both \type {--iftouched} and \type {--ifchanged} means both are
+tested, and when either one is false, nothing will happen. These options have to
+come before one of the next options:
+
+\startoptions
+    \option
+        {script}
+        {run an mtx script (where \LUA\ is the preferred method); it has the
+         sub||options \typ {--nofiledatabase}, \typ {--autogenerate}, \type
+         {--load}, and \type {--save}. The latter two are currently no|-|ops}
+    \option
+        {execute}
+        {run a script or program externally (\type {texmfstart} method); it has
+         sub||option \type {--noquotes}}
+    \option
+        {internal}
+        {run a script using built|-|in libraries (alias is \type {--ctxlua})}
+    \option
+        {direct}
+        {run an external program; it has the sub||option \type {--noquotes}}
+\stopoptions
+
+Since scripts potentially have their own options, any options intended for
+\sMTXRUN\ itself have to come {\it before} the option that specifies the script
+to run, and options for the script itself have to come {\it after} the option
+that gives the script name. This is especially true when using \type {--script},
+so it is important to check the order of your options.
+
+Of the four above options, \type {--script} is the most important one, since that
+is the one that finds and executes the \LUA\ \sMTXRUN\ scripts provided by the
+distribution. With \typ {--nofiledatabase}, it will not attempt to resolve any
+file names (which means you need either a local script or a full path name). On
+the opposite side, when you also provide \typ {--autogenerate}, it will not only
+attempt to resolve the file name, it will also regenerate the database if it
+cannot find the script on the first try. In a future version of \CONTEXT, the
+\type {--load} and \type {--save} will allow you to save|/|restore the current
+command line in a file for reuse.
+
+The shell return value of \sMTXRUN\ indicates whether the script was found. When
+you specify something like \type {--script base}, \sMTXRUN\ actually searches
+for \type {mtx-base.lua}, \type {mtx-bases.lua}, \type {mtx-t-base.lua}, \type
+{mtx-t-bases.lua}, and \type {base.lua}, in that order. The
+distribution||supplied scripts normally use \type {mtx-<name>.lua} as template.
+The template names with \type {mtx-t-} prefix is reserved for third||party
+scripts, and \type {<name>.lua} is just a last-ditch effort if nothing else
+works. Scripts are looked for in the local path, and in whatever directories the
+configuration variable \type {LUAINPUTS} points to.
+
+The \type {--execute} options exists mostly for the non||\LUA\ {\MKII} scripts
+that still exist in the distribution. It will try to find a matching interpreter
+for non||\LUA\ scripts, and it is aware of a number of distribution||supplied
+scripts so that if you specify \type {--execute texexec}, it knows that what you
+really want to execute is \type {ruby texexec.rb}. Support is present for \RUBY\
+(\type {.rb}, \LUA\ (\type {.lua}), python (\type {.py}) and \PERL\ (\type {.pl})
+scripts (tested in that order). File resolving uses \type {TEXMFSCRIPTS} from the
+configuration. The shell return value of \sMTXRUN\ indicates whether the script
+was found and executed.
+
+The \type {--internal} option uses the file search method of \type {--execute},
+but then assumes this is a \LUA\ script and executes it internally like \type
+{--script}. This is useful if you have a \LUA\ script in an odd location.
+
+The last of the four options, \type {--direct}, directly executes an external
+program. You need to give the full path for binaries not in the current shell
+\type {PATH}, because no searching is done at all. The shell return value of
+\sMTXRUN\ in this case is a boolean based on the return value of
+\type {os.exec()}.
+
+It is also possible to execute bare \LUA\ code directly:
+
+\startoptions
+    \option
+        {evaluate}
+        {run code passed on the command-line (between quotes)}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Options for maintenance of \sMTXRUN\ itself]
+
+None of these are advertised. Normally developers should be the only ones needing
+them, but if you made a change to one of the distributed libraries (maybe because
+of a beta bug), you may need to run \type {--selfmerge} and \type {--selfupdate}.
+
+\startoptions
+    \option
+        {selfclean}
+        {remove embedded libraries}
+    \option
+        {selfmerge}
+        {update embedded libraries in \type {mtxrun.lua}}
+    \option
+        {selfupdate}
+        {copy \type {mtxlua.lua} to the executable directory, renamed \type
+         {mtxrun}}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Creating stubs]
+
+Stubs are little shortcuts that live in some binaries directory. For example, the
+content of the \UNIX||style \sCONTEXT\ shell command is:
+
+\starttyping
+#!/bin/sh
+mtxrun --script context "$@"
+\stoptyping
+
+Apart from the \sCONTEXT\ command itself (which is provided by the distribution),
+use of stubs is discouraged. Still, the \sMTXRUN\ options are there because
+sometimes existing workflows depend on executable tool names like \type
+{ctxtools}.
+
+\startoptions
+    \option
+        {makestubs}
+        {create stubs for (context related) scripts}
+    \option
+        {removestubs}
+        {remove stubs (context related) scripts}
+    \option
+        {stubpath=binpath}
+        {paths where stubs will be written}
+    \option
+        {windows}
+        {create windows (mswin) stubs (alias \type {--mswin})}
+    \option
+        {unix}
+        {create unix (linux) stubs (alias \type {--linux})}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Remaining options]
+
+The remaining options are hard to group into a subcategory. These are the
+advertised options:
+
+\startoptions
+    \option
+        {systeminfo}
+        {show current operating system, processor, et cetera}
+    \option
+        {edit}
+        {launch editor with found file; the editor is taken from the environment
+         variable \type {MTXRUN_EDITOR}, or \type {TEXMFSTART_EDITOR}, or
+         \type {EDITOR}, or as a last resort: \type {gvim}}
+    \option
+        {launch}
+        {launch files like manuals, assumes os support (uses the sub||options
+         \type {--all}, \type {--pattern} and \type {--list})}
+\stopoptions
+
+While these are sort of hidden options:
+
+\startoptions
+    \option
+        {ansi}
+        {colorize output to terminal using \ANSI\ escapes}
+    \option
+        {associate}
+        {launch files like manuals, assumes os support. this function does not do
+         any file searching, so you have to use either a local file or a full
+         path name}
+    \option
+        {exporthelp}
+        {output the \sMTXRUN\ \XML\ help blob (useful for creating man and \HTML\
+         help pages)}
+    \option
+        {fmt}
+        {shortcut for \type {--script base --fmt}}
+    \option
+        {gethelp}
+        {attempt to look up remote \sCONTEXT\ command help (uses the sub||options
+         \type{--command} and \type {--url})}
+    \option
+        {help}
+        {print the \sMTXRUN\ help screen}
+    \option
+        {locale}
+        {force setup of locale; unless you are certain you need this option, stay
+         away from it, because it can interfere massively with \CONTEXT's \LUA\
+         code}
+    \option
+        {make}
+        {(re)create format files (aliases are \type {--ini} and \type {--compile})}
+    \option
+        {platform}
+        {(alias is \type {--show-platform})}
+    \option
+        {run}
+        {shortcut for \type {--script base --run}}
+    \option
+        {version}
+        {print \sMTXRUN\ version}
+\stopoptions
+
+\stopsubsection
+
+\startsubsection[title=Known scripts]
+
+When you run \type {mtxrun --scripts}, it will output a list of \quote {known}
+scripts. The definition of \quote {known} is important here: the list comprises
+the scripts that are present in the same directory as \type {mtx-context.lua}
+that do not have an extra hyphen in the name (like \type {mtx-t-...}scripts would
+have). In a normal installation, this means it \quote {knows} almost all the
+scripts that are distributed with \CONTEXT. Note: it skips over any files from
+the distribution that do have an extra hyphen, like the \type {mtx-server}
+support scripts.
+
+Since this section is about \sMTXRUN, I'll just present the list of the scripts
+that are \quote {known} in the current \CONTEXT\ beta as output by \sMTXRUN\
+itself, and not get into detail about all of the script functionality (they all
+have \type {--help} options if you want to find out more). Where we still felt the
+need to explain something, there is an extra bit of text in italics.
+
+\startmtxrunscripts
+\mtxrunscript
+    {babel}
+    {1.20}
+    {Babel Input To UTF Conversion}
+\mtxrunscript
+    {base}
+    {1.35}
+    {ConTeXt TDS Management Tool (aka luatools)}
+\mtxrunscript
+    {bibtex}
+    {}
+    {bibtex helpers (obsolete)}
+\mtxrunscript
+    {cache}
+    {0.10}
+    {ConTeXt & MetaTeX Cache Management}
+\mtxrunscript
+    {chars}
+    {0.10}
+    {MkII Character Table Generators}
+\mtxrunscriptv
+    {check}
+    {0.10}
+    {Basic ConTeXt Syntax Checking}
+    {Occasionally useful on big projects, but be warned that it does not actually
+     run any \TEX\ engine, so it is not 100\% reliable.}
+\mtxrunscriptv
+    {colors}
+    {0.10}
+    {ConTeXt Color Management}
+    {This displays icc color tables by name}
+\mtxrunscriptv
+    {convert}
+    {0.10}
+    {ConTeXT Graphic Conversion Helpers}
+    {A wrapper around ghostscript and imagemagick that offers some extra (batch
+     processing) functionality.}
+\mtxrunscript
+    {dvi}
+    {0.10}
+    {ConTeXt DVI Helpers}
+\mtxrunscriptv
+    {epub}
+    {1.10}
+    {ConTeXt EPUB Helpers}
+    {The EPUB manual (\type {epub-mkiv.pdf}) explains how to use this script.}
+\mtxrunscriptv
+    {evohome}
+    {1.00}
+    {Evohome Fetcher}
+    {Evohome is a domotica system that controls your central heating}
+\mtxrunscript
+    {fcd}
+    {1.00}
+    {Fast Directory Change}
+\mtxrunscriptv
+    {flac}
+    {0.10}
+    {ConTeXt Flac Helpers}
+    {Extracts information from \type{.flac} audio files into an \XML\ index.}
+\mtxrunscript
+    {fonts}
+    {0.21}
+    {ConTeXt Font Database Management}
+\mtxrunscript
+    {grep}
+    {0.10}
+    {Simple Grepper}
+\mtxrunscript
+    {interface}
+    {0.13}
+    {ConTeXt Interface Related Goodies}
+\mtxrunscript
+    {metapost}
+    {0.10}
+    {MetaPost to PDF processor}
+\mtxrunscript
+    {metatex}
+    {0.10}
+    {MetaTeX Process Management (obsolete)}
+\mtxrunscript
+    {modules}
+    {1.00}
+    {ConTeXt Module Documentation Generators}
+\mtxrunscriptv
+    {package}
+    {0.10}
+    {Distribution Related Goodies}
+    {This script is used to create the generic \CONTEXT\ code used in
+     \LUA\LATEX~c.s.}
+\mtxrunscriptv
+    {patterns}
+    {0.20}
+    {ConTeXt Pattern File Management}
+    {Hyphenation patterns, that is \unknown}
+\mtxrunscript
+    {pdf}
+    {0.10}
+    {ConTeXt PDF Helpers}
+\mtxrunscript
+    {plain}
+    {1.00}
+    {Plain TeX Runner}
+\mtxrunscript
+    {profile}
+    {1.00}
+    {ConTeXt MkIV LuaTeX Profiler}
+\mtxrunscript
+    {rsync}
+    {0.10}
+    {Rsync Helpers}
+\mtxrunscript
+    {scite}
+    {1.00}
+    {Scite Helper Script}
+\mtxrunscriptv
+    {server}
+    {0.10}
+    {Simple Webserver For Helpers}
+    {There are some subscripts associated with this.}
+\mtxrunscript
+    {synctex}
+    {1.00}
+    {ConTeXt SyncTeX Checker}
+\mtxrunscript
+    {texworks}
+    {1.00}
+    {TeXworks Startup Script}
+\mtxrunscript
+    {timing}
+    {0.10}
+    {ConTeXt Timing Tools}
+\mtxrunscript
+    {tools}
+    {1.01}
+    {Some File Related Goodies}
+\mtxrunscript
+    {unicode}
+    {1.02}
+    {Checker for \type{char-def.lua}}
+\mtxrunscript
+    {unzip}
+    {0.10}
+    {Simple Unzipper}
+\mtxrunscript
+    {update}
+    {1.03}
+    {ConTeXt Minimals Updater}
+\mtxrunscript
+    {watch}
+    {1.00}
+    {ConTeXt Request Watchdog}
+\mtxrunscriptv
+    {youless}
+    {1.10}
+    {YouLess Fetcher}
+    {YouLess is a domotica system that tracks your home energy use.}
+\stopmtxrunscripts
+
+\stopsubsection
+
+\startsubsection[title=Writing your own]
+
+A well|-|written script has some required internal structure. It should start with
+a module definition block. This gives some information about the module, but more
+importantly, it prevents double|-|loading.
+
+Here is an example:
+
+\starttyping
+if not modules then modules = { } end
+
+modules ['mtx-envtest'] = {
+    version   = 0.100,
+    comment   = "companion to mtxrun.lua",
+    author    = "Taco Hoekwater",
+    copyright = "Taco Hoekwater",
+    license   = "bsd"
+}
+\stoptyping
+
+Next up is a variable containing the help information. The help information is actually
+a bit of \XML\ stored in \LUA\ string. In the full example listing at the end of this
+article, you can see what the internal structure is supposed to be like.
+
+\starttyping
+local helpinfo = [[
+<?xml version="1.0"?>
+<application>
+  ....
+</application>
+]]
+\stoptyping
+
+And this help information is then used to create an instance of an \type
+{application} table.
+
+\starttyping
+local application = logs.application {
+    name     = "envtest",
+    banner   = "Mtxrun environment demo",
+    helpinfo = helpinfo,
+}
+\stoptyping
+
+After this call, the \type {application} table contains (amongst some other
+things) three functions that are very useful:
+
+\startmtxrunenvironment
+\mtxrunenv
+    {identify()}
+    {Prints out a banner identifying the current script to the user.}
+\mtxrunenv
+    {report(str)}
+    {For printing information to the terminal with the script name as prefix.}
+\mtxrunenv
+    {export()}
+    {Prints the \type {helpinfo} to the terminal, so it can easily be used for
+     documentation purposes.}
+\stopmtxrunenvironment
+
+Next up, it is good to define your scripts' functionality in functions in a
+private table. This prevents namespace pollution, and looks like this:
+
+\starttyping
+scripts          = scripts         or { }
+scripts.envtest  = scripts.envtest or { }
+
+function scripts.envtest.runtest()
+    application.report("script name is " .. environment.ownname)
+end
+\stoptyping
+
+An finally, identify the current script, followed by handling the provided
+options (usually with an \type {if}||\type {else} statement).
+
+\starttyping
+if environment.argument("exporthelp") then
+   application.export()
+elseif environment.argument('test') then
+   scripts.envtest.runtest()
+else
+    application.help()
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=Script environment]
+
+\sMTXRUN\ includes lots of the internal \LUA\ helper libraries from \CONTEXT. We
+actually maintains a version of the script without all those libraries included,
+and before every (beta) \CONTEXT\ release, an amalgamated version of \sMTXRUN\ is
+added to the distribution. In the merging process, most all comments are stripped
+from the embedded libraries, so if you want to know details, it is better to look
+in the original \LUA\ source file.
+
+Inside \sMTXRUN, the full list of embedded libraries can be queried via the array
+\type {own.libs}:
+
+\startalign[flushleft]
+l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua
+l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua
+l-file.lua l-gzip.lua l-md5.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua
+l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua
+util-prs.lua util-fmt.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua
+util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua
+luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua
+trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua
+data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua
+data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua
+data-tmf.lua data -lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+\stopalign
+
+In fact, the \LUA\ table \type {own} contains some other useful stuff like the
+script's actual disk name and location (\type {own.name} and \type {own.path})
+and some internal variables like a list of all the locations it searches for its
+embedded libraries (\type {own.list}), which is used by the \type {--selfmerge}
+option and also allows the non||amalgamated version to run (since otherwise \type
+{--selfmerge} could not be bootstrapped).
+
+\sMTXRUN\ offers a programming environment that makes it easy to write \LUA\ a
+scripts. The most important element of that environment is a \LUA\ table that is
+conveniently called \type {environment} (\type {util-env} does the actual work of
+setting that up).
+
+The bulk of \type {environment} consists of functions and variables that deal
+with the command||line given by the user as \sMTXRUN\ does quite a bit of work on
+the given command||line. The goal is to safely tuck all the given options into
+the \type {arguments} and \type {files} tables. This work is done by two
+functions called \type {initializearguments()} and \type {splitarguments()}.
+These functions are part of the \type{environment} table, but you should not need
+them as they have been called already once control is passed on to your script.
+
+\startmtxrunenvironment
+\mtxrunenv
+    {arguments}
+    {These are the processed options to the current script. The keys are option
+     names (without the leading dashes) and the value is either \type {true} or a
+     string with one level of shell quotes removed.}
+\mtxrunenv
+    {files}
+    {This array holds all the non||option arguments to the current script.
+     Typically, those are supposed to be files, but they could be any text,
+     really.}
+\mtxrunenv
+    {getargument(name,partial)}
+    {Queries the \type {arguments} table using a function. Its main reason for
+     existence is the \type {partial} argument, which allows scripts to accept
+     shortened command||line options (alias: \type {argument()}).}
+\mtxrunenv
+    {setargument(name,value)}
+    {Sets a value in the \type {arguments} table. This can be useful in
+     complicated scripts with default options.}
+\stopmtxrunenvironment
+
+In case you need access to the full command||line, there are some possibilities:
+
+\startmtxrunenvironment
+\mtxrunenv
+    {arguments_after}
+    {These are the unquoted but otherwise unprocessed arguments to your script as
+     an array.}
+\mtxrunenv
+    {arguments_before}
+    {These are the unquoted but otherwise unprocessed arguments to \sMTXRUN\
+     before your scripts' name (so the last entry is usually \type {--script}).}
+\mtxrunenv
+    {rawarguments}
+    {This is the whole unprocessed command||line as an array.}
+\mtxrunenv
+    {originalarguments}
+    {Like \type{rawarguments}, but with some top||level quotes removed.}
+\mtxrunenv
+    {reconstructcommandline(arg,noquote)}
+    {Tries to reconstruct a command||line from its arguments. It uses \type
+     {originalarguments} if no \type {arg} is given. Take care: due to the
+     vagaries of shell command||line processing, this may or may not work when
+     quoting is involved.}
+\stopmtxrunenvironment
+
+\type{environment} also stores various bits of information you may find useful:
+
+\startmtxrunenvironment
+\mtxrunenv
+    {validengines}
+    {This table contains keys for \type {luatex} and \type {luajittex}. This is
+     only relevant when \sMTXRUN\ itself is called via \LUATEX's \type {luaonly}
+     option.}
+\mtxrunenv
+    {basicengines}
+    {This table maps executable names to \type{validengines} entries.}
+\mtxrunenv
+    {default_texmfcnf}
+    {This is the \type {texmfcnf} value from \type {kpathsea}, processed for use
+     with \MKIV\ in the unlikely event this is needed.}
+\mtxrunenv
+    {homedir}
+    {The user's home directory.}
+\mtxrunenv
+    {ownbin}
+    {The name of the binary used to call \sMTXRUN.}
+\mtxrunenv
+    {ownmain}
+    {The mapped version of \type {ownbin}.}
+\mtxrunenv
+    {ownname}
+    {Full name of this instance of \sMTXRUN.}
+\mtxrunenv
+    {ownpath}
+    {The path this  instance of \sMTXRUN\ resides in.}
+\mtxrunenv
+    {texmfos}
+    {Operating system root directory path.}
+\mtxrunenv
+    {texos}
+    {Operating system root directory name.}
+\mtxrunenv
+    {texroot}
+    {\CONTEXT\ root directory path.}
+\stopmtxrunenvironment
+
+As well as some functions:
+
+\startmtxrunenvironment
+\mtxrunenv
+    {texfile(filename)}
+    {Locates a {\TEX} file.}
+\mtxrunenv
+    {luafile(filename)}
+    {Locates a \LUA\ file.}
+\mtxrunenv
+    {loadluafile(filename,version)}
+    {Locates, compiles and loads a \LUA\ file, possibly in compressed \type {.luc}
+     format. In the compressed case, it uses the \type {version} to make sure the
+     compressed form is up||to||date.}
+\mtxrunenv
+    {luafilechunk(filename,silent,macros)}
+    {Locates and compiles a \LUA\ file, returning its contents as data.}
+\mtxrunenv
+    {make_format(name,arguments)}
+    {Creates a format file and stores in in the \CONTEXT\ cache, used by \type
+     {mtxrun --make}.}
+\mtxrunenv
+    {relativepath(path,root)}
+    {Returns a modified version of \type {root} based on the relative path in
+     \type {path}.}
+\mtxrunenv
+    {run_format(name,data,more)}
+    {Run a \TEX\ format file.}
+\stopmtxrunenvironment
+
+\stopsubsection
+
+\startsubsection[title=Shell return values]
+
+As explained earlier, the shell return value of \sMTXRUN\ normally indicates
+whether the script was found. If you are running a \CONTEXT\ release newer than
+September 2018 and want to modify the shell return value from within your script,
+you can use \type {os.exitcode}. Whatever value you assign to that variable will
+be the shell return value of your script.
+
+\stopsubsection
 
 \stopsection
 
@@ -504,6 +1410,7 @@ between \MKII\ and \MKIV\ as we've seen no reason to change the methods.
     \NC author    \NC \documentvariable{author},
                       \documentvariable{affiliation},
                       \documentvariable{location} \NC \NR
+    \NC           \NC Taco Hoekwater, extra \sMTXRUN\ section \NC \NR
     \NC version   \NC \currentdate \NC \NR
     \NC website   \NC \documentvariable{website} \endash\
                       \documentvariable{support} \NC \NR

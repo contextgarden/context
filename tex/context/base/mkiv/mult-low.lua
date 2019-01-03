@@ -225,6 +225,8 @@ return {
         "scratchtoks", "globalscratchtoks", "privatescratchtoks",
         "scratchbox", "globalscratchbox", "privatescratchbox",
         --
+        "globalscratchcounterone", "globalscratchcountertwo", "globalscratchcounterthree",
+        --
         "groupedcommand", "groupedcommandcs",
         "triggergroupedcommand", "triggergroupedcommandcs",
         "simplegroupedcommand", "pickupgroupedcommand",

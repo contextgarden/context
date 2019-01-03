@@ -142,16 +142,17 @@
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
+% \parfillskip\zeropoint
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
-        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
       \else\ifcase\bottomraggednessmode
         % ragged (default)
-        \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
@@ -160,7 +161,7 @@
         \page_otr_command_flush_bottom_insertions
       \or
         % baseline
-        \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+        \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
       \fi\fi
       \fakepagenotes}%
@@ -323,15 +324,15 @@
 \def\page_one_command_flush_top_insertions_indeed
   {\ifgridsnapping
      \box\namedinsertionnumber\s!topfloat
-     \vskip-\topskip
-     \vskip\strutheight % [xx] new: see icare topbleed
+     \vkern-\topskip
+     \vkern\strutheight % [xx] new: see icare topbleed
    \else
      \ifcase\c_page_floats_insertions_topskip_mode
        % 0: default, do nothing
      \or
        % 1: no topskip (crossed fingers)
-       \vskip-\topskip
-       \vskip\strutheight
+       \vskip-\topskip % skip !
+       \vkern\strutheight
      \fi
      \unvbox\namedinsertionnumber\s!topfloat
    \fi}
