@@ -50,6 +50,8 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local setfield           = nuts.setfield
 
+local isglyph            = nuts.isglyph
+
 local flushlist          = nuts.flush_list
 local effective_glue     = nuts.effective_glue
 local insert_node_after  = nuts.insert_after
@@ -240,9 +242,9 @@ end
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
     local font = nil
-    local id   = getid(f)
-    if id == glyph_code then
-        font = getfont(f)
+    local char, id = isglyph(f)
+    if char then
+        font = id
     elseif id == hlist_code then
         font = getattr(f,a_runningtext)
     end

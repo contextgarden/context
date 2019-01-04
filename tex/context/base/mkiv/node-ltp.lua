@@ -246,8 +246,6 @@ local getnext              = nuts.getnext
 local getprev              = nuts.getprev
 local getboth              = nuts.getboth
 local getlist              = nuts.getlist
-local getfont              = nuts.getfont
-local getchar              = nuts.getchar
 local getdisc              = nuts.getdisc
 local getattr              = nuts.getattr
 local getdisc              = nuts.getdisc
@@ -547,9 +545,9 @@ end)
 local function kern_stretch_shrink(p,d)
     local left = getprev(p)
     if left then
-        local char = isglyph(left)
+        local char, font = isglyph(left)
         if char then
-            local data = expansions[getfont(left)][char]
+            local data = expansions[font][char]
             if data then
                 local stretch = data.stretch
                 local shrink  = data.shrink
@@ -751,8 +749,8 @@ local function find_protchar_right(l,r)
 end
 
 local function left_pw(p)
-    local font = getfont(p)
-    local prot = chardata[font][getchar(p)].left_protruding
+    local char, font = isglyph(p)
+    local prot = chardata[font][char].left_protruding
     if not prot or prot == 0 then
         return 0
     end
@@ -760,8 +758,8 @@ local function left_pw(p)
 end
 
 local function right_pw(p)
-    local font = getfont(p)
-    local prot = chardata[font][getchar(p)].right_protruding
+    local char, font = isglyph(p)
+    local prot = chardata[font][char].right_protruding
     if not prot or prot == 0 then
         return 0
     end
@@ -794,7 +792,7 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
                 size = size + wd
             end
             if checked_expansion then
-                local data = checked_expansion[getfont(s)]
+                local data = checked_expansion[id] -- id == font
                 if data then
                     data = data[char]
                     if data then
@@ -2023,13 +2021,15 @@ do
                     local margin_kern_shrink  = 0
                     if protrude_chars > 1 then
                         if lp then
-                            local data = expansions[getfont(lp)][getchar(lp)]
+                            local char, font = isglyph(lp)
+                            local data = expansions[font][char]
                             if data then
                                 margin_kern_stretch, margin_kern_shrink = data.glyphstretch, data.glyphshrink
                             end
                         end
                         if rp then
-                            local data = expansions[getfont(lp)][getchar(lp)]
+                            local char, font = isglyph(rp)
+                            local data = expansions[font][char]
                             if data then
                                 margin_kern_stretch = margin_kern_stretch + data.glyphstretch
                                 margin_kern_shrink  = margin_kern_shrink  + data.glyphshrink
@@ -2295,11 +2295,11 @@ do
                         active_width.size = active_width.size + wd
                     end
                     if checked_expansion then
-                        local currentfont = getfont(current)
-                        local data = checked_expansion[currentfont]
+                        local font = id -- == font
+                        local data = checked_expansion[font]
                         if data then
-                            if currentfont ~= lastfont then
-                                fontexps = checked_expansion[currentfont] -- a bit redundant for the par line packer
+                            if font ~= lastfont then
+                                fontexps = checked_expansion[font] -- a bit redundant for the par line packer
                                 lastfont = currentfont
                             end
                             if fontexps then
@@ -2572,6 +2572,7 @@ do
         while a do
             local char, id = isglyph(a)
             if char then
+                -- id == font
                 if id ~= font_in_short_display then
                     write(target,tex.fontidentifier(id) .. ' ')
                     font_in_short_display = id
@@ -2936,10 +2937,10 @@ do
                 local char, id = isglyph(current)
                 if char then
                     if cal_expand_ratio then
-                        local currentfont = getfont(current)
-                        if currentfont ~= lastfont then
-                            fontexps = checked_expansion[currentfont] -- a bit redundant for the par line packer
-                            lastfont = currentfont
+                        local font = id -- == font
+                        if font ~= lastfont then
+                            fontexps = checked_expansion[font] -- a bit redundant for the par line packer
+                            lastfont = font
                         end
                         if fontexps then
                             local expansion = fontexps[char]
@@ -3108,14 +3109,13 @@ do
 
                 local fontexps, lastfont
                 for i=1,expansion_index do
-                    local g    = expansion_stack[i]
-                    local e    = 0
-                    local char = isglyph(g)
+                    local g = expansion_stack[i]
+                    local e = 0
+                    local char, font = isglyph(g)
                     if char then
-                        local currentfont = getfont(g)
-                        if currentfont ~= lastfont then
-                            fontexps = expansions[currentfont]
-                            lastfont = currentfont
+                        if font ~= lastfont then
+                            fontexps = expansions[font]
+                            lastfont = font
                         end
                         local data = fontexps[char]
                         if trace_expansion then
@@ -3165,14 +3165,13 @@ do
 
                 local fontexps, lastfont
                 for i=1,expansion_index do
-                    local g    = expansion_stack[i]
-                    local e    = 0
-                    local char = isglyph(g)
+                    local g = expansion_stack[i]
+                    local e = 0
+                    local char, font = isglyph(g)
                     if char then
-                        local currentfont = getfont(g)
-                        if currentfont ~= lastfont then
-                            fontexps = expansions[currentfont]
-                            lastfont = currentfont
+                        if font ~= lastfont then
+                            fontexps = expansions[font]
+                            lastfont = font
                         end
                         local data = fontexps[char]
                         if trace_expansion then

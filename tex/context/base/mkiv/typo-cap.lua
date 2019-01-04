@@ -27,6 +27,7 @@ local takeattr        = nuts.takeattr
 local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getchar         = nuts.getchar
+local isglyph         = nuts.isglyph
 local getdisc         = nuts.getdisc
 
 local setattr         = nuts.setattr
@@ -113,10 +114,9 @@ local categories = characters.categories
 -- true false true == mixed
 
 local function replacer(start,codes)
-    local char = getchar(start)
-    local dc   = codes[char]
+    local char, fnt = isglyph(start)
+    local dc = codes[char]
     if dc then
-        local fnt = getfont(start)
         local ifc = fontchar[fnt]
         if type(dc) == "table" then
             for i=1,#dc do

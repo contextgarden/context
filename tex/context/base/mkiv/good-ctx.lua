@@ -31,10 +31,7 @@ local fontgoodies        = fonts.goodies or { }
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getattr            = nuts.getattr
-
 local nextglyph          = nuts.traversers.glyph
 
 -- colorschemes
@@ -147,7 +144,7 @@ function colorschemes.coloring(head)
     local lastattr   = nil
     local lastcache  = nil
     local lastscheme = nil
-    for n, f, char in nextglyph, head do
+    for n, char, f in nextglyph, head do
         local a = getattr(n,a_colorscheme)
         if a then
             if f ~= lastfont then

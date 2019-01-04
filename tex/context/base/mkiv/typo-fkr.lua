@@ -9,9 +9,8 @@ if not modules then modules = { } end modules ['typo-fkr'] = {
 local nuts          = nodes.nuts
 local getid         = nuts.getid
 local getnext       = nuts.getnext
-local getchar       = nuts.getchar
-local getfont       = nuts.getfont
 local getattr       = nuts.getattr
+local isglyph       = nuts.isglyph
 
 local nodecodes     = nodes.nodecodes
 local glyph_code    = nodecodes.glyph
@@ -36,12 +35,10 @@ function typesetters.fontkerns.handler(head)
     local lastchar  = nil
     local lastdata  = nil
     while current do
-        local id = getid(current)
-        if id == glyph_code then
+        local char, font = isglyph(current)
+        if char then
             local a = getattr(current,a_extrakern)
             if a then
-                local char = getchar(current)
-                local font = getfont(current)
                 if font ~= lastfont then
                     if a > 0 and lastchar then
                         if not lastdata then

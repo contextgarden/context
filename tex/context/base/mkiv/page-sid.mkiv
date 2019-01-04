@@ -561,11 +561,19 @@
      \page_sides_inject_dummy_line_normal
    \fi
    \par
+   % on an empty page we have topskip, say 12pt
    \ignoreparskip
+   % this can be 18.5pt
    \kern-\dimexpr\lineheight+\strutdp\relax
+   % so we can actually have a -2.5pt skip on top
    \ignoreparskip
    \blank[\v!samepage]
-   \blank[\v!disable]}
+   \blank[\v!disable]
+   % now say we are negative now
+   \ifdim\pagetotal<\zeropoint
+      % then we're at the top of the page ... quite messy .. i really need to
+      % make the page builder a bit more flexible .. should we do something now?
+   \fi}
 
 %D Checkers:
 
@@ -706,12 +714,9 @@
 
 \def\page_sides_analyse_space
   {\global\settrue\c_page_sides_flag
-\ifdim\pagegoal=\maxdimen
-    \pagegoal\textheight
-\fi
-\ifdim\pagetotal<\zeropoint
-    \pagetotal\textheight
-\fi
+% \ifdim\pagegoal=\maxdimen
+%     \pagegoal\textheight % maybe
+% \fi
    \global\d_page_sides_page_total \pagetotal % global
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_width \zeropoint

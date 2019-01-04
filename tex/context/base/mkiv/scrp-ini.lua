@@ -495,16 +495,15 @@ function scripts.injectors.handler(head)
                         normal_process = handler.injector
                     end
                     if normal_process then
-                        -- wrong: originals are indices !
-                        local font = getfont(start)
-                        if font ~= lastfont then
-                            originals = fontdata[font].resources
+                        -- id == font
+                        if id ~= lastfont then
+                            originals = fontdata[id].resources
                             if resources then
                                 originals = resources.originals
                             else
                                 originals = nil -- can't happen
                             end
-                            lastfont = font
+                            lastfont = id
                         end
                         if originals and type(originals) == "number" then
                             char = originals[char] or char
@@ -889,7 +888,7 @@ setmetatableindex(cache_nop,function(t,k) local v = { } t[k] = v return v end)
 -- playing nice
 
 function autofontfeature.handler(head)
-    for n, font, char in nextchar, head do
+    for n, char, font in nextchar, head do
      -- if getattr(n,a_scriptinjection) then
      --     -- already tagged by script feature, maybe some day adapt
      -- else

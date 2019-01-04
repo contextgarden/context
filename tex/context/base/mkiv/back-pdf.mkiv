@@ -66,7 +66,13 @@
 %D
 %D Here we initialize some internal quantities. We also protect them.
 
-\outputmode\plusone  \let\outputmode\relax  \newcount\outputmode  \outputmode\plusone
+\ifdefined\outputmode
+    \outputmode\plusone
+    \let\outputmode\relax
+    \newcount\outputmode
+    \outputmode\plusone
+    \let\normaloutputmode\outputmode
+\fi
 
 %D Because we do a lot in \LUA\ and don't want interferences, we nil most of the
 %D \PDFTEX\ primitives. Of course one can always use the \type {\pdfvariable},

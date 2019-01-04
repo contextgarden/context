@@ -710,8 +710,8 @@ local function insert_dir_points(list,size)
             begindir = righttoleft_code
             enddir   = righttoleft_code
         else
-            begindir = righttoleft_code
-            enddir   = righttoleft_code
+            begindir = lefttoright_code
+            enddir   = lefttoright_code
         end
         for i=1,size do
             local entry = list[i]

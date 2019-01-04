@@ -68,7 +68,7 @@ local mapping = periodkerns.mapping
 local factors = periodkerns.factors
 
 function periodkerns.handler(head)
-    for current, font, char in nextglyph, head do
+    for current, char, font in nextglyph, head do
         if char == period then
             local a = getattr(current,a_periodkern)
             if a then
@@ -77,10 +77,10 @@ function periodkerns.handler(head)
                     local prev, next = getboth(current)
                     if prev and next and getid(prev) == glyph_code and getid(next) == glyph_code then
                         local pchar = getchar(prev)
-                        local pcode = categories[getchar(prev)]
+                        local pcode = categories[pchar]
                         if pcode == "lu" or pcode == "ll" then
                             local nchar = getchar(next)
-                            local ncode = categories[getchar(next)]
+                            local ncode = categories[nchar]
                             if ncode == "lu" or ncode == "ll" then
                                 local next2 = getnext(next)
                                 if next2 and getid(next2) == glyph_code and getchar(next2) == period then

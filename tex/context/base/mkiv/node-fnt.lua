@@ -45,9 +45,7 @@ local nuts              = nodes.nuts
 
 local getattr           = nuts.getattr
 local getid             = nuts.getid
-local getfont           = nuts.getfont
 local getsubtype        = nuts.getsubtype
-local getchar           = nuts.getchar
 local getdisc           = nuts.getdisc
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
@@ -180,7 +178,7 @@ local function start_trace(head)
     while n do
         local char, id = isglyph(n)
         if char then
-            local font = getfont(n)
+            local font = id
             local attr = getattr(n,0) or 0
             report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,char)
         elseif id == disc_code then

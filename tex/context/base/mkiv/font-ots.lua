@@ -189,7 +189,6 @@ local getattr            = nuts.getattr
 local setattr            = nuts.setattr
 local getprop            = nuts.getprop
 local setprop            = nuts.setprop
-local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
 local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar

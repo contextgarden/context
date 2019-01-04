@@ -34,8 +34,6 @@ local setattr           = nuts.setattr
 local getcomponents     = nuts.getcomponents -- not really needed
 local getwidth          = nuts.getwidth
 
-local isglyph           = nuts.isglyph
-
 local getnucleus        = nuts.getnucleus
 local getsub            = nuts.getsub
 local getsup            = nuts.getsup
@@ -167,7 +165,8 @@ local fencesstack = { }
 -- end
 
 local function getunicode(n) -- instead of getchar
-    local char, font = isglyph(n)
+ -- local char, font = isglyph(n) -- no, we have a mathchar
+    local char, font = getchar(n), getfont(n)
     local data = fontcharacters[font][char]
     return data.unicode or char -- can be a table but unlikely for math characters
 end

@@ -208,7 +208,7 @@ function characteralign.handler(head,where)
         while current do
             local char, id = isglyph(current)
             if char then
-                local font    = getfont(current)
+                local font    = id --- nicer
                 local data    = fontcharacters[font][char]
                 local unicode = data and data.unicode or char -- ignore tables
                 if not unicode then -- type(unicode) ~= "number"
@@ -232,8 +232,9 @@ function characteralign.handler(head,where)
                         if not b_start then
                             if sign then
                                 b_start = sign
-                                local new = validsigns[getchar(sign)]
-                                if char == new or not fontcharacters[getfont(sign)][new] then
+                                local c, f = isglyph(sign)
+                                local new = validsigns[c]
+                                if char == new or not fontcharacters[f][new] then
                                     if trace_split then
                                         setcolor(sign,"darkyellow")
                                     end
@@ -283,7 +284,7 @@ function characteralign.handler(head,where)
         while current do
             local char, id = isglyph(current)
             if char then
-                local font = getfont(current)
+                local font = id -- nicer
              -- local unicode = unicodes[font][char]
                 local unicode = fontcharacters[font][char].unicode or char -- ignore tables
                 if not unicode then

@@ -407,15 +407,15 @@ vardef installlabel@# (expr type, x, y, offset) =
 enddef ;
 
 vardef mfun_labshift@#(expr p) =
-    (labxf@#*lrcorner p +
-     labyf@#*ulcorner p +
-     (1-labxf@#-labyf@#)*llcorner p)
+    (mfun_labxf@#*lrcorner p +
+     mfun_labyf@#*ulcorner p +
+     (1-mfun_labxf@#-mfun_labyf@#)*llcorner p)
 enddef ;
 
 vardef mfun_picshift@#(expr p) =
-    (labxf@#*ulcorner p +
-     labyf@#*lrcorner p +
-     (1-labxf@#-labyf@#)*urcorner p)
+    (mfun_labxf@#*ulcorner p +
+     mfun_labyf@#*lrcorner p +
+     (1-mfun_labxf@#-mfun_labyf@#)*urcorner p)
 enddef ;
 
 % we save the plain variant
@@ -468,7 +468,7 @@ plain_compatibility_data := plain_compatibility_data & "save label, thelabel ;" 
 %     fi
 % enddef ;
 
-newinternal anchortextexts ; anchortextexts := 1 ; % so we can disable it
+newinternal anchortextexts ; anchortextexts := 0 ; % disabled by default
 
 vardef thetextext@#(expr p,z) =
   % interim labeloffset := textextoffset ;
@@ -479,7 +479,7 @@ vardef thetextext@#(expr p,z) =
     elseif pair p :
         thetextext@#(rawtextext(ddecimal p),z)
     else :
-        if anchortextexts = 1 :
+        if anchortextexts > 0 :
             image(draw p withprescript "tx_anchor=" & ddecimal z)
         else :
             p
@@ -501,6 +501,8 @@ vardef onetimetextext@#(expr p) = % no draw here
 enddef ;
 
 % formatted text
+
+pair mfun_tt_z ;
 
 if mfun_use_one_pass :
 
@@ -525,8 +527,6 @@ if mfun_use_one_pass :
     enddef ;
 
 else :
-
-    pair mfun_tt_z ;
 
     vardef rawfmttext(text t) = % todo: avoid currentpicture
         mfun_tt_n := mfun_tt_n + 1 ;
@@ -575,9 +575,13 @@ else :
 fi ;
 
 vardef thefmttext@#(text t) =
-    mfun_tt_z := origin ;
+    mfun_tt_z := origin ; % initialization
     save p ; picture p ; p := rawfmttext(t) ;
-    p
+    if anchortextexts > 0 :
+        image(draw p withprescript "tx_anchor=" & ddecimal mfun_tt_z)
+    else :
+        p
+    fi
         if (mfun_labtype@# >= 10) :
             shifted (0,ypart center p)
         fi
@@ -633,10 +637,10 @@ vardef theoffset@#(expr z) =
 enddef;
 
 vardef thelabel@#(expr p,z) =
-    if numeric p :
-        thelabel@#(decimal p,z)
-    elseif string p :
+    if string p :
         thelabel@#(rawtextext("\definedfont[" & defaultfont & "]" & p) scaled defaultscale,z)
+    elseif numeric p :
+        thelabel@#(decimal p,z)
     elseif pair p :
         thelabel@#("(" & decimal(xpart p) & "," & decimal(ypart p) & ")",z)
     else :

@@ -1163,7 +1163,9 @@
 
 \normalpdfcompression
 
-\outputmode \zerocount % we generate the format in this mode
+\ifdefined\outputmode
+    \outputmode \zerocount % we generate the format in this mode
+\fi
 
 %D Basic status stuff.
 
@@ -1198,7 +1200,7 @@
 \savingvdiscards\plusone
 
 %D We only can set this one via directives (system.synctex) and we only support
-%D the context variant.
+%D the context variant. This will go away completely.
 
 \let\synctex\undefined \newcount\synctex \let\normalsynctex\synctex
 

@@ -32,7 +32,6 @@ local nodepool            = nuts.pool
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getid               = nuts.getid
-local getfont             = nuts.getfont
 local getchar             = nuts.getchar
 local getdisc             = nuts.getdisc
 local getattr             = nuts.getattr
@@ -197,8 +196,7 @@ local function domath(head,current)
                                 a = a + 100
                             end
                             local i = getkern(kern)
-                            local f = getfont(glyph)
-                            local c = getchar(glyph)
+                            local c, f = isglyph(glyph)
                             if getheight(next) < 1.25*exheights[f] then
                                 if i == 0 then
                                     if trace_italics then
@@ -298,7 +296,7 @@ local function texthandler(head)
     while current do
         local char, id = isglyph(current)
         if char then
-            local font = getfont(current)
+            local font = id
             local data = italicsdata[font]
             if font ~= lastfont then
                 if previtalic ~= 0 then
@@ -383,7 +381,7 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = getfont(current)
+                        local font = id
                         local data = italicsdata[font]
                         if data then
                             local attr = forcedvariant or getattr(current,a_italics)
@@ -419,7 +417,7 @@ local function texthandler(head)
                 while current do
                     local char, id = isglyph(current)
                     if char then
-                        local font = getfont(current)
+                        local font = id
                         local data = italicsdata[font]
                         if data then
                             local attr = forcedvariant or getattr(current,a_italics)

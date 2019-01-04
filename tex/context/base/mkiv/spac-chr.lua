@@ -35,7 +35,6 @@ local getlang            = nuts.getlang
 local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local setsubtype         = nuts.setsubtype
 local setdisc            = nuts.setdisc
 local isglyph            = nuts.isglyph
@@ -149,7 +148,7 @@ end
 
 function characters.replacenbspaces(head)
     local wipe = false
-    for current, font, char in nextglyph, head do -- can be anytime so no traverse_char
+    for current, char, font in nextglyph, head do -- can be anytime so no traverse_char
         if char == 0x00A0 then
             if wipe then
                 head = remove_node(h,current,true)
@@ -188,11 +187,11 @@ local methods = {
     [0x001F] = function(head,current) -- kind of special
         local next = getnext(current)
         if next then
-            local char = isglyph(next)
+            local char, font = isglyph(next)
             if char then
                 head, current = remove_node(head,current,true)
                 if not is_punctuation[char] then
-                    local p = fontparameters[getfont(next)]
+                    local p = fontparameters[font]
                     head, current = insert_node_before(head,current,new_glue(p.space,p.space_stretch,p.space_shrink))
                 end
             end

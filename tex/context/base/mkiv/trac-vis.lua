@@ -50,7 +50,6 @@ local getid               = nuts.getid
 local getfont             = nuts.getfont
 local getattr             = nuts.getattr
 local getsubtype          = nuts.getsubtype
-local getchar             = nuts.getchar
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
 local getleader           = nuts.getleader
@@ -65,6 +64,8 @@ local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getshift            = nuts.getshift
 local getexpansion        = nuts.getexpansion
+
+local isglyph             = nuts.isglyph
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -818,7 +819,6 @@ local ruledglyph do
 
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
         local wd = getwidth(current)
-     -- local wd = chardata[getfont(current)][getchar(current)].width
         if wd ~= 0 then
             local wd, ht, dp = getwhd(current)
             local next = getnext(current)
@@ -838,7 +838,8 @@ local ruledglyph do
                 new_kern(-wd)
             )
             --
-            local char = chardata[getfont(current)][getchar(current)]
+            local c, f = isglyph(current)
+            local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test
                 setlistcolor(info,c_ligature)
                 setlisttransparency(info,c_ligature_d)

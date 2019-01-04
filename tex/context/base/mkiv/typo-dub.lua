@@ -63,7 +63,7 @@ local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local getprop             = nuts.getprop
-local getdir ection       = nuts.getdirection
+local getdirection        = nuts.getdirection
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
@@ -887,8 +887,8 @@ local function insert_dir_points(list,size)
         local enddir   -- = nil
         local prev     -- = nil
         if toggle then
-            begindir = righttoleft_code
-            enddir   = righttoleft_code
+            begindir = lefttoright_code
+            enddir   = lefttoright_code
             toggle   = false
         else
             begindir = righttoleft_code
@@ -932,7 +932,7 @@ local function insert_dir_points(list,size)
             if trace_list and n > 1 then
                 report_directions("unbalanced list")
             end
-            last.enddir = s[n] == righttoleft_code or lefttoright_code
+            last.enddir = s[n] == righttoleft_code and righttoleft_code or lefttoright_code
         end
     end
 end

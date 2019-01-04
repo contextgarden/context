@@ -269,8 +269,6 @@ local nuts            = nodes.nuts
 local getnext         = nuts.getnext
 local getid           = nuts.getid
 local getlist         = nuts.getlist
-local getchar         = nuts.getchar
-local getfont         = nuts.getfont
 local getsubtype      = nuts.getsubtype
 local getfield        = nuts.getfield
 local getbox          = nuts.getbox
@@ -281,6 +279,7 @@ local getwidth        = nuts.getwidth
 local getheight       = nuts.getheight
 local getdepth        = nuts.getdepth
 local getexpansion    = nuts.getexpansion
+local isglyph         = nuts.isglyph
 
 local effective_glue  = nuts.effective_glue
 
@@ -358,9 +357,9 @@ function fonts.metapost.boxtomp(n,kind)
     horizontal = function(parent,current,xoffset,yoffset)
         local dx = 0
         while current do
-            local id = getid(current)
-            if id == glyph_code then
-                local code, width = metapost.output(kind,getfont(current),getchar(current),xoffset+dx,yoffset,getexpansion(current))
+            local char, id = isglyph(current)
+            if char then
+                local code, width = metapost.output(kind,id,char,xoffset+dx,yoffset,getexpansion(current))
                 result[#result+1] = code
                 dx = dx + width
             elseif id == disc_code then

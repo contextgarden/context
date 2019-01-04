@@ -23,10 +23,9 @@ local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getid              = nuts.getid
 local getwidth           = nuts.getwidth
+local isglyph            = nuts.isglyph
 local takeattr           = nuts.takeattr
 
 local setlink            = nuts.setlink
@@ -97,8 +96,7 @@ function nodes.aligned(head,start,stop,width,how)
 end
 
 actions[1] = function(head,start,attr)
-    local font = getfont(start)
-    local char = getchar(start)
+    local char, font = isglyph(start)
     local unic = chardata[font][char].unicode or char
     if charbase[unic].category == "nd" then -- ignore unic tables
         local oldwidth = getwidth(start)

@@ -42,7 +42,6 @@ local tonode          = nuts.tonode
 local getnext         = nuts.getnext
 local getprev         = nuts.getprev
 local getid           = nuts.getid
-local getchar         = nuts.getchar
 local getsubtype      = nuts.getsubtype
 local getlist         = nuts.getlist
 local getdisc         = nuts.getdisc
@@ -100,7 +99,7 @@ function nodes.handlers.checkglyphs(head,message)
     local t = { }
     local n = 0
     local f = formatters["%U:%s"]
-    for g, font, char in nextglyph, h do
+    for g, char, font in nextglyph, h do
         n = n + 1
         t[n] = f(char,getsubtype(g))
     end

@@ -62,7 +62,6 @@ local getprev          = nuts.getprev
 local getid            = nuts.getid
 local getfont          = nuts.getfont
 local getsubtype       = nuts.getsubtype
-local getchar          = nuts.getchar
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
 local isglyph          = nuts.isglyph
@@ -80,7 +79,7 @@ local flush_node_list  = nuts.flush_list
 local protect_glyphs   = nuts.protect_glyphs
 
 local nextnode         = nuts.traversers.node
------ nextglyph        = nuts.traversers.glyph
+local nextglyph        = nuts.traversers.glyph
 
 local nodepool         = nuts.pool
 local new_glyph        = nodepool.glyph
@@ -118,11 +117,11 @@ function char_tracers.collect(head,list,tag,n)
     n = n or 0
     local ok, fn = false, nil
     while head do
-        local c, id = isglyph(head)
-        if c then
-            local f = getfont(head)
-            if f ~= fn then
-                ok, fn = false, f
+        local char, id = isglyph(head)
+        if char then
+            local font = id
+            if font ~= fn then
+                ok, fn = false, font
             end
             if not ok then
                 ok = true
@@ -131,8 +130,8 @@ function char_tracers.collect(head,list,tag,n)
                 list[n][tag] = { }
             end
             local l = list[n][tag]
-         -- l[#l+1] = { c, f, i }
-            l[#l+1] = { c, f }
+         -- l[#l+1] = { char, font, i }
+            l[#l+1] = { char, font }
         elseif id == disc_code then
             -- skip
          -- local pre, post, replace = getdisc(head)
@@ -296,47 +295,44 @@ end
 function step_tracers.features()
     -- we cannot use first_glyph here as it only finds characters with subtype < 256
     local f = collection[1]
-    while f do
-        if getid(f) == glyph_code then
-            local tfmdata  = fontidentifiers[getfont(f)]
-            local features = tfmdata.resources.features
-            local result_1 = { }
-            local result_2 = { }
-            local gpos = features and features.gpos or { }
-            local gsub = features and features.gsub or { }
-            for feature, value in table.sortedhash(tfmdata.shared.features) do
-                if feature == "number" or feature == "features" then
-                    value = false
-                elseif type(value) == "boolean" then
-                    if value then
-                        value = "yes"
-                    else
-                        value = false
-                    end
-                else
-                    -- use value
-                end
+    for n, char, font in nextglyph, f do
+        local tfmdata  = fontidentifiers[font]
+        local features = tfmdata.resources.features
+        local result_1 = { }
+        local result_2 = { }
+        local gpos = features and features.gpos or { }
+        local gsub = features and features.gsub or { }
+        for feature, value in table.sortedhash(tfmdata.shared.features) do
+            if feature == "number" or feature == "features" then
+                value = false
+            elseif type(value) == "boolean" then
                 if value then
-                    if gpos[feature] or gsub[feature] or feature == "language" or feature == "script" then
-                        result_1[#result_1+1] = formatters["%s=%s"](feature,value)
-                    else
-                        result_2[#result_2+1] = formatters["%s=%s"](feature,value)
-                    end
+                    value = "yes"
+                else
+                    value = false
+                end
+            else
+                -- use value
+            end
+            if value then
+                if gpos[feature] or gsub[feature] or feature == "language" or feature == "script" then
+                    result_1[#result_1+1] = formatters["%s=%s"](feature,value)
+                else
+                    result_2[#result_2+1] = formatters["%s=%s"](feature,value)
                 end
             end
-            if #result_1 > 0 then
-                context("{\\bf[basic:} %, t{\\bf]} ",result_1)
-            else
-                context("{\\bf[}no basic features{\\bf]} ")
-            end
-            if #result_2 > 0 then
-                context("{\\bf[extra:} %, t{\\bf]}",result_2)
-            else
-                context("{\\bf[}no extra features{\\bf]}")
-            end
-            return
         end
-        f = getnext(f)
+        if #result_1 > 0 then
+            context("{\\bf[basic:} %, t{\\bf]} ",result_1)
+        else
+            context("{\\bf[}no basic features{\\bf]} ")
+        end
+        if #result_2 > 0 then
+            context("{\\bf[extra:} %, t{\\bf]}",result_2)
+        else
+            context("{\\bf[}no extra features{\\bf]}")
+        end
+        return
     end
 end
 
@@ -348,21 +344,15 @@ end
 
 function step_tracers.font(command)
     local c = collection[1]
-    while c do
-        local id = getid(c)
-        if id == glyph_code then
-            local font = getfont(c)
-            local name = file.basename(fontproperties[font].filename or "unknown")
-            local size = fontparameters[font].size or 0
-            if command then
-                context[command](font,name,size) -- size in sp
-            else
-                context("[%s: %s @ %p]",font,name,size)
-            end
-            return
+    for n, char, font in nextglyph, c do
+        local name = file.basename(fontproperties[font].filename or "unknown")
+        local size = fontparameters[font].size or 0
+        if command then
+            context[command](font,name,size) -- size in sp
         else
-            c = getnext(c)
+            context("[%s: %s @ %p]",font,name,size)
         end
+        return
     end
 end
 
@@ -376,8 +366,7 @@ function step_tracers.codes(i,command,space)
     local c = collection[i]
 
     local function showchar(c)
-        local f = getfont(c)
-        local c = getchar(c)
+        local c, f = isglyph(c)
         if command then
             local d = fontdescriptions[f]
             local d = d and d[c]
@@ -499,9 +488,9 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
     if list then
         for n, id in nextnode, tonut(list) do
             if id == glyph_code then
-                local c = getchar(n)
+                local c, f = isglyph(n)
                 if c > 0 then
-                    local fc = fontcharacters[getfont(n)]
+                    local fc = fontcharacters[f]
                     if fc then
                         local fcc = fc[c]
                         if fcc then

@@ -20,9 +20,6 @@ local formatters = string.formatters
 
 local nuts               = nodes.nuts
 
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
-
 local setfont            = nuts.setfont
 
 ----- traverse_char      = nuts.traverse_char

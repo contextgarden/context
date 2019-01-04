@@ -67,12 +67,9 @@ local hpack_node           = node.hpack
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
 
-local getfont              = nuts.getfont
-local getchar              = nuts.getchar
-
+local isglyph              = nuts.isglyph
 local setchar              = nuts.setchar
 
------ traverse_id          = nuts.traverse_id
 local nextglyph            = nuts.traversers.glyph
 
 local remove_node          = nuts.remove
@@ -296,7 +293,7 @@ checkers.placeholder = placeholder
 
 function checkers.missing(head)
     local lastfont, characters, found = nil, nil, nil
-    for n, font, char in nextglyph, head do -- faster than while loop so we delay removal
+    for n, char, font in nextglyph, head do -- faster than while loop so we delay removal
         if font ~= lastfont then
             characters = fontcharacters[font]
             lastfont   = font
@@ -325,7 +322,8 @@ function checkers.missing(head)
     elseif action == "replace" then
         for i=1,#found do
             local node = found[i]
-            local kind, char = placeholder(getfont(node),getchar(node))
+            local char, font = isglyph(node)
+            local kind, char = placeholder(font,char)
             if kind == "node" then
                 insert_node_after(head,node,tonut(char))
                 head = remove_node(head,node,true)

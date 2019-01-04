@@ -79,14 +79,12 @@ local aglunicodes         = nil -- delayed loading
 local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 
------ traverse_char       = nuts.traverse_char
 local nextchar            = nuts.traversers.char
 
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
-local getfont             = nuts.getfont
 local setsubtype          = nuts.setsubtype
 
 local texgetattribute     = tex.getattribute
@@ -2752,8 +2750,8 @@ do
 
 
     function methods.nocolor(head,font,attr)
-        for n in nextchar, head do
-            if not font or getfont(n) == font then
+        for n, c, f in nextchar, head do
+            if not font or f == font then
                 setattr(n,a_color,unsetvalue)
             end
         end

@@ -29,6 +29,7 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local end_of_math        = nuts.end_of_math
 local use_components     = nuts.use_components
+local copy_node          = nuts.copy
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
@@ -40,10 +41,12 @@ local getdisc            = nuts.getdisc
 local getglue            = nuts.getglue
 local getkern            = nuts.getkern
 local isglyph            = nuts.isglyph
+local setchar            = nuts.setchar
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
 local takeattr           = nuts.takeattr
+local setattr            = nuts.setattr
 local setlink            = nuts.setlink
 local setdisc            = nuts.setdisc
 local setglue            = nuts.setglue
@@ -252,7 +255,7 @@ end
 
 local function inject_end(boundary,next,keeptogether,krn,ok)
     local tail = find_node_tail(boundary)
-    local char, id = getid(tail)
+    local char, id = isglyph(tail)
     if id == kern_code then
         if getsubtype(tail) == fontkern_code then
             local inject = true
@@ -296,7 +299,7 @@ local function process_list(head,keeptogether,krn,font,okay)
         local char, id = isglyph(start)
         if char then
             if not font then
-                font = getfont(start)
+                font = id -- getfont(start)
                 mark = markdata[font]
                 kern = quaddata[font]*krn
             end
@@ -349,14 +352,220 @@ local function closest_bound(b,get)
         while b do
             if not getattr(b,a_kerns) then
                 break
-            elseif getid(b) == glyph_code then
-                return b, getfont(b)
             else
-                b = get(b)
+                local c, f = isglyph(b)
+                if c then
+                    return b, f
+                else
+                    b = get(b)
+                end
             end
         end
     end
 end
+
+-- function kerns.handler(head)
+--     local start        = head
+--     local lastfont     = nil
+--     local keepligature = kerns.keepligature
+--     local keeptogether = kerns.keeptogether
+--     local fillup       = false
+--     local bound        = false
+--     local prev         = nil
+--     local previd       = nil
+--     local prevchar     = nil
+--     local prevfont     = nil
+--     local prevmark     = nil
+--     while start do
+--         -- fontkerns don't get the attribute but they always sit between glyphs so
+--         -- are always valid bound .. disc nodes also somtimes don't get them
+--         local id   = getid(start)
+--         local attr = takeattr(start,a_kerns)
+--         if attr and attr > 0 then
+--             local krn = mapping[attr]
+--             if krn == v_max then
+--                 krn    = .25
+--                 fillup = true
+--             else
+--                 fillup = false
+--             end
+--             if not krn or krn == 0 then
+--                 bound = false
+--             elseif id == glyph_code then
+--                 if keepligature and keepligature(start) then
+--                     -- keep 'm
+--                 else
+--                     -- we could use the subtype ligature but that's also a call
+--                     -- todo: check tounicode and use that information to split
+--                     head, start = use_components(head,start)
+--                 end
+--                 local char, font = isglyph(start)
+--                 local mark = markdata[font]
+--                 if not bound then
+--                     -- yet
+--                 elseif mark[char] then
+--                     -- skip
+--                 elseif previd == kern_code then
+--                     if getsubtype(prev) == fontkern_code then
+--                         local inject = true
+--                         if keeptogether then
+--                             if previd == glyph_code and keeptogether(prev,start) then
+--                                 inject = false
+--                             end
+--                         end
+--                         if inject then
+--                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+--                             setkern(prev,getkern(prev) + quaddata[font]*krn,userkern_code)
+--                         end
+--                     end
+--                 elseif previd == glyph_code then
+--                     if prevfont == font then
+--                         if keeptogether and keeptogether(prev,start) then
+--                             -- keep 'm
+--                         else
+--                             local data  = chardata[font][prevchar]
+--                             local kerns = data and data.kerns
+--                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
+--                             insert_node_before(head,start,kern_injector(fillup,kern))
+--                         end
+--                     else
+--                         insert_node_before(head,start,kern_injector(fillup,quaddata[font]*krn))
+--                     end
+--                 end
+--                 prev     = start
+--                 prevchar = char
+--                 prevfont = font
+--                 prevmark = mark
+--                 previd   = id
+--                 bound    = true
+--             elseif id == disc_code then
+--                 local prev, next, pglyph, nglyph -- delayed till needed
+--                 local subtype = getsubtype(start)
+--              -- if subtype == automaticdisc_code then
+--              --     -- this is kind of special, as we have already injected the
+--              --     -- previous kern
+--              --     local prev   = getprev(start)
+--              --     local pglyph = prev and getid(prev) == glyph_code
+--              --     languages.expand(start,pglyph and prev)
+--              --     -- we can have a different start now
+--              -- elseif subtype ~= discretionarydisc_code then
+--              --     prev    = getprev(start)
+--              --     pglyph  = prev and getid(prev) == glyph_code
+--              --     languages.expand(start,pglyph and prev)
+--              -- end
+--                 local pre, post, replace = getdisc(start)
+--                 local indeed = false
+--                 if pre then
+--                     local okay = false
+--                     if not prev then
+--                         prev   = getprev(start)
+--                         pglyph = prev and getid(prev) == glyph_code
+--                     end
+--                     if pglyph then
+--                         pre, okay = inject_begin(pre,prev,keeptogether,krn,okay)
+--                     end
+--                     pre, okay = process_list(pre,keeptogether,krn,false,okay)
+--                     if okay then
+--                         indeed = true
+--                     end
+--                 end
+--                 if post then
+--                     local okay = false
+--                     if not next then
+--                         next   = getnext(start)
+--                         nglyph = next and getid(next) == glyph_code
+--                     end
+--                     if nglyph then
+--                         post, okay = inject_end(post,next,keeptogether,krn,okay)
+--                     end
+--                     post, okay = process_list(post,keeptogether,krn,false,okay)
+--                     if okay then
+--                         indeed = true
+--                     end
+--                 end
+--                 if replace then
+--                     local okay = false
+--                     if not prev then
+--                         prev    = getprev(start)
+--                         pglyph  = prev and getid(prev) == glyph_code
+--                     end
+--                     if pglyph then
+--                         replace, okay = inject_begin(replace,prev,keeptogether,krn,okay)
+--                     end
+--                     if not next then
+--                         next   = getnext(start)
+--                         nglyph = next and getid(next) == glyph_code
+--                     end
+--                     if nglyph then
+--                         replace, okay = inject_end(replace,next,keeptogether,krn,okay)
+--                     end
+--                     replace, okay = process_list(replace,keeptogether,krn,false,okay)
+--                     if okay then
+--                         indeed = true
+--                     end
+--                 elseif prevfont then
+--                     replace = new_kern(quaddata[prevfont]*krn)
+--                     indeed  = true
+--                 end
+--                 if indeed then
+--                     setdisc(start,pre,post,replace)
+--                 end
+--                 bound = false
+--             elseif id == kern_code then
+--                 bound  = getsubtype(start) == fontkern_code
+--                 prev   = start
+--                 previd = id
+--             elseif id == glue_code then
+--                 local subtype = getsubtype(start)
+--                 if subtype == userskip_code or subtype == xspaceskip_code or subtype == spaceskip_code then
+--                     local width, stretch, shrink, stretch_order, shrink_order = getglue(start)
+--                     if width > 0 then
+--                         local w = width + gluefactor * width * krn
+--                         stretch = stretch * w / width
+--                         shrink  = shrink  * w / width
+--                         if fillup then
+--                             stretch = 2 * stretch
+--                             shrink  = 2 * shrink
+--                             stretch_order = 1
+--                          -- shrink_order  = 1 ?
+--                         end
+--                         setglue(start,w,stretch,shrink,stretch_order,shrink_order)
+--                     end
+--                 end
+--                 bound = false
+--             elseif id == hlist_code or id == vlist_code then
+--                 local subtype = getsubtype(start)
+--                 if subtype == unknownlist_code or subtype == boxlist_code then
+--                     -- special case
+--                     local b, f = closest_bound(start,getprev)
+--                     if b then
+--                         insert_node_before(head,start,kern_injector(fillup,quaddata[f]*krn))
+--                     end
+--                     local b, f = closest_bound(start,getnext)
+--                     if b then
+--                         insert_node_after(head,start,kern_injector(fillup,quaddata[f]*krn))
+--                     end
+--                 end
+--                 bound = false
+--             elseif id == math_code then
+--                 start = end_of_math(start)
+--                 bound = false
+--             end
+--             if start then
+--                 start = getnext(start)
+--             end
+--         elseif id == kern_code then
+--             bound  = getsubtype(start) == fontkern_code
+--             prev   = start
+--             previd = id
+--             start  = getnext(start)
+--         else
+--             bound = false
+--             start = getnext(start)
+--         end
+--     end
+--     return head
+-- end
 
 function kerns.handler(head)
     local start        = head
@@ -372,10 +581,10 @@ function kerns.handler(head)
     local prevmark     = nil
     while start do
         -- fontkerns don't get the attribute but they always sit between glyphs so
-        -- are always valid bound .. disc nodes also somtimes don't get them
-        local id   = getid(start)
+        -- are always valid bound .. disc nodes also sometimes don't get them
         local attr = takeattr(start,a_kerns)
         if attr and attr > 0 then
+            local char, id = isglyph(start)
             local krn = mapping[attr]
             if krn == v_max then
                 krn    = .25
@@ -385,17 +594,34 @@ function kerns.handler(head)
             end
             if not krn or krn == 0 then
                 bound = false
-            elseif id == glyph_code then
+            elseif char then -- id == glyph_code
+                local font = id -- more readable
+                local mark = markdata[font]
                 if keepligature and keepligature(start) then
                     -- keep 'm
                 else
-                    -- we could use the subtype ligature but that's also a call
-                    -- todo: check tounicode and use that information to split
-                    head, start = use_components(head,start)
+                 -- head, start = use_components(head,start)
+                    -- beware, these are not kerned so we mighty need a kern only pass
+                    -- maybe some day .. anyway, one should disable ligaturing
+                    local data = chardata[font][char]
+                    if data then
+                        local unicode = data.unicode -- can be cached
+                        if type(unicode) == "table" then
+                            char = unicode[1]
+                            local s = start
+                            setchar(s,char)
+                            for i=2,#unicode do
+                                local n = copy_node(s)
+                                if i == 2 then
+                                    setattr(n,a_kerns,attr) -- we took away the attr
+                                end
+                                setchar(n,unicode[i])
+                                insert_node_after(head,s,n)
+                                s = n
+                            end
+                        end
+                    end
                 end
-                local char = getchar(start)
-                local font = getfont(start)
-                local mark = markdata[font]
                 if not bound then
                     -- yet
                 elseif mark[char] then
@@ -418,6 +644,7 @@ function kerns.handler(head)
                         if keeptogether and keeptogether(prev,start) then
                             -- keep 'm
                         else
+                            -- hm, only basemode ... will go away ...
                             local data  = chardata[font][prevchar]
                             local kerns = data and data.kerns
                             local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
@@ -431,7 +658,7 @@ function kerns.handler(head)
                 prevchar = char
                 prevfont = font
                 prevmark = mark
-                previd   = id
+                previd   = glyph_code -- id
                 bound    = true
             elseif id == disc_code then
                 local prev, next, pglyph, nglyph -- delayed till needed
@@ -549,14 +776,17 @@ function kerns.handler(head)
             if start then
                 start = getnext(start)
             end
-        elseif id == kern_code then
-            bound  = getsubtype(start) == fontkern_code
-            prev   = start
-            previd = id
-            start  = getnext(start)
         else
-            bound = false
-            start = getnext(start)
+            local id = getid(start)
+            if id == kern_code then
+                bound  = getsubtype(start) == fontkern_code
+                prev   = start
+                previd = id
+                start  = getnext(start)
+            else
+                bound = false
+                start = getnext(start)
+            end
         end
     end
     return head

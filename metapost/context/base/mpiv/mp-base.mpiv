@@ -330,53 +330,18 @@ primarydef w dotprod z =
     (xpart w * xpart z + ypart w * ypart z)
 enddef ;
 
-primarydef x**y =
-    if y = 2 :
-        x*x
-    else :
-        takepower y of x
-    fi
-enddef ;
-
-def takepower expr y of x =
-    if x>0 :
-        mexp(y*mlog x)
-    elseif (x=0) and (y>0) :
-        0
-    else :
-        1
-        if y = floor y :
-            if y >= 0 :
-                for n=1 upto y :
-                    *x
-                endfor
-            else :
-                for n=-1 downto y :
-                    /x
-                endfor
-            fi
-        else :
-            hide(errmessage "Undefined power: " & decimal x & "**" & decimal y)
-        fi
-    fi
-enddef ;
-
-% for big number systems:
-%
 % primarydef x**y =
-%     if y = 1 :
-%         x
-%     elseif y = 2 :
+%     if y = 2 :
 %         x*x
-%     elseif y = 3 :
-%         x*x*x
 %     else :
 %         takepower y of x
 %     fi
 % enddef ;
-%
-% vardef takepower expr y of x =
-%     if (x=0) and (y>0) :
+% 
+% def takepower expr y of x =
+%     if x>0 :
+%         mexp(y*mlog x)
+%     elseif (x=0) and (y>0) :
 %         0
 %     else :
 %         1
@@ -395,6 +360,51 @@ enddef ;
 %         fi
 %     fi
 % enddef ;
+
+% for big number systems:
+
+primarydef x**y =
+    if y = 0 :
+        1
+    elseif x = 0 :
+        0
+    elseif y < 0 :
+        1/(x**-y)
+    elseif y = 1 :
+        x
+    elseif y = 2 :
+        x*x
+    elseif y = 3 :
+        x*x*x
+    else :
+        takepower y of x
+    fi
+enddef ;
+
+def takepower expr y of x =
+    if y=0 : % isn't x**0 = 1 even if x=0 ?
+        1
+    elseif x=0 :
+        0
+    else :
+        if y = floor y :
+            1
+            if y >= 0 :
+                for n=1 upto y :
+                    *x
+                endfor
+            else :
+                for n=-1 downto y :
+                    /x
+                endfor
+            fi
+        elseif x>0 :
+            mexp(y*mlog x)
+        else :
+            -mexp(y*mlog -x)
+        fi
+    fi
+enddef ;
 
 vardef direction expr t of p =
     postcontrol t of p - precontrol t of p

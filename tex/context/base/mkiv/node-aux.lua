@@ -32,8 +32,6 @@ local getnext            = nuts.getnext
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
-local getfont            = nuts.getfont
-local getchar            = nuts.getchar
 local getattr            = nuts.getattr
 local getboth            = nuts.getboth
 local getcomponents      = nuts.getcomponents
@@ -196,93 +194,6 @@ nuts.setattributes       = set_attributes                    nodes.setattributes
 nuts.setunsetattributes  = set_unset_attributes              nodes.setunsetattributes = vianuts(set_unset_attributes)
 nuts.unsetattributes     = unset_attributes                  nodes.unsetattributes    = vianuts(unset_attributes)
 
--- history:
---
--- local function glyph_width(a)
---     local ch = chardata[getfont(a)][getchar(a)]
---     return (ch and ch.width) or 0
--- end
---
--- local function glyph_total(a)
---     local ch = chardata[getfont(a)][getchar(a)]
---     return (ch and (ch.height+ch.depth)) or 0
--- end
---
--- local function non_discardable(a) -- inline
---     return getid(id) < math_node -- brrrr
--- end
---
--- local function calculate_badness(t,s)
---     if t == 0 then
---         return 0
---     elseif s <= 0 then
---         return INF_BAD
---     else
---         local r
---         if t <= 7230584 then
---             r = t * 297 / s
---         elseif s >= 1663497 then
---             r = t / floor(s / 297)
---         else
---             r = t
---         end
---         r = floor(r)
---         if r > 1290 then
---             return INF_BAD
---         else
---             return floor((r * r * r + 0x20000) / 0x40000) -- 0400000 / 01000000
---         end
---     end
--- end
---
--- left-overs
---
--- local function round_xn_over_d(x, n, d)
---     local positive -- was x >= 0
---     if x >= 0 then
---         positive = true
---     else
---         x = -x
---         positive = false
---     end
---     local t = floor(x % 0x8000) * n              -- 0100000
---     local f = floor(t / 0x8000)                  -- 0100000
---     local u = floor(x / 0x8000) * n + f          -- 0100000
---     local v = floor(u % d) * 0x8000 + f          -- 0100000
---     if floor(u / d) >= 0x8000 then               -- 0100000
---         report_parbuilders('arith_error')
---     else
---         u = 0x8000 * floor(u / d) + floor(v / d) -- 0100000
---     end
---     v = floor(v % d)
---     if 2*v >= d then
---         u = u + 1
---     end
---     if positive then
---         return u
---     else
---         return -u
---     end
--- end
---
--- local function firstline(n)
---     while n do
---         local id = getid(n)
---         if id == hlist_code then
---             if getsubtype(n) == line_code then
---                 return n
---             else
---                 return firstline(getlist(n))
---             end
---         elseif id == vlist_code then
---             return firstline(getlist(n))
---         end
---         n = getnext(n)
---     end
--- end
---
--- nodes.firstline = firstline
-
 function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
     if untagged then
         return first_glyph(n)
@@ -296,8 +207,8 @@ end
 local function firstcharinbox(n)
     local l = getlist(getbox(n))
     if l then
-        for g in nextglyph, l do
-            return getchar(g)
+        for g, c in nextglyph, l do
+            return c
         end
     end
     return 0

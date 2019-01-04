@@ -21,7 +21,6 @@ local setfield           = nuts.setfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
-local getfont            = nuts.getfont
 local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
 local setsubtype         = nuts.setsubtype

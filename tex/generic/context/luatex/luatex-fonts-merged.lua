@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/03/19 19:27:26
+-- merge date  : 01/05/19 00:50:08
 
 do -- begin closure to overcome local limits and interference
 
@@ -25082,7 +25082,6 @@ local getprev=nuts.getprev
 local getprev=nuts.getprev
 local getprop=nuts.getprop
 local setprop=nuts.setprop
-local getfont=nuts.getfont
 local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
 local ischar=nuts.is_char
@@ -25506,7 +25505,6 @@ local getattr=nuts.getattr
 local setattr=nuts.setattr
 local getprop=nuts.getprop
 local setprop=nuts.setprop
-local getfont=nuts.getfont
 local getsubtype=nuts.getsubtype
 local setsubtype=nuts.setsubtype
 local getchar=nuts.getchar

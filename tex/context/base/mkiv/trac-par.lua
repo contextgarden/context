@@ -19,10 +19,10 @@ local getfield      = nuts.getfield
 local getid         = nuts.getid
 local getnext       = nuts.getnext
 local getlist       = nuts.getlist
-local getfont       = nuts.getfont
-local getchar       = nuts.getchar
 local getwidth      = nuts.getwidth
 local getexpansion  = nuts.getexpansion
+
+local isglyph       = nuts.isglyph
 
 local nodecodes     = nodes.nodecodes
 local hlist_code    = nodecodes.hlist
@@ -64,23 +64,23 @@ local function colorize(n)
     -- tricky: the built-in method creates dummy fonts and the last line normally has the
     -- original font and that one then has ex.auto set
     while n do
-        local id = getid(n)
-        if id == glyph_code then
+        local char, id = isglyph(n)
+        if char then
             local ne = getexpansion(n)
             if ne == 0 then
                 if length > 0 then flush() end
                 setnodecolor(n,"hz:zero")
             else
-                local f = getfont(n)
-                if f ~= font then
+                -- id == font
+                if id ~= font then
                     if length > 0 then
                         flush()
                     end
-                    local pf = parameters[f]
+                    local pf = parameters[id]
                     local ex = pf.expansion
                     if ex and ex.auto then
                         size = pf.size
-                        font = f -- save lookups
+                        font = id -- save lookups
                     else
                         size = false
                     end
@@ -101,7 +101,7 @@ local function colorize(n)
                     end
                     if trace_verbose then
                         length = length + 1
-                        list[length] = utfchar(getchar(n))
+                        list[length] = utfchar(char)
                         width = width + getwidth(n) -- no kerning yet
                     end
                 end
@@ -110,7 +110,10 @@ local function colorize(n)
             if length > 0 then
                 flush()
             end
-            colorize(getlist(n),flush)
+            local list = getlist(n)
+            if list then
+                colorize(list,flush)
+            end
         else -- nothing to show on kerns
             if length > 0 then
                 flush()

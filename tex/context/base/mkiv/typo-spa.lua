@@ -26,7 +26,6 @@ local nuts               = nodes.nuts
 
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
-local getfont            = nuts.getfont
 local takeattr           = nuts.takeattr
 local isglyph            = nuts.isglyph
 
@@ -83,10 +82,11 @@ function spacings.handler(head)
                 if data then
                     local map = data.characters[char]
                     if map then
+                        local font = id
                         local left = map.left
                         local right = map.right
                         local alternative = map.alternative
-                        local quad = quaddata[getfont(start)]
+                        local quad = quaddata[font]
                         local prev = getprev(start)
                         if left and left ~= 0 and prev then
                             local ok = false

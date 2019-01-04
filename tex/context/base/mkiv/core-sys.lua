@@ -73,13 +73,13 @@ implement { name = "outputfilename",      actions = function() context(environme
 statistics.register("result saved in file", function()
     -- suffix will be fetched from backend
     local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
-    if (tex.pdfoutput or tex.outputmode) > 0 then
+ -- if (tex.pdfoutput or tex.outputmode) > 0 then
         return format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",
             lpdf.getcompression()
         )
-    else
-        return format("%s.%s",outputfilename,"dvi") -- hard to imagine
-    end
+ -- else
+ --     return format("%s.%s",outputfilename,"dvi") -- hard to imagine
+ -- end
 end)
 
 implement {

@@ -32,7 +32,6 @@ local texsetattribute = tex.setattribute
 
 local nuts            = nodes.nuts
 
-local getchar         = nuts.getchar
 local getattr         = nuts.getattr
 local setattr         = nuts.setattr
 
@@ -58,7 +57,7 @@ local resetter = { -- this will become an entry in char-def
 
 function cleaners.handler(head)
     local inline = false
-    for n, font, char in nextglyph, head do
+    for n, char, font in nextglyph, head do
         if resetter[char] then
             inline = false
         elseif not inline then
