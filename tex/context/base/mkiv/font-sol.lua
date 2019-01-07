@@ -426,7 +426,7 @@ function splitters.split(head) -- best also pass the direction
             end
             local direction, pop = getdirection(current)
             r2l = not pop and direction == righttoleft
-        elseif id == localpar_code then
+        elseif id == localpar_code and getsubtype(current) == 0 then
             if start then
                 flush() -- very unlikely as this starts a paragraph
             end

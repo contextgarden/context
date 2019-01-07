@@ -290,7 +290,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code then -- check for initial par subtype
+        if id == localpar_code and getsubtype(list) == 0 then
             list = getnext(list)
             if not next then
                 return nil
@@ -326,7 +326,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code then -- check for initial par subtype
+        if id == localpar_code and getsubtype(list) == 0 then
             list = getnext(list)
             if not list then
                 return false

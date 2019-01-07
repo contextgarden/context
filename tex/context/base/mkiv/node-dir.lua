@@ -6,328 +6,61 @@ if not modules then modules = { } end modules ['node-dir'] = {
     license   = "see context related readme files"
 }
 
---[[
-<p>In the process of cleaning up the lua variant of the parbuilder
-we ran into a couple of functions (translated c macros) that were
-somewhat inefficient. More convenient is to use hashes although at
-the c-end still macros are used. In the process directions.h was
-adapted and now has the mappings as comments. This lua file is
-based on that file.
-]]--
+-- This is experimental code, so when I change it I need to check other modules
+-- too.
+--
+-- Local par nodes are somewhat special. They start a paragraph and then register
+-- the par direction. But they can also show op mid paragraph in which case they
+-- register boxes and penalties. In that case the direction should not be affected.
+--
+-- We can assume that when hpack and prelinebreak filters are called, a local par
+-- still sits at the head, but after a linebreak pass this node can be after the
+-- leftskip (when present).
 
-local allocate = utilities.storage.allocate
+local nodes         = nodes
+local nuts          = nodes.nuts
 
-local nodes = nodes
+local nodecodes     = nodes.nodecodes
+local localpar_code = nodecodes.localpar
 
-nodes.is_mirrored = allocate {
- -- TLT = false,
- -- TRT = false,
- -- LTL = false,
- -- RTT = false,
-}
+local getid         = nuts.getid
+local getsubtype    = nuts.getsubtype
+local getdirection  = nuts.getdirection
 
-nodes.is_rotated = allocate { -- used
- -- TLT = false,
- -- TRT = false,
- -- LTL = false,
-    RTT = true, ["+RTT"] = true,
-}
+local dirvalues     = nodes.dirvalues
+local lefttoright   = dirvalues.lefttoright
+local righttoleft   = dirvalues.righttoleft
 
-do
+local localparnewgraf_code = 0
 
-    local tlt = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    }
-
-    local trt = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    }
-
-    local ltl = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    }
-
-    local rtt = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    }
-
-    nodes.textdir_is_parallel = allocate { -- used
-        TLT = tlt, ["+TLT"] = tlt, -- ["-TLT"] = tlt,
-        TRT = trt, ["+TRT"] = trt, -- ["-TRT"] = trt,
-        LTL = ltl, ["+LTL"] = ltl, -- ["-LTL"] = ltl,
-        RTT = rtt, ["+RTT"] = rtt, -- ["-RTT"] = rtt,
-    }
-
+local function newstack(head,direction)
+    local stack = { }
+    local top   = 0
+    if head and getid(head) == localpar_code and getsubtype(head) == localparnewgraf_code then
+        direction = getdirection(head)
+    end
+    if not direction then
+        direction = lefttoright
+    elseif direction == "TLT" then
+        direction = lefttoright
+    elseif direction == "TRT" then
+        direction = righttoleft
+    end
+    local function update(node)
+        local dir, pop = getdirection(node)
+        if not pop then
+            top = top + 1
+            stack[top] = dir
+            return dir
+        elseif top == 0 then
+            return direction
+        elseif top == 1 then
+            top = 0
+            return direction
+        else
+            top = top - 1
+            return stack[top]
+        end
+    end
+    return direction, update
 end
-
-do
-
-    local tlt = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    }
-
-    local trt = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    }
-
-    local ltl = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    }
-
-    local rtt = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    }
-
-    nodes.pardir_is_parallel = allocate {
-        TLT = tlt, ["+TLT"] = tlt, -- ["-TLT"] = tlt,
-        TRT = trt, ["+TRT"] = trt, -- ["-TRT"] = trt,
-        LTL = ltl, ["+LTL"] = ltl, -- ["-LTL"] = ltl,
-        RTT = rtt, ["+RTT"] = rtt, -- ["-RTT"] = rtt,
-    }
-
-end
-
-nodes.pardir_is_opposite = allocate {
-    TLT = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    TRT = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-        RTT = true, ["+RTT"] = true,
-    },
-    RTT = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-     -- RTT = false,
-    },
-}
-
-nodes.textdir_is_opposite = allocate { -- used
-    TLT = {
-     -- TLT = false,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    TRT= {
-        TLT = true, ["+TLT"] = true,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    RTT = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-}
-
-nodes.glyphdir_is_opposite = allocate {
-    TLT = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    TRT= {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    RTT = {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-}
-
-nodes.pardir_is_equal = allocate { -- used
-    TLT = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-        },
-    TRT= {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL= {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-     -- RTT = false,
-    },
-    RTT= {
-     -- TLT = false,
-     -- TRT = false,
-     -- LTL = false,
-        RTT = true, ["+RTT"] = true,
-    },
-}
-
-nodes.textdir_is_equal = allocate { -- used
-    TLT = {
-        TLT = true, ["+TLT"] = true,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    TRT= {
-     -- TLT = false,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    },
-    RTT = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    },
-}
-
-nodes.glyphdir_is_equal = allocate { -- used
-    TLT = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-        RTT = true, ["+RTT"] = true,
-    },
-    TRT= {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-        RTT = true, ["+RTT"] = true,
-    },
-    LTL = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-     -- RTT = false,
-    },
-    RTT = {
-        TLT = true, ["+TLT"] = true,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-        RTT = true, ["+RTT"] = true,
-    },
-}
-
-nodes.partextdir_is_equal = allocate {
-    TLT = {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    },
-    TRT= {
-     -- TLT = false,
-     -- TRT = false,
-        LTL = true, ["+LTL"] = true,
-        RTT = true, ["+RTT"] = true,
-    },
-    LTL = {
-        TLT = true, ["+TLT"] = true,
-     -- TRT = false,
-     -- LTL = false,
-     -- RTT = false,
-    },
-    RTT = {
-     -- TLT = false,
-        TRT = true, ["+TRT"] = true,
-     -- LTL = false,
-     -- RTT = false,
-    },
-}
-
-nodes.textdir_is_is = allocate {
-    TLT = true, ["+TLT"] = true,
- -- TRT = false,
- -- LTL = false,
- -- RTT = false,
-}
-
-nodes.glyphdir_is_orthogonal = allocate {
-    TLT = true, ["+TLT"] = true,
-    TRT = true, ["+TRT"] = true,
-    LTL = true, ["+LTL"] = true,
- -- RTT = false
-}
-
-nodes.dir_is_pop = allocate { -- used
-    ["-TRT"] = true,
-    ["-TLT"] = true,
-    ["-LTL"] = true,
-    ["-RTT"] = true,
-}
-
-nodes.dir_negation = allocate { -- used
-    ["-TRT"] = "+TRT",
-    ["-TLT"] = "+TLT",
-    ["-LTL"] = "+LTL",
-    ["-RTT"] = "+RTT",
-    ["+TRT"] = "-TRT",
-    ["+TLT"] = "-TLT",
-    ["+LTL"] = "-LTL",
-    ["+RTT"] = "-RTT",
-}

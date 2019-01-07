@@ -3281,7 +3281,7 @@ local collectresults  do -- too many locals otherwise
                     last = nil
                     currentparagraph = nil
                 end
-            elseif id == localpar_code then
+            elseif not localparagraph and id == localpar_code and subtype == 0 then
                 localparagraph = getattr(n,a_taggedpar)
             end
             p   = n

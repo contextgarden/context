@@ -55,7 +55,6 @@ local glue_code          = nodecodes.glue
 local rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-local localpar_code      = nodecodes.localpar
 
 local states             = attributes.states
 local numbers            = attributes.numbers

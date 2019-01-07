@@ -26,6 +26,8 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local setaction         = nodes.tasks.setaction
 
+local texset            = tex.set
+
 local function nothing() return nil end
 
 backends.nothing = nothing
@@ -60,6 +62,17 @@ backends.tables         = { }  setmetatableindex(backends.tables,         tables
 
 backends.current = "unknown"
 
+local lmtx_mode    = nil
+
+local function lmtxmode()
+    if lmtx_mode == nil then
+        lmtx_mode = environment.lmtxmode and drivers and drivers.lmtxversion
+    end
+    return lmtx_mode
+end
+
+codeinjections.lmtxmode = lmtxmode
+
 function backends.install(what)
     if type(what) == "string" then
         local backend = backends[what]
@@ -87,7 +100,7 @@ end
 statistics.register("used backend", function()
     local bc = backends.current
     if bc ~= "unknown" then
-        local lmtx = environment.lmtxmode and drivers and drivers.lmtxversion
+        local lmtx = lmtxmode()
         local cmnt = backends[bc].comment or "no comment"
         if lmtx then
             return format("lmtx version %0.2f, %s (%s)",lmtx,bc,cmnt)
@@ -138,3 +151,33 @@ backends.included = included
 function backends.timestamp()
     return os.date("%Y-%m-%dT%X") .. os.timezone(true)
 end
+
+-- Also here:
+
+local paper_width  = 0
+local paper_height = 0
+
+function codeinjections.setpagedimensions(paperwidth,paperheight)
+    if paperwidth then
+        paper_width = paperwidth
+    end
+    if paperheight then
+        paper_height = paperheight
+    end
+    if not lmtxmode() then
+        texset("global","pageheight",paper_height)
+        texset("global","pagewidth", paper_width)
+    end
+    return paper_width, paper_height
+end
+
+function codeinjections.getpagedimensions()
+    return paper_width, paper_height
+end
+
+interfaces.implement {
+    name    = "shipoutoffset",
+    actions = function()
+        context(lmtxmode() and "0pt" or "-1in") -- the old tex offset
+    end
+}

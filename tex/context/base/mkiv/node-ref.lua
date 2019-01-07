@@ -418,8 +418,10 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
         elseif id == dir_code then
             local direction, pop = getdirection(current)
             txtdir = not pop and direction -- we might need a stack
-        elseif id == localpar_code then -- only test at begin
-            pardir = getdirection(current)
+        elseif id == localpar_code then
+            if getsubtype(current) == 0 then
+                pardir = getdirection(current)
+            end
         else
             local r = getattr(current,attribute)
             if not r then

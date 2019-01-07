@@ -55,7 +55,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getprop            = nuts.getprop
-local getdirection       = nuts.getdir
+local getdirection       = nuts.getdirection
 local isglyph            = nuts.isglyph -- or ischar
 
 local setprop            = nuts.setprop
@@ -331,7 +331,7 @@ local function process(start)
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
-            elseif id == localpar_code then
+            elseif id == localpar_code and getsubtype(current) == 0 then
                 local direction = getdirection(current)
                 if direction == righttoleft_code then
                     autodir = -1

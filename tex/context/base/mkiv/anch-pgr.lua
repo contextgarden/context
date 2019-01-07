@@ -154,7 +154,7 @@ local function flush(head,f,l,a,parent,depth)
             ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
             rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
         end
-        if getid(f) == localpar_code then -- we need to clean this mess
+        if getid(f) == localpar_code and getsubtype(f) == 0 then -- we need to clean this mess
             insert_after(head,f,ln)
         else
             head, f = insert_before(head,f,ln)

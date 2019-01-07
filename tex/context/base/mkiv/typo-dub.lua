@@ -405,7 +405,7 @@ end
 
 local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
     local id = getid(head)
-    if id == localpar_code then
+    if id == localpar_code and getsubtype(head) == 0 then
         local direction = getdirection(head)
         if direction == righttoleft_code or direction == "TRT" then -- for old times sake we we handle strings too
             return 1, righttoleft_code, true
@@ -984,7 +984,7 @@ local function apply_to_list(list,size,head,pardir)
                 enddir = false
             end
         elseif begindir then
-            if id == localpar_code then
+            if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
                 setprop(d,"directions",true)

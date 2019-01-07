@@ -275,11 +275,21 @@ implement { name = "disableparbuilder", actions = constructors.disable }
 
 -- Here are some tracers:
 
-local new_kern     = nodes.pool.kern
-local new_rule     = nodes.pool.rule
-local hpack        = nodes.hpack
+local nuts         = nodes.nuts
+local tonut        = nodes.tonut
 local setcolor     = nodes.tracers.colors.set
 local listtoutf    = nodes.listtoutf
+local new_kern     = nuts.pool.kern
+local new_rule     = nuts.pool.rule
+local hpack        = nuts.hpack
+local getheight    = nuts.getheight
+local getdepth     = nuts.getdepth
+local getdirection = nuts.getdirection
+local getlist      = nuts.getlist
+local setwidth     = nuts.setwidth
+local setdirection = nuts.setdirection
+local setlink      = nuts.setlink
+local tonode       = nuts.tonode
 
 local report_hpack = logs.reporter("hpack routine")
 local report_vpack = logs.reporter("vpack routine")
@@ -303,8 +313,9 @@ end)
 local report, show = false, false
 
 local function hpack_quality(how,detail,n,first,last)
+    n = tonut(n)
     if report then
-        local str = listtoutf(n.head,"",true,nil,true)
+        local str = listtoutf(getlist(n),"",true,nil,true)
         if last <= 0 then
             report_hpack("%s hbox: %s",how,str)
         elseif first > 0 and first < last then
@@ -314,10 +325,10 @@ local function hpack_quality(how,detail,n,first,last)
         end
     end
     if show then
-        local width  = 2*65536
-        local height = n.height
-        local depth  = n.depth
-        local dir    = n.dir
+        local width     = 2*65536
+        local height    = getheight(n)
+        local depth     = getdepth(n)
+        local direction = getdirection(n)
         if height < 4*65526 then
             height = 4*65526
         end
@@ -325,12 +336,11 @@ local function hpack_quality(how,detail,n,first,last)
             depth = 2*65526
         end
         local rule = new_rule(width,height,depth)
-        rule.dir = dir
+        setdirection(rule,direction)
         if how == "overfull" then
             setcolor(rule,"red")
             local kern = new_kern(-detail)
-            kern.next = rule
-            rule.prev = kern
+            setlink(kern,rule)
             rule = kern
         elseif how == "underfull" then
             setcolor(rule,"blue")
@@ -340,9 +350,9 @@ local function hpack_quality(how,detail,n,first,last)
             setcolor(rule,"cyan")
         end
         rule = hpack(rule)
-        rule.width = 0
-        rule.dir = dir
-        return rule
+        setwidth(rule,0)
+        setdirection(rule,direction)
+        return tonode(rule) -- can be a nut
     end
 end
 

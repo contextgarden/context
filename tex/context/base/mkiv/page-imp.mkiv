@@ -162,8 +162,6 @@
    \box\scratchbox
    \endgroup}
 
-\newdimen\d_page_shipouts_offset \d_page_shipouts_offset=-1in
-
 \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
 
 \def\page_shipouts_normal#1%
@@ -189,9 +187,12 @@
        \finalizeshipoutbox\shipoutscratchbox
      \fi
      \setbox\shipoutscratchbox\vpack
-       {\offinterlineskip
-        \vkern\d_page_shipouts_offset
-        \hkern\d_page_shipouts_offset
+       {\scratchdimen\clf_shipoutoffset\relax
+        \ifdim\scratchdimen=\zeropoint\else
+          \offinterlineskip
+          \vkern\scratchdimen
+          \hkern\scratchdimen
+        \fi
         \hpack
           {\page_otr_flush_every_stuff
            \page_otr_flush_special_content

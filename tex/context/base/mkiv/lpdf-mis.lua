@@ -18,7 +18,6 @@ if not modules then modules = { } end modules ['lpdf-mis'] = {
 local next, tostring, type = next, tostring, type
 local format, gsub, formatters = string.format, string.gsub, string.formatters
 local flattened = table.flattened
-local texset, texget = tex.set, tex.get
 
 local backends, lpdf, nodes = backends, lpdf, nodes
 
@@ -53,6 +52,8 @@ local addtopageattributes  = lpdf.addtopageattributes
 local addtonames           = lpdf.addtonames
 
 local pdfgetmetadata       = lpdf.getmetadata
+
+local texset               = tex.set
 
 local variables            = interfaces.variables
 
@@ -237,10 +238,12 @@ local function setupidentity()
         addtoinfo("ID", pdfstring(id), id) -- needed for pdf/x
         --
         addtoinfo("ConTeXt.Version",version)
-        local lmtx = environment.lmtxmode and drivers and drivers.lmtxversion
+        --
+        local lmtx = codeinjections.lmtxmode()
         if lmtx then
             addtoinfo("ConTeXt.LMTX",formatters["%0.2f"](lmtx))
         end
+        --
         addtoinfo("ConTeXt.Time",os.date("%Y-%m-%d %H:%M"))
         addtoinfo("ConTeXt.Jobname",jobname)
         addtoinfo("ConTeXt.Url","www.pragma-ade.com")
@@ -395,21 +398,23 @@ local cropoffset, bleedoffset, trimoffset, artoffset = 0, 0, 0, 0
 local marked = false
 local copies = false
 
+local getpagedimensions  getpagedimensions = function()
+    getpagedimensions = backends.codeinjections.getpagedimensions
+    return getpagedimensions()
+end
+
 function codeinjections.setupcanvas(specification)
     local paperheight = specification.paperheight
     local paperwidth  = specification.paperwidth
     local paperdouble = specification.doublesided
-    if paperheight then
-        texset('global','pageheight',paperheight)
-    end
-    if paperwidth then
-        texset('global','pagewidth',paperwidth)
-    end
+    --
+    paperwidth, paperheight = codeinjections.setpagedimensions(paperwidth,paperheight)
+    --
     pagespec    = specification.mode       or pagespec
     topoffset   = specification.topoffset  or 0
     leftoffset  = specification.leftoffset or 0
-    height      = specification.height     or texget("pageheight")
-    width       = specification.width      or texget("pagewidth")
+    height      = specification.height     or paperheight
+    width       = specification.width      or paperwidth
     marked      = specification.print
     --
     copies      = specification.copies
@@ -514,11 +519,11 @@ local function boxvalue(n) -- we could share them
 end
 
 local function pagespecification()
-    local pht = texget("pageheight")
+    local paperwidth, paperheight = codeinjections.getpagedimensions()
     local llx = leftoffset
-    local lly = pht + topoffset - height
+    local lly = paperheight + topoffset - height
     local urx = width - leftoffset
-    local ury = pht - topoffset
+    local ury = paperheight - topoffset
     -- boxes can be cached
     local function extrabox(WhatBox,offset,always)
         if offset ~= 0 or always then

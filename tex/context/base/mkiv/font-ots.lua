@@ -198,7 +198,6 @@ local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
 local getcomponents      = nuts.getcomponents -- the original one, not yet node-aux
 local setcomponents      = nuts.setcomponents -- the original one, not yet node-aux
-local getdir             = nuts.getdir
 local getwidth           = nuts.getwidth
 
 local ischar             = nuts.is_char
@@ -3640,57 +3639,57 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     end
 end
 
-local txtdirstate, pardirstate  do
+local txtdirstate, pardirstate  do -- this might change (no need for nxt in pardirstate)
 
     local getdirection = nuts.getdirection
     local lefttoright  = 0
     local righttoleft  = 1
 
     txtdirstate = function(start,stack,top,rlparmode)
-        local nxt = getnext(start)
         local dir, pop = getdirection(start)
         if pop then
             if top == 1 then
-                return nxt, 0, rlparmode
+                return 0, rlparmode
             else
                 top = top - 1
                 if stack[top] == righttoleft then
-                    return nxt, top, -1
+                    return top, -1
                 else
-                    return nxt, top, 1
+                    return top, 1
                 end
             end
         elseif dir == lefttoright then
             top = top + 1
             stack[top] = lefttoright
-            return nxt, top, 1
+            return top, 1
         elseif dir == righttoleft then
             top = top + 1
             stack[top] = righttoleft
-            return nxt, top, -1
+            return top, -1
         else
-            return nxt, top, rlparmode
+            return top, rlparmode
         end
     end
 
     pardirstate = function(start)
-        local nxt = getnext(start)
         local dir = getdirection(start)
         if dir == lefttoright then
-            return nxt, 1, 1
+            return 1, 1
         elseif dir == righttoleft then
-            return nxt, -1, -1
+            return -1, -1
         -- for old times sake we we handle strings too
         elseif dir == "TLT" then
-            return nxt, 1, 1
+            return 1, 1
         elseif dir == "TRT" then
-            return nxt, -1, -1
+            return -1, -1
         else
-            return nxt, 0, 0
+            return 0, 0
         end
     end
 
 end
+
+-- These are non public helpers that can change without notice!
 
 otf.helpers             = otf.helpers or { }
 otf.helpers.txtdirstate = txtdirstate
@@ -3798,7 +3797,13 @@ do
             checkstep(head)
         end
 
-        local initialrl = (direction == 1 or direction == "TRT") and -1 or 0
+        local initialrl = 0
+
+        if getid(head) == localpar_code and getsubtype(head) == 0 then
+            initialrl = pardirstate(start)
+        elseif direction == 1 or direction == "TRT" then
+            initialrl = -1
+        end
 
      -- local done      = false
         local datasets  = otfdataset(tfmdata,font,attr)
@@ -3946,9 +3951,11 @@ do
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
                         elseif id == dir_code then
-                            start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                        elseif id == localpar_code then
-                            start, rlparmode, rlmode = pardirstate(start)
+                            topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+                            start = getnext(start)
+                     -- elseif id == localpar_code then
+                     --     rlparmode, rlmode = pardirstate(start)
+                     --     start = getnext(start)
                         else
                             start = getnext(start)
                         end
@@ -4028,9 +4035,11 @@ do
                         elseif id == math_code then
                             start = getnext(end_of_math(start))
                         elseif id == dir_code then
-                            start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-                        elseif id == localpar_code then
-                            start, rlparmode, rlmode = pardirstate(start)
+                            topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+                            start = getnext(start)
+                     -- elseif id == localpar_code then
+                     --     rlparmode, rlmode = pardirstate(start)
+                     --     start = getnext(start)
                         else
                             start = getnext(start)
                         end
@@ -4137,9 +4146,11 @@ do
             elseif id == math_code then
                 start = getnext(end_of_math(start))
             elseif id == dir_code then
-                start, topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
-            elseif id == localpar_code then
-                start, rlparmode, rlmode = pardirstate(start)
+                topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
+                start = getnext(start)
+         -- elseif id == localpar_code then
+         --     rlparmode, rlmode = pardirstate(start)
+         --     start = getnext(start)
             else
                 start = getnext(start)
             end

@@ -175,8 +175,7 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                local id = prev.id
-                if id == localpar_code then
+                if prev.id == localpar_code then -- and prev.subtype == 0
                     break
                 else
                     first = prev

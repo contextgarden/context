@@ -138,7 +138,7 @@ interfaces.implement {
 
 actions[v_default] = function(head,setting)
     local id   = getid(head)
-    if id == localpar_code then
+    if id == localpar_code then -- and getsubtype(head) == 0
         -- begin of par
         local first  = getnext(head)
         local indent = false

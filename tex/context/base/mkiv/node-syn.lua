@@ -374,9 +374,15 @@ local function flushpostamble()
     enabled = false
 end
 
+local getpagedimensions  getpagedimensions = function()
+    getpagedimensions = backends.codeinjections.getpagedimensions
+    return getpagedimensions()
+end
+
 -- local function doaction(action,t,l,w,h,d)
+--     local pagewidth, pageheight = getpagedimensions()
 --     local x, y = getpos()
---     filehandle:write(action(t,l,x,tex.pageheight-y,w,h,d))
+--     filehandle:write(action(t,l,x,pageheight-y,w,h,d))
 --     nofobjects = nofobjects + 1
 -- end
 --
@@ -412,24 +418,27 @@ end
 -- generic
 --
 -- local function doaction(t,l,w,h,d)
+--     local pagewidth, pageheight = getpagedimensions()
 --     local x, y = getpos()
---     filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+--     filehandle:write(f_hlist_1(t,l,x,pageheight-y,w,h,d))
 --     nofobjects = nofobjects + 1
 -- end
 
 local x_hlist  do
 
     local function doaction_1(t,l,w,h,d)
+        local pagewidth, pageheight = getpagedimensions()
         local x, y = getpos()
-        filehandle:write(f_hlist_1(t,l,x,tex.pageheight-y,w,h,d))
+        filehandle:write(f_hlist_1(t,l,x,pageheight-y,w,h,d))
         nofobjects = nofobjects + 1
     end
 
     -- local lastx, lasty, lastw, lasth, lastd
     --
     -- local function doaction_2(t,l,w,h,d)
+    --     local pagewidth, pageheight = getpagedimensions()
     --     local x, y = getpos()
-    --     y = tex.pageheight-y
+    --     y = pageheight-y
     --     filehandle:write(f_hlist_2(t,l,
     --         x == lastx and "=" or x,
     --         y == lasty and "=" or y,
@@ -446,8 +455,9 @@ local x_hlist  do
     local lasty = false
 
     local function doaction_2(t,l,w,h,d)
+        local pagewidth, pageheight = getpagedimensions()
         local x, y = getpos()
-        y = tex.pageheight - y
+        y = pageheight - y
         filehandle:write(f_hlist_2(t,l,x,y == lasty and "=" or y,w,h,d))
         lasty = y
         nofobjects = nofobjects + 1
@@ -673,10 +683,9 @@ function synctex.start()
             writeanchor()
             filehandle:write("{",nofsheets,eol)
             -- this seems to work:
-            local h = tex.pageheight
-            local w = tex.pagewidth
+            local pagewidth, pageheight = getpagedimensions()
             filehandle:write(z_hlist)
-            filehandle:write(f_vlist_1(0,0,0,h,w,h,0))
+            filehandle:write(f_vlist_1(0,0,0,pageheight,pagewidth,pageheight,0))
         end
     end
 end

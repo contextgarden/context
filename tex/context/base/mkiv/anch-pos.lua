@@ -606,7 +606,7 @@ end
 
 local nofparagraphs = 0
 
-scanners.parpos = function() -- todo: relate to localpar (so this is an intermediate variant)
+scanners.parpos = function()
     nofparagraphs = nofparagraphs + 1
     texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
     local box = getbox("strutbox")

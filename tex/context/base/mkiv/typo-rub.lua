@@ -63,8 +63,8 @@ local glue_code       = nodecodes.glue
 local penalty_code    = nodecodes.penalty
 local hlist_code      = nodecodes.hlist
 local vlist_code      = nodecodes.vlist
-local whatsit_code    = nodecodes.whatsit
 local localpar_code   = nodecodes.localpar
+local dir_code        = nodecodes.dir
 
 local kerncodes       = nodes.kerncodes
 local fontkern_code   = kerncodes.font
@@ -305,11 +305,11 @@ local function whatever(current)
                 local c = getprev(current)
                 while c do
                     local id = getid(c)
-                    if id == glue_code or id == penalty_code or id == kern_code or (id == whatsit_code and getsubtype(current,localpar_code)) then
+                    if id == glue_code or id == penalty_code or id == kern_code then
                         -- go on
                     elseif id == hlist_code and getwidth(c) == 0 then
                         -- go on
-                    elseif id == whatsit_code or id == localpar_code then
+                    elseif id == whatsit_code or id == localpar_code or id == dir_code then
                         -- go on
                     else
                         l = false

@@ -365,8 +365,7 @@ local colors = {
 function step_tracers.codes(i,command,space)
     local c = collection[i]
 
-    local function showchar(c)
-        local c, f = isglyph(c)
+    local function showchar(c,f)
         if command then
             local d = fontdescriptions[f]
             local d = d and d[c]
@@ -382,7 +381,8 @@ function step_tracers.codes(i,command,space)
             context("%s:",what)
             for c, id in nextnode, w do
                 if id == glyph_code then
-                    showchar(c)
+                    local c, f = isglyph(c)
+                    showchar(c,f)
                 else
                     context("[%s]",nodecodes[id])
                 end
@@ -393,10 +393,10 @@ function step_tracers.codes(i,command,space)
     end
 
     while c do
-        local id = getid(c)
-        if id == glyph_code then
-            showchar(c)
-        elseif id == dir_code or id == localpar_code then
+        local char, id = isglyph(c)
+        if char then
+            showchar(char,id)
+        elseif id == dir_code or (id == localpar_code and getsubtype(c) == 0) then
             context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)

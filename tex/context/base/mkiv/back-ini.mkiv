@@ -16,11 +16,21 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / Initialization}
 
+%D The exact page model depends on the backend so we just define some
+%D variables that are used. A helper at the \LUA\ end will synchronize
+%D with the internal variables. We store these in the format.
+
+% \newdimen\backendpageheight
+% \newdimen\backendpagewidth
+% \newdimen\backendinchoffset    \backendinchoffset=1in
+
+%D Now we load the \LUA\ code:
+
 \registerctxluafile{back-ini}{}
 \registerctxluafile{back-res}{}
 
-%D We currently have a curious mix between tex and lua backend
-%D handling but eventually most will move to lua.
+%D We currently have a curious mix between tex and lua backend handling but
+%D eventually most will move to \LUA.
 
 \unprotect
 
@@ -28,23 +38,21 @@
 \ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
 \ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi % e.g. finalize via latelua
 
-%D Right from the start \CONTEXT\ had a backend system based on
-%D runtime pluggable code. As most backend issues involved specials
-%D and since postprocessors had not that much in common, we ended up
-%D with a system where we could switch backend as well as output code
-%D for multiple backends at the same time.
+%D Right from the start \CONTEXT\ had a backend system based on runtime pluggable
+%D code. As most backend issues involved specials and since postprocessors had not
+%D that much in common, we ended up with a system where we could switch backend as
+%D well as output code for multiple backends at the same time.
 %D
-%D Because \LUATEX\ has the backend built in, and since some backend
-%D issues have been moved to the frontend I decided to provide new
-%D backend code for \MKIV, starting with what was actually used.
+%D Because \LUATEX\ has the backend built in, and since some backend issues have
+%D been moved to the frontend I decided to provide new backend code for \MKIV,
+%D starting with what was actually used.
 %D
-%D At this moment \DVI\ is no longer used for advanced document
-%D output and we therefore dropped support for this format. Future
-%D versions might support more backends again, but this has a low
-%D priority.
+%D At this moment \DVI\ is no longer used for advanced document output and we
+%D therefore dropped support for this format. Future versions might support more
+%D backends again, but this has a low priority.
 %D
-%D Not everything here makes sense and the content of this file will
-%D definitely change (or even go away).
+%D Not everything here makes sense and the content of this file will definitely
+%D change (or even go away).
 
 \let \dostartrotation   \gobbleoneargument
 \let \dostoprotation    \donothing
@@ -57,25 +65,23 @@
 %D \macros
 %D   {back_ovalbox}
 %D
-%D When we look at the implementation, this is a complicated
-%D one. There are seven arguments.
+%D When we look at the implementation, this is a complicated one. There are seven
+%D arguments.
 %D
 %D \starttyping
 %D \back_ovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
 %D \stoptyping
 %D
-%D This command has to return a \type{\vbox} which can be used
-%D to lay over another one (with text). The radius is in
-%D degrees, the stroke and fill are~\type{1} (true) of~\type{0}
-%D (false).
+%D This command has to return a \type {\vbox} which can be used to lay over another
+%D one (with text). The radius is in degrees, the stroke and fill are~\type {1}
+%D (true) of~\type {0} (false).
 
 \let\back_ovalbox \gobbleeightarguments
 
 %D \macros
 %D   {dostartclipping,dostopclipping}
 %D
-%D Clipping is implemented in such a way that an arbitrary code
-%D can be fed.
+%D Clipping is implemented in such a way that an arbitrary code can be fed.
 %D
 %D \starttyping
 %D \dostartclipping {pathname} {width} {height}
@@ -88,9 +94,8 @@
 %D \macros
 %D   {jobsuffix}
 %D
-%D By default, \TEX\ produces \DVI\ files which can be
-%D converted to other filetypes. Sometimes it is handy to
-%D know what the target file will be. In other driver
+%D By default, \TEX\ produces \DVI\ files which can be converted to other filetypes.
+%D Sometimes it is handy to know what the target file will be. In other driver
 %D modules we wil set \type {\jobsuffix} to \type {pdf}.
 
 %D Backend configuration:

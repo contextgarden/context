@@ -13,19 +13,16 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Layout Specification}
 
-%D Before you start wondering why some of the page related
-%D modules skip upward or left in order to place elements, you
-%D must realize that the reference point is the top left
-%D corner of the main typesetting area. One reason for this
-%D choice is that it suited some viewers that displayed page
-%D areas. Another reason is that margins, edges and top and
-%D bottom areas are kind of virtual, while the header, text
-%D and footer areas normally determine the text flow.
+%D Before you start wondering why some of the page related modules skip upward or
+%D left in order to place elements, you must realize that the reference point is the
+%D top left corner of the main typesetting area. One reason for this choice is that
+%D it suited some viewers that displayed page areas. Another reason is that margins,
+%D edges and top and bottom areas are kind of virtual, while the header, text and
+%D footer areas normally determine the text flow.
 
 \unprotect
 
-%D The dimensions related to layout areas are represented by
-%D real dimensions.
+%D The dimensions related to layout areas are represented by real dimensions.
 
 \newdimen\paperheight          \paperheight          = 297mm
 \newdimen\paperwidth           \paperwidth           = 210mm
@@ -69,17 +66,15 @@
 
 \newdimen\totaltextwidth
 
-%D The next series of dimensions are complemented by left
-%D and rights ones.
+%D The next series of dimensions are complemented by left and rights ones.
 
 \newdimen\margindistance
 \newdimen\edgedistance
 \newdimen\marginwidth
 \newdimen\edgewidth
 
-%D Because a distance does not really makes sense when there
-%D is no area, we use a zero distance in case there is no
-%D area.
+%D Because a distance does not really makes sense when there is no area, we use a
+%D zero distance in case there is no area.
 
 %D The horizontal distances are:
 
@@ -244,16 +239,15 @@
     \swapmacros\innersidetotal    \outersidetotal
 \to \everyswapmargins
 
-%D The papersize macros have a long history and we don't want
-%D to change the commands so they keep looking a bit complex.
+%D The papersize macros have a long history and we don't want to change the commands
+%D so they keep looking a bit complex.
 
 %D \macros
 %D   {definepapersize}
 %D
-%D Before we start calculating layout dimensions, we will
-%D first take care of paper sizes. The first argument can be
-%D either an assignment (for defaults) or an identifier, in
-%D which case the second argument is an assignment.
+%D Before we start calculating layout dimensions, we will first take care of paper
+%D sizes. The first argument can be either an assignment (for defaults) or an
+%D identifier, in which case the second argument is an assignment.
 %D
 %D \showsetup{definepapersize}
 %D
@@ -281,8 +275,8 @@
 %D \macros
 %D   {setuppaper,setuppapersize}
 %D
-%D When setting up the papersize on which to typeset and
-%D print, we can also determine some more characteristics.
+%D When setting up the papersize on which to typeset and print, we can also
+%D determine some more characteristics.
 %D
 %D \showsetup{setuppapersize}
 %D
@@ -335,9 +329,8 @@
 
 \def\v_page_target_xy       {\numexpr\v_page_target_nx*\v_page_target_ny\relax}
 
-% Normally we will not use this command directly but for now it
-% works out okay. In the future we might use more of the related
-% commands.
+%D Normally we will not use this command directly but for now it works out okay. In
+%D the future we might use more of the related commands.
 
 \setuplayouttarget
   [% these are rather special
@@ -1175,12 +1168,9 @@
   {\freezetextwidth
    \page_otr_command_set_hsize}
 
-% The next few are better off in page-ini.mkiv
-
-%D When we start at an even page, we need to swap the layout
-%D differently. We cannot adapt the real page number, since
-%D it is used in cross referencing. The next switch is set
-%D when we start at an even page.
+%D When we start at an even page, we need to swap the layout differently. We cannot
+%D adapt the real page number, since it is used in cross referencing. The next
+%D switch is set when we start at an even page.
 
 % #single #left #right
 
@@ -1325,12 +1315,9 @@
 %D \macros
 %D   {startlocallayout}
 %D
-%D These macros should be used with care. They permit local
-%D layouts (as used in fitting pages, see \type {page-app.tex}).
-
-%D This is kind of obsolete now that we have \type
-%D {\definelayout}, so this hack will disappear in future
-%D versions.
+%D These macros should be used with care. They permit local layouts (as used in
+%D fitting pages, see \type {page-app.tex}). This is kind of obsolete now that we
+%D have \type {\definelayout}, so this hack will disappear in future versions.
 
 \unexpanded\def\startlocallayout
   {\globalpushmacro\page_paper_restore
@@ -1365,19 +1352,16 @@
 \glet\page_grids_add_to_one\gobbleoneargument
 \glet\page_grids_add_to_mix\gobbleoneargument
 
-%D The default dimensions are quite old and will not change.
-%D The funny fractions were introduced when we went from fixed
-%D dimensions to relative ones. Since \CONTEXT\ is a dutch
-%D package, the dimensions are based on the metric system. The
-%D asymmetrical layout is kind of handy for short
-%D quick||and||dirty stapled documents.
+%D The default dimensions are quite old and will not change. The funny fractions
+%D were introduced when we went from fixed dimensions to relative ones. Since
+%D \CONTEXT\ is a dutch package, the dimensions are based on the metric system. The
+%D asymmetrical layout is kind of handy for short quick||and||dirty stapled
+%D documents.
 %D
-%D Although valid, it is not a real good idea to use
-%D dimensions based on the \type {em} unit. First of all,
-%D since there are no fonts loaded yet, this dimension makes
-%D no sense, and second, you would loose track of values,
-%D since they could change while going to a new page,
-%D depending on the current font setting.
+%D Although valid, it is not a real good idea to use dimensions based on the \type
+%D {em} unit. First of all, since there are no fonts loaded yet, this dimension
+%D makes no sense, and second, you would loose track of values, since they could
+%D change while going to a new page, depending on the current font setting.
 
 \setuplayout
   [             \c!topspace=.08417508418\paperheight,  %  2.5cm
@@ -1433,8 +1417,8 @@
                  \c!columns=\plusone,
           \c!columndistance=\zeropoint]
 
-%D First we define a whole range of (DIN) papersizes,
-%D of which the A-series makes most sense. We enable checking.
+%D First we define a whole range of (DIN) papersizes, of which the A-series makes
+%D most sense. We enable checking.
 
 \definepapersize [A0]  [\c!width=841mm,\c!height=1189mm]
 \definepapersize [A1]  [\c!width=594mm,\c!height=841mm]
@@ -1475,18 +1459,17 @@
 \definepapersize [C9]  [\c!width=40mm,\c!height=57mm]
 \definepapersize [C10] [\c!width=28mm,\c!height=40mm]
 
-%D Per August 2004 the rounding of some (seldom used) sizes
-%D were corrected top the latest DIN specifications. Peter
-%D Rolf came up with these and a few more missing sizes.
-%D Watch out: spaces and slashes!
+%D Per August 2004 the rounding of some (seldom used) sizes were corrected top the
+%D latest DIN specifications. Peter Rolf came up with these and a few more missing
+%D sizes. Watch out: spaces and slashes!
 
 \definepapersize [4 A0]  [\c!width=1682mm,\c!height=2378mm]
 \definepapersize [2 A0]  [\c!width=1189mm,\c!height=1682mm]
 \definepapersize [C6/C5] [\c!width=114mm,\c!height=229mm]
 
-%D Because there are no standardized screen sizes, we define
-%D a bunch of sizes with $4:3$ ratios. The \type {S6} size is
-%D nearly as wide as a sheet of \type {A4} paper.
+%D Because there are no standardized screen sizes, we define a bunch of sizes with
+%D $4:3$ ratios. The \type {S6} size is nearly as wide as a sheet of \type {A4}
+%D paper.
 
 \definepapersize [S3]  [\c!width=300pt,\c!height=225pt]
 \definepapersize [S4]  [\c!width=400pt,\c!height=300pt]
@@ -1507,15 +1490,13 @@
 \definepapersize [S55] [\c!width=500pt,\c!height=500pt]
 \definepapersize [S66] [\c!width=600pt,\c!height=600pt]
 
-%D One may wonder if \TEX\ should be used for typesetting
-%D \CDROM\ covers, but it does not hurt to have the paper size
-%D ready.
+%D One may wonder if \TEX\ should be used for typesetting \CDROM\ covers, but it
+%D does not hurt to have the paper size ready.
 
 \definepapersize [CD] [\c!width=120mm,\c!height=120mm]
 
-%D The next series is for our English speaking friends who
-%D decided to stick to non metric values. Thanks to Nelson
-%D Beebe for completing the inch based list.
+%D The next series is for our English speaking friends who decided to stick to non
+%D metric values. Thanks to Nelson Beebe for completing the inch based list.
 
 \definepapersize [letter]    [\c!width=8.5in,\c!height=11in]
 \definepapersize [ledger]    [\c!width=11in,\c!height=17in]
@@ -1571,9 +1552,9 @@
 \definepapersize [business]   [\c!width=85mm,\c!height=55mm]
 \definepapersize [businessUS] [\c!width=3.5in,\c!height=2in]
 
-%D We can now default to a reasonable size. We match the print
-%D paper size with the typeset paper size. This setting should
-%D come after the first layout specification (already done).
+%D We can now default to a reasonable size. We match the print paper size with the
+%D typeset paper size. This setting should come after the first layout specification
+%D (already done).
 
 % \definepapersize
 %   [\v!default]

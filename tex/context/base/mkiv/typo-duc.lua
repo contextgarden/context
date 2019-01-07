@@ -409,7 +409,7 @@ end
 local function get_baselevel(head,list,size,direction)
     if direction == lefttoright_code or direction == righttoleft_code then
         return direction, true
-    elseif getid(head) == localpar_code then
+    elseif getid(head) == localpar_code and getsubtype(head) == 0 then
         direction = getdirection(head)
         if direction == righttoleft_code or direction == lefttoright_code then
             return direction, true
@@ -946,7 +946,7 @@ local function apply_to_list(list,size,head,pardir)
                 enddir = false
             end
         elseif begindir then
-            if id == localpar_code then
+            if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
                 local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end

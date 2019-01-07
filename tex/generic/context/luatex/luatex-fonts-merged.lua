@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/05/19 00:50:08
+-- merge date  : 01/07/19 16:10:23
 
 do -- begin closure to overcome local limits and interference
 
@@ -4824,60 +4824,64 @@ nodes.tonode=tonode
 nodes.tonut=tonut
 nuts.tonode=tonode
 nuts.tonut=tonut
-local getfield=direct.getfield
-local setfield=direct.setfield
-nuts.getfield=getfield
-nuts.setfield=setfield
-nuts.getnext=direct.getnext
-nuts.setnext=direct.setnext
-nuts.getprev=direct.getprev
-nuts.setprev=direct.setprev
-nuts.getboth=direct.getboth
-nuts.setboth=direct.setboth
-nuts.getid=direct.getid
 nuts.getattr=direct.get_attribute
-nuts.setattr=setfield
-nuts.getfont=direct.getfont
-nuts.setfont=direct.setfont
-nuts.getsubtype=direct.getsubtype
-nuts.setsubtype=direct.setsubtype
+nuts.getboth=direct.getboth
 nuts.getchar=direct.getchar
-nuts.setchar=direct.setchar
+nuts.getcomponents=direct.getcomponents
+nuts.getdirection=direct.getdirection
 nuts.getdisc=direct.getdisc
-nuts.setdisc=direct.setdisc
-nuts.setlink=direct.setlink
-nuts.setsplit=direct.setsplit
+nuts.getfield=direct.getfield
+nuts.getfont=direct.getfont
+nuts.getid=direct.getid
+nuts.getkern=direct.getkern
 nuts.getlist=direct.getlist
-nuts.setlist=direct.setlist
+nuts.getnext=direct.getnext
 nuts.getoffsets=direct.getoffsets
+nuts.getprev=direct.getprev
+nuts.getsubtype=direct.getsubtype
+nuts.getwidth=direct.getwidth
+nuts.setattr=direct.setfield
+nuts.setboth=direct.setboth
+nuts.setchar=direct.setchar
+nuts.setcomponents=direct.setcomponents
+nuts.setdir=direct.setdir
+nuts.setdirection=direct.setdirection
+nuts.setdisc=direct.setdisc
+nuts.setfield=setfield
+nuts.setkern=direct.setkern
+nuts.setlink=direct.setlink
+nuts.setlist=direct.setlist
+nuts.setnext=direct.setnext
 nuts.setoffsets=direct.setoffsets
-nuts.ischar=direct.is_char
+nuts.setprev=direct.setprev
+nuts.setsplit=direct.setsplit
+nuts.setsubtype=direct.setsubtype
+nuts.setwidth=direct.setwidth
 nuts.is_char=direct.is_char
-nuts.isglyph=direct.is_glyph
 nuts.is_glyph=direct.is_glyph
-nuts.insert_before=direct.insert_before
-nuts.insert_after=direct.insert_after
-nuts.delete=direct.delete
+nuts.ischar=direct.is_char
+nuts.isglyph=direct.is_glyph
 nuts.copy=direct.copy
-nuts.copy_node=direct.copy
 nuts.copy_list=direct.copy_list
-nuts.tail=direct.tail
+nuts.copy_node=direct.copy
+nuts.delete=direct.delete
+nuts.end_of_math=direct.end_of_math
+nuts.flush=direct.flush
 nuts.flush_list=direct.flush_list
 nuts.flush_node=direct.flush_node
-nuts.flush=direct.flush
 nuts.free=direct.free
-nuts.remove=direct.remove
+nuts.insert_after=direct.insert_after
+nuts.insert_before=direct.insert_before
 nuts.is_node=direct.is_node
-nuts.end_of_math=direct.end_of_math
+nuts.kerning=direct.kerning
+nuts.ligaturing=direct.ligaturing
+nuts.new=direct.new
+nuts.remove=direct.remove
+nuts.tail=direct.tail
 nuts.traverse=direct.traverse
-nuts.traverse_id=direct.traverse_id
 nuts.traverse_char=direct.traverse_char
 nuts.traverse_glyph=direct.traverse_glyph
-nuts.ligaturing=direct.ligaturing
-nuts.kerning=direct.kerning
-nuts.new=direct.new
-nuts.getprop=nuts.getattr
-nuts.setprop=nuts.setattr
+nuts.traverse_id=direct.traverse_id
 local propertydata=direct.get_properties_table()
 nodes.properties={ data=propertydata }
 direct.set_properties_mode(true,true)   
@@ -25514,7 +25518,6 @@ local setdisc=nuts.setdisc
 local setlink=nuts.setlink
 local getcomponents=nuts.getcomponents 
 local setcomponents=nuts.setcomponents 
-local getdir=nuts.getdir
 local getwidth=nuts.getwidth
 local ischar=nuts.is_char
 local isglyph=nuts.isglyph
@@ -28405,49 +28408,47 @@ local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,datase
     end
   end
 end
-local txtdirstate,pardirstate do
+local txtdirstate,pardirstate do 
   local getdirection=nuts.getdirection
   local lefttoright=0
   local righttoleft=1
   txtdirstate=function(start,stack,top,rlparmode)
-    local nxt=getnext(start)
     local dir,pop=getdirection(start)
     if pop then
       if top==1 then
-        return nxt,0,rlparmode
+        return 0,rlparmode
       else
         top=top-1
         if stack[top]==righttoleft then
-          return nxt,top,-1
+          return top,-1
         else
-          return nxt,top,1
+          return top,1
         end
       end
     elseif dir==lefttoright then
       top=top+1
       stack[top]=lefttoright
-      return nxt,top,1
+      return top,1
     elseif dir==righttoleft then
       top=top+1
       stack[top]=righttoleft
-      return nxt,top,-1
+      return top,-1
     else
-      return nxt,top,rlparmode
+      return top,rlparmode
     end
   end
   pardirstate=function(start)
-    local nxt=getnext(start)
     local dir=getdirection(start)
     if dir==lefttoright then
-      return nxt,1,1
+      return 1,1
     elseif dir==righttoleft then
-      return nxt,-1,-1
+      return -1,-1
     elseif dir=="TLT" then
-      return nxt,1,1
+      return 1,1
     elseif dir=="TRT" then
-      return nxt,-1,-1
+      return -1,-1
     else
-      return nxt,0,0
+      return 0,0
     end
   end
 end
@@ -28496,7 +28497,12 @@ do
     if trace_steps then
       checkstep(head)
     end
-    local initialrl=(direction==1 or direction=="TRT") and -1 or 0
+    local initialrl=0
+    if getid(head)==localpar_code and getsubtype(head)==0 then
+      initialrl=pardirstate(start)
+    elseif direction==1 or direction=="TRT" then
+      initialrl=-1
+    end
     local datasets=otfdataset(tfmdata,font,attr)
     local dirstack={ nil } 
     sweephead={}
@@ -28611,9 +28617,8 @@ do
             elseif id==math_code then
               start=getnext(end_of_math(start))
             elseif id==dir_code then
-              start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-            elseif id==localpar_code then
-              start,rlparmode,rlmode=pardirstate(start)
+              topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+              start=getnext(start)
             else
               start=getnext(start)
             end
@@ -28682,9 +28687,8 @@ do
             elseif id==math_code then
               start=getnext(end_of_math(start))
             elseif id==dir_code then
-              start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-            elseif id==localpar_code then
-              start,rlparmode,rlmode=pardirstate(start)
+              topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+              start=getnext(start)
             else
               start=getnext(start)
             end
@@ -28761,9 +28765,8 @@ do
       elseif id==math_code then
         start=getnext(end_of_math(start))
       elseif id==dir_code then
-        start,topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
-      elseif id==localpar_code then
-        start,rlparmode,rlmode=pardirstate(start)
+        topstack,rlmode=txtdirstate(start,dirstack,topstack,rlparmode)
+        start=getnext(start)
       else
         start=getnext(start)
       end

@@ -1209,10 +1209,12 @@
 \voffset\zeropoint \let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
 \hoffset\zeropoint \let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
 
-\let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
-\let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
-\let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
-\let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
+\ifdefined\pageleftoffset
+    \let\pageleftoffset  \hoffset \let\normalpageleftoffset  \hoffset
+    \let\pagerightoffset \hoffset \let\normalpagerightoffset \hoffset
+    \let\pagetopoffset   \voffset \let\normalpagetopoffset   \voffset
+    \let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
+\fi
 
 %D Handy.
 
