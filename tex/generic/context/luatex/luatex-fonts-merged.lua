@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/07/19 16:10:23
+-- merge date  : 01/17/19 22:10:09
 
 do -- begin closure to overcome local limits and interference
 
@@ -4882,6 +4882,20 @@ nuts.traverse=direct.traverse
 nuts.traverse_char=direct.traverse_char
 nuts.traverse_glyph=direct.traverse_glyph
 nuts.traverse_id=direct.traverse_id
+if not nuts.getdirection then
+  local getdir=direct.getdir
+  function nuts.getdirection(n)
+    local d=getdir(n)
+    if   d=="TLT" then return 0
+    elseif d=="TRT" then return 1
+    elseif d=="+TLT" then return 0,false
+    elseif d=="+TRT" then return 1,false
+    elseif d=="-TLT" then return 0,true
+    elseif d=="-TRT" then return 1,true
+    else          return 0
+    end
+  end
+end
 local propertydata=direct.get_properties_table()
 nodes.properties={ data=propertydata }
 direct.set_properties_mode(true,true)   

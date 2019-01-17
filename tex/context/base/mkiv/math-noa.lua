@@ -1446,7 +1446,7 @@ end
 
 -- in opentype the italic correction of a limop is added to the width and luatex does
 -- some juggling that we want to avoid but we need to do something here (in fact, we could
--- better fix the width of the character
+-- better fix the width of the character)
 
 do
 

@@ -323,20 +323,14 @@ implement {
 statistics.register("metapost", function()
     local n =  metapost.n
     if n and n > 0 then
-        local nofconverted = metapost.makempy.nofconverted
         local elapsedtime = statistics.elapsedtime
-        local elapsed = statistics.elapsed
-        local instances, memory = metapost.getstatistics(true)
-        local str = format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %i, memory: %0.3f M",
+        local elapsed     = statistics.elapsed
+        local instances,
+              memory      = metapost.getstatistics(true)
+        return format("%s seconds, loading: %s, execution: %s, n: %s, average: %s, instances: %i, luacalls: %i, memory: %0.3f M",
             elapsedtime(metapost), elapsedtime(mplib), elapsedtime(metapost.exectime), n,
             elapsedtime((elapsed(metapost) + elapsed(mplib) + elapsed(metapost.exectime)) / n),
             instances, metapost.nofscriptruns(),memory/(1024*1024))
-        if nofconverted > 0 then
-            return format("%s, external: %s (%s calls)",
-                str, elapsedtime(metapost.makempy), nofconverted)
-        else
-            return str
-        end
     else
         return nil
     end

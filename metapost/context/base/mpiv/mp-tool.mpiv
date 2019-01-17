@@ -3594,3 +3594,11 @@ def drawdot expr p =
         )
     fi
 enddef ;
+
+% vardef textlength(text t) =
+%     save n ; n := 0 ;
+%     for i = t :
+% 		n := n + 1 ;
+% 	endfor;
+%     n
+% enddef;

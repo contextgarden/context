@@ -318,9 +318,10 @@ local function accent_to_extensible(target,newchr,original,oldchr,height,depth,s
             height = height or 0
             depth  = depth  or 0
         end
+        local oldheight  = olddata.height or 0
         local correction = swap and
-            downcommand[(olddata.height or 0) - height]
-         or downcommand[olddata.height + (offset or 0)]
+            downcommand[oldheight - height]
+         or downcommand[oldheight + (offset or 0)]
         local newdata = {
             commands = { correction, charcommand[oldchr] },
             width    = olddata.width,
@@ -654,3 +655,35 @@ virtualcharacters[0x2980] = function(data) return equals(data,0x2980,0x007C,-1/8
 --         },
 --     }
 -- end
+
+-- lucida needs this
+
+virtualcharacters[0x305] = function(data)
+    local target = data.target
+    local height = target.parameters.xheight/8
+    local width  = target.parameters.emwidth/2
+    local depth  = height
+    local used   = 0.8 * width
+    return {
+        width    = width,
+        height   = height,
+        depth    = depth,
+        commands = { { "rule", height, width } },
+        horiz_variants = {
+            {
+              advance   = width,
+              ["end"]   = used,
+              glyph     = 0x305,
+              start     = 0,
+            },
+            {
+              advance   = width,
+              ["end"]   = 0,
+              extender  = 1,
+              glyph     = 0x305,
+              start     = used,
+            },
+        }
+    }
+end
+

@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
     license   = "see context related readme files",
 }
 
--- maybe %s is better than %f
-
 local gsub = string.gsub
 local concat, insert, remove = table.concat, table.insert, table.remove
 local abs, sqrt, round = math.abs, math.sqrt, math.round
@@ -42,11 +40,9 @@ local pdfflusher      = { }
 metapost.flushers.pdf = pdfflusher
 
 metapost.n            = 0
-metapost.optimize     = true  -- false
 
 local experiment      = true -- uses context(node) that already does delayed nodes
 local savedliterals   = nil  -- needs checking
------ mpsliteral      = nodes.pool.register(node.new("whatsit",nodes.whatsitcodes.pdfliteral))
 local mpsliteral      = nodes.pool.pdforiginliteral
 
 local f_f  = formatters["%.6F"]
@@ -87,65 +83,27 @@ trackers.register("metapost.forcestroke",function(v)
     force_stroke = v
 end)
 
--- local pdfliteral = function(pdfcode)
---     local literal = copy_node(mpsliteral)
---     literal.data = pdfcode
---     return literal
--- end
-
 -- Because in MKiV we always have two passes, we save the objects. When an extra
 -- mp run is done (due to for instance texts identifier in the parse pass), we
 -- get a new result table and the stored objects are forgotten. Otherwise they
 -- are reused.
 
 local function getobjects(result,figure,index)
-    if metapost.optimize then
-        local robjects = result.objects
-        if not robjects then
-            robjects = { }
-            result.objects = robjects
-        end
-        local fobjects = robjects[index or 1]
-        if not fobjects then
-            fobjects = figure:objects()
-            robjects[index] = fobjects
-        end
-        return fobjects
-    else
-        return figure:objects()
-    end
+    return figure:objects()
 end
 
 function metapost.convert(specification,result)
-    local trialrun  = specification.trialrun
-    local flusher   = specification.flusher
-    local multipass = specification.multipass
-    local askedfig  = specification.askedfig
-    local incontext = specification.incontext
-    if trialrun then
-        local multipassindeed = metapost.parse(result,askedfig)
-        if multipass and not multipassindeed and metapost.optimize then
-            if save_table then
-                table.save(save_table,metapost.totable(result,1)) -- direct
-            end
-            metapost.flush(specification,result)
-        else
-            return false
-        end
-    else
-        if save_table then
-            table.save(save_table,metapost.totable(result,1)) -- direct
-        end
-        metapost.flush(specification,result)
+    local flusher  = specification.flusher
+    local askedfig = specification.askedfig
+    if save_table then
+        table.save(save_table,metapost.totable(result,1)) -- direct
     end
+    metapost.flush(specification,result)
     return true -- done
 end
 
 function metapost.flushliteral(d)
     if savedliterals then
---         local literal = copy_node(mpsliteral)
---         literal.data = savedliterals[d]
---         write_node(literal)
         write_node(mpsliteral(savedliterals[d]))
     else
         report_metapost("problem flushing literal %a",d)
@@ -160,7 +118,6 @@ function pdfflusher.comment(message)
     if message then
         message = formatters["%% mps graphic %s: %s"](metapost.n,message)
         if experiment then
-         -- context(pdfliteral(message))
             context(mpsliteral(message))
         elseif savedliterals then
             local last = #savedliterals + 1
@@ -190,7 +147,6 @@ function pdfflusher.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
         if experiment then
-         -- context(pdfliteral(pdfliterals))
             context(mpsliteral(pdfliterals))
         else
             if savedliterals then
@@ -341,15 +297,6 @@ local p_string  = C((1-newline)^0)
 local p_boolean = P("false") * Cc(false) + P("true") * Cc(true)
 local p_set     = Ct(number^1)
 local p_path    = Ct(Ct(number * number^-5)^1)
-
--- local variable =
---     P("1:")            * key * p_number
---   + P("2:")            * key * p_string
---   + P("3:")            * key * p_boolean
---   + S("4568") * P(":") * key * p_set
---   + P("7:")            * key * p_path
---
--- local pattern_key = Cf ( Carg(1) * (Cg(variable * newline^0)^0), rawset)
 
 local variable =
     P("1:")            * p_number
@@ -504,7 +451,6 @@ function metapost.flush(specification,result)
                                         setmetatable(object, {
                                             __index = original
                                         })
-                                        -- first we analyze
                                         local before, after = processplugins(object)
                                         local evenodd, collect, both = false, false, false
                                         local postscript = object.postscript
@@ -689,35 +635,6 @@ function metapost.flush(specification,result)
     end
 end
 
-function metapost.parse(result,askedfig)
-    if result then
-        local figures = result.fig
-        if figures then
-            local multipass = false
-            local analyzeplugins = metapost.analyzeplugins -- each object
-            for index=1,#figures do
-                local figure = figures[index]
-                local properties = pushproperties(figure)
-                if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
-                    local objects = getobjects(result,figure,index)
-                    if objects then
-                        for o=1,#objects do
-                            if analyzeplugins(objects[o]) then
-                                multipass = true
-                            end
-                        end
-                    end
-                    if askedfig ~= "all" then
-                        break
-                    end
-                end
-                popproperties()
-            end
-            return multipass
-        end
-    end
-end
-
 -- tracing:
 
 do
@@ -757,7 +674,6 @@ function metapost.totable(result,askedfig)
     local figure   = result and result.fig and result.fig[1]
     if figure then
         local results = { }
-     -- local objects = figure:objects()
         local objects = getobjects(result,figure,askedfig)
         for o=1,#objects do
             local object = objects[o]

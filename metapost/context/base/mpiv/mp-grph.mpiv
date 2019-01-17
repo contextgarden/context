@@ -65,8 +65,6 @@ enddef ;
 
 numeric currentgraphictext ; currentgraphictext := 0 ;
 
-def data_mpy_file = job_name & "-mpgraph.mpy" enddef ;
-
 def begingraphictextfig (expr n) =
     foundpicture := n ;
     scratchpicture := nullpicture ;
@@ -117,7 +115,7 @@ def mfun_load_figure (expr filename) text figureattributes =
     endgroup ;
 enddef ;
 
-% shared between old and new
+% We only use the new method now.
 
 boolean mfun_gt_color_fill ;
 boolean mfun_gt_color_draw ;
@@ -126,168 +124,12 @@ boolean mfun_gt_reverse_fill ;
 boolean mfun_gt_outline_fill ;
 picture mfun_gt_picture ;
 
-% this is the old version:
-
-if mfun_use_one_pass :
-
-    def old_graphictext primary t =
-        mfun_do_graphic_text(t)
-    enddef ;
-
-    def mfun_do_graphic_text (expr t) =
-        begingroup ;
-        save figurepicture ; picture figurepicture ;
-        figurepicture := currentpicture ; currentpicture := nullpicture ;
-        currentgraphictext := currentgraphictext + 1 ;
-        lua.mp.mf_graphic_text(currentgraphictext,t) ;
-        mfun_finish_graphic_text % picks up directives
-    enddef ;
-
-else :
-
-    def old_graphictext primary t =
-        hide (
-            if mfun_trial_run :
-                let mfun_graphic_text = mfun_no_graphic_text ;
-            else :
-                let mfun_graphic_text = mfun_do_graphic_text ;
-            fi
-        )
-        mfun_graphic_text(t)
-    enddef ;
-
-    def mfun_do_graphic_text (expr t) =
-        % withprescript "gt_stage=final"
-        begingroup ;
-        save figurepicture ; picture figurepicture ;
-        figurepicture := currentpicture ; currentpicture := nullpicture ;
-        currentgraphictext := currentgraphictext + 1 ;
-        mfun_finish_graphic_text % picks up directives
-    enddef ;
-
-    def mfun_no_graphic_text (expr t) text rest =
-        currentgraphictext := currentgraphictext + 1 ;
-        draw unitsquare
-            withprescript "mf_object=graphictext"
-            withprescript "gt_stage=trial"
-            withprescript "gt_index=" & decimal currentgraphictext
-            withpostscript t
-    enddef ;
-
-fi ;
-
-def mfun_finish_graphic_text text rest =
-    protectgraphicmacros ; % resets currentpicture
-    interim linecap    := butt ;     % normally rounded
-    interim linejoin   := mitered ;  % normally rounded
-    interim miterlimit := 10 ;       % todo
-    let normalwithshade = withshade ;
-    save foundpicture, scratchpicture, str ;
-    save fill, draw, withshade, reversefill, outlinefill ;
-    save withfillcolor, withdrawcolor ; % quite important
-    numeric foundpicture ; picture scratchpicture ; string str ;
-    def draw expr p =
-        % the first, naive implementation was:
-        %   addto scratchpicture doublepath p withpen currentpen ;
-        % but it is better to turn lines into fills
-        addto scratchpicture contour boundingbox
-            image (addto currentpicture doublepath p withpen currentpen) ;
-    enddef ;
-    def fill expr p =
-        addto scratchpicture contour p withpen currentpen ;
-    enddef ;
-    def mfun_gt_fill  = enddef ; boolean mfun_gt_color_fill ; mfun_gt_color_fill := false ;
-    def mfun_gt_draw  = enddef ; boolean mfun_gt_color_draw ; mfun_gt_color_draw := false ;
-    def mfun_gt_shade = enddef ; boolean mfun_gt_shade_fill ; mfun_gt_shade_fill := false ;
-    boolean mfun_gt_reverse_fill ; mfun_gt_reverse_fill := false ;
-    boolean mfun_gt_outline_fill ; mfun_gt_outline_fill := false ;
-    def reversefill =
-        hide(mfun_gt_reverse_fill := true )
-    enddef ;
-    def outlinefill =
-        hide(mfun_gt_outline_fill := true )
-    enddef ;
-    def withshade primary c =
-        hide(def mfun_gt_shade = normalwithshade c enddef ; mfun_gt_shade_fill := true )
-    enddef ;
-    def withfillcolor primary c =
-        hide(def mfun_gt_fill = withcolor c enddef ; mfun_gt_color_fill := true )
-    enddef ;
-    def withdrawcolor primary c =
-        hide(def mfun_gt_draw = withcolor c enddef ; mfun_gt_color_draw := true )
-    enddef ;
-    scratchpicture := nullpicture ;
-    addto scratchpicture doublepath origin rest ; % pre-roll
-    for i within scratchpicture : % Below here is a dirty tricky test!
-        if (urcorner dashpart i) = origin :
-            mfun_gt_outline_fill := false ;
-        fi ;
-    endfor ;
-    scratchpicture := nullpicture ;
-    readfile(data_mpy_file) ;
-    scratchpicture := (scratchpicture shifted -llcorner scratchpicture) scaled (1/10) ;
-    if not mfun_gt_color_draw and not mfun_gt_color_fill :
-        mfun_gt_color_draw := true ;
-    fi
-    if mfun_gt_shade_fill :
-        mfun_gt_color_draw := false ;
-        mfun_gt_color_fill := false ;
-    fi ;
-    currentpicture := figurepicture ;
-    if mfun_gt_shade_fill :
-        for i within scratchpicture :
-            if filled i :
-                addto currentpicture contour pathpart i _op_ rest mfun_gt_shade ;
-            fi ;
-        endfor ;
-    else :
-        if mfun_gt_color_draw and not mfun_gt_reverse_fill :
-            for i within scratchpicture :
-                if mfun_gt_color_fill and mfun_gt_outline_fill :
-                    addto currentpicture doublepath pathpart i _op_ rest mfun_gt_fill dashed nullpicture ;
-                fi ;
-                if filled i :
-                    addto currentpicture doublepath pathpart i _op_ rest mfun_gt_draw ;
-                fi ;
-            endfor ;
-        fi ;
-        if mfun_gt_color_fill :
-            for i within scratchpicture :
-                if filled i :
-                    addto currentpicture contour pathpart i _op_ rest mfun_gt_fill withpen pencircle scaled 0 ;
-                fi ;
-            endfor ;
-        fi ;
-        if mfun_gt_color_draw and mfun_gt_reverse_fill :
-            for i within scratchpicture :
-                if filled i :
-                    addto currentpicture doublepath pathpart i _op_ rest mfun_gt_draw ;
-                fi ;
-            endfor ;
-        fi ;
-        for i within scratchpicture :
-            if stroked i :
-                addto currentpicture doublepath pathpart i _op_ rest mfun_gt_draw ;
-            fi ;
-        endfor ;
-    fi ;
-    endgroup ;
-enddef ;
-
-% and this is the new one:
-
-% boolean mfun_gt_color_fill ;
-% boolean mfun_gt_color_draw ;
-% boolean mfun_gt_shade_fill ;
-% boolean mfun_gt_reverse_fill ;
-% picture mfun_gt_picture ;
-
 def mfun_gt_default = % somewhat compatible
     scaled 11.5
     withpen pencircle scaled .1
 enddef ;
 
-def new_graphictext primary t = % use outlinetext instead
+def graphictext primary t = % use outlinetext instead
     begingroup ;
     mfun_graphic_text_indeed(t)
 enddef ;
@@ -344,9 +186,6 @@ def mfun_graphic_text_indeed(expr t) text rest =
     %
     endgroup ;
 enddef ;
-
-let graphictext = old_graphictext ;
-%%% graphictext = new_graphictext ; % more than 10 times faster
 
 % example
 %

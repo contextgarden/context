@@ -27,7 +27,6 @@ local nodeinjections           = backends.pdf.nodeinjections
 
 local pdfconstant              = lpdf.constant
 local pdfboolean               = lpdf.boolean
-local pdfnumber                = lpdf.number
 local pdfunicode               = lpdf.unicode
 local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
@@ -448,13 +447,12 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
             stored_pr[tag] = ref
         end
         if ref then -- see back-pdf ** .. here we have a local /IM !
-            local zero, one = pdfnumber(0), pdfnumber(1) -- not really needed
             local pw   = pdfdictionary {
                 Type      = pdfconstant("XObject"),
                 Subtype   = pdfconstant("Form"),
-                FormType  = one,
-                BBox      = pdfarray { zero, zero, pdfnumber(factor*width), pdfnumber(factor*height) },
-                Matrix    = pdfarray { one, zero, zero, one, zero, zero },
+                FormType  = 1,
+                BBox      = pdfarray { 0, 0, pdfnumber(factor*width), pdfnumber(factor*height) },
+                Matrix    = pdfarray { 1, 0, 0, 1, 0, 0 },
                 ProcSet   = lpdf.procset(),
                 Resources = pdfdictionary {
                                 XObject = pdfdictionary {
@@ -464,8 +462,8 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                 ExtGState = pdfdictionary {
                                 GS = pdfdictionary {
                                     Type = pdfconstant("ExtGState"),
-                                    CA   = one,
-                                    ca   = one,
+                                    CA   = 1,
+                                    ca   = 1,
                                 }
                             },
             }

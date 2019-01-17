@@ -18,8 +18,6 @@ boolean context_mlib ; context_mlib := true ;
 
 numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY)") ;
 
-boolean mfun_use_one_pass ; mfun_use_one_pass := runscript("mp.print(metapost.use_one_pass)") ;
-
 %D Objects:
 
 vardef isobject expr p =
@@ -194,39 +192,19 @@ boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
 
 def notcached = withprescript "tx_cache=no" enddef ;
 
-if mfun_use_one_pass :
+% todo: onetime
 
-    % todo: onetime
+rgbcolor mfun_tt_r ;
 
-    rgbcolor mfun_tt_r ;
-
-    vardef rawtextext(expr s) =
-        if s = "" :
-            nullpicture
-        else :
-            mfun_tt_n := mfun_tt_n + 1 ;
-            mfun_tt_c := nullpicture ;
-            mfun_tt_o := nullpicture ;
-            addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-            mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s) ;
-            addto mfun_tt_c doublepath unitsquare
-                xscaled wdpart mfun_tt_r
-                yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
-                shifted (0,-dppart mfun_tt_r)
-                withprescript "mf_object=text"
-                withprescript "tx_index=" & decimal mfun_tt_n
-                withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-            ;
-            mfun_tt_c
-        fi
-    enddef ;
-
-    vardef rawmadetext =
+vardef rawtextext(expr s) =
+    if s = "" :
+        nullpicture
+    else :
         mfun_tt_n := mfun_tt_n + 1 ;
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := lua.mp.mf_made_text(mfun_tt_n) ;
+        mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s) ;
         addto mfun_tt_c doublepath unitsquare
             xscaled wdpart mfun_tt_r
             yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
@@ -236,46 +214,25 @@ if mfun_use_one_pass :
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
         ;
         mfun_tt_c
-    enddef ;
+    fi
+enddef ;
 
-else :
-
-    vardef rawtextext(expr s) = % todo: avoid currentpicture
-        if s = "" :
-            mfun_onetime_textext := false ;
-            nullpicture
-        else :
-            mfun_tt_n := mfun_tt_n + 1 ;
-            mfun_tt_c := nullpicture ;
-            if mfun_trial_run :
-                mfun_tt_o := nullpicture ;
-                addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-                addto mfun_tt_c doublepath unitsquare
-                    withprescript "mf_object=text"
-                    withprescript "tx_number=" & decimal mfun_tt_n
-                    withprescript "tx_stage=trial"
-                    withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-                    withpostscript s ;
-                if not mfun_onetime_textext :
-                    addto mfun_tt_p also mfun_tt_c
-                        withprescript "tx_global=yes" ;
-                fi ;
-            else :
-                mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
-                addto mfun_tt_c doublepath unitsquare
-                    xscaled wdpart mfun_tt_b
-                    yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
-                    shifted (0,- dppart mfun_tt_b)
-                    withprescript "mf_object=text"
-                    withprescript "tx_number=" & decimal mfun_tt_n
-                    withprescript "tx_stage=final" ;
-            fi ;
-            mfun_onetime_textext := false ;
-            mfun_tt_c
-        fi
-    enddef ;
-
-fi ;
+vardef rawmadetext =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := lua.mp.mf_made_text(mfun_tt_n) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+        shifted (0,-dppart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    mfun_tt_c
+enddef ;
 
 vardef validtexbox(expr category, name) =
     if category == "" :
@@ -504,75 +461,25 @@ enddef ;
 
 pair mfun_tt_z ;
 
-if mfun_use_one_pass :
-
-    vardef rawfmttext(text t) =
-        mfun_tt_n := mfun_tt_n + 1 ;
-        mfun_tt_c := nullpicture ;
-        mfun_tt_o := nullpicture ;
-        addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
-        addto mfun_tt_c doublepath unitsquare
-            xscaled wdpart mfun_tt_r
-            yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
-            shifted (0,-dppart mfun_tt_r)
-            withprescript "mf_object=text"
-            withprescript "tx_index=" & decimal mfun_tt_n
-            withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-        ;
-        for s = t :
-            if pair s : mfun_tt_z := s ; fi
-        endfor ;
-        mfun_tt_c
-    enddef ;
-
-else :
-
-    vardef rawfmttext(text t) = % todo: avoid currentpicture
-        mfun_tt_n := mfun_tt_n + 1 ;
-        mfun_tt_c := nullpicture ;
-        if mfun_trial_run :
-            mfun_tt_o := nullpicture ;
-            addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-            addto mfun_tt_c doublepath unitsquare
-                withprescript "mf_object=text"
-                withprescript "tx_number=" & decimal mfun_tt_n
-                withprescript "tx_stage=trial"
-                withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-                % begin of fmt specific
-                withprescript "tx_type=format"
-                for s = t :
-                            if string  s : withpostscript "s:" & s
-                        elseif numeric s : withpostscript "n:" & decimal s
-                        elseif boolean s : withpostscript "b:" & if s : "true" else : "false" fi
-                        elseif pair    s : hide(mfun_tt_z := s ; )
-                        fi
-                endfor ;
-                % end of fmt specific
-            if not mfun_onetime_textext :
-                addto mfun_tt_p also mfun_tt_c
-                    withprescript "tx_global=yes" ;
-            fi ;
-        else :
-            mfun_tt_b := lua.mp.mf_tt_dimensions(mfun_tt_n) ;
-            addto mfun_tt_c doublepath unitsquare
-                xscaled wdpart mfun_tt_b
-                yscaled (htpart mfun_tt_b + dppart mfun_tt_b)
-                shifted (0,- dppart mfun_tt_b)
-                withprescript "mf_object=text"
-                withprescript "tx_number=" & decimal mfun_tt_n
-                withprescript "tx_stage=final" ;
-            % begin of fmt specific
-            for s = t :
-                if pair s : mfun_tt_z := s ; fi
-            endfor ;
-            % end of fmt specific
-        fi ;
-        mfun_onetime_textext := false ;
-        mfun_tt_c
-    enddef ;
-
-fi ;
+vardef rawfmttext(text t) =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := lua.mp.mf_formatted_text(mfun_tt_n,t) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+        shifted (0,-dppart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    for s = t :
+        if pair s : mfun_tt_z := s ; fi
+    endfor ;
+    mfun_tt_c
+enddef ;
 
 vardef thefmttext@#(text t) =
     mfun_tt_z := origin ; % initialization
@@ -1113,38 +1020,17 @@ def withmask primary filename =
     withprescript "fg_mask=" & filename
 enddef ;
 
-if mfun_use_one_pass :
-
-    vardef externalfigure primary filename =
-        mfun_tt_c := nullpicture ;
-        mfun_tt_r := lua.mp.mf_external_figure(filename) ;
-        addto mfun_tt_c doublepath unitsquare
-            xscaled wdpart mfun_tt_r
-            yscaled htpart mfun_tt_r
-            withprescript "mf_object=figure"
-            withprescript "fg_name=" & filename ;
-        ;
-        mfun_tt_c
-    enddef ;
-
-else :
-
-    def externalfigure primary filename =
-        if false :
-            rawtextext("\externalfigure[" & filename & "]")
-        else :
-            image (
-                addto currentpicture doublepath unitsquare
-                    withprescript "mf_object=figure"
-                    withprescript "fg_name=" & filename ;
-            )
-          % unitsquare
-          %     withpen pencircle scaled 0
-          %     withprescript "fg_name=" & filename
-        fi
-    enddef ;
-
-fi ;
+vardef externalfigure primary filename =
+    mfun_tt_c := nullpicture ;
+    mfun_tt_r := lua.mp.mf_external_figure(filename) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled htpart mfun_tt_r
+        withprescript "mf_object=figure"
+        withprescript "fg_name=" & filename ;
+    ;
+    mfun_tt_c
+enddef ;
 
 def figure primary filename =
     rawtextext("\externalfigure[" & filename & "]")
@@ -1311,77 +1197,34 @@ def drawoutlinetext(expr o) =
     )
 enddef ;
 
-if mfun_use_one_pass :
-
-    vardef outlinetext@# (expr t) text rest =
-        save kind ; string kind ; kind := str @# ;
-        currentoutlinetext := currentoutlinetext + 1 ;
-        def mfun_do_outline_options_d = enddef ;
-        def mfun_do_outline_options_f = enddef ;
-        def mfun_do_outline_options_r = enddef ;
-        image ( normaldraw image (
-          % lua.mp.report("set outline text",currentoutlinetext);
-            lua.mp.mf_outline_text(currentoutlinetext,t,kind) ;
-          % lua.mp.report("get outline text",currentoutlinetext);
-            if kind = "f" :
-                mfun_do_outline_text_set_f rest ;
-            elseif kind = "d" :
-                mfun_do_outline_text_set_d rest ;
-            elseif kind = "b" :
-                mfun_do_outline_text_set_b rest ;
-            elseif kind = "u" :
-                mfun_do_outline_text_set_f rest ;
-            elseif kind = "r" :
-                mfun_do_outline_text_set_r rest ;
-            elseif kind = "p" :
-                mfun_do_outline_text_set_p ;
-            else :
-                mfun_do_outline_text_set_n rest ;
-            fi ;
-            lua.mp.mf_get_outline_text(currentoutlinetext) ;
-        ) mfun_do_outline_options_r ; )
-    enddef ;
-
-else :
-
-    vardef outlinetext@# (expr t) text rest =
-        save kind ; string kind ; kind := str @# ;
-        currentoutlinetext := currentoutlinetext + 1 ;
-        def mfun_do_outline_options_d = enddef ;
-        def mfun_do_outline_options_f = enddef ;
-        def mfun_do_outline_options_r = enddef ;
-        image ( normaldraw image (
-            if mfun_trial_run :
-              % lua.mp.report("set outline text",currentoutlinetext);
-                normaldraw unitsquare
-                    withprescript "mf_object=outline"
-                    withprescript "ot_stage=trial"
-                    withprescript "ot_index=" & decimal currentoutlinetext
-                    withprescript "ot_kind=" & kind
-                    withpostscript t ;
-            else :
-              % lua.mp.report("get outline text",currentoutlinetext);
-                if kind = "f" :
-                    mfun_do_outline_text_set_f rest ;
-                elseif kind = "d" :
-                    mfun_do_outline_text_set_d rest ;
-                elseif kind = "b" :
-                    mfun_do_outline_text_set_b rest ;
-                elseif kind = "u" :
-                    mfun_do_outline_text_set_f rest ;
-                elseif kind = "r" :
-                    mfun_do_outline_text_set_r rest ;
-                elseif kind = "p" :
-                    mfun_do_outline_text_set_p ;
-                else :
-                    mfun_do_outline_text_set_n rest ;
-                fi ;
-                lua.mp.mf_get_outline_text(currentoutlinetext) ;
-            fi ;
-        ) mfun_do_outline_options_r ; )
-    enddef ;
-
-fi ;
+vardef outlinetext@# (expr t) text rest =
+    save kind ; string kind ; kind := str @# ;
+    currentoutlinetext := currentoutlinetext + 1 ;
+    def mfun_do_outline_options_d = enddef ;
+    def mfun_do_outline_options_f = enddef ;
+    def mfun_do_outline_options_r = enddef ;
+    image ( normaldraw image (
+      % lua.mp.report("set outline text",currentoutlinetext);
+        lua.mp.mf_outline_text(currentoutlinetext,t,kind) ;
+      % lua.mp.report("get outline text",currentoutlinetext);
+        if kind = "f" :
+            mfun_do_outline_text_set_f rest ;
+        elseif kind = "d" :
+            mfun_do_outline_text_set_d rest ;
+        elseif kind = "b" :
+            mfun_do_outline_text_set_b rest ;
+        elseif kind = "u" :
+            mfun_do_outline_text_set_f rest ;
+        elseif kind = "r" :
+            mfun_do_outline_text_set_r rest ;
+        elseif kind = "p" :
+            mfun_do_outline_text_set_p ;
+        else :
+            mfun_do_outline_text_set_n rest ;
+        fi ;
+        lua.mp.mf_get_outline_text(currentoutlinetext) ;
+    ) mfun_do_outline_options_r ; )
+enddef ;
 
 % A few helpers:
 

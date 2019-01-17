@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.01.07 16:10}
+\edef\contextversion{2019.01.17 22:10}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -605,6 +605,14 @@
 \appendtoks
     \ctxlua{statistics.stoptiming(statistics)}%
 \to \everyjob
+
+% \appendtoks
+%     \ctxlua{job.prepare()}%
+% \to \everyjob
+
+% \appendtoks
+%     \enabletrackers[*]%
+% \to \everyjob
 
 \appendtoks
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind","\contextbanner")}% can become automatic

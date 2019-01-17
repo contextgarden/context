@@ -31,10 +31,6 @@ local report          = logs.reporter("metapost","blobs")
 
 trackers.register("metapost.blobs", function(v) trace = v end)
 
--- We start with a text that comes from an analyze stage and can end up with
--- one or more results. For practical reasons we store the blobs in one array
--- and work with ranges.
-
 local allblobs = { }
 
 local function newcategory(t,k)
@@ -189,10 +185,6 @@ local function reset()
     blob_raw_reset()
 end
 
-local function analyze(object,prescript)
-    -- nothing
-end
-
 local function process(object,prescript,before,after)
 --     if prescript.tb_stage == "inject" then
         local tb_blob = tonumber(prescript.tb_blob)
@@ -205,7 +197,6 @@ end
 metapost.installplugin {
     name    = "texblob",
     reset   = reset,
-    analyze = analyze,
     process = process,
 }
 
@@ -291,71 +282,33 @@ interfaces.implement {
     actions   = initialize,
 }
 
-local ft_reset, ft_analyze, ft_process  do
+local mp_category = 0
+local mp_str      = ""
 
-    if metapost.use_one_pass then
+function mp.mf_inject_blob(category,str)
+    newblob(category,str) -- only for tracing
+    mp_category = category
+    mp_str      = str
+    tex.runtoks("mpblobtext")
+end
 
-        local mp_category = 0
-        local mp_str      = ""
-
-        function mp.mf_inject_blob(category,str)
-            newblob(category,str) -- only for tracing
-            mp_category = category
-            mp_str      = str
-            tex.runtoks("mpblobtext")
-        end
-
-        interfaces.implement {
-            name    = "mpblobtext",
-            actions = function()
-                context.MPLIBfollowtext(mp_category,mp_str)
-            end
-        }
-
-        ft_process = function(object,prescript,before,after)
-            if prescript.ft_category then
-                object.path    = false
-                object.color   = false
-                object.grouped = true
-                object.istext  = true
-            end
-        end
-
-
-    else
-
-        ft_reset = function()
-            -- nothing
-        end
-
-        ft_analyze = function(object,prescript)
-            if prescript.ft_stage == "trial" then
-                local ft_category = tonumber(prescript.ft_category)
-                if ft_category then
-                    newblob(ft_category,object.postscript) -- only for tracing
-                    context.MPLIBfollowtext(ft_category,object.postscript)
-                    metapost.getjobdata().multipass = true
-                end
-            end
-        end
-
-        ft_process = function(object,prescript,before,after)
-            if prescript.ft_stage == "final" then
-                object.path    = false
-                object.color   = false
-                object.grouped = true
-                object.istext  = true
-            end
-        end
-
-
+interfaces.implement {
+    name    = "mpblobtext",
+    actions = function()
+        context.MPLIBfollowtext(mp_category,mp_str)
     end
+}
 
+local process = function(object,prescript,before,after)
+    if prescript.ft_category then
+        object.path    = false
+        object.color   = false
+        object.grouped = true
+        object.istext  = true
+    end
 end
 
 metapost.installplugin {
     name    = "followtext",
-    reset   = ft_reset,
-    analyze = ft_analyze,
-    process = ft_process,
+    process = process,
 }

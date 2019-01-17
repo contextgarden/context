@@ -31,11 +31,11 @@ local resolvers = resolvers
 zip                   = zip or { }
 local zip             = zip
 
-zip.archives          = zip.archives or { }
-local archives        = zip.archives
+local archives        = zip.archives or { }
+zip.archives          = archives
 
-zip.registeredfiles   = zip.registeredfiles or { }
-local registeredfiles = zip.registeredfiles
+local registeredfiles = zip.registeredfiles or { }
+zip.registeredfiles   = registeredfiles
 
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
@@ -108,7 +108,7 @@ function resolvers.finders.zip(specification)
                 end
                 local dfile = zfile:open(queryname)
                 if dfile then
-                    dfile = zfile:close()
+                    dfile:close()
                     if trace_locating then
                         report_zip("finder: file %a found",queryname)
                     end

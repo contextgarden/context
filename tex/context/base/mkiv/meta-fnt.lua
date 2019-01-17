@@ -110,10 +110,7 @@ local function process(mpxformat,name,instances,scalefactor)
                 descriptions = { }
                 metapost.process {
                     mpx         = mpxformat,
-                 -- trialrun    = false,
                     flusher     = flusher,
-                 -- multipass   = false,
-                 -- isextrapass = false,
                     askedfig    = "all",
                  -- incontext   = false,
                     data        = {

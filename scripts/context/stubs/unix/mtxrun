@@ -7193,7 +7193,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 27742, stripped down to: 17085
+-- original size: 28756, stripped down to: 17693
 
 if not modules then modules={} end modules ['util-tab']={
   version=1.001,
@@ -7810,6 +7810,42 @@ if setinspector then
       return true
     end
   end)
+end
+local mt={
+  __newindex=function(t,k,v)
+    local n=t.last+1
+    t.last=n
+    t.list[n]=k
+    t.hash[k]=v
+  end,
+  __index=function(t,k)
+    return t.hash[k]
+  end,
+  __len=function(t)
+    return t.last
+  end,
+}
+function table.orderedhash()
+  return setmetatable({ list={},hash={},last=0 },mt)
+end
+function table.ordered(t)
+  local n=t.last
+  if n>0 then
+    local l=t.list
+    local i=1
+    local h=t.hash
+    local f=function()
+      if i<=n then
+        local k=i
+        local v=h[l[k]]
+        i=i+1
+        return k,v
+      end
+    end
+    return f,1,h[l[1]]
+  else
+    return function() end
+  end
 end
 
 
@@ -23174,7 +23210,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-zip"] = package.loaded["data-zip"] or true
 
--- original size: 8716, stripped down to: 6795
+-- original size: 8700, stripped down to: 6781
 
 if not modules then modules={} end modules ['data-zip']={
   version=1.001,
@@ -23189,10 +23225,10 @@ local report_zip=logs.reporter("resolvers","zip")
 local resolvers=resolvers
 zip=zip or {}
 local zip=zip
-zip.archives=zip.archives or {}
-local archives=zip.archives
-zip.registeredfiles=zip.registeredfiles or {}
-local registeredfiles=zip.registeredfiles
+local archives=zip.archives or {}
+zip.archives=archives
+local registeredfiles=zip.registeredfiles or {}
+zip.registeredfiles=registeredfiles
 local function validzip(str) 
   if not find(str,"^zip://") then
     return "zip:///"..str
@@ -23258,7 +23294,7 @@ function resolvers.finders.zip(specification)
         end
         local dfile=zfile:open(queryname)
         if dfile then
-          dfile=zfile:close()
+          dfile:close()
           if trace_locating then
             report_zip("finder: file %a found",queryname)
           end
@@ -24747,8 +24783,8 @@ end -- of closure
 
 -- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 987988
--- stripped bytes    : 348954
+-- original bytes    : 988986
+-- stripped bytes    : 349358
 
 -- end library merge
 

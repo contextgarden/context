@@ -810,7 +810,7 @@ function scripts.context.run(ctxdata,filename)
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
                  -- ["synctex"]               = false,       -- context has its own way
-                    ["no-parse-first-line"]   = true,        -- obsolete
+                 -- ["no-parse-first-line"]   = true,        -- obsolete
                  -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,

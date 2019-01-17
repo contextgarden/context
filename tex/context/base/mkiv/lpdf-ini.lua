@@ -521,6 +521,8 @@ do
             for k, v in next, t do
                 if k == "__extra__" then
                     e = v
+                elseif k == "__stream__" then
+                    -- do nothing (yet)
                 else
                     n = n + 1
                     r[n] = k
@@ -533,8 +535,9 @@ do
                 local tv = type(v)
                 -- mostly tables
                 if tv == "table" then
-                    local mv = getmetatable(v)
-                    if mv and mv.__lpdftype then
+                 -- local mv = getmetatable(v)
+                 -- if mv and mv.__lpdftype then
+                    if v.__lpdftype__ then
                      -- if v == t then
                      --     report_objects("ignoring circular reference in dirctionary")
                      --     r[i] = f_key_null(k)
@@ -582,9 +585,9 @@ do
                 if tv == "number" then
                     r[k] = f_tonumber(v)
                 elseif tv == "table" then
-                    local mv = getmetatable(v)
-                    local mt = mv and mv.__lpdftype
-                    if mt then
+                 -- local mv = getmetatable(v)
+                 -- if mv and mv.__lpdftype then
+                    if v.__lpdftype__ then
                      -- if v == t then
                      --     report_objects("ignoring circular reference in array")
                      --     r[k] = "null"
@@ -707,20 +710,35 @@ end
 
 local function add_x(t,k,v) rawset(t,k,tostring(v)) end
 
-local mt_x = { __lpdftype = "stream",     __tostring = tostring_x, __call = value_x, __newindex = add_x }
-local mt_d = { __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d, __add = add_to_d }
-local mt_a = { __lpdftype = "array",      __tostring = tostring_a, __call = value_a, __add = add_to_a }
-local mt_u = { __lpdftype = "unicode",    __tostring = tostring_u, __call = value_u }
-local mt_s = { __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
-local mt_p = { __lpdftype = "docstring",  __tostring = tostring_p, __call = value_p }
-local mt_n = { __lpdftype = "number",     __tostring = tostring_n, __call = value_n }
-local mt_c = { __lpdftype = "constant",   __tostring = tostring_c, __call = value_c }
-local mt_z = { __lpdftype = "null",       __tostring = tostring_z, __call = value_z }
-local mt_t = { __lpdftype = "true",       __tostring = tostring_t, __call = value_t }
-local mt_f = { __lpdftype = "false",      __tostring = tostring_f, __call = value_f }
-local mt_r = { __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
-local mt_v = { __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
-local mt_l = { __lpdftype = "literal",    __tostring = tostring_l, __call = value_l }
+-- local mt_x = { __index = { __lpdftype__ = "stream"     }, __lpdftype = "stream",     __tostring = tostring_x, __call = value_x, __newindex = add_x }
+-- local mt_d = { __index = { __lpdftype__ = "dictionary" }, __lpdftype = "dictionary", __tostring = tostring_d, __call = value_d, __add = add_to_d }
+-- local mt_a = { __index = { __lpdftype__ = "array"      }, __lpdftype = "array",      __tostring = tostring_a, __call = value_a, __add = add_to_a }
+-- local mt_u = { __index = { __lpdftype__ = "unicode"    }, __lpdftype = "unicode",    __tostring = tostring_u, __call = value_u }
+-- local mt_s = { __index = { __lpdftype__ = "string"     }, __lpdftype = "string",     __tostring = tostring_s, __call = value_s }
+-- local mt_p = { __index = { __lpdftype__ = "docstring"  }, __lpdftype = "docstring",  __tostring = tostring_p, __call = value_p }
+-- local mt_n = { __index = { __lpdftype__ = "number"     }, __lpdftype = "number",     __tostring = tostring_n, __call = value_n }
+-- local mt_c = { __index = { __lpdftype__ = "constant"   }, __lpdftype = "constant",   __tostring = tostring_c, __call = value_c }
+-- local mt_z = { __index = { __lpdftype__ = "null"       }, __lpdftype = "null",       __tostring = tostring_z, __call = value_z }
+-- local mt_t = { __index = { __lpdftype__ = "true"       }, __lpdftype = "true",       __tostring = tostring_t, __call = value_t }
+-- local mt_f = { __index = { __lpdftype__ = "false"      }, __lpdftype = "false",      __tostring = tostring_f, __call = value_f }
+-- local mt_r = { __index = { __lpdftype__ = "reference"  }, __lpdftype = "reference",  __tostring = tostring_r, __call = value_r }
+-- local mt_v = { __index = { __lpdftype__ = "verbose"    }, __lpdftype = "verbose",    __tostring = tostring_v, __call = value_v }
+-- local mt_l = { __index = { __lpdftype__ = "literal"    }, __lpdftype = "literal",    __tostring = tostring_l, __call = value_l }
+
+local mt_x = { __index = { __lpdftype__ = "stream"     }, __tostring = tostring_x, __call = value_x, __newindex = add_x }
+local mt_d = { __index = { __lpdftype__ = "dictionary" }, __tostring = tostring_d, __call = value_d, __add = add_to_d }
+local mt_a = { __index = { __lpdftype__ = "array"      }, __tostring = tostring_a, __call = value_a, __add = add_to_a }
+local mt_u = { __index = { __lpdftype__ = "unicode"    }, __tostring = tostring_u, __call = value_u }
+local mt_s = { __index = { __lpdftype__ = "string"     }, __tostring = tostring_s, __call = value_s }
+local mt_p = { __index = { __lpdftype__ = "docstring"  }, __tostring = tostring_p, __call = value_p }
+local mt_n = { __index = { __lpdftype__ = "number"     }, __tostring = tostring_n, __call = value_n }
+local mt_c = { __index = { __lpdftype__ = "constant"   }, __tostring = tostring_c, __call = value_c }
+local mt_z = { __index = { __lpdftype__ = "null"       }, __tostring = tostring_z, __call = value_z }
+local mt_t = { __index = { __lpdftype__ = "true"       }, __tostring = tostring_t, __call = value_t }
+local mt_f = { __index = { __lpdftype__ = "false"      }, __tostring = tostring_f, __call = value_f }
+local mt_r = { __index = { __lpdftype__ = "reference"  }, __tostring = tostring_r, __call = value_r }
+local mt_v = { __index = { __lpdftype__ = "verbose"    }, __tostring = tostring_v, __call = value_v }
+local mt_l = { __index = { __lpdftype__ = "literal"    }, __tostring = tostring_l, __call = value_l }
 
 local function pdfstream(t) -- we need to add attributes
     if t then
@@ -730,9 +748,9 @@ local function pdfstream(t) -- we need to add attributes
                 t[i] = tostring(t[i])
             end
         elseif tt == "string" then
-            t= { t }
+            t = { t }
         else
-            t= { tostring(t) }
+            t = { tostring(t) }
         end
     end
     return setmetatable(t or { },mt_x)

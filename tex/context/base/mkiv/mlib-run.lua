@@ -71,20 +71,6 @@ end
 ----- mpbasepath = lpeg.instringchecker(lpeg.append { "/metapost/context/", "/metapost/base/" })
 local mpbasepath = lpeg.instringchecker(P("/metapost/") * (P("context") + P("base")) * P("/"))
 
--- local function i_finder(askedname,mode,ftype) -- fake message for mpost.map and metafun.mpvi
---     local foundname = file.is_qualified_path(askedname) and askedname or resolvers.findfile(askedname,ftype)
---     if not mpbasepath(foundname) then
---         -- we could use the via file but we don't have a complete io interface yet
---         local data, found, forced = metapost.checktexts(io.loaddata(foundname) or "")
---         if found then
---             local tempname = luatex.registertempfile(foundname,true)
---             io.savedata(tempname,data)
---             foundname = tempname
---         end
---     end
---     return foundname
--- end
-
 -- mplib has no real io interface so we have a different mechanism than
 -- tex (as soon as we have more control, we will use the normal code)
 --
@@ -98,21 +84,6 @@ do
 
     local new_instance = mplib.new
 
-    local function preprocessed(name)
-        if not mpbasepath(name) then
-            -- we could use the via file but we don't have a complete io interface yet
-            local data, found, forced = metapost.checktexts(io.loaddata(name) or "")
-            if found then
-                local temp = luatex.registertempfile(name,true)
-                io.savedata(temp,data)
-                return temp
-            end
-        end
-        return name
-    end
-
-    mplib.preprocessed = preprocessed -- helper
-
     local function validftype(ftype)
         if ftype == "" then
             -- whatever
@@ -124,14 +95,13 @@ do
     end
 
     finders.file = function(specification,name,mode,ftype)
-        return preprocessed(resolvers.findfile(name,validftype(ftype)))
+        return resolvers.findfile(name,validftype(ftype))
     end
 
     local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
         local specification = url.hashed(name)
         local finder = finders[specification.scheme] or finders.file
         local found = finder(specification,name,mode,validftype(ftype))
-     -- print(found)
         return found
     end
 
@@ -308,8 +278,6 @@ local function prepareddata(data,collapse)
     end
 end
 
-metapost.use_one_pass    = true -- Some day I will prune the code (still testing).
-
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
 metapost.defaultmethod   = "default"
@@ -460,18 +428,13 @@ end
 --
 --     mpx          string or mp object
 --     data         string or table of strings
---     trialrun     boolean
 --     flusher      table with flush methods
---     multipass    boolean
---     isextrapass  boolean
 --     askedfig     string ("all" etc) or number
 --     incontext    boolean
 --     plugmode     boolean
 
 local function makebeginbanner(specification)
-    return formatters
-        ["%% begin graphic: n=%s, trialrun=%l, multipass=%l, isextrapass=%l\n\n"]
-        (metapost.n, specification.trialrun, specification.multipass, specification.isextrapass)
+    return formatters["%% begin graphic: n=%s\n\n"](metapost.n)
 end
 
 local function makeendbanner(specification)

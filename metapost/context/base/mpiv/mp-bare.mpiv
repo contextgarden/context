@@ -14,8 +14,6 @@
 if known context_bare : endinput ; fi ;
 boolean context_bare  ; context_bare := true ;
 
-boolean mfun_use_one_pass ; mfun_use_one_pass := runscript("mp.print(metapost.use_one_pass)") ;
-
 vardef colordecimals primary c =
     if cmykcolor c  :
         decimal cyanpart c & ":" & decimal magentapart c & ":" & decimal yellowpart c & ":" & decimal blackpart c
@@ -26,49 +24,29 @@ vardef colordecimals primary c =
     fi
 enddef ;
 
-if mfun_use_one_pass :
+rgbcolor mfun_tt_r ;
+numeric mfun_tt_n ; mfun_tt_n := 0 ;
+picture mfun_tt_o ; mfun_tt_o := nullpicture ;
+picture mfun_tt_c ; mfun_tt_c := nullpicture ;
 
-    rgbcolor mfun_tt_r ;
-    numeric mfun_tt_n ; mfun_tt_n := 0 ;
-    picture mfun_tt_o ; mfun_tt_o := nullpicture ;
-    picture mfun_tt_c ; mfun_tt_c := nullpicture ;
+def mfun_reset_tex_texts =
+    mfun_tt_n := 0 ;
+    mfun_tt_o := nullpicture ; % redundant
+    mfun_tt_c := nullpicture ; % redundant
+enddef ;
 
-    def mfun_reset_tex_texts =
-        mfun_tt_n := 0 ;
-        mfun_tt_o := nullpicture ; % redundant
-        mfun_tt_c := nullpicture ; % redundant
-    enddef ;
+def mfun_flush_tex_texts =
+enddef ;
 
-    def mfun_flush_tex_texts =
-    enddef ;
-
-    vardef rawtextext(expr s) =
-        if s = "" :
-            nullpicture
-        else :
-            mfun_tt_n := mfun_tt_n + 1 ;
-            mfun_tt_c := nullpicture ;
-            mfun_tt_o := nullpicture ;
-            addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-            mfun_tt_r := runscript("mp.SomeText(" & decimal mfun_tt_n & "," & ditto & s & ditto & ")") ;
-            addto mfun_tt_c doublepath unitsquare
-                xscaled redpart mfun_tt_r
-                yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
-                shifted (0,-bluepart mfun_tt_r)
-                withprescript "mf_object=text"
-                withprescript "tx_index=" & decimal mfun_tt_n
-                withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-            ;
-            mfun_tt_c
-        fi
-    enddef ;
-
-    vardef rawmadetext =
+vardef rawtextext(expr s) =
+    if s = "" :
+        nullpicture
+    else :
         mfun_tt_n := mfun_tt_n + 1 ;
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := runscript("mp.MadeText(" & decimal mfun_tt_n & ")") ;
+        mfun_tt_r := runscript("mp.SomeText(" & decimal mfun_tt_n & "," & ditto & s & ditto & ")") ;
         addto mfun_tt_c doublepath unitsquare
             xscaled redpart mfun_tt_r
             yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
@@ -78,67 +56,25 @@ if mfun_use_one_pass :
             withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
         ;
         mfun_tt_c
-    enddef ;
+    fi
+enddef ;
 
-else :
-
-    numeric mfun_tt_w[], mfun_tt_h[], mfun_tt_d[] ;
-    numeric mfun_tt_n ; mfun_tt_n := 0 ;
-    picture mfun_tt_p ; mfun_tt_p := nullpicture ;
-    picture mfun_tt_o ; mfun_tt_o := nullpicture ;
-    picture mfun_tt_c ; mfun_tt_c := nullpicture ;
-
-    if unknown mfun_trial_run :
-        boolean mfun_trial_run ;
-        mfun_trial_run := false ;
-    fi ;
-
-    if unknown mfun_first_run :
-        boolean mfun_first_run ;
-        mfun_first_run := true ;
-    fi ;
-
-    def mfun_reset_tex_texts =
-        mfun_tt_n := 0 ;
-        mfun_tt_p := nullpicture ;
-        mfun_tt_o := nullpicture ; % redundant
-        mfun_tt_c := nullpicture ; % redundant
-    enddef ;
-
-    def mfun_flush_tex_texts =
-        addto currentpicture also mfun_tt_p
-    enddef ;
-
-    vardef rawtextext(expr str) = % todo: avoid currentpicture
-        if str = "" :
-            nullpicture
-        else :
-            mfun_tt_n := mfun_tt_n + 1 ;
-            mfun_tt_c := nullpicture ;
-            if mfun_trial_run :
-                mfun_tt_o := nullpicture ;
-                addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-                addto mfun_tt_c doublepath unitsquare
-                    withprescript "tx_number=" & decimal mfun_tt_n
-                    withprescript "tx_stage=trial"
-                    withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
-                    withpostscript str ;
-                addto mfun_tt_p also mfun_tt_c ;
-            elseif known mfun_tt_d[mfun_tt_n] :
-                addto mfun_tt_c doublepath unitsquare
-                    xscaled mfun_tt_w[mfun_tt_n]
-                    yscaled (mfun_tt_h[mfun_tt_n] + mfun_tt_d[mfun_tt_n])
-                    shifted (0,-mfun_tt_d[mfun_tt_n])
-                    withprescript "tx_number=" & decimal mfun_tt_n
-                    withprescript "tx_stage=final" ;
-            else :
-                addto mfun_tt_c doublepath unitsquare ; % unitpicture
-            fi ;
-            mfun_tt_c
-        fi
-    enddef ;
-
-fi ;
+vardef rawmadetext =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := runscript("mp.MadeText(" & decimal mfun_tt_n & ")") ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled redpart mfun_tt_r
+        yscaled (greenpart mfun_tt_r + bluepart mfun_tt_r)
+        shifted (0,-bluepart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    mfun_tt_c
+enddef ;
 
 extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 extra_endfig   := "mfun_flush_tex_texts ; mfun_reset_tex_texts ; " & extra_endfig ;

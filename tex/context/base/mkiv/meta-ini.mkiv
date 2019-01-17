@@ -881,19 +881,6 @@
   {\meta_prepare_instance_variable{#1}%
    \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
 
-%D \macros
-%D   {MPdatafile}
-%D
-%D We redefine a macro from \type {supp-mps.tex}:
-
-% This will change ...
-
-\def\MPdataMPYfile{\jobname-mpgraph.mpy}
-
-\startMPextensions
-    def data_mpy_file = "\noexpand\MPdataMPYfile" enddef ;
-\stopMPextensions
-
 \unexpanded\def\getMPdata  {\clf_getMPdata}
            \let\rawMPdata   \clf_getMPdata
 

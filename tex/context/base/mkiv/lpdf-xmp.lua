@@ -136,11 +136,11 @@ local function update()
     --
     local t = type(dates)
     if t == "number" or t == "string" then
-        t = converters.totime(dates)
-        if t then
+        local d = converters.totime(dates)
+        if d then
             included.date = true
             included.id   = "fake"
-            report_info("forced date/time information %a will be used",lpdf.settime(t))
+            report_info("forced date/time information %a will be used",lpdf.settime(d))
             settrailerid(false)
             return
         end

@@ -175,6 +175,8 @@ if sandboxing then
         traceback = traceback,
     }
 
+    package.loaded.debug = debug
+
 elseif debugging then
 
     -- we keep debug
@@ -187,15 +189,13 @@ else
         sethook   = sethook,
     }
 
+    package.loaded.debug = debug
+
 end
 
-local function processjob()
-
-    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
+local preparejob  preparejob = function() -- tricky: we need a hook for this
 
     local arguments = environment.arguments
-    local suffix    = environment.suffix
-    local filename  = environment.filename -- hm, not inputfilename !
 
     if arguments.lmtx or not status.obj_ptr then
         report("enabling lmtx mode")
@@ -244,6 +244,24 @@ local function processjob()
  -- if arguments.errors then
  --     directives.enable("logs.errors",arguments.errors)
  -- end
+
+    preparejob = function() end
+
+    job.prepare = preparejob
+
+end
+
+job.prepare = preparejob
+
+local function processjob()
+
+    environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
+
+    local arguments = environment.arguments
+    local suffix    = environment.suffix
+    local filename  = environment.filename -- hm, not inputfilename !
+
+    preparejob()
 
     if not filename or filename == "" then
         -- skip
@@ -308,7 +326,6 @@ local function processjob()
      -- \writestatus{system}{processing as tex}
         -- We have a regular tex file so no \starttext yet as we can
         -- load fonts.
-
      -- context.enabletrackers { "resolvers.*" }
         context.input(filename)
      -- context.disabletrackers { "resolvers.*" }

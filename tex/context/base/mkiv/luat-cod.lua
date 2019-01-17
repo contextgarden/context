@@ -11,6 +11,10 @@ local match, gsub, find, format, gmatch = string.match, string.gsub, string.find
 
 local texconfig, lua = texconfig, lua
 
+-- maybe pick up from commandline:
+--
+-- texconfig.interaction: 0=batchmode 1=nonstopmode 2=scrollmode 3=errornonstopmode 4=normal
+
 -- some basic housekeeping
 
 texconfig.kpse_init       = false

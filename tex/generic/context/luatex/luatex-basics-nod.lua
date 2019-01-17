@@ -234,6 +234,26 @@ nuts.traverse_char       = direct.traverse_char
 nuts.traverse_glyph      = direct.traverse_glyph
 nuts.traverse_id         = direct.traverse_id
 
+-- for now
+
+if not nuts.getdirection then
+
+    local getdir = direct.getdir
+
+    function nuts.getdirection(n)
+        local d = getdir(n)
+        if     d ==  "TLT" then return 0
+        elseif d ==  "TRT" then return 1
+        elseif d == "+TLT" then return 0, false
+        elseif d == "+TRT" then return 1, false
+        elseif d == "-TLT" then return 0, true
+        elseif d == "-TRT" then return 1, true
+        else                    return 0
+        end
+    end
+
+end
+
 -- properties as used in the (new) injector:
 
 local propertydata = direct.get_properties_table()
