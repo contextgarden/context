@@ -113,6 +113,7 @@ local pack            = digit * space^1 * operator4 * optionalspacing +
                         optionalspaces  * separator * optionalspaces
 local lines           = emptyline^2 / "\n"
 local spaces          = (space * space) / " "
+local spaces          = (space * space * space * space) / " "
 ----- spaces          = ((space+eol)^1 ) / " "
 
 local compact = Cs ( (

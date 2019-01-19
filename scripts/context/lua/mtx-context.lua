@@ -433,6 +433,7 @@ end
 local pdfview -- delayed
 
 local function pdf_open(name,method)
+    statistics.starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
@@ -441,9 +442,13 @@ local function pdf_open(name,method)
         pdfname = name .. ".pdf" -- agressive
     end
     pdfview.open(pdfname)
+    statistics.stoptiming("pdfview")
+ -- report("pdfview overhead after opening: %0.3f seconds",statistics.elapsedtime("pdfview"))
+    report("pdfview overhead: %0.3f seconds",statistics.elapsedtime("pdfview"))
 end
 
 local function pdf_close(name,method)
+    statistics.starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     local pdfname = filenewsuffix(name,"pdf")
@@ -452,6 +457,8 @@ local function pdf_close(name,method)
     end
     pdfname = name .. ".pdf" -- agressive
     pdfview.close(pdfname)
+    statistics.stoptiming("pdfview")
+ -- report("pdfview overhead after closing: %0.3f seconds",statistics.elapsedtime("pdfview"))
 end
 
 -- result file handling
@@ -1584,7 +1591,7 @@ end
 -- updating (often one will use mtx-update instead)
 
 function scripts.context.timed(action)
-    statistics.timed(action)
+    statistics.timed(action,true)
 end
 
 local zipname     = "cont-tmf.zip"

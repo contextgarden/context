@@ -62,7 +62,7 @@ backends.tables         = { }  setmetatableindex(backends.tables,         tables
 
 backends.current = "unknown"
 
-local lmtx_mode    = nil
+local lmtx_mode  = nil
 
 local function lmtxmode()
     if lmtx_mode == nil then

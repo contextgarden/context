@@ -253,16 +253,23 @@ end
 function statistics.runtime()
     stoptiming(statistics)
  -- stoptiming(statistics) -- somehow we can start the timer twice, but where
-    return statistics.formatruntime(elapsedtime(statistics))
+    local runtime = lua.getruntime and lua.getruntime() or elapsedtime(statistics)
+    return statistics.formatruntime(runtime)
 end
 
 local report = logs.reporter("system")
 
-function statistics.timed(action)
+function statistics.timed(action,all)
     starttiming("run")
     action()
     stoptiming("run")
-    report("total runtime: %s seconds",elapsedtime("run"))
+    local runtime = tonumber(elapsedtime("run"))
+    if all then
+        local alltime = lua.getruntime and lua.getruntime() or elapsedtime(statistics)
+        report("total runtime: %0.3f seconds of %0.3f seconds",runtime,alltime)
+    else
+        report("total runtime: %0.3f seconds",runtime)
+    end
 end
 
 -- goodie

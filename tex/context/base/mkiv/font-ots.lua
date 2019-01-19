@@ -3800,7 +3800,7 @@ do
         local initialrl = 0
 
         if getid(head) == localpar_code and getsubtype(head) == 0 then
-            initialrl = pardirstate(start)
+            initialrl = pardirstate(head)
         elseif direction == 1 or direction == "TRT" then
             initialrl = -1
         end

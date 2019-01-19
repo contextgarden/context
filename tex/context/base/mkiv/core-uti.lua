@@ -432,6 +432,7 @@ end)
 -- local used_wood_factor        = watts_per_core * kg_per_watt_per_second / speedup_by_other_engine
 -- local used_wood_factor        = (50 / 15000000) / 1.2
 
+
 function statistics.formatruntime(runtime)
     if not environment.initex then -- else error when testing as not counters yet
      -- stoptiming(statistics) -- to be sure
@@ -440,19 +441,15 @@ function statistics.formatruntime(runtime)
         if pages > shipped then
             pages = shipped
         end
+        runtime = tonumber(runtime)
         if shipped > 0 or pages > 0 then
-            runtime = tonumber(runtime)
             local persecond = (runtime > 0) and (shipped/runtime) or pages
-            if pages == 0 then pages = shipped end
-         -- if TEXENGINE == "luajittex" then
-         --     local saved = watts_per_core * runtime * kg_per_watt_per_second / speedup_by_other_engine
-         --     local saved = used_wood_factor * runtime
-         --     return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second, %f mg tree saved by using luajittex",runtime,pages,shipped,persecond,saved*1000*1000)
-         -- else
-                return format("%s seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
-         -- end
+            if pages == 0 then
+                pages = shipped
+            end
+            return format("%0.3f seconds, %i processed pages, %i shipped pages, %.3f pages/second",runtime,pages,shipped,persecond)
         else
-            return format("%s seconds",runtime)
+            return format("%0.3f seconds",runtime)
         end
     end
 end
