@@ -1538,7 +1538,7 @@ do
     local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
-    local pdfdirect = nodes.pool.pdfdirectliteral
+    local pdfdirect = nodes.pool.pdfdirectliteral -- we can use nuts.write deep down
 
     -- todo: use tounicode from the font mapper
 

@@ -172,16 +172,16 @@ def mfun_graphic_text_indeed(expr t) text rest =
         draw outlinetext.f(t)(mfun_gt_shade) rest;
     elseif mfun_gt_color_fill and mfun_gt_color_draw :
         if mfun_gt_reverse_fill :
-            draw outlinetext.r(t)(mfun_gt_default mfun_gt_fill rest)(mfun_gt_default mfun_gt_draw rest) ;
+            draw outlinetext.r(t)(mfun_gt_default mfun_gt_fill)(mfun_gt_default mfun_gt_draw) rest;
         else :
-            draw outlinetext.b(t)(mfun_gt_default mfun_gt_draw rest)(mfun_gt_default mfun_gt_fill rest);
+            draw outlinetext.b(t)(mfun_gt_default mfun_gt_draw)(mfun_gt_default mfun_gt_fill) rest;
         fi ;
     elseif mfun_gt_color_fill :
-        draw outlinetext.f(t)(mfun_gt_default mfun_gt_fill rest) ;
+        draw outlinetext.f(t)(mfun_gt_default mfun_gt_fill) rest;
     elseif mfun_gt_color_draw :
-        draw outlinetext.d(t)(mfun_gt_default mfun_gt_draw rest) ;
+        draw outlinetext.d(t)(mfun_gt_default mfun_gt_draw) rest ;
     else :
-        draw outlinetext.d(t)(mfun_gt_default rest) ;
+        draw outlinetext.d(t)(mfun_gt_default) rest ;
     fi ;
     %
     endgroup ;

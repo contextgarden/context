@@ -408,15 +408,33 @@
 %D
 %D \typebuffer \getbuffer
 
+\setupsystem
+  [\c!y=\normalyear,
+   \c!m=\normalmonth,
+   \c!d=\normalday]
+
 \newtoks \everycurrentdate
+
+\def\syst_converters_check_date
+  {\edef\temp{\systemparameter\c!y}\scratchcounterone  \ifx\temp\empty\normalyear \else\temp\fi
+   \edef\temp{\systemparameter\c!m}\scratchcountertwo  \ifx\temp\empty\normalmonth\else\temp\fi
+   \edef\temp{\systemparameter\c!d}\scratchcounterthree\ifx\temp\empty\normalday  \else\temp\fi}
 
 \unexpanded\def\currentdate
   {\dosingleempty\syst_converters_current_date}
 
 \def\syst_converters_current_date[#1]%
-  {\begingroup
+  {\dontleavehmode
+   \begingroup
    \the\everycurrentdate
-   \clf_currentdate{#1}{\currentdatespecification}{\labellanguage}%
+   \syst_converters_check_date
+   \clf_currentdate
+     {#1}%
+     {\currentdatespecification}%
+     {\labellanguage}%
+     \scratchcounterone
+     \scratchcountertwo
+     \scratchcounterthree
    \endgroup}
 
 \unexpanded\def\date
@@ -425,19 +443,24 @@
 \def\syst_converters_date[#1][#2]%
   {\begingroup
    \iffirstargument
-     \letdummyparameter\c!d\normalday
-     \letdummyparameter\c!m\normalmonth
-     \letdummyparameter\c!y\normalyear
-     \getdummyparameters[#1]%
-     \normalday  \directdummyparameter\c!d\relax
-     \normalmonth\directdummyparameter\c!m\relax
-     \normalyear \directdummyparameter\c!y\relax
+     \setupsystem[#1]%
    \fi
+   \syst_converters_check_date
    \syst_converters_current_date[#2]%
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\clf_currentdate{#1}{\currentdatespecification}{}}
+  {\begingroup
+   \syst_converters_check_date
+   \clf_currentdate
+     {#1}%
+     {\currentdatespecification}%
+     {}%
+     \scratchcounterone
+     \scratchcountertwo
+     \scratchcounterthree
+   \relax
+   \endgroup}
 
 %D \macros
 %D   {currenttime}

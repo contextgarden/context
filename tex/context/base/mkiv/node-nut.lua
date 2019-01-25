@@ -202,13 +202,19 @@ nuts.uses_font               = direct.uses_font
 nuts.vpack                   = direct.vpack
 nuts.writable_spec           = direct.writable_spec
 nuts.write                   = direct.write
+nuts.mlist_to_hlist          = direct.mlist_to_hlist
 
-if not direct.mlist_to_hlist then -- needed
+if not nuts.mlist_to_hlist then
 
     local n_mlist_to_hlist = node.mlist_to_hlist
 
-    function nuts.mlist_to_hlist(head)
-        return n_mlist_to_hlist(tonut(head))
+    function nuts.mlist_to_hlist(head,...)
+        if head then
+            local head = n_mlist_to_hlist(tonode(head),...)
+            if head then
+                return tonut(head)
+            end
+        end
     end
 
 end

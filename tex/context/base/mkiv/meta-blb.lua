@@ -22,9 +22,12 @@ local mppoints        = mp.points
 local mptriplet       = mp.triplet
 local mptripletpoints = mp.tripletpoints
 
-local texsetbox       = tex.setbox
-local toutf           = nodes.toutf
-local hpack_nodes     = nodes.hpack
+local nuts            = nodes.nuts
+local hpack           = nuts.hpack
+local setbox          = nuts.setbox
+local getwhd          = nuts.getwhd
+local getwidth        = nuts.getwidth
+local toutf           = nuts.toutf
 
 local trace           = false
 local report          = logs.reporter("metapost","blobs")
@@ -66,7 +69,7 @@ end
 local function blob_raw_dimensions(i)
     local blob = allblobs[i]
     if blob then
-        return blob.width, blob.height, blob.depth
+        return getwhd(blob)
     else
         return 0, 0, 0
     end
@@ -100,7 +103,7 @@ end
 function mp.mf_blob_add(category,blob)
     local tb = texblobs[category].blobs
     local tn = #allblobs + 1
-    blob = hpack_nodes(blob)
+    blob = hpack(blob)
     allblobs[tn] = blob
     tb[#tb+1] = tn
     if trace then
@@ -112,7 +115,7 @@ function mp.mf_blob_width(category,i)
     local index = texblobs[category].blobs[i]
     local blob  = allblobs[index]
     if blob then
-        mppoints(blob.width or 0)
+        mppoints(getwidth(blob) or 0)
     else
         mpinteger(0)
     end
@@ -130,7 +133,7 @@ function mp.mf_blob_dimensions(category,i)
     local index = texblobs[category].blobs[i]
     local blob  = allblobs[index]
     if blob then
-        mptripletpoints(blob.width,blob.height,blob.depth)
+        mptripletpoints(getwhd(blob))
     else
         mptriplet(0,0,0)
     end
@@ -168,7 +171,7 @@ end
 -- mp.mf_blob_inject = injectblob
 
 local function getblob(box,blob)
-    texsetbox(box,blob_raw_content(blob))
+    setbox(box,blob_raw_content(blob))
     blob_raw_wipe(blob)
 end
 
@@ -214,10 +217,17 @@ local italickern_code = kerncodes.italickern
 
 local a_fontkern      = attributes.private("fontkern")
 
-local takebox         = tex.takebox
-local flatten_list    = node.flatten_discretionaries
-local remove_node     = nodes.remove
-local flush_node      = nodes.flush
+local nuts            = nodes.nuts
+local takebox         = nuts.takebox
+local getlist         = nuts.getlist
+local getid           = nuts.getid
+local getsubtype      = nuts.getsubtype
+local setlink         = nuts.setlink
+local setlist         = nuts.setlist
+local getnext         = nuts.getnext
+local flatten_list    = nuts.flatten_discretionaries
+local remove_node     = nuts.remove
+local flush_node      = nuts.flush
 
 local addblob         = mp.mf_blob_add
 local newblob         = mp.mf_blob_new
@@ -233,7 +243,7 @@ local visible_codes = {
 local function initialize(category,box)
     local wrap = takebox(box)
     if wrap then
-        local head = wrap.list
+        local head = getlist(wrap)
         local tail = nil
         local temp = nil
         if head then
@@ -242,18 +252,16 @@ local function initialize(category,box)
             head = flatten_list(head)
             local current = head
             while current do
-                local id = current.id
+                local id = getid(current)
                 if visible_codes[id] then
                     head, current, tail = remove_node(head,current)
                     s = s + 1
                     n[s] = tail
                 elseif id == kern_code then
-                    local subtype = current.subtype
+                    local subtype = getsubtype(current)
                     if subtype == fontkern_code or subtype == italickern_code then -- or current[a_fontkern]
                         head, current, temp = remove_node(head,current)
-                        tail.next = temp
-                        temp.prev = tail
-                        tail = temp
+                        setlink(tail,temp)
                     else
                         head, current, temp = remove_node(head,current)
                         s = s + 1
@@ -264,13 +272,13 @@ local function initialize(category,box)
                     s = s + 1
                     n[s] = temp
                 else
-                    current = current.next
+                    current = getnext(current)
                 end
             end
             for i=1,s do
                 n[i] = addblob(category,n[i])
             end
-            wrap.list = head
+            setlist(wrap,head)
         end
         flush_node(wrap)
     end

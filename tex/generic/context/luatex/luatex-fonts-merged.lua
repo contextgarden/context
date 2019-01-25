@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/19/19 12:06:39
+-- merge date  : 01/25/19 20:06:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -20,7 +20,6 @@ if LUAVERSION<5.2 and jit then
  MINORVERSION=2
  LUAVERSION=5.2
 end
-_LUAVERSION=LUAVERSION
 if not lpeg then
  lpeg=require("lpeg")
 end
@@ -3050,19 +3049,11 @@ local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
-local loadstripped=nil
-local oldfashioned=LUAVERSION<5.2
-if oldfashioned then
- loadstripped=function(str,shortcuts)
-  return load(str)
- end
-else
- loadstripped=function(str,shortcuts)
-  if shortcuts then
-   return load(dump(load(str),true),nil,nil,shortcuts)
-  else
-   return load(dump(load(str),true))
-  end
+local loadstripped=function(str,shortcuts)
+ if shortcuts then
+  return load(dump(load(str),true),nil,nil,shortcuts)
+ else
+  return load(dump(load(str),true))
  end
 end
 if not number then number={} end 
@@ -3369,61 +3360,33 @@ local template=[[
 %s
 return function(%s) return %s end
 ]]
-local preamble,environment="",{}
-if oldfashioned then
- preamble=[[
-local lpeg=lpeg
-local type=type
-local tostring=tostring
-local tonumber=tonumber
-local format=string.format
-local concat=table.concat
-local signed=number.signed
-local points=number.points
-local basepoints= number.basepoints
-local utfchar=utf.char
-local utfbyte=utf.byte
-local lpegmatch=lpeg.match
-local nspaces=string.nspaces
-local utfpadding=string.utfpadding
-local tracedchar=string.tracedchar
-local autosingle=string.autosingle
-local autodouble=string.autodouble
-local sequenced=table.sequenced
-local formattednumber=number.formatted
-local sparseexponent=number.sparseexponent
-local formattedfloat=number.formattedfloat
-local stripzero=lpeg.patterns.stripzero
-local stripzeros=lpeg.patterns.stripzeros
-    ]]
-else
- environment={
-  global=global or _G,
-  lpeg=lpeg,
-  type=type,
-  tostring=tostring,
-  tonumber=tonumber,
-  format=string.format,
-  concat=table.concat,
-  signed=number.signed,
-  points=number.points,
-  basepoints=number.basepoints,
-  utfchar=utf.char,
-  utfbyte=utf.byte,
-  lpegmatch=lpeg.match,
-  nspaces=string.nspaces,
-  utfpadding=string.utfpadding,
-  tracedchar=string.tracedchar,
-  autosingle=string.autosingle,
-  autodouble=string.autodouble,
-  sequenced=table.sequenced,
-  formattednumber=number.formatted,
-  sparseexponent=number.sparseexponent,
-  formattedfloat=number.formattedfloat,
-  stripzero=lpeg.patterns.stripzero,
-  stripzeros=lpeg.patterns.stripzeros,
- }
-end
+local preamble=""
+local environment={
+ global=global or _G,
+ lpeg=lpeg,
+ type=type,
+ tostring=tostring,
+ tonumber=tonumber,
+ format=string.format,
+ concat=table.concat,
+ signed=number.signed,
+ points=number.points,
+ basepoints=number.basepoints,
+ utfchar=utf.char,
+ utfbyte=utf.byte,
+ lpegmatch=lpeg.match,
+ nspaces=string.nspaces,
+ utfpadding=string.utfpadding,
+ tracedchar=string.tracedchar,
+ autosingle=string.autosingle,
+ autodouble=string.autodouble,
+ sequenced=table.sequenced,
+ formattednumber=number.formatted,
+ sparseexponent=number.sparseexponent,
+ formattedfloat=number.formattedfloat,
+ stripzero=lpeg.patterns.stripzero,
+ stripzeros=lpeg.patterns.stripzeros,
+}
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
   local v=t[k-1]..",a"..k
@@ -3698,31 +3661,33 @@ local format_extension=function(extensions,f,name)
  local extension=extensions[name] or "tostring(%s)"
  local f=tonumber(f) or 1
  local w=find(extension,"%.%.%.")
- if f==0 then
-  if w then
+ if w then
+  if f==0 then
    extension=gsub(extension,"%.%.%.","")
-  end
-  return extension
- elseif f==1 then
-  if w then
+   return extension
+  elseif f==1 then
    extension=gsub(extension,"%.%.%.","%%s")
-  end
-  n=n+1
-  local a="a"..n
-  return format(extension,a,a) 
- elseif f<0 then
-  local a="a"..(n+f+1)
-  return format(extension,a,a)
- else
-  if w then
-   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
-  end
-  local t={}
-  for i=1,f do
    n=n+1
-   t[i]="a"..n
+   local a="a"..n
+   return format(extension,a,a) 
+  elseif f<0 then
+   local a="a"..(n+f+1)
+   return format(extension,a,a)
+  else
+   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
+   local t={}
+   for i=1,f do
+    n=n+1
+    t[i]="a"..n
+   end
+   return format(extension,unpack(t))
   end
-  return format(extension,unpack(t))
+ else
+  extension=gsub(extension,"%%s",function()
+   n=n+1
+   return "a"..n
+  end)
+  return extension
  end
 end
 local builder=Cs { "start",
@@ -3827,22 +3792,20 @@ local function use(t,fmt,...)
  return t[fmt](...)
 end
 strings.formatters={}
-if oldfashioned then
- function strings.formatters.new(noconcat)
-  local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_=preamble,_environment_={} }
-  setmetatable(t,{ __index=make,__call=use })
-  return t
+function strings.formatters.new(noconcat)
+ local e={} 
+ for k,v in next,environment do
+  e[k]=v
  end
-else
- function strings.formatters.new(noconcat)
-  local e={} 
-  for k,v in next,environment do
-   e[k]=v
-  end
-  local t={ _type_="formatter",_connector_=noconcat and "," or "..",_extensions_={},_preamble_="",_environment_=e }
-  setmetatable(t,{ __index=make,__call=use })
-  return t
- end
+ local t={
+  _type_="formatter",
+  _connector_=noconcat and "," or "..",
+  _extensions_={},
+  _preamble_="",
+  _environment_=e,
+ }
+ setmetatable(t,{ __index=make,__call=use })
+ return t
 end
 local formatters=strings.formatters.new() 
 string.formatters=formatters 
@@ -3864,15 +3827,9 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-if oldfashioned then
- add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],"local xmlescape = lpeg.patterns.xmlescape")
- add(formatters,"tex",[[lpegmatch(texescape,%s)]],"local texescape = lpeg.patterns.texescape")
- add(formatters,"lua",[[lpegmatch(luaescape,%s)]],"local luaescape = lpeg.patterns.luaescape")
-else
- add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
- add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
- add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
-end
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
 local dquote=patterns.dquote 
 local equote=patterns.escaped+dquote/'\\"'+1
 local cquote=Cc('"')

@@ -134,7 +134,7 @@ local copy_node          = nuts.copy
 local slide_nodes        = nuts.slide
 local set_visual         = nuts.setvisual
 
-local mlist_to_hlist     = nodes.mlist_to_hlist
+local mlist_to_hlist     = nuts.mlist_to_hlist
 
 local font_of_family     = node.family_font
 

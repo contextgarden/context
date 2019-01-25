@@ -50,7 +50,6 @@ local getsubtype   = nuts.getsubtype
 local setlist      = nuts.setlist
 
 local getbox       = nuts.getbox
-local getboxnode   = nodes.getbox
 
 local removables   = {
     [whatsitcodes.open]    = true,

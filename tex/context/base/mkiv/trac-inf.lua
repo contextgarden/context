@@ -265,11 +265,13 @@ function statistics.timed(action,all)
     stoptiming("run")
     local runtime = tonumber(elapsedtime("run"))
     if all then
-        local alltime = lua.getruntime and lua.getruntime() or elapsedtime(statistics)
-        report("total runtime: %0.3f seconds of %0.3f seconds",runtime,alltime)
-    else
-        report("total runtime: %0.3f seconds",runtime)
+        local alltime = tonumber(lua.getruntime and lua.getruntime() or elapsedtime(statistics))
+        if alltime and alltime > 0 then
+            report("total runtime: %0.3f seconds of %0.3f seconds",runtime,alltime)
+            return
+        end
     end
+    report("total runtime: %0.3f seconds",runtime)
 end
 
 -- goodie

@@ -460,18 +460,20 @@ end
 
 do
 
-    local flush_list = nodes.flush_list
-    local copy_list  = nodes.copy_list
-    local takebox    = nodes.takebox
-    local texsetbox  = tex.setbox
+    local nuts       = nodes.nuts
+    local tonode     = nuts.tonode
+    local takebox    = nuts.takebox
+    local flush_list = nuts.flush_list
+    local copy_list  = nuts.copy_list
+    local getwhd     = nuts.getwhd
+    local setbox     = nuts.setbox
+    local new_hlist  = nuts.pool.hlist
 
-    local new_hlist  = nodes.pool.hlist
-
-    local boxes  = { }
-    nodes.boxes  = boxes
-    local cache  = table.setmetatableindex("table")
-    local report = logs.reporter("boxes","cache")
-    local trace  = false
+    local boxes      = { }
+    nodes.boxes      = boxes
+    local cache      = table.setmetatableindex("table")
+    local report     = logs.reporter("boxes","cache")
+    local trace      = false
 
     trackers.register("nodes.boxes",function(v) trace = v end)
 
@@ -503,7 +505,9 @@ do
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"direct",b and "content" or "empty")
         end
-        return b or nil
+        if b then
+            return tonode(b)
+        end
     end
 
     function boxes.restore(category,name,box,copy)
@@ -524,10 +528,8 @@ do
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"restore",b and "content" or "empty")
         end
-        texsetbox(box,b or nil)
+        setbox(box,b or nil)
     end
-
-    local getwhd = nodes.getwhd
 
     function boxes.dimensions(category,name)
         name = tonumber(name) or name
@@ -608,19 +610,19 @@ do
         actions   = boxes.reset,
     }
 
-    implement {
-        name    = "lastlinewidth",
-        actions = function()
-            local head = tex.lists.page_head
-            -- list dimensions returns 3 value but we take the first
-            context(head and getdimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
-        end
-    }
-
-    interfaces.implement {
-        name      = "shiftbox",
-        arguments = { "integer", "dimension" },
-        actions   = function(n,d) setshift(getbox(n),d) end,
-    }
-
 end
+
+implement {
+    name    = "lastlinewidth",
+    actions = function()
+        local head = tex.lists.page_head
+        -- list dimensions returns 3 value but we take the first
+        context(head and getdimensions(getlist(find_tail(tonut(tex.lists.page_head)))) or 0)
+    end
+}
+
+interfaces.implement {
+    name      = "shiftbox",
+    arguments = { "integer", "dimension" },
+    actions   = function(n,d) setshift(getbox(n),d) end,
+}

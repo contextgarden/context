@@ -20,18 +20,27 @@ local implement         = interfaces.implement
 
 local nodecodes         = nodes.nodecodes
 
-local slide_node_list   = nodes.slide
-local write_node        = nodes.write
-local flush_node        = nodes.flush
-local copy_node_list    = nodes.copy_list
-local vpack_node_list   = nodes.vpack
+local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+local slide_node_list   = nuts.slide
+local write_node        = nuts.write
+local flush_node        = nuts.flush
+local copy_node_list    = nuts.copy_list
+local vpack_node_list   = nuts.vpack
+
+local getbox            = nuts.getbox
+local setlink           = nuts.setlink
+local getlist           = nuts.getlist
+local setlist           = nuts.setlist
+local getwhd            = nuts.getwhd
+local setwhd            = nuts.setwhd
 
 local settings_to_array = utilities.parsers.settings_to_array
 
 local enableaction      = nodes.tasks.enableaction
 
 local texgetdimen       = tex.getdimen
-local texgetbox         = tex.getbox
+----- texgetbox         = tex.getbox
 
 local trace_collecting = false  trackers.register("streams.collecting", function(v) trace_collecting = v end)
 local trace_flushing   = false  trackers.register("streams.flushing",   function(v) trace_flushing   = v end)
@@ -41,7 +50,11 @@ local report_streams = logs.reporter("streams")
 streams       = streams or { } -- might move to the builders namespace
 local streams = streams
 
-local data, name, stack = { }, nil, { }
+-- maybe store head and tail ... first we need usage
+
+local data    = { }
+local name    = nil
+local stack   = { }
 
 function streams.enable(newname)
     if newname == "default" then
@@ -66,7 +79,7 @@ end
 
 function streams.collect(head,where)
     if name and head and name ~= "default" then
-        local tail = node.slide(head)
+        local head = tonut(head)
         local dana = data[name]
         if not dana then
             dana = { }
@@ -75,7 +88,7 @@ function streams.collect(head,where)
         local last = dana[#dana]
         if last then
             local tail = slide_node_list(last)
-            tail.next, head.prev = head, tail
+            setlink(tail,head)
         elseif last == false then
             dana[#dana] = head
         else
@@ -84,9 +97,9 @@ function streams.collect(head,where)
         if trace_collecting then
             report_streams("appending snippet %a to slot %s",name,#dana)
         end
-        return nil, true
+        return nil
     else
-        return head, false
+        return head
     end
 end
 
@@ -118,7 +131,7 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
             for i=1,dn do
                 local di = dana[i]
                 if di then
-                    write_node(copy_node_list(di.list)) -- list, will be option
+                    write_node(copy_node_list(getlist(di))) -- list, will be option
                 end
             end
             if copy then
@@ -131,8 +144,8 @@ function streams.flush(name,copy) -- problem: we need to migrate afterwards
             for i=1,dn do
                 local di = dana[i]
                 if di then
-                    write_node(di.list) -- list, will be option
-                    di.list = nil
+                    write_node(getlist(di)) -- list, will be option
+                    setlist(di)
                     flush_node(di)
                 end
             end
@@ -167,7 +180,7 @@ function streams.synchronize(list) -- this is an experiment !
             local slot = dana[m]
             if slot then
                 local vbox = vpack_node_list(slot)
-                local ht, dp = vbox.height, vbox.depth
+                local wd, ht, dp = getwhd(vbox)
                 if ht > height then
                     height = ht
                 end
@@ -191,32 +204,36 @@ function streams.synchronize(list) -- this is an experiment !
             local dana = data[name]
             local vbox = dana[m]
             if vbox then
-                local delta_height = height - vbox.height
-                local delta_depth  = depth  - vbox.depth
+                local wd, ht, dp = getwhd(vbox)
+                local delta_height = height - ht
+                local delta_depth  = depth  - dp
                 if delta_height > 0 or delta_depth > 0 then
                     if false then
                         -- actually we need to add glue and repack
-                        vbox.height, vbox.depth = height, depth
+                        setwhd(vbox,false,height,depth)
                         if trace_flushing then
                             report_streams("slot %s of %a with delta (%p,%p) is compensated",m,i,delta_height,delta_depth)
                         end
                     else
                         -- this is not yet ok as we also need to keep an eye on vertical spacing
                         -- so we might need to do some splitting or whatever
-                        local tail = vbox.list and slide_node_list(vbox.list)
-                        local n, delta = 0, delta_height -- for tracing
+                        local list  = getlist(vbox)
+                        local tail  = list and slide_node_list(list)
+                        local n     = 0
+                        local delta = delta_height -- for tracing
                         while delta > 0 do
                             -- we need to add some interline penalties
-                            local line = copy_node_list(texgetbox("strutbox"))
-                            line.height, line.depth = strutht, strutdp
+                            local line = copy_node_list(getbox("strutbox"))
+                            setwhd(line,false,strutht,strutdp)
                             if tail then
-                                tail.next, line.prev = line, tail
+                                setlink(tail,line)
                             end
-                            tail = line
-                            n, delta = n +1, delta - struthtdp
+                            tail  = line
+                            n     = n + 1
+                            delta = delta - struthtdp
                         end
-                        dana[m] = vpack_node_list(vbox.list)
-                        vbox.list = nil
+                        dana[m] = vpack_node_list(getlist(vbox))
+                        setlist(vbox)
                         flush_node(vbox)
                         if trace_flushing then
                             report_streams("slot %s:%s with delta (%p,%p) is compensated by %s lines",m,i,delta_height,delta_depth,n)
@@ -229,6 +246,8 @@ function streams.synchronize(list) -- this is an experiment !
         end
     end
 end
+
+-- hm, nut or node
 
 tasks.appendaction("mvlbuilders", "normalizers", "streams.collect")
 

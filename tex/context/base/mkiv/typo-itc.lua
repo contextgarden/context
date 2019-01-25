@@ -124,14 +124,22 @@ local function okay(data,current,font,prevchar,previtalic,char,what)
         return false
     end
     if threshold then
-        local ht = getheight(current)
-        local ex = exheights[font]
-        local th = threshold * ex
-        if ht <= th then
-            if trace_italics then
-                report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+     -- if getid(current) == glyph_code then
+        while current and getid(current) ~= glyph_code do
+            current = getprev(current)
+        end
+        if current then
+            local ht = getheight(current)
+            local ex = exheights[font]
+            local th = threshold * ex
+            if ht <= th then
+                if trace_italics then
+                    report_italics("ignoring correction between %s italic %C and regular %C, height %p less than threshold %p",prevchar,what,char,ht,th)
+                end
+                return false
             end
-            return false
+        else
+            -- maybe backtrack to glyph
         end
     end
     if trace_italics then

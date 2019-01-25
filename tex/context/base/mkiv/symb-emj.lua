@@ -19,32 +19,27 @@ local protectglyphs   = nodes.handlers.protectglyphs
 local tonodes         = nodes.tonodes
 local currentfont     = font.current
 
--- fast enough, no need to memoize
-
-local glyph_code   = nodes.nodecodes.glyph
-local remove_node  = nodes.remove
-local getid        = nodes.getid
-local getnext      = nodes.getnext
-local getchar      = nodes.getchar
+local nuts            = nodes.nuts
+local tonode          = nuts.tonode
+local tonut           = nuts.tonut
+local remove_node     = nuts.remove
+local isglyph         = nuts.isglyph
 
 local function removemodifiers(head)
+    local head    = tonut(head)
     local current = head
     while current do
-        if getid(current) == glyph_code then
-            local char = getchar(current) -- using categories is too much
-            if char == 0x200D or (char >= 0x1F3FB and char <= 0x1F3FF) then
-                head, current = remove_node(head,current,true)
-            else
-                current = getnext(current)
-            end
+        local char, id = isglyph(current)
+        if char and char == 0x200D or (char >= 0x1F3FB and char <= 0x1F3FF) then
+            head, current = remove_node(head,current,true)
         else
             current = getnext(current)
         end
     end
-    return head
+    return tonode(head)
 end
 
--- attributes
+-- fast enough, no need to memoize, maybe use attributes
 
 local function checkedemoji(name,id)
     local str = resolvedemoji(name)

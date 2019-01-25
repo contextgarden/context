@@ -126,11 +126,7 @@ do
         arguments = "2 strings",
     }
 
-    if LUAVERSION < 5.2  then
-        utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]], "local texexp = metapost.texexp")
-    else
-        utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]],      { texexp = metapost.texexp })
-    end
+    utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]],      { texexp = metapost.texexp })
 
     local f_textext = formatters[ [[textext("%s")]] ]
     local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]

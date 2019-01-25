@@ -56,12 +56,11 @@ boolean hobbiestextext ; hobbiestextext := false ;
 % enddef ;
 
 vardef textext@#(expr txt) =
-  save _s_ ; string _s_ ;
   interim labeloffset := textextoffset ;
   noftexpictures := noftexpictures + 1 ;
   if string txt :
     if hobbiestextext : % the tex.mp method as fallback (see tex.mp)
-      write _s_ & "btex " & txt & " etex" to "mptextmp.mp" ;
+      write "btex " & txt & " etex" to "mptextmp.mp" ;
       write EOF to "mptextmp.mp" ;
       scantokens "input mptextmp"
     else :

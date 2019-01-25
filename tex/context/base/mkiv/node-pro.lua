@@ -124,28 +124,20 @@ do
 
     do
 
-        local setboth = nodes.setboth
-        local hpack   = nodes.hpack
+        local hpack = nodes.hpack
 
         function nodes.fullhpack(head,...)
-            head = hpack_filter(head)
-            local hp, b = hpack(head,...)
-            setboth(hp)
-            return hp, b
+            return hpack((hpack_filter(head)),...)
         end
 
     end
 
     do
 
-        local setboth = nuts.setboth
-        local hpack   = nuts.hpack
+        local hpack = nuts.hpack
 
         function nuts.fullhpack(head,...)
-            local head = tonut(hpack_filter(tonode(head)))
-            local hp, b = hpack(head,...)
-            setboth(hp)
-            return hp, b
+            return hpack(tonut(hpack_filter(tonode(head))),...)
         end
 
     end

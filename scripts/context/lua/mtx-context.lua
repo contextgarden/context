@@ -695,7 +695,7 @@ function scripts.context.run(ctxdata,filename)
         --
         if pathname == "" and not a_global and filename ~= usedfiles.nop then
             filename = "./" .. filename
-            if not validfile(filename) then
+            if not validfile(filename) and not validfile(filename..".tex") then
                 report("warning: no (local) file %a, proceeding",filename)
             end
         end
