@@ -61,19 +61,6 @@
 
 \newtoks\everyresetalign % todo
 
-%D We will not use bodydir and pagedir so we disable them. That way we get
-%D normal hyperlink support. We back on it (too hard to fake \type {\the}).
-
-\chardef\directionlefttoright\zerocount
-\chardef\directionrighttoleft\plusone
-
-\ifdefined\pagedir
-    \let\pagedir      \undefined \let\normalpagedir      \undefined
-    \let\bodydir      \undefined \let\normalbodydir      \undefined
-    \let\pagedirection\undefined \let\normalpagedirection\undefined
-    \let\bodydirection\undefined \let\normalbodydirection\undefined
-\fi
-
 % This will become a more advanced layout controller soon:
 
 \newconditional\layoutlefttoright   \settrue\layoutlefttoright

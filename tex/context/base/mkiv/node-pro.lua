@@ -76,16 +76,16 @@ do
 
     local tracer      = processors.tracer
 
-    local function pre_linebreak_filter(head,groupcode) -- ,size,packtype,direction
+    local function pre_linebreak_filter(head,groupcode)
         local found = force_processors or has_glyph(head)
         if found then
             if trace_callbacks then
                 local before = count_nodes(head,true)
-                head = actions(head,groupcode) -- ,size,packtype,direction
+                head = actions(head,groupcode)
                 local after = count_nodes(head,true)
                 tracer("pre_linebreak",head,groupcode,before,after,true)
             else
-                head = actions(head,groupcode) -- ,size,packtype,direction
+                head = actions(head,groupcode)
             end
         elseif trace_callbacks then
             local n = count_nodes(head,false)

@@ -75,13 +75,13 @@ local new_wordboundary   = nodepool.wordboundary
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 
-local glyph_code         = nodecodes.glyph
 local kern_code          = nodecodes.kern
 local math_code          = nodecodes.math
 
 local fontkern_code      = kerncodes.fontkern
------ userkern_code      = kerncodes.userkern
 local italickern_code    = kerncodes.italiccorrection
+
+local is_letter          = characters.is_letter
 
 local typesetters        = typesetters
 
@@ -321,17 +321,21 @@ function breakpoints.handler(head)
         local stop  = data[2]
         local cmap  = data[3]
         local smap  = data[4]
---         local lang  = getlang(start)
 --         -- we do a sanity check for language
+--         local lang  = getlang(start)
 --         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
 --         if smap then
             local nleft = smap.nleft
             local cleft = 0
             local prev  = getprev(start)
-            local kern   = nil
+            local kern  = nil
             while prev and nleft ~= cleft do
-                local id = getid(prev)
-                if id == glyph_code then
+                local char, id = isglyph(prev)
+                if char then
+                    if not is_letter[char] then
+                        cleft = -1
+                        break
+                    end
                     cleft = cleft + 1
                     prev  = getprev(prev)
                 elseif id == kern_code then
@@ -357,6 +361,10 @@ function breakpoints.handler(head)
                 while next and nright ~= cright do
                     local char, id = isglyph(next)
                     if char then
+                        if not is_letter[char] then
+                            cright = -1
+                            break
+                        end
                         if cright == 1 and cmap[char] then
                             -- let's not make it too messy
                             break

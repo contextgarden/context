@@ -66,6 +66,7 @@ local getchar             = nuts.getchar
 local getattr             = nuts.getattr
 local getprop             = nuts.getprop
 local getdirection        = nuts.getdirection
+local isglyph             = nuts.isglyph
 
 local setprop             = nuts.setprop
 local setchar             = nuts.setchar
@@ -247,16 +248,16 @@ end
 -- tracking what direction is used and skipping tests is not faster (extra kind of
 -- compensates gain)
 
-local mt_space  = { __index = { char = 0x0020, direction = "ws",  original = "ws",  level = 0 } }
-local mt_lre    = { __index = { char = 0x202A, direction = "lre", original = "lre", level = 0 } }
-local mt_rle    = { __index = { char = 0x202B, direction = "rle", original = "rle", level = 0 } }
-local mt_pdf    = { __index = { char = 0x202C, direction = "pdf", original = "pdf", level = 0 } }
-local mt_object = { __index = { char = 0xFFFC, direction = "on",  original = "on",  level = 0 } }
+local mt_space  = { __index = { char = 0x0020, direction = "ws",  original = "ws",  level = 0, skip = 0 } }
+local mt_lre    = { __index = { char = 0x202A, direction = "lre", original = "lre", level = 0, skip = 0 } }
+local mt_rle    = { __index = { char = 0x202B, direction = "rle", original = "rle", level = 0, skip = 0 } }
+local mt_pdf    = { __index = { char = 0x202C, direction = "pdf", original = "pdf", level = 0, skip = 0 } }
+local mt_object = { __index = { char = 0xFFFC, direction = "on",  original = "on",  level = 0, skip = 0 } }
 
 local stack = table.setmetatableindex("table") -- shared
 local list  = { }                              -- shared
 
-local function build_list(head) -- todo: store node pointer ... saves loop
+local function build_list(head,where) -- todo: store node pointer ... saves loop
     -- P1
     local current = head
     local size    = 0
@@ -265,6 +266,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
         local id = getid(current)
         local p  = properties[current]
         if p and p.directions then
+            -- tricky as dirs can be injected in between
             local skip = 0
             local last = id
             current    = getnext(current)
@@ -287,6 +289,7 @@ local function build_list(head) -- todo: store node pointer ... saves loop
         elseif id == glyph_code then
             local chr  = getchar(current)
             local dir  = directiondata[chr]
+            -- could also be a metatable
             list[size] = { char = chr, direction = dir, original = dir, level = 0 }
             current    = getnext(current)
          -- if not list[dir] then list[dir] = true end -- not faster when we check for usage
@@ -296,9 +299,9 @@ local function build_list(head) -- todo: store node pointer ... saves loop
         elseif id == dir_code then
             local dir, pop = getdirection(current)
             if dir == lefttoright_code then
-                list[size] = setmetatable({ },swap and mt_pdf or mt_lre)
+                list[size] = setmetatable({ },pop and mt_pdf or mt_lre)
             elseif dir == righttoleft_code then
-                list[size] = setmetatable({ },swap and mt_pdf or mt_rle)
+                list[size] = setmetatable({ },pop and mt_pdf or mt_rle)
             else
                 list[size] = setmetatable({ id = id },mt_object)
             end
@@ -353,6 +356,7 @@ end
 
 local function resolve_fences(list,size,start,limit)
     -- N0: funny effects, not always better, so it's an option
+    local stack    = { }
     local nofstack = 0
     for i=start,limit do
         local entry = list[i]
@@ -368,7 +372,6 @@ local function resolve_fences(list,size,start,limit)
                     local stacktop = stack[nofstack]
                     stacktop[1]    = mirror
                     stacktop[2]    = i
-                    stacktop[3]    = false -- not used
                 elseif nofstack == 0 then
                     -- skip
                 elseif class == "close" then
@@ -411,15 +414,15 @@ local function get_baselevel(head,list,size,direction)
         return direction, true
     elseif getid(head) == localpar_code and getsubtype(head) == 0 then
         direction = getdirection(head)
-        if direction == righttoleft_code or direction == lefttoright_code then
+        if direction == lefttoright_code or direction == righttoleft_code then
             return direction, true
         end
     end
     -- for old times sake we we handle strings too
     if direction == "TLT" then
-        return righttoleft_code, true
-    elseif direction == "TRT" then
         return lefttoright_code, true
+    elseif direction == "TRT" then
+        return righttoleft_code, true
     end
     -- P2, P3:
     for i=1,size do
@@ -505,7 +508,7 @@ local function resolve_explicit(list,size,baselevel)
             end
         -- X7
         elseif direction == "pdf" then
-            if nofstack < maximum_stack then
+            if nofstack > 0 then
                 local stacktop  = stack[nofstack]
                 level           = stacktop[1]
                 override        = stacktop[2]
@@ -514,7 +517,11 @@ local function resolve_explicit(list,size,baselevel)
                 entry.direction = "bn"
                 entry.remove    = true
             elseif trace_directions then
-                report_directions("stack overflow at position %a with direction %a",i,direction)
+                report_directions("stack underflow at position %a with direction %a",
+                    i, direction)
+            else
+                report_directions("stack underflow at position %a with direction %a: %s",
+                    i, direction, show_list(list,size))
             end
         -- X6
         else
@@ -899,6 +906,10 @@ local function insert_dir_points(list,size)
     end
 end
 
+-- We flag nodes that can be skipped when we see them again but because whatever
+-- mechanism can injetc dir nodes that then are not flagged, we don't flag dir
+-- nodes that we inject here.
+
 local function apply_to_list(list,size,head,pardir)
     local index   = 1
     local current = head
@@ -914,7 +925,12 @@ local function apply_to_list(list,size,head,pardir)
         local entry    = list[index]
         local begindir = entry.begindir
         local enddir   = entry.enddir
-        local p = properties[current] if p then p.directions = true else properties[current] = { directions = true } end
+        local p = properties[current]
+        if p then
+            p.directions = true
+        else
+            properties[current] = { directions = true }
+        end
         if id == glyph_code then
             local mirror = entry.mirror
             if mirror then
@@ -939,40 +955,33 @@ local function apply_to_list(list,size,head,pardir)
         elseif id == glue_code then
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
-                local d = new_direction(enddir,true)
-                local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-             -- setattrlist(d,current)
-                head = insert_node_before(head,current,d)
+                head = insert_node_before(head,current,new_direction(enddir,true))
                 enddir = false
             end
         elseif begindir then
             if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
-                local d = new_direction(begindir)
-                local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-             -- setattrlist(d,current)
-                head, current = insert_node_after(head,current,d)
+                head, current = insert_node_after(head,current,new_direction(begindir))
                 begindir = nil
             end
         end
         if begindir then
-            local d = new_direction(begindir)
-            local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-         -- setattrlist(d,current)
-            head = insert_node_before(head,current,d)
+            head = insert_node_before(head,current,new_direction(begindir))
         end
         local skip = entry.skip
         if skip and skip > 0 then
             for i=1,skip do
                 current = getnext(current)
-                local p = properties[current] if p then p.directions = true else properties[current] = { directions = true } end
+                local p = properties[current]
+                if p then
+                    p.directions = true
+                else
+                    properties[current] = { directions = true }
+                end
             end
         end
         if enddir then
-            local d = new_direction(enddir,true)
-            local p = properties[d] if p then p.directions = true else properties[d] = { directions = true } end
-         -- setattrlist(d,current)
-            head, current = insert_node_after(head,current,d)
+            head, current = insert_node_after(head,current,new_direction(enddir,true))
         end
         if not entry.remove then
             current = getnext(current)
@@ -996,12 +1005,19 @@ end
 -- have more than one node. Actually, we only enter this function when we
 -- do have a glyph!
 
-local function process(head,direction,only_one)
+local function process(head,direction,only_one,where)
+
+-- print("START")
+-- for n in nodes.traverse(nodes.tonode(head)) do
+--     print("  "..tostring(n))
+-- end
+-- print("STOP")
+
     -- for the moment a whole paragraph property
     local attr = getattr(head,a_directions)
     local analyze_fences = getfences(attr)
     --
-    local list, size = build_list(head)
+    local list, size = build_list(head,where)
     local baselevel, dirfound = get_baselevel(head,list,size,direction) -- we always have an inline dir node in context
     if trace_details then
         report_directions("analyze: baselevel %a",baselevel == righttoleft_code and "r2l" or "l2r")

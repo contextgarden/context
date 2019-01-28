@@ -419,7 +419,7 @@ local function resolve_explicit(list,size,baselevel)
             end
         -- X7
         elseif direction == "pdf" then
-            if nofstack < maximum_stack then
+            if noifstack > 0 then
                 local stacktop  = stack[nofstack]
                 nofstack        = nofstack - 1
                 level           = stacktop[1]
@@ -428,7 +428,7 @@ local function resolve_explicit(list,size,baselevel)
                 entry.direction = "bn"
                 entry.remove    = true
             elseif trace_directions then
-                report_directions("stack overflow at position %a with direction %a",i,direction)
+                report_directions("stack underflow at position %a with direction %a",i,direction)
             end
         -- X6
         else

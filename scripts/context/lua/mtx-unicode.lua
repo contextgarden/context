@@ -14,9 +14,54 @@ if not modules then modules = { } end modules ['mtx-unicode'] = {
 --
 --    e:/tex-context/tex/texmf-local/data/unicode/blocks.txt
 --
--- last checked:
+-- curl -o arabicshaping.txt             http://www.unicode.org/Public/UNIDATA/ArabicShaping.txt
+-- curl -o bidibrackets.txt              http://www.unicode.org/Public/UNIDATA/BidiBrackets.txt
+-- curl -o bidicharactertest.txt         http://www.unicode.org/Public/UNIDATA/BidiCharacterTest.txt
+-- curl -o bidimirroring.txt             http://www.unicode.org/Public/UNIDATA/BidiMirroring.txt
+-- curl -o biditest.txt                  http://www.unicode.org/Public/UNIDATA/BidiTest.txt
+-- curl -o blocks.txt                    http://www.unicode.org/Public/UNIDATA/Blocks.txt
+-- curl -o cjkradicals.txt               http://www.unicode.org/Public/UNIDATA/CJKRadicals.txt
+-- curl -o casefolding.txt               http://www.unicode.org/Public/UNIDATA/CaseFolding.txt
+-- curl -o compositionexclusions.txt     http://www.unicode.org/Public/UNIDATA/CompositionExclusions.txt
+-- curl -o derivedage.txt                http://www.unicode.org/Public/UNIDATA/DerivedAge.txt
+-- curl -o derivedcoreproperties.txt     http://www.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
+-- curl -o derivednormalizationprops.txt http://www.unicode.org/Public/UNIDATA/DerivedNormalizationProps.txt
+-- curl -o eastasianwidth.txt            http://www.unicode.org/Public/UNIDATA/EastAsianWidth.txt
+-- curl -o emojisources.txt              http://www.unicode.org/Public/UNIDATA/EmojiSources.txt
+-- curl -o hangulsyllabletype.txt        http://www.unicode.org/Public/UNIDATA/HangulSyllableType.txt
+-- curl -o index.txt                     http://www.unicode.org/Public/UNIDATA/Index.txt
+-- curl -o indicpositionalcategory.txt   http://www.unicode.org/Public/UNIDATA/IndicPositionalCategory.txt
+-- curl -o indicsyllabiccategory.txt     http://www.unicode.org/Public/UNIDATA/IndicSyllabicCategory.txt
+-- curl -o jamo.txt                      http://www.unicode.org/Public/UNIDATA/Jamo.txt
+-- curl -o linebreak.txt                 http://www.unicode.org/Public/UNIDATA/LineBreak.txt
+-- curl -o namealiases.txt               http://www.unicode.org/Public/UNIDATA/NameAliases.txt
+-- curl -o namedsequences.txt            http://www.unicode.org/Public/UNIDATA/NamedSequences.txt
+-- curl -o namedsequencesprov.txt        http://www.unicode.org/Public/UNIDATA/NamedSequencesProv.txt
+-- curl -o nameslist.html                http://www.unicode.org/Public/UNIDATA/NamesList.html
+-- curl -o nameslist.txt                 http://www.unicode.org/Public/UNIDATA/NamesList.txt
+-- curl -o normalizationcorrections.txt  http://www.unicode.org/Public/UNIDATA/NormalizationCorrections.txt
+-- curl -o normalizationtest.txt         http://www.unicode.org/Public/UNIDATA/NormalizationTest.txt
+-- curl -o proplist.txt                  http://www.unicode.org/Public/UNIDATA/PropList.txt
+-- curl -o propertyaliases.txt           http://www.unicode.org/Public/UNIDATA/PropertyAliases.txt
+-- curl -o propertyvaluealiases.txt      http://www.unicode.org/Public/UNIDATA/PropertyValueAliases.txt
+-- curl -o readme.txt                    http://www.unicode.org/Public/UNIDATA/ReadMe.txt
+-- curl -o scriptextensions.txt          http://www.unicode.org/Public/UNIDATA/ScriptExtensions.txt
+-- curl -o scripts.txt                   http://www.unicode.org/Public/UNIDATA/Scripts.txt
+-- curl -o specialcasing.txt             http://www.unicode.org/Public/UNIDATA/SpecialCasing.txt
+-- curl -o standardizedvariants.html     http://www.unicode.org/Public/UNIDATA/StandardizedVariants.html
+-- curl -o standardizedvariants.txt      http://www.unicode.org/Public/UNIDATA/StandardizedVariants.txt
+-- curl -o tangutsources.txt             http://www.unicode.org/Public/UNIDATA/TangutSources.txt
+-- curl -o ucd.zip                       http://www.unicode.org/Public/UNIDATA/UCD.zip
+-- curl -o usourcedata.txt               http://www.unicode.org/Public/UNIDATA/USourceData.txt
+-- curl -o usourceglyphs.pdf             http://www.unicode.org/Public/UNIDATA/USourceGlyphs.pdf
+-- curl -o unicodedata.txt               http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
+-- curl -o unihan.zip                    http://www.unicode.org/Public/UNIDATA/Unihan.zip
 --
---    code freeze tl 2014 / unicode 7
+-- curl -o emoji-data.txt                http://unicode.org/Public/emoji/11.0/emoji-data.txt
+-- curl -o emoji-sequences.txt           http://unicode.org/Public/emoji/11.0/emoji-sequences.txt
+-- curl -o emoji-variation-sequences.txt http://unicode.org/Public/emoji/11.0/emoji-variation-sequences.txt
+-- curl -o emoji-zwj-sequences.txt       http://unicode.org/Public/emoji/11.0/emoji-zwj-sequences.txt
+-- curl -o emoji-test.txt                http://unicode.org/Public/emoji/11.0/emoji-test.txt
 --
 -- todo:
 --

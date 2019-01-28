@@ -89,6 +89,7 @@ local getobjectcompresslevel  = pdf.getobjcompresslevel
 
 local setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
 local setomitcidset           = pdf.setomitcidset
+local setomitcharset          = pdf.setomitcharset or function() end
 
 local function pdfdisablecommand(command)
     pdf[command] = function()
@@ -102,6 +103,7 @@ pdfdisablecommand("setnames")
 pdfdisablecommand("settrailer")
 pdfdisablecommand("settrailerid")
 pdfdisablecommand("setomitcidset")
+pdfdisablecommand("setomitcharset")
 pdfdisablecommand("setpageresources")
 pdfdisablecommand("setpageattributes")
 pdfdisablecommand("setpagesattributes")
@@ -145,6 +147,7 @@ updaters.register("backend.update.lpdf",function()
 
     setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
     setomitcidset           = pdf.setomitcidset
+    setomitcharset          = pdf.setomitcharset
 
     pdfdisablecommand("setinfo")
     pdfdisablecommand("setcatalog")
@@ -234,6 +237,10 @@ end
 
 function lpdf.setomitcidset(v)
     return setomitcidset(v)
+end
+
+function lpdf.setomitcharset(v)
+    return setomitcharset(v)
 end
 
 local jobpositions = job.positions

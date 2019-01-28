@@ -190,10 +190,10 @@
 %D want to use as meaningful commands as possible, and because \TEX\ already
 %D uses up some of those, we save the original meanings.
 
-\savenormalmeaning\time
-\savenormalmeaning\year
-\savenormalmeaning\month
-\savenormalmeaning\day
+% \savenormalmeaning\time
+% \savenormalmeaning\year
+% \savenormalmeaning\month
+% \savenormalmeaning\day
 
 %D \macros
 %D   {month,MONTH}
@@ -218,7 +218,7 @@
 %D \showsetup{month}
 %D \showsetup{MONTH}
 
-\let\month              \monthlong
+\let\month\monthlong
 
 \unexpanded\def\MONTH     #1{\WORD{\month     {#1}}}
 \unexpanded\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
@@ -408,17 +408,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\setupsystem
-  [\c!y=\normalyear,
-   \c!m=\normalmonth,
-   \c!d=\normalday]
-
 \newtoks \everycurrentdate
-
-\def\syst_converters_check_date
-  {\edef\temp{\systemparameter\c!y}\scratchcounterone  \ifx\temp\empty\normalyear \else\temp\fi
-   \edef\temp{\systemparameter\c!m}\scratchcountertwo  \ifx\temp\empty\normalmonth\else\temp\fi
-   \edef\temp{\systemparameter\c!d}\scratchcounterthree\ifx\temp\empty\normalday  \else\temp\fi}
 
 \unexpanded\def\currentdate
   {\dosingleempty\syst_converters_current_date}
@@ -427,40 +417,40 @@
   {\dontleavehmode
    \begingroup
    \the\everycurrentdate
-   \syst_converters_check_date
    \clf_currentdate
-     {#1}%
-     {\currentdatespecification}%
-     {\labellanguage}%
-     \scratchcounterone
-     \scratchcountertwo
-     \scratchcounterthree
+     {#1}{\currentdatespecification}{\labellanguage}%
+     \normalyear\normalmonth\normalday
    \endgroup}
 
 \unexpanded\def\date
   {\dodoubleempty\syst_converters_date}
 
 \def\syst_converters_date[#1][#2]%
-  {\begingroup
+  {\dontleavehmode
+   \begingroup
+   \scratchcounterone  \normalyear
+   \scratchcountertwo  \normalmonth
+   \scratchcounterthree\normalday
    \iffirstargument
-     \setupsystem[#1]%
+     \letdummyparameter\c!y\empty
+     \letdummyparameter\c!m\empty
+     \letdummyparameter\c!d\empty
+     \getdummyparameters[#1]%
+     \edef\temp{\dummyparameter\c!y}\ifx\temp\empty\else\scratchcounterone  \temp\fi
+     \edef\temp{\dummyparameter\c!m}\ifx\temp\empty\else\scratchcountertwo  \temp\fi
+     \edef\temp{\dummyparameter\c!d}\ifx\temp\empty\else\scratchcounterthree\temp\fi
+     \relax
    \fi
-   \syst_converters_check_date
-   \syst_converters_current_date[#2]%
+   \the\everycurrentdate
+   \clf_currentdate
+     {#1}{\currentdatespecification}{\labellanguage}%
+     \scratchcounterone\scratchcountertwo\scratchcounterthree
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
-  {\begingroup
-   \syst_converters_check_date
-   \clf_currentdate
-     {#1}%
-     {\currentdatespecification}%
-     {}%
-     \scratchcounterone
-     \scratchcountertwo
-     \scratchcounterthree
-   \relax
-   \endgroup}
+  {\clf_currentdate
+     {#1}{\currentdatespecification}{}%
+     \normalyear\normalmonth\normalday}
 
 %D \macros
 %D   {currenttime}

@@ -7715,14 +7715,6 @@
   {\unprotect
    \syst_helpers_unprotected}
 
-% awaiting the definitive implementation
-
-% \ifdefined\resettimer \else
-%   \let\resettimer \relax
-%   \newcount\elapsedtime
-% \fi
-% \def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
-
 \let\resettimer    \clf_resettimer
 \let\elapsedtime   \clf_elapsedtime
 \let\elapsedseconds \elapsedtime

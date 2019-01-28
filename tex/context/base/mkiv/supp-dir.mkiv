@@ -13,8 +13,37 @@
 
 \unprotect
 
-% \expanded{\defineactivecharacter \number"2000E} {\textdirection TRT\relax}
-% \expanded{\defineactivecharacter \number"2000F} {\textdirection TLT\relax}
+\chardef\directionlefttoright\zerocount
+\chardef\directionrighttoleft\plusone
+
+\edef\??bdir{\ifdefined\bodydir bdir\else direction\fi}
+
+\unexpanded\edef\naturalhbox  {\hbox  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvbox  {\vbox  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvtop  {\vtop  \??bdir\directionlefttoright}
+\unexpanded\edef\naturalhpack {\hpack \??bdir\directionlefttoright}
+\unexpanded\edef\naturalvpack {\vpack \??bdir\directionlefttoright}
+\unexpanded\edef\naturaltpack {\tpack \??bdir\directionlefttoright}
+
+\unexpanded\edef\reversehbox  {\hbox  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevbox  {\vbox  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevtop  {\vtop  \??bdir\directionrighttoleft}
+\unexpanded\edef\reversehpack {\hpack \??bdir\directionrighttoleft}
+\unexpanded\edef\reversevpack {\vpack \??bdir\directionrighttoleft}
+\unexpanded\edef\reversetpack {\tpack \??bdir\directionrighttoleft}
+
+\ifdefined\bodydir
+    \let\bodydir      \undefined \let\normalbodydir      \undefined
+    \let\bodydirection\undefined \let\normalbodydirection\undefined
+\fi
+
+\ifdefined\pagedir
+    \let\pagedir      \undefined \let\normalpagedir      \undefined
+    \let\pagedirection\undefined \let\normalpagedirection\undefined
+\fi
+
+% \expanded{\defineactivecharacter \number"2000E} {\textdirection\directionrighttoleft\relax}
+% \expanded{\defineactivecharacter \number"2000F} {\textdirection\directionlefttoright\relax}
 
 \def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 

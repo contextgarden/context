@@ -11,9 +11,7 @@ local scankeyword = tokens.scanners.keyword
 
 local settextdir = tex.settextdir
 local setlinedir = tex.setlinedir
-local setpagedir = tex.setpagedir
 local setpardir  = tex.setpardir
-local setbodydir = tex.setbodydir
 local setboxdir  = tex.setboxdir
 
 local function scandir(what)
@@ -21,10 +19,12 @@ local function scandir(what)
         what(0)
     elseif scankeyword("trt") then
         what(1)
-    elseif scankeyword("rtt") then
-        what(2)
-    elseif scankeyword("ltl") then
-        what(3)
+ -- elseif scankeyword("rtt") then
+ --     what(2)
+ -- elseif scankeyword("ltl") then
+ --     what(3)
+    else
+        what(0)
     end
 end
 

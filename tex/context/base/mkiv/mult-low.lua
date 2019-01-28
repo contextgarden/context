@@ -21,7 +21,9 @@ return {
         "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
-        --        --
+        --
+        "directionlefttoright", "directionrighttoleft",
+        --
         "endoflinetoken", "outputnewlinechar",
         --
         "emptytoks", "empty", "undefined",

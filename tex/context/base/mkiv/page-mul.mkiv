@@ -890,6 +890,7 @@
 
 \def\page_mul_routine_balance
   {\bgroup
+   % why no \forgetall here
    \page_mul_initialize_variables
    \widowpenalty\zerocount
    \setbox\b_page_mul_balance_content\vbox{\unvbox\normalpagebox}%

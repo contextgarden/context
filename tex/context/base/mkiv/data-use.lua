@@ -69,7 +69,11 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) -
         }
         io.savedata(luvname,table.serialize(luvdata,true))
         lua.registerfinalizer(function()
-            logs.report("format banner","%s",banner)
+            if jit then
+                logs.report("format banner","%s  lua: %s jit",banner,LUAVERSION)
+            else
+                logs.report("format banner","%s  lua: %s",banner,LUAVERSION)
+            end
             logs.newline()
         end)
     end

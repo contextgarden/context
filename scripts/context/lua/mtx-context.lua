@@ -40,49 +40,49 @@ local application = logs.application {
 }
 
 -- local luatexflags = {
---     ["8bit"]                        = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["default-translate-file"]      = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["translate-file"]              = true, -- ignored, input is assumed to be in UTF-8 encoding
---     ["etex"]                        = true, -- ignored, the etex extensions are always active
---     ["parse-first-line"]            = true, -- ignored, enable parsing of the first line of the input file
---     ["no-parse-first-line"]         = true, -- ignored, disable parsing of the first line of the input file
+--     ["8bit"]                        = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["default-translate-file"]      = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["translate-file"]              = true,  -- ignored, input is assumed to be in UTF-8 encoding
+--     ["etex"]                        = true,  -- ignored, the etex extensions are always active
+--     ["parse-first-line"]            = true,  -- ignored, enable parsing of the first line of the input file
+--     ["no-parse-first-line"]         = true,  -- ignored, disable parsing of the first line of the input file
 --
---     ["credits"]                     = true, -- display credits and exit
---     ["debug-format"]                = true, -- enable format debugging
---     ["disable-write18"]             = true, -- disable \write18{SHELL COMMAND}
---     ["draftmode"]                   = true, -- switch on draft mode (generates no output PDF)
---     ["enable-write18"]              = true, -- enable \write18{SHELL COMMAND}
---     ["file-line-error"]             = true, -- enable file:line:error style messages
---     ["file-line-error-style"]       = true, -- aliases of --file-line-error
---     ["no-file-line-error"]          = true, -- disable file:line:error style messages
---     ["no-file-line-error-style"]    = true, -- aliases of --no-file-line-error
---     ["fmt"]                         = true, -- load the format file FORMAT
---     ["halt-on-error"]               = true, -- stop processing at the first error
---     ["help"]                        = true, -- display help and exit
---     ["ini"]                         = true, -- be iniluatex, for dumping formats
---     ["interaction"]                 = true, -- set interaction mode (STRING=batchmode/nonstopmode/scrollmode/errorstopmode)
---     ["jobname"]                     = true, -- set the job name to STRING
---     ["kpathsea-debug"]              = true, -- set path searching debugging flags according to the bits of NUMBER
---     ["lua"]                         = true, -- load and execute a lua initialization script
---     ["mktex"]                       = true, -- enable mktexFMT generation (FMT=tex/tfm)
---     ["no-mktex"]                    = true, -- disable mktexFMT generation (FMT=tex/tfm)
---     ["nosocket"]                    = true, -- disable the lua socket library
---     ["output-comment"]              = true, -- use STRING for DVI file comment instead of date (no effect for PDF)
---     ["output-directory"]            = true, -- use existing DIR as the directory to write files in
---     ["output-format"]               = true, -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
---     ["progname"]                    = true, -- set the program name to STRING
---     ["recorder"]                    = true, -- enable filename recorder
---     ["safer"]                       = true, -- disable easily exploitable lua commands
---     ["shell-escape"]                = true, -- enable \write18{SHELL COMMAND}
---     ["no-shell-escape"]             = true, -- disable \write18{SHELL COMMAND}
---     ["shell-restricted"]            = true, -- restrict \write18 to a list of commands given in texmf.cnf
---     ["nodates"]                     = true, -- no production dates in pdf file
---     ["trailerid"]                   = true, -- alternative trailer id
---     ["synctex"]                     = true, -- enable synctex
---     ["version"]                     = true, -- display version and exit
---     ["luaonly"]                     = true, -- run a lua file, then exit
---     ["luaconly"]                    = true, -- byte-compile a lua file, then exit
---     ["jiton"]                       = false,
+--     ["credits"]                     = true,  -- display credits and exit
+--     ["debug-format"]                = true,  -- enable format debugging
+--     ["disable-write18"]             = true,  -- disable \write18{SHELL COMMAND}
+--     ["draftmode"]                   = true,  -- switch on draft mode (generates no output PDF)
+--     ["enable-write18"]              = true,  -- enable \write18{SHELL COMMAND}
+--     ["file-line-error"]             = true,  -- enable file:line:error style messages
+--     ["file-line-error-style"]       = true,  -- aliases of --file-line-error
+--     ["no-file-line-error"]          = true,  -- disable file:line:error style messages
+--     ["no-file-line-error-style"]    = true,  -- aliases of --no-file-line-error
+--     ["fmt"]                         = true,  -- load the format file FORMAT
+--     ["halt-on-error"]               = true,  -- stop processing at the first error
+--     ["help"]                        = true,  -- display help and exit
+--     ["ini"]                         = true,  -- be iniluatex, for dumping formats
+--     ["interaction"]                 = true,  -- set interaction mode (STRING=batchmode/nonstopmode/scrollmode/errorstopmode)
+--     ["jobname"]                     = true,  -- set the job name to STRING
+--     ["kpathsea-debug"]              = true,  -- set path searching debugging flags according to the bits of NUMBER
+--     ["lua"]                         = true,  -- load and execute a lua initialization script
+--     ["mktex"]                       = true,  -- enable mktexFMT generation (FMT=tex/tfm)
+--     ["no-mktex"]                    = true,  -- disable mktexFMT generation (FMT=tex/tfm)
+--     ["nosocket"]                    = true,  -- disable the lua socket library
+--     ["output-comment"]              = true,  -- use STRING for DVI file comment instead of date (no effect for PDF)
+--     ["output-directory"]            = true,  -- use existing DIR as the directory to write files in
+--     ["output-format"]               = true,  -- use FORMAT for job output; FORMAT is 'dvi' or 'pdf'
+--     ["progname"]                    = true,  -- set the program name to STRING
+--     ["recorder"]                    = true,  -- enable filename recorder
+--     ["safer"]                       = true,  -- disable easily exploitable lua commands
+--     ["shell-escape"]                = true,  -- enable \write18{SHELL COMMAND}
+--     ["no-shell-escape"]             = true,  -- disable \write18{SHELL COMMAND}
+--     ["shell-restricted"]            = true,  -- restrict \write18 to a list of commands given in texmf.cnf
+--     ["nodates"]                     = true,  -- no production dates in pdf file
+--     ["trailerid"]                   = true,  -- alternative trailer id
+--     ["synctex"]                     = true,  -- enable synctex
+--     ["version"]                     = true,  -- display version and exit
+--     ["luaonly"]                     = true,  -- run a lua file, then exit
+--     ["luaconly"]                    = true,  -- byte-compile a lua file, then exit
+--     ["jiton"]                       = false, -- not supported (makes no sense, slower)
 -- }
 
 local report = application.report
@@ -95,31 +95,34 @@ scripts.context = scripts.context or { }
 if jit then -- already luajittex
     setargument("engine","luajittex")
     setargument("jit",nil)
-elseif getargument("jit") or getargument("jiton") then -- relaunch luajittex
-    -- bonus shortcut, we assume than --jit also indicates the engine
+elseif getargument("jit") then -- relaunch luajittex
+    -- bonus shortcut, we assume that --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
 end
 
-local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
-local engine_old = file.nameonly(environment.ownbin)
-
-local function restart(engine_old,engine_new)
-    local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
-    report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
-    local result = os.execute(command)
-    os.exit(result == 0 and 0 or 1)
-end
-
-if getargument("redirected") then
-    setargument("engine",engine_old) -- later on we need this
-elseif engine_new == engine_old then
-    setargument("engine",engine_new) -- later on we need this
-elseif environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
-    restart(engine_old,engine_new)
-else
-    setargument("engine",engine_new) -- later on we need this
-end
+-- -- The way we use stubs will change in a bit in 2019 (mtxrun and context). We also normalize
+-- -- the platforms to use a similar approach to this.
+--
+-- local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
+-- local engine_old = file.nameonly(environment.ownbin)
+--
+-- local function restart(engine_old,engine_new)
+--     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
+--     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
+--     local result = os.execute(command)
+--     os.exit(result == 0 and 0 or 1)
+-- end
+--
+-- if getargument("redirected") then
+--     setargument("engine",engine_old) -- later on we need this
+-- elseif engine_new == engine_old then
+--     setargument("engine",engine_new) -- later on we need this
+-- elseif environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
+--     restart(engine_old,engine_new)
+-- else
+--     setargument("engine",engine_new) -- later on we need this
+-- end
 
 -- so far
 
@@ -658,7 +661,6 @@ function scripts.context.run(ctxdata,filename)
     local a_backend       = getargument("backend")
     local a_arrange       = getargument("arrange")
     local a_noarrange     = getargument("noarrange")
-    local a_jiton         = getargument("jiton")
     local a_jithash       = getargument("jithash")
     local a_texformat     = getargument("texformat")
     local a_keeptuc       = getargument("keeptuc")
@@ -716,7 +718,6 @@ function scripts.context.run(ctxdata,filename)
                 formatfile, scriptfile = resolvers.locateformat(formatname)
             end
             --
-            a_jiton   = (a_jiton   or toboolean(analysis.jiton,true)) and true or nil
             a_jithash = validstring(a_jithash or analysis.jithash) or nil
             --
             if not formatfile or not scriptfile then
@@ -824,7 +825,6 @@ function scripts.context.run(ctxdata,filename)
                     ["fmt"]                   = formatfile,
                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
-                    ["jiton"]                 = a_jiton,
                     ["jithash"]               = a_jithash,
                 }
                 --
@@ -1195,7 +1195,7 @@ function scripts.context.make(name)
     end
     local list = (name and { name }) or (environment.filenames[1] and environment.filenames) or defaultformats
     local engine = getargument("engine") or "luatex"
-    if getargument("jit") or getargument("jiton") then
+    if getargument("jit") then
         engine = "luajittex"
     end
     for i=1,#list do

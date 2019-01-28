@@ -166,7 +166,7 @@ local stoptiming  = statistics.stoptiming
 --
 -- \enabledirectives[typesetters.directions.onetoo]
 
-function directions.handler(head,_,_,_,direction)
+function directions.handler(head,where,_,_,direction)
     local only_one = not getnext(head)
     if only_one and not one_too then
         return head
@@ -181,7 +181,7 @@ function directions.handler(head,_,_,_,direction)
         return head
     end
     starttiming(directions)
-    head = handler(head,direction,only_one)
+    head = handler(head,direction,only_one,where)
     stoptiming(directions)
     return head
 end

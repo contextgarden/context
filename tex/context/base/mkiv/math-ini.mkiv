@@ -1335,7 +1335,7 @@
 \to \everyswitchmathematics
 
 \unexpanded\def\math_basics_synchronize_direction
-  {\mathdirection\ifconditional\c_math_right_to_left\plusone\else\zerocount\fi}
+  {\mathdirection\ifconditional\c_math_right_to_left\directionrighttoleft\else\directionlefttoright\fi}
 
 % Not \everymathematics as it comes too late and I'm not in the mood for a mixed mode
 % kludge now (should be a property of beginmath nodes and passed to callbacks).

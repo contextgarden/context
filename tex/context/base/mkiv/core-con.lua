@@ -16,7 +16,7 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
-local floor, date, time, concat = math.floor, os.date, os.time, table.concat
+local floor, osdate, ostime, concat = math.floor, os.date, os.time, table.concat
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
@@ -308,14 +308,14 @@ local function leapyear(year)
 end
 
 local function textime()
-    return tonumber(date("%H")) * 60 + tonumber(date("%M"))
+    return tonumber(osdate("%H")) * 60 + tonumber(osdate("%M"))
 end
 
-function converters.year  () return date("%Y") end
-function converters.month () return date("%m") end
-function converters.hour  () return date("%H") end
-function converters.minute() return date("%M") end
-function converters.second() return date("%S") end
+function converters.year  () return osdate("%Y") end
+function converters.month () return osdate("%m") end
+function converters.hour  () return osdate("%H") end
+function converters.minute() return osdate("%M") end
+function converters.second() return osdate("%S") end
 
 converters.weekday    = weekday
 converters.isleapyear = isleapyear
@@ -327,11 +327,11 @@ implement { name = "weekday",  actions = { weekday,  context }, arguments = { "i
 implement { name = "leapyear", actions = { leapyear, context }, arguments = { "integer" } }
 implement { name = "nofdays",  actions = { nofdays,  context }, arguments = { "integer", "integer" } }
 
-implement { name = "year",     actions = { date,     context }, arguments = "'%Y'" }
-implement { name = "month",    actions = { date,     context }, arguments = "'%m'" }
-implement { name = "hour",     actions = { date,     context }, arguments = "'%H'" }
-implement { name = "minute",   actions = { date,     context }, arguments = "'%M'" }
-implement { name = "second",   actions = { date,     context }, arguments = "'%S'" }
+implement { name = "year",     actions = { osdate,   context }, arguments = "'%Y'" }
+implement { name = "month",    actions = { osdate,   context }, arguments = "'%m'" }
+implement { name = "hour",     actions = { osdate,   context }, arguments = "'%H'" }
+implement { name = "minute",   actions = { osdate,   context }, arguments = "'%M'" }
+implement { name = "second",   actions = { osdate,   context }, arguments = "'%S'" }
 implement { name = "textime",  actions = { textime,  context } }
 
 implement {
@@ -1268,31 +1268,64 @@ do
         arguments = { "integer" }
     }
 
-    local f_month        = formatters["\\month{%s}"]
+    local f_monthlong    = formatters["\\monthlong{%s}"]
     local f_monthshort   = formatters["\\monthshort{%s}"]
     local f_weekday      = formatters["\\weekday{%s}"]
     local f_dayoftheweek = formatters["\\dayoftheweek{%s}{%s}{%s}"]
 
-    local function tomonth(m)
-        return f_month(tonumber(m) or 1)
-    end
-
-    local function tomonthshort(m)
-        return f_monthshort(tonumber(m) or 1)
-    end
-
-    local function toweekday(d)
-        return f_weekday(tonumber(d) or 1)
-    end
+    local function tomonthlong (m) return f_monthlong (tonumber(m) or 1) end
+    local function tomonthshort(m) return f_monthshort(tonumber(m) or 1) end
+    local function toweekday   (d) return f_weekday   (tonumber(d) or 1) end
 
     local function todayoftheweek(d,m,y)
         return f_dayoftheweek(tonumber(d) or 1,tonumber(m) or 1,tonumber(y) or 2000)
     end
 
-    addformatter(formatters,"month",       [[tomonth(%s)]],             { tomonth        = tomonth        })
+    addformatter(formatters,"monthlong",   [[tomonthlong(%s)]],         { tomonthlong    = tomonthlong    })
     addformatter(formatters,"monthshort",  [[tomonthshort(%s)]],        { tomonthshort   = tomonthshort   })
     addformatter(formatters,"weekday",     [[toweekday(%s)]],           { toweekday      = toweekday      })
     addformatter(formatters,"dayoftheweek",[[todayoftheweek(%s,%s,%s)]],{ todayoftheweek = todayoftheweek })
+
+    -- using %t is slower, even with caching as we seldom use > 3 items per epoch
+
+    local function toeyear  (e) return osdate("%Y",tonumber(e))  end
+    local function toemonth (e) return osdate("%m",tonumber(e))  end
+    local function toeday   (e) return osdate("%d",tonumber(e))  end
+    local function toeminute(e) return osdate("%M",tonumber(e))  end
+    local function toesecond(e) return osdate("%S",tonumber(e))  end
+
+    local function toemonthlong(e)
+        return f_monthlong(tonumber(osdate("%m",tonumber(e))))
+    end
+
+    local function toemonthshort(e)
+        return f_monthshort(tonumber(osdate("%m",tonumber(e))))
+    end
+
+    local function toeweek(e) -- we run from 1-7 not 0-6
+        return tostring(tonumber(osdate("%w",tonumber(e)))+1)
+    end
+
+    local function toeweekday(e)
+        return f_weekday(tonumber(osdate("%w",tonumber(e)))+1)
+    end
+
+    local function toedate(format,e)
+        return osdate(format,tonumber(e))
+    end
+
+    addformatter(formatters,"eyear",        [[toeyear(%s)]],        { toeyear         = toeyear         })
+    addformatter(formatters,"emonth",       [[toemonth(%s)]],       { toemonth        = toemonth        })
+    addformatter(formatters,"eday",         [[toeday(%s)]],         { toeday          = toeday          })
+    addformatter(formatters,"eweek",        [[toeweek(%s)]],        { toeweek         = toeweek         })
+    addformatter(formatters,"eminute",      [[toeminute(%s)]],      { toeminute       = toeminute       })
+    addformatter(formatters,"esecond",      [[toesecond(%s)]],      { toesecond       = toesecond       })
+
+    addformatter(formatters,"emonthlong",   [[toemonthlong(%s)]],   { toemonthlong    = toemonthlong    })
+    addformatter(formatters,"emonthshort",  [[toemonthshort(%s)]],  { toemonthshort   = toemonthshort   })
+    addformatter(formatters,"eweekday",     [[toeweekday(%s)]],     { toeweekday      = toeweekday      })
+
+    addformatter(formatters,"edate",        [[toedate(%s,%s)]],     { toedate         = toedate         })
 
 end
 

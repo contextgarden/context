@@ -2044,7 +2044,7 @@
    \vpack to \onepoint{\box\b_strc_floats_caption}}
 
 \def\strc_floats_build_box_separate_split#1%
-  {\setbox\scratchbox\vbox{%
+  {\setbox\scratchbox\vbox\bgroup
      \setbox\scratchbox\vpack{#1}%
      \unvbox\scratchbox\relax
      \setbox\scratchbox\lastbox
@@ -2055,13 +2055,20 @@
           \unvbox\scratchbox
           \setbox\scratchbox\lastbox
     %     \exitloop
-    %   \fi}%
+    %   \fi
+    %}%
      \splittopskip\zeropoint
      \global\setbox\b_strc_floats_separate_content\vsplit\scratchbox to \onepoint
      \global\setbox\b_strc_floats_separate_caption\vsplit\scratchbox to \onepoint
-     \global\setbox\b_strc_floats_separate_content\vpack{\unvbox\b_strc_floats_separate_content\setbox0\lastbox\unvbox0}%
-     \global\setbox\b_strc_floats_separate_caption\tpack{\unvbox\b_strc_floats_separate_caption\setbox0\lastbox\unvbox0}%
-   }}
+   \egroup
+   \global\setbox\b_strc_floats_separate_content\vpack
+     {\unvbox\b_strc_floats_separate_content
+      \setbox\scratchbox\lastbox
+      \unvbox\scratchbox}%
+   \global\setbox\b_strc_floats_separate_caption\tpack
+     {\unvbox\b_strc_floats_separate_caption
+      \setbox\scratchbox\lastbox
+      \unvbox\scratchbox}}
 
 % \def\strc_floats_build_box_step#1%
 %   {\doifdefined{\??floatbuilder#1}{\def\floatcaptionarrangement{#1}\quitcommalist}}

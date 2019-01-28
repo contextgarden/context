@@ -116,6 +116,7 @@ local formats = utilities.storage.allocate {
         jbig2_compression       = true, -- todo: block at lua level
         jpeg2000_compression    = true, -- todo: block at lua level
         include_cidsets         = true,
+        include_charsets        = true,
         inject_metadata         = function()
             -- nothing
         end
@@ -131,6 +132,7 @@ local formats = utilities.storage.allocate {
             spot_colors             = true,
             internal_icc_profiles   = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
@@ -146,6 +148,7 @@ local formats = utilities.storage.allocate {
             spot_colors             = true,
             internal_icc_profiles   = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
@@ -165,6 +168,7 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_intents         = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2002")
             end
@@ -184,6 +188,7 @@ local formats = utilities.storage.allocate {
             include_intents         = true,
             jbig2_compression       = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2003")
             end
@@ -207,6 +212,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
                 insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -233,6 +239,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
                 insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -259,6 +266,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 -- todo
             end
@@ -284,6 +292,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 -- todo
             end
@@ -308,6 +317,7 @@ local formats = utilities.storage.allocate {
             nchannel_colorspace     = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 -- todo
             end
@@ -328,6 +338,7 @@ local formats = utilities.storage.allocate {
             tagging                 = true, -- NEW; the only difference to PDF/A-1b
             internal_icc_profiles   = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -347,6 +358,7 @@ local formats = utilities.storage.allocate {
             forms                   = true,
             internal_icc_profiles   = true,
             include_cidsets         = true,
+            include_charsets        = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
             end
@@ -371,6 +383,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true, -- NEW
             object_compression      = true,
             include_cidsets         = false,
+            include_charsets        = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -395,6 +408,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = false,
+            include_charsets        = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -418,6 +432,7 @@ local formats = utilities.storage.allocate {
             jpeg2000_compression    = true,
             object_compression      = true,
             include_cidsets         = true,
+            include_charsets        = true, --- really ?
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
@@ -756,7 +771,8 @@ function codeinjections.setformat(s)
             -- cid sets can always omitted now, but those validators still complain so let's
             -- for a while keep it (for luigi):
             --
-            lpdf.setomitcidset(formatspecification.include_cidsets == false and 1 or 0)
+            lpdf.setomitcidset (formatspecification.include_cidsets  == false and 1 or 0)
+            lpdf.setomitcharset(formatspecification.include_charsets == false and 1 or 0)
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,
