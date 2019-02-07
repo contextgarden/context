@@ -18,6 +18,7 @@
                 <cd:constant type="right" default="yes"/>
                 <cd:constant type="left"/>
                 <cd:constant type="outer"/>
+                <cd:constant type="inner"/>
                 <cd:constant type="columns" default="yes"/>
             </cd:keywords>
         </cd:arguments>

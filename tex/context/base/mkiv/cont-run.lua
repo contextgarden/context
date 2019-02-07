@@ -197,7 +197,7 @@ local preparejob  preparejob = function() -- tricky: we need a hook for this
 
     local arguments = environment.arguments
 
-    if arguments.lmtx or not status.obj_ptr then
+    if arguments.lmtx or CONTEXTLMTXMODE then
         report("enabling lmtx mode")
         context.enablelmtx()
         environment.lmtxmode = true

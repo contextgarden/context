@@ -5221,10 +5221,10 @@
       <cd:constant type="no"/>
      </cd:parameter>
      <cd:parameter name="align">
-      <cd:constant type="setupalign"/>
+      <cd:inherit type="setupalign"/>
      </cd:parameter>
      <cd:parameter name="tolerance">
-      <cd:constant type="setuptolerance"/>
+      <cd:inherit type="setuptolerance"/>
      </cd:parameter>
      <cd:parameter name="blank">
       <cd:inherit name="blank"/>
@@ -15044,6 +15044,7 @@
      <cd:constant default="yes" type="right"/>
      <cd:constant type="left"/>
      <cd:constant type="outer"/>
+     <cd:constant type="inner"/>
      <cd:constant default="yes" type="columns"/>
     </cd:keywords>
    </cd:arguments>

@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['typo-dha'] = {
 
 local nodes, node = nodes, node
 
-local trace_directions   = false  trackers.register("typesetters.directions.default", function(v) trace_directions = v end)
+local trace_directions   = false  trackers.register("typesetters.directions", function(v) trace_directions = v end)
 
 local report_directions  = logs.reporter("typesetting","text directions")
 

@@ -81,44 +81,82 @@ local function tomatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
     end
 end
 
-local pdforiginliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdforiginliteral,"mode",originliteral_code)
-local pdfpageliteral   = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfpageliteral,  "mode",pageliteral_code)
-local pdfdirectliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfdirectliteral,"mode",directliteral_code)
-local pdfrawliteral    = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfrawliteral,   "mode",rawliteral_code)
+if CONTEXTLMTXMODE then
 
-local pdfsave          = register(new_node(whatsit_code, savewhatsit_code))
-local pdfrestore       = register(new_node(whatsit_code, restorewhatsit_code))
-local pdfsetmatrix     = register(new_node(whatsit_code, setmatrixwhatsit_code))
+    local nodeproperties = nodes.properties.data
 
-function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setdata(t,str) return t end
-function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setdata(t,str) return t end
-function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setdata(t,str) return t end
-function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setdata(t,str) return t end
+    local pdfliteral = register(new_node(whatsit_code,literalwhatsit_code))
 
-local pdfliterals = {
-    -- by number
-    [originliteral_code] = pdforiginliteral,
-    [pageliteral_code]   = pdfpageliteral,
-    [directliteral_code] = pdfdirectliteral,
-    [rawliteral_code]    = pdfrawliteral,
-    -- by name
-    [literalvalues[originliteral_code]] = pdforiginliteral,
-    [literalvalues[pageliteral_code]]   = pdfpageliteral,
-    [literalvalues[directliteral_code]] = pdfdirectliteral,
-    [literalvalues[rawliteral_code]]    = pdfrawliteral,
-}
+    function nodepool.pdforiginliteral(str) local t = copy_node(pdfliteral) nodeproperties[t] = { data = str, mode = originliteral_code } return t end
+    function nodepool.pdfpageliteral  (str) local t = copy_node(pdfliteral) nodeproperties[t] = { data = str, mode = pageliteral_code   } return t end
+    function nodepool.pdfdirectliteral(str) local t = copy_node(pdfliteral) nodeproperties[t] = { data = str, mode = directliteral_code } return t end
+    function nodepool.pdfrawliteral   (str) local t = copy_node(pdfliteral) nodeproperties[t] = { data = str, mode = rawliteral_code    } return t end
 
-function nodepool.pdfliteral(mode,str)
-    if str then
-        local t = copy_node(pdfliterals[mode] or pdfpageliteral)
-        setdata(t,str)
-        return t
-    else
-        local t = copy_node(pdfpageliteral)
-        setdata(t,mode)
+    local pdfliterals = {
+        -- by number
+        [originliteral_code] = originliteral_code,
+        [pageliteral_code]   = pageliteral_code,
+        [directliteral_code] = directliteral_code,
+        [rawliteral_code]    = rawliteral_code,
+        -- by name
+        [literalvalues[originliteral_code]] = originliteral_code,
+        [literalvalues[pageliteral_code]]   = pageliteral_code,
+        [literalvalues[directliteral_code]] = directliteral_code,
+        [literalvalues[rawliteral_code]]    = rawliteral_code,
+    }
+
+    function nodepool.pdfliteral(mode,str)
+        local t = copy_node(pdfliteral)
+        if str then
+            nodeproperties[t] = { data = str, mode = pdfliterals[mode] or pageliteral_code }
+        else
+            nodeproperties[t] = { data = mode, mode = pageliteral_code }
+        end
         return t
     end
+
+else
+
+    local pdforiginliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdforiginliteral,"mode",originliteral_code)
+    local pdfpageliteral   = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfpageliteral,  "mode",pageliteral_code)
+    local pdfdirectliteral = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfdirectliteral,"mode",directliteral_code)
+    local pdfrawliteral    = register(new_node(whatsit_code, literalwhatsit_code))  setfield(pdfrawliteral,   "mode",rawliteral_code)
+
+    function nodepool.pdforiginliteral(str) local t = copy_node(pdforiginliteral) setdata(t,str) return t end
+    function nodepool.pdfpageliteral  (str) local t = copy_node(pdfpageliteral  ) setdata(t,str) return t end
+    function nodepool.pdfdirectliteral(str) local t = copy_node(pdfdirectliteral) setdata(t,str) return t end
+    function nodepool.pdfrawliteral   (str) local t = copy_node(pdfrawliteral   ) setdata(t,str) return t end
+
+    local pdfliterals = {
+        -- by number
+        [originliteral_code] = pdforiginliteral,
+        [pageliteral_code]   = pdfpageliteral,
+        [directliteral_code] = pdfdirectliteral,
+        [rawliteral_code]    = pdfrawliteral,
+        -- by name
+        [literalvalues[originliteral_code]] = pdforiginliteral,
+        [literalvalues[pageliteral_code]]   = pdfpageliteral,
+        [literalvalues[directliteral_code]] = pdfdirectliteral,
+        [literalvalues[rawliteral_code]]    = pdfrawliteral,
+    }
+
+    function nodepool.pdfliteral(mode,str)
+        if str then
+            local t = copy_node(pdfliterals[mode] or pdfpageliteral)
+            setdata(t,str)
+            return t
+        else
+            local t = copy_node(pdfpageliteral)
+            setdata(t,mode)
+            return t
+        end
+    end
+
 end
+
+local pdfsave      = register(new_node(whatsit_code, savewhatsit_code))
+local pdfrestore   = register(new_node(whatsit_code, restorewhatsit_code))
+local pdfsetmatrix = register(new_node(whatsit_code, setmatrixwhatsit_code))
 
 function nodepool.pdfsave()
     return copy_node(pdfsave)
@@ -128,12 +166,25 @@ function nodepool.pdfrestore()
     return copy_node(pdfrestore)
 end
 
-function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
-    local t = copy_node(pdfsetmatrix)
-    setdata(t,tomatrix(rx,sx,sy,ry,tx,ty))
-    return t
-end
+if CONTEXTLMTXMODE then
 
+    local nodeproperties = nodes.properties.data
+
+    function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
+        local t = copy_node(pdfsetmatrix)
+        nodeproperties[t] = { matrix = tomatrix(rx,sx,sy,ry,tx,ty) }
+        return t
+    end
+
+else
+
+    function nodepool.pdfsetmatrix(rx,sx,sy,ry,tx,ty)
+        local t = copy_node(pdfsetmatrix)
+        setdata(t,tomatrix(rx,sx,sy,ry,tx,ty))
+        return t
+    end
+
+end
 
 -- best is to use a specific one: origin | page | direct | raw
 

@@ -202,14 +202,6 @@ luatex.registerstopactions(luatex.cleanuptempfiles)
 
 -- filenames
 
-local types = {
-    "data",
-    "font map",
-    "image",
-    "font subset",
-    "full font",
-}
-
 local report_open  = logs.reporter("open source")
 local report_close = logs.reporter("close source")
 local report_load  = logs.reporter("load resource")
@@ -225,15 +217,8 @@ function luatex.currentfile()
     return stack[#stack] or tex.jobname
 end
 
-local function report_start(left,name)
-    if not left then
-        -- skip
-    elseif left ~= 1 then
-        if all then
-         -- report_load("%s > %s",types[left],name or "?")
-            report_load("type %a, name %a",types[left],name or "?")
-        end
-    elseif find(name,"virtual://",1,true) then
+local function report_start(name)
+    if find(name,"virtual://",1,true) then
         insert(stack,false)
     else
         insert(stack,name)
@@ -245,16 +230,47 @@ local function report_start(left,name)
     end
 end
 
-local function report_stop(right)
-    if level == 1 or not right or right == 1 then
-        local name = remove(stack)
-        if name then
-         -- report_close("%i > %i > %s",level,total,name or "?")
-            report_close("level %i, order %i, name %a",level,total,name or "?")
-            level = level - 1
-            synctex.setfilename(stack[#stack] or tex.jobname)
+local function report_stop()
+    local name = remove(stack)
+    if name then
+     -- report_close("%i > %i > %s",level,total,name or "?")
+        report_close("level %i, order %i, name %a",level,total,name or "?")
+        level = level - 1
+        synctex.setfilename(stack[#stack] or tex.jobname)
+    end
+end
+
+if not CONTEXTLMTXMODE then
+
+    local types = {
+        "data",
+        "font map",
+        "image",
+        "font subset",
+        "full font",
+    }
+
+    local do_report_start = report_start
+    local do_report_stop  = report_stop
+
+    report_start = function(left,name)
+        if not left then
+            -- skip
+        elseif left ~= 1 then
+            if all then
+                report_load("type %a, name %a",types[left],name or "?")
+            end
+        else
+            do_report_start(name)
         end
     end
+
+    report_stop = function(right)
+        if level == 1 or not right or right == 1 then
+            do_report_stop()
+        end
+    end
+
 end
 
 local function report_none()

@@ -103,17 +103,17 @@ end
 
 -- -- The way we use stubs will change in a bit in 2019 (mtxrun and context). We also normalize
 -- -- the platforms to use a similar approach to this.
---
--- local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
--- local engine_old = file.nameonly(environment.ownbin)
---
--- local function restart(engine_old,engine_new)
---     local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
---     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
---     local result = os.execute(command)
---     os.exit(result == 0 and 0 or 1)
--- end
---
+
+local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
+local engine_old = file.nameonly(environment.ownbin)
+
+local function restart(engine_old,engine_new)
+    local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
+    report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
+    local result = os.execute(command)
+    os.exit(result == 0 and 0 or 1)
+end
+
 -- if getargument("redirected") then
 --     setargument("engine",engine_old) -- later on we need this
 -- elseif engine_new == engine_old then

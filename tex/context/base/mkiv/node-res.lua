@@ -178,7 +178,7 @@ local user_number       = register_nut(copy_nut(user_node)) setfield(user_number
 local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
 local user_string       = register_nut(copy_nut(user_node)) setfield(user_string,    "type",usercodes.string)
 local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.token)
------ user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
+local user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
 local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attribute)
 
 local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
@@ -437,6 +437,20 @@ function nutpool.latelua(code)
     return n
 end
 
+if CONTEXTLMTXMODE then
+
+    local properties = nodes.properties.data
+
+    local justlua = register_nut(new_nut(whatsit_code,whatsitcodes.lua))
+
+    function nutpool.lua(code)
+        local n = copy_nut(justlua)
+        properties[n] = { data = code }
+        return n
+    end
+
+end
+
 nutpool.lateluafunction = nutpool.latelua
 
 function nutpool.leftmarginkern(glyph,width)
@@ -559,10 +573,8 @@ function nutpool.userstring(id,str)
     local n = copy_nut(user_string)
     if str then
         setfield(n,"user_id",id)
-     -- setfield(n,"value",str)
         setvalue(n,str)
     else
-     -- setfield(n,"value",id)
         setvalue(n,id)
     end
     return n
@@ -572,10 +584,8 @@ function nutpool.usertokens(id,tokens)
     local n = copy_nut(user_tokens)
     if tokens then
         setfield(n,"user_id",id)
-     -- setfield(n,"value",tokens)
         setvalue(n,tokens)
     else
-     -- setfield(n,"value",id)
         setvalue(n,id)
     end
     return n
@@ -585,10 +595,8 @@ function nutpool.userlua(id,code)
     local n = copy_nut(user_lua)
     if code then
         setfield(n,"user_id",id)
-     -- setfield(n,"value",code)
         setvalue(n,code)
     else
-     -- setfield(n,"value",id)
         setvalue(n,id)
     end
     return n
@@ -598,10 +606,8 @@ function nutpool.userattributes(id,attr)
     local n = copy_nut(user_attributes)
     if attr then
         setfield(n,"user_id",id)
-     -- setfield(n,"value",attr)
         setvalue(n,attr)
     else
-     -- setfield(n,"value",id)
         setvalue(n,id)
     end
     return n

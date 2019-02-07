@@ -707,14 +707,10 @@ nodes.properties = {
     data = propertydata,
 }
 
-------.set_properties_mode(true,false) -- shallow copy ... problem: in fonts we then affect the originals too
-direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-otj.lua (unless we use an intermediate table)
-
--- todo:
---
--- function direct.set_properties_mode()
---     -- we really need the set modes
--- end
+if direct.set_properties_mode then
+    direct.set_properties_mode(true,true)  -- create metatable, slower but needed for font-otj.lua (unless we use an intermediate table)
+    function direct.set_properties_mode() end
+end
 
 -- experimental code with respect to copying attributes has been removed
 -- as it doesn't pay of (most attributes are only accessed once anyway)

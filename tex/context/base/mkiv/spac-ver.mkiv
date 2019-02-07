@@ -1876,8 +1876,10 @@
       \resetteststrut
       \offinterlineskip
       \hsize#2%
-      \ifnum\gridboxlinenomode=\plusthree
-        \gridboxlinenomode\ifodd\realpageno\plusone\else\plustwo\fi
+      \ifcase\gridboxlinenomode\or\or\or
+        \gridboxlinenomode\doifoddpageelse\plusone\plustwo % 3: outer
+      \or
+        \gridboxlinenomode\doifoddpageelse\plustwo\plusone % 4: inner
       \fi
       \topskipcorrection
       \gridboxvbox % calculated size

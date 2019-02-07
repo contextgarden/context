@@ -141,6 +141,10 @@ if LUATEXVERION == nil then
                   + (tonumber(LUATEXVERSION) or (string.byte(LUATEXVERSION)-string.byte("a")+10))/1000
 end
 
+if CONTEXTLMTXMODE == nil then
+    CONTEXTLMTXMODE = status.obj_ptr == nil and true or false
+end
+
 if LUATEXFUNCTIONALITY == nil then
     LUATEXFUNCTIONALITY = status.development_id or 6346
 end

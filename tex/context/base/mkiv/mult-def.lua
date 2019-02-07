@@ -17075,6 +17075,9 @@ return {
   ["unframed"]={
    ["en"]="unframed",
   },
+  ["unicode"]={
+   ["en"]="unicode",
+  },
   ["unit"]={
    ["cs"]="jednotka",
    ["de"]="einheit",

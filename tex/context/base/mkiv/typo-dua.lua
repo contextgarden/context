@@ -106,20 +106,20 @@ local dirvalues           = nodes.dirvalues
 local lefttoright_code    = dirvalues.lefttoright
 local righttoleft_code    = dirvalues.righttoleft
 
------ object_replacement  = 0xFFFC -- object replacement character
-local maximum_stack       = 60     -- probably spec but not needed
+local maximum_stack       = 60
 
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
 
------ a_directions        = attributes.private('directions')
-
 local remove_controls     = true  directives.register("typesetters.directions.one.removecontrols",function(v) remove_controls  = v end)
 
-local trace_directions    = false trackers  .register("typesetters.directions.one",               function(v) trace_directions = v end)
-local trace_details       = false trackers  .register("typesetters.directions.one.details",       function(v) trace_details    = v end)
-
 local report_directions   = logs.reporter("typesetting","directions one")
+
+local trace_directions    = false trackers  .register("typesetters.directions",               function(v) trace_directions = v end)
+local trace_details       = false trackers  .register("typesetters.directions.details",       function(v) trace_details    = v end)
+
+
+
 
 local whitespace = {
     lre = true,
@@ -332,28 +332,33 @@ local function find_run_limit_b_s_ws_on(list,start,limit)
     return start
 end
 
-local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
-    local id = getid(head)
-    if id == localpar_code and getsubtype(head) == 0 then
-        local direction = getdirection(head)
-        if direction == righttoleft_code or direction == "TRT" then -- for old times sake we we handle strings too
-            return 1, righttoleft_code, true
-        else
-            return 0, lefttoright_code, true
+local function get_baselevel(head,list,size,direction)
+    -- This is an adapted version:
+    if direction == lefttoright_code or direction == righttoleft_code then
+        return direction, true
+    elseif getid(head) == localpar_code and getsubtype(head) == 0 then
+        direction = getdirection(head)
+        if direction == lefttoright_code or direction == righttoleft_code then
+            return direction, true
         end
-    else
-        -- P2, P3
-        for i=1,size do
-            local entry     = list[i]
-            local direction = entry.direction
-            if direction == "r" or direction == "al" then
-                return 1, righttoleft_code, true
-            elseif direction == "l" then
-                return 0, lefttoright_code, true
-            end
-        end
-        return 0, lefttoright_code, false
     end
+    -- for old times sake we we handle strings too
+    if direction == "TLT" then
+        return lefttoright_code, true
+    elseif direction == "TRT" then
+        return righttoleft_code, true
+    end
+    -- P2, P3
+    for i=1,size do
+        local entry     = list[i]
+        local direction = entry.direction
+        if direction == "r" or direction == "al" then
+            return righttoleft_code, true
+        elseif direction == "l" then
+            return lefttoright_code, true
+        end
+    end
+    return lefttoright_code, false
 end
 
 local function resolve_explicit(list,size,baselevel)
@@ -689,8 +694,6 @@ local function resolve_levels(list,size,baselevel)
     end
 end
 
--- This is not ok but we keep it as-is:
-
 local function insert_dir_points(list,size)
     -- L2, but no actual reversion is done, we simply annotate where
     -- begindir/endddir node will be inserted.
@@ -765,7 +768,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_direction(enddir,true)
-                setprop(d,"directions",true)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -774,7 +777,7 @@ local function apply_to_list(list,size,head,pardir)
             if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
-                setprop(d,"directions",true)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
@@ -782,7 +785,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if begindir then
             local d = new_direction(begindir)
-            setprop(d,"directions",true)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
         end
@@ -795,7 +798,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if enddir then
             local d = new_direction(enddir,true)
-            setprop(d,"directions",true)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
         end
@@ -812,9 +815,10 @@ local function apply_to_list(list,size,head,pardir)
     return head
 end
 
-local function process(head)
+local function process(head,direction,only_one,where)
+    -- This is an adapted version: 
     local list, size = build_list(head)
-    local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
+    local baselevel, dirfound = get_baselevel(head,list,size,direction)
     if not dirfound and trace_details then
         report_directions("no initial direction found, gambling")
     end
@@ -828,7 +832,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    return apply_to_list(list,size,head,pardir)
+    return apply_to_list(list,size,head,baselevel)
 end
 
 directions.installhandler(interfaces.variables.one,process)

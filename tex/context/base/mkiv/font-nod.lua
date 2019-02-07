@@ -97,9 +97,6 @@ local fontparameters   = hashes.parameters
 
 local properties = nodes.properties.data
 
--- direct.set_properties_mode(true,false)
--- direct.set_properties_mode(true,true)  -- default
-
 local function freeze(h,where)
     for n in nextnode, h do -- todo: disc but not traced anyway
         local p = properties[n]

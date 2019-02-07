@@ -56,7 +56,6 @@ local mirrordata          = characters.mirrors
 local textclassdata       = characters.textclasses
 
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
 
 local getnext             = nuts.getnext
 local getid               = nuts.getid
@@ -99,22 +98,22 @@ local dirvalues           = nodes.dirvalues
 local lefttoright_code    = dirvalues.lefttoright
 local righttoleft_code    = dirvalues.righttoleft
 
-local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
+local maximum_stack       = 0xFF
+
+local a_directions        = attributes.private('directions')
 
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
 local getfences           = directions.getfences
 
-local a_directions        = attributes.private('directions')
-
 local remove_controls     = true  directives.register("typesetters.directions.removecontrols",function(v) remove_controls  = v end)
 ----- analyze_fences      = true  directives.register("typesetters.directions.analyzefences", function(v) analyze_fences   = v end)
 
-local trace_directions    = false trackers.register("typesetters.directions.three",         function(v) trace_directions = v end)
-local trace_details       = false trackers.register("typesetters.directions.three.details", function(v) trace_details    = v end)
-local trace_list          = false trackers.register("typesetters.directions.three.list",    function(v) trace_list       = v end)
-
 local report_directions   = logs.reporter("typesetting","directions three")
+
+local trace_directions    = false trackers.register("typesetters.directions",         function(v) trace_directions = v end)
+local trace_details       = false trackers.register("typesetters.directions.details", function(v) trace_details    = v end)
+local trace_list          = false trackers.register("typesetters.directions.list",    function(v) trace_list       = v end)
 
 -- strong (old):
 --
@@ -125,7 +124,7 @@ local report_directions   = logs.reporter("typesetting","directions three")
 -- lre : left to right embedding
 -- rle : left to left embedding
 -- al  : right to legt arabic (esp punctuation issues)
-
+--
 -- weak:
 --
 -- en  : english number
@@ -135,23 +134,23 @@ local report_directions   = logs.reporter("typesetting","directions three")
 -- cs  : common number separator
 -- nsm : nonspacing mark
 -- bn  : boundary neutral
-
+--
 -- neutral:
 --
 -- b  : paragraph separator
 -- s  : segment separator
 -- ws : whitespace
 -- on : other neutrals
-
+--
 -- interesting: this is indeed better (and more what we expect i.e. we already use this split
 -- in the old original (also these isolates)
-
+--
 -- strong (new):
 --
 -- l   : left to right
 -- r   : right to left
 -- al  : right to left arabic (esp punctuation issues)
-
+--
 -- explicit: (new)
 --
 -- lro : left to right override
@@ -244,7 +243,7 @@ end
 -- keeping the list and overwriting doesn't save much runtime, only a few percent
 -- char is only used for mirror, so in fact we can as well only store it for
 -- glyphs only
-
+--
 -- tracking what direction is used and skipping tests is not faster (extra kind of
 -- compensates gain)
 
@@ -257,7 +256,7 @@ local mt_object = { __index = { char = 0xFFFC, direction = "on",  original = "on
 local stack = table.setmetatableindex("table") -- shared
 local list  = { }                              -- shared
 
-local function build_list(head,where) -- todo: store node pointer ... saves loop
+local function build_list(head,where)
     -- P1
     local current = head
     local size    = 0
@@ -354,9 +353,10 @@ end
 -- ש ( ל ( א ) כ ) 2-8,4-6
 -- ש ( ל [ א ] כ ) 2-8,4-6
 
+local fencestack = table.setmetatableindex("table")
+
 local function resolve_fences(list,size,start,limit)
     -- N0: funny effects, not always better, so it's an option
-    local stack    = { }
     local nofstack = 0
     for i=start,limit do
         local entry = list[i]
@@ -369,14 +369,14 @@ local function resolve_fences(list,size,start,limit)
                 entry.class  = class
                 if class == "open" then
                     nofstack       = nofstack + 1
-                    local stacktop = stack[nofstack]
+                    local stacktop = fencestack[nofstack]
                     stacktop[1]    = mirror
                     stacktop[2]    = i
                 elseif nofstack == 0 then
                     -- skip
                 elseif class == "close" then
                     while nofstack > 0 do
-                        local stacktop = stack[nofstack]
+                        local stacktop = fencestack[nofstack]
                         if stacktop[1] == char then
                             local open  = stacktop[2]
                             local close = i
@@ -424,7 +424,7 @@ local function get_baselevel(head,list,size,direction)
     elseif direction == "TRT" then
         return righttoleft_code, true
     end
-    -- P2, P3:
+    -- P2, P3
     for i=1,size do
         local entry     = list[i]
         local direction = entry.direction
@@ -531,11 +531,6 @@ local function resolve_explicit(list,size,baselevel)
             end
         end
     end
--- else
---     for i=1,size do
---         list[i].level = baselevel
---     end
--- end
     -- X8 (reset states and overrides after paragraph)
 end
 
@@ -1006,19 +1001,12 @@ end
 -- do have a glyph!
 
 local function process(head,direction,only_one,where)
-
--- print("START")
--- for n in nodes.traverse(nodes.tonode(head)) do
---     print("  "..tostring(n))
--- end
--- print("STOP")
-
     -- for the moment a whole paragraph property
     local attr = getattr(head,a_directions)
     local analyze_fences = getfences(attr)
     --
     local list, size = build_list(head,where)
-    local baselevel, dirfound = get_baselevel(head,list,size,direction) -- we always have an inline dir node in context
+    local baselevel, dirfound = get_baselevel(head,list,size,direction)
     if trace_details then
         report_directions("analyze: baselevel %a",baselevel == righttoleft_code and "r2l" or "l2r")
         report_directions("before : %s",show_list(list,size,"original"))
@@ -1033,4 +1021,9 @@ local function process(head,direction,only_one,where)
     return apply_to_list(list,size,head,baselevel)
 end
 
-directions.installhandler(interfaces.variables.three,process)
+local variables = interfaces.variables
+
+directions.installhandler(variables.one,    process) -- for old times sake
+directions.installhandler(variables.two,    process) -- for old times sake
+directions.installhandler(variables.three,  process) -- for old times sake
+directions.installhandler(variables.unicode,process)

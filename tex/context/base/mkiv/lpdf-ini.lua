@@ -535,7 +535,9 @@ do
                     r[n] = k
                 end
             end
-            sort(r)
+            if n > 1 then
+                sort(r)
+            end
             for i=1,n do
                 local k  = r[i]
                 local v  = t[k]

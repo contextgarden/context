@@ -94,22 +94,22 @@ local dirvalues           = nodes.dirvalues
 local lefttoright_code    = dirvalues.lefttoright
 local righttoleft_code    = dirvalues.righttoleft
 
-local maximum_stack       = 0xFF -- unicode: 60, will be jumped to 125, we don't care too much
+local maximum_stack       = 0xFF
+
+local a_directions        = attributes.private('directions')
 
 local directions          = typesetters.directions
 local setcolor            = directions.setcolor
 local getfences           = directions.getfences
 
-local a_directions        = attributes.private('directions')
-
 local remove_controls     = true  directives.register("typesetters.directions.removecontrols",function(v) remove_controls  = v end)
 ----- analyze_fences      = true  directives.register("typesetters.directions.analyzefences", function(v) analyze_fences   = v end)
 
-local trace_directions    = false trackers  .register("typesetters.directions.two",           function(v) trace_directions = v end)
-local trace_details       = false trackers  .register("typesetters.directions.two.details",   function(v) trace_details    = v end)
-local trace_list          = false trackers  .register("typesetters.directions.two.list",      function(v) trace_list       = v end)
+local report_directions   = logs.reporter("typesetting","directions three")
 
-local report_directions   = logs.reporter("typesetting","directions two")
+local trace_directions    = false trackers.register("typesetters.directions",         function(v) trace_directions = v end)
+local trace_details       = false trackers.register("typesetters.directions.details", function(v) trace_details    = v end)
+local trace_list          = false trackers.register("typesetters.directions.list",    function(v) trace_list       = v end)
 
 -- strong (old):
 --
@@ -120,7 +120,7 @@ local report_directions   = logs.reporter("typesetting","directions two")
 -- lre : left to right embedding
 -- rle : left to left embedding
 -- al  : right to legt arabic (esp punctuation issues)
-
+--
 -- weak:
 --
 -- en  : english number
@@ -130,23 +130,23 @@ local report_directions   = logs.reporter("typesetting","directions two")
 -- cs  : common number separator
 -- nsm : nonspacing mark
 -- bn  : boundary neutral
-
+--
 -- neutral:
 --
 -- b  : paragraph separator
 -- s  : segment separator
 -- ws : whitespace
 -- on : other neutrals
-
+--
 -- interesting: this is indeed better (and more what we expect i.e. we already use this split
 -- in the old original (also these isolates)
-
+--
 -- strong (new):
 --
 -- l   : left to right
 -- r   : right to left
 -- al  : right to left arabic (esp punctuation issues)
-
+--
 -- explicit: (new)
 --
 -- lro : left to right override
@@ -209,27 +209,28 @@ end
 local function show_done(list,size)
     local joiner = utfchar(0x200C)
     local result = { }
+    local format = formatters["<%s>"]
     for i=1,size do
         local entry     = list[i]
         local character = entry.char
         local begindir  = entry.begindir
         local enddir    = entry.enddir
         if begindir then
-            result[#result+1] = formatters["<%s>"](begindir)
+            result[#result+1] = format(begindir)
         end
         if entry.remove then
             -- continue
         elseif character == 0xFFFC then
-            result[#result+1] = formatters["<%s>"]("?")
+            result[#result+1] = format("?")
         elseif character == 0x0020 then
-            result[#result+1] = formatters["<%s>"](" ")
+            result[#result+1] = format(" ")
         elseif character >= 0x202A and character <= 0x202C then
-            result[#result+1] = formatters["<%s>"](entry.original)
+            result[#result+1] = format(entry.original)
         else
             result[#result+1] = utfchar(character)
         end
         if enddir then
-            result[#result+1] = formatters["<%s>"](enddir)
+            result[#result+1] = format(enddir)
         end
     end
     return concat(result,joiner)
@@ -239,17 +240,7 @@ end
 -- char is only used for mirror, so in fact we can as well only store it for
 -- glyphs only
 
--- using metatable is slightly faster so maybe some day ...
-
--- local space  = { char = 0x0020, direction = "ws",  original = "ws"  }
--- local lre    = { char = 0x202A, direction = "lre", original = "lre" }
--- local rle    = { char = 0x202B, direction = "rle", original = "rle" }
--- local pdf    = { char = 0x202C, direction = "pdf", original = "pdf" }
--- local object = { char = 0xFFFC, direction = "on",  original = "on"  }
---
--- local t = { level = 0 } setmetatable(t,space) list[size] = t
-
-local function build_list(head) -- todo: store node pointer ... saves loop
+local function build_list(head)
     -- P1
     local current = head
     local list    = { }
@@ -352,8 +343,8 @@ end
 
 local function resolve_fences(list,size,start,limit)
     -- N0: funny effects, not always better, so it's an option
-    local stack = { }
-    local top   = 0
+    local stack    = { }
+    local nofstack = 0
     for i=start,limit do
         local entry = list[i]
         if entry.direction == "on" then
@@ -364,15 +355,15 @@ local function resolve_fences(list,size,start,limit)
                 entry.mirror = mirror
                 entry.class  = class
                 if class == "open" then
-                    top = top + 1
-                    stack[top] = { mirror, i, false }
-                elseif top == 0 then
+                    nofstack        = nofstack + 1
+                    stack[nofstack] = { mirror, i, false }
+                elseif nofstack == 0 then
                     -- skip
                 elseif class == "close" then
-                    while top > 0 do
-                        local s = stack[top]
-                        if s[1] == char then
-                            local open  = s[2]
+                    while nofstack > 0 do
+                        local stacktop = stack[nofstack]
+                        if stacktop[1] == char then
+                            local open  = stacktop[2]
                             local close = i
                             list[open ].paired = close
                             list[close].paired = open
@@ -380,7 +371,7 @@ local function resolve_fences(list,size,start,limit)
                         else
                             -- do we mirror or not
                         end
-                        top = top - 1
+                        nofstack = nofstack - 1
                     end
                 end
             end
@@ -403,28 +394,32 @@ end
 
 -- the action
 
-local function get_baselevel(head,list,size) -- todo: skip if first is object (or pass head and test for localpar)
-    local id = getid(head)
-    if id == localpar_code and getsubtype(head) == 0 then
-        local direction = getdirection(head)
-        if direction == righttoleft_code or direction == "TRT" then -- for old times sake we we handle strings too
-            return 1, righttoleft_code, true
-        else
-            return 0, lefttoright_code, true
+local function get_baselevel(head,list,size,direction)
+    if direction == lefttoright_code or direction == righttoleft_code then
+        return direction, true
+    elseif getid(head) == localpar_code and getsubtype(head) == 0 then
+        direction = getdirection(head)
+        if direction == lefttoright_code or direction == righttoleft_code then
+            return direction, true
         end
-    else
-        -- P2, P3
-        for i=1,size do
-            local entry     = list[i]
-            local direction = entry.direction
-            if direction == "r" or direction == "al" then -- and an ?
-                return 1, righttoleft_code, true
-            elseif direction == "l" then
-                return 0, lefttoright_code, true
-            end
-        end
-        return 0, lefttoright_code, false
     end
+    -- for old times sake we we handle strings too
+    if direction == "TLT" then
+        return lefttoright_code, true
+    elseif direction == "TRT" then
+        return righttoleft_code, true
+    end
+    -- P2, P3
+    for i=1,size do
+        local entry     = list[i]
+        local direction = entry.direction
+        if direction == "r" or direction == "al" then -- and an ?
+            return righttoleft_code, true
+        elseif direction == "l" then
+            return lefttoright_code, true
+        end
+    end
+    return lefttoright_code, false
 end
 
 local function resolve_explicit(list,size,baselevel)
@@ -492,14 +487,15 @@ local function resolve_explicit(list,size,baselevel)
         elseif direction == "pdf" then
             if nofstack > 0 then
                 local stacktop  = stack[nofstack]
-                nofstack        = nofstack - 1
                 level           = stacktop[1]
                 override        = stacktop[2]
+                nofstack        = nofstack - 1
                 entry.level     = level
                 entry.direction = "bn"
                 entry.remove    = true
             elseif trace_directions then
-                report_directions("stack underflow at position %a with direction %a",i,direction)
+                report_directions("stack underflow at position %a with direction %a",
+                    i, direction)
             end
         -- X6
         else
@@ -698,33 +694,6 @@ local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     end
 end
 
--- local function resolve_implicit(list,size,start,limit,orderbefore,orderafter)
---     -- I1
---     for i=start,limit do
---         local entry = list[i]
---         local level = entry.level
---         if level % 2 ~= 1 then -- not odd(level)
---             local direction = entry.direction
---             if direction == "r" then
---                 entry.level = level + 1
---             elseif direction == "an" or direction == "en" then
---                 entry.level = level + 2
---             end
---         end
---     end
---     -- I2
---     for i=start,limit do
---         local entry = list[i]
---         local level = entry.level
---         if level % 2 == 1 then -- odd(level)
---             local direction = entry.direction
---             if direction == "l" or direction == "en" or direction == "an" then
---                 entry.level = level + 1
---             end
---         end
---     end
--- end
-
 local function resolve_implicit(list,size,start,limit,orderbefore,orderafter,baselevel)
     for i=start,limit do
         local entry     = list[i]
@@ -823,52 +792,6 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
         end
     end
 end
-
--- local function insert_dir_points(list,size)
---     -- L2, but no actual reversion is done, we simply annotate where
---     -- begindir/endddir node will be inserted.
---     local maxlevel = 0
---     local finaldir = false
---     for i=1,size do
---         local level = list[i].level
---         if level > maxlevel then
---             maxlevel = level
---         end
---     end
---     for level=0,maxlevel do
---         local started  = false
---         local begindir = nil
---         local enddir   = nil
---         if level % 2 == 1 then
---             begindir = righttoleft_code
---             enddir   = righttoleft_code
---         else
---             begindir = lefttoright_code
---             enddir   = lefttoright_code
---         end
---         for i=1,size do
---             local entry = list[i]
---             if entry.level >= level then
---                 if not started then
---                     entry.begindir = begindir
---                     started        = true
---                 end
---             else
---                 if started then
---                     list[i-1].enddir = enddir
---                     started          = false
---                 end
---             end
---         end
---         -- make sure to close the run at end of line
---         if started then
---             finaldir = enddir
---         end
---     end
---     if finaldir then
---         list[size].enddir = finaldir
---     end
--- end
 
 local function insert_dir_points(list,size)
     -- L2, but no actual reversion is done, we simply annotate where
@@ -978,7 +901,7 @@ local function apply_to_list(list,size,head,pardir)
             if enddir and getsubtype(current) == parfillskip_code then
                 -- insert the last enddir before \parfillskip glue
                 local d = new_direction(enddir,true)
-                setprop(d,"directions",true)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head = insert_node_before(head,current,d)
                 enddir = false
@@ -987,7 +910,7 @@ local function apply_to_list(list,size,head,pardir)
             if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
-                setprop(d,"directions",true)
+             -- setprop(d,"directions",true)
              -- setattrlist(d,current)
                 head, current = insert_node_after(head,current,d)
                 begindir = nil
@@ -995,7 +918,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if begindir then
             local d = new_direction(begindir)
-            setprop(d,"directions",true)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head = insert_node_before(head,current,d)
         end
@@ -1008,7 +931,7 @@ local function apply_to_list(list,size,head,pardir)
         end
         if enddir then
             local d = new_direction(enddir,true)
-            setprop(d,"directions",true)
+         -- setprop(d,"directions",true)
          -- setattrlist(d,current)
             head, current = insert_node_after(head,current,d)
         end
@@ -1028,13 +951,13 @@ local function apply_to_list(list,size,head,pardir)
     return head
 end
 
-local function process(head)
+local function process(head,direction,only_one,where)
     -- for the moment a whole paragraph property
     local attr = getattr(head,a_directions)
     local analyze_fences = getfences(attr)
     --
     local list, size = build_list(head)
-    local baselevel, pardir, dirfound = get_baselevel(head,list,size) -- we always have an inline dir node in context
+    local baselevel, dirfound = get_baselevel(head,list,size,direction)
     if not dirfound and trace_details then
         report_directions("no initial direction found, gambling")
     end
@@ -1048,7 +971,7 @@ local function process(head)
         report_directions("after  : %s",show_list(list,size,"direction"))
         report_directions("result : %s",show_done(list,size))
     end
-    return apply_to_list(list,size,head,pardir)
+    return apply_to_list(list,size,head,baselevel)
 end
 
 directions.installhandler(interfaces.variables.two,process)

@@ -291,6 +291,7 @@ local whatcodes = simplified(node.whatsits())
 local usercodes = allocate {
     [ 97] = "attribute",  -- a
     [100] = "number",     -- d
+    [102] = "float",      -- f
     [108] = "lua",        -- l
     [110] = "node",       -- n
     [115] = "string",     -- s
@@ -363,6 +364,20 @@ dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
+if CONTEXTLMTXMODE then
+    whatcodes.literal   = 0x1000  whatcodes[0x1000] = whatcodes.literal
+    whatcodes.savepos   = 0x1001  whatcodes[0x1001] = whatcodes.savepos
+    whatcodes.save      = 0x1002  whatcodes[0x1002] = whatcodes.save
+    whatcodes.restore   = 0x1003  whatcodes[0x1003] = whatcodes.restore
+    whatcodes.setmatrix = 0x1004  whatcodes[0x1004] = whatcodes.setmatrix
+    whatcodes.lua       = 0x1005  whatcodes[0x1005] = whatcodes.lua
+elseif not whatcodes.literal then
+    whatcodes.literal   = whatcodes.pdfliteral
+    whatcodes.save      = whatcodes.pdfsave
+    whatcodes.restore   = whatcodes.pdfrestore
+    whatcodes.setmatrix = whatcodes.pdfsetmatrix
+end
+
 nodes.gluecodes            = gluecodes
 nodes.dircodes             = dircodes
 nodes.boundarycodes        = boundarycodes
@@ -387,19 +402,6 @@ nodes.noadoptions          = noadoptions
 nodes.dirvalues            = dirvalues
 nodes.gluevalues           = gluevalues
 nodes.literalvalues        = literalvalues
-
-if whatcodes.literal then
-    -- temporary hack
-    whatcodes.pdfliteral   = whatcodes.literal
-    whatcodes.pdfsave      = whatcodes.save
-    whatcodes.pdfrestore   = whatcodes.restore
-    whatcodes.pdfsetmatrix = whatcodes.setmatrix
-else
-    whatcodes.literal   = whatcodes.pdfliteral
-    whatcodes.save      = whatcodes.pdfsave
-    whatcodes.restore   = whatcodes.pdfrestore
-    whatcodes.setmatrix = whatcodes.pdfsetmatrix
-end
 
 dirvalues.lefttoright = 0
 dirvalues.righttoleft = 1

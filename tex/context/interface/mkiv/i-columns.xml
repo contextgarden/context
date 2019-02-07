@@ -34,10 +34,10 @@
                     <cd:constant type="no"/>
                 </cd:parameter>
                 <cd:parameter name="align">
-                    <cd:constant type="setupalign"/>
+                    <cd:inherit type="setupalign"/>
                 </cd:parameter>
                 <cd:parameter name="tolerance">
-                    <cd:constant type="setuptolerance"/>
+                    <cd:inherit type="setuptolerance"/>
                 </cd:parameter>
                 <cd:parameter name="blank">
                     <cd:inherit name="blank"/>

@@ -37,6 +37,8 @@ JITSUPPORTED        = LUATEXENGINE == "luajittex" or jit
 
 INITEXMODE          = status.ini_version
 
+CONTEXTLMTXMODE     = status.obj_ptr == nil and true or false
+
 function os.setlocale()
     -- no need for a message
 end

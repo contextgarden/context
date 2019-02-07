@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['cldf-ini'] = {
     license   = "see context related readme files"
 }
 
+-- todo: {token} -> 3 tokens
+
 -- This started as an experiment: generating context code at the lua end. After all
 -- it is surprisingly simple to implement due to metatables. I was wondering if
 -- there was a more natural way to deal with commands at the lua end. Of course it's
@@ -898,6 +900,30 @@ if tokenflushmode then -- combine them
         parent[k] = f
         return f
     end)
+
+-- core = setmetatableindex(function(parent,k)
+--     local t
+--     local f = function(first,...)
+--         if not t then
+--             t = toks[k]
+--         end
+--         local f = function(first,...)
+--             if first == nil then
+--                 flush(t)
+--             else
+--                 return writer(context,t,first,...)
+--             end
+--         end
+--         parent[k] = f
+--         if first == nil then
+--             flush(t)
+--         else
+--             return writer(context,t,first,...)
+--         end
+--     end
+--     parent[k] = f
+--     return f
+-- end)
 
     core.cs = setmetatableindex(function(parent,k)
         local t
