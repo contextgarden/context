@@ -189,25 +189,12 @@
 %D Although we could do with one pass, a second pass for
 %D handling the stored sequence is more readable.
 
-\ifnum\texengine=\luatexengine
+\def\dohandledigits
+  {\mathcode`\,="002C \mathcode`\.="002E % pretty hard coded
+   \expandafter\handletokens\collecteddigits\with\scandigits
+   \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
 
-    \def\dohandledigits
-      {\mathcode`\,="002C \mathcode`\.="002E % pretty hard coded
-       \expandafter\handletokens\collecteddigits\with\scandigits
-       \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
-
-    \chardef\mathaxisfontid\zerocount
-
-\else
-
-    \def\dohandledigits
-      {\mathcode`\,="013B \mathcode`\.="013A % pretty hard coded
-       \expandafter\handletokens\collecteddigits\with\scandigits
-       \ifcase\powerdigits\else\digitpowerseparator^{\savedpowerdigits}\fi}
-
-    \chardef\mathaxisfontid\plustwo
-
-\fi
+\chardef\mathaxisfontid\zerocount
 
 \def\doscandigit#1%
   {\ifcase\skipdigit\expandafter\hbox\else\expandafter\hphantom\fi\bgroup

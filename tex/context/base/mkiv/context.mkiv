@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.02.07 18:46}
+\edef\contextversion{2019.02.10 17:43}
 \edef\contextkind   {beta}
 
 %D For those who want to use this:
@@ -595,6 +595,7 @@
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
+\doifelsefileexists{back-out.mkiv}{\loadmarkfile{back-out}}{}
 \doifelsefileexists{back-shp.mkiv}{\loadmarkfile{back-shp}}{}
 
 \setupcurrentlanguage[\defaultlanguagetag]

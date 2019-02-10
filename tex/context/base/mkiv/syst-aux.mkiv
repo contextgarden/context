@@ -6779,7 +6779,7 @@
 
 \unexpanded\def\processassignlist#1[#2]#3%
   {\def\syst_helpers_process_assign_list_assign[##1=##2=##3]%
-     {\doifnot{##3}\relax{#3{##1}}}%
+     {\doif{##3}\relax{#3{##1}}}%
    \def\syst_helpers_process_assign_list_step##1%
      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
    \processcommalist[#2]\syst_helpers_process_assign_list_step}

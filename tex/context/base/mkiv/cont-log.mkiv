@@ -205,7 +205,7 @@
 \unexpanded\def\Lua      {Lua}
 \unexpanded\def\luajitTeX{luajit\wordboundary\TeX}
 \unexpanded\def\metaTeX  {meta\wordboundary\TeX}
-\unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+%unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
 
@@ -236,40 +236,6 @@
 \let\LUAJITTEX\luajitTeX
 \let\LuaTeX   \luaTeX
 \let\XETEX    \XeTeX
-
-% \unexpanded\def\MkApproved % joke, not used so it might move
-%   {\dontleavehmode\rotate
-%      [\c!rotation={\ifnum\texengine=\luatexengine\cldcontext{45-45*\the\luatexversion/100}\else0\fi},
-%       \c!align=\v!middle,
-%       \c!foregroundstyle=\v!type,
-%       \c!foregroundcolor=darkred,
-%       \c!frame=\v!on,
-%       \c!offset=1ex,
-%       \c!background=\v!color,
-%       \c!backgroundcolor=lightgray,
-%       \c!framecolor=darkred,
-%       \c!rulethickness=2pt]
-%      {Mk\ifnum\texengine=\luatexengine IV\else II\fi\\approved}}
-
-% \unexpanded\def\luaTeX
-%   {\dontleavehmode\begingroup
-%    Lua%
-%    \setbox0\hbox{oT}%
-%    \setbox2\hbox{o\kern0ptT}%
-%    \ifdim\wd0=\wd2
-%      \setbox0\hbox dir TRT{To}%
-%      \setbox2\hbox{T\kern0pto}%
-%      \hskip\dimexpr\wd0-\wd2\relax
-%    \fi
-%    \TeX
-%    \endgroup}
-%
-% a further iteration from the list, patched again
-
-% \ifx\fontalternative\s!it -\else
-% \ifx\fontalternative\s!sl -\else
-% \ifx\fontalternative\s!bi -\else
-% \ifx\fontalternative\s!bs -\fi\fi\fi\fi
 
 \unexpanded\def\LuaTeX
   {\dontleavehmode

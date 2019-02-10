@@ -29,7 +29,7 @@ local getsubtype       = nuts.getsubtype
 local getfield         = nuts.getfield
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
-local getdata          = nuts.getdata
+local getprop          = nuts.getprop
 
 local removenode       = nuts.remove
 
@@ -46,15 +46,13 @@ local vlist_code       = nodecodes.vlist
 local userdefinedwhatsit_code = whatsitcodes.userdefined
 
 local nodepool         = nodes.pool
-local new_usernumber   = nodepool.usernumber
+local new_usernode     = nodepool.usernode
 
 local variables        = interfaces.variables
 local v_before         = variables.before
 local v_after          = variables.after
 local v_here           = variables.here
 
-local cache            = { }
-local nofslots         = 0
 local property_id      = nodepool.userids["property"]
 
 local properties       = nodes.properties
@@ -75,15 +73,8 @@ local function register(where,data,...)
         where = v_after
     end
     if data then
-        local data = { where, data, ... }
         nofslots = nofslots + 1
-        if nofslots > 1 then
-            cache[nofslots] = data
-        else
-         -- report("restarting attacher")
-            cache = { data } -- also forces collection
-        end
-        return new_usernumber(property_id,nofslots)
+        return new_usernode(property_id,{ where, data, ... })
     end
 end
 
@@ -112,17 +103,9 @@ local f_delayed   = formatters["return function(target,head,where,propdata,paren
 local f_immediate = formatters["return function(target,head,where,propdata) %s end"]
 
 local nofdelayed  = 0 -- better is to keep track of it per page ... we can have deleted nodes with properties
+local nofslots    = 0
 
 function actions.delayed(target,head,where,propdata,code,...) -- this one is used at the tex end
---    local kind = type(code)
---    if kind == "string" then
---        code, err = load(f_delayed(code))
---        if code then
---            code = code()
---        end
---    elseif kind ~= "function" then
---        code = nil
---    end
     if code then
         local delayed = propdata.delayed
         if delayed then
@@ -135,15 +118,6 @@ function actions.delayed(target,head,where,propdata,code,...) -- this one is use
 end
 
 function actions.fdelayed(target,head,where,propdata,code,...) -- this one is used at the tex end
---    local kind = type(code)
---    if kind == "string" then
---        code, err = load(f_delayed(code))
---        if code then
---            code = code()
---        end
---    elseif kind ~= "function" then
---        code = nil
---    end
     if code then
         local delayed = propdata.delayed
         if delayed then
@@ -174,79 +148,40 @@ function actions.immediate(target,head,where,propdata,code,...) -- this one is u
     end
 end
 
--- another experiment (a table or function closure are equally efficient); a function
--- is easier when we want to experiment with different (compatible) implementations
-
--- local nutpool          = nuts.pool
--- local nut_usernumber = nutpool.usernumber
-
--- function nodes.nuts.pool.deferredfunction(...)
---     nofdelayed = nofdelayed + 1
---     local n = nut_usernumber(property_id,0)
---     propertydata[n] = { deferred = { ... } }
---     return n
--- end
-
--- function nodes.nuts.pool.deferredfunction(f)
---     nofdelayed = nofdelayed + 1
---     local n = nut_usernumber(property_id,0)
---     propertydata[n] = { deferred = f }
---     return n
--- end
-
--- maybe actions will get parent too
-
 local function delayed(head,parent) -- direct based
     for target, id in nextnode, head do
         local p = propertydata[target]
         if p then
-         -- local deferred = p.deferred -- kind of late lua (but too soon as we have no access to pdf.h/v)
-         -- if deferred then
-         --  -- if #deferred > 0 then
-         --  --     deferred[1](unpack(deferred,2))
-         --  -- else
-         --  --     deferred[1]()
-         --  -- end
-         --     deferred()
-         --     p.deferred = false
-         --     if nofdelayed == 1 then
-         --         nofdelayed = 0
-         --         return head
-         --     else
-         --         nofdelayed = nofdelayed - 1
-         --     end
-         -- else
-                local delayed = p.delayed
-                if delayed then
-                    for i=1,#delayed do
-                        local d = delayed[i]
-                        local code  = d[2]
-                        local kind = type(code)
-                        if kind == "string" then
-                            code, err = load(f_delayed(code))
-                            if code then
-                                code = code()
-                            end
-                        end
-                        local where = d[1]
-                        if where then
-                            local h = code(target,where,head,p,parent,unpack(d,3)) -- target where propdata head parent
-                            if h and h ~= head then
-                                head = h
-                            end
-                        else
-                            code(unpack(d,3))
+            local delayed = p.delayed
+            if delayed then
+                for i=1,#delayed do
+                    local d = delayed[i]
+                    local code  = d[2]
+                    local kind = type(code)
+                    if kind == "string" then
+                        code, err = load(f_delayed(code))
+                        if code then
+                            code = code()
                         end
                     end
-                    p.delayed = nil
-                    if nofdelayed == 1 then
-                        nofdelayed = 0
-                        return head
+                    local where = d[1]
+                    if where then
+                        local h = code(target,where,head,p,parent,unpack(d,3)) -- target where propdata head parent
+                        if h and h ~= head then
+                            head = h
+                        end
                     else
-                        nofdelayed = nofdelayed - 1
+                        code(unpack(d,3))
                     end
                 end
-         -- end
+                p.delayed = nil
+                if nofdelayed == 1 then
+                    nofdelayed = 0
+                    return head
+                else
+                    nofdelayed = nofdelayed - 1
+                end
+            end
         end
         if id == hlist_code or id == vlist_code then
             local list = getlist(target)
@@ -286,7 +221,7 @@ local anchored = {
     [v_before] = function(n)
         while n do
             n = getprev(n)
-            if getid(n) == whatsit_code and getsubtype(n) == user_code and getfield(n,"user_id") == property_id then
+            if getid(n) == whatsit_code and getsubtype(n) == user_code and getprop(n,"id") == property_id then
                 -- continue
             else
                 return n
@@ -298,7 +233,7 @@ local anchored = {
             n = getnext(n)
             if getid(n) == whatsit_code then
                 local subtype = getsubtype(n)
-                if (subtype == userdefinedwhatsit_code and getfield(n,"user_id") == property_id) then
+                if (subtype == userdefinedwhatsit_code and getprop(n,"id") == property_id) then
                     -- continue
                 else
                     return n
@@ -335,11 +270,9 @@ function properties.attach(head)
                 removenode(head,last,true)
                 last = nil
             end
-            if getfield(source,"user_id") == property_id then
-                local slot = getdata(source)
-                local data = cache[slot]
+            if getprop(source,"id") == property_id then
+                local data = getprop(source,"data")
                 if data then
-                    cache[slot] = nil
                     local where  = data[1]
                     local target = anchored[where](source)
                     if target then

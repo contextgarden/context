@@ -83,7 +83,7 @@ local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
-local getdata            = nuts.getdata
+local getprop            = nuts.getprop
 
 local setattrlist        = nuts.setattrlist
 
@@ -104,7 +104,7 @@ local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 
-local new_usernumber     = nodepool.usernumber
+local new_usernode       = nodepool.usernode
 local new_hlist          = nodepool.hlist
 
 local lateluafunction    = nodepool.lateluafunction
@@ -300,7 +300,7 @@ function margins.save(t)
         --
      -- t.realpageno          = texgetcount("realpageno")
         if inline then
-            local n = new_usernumber(inline_mark,nofsaved)
+            local n = new_usernode(inline_mark,nofsaved)
             setattrlist(n,true)
             context(tonode(n)) -- or use a normal node
             store[nofsaved] = t -- no insert
@@ -720,8 +720,8 @@ local function flushinline(parent,head)
     while current and nofinlined > 0 do
         local id = getid(current)
         if id == whatsit_code then
-            if getsubtype(current) == userdefined_code and getfield(current,"user_id") == inline_mark then
-                local n = getdata(current)
+            if getsubtype(current) == userdefined_code and getprop(current,"id") == inline_mark then
+                local n = getprop(current,"data")
                 local candidate = inlinestore[n]
                 if candidate then -- no vpack, as we want to realign
                     inlinestore[n] = nil

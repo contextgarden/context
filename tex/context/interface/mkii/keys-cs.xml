@@ -590,6 +590,7 @@
 		<cd:variable name='understrike' value='understrike'/>
 		<cd:variable name='understrikes' value='understrikes'/>
 		<cd:variable name='unframed' value='unframed'/>
+		<cd:variable name='unicode' value='unicode'/>
 		<cd:variable name='unit' value='jednotka'/>
 		<cd:variable name='units' value='jednotky'/>
 		<cd:variable name='unknown' value='neznamy'/>

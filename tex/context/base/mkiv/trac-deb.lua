@@ -347,24 +347,25 @@ directives.register("system.showerror", lmx.overloaderror)
 --     trace_calls(n)
 -- end) -- indirect is needed for nilling
 
--- I'll make this obsolete soon.
+-- Obsolete ... not that usefull as normally one runs from an editor and
+-- when run unattended it makes no sense either.
 
-local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
-
-directives.register("system.editor",function(v)
-    editor = v
-end)
-
-callback.register("call_edit",function(filename,linenumber)
-    if editor then
-        editor = gsub(editor,"%%s",filename)
-        editor = gsub(editor,"%%d",linenumber)
-        editor = gsub(editor,"%%filename%%",filename)
-        editor = gsub(editor,"%%linenumber%%",linenumber)
-        logs.report("system","starting editor: %s",editor)
-        os.execute(editor)
-    end
-end)
+-- local editor = [[scite "-open:%filename%" -goto:%linenumber%]]
+--
+-- directives.register("system.editor",function(v)
+--     editor = v
+-- end)
+--
+-- callback.register("call_edit",function(filename,linenumber)
+--     if editor then
+--         editor = gsub(editor,"%%s",filename)
+--         editor = gsub(editor,"%%d",linenumber)
+--         editor = gsub(editor,"%%filename%%",filename)
+--         editor = gsub(editor,"%%linenumber%%",linenumber)
+--         logs.report("system","starting editor: %s",editor)
+--         os.execute(editor)
+--     end
+-- end)
 
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }

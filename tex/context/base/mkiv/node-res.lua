@@ -14,41 +14,39 @@ local gmatch, format = string.gmatch, string.format
 for debugging <l n='luatex'/> node management.</p>
 --ldx]]--
 
-local report_nodes = logs.reporter("nodes","housekeeping")
-
 local nodes, node = nodes, node
 
-nodes.pool          = nodes.pool or { }
-local nodepool      = nodes.pool
+local report_nodes   = logs.reporter("nodes","housekeeping")
 
-local whatsitcodes  = nodes.whatsitcodes
-local gluecodes     = nodes.gluecodes
-local kerncodes     = nodes.kerncodes
-local rulecodes     = nodes.rulecodes
-local nodecodes     = nodes.nodecodes
-local leadercodes   = nodes.leadercodes
-local boundarycodes = nodes.boundarycodes
-local usercodes     = nodes.usercodes
+nodes.pool           = nodes.pool or { }
+local nodepool       = nodes.pool
 
+local whatsitcodes   = nodes.whatsitcodes
+local gluecodes      = nodes.gluecodes
+local kerncodes      = nodes.kerncodes
+local rulecodes      = nodes.rulecodes
+local nodecodes      = nodes.nodecodes
+local leadercodes    = nodes.leadercodes
+local boundarycodes  = nodes.boundarycodes
+local usercodes      = nodes.usercodes
 
-local glyph_code    = nodecodes.glyph
-local rule_code     = nodecodes.rule
-local kern_code     = nodecodes.kern
-local glue_code     = nodecodes.glue
-local whatsit_code  = nodecodes.whatsit
+local nodeproperties = nodes.properties.data
 
-local currentfont   = font.current
+local glyph_code     = nodecodes.glyph
+local rule_code      = nodecodes.rule
+local kern_code      = nodecodes.kern
+local glue_code      = nodecodes.glue
+local whatsit_code   = nodecodes.whatsit
 
-local allocate      = utilities.storage.allocate
+local currentfont    = font.current
+local texgetcount    = tex.getcount
 
-local texgetcount   = tex.getcount
+local allocate       = utilities.storage.allocate
 
-local reserved, nofreserved = { }, 0
-
--- user nodes
-
-local userids = allocate()
-local lastid  = 0
+local reserved       = { }
+local nofreserved    = 0
+local userids        = allocate()
+local lastid         = 0
 
 setmetatable(userids, {
     __index = function(t,k)
@@ -173,13 +171,6 @@ local latelua           = register_nut(new_nut(whatsit_code,whatsitcodes.latelua
 local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos))
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
-
-local user_number       = register_nut(copy_nut(user_node)) setfield(user_number,    "type",usercodes.number)
-local user_nodes        = register_nut(copy_nut(user_node)) setfield(user_nodes,     "type",usercodes.node)
-local user_string       = register_nut(copy_nut(user_node)) setfield(user_string,    "type",usercodes.string)
-local user_tokens       = register_nut(copy_nut(user_node)) setfield(user_tokens,    "type",usercodes.token)
-local user_lua          = register_nut(copy_nut(user_node)) setfield(user_lua,       "type",usercodes.lua) -- in > 0.95
-local user_attributes   = register_nut(copy_nut(user_node)) setfield(user_attributes,"type",usercodes.attribute)
 
 local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
 local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
@@ -431,21 +422,19 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-function nutpool.latelua(code)
-    local n = copy_nut(latelua)
-    setdata(n,code)
-    return n
-end
-
 if CONTEXTLMTXMODE then
 
-    local properties = nodes.properties.data
+    function nutpool.latelua(code)
+        local n = copy_nut(latelua)
+        nodeproperties[n] = { data = code }
+        return n
+    end
 
-    local justlua = register_nut(new_nut(whatsit_code,whatsitcodes.lua))
+else
 
-    function nutpool.lua(code)
-        local n = copy_nut(justlua)
-        properties[n] = { data = code }
+    function nutpool.latelua(code)
+        local n = copy_nut(latelua)
+        setdata(n,code)
         return n
     end
 
@@ -540,76 +529,12 @@ function nodepool.vlist(list,width,height,depth,shift)
     return tonode(new_vlist(list and tonut(list),width,height,depth,shift))
 end
 
--- local num = userids["my id"]
--- local str = userids[num]
-
-function nutpool.usernumber(id,num)
-    local n = copy_nut(user_number)
-    if num then
-        setfield(n,"user_id",id)
-     -- setfield(n,"value",num)
-        setvalue(n,num)
-    elseif id then
-     -- setfield(n,"value",id)
-        setvalue(n,id)
-    end
-    return n
-end
-
-function nutpool.userlist(id,list)
-    local n = copy_nut(user_nodes)
-    if list then
-        setfield(n,"user_id",id)
-     -- setfield(n,"value",list)
-        setvalue(n,list)
-    else
-     -- setfield(n,"value",id)
-        setvalue(n,id)
-    end
-    return n
-end
-
-function nutpool.userstring(id,str)
-    local n = copy_nut(user_string)
-    if str then
-        setfield(n,"user_id",id)
-        setvalue(n,str)
-    else
-        setvalue(n,id)
-    end
-    return n
-end
-
-function nutpool.usertokens(id,tokens)
-    local n = copy_nut(user_tokens)
-    if tokens then
-        setfield(n,"user_id",id)
-        setvalue(n,tokens)
-    else
-        setvalue(n,id)
-    end
-    return n
-end
-
-function nutpool.userlua(id,code)
-    local n = copy_nut(user_lua)
-    if code then
-        setfield(n,"user_id",id)
-        setvalue(n,code)
-    else
-        setvalue(n,id)
-    end
-    return n
-end
-
-function nutpool.userattributes(id,attr)
-    local n = copy_nut(user_attributes)
-    if attr then
-        setfield(n,"user_id",id)
-        setvalue(n,attr)
-    else
-        setvalue(n,id)
-    end
+function nutpool.usernode(id,data)
+    local n = copy_nut(user_node)
+    nodeproperties[n] = {
+        id   = id,
+        data = data,
+    }
     return n
 end
 

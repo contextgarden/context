@@ -92,38 +92,7 @@
 \catcode\tildeasciicode          \activecatcode      % `\~     tilde is active
 %catcode\delasciicode            \invalidcatcode     % `\^^?   ascii delete is invalid
 
-%D It makes sense to know what engine we're running so let's try to deduce it.
-
-\chardef\unknownengine 0
-\chardef\pdftexengine  1
-\chardef\xetexengine   2
-\chardef\luatexengine  3
-
 \chardef\statuswrite   128
-
-\ifx\directlua\undefined
-    \ifx\XeTeXversion\undefined
-        \ifx\pdftexversion\undefined
-            \let\texengine\unknownengine
-        \else
-            \let\texengine\pdftexengine
-        \fi
-    \else
-        \let\texengine\xetexengine
-    \fi
-\else
-    \let\texengine\luatexengine
-\fi
-
-\ifnum\texengine=\luatexengine
-    % for historic reasons we keep some mkii code around
-\else
-    \immediate\write\statuswrite{>>>}
-    \immediate\write\statuswrite{>>> only LuaTeX is supported}
-    \immediate\write\statuswrite{>>>}
-    \let\dump\relax
-    \expandafter\end
-\fi
 
 %D Initialization of primitives.
 
@@ -316,7 +285,8 @@
 %D as all engines now provide many registers we removed all traces.
 
 \ifdefined\writestatus \else
-    \normalprotected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
+   %\normalprotected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
+    \normalprotected\def\writestatus#1#2{\message{#1: #2}}
 \fi
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
@@ -1182,12 +1152,10 @@
 \def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
 
 \ifdefined\texenginename \else
-    %edef\texenginename{luatex}
     \edef\texenginename{\directlua{tex.print(LUATEXENGINE)}}
 \fi
 
 \ifdefined\texengineversion \else
-    %edef\texengineversion{\dividenumber{100}\luatexversion.\modulonumber{100}\luatexversion.\luatexrevision}
     \edef\texengineversion{\directlua{tex.print(LUATEXVERSION)}}
 \fi
 
@@ -1230,25 +1198,8 @@
 
 \matheqnogapstep\zerocount % for now
 
-%D While cleaning this code up a bit I was listening to Heather Nova's \CD\ Redbird.
-%D The first song on that \CD\ ends with a few lines suitable for ending this
-%D initialization module:
-%D
-%D \startlines
-%D And there's so much I can do for you
-%D Given time I know that I can prove
-%D Now my world is opened up to you
-%D Come inside
-%D
-%D Welcome to my life
-%D Welcome to my world
-%D Come inside
-%D \stoplines
-%D
-%D So let's see what \TEX\ can do now that we've opened up the basic machinery.
-
-%D Now we define a few helpers that we need in a very early stage. We hav eno message system
-%D yet but redundant definitions are fatal anyway.
+%D Now we define a few helpers that we need in a very early stage. We have no
+%D message system yet but redundant definitions are fatal anyway.
 
 \newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 

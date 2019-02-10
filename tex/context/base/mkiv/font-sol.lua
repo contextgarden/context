@@ -112,11 +112,13 @@ local fontkern_code      = kerncodes.fontkern
 
 local userdefinedwhatsit_code = whatsitcodes.userdefined
 
+local nodeproperties     = nodes.properties.data
+
 local nodepool           = nuts.pool
 local usernodeids        = nodepool.userids
 
 local new_direction      = nodepool.direction
-local new_usernumber     = nodepool.usernumber
+local new_usernode       = nodepool.usernode
 local new_glue           = nodepool.glue
 local new_leftskip       = nodepool.leftskip
 
@@ -351,11 +353,11 @@ function splitters.split(head) -- best also pass the direction
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
-        local list = last and copy_node_list(start,stop) or copy_node_list(start)
+        local list = last and copy_node_list(start,last) or copy_node_list(start)
         local n    = #cache + 1
         if encapsulate then
-            local user_one = new_usernumber(splitter_one,n)
-            local user_two = new_usernumber(splitter_two,n)
+            local user_one = new_usernode(splitter_one,n)
+            local user_two = new_usernode(splitter_two,n)
             head, start = insert_node_before(head,start,user_one)
             insert_node_after(head,stop,user_two)
         else
@@ -452,16 +454,19 @@ local function collect_words(list) -- can be made faster for attributes
     if encapsulate then
         for current, subtype in nextwhatsit, list do
             if subtype == userdefinedwhatsit_code then -- hm
-                local user_id = getfield(current,"user_id")
-                if user_id == splitter_one then
-                    word = { getdata(current), current, current }
-                    w = w + 1
-                    words[w] = word
-                elseif user_id == splitter_two then
-                    if word then
-                        word[3] = current
-                    else
-                        -- something is wrong
+                local p = nodeproperties[current]
+                if p then
+                    local user_id = p.id
+                    if user_id == splitter_one then
+                        word = { p.data, current, current }
+                        w = w + 1
+                        words[w] = word
+                    elseif user_id == splitter_two then
+                        if word then
+                            word[3] = current
+                        else
+                            -- something is wrong
+                        end
                     end
                 end
             end

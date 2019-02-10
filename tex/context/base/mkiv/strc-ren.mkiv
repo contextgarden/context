@@ -530,8 +530,14 @@
 
 \def\fakedheadnumber{\vphantom{0}} % needed for mathplus
 
+% \unexpanded\def\fakeheadnumbercontent
+%   {\hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}}
+
 \unexpanded\def\fakeheadnumbercontent
-  {\hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}}
+  {\edef\p_hidenumber{\headparameter\c!hidenumber}%
+   \ifx\p_hidenumber\v!yes\else
+     \hbox to \zeropoint{\let\getheadnumber\fakedheadnumber\headnumbercontent}%
+   \fi}
 
 \unexpanded\def\strc_rendering_inject_number_and_text
   {\edef\p_command{\headparameter\c!command}% assumes \unexpanded definition

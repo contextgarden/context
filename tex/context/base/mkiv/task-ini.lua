@@ -24,7 +24,7 @@ local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
 
-appendaction("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
+------------("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
 
 appendaction("processors",   "normalizers", "typesetters.periodkerns.handler",                  nil, "nut",    "disabled"  )
 appendaction("processors",   "normalizers", "languages.replacements.handler",                   nil, "nut",    "disabled"  )
@@ -81,7 +81,7 @@ appendaction("shipouts",     "normalizers", "structures.tags.handler",          
 appendaction("shipouts",     "normalizers", "nodes.handlers.accessibility",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
-appendaction("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
+------------("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
 
 appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.colors.handler",                        nil, "nut",    "disabled"  )

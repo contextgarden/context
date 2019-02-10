@@ -286,7 +286,7 @@ local function simplified(t)
 end
 
 local nodecodes = simplified(node.types())
-local whatcodes = simplified(node.whatsits())
+local whatcodes = simplified(node.whatsits and node.whatsits() or { })
 
 local usercodes = allocate {
     [ 97] = "attribute",  -- a
@@ -365,17 +365,21 @@ gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
 if CONTEXTLMTXMODE then
-    whatcodes.literal   = 0x1000  whatcodes[0x1000] = whatcodes.literal
-    whatcodes.savepos   = 0x1001  whatcodes[0x1001] = whatcodes.savepos
-    whatcodes.save      = 0x1002  whatcodes[0x1002] = whatcodes.save
-    whatcodes.restore   = 0x1003  whatcodes[0x1003] = whatcodes.restore
-    whatcodes.setmatrix = 0x1004  whatcodes[0x1004] = whatcodes.setmatrix
-    whatcodes.lua       = 0x1005  whatcodes[0x1005] = whatcodes.lua
+    whatcodes.literal     = 0x1  whatcodes[0x1] = "literal"
+    whatcodes.latelua     = 0x2  whatcodes[0x2] = "latelua"
+    whatcodes.userdefined = 0x3  whatcodes[0x3] = "userdefined"
+    whatcodes.savepos     = 0x4  whatcodes[0x4] = "savepos"
+    whatcodes.save        = 0x5  whatcodes[0x5] = "save"
+    whatcodes.restore     = 0x6  whatcodes[0x6] = "restore"
+    whatcodes.setmatrix   = 0x7  whatcodes[0x7] = "setmatrix"
+    whatcodes.open        = 0x8  whatcodes[0x8] = "open"
+    whatcodes.close       = 0x9  whatcodes[0x9] = "close"
+    whatcodes.write       = 0xA  whatcodes[0xA] = "write"
 elseif not whatcodes.literal then
-    whatcodes.literal   = whatcodes.pdfliteral
-    whatcodes.save      = whatcodes.pdfsave
-    whatcodes.restore   = whatcodes.pdfrestore
-    whatcodes.setmatrix = whatcodes.pdfsetmatrix
+    whatcodes.literal     = whatcodes.pdfliteral
+    whatcodes.save        = whatcodes.pdfsave
+    whatcodes.restore     = whatcodes.pdfrestore
+    whatcodes.setmatrix   = whatcodes.pdfsetmatrix
 end
 
 nodes.gluecodes            = gluecodes
