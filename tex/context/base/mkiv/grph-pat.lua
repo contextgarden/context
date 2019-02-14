@@ -15,7 +15,7 @@ local texsetbox   = tex.setbox
 local texgetbox   = tex.getbox
 
 local nodepool    = nodes.pool
-local new_literal = nodepool.pdforiginliteral -- really ?
+local new_literal = nodepool.originliteral -- really ?
 local new_hlist   = nodepool.hlist
 
 local names       = { }

@@ -15,7 +15,6 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
-%registerctxluafile{lpdf-aux}{optimize} % common helpers
 \registerctxluafile{lpdf-ini}{optimize}
 \registerctxluafile{lpdf-nod}{}
 \registerctxluafile{lpdf-col}{}
@@ -34,25 +33,19 @@
 \registerctxluafile{lpdf-fmt}{}
 \registerctxluafile{lpdf-pde}{}
 
-\doifelsefileexists {lpdf-emb.lua} {
+\ifcase\contextlmtxmode\else
     \registerctxluafile{lpdf-img}{optimize}
-} {
-    % nothing
-}
+\fi
 
 \registerctxluafile{lpdf-epa}{}
 
-\doifelsefileexists {lpdf-emb.lua} {
+\ifcase\contextlmtxmode\else
     \registerctxluafile{lpdf-emb}{optimize}
-} {
-    % nothing
-}
+\fi
 
 \registerctxluafile{back-pdp}{}
 
-\ifnum\texenginefunctionality>6856
-    \registerctxluafile{lpdf-fnt}{}
-\fi
+\registerctxluafile{lpdf-fnt}{}
 
 \registerctxluafile{back-pdf}{} % some code will move to lpdf-*
 
@@ -103,15 +96,16 @@
 %D I'll write a parser that maps onto \CONTEXT.
 
 \unexpanded\def\unsupportedpdfprimitive#1%
-  {\writestatus{error}{the primitive \string#1\space is not supported}}
+  {\writestatus{fatal error}{the primitive \string#1\space is not supported}%
+   \directlua{os.exit()}}
 
 \unexpanded\def\pdfcolorstack    {\unsupportedpdfprimitive\pdfcolorstack}
 \unexpanded\def\pdfcolorstackinit{\unsupportedpdfprimitive\pdfcolorstackinit}
-%unexpanded\def\pdfannot         {\unsupportedpdfprimitive\pdfannot}
+%               pdfannot
 \unexpanded\def\pdfstartlink     {\unsupportedpdfprimitive\pdfstartlink}
 \unexpanded\def\pdfendlink       {\unsupportedpdfprimitive\pdfendlink}
 \unexpanded\def\pdfoutline       {\unsupportedpdfprimitive\pdfoutline}
-%unexpanded\def\pdfdest          {\unsupportedpdfprimitive\pdfdest}
+%               pdfdest
 \unexpanded\def\pdfthread        {\unsupportedpdfprimitive\pdfthread}
 \unexpanded\def\pdfstartthread   {\unsupportedpdfprimitive\pdfstartthread}
 \unexpanded\def\pdfendthread     {\unsupportedpdfprimitive\pdfendthread}
@@ -149,8 +143,8 @@
 
 %D These might even become no-ops as we don't need them in \CONTEXT:
 
-\unexpanded\def\pdfmapfile#1{\clf_setmapfile{#1}}
-\unexpanded\def\pdfmapline#1{\clf_setmapline{#1}}
+\unexpanded\def\pdfmapfile#1{} % obsolete
+\unexpanded\def\pdfmapline#1{} % obsolete
 
 %D We don't support these directives, at least not this way. If they are needed
 %D by third party modules we can provide some interface.
@@ -276,84 +270,6 @@
            \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
            \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
            \let\PDFcolor\pdfcolor
-
-%D Transformations
-
-% rotation
-
-\unexpanded\def\dostartrotation#1%
-  {\forcecolorhack
-   \clf_pdfstartrotation#1\relax} % todo: implement without Q q
-
-\unexpanded\def\dostoprotation
-  {\clf_pdfstoprotation
-   \forcecolorhack}
-
-% scaling
-
-\unexpanded\def\dostartscaling#1#2%
-  {\forcecolorhack
-   \clf_pdfstartscaling rx #1 ry #2\relax}
-
-\unexpanded\def\dostopscaling
-  {\clf_pdfstopscaling
-   \forcecolorhack}
-
-% mirroring
-
-\unexpanded\def\dostartmirroring
-  {\clf_pdfstartmirroring}
-
-\unexpanded\def\dostopmirroring
-  {\clf_pdfstopmirroring}
-
-% transform
-
-\unexpanded\def\dotransformnextbox#1#2#3#4#5#6%
-  {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
-
-\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
-  {\hpack
-     {\kern #5\onebasepoint
-      \raise#6\onebasepoint
-      \hpack
-        {\clf_pdfstartmatrix rx #1 sx #2 sy #3 ry #4\relax
-         \box\nextbox
-         \clf_pdfstopmatrix}}}
-
-% somehow the shift is not happening .. bug in luatex?
-%
-% \unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
-%   {\ctxcommand{pdftransformbox(\number\nextbox,#1,#2,#3,#4,\number\dimexpr#5\onebasepoint,\number\dimexpr#6\onebasepoint)}%
-%    \box\nextbox}
-%
-% \startluacode
-%     function commands.pdftransformbox(box,rx,sx,sy,ry,tx,ty)
-%         if rx == 1 and sx == 0 and sy == 0 and ry == 1 then
-%             if tx == 0 and ty == 0 then
-%                 local b = nodes.hpack(nodes.concat {
-%                     nodes.pool.kern(tx),
-%                     nodes.takebox(box),
-%                 })
-%                 b.shift = -ty
-%                 tex.setbox(box,b)
-%             else
-%                 -- no need to transform
-%             end
-%         else
-%             local b = nodes.hpack(nodes.concat {
-%                 nodes.pool.kern(tx),
-%                 nodes.pool.pdfsave(),
-%                 nodes.pool.pdfsetmatrix(rx,sx,sy,ry),
-%                 nodes.takebox(box),
-%                 nodes.pool.pdfsetmatrix(-rx,-sx,-sy,-ry),
-%                 nodes.pool.pdfrestore(),
-%             })
-%             b.shift = -ty
-%             tex.setbox(box,b)
-%         end
-%     end
-% \stopluacode
 
 % clipping
 

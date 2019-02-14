@@ -20,15 +20,14 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\doifelsefileexists {grph-img.lua} {
+\ifcase\contextlmtxmode
+    \registerctxluafile{grph-inc}{}
+\else
     \registerctxluafile{grph-img}{}
-} {}
-
-\registerctxluafile{grph-inc}{}
-
-\doifelsefileexists {grph-chk.lua} {
+    \registerctxluafile{grph-inc}{}
+    \registerctxluafile{grph-bmp}{}
     \registerctxluafile{grph-chk}{}
-} {}
+\fi
 
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}
@@ -41,7 +40,7 @@
 %D Including graphics is complicated by the fact that  we need to locate them first,
 %D optionally manipulate them and scale then next. Lookups are to be done as efficient
 %D as possible and inclusion of the data might happens only once. In \MKIV\ much of this
-%D is delegated to the \LUA\ end. There is nor so much less code as in \MKII\ but it's
+%D is delegated to the \LUA\ end. There is not so much less code as in \MKII\ but it's
 %D more powerful, flexible, pluggable and some of the extended functionality has been
 %D moved from modules to the core. The overall functionality is rather stable and has
 %D not changed much over the years.

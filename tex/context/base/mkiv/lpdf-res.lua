@@ -6,16 +6,15 @@ if not modules then modules = { } end modules ['lpdf-res'] = {
     license   = "see context related readme files"
 }
 
-local codeinjections  = backends.codeinjections
-local implement       = interfaces.implement
+local codeinjections           = backends.codeinjections
 
-local nuts            = nodes.nuts
-local tonut           = nodes.tonut
+local nuts                     = nodes.nuts
+local tonut                    = nodes.tonut
 
-local setwhd          = nuts.setwhd
-local setlist         = nuts.setlist
+local setwhd                   = nuts.setwhd
+local setlist                  = nuts.setlist
 
-local new_hlist       = nuts.pool.hlist
+local new_hlist                = nuts.pool.hlist
 
 local boxresources             = tex.boxresources
 local saveboxresource          = boxresources.save

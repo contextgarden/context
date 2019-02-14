@@ -65,8 +65,6 @@ local executers               = references.executers
 
 local nodepool                = nodes.pool
 
------ pdfannotation_node      = nodepool.pdfannotation
------ pdfdestination_node     = nodepool.pdfdestination
 local new_latelua             = nodepool.latelua
 
 local texgetcount             = tex.getcount

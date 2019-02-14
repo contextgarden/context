@@ -26,8 +26,6 @@ local io                = io
 local os                = os
 local lpeg              = lpeg
 
-local luanames          = lua.name -- luatex itself
-
 local setmetatableindex = table.setmetatableindex
 local load              = load
 local xpcall            = xpcall
@@ -135,7 +133,6 @@ local function registername(name,message)
         messages[lnn] = message
         numbers[name] = lnn
     end
-    luanames[lnn] = instance_banner(message)
     local report = reporter("lua instance",message)
     local proxy = {
         -- we can access all via:

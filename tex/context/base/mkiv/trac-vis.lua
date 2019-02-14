@@ -45,7 +45,6 @@ local setattr             = nuts.setattr
 local setwidth            = nuts.setwidth
 local setshift            = nuts.setshift
 
-local getfield            = nuts.getfield
 local getid               = nuts.getid
 local getfont             = nuts.getfont
 local getattr             = nuts.getattr
@@ -579,29 +578,17 @@ local whatsit do
     local w_cache      = caches["whatsit"]
 
     local tags         = {
-        open             = "FIC",
-        write            = "FIW",
-        close            = "FIC",
-        special          = "SPE",
-        latelua          = "LUA",
-        savepos          = "POS",
-        userdefined      = "USR",
-     -- backend stuff
-        pdfliteral       = "PDF",
-        pdfrefobj        = "PDF",
-        pdfannot         = "PDF",
-        pdfstartlink     = "PDF",
-        pdfendlink       = "PDF",
-        pdfdest          = "PDF",
-        pdfthread        = "PDF",
-        pdfstartthread   = "PDF",
-        pdfendthread     = "PDF",
-        pdfthreaddata    = "PDF",
-        pdflinkdata      = "PDF",
-        pdfcolorstack    = "PDF",
-        pdfsetmatrix     = "PDF",
-        pdfsave          = "PDF",
-        pdfrestore       = "PDF",
+        open        = "OPN",
+        write       = "WRI",
+        close       = "CLS",
+        special     = "SPE",
+        latelua     = "LUA",
+        savepos     = "POS",
+        userdefined = "USR",
+        literal     = "LIT",
+        setmatrix   = "MAT",
+        save        = "SAV",
+        restore     = "RES",
     }
 
     whatsit = function(head,current)

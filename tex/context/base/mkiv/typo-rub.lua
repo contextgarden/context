@@ -204,7 +204,7 @@ function rubies.check(head)
             setprev(start)
             setnext(stop)
             local h = hpack(start)
-            if prev == head then
+            if start == head then
                 head = h
             else
                 setlink(prev,h)
@@ -243,20 +243,21 @@ function rubies.check(head)
                 start = current
                 stop  = current
             end
+            -- go on
         elseif id == kern_code and getsubtype(current,fontkern_code) then
             -- go on
         elseif found and id == disc_code then
             -- go on (todo: look into disc)
         elseif found then
-            flush("flush 4")
+            flush("flush 3")
             found = nil
         end
         current = nx
     end
     if found then
-        flush("flush 5")
+        flush("flush 4")
     end
-    return head, true
+    return head, true -- no need for true
 end
 
 local attach

@@ -154,6 +154,8 @@ function texconfig.init()
 
 end
 
+CONTEXTLMTXMODE = %s
+
 -- we provide a qualified path
 
 callback.register('find_format_file',function(name)
@@ -212,7 +214,7 @@ local function makestub()
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
-    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable)))
+    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable,tostring(CONTEXTLMTXMODE) or 0)))
     logs.newline()
 end
 

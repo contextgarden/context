@@ -54,7 +54,7 @@ local copy_node           = nuts.copy
 
 local nodepool            = nuts.pool
 local register            = nodepool.register
-local pdfpageliteral      = nodepool.pdfpageliteral
+local pageliteral         = nodepool.pageliteral
 
 local pdf_ocg             = pdfconstant("OCG")
 local pdf_ocmd            = pdfconstant("OCMD")
@@ -261,7 +261,7 @@ function nodeinjections.startlayer(name)
     local c = cache[name]
     if not c then
         useviewerlayer(name)
-        c = register(pdfpageliteral(f_bdc(escapednames[name])))
+        c = register(pageliteral(f_bdc(escapednames[name])))
         cache[name] = c
     end
     return copy_node(c)
@@ -269,7 +269,7 @@ end
 
 function nodeinjections.stoplayer()
     if not stop then
-        stop = register(pdfpageliteral(s_emc))
+        stop = register(pageliteral(s_emc))
     end
     return copy_node(stop)
 end
@@ -286,7 +286,7 @@ function nodeinjections.startstackedlayer(s,t,first,last)
         r[#r+1] = startlayer(values[t[i]])
     end
     r = concat(r," ")
-    return pdfpageliteral(r)
+    return pageliteral(r)
 end
 
 function nodeinjections.stopstackedlayer(s,t,first,last)
@@ -295,7 +295,7 @@ function nodeinjections.stopstackedlayer(s,t,first,last)
         r[#r+1] = stoplayer()
     end
     r = concat(r," ")
-    return pdfpageliteral(r)
+    return pageliteral(r)
 end
 
 function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
@@ -307,7 +307,7 @@ function nodeinjections.changestackedlayer(s,t1,first1,last1,t2,first2,last2)
         r[#r+1] = startlayer(values[t2[i]])
     end
     r = concat(r," ")
-    return pdfpageliteral(r)
+    return pageliteral(r)
 end
 
 -- transitions

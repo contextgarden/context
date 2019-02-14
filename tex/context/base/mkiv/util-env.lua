@@ -72,20 +72,16 @@ end
 -- dirty tricks (we will replace the texlua call by luatex --luaonly)
 
 local validengines = allocate {
-    ["luatex"]        = true,
-    ["luajittex"]     = true,
- -- ["luatex.exe"]    = true,
- -- ["luajittex.exe"] = true,
+    ["luatex"]    = true,
+    ["luajittex"] = true,
 }
 
 local basicengines = allocate {
-    ["luatex"]        = "luatex",
-    ["texlua"]        = "luatex",
-    ["texluac"]       = "luatex",
-    ["luajittex"]     = "luajittex",
-    ["texluajit"]     = "luajittex",
- -- ["texlua.exe"]    = "luatex",
- -- ["texluajit.exe"] = "luajittex",
+    ["luatex"]    = "luatex",
+    ["texlua"]    = "luatex",    -- obsolete
+    ["texluac"]   = "luatex",    -- obsolete
+    ["luajittex"] = "luajittex",
+    ["texluajit"] = "luajittex", -- obsolete
 }
 
 local luaengines = allocate {

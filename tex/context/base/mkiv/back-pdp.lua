@@ -33,10 +33,10 @@ local report            = logs.reporter("command")
 
 local nodepool          = nodes.pool
 local newsavepos        = nodepool.savepos
-local newliteral        = nodepool.pdfliteral
-local newsave           = nodepool.pdfsave
-local newrestore        = nodepool.pdfrestore
-local newsetmatrix      = nodepool.pdfsetmatrix
+local newliteral        = nodepool.literal
+local newsave           = nodepool.save
+local newrestore        = nodepool.restore
+local newsetmatrix      = nodepool.setmatrix
 
 local implement         = interfaces.implement
 local constants         = interfaces.constants

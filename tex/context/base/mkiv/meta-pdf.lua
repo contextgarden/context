@@ -35,7 +35,6 @@ local pdfgraycode               = lpdf.graycode
 local pdfspotcode               = lpdf.spotcode
 local pdftransparencycode       = lpdf.transparencycode
 local pdffinishtransparencycode = lpdf.finishtransparencycode
------ pdfpageliteral            = nodes.pool.pdfpageliteral
 
 metapost.mptopdf = metapost.mptopdf or { }
 local mptopdf    = metapost.mptopdf
@@ -68,13 +67,6 @@ local function resetall()
 end
 
 resetall()
-
--- -- this does not work as expected (displacement of text) beware, needs another
--- -- comment hack
---
--- local function pdfcode(str)
---    context(pdfpageliteral(str))
--- end
 
 local pdfcode = context.pdfliteral
 

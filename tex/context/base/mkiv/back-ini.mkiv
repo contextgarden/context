@@ -29,6 +29,8 @@
 \registerctxluafile{back-ini}{}
 \registerctxluafile{back-res}{}
 
+\doifelsefileexists{back-out.mkiv}{\loadmarkfile{back-out}}{}
+
 %D We currently have a curious mix between tex and lua backend handling but
 %D eventually most will move to \LUA.
 
@@ -54,13 +56,47 @@
 %D Not everything here makes sense and the content of this file will definitely
 %D change (or even go away).
 
-\let \dostartrotation   \gobbleoneargument
-\let \dostoprotation    \donothing
-\let \dostartscaling    \gobbletwoarguments
-\let \dostopscaling     \donothing
-\let \dostartmirroring  \donothing
-\let \dostopmirroring   \donothing
-\let \dotransformnextbox\gobblesixarguments % and pass last box
+% rotation
+
+\unexpanded\def\dostartrotation#1%
+  {\forcecolorhack
+   \clf_startrotation#1\relax} % todo: implement without Q q
+
+\unexpanded\def\dostoprotation
+  {\clf_stoprotation
+   \forcecolorhack}
+
+% scaling
+
+\unexpanded\def\dostartscaling#1#2%
+  {\forcecolorhack
+   \clf_startscaling rx #1 ry #2\relax}
+
+\unexpanded\def\dostopscaling
+  {\clf_stopscaling
+   \forcecolorhack}
+
+% mirroring
+
+\unexpanded\def\dostartmirroring
+  {\clf_startmirroring}
+
+\unexpanded\def\dostopmirroring
+  {\clf_stopmirroring}
+
+% transform
+
+\unexpanded\def\dotransformnextbox#1#2#3#4#5#6%
+  {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
+
+\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
+  {\hpack
+     {\kern #5\onebasepoint
+      \raise#6\onebasepoint
+      \hpack
+        {\clf_startmatrix rx #1 sx #2 sy #3 ry #4\relax
+         \box\nextbox
+         \clf_stopmatrix}}}
 
 %D \macros
 %D   {back_ovalbox}

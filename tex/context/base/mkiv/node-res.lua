@@ -172,6 +172,10 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
+if CONTEXTLMTXMODE < 2 then
+    setfield(user_node,"type",usercodes.number)
+end
+
 local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
 local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
 
@@ -422,7 +426,7 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-if CONTEXTLMTXMODE then
+if CONTEXTLMTXMODE > 1 then
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)

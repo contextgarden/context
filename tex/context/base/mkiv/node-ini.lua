@@ -364,7 +364,7 @@ dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
-if CONTEXTLMTXMODE then
+if CONTEXTLMTXMODE > 1 then
     whatcodes.literal     = 0x1  whatcodes[0x1] = "literal"
     whatcodes.latelua     = 0x2  whatcodes[0x2] = "latelua"
     whatcodes.userdefined = 0x3  whatcodes[0x3] = "userdefined"

@@ -29,7 +29,7 @@ local nuts                 = nodes.nuts
 local copy_node            = nuts.copy
 
 local nodepool             = nuts.pool
-local pdfpageliteral       = nodepool.pdfpageliteral
+local pageliteral          = nodepool.pageliteral
 local register             = nodepool.register
 
 local pdfdictionary        = lpdf.dictionary
@@ -77,10 +77,10 @@ local v_lefttoright        = variables.lefttoright
 local v_righttoleft        = variables.righttoleft
 local v_title              = variables.title
 
-local positive             = register(pdfpageliteral("/GSpositive gs"))
-local negative             = register(pdfpageliteral("/GSnegative gs"))
-local overprint            = register(pdfpageliteral("/GSoverprint gs"))
-local knockout             = register(pdfpageliteral("/GSknockout gs"))
+local positive             = register(pageliteral("/GSpositive gs"))
+local negative             = register(pageliteral("/GSnegative gs"))
+local overprint            = register(pageliteral("/GSoverprint gs"))
+local knockout             = register(pageliteral("/GSknockout gs"))
 
 local omitextraboxes       = false
 

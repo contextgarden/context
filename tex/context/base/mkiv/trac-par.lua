@@ -15,7 +15,6 @@ local concat = table.concat
 local nuts          = nodes.nuts
 local tonut         = nuts.tonut
 
-local getfield      = nuts.getfield
 local getid         = nuts.getid
 local getnext       = nuts.getnext
 local getlist       = nuts.getlist

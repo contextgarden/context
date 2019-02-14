@@ -43,7 +43,7 @@ metapost.n            = 0
 
 local experiment      = true -- uses context(node) that already does delayed nodes
 local savedliterals   = nil  -- needs checking
-local mpsliteral      = nodes.pool.pdforiginliteral
+local mpsliteral      = nodes.pool.originliteral
 
 local f_f  = formatters["%.6F"]
 local f_m  = formatters["%.6F %.6F m"]

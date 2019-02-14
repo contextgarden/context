@@ -400,7 +400,7 @@ function statistics.callbacks()
     local c_internal = status.callbacks or 0
     local c_file     = status.indirect_callbacks or 0
     local c_direct   = status.direct_callbacks or 0
-    local c_late     = status.late_callbacks or 0
+    local c_late     = backends.noflatelua() or 0
     local c_function = status.function_callbacks or 0
     local c_total    = c_internal + c_file + c_direct + c_late + c_function
     local n_pages    = texgetcount('realpageno') - 1

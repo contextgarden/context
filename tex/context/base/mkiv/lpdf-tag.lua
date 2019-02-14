@@ -54,7 +54,7 @@ local a_image             = attributes.private('image')
 local nuts                = nodes.nuts
 
 local nodepool            = nuts.pool
-local pdfpageliteral      = nodepool.pdfpageliteral
+local pageliteral         = nodepool.pageliteral
 local register            = nodepool.register
 
 local getid               = nuts.getid
@@ -322,7 +322,7 @@ local visualize  = nil
 function nodeinjections.addtags(head)
 
     if not EMCliteral then
-        EMCliteral = register(pdfpageliteral("EMC"))
+        EMCliteral = register(pageliteral("EMC"))
     end
 
     local last   = nil
@@ -463,9 +463,9 @@ function nodeinjections.addtags(head)
             end
 
             if prev then
-                literal = pdfpageliteral(makecontent(prev,id,specification))
+                literal = pageliteral(makecontent(prev,id,specification))
             elseif ignore then
-                literal = pdfpageliteral(makeignore(specification))
+                literal = pageliteral(makeignore(specification))
             else
                 -- maybe also ignore or maybe better: comment or so
             end
@@ -490,7 +490,7 @@ function nodeinjections.addtags(head)
 
         else
 
-            local literal = pdfpageliteral(makeignore(specification))
+            local literal = pageliteral(makeignore(specification))
 
             inject(start,stop,list,literal)
 
@@ -614,9 +614,9 @@ end
 --         end
 --
 --         if r > 0 then
---             local literal = pdfpageliteral(concat(result,"\n"))
+--             local literal = pageliteral(concat(result,"\n"))
 --             -- use insert instead:
---             local literal = pdfpageliteral(result)
+--             local literal = pageliteral(result)
 --             local prev = getprev(start)
 --             if prev then
 --                 setlink(prev,literal)
@@ -638,7 +638,7 @@ end
 --         for i=1,noftop do
 --             result[i] = "EMC"
 --         end
---         local literal = pdfpageliteral(concat(result,"\n"))
+--         local literal = pageliteral(concat(result,"\n"))
 --         -- use insert instead:
 --         local next = getnext(last)
 --         if next then

@@ -162,7 +162,11 @@
    \box\scratchbox
    \endgroup}
 
-\def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+\ifdefined \page_shipout_box \else
+
+    \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+
+\fi
 
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone

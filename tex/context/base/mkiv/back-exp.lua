@@ -2905,7 +2905,6 @@ local collectresults  do -- too many locals otherwise
     local isglyph          = nuts.isglyph
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
-    local getfield         = nuts.getfield
 
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node

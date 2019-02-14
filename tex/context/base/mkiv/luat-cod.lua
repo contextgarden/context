@@ -142,7 +142,15 @@ if LUATEXVERION == nil then
 end
 
 if CONTEXTLMTXMODE == nil then
-    CONTEXTLMTXMODE = status.obj_ptr == nil and true or false
+    if status.obj_ptr == nil then
+        CONTEXTLMTXMODE = 2
+    else
+        CONTEXTLMTXMODE = 0
+        for i=1,#arg do if arg[i] == "--c:lmtx" then
+            CONTEXTLMTXMODE, pdf, img = 1, nil, nil
+            break
+        end end
+    end
 end
 
 if LUATEXFUNCTIONALITY == nil then

@@ -153,7 +153,7 @@ end)
 --
 -- tasks.appendaction("processors", "words", "nodes.injectspans")
 --
--- local pdfpageliteral = nuts.pool.pdfpageliteral
+-- local pageliteral = nuts.pool.pageliteral
 --
 -- local function injectspans(head)
 --     local done = false
@@ -162,8 +162,8 @@ end)
 --             local a = getattr(n,a_hyphenated)
 --             if a then
 --                 local str = codes[a]
---                 local b = pdfpageliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
---                 local e = pdfpageliteral("EMC")
+--                 local b = pageliteral(format("/Span << /ActualText %s >> BDC", lpdf.tosixteen(str)))
+--                 local e = pageliteral("EMC")
 --                 insert_before(head,n,b)
 --                 insert_after(head,n,e)
 --                 done = true

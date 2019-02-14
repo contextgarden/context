@@ -149,8 +149,11 @@ callbacks.register('stop_run',                stop_run,            "actions perf
 callbacks.register('report_output_pages',     report_output_pages, "actions performed when reporting pages")
 callbacks.register('report_output_log',       report_output_log,   "actions performed when reporting log file")
 
-callbacks.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
+---------.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
+---------.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
+
+callbacks.register('start_page_number',       function() end,      "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',        function() end,      "actions performed at the end of a shipout")
 
 callbacks.register('process_input_buffer',    false,               "actions performed when reading data")
 callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
@@ -240,7 +243,7 @@ local function report_stop()
     end
 end
 
-if not CONTEXTLMTXMODE then
+if CONTEXTLMTXMODE < 2 then
 
     local types = {
         "data",

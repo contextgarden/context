@@ -23,7 +23,7 @@ local registrations           = backends.pdf.registrations
 
 local nodepool                = nodes.nuts.pool
 local register                = nodepool.register
-local pdfpageliteral          = nodepool.pdfpageliteral
+local pageliteral             = nodepool.pageliteral
 
 local pdfconstant             = lpdf.constant
 local pdfdictionary           = lpdf.dictionary
@@ -129,26 +129,26 @@ lpdf.registerpagefinalizer(addpagegroup,3,"pagegroup")
 -- color injection
 
 function nodeinjections.rgbcolor(r,g,b)
-    return register(pdfpageliteral(f_rgb(r,g,b,r,g,b)))
+    return register(pageliteral(f_rgb(r,g,b,r,g,b)))
 end
 
 function nodeinjections.cmykcolor(c,m,y,k)
-    return register(pdfpageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
+    return register(pageliteral(f_cmyk(c,m,y,k,c,m,y,k)))
 end
 
 function nodeinjections.graycolor(s) -- caching 0/1 does not pay off
-    return register(pdfpageliteral(f_gray(s,s)))
+    return register(pageliteral(f_gray(s,s)))
 end
 
 function nodeinjections.spotcolor(n,f,d,p)
     if type(p) == "string" then
         p = gsub(p,","," ") -- brr misuse of spot
     end
-    return register(pdfpageliteral(f_spot(n,n,p,p)))
+    return register(pageliteral(f_spot(n,n,p,p)))
 end
 
 function nodeinjections.transparency(n)
-    return register(pdfpageliteral(f_tr_gs(n)))
+    return register(pageliteral(f_tr_gs(n)))
 end
 
 -- a bit weird but let's keep it here for a while
@@ -167,7 +167,7 @@ function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
     rulethickness = bp * rulethickness
     effect = effects[effect] or effects['normal']
-    return register(pdfpageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
+    return register(pageliteral(f_effect(stretch,rulethickness,effect))) -- watch order
 end
 
 -- spot- and indexcolors

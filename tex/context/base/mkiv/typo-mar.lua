@@ -67,7 +67,6 @@ local hpack_nodes        = nuts.hpack
 local traverse_id        = nuts.traverse_id
 local flush_node_list    = nuts.flush_list
 
-local getfield           = nuts.getfield
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid

@@ -1547,7 +1547,7 @@ do
     local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
-    local pdfdirect = nodes.pool.pdfdirectliteral -- we can use nuts.write deep down
+    local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
 
     -- todo: use tounicode from the font mapper
 
@@ -1731,6 +1731,12 @@ do
         end
     end
 
+end
+
+-- a left-over
+
+if environment.arguments.nocompression then
+    lpdf.setcompression(0,0,true)
 end
 
 

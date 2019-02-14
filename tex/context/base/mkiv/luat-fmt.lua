@@ -19,9 +19,9 @@ local function primaryflags()
     if arguments.silent then
         flags[#flags+1] = "--interaction=batchmode"
     end
-    if arguments.jit then
-        flags[#flags+1] = "--jiton"
-    end
+ -- if arguments.jit then
+ --     flags[#flags+1] = "--jiton"
+ -- end
     return concat(flags," ")
 end
 
@@ -50,6 +50,9 @@ local function secondaryflags()
     end
     if arguments.strip then
         flags[#flags+1] = "--c:strip"
+    end
+    if arguments.lmtx then
+        flags[#flags+1] = "--c:lmtx"
     end
     return concat(flags," ")
 end
