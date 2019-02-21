@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['meta-pdf'] = {
     license   = "see context related readme files"
 }
 
+-- This module is not used in practice but we keep it around for historic
+-- reasons.
+
 -- Finally we used an optimized version. The test code can be found in
 -- meta-pdh.lua but since we no longer want to overload functione we use
 -- more locals now. This module keeps changing as it is also a testbed.
@@ -96,16 +99,28 @@ local function flushpath(cmd)
     if #m_stack_path > 0 then
         local path = { }
         if m_stack_concat then
-            local sx, sy = m_stack_concat[1], m_stack_concat[4]
-            local rx, ry = m_stack_concat[2], m_stack_concat[3]
-            local tx, ty = m_stack_concat[5], m_stack_concat[6]
+            local sx = m_stack_concat[1]
+            local sy = m_stack_concat[4]
+            local rx = m_stack_concat[2]
+            local ry = m_stack_concat[3]
+            local tx = m_stack_concat[5]
+            local ty = m_stack_concat[6]
             local d = (sx*sy) - (rx*ry)
             for k=1,#m_stack_path do
-                local v = m_stack_path[k]
-                local px, py = v[1], v[2] ; v[1], v[2] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[1],v[2])
+                local v  = m_stack_path[k]
+                local px = v[1]
+                local py = v[2]
+                v[1] = (sy*(px-tx)-ry*(py-ty))/d
+                v[2] = (sx*(py-ty)-rx*(px-tx))/d
                 if #v == 7 then
-                    local px, py = v[3], v[4] ; v[3], v[4] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[3],v[4])
-                    local px, py = v[5], v[6] ; v[5], v[6] = (sy*(px-tx)-ry*(py-ty))/d, (sx*(py-ty)-rx*(px-tx))/d -- mpconcat(v[5],v[6])
+                    px = v[3]
+                    py = v[4]
+                    v[3] = (sy*(px-tx)-ry*(py-ty))/d
+                    v[4] = (sx*(py-ty)-rx*(px-tx))/d
+                    px = v[5]
+                    py = v[6]
+                    v[5] = (sy*(px-tx)-ry*(py-ty))/d
+                    v[6] = (sx*(py-ty)-rx*(px-tx))/d
                 end
                 path[k] = concat(v," ")
             end
@@ -158,7 +173,8 @@ function mps.lineto(x,y)
 end
 
 function mps.rlineto(x,y)
-    local dx, dy = 0, 0
+    local dx = 0
+    local dy = 0
     local topofstack = #m_stack_path
     if topofstack > 0 then
         local msp = m_stack_path[topofstack]
@@ -235,7 +251,8 @@ function mps.clip()
 end
 
 function mps.textext(font, scale, str) -- old parser
-    local dx, dy = 0, 0
+    local dx = 0
+    local dy = 0
     if #m_stack_path > 0 then
         dx, dy = m_stack_path[1][1], m_stack_path[1][2]
     end
@@ -330,9 +347,12 @@ handlers[50] = function() report_mptopdf("skipping special %s",50) end
 --end of not supported
 
 function mps.setrgbcolor(r,g,b) -- extra check
-    r, g, b = tonumber(r), tonumber(g), tonumber(b) -- needed when we use lpeg
+    r = tonumber(r) -- needed when we use lpeg
+    g = tonumber(g) -- needed when we use lpeg
+    b = tonumber(b) -- needed when we use lpeg
     if r == 0.0123 and g < 0.1 then
-        g, b = round(g*10000), round(b*10000)
+        g = round(g*10000)
+        b = round(b*10000)
         local s = specials[b]
         local h = round(s[#s])
         local handler = handlers[h]
@@ -342,7 +362,8 @@ function mps.setrgbcolor(r,g,b) -- extra check
             report_mptopdf("unknown special handler %s (1)",h)
         end
     elseif r == 0.123 and g < 0.1 then
-        g, b = round(g*1000), round(b*1000)
+        g = round(g*1000)
+        b = round(b*1000)
         local s = specials[b]
         local h = round(s[#s])
         local handler = handlers[h]

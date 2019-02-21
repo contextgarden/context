@@ -365,7 +365,9 @@ implement {
 }
 
 local function getnaturaldimensions(n)
-    local w, h, d = 0, 0, 0
+    local w = 0
+    local h = 0
+    local d = 0
     local l = getlist(getbox(n))
     if l then
         w, h, d = getdimensions(l)
@@ -395,7 +397,9 @@ interfaces.implement {
     name      = "getnaturalwd",
     arguments = "integer",
     actions   = function(n)
-        local w, h, d = 0, 0, 0
+        local w = 0
+        local h = 0
+        local d = 0
         local l = getlist(getbox(n))
         if l then
             w, h, d = getdimensions(l)

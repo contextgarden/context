@@ -755,7 +755,11 @@ local function makereference(width,height,depth,reference) -- height and depth a
         if trace_references then
             report_reference("resolving attribute %a",reference)
         end
-        local resolved, ht, dp, set, n = sr[1], sr[2], sr[3], sr[4], sr[5]
+        local resolved = sr[1]
+        local ht       = sr[2]
+        local dp       = sr[3]
+        local set      = sr[4]
+        local n        = sr[5]
      -- logs.report("temp","child: ht=%p dp=%p, parent: ht=%p dp=%p",ht,dp,height,depth)
         if ht then
             if height < ht then height = ht end
@@ -844,7 +848,11 @@ local function makedestination(width,height,depth,reference)
         if trace_destinations then
             report_destination("resolving attribute %a",reference)
         end
-        local resolved, ht, dp, name, view = sr[1], sr[2], sr[3], sr[4], sr[5] -- sr[4] will change to just internal
+        local resolved = sr[1]
+        local ht       = sr[2]
+        local dp       = sr[3]
+        local name     = sr[4]
+        local view     = sr[5]
         if ht then
             if height < ht then height = ht end
             if depth  < dp then depth  = dp end

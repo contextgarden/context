@@ -368,10 +368,14 @@ local function reviver(data,n)
                 local gray = graycolor(v[2])
                 d = { gray, gray, gray, gray }
             elseif model == 3 then
-                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                local gray = graycolor(v[2])
+                local rgb  = rgbcolor(v[3],v[4],v[5])
+                local cmyk = cmykcolor(v[6],v[7],v[8],v[9])
                 d = { rgb, gray, rgb, cmyk }
             elseif model == 4 then
-                local gray, rgb, cmyk = graycolor(v[2]), rgbcolor(v[3],v[4],v[5]), cmykcolor(v[6],v[7],v[8],v[9])
+                local gray = graycolor(v[2])
+                local rgb  = rgbcolor(v[3],v[4],v[5])
+                local cmyk = cmykcolor(v[6],v[7],v[8],v[9])
                 d = { cmyk, gray, rgb, cmyk }
             elseif model == 5 then
                 local spot = spotcolor(v[10],v[11],v[12],v[13])

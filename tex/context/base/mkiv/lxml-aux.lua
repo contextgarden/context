@@ -134,10 +134,12 @@ end
 function xml.collect_tags(root, pattern, nonamespace)
     local collected = xmlapplylpath(root,pattern)
     if collected then
-        local t, n = { }, 0
+        local t = { }
+        local n = 0
         for c=1,#collected do
-            local e = collected[c]
-            local ns, tg = e.ns, e.tg
+            local e  = collected[c]
+            local ns = e.ns
+            local tg = e.tg
             n = n + 1
             if nonamespace then
                 t[n] = tg
@@ -226,7 +228,7 @@ function xml.delete(root,pattern)
                     if trace_manipulations then
                         report('deleting',pattern,c,e)
                     end
-                    local d = p.dt
+                    local d  = p.dt
                     local ni = e.ni
                     if ni <= #d then
                         if false then
@@ -313,8 +315,10 @@ local function inject_element(root,pattern,whatever,prepend)
     local element = root and xmltoelement(whatever,root)
     local collected = element and xmlapplylpath(root,pattern)
     local function inject_e(e)
-        local r = e.__p__
-        local d, k, rri = r.dt, e.ni, r.ri
+        local r   = e.__p__
+        local d   = r.dt
+        local k   = e.ni
+        local rri = r.ri
         local edt = (rri and d[rri].dt) or (d and d[k] and d[k].dt)
         if edt then
             local be, af
@@ -354,7 +358,8 @@ local function insert_element(root,pattern,whatever,before) -- todo: element als
     local collected = element and xmlapplylpath(root,pattern)
     local function insert_e(e)
         local r = e.__p__
-        local d, k = r.dt, e.ni
+        local d = r.dt
+        local k = e.ni
         if not before then
             k = k + 1
         end
@@ -860,8 +865,10 @@ function xml.separate(x,pattern)
                 report_xml("warning: xml.separate changes root")
                 x = d
             end
-            local t, n = { "\n" }, 1
-            local i, nd = 1, #d
+            local t  = { "\n" }
+            local n  = 1
+            local i  = 1
+            local nd = #d
             while i <= nd do
                 while i <= nd do
                     local di = d[i]

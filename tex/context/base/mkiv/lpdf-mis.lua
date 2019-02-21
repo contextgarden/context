@@ -268,7 +268,9 @@ local function flushjavascripts()
         local a = pdfarray()
         local pdf_javascript = pdfconstant("JavaScript")
         for i=1,#t do
-            local name, script = t[i][1], t[i][2]
+            local ti     = t[i]
+            local name   = ti[1]
+            local script = ti[2]
             local j = pdfdictionary {
                 S  = pdf_javascript,
                 JS = pdfreference(pdfflushstreamobject(script)),

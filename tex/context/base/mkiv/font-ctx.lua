@@ -793,7 +793,8 @@ end
 local function registercontext(fontnumber,extraname,option)
     local extra = setups[extraname]
     if extra then
-        local mergedfeatures, mergedname = { }, nil
+        local mergedfeatures = { }
+        local mergedname     = nil
         if option < 0 then
             mergedname = fontnumber .. "-" .. extraname
         else
@@ -3297,7 +3298,8 @@ function fonts.helpers.collectanchors(tfmdata)
             a[target] = { anchor }
             return
         end
-        local x, y = anchor[1], anchor[2]
+        local x = anchor[1]
+        local y = anchor[2]
         for k, v in next, t do
             if v[1] == x and v[2] == y then
                 return

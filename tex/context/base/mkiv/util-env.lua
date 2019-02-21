@@ -150,8 +150,11 @@ environment.sortedflags = nil
 -- context specific arguments (in order not to confuse the engine)
 
 function environment.initializearguments(arg)
-    local arguments, files = { }, { }
-    environment.arguments, environment.files, environment.sortedflags = arguments, files, nil
+    local arguments = { }
+    local files     = { }
+    environment.arguments   = arguments
+    environment.files       = files
+    environment.sortedflags = nil
     for index=1,#arg do
         local argument = arg[index]
         if index > 0 then
@@ -168,6 +171,11 @@ function environment.initializearguments(arg)
                     files[#files+1] = argument
                 end
             end
+        end
+    end
+    if not environment.ownname then
+        if os.selfpath and os.selfname then
+            environment.ownname = file.addsuffix(file.join(os.selfpath,os.selfname),"lua")
         end
     end
     environment.ownname = file.reslash(environment.ownname or arg[0] or 'unknown.lua')

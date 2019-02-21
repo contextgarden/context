@@ -53,8 +53,16 @@ end
 job.register('job.objects.collected', tobesaved, initializer, nil)
 
 local function saveobject(tag,number,page)
-    local t = { number, page }
-    tobesaved[tag], collected[tag] = t, t
+    local data = { number, page }
+    tobesaved[tag] = data
+    collected[tag] = data
+end
+
+local function saveobjectspec(specification)
+    local tag  = specification.tag
+    local data = { specification.number, specification.page }
+    tobesaved[tag] = data
+    collected[tag] = data
 end
 
 local function setobject(tag,number,page)
@@ -162,9 +170,12 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
         local hbox   = codeinjections.restoreboxresource(index) -- a nut !
         if status then
             local list = getlist(hbox)
-            local page = new_latelua(function()
-                saveobject(ns .. "::" .. id,index,getcount("realpageno"))
-            end)
+            local page = new_latelua {
+                action = saveobjectspec,
+                tag    = ns .. "::" .. id,
+                number = index,
+                page   = getcount("realpageno"),
+            }
             setlink(list,page)
         end
         setbox("objectbox",hbox)

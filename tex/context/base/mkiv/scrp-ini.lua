@@ -468,8 +468,8 @@ function scripts.injectors.handler(head)
     if not start then
         return head
     else
-        local last_a, normal_process, lastfont, originals = nil, nil, nil, nil
-        local first, last, ok = nil, nil, false
+        local last_a, normal_process, lastfont, originals, first, last
+        local ok = false
         while start do
             local char, id = isglyph(start)
             if char then
@@ -1012,12 +1012,14 @@ do
         end,
 
         nobreakspace_before = function(head,current)
-            local g, p = space_glue(current), new_penalty(10000)
+            local g = space_glue(current)
+            local p = new_penalty(10000)
             head, current = insert_node_before(head,current,p)
             return insert_node_before(head,current,g)
         end,
         nobreakspace_after = function(head,current)
-            local g, p = space_glue(current), new_penalty(10000)
+            local g = space_glue(current)
+            local p = new_penalty(10000)
             head, current = insert_node_after(head,current,g)
             return insert_node_after(head,current,p)
         end,

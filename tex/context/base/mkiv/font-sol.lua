@@ -348,8 +348,14 @@ directives.register("builders.paragraphs.solutions.splitters.encapsulate", funct
 end)
 
 function splitters.split(head) -- best also pass the direction
-    local current, r2l, start, stop, attribute = head, false, nil, nil, 0
-    cache, max_less, max_more = { }, 0, 0
+    local current   = head
+    local r2l       = false
+    local start     = nil
+    local stop      = nil
+    local attribute = 0
+    cache           = { }
+    max_less        = 0
+    max_more        = 0
     local function flush() -- we can move this
         local font = getfont(start)
         local last = getnext(stop)
@@ -445,12 +451,14 @@ function splitters.split(head) -- best also pass the direction
         flush()
     end
     nofparagraphs = nofparagraphs + 1
-    nofwords = nofwords + #cache
+    nofwords      = nofwords + #cache
     return head
 end
 
 local function collect_words(list) -- can be made faster for attributes
-    local words, w, word = { }, 0, nil
+    local words = { }
+    local w     = 0
+    local word  = nil
     if encapsulate then
         for current, subtype in nextwhatsit, list do
             if subtype == userdefinedwhatsit_code then -- hm
@@ -472,7 +480,8 @@ local function collect_words(list) -- can be made faster for attributes
             end
         end
     else
-        local current, first, last, index = list, nil, nil, nil
+        local first, last, index
+        local current = list
         while current do
             -- todo: disc and kern
             local id = getid(current)
@@ -537,7 +546,9 @@ local function collect_words(list) -- can be made faster for attributes
         if trace_split then
             for i=1,#words do
                 local w = words[i]
-                local n, f, l = w[1], w[2], w[3]
+                local n = w[1]
+                local f = w[2]
+                local l = w[3]
                 local c = cache[n]
                 if c then
                     report_splitters("found %4i: word %a, cached %a",n,nodes_to_utf(f,true,true,l),nodes_to_utf(c.original,true))
@@ -793,7 +804,8 @@ function splitters.optimize(head)
                     set, max = "less", max_less
                 end
                 -- we can keep the best variants
-                local lastbest, lastbadness = nil, badness
+                local lastbest    = nil
+                local lastbadness = badness
                 if preroll then
                     local bb, base
                     for i=1,max do
@@ -866,7 +878,7 @@ statistics.register("optimizer statistics", function()
     if nofwords > 0 then
         local elapsed = statistics.elapsedtime(splitters)
         local average = noftries/elapsed
-        return format("%s words identified in %s paragraphs, %s words retried, %s lines tried, %0.3f seconds used, %s adapted, %0.1f lines per second",
+        return format("%s words identified in %s paragraphs, %s words retried, %s lines tried, %s seconds used, %s adapted, %0.1f lines per second",
             nofwords,nofparagraphs,noftries,nofadapted+nofkept,elapsed,nofadapted,average)
     end
 end)

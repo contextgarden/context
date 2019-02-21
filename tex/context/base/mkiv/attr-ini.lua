@@ -114,7 +114,8 @@ local function showlist(what,list)
         local a = list.next
         local i = 0
         while a do
-            local number, value = a.number, a.value
+            local number = a.number
+            local value  = a.value
             i = i + 1
             report_attribute("%S %2i: attribute %3i, value %4i, name %a",what,i,number,value,names[number])
             a = a.next

@@ -20,7 +20,7 @@ elseif utf8 then
 
     -- lua 5.3:  bitwise.lua, v 1.24 2014/12/26 17:20:53 roberto
 
-    bit32 = load ( [[
+    load ( [[
 local select = select -- instead of: arg = { ... }
 
 bit32 = {
@@ -105,13 +105,13 @@ bit32 = {
     return ((a & ~(mask << f)) | ((v & mask) << f)) & 0xFFFFFFFF
   end,
 }
-        ]] )
+        ]] ) ()
 
 elseif bit then
 
     -- luajit (for now)
 
-    bit32 = load ( [[
+    load ( [[
 local band, bnot, rshift, lshift = bit.band, bit.bnot, bit.rshift, bit.lshift
 
 bit32 = {
@@ -135,7 +135,7 @@ bit32 = {
   rrotate = bit.ror,
   rshift  = rshift,
 }
-        ]] )
+        ]] ) ()
 
 else
 
@@ -146,5 +146,3 @@ else
     xpcall(function() local _, t = require("bit32") if t then bit32 = t end return end,function() end)
 
 end
-
-return bit32 or false

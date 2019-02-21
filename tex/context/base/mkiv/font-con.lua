@@ -827,7 +827,10 @@ function constructors.scale(tfmdata,specification)
             if stackmath then
                 local mk = character.mathkerns
                 if mk then
-                    local tr, tl, br, bl = mk.topright, mk.topleft, mk.bottomright, mk.bottomleft
+                    local tr = mk.topright
+                    local tl = mk.topleft
+                    local br = mk.bottomright
+                    local bl = mk.bottomleft
                     chr.mathkern = { -- singular -> should be patched in luatex !
                         top_right    = tr and mathkerns(tr,vdelta) or nil,
                         top_left     = tl and mathkerns(tl,vdelta) or nil,
@@ -1174,7 +1177,9 @@ loose our testcases for <l n='luatex'/>.</p>
 --ldx]]--
 
 function constructors.hashinstance(specification,force)
-    local hash, size, fallbacks = specification.hash, specification.size, specification.fallbacks
+    local hash      = specification.hash
+    local size      = specification.size
+    local fallbacks = specification.fallbacks
     if force or not hash then
         hash = constructors.hashfeatures(specification)
         specification.hash = hash
@@ -1612,7 +1617,8 @@ end
 -- while typesetting
 
 function constructors.collectprocessors(what,tfmdata,features,trace,report)
-    local processes, nofprocesses = { }, 0
+    local processes    = { }
+    local nofprocesses = 0
     if features and next(features) then
         local properties     = tfmdata.properties
         local whathandler    = handlers[what]

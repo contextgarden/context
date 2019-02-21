@@ -107,8 +107,10 @@ else
     local function backtrack(v,last,target)
         local vs = v.specials
         if vs and #vs == 3 and vs[1] == "char" then
-            local one, two = vs[2], vs[3]
-            local first, second = utfchar(one), utfchar(two) .. last
+            local one = vs[2]
+            local two = vs[3]
+            local first  = utfchar(one)
+            local second = utfchar(two) .. last
             collapsed[first..second] = target
             backtrack(data[one],second,target)
         end
@@ -141,8 +143,11 @@ else
             local size = #vs
             if kind == "char" and size == 3 then -- what if more than 3
                 --
-                local one, two = vs[2], vs[3]
-                local first, second, combination = utfchar(one), utfchar(two), utfchar(unicode)
+                local one = vs[2]
+                local two = vs[3]
+                local first       = utfchar(one)
+                local second      = utfchar(two)
+                local combination = utfchar(unicode)
                 --
                 collapsed[first..second] = combination
                 backtrack(data[one],second,combination)

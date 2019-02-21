@@ -50,198 +50,136 @@ local pdfbackend        = {
 
 backends.pdf = pdfbackend
 
-lpdf         = lpdf or { }
-local lpdf   = lpdf
-lpdf.flags   = lpdf.flags or { } -- will be filled later
-
-local pdfsetinfo              = pdf.setinfo
-local pdfsetcatalog           = pdf.setcatalog
------ pdfsetnames             = pdf.setnames
------ pdfsettrailer           = pdf.settrailer
-local pdfsettrailerid         = pdf.settrailerid
-
-local pdfsetpageresources     = pdf.setpageresources
-local pdfsetpageattributes    = pdf.setpageattributes
-local pdfsetpagesattributes   = pdf.setpagesattributes
-
-local pdfreserveobject        = pdf.reserveobj
-local pdfimmediateobject      = pdf.immediateobj
-local pdfdeferredobject       = pdf.obj
-local pdfreferenceobject      = pdf.refobj
-
-local pdfgetfontname          = pdf.getfontname
-local pdfgetfontobjnum        = pdf.getfontobjnum
-local pdfgetxformname         = pdf.getxformname
-local pdfincludeimage         = pdf.includeimage
-local pdfincludechar          = pdf.includechar
-local pdfgetpagereference     = pdf.getpageref or pdf.pageref -- tex.pdfpageref is obsolete
-local pdfsetfontattributes    = pdf.setfontattributes
-
-local setmajorversion         = pdf.setmajorversion
-local setminorversion         = pdf.setminorversion
-local getmajorversion         = pdf.getmajorversion
-local getminorversion         = pdf.getminorversion
-
-local setcompresslevel        = pdf.setcompresslevel
-local setobjectcompresslevel  = pdf.setobjcompresslevel
-local getcompresslevel        = pdf.getcompresslevel
-local getobjectcompresslevel  = pdf.getobjcompresslevel
-
-local setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
-local setomitcidset           = pdf.setomitcidset
-local setomitcharset          = pdf.setomitcharset or function() end
-
-local function pdfdisablecommand(command)
-    pdf[command] = function()
---         report_blocked("'pdf.%s' is not supported",command)
-    end
-end
-
-pdfdisablecommand("setinfo")
-pdfdisablecommand("setcatalog")
-pdfdisablecommand("setnames")
-pdfdisablecommand("settrailer")
-pdfdisablecommand("settrailerid")
-pdfdisablecommand("setomitcidset")
-pdfdisablecommand("setomitcharset")
-pdfdisablecommand("setpageresources")
-pdfdisablecommand("setpageattributes")
-pdfdisablecommand("setpagesattributes")
-pdfdisablecommand("registerannot")
-pdfdisablecommand("reserveobj")
-
-pdf.disablecommand = pdfdisablecommand
-
-updaters.register("backend.update.lpdf",function()
-
-    pdfsetinfo              = pdf.setinfo
-    pdfsetcatalog           = pdf.setcatalog
-    pdfsettrailerid         = pdf.settrailerid
-
-    pdfreserveobject        = pdf.reserveobj
-    pdfimmediateobject      = pdf.immediateobj
-    pdfdeferredobject       = pdf.obj
-    pdfreferenceobject      = pdf.refobj
-    pdfsetfontattributes    = pdf.setfontattributes
-
-    pdfgetfontname          = pdf.getfontname
-    pdfgetfontobjnum        = pdf.getfontobjnum
-    pdfgetxformname         = pdf.getxformname
-    pdfincludeimage         = pdf.includeimage
-    pdfincludechar          = pdf.includechar
-    pdfgetpagereference     = pdf.getpageref
-
-    setmajorversion         = pdf.setmajorversion
-    setminorversion         = pdf.setminorversion
-    getmajorversion         = pdf.getmajorversion
-    getminorversion         = pdf.getminorversion
-
-    setcompresslevel        = pdf.setcompresslevel
-    setobjectcompresslevel  = pdf.setobjcompresslevel
-    getcompresslevel        = pdf.getcompresslevel
-    getobjectcompresslevel  = pdf.getobjcompresslevel
-
-    pdfsetpageresources     = pdf.setpageresources
-    pdfsetpageattributes    = pdf.setpageattributes
-    pdfsetpagesattributes   = pdf.setpagesattributes
-
-    setsuppressoptionalinfo = pdf.setsuppressoptionalinfo
-    setomitcidset           = pdf.setomitcidset
-    setomitcharset          = pdf.setomitcharset
-
-    pdfdisablecommand("setinfo")
-    pdfdisablecommand("setcatalog")
-    pdfdisablecommand("settrailerid")
-
-    pdfdisablecommand("reserveobj")
-    pdfdisablecommand("getfontname")
-    pdfdisablecommand("getfontobjnum")
-end)
+lpdf       = lpdf or { }
+local lpdf = lpdf
+lpdf.flags = lpdf.flags or { } -- will be filled later
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
 local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
-function lpdf.settrailerid(id)
-    pdfsettrailerid(id)
-end
+do
 
-function lpdf.setversion(major,minor)
-    setmajorversion(major or 1)
-    setminorversion(minor or 7)
-end
+    local pdfsetmajorversion, pdfsetminorversion, pdfgetmajorversion, pdfgetminorversion
+    local pdfsetcompresslevel, pdfsetobjectcompresslevel, pdfgetcompresslevel, pdfgetobjectcompresslevel
+    local pdfsetsuppressoptionalinfo, pdfsetomitcidset, pdfsetomitcharset
 
-function lpdf.getversion(major,minor)
-    return getmajorversion(), getminorversion()
-end
+    updaters.register("backend.update.lpdf",function()
+        pdfsetmajorversion         = pdf.setmajorversion
+        pdfsetminorversion         = pdf.setminorversion
+        pdfgetmajorversion         = pdf.getmajorversion
+        pdfgetminorversion         = pdf.getminorversion
 
-function lpdf.majorversion() return getmajorversion() end
-function lpdf.minorversion() return getminorversion() end
+        pdfsetcompresslevel        = pdf.setcompresslevel
+        pdfsetobjectcompresslevel  = pdf.setobjcompresslevel
+        pdfgetcompresslevel        = pdf.getcompresslevel
+        pdfgetobjectcompresslevel  = pdf.getobjcompresslevel
 
-function lpdf.getfontname     (id) return pdfgetfontname  (id) end
-function lpdf.getfontobjnumber(id) return pdfgetfontobjnum(id) end
+        pdfsetsuppressoptionalinfo = pdf.setsuppressoptionalinfo
+        pdfsetomitcidset           = pdf.setomitcidset
+        pdfsetomitcharset          = pdf.setomitcharset
+    end)
 
-function lpdf.getxformname(id) return pdfgetxformname(id) end
-function lpdf.includeimage(id) return pdfincludeimage(id) end
+    function lpdf.setversion(major,minor)
+        pdfsetmajorversion(major or 1)
+        pdfsetminorversion(minor or 7)
+    end
 
-function lpdf.includechar    (f,c) pdfincludechar(f,c) end
-function lpdf.includecharlist(f,c) pdfincludechar(f,c) end -- can be disabled
+    function lpdf.getversion(major,minor)
+        return pdfgetmajorversion(), pdfgetminorversion()
+    end
 
-local frozen = false
-local clevel = 3
-local olevel = 1
+    function lpdf.majorversion() return pdfgetmajorversion() end
+    function lpdf.minorversion() return pdfgetminorversion() end
 
-function lpdf.setcompression(level,objectlevel,freeze)
-    if not frozen then
-        if setcompresslevel then
-            setcompresslevel(level or 3)
-            setobjectcompresslevel(objectlevel or level or 3)
-        else
-            clevel = level
-            olevel = objectlevel
+    local frozen = false
+    local clevel = 3
+    local olevel = 1
+
+    function lpdf.setcompression(level,objectlevel,freeze)
+        if not frozen then
+            if pdfsetcompresslevel then
+                pdfsetcompresslevel(level or 3)
+                pdfsetobjectcompresslevel(objectlevel or level or 3)
+            else
+                clevel = level
+                olevel = objectlevel
+            end
+            frozen = freeze
         end
-        frozen = freeze
     end
-end
 
-function lpdf.getcompression()
-    if getcompresslevel then
-        return getcompresslevel(), getobjectcompresslevel()
-    else
-        return clevel, olevel
+    function lpdf.getcompression()
+        if pdfgetcompresslevel then
+            return pdfgetcompresslevel(), pdfgetobjectcompresslevel()
+        else
+            return clevel, olevel
+        end
     end
-end
 
-function lpdf.compresslevel()
-    if getcompresslevel then
-        return getcompresslevel()
-    else
-        return clevel
+    function lpdf.compresslevel()
+        if pdfgetcompresslevel then
+            return pdfgetcompresslevel()
+        else
+            return clevel
+        end
     end
-end
 
-function lpdf.objectcompresslevel()
-    if getobjectcompresslevel then
-        return getobjectcompresslevel()
-    else
-        return olevel
+    function lpdf.objectcompresslevel()
+        if pdfgetobjectcompresslevel then
+            return pdfgetobjectcompresslevel()
+        else
+            return olevel
+        end
     end
-end
 
-function lpdf.setsuppressoptionalinfo(n)
-    if setsuppressoptionalinfo then
-        setsuppressoptionalinfo(n) -- todo
+    function lpdf.setsuppressoptionalinfo(n)
+        if pdfsetsuppressoptionalinfo then
+            pdfsetsuppressoptionalinfo(n) -- todo
+        end
     end
+
+    function lpdf.setomitcidset(v)
+        return pdfsetomitcidset(v)
+    end
+
+    function lpdf.setomitcharset(v)
+        return pdfsetomitcharset(v)
+    end
+
 end
 
-function lpdf.setomitcidset(v)
-    return setomitcidset(v)
+do
+
+    local pdfgetxformname, pdfincludeimage
+
+    updaters.register("backend.update.lpdf",function()
+        pdfgetxformname = pdf.getxformname
+        pdfincludeimage = pdf.includeimage
+    end)
+
+    function lpdf.getxformname(id) return pdfgetxformname(id) end
+    function lpdf.includeimage(id) return pdfincludeimage(id) end
+
 end
 
-function lpdf.setomitcharset(v)
-    return setomitcharset(v)
-end
+    local pdfsetpageresources, pdfsetpageattributes, pdfsetpagesattributes
+    local pdfreserveobject, pdfimmediateobject, pdfdeferredobject, pdfreferenceobject
+    local pdfgetpagereference
+
+    updaters.register("backend.update.lpdf",function()
+        pdfreserveobject           = pdf.reserveobj
+        pdfimmediateobject         = pdf.immediateobj
+        pdfdeferredobject          = pdf.obj
+        pdfreferenceobject         = pdf.refobj
+
+        pdfgetpagereference        = pdf.getpageref
+
+        pdfsetpageresources        = pdf.setpageresources
+        pdfsetpageattributes       = pdf.setpageattributes
+        pdfsetpagesattributes      = pdf.setpagesattributes
+    end)
 
 local jobpositions = job.positions
 local getpos       = jobpositions.getpos
@@ -254,28 +192,19 @@ jobpositions.registerhandlers {
 
 do
 
-    local pdfgetmatrix = pdf.getmatrix
-    local pdfhasmatrix = pdf.hasmatrix
-    local pdfprint     = pdf.print
+    local pdfgetmatrix, pdfhasmatrix, pdfprint
 
-    -- todo
+    updaters.register("backend.update.lpdf",function()
+        pdfgetmatrix = pdf.getmatrix
+        pdfhasmatrix = pdf.hasmatrix
+        pdfprint     = pdf.print
+    end)
 
     function lpdf.print(...)
         return pdfprint(...)
     end
 
-    pdfbackend.codeinjections.print = lpdf.print
-
-    updaters.register("backend.update.lpdf",function()
-        pdfprint = pdf.print
-    end)
-
-    -- todo
-
-    updaters.register("backend.update.lpdf",function()
-        pdfhasmatrix = pdf.hasmatrix
-        pdfgetmatrix = pdf.getmatrix
-    end)
+    pdfbackend.codeinjections.print = lpdf.print -- will go
 
     -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
     --     local x1 = llx * rx + lly * sy
@@ -524,7 +453,9 @@ do
 
     tostring_d = function(t,contentonly,key)
         if next(t) then
-            local r, n, e = { }, 0
+            local r = { }
+            local n = 0
+            local e
             for k, v in next, t do
                 if k == "__extra__" then
                     e = v
@@ -1176,6 +1107,18 @@ callbacks.register("finish_pdffile", lpdf.finalizedocument)
 
 do
 
+    local pdfsetinfo, pdfsetcatalog, pdfsettrailerid -- pdfsetnames pdfsettrailer
+
+    updaters.register("backend.update.lpdf",function()
+        pdfsetinfo                 = pdf.setinfo
+        pdfsetcatalog              = pdf.setcatalog
+        pdfsettrailerid            = pdf.settrailerid
+    end)
+
+    function lpdf.settrailerid(id)
+        pdfsettrailerid(id)
+    end
+
     -- some minimal tracing, handy for checking the order
 
     local function trace_set(what,key)
@@ -1390,7 +1333,8 @@ end
 -- in strc-bkm: lpdf.registerdocumentfinalizer(function() structures.bookmarks.place() end,1)
 
 function lpdf.rotationcm(a)
-    local s, c = sind(a), cosd(a)
+    local s = sind(a)
+    local c = cosd(a)
     return format("%.6F %.6F %.6F %.6F 0 0 cm",c,s,-s,c)
 end
 
@@ -1680,23 +1624,30 @@ end
 
 do
 
-    local pdf_includechar = pdf.includechar
-    local pdf_includefont = pdf.includefont
-    local pdf_setmapfile  = pdf.mapfile
-    local pdf_setmapline  = pdf.mapline
+    local pdfincludechar, pdfincludecharlist, pdfincludefont
+    local pdfgetfontname, pdfgetfontobjnum
+    local pdfsetmapfile, pdfsetmapline
 
     updaters.register("backend.update.lpdf",function()
-        pdf_includechar = pdf.includechar
-        pdf_includefont = pdf.includefont
-        pdf_setmapfile  = pdf.mapfile
-        pdf_setmapline  = pdf.mapline
+        pdfincludechar     = pdf.includechar
+        pdfincludefont     = pdf.includefont
+        pdfincludecharlist = pdf.includecharlist
+        pdfgetfontname     = pdf.getfontname
+        pdfgetfontobjnum   = pdf.getfontobjnum
+        pdfsetmapfile      = pdf.mapfile
+        pdfsetmapline      = pdf.mapline
     end)
 
-    function lpdf.includechar(...) pdf_includechar(...) end
-    function lpdf.includefont(...) pdf_includefont(...) end
+    function lpdf.includechar(f,c) pdfincludechar(f,c) end
+    function lpdf.includefont(...) pdfincludefont(...) end
 
-    function lpdf.setmapfile(...) pdf_setmapfile(...) end
-    function lpdf.setmapline(...) pdf_setmapline(...) end
+    function lpdf.includecharlist(f,c) pdfincludecharlist(f,c) end -- can be disabled
+
+    function lpdf.getfontname     (id) return pdfgetfontname  (id) end
+    function lpdf.getfontobjnumber(id) return pdfgetfontobjnum(id) end
+
+    function lpdf.setmapfile(...) pdfsetmapfile(...) end
+    function lpdf.setmapline(...) pdfsetmapline(...) end
 
 end
 

@@ -108,6 +108,9 @@ end
 datasets.setdata = setdata
 
 function datasets.extend(name,tag)
+    if type(name) == "table" then
+        name, tag = name.name, name.tag
+    end
     local set = sets[name]
     local order = set.order + 1
     local realpage = texgetcount("realpageno")
@@ -148,10 +151,8 @@ local function setdataset(settings)
     local name, tag = setdata(settings)
     if settings.delay ~= v_yes then
         --
-    elseif type(tag) == "number" then
-        context(new_latelua(formatters["job.datasets.extend(%q,%i)"](name,tag)))
     else
-        context(new_latelua(formatters["job.datasets.extend(%q,%q)"](name,tag)))
+        context(new_latelua { action = job.datasets.extend, name = name, tag = tag })
     end
 end
 

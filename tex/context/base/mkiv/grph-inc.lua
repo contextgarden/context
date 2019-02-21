@@ -162,16 +162,16 @@ end
 local  __img__ = type(img) == "table" and img or { }
 images.__img__ =__img__
 
-local img_new   = __img__.new
-local img_scan  = __img__.scan
-local img_copy  = __img__.copy
-local img_wrap  = __img__.node
-local img_embed = __img__.immediatewrite
+local imgnew   = __img__.new
+local imgscan  = __img__.scan
+local imgcopy  = __img__.copy
+local imgwrap  = __img__.node
+local imgembed = __img__.immediatewrite
 
-if img_new then
+if imgnew then
     -- catch (actually we should be less picky in img)
     local __img__new__ = img_new
-    img_new = function(t)
+    imgnew = function(t)
         t.kind = nil
         return __img__new__(t)
     end
@@ -179,11 +179,11 @@ end
 
 updaters.register("backend.update",function()
     local img = images.__img__
-    img_new   = img.new
-    img_scan  = img.scan
-    img_copy  = img.copy
-    img_wrap  = img.wrap
-    img_embed = img.embed
+    imgnew   = img.new
+    imgscan  = img.scan
+    imgcopy  = img.copy
+    imgwrap  = img.wrap
+    imgembed = img.embed
 end)
 
 local imagekeys  = { -- only relevant ones
@@ -217,25 +217,25 @@ images.sizes = imagesizes
 -- new interface
 
 local function createimage(specification)
-    return img_new(specification)
+    return imgnew(specification)
 end
 
 local function copyimage(specification)
-    return img_copy(specification)
+    return imgcopy(specification)
 end
 
 local function scanimage(specification)
-    return img_scan(specification)
+    return imgscan(specification)
 end
 
 local function embedimage(specification)
     -- write the image to file
-    return img_embed(specification)
+    return imgembed(specification)
 end
 
 local function wrapimage(specification)
     -- create an image rule
-    return img_wrap(specification)
+    return imgwrap(specification)
 end
 
 images.create = createimage
@@ -1575,6 +1575,11 @@ function figures.getrealpage(index)
     return pofimages[index] or 0
 end
 
+local function updatepage(specification)
+    local n = specification.n
+    pofimages[n] = pofimages[n] or tex.count.realpageno -- so when reused we register the first one only
+end
+
 function includers.generic(data)
     local dr, du, ds = data.request, data.used, data.status
     -- here we set the 'natural dimensions'
@@ -1603,9 +1608,7 @@ function includers.generic(data)
         nofimages    = nofimages + 1
         ds.pageindex = nofimages
         local image  = wrapimage(figure)
-        local pager  = new_latelua(function()
-            pofimages[nofimages] = pofimages[nofimages] or tex.count.realpageno -- so when reused we register the first one only
-        end)
+        local pager  = new_latelua { action = updatepage, n = nofimages }
         image.next = pager
         pager.prev = image
         local box  = hpack(image)

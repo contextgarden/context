@@ -434,8 +434,8 @@ end
 
 references.synchronizepage = synchronizepage
 
-local function enhancereference(prefix,tag)
-    local l = tobesaved[prefix][tag]
+local function enhancereference(specification)
+    local l = tobesaved[specification.prefix][specification.tag]
     if l then
         synchronizepage(l.references)
     end
@@ -446,7 +446,9 @@ references.enhance = enhancereference
 -- implement {
 --     name      = "enhancereference",
 --     arguments = "2 strings",
---     actions   = references.enhance,
+--     actions   = function(prefix,tag)
+--        enhancereference { prefix = prefix, tag = tag }
+--     end,
 -- }
 
 implement {
@@ -454,7 +456,7 @@ implement {
     arguments = "2 strings",
     protected = true,
     actions   = function(prefix,tag)
-        ctx_latelua(function() enhancereference(prefix,tag) end)
+        ctx_latelua { action = enhancereference, prefix = prefix, tag = tag }
     end,
 }
 
@@ -1999,7 +2001,8 @@ local function setinternalreference(specification)
     local internal    = specification.internal
     local destination = unsetvalue
     if innermethod == v_auto or innermethod == v_name then
-        local t, tn = { }, 0 -- maybe add to current (now only used for tracing)
+        local t         = { } -- maybe add to current (now only used for tracing)
+        local tn        = 0
         local reference = specification.reference
         local view      = specification.view
         if reference then
@@ -2320,7 +2323,8 @@ genericfilters.default = genericfilters.text
 function genericfilters.page(data,prefixspec,pagespec)
     local pagedata = data.pagedata
     if pagedata then
-        local number, conversion = pagedata.number, pagedata.conversion
+        local number     = pagedata.number
+        local conversion = pagedata.conversion
         if not number then
             -- error
         elseif conversion then

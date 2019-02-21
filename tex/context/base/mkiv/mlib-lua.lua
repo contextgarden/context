@@ -468,7 +468,6 @@ do
         runs = runs + 1
         local f = cache[code]
         if not f then
-         -- f = loadstring(f_code(code))
             f = loadstring(code .. " return mp._f_()")
             if f then
                 cache[code] = f
@@ -480,8 +479,10 @@ do
             end
         end
         if f then
-            local _buffer_, _n_ = buffer, n
-            buffer, n = { }, 0
+            local _buffer_ = buffer
+            local _n_      = n
+                   buffer  = { }
+                   n       = 0
             local result = f()
             if result then
                 local t = type(result)
@@ -493,17 +494,16 @@ do
                 if trace then
                     if #result == 0 then
                         report_luarun("%i: no result",nesting)
--- print(debug.traceback())
                     else
                         report_luarun("%i: result: %s",nesting,result)
                     end
                 end
-                buffer, n = _buffer_, _n_
+                buffer = _buffer_
+                n      = _n_
                 nesting = nesting - 1
                 return result
             elseif trace then
                 report_luarun("%i: no result",nesting)
--- print(debug.traceback())
             end
             buffer, n = _buffer_, _n_
         else

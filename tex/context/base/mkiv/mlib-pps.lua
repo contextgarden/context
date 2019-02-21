@@ -202,7 +202,8 @@ local function checkandconvert(ca,cb,model)
                 ca = { cmyktorgb(ca[1],ca[2],ca[3],ca[4]) }
                 cb = { cmyktorgb(cb[1],cb[2],cb[3],cb[4]) }
             elseif #ca == 1 then
-                local a, b = 1-ca[1], 1-cb[1]
+                local a = 1 - ca[1]
+                local b = 1 - cb[1]
                 ca = { a, a, a }
                 cb = { b, b, b }
             end
@@ -334,14 +335,19 @@ function models.all(cr)
             local s = cr[1]
             return checked_color_pair(f_gray,s,s)
         elseif n == 3 then
-            local r, g, b = cr[1], cr[2], cr[3]
+            local r = cr[1]
+            local g = cr[2]
+            local b = cr[3]
             if r == g and g == b then
                 return checked_color_pair(f_gray,r,r)
             else
                 return checked_color_pair(f_rgb,r,g,b,r,g,b)
             end
         else
-            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            local c = cr[1]
+            local m = cr[2]
+            local y = cr[3]
+            local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
                 return checked_color_pair(f_gray,k,k)
@@ -353,10 +359,15 @@ function models.all(cr)
         local s = cr[1]
         return checked_color_pair(f_gray,s,s)
     elseif n == 3 then
-        local r, g, b = cr[1], cr[2], cr[3]
+        local r = cr[1]
+        local g = cr[2]
+        local b = cr[3]
         return checked_color_pair(f_rgb,r,g,b,r,g,b)
     else
-        local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+        local c = cr[1]
+        local m = cr[2]
+        local y = cr[3]
+        local k = cr[4]
         return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
     end
 end
@@ -370,14 +381,19 @@ function models.rgb(cr)
             local s = cr[1]
             checked_color_pair(f_gray,s,s)
         elseif n == 3 then
-            local r, g, b = cr[1], cr[2], cr[3]
+            local r = cr[1]
+            local g = cr[2]
+            local b = cr[3]
             if r == g and g == b then
                 return checked_color_pair(f_gray,r,r)
             else
                 return checked_color_pair(f_rgb,r,g,b,r,g,b)
             end
         else
-            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            local c = cr[1]
+            local m = cr[2]
+            local y = cr[3]
+            local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = 1 - k
                 return checked_color_pair(f_gray,k,k)
@@ -390,11 +406,12 @@ function models.rgb(cr)
         local s = cr[1]
         return checked_color_pair(f_gray,s,s)
     else
+        local r = cr[1]
+        local g = cr[2]
+        local b = cr[3]
         local r, g, b
         if n == 3 then
-            r, g, b = cmyktorgb(cr[1],cr[2],cr[3],cr[4])
-        else
-            r, g, b = cr[1], cr[2], cr[3]
+            r, g, b = cmyktorgb(r,g,b,cr[4])
         end
         return checked_color_pair(f_rgb,r,g,b,r,g,b)
     end
@@ -409,7 +426,9 @@ function models.cmyk(cr)
             local s = cr[1]
             return checked_color_pair(f_gray,s,s)
         elseif n == 3 then
-            local r, g, b = cr[1], cr[2], cr[3]
+            local r = cr[1]
+            local g = cr[2]
+            local b = cr[3]
             if r == g and g == b then
                 return checked_color_pair(f_gray,r,r)
             else
@@ -417,7 +436,10 @@ function models.cmyk(cr)
                 return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
             end
         else
-            local c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            local c = cr[1]
+            local m = cr[2]
+            local y = cr[3]
+            local k = cr[4]
             if c == m and m == y and y == 0 then
                 k = k - 1
                 return checked_color_pair(f_gray,k,k)
@@ -429,18 +451,20 @@ function models.cmyk(cr)
         local s = cr[1]
         return checked_color_pair(f_gray,s,s)
     else
-        local c, m, y, k
+        local c = cr[1]
+        local m = cr[2]
+        local y = cr[3]
+        local k = cr[4]
         if n == 3 then
-            c, m, y, k = rgbtocmyk(cr[1],cr[2],cr[3])
-        else
-            c, m, y, k = cr[1], cr[2], cr[3], cr[4]
+            c, m, y, k = rgbtocmyk(c,m,y)
         end
         return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
     end
 end
 
 function models.gray(cr)
-    local n, s = #cr, 0
+    local n = #cr
+    local s = 0
     if n == 0 then
         return checked_color_pair()
     elseif n == 4 then
@@ -714,11 +738,16 @@ local basepoints = number.dimenfactors["bp"]
 local function cm(object)
     local op = object.path
     if op then
-        local first, second, fourth = op[1], op[2], op[4]
+        local first  = op[1]
+        local second = op[2]
+        local fourth = op[4]
         if fourth then
-            local tx, ty = first.x_coord,       first.y_coord
-            local sx, sy = second.x_coord - tx, fourth.y_coord - ty
-            local rx, ry = second.y_coord - ty, fourth.x_coord - tx
+            local tx = first.x_coord
+            local ty = first.y_coord
+            local sx = second.x_coord - tx
+            local sy = fourth.y_coord - ty
+            local rx = second.y_coord - ty
+            local ry = fourth.x_coord - tx
             if sx == 0 then sx = 0.00001 end
             if sy == 0 then sy = 0.00001 end
             return sx, rx, ry, sy, tx, ty
@@ -1166,10 +1195,13 @@ end
 local function ps_process(object,prescript,before,after)
     local ps_label = prescript.ps_label
     if ps_label then
-        local op = object.path
-        local first, third  = op[1], op[3]
-        local x, y = first.x_coord, first.y_coord
-        local w, h = third.x_coord - x, third.y_coord - y
+        local op     = object.path
+        local first  = op[1]
+        local third  = op[3]
+        local x      = first.x_coord
+        local y      = first.y_coord
+        local w      = third.x_coord - x
+        local h      = third.y_coord - y
         local properties = metapost.properties
         x = x - properties.llx
         y = properties.ury - y
@@ -1370,7 +1402,10 @@ local function gr_process(object,prescript,before,after)
     elseif gr_state == "start" then
         local gr_type = utilities.parsers.settings_to_set(prescript.gr_type)
         local path = object.path
-        local p1, p2, p3, p4 = path[1], path[2], path[3], path[4]
+        local p1 = path[1]
+        local p2 = path[2]
+        local p3 = path[3]
+        local p4 = path[4]
         local llx = min(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)
         local lly = min(p1.y_coord,p2.y_coord,p3.y_coord,p4.y_coord)
         local urx = max(p1.x_coord,p2.x_coord,p3.x_coord,p4.x_coord)

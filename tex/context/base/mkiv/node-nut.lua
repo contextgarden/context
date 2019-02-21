@@ -127,11 +127,11 @@ nodes.tonut               = tonut
 -- function nuts.reportattr()
 --     inspect(hash)
 -- end
---
+
 -- local function track(name)
 --     local n = 0
---     local f = nuts[name]
---     function nuts[name](...)
+--     local f = direct[name]
+--     direct[name] = function(...)
 --         n = n + 1
 --         if n % 1000 == 0 then
 --             print(name,n)
@@ -139,7 +139,6 @@ nodes.tonut               = tonut
 --         return f(...)
 --     end
 -- end
---
 -- track("getfield")
 
 -- helpers

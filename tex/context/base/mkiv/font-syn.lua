@@ -2009,7 +2009,8 @@ local lastlookups, lastpattern = { }, ""
 
 local function look_them_up(lookups,specification)
     for key, value in sortedhash(specification) do
-        local t, n = { }, 0
+        local t = { }
+        local n = 0
         if find(value,"*",1,true) then
             value = topattern(value)
             for i=1,#lookups do

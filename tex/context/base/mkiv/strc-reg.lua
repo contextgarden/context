@@ -568,13 +568,18 @@ local function storeregister(rawdata) -- metadata, references, entries
     return #entries
 end
 
-local function enhanceregister(name,n)
-    local data = tobesaved[name].metadata.notsaved and collected[name] or tobesaved[name]
+local function enhanceregister(specification)
+    local name  = specification.name
+    local n     = specification.n
+    local saved = tobesaved[name]
+    local data  = saved.metadata.notsaved and collected[name] or saved
     local entry = data.entries[n]
     if entry then
         entry.references.realpage = texgetcount("realpageno")
     end
 end
+
+-- This can become extendregister(specification)!
 
 local function extendregister(name,tag,rawdata) -- maybe do lastsection internally
     if type(tag) == "string" then
@@ -632,7 +637,9 @@ end
 implement {
     name      = "enhanceregister",
     arguments = { "string", "integer" },
-    actions   = enhanceregister,
+    actions   = function(name,n)
+        enhanceregister { name = name, n = n } -- todo: move to scanner
+    end,
 }
 
 implement {
@@ -640,7 +647,7 @@ implement {
     arguments = { "string", "integer" },
     protected = true,
     actions   = function(name,n)
-        ctx_latelua(function() enhanceregister(name,n) end)
+        ctx_latelua { action = enhanceregister, name = name, n = n }
     end,
 }
 
@@ -712,7 +719,8 @@ function registers.compare(a,b)
         local ka = a.metadata.kind
         local kb = b.metadata.kind
         if ka == kb then
-            local page_a, page_b = a.references.realpage, b.references.realpage
+            local page_a = a.references.realpage
+            local page_b = b.references.realpage
             if not page_a or not page_b then
                 return 0
             elseif page_a < page_b then
@@ -857,7 +865,9 @@ function registers.sort(data,options)
 end
 
 function registers.unique(data,options)
-    local result, nofresult, prev = { }, 0, nil
+    local result     = { }
+    local nofresult  = 0
+    local prev       = nil
     local dataresult = data.result
     for k=1,#dataresult do
         local v = dataresult[k]
@@ -869,7 +879,8 @@ function registers.unique(data,options)
             elseif pr.realpage ~= vr.realpage then
                 -- ok
             else
-                local pl, vl = pr.lastrealpage, vr.lastrealpage
+                local pl = pr.lastrealpage
+                local vl = vr.lastrealpage
                 if pl or vl then
                     if not vl then
                         -- ok
@@ -897,7 +908,11 @@ end
 function registers.finalize(data,options) -- maps character to index (order)
     local result = data.result
     data.metadata.nofsorted = #result
-    local split, nofsplit, lasttag, done, nofdone = { }, 0, nil, nil, 0
+    local split    = { }
+    local nofsplit = 0
+    local lasttag  = nil
+    local done     = nil
+    local nofdone  = 0
     local firstofsplit = sorters.firstofsplit
     for k=1,#result do
         local v = result[k]
@@ -1007,7 +1022,8 @@ implement {
 -- todo: ownnumber
 
 local function pagerange(f_entry,t_entry,is_last,prefixspec,pagespec)
-    local fer, ter = f_entry.references, t_entry.references
+    local fer = f_entry.references
+    local ter = t_entry.references
     ctx_registerpagerange(
         f_entry.metadata.name or "",
         f_entry.processors and f_entry.processors[2] or "",
@@ -1040,7 +1056,8 @@ local function pagenumber(entry,prefixspec,pagespec)
 end
 
 local function packed(f_entry,t_entry)
-    local fer, ter = f_entry.references, t_entry.references
+    local fer = f_entry.references
+    local ter = t_entry.references
     ctx_registerpacked(
         fer.internal or 0,
         ter.internal or 0
@@ -1049,8 +1066,12 @@ end
 
 local function collapsedpage(pages)
     for i=2,#pages do
-        local first, second = pages[i-1], pages[i]
-        local first_first, first_last, second_first, second_last = first[1], first[2], second[1], second[2]
+        local first             = pages[i-1]
+        local second            = pages[i]
+        local first_first       = first[1]
+        local first_last        = first[2]
+        local second_first      = second[1]
+        local second_last       = second[2]
         local first_last_pn     = first_last  .references.realpage
         local second_first_pn   = second_first.references.realpage
         local second_last_pn    = second_last .references.realpage
@@ -1146,7 +1167,8 @@ function registers.flush(data,options,prefixspec,pagespec)
             done[i] = false
         end
         local data = sublist.data
-        local d, n = 0, 0
+        local d    = 0
+        local n    = 0
         ctx_startregistersection(sublist.tag)
         for d=1,#data do
             local entry = data[d]
@@ -1341,7 +1363,8 @@ function registers.flush(data,options,prefixspec,pagespec)
             end
 
             local function case_4()
-                local t, nt = { }, 0
+                local t  = { }
+                local nt = 0
                 while true do
                     if entry.seeword and entry.seeword.valid then
                         nt = nt + 1
@@ -1361,7 +1384,7 @@ function registers.flush(data,options,prefixspec,pagespec)
                     end
                 end
                 for i=1,nt do
-                    local entry = t[i]
+                    local entry     = t[i]
                     local seeword   = entry.seeword
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""

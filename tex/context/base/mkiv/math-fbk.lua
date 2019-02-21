@@ -384,7 +384,8 @@ end
 
 virtualcharacters[0x203E] = function(data)
     local target = data.target
-    local height, depth = 0, 0
+    local height = 0
+    local depth  = 0
  -- local mathparameters = target.mathparameters
  -- if mathparameters then
  --     height = mathparameters.OverbarVerticalGap

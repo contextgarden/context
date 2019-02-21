@@ -600,14 +600,17 @@ if not csletters then
                     end
                     --
                     if isletter then
-                        local lc, uc = chr.lccode, chr.uccode
+                        local lc = chr.lccode
+                        local uc = chr.uccode
                         if not lc then
-                            chr.lccode, lc = u, u
+                            chr.lccode = u
+                            lc = u
                         elseif type(lc) == "table" then
                             lc = u
                         end
                         if not uc then
-                            chr.uccode, uc = u, u
+                            chr.uccode = u
+                            uc = u
                         elseif type(uc) == "table" then
                             uc = u
                         end
@@ -631,12 +634,14 @@ if not csletters then
                 --
                 local lc, uc = chr.lccode, chr.uccode
                 if not lc then
-                    chr.lccode, lc = u, u
+                    chr.lccode = u
+                    lc = u
                 elseif type(lc) == "table" then
                     lc = u
                 end
                 if not uc then
-                    chr.uccode, uc = u, u
+                    chr.uccode = u
+                    uc = u
                 elseif type(uc) == "table" then
                     uc = u
                 end

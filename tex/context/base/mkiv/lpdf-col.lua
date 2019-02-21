@@ -342,7 +342,9 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
         colorspace,
         pdfreference(n),
     }
-    local vector, set, n = { }, { }, #values
+    local vector = { }
+    local set    = { }
+    local n      = #values
     for i=255,0,-1 do
         for j=1,n do
             set[j] = format("%02X",round(values[j]*i))
@@ -519,13 +521,21 @@ local function lpdfcolor(model,ca,default) -- todo: use gray when no color
                 local s = cv[2]
                 return f_gray(s,s)
             elseif model == 3 then
-                local r, g, b = cv[3], cv[4], cv[5]
+                local r = cv[3]
+                local g = cv[4]
+                local b = cv[5]
                 return f_rgb(r,g,b,r,g,b)
             elseif model == 4 then
-                local c, m, y, k = cv[6],cv[7],cv[8],cv[9]
+                local c = cv[6]
+                local m = cv[7]
+                local y = cv[8]
+                local k = cv[9]
                 return f_cmyk(c,m,y,k,c,m,y,k)
             else
-                local n,f,d,p = cv[10],cv[11],cv[12],cv[13]
+                local n = cv[10]
+                local f = cv[11]
+                local d = cv[12]
+                local p = cv[13]
                 if type(p) == "string" then
                     p = gsub(p,","," ") -- brr misuse of spot
                 end

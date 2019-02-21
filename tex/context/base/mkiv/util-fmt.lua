@@ -35,10 +35,17 @@ function formatters.formatcolumns(result,between)
             for j=1,n do
                 local rj = r[j]
                 local tj = type(rj)
+--                 if tj == "number" then
+--                     numbers[j] = true
+--                 end
+--                 if tj ~= "string" then
+--                     rj = tostring(rj)
+--                     r[j] = rj
+--                 end
                 if tj == "number" then
                     numbers[j] = true
-                end
-                if tj ~= "string" then
+                    rj = tostring(rj)
+                elseif tj ~= "string" then
                     rj = tostring(rj)
                     r[j] = rj
                 end

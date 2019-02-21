@@ -17,7 +17,8 @@ local getid = lxml.getid
 local status, stack
 
 local function get(e,d)
-    local ns, tg = e.ns, e.tg
+    local ns   = e.ns
+    local tg   = e.tg
     local name = tg
     if ns ~= "" then name = ns .. ":" .. tg end
     stack[d] = name

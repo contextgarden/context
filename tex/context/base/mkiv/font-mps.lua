@@ -109,9 +109,12 @@ function metapost.paths(d,xfactor,yfactor)
             elseif operator =="q" then -- "quadraticto"
                 size = size + 1
                 -- first is always a moveto
-                local l_x, l_y = xfactor*sequence[i-2], yfactor*sequence[i-1]
-                local m_x, m_y = xfactor*sequence[i+1], yfactor*sequence[i+2]
-                local r_x, r_y = xfactor*sequence[i+3], yfactor*sequence[i+4]
+                local l_x = xfactor*sequence[i-2]
+                local l_y = yfactor*sequence[i-1]
+                local m_x = xfactor*sequence[i+1]
+                local m_y = yfactor*sequence[i+2]
+                local r_x = xfactor*sequence[i+3]
+                local r_y = yfactor*sequence[i+4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -149,9 +152,12 @@ function metapost.paths(d,xfactor,yfactor)
                 size = size + 1
                 -- first is always a moveto
                 local prev = segments[i-1]
-                local l_x, l_y = xfactor*prev[#prev-2], yfactor*prev[#prev-1]
-                local m_x, m_y = xfactor*segment[1], yfactor*segment[2]
-                local r_x, r_y = xfactor*segment[3], yfactor*segment[4]
+                local l_x = xfactor*prev[#prev-2]
+                local l_y = yfactor*prev[#prev-1]
+                local m_x = xfactor*segment[1]
+                local m_y = yfactor*segment[2]
+                local r_x = xfactor*segment[3]
+                local r_y = yfactor*segment[4]
                 path[size] = f_curveto (
                     l_x + 2/3 * (m_x-l_x),
                     l_y + 2/3 * (m_y-l_y),
@@ -208,7 +214,10 @@ function metapost.maxbounds(data,index,factor)
     local boundingbox = glyph.boundingbox
     local xmin, ymin, xmax, ymax
     if not maxbounds then
-        xmin, ymin, xmax, ymax = 0, 0, 0, 0
+        xmin = 0
+        ymin = 0
+        xmax = 0
+        ymax = 0
         for i=1,#glyphs do
             local d = glyphs[i]
             if d then

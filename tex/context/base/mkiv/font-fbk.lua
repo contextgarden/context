@@ -115,9 +115,15 @@ local function composecharacters(tfmdata)
                                 local ab = descriptions[acc].boundingbox
                                 -- todo: adapt height
                                 if cb and ab then
-                                    local c_llx, c_lly, c_urx, c_ury = scale*cb[1], scale*cb[2], scale*cb[3], scale*cb[4]
-                                    local a_llx, a_lly, a_urx, a_ury = scale*ab[1], scale*ab[2], scale*ab[3], scale*ab[4]
-                                    local done = false
+                                    local c_llx = scale*cb[1]
+                                    local c_lly = scale*cb[2]
+                                    local c_urx = scale*cb[3]
+                                    local c_ury = scale*cb[4]
+                                    local a_llx = scale*ab[1]
+                                    local a_lly = scale*ab[2]
+                                    local a_urx = scale*ab[3]
+                                    local a_ury = scale*ab[4]
+                                    local done  = false
                                     if compose then
                                         local i_compose = compose[i]
                                         local i_anchored = i_compose and i_compose.anchored

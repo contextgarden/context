@@ -617,7 +617,8 @@ characters.otfscripts = otfscripts
 
 setmetatableindex(otfscripts,function(t,unicode)
     for k, v in next, blocks do
-        local first, last = v.first, v.last
+        local first = v.first
+        local last  = v.last
         if unicode >= first and unicode <= last then
             local script = v.otf or "dflt"
             for u=first,last do
@@ -1057,7 +1058,8 @@ setmetatableindex(specialchars, function(t,u)
         local c = data[u]
         local s = c and c.specials
         if s then
-            local tt, ttn = { }, 0
+            local tt  = { }
+            local ttn = 0
             for i=2,#s do
                 local si = s[i]
                 local c = data[si]

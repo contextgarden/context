@@ -389,8 +389,9 @@ function sections.setentry(given)
     -- new number
     olddepth = newdepth
     if metadata.increment then
-        local oldn, newn = numbers[newdepth] or 0, 0
-        local fd = forced[newdepth]
+        local oldn = numbers[newdepth] or 0
+        local newn = 0
+        local fd   = forced[newdepth]
         if fd then
             if fd[1] == "add" then
                 newn = oldn + fd[2] + 1
@@ -445,7 +446,10 @@ end
 
 function sections.reportstructure()
     if sections.verbose then
-        local numbers, ownnumbers, status, depth = data.numbers, data.ownnumbers, data.status, data.depth
+        local numbers    = data.numbers
+        local ownnumbers = data.ownnumbers
+        local status     = data.status
+        local depth      = data.depth
         local d = status[depth]
         local o = concat(ownnumbers,".",1,depth)
         local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
@@ -718,7 +722,8 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             criterium = 0
         end
         --
-        local firstprefix, lastprefix = 0, 16 -- too much, could max found level
+        local firstprefix =  0
+        local lastprefix  = 16 -- too much, could max found level
         if segments == v_current then
             firstprefix = data.depth
             lastprefix  = firstprefix
@@ -741,9 +746,11 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             end
         end
         --
-        local numbers, ownnumbers = entry.numbers, entry.ownnumbers
+        local numbers    = entry.numbers
+        local ownnumbers = entry.ownnumbers
         if numbers then
-            local done, preceding = false, false
+            local done      = false
+            local preceding = false
             --
             local result = kind == "direct" and { }
             if result then
@@ -761,11 +768,14 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
             if prefixlist and (kind == "section" or kind == "prefix" or kind == "direct") then
                 -- find valid set (problem: for sectionnumber we should pass the level)
                 -- no holes
-                local b, e, bb, ee = 1, #prefixlist, 0, 0
+                local b  = 1
+                local e  = #prefixlist
+                local bb = 0
+                local ee = 0
                 -- find last valid number
                 for k=e,b,-1 do
                     local prefix = prefixlist[k]
-                    local index = sections.getlevel(prefix) or k
+                    local index  = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
                         local number = numbers and numbers[index]
                         if number then
@@ -781,7 +791,7 @@ function sections.typesetnumber(entry,kind,...) -- kind='section','number','pref
                 -- find valid range
                 for k=b,e do
                     local prefix = prefixlist[k]
-                    local index = sections.getlevel(prefix) or k
+                    local index  = sections.getlevel(prefix) or k
                     if index >= firstprefix and index <= lastprefix then
                         local number = numbers and numbers[index]
                         if number then

@@ -224,7 +224,9 @@ implement {
 local function check_number(n,a,skip,sameline)
     local d = data[a]
     if d then
-        local tag, skipflag, s = d.tag or "", 0, d.start or 1
+        local tag      = d.tag or ""
+        local skipflag = 0
+        local s        = d.start or 1
         current_list[#current_list+1] = { n, s }
         if sameline then
             skipflag = 0
@@ -471,14 +473,17 @@ end
 function boxed.stage_two(n,m)
     if #current_list > 0 then
         m = m or lines.scratchbox
-        local t, tn = { }, 0
+        local t  = { }
+        local tn = 0
         for l in nexthlist, getlist(getbox(m)) do
             tn = tn + 1
             t[tn] = copy_node(l) -- use take_box instead
         end
         for i=1,#current_list do
             local li = current_list[i]
-            local n, m, ti = li[1], li[2], t[i]
+            local n  = li[1]
+            local m  = li[2]
+            local ti = t[i]
             if ti then
              -- local d = getdirection(n)
              -- local l = getlist(n)

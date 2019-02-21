@@ -380,27 +380,30 @@ function metapost.flush(specification,result)
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
-            local resetplugins = metapost.resetplugins or ignore -- before figure
-            local processplugins = metapost.processplugins or ignore -- each object
+            local resetplugins       = metapost.resetplugins or ignore -- before figure
+            local processplugins     = metapost.processplugins or ignore -- each object
             local synchronizeplugins = metapost.synchronizeplugins or ignore
-            local pluginactions = metapost.pluginactions or ignore -- before / after
-            local startfigure = flusher.startfigure
-            local stopfigure = flusher.stopfigure
-            local flushfigure = flusher.flushfigure
-            local textfigure = flusher.textfigure
-            local processspecial = flusher.processspecial or metapost.processspecial
-            metapost.comment = flusher.comment or nocomment
+            local pluginactions      = metapost.pluginactions or ignore -- before / after
+            local startfigure        = flusher.startfigure
+            local stopfigure         = flusher.stopfigure
+            local flushfigure        = flusher.flushfigure
+            local textfigure         = flusher.textfigure
+            local processspecial     = flusher.processspecial or metapost.processspecial
+            metapost.comment         = flusher.comment or nocomment
             for index=1,#figures do
-                local figure = figures[index]
+                local figure     = figures[index]
                 local properties = pushproperties(figure)
                 if askedfig == "direct" or askedfig == "all" or askedfig == properties.number then
-                    local objects = getobjects(result,figure,index)
-                    local result = { }
-                    local miterlimit, linecap, linejoin, dashed = -1, -1, -1, false
-                    local llx = properties.llx
-                    local lly = properties.lly
-                    local urx = properties.urx
-                    local ury = properties.ury
+                    local objects    = getobjects(result,figure,index)
+                    local result     = { }
+                    local miterlimit = -1
+                    local linecap    = -1
+                    local linejoin   = -1
+                    local dashed     = false
+                    local llx        = properties.llx
+                    local lly        = properties.lly
+                    local urx        = properties.urx
+                    local ury        = properties.ury
                     if urx < llx then
                         -- invalid
                         startfigure(properties.number,0,0,0,0,"invalid",figure)
@@ -451,8 +454,11 @@ function metapost.flush(specification,result)
                                         setmetatable(object, {
                                             __index = original
                                         })
-                                        local before, after = processplugins(object)
-                                        local evenodd, collect, both = false, false, false
+                                        local before,
+                                              after      = processplugins(object)
+                                        local evenodd    = false
+                                        local collect    = false
+                                        local both       = false
                                         local postscript = object.postscript
                                         if not object.istext then
                                             if postscript == "evenodd" then
@@ -513,10 +519,11 @@ function metapost.flush(specification,result)
                                                    dashed = false
                                                 end
                                             end
-                                            local path = object.path -- newpath
-                                            local transformed, penwidth = false, 1
-                                            local open = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                            local pen = object.pen
+                                            local path        = object.path -- newpath
+                                            local transformed = false
+                                            local penwidth    = 1
+                                            local open        = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
+                                            local pen         = object.pen
                                             if pen then
                                                if pen.type == "elliptical" then
                                                     transformed, penwidth = pen_characteristics(original) -- boolean, value

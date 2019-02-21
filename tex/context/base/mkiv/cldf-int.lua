@@ -88,9 +88,10 @@ function interfaces.definecommand(name,specification) -- name is optional
         else
             -- we could flush immediate but tracing is bad then
             stack[name] = { }
-            local opt, done = 0, false
+            local opt      = 0
+            local done     = false
             local snippets = { } -- we can reuse it
-            local mkivdo = "\\mkivdo" .. name -- maybe clddo
+            local mkivdo   = "\\mkivdo" .. name -- maybe clddo
             snippets[#snippets+1] = "\\def"
             snippets[#snippets+1] = mkivdo
             for i=1,na do

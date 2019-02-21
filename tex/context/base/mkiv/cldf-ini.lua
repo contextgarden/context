@@ -1218,7 +1218,8 @@ local tracedwriter = function(parent,...) -- also catcodes ?
     nofwriters = nofwriters + 1
     local savedflush       = flush
     local savedflushdirect = flushdirect -- unlikely to be used here
-    local t, n = { "w : - : " }, 1
+    local t = { "w : - : " }
+    local n = 1
     local traced = function(catcodes,...) -- todo: check for catcodes
         local s = type(catcodes) == "number" and { ... } or { catcodes, ... }
         for i=1,#s do
@@ -1262,9 +1263,10 @@ end
 local traced = function(one,two,...)
     if two ~= nil then
         -- only catcodes if 'one' is number
-        local catcodes = type(one) == "number" and one
+        local catcodes  = type(one) == "number" and one
         local arguments = catcodes and { two, ... } or { one, two, ... }
-        local collapsed, c = { formatters["f : %s : "](catcodes or '-') }, 1
+        local collapsed = { formatters["f : %s : "](catcodes or '-') }
+        local c         = 1
         for i=1,#arguments do
             local argument = arguments[i]
             local argtype = type(argument)

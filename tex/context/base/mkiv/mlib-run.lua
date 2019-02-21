@@ -131,7 +131,9 @@ function metapost.reporterror(result)
     if not result then
         report_metapost("error: no result object returned")
     elseif result.status > 0 then
-        local t, e, l = result.term, result.error, result.log
+        local t = result.term
+        local e = result.error
+        local l = result.log
         local report = metapost.texerrors and texerrormessage or report_metapost
         if t and t ~= "" then
             report("mp error: %s",striplines(t))

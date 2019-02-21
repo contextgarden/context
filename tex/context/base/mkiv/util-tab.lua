@@ -22,7 +22,8 @@ local utftoeight = utf.toeight
 local splitter = lpeg.tsplitat(".")
 
 function utilities.tables.definetable(target,nofirst,nolast) -- defines undefined tables
-    local composed, t = nil, {  }
+    local composed = nil
+    local t        = { }
     local snippets = lpegmatch(splitter,target)
     for i=1,#snippets - (nolast and 1 or 0) do
         local name = snippets[i]

@@ -142,7 +142,8 @@ local functions = { __index = {
 local handlers = { }
 
 function visualizers.newhandler(name,data)
-    local tname, tdata = type(name), type(data)
+    local tname = type(name)
+    local tdata = type(data)
     if tname == "table" then -- (data)
         setmetatable(name,getmetatable(name) or functions)
         return name
@@ -615,7 +616,12 @@ end
 local onlyspaces = S(" \t\f\n\r")^0 * P(-1)
 
 local function getstrip(lines,first,last)
-    local first, last = first or 1, last or #lines
+    if not first then
+        first = 1
+    end
+    if not last then
+        last = #lines
+    end
     for i=first,last do
         local li = lines[i]
         if #li == 0 or lpegmatch(onlyspaces,li) then
@@ -741,9 +747,10 @@ local function filter(lines,settings) -- todo: inline or display in settings
     if strip ~= v_no and strip ~= false then
         lines = realign(lines,strip)
     end
-    local line, n = 0, 0
-    local first, last, m = getstrip(lines)
+    local line  = 0
+    local n     = 0
     local range = settings.range
+    local first, last, m = getstrip(lines)
     if range then
         first, last = getrange(lines,first,last,range)
         first, last = getstrip(lines,first,last)

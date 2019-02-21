@@ -247,15 +247,38 @@ end
 notes.internal = internal
 notes.ordered  = ordered
 
+-- local function onsamepageasprevious(tag)
+--     local same     = false
+--     local n        = getn(tag,n)
+--     local current  = get(tag,n)
+--     local previous = get(tag,n-1)
+--     if current and previous then
+--         local cr = current.references
+--         local pr = previous.references
+--         same = cr and pr and cr.realpage == pr.realpage
+--     end
+--     return same and true or false
+-- end
+
 local function onsamepageasprevious(tag)
-    local same = false
-    local n = getn(tag,n)
-    local current, previous = get(tag,n), get(tag,n-1)
-    if current and previous then
-        local cr, pr = current.references, previous.references
-        same = cr and pr and cr.realpage == pr.realpage
+    local n        = getn(tag,n)
+    local current  = get(tag,n)
+    if not current then
+        return false
     end
-    return same and true or false
+    local cr = current.references
+    if not cr then
+        return false
+    end
+    local previous = get(tag,n-1)
+    if not previous then
+        return false
+    end
+    local pr = previous.references
+    if not pr then
+        return false
+    end
+    return cr.realpage == pr.realpage
 end
 
 notes.doifonsamepageasprevious = onsamepageasprevious
@@ -471,7 +494,7 @@ local texsetglue = tex.setglue
 local function check_spacing(n,i)
     local gn, pn, mn = texgetglue(n)
     local gi, pi, mi = texgetglue(i > 1 and "s_strc_notes_inbetween" or "s_strc_notes_before")
-    local gt, pt, mt = gn+gi, pn+pi, mn+mi
+    local gt, pt, mt = gn + gi, pn + pi, mn + mi
     if trace_insert then
         report_insert("%s %i: %p plus %p minus %p","always   ",n,gn,pn,mn)
         report_insert("%s %i: %p plus %p minus %p",i > 1 and "inbetween" or "before   ",n,gi,pi,mi)

@@ -289,7 +289,8 @@ function mathematics.define(family)
     local data = characters.data
     for unicode, character in sortedhash(data) do
         local symbol = character.mathsymbol
-        local mset, dset = true, true
+        local mset   = true
+        local dset   = true
         if symbol then
             local other = data[symbol]
             local class = other.mathclass

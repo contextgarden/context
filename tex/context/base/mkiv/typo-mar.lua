@@ -106,7 +106,7 @@ local nodepool           = nuts.pool
 local new_usernode       = nodepool.usernode
 local new_hlist          = nodepool.hlist
 
-local lateluafunction    = nodepool.lateluafunction
+local latelua            = nodepool.latelua
 
 local texgetdimen        = tex.getdimen
 local texgetcount        = tex.getcount
@@ -450,8 +450,9 @@ end
 
 -- anchors are only set for lines that have a note
 
-local function sa(tag) -- maybe l/r keys ipv left/right keys
-    local p = cache[tag]
+local function sa(specification) -- maybe l/r keys ipv left/right keys
+    local tag = specification.tag
+    local p   = cache[tag]
     if p then
         if trace_marginstack then
             report_margindata("updating anchor %a",tag)
@@ -464,11 +465,13 @@ local function sa(tag) -- maybe l/r keys ipv left/right keys
 end
 
 local function setanchor(v_anchor) -- freezes the global here
-    return lateluafunction(function() sa(v_anchor) end)
+    return latelua { action = sa, tag = v_anchor }
 end
 
-local function aa(tag,n) -- maybe l/r keys ipv left/right keys
-    local p = jobpositions.gettobesaved('md:v',tag)
+local function aa(specification) -- maybe l/r keys ipv left/right keys
+    local tag = specification.tag
+    local n   = specification.n
+    local p   = jobpositions.gettobesaved('md:v',tag)
     if p then
         if trace_marginstack then
             report_margindata("updating injected %a",tag)
@@ -485,7 +488,7 @@ local function aa(tag,n) -- maybe l/r keys ipv left/right keys
 end
 
 local function addtoanchor(v_anchor,n) -- freezes the global here
-    return lateluafunction(function() aa(v_anchor,n) end)
+    return latelua { action = aa, tag = v_anchor, n = n }
 end
 
 local function markovershoot(current) -- todo: alleen als offset > line

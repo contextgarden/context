@@ -3502,7 +3502,8 @@ function readers.avar(f,fontdata,specification)
             local lastfrom  = false
             local lastto    = false
             for i=1,nofvalues do
-                local f, t = read2dot14(f), read2dot14(f)
+                local f = read2dot14(f)
+                local t = read2dot14(f)
                 if lastfrom and f <= lastfrom then
                     -- ignore
                 elseif lastto and t >= lastto then

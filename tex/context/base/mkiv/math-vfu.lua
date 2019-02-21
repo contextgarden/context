@@ -405,23 +405,32 @@ local function jointhree(main,characters,id,size,unicode,u1,d12,u2,d23,u3)
 end
 
 local function stack(main,characters,id,size,unicode,u1,d12,u2)
-    local c1, c2 = characters[u1], characters[u2]
-    if c1 and c2 then
-        local w1, h1, d1 = c1.width,  c1.height, c1.depth
-        local w2, h2, d2 = c2.width,  c2.height, c2.depth
-        local mu = size/18
-        characters[unicode] = {
-            width    = w1,
-            height   = h1 + h2 + d12,
-            depth    = d1,
-            commands = {
-                { "slot", id, u1 },
-                leftcommand[w1/2 + w2/2],
-                downcommand[-h1 + d2 -d12*mu],
-                { "slot", id, u2 },
-            }
-        }
+    local c1 = characters[u1]
+    if not c1 then
+        return
     end
+    local c2 = characters[u2]
+    if not c2 then
+        return
+    end
+    local w1 = c1.width  or 0
+    local h1 = c1.height or 0
+    local d1 = c1.depth  or 0
+    local w2 = c2.width  or 0
+    local h2 = c2.height or 0
+    local d2 = c2.depth  or 0
+    local mu = size/18
+    characters[unicode] = {
+        width    = w1,
+        height   = h1 + h2 + d12,
+        depth    = d1,
+        commands = {
+            { "slot", id, u1 },
+            leftcommand[w1/2 + w2/2],
+            downcommand[-h1 + d2 -d12*mu],
+            { "slot", id, u2 },
+        }
+    }
 end
 
 local function repeated(main,characters,id,size,unicode,u,n,private,fraction) -- math-fbk.lua
@@ -429,8 +438,8 @@ local function repeated(main,characters,id,size,unicode,u,n,private,fraction) --
     if c then
         local width  = c.width
         local italic = fraction*width -- c.italic or 0 -- larger ones have funny italics
-        local tc = { "slot", id, u }
-        local tr = leftcommand[italic] -- see hack elsewhere
+        local tc     = { "slot", id, u }
+        local tr     = leftcommand[italic] -- see hack elsewhere
         local commands = { }
         for i=1,n-1 do
             commands[#commands+1] = tc
@@ -610,7 +619,8 @@ setmetatableindex(reverse, function(t,name)
     if trace_virtual then
         report_virtual("initializing math vector %a",name)
     end
-    local m, r = mathencodings[name], { }
+    local m = mathencodings[name]
+    local r = { }
     for u, i in next, m do
         r[i] = u
     end
@@ -700,13 +710,17 @@ end
 vfmath.copy_glyph = copy_glyph
 
 function vfmath.define(specification,set,goodies)
-    local name = specification.name -- symbolic name
-    local size = specification.size -- given size
-    local loaded, fontlist, names, main = { }, { }, { }, nil
-    local start = (trace_virtual or trace_timings) and os.clock()
-    local okset, n = { }, 0
+    local name     = specification.name -- symbolic name
+    local size     = specification.size -- given size
+    local loaded   = { }
+    local fontlist = { }
+    local names    = { }
+    local main     = nil
+    local start    = (trace_virtual or trace_timings) and os.clock()
+    local okset    = { }
+    local n        = 0
     for s=1,#set do
-        local ss = set[s]
+        local ss     = set[s]
         local ssname = ss.name
         if add_optional and ss.optional then
             if trace_virtual then
@@ -850,11 +864,11 @@ function vfmath.define(specification,set,goodies)
         elseif add_optional and ss.optional then
             -- skip, redundant
         else
-            local newparameters = fs.parameters
+            local newparameters     = fs.parameters
             local newmathparameters = fs.mathparameters
             if newmathparameters then
                 if not parameters_done or ss.parameters then
-                    mathparameters = newmathparameters
+                    mathparameters  = newmathparameters
                     parameters_done = true
                 end
             elseif not newparameters then
@@ -889,7 +903,7 @@ function vfmath.define(specification,set,goodies)
             --  report_virtual("loading and virtualizing font %a at size %p, setting sy parameters",name,size)
             end
             if ss.overlay then
-                local fc = fs.characters
+                local fc    = fs.characters
                 local first = ss.first
                 if first then
                     local last = ss.last or first
@@ -904,12 +918,14 @@ function vfmath.define(specification,set,goodies)
             else
                 local vectorname = ss.vector
                 if vectorname then
-                    local offset = 0xFF000
-                    local vector = mathencodings[vectorname]
-                    local rotcev = reverse[vectorname]
+                    local offset      = 0xFF000
+                    local vector      = mathencodings[vectorname]
+                    local rotcev      = reverse[vectorname]
                     local isextension = ss.extension
                     if vector and rotcev then
-                        local fc, fd, si = fs.characters, fs.descriptions, shared[s]
+                        local fc       = fs.characters
+                        local fd       = fs.descriptions
+                        local si       = shared[s]
                         local skewchar = ss.skewchar
                         for unicode, index in next, vector do
                             local fci = fc[index]
@@ -935,8 +951,8 @@ function vfmath.define(specification,set,goodies)
                                     ref = { { 'slot', s, index } }
                                     si[index] = ref
                                 end
-                                local kerns = fci.kerns
-                                local width = fci.width
+                                local kerns  = fci.kerns
+                                local width  = fci.width
                                 local italic = fci.italic
                                 if italic and italic > 0 then
                                         -- int_a^b

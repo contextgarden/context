@@ -113,8 +113,9 @@ end
 -- end
 
 function pages.number(realdata,pagespec)
-    local userpage, block = realdata.number, realdata.block or "" -- sections.currentblock()
-    local numberspec = realdata.numberdata
+    local userpage      = realdata.number
+    local block         = realdata.block or "" -- sections.currentblock()
+    local numberspec    = realdata.numberdata
     local conversionset = (pagespec and pagespec.conversionset ~= "" and pagespec.conversionset) or (numberspec and numberspec.conversionset ~= "" and numberspec.conversionset) or ""
     local conversion    = (pagespec and pagespec.conversion    ~= "" and pagespec.conversion   ) or (numberspec and numberspec.conversion    ~= "" and numberspec.conversion   ) or ""
     local starter       = (pagespec and pagespec.starter       ~= "" and pagespec.starter      ) or (numberspec and numberspec.starter       ~= "" and numberspec.starter      ) or ""
@@ -212,9 +213,11 @@ end
 
 function helpers.prefixlastpage(data,prefixspec,pagespec)
     if data then
-        local r = data.references
-        local ls, lr = r.section, r.realpage
-        r.section, r.realpage = r.lastsection or r.section, r.lastrealpage or r.realpage
+        local r  = data.references
+        local ls = r.section
+        local lr = r.realpage
+        r.section  = r.lastsection or r.section
+        r.realpage = r.lastrealpage or r.realpage
         helpers.prefixpage(data,prefixspec,pagespec)
         r.section, r.realpage = ls, lr
     end
@@ -227,7 +230,8 @@ function helpers.analyze(entry,specification)
     if not entry then
         return false, false, "no entry"
     end
-    local yes, no = variables.yes, variables.no
+    local yes = variables.yes
+    local no  = variables.no
     -- section data
     local references = entry.references
     if not references then

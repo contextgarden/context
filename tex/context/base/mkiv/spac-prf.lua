@@ -131,6 +131,9 @@ local function getprofile(line,step)
     local margin   = step / 4
     local min      = 0
     local max      = ceiling(getwidth(line)/step) + 1
+    local wd       = 0
+    local ht       = 0
+    local dp       = 0
 
     for i=min,max do
         heights[i] = 0
@@ -138,8 +141,6 @@ local function getprofile(line,step)
     end
 
     -- remember p
-
-    local wd, ht, dp = 0, 0, 0
 
     local function progress()
         position = width

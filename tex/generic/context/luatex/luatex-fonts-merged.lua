@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/10/19 17:43:53
+-- merge date  : 02/21/19 18:34:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -119,8 +119,8 @@ if not FFISUPPORTED then
 elseif not ffi.number then
  ffi.number=tonumber
 end
-if not bit32 then
- bit32=require("l-bit32")
+if LUAVERSION>5.3 then
+ collectgarbage("generational")
 end
 
 end -- closure
@@ -1045,7 +1045,7 @@ if not modules then modules={} end modules ['l-table']={
 }
 local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
 local table,string=table,string
-local concat,sort,insert,remove=table.concat,table.sort,table.insert,table.remove
+local concat,sort=table.concat,table.sort
 local format,lower,dump=string.format,string.lower,string.dump
 local getmetatable,setmetatable=getmetatable,setmetatable
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
@@ -1055,7 +1055,8 @@ function table.getn(t)
  return t and #t 
 end
 function table.strip(tab)
- local lst,l={},0
+ local lst={}
+ local l=0
  for i=1,#tab do
   local s=lpegmatch(stripper,tab[i]) or ""
   if s=="" then
@@ -1068,7 +1069,8 @@ function table.strip(tab)
 end
 function table.keys(t)
  if t then
-  local keys,k={},0
+  local keys={}
+  local k=0
   for key in next,t do
    k=k+1
    keys[k]=key
@@ -1099,7 +1101,9 @@ local function compare(a,b)
 end
 local function sortedkeys(tab)
  if tab then
-  local srt,category,s={},0,0 
+  local srt={}
+  local category=0 
+  local s=0
   for key in next,tab do
    s=s+1
    srt[s]=key
@@ -1136,7 +1140,8 @@ local function sortedkeys(tab)
 end
 local function sortedhashonly(tab)
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if type(key)=="string" then
     s=s+1
@@ -1153,7 +1158,8 @@ local function sortedhashonly(tab)
 end
 local function sortedindexonly(tab)
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if type(key)=="number" then
     s=s+1
@@ -1170,7 +1176,8 @@ local function sortedindexonly(tab)
 end
 local function sortedhashkeys(tab,cmp) 
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if key then
     s=s+1
@@ -1246,7 +1253,9 @@ function table.prepend(t,list)
  return t
 end
 function table.merge(t,...) 
- t=t or {}
+ if not t then
+  t={}
+ end
  for i=1,select("#",...) do
   for k,v in next,(select(i,...)) do
    t[k]=v
@@ -1275,7 +1284,8 @@ function table.imerge(t,...)
  return t
 end
 function table.imerged(...)
- local tmp,ntmp={},0
+ local tmp={}
+ local ntmp=0
  for i=1,select("#",...) do
   local nst=select(i,...)
   for j=1,#nst do
@@ -1307,7 +1317,9 @@ local function fastcopy(old,metatabletoo)
  end
 end
 local function copy(t,tables) 
- tables=tables or {}
+ if not tables then
+  tables={}
+ end
  local tcopy={}
  if not tables[t] then
   tables[t]=tcopy
@@ -1354,7 +1366,8 @@ function table.tohash(t,value)
  return h
 end
 function table.fromhash(t)
- local hsh,h={},0
+ local hsh={}
+ local h=0
  for k,v in next,t do
   if v then
    h=h+1
@@ -1455,7 +1468,8 @@ local function do_serialize(root,name,depth,level,indexed)
   end
  end
  if root and next(root)~=nil then
-  local first,last=nil,0
+  local first=nil
+  local last=0
   if compact then
    last=#root
    for k=1,last do
@@ -1714,7 +1728,8 @@ local function serialize(_handle,root,name,specification)
  handle("}")
 end
 function table.serialize(root,name,specification)
- local t,n={},0
+ local t={}
+ local n=0
  local function flush(s)
   n=n+1
   t[n]=s
@@ -1728,13 +1743,15 @@ function table.tofile(filename,root,name,specification)
  local f=io.open(filename,'w')
  if f then
   if maxtab>1 then
-   local t,n={},0
+   local t={}
+   local n=0
    local function flush(s)
     n=n+1
     t[n]=s
     if n>maxtab then
      f:write(concat(t,"\n"),"\n") 
-     t,n={},0 
+     t={} 
+     n=0
     end
    end
    serialize(flush,root,name,specification)
@@ -1836,8 +1853,12 @@ local function are_equal(a,b,n,m)
  if a==b then
   return true
  elseif a and b and #a==#b then
-  n=n or 1
-  m=m or #a
+  if not n then
+   n=1
+  end
+  if not m then
+   m=#a
+  end
   for i=n,m do
    local ai,bi=a[i],b[i]
    if ai==bi then
@@ -1937,7 +1958,8 @@ function table.mirrored(t)
 end
 function table.reversed(t)
  if t then
-  local tt,tn={},#t
+  local tt={}
+  local tn=#t
   if tn>0 then
    local ttn=0
    for i=tn,1,-1 do
@@ -2050,7 +2072,9 @@ function table.sorted(t,...)
 end
 function table.values(t,s) 
  if t then
-  local values,keys,v={},{},0
+  local values={}
+  local keys={}
+  local v=0
   for key,value in next,t do
    if not keys[value] then
     v=v+1
@@ -8881,7 +8905,10 @@ function constructors.scale(tfmdata,specification)
    if stackmath then
     local mk=character.mathkerns
     if mk then
-     local tr,tl,br,bl=mk.topright,mk.topleft,mk.bottomright,mk.bottomleft
+     local tr=mk.topright
+     local tl=mk.topleft
+     local br=mk.bottomright
+     local bl=mk.bottomleft
      chr.mathkern={ 
       top_right=tr and mathkerns(tr,vdelta) or nil,
       top_left=tl and mathkerns(tl,vdelta) or nil,
@@ -9167,7 +9194,9 @@ hashmethods.normal=function(list)
  end
 end
 function constructors.hashinstance(specification,force)
- local hash,size,fallbacks=specification.hash,specification.size,specification.fallbacks
+ local hash=specification.hash
+ local size=specification.size
+ local fallbacks=specification.fallbacks
  if force or not hash then
   hash=constructors.hashfeatures(specification)
   specification.hash=hash
@@ -9534,7 +9563,8 @@ function constructors.initializefeatures(what,tfmdata,features,trace,report)
  end
 end
 function constructors.collectprocessors(what,tfmdata,features,trace,report)
- local processes,nofprocesses={},0
+ local processes={}
+ local nofprocesses=0
  if features and next(features) then
   local properties=tfmdata.properties
   local whathandler=handlers[what]
@@ -10071,7 +10101,8 @@ function mappings.addtounicode(data,filename,checklookups,forceligatures)
         glyph.unicode=unicode
        end
       else
-       local t,n={},0
+       local t={}
+       local n=0
        for l=1,nsplit do
         local base=split[l]
         local u=unicodes[base] or unicodevector[base] or contextvector[name]
@@ -14945,7 +14976,8 @@ end
   end
  end
  local function setbias(globals,locals)
-   local g,l=#globals,#locals
+   local g=#globals
+   local l=#locals
    return
     ((g<1240 and 107) or (g<33900 and 1131) or 32768)+1,
     ((l<1240 and 107) or (l<33900 and 1131) or 32768)+1
@@ -15681,7 +15713,8 @@ local function contours2outlines_normal(glyphs,shapes)
     local nofsegments=0
     glyph.segments=segments
     if nofcontours>0 then
-     local px,py=0,0 
+     local px=0
+     local py=0
      local first=1
      for i=1,nofcontours do
       local last=contours[i]
@@ -15708,15 +15741,20 @@ local function contours2outlines_normal(glyphs,shapes)
          end
          control_pt=first_pt
         end
-        local x,y=first_pt[1],first_pt[2]
+        local x=first_pt[1]
+        local y=first_pt[2]
         if not done then
-         xmin,ymin,xmax,ymax=x,y,x,y
+         xmin=x
+         ymin=y
+         xmax=x
+         ymax=y
          done=true
         end
         nofsegments=nofsegments+1
         segments[nofsegments]={ x,y,"m" } 
         if not quadratic then
-         px,py=x,y
+         px=x
+         py=y
         end
         local previous_pt=first_pt
         for i=first,last do
@@ -15735,8 +15773,10 @@ local function contours2outlines_normal(glyphs,shapes)
            control_pt=current_pt
           end
          elseif current_on then
-          local x1,y1=control_pt[1],control_pt[2]
-          local x2,y2=current_pt[1],current_pt[2]
+          local x1=control_pt[1]
+          local y1=control_pt[2]
+          local x2=current_pt[1]
+          local y2=current_pt[2]
           nofsegments=nofsegments+1
           if quadratic then
            segments[nofsegments]={ x1,y1,x2,y2,"q" } 
@@ -15746,8 +15786,10 @@ local function contours2outlines_normal(glyphs,shapes)
           end
           control_pt=false
          else
-          local x2,y2=(previous_pt[1]+current_pt[1])/2,(previous_pt[2]+current_pt[2])/2
-          local x1,y1=control_pt[1],control_pt[2]
+          local x2=(previous_pt[1]+current_pt[1])/2
+          local y2=(previous_pt[2]+current_pt[2])/2
+          local x1=control_pt[1]
+          local y1=control_pt[2]
           nofsegments=nofsegments+1
           if quadratic then
            segments[nofsegments]={ x1,y1,x2,y2,"q" } 
@@ -15762,14 +15804,17 @@ local function contours2outlines_normal(glyphs,shapes)
         if first_pt==last_pt then
         else
          nofsegments=nofsegments+1
-         local x2,y2=first_pt[1],first_pt[2]
+         local x2=first_pt[1]
+         local y2=first_pt[2]
          if not control_pt then
           segments[nofsegments]={ x2,y2,"l" } 
          elseif quadratic then
-          local x1,y1=control_pt[1],control_pt[2]
+          local x1=control_pt[1]
+          local y1=control_pt[2]
           segments[nofsegments]={ x1,y1,x2,y2,"q" } 
          else
-          local x1,y1=control_pt[1],control_pt[2]
+          local x1=control_pt[1]
+          local y1=control_pt[2]
           x1,y1,x2,y2,px,py=curveto(x1,y1,px,py,x2,y2)
           segments[nofsegments]={ x1,y1,x2,y2,px,py,"c" }
          end
@@ -15828,7 +15873,8 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
          end
          control_pt=first_pt
         end
-        local x,y=first_pt[1],first_pt[2]
+        local x=first_pt[1]
+        local y=first_pt[2]
         if not done then
          xmin,ymin,xmax,ymax=x,y,x,y
          done=true
@@ -15841,7 +15887,8 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
          segments[nofsegments]={ x,y,"m" } 
         end
         if not quadratic then
-         px,py=x,y
+         px=x
+         py=y
         end
         local previous_pt=first_pt
         for i=first,last do
@@ -15850,7 +15897,8 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
          local previous_on=previous_pt[3]
          if previous_on then
           if current_on then
-           local x,y=current_pt[1],current_pt[2]
+           local x=current_pt[1]
+           local y=current_pt[2]
            if x<xmin then xmin=x elseif x>xmax then xmax=x end
            if y<ymin then ymin=y elseif y>ymax then ymax=y end
            if keepcurve then
@@ -15858,14 +15906,17 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
             segments[nofsegments]={ x,y,"l" } 
            end
            if not quadratic then
-            px,py=x,y
+            px=x
+            py=y
            end
           else
            control_pt=current_pt
           end
          elseif current_on then
-          local x1,y1=control_pt[1],control_pt[2]
-          local x2,y2=current_pt[1],current_pt[2]
+          local x1=control_pt[1]
+          local y1=control_pt[2]
+          local x2=current_pt[1]
+          local y2=current_pt[2]
           if quadratic then
            if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
            if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
@@ -15888,8 +15939,10 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
           end
           control_pt=false
          else
-          local x2,y2=(previous_pt[1]+current_pt[1])/2,(previous_pt[2]+current_pt[2])/2
-          local x1,y1=control_pt[1],control_pt[2]
+          local x2=(previous_pt[1]+current_pt[1])/2
+          local y2=(previous_pt[2]+current_pt[2])/2
+          local x1=control_pt[1]
+          local y1=control_pt[2]
           if quadratic then
            if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
            if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
@@ -15921,8 +15974,10 @@ local function contours2outlines_shaped(glyphs,shapes,keepcurve)
           segments[nofsegments]={ first_pt[1],first_pt[2],"l" } 
          end
         else
-         local x1,y1=control_pt[1],control_pt[2]
-         local x2,y2=first_pt[1],first_pt[2]
+         local x1=control_pt[1]
+         local y1=control_pt[2]
+         local x2=first_pt[1]
+         local y2=first_pt[2]
          if x1<xmin then xmin=x1 elseif x1>xmax then xmax=x1 end
          if y1<ymin then ymin=y1 elseif y1>ymax then ymax=y1 end
          if quadratic then
@@ -19587,7 +19642,8 @@ function readers.avar(f,fontdata,specification)
    local lastfrom=false
    local lastto=false
    for i=1,nofvalues do
-    local f,t=read2dot14(f),read2dot14(f)
+    local f=read2dot14(f)
+    local t=read2dot14(f)
     if lastfrom and f<=lastfrom then
     elseif lastto and t>=lastto then
     else
@@ -21074,7 +21130,9 @@ function readers.pack(data)
     end
     return false
    elseif nt>=threshold then
-    local one,two,rest=0,0,0
+    local one=0
+    local two=0
+    local rest=0
     if pass==1 then
      for k,v in next,c do
       if v==1 then
@@ -23176,7 +23234,9 @@ local function gref(descriptions,n)
    return f_unicode(n)
   end
  elseif n then
-  local num,nam,j={},{},0
+  local num={}
+  local nam={}
+  local j=0
   for i=1,#n do
    local ni=n[i]
    if tonumber(ni) then 
@@ -23381,12 +23441,15 @@ local function preparesubstitutions(tfmdata,feature,value,validlookups,lookuplis
   local done=trace_baseinit and trace_ligatures and {}
   for i=1,nofligatures do
    local ligature=ligatures[i]
-   local unicode,tree=ligature[1],ligature[2]
+   local unicode=ligature[1]
+   local tree=ligature[2]
    make_1(present,tree,"ctx_"..unicode)
   end
   for i=1,nofligatures do
    local ligature=ligatures[i]
-   local unicode,tree,lookupname=ligature[1],ligature[2],ligature[3]
+   local unicode=ligature[1]
+   local tree=ligature[2]
+   local lookupname=ligature[3]
    make_2(present,tfmdata,characters,tree,"ctx_"..unicode,unicode,unicode,done,sequence)
   end
  end
@@ -23952,7 +24015,8 @@ function injections.setmove(current,factor,rlmode,x,injection)
  end
 end
 function injections.setmark(start,base,factor,rlmode,ba,ma,tfmbase,mkmk,checkmark) 
- local dx,dy=factor*(ba[1]-ma[1]),factor*(ba[2]-ma[2])
+ local dx=factor*(ba[1]-ma[1])
+ local dy=factor*(ba[2]-ma[2])
  nofregisteredmarks=nofregisteredmarks+1
  if rlmode>=0 then
   dx=tfmbase.width-dx 
@@ -25278,9 +25342,9 @@ if not classifiers then
  characters.classifiers=classifiers
 end
 function methods.arab(head,font,attr)
- local first,last=nil,nil
- local c_first,c_last=nil,nil
- local current,done=head,false
+ local first,last,c_first,c_last
+ local current=head
+ local done=false
  current=tonut(current)
  while current do
   local char,id=ischar(current,font)
@@ -26113,7 +26177,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
      end
      local format=step.format
      if format=="pair" then
-      local a,b=krn[1],krn[2]
+      local a=krn[1]
+      local b=krn[2]
       if a==true then
       elseif a then 
        local x,y,w,h=setposition(1,start,factor,rlmode,a,injection)
@@ -26631,7 +26696,8 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
       end
       local format=currentlookup.format
       if format=="pair" then
-       local a,b=krn[1],krn[2]
+       local a=krn[1]
+       local b=krn[2]
        if a==true then
        elseif a then
         local x,y,w,h=setposition(1,start,factor,rlmode,a,"injections") 
@@ -31668,7 +31734,8 @@ local function addfeature(data,feature,specifications)
    if not nocheck and not description then
     skip=skip+1
    elseif type(replacement)=="table" then
-    local r,n={},0
+    local r={}
+    local n=0
     for i=1,#replacement do
      local u=tounicode(replacement[i])
      if nocheck or descriptions[u] then
@@ -32601,13 +32668,15 @@ function afm.load(filename)
   local name=file.removesuffix(file.basename(filename))
   local data=containers.read(afm.cache,name)
   local attr=lfs.attributes(filename)
-  local size,time=attr and attr.size or 0,attr and attr.modification or 0
+  local size=attr and attr.size or 0
+  local time=attr and attr.modification or 0
   local pfbfile=file.replacesuffix(name,"pfb")
   local pfbname=resolvers.findfile(pfbfile,"pfb") or ""
   if pfbname=="" then
    pfbname=resolvers.findfile(file.basename(pfbfile),"pfb") or ""
   end
-  local pfbsize,pfbtime=0,0
+  local pfbsize=0
+  local pfbtime=0
   if pfbname~="" then
    local attr=lfs.attributes(pfbname)
    pfbsize=attr.size or 0
@@ -32816,7 +32885,8 @@ local addthem=function(rawdata,ligatures)
    local one=descriptions[unicodes[ligname]]
    if one then
     for _,pair in next,ligdata do
-     local two,three=unicodes[pair[1]],unicodes[pair[2]]
+     local two=unicodes[pair[1]]
+     local three=unicodes[pair[2]]
      if two and three then
       local ol=one.ligatures
       if ol then
@@ -32916,7 +32986,8 @@ local function adddimensions(data)
   for unicode,description in next,data.descriptions do
    local bb=description.boundingbox
    if bb then
-    local ht,dp=bb[4],-bb[2]
+    local ht=bb[4]
+    local dp=-bb[2]
     if ht==0 or ht<0 then
     else
      description.height=ht

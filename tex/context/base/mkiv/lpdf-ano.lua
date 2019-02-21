@@ -157,7 +157,9 @@ directives.register("references.border",function(v)
             local c = m and m[v]
             local v = c and attributes.colors.value(c)
             if v then
-                local r, g, b = v[3], v[4], v[5]
+                local r = v[3]
+                local g = v[4]
+                local b = v[5]
              -- if r == g and g == b then
              --     pdf_border_color = pdfarray { r }       -- reduced, not not ... bugged viewers
              -- else
@@ -466,13 +468,15 @@ local pagedestinations = setmetatableindex(function(t,k) -- not the same as the 
     return v
 end)
 
-local function flushdestination(width,height,depth,names,view)
-    local r = pdfpagereference(texgetcount("realpageno"))
+local function flushdestination(specification)
+    local names = specification.names
+    local view  = specification.view
+    local r     = pdfpagereference(texgetcount("realpageno"))
     if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else
         local action = view and destinationactions[view] or defaultaction
-        r = pdfdelayedobject(action(r,width,height,depth,offset))
+        r = pdfdelayedobject(action(r,specification.width,specification.height,specification.depth,offset))
     end
     for n=1,#names do
         local name = names[n]
@@ -554,7 +558,14 @@ function nodeinjections.destination(width,height,depth,names,view)
         end
     end
     if doview then
-        return new_latelua(function() flushdestination(width,height,depth,names,view) end)
+        return new_latelua {
+            action = flushdestination,
+            width  = width,
+            height = height,
+            depth  = depth,
+            names  = names,
+            view   = view,
+        }
     end
 end
 
@@ -766,24 +777,26 @@ setmetatableindex(hashed,function(t,k)
     return v
 end)
 
-local function finishreference(width,height,depth,prerolled) -- %0.2f looks okay enough (no scaling anyway)
-    local annot = hashed[f_annot(prerolled,pdfrectangle(width,height,depth))]
+local function finishreference(specification) -- %0.2f looks okay enough (no scaling anyway)
+    local annot = hashed[f_annot(specification.prerolled,pdfrectangle(specification.width,specification.height,specification.depth))]
     nofused = nofused + 1
     return pdfregisterannotation(annot)
 end
 
-local function finishannotation(width,height,depth,prerolled,r)
+local function finishannotation(specification)
+    local prerolled = specification.prerolled
+    local objref    = specification.objref
     if type(prerolled) == "function" then
         prerolled = prerolled()
     end
-    local annot = f_annot(prerolled,pdfrectangle(width,height,depth))
-    if r then
-        pdfdelayedobject(annot,r)
+    local annot = f_annot(prerolled,pdfrectangle(specification.width,specification.height,specification.depth))
+    if objref then
+        pdfdelayedobject(annot,objref)
     else
-        r = pdfdelayedobject(annot)
+        objref = pdfdelayedobject(annot)
     end
     nofspecial = nofspecial + 1
-    return pdfregisterannotation(r)
+    return pdfregisterannotation(objref)
 end
 
 function nodeinjections.reference(width,height,depth,prerolled)
@@ -791,17 +804,30 @@ function nodeinjections.reference(width,height,depth,prerolled)
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
-        return new_latelua(function() finishreference(width,height,depth,prerolled) end)
+        return new_latelua {
+            action    = finishreference,
+            width     = width,
+            height    = height,
+            depth     = depth,
+            prerolled = prerolled,
+        }
     end
 end
 
-function nodeinjections.annotation(width,height,depth,prerolled,r)
+function nodeinjections.annotation(width,height,depth,prerolled,objref)
     if prerolled then
         if trace_references then
             report_references("special: width %p, height %p, depth %p, prerolled %a",width,height,depth,
                 type(prerolled) == "string" and prerolled or "-")
         end
-        return new_latelua(function() finishannotation(width,height,depth,prerolled,r or false) end)
+        return new_latelua {
+            action    = finishannotation,
+            width     = width,
+            height    = height,
+            depth     = depth,
+            prerolled = prerolled,
+            objref    = objref or false,
+        }
     end
 end
 
@@ -1202,7 +1228,8 @@ end
 local function build(levels,start,parent,method,nested)
     local startlevel = levels[start].level
     local noflevels  = #levels
-    local i, n = start, 0
+    local i = start
+    local n = 0
     local child, entry, m, prev, first, last, f, l
     while i and i <= noflevels do
         local current = levels[i]

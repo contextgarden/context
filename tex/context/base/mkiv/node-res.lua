@@ -438,13 +438,16 @@ else
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)
+        if type(code) == "table" then
+            local action        = code.action
+            local specification = code.specification or code
+            code = function() action(specification) end
+        end
         setdata(n,code)
         return n
     end
 
 end
-
-nutpool.lateluafunction = nutpool.latelua
 
 function nutpool.leftmarginkern(glyph,width)
     local n = copy_nut(left_margin_kern)

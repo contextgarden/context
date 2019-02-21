@@ -437,7 +437,8 @@ local function resolve(name,first,last,strict,quitonfalse,notrace)
                 if trace_marks_get and not notrace then
                     report_marks("found chain [ % => T ]",fullchain)
                 end
-                local chaindata, chainlength = { }, #fullchain
+                local chaindata   = { }
+                local chainlength = #fullchain
                 for i=1,chainlength do
                     local cname = fullchain[i]
                     if data[cname].set > 0 then
@@ -513,7 +514,8 @@ local methods  = { }
 
 local function doresolve(name,rangename,swap,df,dl,strict)
     local range = ranges[rangename] or ranges[v_page]
-    local first, last = range.first, range.last
+    local first = range.first
+    local last  = range.last
     if trace_marks_get then
         report_marks("action %a, name %a, range %a, swap %a, first %a, last %a, df %a, dl %a, strict %a",
             "resolving",name,rangename,swap or false,first,last,df,dl,strict or false)
@@ -642,7 +644,10 @@ function marks.tracers.showtable()
     context.tabulaterowbold("name","parent","chain","children","fullchain")
     context.ML()
     for k, v in table.sortedpairs(data) do
-        local parent, chain, children, fullchain = v.parent or "", v.chain or "", v.children or { }, v.fullchain or { }
+        local parent    = v.parent    or ""
+        local chain     = v.chain     or ""
+        local children  = v.children  or { }
+        local fullchain = v.fullchain or { }
         table.sort(children) -- in-place but harmless
         context.tabulaterowtyp(k,parent,chain,concat(children," "),concat(fullchain," "))
     end

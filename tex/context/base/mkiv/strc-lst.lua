@@ -99,7 +99,8 @@ local v_default         = variables.default
 -- for the moment not public --
 
 local function zerostrippedconcat(t,separator)
-    local f, l = 1, #t
+    local f = 1
+    local l = #t
     for i=f,l do
         if t[i] == 0 then
             f = f + 1
@@ -309,7 +310,8 @@ local synchronizepage = function(r)  -- bah ... will move
     return synchronizepage(r)
 end
 
-local function enhancelist(n)
+local function enhancelist(specification)
+    local n = specification.n
     local l = cached[n]
     if not l then
         report_lists("enhancing %a, unknown internal",n)
@@ -851,18 +853,22 @@ end
 function lists.userdata(name,r,tag) -- to tex (todo: xml)
     local result = lists.result[r]
     if result then
-        local userdata, metadata = result.userdata, result.metadata
+        local userdata = result.userdata
         local str = userdata and userdata[tag]
         if str then
-            return str, metadata
+            return str, result.metadata
         end
     end
 end
 
 function lists.uservalue(name,r,tag,default) -- to lua
     local str = lists.result[r]
-    str = str and str.userdata
-    str = str and str[tag]
+    if str then
+        str = str.userdata
+    end
+    if str then
+        str = str[tag]
+    end
     return str or default
 end
 
@@ -1076,7 +1082,9 @@ implement {
 implement {
     name      = "enhancelist",
     arguments = "integer",
-    actions   = enhancelist,
+    actions   = function(n)
+        enhancelist { n = n }
+    end
 }
 
 implement {
@@ -1084,7 +1092,7 @@ implement {
     arguments = "integer",
     protected = true, -- for now, pre 1.09
     actions   = function(n)
-        ctx_latelua(function() enhancelist(n) end)
+        ctx_latelua { action = enhancelist, n = n }
     end,
 }
 

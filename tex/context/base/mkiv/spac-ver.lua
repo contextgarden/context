@@ -877,7 +877,8 @@ end
 local trace_list, tracing_info, before, after = { }, false, "", ""
 
 local function nodes_to_string(head)
-    local current, t = head, { }
+    local current = head
+    local t       = { }
     while current do
         local id = getid(current)
         local ty = nodecodes[id]
@@ -1266,17 +1267,26 @@ do
         if trace then
             reset_tracing(head)
         end
-        local current, oldhead = head, head
-        local glue_order, glue_data, force_glue = 0, nil, false
-        local penalty_order, penalty_data, natural_penalty, special_penalty = 0, nil, nil, nil
-        local parskip, ignore_parskip, ignore_following, ignore_whitespace, keep_together = nil, false, false, false, false
-        local lastsnap = nil
+        local current           = head
+        local oldhead           = head
+        local glue_order        = 0
+        local glue_data
+        local force_glue        = false
+        local penalty_order     = 0
+        local penalty_data
+        local natural_penalty
+        local special_penalty
+        local parskip
+        local ignore_parskip    = false
+        local ignore_following  = false
+        local ignore_whitespace = false
+        local keep_together     = false
+        local lastsnap
+        local pagehead
+        local pagetail
         --
         -- todo: keep_together: between headers
         --
-        local pagehead = nil
-        local pagetail = nil
-
         local function getpagelist()
             if not pagehead then
                 pagehead = texlists.page_head
@@ -1952,8 +1962,9 @@ do
                 if stackhead then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
                     setlink(stacktail,newhead)
-                    newhead = stackhead
-                    stackhead, stacktail = nil, nil
+                    newhead   = stackhead
+                    stackhead = nil
+                    stacktail = nil
                 end
                 if stackhack then
                     stackhack = false

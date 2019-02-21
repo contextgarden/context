@@ -112,7 +112,8 @@ end
 
 function char_tracers.collect(head,list,tag,n)
     n = n or 0
-    local ok, fn = false, nil
+    local ok = false
+    local fn = nil
     while head do
         local char, id = isglyph(head)
         if char then
@@ -159,7 +160,8 @@ function char_tracers.equal(ta, tb)
         return false
     else
         for i=1,#ta do
-            local a, b = ta[i], tb[i]
+            local a = ta[i]
+            local b = tb[i]
          -- if a[1] ~= b[1] or a[2] ~= b[2] or a[3] ~= b[3] then
             if a[1] ~= b[1] or a[2] ~= b[2] then
                 return false

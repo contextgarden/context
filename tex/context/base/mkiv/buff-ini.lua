@@ -167,7 +167,8 @@ local function collectcontent(name,separator) -- no print
     elseif nnames == 1 then
         return getcontent(names[1])
     else
-        local t, n = { }, 0
+        local t = { }
+        local n = 0
         for i=1,nnames do
             local c = getcontent(names[i])
             if c ~= "" then

@@ -61,9 +61,140 @@ if not modules then modules = { } end modules ['mtxrun'] = {
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["l-bit32"] = package.loaded["l-bit32"] or true
+
+-- original size: 3607, stripped down to: 3009
+
+if not modules then modules={} end modules ['l-bit32']={
+ version=1.001,
+ license="the same as regular Lua",
+ source="bitwise.lua, v 1.24 2014/12/26 17:20:53 roberto",
+ comment="drop-in for bit32, adapted a bit by Hans Hagen",
+}
+if bit32 then
+elseif utf8 then
+ load ([[
+local select = select -- instead of: arg = { ... }
+bit32 = {
+  bnot = function (a)
+    return ~a & 0xFFFFFFFF
+  end,
+  band = function (x, y, z, ...)
+    if not z then
+      return ((x or -1) & (y or -1)) & 0xFFFFFFFF
+    else
+      local res = x & y & z
+      for i=1,select("#",...) do
+        res = res & select(i,...)
+      end
+      return res & 0xFFFFFFFF
+    end
+  end,
+  bor = function (x, y, z, ...)
+    if not z then
+      return ((x or 0) | (y or 0)) & 0xFFFFFFFF
+    else
+      local res = x | y | z
+      for i=1,select("#",...) do
+        res = res | select(i,...)
+      end
+      return res & 0xFFFFFFFF
+    end
+  end,
+  bxor = function (x, y, z, ...)
+    if not z then
+      return ((x or 0) ~ (y or 0)) & 0xFFFFFFFF
+    else
+      local res = x ~ y ~ z
+      for i=1,select("#",...) do
+        res = res ~ select(i,...)
+      end
+      return res & 0xFFFFFFFF
+    end
+  end,
+  btest = function (x, y, z, ...)
+    if not z then
+      return (((x or -1) & (y or -1)) & 0xFFFFFFFF) ~= 0
+    else
+      local res = x & y & z
+      for i=1,select("#",...) do
+          res = res & select(i,...)
+      end
+      return (res & 0xFFFFFFFF) ~= 0
+    end
+  end,
+  lshift = function (a, b)
+    return ((a & 0xFFFFFFFF) << b) & 0xFFFFFFFF
+  end,
+  rshift = function (a, b)
+    return ((a & 0xFFFFFFFF) >> b) & 0xFFFFFFFF
+  end,
+  arshift = function (a, b)
+    a = a & 0xFFFFFFFF
+    if b <= 0 or (a & 0x80000000) == 0 then
+      return (a >> b) & 0xFFFFFFFF
+    else
+      return ((a >> b) | ~(0xFFFFFFFF >> b)) & 0xFFFFFFFF
+    end
+  end,
+  lrotate = function (a ,b)
+    b = b & 31
+    a = a & 0xFFFFFFFF
+    a = (a << b) | (a >> (32 - b))
+    return a & 0xFFFFFFFF
+  end,
+  rrotate = function (a, b)
+    b = -b & 31
+    a = a & 0xFFFFFFFF
+    a = (a << b) | (a >> (32 - b))
+    return a & 0xFFFFFFFF
+  end,
+  extract = function (a, f, w)
+    return (a >> f) & ~(-1 << (w or 1))
+  end,
+  replace = function (a, v, f, w)
+    local mask = ~(-1 << (w or 1))
+    return ((a & ~(mask << f)) | ((v & mask) << f)) & 0xFFFFFFFF
+  end,
+}
+        ]] ) ()
+elseif bit then
+ load ([[
+local band, bnot, rshift, lshift = bit.band, bit.bnot, bit.rshift, bit.lshift
+bit32 = {
+  arshift = bit.arshift,
+  band    = band,
+  bnot    = bnot,
+  bor     = bit.bor,
+  bxor    = bit.bxor,
+  btest   = function(...)
+    return band(...) ~= 0
+  end,
+  extract = function(a,f,w)
+    return band(rshift(a,f),2^(w or 1)-1)
+  end,
+  lrotate = bit.rol,
+  lshift  = lshift,
+  replace = function(a,v,f,w)
+    local mask = 2^(w or 1)-1
+    return band(a,bnot(lshift(mask,f)))+lshift(band(v,mask),f)
+  end,
+  rrotate = bit.ror,
+  rshift  = rshift,
+}
+        ]] ) ()
+else
+ xpcall(function() local _,t=require("bit32") if t then bit32=t end return end,function() end)
+end
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6204, stripped down to: 2852
+-- original size: 6281, stripped down to: 2863
 
 if not modules then modules={} end modules ['l-lua']={
  version=1.001,
@@ -180,8 +311,8 @@ if not FFISUPPORTED then
 elseif not ffi.number then
  ffi.number=tonumber
 end
-if not bit32 then
- bit32=require("l-bit32")
+if LUAVERSION>5.3 then
+ collectgarbage("generational")
 end
 
 
@@ -1962,7 +2093,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 40960, stripped down to: 21348
+-- original size: 41298, stripped down to: 21498
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -1973,7 +2104,7 @@ if not modules then modules={} end modules ['l-table']={
 }
 local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
 local table,string=table,string
-local concat,sort,insert,remove=table.concat,table.sort,table.insert,table.remove
+local concat,sort=table.concat,table.sort
 local format,lower,dump=string.format,string.lower,string.dump
 local getmetatable,setmetatable=getmetatable,setmetatable
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
@@ -1983,7 +2114,8 @@ function table.getn(t)
  return t and #t 
 end
 function table.strip(tab)
- local lst,l={},0
+ local lst={}
+ local l=0
  for i=1,#tab do
   local s=lpegmatch(stripper,tab[i]) or ""
   if s=="" then
@@ -1996,7 +2128,8 @@ function table.strip(tab)
 end
 function table.keys(t)
  if t then
-  local keys,k={},0
+  local keys={}
+  local k=0
   for key in next,t do
    k=k+1
    keys[k]=key
@@ -2027,7 +2160,9 @@ local function compare(a,b)
 end
 local function sortedkeys(tab)
  if tab then
-  local srt,category,s={},0,0 
+  local srt={}
+  local category=0 
+  local s=0
   for key in next,tab do
    s=s+1
    srt[s]=key
@@ -2064,7 +2199,8 @@ local function sortedkeys(tab)
 end
 local function sortedhashonly(tab)
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if type(key)=="string" then
     s=s+1
@@ -2081,7 +2217,8 @@ local function sortedhashonly(tab)
 end
 local function sortedindexonly(tab)
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if type(key)=="number" then
     s=s+1
@@ -2098,7 +2235,8 @@ local function sortedindexonly(tab)
 end
 local function sortedhashkeys(tab,cmp) 
  if tab then
-  local srt,s={},0
+  local srt={}
+  local s=0
   for key in next,tab do
    if key then
     s=s+1
@@ -2174,7 +2312,9 @@ function table.prepend(t,list)
  return t
 end
 function table.merge(t,...) 
- t=t or {}
+ if not t then
+  t={}
+ end
  for i=1,select("#",...) do
   for k,v in next,(select(i,...)) do
    t[k]=v
@@ -2203,7 +2343,8 @@ function table.imerge(t,...)
  return t
 end
 function table.imerged(...)
- local tmp,ntmp={},0
+ local tmp={}
+ local ntmp=0
  for i=1,select("#",...) do
   local nst=select(i,...)
   for j=1,#nst do
@@ -2235,7 +2376,9 @@ local function fastcopy(old,metatabletoo)
  end
 end
 local function copy(t,tables) 
- tables=tables or {}
+ if not tables then
+  tables={}
+ end
  local tcopy={}
  if not tables[t] then
   tables[t]=tcopy
@@ -2282,7 +2425,8 @@ function table.tohash(t,value)
  return h
 end
 function table.fromhash(t)
- local hsh,h={},0
+ local hsh={}
+ local h=0
  for k,v in next,t do
   if v then
    h=h+1
@@ -2383,7 +2527,8 @@ local function do_serialize(root,name,depth,level,indexed)
   end
  end
  if root and next(root)~=nil then
-  local first,last=nil,0
+  local first=nil
+  local last=0
   if compact then
    last=#root
    for k=1,last do
@@ -2642,7 +2787,8 @@ local function serialize(_handle,root,name,specification)
  handle("}")
 end
 function table.serialize(root,name,specification)
- local t,n={},0
+ local t={}
+ local n=0
  local function flush(s)
   n=n+1
   t[n]=s
@@ -2656,13 +2802,15 @@ function table.tofile(filename,root,name,specification)
  local f=io.open(filename,'w')
  if f then
   if maxtab>1 then
-   local t,n={},0
+   local t={}
+   local n=0
    local function flush(s)
     n=n+1
     t[n]=s
     if n>maxtab then
      f:write(concat(t,"\n"),"\n") 
-     t,n={},0 
+     t={} 
+     n=0
     end
    end
    serialize(flush,root,name,specification)
@@ -2764,8 +2912,12 @@ local function are_equal(a,b,n,m)
  if a==b then
   return true
  elseif a and b and #a==#b then
-  n=n or 1
-  m=m or #a
+  if not n then
+   n=1
+  end
+  if not m then
+   m=#a
+  end
   for i=n,m do
    local ai,bi=a[i],b[i]
    if ai==bi then
@@ -2865,7 +3017,8 @@ function table.mirrored(t)
 end
 function table.reversed(t)
  if t then
-  local tt,tn={},#t
+  local tt={}
+  local tn=#t
   if tn>0 then
    local ttn=0
    for i=tn,1,-1 do
@@ -2978,7 +3131,9 @@ function table.sorted(t,...)
 end
 function table.values(t,s) 
  if t then
-  local values,keys,v={},{},0
+  local values={}
+  local keys={}
+  local v=0
   for key,value in next,t do
    if not keys[value] then
     v=v+1
@@ -6310,7 +6465,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 43101, stripped down to: 21622
+-- original size: 43539, stripped down to: 21641
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6667,6 +6822,7 @@ local environment={
  formattedfloat=number.formattedfloat,
  stripzero=lpeg.patterns.stripzero,
  stripzeros=lpeg.patterns.stripzeros,
+ FORMAT=string.f9,
 }
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
@@ -7150,7 +7306,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28756, stripped down to: 16104
+-- original size: 28772, stripped down to: 16111
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7172,7 +7328,8 @@ local formatters=string.formatters
 local utftoeight=utf.toeight
 local splitter=lpeg.tsplitat(".")
 function utilities.tables.definetable(target,nofirst,nolast) 
- local composed,t=nil,{}
+ local composed=nil
+ local t={}
  local snippets=lpegmatch(splitter,target)
  for i=1,#snippets-(nolast and 1 or 0) do
   local name=snippets[i]
@@ -8698,7 +8855,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 23400, stripped down to: 15802
+-- original size: 23460, stripped down to: 15834
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -8943,7 +9100,9 @@ function parsers.add_settings_to_array(t,str)
 end
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
  if h then
-  local t,tn,s={},0,sortedkeys(h)
+  local t={}
+  local tn=0
+  local s=sortedkeys(h)
   omit=omit and tohash(omit)
   for i=1,#s do
    local key=s[i]
@@ -8991,7 +9150,8 @@ hashes.settings_to_set=table.setmetatableindex(function(t,k)
 end)
 getmetatable(hashes.settings_to_set).__mode="kv" 
 function parsers.simple_hash_to_string(h,separator)
- local t,tn={},0
+ local t={}
+ local tn=0
  for k,v in sortedhash(h) do
   if v then
    tn=tn+1
@@ -9020,7 +9180,8 @@ local function repeater(n,str)
   if n==1 then
    return unpack(s)
   else
-   local t,tn={},0
+   local t={}
+   local tn=0
    for i=1,n do
     for j=1,#s do
      tn=tn+1
@@ -9268,7 +9429,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-fmt"] = package.loaded["util-fmt"] or true
 
--- original size: 2274, stripped down to: 1607
+-- original size: 2541, stripped down to: 1624
 
 if not modules then modules={} end modules ['util-fmt']={
  version=1.001,
@@ -9304,8 +9465,8 @@ function formatters.formatcolumns(result,between)
     local tj=type(rj)
     if tj=="number" then
      numbers[j]=true
-    end
-    if tj~="string" then
+     rj=tostring(rj)
+    elseif tj~="string" then
      rj=tostring(rj)
      r[j]=rj
     end
@@ -15061,7 +15222,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9634, stripped down to: 5360
+-- original size: 9738, stripped down to: 5531
 
 if not modules then modules={} end modules ['util-env']={
  version=1.001,
@@ -15135,8 +15296,11 @@ environment.arguments=allocate()
 environment.files=allocate()
 environment.sortedflags=nil
 function environment.initializearguments(arg)
- local arguments,files={},{}
- environment.arguments,environment.files,environment.sortedflags=arguments,files,nil
+ local arguments={}
+ local files={}
+ environment.arguments=arguments
+ environment.files=files
+ environment.sortedflags=nil
  for index=1,#arg do
   local argument=arg[index]
   if index>0 then
@@ -15153,6 +15317,11 @@ function environment.initializearguments(arg)
      files[#files+1]=argument
     end
    end
+  end
+ end
+ if not environment.ownname then
+  if os.selfpath and os.selfname then
+   environment.ownname=file.addsuffix(file.join(os.selfpath,os.selfname),"lua")
   end
  end
  environment.ownname=file.reslash(environment.ownname or arg[0] or 'unknown.lua')
@@ -16891,7 +17060,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 54551, stripped down to: 30745
+-- original size: 55145, stripped down to: 30992
 
 if not modules then modules={} end modules ['lxml-lpt']={
  version=1.001,
@@ -16971,7 +17140,8 @@ apply_axis['self']=function(list)
  return list
 end
 apply_axis['child']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   local dt=ll.dt
@@ -17043,7 +17213,8 @@ local function collect(list,collected,c)
  return c
 end
 apply_axis['descendant']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   c=collect(list[l],collected,c)
  end
@@ -17084,7 +17255,8 @@ local function collect(list,collected,c)
  return c
 end
 apply_axis['descendant-or-self']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   if ll.special~=true then 
@@ -17096,7 +17268,8 @@ apply_axis['descendant-or-self']=function(list)
  return collected
 end
 apply_axis['ancestor']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   while ll do
@@ -17110,7 +17283,8 @@ apply_axis['ancestor']=function(list)
  return collected
 end
 apply_axis['ancestor-or-self']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   c=c+1
@@ -17126,7 +17300,8 @@ apply_axis['ancestor-or-self']=function(list)
  return collected
 end
 apply_axis['parent']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local pl=list[l].__p__
   if pl then
@@ -17149,7 +17324,8 @@ apply_axis['preceding']=function(list)
  return {}
 end
 apply_axis['following-sibling']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   local p=ll.__p__
@@ -17165,7 +17341,8 @@ apply_axis['following-sibling']=function(list)
  return collected
 end
 apply_axis['preceding-sibling']=function(list)
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   local p=ll.__p__
@@ -17181,7 +17358,8 @@ apply_axis['preceding-sibling']=function(list)
  return collected
 end
 apply_axis['reverse-sibling']=function(list) 
- local collected,c={},0
+ local collected={}
+ local c=0
  for l=1,#list do
   local ll=list[l]
   local p=ll.__p__
@@ -17204,7 +17382,8 @@ apply_axis['initial-child']=apply_axis['child']
 local function apply_nodes(list,directive,nodes)
  local maxn=#nodes
  if maxn==3 then 
-  local nns,ntg=nodes[2],nodes[3]
+  local nns=nodes[2]
+  local ntg=nodes[3]
   if not nns and not ntg then 
    if directive then
     return list
@@ -17212,7 +17391,10 @@ local function apply_nodes(list,directive,nodes)
     return {}
    end
   else
-   local collected,c,m,p={},0,0,nil
+   local collected={}
+   local c=0
+   local m=0
+   local p=nil
    if not nns then 
     for l=1,#list do
      local ll=list[l]
@@ -17220,14 +17402,16 @@ local function apply_nodes(list,directive,nodes)
      if ltg then
       if directive then
        if ntg==ltg then
-        local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+        local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
         c=c+1
-        collected[c],ll.mi=ll,m
+        collected[c]=ll
+        ll.mi=m
        end
       elseif ntg~=ltg then
-       local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+       local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
        c=c+1
-       collected[c],ll.mi=ll,m
+       collected[c]=ll
+       ll.mi=m
       end
      end
     end
@@ -17238,14 +17422,16 @@ local function apply_nodes(list,directive,nodes)
      if lns then
       if directive then
        if lns==nns then
-        local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+        local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
         c=c+1
-        collected[c],ll.mi=ll,m
+        collected[c]=ll
+        ll.mi=m
        end
       elseif lns~=nns then
-       local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+       local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
        c=c+1
-       collected[c],ll.mi=ll,m
+       collected[c]=ll
+       ll.mi=m
       end
      end
     end
@@ -17258,14 +17444,16 @@ local function apply_nodes(list,directive,nodes)
       local ok=ltg==ntg and lns==nns
       if directive then
        if ok then
-        local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+        local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
         c=c+1
-        collected[c],ll.mi=ll,m
+        collected[c]=ll
+        ll.mi=m
        end
       elseif not ok then
-       local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+       local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
        c=c+1
-       collected[c],ll.mi=ll,m
+       collected[c]=ll
+       ll.mi=m
       end
      end
     end
@@ -17273,7 +17461,10 @@ local function apply_nodes(list,directive,nodes)
    return collected
   end
  else
-  local collected,c,m,p={},0,0,nil
+  local collected={}
+  local c=0
+  local m=0
+  local p=nil
   for l=1,#list do
    local ll=list[l]
    local ltg=ll.tg
@@ -17281,7 +17472,8 @@ local function apply_nodes(list,directive,nodes)
     local lns=ll.rn or ll.ns
     local ok=false
     for n=1,maxn,3 do
-     local nns,ntg=nodes[n+1],nodes[n+2]
+     local nns=nodes[n+1]
+     local ntg=nodes[n+2]
      ok=(not ntg or ltg==ntg) and (not nns or lns==nns)
      if ok then
       break
@@ -17289,14 +17481,16 @@ local function apply_nodes(list,directive,nodes)
     end
     if directive then
      if ok then
-      local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+      local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
       c=c+1
-      collected[c],ll.mi=ll,m
+      collected[c]=ll
+      ll.mi=m
      end
     elseif not ok then
-     local llp=ll.__p__;if llp~=p then p,m=llp,1 else m=m+1 end
+     local llp=ll.__p__;if llp~=p then p=llp;m=1 else m=m+1 end
      c=c+1
-     collected[c],ll.mi=ll,m
+     collected[c]=ll
+     ll.mi=m
     end
    end
   end
@@ -17305,7 +17499,8 @@ local function apply_nodes(list,directive,nodes)
 end
 local quit_expression=false
 local function apply_expression(list,expression,order)
- local collected,c={},0
+ local collected={}
+ local c=0
  quit_expression=false
  for l=1,#list do
   local ll=list[l]
@@ -17559,7 +17754,8 @@ local function tagstostring(list)
   local t={}
   for i=1,#list do
    local li=list[i]
-   local ns,tg=li.ns,li.tg
+   local ns=li.ns
+   local tg=li.tg
    if not ns or ns=="" then ns="*" end
    if not tg or tg=="" then tg="*" end
    t[i]=(tg=="@rt@" and "[root]") or format("%s:%s",ns,tg)
@@ -17923,7 +18119,8 @@ expressions.name=function(e,n)
  if n==0 then
   found=type(e)=="table" and e
  elseif n<0 then
-  local d,k=e.__p__.dt,e.ni
+  local d=e.__p__.dt
+  local k=e.ni
   for i=k-1,1,-1 do
    local di=d[i]
    if type(di)=="table" then
@@ -17936,7 +18133,8 @@ expressions.name=function(e,n)
    end
   end
  else
-  local d,k=e.__p__.dt,e.ni
+  local d=e.__p__.dt
+  local k=e.ni
   for i=k+1,#d,1 do
    local di=d[i]
    if type(di)=="table" then
@@ -17950,7 +18148,8 @@ expressions.name=function(e,n)
   end
  end
  if found then
-  local ns,tg=found.rn or found.ns or "",found.tg
+  local ns=found.rn or found.ns or ""
+  local tg=found.tg
   if ns~="" then
    return ns..":"..tg
   else
@@ -17969,7 +18168,8 @@ expressions.tag=function(e,n)
   if n==0 then
    found=(type(e)=="table") and e 
   elseif n<0 then
-   local d,k=e.__p__.dt,e.ni
+   local d=e.__p__.dt
+   local k=e.ni
    for i=k-1,1,-1 do
     local di=d[i]
     if type(di)=="table" then
@@ -17982,7 +18182,8 @@ expressions.tag=function(e,n)
     end
    end
   else
-   local d,k=e.__p__.dt,e.ni
+   local d=e.__p__.dt
+   local k=e.ni
    for i=k+1,#d,1 do
     local di=d[i]
     if type(di)=="table" then
@@ -18162,7 +18363,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30650, stripped down to: 19621
+-- original size: 30771, stripped down to: 19680
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -18277,10 +18478,12 @@ end
 function xml.collect_tags(root,pattern,nonamespace)
  local collected=xmlapplylpath(root,pattern)
  if collected then
-  local t,n={},0
+  local t={}
+  local n=0
   for c=1,#collected do
    local e=collected[c]
-   local ns,tg=e.ns,e.tg
+   local ns=e.ns
+   local tg=e.tg
    n=n+1
    if nonamespace then
     t[n]=tg
@@ -18435,7 +18638,9 @@ local function inject_element(root,pattern,whatever,prepend)
  local collected=element and xmlapplylpath(root,pattern)
  local function inject_e(e)
   local r=e.__p__
-  local d,k,rri=r.dt,e.ni,r.ri
+  local d=r.dt
+  local k=e.ni
+  local rri=r.ri
   local edt=(rri and d[rri].dt) or (d and d[k] and d[k].dt)
   if edt then
    local be,af
@@ -18472,7 +18677,8 @@ local function insert_element(root,pattern,whatever,before)
  local collected=element and xmlapplylpath(root,pattern)
  local function insert_e(e)
   local r=e.__p__
-  local d,k=r.dt,e.ni
+  local d=r.dt
+  local k=e.ni
   if not before then
    k=k+1
   end
@@ -18902,8 +19108,10 @@ function xml.separate(x,pattern)
     report_xml("warning: xml.separate changes root")
     x=d
    end
-   local t,n={ "\n" },1
-   local i,nd=1,#d
+   local t={ "\n" }
+   local n=1
+   local i=1
+   local nd=#d
    while i<=nd do
     while i<=nd do
      local di=d[i]
@@ -23910,7 +24118,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-aux"] = package.loaded["data-aux"] or true
 
--- original size: 2438, stripped down to: 1863
+-- original size: 2452, stripped down to: 1877
 
 if not modules then modules={} end modules ['data-aux']={
  version=1.001,
@@ -23958,7 +24166,7 @@ function resolvers.updatescript(oldname,newname)
     local newdata=io.loaddata(newscript)
     if newdata then
      if trace_locating then
-      report_scripts("old script content replaced by new content")
+      report_scripts("old script content replaced by new content: %s",oldscript)
      end
      io.savedata(oldscript,newdata)
      break
@@ -24515,7 +24723,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9346, stripped down to: 7085
+-- original size: 9418, stripped down to: 7087
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -24534,9 +24742,6 @@ local function primaryflags()
  local flags={}
  if arguments.silent then
   flags[#flags+1]="--interaction=batchmode"
- end
- if arguments.jit then
-  flags[#flags+1]="--jiton"
  end
  return concat(flags," ")
 end
@@ -24565,6 +24770,9 @@ local function secondaryflags()
  end
  if arguments.strip then
   flags[#flags+1]="--c:strip"
+ end
+ if arguments.lmtx then
+  flags[#flags+1]="--c:lmtx"
  end
  return concat(flags," ")
 end
@@ -24752,10 +24960,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
+-- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 989156
--- stripped bytes    : 393037
+-- original bytes    : 994864
+-- stripped bytes    : 395007
 
 -- end library merge
 
@@ -24778,6 +24986,7 @@ local owntree = environment and environment.ownpath or ownpath
 
 local ownlibs = { -- order can be made better
 
+    'l-bit32.lua',
     'l-lua.lua',
     'l-macro.lua',
     'l-sandbox.lua',

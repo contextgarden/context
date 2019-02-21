@@ -389,9 +389,12 @@ local function segmentstopdf(segments,factor,bt,et)
         elseif w == "q" then
             local p = segments[i-1]
             local n = #p
-            local l_x, l_y = factor*p[n-2], factor*p[n-1]
-            local m_x, m_y = factor*s[1], factor*s[2]
-            local r_x, r_y = factor*s[3], factor*s[4]
+            local l_x = factor*p[n-2]
+            local l_y = factor*p[n-1]
+            local m_x = factor*s[1]
+            local m_y = factor*s[2]
+            local r_x = factor*s[3]
+            local r_y = factor*s[4]
             m = m + 1
             t[m] = f_c (
                 l_x + 2/3 * (m_x-l_x), l_y + 2/3 * (m_y-l_y),

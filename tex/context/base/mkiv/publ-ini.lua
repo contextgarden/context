@@ -1065,14 +1065,17 @@ do
     -- maybe not redo when already done
 
     local function shortsorter(a,b)
-        local ay, by = a[2], b[2] -- year
+        local ay = a[2] -- year
+        local by = b[2] -- year
         if ay ~= by then
             return ay < by
         end
-        local ay, by = a[3], b[3] -- suffix
+        local ay = a[3] -- suffix
+        local by = b[3] -- suffix
         if ay ~= by then
             -- bah, bah, bah
-            local an, bn = tonumber(ay), tonumber(by)
+            local an = tonumber(ay)
+            local bn = tonumber(by)
             if an and bn then
                 return an < bn
             else
@@ -2023,7 +2026,8 @@ do
         for i=1,nofranges do
             local r = ranges[i]
             ctx_btxsetconcat(concatstate(i,nofranges))
-            local first, last = r[1], r[2]
+            local first = r[1]
+            local last  = r[2]
             ctx_btxsetfirstinternal(first[2].internal)
             ctx_btxsetfirstpage(first[1])
             if last then
@@ -2044,7 +2048,8 @@ do
     }
 
     local function identical(a,b)
-        local na, nb = #a, #b
+        local na = #a
+        local nb = #b
         if na ~= nb then
             return false
         end
@@ -2056,7 +2061,8 @@ do
             end
             return true
         end
-        local ha, hb = a.hash, b.hash
+        local ha = a.hash
+        local hb = b.hash
         if ha then
             return ha == hb
         end

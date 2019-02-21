@@ -50,7 +50,7 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
                 local newdata = io.loaddata(newscript)
                 if newdata then
                     if trace_locating then
-                        report_scripts("old script content replaced by new content")
+                        report_scripts("old script content replaced by new content: %s",oldscript)
                     end
                     io.savedata(oldscript,newdata)
                     break

@@ -408,12 +408,17 @@ function paragraphs.moveinline(n,blob,dx,dy)
     end
 end
 
-local lateluafunction = nodepool.lateluafunction
-local setposition     = job.positions.set
-local t_anchor        = { x = true, c = true }
+local latelua     = nodepool.latelua
+local setposition = jobpositions.setspec
+local t_anchor    = { x = true, c = true } -- needs checking
 
 local function setanchor(h_anchor)
-    return lateluafunction(function() setposition("md:h",h_anchor,t_anchor) end)
+    return latelua {
+        action = setposition,
+        name   = "md:h",
+        index  = h_anchor,
+        value  = t_anchor, -- really shared ?
+    }
 end
 
 function paragraphs.calculatedelta(n,width,delta,atleft,islocal,followshape,area)

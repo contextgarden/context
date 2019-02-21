@@ -778,7 +778,8 @@ do
         if subtype == leftfence_code or subtype == rightfence_code then
             local a = getattr(pointer,a_mathsize)
             if a and a > 0 then
-                local method, size = div(a,100), a % 100
+                local method = div(a,100)
+                local size   = a % 100
                 setattr(pointer,a_mathsize,0)
                 local delimiter = getfield(pointer,"delim")
                 local chr = getchar(delimiter)

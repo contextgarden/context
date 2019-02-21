@@ -377,7 +377,8 @@ function xtables.set_reflow_width()
     --
     drc.dimensionstate = dimensionstate
     --
-    local nx, ny = drc.nx, drc.ny
+    local nx = drc.nx
+    local ny = drc.ny
     if nx > 1 or ny > 1 then
      -- local spans = data.spans -- not used
         local self = true

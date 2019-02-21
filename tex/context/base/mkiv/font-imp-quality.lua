@@ -451,9 +451,12 @@ local function initialize(tfmdata,value)
                         right  = right,
                     }
                     for i, chr in next, tfmdata.characters do
-                        local v, pl, pr = vector[i], nil, nil
+                        local v  = vector[i]
+                        local pl = nil
+                        local pr = nil
                         if v then
-                            pl, pr = v[1], v[2]
+                            pl = v[1]
+                            pr = v[2]
                         else
                             local d = data[i]
                             if d then
@@ -461,13 +464,15 @@ local function initialize(tfmdata,value)
                                 if not s then
                                     -- sorry
                                 elseif type(s) == "table" then
-                                    local vl, vr = vector[s[1]], vector[s[#s]]
+                                    local vl = vector[s[1]]
+                                    local vr = vector[s[#s]]
                                     if vl then pl = vl[1] end
                                     if vr then pr = vr[2] end
                                 else
                                     v = vector[s]
                                     if v then
-                                        pl, pr = v[1], v[2]
+                                        pl = v[1]
+                                        pr = v[2]
                                     end
                                 end
                             end

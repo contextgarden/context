@@ -273,7 +273,7 @@ end
 function counters.compact(name,level,onlynumbers)
     local cd = counterdata[name]
     if cd then
-        local data = cd.data
+        local data    = cd.data
         local compact = { }
         for i=1,level or #data do
             local d = data[i]
@@ -541,22 +541,26 @@ function counters.converted(name,spec) -- name can be number and reference to st
     local cd
     if type(name) == "number" then
         cd = specials.retrieve("counter",name)
-        cd = cd and cd.counter
+        if cd then
+            cd = cd.counter
+        end
     else
         cd = counterdata[name]
     end
     if cd then
-        local spec = spec or { }
-        local numbers, ownnumbers = { }, { }
-        local reverse = spec.order == v_reverse
-        local kind = spec.type or "number"
-        local data = cd.data
+        local spec       = spec or { }
+        local numbers    = { }
+        local ownnumbers = { }
+        local reverse    = spec.order == v_reverse
+        local kind       = spec.type or "number"
+        local data       = cd.data
         for k=1,#data do
             local v = data[k]
             -- somewhat messy, what if subnr? only last must honour kind?
             local vn
             if v.own then
-                numbers[k], ownnumbers[k] = v.number, v.own
+                numbers[k]    = v.number
+                ownnumbers[k] = v.own
             else
                 if kind == v_first then
                     vn = v.first
@@ -577,13 +581,14 @@ function counters.converted(name,spec) -- name can be number and reference to st
                         end
                     end
                 end
-                numbers[k], ownnumbers[k] = vn or v.number, nil
+                numbers[k]    = vn or v.number
+                ownnumbers[k] = nil
             end
         end
-        cd.numbers = numbers
+        cd.numbers    = numbers
         cd.ownnumbers = ownnumbers
         sections.typesetnumber(cd,'number',spec)
-        cd.numbers = nil
+        cd.numbers    = nil
         cd.ownnumbers = nil
     end
 end

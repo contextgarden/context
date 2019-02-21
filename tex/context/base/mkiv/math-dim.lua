@@ -157,7 +157,8 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         for variable, styles in next, defaults do
             local tt = { }
             for style, default in next, styles do
-                local one, two = default[1], default[2]
+                local one   = default[1]
+                local two   = default[2]
                 local value = dimens[one]
                 if value then
                     tt[style] = value

@@ -401,8 +401,10 @@ local function basic(a,b) -- trace ea and eb
         -- hashed (shared) entries
         return 0
     end
-    local ea, eb = a.split, b.split
-    local na, nb = #ea, #eb
+    local ea = a.split
+    local eb = b.split
+    local na = #ea
+    local nb = #eb
     if na == 0 and nb == 0 then
         -- simple variant (single word)
         local result = 0
@@ -414,7 +416,8 @@ local function basic(a,b) -- trace ea and eb
             end
         end
         if result == 0 then
-            local la, lb = #ea.uc, #eb.uc
+            local la = #ea.uc
+            local lb = #eb.uc
             if la > lb then
                 return 1
             elseif lb > la then
@@ -429,7 +432,8 @@ local function basic(a,b) -- trace ea and eb
         -- complex variant, used in register (multiple words)
         local result = 0
         for i=1,nb < na and nb or na do
-            local eai, ebi = ea[i], eb[i]
+            local eai = ea[i]
+            local ebi = eb[i]
             for j=1,#sequence do
                 local m = sequence[j]
                 result = basicsort(eai[m],ebi[m])
@@ -438,7 +442,8 @@ local function basic(a,b) -- trace ea and eb
                 end
             end
             if result == 0 then
-                local la, lb = #eai.uc, #ebi.uc
+                local la = #eai.uc
+                local lb = #ebi.uc
                 if la > lb then
                     return 1
                 elseif lb > la then
@@ -586,8 +591,18 @@ function splitters.utf(str,checked) -- we could append m and u but this is clean
      --     end
      -- end
     end
-    local m_case, z_case, p_case, m_mapping, z_mapping, p_mapping, char, byte, n = { }, { }, { }, { }, { }, { }, { }, { }, 0
-    local nm, nz, np = 0, 0, 0
+    local m_case    = { }
+    local z_case    = { }
+    local p_case    = { }
+    local m_mapping = { }
+    local z_mapping = { }
+    local p_mapping = { }
+    local char      = { }
+    local byte      = { }
+    local n         = 0
+    local nm        = 0
+    local nz        = 0
+    local np        = 0
     for sc in utfcharacters(str) do
         local b = utfbyte(sc)
         if b >= digitsoffset then

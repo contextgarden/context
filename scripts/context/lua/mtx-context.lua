@@ -446,8 +446,7 @@ local function pdf_open(name,method)
     end
     pdfview.open(pdfname)
     statistics.stoptiming("pdfview")
- -- report("pdfview overhead after opening: %0.3f seconds",statistics.elapsedtime("pdfview"))
-    report("pdfview overhead: %0.3f seconds",statistics.elapsedtime("pdfview"))
+    report("pdfview overhead: %s seconds",statistics.elapsedtime("pdfview"))
 end
 
 local function pdf_close(name,method)
@@ -461,7 +460,6 @@ local function pdf_close(name,method)
     pdfname = name .. ".pdf" -- agressive
     pdfview.close(pdfname)
     statistics.stoptiming("pdfview")
- -- report("pdfview overhead after closing: %0.3f seconds",statistics.elapsedtime("pdfview"))
 end
 
 -- result file handling

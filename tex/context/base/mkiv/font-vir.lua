@@ -106,8 +106,10 @@ local function combine_assign(g, name, from, to, start, force)
         if not from  then from, to = 0, 0xFF00 end
         if not to    then to       = from      end
         if not start then start    = from      end
-        local fc, gc = f.characters, g.characters
-        local fd, gd = f.descriptions, g.descriptions
+        local fc = f.characters
+        local gc = g.characters
+        local fd = f.descriptions
+        local gd = g.descriptions
         local hn = #g.fonts+1
         g.fonts[hn] = { id = id } -- no need to be sparse
         for i=from,to do
@@ -133,8 +135,10 @@ end
 local function combine_names(g,name,force)
     local f, id = constructors.readanddefine(name,g.specification.size)
     if f and id then
-        local fc, gc = f.characters, g.characters
-        local fd, gd = f.descriptions, g.descriptions
+        local fc = f.characters
+        local gc = g.characters
+        local fd = f.descriptions
+        local gd = g.descriptions
         g.fonts[#g.fonts+1] = { id = id } -- no need to be sparse
         local hn = #g.fonts
         for k, v in next, fc do
@@ -149,7 +153,8 @@ local function combine_names(g,name,force)
 end
 
 local combine_feature = function(g,v)
-    local key, value = v[2], v[3]
+    local key   = v[2]
+    local value = v[3]
     if key then
         if value == nil then
             value = true

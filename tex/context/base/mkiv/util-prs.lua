@@ -308,7 +308,9 @@ end
 
 function parsers.hash_to_string(h,separator,yes,no,strict,omit)
     if h then
-        local t, tn, s = { }, 0, sortedkeys(h)
+        local t  = { }
+        local tn = 0
+        local s  = sortedkeys(h)
         omit = omit and tohash(omit)
         for i=1,#s do
             local key = s[i]
@@ -374,7 +376,8 @@ end)
 getmetatable(hashes.settings_to_set).__mode = "kv" -- could be an option (maybe sharing makes sense)
 
 function parsers.simple_hash_to_string(h, separator)
-    local t, tn = { }, 0
+    local t  = { }
+    local tn = 0
     for k, v in sortedhash(h) do
         if v then
             tn = tn + 1
@@ -415,7 +418,8 @@ local function repeater(n,str)
         if n == 1 then
             return unpack(s)
         else
-            local t, tn = { }, 0
+            local t  = { }
+            local tn = 0
             for i=1,n do
                 for j=1,#s do
                     tn = tn + 1

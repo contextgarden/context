@@ -312,7 +312,8 @@ local function definetransparency(name,n,global)
     end
     local settings = settings_to_hash_strict(n)
     if settings then
-        local a, t = settings.a, settings.t
+        local a = settings.a
+        local t = settings.t
         if a and t then
             definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
         else
@@ -443,16 +444,23 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
     else
         local settings = settings_to_hash_strict(str)
         if settings then
-            local r, g, b = settings.r, settings.g, settings.b
+            local r = settings.r
+            local g = settings.g
+            local b = settings.b
             if r or g or b then
                 -- we can consider a combined rgb cmyk s definition
                 definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
             else
-                local c, m, y, k = settings.c, settings.m, settings.y, settings.k
+                local c = settings.c
+                local m = settings.m
+                local y = settings.y
+                local k = settings.k
                 if c or m or y or k then
                     definecolor(name, register_color(name,'cmyk',tonumber(c) or 0, tonumber(m) or 0, tonumber(y) or 0, tonumber(k) or 0), global)
                 else
-                    local h, s, v = settings.h, settings.s, settings.v
+                    local h = settings.h
+                    local s = settings.s
+                    local v = settings.v
                     if v then
                         r, g, b = colors.hsvtorgb(tonumber(h) or 0, tonumber(s) or 1, tonumber(v) or 1) -- maybe later native
                         definecolor(name, register_color(name,'rgb',r,g,b), global)
@@ -471,7 +479,8 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                     end
                 end
             end
-            local a, t = settings.a, settings.t
+            local a = settings.a
+            local t = settings.t
             if a and t then
                 definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
             elseif colors.couple then
@@ -523,7 +532,8 @@ local function definespotcolor(name,parent,str,global)
                 do_registerspotcolor(parent,cp,t.e,1,"",tp) -- p not really needed, only diagnostics
                 if name and name ~= "" then
                     definecolor(name,register_color(name,'spot',parent,1,"",tp),true)
-                    local ta, tt = t.a, t.t
+                    local ta = t.a
+                    local tt = t.t
                     if ta and tt then
                         definetransparent(name, transparencies.register(name,transparent[ta] or tonumber(ta) or 1,tonumber(tt) or 1), global)
                     elseif colors.couple then
@@ -600,7 +610,10 @@ local function definemixcolor(makecolor,name,fractions,cs,global,freeze)
 end
 
 local function definemultitonecolor(name,multispec,colorspec,selfspec)
-    local dd, pp, nn, max = { }, { }, { }, 0
+    local dd  = { }
+    local pp  = { }
+    local nn  = { }
+    local max = 0
     for k,v in gmatch(multispec,"([^=,]+)=([^%,]*)") do -- use settings_to_array
         max = max + 1
         dd[max] = k
