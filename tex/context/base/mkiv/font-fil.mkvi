@@ -107,11 +107,14 @@
    \let\p_designsize\undefined
    \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
 
+% todo: check if we can use \edef but then we need to protect \mathsizesuffix .. in fact that
+% can be default then: \let\mathsizesuffix\relax .. i need to play with it first
+
 \def\font_basics_get_font_parameter_nop#key=#value,%
   {\if]#key%
      \font_basics_get_font_parameter_nop_finish
    \else
-     \expandafter\normaledef\csname p_#key\endcsname{#value}%
+     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
      \expandafter\font_basics_get_font_parameter_nop
    \fi}
 
@@ -119,7 +122,7 @@
   {\if]#key%
      \font_basics_get_font_parameter_yes_finish
    \else
-     \expandafter\normaledef\csname p_#key\endcsname{#value}%
+     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
      \expandafter\font_basics_get_font_parameter_yes
    \fi}
 
