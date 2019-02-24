@@ -48,6 +48,7 @@ local setattrlist        = nuts.setattrlist
 local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
+local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
 
 local isglyph            = nuts.isglyph
@@ -754,19 +755,22 @@ interfaces.implement {
             { "width", "dimension" },
             { "height", "dimension" },
             { "depth", "dimension" },
+            { "xoffset", "dimension" },
+            { "yoffset", "dimension" },
             { "left", "dimension" },
             { "right", "dimension" },
         },
     },
     actions   = function(t)
-        local l = t.left
-        local r = t.right
         local n = new_rule(
             t.width,
             t.height,
             t.depth
         )
         setattrlist(n,true)
+        setoffsets(n,t.xoffset,t.yoffset)
+        local l = t.left
+        local r = t.right
         if l then
             setfield(n,"left",l)
         end

@@ -170,14 +170,14 @@ local imgembed = __img__.immediatewrite
 
 if imgnew then
     -- catch (actually we should be less picky in img)
-    local __img__new__ = img_new
+    local __img__new__ = imgnew
     imgnew = function(t)
         t.kind = nil
         return __img__new__(t)
     end
 end
 
-updaters.register("backend.update",function()
+updaters.register("backend.update.img",function()
     local img = images.__img__
     imgnew   = img.new
     imgscan  = img.scan

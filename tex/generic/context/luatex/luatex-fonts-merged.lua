@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/22/19 19:35:21
+-- merge date  : 02/24/19 17:23:33
 
 do -- begin closure to overcome local limits and interference
 
@@ -1107,23 +1107,24 @@ local function sortedkeys(tab)
   for key in next,tab do
    s=s+1
    srt[s]=key
-   if category==3 then
-   elseif category==1 then
-    if type(key)~="string" then
-     category=3
-    end
-   elseif category==2 then
-    if type(key)~="number" then
-     category=3
-    end
-   else
+   if category~=3 then
     local tkey=type(key)
-    if tkey=="string" then
-     category=1
-    elseif tkey=="number" then
-     category=2
+    if category==1 then
+     if tkey~="string" then
+      category=3
+     end
+    elseif category==2 then
+     if tkey~="number" then
+      category=3
+     end
     else
-     category=3
+     if tkey=="string" then
+      category=1
+     elseif tkey=="number" then
+      category=2
+     else
+      category=3
+     end
     end
    end
   end
@@ -3496,7 +3497,7 @@ local format_F=function(f)
 end
 local format_k=function(b,a) 
  n=n+1
- return format("formattedfloat(a%s,%i,%i)",n,b or 0,a or 0)
+ return format("formattedfloat(a%s,%s,%s)",n,b or 0,a or 0)
 end
 local format_g=function(f)
  n=n+1
@@ -8661,7 +8662,6 @@ function constructors.scale(tfmdata,specification)
  local hasitalics=properties.hasitalics
  local autoitalicamount=properties.autoitalicamount
  local stackmath=not properties.nostackmath
- local nonames=properties.noglyphnames
  local haskerns=properties.haskerns  or properties.mode=="base" 
  local hasligatures=properties.hasligatures or properties.mode=="base" 
  local realdimensions=properties.realdimensions
@@ -8768,6 +8768,7 @@ function constructors.scale(tfmdata,specification)
   local width=description.width
   local height=description.height
   local depth=description.depth
+  local isunicode=description.unicode
   if realdimensions then
    if not height or height==0 then
     local bb=description.boundingbox
@@ -8792,16 +8793,16 @@ function constructors.scale(tfmdata,specification)
   if height then height=vdelta*height else height=scaledheight end
   if depth and depth~=0 then
    depth=delta*depth
-   if nonames then
+   if isunicode then
     chr={
      index=index,
      height=height,
      depth=depth,
      width=width,
+     unicode=unicode,
     }
    else
     chr={
-     name=description.name,
      index=index,
      height=height,
      depth=depth,
@@ -8809,33 +8810,23 @@ function constructors.scale(tfmdata,specification)
     }
    end
   else
-   if nonames then
+   if isunicode then
     chr={
      index=index,
      height=height,
      width=width,
+     unicode=unicode,
     }
    else
     chr={
-     name=description.name,
      index=index,
      height=height,
      width=width,
     }
    end
   end
-  local isunicode=description.unicode
   if addtounicode then
-   if isunicode then
-    chr.unicode=isunicode
-    chr.tounicode=tounicode(isunicode)
-   else
-    chr.tounicode=unknowncode
-   end
-  else
-   if isunicode then
-    chr.unicode=isunicode
-   end
+   chr.tounicode=isunicode and tounicode(isunicode) or unknowncode
   end
   if hasquality then
    local ve=character.expansion_factor
@@ -10441,7 +10432,6 @@ local P,R,S,C,Cs,Cc,Ct,Carg,Cmt=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cc,lpeg
 local lpegmatch=lpeg.match
 local rshift=bit32.rshift
 local setmetatableindex=table.setmetatableindex
-local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
 local stripstring=string.nospaces
@@ -19642,13 +19632,13 @@ function readers.avar(f,fontdata,specification)
    local lastfrom=false
    local lastto=false
    for i=1,nofvalues do
-    local f=read2dot14(f)
-    local t=read2dot14(f)
-    if lastfrom and f<=lastfrom then
-    elseif lastto and t>=lastto then
+    local from=read2dot14(f)
+    local to=read2dot14(f)
+    if lastfrom and from<=lastfrom then
+    elseif lastto and to>=lastto then
     else
-     values[#values+1]={ f,t }
-     lastfrom,lastto=f,t
+     values[#values+1]={ from,to }
+     lastfrom,lastto=from,to
     end
    end
    nofvalues=#values
@@ -22880,7 +22870,6 @@ local function copytotfm(data,cache_id)
   properties.space=spacer
   properties.encodingbytes=2
   properties.format=data.format or formats.otf
-  properties.noglyphnames=true
   properties.filename=filename
   properties.fontname=fontname
   properties.fullname=fullname

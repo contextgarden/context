@@ -401,7 +401,7 @@ end
 -- use that one instead of a table (so, a 3rd / 4th argument: key, e.g. "x")
 
 local function set(name,index,value) -- ,key
-    local data = enhance(value or index)
+    local data = enhance(tobesaved[value or index])
     if value then
         container = tobesaved[name]
         if not container then
@@ -420,7 +420,7 @@ local function setspec(specification)
     local name  = specification.name
     local index = specification.index
     local value = specification.value
-    local data  = enhance(value or index)
+    local data  = enhance(tobesaved[value or index])
     if value then
         container = tobesaved[name]
         if not container then
@@ -672,6 +672,7 @@ scanners.dosetposition = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 
@@ -692,6 +693,7 @@ scanners.dosetpositionwhd = function() -- name w h d extra
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 
@@ -711,6 +713,7 @@ scanners.dosetpositionbox = function() -- name box
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 
@@ -732,6 +735,7 @@ scanners.dosetpositionplus = function() -- name w h d extra
         e = scanstring(),
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 
@@ -750,6 +754,7 @@ scanners.dosetpositionstrut = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 
@@ -770,6 +775,7 @@ scanners.dosetpositionstrutkind = function() -- name
         n = nofparagraphs > 0 and nofparagraphs or nil,
         r2l = texgetcount("inlinelefttoright") == 1 or nil,
     }
+    tobesaved[name] = spec
     ctx_latelua { action = enhance, specification = spec }
 end
 

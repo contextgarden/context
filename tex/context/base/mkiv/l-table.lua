@@ -153,24 +153,24 @@ local function sortedkeys(tab)
         for key in next, tab do
             s = s + 1
             srt[s] = key
-            if category == 3 then
-                -- no further check
-            elseif category == 1 then
-                if type(key) ~= "string" then
-                    category = 3
-                end
-            elseif category == 2 then
-                if type(key) ~= "number" then
-                    category = 3
-                end
-            else
+            if category ~= 3 then
                 local tkey = type(key)
-                if tkey == "string" then
-                    category = 1
-                elseif tkey == "number" then
-                    category = 2
+                if category == 1 then
+                    if tkey ~= "string" then
+                        category = 3
+                    end
+                elseif category == 2 then
+                    if tkey ~= "number" then
+                        category = 3
+                    end
                 else
-                    category = 3
+                    if tkey == "string" then
+                        category = 1
+                    elseif tkey == "number" then
+                        category = 2
+                    else
+                        category = 3
+                    end
                 end
             end
         end

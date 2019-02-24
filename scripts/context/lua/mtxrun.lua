@@ -2093,7 +2093,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 41298, stripped down to: 21498
+-- original size: 41332, stripped down to: 21508
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2166,23 +2166,24 @@ local function sortedkeys(tab)
   for key in next,tab do
    s=s+1
    srt[s]=key
-   if category==3 then
-   elseif category==1 then
-    if type(key)~="string" then
-     category=3
-    end
-   elseif category==2 then
-    if type(key)~="number" then
-     category=3
-    end
-   else
+   if category~=3 then
     local tkey=type(key)
-    if tkey=="string" then
-     category=1
-    elseif tkey=="number" then
-     category=2
+    if category==1 then
+     if tkey~="string" then
+      category=3
+     end
+    elseif category==2 then
+     if tkey~="number" then
+      category=3
+     end
     else
-     category=3
+     if tkey=="string" then
+      category=1
+     elseif tkey=="number" then
+      category=2
+     else
+      category=3
+     end
     end
    end
   end
@@ -6465,7 +6466,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 43539, stripped down to: 21641
+-- original size: 43538, stripped down to: 21641
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6908,7 +6909,7 @@ local format_F=function(f)
 end
 local format_k=function(b,a) 
  n=n+1
- return format("formattedfloat(a%s,%i,%i)",n,b or 0,a or 0)
+ return format("formattedfloat(a%s,%s,%s)",n,b or 0,a or 0)
 end
 local format_g=function(f)
  n=n+1
@@ -7306,7 +7307,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28772, stripped down to: 16111
+-- original size: 28810, stripped down to: 16134
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7770,18 +7771,19 @@ local function serialize(root,name,specification)
   end
   if root and next(root)~=nil then
    local first=nil
-   local last=0
-   last=#root
-   for k=1,last do
-    if rawget(root,k)==nil then
-     last=k-1
-     break
+   local last=#root
+   if last>0 then
+    for k=1,last do
+     if rawget(root,k)==nil then
+      last=k-1
+      break
+     end
+    end
+    if last>0 then
+     first=1
     end
    end
-   if last>0 then
-    first=1
-   end
-   local sk=sortedkeys(root) 
+   local sk=sortedkeys(root)
    for i=1,#sk do
     local k=sk[i]
     local v=root[k]
@@ -24962,8 +24964,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 994864
--- stripped bytes    : 395007
+-- original bytes    : 994935
+-- stripped bytes    : 395045
 
 -- end library merge
 

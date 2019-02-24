@@ -242,7 +242,6 @@ do
             hasitalics       = t_boolean,
             autoitalicamount = t_float,
             nostackmath      = t_boolean,
-            noglyphnames     = t_boolean,
             mode             = t_string,
             hasmath          = t_boolean,
             mathitalics      = t_boolean,

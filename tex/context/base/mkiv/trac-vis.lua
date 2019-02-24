@@ -1210,6 +1210,7 @@ do
                 prev_trace_fontkern  = trace_fontkern
                 prev_trace_italic    = trace_italic
                 prev_trace_expansion = trace_expansion
+                attr = a
                 if a == unsetvalue then
                     trace_hbox          = false
                     trace_vbox          = false
@@ -1231,6 +1232,7 @@ do
                     trace_line          = false
                     trace_space         = false
                     trace_depth         = false
+                    goto list
                 else -- dead slow:
                  -- cache[a]()
                     trace_hbox          = band(a,     1) ~= 0
@@ -1254,7 +1256,8 @@ do
                     trace_space         = band(a,262144) ~= 0
                     trace_depth         = band(a,524288) ~= 0
                 end
-                attr = a
+            elseif a == unsetvalue then
+                goto list
             end
             if trace_strut then
                 setattr(current,a_layer,l_strut)
@@ -1313,7 +1316,24 @@ do
                 if trace_penalty then
                     head, current = ruledpenalty(head,current,vertical)
                 end
-            elseif id == hlist_code then
+            elseif id == hlist_code or id == vlist_code then
+                goto list
+            elseif id == whatsit_code then
+                if trace_whatsit then
+                    head, current = whatsit(head,current)
+                end
+            elseif id == user_code then
+                if trace_user then
+                    head, current = user(head,current)
+                end
+            elseif id == math_code then
+                if trace_math then
+                    head, current = math(head,current)
+                end
+            end
+            goto next
+            ::list::
+            if id == hlist_code then
                 local content = getlist(current)
                 if content then
                     setlist(current,visualize(content,false,nil,current))
@@ -1336,19 +1356,8 @@ do
                 elseif trace_vbox then
                     head, current = ruledbox(head,current,true,l_vbox,"__V",trace_simple,previous,trace_origin,parent)
                 end
-            elseif id == whatsit_code then
-                if trace_whatsit then
-                    head, current = whatsit(head,current)
-                end
-            elseif id == user_code then
-                if trace_user then
-                    head, current = user(head,current)
-                end
-            elseif id == math_code then
-                if trace_math then
-                    head, current = math(head,current)
-                end
             end
+            ::next::
             previous = current
             current  = getnext(current)
         end

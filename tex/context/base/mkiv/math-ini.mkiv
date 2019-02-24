@@ -436,6 +436,16 @@
 % if there were many features we could have a feature pass over math nodes but it makes no
 % sense now so we have commands to deal with it
 
+% \enabletrackers[math.alternates]
+% \setupbodyfont[lucidaot]
+%
+% \startTEXpage
+%     \setupmathematics[stylealternative={reset}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,calligraphic}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,italic}]$x+\mathcal A$\par
+%     \setupmathematics[stylealternative={reset,calligraphic,italic}]$x+\mathcal A$
+% \stopTEXpage
+
 \unexpanded\def\mathaltcalligraphic{\math_set_font_alternate{calligraphic}\cal}          % set via goody file
 \unexpanded\def\mathaltitalic      {\math_set_font_alternate{italic}}                    % set via goody file
 \unexpanded\def\mathslashedzero    {\begingroup\math_set_font_alternate{zero}∅\endgroup} % set via goody file or automatic

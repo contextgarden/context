@@ -547,7 +547,6 @@ function constructors.scale(tfmdata,specification)
     local hasitalics       = properties.hasitalics
     local autoitalicamount = properties.autoitalicamount
     local stackmath        = not properties.nostackmath
-    local nonames          = properties.noglyphnames
     local haskerns         = properties.haskerns     or properties.mode == "base" -- we can have afm in node mode
     local hasligatures     = properties.hasligatures or properties.mode == "base" -- we can have afm in node mode
     local realdimensions   = properties.realdimensions
@@ -677,9 +676,10 @@ function constructors.scale(tfmdata,specification)
             description = descriptions[unicode] or character
             index       = description.index or unicode
         end
-        local width  = description.width
-        local height = description.height
-        local depth  = description.depth
+        local width     = description.width
+        local height    = description.height
+        local depth     = description.depth
+        local isunicode = description.unicode
         if realdimensions then
             -- this is mostly for checking issues
             if not height or height == 0 then
@@ -706,16 +706,16 @@ function constructors.scale(tfmdata,specification)
     --  if depth  then depth  = vdelta*depth  else depth  = scaleddepth  end
         if depth and depth ~= 0 then
             depth = delta*depth
-            if nonames then
+            if isunicode then
                 chr = {
-                    index  = index,
-                    height = height,
-                    depth  = depth,
-                    width  = width,
+                    index   = index,
+                    height  = height,
+                    depth   = depth,
+                    width   = width,
+                    unicode = unicode,
                 }
             else
                 chr = {
-                    name   = description.name,
                     index  = index,
                     height = height,
                     depth  = depth,
@@ -723,36 +723,23 @@ function constructors.scale(tfmdata,specification)
                 }
             end
         else
-            -- this saves a little bit of memory time and memory, esp for big cjk fonts
-            if nonames then
+            if isunicode then
                 chr = {
-                    index  = index,
-                    height = height,
-                    width  = width,
+                    index   = index,
+                    height  = height,
+                    width   = width,
+                    unicode = unicode,
                 }
             else
                 chr = {
-                    name   = description.name,
                     index  = index,
                     height = height,
                     width  = width,
                 }
             end
         end
-        local isunicode = description.unicode
         if addtounicode then
-            if isunicode then
-                chr.unicode   = isunicode
-                chr.tounicode = tounicode(isunicode)
-                -- in luatex > 0.85 we can do this:
-                -- chr.tounicode = isunicode
-            else
-                chr.tounicode = unknowncode
-            end
-        else
-            if isunicode then
-                chr.unicode   = isunicode
-            end
+            chr.tounicode = isunicode and tounicode(isunicode) or unknowncode
         end
         if hasquality then
             -- we could move these calculations elsewhere (saves calculations)

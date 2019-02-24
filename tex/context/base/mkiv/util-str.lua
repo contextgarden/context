@@ -745,7 +745,7 @@ end
 
 local format_k = function(b,a) -- slow
     n = n + 1
-    return format("formattedfloat(a%s,%i,%i)",n,b or 0, a or 0)
+    return format("formattedfloat(a%s,%s,%s)",n,b or 0,a or 0)
 end
 
 local format_g = function(f)
