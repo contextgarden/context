@@ -8857,7 +8857,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 23460, stripped down to: 15834
+-- original size: 23718, stripped down to: 16067
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -8882,7 +8882,7 @@ local sortedhash=table.sortedhash
 local sortedkeys=table.sortedkeys
 local tohash=table.tohash
 local hashes={}
-utilities.parsers.hashes=hashes
+parsers.hashes=hashes
 local digit=R("09")
 local space=P(' ')
 local equal=P("=")
@@ -9142,7 +9142,7 @@ function parsers.array_to_string(a,separator)
  end
 end
 local pattern=Cf(Ct("")*Cg(C((1-S(", "))^1)*S(", ")^0*Cc(true))^1,rawset)
-function utilities.parsers.settings_to_set(str)
+function parsers.settings_to_set(str)
  return str and lpegmatch(pattern,str) or {}
 end
 hashes.settings_to_set=table.setmetatableindex(function(t,k) 
@@ -9165,11 +9165,11 @@ end
 local str=Cs(lpegpatterns.unquoted)+C((1-whitespace-equal)^1)
 local setting=Cf(Carg(1)*(whitespace^0*Cg(str*whitespace^0*(equal*whitespace^0*str+Cc(""))))^1,rawset)
 local splitter=setting^1
-function utilities.parsers.options_to_hash(str,target)
+function parsers.options_to_hash(str,target)
  return str and lpegmatch(splitter,str,1,target or {}) or {}
 end
 local splitter=lpeg.tsplitat(" ")
-function utilities.parsers.options_to_array(str)
+function parsers.options_to_array(str)
  return str and lpegmatch(splitter,str) or {}
 end
 local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)
@@ -9354,7 +9354,7 @@ setmetatableindex(cache,function(t,k)
  return pattern
 end)
 local commalistiterator=cache[","]
-function utilities.parsers.iterator(str,separator)
+function parsers.iterator(str,separator)
  local n=#str
  if n==0 then
   return dummy
@@ -9396,10 +9396,10 @@ end
 local name=C((1-S(", "))^1)
 local parser=(Carg(1)*name/initialize)*(S(", ")^1*(Carg(1)*name/fetch))^0
 local merge=Cf(parser,process)
-function utilities.parsers.mergehashes(hash,list)
+function parsers.mergehashes(hash,list)
  return lpegmatch(merge,list,1,hash)
 end
-function utilities.parsers.runtime(time)
+function parsers.runtime(time)
  if not time then
   time=os.runtime()
  end
@@ -9416,12 +9416,18 @@ local apply=P("->")
 local method=C((1-apply)^1)
 local token=lbrace*C((1-rbrace)^1)*rbrace+C(anything^1)
 local pattern=spacing*(method*spacing*apply+Carg(1))*spacing*token
-function utilities.parsers.splitmethod(str,default)
+function parsers.splitmethod(str,default)
  if str then
   return lpegmatch(pattern,str,1,default or false)
  else
   return default or false,""
  end
+end
+local pattern=Cf(Ct("")*Cg(Cc("year")*cardinal)*P("-")*Cg(Cc("month")*cardinal)*P("-")*Cg(Cc("day")*cardinal)*P(" ")*Cg(Cc("hour")*cardinal)*P(":")*Cg(Cc("minute")*cardinal)*(P(":")*Cg(Cc("sec")*cardinal))^-1
+,rawset)
+lpegpatterns.splittime=pattern
+function parsers.totime(str)
+ return lpegmatch(pattern,str)
 end
 
 
@@ -13561,7 +13567,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 9072, stripped down to: 6055
+-- original size: 8966, stripped down to: 5972
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -13708,13 +13714,11 @@ function statistics.show()
   end
   register("lua properties",function()
    local hashchar=tonumber(status.luatex_hashchars)
-   local hashtype=status.luatex_hashtype
    local mask=lua.mask or "ascii"
-   return format("engine: %s %s, used memory: %s, hash type: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
+   return format("engine: %s %s, used memory: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
     jit and "luajit" or "lua",
     LUAVERSION,
     statistics.memused(),
-    hashtype or "default",
     hashchar and 2^hashchar or "unknown",
     mask,
     mask=="utf" and "τεχ" or "tex")
@@ -24964,8 +24968,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 994935
--- stripped bytes    : 395045
+-- original bytes    : 995087
+-- stripped bytes    : 395047
 
 -- end library merge
 

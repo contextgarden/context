@@ -1694,6 +1694,7 @@ local ctx_docheckfiguremps   = context.docheckfiguremps
 
 local function internal(askedname)
     local spec, mprun, mpnum = match(lower(askedname),"mprun([:%.]?)(.-)%.(%d+)")
+ -- mpnum = tonumber(mpnum) or 0 -- can be string or number, fed to context anyway
     if spec ~= "" then
         return mprun, mpnum
     else

@@ -50,6 +50,7 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
+local getdata            = nuts.getdata
 
 local isglyph            = nuts.isglyph
 
@@ -164,28 +165,23 @@ local ruleactions    = { }
 rules   .ruleactions = ruleactions
 nutrules.ruleactions = ruleactions -- convenient
 
-local function mathradical(n,h,v)
-    ----- size    = getfield(n,"index")
-    local font    = getfield(n,"transform")
+local function mathaction(n,h,v,what)
+    local font    = CONTEXTLMTXMODE > 1 and getdata(n) or getfield(n,"transform")
     local actions = fontresources[font].mathruleactions
     if actions then
-        local action = actions.radicalaction
+        local action = actions[what]
         if action then
             action(n,h,v,font)
         end
     end
 end
 
+local function mathradical(n,h,v)
+    mathaction(n,h,v,"radicalaction")
+end
+
 local function mathrule(n,h,v)
-    ----- size    = getfield(n,"index")
-    local font    = getfield(n,"transform")
-    local actions = fontresources[font].mathruleactions
-    if actions then
-        local action = actions.hruleaction
-        if action then
-            action(n,h,v,font)
-        end
-    end
+    mathaction(n,h,v,"hruleaction")
 end
 
 local function useraction(n,h,v)
@@ -746,7 +742,7 @@ implement {
     actions  = nodes.linefillers.enable
 }
 
--- We add a bonus feature here:
+-- We add a bonus feature here (experiment):
 
 interfaces.implement {
     name      = "autorule",
@@ -768,7 +764,7 @@ interfaces.implement {
             t.depth
         )
         setattrlist(n,true)
-        setoffsets(n,t.xoffset,t.yoffset)
+        setoffsets(n,t.xoffset,t.yoffset) -- ,t.left, t.right
         local l = t.left
         local r = t.right
         if l then

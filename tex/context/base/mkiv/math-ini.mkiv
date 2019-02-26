@@ -268,8 +268,8 @@
 
 \def\math_m_yes_text_openedup#1%
   {\setbox\scratchbox\hbox\bgroup
-      \normalstartimath
       \the\everyswitchmathematics\relax
+      \normalstartimath
       #1%
       \normalstopimath
    \egroup
@@ -285,8 +285,8 @@
    \endgroup}
 
 \def\math_m_yes_text_normal#1%
-  {\normalstartimath
-   \the\everyswitchmathematics\relax
+  {\the\everyswitchmathematics\relax
+   \normalstartimath
    #1%
    \normalstopimath
    \endgroup}

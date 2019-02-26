@@ -364,49 +364,37 @@ function nutpool.direction(dir,swap)
     return t
 end
 
-function nutpool.rule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.rule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(rule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.emptyrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.emptyrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(emptyrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.userrule(width,height,depth,direction) -- w/h/d == nil will let them adapt
+function nutpool.userrule(width,height,depth) -- w/h/d == nil will let them adapt
     local n = copy_nut(userrule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
-    if direction then
-        setdirection(n,direction)
-    end
     return n
 end
 
-function nutpool.outlinerule(width,height,depth,line,direction) -- w/h/d == nil will let them adapt
+function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let them adapt
     local n = copy_nut(outlinerule)
     if width or height or depth then
         setwhd(n,width,height,depth)
     end
     if line then
-        setfield(n,"transform",line)
-    end
-    if direction then
-        setdirection(n,direction)
+        if CONTEXTLMTXMODE > 1 then setdata(n,line) else setfield(n,"transform",line) end
     end
     return n
 end
@@ -576,7 +564,7 @@ end
 local function usage()
     local t = { }
     for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
-        t[tag] = n
+        t[tag] = tonumber(n) or 0
     end
     return t
 end
