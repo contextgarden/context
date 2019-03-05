@@ -829,7 +829,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 end
             end
             if not match and not pre or not replace then
-                local n = getnext(discfound)
+                local n    = getnext(discfound)
                 local char = ischar(n,currentfont)
                 if char and ligature[char] then
                     match = true
@@ -841,8 +841,8 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
                 local prev   = getprev(start)
                 if stop then
                     setnext(stop)
-                    local tail = getprev(stop)
                     local copy = copy_node_list(start)
+                    local tail = stop -- was: getprev(stop) -- Kai: needs checking on your samples
                     local liat = find_node_tail(copy)
                     if pre then
                         setlink(liat,pre)

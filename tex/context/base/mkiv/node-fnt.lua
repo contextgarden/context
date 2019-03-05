@@ -437,6 +437,8 @@ do
                     local prevfont = nil
                     local prevattr = nil
                     local none     = false
+                    firstnone = nil
+                    basefont  = nil
                     for n, char, font in nextchar, r do
                         local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
                         if font ~= prevfont or attr ~= prevattr then
@@ -446,6 +448,7 @@ do
                             if fontmode == "none" then
                                 setnone(n)
                             elseif fontmode == "base" then
+                                -- so the replace gets an extra treatment ... so be it
                                 setbase(n)
                             else
                                 setnode(n,font,attr)

@@ -712,7 +712,7 @@ function constructors.scale(tfmdata,specification)
                     height  = height,
                     depth   = depth,
                     width   = width,
-                    unicode = unicode,
+                    unicode = isunicode,
                 }
             else
                 chr = {
@@ -728,7 +728,7 @@ function constructors.scale(tfmdata,specification)
                     index   = index,
                     height  = height,
                     width   = width,
-                    unicode = unicode,
+                    unicode = isunicode,
                 }
             else
                 chr = {

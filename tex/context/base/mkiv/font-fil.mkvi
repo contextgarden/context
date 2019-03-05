@@ -85,22 +85,39 @@
       \expandafter\font_basics_define_font_synonym_yes
    \fi}
 
-\def\font_basics_define_font_synonym_nop
+\unexpanded\def\font_basics_define_font_synonym_nop
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
 
-\def\font_basics_define_font_synonym_yes
+\unexpanded\def\font_basics_define_font_synonym_yes
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
-\def\font_basics_define_font_synonym_nop_opt[#specification]%
+\unexpanded\def\edefinefontsynonym[#name]#crap[#file]%
+  {\edef\m_font_name{#name}%
+   \edef\m_font_file{#file}%
+   \ifx\fontclass\empty
+      \expandafter\font_basics_define_font_synonym_nop_expanded
+   \else
+      \expandafter\font_basics_define_font_synonym_yes_expanded
+   \fi}
+
+\unexpanded\def\font_basics_define_font_synonym_nop_expanded#crap[#spec]%
+  {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
+   \normalexpanded{\font_basics_define_font_synonym_nop_opt[#1]}}
+
+\unexpanded\def\font_basics_define_font_synonym_yes_expanded#crap[#spec]%
+  {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
+   \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
+
+\unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined
    \let\p_designsize\undefined
    \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
 
-\def\font_basics_define_font_synonym_yes_opt[#specification]%
+\unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined

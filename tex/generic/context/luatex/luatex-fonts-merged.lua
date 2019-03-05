@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/26/19 20:04:01
+-- merge date  : 03/05/19 15:40:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -8799,7 +8799,7 @@ function constructors.scale(tfmdata,specification)
      height=height,
      depth=depth,
      width=width,
-     unicode=unicode,
+     unicode=isunicode,
     }
    else
     chr={
@@ -8815,7 +8815,7 @@ function constructors.scale(tfmdata,specification)
      index=index,
      height=height,
      width=width,
-     unicode=unicode,
+     unicode=isunicode,
     }
    else
     chr={
@@ -26074,8 +26074,8 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local prev=getprev(start)
     if stop then
      setnext(stop)
-     local tail=getprev(stop)
      local copy=copy_node_list(start)
+     local tail=stop 
      local liat=find_node_tail(copy)
      if pre then
       setlink(liat,pre)

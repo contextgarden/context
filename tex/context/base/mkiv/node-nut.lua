@@ -697,7 +697,7 @@ nuts.nestedtracedslide = nestedtracedslide
 
 -- this might move
 
-local propertydata = direct.get_properties_table and direct.get_properties_table()
+local propertydata = direct.get_properties_table(true)
 
 local getattr = nuts.getattr
 local setattr = nuts.setattr

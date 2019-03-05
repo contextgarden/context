@@ -351,11 +351,17 @@ buffers.undent = undent
 --     commands.doifelse(more)
 -- end
 
+local split = table.setmetatableindex(function(t,k)
+    local v = totable(k)
+    t[k] = v
+    return v
+end)
+
 function tokens.pickup(start,stop)
-    local stoplist     = totable(stop)
+    local stoplist     = split[stop] -- totable(stop)
     local stoplength   = #stoplist
     local stoplast     = stoplist[stoplength]
-    local startlist    = totable(start)
+    local startlist    = split[start] -- totable(start)
     local startlength  = #startlist
     local startlast    = startlist[startlength]
     local list         = { }

@@ -376,10 +376,12 @@
    \egroup
    \ifconditional\headisdisplay
      \useindentnextparameter\headparameter
+   \else\ifconditional\headissomewhere
+     \ignoreparskip
+     \noindentation
    \else
      \ignoreparskip
-     \noindentation % recently added, was a bug
-   \fi}
+   \fi\fi}
 
 % nice testcase
 %

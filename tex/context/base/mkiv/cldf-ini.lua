@@ -137,7 +137,7 @@ function context.trialtypesetting()
     return texgetcount(trialtypesettingstate) ~= 0
 end
 
-local knownfunctions = lua.get_functions_table()
+local knownfunctions = lua.get_functions_table(true)
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)

@@ -774,13 +774,22 @@ end
 -- print(parsers.splitmethod("{foo}"))
 -- print(parsers.splitmethod())
 
+local p_year = lpegpatterns.digit^4 / tonumber
+
 local pattern = Cf( Ct("") *
-                  Cg(Cc("year")   * cardinal)
-      *  P("-") * Cg(Cc("month")  * cardinal)
-      *  P("-") * Cg(Cc("day")    * cardinal)
-      *  P(" ") * Cg(Cc("hour")   * cardinal)
-      *  P(":") * Cg(Cc("minute") * cardinal)
-      * (P(":") * Cg(Cc("sec")    * cardinal))^-1
+    (
+        (              Cg(Cc("year")  * p_year)
+          *  S("-/") * Cg(Cc("month") * cardinal)
+          *  S("-/") * Cg(Cc("day")   * cardinal)
+        ) +
+        (              Cg(Cc("day")   * cardinal)
+          *  S("-/") * Cg(Cc("month") * cardinal)
+          *  S("-/") * Cg(Cc("year")  * p_year)
+        )
+    )
+      *  P(" ")  * Cg(Cc("hour")   * cardinal)
+      *  P(":")  * Cg(Cc("min")    * cardinal)
+      * (P(":")  * Cg(Cc("sec")    * cardinal))^-1
 , rawset)
 
 lpegpatterns.splittime = pattern
@@ -790,3 +799,6 @@ function parsers.totime(str)
 end
 
 -- print(os.time(parsers.totime("2019-03-05 12:12:12")))
+-- print(os.time(parsers.totime("2019/03/05 12:12:12")))
+-- print(os.time(parsers.totime("05-03-2019 12:12:12")))
+-- print(os.time(parsers.totime("05/03/2019 12:12:12")))

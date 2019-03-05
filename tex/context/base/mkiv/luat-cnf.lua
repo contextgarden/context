@@ -30,6 +30,8 @@ texconfig.nest_size       =   1000
 texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
+texconfig.function_size   =  32768
+texconfig.properties_size =  65536
 
 local stub = [[
 
@@ -178,6 +180,8 @@ local variablenames = {
     param_size      = true,
     save_size       = true,
     stack_size      = true,
+    function_size   = true,
+    properties_size = true,
 }
 
 local function makestub()

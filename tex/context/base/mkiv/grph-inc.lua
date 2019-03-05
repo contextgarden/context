@@ -124,8 +124,8 @@ local ctx_doboxfigureobject        = context.doboxfigureobject
 
 function checkimage(figure)
     if figure then
-        local width  = figure.width
-        local height = figure.height
+        local width  = figure.width or 0
+        local height = figure.height or 0
         if width <= 0 or height <= 0 then
             report_inclusion("image %a has bad dimensions (%p,%p), discarding",figure.filename or "?",width,height)
             return false, "bad dimensions"
@@ -918,6 +918,7 @@ local function register(askedname,specification)
                             format = suffix
                         end
                     end
+specification.format = format
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
                     if format and imagetypes[format] then
@@ -1285,6 +1286,7 @@ function figures.identify(data)
         for i=1,#list do
             local identifier = list[i]
             local data = identifier(data)
+--             if data and (not data.status and data.status.status > 0) then
             if data and (not data.status and data.status.status > 0) then
                 break
             end

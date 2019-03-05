@@ -817,7 +817,7 @@ local function typestring(settings)
         local compact   = settings.compact
         local compactor = compact and compactors[compact]
         if compactor then
-            content = lpegmatch(compactor,content)
+            content = lpegmatch(compactor,content) or content
         end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
@@ -853,7 +853,7 @@ implement {
     actions   = typestring,
     arguments = {
         {
-            { "data"    },
+            { "data" },
             { "tab"     },
             { "method"  },
             { "compact" },
@@ -862,6 +862,50 @@ implement {
         }
     }
 }
+
+-- implement {
+--     name      = "type_x",
+--     actions   = typestring,
+--     arguments = {
+--         {
+--             { "data", "verbatim" },
+--             { "tab"     },
+--             { "method"  },
+--             { "compact" },
+--             { "nature"  },
+--             { "escape"  },
+--         }
+--     }
+-- }
+
+-- local function typestring_y(settings)
+--     local content = tex.toks[settings.n]
+--     if content and content ~= "" then
+--         local compact   = settings.compact
+--         local compactor = compact and compactors[compact]
+--         if compactor then
+--             content = lpegmatch(compactor,content)
+--         end
+--      -- content = decodecomment(content)
+--      -- content = dotabs(content,settings)
+--         visualize(content,checkedsettings(settings,"inline"))
+--     end
+-- end
+
+-- implement {
+--     name      = "type_y",
+--     actions   = typestring_y,
+--     arguments = {
+--         {
+--             { "n", "integer" },
+--             { "tab"     },
+--             { "method"  },
+--             { "compact" },
+--             { "nature"  },
+--             { "escape"  },
+--         }
+--     }
+-- }
 
 implement {
     name      = "processbuffer",
