@@ -16,7 +16,7 @@ if known   context_mlib : endinput ; fi ;
 
 boolean context_mlib ; context_mlib := true ;
 
-numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY)") ;
+% numeric LUATEXFUNCTIONALITY ; LUATEXFUNCTIONALITY := runscript("mp.print(LUATEXFUNCTIONALITY or (status and status.development_id) or 6346)") ;
 
 %D Objects:
 

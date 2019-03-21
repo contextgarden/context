@@ -159,7 +159,7 @@ local formatofinterface = {
 
 local defaultformats = {
     "cont-en",
-    "cont-nl",
+ -- "cont-nl",
 }
 
 -- purging files (we should have an mkii and mkiv variants)
@@ -537,7 +537,7 @@ end
 
 local function luatex_command(l_flags,c_flags,filename,engine)
     return format('%s %s %s "%s"',
-        engine or "luatex",
+        engine or (status and status.luatex_engine) or "luatex",
         flags_to_string(l_flags),
         flags_to_string(c_flags,true),
         filename
@@ -872,10 +872,12 @@ function scripts.context.run(ctxdata,filename)
                     --
                     report("run %s: %s",currentrun,command)
                     print("") -- cleaner, else continuation on same line
-                    local returncode, errorstring = os.spawn(command)
+--                     local returncode, errorstring = os.spawn(command)
+                    local returncode = os.execute(command)
                     -- todo: remake format when no proper format is found
                     if not returncode then
-                        report("fatal error: no return code, message: %s",errorstring or "?")
+--                         report("fatal error: no return code, message: %s",errorstring or "?")
+                        report("fatal error: no return code")
                         if resultname then
                             result_save_error(oldbase,newbase)
                         end
@@ -1192,7 +1194,7 @@ function scripts.context.make(name)
         scripts.context.generate()
     end
     local list = (name and { name }) or (environment.filenames[1] and environment.filenames) or defaultformats
-    local engine = getargument("engine") or "luatex"
+    local engine = getargument("engine") or (status and status.luatex_engine) or "luatex"
     if getargument("jit") then
         engine = "luajittex"
     end
@@ -1201,7 +1203,7 @@ function scripts.context.make(name)
         name = formatofinterface[name] or name or ""
         if name == "" then
             -- nothing
-        elseif engine == "luatex" or engine == "luajittex" then
+        elseif engine == "luametatex" or engine == "luatex" or engine == "luajittex" then
             make_mkiv_format(name,engine)
         elseif engine == "pdftex" or engine == "xetex" then
             make_mkii_format(name,engine)

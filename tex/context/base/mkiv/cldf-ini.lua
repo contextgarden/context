@@ -793,7 +793,7 @@ local function writer(parent,command,...) -- already optimized before call
                         tj = storefunction(tj)
                         if tokenflushmode then
                             if newtoken then
-                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),"]")
+                                flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),"]")
                             else
                                 flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
                             end
@@ -811,7 +811,7 @@ local function writer(parent,command,...) -- already optimized before call
                             tj = storefunction(tj)
                             if tokenflushmode then
                                 if newtoken then
-                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_code),j == tn and "]" or ",")
+                                    flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),j == tn and "]" or ",")
                                 else
                                     flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
                                 end

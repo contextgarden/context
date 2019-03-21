@@ -68,6 +68,8 @@ caches.ask      = false
 caches.relocate = false
 caches.defaults = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
+directives.register("system.caches.fast",function(v) caches.fast = true end)
+
 local writable, readables, usedreadables = nil, { }, { }
 
 -- we could use a metatable for writable and readable but not yet
@@ -364,7 +366,9 @@ local saveoptions = { compact = true }
 function caches.savedata(filepath,filename,data,raw)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     data.cache_uuid = os.uuid()
-    if caches.direct then
+    if caches.fast then
+        file.savedata(tmaname,table.fastserialize(data,true))
+    elseif caches.direct then
         file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
         table.tofile(tmaname,data,true,saveoptions)

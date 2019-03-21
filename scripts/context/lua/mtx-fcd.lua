@@ -66,7 +66,7 @@ local application = logs.application {
 }
 
 local report  = application.report
-local writeln = print -- texio.write_nl
+local writeln = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 local find, char, byte, lower, gsub, format = string.find, string.char, string.byte, string.lower, string.gsub, string.format
 

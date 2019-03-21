@@ -5,7 +5,7 @@ local type, tostring, setmetatable = type, tostring, setmetatable
 local min = math.min
 local format = string.format
 
-local socket      = require("socket.core")
+local socket      = socket or package.loaded.socket or require("socket.core")
 
 local connect     = socket.connect
 local tcp4        = socket.tcp4

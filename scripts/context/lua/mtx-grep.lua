@@ -69,7 +69,7 @@ local crlf     = cr * lf
 local newline  = crlf + cr + lf
 local content  = lpeg.C((1-newline)^0) * newline + lpeg.C(lpeg.P(1)^1)
 
-local write_nl = texio.write_nl
+local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 -- local pattern = "LIJST[@TYPE='BULLET']/LIJSTITEM[contains(text(),'Kern')]"
 

@@ -761,7 +761,7 @@ local function check_afm(specification,fullname)
     if foundname == "" then
         foundname = fonts.names.getfilename(fullname,"afm") or ""
     end
-    if foundname == "" and afm.autoprefixed then
+    if fullname and foundname == "" and afm.autoprefixed then
         local encoding, shortname = match(fullname,"^(.-)%-(.*)$") -- context: encoding-name.*
         if encoding and shortname and fonts.encodings.known[encoding] then
             shortname = findbinfile(shortname,'afm') or "" -- just to be sure

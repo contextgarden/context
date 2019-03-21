@@ -37,6 +37,81 @@ zip.archives          = archives
 local registeredfiles = zip.registeredfiles or { }
 zip.registeredfiles   = registeredfiles
 
+local zipfiles        = utilities.zipfiles
+
+local openzip, closezip, validfile, wholefile, filehandle, traversezip
+
+if zipfiles then
+
+    local ipairs = ipairs
+
+    openzip   = zipfiles.open
+    closezip  = zipfiles.close
+    validfile = zipfiles.found
+    wholefile = zipfiles.unzip
+
+    traversezip = function(zfile)
+        return ipairs(zipfiles.list(zfile))
+    end
+
+    local streams     = utilities.streams
+    local openstream  = streams.open
+    local readstring  = streams.readstring
+    local streamsize  = streams.size
+
+    local metatable = {
+        close = streams.close,
+        read  = function(stream,n)
+            readstring(stream,n == "*a" and streamsize(stream) or n)
+        end
+    }
+
+    filehandle = function(zfile,queryname)
+        local data = wholefile(zfile,queryname)
+        if data then
+            local stream = openstream(data)
+            if stream then
+                return setmetatableindex(stream,metatable)
+            end
+        end
+    end
+
+else
+
+    openzip  = zip.open
+    closezip = zip.close
+
+    validfile = function(zfile,queryname)
+        local dfile = zfile:open(queryname)
+        if dfile then
+            dfile:close()
+            return true
+        end
+        return false
+    end
+
+    traversezip = function(zfile)
+        return z:files()
+    end
+
+    wholefile = function(zfile,queryname)
+        local dfile = zfile:open(queryname)
+        if dfile then
+            local s = dfile:read("*all")
+            dfile:close()
+            return s
+        end
+    end
+
+    filehandle = function(zfile,queryname)
+        local dfile = zfile:open(queryname)
+        if dfile then
+            return dfile
+        end
+    end
+
+end
+
 local function validzip(str) -- todo: use url splitter
     if not find(str,"^zip://") then
         return "zip:///" .. str
@@ -52,7 +127,7 @@ function zip.openarchive(name)
         local arch = archives[name]
         if not arch then
            local full = resolvers.findfile(name) or ""
-           arch = full ~= "" and zip.open(full) or false
+           arch = full ~= "" and openzip(full) or false
            archives[name] = arch
         end
        return arch
@@ -61,7 +136,7 @@ end
 
 function zip.closearchive(name)
     if not name or (name == "" and archives[name]) then
-        zip.close(archives[name])
+        closezip(archives[name])
         archives[name] = nil
     end
 end
@@ -106,9 +181,7 @@ function resolvers.finders.zip(specification)
                 if trace_locating then
                     report_zip("finder: archive %a found",archive)
                 end
-                local dfile = zfile:open(queryname)
-                if dfile then
-                    dfile:close()
+                if validfile(zfile,queryname) then
                     if trace_locating then
                         report_zip("finder: file %a found",queryname)
                     end
@@ -139,12 +212,12 @@ function resolvers.openers.zip(specification)
                 if trace_locating then
                     report_zip("opener; archive %a opened",archive)
                 end
-                local dfile = zfile:open(queryname)
-                if dfile then
+                local handle = filehandle(zfile,queryname)
+                if handle then
                     if trace_locating then
                         report_zip("opener: file %a found",queryname)
                     end
-                    return resolvers.openers.helpers.textopener('zip',original,dfile)
+                    return resolvers.openers.helpers.textopener('zip',original,handle)
                 elseif trace_locating then
                     report_zip("opener: file %a not found",queryname)
                 end
@@ -171,15 +244,13 @@ function resolvers.loaders.zip(specification)
                 if trace_locating then
                     report_zip("loader: archive %a opened",archive)
                 end
-                local dfile = zfile:open(queryname)
-                if dfile then
+                local data = wholefile(zfile,queryname)
+                if data then
                     logs.show_load(original)
                     if trace_locating then
                         report_zip("loader; file %a loaded",original)
                     end
-                    local s = dfile:read("*all")
-                    dfile:close()
-                    return true, s, #s
+                    return true, data, #data
                 elseif trace_locating then
                     report_zip("loader: file %a not found",queryname)
                 end
@@ -231,7 +302,7 @@ function resolvers.registerzipfile(z,tree)
     if trace_locating then
         report_zip("registering: using filter %a",filter)
     end
-    for i in z:files() do
+    for i in traversezip(z) do
         local filename = i.filename
         local path, name = match(filename,filter)
         if not path then

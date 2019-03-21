@@ -44,8 +44,22 @@
 %D \stoptyping
 
 \installcorenamespace{symbol}
+\installcorenamespace{symbols}
 \installcorenamespace{symbolset}
 \installcorenamespace{symboldefault}
+
+%D For now we only have one option.
+
+\installparameterhandler\??symbols {symbols}
+\installsetuphandler    \??symbols {symbols}
+
+\appendtoks
+   \doifelse{\symbolsparameter\c!stylealternative}\v!math
+     \settrue\setfalse\prefermathovertextchar
+\to \everysetupsymbols
+
+\setupsymbols
+  [\c!stylealternative=\v!text]
 
 \let\currentsymbol   \empty
 \let\currentsymbolset\empty

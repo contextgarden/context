@@ -79,6 +79,13 @@ local runners = {
         checkers = checkers,
         reporter = report_format,
     },
+    luametatex = sandbox.registerrunner {
+        name     = "make luametatex format",
+        program  = "luametatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
     luajittex = sandbox.registerrunner {
         name     = "make luajittex format",
         program  = "luajittex",

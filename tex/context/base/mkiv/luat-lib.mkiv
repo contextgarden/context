@@ -54,6 +54,10 @@
 %registerctxluafile{util-soc-imp-ftp}    {}
 %registerctxluafile{util-soc-imp-smtp}   {}
 
+\ifcase\contextlmtxmode\else
+    \registerctxluafile{util-zip}{}
+\fi
+
 \registerctxluafile{data-ini}{}
 \registerctxluafile{data-exp}{}
 \registerctxluafile{data-env}{}

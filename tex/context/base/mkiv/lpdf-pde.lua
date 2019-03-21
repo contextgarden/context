@@ -1003,7 +1003,15 @@ if img then do
         return openpdf(str,userpassword,ownerpassword,true)
     end
 
-    local function querypdf(pdfdoc,pagenumber)
+    local sizes = {
+        crop  = "CropBox",
+        media = "MediaBox",
+        bleed = "BleedBox",
+        art   = "ArtBox",
+        trim  = "TrimBox",
+    }
+
+    local function querypdf(pdfdoc,pagenumber,size)
         if pdfdoc then
             if not pagenumber then
                 pagenumber = 1
@@ -1011,9 +1019,9 @@ if img then do
             local root = pdfdoc.Catalog
             local page = pdfdoc.pages[pagenumber]
             if page then
-                -- todo
+                local sizetag  = sizes[size or "crop"] or sizes.cro
                 local mediabox = page.MediaBox or { 0, 0, 0, 0 }
-                local cropbox  = page.CropBox or mediabox
+                local cropbox  = page[sizetag] or mediabox
                 return {
                     filename    = pdfdoc.filename,
                     pagenumber  = pagenumber,

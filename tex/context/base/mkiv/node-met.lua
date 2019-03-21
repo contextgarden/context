@@ -136,103 +136,82 @@ nodes.is_zero_glue            = node.is_zero_glue
 nodes.tonode = function(n) return n end
 nodes.tonut  = function(n) return n end
 
-local n_getid           = node.getid
-local n_getlist         = node.getlist
-local n_getnext         = node.getnext
-local n_getprev         = node.getprev
-local n_getchar         = node.getchar
-local n_getfont         = node.getfont
-local n_getsubtype      = node.getsubtype
-local n_getfield        = node.getfield
-local n_getattr         = node.get_attribute
-local n_getdisc         = node.getdisc
-local n_getleader       = node.getleader
+-- These are never used in \CONTEXT, only as a gimmick in node operators
+-- so we keep them around.
 
-local n_setfield        = node.setfield
-local n_setattr         = n_setfield
+local n_getfield = node.getfield
+local n_getattr  = node.get_attribute
 
-local n_setnext         = node.setnext or -- always
-    function(c,n)
-        n_setfield(c,"next",n)
-    end
-local n_setprev         = node.setprev or -- always
-    function(c,p)
-        n_setfield(c,"prev",p)
-    end
-local n_setlist         = node.setlist or -- always
-    function(c,l)
-        n_setfield(c,"list",l)
-    end
-local n_setlink         = node.setlink or -- always
-    function(...)
-        -- not that fast but not used often anyway
-        local h = nil
-        for i=1,select("#",...) do
-            local n = select(i,...)
-            if not n then
-                -- go on
-            elseif h then
-                n_setfield(h,"next",n)
-                n_setfield(n,"prev",h)
-            else
-                h = n
-            end
+local n_setfield = node.setfield
+local n_setattr  = n_setfield
+
+nodes.getfield = n_getfield
+nodes.setfield = n_setfield
+nodes.getattr  = n_getattr
+nodes.setattr  = n_setattr
+nodes.takeattr = nodes.unset_attribute
+
+local function n_getid     (n) return n_getfield(n,"id")      end
+local function n_getsubtype(n) return n_getfield(n,"subtype") end
+
+nodes.getid      = n_getid
+nodes.getsubtype = n_getsubtype
+
+local function n_getchar(n)   return n_getfield(n,"char")    end
+local function n_setchar(n,c) return n_setfield(n,"char",c)  end
+local function n_getfont(n)   return n_getfield(n,"font")    end
+local function n_setfont(n,f) return n_setfield(n,"font",f)  end
+
+nodes.getchar = n_getchar
+nodes.setchar = n_setchar
+nodes.getfont = n_getfont
+nodes.setfont = n_setfont
+
+local function n_getlist  (n)   return n_getfield(n,"list")     end
+local function n_setlist  (n,l) return n_setfield(n,"list",l)   end
+local function n_getleader(n)   return n_getfield(n,"leader")   end
+local function n_setleader(n,l) return n_setfield(n,"leader",l) end
+
+nodes.getlist   = n_getlist
+nodes.setlist   = n_setlist
+nodes.getleader = n_getleader
+nodes.setleader = n_setleader
+
+local function n_getnext(n)       return n_getfield(n,"next")    end
+local function n_setnext(n,nn)    return n_setfield(n,"next",nn) end
+local function n_getprev(n)       return n_getfield(n,"prev")    end
+local function n_setprev(n,pp)    return n_setfield(n,"prev",pp) end
+local function n_getboth(n)       return n_getfield(n,"prev"),    n_getfield(n,"next")    end
+local function n_setboth(n,pp,nn) return n_setfield(n,"prev",pp), n_setfield(n,"next",nn) end
+
+nodes.getnext = n_getnext
+nodes.setnext = n_setnext
+nodes.getprev = n_getprev
+nodes.setprev = n_setprev
+nodes.getboth = n_getboth
+nodes.setboth = n_setboth
+
+local function n_setlink(...)
+    -- not that fast but not used often anyway
+    local h = nil
+    for i=1,select("#",...) do
+        local n = select(i,...)
+        if not n then
+            -- go on
+        elseif h then
+            n_setfield(h,"next",n)
+            n_setfield(n,"prev",h)
+        else
+            h = n
         end
-        return h
     end
-local n_setboth         = node.setboth or -- always
-    function(c,p,n)
-        n_setfield(c,"prev",p)
-        n_setfield(c,"next",n)
-    end
-
-nodes.setnext         = n_setnext
-nodes.setprev         = n_setprev
-nodes.setlink         = n_setlink
-nodes.setboth         = n_setboth
-nodes.setlist         = n_setlist
-
-nodes.getfield        = n_getfield
-nodes.setfield        = n_setfield
-nodes.getattr         = n_getattr
-nodes.setattr         = n_setattr
-nodes.takeattr        = nodes.unset_attribute
-
-nodes.getnext         = n_getnext
-nodes.getprev         = n_getprev
-nodes.getid           = n_getid
-nodes.getchar         = n_getchar
-nodes.getfont         = n_getfont
-nodes.getsubtype      = n_getsubtype
-nodes.getlist         = n_getlist
-nodes.getleader       = n_getleader
-nodes.getdisc         = n_getdisc
-
-if not node.getwhd then
-    function node.getwhd(n)
-        return n_getfield(n,"width"), n_getfield(n,"height"), n_getfield(n,"depth")
-    end
+    return h
 end
 
-if not node.setwhd then
-    function node.setwhd(n,w,h,d)
-        n_setfield(n,"width",w or 0)
-        n_setfield(n,"height",h or 0)
-        n_setfield(n,"depth",d or 0)
-    end
-end
+nodes.setlink = n_setlink
 
-nodes.getwhd = node.getwhd
-nodes.setwhd = node.setwhd
-
-nodes.is_char         = node.is_char
-nodes.ischar          = node.is_char
-
-nodes.is_glyph        = node.is_glyph
-nodes.isglyph         = node.is_glyph
-
-nodes.getbox          = node.getbox or tex.getbox
-nodes.setbox          = node.setbox or tex.setbox
+nodes.getbox  = node.getbox or tex.getbox
+nodes.setbox  = node.setbox or tex.setbox
 
 local n_flush_node    = nodes.flush
 local n_copy_node     = nodes.copy

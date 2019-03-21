@@ -348,6 +348,13 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
     return mpx
 end
 
+
+-- luatex.wrapup(function()
+--     for k, mpx in next, mpxformats do
+--         mpx:finish()
+--     end
+-- end)
+
 function metapost.popformat()
     nofformats = nofformats - 1
 end

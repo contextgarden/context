@@ -311,7 +311,8 @@ function tables.encapsulate(core,capsule,protect)
     end
 end
 
--- best keep [%q] keys (as we have some in older applications i.e. saving user data
+-- best keep [%q] keys (as we have some in older applications i.e. saving user data (otherwise
+-- we also need to check for reserved words)
 
 local f_hashed_string   = formatters["[%q]=%q,"]
 local f_hashed_number   = formatters["[%q]=%s,"]

@@ -14,6 +14,7 @@ local report_nodes = logs.reporter("nodes","processors")
 local nodes        = nodes
 local tasks        = nodes.tasks
 local nuts         = nodes.nuts
+local tonut        = nodes.tonut
 
 nodes.processors   = nodes.processors or { }
 local processors   = nodes.processors
@@ -25,7 +26,6 @@ local actions = tasks.actions("processors")
 
 do
 
-    local tonut   = nuts.tonut
     local isglyph = nuts.isglyph
     local getnext = nuts.getnext
 
@@ -178,9 +178,9 @@ do
 
     local texnest       = tex.nest
 
-    local getlist       = nodes.getlist
-    local setlist       = nodes.setlist
-    local getsubtype    = nodes.getsubtype
+    local getlist       = nuts.getlist
+    local setlist       = nuts.setlist
+    local getsubtype    = nuts.getsubtype
 
     local linelist_code = nodes.listcodes.line
 
@@ -191,12 +191,15 @@ do
             local whatever = texnest[texnest.ptr]
             if whatever then
                 local line = whatever.tail
-                if line and getsubtype(line) == linelist_code then
-                    local head = getlist(line)
-                    if head then
-                        local result = actions(head,groupcode,line)
-                        if result and result ~= head then
-                            setlist(line,result)
+                if line then
+                    line = tonut(line)
+                    if getsubtype(line) == linelist_code then
+                        local head = getlist(line)
+                        if head then
+                            local result = actions(head,groupcode,line)
+                            if result and result ~= head then
+                                setlist(line,result)
+                            end
                         end
                     end
                 end

@@ -29,6 +29,12 @@ function streams.openstring(f,zerobased)
     end
 end
 
+function streams.getstring(f)
+    if f then
+        return f[1]
+    end
+end
+
 function streams.close()
     -- dummy
 end
@@ -137,7 +143,7 @@ function streams.readcardinal2(f)
     return 0x100 * a + b
 end
 
-function streams.readcardinal2LE(f)
+function streams.readcardinal2le(f)
     local i = f[2]
     local j = i + 1
     f[2] = j + 1
@@ -214,6 +220,14 @@ function streams.readcardinal4(f)
     local j = i + 3
     f[2] = j + 1
     local a, b, c, d = byte(f[1],i,j)
+    return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
+end
+
+function streams.readcardinal4le(f)
+    local i = f[2]
+    local j = i + 3
+    f[2] = j + 1
+    local d, c, b, a = byte(f[1],i,j)
     return 0x1000000 * a + 0x10000 * b + 0x100 * c + d
 end
 

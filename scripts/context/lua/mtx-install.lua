@@ -36,8 +36,8 @@ local helpinfo = [[
 local gsub, find, escapedpattern = string.gsub, string.find, string.escapedpattern
 local round = math.round
 local savetable, loadtable, sortedhash = table.save, table.load, table.sortedhash
-local joinfile, filesize, dirname, addsuffix = file.join, file.size, file.dirname, file.addsuffix
-local isdir, isfile, walkdir = lfs.isdir, lfs.isfile, lfs.dir
+local copyfile, joinfile, filesize, dirname, addsuffix, basename = file.copy, file.join, file.size, file.dirname, file.addsuffix, file.basename
+local isdir, isfile, walkdir, pushdir, popdir, currentdir = lfs.isdir, lfs.isfile, lfs.dir, lfs.chdir, dir.push, dir.pop, currentdir
 local mkdirs, globdir = dir.mkdirs, dir.glob
 local osremove, osexecute, ostype = os.remove, os.execute, os.type
 local savedata = io.savedata
@@ -223,9 +223,9 @@ function install.update()
         mkdirs(tree)
     end
 
-    local function update(url,tree)
+    local function update(url,what,zipfile,skiplist)
 
-        tree = joinfile("tex",tree)
+        local tree = joinfile("tex",what)
 
         local ok = validdir(tree)
         if not validdir(tree) then
@@ -252,23 +252,68 @@ function install.update()
 
         local total = 0
         local done  = 0
+        local count = 0
 
         if not old then
 
-            report("installing %s, %i files",tree,#new)
+            if zipfile then
+                zipfile = addsuffix(what,"zip")
+            end
+            if zipfile then
+                local zipurl = url .. "/" .. zipfile
+                report("fetching %a",zipurl)
+                local zipdata = fetch(zipurl)
+                if zipdata then
+                    io.savedata(zipfile,zipdata)
+                else
+                    zipfile = false
+                end
+            end
 
-            for i=1,#new do
+            if type(zipfile) == "string" and isfile(zipfile) then
+
+                -- todo: pcall
+
+                report("unzipping %a",zipfile)
+
+                local specification = {
+                    zipname = zipfile,
+                    path    = ".",
+                 -- verbose = true,
+                    verbose = "steps",
+                }
+
+                if utilities.zipfiles.unzipdir(specification) then
+                    osremove(zipfile)
+                    goto done
+                else
+                    osremove(zipfile)
+                end
+
+            end
+
+            count = #new
+
+            report("installing %s, %i files",tree,count)
+
+            for i=1,count do
                 total = total + new[i][2]
             end
 
-            for i=1,#new do
+            for i=1,count do
                 local entry  = new[i]
                 local name   = entry[1]
                 local size   = entry[2]
                 local target = joinfile(tree,name)
                 done = done + size
-                download("new",url,target,total,done)
+                if not skiplist or not skiplist[basename(name)] then
+                    download("new",url,target,total,done)
+                else
+                    report("skipping %s",target)
+                end
             end
+
+            ::done::
 
         else
 
@@ -279,24 +324,30 @@ function install.update()
             local todo = { }
 
             for newname, newhash in sortedhash(hnew) do
-                local target  = joinfile(tree,newname)
-                local oldhash = hold[newname]
-                local action  = nil
-                if not oldhash then
-                    action = "added"
-                elseif oldhash[3] ~= newhash[3] then
-                    action = "changed"
-                elseif not ispresent(joinfile(tree,newname)) then
-                    action = "missing"
-                end
-                if action then
-                    local size = newhash[2]
-                    total = total + size
-                    todo[#todo+1] = { action, target, size }
+                local target = joinfile(tree,newname)
+                if not skiplist or not skiplist[basename(newname)] then
+                    local oldhash = hold[newname]
+                    local action  = nil
+                    if not oldhash then
+                        action = "added"
+                    elseif oldhash[3] ~= newhash[3] then
+                        action = "changed"
+                    elseif not ispresent(joinfile(tree,newname)) then
+                        action = "missing"
+                    end
+                    if action then
+                        local size = newhash[2]
+                        total = total + size
+                        todo[#todo+1] = { action, target, size }
+                    end
+                else
+                    report("skipping %s",target)
                 end
             end
 
-            for i=1,#todo do
+            count = #todo
+
+            for i=1,count do
                 local entry = todo[i]
                 download(entry[1],url,entry[2],total,done)
                 done = done + entry[3]
@@ -313,6 +364,8 @@ function install.update()
         end
 
         savetable(lua,new)
+
+        return { tree, count, done }
 
     end
 
@@ -355,9 +408,17 @@ function install.update()
     report("platform : %s",osplatform)
     report("system   : %s",ostype)
 
-    update(url,"texmf")
-    update(url,"texmf-context")
-    update(url,texmfplatform)
+    local status   = { }
+    local skiplist = {
+        ["mtxrun"]      = true,
+        ["context"]     = true,
+        ["mtxrun.exe"]  = true,
+        ["context.exe"] = true,
+    }
+
+    status[#status+1] = update(url,"texmf",true)
+    status[#status+1] = update(url,"texmf-context",true)
+    status[#status+1] = update(url,texmfplatform,false,skiplist)
 
     prepare("texmf-cache")
     prepare("texmf-project")
@@ -367,35 +428,82 @@ function install.update()
 
     local binpath = joinfile(targetroot,"tex",texmfplatform,"bin")
 
-    if ostype == "unix" then
-        osexecute(formatters["chmod +x %s/*"](binpath))
-    end
-
-    local mtxrun  = joinfile(binpath,"mtxrun")
-    local context = joinfile(binpath,"context")
+    local luametatex = "luametatex"
+    local mtxrun     = "mtxrun"
+    local context    = "context"
 
     if ostype == "windows" then
-        addsuffix(mtxrun,"exe")
-        addsuffix(context,"exe")
+        luametatex = addsuffix(luametatex,"exe")
+        mtxrun     = addsuffix(mtxrun,"exe")
+        context    = addsuffix(context,"exe")
     end
 
-    run("%s --generate",mtxrun)
-    run("%s --make en", context)
-    run("%s --make nl", context)
+    local luametatexbin = joinfile(binpath,luametatex)
+    local mtxrunbin     = joinfile(binpath,mtxrun)
+    local contextbin    = joinfile(binpath,context)
 
- -- local mtxrun  = joinfile(binpath,"mtxrunjit")
- -- local context = joinfile(binpath,"contextjit")
- --
- -- if ostype == "windows" then
- --     addsuffix(mtxrun,"exe")
- --     addsuffix(context,"exe")
- -- end
- --
- -- run("%s --generate",mtxrun)
- -- run("%s --make en", context)
- -- run("%s --make nl", context)
+    local cdir = currentdir()
+    local pdir = pushdir(binpath)
+
+    report("current  : %S",cdir)
+    report("target   : %S",pdir)
+
+    if pdir ~= cdir then
+
+        report("removing : %s",mtxrun)
+        report("removing : %s",context)
+
+        osremove(mtxrun)
+        osremove(context)
+
+        if isfile(luametatex) then
+            lfs.symlink(luametatex,mtxrun)
+            lfs.symlink(luametatex,context)
+        end
+
+        if isfile(mtxrun) then
+            report("linked   : %s",mtxrun)
+        else
+            copyfile(luametatex,mtxrun)
+            report("copied   : %s",mtxrun)
+        end
+        if isfile(context) then
+            report("linked   : %s",context)
+        else
+            copyfile(luametatex,context)
+            report("copied   : %s",context)
+        end
+
+    end
+
+    popdir()
+
+    if lfs.setexecutable(luametatexbin) then
+        report("xbit set : %s",luametatexbin)
+    else
+     -- report("xbit bad : %s",luametatexbin)
+    end
+    if lfs.setexecutable(mtxrunbin) then
+        report("xbit set : %s",mtxrunbin)
+    else
+     -- report("xbit bad : %s",mtxrunbin)
+    end
+    if lfs.setexecutable(contextbin) then
+        report("xbit set : %s",contextbin)
+    else
+     -- report("xbit bad : %s",contextbin)
+    end
+
+    run("%s --generate",mtxrunbin)
+    run("%s --make en", contextbin)
 
     -- in calling script: update mtxrun.exe and mtxrun.lua
+
+    report("")
+    for i=1,#status do
+        report("%-20s : %4i files with %9i bytes installed",unpack(status[i]))
+    end
+    report("")
 
     report("update, done")
 end

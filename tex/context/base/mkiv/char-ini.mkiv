@@ -57,14 +57,34 @@
 \unexpanded\def\checkedtextchar#1% #2%
   {\clf_doifelsecharinfont\numexpr#1\relax{\char#1}} % {#2}
 
+% \unexpanded\def\textormathchar#1%
+%   {\relax\ifmmode
+%      \char#1\relax
+%    \else\iffontchar\font#1\relax
+%      \char#1\relax
+%    \else
+%      \normalstartimath\char#1\normalstopimath
+%    \fi\fi}
+
+\newconditional\prefermathovertextchar
+
 \unexpanded\def\textormathchar#1%
-  {\relax\ifmmode
-     \char#1\relax
-   \else\iffontchar\font#1\relax
-     \char#1\relax
+  {\begingroup
+   \scratchcounter#1\relax
+   \ifmmode
+     \char\scratchcounter
    \else
-     \normalstartimath\char#1\normalstopimath
-   \fi\fi}
+      \ifconditional\prefermathovertextchar
+        % dirty trick .. maybe let this adapt to bf too ?
+        \setfontid\fontid\textfont\c_font_fam_mr
+      \fi
+      \iffontchar\font\scratchcounter
+        \char\scratchcounter
+      \else
+        \normalstartimath\char\scratchcounter\normalstopimath
+      \fi
+   \fi
+   \endgroup}
 
 \unexpanded\def\textormathchars#1%
   {{\font_text_or_mathchars#1\relax}}

@@ -53,7 +53,8 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
-local report = application.report
+local report  = application.report
+local writeln = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 scripts       = scripts       or { }
 scripts.tools = scripts.tools or { }
@@ -189,7 +190,7 @@ function scripts.tools.dirtoxml()
     result = table.concat(result,"\n")
 
     if not outputfile or outputfile == "" then
-        texio.write_nl(result)
+        writeln(result)
     else
         io.savedata(outputfile,result)
     end

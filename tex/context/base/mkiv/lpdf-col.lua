@@ -429,7 +429,8 @@ function codeinjections.setfigurecolorspace(data,figure)
         local ref = indexcolorref(color)
         if ref then
             figure.colorspace = ref
-            data.used.color = color
+            data.used.color    = color
+            data.used.colorref = ref
         end
     end
 end

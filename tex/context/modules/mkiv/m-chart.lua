@@ -864,8 +864,8 @@ local function getchart(settings,forced_x,forced_y,forced_nx,forced_ny)
     for i=1,#data do
         local cell = data[i]
         if not autofocus or autofocus[cell.name] then -- offsets probably interfere with autofocus
-            local x = cell.x
-            local y = cell.y
+            local x = cell.realx -- was bug: .x
+            local y = cell.realy -- was bug: .y
             if minx == 0 or x < minx then minx = x end
             if miny == 0 or y < miny then miny = y end
             if minx == 0 or x > maxx then maxx = x end

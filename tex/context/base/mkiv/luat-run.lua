@@ -64,8 +64,9 @@ local function stop_run()
         end
     end
     if quit then
-        if status.setexitcode then
-            status.setexitcode(1)
+        local setexitcode = lua.setexitcode or status.setexitcode
+        if setexitcode then
+            setexitcode(1)
             if type(quit) == "table" then
                 logs.newline()
                 report_tex("quitting due to: %, t",quit)

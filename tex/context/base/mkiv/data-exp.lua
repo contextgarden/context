@@ -344,9 +344,11 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
     local pattern  = tolerant and lessweird or weird
     local filelist = { }
     local noffiles = 0
-    for name in directory(full) do
+    for name, mode in directory(full) do
         if not lpegmatch(pattern,name) then
-            local mode = attributes(full..name,"mode")
+            if not mode then
+                mode = attributes(full..name,"mode")
+            end
             if mode == "file" then
                 n = n + 1
                 noffiles = noffiles + 1

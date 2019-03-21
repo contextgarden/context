@@ -14,7 +14,6 @@ local format, gsub, rep, sub, find = string.format, string.gsub, string.rep, str
 local load, dump = load, string.dump
 local tonumber, type, tostring, next, setmetatable = tonumber, type, tostring, next, setmetatable
 local unpack, concat = table.unpack, table.concat
-local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
 local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len

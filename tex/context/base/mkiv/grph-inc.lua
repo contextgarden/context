@@ -1611,15 +1611,15 @@ function includers.generic(data)
         ds.pageindex = nofimages
         local image  = wrapimage(figure)
         local pager  = new_latelua { action = updatepage, n = nofimages }
-        image.next = pager
-        pager.prev = image
-        local box  = hpack(image)
-     -- indexed[figure.index] = figure
-        box.width  = figure.width
-        box.height = figure.height
-        box.depth  = 0
+        image.next   = pager
+        pager.prev   = image
+        local box    = hpack(image)
+        box.width    = figure.width
+        box.height   = figure.height
+        box.depth    = 0
         texsetbox(nr,box)
         ds.objectnumber = figure.objnum
+     -- indexed[figure.index] = figure
         ctx_relocateexternalfigure()
     end
     return data

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/05/19 15:40:37
+-- merge date  : 03/21/19 21:39:34
 
 do -- begin closure to overcome local limits and interference
 
@@ -120,7 +120,6 @@ elseif not ffi.number then
  ffi.number=tonumber
 end
 if LUAVERSION>5.3 then
- collectgarbage("generational")
 end
 
 end -- closure
@@ -2677,39 +2676,44 @@ local reslasher=lpeg.replacer(P("\\"),"/")
 function file.reslash(str)
  return str and lpegmatch(reslasher,str)
 end
-function file.is_writable(name)
- if not name then
- elseif lfs.isdir(name) then
-  name=name.."/m_t_x_t_e_s_t.tmp"
-  local f=io.open(name,"wb")
-  if f then
-   f:close()
-   os.remove(name)
-   return true
+if lfs.isreadablefile and lfs.iswritablefile then
+ file.is_readable=lfs.isreadablefile
+ file.is_writable=lfs.iswritablefile
+else
+ function file.is_writable(name)
+  if not name then
+  elseif lfs.isdir(name) then
+   name=name.."/m_t_x_t_e_s_t.tmp"
+   local f=io.open(name,"wb")
+   if f then
+    f:close()
+    os.remove(name)
+    return true
+   end
+  elseif lfs.isfile(name) then
+   local f=io.open(name,"ab")
+   if f then
+    f:close()
+    return true
+   end
+  else
+   local f=io.open(name,"ab")
+   if f then
+    f:close()
+    os.remove(name)
+    return true
+   end
   end
- elseif lfs.isfile(name) then
-  local f=io.open(name,"ab")
-  if f then
-   f:close()
-   return true
-  end
- else
-  local f=io.open(name,"ab")
-  if f then
-   f:close()
-   os.remove(name)
-   return true
-  end
- end
- return false
-end
-local readable=P("r")*Cc(true)
-function file.is_readable(name)
- if name then
-  local a=attributes(name)
-  return a and lpegmatch(readable,a.permissions) or false
- else
   return false
+ end
+ local readable=P("r")*Cc(true)
+ function file.is_readable(name)
+  if name then
+   local a=attributes(name)
+   return a and lpegmatch(readable,a.permissions) or false
+  else
+   return false
+  end
  end
 end
 file.isreadable=file.is_readable 
@@ -3069,7 +3073,6 @@ local strings=utilities.strings
 local format,gsub,rep,sub,find=string.format,string.gsub,string.rep,string.sub,string.find
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
-local unpack,concat=table.unpack,table.concat
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
@@ -4099,6 +4102,32 @@ if bit32 then
   local b=char(n%256)
   f:write(b,a)
  end
+ function files.writecardinal4(f,n)
+  local a=char(n%256)
+  n=rshift(n,8)
+  local b=char(n%256)
+  n=rshift(n,8)
+  local c=char(n%256)
+  n=rshift(n,8)
+  local d=char(n%256)
+  f:write(d,c,b,a)
+ end
+ function files.writecardinal2le(f,n)
+  local a=char(n%256)
+  n=rshift(n,8)
+  local b=char(n%256)
+  f:write(a,b)
+ end
+ function files.writecardinal4le(f,n)
+  local a=char(n%256)
+  n=rshift(n,8)
+  local b=char(n%256)
+  n=rshift(n,8)
+  local c=char(n%256)
+  n=rshift(n,8)
+  local d=char(n%256)
+  f:write(a,b,c,d)
+ end
 else
  local floor=math.floor
  function files.writecardinal2(f,n)
@@ -4107,16 +4136,32 @@ else
   local b=char(n%256)
   f:write(b,a)
  end
-end
-function files.writecardinal4(f,n)
- local a=char(n%256)
- n=rshift(n,8)
- local b=char(n%256)
- n=rshift(n,8)
- local c=char(n%256)
- n=rshift(n,8)
- local d=char(n%256)
- f:write(d,c,b,a)
+ function files.writecardinal4(f,n)
+  local a=char(n%256)
+  n=floor(n/256)
+  local b=char(n%256)
+  n=floor(n/256)
+  local c=char(n%256)
+  n=floor(n/256)
+  local d=char(n%256)
+  f:write(d,c,b,a)
+ end
+ function files.writecardinal2le(f,n)
+  local a=char(n%256)
+  n=floor(n/256)
+  local b=char(n%256)
+  f:write(a,b)
+ end
+ function files.writecardinal4le(f,n)
+  local a=char(n%256)
+  n=floor(n/256)
+  local b=char(n%256)
+  n=floor(n/256)
+  local c=char(n%256)
+  n=floor(n/256)
+  local d=char(n%256)
+  f:write(a,b,c,d)
+ end
 end
 function files.writestring(f,s)
  f:write(char(byte(s,1,#s)))
@@ -4129,10 +4174,18 @@ if fio and fio.readcardinal1 then
  files.readcardinal2=fio.readcardinal2
  files.readcardinal3=fio.readcardinal3
  files.readcardinal4=fio.readcardinal4
+ files.readcardinal1le=fio.readcardinal1le or files.readcardinal1le
+ files.readcardinal2le=fio.readcardinal2le or files.readcardinal2le
+ files.readcardinal3le=fio.readcardinal3le or files.readcardinal3le
+ files.readcardinal4le=fio.readcardinal4le or files.readcardinal4le
  files.readinteger1=fio.readinteger1
  files.readinteger2=fio.readinteger2
  files.readinteger3=fio.readinteger3
  files.readinteger4=fio.readinteger4
+ files.readinteger1le=fio.readinteger1le or files.readinteger1le
+ files.readinteger2le=fio.readinteger2le or files.readinteger2le
+ files.readinteger3le=fio.readinteger3le or files.readinteger3le
+ files.readinteger4le=fio.readinteger4le or files.readinteger4le
  files.readfixed2=fio.readfixed2
  files.readfixed4=fio.readfixed4
  files.read2dot14=fio.read2dot14
@@ -4152,6 +4205,24 @@ if fio and fio.readcardinal1 then
  function files.skiplong(f,n)
   skipposition(f,4*(n or 1))
  end
+end
+if fio and fio.writecardinal1 then
+ files.writecardinal1=fio.writecardinal1
+ files.writecardinal2=fio.writecardinal2
+ files.writecardinal3=fio.writecardinal3
+ files.writecardinal4=fio.writecardinal4
+ files.writecardinal1le=fio.writecardinal1le
+ files.writecardinal2le=fio.writecardinal2le
+ files.writecardinal3le=fio.writecardinal3le
+ files.writecardinal4le=fio.writecardinal4le
+ files.writeinteger1=fio.writeinteger1 or fio.writecardinal1
+ files.writeinteger2=fio.writeinteger2 or fio.writecardinal2
+ files.writeinteger3=fio.writeinteger3 or fio.writecardinal3
+ files.writeinteger4=fio.writeinteger4 or fio.writecardinal4
+ files.writeinteger1le=files.writeinteger1le or fio.writecardinal1le
+ files.writeinteger2le=files.writeinteger2le or fio.writecardinal2le
+ files.writeinteger3le=files.writeinteger3le or fio.writecardinal3le
+ files.writeinteger4le=files.writeinteger4le or fio.writecardinal4le
 end
 if fio and fio.readcardinaltable then
  files.readcardinaltable=fio.readcardinaltable
@@ -4737,67 +4808,8 @@ end
 nodes.nodecodes=nodecodes
 nodes.glyphcodes=glyphcodes
 nodes.disccodes=disccodes
-local flush_node=node.flush_node
-local remove_node=node.remove
-local traverse_id=node.traverse_id
 nodes.handlers.protectglyphs=node.protect_glyphs   
-nodes.handlers.unprotectglyphs=node.unprotect_glyphs 
-function nodes.remove(head,current,free_too)
-   local t=current
-   head,current=remove_node(head,current)
-   if t then
-  if free_too then
-   flush_node(t)
-   t=nil
-  else
-   t.next,t.prev=nil,nil
-  end
-   end
-   return head,current,t
-end
-function nodes.delete(head,current)
- return nodes.remove(head,current,true)
-end
-local getfield=node.getfield
-local setfield=node.setfield
-nodes.getfield=getfield
-nodes.setfield=setfield
-nodes.getattr=getfield
-nodes.setattr=setfield
-nodes.tostring=node.tostring or tostring
-nodes.copy=node.copy
-nodes.copy_node=node.copy
-nodes.copy_list=node.copy_list
-nodes.delete=node.delete
-nodes.dimensions=node.dimensions
-nodes.end_of_math=node.end_of_math
-nodes.flush_list=node.flush_list
-nodes.flush_node=node.flush_node
-nodes.flush=node.flush_node
-nodes.free=node.free
-nodes.insert_after=node.insert_after
-nodes.insert_before=node.insert_before
-nodes.hpack=node.hpack
-nodes.new=node.new
-nodes.tail=node.tail
-nodes.traverse=node.traverse
-nodes.traverse_id=node.traverse_id
-nodes.slide=node.slide
-nodes.vpack=node.vpack
-nodes.first_glyph=node.first_glyph
-nodes.has_glyph=node.has_glyph or node.first_glyph
-nodes.current_attr=node.current_attr
-nodes.has_field=node.has_field
-nodes.last_node=node.last_node
-nodes.usedlist=node.usedlist
-nodes.protrusion_skippable=node.protrusion_skippable
-nodes.write=node.write
-nodes.has_attribute=node.has_attribute
-nodes.set_attribute=node.set_attribute
-nodes.unset_attribute=node.unset_attribute
-nodes.protect_glyphs=node.protect_glyphs
-nodes.unprotect_glyphs=node.unprotect_glyphs
-nodes.mlist_to_hlist=node.mlist_to_hlist
+nodes.handlers.unprotectglyphs=node.unprotect_glyphs
 local direct=node.direct
 local nuts={}
 nodes.nuts=nuts
@@ -30089,7 +30101,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
 end
 function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replacement)
  local stop=getnext(start)
- local font=getfont(start)
+ local font=getfont(start) 
  local last=start
  while stop do
   local char=ischar(stop,font)
@@ -33242,7 +33254,7 @@ local function check_afm(specification,fullname)
  if foundname=="" then
   foundname=fonts.names.getfilename(fullname,"afm") or ""
  end
- if foundname=="" and afm.autoprefixed then
+ if fullname and foundname=="" and afm.autoprefixed then
   local encoding,shortname=match(fullname,"^(.-)%-(.*)$") 
   if encoding and shortname and fonts.encodings.known[encoding] then
    shortname=findbinfile(shortname,'afm') or "" 

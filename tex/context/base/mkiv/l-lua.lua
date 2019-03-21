@@ -250,5 +250,6 @@ end
 -- if not loaded["socket.url"]  then loaded["socket.url"]  = socket.url  end
 
 if LUAVERSION > 5.3 then
-    collectgarbage("generational")
+ -- collectgarbage("collect")
+ -- collectgarbage("generational") -- crashes on unix
 end

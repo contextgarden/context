@@ -116,10 +116,10 @@
                     -- forced
                 end
                 context.page()
-                context.setupfootertexts( -- return true: we need to keep this entry
-                    { function() context.detokenize(pattern and filename or file.basename(filename)) return true end },
-                    { function() context.pagenumber() return true end }
-                )
+--                context.setupfootertexts( -- return true: we need to keep this entry
+--                    { function() context.detokenize(pattern and filename or file.basename(filename)) return true end },
+--                    { function() context.pagenumber() return true end }
+--                )
                 if scite then
                     context.scitefile { filename } -- here { }
                 elseif pretty then

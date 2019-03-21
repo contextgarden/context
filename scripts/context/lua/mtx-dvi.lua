@@ -83,7 +83,7 @@ local f_postamble_end   = formatters["postamble end    offset=%s version=%s"]
 local f_define_font     = formatters["define font      k=%i checksum=%i scale=%p designsize=%p area=%s name=%s"]
 
 local currentdepth = 0
-local usedprinter  = texio and texio.write_ln or print
+local usedprinter  = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 local handler = { } for i=0,255 do handler[i] = false end
 
@@ -379,7 +379,7 @@ function scripts.dvi.list(filename,printer)
         local position = 0
         f:seek("set",position)
         local format = formatters["%0" .. #tostring(filesize) .. "i :  %s"]
-        local flush  = printer or (texio and texio.write_ln) or print
+        local flush  = printer or usedprinter
         usedprinter = function(str)
             flush(format(position,str))
             position = f:seek()

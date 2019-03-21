@@ -180,7 +180,6 @@ end
 -- experiment: for now not in not in export mode!
 
 local flatten = languages.flatten
-local getlist = nodes.getlist
 
 nodes.handlers.flattenline = flatten
 

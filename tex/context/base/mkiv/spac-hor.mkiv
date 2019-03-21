@@ -717,7 +717,7 @@
    \global\s_spac_narrower_left  \zeropoint
    \global\s_spac_narrower_right \zeropoint
    \global\s_spac_narrower_middle\zeropoint
-   \edef\askednarrower{#1}
+   \edef\askednarrower{#1}%
    \ifx\askednarrower\v!reverse
      \ifconditional\s_spac_narrower_last_swap
        \leftskip \s_spac_narrower_right_last

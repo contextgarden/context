@@ -627,12 +627,11 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,groupcode,line)
-    local nuthead = tonut(head)
-    local nutline = tonut(line)
+-- we operate exclusively on nuts
 
+return function(nuthead,groupcode,nutline)
 %actions%
-    return tonode(nuthead)
+    return nuthead
 end
 ]],
 

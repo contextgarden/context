@@ -204,7 +204,6 @@ end
 function margins.save(t)
     setmetatable(t,defaults)
     local content  = takebox(t.number)
-    setprop(content,"specialcontent","margindata")
     local location = t.location
     local category = t.category
     local inline   = t.inline
@@ -220,6 +219,7 @@ function margins.save(t)
         report_margindata("ignoring empty margin data %a",location or "unknown")
         return
     end
+    setprop(content,"specialcontent","margindata")
     local store
     if inline then
         store = inlinestore

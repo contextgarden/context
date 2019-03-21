@@ -3,8 +3,8 @@
 
 local type, tostring = type, tostring
 
-local mime        = require("mime.core")
-local ltn12       = ltn12 or require("ltn12")
+local mime  = mime  or package.loaded.mime  or require("mime.core")
+local ltn12 = ltn12 or package.loaded.ltn12 or require("ltn12")
 
 local filtercycle = ltn12.filter.cycle
 

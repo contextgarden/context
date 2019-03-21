@@ -127,7 +127,7 @@ function scripts.bibtex.search(files,pattern,list)
             utilities.formatters.formatcolumns(result)
             logs.newline()
             for i=1,#result do
-                texio.write_nl(result[i])
+                logs.writer(result[i])
             end
             logs.newline()
         else

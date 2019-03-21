@@ -515,15 +515,20 @@ local function cleanname(name)
 end
 
 local function cleanfilename(fullname,defaultsuffix)
-    local path, name, suffix = splitname(fullname)
-    name = gsub(lower(name),"[^%a%d]","")
-    if suffix and suffix ~= "" then
-        return name .. ".".. suffix
-    elseif defaultsuffix and defaultsuffix ~= "" then
-        return name .. ".".. defaultsuffix
-    else
-        return name
+    if fullname then
+        local path, name, suffix = splitname(fullname)
+        if name then
+            name = gsub(lower(name),"[^%a%d]","")
+            if suffix and suffix ~= "" then
+                return name .. ".".. suffix
+            elseif defaultsuffix and defaultsuffix ~= "" then
+                return name .. ".".. defaultsuffix
+            else
+                return name
+            end
+        end
     end
+    return "badfontname"
 end
 
 local sorter = function(a,b)

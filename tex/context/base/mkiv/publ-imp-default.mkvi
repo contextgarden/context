@@ -342,23 +342,35 @@
   [it]
   [\s!default:and=e,
    \s!default:number={nº},
-   \s!default:edition={ed.}, % edizione
+   \s!default:edition={ed.},      % edizione
    \s!default:Editor={A cura di},
    \s!default:Editors={A cura di},
-   \s!default:Volume={Vol.},  % Volume
-   \s!default:Volumes={Vol.}, % Volumi
+   \s!default:Volume={Vol.},      % Volume
+   \s!default:Volumes={Vol.},     % Volumi
    \s!default:others={et al.}]
 
 \setupbtxlabeltext
   [es]
   [\s!default:and=y,
    \s!default:number={nº},
-   \s!default:edition={ed.}, % edición
-   \s!default:Editor=Editor, % Ed./Eds.
+   \s!default:edition={ed.},   % edición
+   \s!default:Editor=Editor,   % Ed./Eds.
    \s!default:Editors=Editores,
    \s!default:Volume={Vol.},   % Volumen
    \s!default:Volumes={Vols.}, % Volúmenes
    \s!default:others={et al.}]
+
+\setupbtxlabeltext
+  [sv]
+  [\s!default:and=och,
+   \s!default:number={nr.},
+   \s!default:edition={Utgåva},
+   \s!default:Editor=Redaktör, 
+   \s!default:Editors=Redaktörer,
+   \s!default:Volume=Band,
+   \s!default:Volumes=Band,
+   \s!default:others={et al.}]
+
 
 % First some helpers:
 

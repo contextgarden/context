@@ -114,7 +114,7 @@ local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog,
 -- we don't want this overhead for single messages (not that there are that
 -- many; we could have a special weak table)
 
-if runningtex then
+if runningtex and texio then
 
     if texio.setescape then
         texio.setescape(0) -- or (false)
