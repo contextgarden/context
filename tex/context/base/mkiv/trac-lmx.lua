@@ -684,9 +684,8 @@ end
 lmx.make = lmxmake
 
 function lmx.show(name,variables)
-    -- todo: pcall
     local htmfile = lmxmake(name,variables)
-    -- lmx.popupfile(htmfile)
+    lmx.popupfile(htmfile)
     return htmfile
 end
 

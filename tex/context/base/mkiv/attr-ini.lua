@@ -34,8 +34,6 @@ attributes.states     = attributes.states   or { }
 attributes.handlers   = attributes.handlers or { }
 attributes.unsetvalue = -0x7FFFFFFF
 
-local currentfont     = font.current
-
 local names           = attributes.names
 local numbers         = attributes.numbers
 local list            = attributes.list
@@ -148,7 +146,7 @@ function attributes.save(name)
     end
     store[name] = {
         attr = t,
-        font = currentfont(),
+        font = font.current(),
     }
 end
 
@@ -165,8 +163,7 @@ function attributes.restore(name)
         end
         if font then
          -- tex.font = font
-         -- context.getvalue(fonts.hashes.csnames[font])
-            currentfont(font)
+            context.getvalue(fonts.hashes.csnames[font]) -- we don't have a direct way yet (will discuss it with taco)
         end
     end
  -- store[name] = nil

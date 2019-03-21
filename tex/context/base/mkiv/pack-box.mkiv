@@ -913,15 +913,15 @@
    \scratchtopoffset   \offsetboxparameter\c!topoffset
    \scratchbottomoffset\offsetboxparameter\c!bottomoffset
    \relax % really needed
-   \ifzeropt\scratchleftoffset  \else\donetrue\fi
-   \ifzeropt\scratchrightoffset \else\donetrue\fi
-   \ifzeropt\scratchtopoffset   \else\donetrue\fi
-   \ifzeropt\scratchbottomoffset\else\donetrue\fi
+   \ifdim\scratchleftoffset  =\zeropoint\else\donetrue\fi
+   \ifdim\scratchrightoffset =\zeropoint\else\donetrue\fi
+   \ifdim\scratchtopoffset   =\zeropoint\else\donetrue\fi
+   \ifdim\scratchbottomoffset=\zeropoint\else\donetrue\fi
    \ifdone
      \edef\p_method{\offsetboxparameter\c!method}%
      \ifx\p_method\v!fixed % new
-       \ifzeropt\scratchleftoffset
-         \ifzeropt\scratchrightoffset \else
+       \ifdim\scratchleftoffset=\zeropoint
+         \ifdim\scratchrightoffset=\zeropoint \else
            \scratchxposition-\scratchrightoffset
            \scratchrightoffset\zeropoint
          \fi
@@ -929,8 +929,8 @@
          \scratchxposition\scratchleftoffset
          \scratchleftoffset\zeropoint
        \fi
-       \ifzeropt\scratchtopoffset
-         \ifzeropt\scratchbottomoffset \else
+       \ifdim\scratchtopoffset=\zeropoint
+         \ifdim\scratchbottomoffset=\zeropoint \else
            \scratchyposition-\scratchbottomoffset
            \scratchbottomoffset\zeropoint
          \fi

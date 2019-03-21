@@ -12,13 +12,12 @@ local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setme
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
-local sort, sortedhash = table.sort, table.sortedhash
+local sort = table.sort
 local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 local isboolean = string.is_boolean
 local rshift = bit32.rshift
-local osdate, ostime = os.date, os.time
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -58,7 +57,7 @@ lpdf.flags = lpdf.flags or { } -- will be filled later
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
-local trace_details    = false  trackers.register("backend.details",    function(v) trace_details    = v end)
+local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
 
 do
 
@@ -170,25 +169,23 @@ end
     local pdfgetpagereference
 
     updaters.register("backend.update.lpdf",function()
-        pdfreserveobject      = pdf.reserveobj
-        pdfimmediateobject    = pdf.immediateobj
-        pdfdeferredobject     = pdf.obj
-        pdfreferenceobject    = pdf.refobj
+        pdfreserveobject           = pdf.reserveobj
+        pdfimmediateobject         = pdf.immediateobj
+        pdfdeferredobject          = pdf.obj
+        pdfreferenceobject         = pdf.refobj
 
-        pdfgetpagereference   = pdf.getpageref
+        pdfgetpagereference        = pdf.getpageref
 
-        pdfsetpageresources   = pdf.setpageresources
-        pdfsetpageattributes  = pdf.setpageattributes
-        pdfsetpagesattributes = pdf.setpagesattributes
+        pdfsetpageresources        = pdf.setpageresources
+        pdfsetpageattributes       = pdf.setpageattributes
+        pdfsetpagesattributes      = pdf.setpagesattributes
     end)
 
 local jobpositions = job.positions
 local getpos       = jobpositions.getpos
-local getrpos      = jobpositions.getrpos
 
 jobpositions.registerhandlers {
     getpos  = pdf.getpos,
- -- getrpos = pdf.getrpos,
     gethpos = pdf.gethpos,
     getvpos = pdf.getvpos,
 }
@@ -206,6 +203,8 @@ do
     function lpdf.print(...)
         return pdfprint(...)
     end
+
+    pdfbackend.codeinjections.print = lpdf.print -- will go
 
     -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
     --     local x1 = llx * rx + lly * sy
@@ -237,7 +236,7 @@ do
     -- funny values for tx and ty
 
     function lpdf.rectangle(width,height,depth,offset)
-        local tx, ty = getpos() -- pdfgetpos, maybe some day use dir here
+        local tx, ty = getpos()
         if offset then
             tx     = tx     -   offset
             ty     = ty     +   offset
@@ -867,21 +866,18 @@ end
 
 local nofpages = 0
 
-local texgetcount = tex.getcount
-
-function lpdf.pagereference(n,complete) -- true | false | nil | n [true,false]
+function lpdf.pagereference(n)
     if nofpages == 0 then
         nofpages = structures.pages.nofpages
         if nofpages == 0 then
             nofpages = 1
         end
     end
-    if n == true or not n then
-        complete = n
-        n = texgetcount("realpageno")
+    if n > nofpages then
+        return pdfgetpagereference(nofpages) -- or 1, could be configureable
+    else
+        return pdfgetpagereference(n)
     end
-    local r = n > nofpages and pdfgetpagereference(nofpages) or pdfgetpagereference(n)
-    return complete and pdfreference(r) or r
 end
 
 function lpdf.nofpages()
@@ -911,7 +907,7 @@ function lpdf.flushobject(name,data)
         local named = names[name]
         if named then
             if not trace_objects then
-            elseif trace_details then
+            elseif trace_detail then
                 report_objects("flushing data to reserved object with name %a, data: %S",name,data)
             else
                 report_objects("flushing data to reserved object with name %a",name)
@@ -919,7 +915,7 @@ function lpdf.flushobject(name,data)
             return pdfimmediateobject(named,tostring(data))
         else
             if not trace_objects then
-            elseif trace_details then
+            elseif trace_detail then
                 report_objects("flushing data to reserved object with number %s, data: %S",name,data)
             else
                 report_objects("flushing data to reserved object with number %s",name)
@@ -927,7 +923,7 @@ function lpdf.flushobject(name,data)
             return pdfimmediateobject(name,tostring(data))
         end
     else
-        if trace_objects and trace_details then
+        if trace_objects and trace_detail then
             report_objects("flushing data: %S",name)
         end
         return pdfimmediateobject(tostring(name))
@@ -1253,47 +1249,32 @@ do
     -- todo: share them
     -- todo: force when not yet set
 
-    local f_font = formatters["%s%d"]
-
     function lpdf.collectedresources(options)
         local ExtGState  = d_extgstates  and next(d_extgstates ) and p_extgstates
         local ColorSpace = d_colorspaces and next(d_colorspaces) and p_colorspaces
         local Pattern    = d_patterns    and next(d_patterns   ) and p_patterns
         local Shading    = d_shades      and next(d_shades     ) and p_shades
-        local Font
         if options and options.patterns == false then
             Pattern = nil
         end
-        local fonts = options and options.fonts
-        if fonts and next(fonts) then
-            local pdfgetfontobjnumber = lpdf.getfontobjnumber
-            if pdfgetfontobjnumber then
-                local prefix = options.fontprefix or "F"
-                Font = pdfdictionary { }
-                for k, v in sortedhash(fonts) do
-                    Font[f_font(prefix,v)] = pdfreference(pdfgetfontobjnumber(k))
-                end
-            end
-        end
-        if ExtGState or ColorSpace or Pattern or Shading or Fonts then
+        if ExtGState or ColorSpace or Pattern or Shading then
             local collected = pdfdictionary {
                 ExtGState  = ExtGState,
                 ColorSpace = ColorSpace,
                 Pattern    = Pattern,
                 Shading    = Shading,
-                Font       = Font,
             }
             if options and options.serialize == false then
                 return collected
             else
                 return collected()
             end
-        elseif options and options.notempty then
-            return nil
-        elseif options and options.serialize == false then
-            return pdfdictionary { }
         else
-            return ""
+            if options and options.serialize == false then
+                return pdfdictionary { }
+            else
+                return ""
+            end
         end
     end
 
@@ -1402,13 +1383,8 @@ do
     lpdf.settime(tonumber(resolvers.variable("start_time")) or tonumber(resolvers.variable("SOURCE_DATE_EPOCH"))) -- bah
 
     function lpdf.pdftimestamp(str)
-        local t = type(str)
-        if t == "string" then
-            local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
-            return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
-        else
-            return osdate("D:%Y%m%d%H%M%S",t == "number" and str or ostime()) -- maybe "!D..." : universal time
-        end
+        local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
+        return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
     end
 
     function lpdf.id(date)
@@ -1502,23 +1478,41 @@ end
 
 do
 
-    local f_actual_text_p     = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
-    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e     = "EMC ET"
-    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e_not = "EMC"
-    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
+    local f_actual_text_one       = formatters["BT /Span << /ActualText <feff%04x> >> BDC %s EMC ET"]
+    local f_actual_text_two       = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC %s EMC ET"]
+    local f_actual_text_one_b     = formatters["BT /Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b     = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC"]
+    local f_actual_text_b         = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
+    local s_actual_text_e         = "EMC ET"
+    local f_actual_text_b_not     = formatters["/Span << /ActualText <feff%s> >> BDC"]
+    local f_actual_text_one_b_not = formatters["/Span << /ActualText <feff%04x> >> BDC"]
+    local f_actual_text_two_b_not = formatters["/Span << /ActualText <feff%04x%04x> >> BDC"]
+    local s_actual_text_e_not     = "EMC"
+    local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
-    local tounicode = fonts.mappings.tounicode
+
+    -- todo: use tounicode from the font mapper
+
+    -- floor(unicode/1024) => rshift(unicode,10) -- better for 5.3
 
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
-        return f_actual_text_p(type(unicode) == "string" and unicode or tounicode(unicode),pdfcode)
+        if unicode < 0x10000 then
+            return f_actual_text_one(unicode,pdfcode)
+        else
+            return f_actual_text_two(rshift(unicode,10)+0xD800,unicode%1024+0xDC00,pdfcode)
+        end
     end
 
     function codeinjections.startunicodetoactualtext(unicode)
-        return f_actual_text_b(type(unicode) == "string" and unicode or tounicode(unicode))
+        if type(unicode) == "string" then
+            return f_actual_text_b(unicode)
+        elseif unicode < 0x10000 then
+            return f_actual_text_one_b(unicode)
+        else
+            return f_actual_text_two_b(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
+        end
     end
 
     function codeinjections.stopunicodetoactualtext()
@@ -1526,7 +1520,13 @@ do
     end
 
     function codeinjections.startunicodetoactualtextdirect(unicode)
-        return f_actual_text_b_not(type(unicode) == "string" and unicode or tounicode(unicode))
+        if type(unicode) == "string" then
+            return f_actual_text_b_not(unicode)
+        elseif unicode < 0x10000 then
+            return f_actual_text_one_b_not(unicode)
+        else
+            return f_actual_text_two_b_not(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
+        end
     end
 
     function codeinjections.stopunicodetoactualtextdirect()
@@ -1689,3 +1689,5 @@ end
 if environment.arguments.nocompression then
     lpdf.setcompression(0,0,true)
 end
+
+

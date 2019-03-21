@@ -1,6 +1,6 @@
 .TH "mtx-package" "1" "01-01-2019" "version 0.10" "Distribution Related Goodies"
 .SH NAME
- mtx-package - Distribution Related Goodies
+.B mtx-package
 .SH SYNOPSIS
 .B mtxrun --script package [
 .I OPTIONS ...

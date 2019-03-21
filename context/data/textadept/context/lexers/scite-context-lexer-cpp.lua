@@ -28,7 +28,6 @@ local keywords = { -- copied from cpp.lua
     "restrict",
     -- hm
     "_Bool", "_Complex", "_Pragma", "_Imaginary",
-    "boolean",
     -- c++.
     "catch", "class", "const_cast", "delete", "dynamic_cast", "explicit",
     "export", "friend", "mutable", "namespace", "new", "operator", "private",
@@ -45,10 +44,6 @@ local datatypes = { -- copied from cpp.lua
 local macros = { -- copied from cpp.lua
     "define", "elif", "else", "endif", "error", "if", "ifdef", "ifndef", "import",
     "include", "line", "pragma", "undef", "using", "warning"
-}
-
-local luatexs = {
-    "word", "halfword", "quarterword", "scaled", "pointer", "glueratio",
 }
 
 local space         = patterns.space -- S(" \n\r\t\f\v")
@@ -95,12 +90,10 @@ local operator      = token("special", S("+-*/%^!=<>;:{}[]().&|?~"))
 local p_keywords    = exact_match(keywords)
 local p_datatypes   = exact_match(datatypes)
 local p_macros      = exact_match(macros)
-local p_luatexs     = exact_match(luatexs)
 
 local keyword       = token("keyword", p_keywords)
 local datatype      = token("keyword", p_datatypes)
 local identifier    = token("default", validword)
-local luatex        = token("command", p_luatexs)
 
 local macro         = token("data", #P("#") * startofline * P("#") * S("\t ")^0 * p_macros)
 
@@ -108,7 +101,6 @@ cpplexer._rules = {
     { "whitespace",   spacing      },
     { "keyword",      keyword      },
     { "type",         datatype     },
-    { "luatex",       luatex       },
     { "identifier",   identifier   },
     { "string",       shortstring  },
     { "longcomment",  longcomment  },
@@ -129,7 +121,6 @@ if web then
         { "whitespace",   spacing      },
         { "keyword",      keyword      },
         { "type",         datatype     },
-        { "luatex",       luatex       },
         { "identifier",   identifier   },
         { "string",       shortstring  },
         { "longcomment",  longcomment  },
@@ -149,7 +140,6 @@ else
         { "whitespace",   spacing      },
         { "keyword",      keyword      },
         { "type",         datatype     },
-        { "luatex",       luatex       },
         { "identifier",   identifier   },
         { "string",       shortstring  },
         { "longcomment",  longcomment  },

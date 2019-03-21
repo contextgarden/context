@@ -7,8 +7,9 @@ if not modules then modules = { } end modules ['node-par'] = {
     comment   = "a translation of the built in parbuilder, initial convertsin by Taco Hoekwater",
 }
 
--- todo: not yet in sync with the experimental variant on my disk
 -- todo: remove nest_stack from linebreak.w
+-- todo: use ex field as signal (index in ?)
+-- todo: attr driven unknown/on/off
 -- todo: permit global steps i.e. using an attribute that sets min/max/step and overloads the font parameters
 -- todo: split the three passes into three functions
 -- todo: simplify the direction stack, no copy needed
@@ -18,8 +19,10 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: maybe split expansion code paths
 -- todo: fix line numbers (cur_list.pg_field needed)
 -- todo: check and improve protrusion
--- todo: I need to check this with the latest patches to the tex kernel
+-- todo: arabic etc (we could use pretty large scales there) .. marks and cursive
+-- todo: see: we need to check this with the latest patches to the tex kernel
 -- todo: adapt math glue spacing to new model (left/right)
+
 -- todo: optimize a bit more (less par.*)
 
 --[[
@@ -129,11 +132,56 @@ if not modules then modules = { } end modules ['node-par'] = {
     A next iteration will provide plug-ins and more control. I will also explore the possibility to avoid the
     redundant hpack calculations (easier now, although I've only done some quick and dirty experiments.)
 
-    The code has been adapted to the more reasonable and simplified direction model.
-
 ]]--
 
-local tonumber, unpack = tonumber, unpack
+--[[--
+
+#define dir_TLT 0
+#define dir_TRT 1
+#define dir_LTL 2
+#define dir_RTT 3
+
+#define dir_TLT_or_TRT(A) (A < 2)
+#define dir_LTL_or_RTT(A) (A > 1)
+
+#define textdir_parallel(A,B) (\
+(dir_TLT_or_TRT(A) and dir_TLT_or_TRT(B)) or \
+(dir_LTL_or_RTT(A) and dir_LTL_or_RTT(B))\
+)
+
+#define pardir_parallel(A,B) (\
+(dir_TLT_or_TRT(A) and dir_TLT_or_TRT(B)) or \
+(dir_LTL_or_RTT(A) and dir_LTL_or_RTT(B))\
+)
+
+#define pardir_opposite(A,B) (\
+(A == dir_LTL and B == dir_RTT) or \
+(A == dir_RTT and B == dir_LTL)\
+)
+
+#define textdir_opposite(A,B) (\
+(A == dir_TLT and B == dir_TRT) or \
+(A == dir_TRT and B == dir_TLT)\
+)
+
+#define glyphdir_opposite(A,B) 0
+
+#define pardir_equal(A,B) (\
+(dir_TLT_or_TRT(A) and dir_TLT_or_TRT(B)) or \
+(A == dir_LTL and B == dir_LTL) or \
+(A == dir_RTT and B == dir_RTT)\
+)
+
+#define textdir_equal(A,B) (\
+(A == dir_TLT and B == dir_TLT) or \
+(A == dir_TRT and B == dir_TRT) or \
+(A == dir_LTL and dir_LTL_or_RTT(B)) or \
+(A == dir_RTT and dir_LTL_or_RTT(B))\
+)
+
+--]]--
+
+local tonumber = tonumber
 local utfchar = utf.char
 local write, write_nl = texio.write, texio.write_nl
 local sub, formatters = string.sub, string.formatters
@@ -151,11 +199,8 @@ local report_parbuilders  = logs.reporter("nodes","parbuilders")
 ----- report_hpackers     = logs.reporter("nodes","hpackers")
 
 local calculate_badness   = tex.badness
------ texnest             = tex.nest
+local texnest             = tex.nest
 local texlists            = tex.lists
-local texget              = tex.get
-local texset              = tex.set
-local texgetglue          = tex.getglue
 
 -- (t == 0 and 0) or (s <= 0 and 10000) or calculate_badness(t,s)
 
@@ -214,12 +259,7 @@ local getwidth             = nuts.getwidth
 local getheight            = nuts.getheight
 local getdepth             = nuts.getdepth
 local getdata              = nuts.getdata
-local getreplace           = nuts.getreplace
-local setreplace           = nuts.setreplace
-local getpost              = nuts.getpost
-local setpost              = nuts.setpost
-local getpre               = nuts.getpre
-local setpre               = nuts.setpre
+local getwhd               = nuts.getwhd
 
 local isglyph              = nuts.isglyph
 
@@ -239,6 +279,7 @@ local setshift             = nuts.setshift
 local setwidth             = nuts.setwidth
 local setexpansion         = nuts.setexpansion
 
+local slide_node_list      = nuts.slide -- get rid of this, probably ok > 78.2
 local find_tail            = nuts.tail
 local copy_node            = nuts.copy
 local flush_node           = nuts.flush
@@ -250,7 +291,6 @@ local insert_node_after    = nuts.insert_after
 local insert_node_before   = nuts.insert_before
 local is_zero_glue         = nuts.is_zero_glue
 local is_skipable          = nuts.protrusion_skippable
-local setattributelist     = nuts.setattributelist
 
 local nodepool             = nuts.pool
 
@@ -280,7 +320,6 @@ local unset_code           = nodecodes.unset
 local marginkern_code      = nodecodes.marginkern
 local dir_code             = nodecodes.dir
 local boundary_code        = nodecodes.boundary
-local localpar_code        = nodecodes.localpar
 
 local protrusionboundary_code = boundarycodes.protrusion
 
@@ -513,10 +552,12 @@ local function kern_stretch_shrink(p,d)
                 local stretch = data.stretch
                 local shrink  = data.shrink
                 if stretch ~= 0 then
-                    stretch = data.factor * d * (stretch - 1)
+                 -- stretch = data.factor * (d *  stretch - d)
+                    stretch = data.factor *  d * (stretch - 1)
                 end
                 if shrink ~= 0 then
-                    shrink = data.factor  * d * (shrink  - 1)
+                 -- shrink = data.factor * (d *  shrink - d)
+                    shrink = data.factor *  d * (shrink - 1)
                 end
                 return stretch, shrink
             end
@@ -744,7 +785,12 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
     while s do
         local char, id = isglyph(s)
         if char then
-            size = size + getwidth(s)
+            local wd, ht, dp = getwhd(s)
+            if is_rotated(line_break_dir) then
+                size = size + ht + dp
+            else
+                size = size + wd
+            end
             if checked_expansion then
                 local data = checked_expansion[id] -- id == font
                 if data then
@@ -756,7 +802,12 @@ local function add_to_width(line_break_dir,checked_expansion,s) -- split into tw
                 end
             end
         elseif id == hlist_code or id == vlist_code then
-            size = size + getwidth(s)
+            local wd, ht, dp = getwhd(s)
+            if textdir_parallel(getdirection(s),line_break_dir) then
+                size = size + wd
+            else
+                size = size + ht + dp
+            end
         elseif id == kern_code then
             local kern = getkern(s)
             if kern ~= 0 then
@@ -859,21 +910,20 @@ do
     local function append_to_vlist(par, b)
         local prev_depth = par.prev_depth
         local head_field = par.head_field
-        local tail_field = head_field and find_tail(head_field)
+        local tail_field = head_field and slide_node_list(head_field) -- todo: find_tail
         local is_hlist   = getid(b) == hlist_code
+     -- if prev_depth > par.ignored_dimen then
         if prev_depth > ignore_depth then
             if is_hlist then
-                -- we can fetch the skips values earlier if needed
-                local width, stretch, shrink, stretch_order, shrink_order = unpack(par.baseline_skip)
+                local width, stretch, shrink, stretch_order, shrink_order = getglue(par.baseline_skip)
                 local delta = width - prev_depth - getheight(b) -- deficiency of space between baselines
                 local skip = nil
                 if delta < par.line_skip_limit then
-                    width, stretch, shrink, stretch_order, shrink_order = unpack(par.lineskip)
+                    width, stretch, shrink, stretch_order, shrink_order = getglue(par.lineskip)
                     skip = new_lineskip(width, stretch, shrink, stretch_order, shrink_order)
                 else
                     skip = new_baselineskip(delta, stretch, shrink, stretch_order, shrink_order)
                 end
-                setattributelist(skip,par.head)
                 if head_field then
                     setlink(tail_field,skip)
                 else
@@ -891,14 +941,14 @@ do
         if is_hlist then
             local pd = getdepth(b)
             par.prev_depth = pd
-            texset("prevdepth",pd)
+            texnest[texnest.ptr].prevdepth = pd
         end
     end
 
     local function append_list(par, b)
         local head_field = par.head_field
         if head_field then
-            local n = find_tail(head_field)
+            local n = slide_node_list(head_field) -- todo: find_tail
             setlink(n,b)
         else
             par.head_field = b
@@ -911,18 +961,18 @@ do
 
     local function initialize_line_break(head,display)
 
-        local hang_indent    = texget("hangindent")
-        local hsize          = texget("hsize")
-        local hang_after     = texget("hangafter")
-        local par_shape_ptr  = texget("parshape")
-        local left_skip      = tonut(texget("leftskip"))  -- nodes
-        local right_skip     = tonut(texget("rightskip")) -- nodes
-        local pretolerance   = texget("pretolerance")
-        local tolerance      = texget("tolerance")
-        local adjust_spacing = texget("adjustspacing")
-        local protrude_chars = texget("protrudechars")
-        local last_line_fit  = texget("lastlinefit")
-        local par_dir        = texget("pardirection")
+        local hang_indent    = tex.hangindent or 0
+        local hsize          = tex.hsize or 0
+        local hang_after     = tex.hangafter or 0
+        local par_shape_ptr  = tex.parshape
+        local left_skip      = tonut(tex.leftskip)  -- nodes
+        local right_skip     = tonut(tex.rightskip) -- nodes
+        local pretolerance   = tex.pretolerance
+        local tolerance      = tex.tolerance
+        local adjust_spacing = tex.adjustspacing
+        local protrude_chars = tex.protrudechars
+        local last_line_fit  = tex.lastlinefit
+        local par_dir        = tex.pardirection
 
         local newhead = new_temp()
         setnext(newhead,head)
@@ -946,11 +996,11 @@ do
             pass_number                  = 0,      -- the number of passive nodes allocated on this pass
             auto_breaking                = 0,      -- make auto_breaking accessible out of line_break
 
-            active_width                 = { size = 0, normal = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0, adjust_stretch = 0, adjust_shrink = 0 },
-            break_width                  = { size = 0, normal = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0, adjust_stretch = 0, adjust_shrink = 0 },
+            active_width                 = { size = 0, stretch = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0, adjust_stretch = 0, adjust_shrink = 0 },
+            break_width                  = { size = 0, stretch = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0, adjust_stretch = 0, adjust_shrink = 0 },
             disc_width                   = { size = 0,                                                                adjust_stretch = 0, adjust_shrink = 0 },
-            fill_width                   = {           normal = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0                                        },
-            background                   = { size = 0, normal = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0                                        },
+            fill_width                   = {           stretch = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0                                        },
+            background                   = { size = 0, stretch = 0, fi = 0, fil = 0, fill = 0, filll = 0, shrink = 0                                        },
 
             hang_indent                  = hang_indent,
             hsize                        = hsize,
@@ -967,29 +1017,39 @@ do
             max_shrink_ratio             = adjust_spacing_status,
             cur_font_step                = adjust_spacing_status,
             checked_expansion            = false,
-            tracing_paragraphs           = texget("tracingparagraphs") > 0,
+            tracing_paragraphs           = tex.tracingparagraphs > 0,
 
-            emergency_stretch            = texget("emergencystretch")     or 0,
-            looseness                    = texget("looseness")            or 0,
-            line_penalty                 = texget("linepenalty")          or 0,
-            broken_penalty               = texget("brokenpenalty")        or 0,
-            inter_line_penalty           = texget("interlinepenalty")     or 0,
-            club_penalty                 = texget("clubpenalty")          or 0,
-            widow_penalty                = texget("widowpenalty")         or 0,
-            display_widow_penalty        = texget("displaywidowpenalty")  or 0,
+            emergency_stretch            = tex.emergencystretch     or 0,
+            looseness                    = tex.looseness            or 0,
+            line_penalty                 = tex.linepenalty          or 0,
+            hyphen_penalty               = tex.hyphenpenalty        or 0,
+            broken_penalty               = tex.brokenpenalty        or 0,
+            inter_line_penalty           = tex.interlinepenalty     or 0,
+            club_penalty                 = tex.clubpenalty          or 0,
+            widow_penalty                = tex.widowpenalty         or 0,
+            display_widow_penalty        = tex.displaywidowpenalty  or 0,
+            ex_hyphen_penalty            = tex.exhyphenpenalty      or 0,
 
-            adj_demerits                 = texget("adjdemerits")          or 0,
-            double_hyphen_demerits       = texget("doublehyphendemerits") or 0,
-            final_hyphen_demerits        = texget("finalhyphendemerits")  or 0,
+            adj_demerits                 = tex.adjdemerits          or 0,
+            double_hyphen_demerits       = tex.doublehyphendemerits or 0,
+            final_hyphen_demerits        = tex.finalhyphendemerits  or 0,
 
-            first_line                   = texget("prevgraf"),
-            prev_depth                   = texget("prevdepth"),
+            first_line                   = 0, -- texnest[texnest.ptr].modeline, -- 0, -- cur_list.pg_field
 
-            baseline_skip                = { texgetglue("baselineskip") },
-            lineskip                     = { texgetglue("lineskip") },
-            line_skip_limit              = texget("lineskiplimit"),
+         -- each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
+         -- each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away
+         -- first_line_height            = tex.pdffirstlineheight   or 0, -- this will go away
+         -- last_line_depth              = tex.pdflastlinedepth     or 0, -- this will go away
 
-            final_par_glue               = find_tail(head),
+         -- ignored_dimen                = tex.pdfignoreddimen      or 0,
+
+            baseline_skip                = tonut(tex.baselineskip),
+            lineskip                     = tonut(tex.lineskip),
+            line_skip_limit              = tex.lineskiplimit,
+
+            prev_depth                   = texnest[texnest.ptr].prevdepth,
+
+            final_par_glue               = slide_node_list(head), -- todo: we know tail already, slow
 
             par_break_dir                = par_dir,
             line_break_dir               = par_dir,
@@ -1183,17 +1243,21 @@ do
 
     local function post_line_break(par)
 
-        local prevgraf       = par.first_line -- or texget("prevgraf")
+        local prevgraf       = texnest[texnest.ptr].prevgraf
         local current_line   = prevgraf + 1 -- the current line number being justified
+
         local adjust_spacing = par.adjust_spacing
         local protrude_chars = par.protrude_chars
         local statistics     = par.statistics
+
+        local stack          = new_dir_stack()
+
         local leftskip       = par.used_left_skip -- used or normal ?
         local rightskip      = par.right_skip
         local parshape       = par.par_shape_ptr
-        local adapt_width    = par.adapt_width
+        ----- ignored_dimen  = par.ignored_dimen
 
-        local stack          = new_dir_stack()
+        local adapt_width    = par.adapt_width
 
         -- reverse the links of the relevant passive nodes, goto first breakpoint
 
@@ -1224,7 +1288,7 @@ do
 
             if not lastnode then
                 -- only at the end
-                lastnode = find_tail(head)
+                lastnode = slide_node_list(head) -- todo: find_tail
                 if lastnode == par.final_par_glue then
                     lineend  = lastnode
                     lastnode = getprev(lastnode)
@@ -1233,9 +1297,7 @@ do
                 local id = getid(lastnode)
                 if id == glue_code then
                     -- lastnode is normal skip
-                    local r = new_rightskip(rightskip)
-                    setattributelist(r,lastnode)
-                    lastnode   = replace_node(lastnode,r)
+                    lastnode   = replace_node(lastnode,new_rightskip(rightskip))
                     glue_break = true
                     lineend    = lastnode
                     lastnode   = getprev(lastnode)
@@ -1275,8 +1337,8 @@ do
                             report_parbuilders('unsupported disc at location %a',4)
                         end
                         setsubtype(nextlast,regulardisc_code)
-                        setreplace(nextlast,post)
-                        setpost(lastnode)
+                        setfield(nextlast,"replace",post)
+                        setfield(lastnode,"post") -- nil
                     end
                     if replace then
                         flush_node_list(replace)
@@ -1325,38 +1387,34 @@ do
             setnext(lineend)
             if not glue_break then
                 if rightskip then
-                    local r = new_rightskip(right_skip)
-                    setattributelist(r,lastnode)
-                    insert_node_after(lineend,lineend,r) -- lineend moves on as pseudo head
+                    insert_node_after(lineend,lineend,new_rightskip(right_skip)) -- lineend moves on as pseudo head
                 end
             end
             -- each time ?
-            local start = getnext(head)
+            local q = getnext(head)
             setlink(head,r)
             -- insert leftbox (if needed after parindent)
             local leftbox = current_break.passive_left_box
             if leftbox then
-                local first = getnext(start)
+                local first = getnext(q)
                 if first and current_line == (par.first_line + 1) and getid(first) == hlist_code and not getlist(first) then
-                    insert_node_after(start,start,copy_node(leftbox))
+                    insert_node_after(q,q,copy_node(leftbox))
                 else
-                    start = insert_node_before(start,start,copy_node(leftbox))
+                    q = insert_node_before(q,q,copy_node(leftbox))
                 end
             end
             if protrude_chars > 0 then
-                local p = find_protchar_left(start)
+                local p = find_protchar_left(q)
                 if p and getid(p) == glyph_code then
                     local w, last_leftmost_char = left_pw(p)
                     if last_leftmost_char and w ~= 0 then
-                        -- so we inherit attributes, start is pseudo head and moves back
-                        start = insert_node_before(start,start,new_leftmarginkern(copy_node(last_leftmost_char),-w))
+                        -- so we inherit attributes, q is pseudo head and moves back
+                        q = insert_node_before(q,q,new_leftmarginkern(copy_node(last_leftmost_char),-w))
                     end
                 end
             end
             if leftskip then
-                local l = new_leftskip(leftskip)
-                setattributelist(l,start)
-                start = insert_node_before(start,start,l)
+                q = insert_node_before(q,q,new_leftskip(leftskip))
             end
             local cur_width, cur_indent
             if current_line > par.last_special_line then
@@ -1381,9 +1439,9 @@ do
             local finished_line = nil
             if adjust_spacing > 0 then
                 statistics.nofadjustedlines = statistics.nofadjustedlines + 1
-                finished_line = xpack_nodes(start,cur_width,"cal_expand_ratio",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
+                finished_line = xpack_nodes(q,cur_width,"cal_expand_ratio",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
             else
-                finished_line = xpack_nodes(start,cur_width,"exactly",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
+                finished_line = xpack_nodes(q,cur_width,"exactly",par.par_break_dir,par.first_line,current_line) -- ,current_break.analysis)
             end
             if protrude_chars > 0 then
                 statistics.nofprotrudedlines = statistics.nofprotrudedlines + 1
@@ -1393,7 +1451,22 @@ do
             local pre_adjust_head = texlists.pre_adjust_head
             --
             setshift(finished_line,cur_indent)
-            --
+         --
+         -- -- this is gone:
+         --
+         -- if par.each_line_height ~= ignored_dimen then
+         --     setheight(finished_line,par.each_line_height)
+         -- end
+         -- if par.each_line_depth ~= ignored_dimen then
+         --     setdepth(finished_line,par.each_line_depth)
+         -- end
+         -- if par.first_line_height ~= ignored_dimen and (current_line == par.first_line + 1) then
+         --     setheight(finished_line,par.first_line_height)
+         -- end
+         -- if par.last_line_depth ~= ignored_dimen and current_line + 1 == par.best_line then
+         --     setdepth(finished_line,par.last_line_depth)
+         -- end
+         --
             if texlists.pre_adjust_head ~= pre_adjust_head then
                 append_list(par, texlists.pre_adjust_head)
                 texlists.pre_adjust_head = pre_adjust_head
@@ -1429,9 +1502,7 @@ do
                     end
                 end
                 if pen ~= 0 then
-                    local p = new_penalty(pen)
-                    setattributelist(p,par.head)
-                    append_to_vlist(par,p)
+                    append_to_vlist(par,new_penalty(pen))
                 end
             end
             current_line  = current_line + 1
@@ -1477,24 +1548,12 @@ do
      -- if current_line ~= par.best_line then
      --     report_parbuilders("line breaking")
      -- end
-        local h = par.head
-        if h then
-            if trace_basic then
-                if getnext(h) then
-                    report_parbuilders("something is left over")
-                end
-                if getid(h) ~= localpar_code then
-                    report_parbuilders("no local par node")
-                end
-            end
-            flush_node(h)
-            par.head = nil -- needs checking
-        end
+        par.head = nil -- needs checking
         current_line = current_line - 1
         if trace_basic then
             report_parbuilders("paragraph broken into %a lines",current_line)
         end
-        texset("prevgraf",current_line)
+        texnest[texnest.ptr].prevgraf  = current_line
     end
 
     local function wrap_up(par)
@@ -1521,18 +1580,10 @@ do
         end
         -- we have a bunch of glue and and temp nodes not freed
         local head = par.head
-        if head and getid(head) == temp_code then
-            local next = getnext(head)
-            par.head = next
-            if next then
-                setprev(next)
-            end
+        if getid(head) == temp_code then
+            par.head = getnext(head)
             flush_node(head)
         end
-flush_node(par.left_skip)
-flush_node(par.right_skip)
-par.left_skip  = nil
-par.right_skip = nil
         post_line_break(par)
         reset_meta(par)
         register_statistics(par)
@@ -1552,13 +1603,13 @@ par.right_skip = nil
         if prev_r == active then
             r = active.next
             if r.id == delta_code then
-                local aw = active_width.size   + r.size    active_width.size   = aw  cur_active_width.size   = aw
-                local aw = active_width.normal + r.normal  active_width.normal = aw  cur_active_width.normal = aw
-                local aw = active_width.fi     + r.fi      active_width.fi     = aw  cur_active_width.fi     = aw
-                local aw = active_width.fil    + r.fil     active_width.fil    = aw  cur_active_width.fil    = aw
-                local aw = active_width.fill   + r.fill    active_width.fill   = aw  cur_active_width.fill   = aw
-                local aw = active_width.filll  + r.filll   active_width.filll  = aw  cur_active_width.filll  = aw
-                local aw = active_width.shrink + r.shrink  active_width.shrink = aw  cur_active_width.shrink = aw
+                local aw = active_width.size    + r.size    active_width.size    = aw  cur_active_width.size    = aw
+                local aw = active_width.stretch + r.stretch active_width.stretch = aw  cur_active_width.stretch = aw
+                local aw = active_width.fi      + r.fi      active_width.fi      = aw  cur_active_width.fi      = aw
+                local aw = active_width.fil     + r.fil     active_width.fil     = aw  cur_active_width.fil     = aw
+                local aw = active_width.fill    + r.fill    active_width.fill    = aw  cur_active_width.fill    = aw
+                local aw = active_width.filll   + r.filll   active_width.filll   = aw  cur_active_width.filll   = aw
+                local aw = active_width.shrink  + r.shrink  active_width.shrink  = aw  cur_active_width.shrink  = aw
                 if checked_expansion then
                     local aw = active_width.adjust_stretch + r.adjust_stretch  active_width.adjust_stretch = aw  cur_active_width.adjust_stretch = aw
                     local aw = active_width.adjust_shrink  + r.adjust_shrink   active_width.adjust_shrink  = aw  cur_active_width.adjust_shrink  = aw
@@ -1570,13 +1621,13 @@ par.right_skip = nil
         elseif prev_r.id == delta_code then
             r = prev_r.next
             if r == active then
-                cur_active_width.size   = cur_active_width.size   - prev_r.size
-                cur_active_width.normal = cur_active_width.normal - prev_r.normal
-                cur_active_width.fi     = cur_active_width.fi     - prev_r.fi
-                cur_active_width.fil    = cur_active_width.fil    - prev_r.fil
-                cur_active_width.fill   = cur_active_width.fill   - prev_r.fill
-                cur_active_width.filll  = cur_active_width.filll  - prev_r.filll
-                cur_active_width.shrink = cur_active_width.shrink - prev_r.shrink
+                cur_active_width.size    = cur_active_width.size    - prev_r.size
+                cur_active_width.stretch = cur_active_width.stretch - prev_r.stretch
+                cur_active_width.fi      = cur_active_width.fi      - prev_r.fi
+                cur_active_width.fil     = cur_active_width.fil     - prev_r.fil
+                cur_active_width.fill    = cur_active_width.fill    - prev_r.fill
+                cur_active_width.filll   = cur_active_width.filll   - prev_r.filll
+                cur_active_width.shrink  = cur_active_width.shrink  - prev_r.shrink
                 if checked_expansion then
                     cur_active_width.adjust_stretch = cur_active_width.adjust_stretch - prev_r.adjust_stretch
                     cur_active_width.adjust_shrink  = cur_active_width.adjust_shrink  - prev_r.adjust_shrink
@@ -1586,13 +1637,13 @@ par.right_skip = nil
                 -- prev_r = nil
                 prev_r = prev_prev_r
             elseif r.id == delta_code then
-                local rn = r.size     cur_active_width.size   = cur_active_width.size   + rn  prev_r.size   = prev_r.size    + rn
-                local rn = r.normal   cur_active_width.normal = cur_active_width.normal + rn  prev_r.normal = prev_r.normal  + rn
-                local rn = r.fi       cur_active_width.fi     = cur_active_width.fi     + rn  prev_r.fi     = prev_r.fi      + rn
-                local rn = r.fil      cur_active_width.fil    = cur_active_width.fil    + rn  prev_r.fil    = prev_r.fil     + rn
-                local rn = r.fill     cur_active_width.fill   = cur_active_width.fill   + rn  prev_r.fill   = prev_r.fill    + rn
-                local rn = r.filll    cur_active_width.filll  = cur_active_width.filll  + rn  prev_r.filll  = prev_r.fill    + rn
-                local rn = r.shrink   cur_active_width.shrink = cur_active_width.shrink + rn  prev_r.shrink = prev_r.shrink  + rn
+                local rn = r.size     cur_active_width.size    = cur_active_width.size    + rn  prev_r.size    = prev_r.size    + rn
+                local rn = r.stretch  cur_active_width.stretch = cur_active_width.stretch + rn  prev_r.stretch = prev_r.stretch + rn
+                local rn = r.fi       cur_active_width.fi      = cur_active_width.fi      + rn  prev_r.fi      = prev_r.fi      + rn
+                local rn = r.fil      cur_active_width.fil     = cur_active_width.fil     + rn  prev_r.fil     = prev_r.fil     + rn
+                local rn = r.fill     cur_active_width.fill    = cur_active_width.fill    + rn  prev_r.fill    = prev_r.fill    + rn
+                local rn = r.filll    cur_active_width.filll   = cur_active_width.filll   + rn  prev_r.filll   = prev_r.fill    + rn
+                local rn = r.shrink   cur_active_width.shrink  = cur_active_width.shrink  + rn  prev_r.shrink  = prev_r.shrink  + rn
                 if checked_expansion then
                     local rn = r.adjust_stretch  cur_active_width.adjust_stretch = cur_active_width.adjust_stretch + rn  prev_r.adjust_stretch = prev_r.adjust_stretch    + rn
                     local rn = r.adjust_shrink   cur_active_width.adjust_shrink  = cur_active_width.adjust_shrink  + rn  prev_r.adjust_shrink  = prev_r.adjust_shrink     + rn
@@ -1612,7 +1663,7 @@ par.right_skip = nil
         if cur_active_width.fi ~= fill_width.fi or cur_active_width.fil ~= fill_width.fil or cur_active_width.fill ~= fill_width.fill or cur_active_width.filll ~= fill_width.filll then
             return false, 0, fit_decent_class, 0, 0
         end
-        local adjustment = active_short > 0 and cur_active_width.normal or cur_active_width.shrink
+        local adjustment = active_short > 0 and cur_active_width.stretch or cur_active_width.shrink
         if adjustment <= 0 then
             return false, 0, fit_decent_class, adjustment, 0
         end
@@ -1622,7 +1673,7 @@ par.right_skip = nil
         end
         local fit_class = fit_decent_class
         if adjustment > 0 then
-            local stretch = cur_active_width.normal
+            local stretch = cur_active_width.stretch
             if adjustment > shortfall then
                 adjustment = shortfall
             end
@@ -1705,7 +1756,7 @@ par.right_skip = nil
 
         local cur_active_width = checked_expansion and { -- distance from current active node
             size           = active_width.size,
-            normal         = active_width.normal,
+            stretch        = active_width.stretch,
             fi             = active_width.fi,
             fil            = active_width.fil,
             fill           = active_width.fill,
@@ -1715,7 +1766,7 @@ par.right_skip = nil
             adjust_shrink  = active_width.adjust_shrink,
         } or {
             size           = active_width.size,
-            normal         = active_width.normal,
+            stretch        = active_width.stretch,
             fi             = active_width.fi,
             fil            = active_width.fil,
             fill           = active_width.fill,
@@ -1726,13 +1777,13 @@ par.right_skip = nil
         while true do
             r = prev_r.next
             if r.id == delta_code then
-                cur_active_width.size   = cur_active_width.size   + r.size
-                cur_active_width.normal = cur_active_width.normal + r.normal
-                cur_active_width.fi     = cur_active_width.fi     + r.fi
-                cur_active_width.fil    = cur_active_width.fil    + r.fil
-                cur_active_width.fill   = cur_active_width.fill   + r.fill
-                cur_active_width.filll  = cur_active_width.filll  + r.filll
-                cur_active_width.shrink = cur_active_width.shrink + r.shrink
+                cur_active_width.size    = cur_active_width.size    + r.size
+                cur_active_width.stretch = cur_active_width.stretch + r.stretch
+                cur_active_width.fi      = cur_active_width.fi      + r.fi
+                cur_active_width.fil     = cur_active_width.fil     + r.fil
+                cur_active_width.fill    = cur_active_width.fill    + r.fill
+                cur_active_width.filll   = cur_active_width.filll   + r.filll
+                cur_active_width.shrink  = cur_active_width.shrink  + r.shrink
                 if checked_expansion then
                     cur_active_width.adjust_stretch = cur_active_width.adjust_stretch + r.adjust_stretch
                     cur_active_width.adjust_shrink  = cur_active_width.adjust_shrink  + r.adjust_shrink
@@ -1746,13 +1797,13 @@ par.right_skip = nil
                     if minimum_demerits < awful_badness and (old_line_number ~= par.easy_line or r == par.active) then
                         if no_break_yet then
                             no_break_yet = false
-                            break_width.size   = background.size
-                            break_width.normal = background.normal
-                            break_width.fi     = background.fi
-                            break_width.fil    = background.fil
-                            break_width.fill   = background.fill
-                            break_width.filll  = background.filll
-                            break_width.shrink = background.shrink
+                            break_width.size    = background.size
+                            break_width.stretch = background.stretch
+                            break_width.fi      = background.fi
+                            break_width.fil     = background.fil
+                            break_width.fill    = background.fill
+                            break_width.filll   = background.filll
+                            break_width.shrink  = background.shrink
                             if checked_expansion then
                                 break_width.adjust_stretch = 0
                                 break_width.adjust_shrink  = 0
@@ -1762,25 +1813,25 @@ par.right_skip = nil
                             end
                         end
                         if prev_r.id == delta_code then
-                            prev_r.size   = prev_r.size   - cur_active_width.size   + break_width.size
-                            prev_r.normal = prev_r.normal - cur_active_width.normal + break_width.normal
-                            prev_r.fi     = prev_r.fi     - cur_active_width.fi     + break_width.fi
-                            prev_r.fil    = prev_r.fil    - cur_active_width.fil    + break_width.fil
-                            prev_r.fill   = prev_r.fill   - cur_active_width.fill   + break_width.fill
-                            prev_r.filll  = prev_r.filll  - cur_active_width.filll  + break_width.filll
-                            prev_r.shrink = prev_r.shrink - cur_active_width.shrink + break_width.shrink
+                            prev_r.size    = prev_r.size    - cur_active_width.size   + break_width.size
+                            prev_r.stretch = prev_r.stretch - cur_active_width.stretc + break_width.stretch
+                            prev_r.fi      = prev_r.fi      - cur_active_width.fi     + break_width.fi
+                            prev_r.fil     = prev_r.fil     - cur_active_width.fil    + break_width.fil
+                            prev_r.fill    = prev_r.fill    - cur_active_width.fill   + break_width.fill
+                            prev_r.filll   = prev_r.filll   - cur_active_width.filll  + break_width.filll
+                            prev_r.shrink  = prev_r.shrink  - cur_active_width.shrink + break_width.shrink
                             if checked_expansion then
                                 prev_r.adjust_stretch = prev_r.adjust_stretch - cur_active_width.adjust_stretch + break_width.adjust_stretch
                                 prev_r.adjust_shrink  = prev_r.adjust_shrink  - cur_active_width.adjust_shrink  + break_width.adjust_shrink
                             end
                         elseif prev_r == par.active then
-                            active_width.size   = break_width.size
-                            active_width.normal = break_width.normal
-                            active_width.fi     = break_width.fi
-                            active_width.fil    = break_width.fil
-                            active_width.fill   = break_width.fill
-                            active_width.filll  = break_width.filll
-                            active_width.shrink = break_width.shrink
+                            active_width.size    = break_width.size
+                            active_width.stretch = break_width.stretch
+                            active_width.fi      = break_width.fi
+                            active_width.fil     = break_width.fil
+                            active_width.fill    = break_width.fill
+                            active_width.filll   = break_width.filll
+                            active_width.shrink  = break_width.shrink
                             if checked_expansion then
                                 active_width.adjust_stretch = break_width.adjust_stretch
                                 active_width.adjust_shrink  = break_width.adjust_shrink
@@ -1791,7 +1842,7 @@ par.right_skip = nil
                                 subtype        = nosubtype_code,
                                 next           = r,
                                 size           = break_width.size           - cur_active_width.size,
-                                normal         = break_width.normal         - cur_active_width.normal,
+                                stretch        = break_width.stretch        - cur_active_width.stretch,
                                 fi             = break_width.fi             - cur_active_width.fi,
                                 fil            = break_width.fil            - cur_active_width.fil,
                                 fill           = break_width.fill           - cur_active_width.fill,
@@ -1800,16 +1851,16 @@ par.right_skip = nil
                                 adjust_stretch = break_width.adjust_stretch - cur_active_width.adjust_stretch,
                                 adjust_shrink  = break_width.adjust_shrink  - cur_active_width.adjust_shrink,
                             } or {
-                                id      = delta_code,
-                                subtype = nosubtype_code,
-                                next    = r,
-                                size    = break_width.size   - cur_active_width.size,
-                                normal  = break_width.normal - cur_active_width.normal,
-                                fi      = break_width.fi     - cur_active_width.fi,
-                                fil     = break_width.fil    - cur_active_width.fil,
-                                fill    = break_width.fill   - cur_active_width.fill,
-                                filll   = break_width.filll  - cur_active_width.filll,
-                                shrink  = break_width.shrink - cur_active_width.shrink,
+                                id             = delta_code,
+                                subtype        = nosubtype_code,
+                                next           = r,
+                                size           = break_width.size           - cur_active_width.size,
+                                stretch        = break_width.stretch        - cur_active_width.stretch,
+                                fi             = break_width.fi             - cur_active_width.fi,
+                                fil            = break_width.fil            - cur_active_width.fil,
+                                fill           = break_width.fill           - cur_active_width.fill,
+                                filll          = break_width.filll          - cur_active_width.filll,
+                                shrink         = break_width.shrink         - cur_active_width.shrink,
                             }
                             prev_r.next = q
                             prev_prev_r = prev_r
@@ -1878,7 +1929,7 @@ par.right_skip = nil
                                 subtype        = nosubtype_code,
                                 next           = r,
                                 size           = cur_active_width.size           - break_width.size,
-                                normal         = cur_active_width.normal         - break_width.normal,
+                                stretch        = cur_active_width.stretch        - break_width.stretch,
                                 fi             = cur_active_width.fi             - break_width.fi,
                                 fil            = cur_active_width.fil            - break_width.fil,
                                 fill           = cur_active_width.fill           - break_width.fill,
@@ -1887,16 +1938,16 @@ par.right_skip = nil
                                 adjust_stretch = cur_active_width.adjust_stretch - break_width.adjust_stretch,
                                 adjust_shrink  = cur_active_width.adjust_shrink  - break_width.adjust_shrink,
                             } or {
-                                id      = delta_code,
-                                subtype = nosubtype_code,
-                                next    = r,
-                                size    = cur_active_width.size   - break_width.size,
-                                normal  = cur_active_width.normal - break_width.normal,
-                                fi      = cur_active_width.fi     - break_width.fi,
-                                fil     = cur_active_width.fil    - break_width.fil,
-                                fill    = cur_active_width.fill   - break_width.fill,
-                                filll   = cur_active_width.filll  - break_width.filll,
-                                shrink  = cur_active_width.shrink - break_width.shrink,
+                                id             = delta_code,
+                                subtype        = nosubtype_code,
+                                next           = r,
+                                size           = cur_active_width.size           - break_width.size,
+                                stretch        = cur_active_width.stretch        - break_width.stretch,
+                                fi             = cur_active_width.fi             - break_width.fi,
+                                fil            = cur_active_width.fil            - break_width.fil,
+                                fill           = cur_active_width.fill           - break_width.fill,
+                                filll          = cur_active_width.filll          - break_width.filll,
+                                shrink         = cur_active_width.shrink         - break_width.shrink,
                             }
                          -- q.next = r -- already done
                             prev_r.next = q
@@ -1955,8 +2006,8 @@ par.right_skip = nil
                     local id = getid(l)
                     if id == glyph_code then
                         -- ok ?
-                    elseif id == disc_code and getpost(l) then
-                        l = getpost(l) -- TODO: first char could be a disc
+                    elseif id == disc_code and getfield(l,"post") then
+                        l = getfield(l,"post") -- TODO: first char could be a disc
                     else
                         l = find_protchar_left(l)
                     end
@@ -2017,7 +2068,7 @@ par.right_skip = nil
                             shortfall = 0
                         end
                     else
-                        local stretch = cur_active_width.normal
+                        local stretch = cur_active_width.stretch
                         if shortfall > 7230584 and stretch < 1663497 then
                             b = infinite_badness
                             fit_class = fit_very_loose_class
@@ -2050,7 +2101,7 @@ par.right_skip = nil
                      -- g = 0
                         shortfall = 0
                     elseif shortfall > 0 then
-                        g = cur_active_width.normal
+                        g = cur_active_width.stretch
                     elseif shortfall < 0 then
                         g = cur_active_width.shrink
                     else
@@ -2141,6 +2192,7 @@ par.right_skip = nil
         if trace_basic then
             report_parbuilders("starting at %a",head)
         end
+
         local par = initialize_line_break(head,d)
 
         local checked_expansion  = par.checked_expansion
@@ -2173,13 +2225,13 @@ par.right_skip = nil
                 active_short   = 0,
                 active_glue    = 0,
             }
-            active_width.size   = background.size
-            active_width.normal = background.normal
-            active_width.fi     = background.fi
-            active_width.fil    = background.fil
-            active_width.fill   = background.fill
-            active_width.filll  = background.filll
-            active_width.shrink = background.shrink
+            active_width.size           = background.size
+            active_width.stretch        = background.stretch
+            active_width.fi             = background.fi
+            active_width.fil            = background.fil
+            active_width.fill           = background.fill
+            active_width.filll          = background.filll
+            active_width.shrink         = background.shrink
 
             if checked_expansion then
                 active_width.adjust_stretch = 0
@@ -2236,7 +2288,12 @@ par.right_skip = nil
             while current and p_active ~= n_active do
                 local char, id = isglyph(current)
                 if char then
-                    active_width.size = active_width.size + getwidth(current)
+                    local wd, ht, dp = getwhd(current)
+                    if is_rotated(par.line_break_dir) then
+                        active_width.size = active_width.size + ht + dp
+                    else
+                        active_width.size = active_width.size + wd
+                    end
                     if checked_expansion then
                         local font = id -- == font
                         local data = checked_expansion[font]
@@ -2255,8 +2312,14 @@ par.right_skip = nil
                         end
                     end
                 elseif id == hlist_code or id == vlist_code then
-                    active_width.size = active_width.size + getwidth(current)
+                    local wd, ht, dp = getwhd(current)
+                    if textdir_parallel(getdirection(current),par.line_break_dir) then
+                        active_width.size = active_width.size + wd
+                    else
+                        active_width.size = active_width.size + ht + dp
+                    end
                 elseif id == glue_code then
+    --                 if par.auto_breaking then
                     if auto_breaking then
                         local prev_p = getprev(current)
                         if prev_p and prev_p ~= temp_head then
@@ -2283,7 +2346,10 @@ par.right_skip = nil
                     if subtype ~= seconddisc_code then
                         local line_break_dir = par.line_break_dir
                         if second_pass or subtype <= automaticdisc_code then
-                            local actual_pen = getpenalty(current)
+                            local actual_pen = subtype == automaticdisc_code and par.ex_hyphen_penalty or par.hyphen_penalty
+                            -- 0.81 :
+                            -- local actual_pen = getpenalty(current)
+                            --
                             local pre, post, replace = getdisc(current)
                             if not pre then    --  trivial pre-break
                                 disc_width.size = 0
@@ -2311,7 +2377,7 @@ par.right_skip = nil
                                     if getid(cur_p_next) ~= disc_code or getsubtype(cur_p_next) ~= seconddisc_code then
                                         report_parbuilders("unsupported disc at location %a",1)
                                     else
-                                        local pre = getpre(cur_p_next)
+                                        local pre = getfield(cur_p_next,"pre")
                                         if pre then
                                             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,pre)
                                             disc_width.size = disc_width.size + size
@@ -2354,36 +2420,43 @@ par.right_skip = nil
                     end
                 elseif id == kern_code then
                     local s = getsubtype(current)
-                    local kern = getkern(current)
                     if s == userkern_code or s == italickern_code then
                         local v = getnext(current)
+                   --   if par.auto_breaking and getid(v) == glue_code then
                         if auto_breaking and getid(v) == glue_code then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                         end
                         local active_width = par.active_width
-                        active_width.size = active_width.size + kern
-                    elseif kern ~= 0 then
-                        active_width.size = active_width.size + kern
-                        if checked_expansion and expand_kerns and s == fontkern_code then
-                            local stretch, shrink = kern_stretch_shrink(current,kern)
-                            if expand_kerns == "stretch" then
-                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
-                            elseif expand_kerns == "shrink" then
-                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
-                            else
-                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
-                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                        active_width.size = active_width.size + getkern(current)
+                    else
+                        local kern = getkern(current)
+                        if kern ~= 0 then
+                            active_width.size = active_width.size + kern
+                            if checked_expansion and expand_kerns and getsubtype(current) == fontkern_code then
+                                local stretch, shrink = kern_stretch_shrink(current,kern)
+                                if expand_kerns == "stretch" then
+                                    active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                                elseif expand_kerns == "shrink" then
+                                    active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                                else
+                                    active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                                    active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                                end
                             end
                         end
                     end
                 elseif id == math_code then
+    --                 par.auto_breaking = getsubtype(current) == endmath_code
                     auto_breaking = getsubtype(current) == endmath_code
                     local v = getnext(current)
+    --                 if par.auto_breaking and getid(v) == glue_code then
                     if auto_breaking and getid(v) == glue_code then
                         p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                     end
                     local active_width = par.active_width
-                    active_width.size = active_width.size + getkern(current) + getwidth(current)
+                    active_width.size = active_width.size + getkern(current) -- surround
+                    -- new in luatex
+                    + getwidth(current)
                 elseif id == rule_code then
                     active_width.size = active_width.size + getwidth(current)
                 elseif id == penalty_code then
@@ -2460,8 +2533,8 @@ par.right_skip = nil
                 if tracing_paragraphs then
                     diagnostics.current_pass(par,"emergencypass")
                 end
-                par.background.normal = par.background.normal + par.emergency_stretch
-                par.final_pass        = true
+                par.background.stretch = par.background.stretch + par.emergency_stretch
+                par.final_pass         = true
             end
         end
         return wrap_up(par)
@@ -2474,7 +2547,7 @@ end
 do
 
     local function write_esc(cs)
-        local esc = texget("escapechar")
+        local esc = tex.escapechar
         if esc then
             write("log",utfchar(esc),cs)
         else
@@ -2822,7 +2895,7 @@ do
 
         local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
 
-        direction               = direction or texget("textdir")
+        direction               = direction or tex.textdir
 
         local line              = 0
 
@@ -2842,8 +2915,8 @@ do
 
         local adjust_head       = texlists.adjust_head
         local pre_adjust_head   = texlists.pre_adjust_head
-        local adjust_tail       = adjust_head and find_tail(adjust_head)
-        local pre_adjust_tail   = pre_adjust_head and find_tail(pre_adjust_head)
+        local adjust_tail       = adjust_head and slide_node_list(adjust_head) -- todo: find_tail
+        local pre_adjust_tail   = pre_adjust_head and slide_node_list(pre_adjust_head) -- todo: find_tail
 
         new_dir_stack(hpack_dir)
 
@@ -2908,7 +2981,7 @@ do
                     local subtype = getsubtype(current)
                     if subtype ~= seconddisc_code then
                         -- todo : local stretch, shrink = char_stretch_shrink(s)
-                        local replace = getreplace(current)
+                        local replace = getfield(current,"replace")
                         if replace then
                             process(replace)
                         end
@@ -2949,7 +3022,9 @@ do
                         depth = dp
                     end
                 elseif id == math_code then
-                    natural = natural + getkern(current) + getwidth(current)
+                    natural = natural + getkern(current) -- surround
+                    -- new in luatex
+                    + getwidth(current)
                 elseif id == unset_code then
                     local wd, ht, dp = getwhd(current)
                     local sh = getshift(current)
@@ -2981,7 +3056,7 @@ do
                     else
                         adjust_head = list
                     end
-                    adjust_tail = find_tail(list)
+                    adjust_tail = slide_node_list(list) -- find_tail(list)
                 elseif id == dir_code then
                     hpack_dir = checked_line_dir(stack,current) or hpack_dir
                 elseif id == marginkern_code then
@@ -3069,7 +3144,7 @@ do
                 -- todo
             elseif order == 0 then -- and getlist(hlist) then
                 last_badness = calculate_badness(delta,total_stretch[0])
-                if last_badness > texget("hbadness") then
+                if last_badness > tex.hbadness then
                     if last_badness > 100 then
                         diagnostics.underfull_hbox(hlist,line,last_badness)
                     else
@@ -3127,16 +3202,16 @@ do
                 last_badness = 1000000
                 setfield(hlist,"glue_set",1)
                 local fuzz = - delta - total_shrink[0]
-                local hfuzz = texget("hfuzz")
-                if fuzz > hfuzz or texget("hbadness") < 100 then
-                    local overfullrule = texget("overfullrule")
+                local hfuzz = tex.hfuzz
+                if fuzz > hfuzz or tex.hbadness < 100 then
+                    local overfullrule = tex.overfullrule
                     if fuzz > hfuzz and overfullrule > 0 then
                         -- weird, is always called and no rules shows up
-                        setnext(find_tail(list),new_rule(overfullrule,nil,nil,getdirection(hlist)))
+                        setnext(slide_node_list(list),new_rule(overfullrule,nil,nil,getdirection(hlist))) -- todo: find_tail
                     end
                     diagnostics.overfull_hbox(hlist,line,-delta)
                 end
-            elseif order == 0 and getlist(hlist) and last_badness > texget("hbadness") then
+            elseif order == 0 and getlist(hlist) and last_badness > tex.hbadness then
                 diagnostics.bad_hbox(hlist,line,last_badness)
             end
         end

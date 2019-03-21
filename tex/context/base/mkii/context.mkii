@@ -20,7 +20,7 @@
 %D your styles an modules.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.11.14 17:07}
+\edef\contextversion{2019.03.21 21:39}
 
 %D For those who want to use this:
 
@@ -34,7 +34,10 @@
 
 \ifx\normalinput\undefined \let\normalinput\input \fi
 
+\def\loadcorefile#1{\normalinput#1\relax}
 \def\loadmarkfile#1{\normalinput#1.\mksuffix\relax}
+\def\loadmkiifile#1{\normalinput#1\relax}
+\def\loadmkivfile#1{}
 
 %D First we load the system modules. These implement a lot of
 %D manipulation macros. The first one loads \PLAIN\ \TEX, as

@@ -444,10 +444,9 @@ function constructors.scale(tfmdata,specification)
  -- boundarychar       = 65536, -- there is now a string 'right_boundary'
  -- false_boundarychar = 65536, -- produces invalid tfm in luatex
     --
-    targetproperties.language   = properties.language or "dflt" -- inherited
-    targetproperties.script     = properties.script   or "dflt" -- inherited
-    targetproperties.mode       = properties.mode     or "base" -- inherited
-    targetproperties.method     = properties.method
+    targetproperties.language = properties.language or "dflt" -- inherited
+    targetproperties.script   = properties.script   or "dflt" -- inherited
+    targetproperties.mode     = properties.mode     or "base" -- inherited
     --
     local askedscaledpoints   = scaledpoints
     local scaledpoints, delta = constructors.calculatescale(tfmdata,scaledpoints,nil,specification) -- no shortcut, dan be redefined
@@ -466,7 +465,6 @@ function constructors.scale(tfmdata,specification)
     target.size          = scaledpoints
     --
     target.encodingbytes = properties.encodingbytes or 1
-    target.subfont       = properties.subfont
     target.embedding     = properties.embedding or "subset"
     target.tounicode     = 1
     target.cidinfo       = properties.cidinfo
@@ -597,6 +595,7 @@ function constructors.scale(tfmdata,specification)
         targetparameters.descender = delta * descender
     end
     --
+-- inspect(targetparameters)
     constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --
     local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
@@ -984,15 +983,15 @@ function constructors.finalize(tfmdata)
     end
     --
     if not parameters.slantfactor then
-        parameters.slantfactor = (tfmdata.slant or 0)/1000
+        parameters.slantfactor = tfmdata.slant or 0
     end
     --
     if not parameters.extendfactor then
-        parameters.extendfactor = (tfmdata.extend or 1000)/1000
+        parameters.extendfactor = tfmdata.extend or 0
     end
     --
     if not parameters.squeezefactor then
-        parameters.squeezefactor = (tfmdata.squeeze or 1000)/1000
+        parameters.squeezefactor = tfmdata.squeeze or 0
     end
     --
     local designsize = parameters.designsize
@@ -1028,14 +1027,13 @@ function constructors.finalize(tfmdata)
         properties.virtualized = tfmdata.type == "virtual"
     end
     --
-    properties.fontname      = properties.fontname or tfmdata.fontname
-    properties.filename      = properties.filename or tfmdata.filename
-    properties.fullname      = properties.fullname or tfmdata.fullname
-    properties.name          = properties.name     or tfmdata.name
-    properties.psname        = properties.psname   or tfmdata.psname
+    properties.fontname      = tfmdata.fontname
+    properties.filename      = tfmdata.filename
+    properties.fullname      = tfmdata.fullname
+    properties.name          = tfmdata.name
+    properties.psname        = tfmdata.psname
     --
     properties.encodingbytes = tfmdata.encodingbytes or 1
-    properties.subfont       = tfmdata.subfont       or nil
     properties.embedding     = tfmdata.embedding     or "subset"
     properties.tounicode     = tfmdata.tounicode     or 1
     properties.cidinfo       = tfmdata.cidinfo       or nil
@@ -1069,7 +1067,6 @@ function constructors.finalize(tfmdata)
     tfmdata.psname           = nil
     --
     tfmdata.encodingbytes    = nil
-    tfmdata.subfont          = nil
     tfmdata.embedding        = nil
     tfmdata.tounicode        = nil
     tfmdata.cidinfo          = nil

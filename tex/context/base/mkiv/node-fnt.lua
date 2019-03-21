@@ -43,6 +43,7 @@ local handlers          = nodes.handlers
 
 local nuts              = nodes.nuts
 
+local getattr           = nuts.getattr
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getdisc           = nuts.getdisc
@@ -50,9 +51,7 @@ local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getboth           = nuts.getboth
 local getdata           = nuts.getdata
-local getglyphdata      = nuts.getglyphdata
 ----- getdisc           = nuts.getdisc
-
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
 local setnext           = nuts.setnext
@@ -180,7 +179,7 @@ local function start_trace(head)
         local char, id = isglyph(n)
         if char then
             local font = id
-            local attr = getglyphdata(n) or 0
+            local attr = getattr(n,0) or 0
             report_fonts("font %03i, dynamic %03i, glyph %C",font,attr,char)
         elseif id == disc_code then
             report_fonts("[disc] %s",nodes.listtoutf(n,true,false,n))
@@ -210,12 +209,12 @@ do
 
     local usedfonts
     local attrfonts
-    local basefonts  -- could be reused
+    local basefonts
     local basefont
     local prevfont
     local prevattr
     local variants
-    local redundant  -- could be reused
+    local redundant
     local firstnone
     local lastfont
     local lastproc
@@ -317,8 +316,8 @@ do
         -- metafun manual (with some 2500 single char lists) the difference is just noise.
 
         for n, char, font in nextchar, head do
-         -- local attr = (none and prevattr) or getglyphdata(n) or 0 -- zero attribute is reserved for fonts in context
-            local attr = getglyphdata(n) or 0 -- zero attribute is reserved for fonts in context
+         -- local attr = (none and prevattr) or getattr(n,0) or 0 -- zero attribute is reserved for fonts in context
+            local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
             if font ~= prevfont or attr ~= prevattr then
                 prevfont = font
                 prevattr = attr
@@ -441,7 +440,7 @@ do
                     firstnone = nil
                     basefont  = nil
                     for n, char, font in nextchar, r do
-                        local attr = getglyphdata(n) or 0 -- zero attribute is reserved for fonts in context
+                        local attr = getattr(n) or 0 -- zero attribute is reserved for fonts in context
                         if font ~= prevfont or attr ~= prevattr then
                             prevfont = font
                             prevattr = attr

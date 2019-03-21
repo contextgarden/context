@@ -17,26 +17,6 @@ return {
         "drawoptionsfactor",
         "dq", "sq",
         "crossingscale", "crossingoption",
-        "contextlmtxmode",
-        --
-        -- for the moment we put these here as they need to stand out
-        --
-        "getparameters",
-        "presetparameters",
-        "hasparameter",
-        "hasoption",
-        "getparameter",
-        "getparameterdefault",
-        "getparametercount",
-        "getmaxparametercount",
-        "getparameterpath",
-        "getparameterpen",
-        "getparametertext",
-     -- "getparameteroption",
-        "applyparameters",
-        "pushparameters",
-        "popparameters",
-        "definecolor",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",
@@ -85,7 +65,7 @@ return {
         "withmask", "bitmapimage",
         "colordecimals", "ddecimal", "dddecimal", "ddddecimal", "colordecimalslist",
         "textext", "thetextext", "rawtextext", "textextoffset", "texbox", "thetexbox", "rawtexbox", "istextext",
-        "notcached", "keepcached",
+        "notcached",
         "verbatim",
         "thelabel", "label",
         "autoalign",
@@ -156,7 +136,7 @@ return {
         "passvariable", "passarrayvariable", "tostring", "topair", "format", "formatted", "quotation", "quote",
         "startpassingvariable", "stoppassingvariable",
         --
-        "eofill", "eoclip", "nofill", "dofill", "fillup", "eofillup", "nodraw", "dodraw",
+        "eofill", "eoclip", "nofill", "fillup", "eofillup",
         "area",
         --
         "addbackground",
@@ -185,8 +165,6 @@ return {
         --
         "inpath", "pointof", "leftof", "rightof",
         --
-        "utflen", "utfsub",
-        --
         "newhash", "disposehash", "inhash", "tohash",
         --
         "isarray", "prefix", "isobject",
@@ -194,7 +172,5 @@ return {
         "comment", "report", "lua", "mp", "MP", "luacall",
         --
         "mirrored", "mirroredabout",
-        --
-        "scriptindex",
     },
 }

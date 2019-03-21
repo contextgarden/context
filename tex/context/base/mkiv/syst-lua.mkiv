@@ -24,32 +24,36 @@
 %D {\expanded} primitive were mentioned in talks.} trip. For now I don't really see
 %D other useful applications.
 
-\def\expandeddoifelse#1#2%
-  {\immediateassignment\edef\m_syst_string_one{#1}%
-   \immediateassignment\edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+\ifdefined\immediateassignment
 
-\def\expandeddoif#1#2%
-  {\immediateassignment\edef\m_syst_string_one{#1}%
-   \immediateassignment\edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+    \def\expandeddoif#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
 
-\def\expandeddoifnot#1#2%
-  {\immediateassignment\edef\m_syst_string_one{#1}%
-   \immediateassignment\edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+    \def\expandeddoifnot#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \def\expandeddoifelse#1#2%
+      {\immediateassignment\edef\m_syst_string_one{#1}%
+       \immediateassignment\edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+\fi
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
@@ -60,24 +64,35 @@
 \def\expdoifcommonelse\expdoifelsecommon
 \def\expdoifinsetelse \expdoifelseinset
 
-%D We define these here, just in case. This permits \typefile {self} otherwise
-%D nested b|/|e sep problems.
+% we define these here, just in case ...
 
-\def\luastringsep{===}
+\def\luastringsep{===} % this permits \typefile{self} otherwise nested b/e sep problems
 
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
 \unexpanded\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
 
-%D We can omit the tex.ctxcatcodes here as nowadays we seldom change the regime at
-%D the \TEX\ end:
+% A handy helper:
 
-%def\luaexpr#1{\ctxlua{context  (tostring(#1))}}   % more efficient:
+% \def\luaexpr#1{\ctxlua{context(tostring(#1))}} % more efficient:
+
+% We can omit the tex.ctxcatcodes here as nowadays we seldom
+% change the regime at the \TEX\ end:
+
 \def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
 
-%D But as we only use write 16 we could as well do all in \LUA\ and ignore the rest.
-%D Okay, we still can do writes here but only when not blocked.
+% helpers:
+
+\def\ui_fo  #1{#1}
+\def\ui_go  #1{}
+\def\ui_ft#1#2{#1}
+\def\ui_st#1#2{#2}
+
+
+%D But as we only use write 16 we could as well do all in \LUA\
+%D and ignore the rest. Okay, we still can do writes here but only
+%D when not blocked.
 
 \let\syst_write_execute\clf_execute % always {...}
 

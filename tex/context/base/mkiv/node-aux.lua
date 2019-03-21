@@ -21,7 +21,6 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
-local localpar_code      = nodecodes.localpar
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -35,7 +34,6 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getboth            = nuts.getboth
-local getprev            = nuts.getprev
 local getcomponents      = nuts.getcomponents
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
@@ -51,6 +49,8 @@ local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
+----- traverse_nodes     = nuts.traverse
+----- traverse_id        = nuts.traverse_id
 local nextnode           = nuts.traversers.node
 local nextglyph          = nuts.traversers.glyph
 local flush_node         = nuts.flush
@@ -59,6 +59,7 @@ local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
+----- copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
 local getbox             = nuts.getbox
 local count              = nuts.count
@@ -72,7 +73,6 @@ local unsetvalue         = attributes.unsetvalue
 local current_font       = font.current
 
 local texsetbox          = tex.setbox
-local texnest            = tex.nest
 
 local report_error       = logs.reporter("node-aux:error")
 
@@ -380,6 +380,25 @@ function nodes.rehpack(n,...)
     rehpack(tonut(n),...)
 end
 
+-- I have no use for this yet:
+--
+-- \skip0=10pt plus 2pt minus 2pt
+-- \cldcontext{"\letterpercent p",tex.stretch_amount(tex.skip[0],1000)} -- 14.30887pt
+--
+-- local gluespec_code = nodes.nodecodes.gluespec
+--
+-- function tex.badness_to_ratio(badness)
+--     return (badness/100)^(1/3)
+-- end
+--
+-- function tex.stretch_amount(skip,badness) -- node no nut
+--     if skip.id == gluespec_code then
+--         return skip.width + (badness and (badness/100)^(1/3) or 1) * skip.stretch
+--     else
+--         return 0
+--     end
+-- end
+
 -- nodemode helper: the next and prev pointers are untouched
 
 function nuts.copy_no_components(g,copyinjection)
@@ -472,14 +491,3 @@ end
 --         end
 --     end
 -- end
-
-function nuts.setparproperty(action,...)
-    local tail = tonut(texnest[texnest.ptr].tail)
-    while tail do
-        if getid(tail) == localpar_code then
-            return action(tail,...)
-        else
-            tail = getprev(tail)
-        end
-    end
-end

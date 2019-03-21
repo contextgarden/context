@@ -22,10 +22,9 @@ local otf                 = fonts.handlers.otf
 local registerotffeature  = otf.features.register
 local setmetatableindex   = table.setmetatableindex
 
-local fonthelpers         = fonts.helpers
-local checkmerge          = fonthelpers.checkmerge
-local checkflags          = fonthelpers.checkflags
-local checksteps          = fonthelpers.checksteps
+local checkmerge          = fonts.helpers.checkmerge
+local checkflags          = fonts.helpers.checkflags
+local checksteps          = fonts.helpers.checksteps
 
 local normalized = {
     substitution      = "substitution",
@@ -168,7 +167,6 @@ local function addfeature(data,feature,specifications)
     local done         = 0
     local skip         = 0
     local aglunicodes  = false
-    local privateslot  = fonthelpers.privateslot
 
     local specifications = validspecification(specifications,feature)
     if not specifications then
@@ -195,13 +193,6 @@ local function addfeature(data,feature,specifications)
         if utflen(code) == 1 then
             u = utfbyte(code)
             if u then
-                return u
-            end
-        end
-        if privateslot then
-            u = privateslot(code) -- no creation !
-            if u then
-             -- unicodes[code] = u
                 return u
             end
         end
@@ -238,7 +229,7 @@ local function addfeature(data,feature,specifications)
                     replacement = replacement[1]
                 end
                 replacement = tounicode(replacement)
-                if replacement and (nocheck or descriptions[replacement]) then
+                if replacement and descriptions[replacement] then
                     cover(coverage,unicode,replacement)
                     done = done + 1
                 else
@@ -629,6 +620,7 @@ local function addfeature(data,feature,specifications)
             local featuretype   = normalized[specification.type or "substitution"] or "substitution"
             local featureflags  = specification.flags or noflags
             local nocheck       = specification.nocheck
+            local futuresteps   = specification.futuresteps
             local featureorder  = specification.order or { feature }
             local featurechain  = (featuretype == "chainsubstitution" or featuretype == "chainposition") and 1 or 0
             local nofsteps      = 0

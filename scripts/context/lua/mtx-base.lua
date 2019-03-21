@@ -76,6 +76,14 @@ elseif environment.arguments["find-path"] then
     resolvers.load()
     local path = resolvers.findpath(environment.files[1], fileformat)
     print(path) -- quite basic, wil become function in logs
+elseif environment.arguments["run"] then
+    resolvers.load("nofiles") -- ! no need for loading databases
+    trackers.enable("resolvers.locating")
+    environment.run_format(environment.files[1] or "",environment.files[2] or "",environment.files[3] or "")
+elseif environment.arguments["fmt"] then
+    resolvers.load("nofiles") -- ! no need for loading databases
+    trackers.enable("resolvers.locating")
+    environment.run_format(environment.arguments["fmt"], environment.files[1] or "",environment.files[2] or "")
 elseif environment.arguments["expand-braces"] then
     resolvers.load("nofiles")
     resolvers.dowithfilesandreport(resolvers.expandbraces, environment.files)

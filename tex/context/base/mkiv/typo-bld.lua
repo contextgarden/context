@@ -36,11 +36,6 @@ local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
 local texlists           = tex.lists
 
-local texget             = tex.get
-local texset             = tex.set
-
-local texgetdimen        = tex.getdimen
-
 local nodes              = nodes
 local nodeidstostring    = nodes.idstostring
 local nodepool           = nodes.pool
@@ -48,12 +43,7 @@ local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
 local insert_node_before = nodes.insert_before
 local hpack_node         = nodes.hpack
-
-local nuts               = nodes.nuts
-local tonode             = nodes.tonode
-local tonut              = nodes.tonut
-local count_nodes        = nuts.countall
-local getattr            = nuts.getattr
+local count_nodes        = nodes.countall
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -124,7 +114,7 @@ function constructors.handler(head,followed_by_display)
     if type(head) == "boolean" then
         return head
     else
-        local attribute = getattr(head,a_parbuilder) -- or mainconstructor
+        local attribute = head[a_parbuilder] -- or mainconstructor
         if attribute then
             local method = names[attribute]
             if method then
@@ -153,11 +143,11 @@ function parbuilders.constructors.methods.oneline(head,followed_by_display)
     -- when needed we will turn this into a helper
     local t = texnest[texnest.ptr]
     local h = hpack_node(head)
-    local d = texget("baselineskip",false) - t.prevdepth - h.height
+    local d = tex.baselineskip.width - t.prevdepth - h.height
     t.prevdepth = h.depth
     t.prevgraf  = 1
-    if d < texget("lineskiplimit") then
-        return insert_node_before(h,h,new_lineskip(texget("lineskip",false))) -- no stretch etc
+    if d < tex.lineskiplimit then
+        return insert_node_before(h,h,new_lineskip(tex.lineskip))
     else
         return insert_node_before(h,h,new_baselineskip(d))
     end
@@ -177,9 +167,7 @@ local function processor(head,followed_by_display)
     -- todo: not again in otr so we need to flag
     if enabled then
         starttiming(parbuilders)
-        head = tonut(head)
-        head = actions(head,followed_by_display)
-        head = tonode(head)
+        local head = actions(head,followed_by_display)
         stoptiming(parbuilders)
         return head
     else
@@ -207,7 +195,6 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
-        head = tonut(head)
         if trace_vbox_builder then
             local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -216,7 +203,6 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
         else
             head, done = vboxactions(head,groupcode)
         end
-        head = tonode(head)
         stoptiming(builders)
     end
     return head, done
@@ -230,11 +216,13 @@ local pageactions = nodes.tasks.actions("mvlbuilders")
 
 local function report(groupcode,head)
     report_page_builder("trigger: %s",groupcode)
-    report_page_builder("  vsize    : %p",texget("vsize"))
-    report_page_builder("  pagegoal : %p",texget("pagegoal"))
-    report_page_builder("  pagetotal: %p",texget("pagetotal"))
+    report_page_builder("  vsize    : %p",tex.vsize)
+    report_page_builder("  pagegoal : %p",tex.pagegoal)
+    report_page_builder("  pagetotal: %p",tex.pagetotal)
     report_page_builder("  list     : %s",head and nodeidstostring(head) or "<empty>")
 end
+
+-- use tex.[sg]etlist
 
 -- check why box is called before after_linebreak .. maybe make categories and
 -- call 'm less
@@ -255,7 +243,7 @@ function builders.buildpage_filter(groupcode)
         head, done = pageactions(head,groupcode)
         stoptiming(builders)
      -- -- doesn't work here (not passed on?)
-     -- texset("pagegoal,texget("vsize") - texgetdimen("d_page_floats_inserted_top") - texgetdimen("d_page_floats_inserted_bottom")
+     -- tex.pagegoal = tex.vsize - tex.dimen.d_page_floats_inserted_top - tex.dimen.d_page_floats_inserted_bottom
         texlists.contrib_head = head or nil -- needs checking
      -- tex.setlist("contrib_head",head,head and nodes.tail(head))
         return done and head or true -- no return value needed
@@ -377,3 +365,34 @@ trackers.register("builders.hpack.overflow",function(v)
     show = v
     registercallback("hpack_quality",(report or show) and hpack_quality or nil,"check hpack quality")
 end)
+
+-- local ignoredepth = - 65536000
+--
+-- registercallback(
+--     "append_to_vlist_filter",
+--     function(box,location,prevdepth,mirrored),
+--         if prevdepth > ignoredepth then
+--             local b = tex.baselineskip
+--             local d = b.width - prevdepth
+--             local g = nil
+--             if mirrored then
+--                 d = d - box.depth
+--             else
+--                 d = d - box.height
+--             end
+--             if d < tex.lineskiplimit then
+--                 g = nodes.pool.glue()
+--                 g.spec = tex.lineskip
+--             else
+--                 g = nodes.pool.baselineskip(d)
+--             end
+--             g.next = box
+--             box.prev = g
+--             return g, mirrored and box.height or box.depth
+--         else
+--             return box, mirrored and box.height or box.depth
+--         end
+--     end,
+--     "experimental prevdepth checking"
+-- )
+

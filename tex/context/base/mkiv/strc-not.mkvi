@@ -943,22 +943,11 @@
 \letvalue{\??notepenalty\v!verystrict}\notepenaltyverystrict
 \letvalue{\??notepenalty             }\notepenaltytolerant
 
-% \def\strc_notes_set_width
-%   {\edef\p_width{\noteparameter\c!width}%
-%    \ifx\p_width\empty
-%      \setnoteparameter\c!width{\hsize}%
-%    \fi}
-
-\setupnotes
-  [\c!width=\v!auto]
-
 \def\strc_notes_set_width
   {\edef\p_width{\noteparameter\c!width}%
-   \ifx\p_width\v!auto
-     \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
-   \else\ifx\p_width\empty
+   \ifx\p_width\empty
      \setnoteparameter\c!width{\hsize}%
-   \fi\fi}
+   \fi}
 
 \appendtoks
     \strc_notes_set_width
@@ -1399,11 +1388,6 @@
     \pickupattributes
 \to \everyinsidenoteinsert
 
-%D Nasty, the might be more:
-
-\appendtoks \strc_itemgroups_push \to \everybeforenoteinsert
-\appendtoks \strc_itemgroups_pop  \to \everyafternoteinsert
-
 % maybe but better use [scope=local] here
 %
 % \appendtoks
@@ -1474,7 +1458,7 @@
            \c!strut=\v!no,
            \c!offset=\v!overlay]%
         \inheritednoteframed
-          {\ifzeropt\dp\scratchbox                  % this hack is needed because \vadjust
+          {\ifdim\dp\scratchbox=\zeropoint          % this hack is needed because \vadjust
              \hpack{\lower\strutdp\box\scratchbox}% % in margin number placement
            \else                                    % hides the (always) present depth
              \box\scratchbox

@@ -26,7 +26,6 @@ local helpinfo = [[
     <flag name="goodies" value="string"><short>extra binaries (like scite and texworks)</short></flag>
     <flag name="install"><short>install context</short></flag>
     <flag name="update"><short>update context</short></flag>
-    <flag name="erase"><short>wipe the cache</short></flag>
     <flag name="identify"><short>create list of files</short></flag>
    </subcategory>
   </category>
@@ -91,39 +90,34 @@ local platforms = {
     --
     ["linux-armhf"]    = "linux-armhf",
     --
-    ["openbsd"]        = "openbsd6.6",
-    ["openbsd-i386"]   = "openbsd6.6",
-    ["openbsd-amd64"]  = "openbsd6.6-amd64",
-    --
     ["freebsd"]        = "freebsd",
-    ["freebsd-i386"]   = "freebsd",
+    --
     ["freebsd-amd64"]  = "freebsd-amd64",
     --
- -- ["kfreebsd"]       = "kfreebsd-i386",
- -- ["kfreebsd-i386"]  = "kfreebsd-i386",
- -- ["kfreebsd-amd64"] = "kfreebsd-amd64",
+    ["kfreebsd"]       = "kfreebsd-i386",
+    ["kfreebsd-i386"]  = "kfreebsd-i386",
     --
- -- ["linux-ppc"]      = "linux-ppc",
- -- ["ppc"]            = "linux-ppc",
+    ["kfreebsd-amd64"] = "kfreebsd-amd64",
     --
- -- ["osx"]            = "osx-intel",
- -- ["macosx"]         = "osx-intel",
- -- ["osx-intel"]      = "osx-intel",
- -- ["osxintel"]       = "osx-intel",
+    ["linux-ppc"]      = "linux-ppc",
+    ["ppc"]            = "linux-ppc",
     --
- -- ["osx-ppc"]        = "osx-ppc",
- -- ["osx-powerpc"]    = "osx-ppc",
- -- ["osxppc"]         = "osx-ppc",
- -- ["osxpowerpc"]     = "osx-ppc",
+    ["osx"]            = "osx-intel",
+    ["macosx"]         = "osx-intel",
+    ["osx-intel"]      = "osx-intel",
+    ["osxintel"]       = "osx-intel",
     --
-    ["macosx"]         = "osx-64",
-    ["osx"]            = "osx-64",
+    ["osx-ppc"]        = "osx-ppc",
+    ["osx-powerpc"]    = "osx-ppc",
+    ["osxppc"]         = "osx-ppc",
+    ["osxpowerpc"]     = "osx-ppc",
+    --
     ["osx-64"]         = "osx-64",
     --
- -- ["solaris-intel"]  = "solaris-intel",
+    ["solaris-intel"]  = "solaris-intel",
     --
- -- ["solaris-sparc"]  = "solaris-sparc",
- -- ["solaris"]        = "solaris-sparc",
+    ["solaris-sparc"]  = "solaris-sparc",
+    ["solaris"]        = "solaris-sparc",
     --
     ["unknown"]        = "unknown",
 }
@@ -132,8 +126,6 @@ function install.identify()
 
     -- We have to be in "...../tex" where subdirectories are prefixed with
     -- "texmf". We strip the "tex/texm*/" from the name in the list.
-
-    local hashdata = sha2 and sha2.HASH256 or md5.hex
 
     local function collect(root,tree)
 
@@ -149,12 +141,12 @@ function install.identify()
             local total   = 0
 
             for i=1,#files do
-                local name  = files[i]
-                local size  = filesize(name)
-                local base  = gsub(name,pattern,"")
-                local stamp = hashdata(io.loaddata(name))
-                details[i]  = { base, size, stamp }
-                total       = total + size
+                local name = files[i]
+                local size = filesize(name)
+                local base = gsub(name,pattern,"")
+                local stamp = md5.hex(io.loaddata(name))
+                details[i] = { base, size, stamp }
+                total = total + size
             end
             report("%-20s : %4i files, %3.0f MB",tree,#files,total/(1000*1000))
 
@@ -172,24 +164,6 @@ function install.identify()
         end
     end
 
-    savetable("./tex/status.tma",{
-        name    = "context",
-        version = "lmtx",
-        date    = os.date("%Y-%m-%d"),
-    })
-
-end
-
-local function disclaimer()
-    report("ConTeXt LMTX with LuaMetaTeX is still experimental and when you get a crash this")
-    report("can be due to a mismatch between Lua bytecode and the engine. In that case you can")
-    report("try the following:")
-    report("")
-    report("  - wipe the texmf-cache directory")
-    report("  - run: mtxrun --generate")
-    report("  - run: context --make")
-    report("")
-    report("When that doesn't solve the problem, ask on the mailing list (ntg-context@ntg.nl).")
 end
 
 function install.update()
@@ -397,57 +371,39 @@ function install.update()
 
     local targetroot = dir.current()
 
-    local server     = environment.arguments.server   or ""
-    local instance   = environment.arguments.instance or ""
-    local osplatform = environment.arguments.platform or nil
-    local platform   = platforms[osplatform or os.platform or ""]
-
-    if (platform == "unknown" or platform == "" or not platform) and osplatform then
-        -- catches openbsdN.M kind of specifications
-        platform = osplatform
-    elseif not osplatform then
-        osplatform = platform
-    end
+    local server   = environment.arguments.server   or ""
+    local port     = environment.arguments.port     or ""
+    local instance = environment.arguments.instance or ""
 
     if server == "" then
-        server = "lmtx.contextgarden.net,lmtx.pragma-ade.com,lmtx.pragma-ade.nl,dmz.pragma-ade.nl"
+        report("provide server")
+        return
     end
-    if instance == "" then
-        instance = "install-lmtx"
+
+    local url = "http://" .. server
+
+    if port ~= "" then
+        url = url .. ":" .. port
     end
+
+    url = url .. "/"
+
+    if instance ~= "" then
+        url = url .. instance .. "/"
+    end
+
+    local osplatform = os.platform
+    local platform   = platforms[osplatform]
+
     if not platform then
         report("unknown platform")
         return
     end
 
-    local list   = utilities.parsers.settings_to_array(server)
-    local server = false
-
-    for i=1,#list do
-        local host = list[i]
-        local data, status, detail = fetch("http://" .. host .. "/" .. instance .. "/tex/status.tma")
-        if status == 200 and type(data) == "string" then
-            local t = loadstring(data)
-            if type(t) == "function" then
-                t = t()
-            end
-            if type(t) == "table" and t.name == "context" and t.version == "lmtx" then
-                server = host
-                break
-            end
-        end
-    end
-
-    if not server then
-        report("provide valid server and instance")
-        return
-    end
-
-    local url = "http://" .. server .. "/" .. instance .. "/"
-
     local texmfplatform = "texmf-" .. platform
 
     report("server   : %s",server)
+    report("port     : %s",port == "" and 80 or "80")
     report("instance : %s",instance)
     report("platform : %s",osplatform)
     report("system   : %s",ostype)
@@ -539,12 +495,7 @@ function install.update()
     end
 
     run("%s --generate",mtxrunbin)
-    if environment.argument("erase") then
-        run("%s --script cache --erase",mtxrunbin)
-        run("%s --generate",mtxrunbin)
-    end
     run("%s --make en", contextbin)
-
 
     -- in calling script: update mtxrun.exe and mtxrun.lua
 
@@ -552,8 +503,6 @@ function install.update()
     for i=1,#status do
         report("%-20s : %4i files with %9i bytes installed",unpack(status[i]))
     end
-    report("")
-    disclaimer()
     report("")
 
     report("update, done")
@@ -569,6 +518,4 @@ elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
-    report("")
-    disclaimer()
 end

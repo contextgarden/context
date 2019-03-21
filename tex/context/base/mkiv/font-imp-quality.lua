@@ -153,11 +153,15 @@ registerafmfeature(specification)
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
-implement {
-    name      = "setupfontexpansion",
-    arguments = "2 strings",
-    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
-}
+if context then
+
+    implement {
+        name      = "setupfontexpansion",
+        arguments = "2 strings",
+        actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+    }
+
+end
 
 -- -- -- -- -- --
 -- protrusion
@@ -512,40 +516,12 @@ registerafmfeature(specification)
 
 fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
 
-implement {
-    name      = "setupfontprotrusion",
-    arguments = "2 strings",
-    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
-}
+if context then
 
-local function initialize(tfmdata,value)
-    local properties = tfmdata.properties
-    local parameters = tfmdata.parameters
-    if properties then
-        value = tonumber(value)
-        if value then
-            if value < 0 then
-                value = 0
-            elseif value > 10 then
-                report_expansions("threshold for %a @ %p limited to 10 pct",properties.fontname,parameters.size)
-                value = 10
-            end
-            if value > 5 then
-                report_expansions("threshold for %a @ %p exceeds 5 pct",properties.fontname,parameters.size)
-            end
-        end
-        properties.threshold = value or nil -- nil enforces default
-    end
-end
-
-local specification = {
-    name         = "threshold",
-    description  = "threshold for quality features",
-    initializers = {
-        base = initialize,
-        node = initialize,
+    implement {
+        name      = "setupfontprotrusion",
+        arguments = "2 strings",
+        actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
     }
-}
 
-registerotffeature(specification)
-registerafmfeature(specification)
+end

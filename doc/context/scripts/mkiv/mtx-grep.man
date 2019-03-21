@@ -1,6 +1,6 @@
 .TH "mtx-grep" "1" "01-01-2019" "version 0.10" "Simple Grepper"
 .SH NAME
- mtx-grep - Simple Grepper
+.B mtx-grep
 .SH SYNOPSIS
 .B mtxrun --script grep [
 .I OPTIONS ...

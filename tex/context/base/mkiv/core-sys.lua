@@ -53,10 +53,6 @@ function environment.initializefilenames()
     environment.filename          = filename
     environment.suffix            = suffix
 
- -- if tex then
- --     tex.jobname = jobfilename
- -- end
-
     report_files("jobname %a, input %a, result %a",jobfilename,inputfilename,outputfilename)
 
     function environment.initializefilenames() end

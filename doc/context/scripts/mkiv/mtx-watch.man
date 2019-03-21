@@ -1,6 +1,6 @@
 .TH "mtx-watch" "1" "01-01-2019" "version 1.00" "ConTeXt Request Watchdog"
 .SH NAME
- mtx-watch - ConTeXt Request Watchdog
+.B mtx-watch
 .SH SYNOPSIS
 .B mtxrun --script watch [
 .I OPTIONS ...

@@ -1,6 +1,6 @@
 .TH "mtx-server" "1" "01-01-2019" "version 0.10" "Simple Webserver For Helpers"
 .SH NAME
- mtx-server - Simple Webserver For Helpers
+.B mtx-server
 .SH SYNOPSIS
 .B mtxrun --script server [
 .I OPTIONS ...

@@ -364,7 +364,7 @@ dirvalues        = allocate(swapped(dirvalues,dirvalues))
 gluevalues       = allocate(swapped(gluevalues,gluevalues))
 literalvalues    = allocate(swapped(literalvalues,literalvalues))
 
-if CONTEXTLMTXMODE > 0 then
+if CONTEXTLMTXMODE > 1 then
     whatcodes.literal     = 0x1  whatcodes[0x1] = "literal"
     whatcodes.latelua     = 0x2  whatcodes[0x2] = "latelua"
     whatcodes.userdefined = 0x3  whatcodes[0x3] = "userdefined"
@@ -512,25 +512,14 @@ end
 
 trackers.register("system.showcodes", nodes.showcodes)
 
+if not nodecodes.dir then
+    report_codes("use a newer version of luatex")
+    os.exit()
+end
+
 -- We don't need this sanitize-after-callback in ConTeXt and by disabling it we
 -- also have a way to check if LuaTeX itself does the right thing.
 
 if node.fix_node_lists then
     node.fix_node_lists(false)
 end
-
--- We use the real node code numbers.
-
-if CONTEXTLMTXMODE > 0 then
-
-    local texchardef = tex.chardef
-
-    if texchardef then
-        for i=0,nodecodes.glyph do
-            texchardef(nodecodes[i] .. "nodecode",i)
-        end
-        tex.set("internalcodesmode",1)
-    end
-
-end
-

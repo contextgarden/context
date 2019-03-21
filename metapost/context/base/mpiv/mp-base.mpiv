@@ -13,7 +13,7 @@
 string base_name, base_version ;
 
 base_name    := "plain" ;
-base_version := "1.004 for metafun iv and xl"  ;
+base_version := "1.004 for metafun iv"  ;
 
 message "loading metafun, including plain.mp version " & base_version ;
 
@@ -337,7 +337,7 @@ enddef ;
 %         takepower y of x
 %     fi
 % enddef ;
-%
+% 
 % def takepower expr y of x =
 %     if x>0 :
 %         mexp(y*mlog x)
@@ -818,7 +818,7 @@ enddef ;
 
 newinternal bboxmargin ;
 
-bboxmargin := 2bp ; % this can bite you, just don't use it in \METAFUN
+bboxmargin := 2bp ; % this can bite you
 
 vardef bbox primary p =
     llcorner p - ( bboxmargin, bboxmargin) --

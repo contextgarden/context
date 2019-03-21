@@ -13,15 +13,15 @@ local ceil, odd, round = math.ceil, math.odd, math.round
 local lower = string.lower
 local copy = table.copy
 
-local trace_state   = false  trackers.register("columnsets.trace",   function(v) trace_state  = v end)
-local trace_details = false  trackers.register("columnsets.details", function(v) trace_details = v end)
-local trace_cells   = false  trackers.register("columnsets.cells",   function(v) trace_cells  = v end)
+local trace_state  = false  trackers.register("columnsets.trace",  function(v) trace_state  = v end)
+local trace_detail = false  trackers.register("columnsets.detail", function(v) trace_detail = v end)
+local trace_cells  = false  trackers.register("columnsets.cells",  function(v) trace_cells  = v end)
 
 local report       = logs.reporter("column sets")
 
 local setmetatableindex = table.setmetatableindex
 
-local properties        = nodes.properties.data
+local properties        = nodes.properties
 
 local nodecodes         = nodes.nodecodes
 
@@ -36,6 +36,7 @@ local nuts              = nodes.nuts
 local tonode            = nuts.tonode
 local tonut             = nuts.tonut
 
+local hpack             = nuts.hpack
 local vpack             = nuts.vpack
 local flushlist         = nuts.flush_list
 ----- removenode        = nuts.remove
@@ -441,13 +442,11 @@ local function here(c,r,nr,nofcolumns,nofrows,cells,width,spans)
     return c, r, nc
 end
 
--- we use c/r as range limiters
-
 local methods = {
     [v_here] = here,
     [v_fixed] = here,
     tblr = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=r,nofrows-nr+1 do
+        for j=1,nofrows-nr+1 do
             for i=c,nofcolumns do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -460,7 +459,7 @@ local methods = {
     end,
     lrtb = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=c,nofcolumns do
-            for j=r,nofrows-nr+1 do
+            for j=1,nofrows-nr+1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -471,7 +470,7 @@ local methods = {
         end
     end,
     tbrl = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=r,nofrows-nr+1 do
+        for j=1,nofrows-nr+1 do
             for i=nofcolumns,c,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -484,7 +483,7 @@ local methods = {
     end,
     rltb = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=nofcolumns,c,-1 do
-            for j=r,nofrows-nr+1 do
+            for j=1,nofrows-nr+1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -495,8 +494,7 @@ local methods = {
         end
     end,
     btlr = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-     -- for j=nofrows-nr+1,1,-1 do
-        for j=nofrows-nr+1-r+1,1,-1 do
+        for j=nofrows-nr+1,1,-1 do
             for i=c,nofcolumns do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -509,8 +507,7 @@ local methods = {
     end,
     lrbt = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=c,nofcolumns do
-         -- for j=nofrows-nr+1,1,-1 do
-            for j=nofrows-nr+1-r+1,1,-1 do
+            for j=nofrows-nr+1,1,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -521,8 +518,7 @@ local methods = {
         end
     end,
     btrl = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-     -- for j=nofrows-nr+1,1,-1 do
-        for j=nofrows-nr+1-r+1,1,-1 do
+        for j=nofrows-nr+1,1,-1 do
             for i=nofcolumns,c,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -535,8 +531,7 @@ local methods = {
     end,
     rlbt = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=nofcolumns,c,-1 do
-         -- for j=nofrows-nr+1,1,-1 do
-            for j=nofrows-nr+1-r+1,1,-1 do
+            for j=nofrows-nr+1,1,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -926,7 +921,7 @@ local function findslice(dataset,head,available,column,row)
         local used = getheight(done)
         local rest = takebox("scratchbox")
         if used > (usedsize+slack) then
-            if trace_details then
+            if trace_detail then
                 report("at (%i,%i) available %p, used %p, overflow %p",column,row,usedsize,used,used-usedsize)
             end
             -- flush copy
@@ -1323,7 +1318,6 @@ interfaces.implement {
         { "r", "integer" },
         { "nc", "integer" },
         { "nr", "integer" },
-        { "method", "string" },
         { "box", "integer" },
     } }
 }
@@ -1336,7 +1330,6 @@ interfaces.implement {
         { "method", "string" },
         { "c", "integer" },
         { "r", "integer" },
-        { "method", "string" },
         { "box", "integer" },
         { "width", "dimension" },
         { "height", "dimension" },
@@ -1351,7 +1344,6 @@ interfaces.implement {
         { "name", "string" },
         { "c", "integer" },
         { "r", "integer" },
-        { "method", "string" },
         { "box", "integer" },
     } }
 }
@@ -1423,7 +1415,6 @@ interfaces.implement {
         { "name", "string" },
         { "c", "integer" },
         { "r", "integer" },
-        { "method", "string" },
         { "box", "integer" },
     } }
 }

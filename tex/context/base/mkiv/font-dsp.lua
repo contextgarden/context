@@ -1473,123 +1473,6 @@ end
 -- ValueFormat1 applies to the ValueRecord of the first glyph in each pair. ValueRecords for all first glyphs must use ValueFormat1. If ValueFormat1 is set to zero (0), the corresponding glyph has no ValueRecord and, therefore, should not be repositioned.
 -- ValueFormat2 applies to the ValueRecord of the second glyph in each pair. ValueRecords for all second glyphs must use ValueFormat2. If ValueFormat2 is set to null, then the second glyph of the pair is the “next” glyph for which a lookup should be performed.
 
--- local simple = {
---     [true]  = { [true] = { true,  true }, [false] = { true  } },
---     [false] = { [true] = { false, true }, [false] = { false } },
--- }
-
--- function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyphs)
---     local tableoffset = lookupoffset + offset
---     setposition(f,tableoffset)
---     local subtype  = readushort(f)
---     local getdelta = fontdata.temporary.getdelta
---     if subtype == 1 then
---         local coverage = readushort(f)
---         local format1  = readushort(f)
---         local format2  = readushort(f)
---         local sets     = readarray(f)
---               sets     = readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdelta)
---               coverage = readcoverage(f,tableoffset + coverage)
---         local shared   = { } -- partial sparse, when set also needs to be handled in the packer
---         for index, newindex in next, coverage do
---             local set  = sets[newindex+1]
---             local hash = { }
---             for i=1,#set do
---                 local value = set[i]
---                 if value then
---                     local other  = value[1]
---                     if shared then
---                         local s = shared[value]
---                         if s == nil then
---                             local first  = value[2]
---                             local second = value[3]
---                             if first or second then
---                                 s = { first, second or nil } -- needs checking
---                             else
---                                 s = false
---                             end
---                             shared[value] = s
---                         end
---                         hash[other] = s or nil
---                     else
---                         local first  = value[2]
---                         local second = value[3]
---                         if first or second then
---                             hash[other] = { first, second or nil } -- needs checking
---                         else
---                             hash[other] = nil -- what if set, maybe warning
---                         end
---                     end
---                 end
---             end
---             coverage[index] = hash
---         end
---         return {
---             shared   = shared and true or nil,
---             format   = "pair",
---             coverage = coverage,
---         }
---     elseif subtype == 2 then
---         local coverage     = readushort(f)
---         local format1      = readushort(f)
---         local format2      = readushort(f)
---         local classdef1    = readushort(f)
---         local classdef2    = readushort(f)
---         local nofclasses1  = readushort(f) -- incl class 0
---         local nofclasses2  = readushort(f) -- incl class 0
---         local classlist    = readpairclasssets(f,nofclasses1,nofclasses2,format1,format2,tableoffset,getdelta)
---               coverage     = readcoverage(f,tableoffset+coverage)
---               classdef1    = readclassdef(f,tableoffset+classdef1,coverage)
---               classdef2    = readclassdef(f,tableoffset+classdef2,nofglyphs)
---         local usedcoverage = { }
---         local shared       = { } -- partial sparse, when set also needs to be handled in the packer
---         for g1, c1 in next, classdef1 do
---             if coverage[g1] then
---                 local l1 = classlist[c1]
---                 if l1 then
---                     local hash = { }
---                     for paired, class in next, classdef2 do
---                         local offsets = l1[class]
---                         if offsets then
---                             local first  = offsets[1]
---                             local second = offsets[2]
---                             if first or second then
---                                 if shared then
---                                     local s1 = shared[first]
---                                     if s1 == nil then
---                                         s1 = { }
---                                         shared[first] = s1
---                                     end
---                                     local s2 = s1[second]
---                                     if s2 == nil then
---                                         s2 = { first, second or nil }
---                                         s1[second] = s2
---                                     end
---                                     hash[paired] = s2
---                                 else
---                                     hash[paired] = { first, second or nil }
---                                 end
---                             else
---                                 -- upto the next lookup for this combination
---                             end
---                         end
---                     end
---                     usedcoverage[g1] = hash
---                 end
---             end
---         end
---         return {
---             shared   = shared and true or nil,
---             format   = "pair",
---             coverage = usedcoverage,
---         }
---     elseif subtype == 3 then
---         report("yet unsupported subtype %a in %a positioning",subtype,"pair")
---     else
---         report("unsupported subtype %a in %a positioning",subtype,"pair")
---     end
--- end
-
 function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofglyphs)
     local tableoffset = lookupoffset + offset
     setposition(f,tableoffset)
@@ -1602,32 +1485,25 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
         local sets     = readarray(f)
               sets     = readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdelta)
               coverage = readcoverage(f,tableoffset + coverage)
-        local shared   = { } -- partial sparse, when set also needs to be handled in the packer
         for index, newindex in next, coverage do
             local set  = sets[newindex+1]
             local hash = { }
             for i=1,#set do
                 local value = set[i]
                 if value then
-                    local other = value[1]
-                    local share = shared[value]
-                    if share == nil then
-                        local first  = value[2]
-                        local second = value[3]
-                        if first or second then
-                            share = { first, second or nil } -- needs checking
-                        else
-                            share = false
-                        end
-                        shared[value] = share
+                    local other  = value[1]
+                    local first  = value[2]
+                    local second = value[3]
+                    if first or second then
+                        hash[other] = { first, second or nil } -- needs checking
+                    else
+                        hash[other] = nil -- what if set, maybe warning
                     end
-                    hash[other] = share or nil -- really overload ?
                 end
             end
             coverage[index] = hash
         end
         return {
-            shared   = shared and true or nil,
             format   = "pair",
             coverage = coverage,
         }
@@ -1644,7 +1520,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
               classdef1    = readclassdef(f,tableoffset+classdef1,coverage)
               classdef2    = readclassdef(f,tableoffset+classdef2,nofglyphs)
         local usedcoverage = { }
-        local shared       = { } -- partial sparse, when set also needs to be handled in the packer
         for g1, c1 in next, classdef1 do
             if coverage[g1] then
                 local l1 = classlist[c1]
@@ -1656,17 +1531,9 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
                             local first  = offsets[1]
                             local second = offsets[2]
                             if first or second then
-                                local s1 = shared[first]
-                                if s1 == nil then
-                                    s1 = { }
-                                    shared[first] = s1
-                                end
-                                local s2 = s1[second]
-                                if s2 == nil then
-                                    s2 = { first, second or nil }
-                                    s1[second] = s2
-                                end
-                                hash[paired] = s2
+                                hash[paired] = { first, second or nil }
+                            else
+                                -- upto the next lookup for this combination
                             end
                         end
                     end
@@ -1675,7 +1542,6 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
             end
         end
         return {
-            shared   = shared and true or nil,
             format   = "pair",
             coverage = usedcoverage,
         }
@@ -3159,14 +3025,6 @@ function readers.cpal(f,fontdata,specification)
     end
 end
 
-local compress   = gzip and gzip.compress
-local compressed = compress and gzip.compressed
-
--- At some point I will delay loading and only store the offsets (in context lmtx
--- only).
-
--- compressed = false
-
 function readers.svg(f,fontdata,specification)
     local tableoffset = gotodatatable(f,fontdata,"svg",specification.glyphs)
     if tableoffset then
@@ -3192,14 +3050,10 @@ function readers.svg(f,fontdata,specification)
         for i=1,nofentries do
             local entry = entries[i]
             setposition(f,entry.offset)
-            local data = readstring(f,entry.length)
-            if compressed and not compressed(data) then
-                data = compress(data)
-            end
             entries[i] = {
                 first = entry.first,
                 last  = entry.last,
-                data  = data
+                data  = readstring(f,entry.length)
             }
         end
         fontdata.svgshapes = entries

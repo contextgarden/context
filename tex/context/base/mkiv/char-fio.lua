@@ -92,11 +92,7 @@ directives.register("filters.utf.reorder",   function(v) configure("characters.f
 directives.register("filters.utf.collapse",  function(v) configure("characters.filters.utf.collapse", v) end)
 directives.register("filters.utf.decompose", function(v) configure("characters.filters.utf.decompose",v) end)
 
-utffilters.setskippable {
-    "mkiv", "mkvi",
-    "mkix", "mkxi",
-    "mkxl", "mklx",
-}
+utffilters.setskippable { "mkiv", "mkvi", "mkix", "mkxi" }
 
 interfaces.implement {
     name     = "enableutf",

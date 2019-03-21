@@ -287,37 +287,6 @@ local function sortedhash(t,cmp)
     return nothing
 end
 
--- local function iterate(t,i)
---     local i = i + 1
---     if i <= t.n then
---         local k = t[i]
---         return i, k, t.t[k]
---     end
--- end
---
--- local function indexedhash(t,cmp)
---     if t then
---         local s
---         if cmp then
---             -- it would be nice if the sort function would accept a third argument (or nicer, an optional first)
---             s = sortedhashkeys(t,function(a,b) return cmp(t,a,b) end)
---         else
---             s = sortedkeys(t) -- the robust one
---         end
---         local m = #s
---         if m == 1 then
---             return next, t
---         elseif m > 0 then
---             s.n = m
---             s.t = t
---             return iterate, s, 0
---         end
---     end
---     return nothing
--- end
---
--- -- for i, k, v in indexedhash(t) do print(k,v,s) end
-
 table.sortedhash  = sortedhash
 table.sortedpairs = sortedhash -- obsolete
 
@@ -1292,12 +1261,10 @@ function table.reverse(t) -- check with 5.3 ?
     end
 end
 
--- This one is for really simple cases where need a hash from a table.
-
 local function sequenced(t,sep,simple)
     if not t then
         return ""
-    elseif type(t) ~= "table" then
+    elseif type(t) == "string" then
         return t -- handy fallback
     end
     local n = #t
@@ -1338,11 +1305,7 @@ local function sequenced(t,sep,simple)
             end
         end
     end
-    if sep == true then
-        return "{ " .. concat(s,", ") .. " }"
-    else
-        return concat(s,sep or " | ")
-    end
+    return concat(s,sep or " | ")
 end
 
 table.sequenced = sequenced

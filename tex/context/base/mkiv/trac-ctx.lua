@@ -70,17 +70,3 @@ implement {
         install(texdirectives,directives.register,tag,enable,disable)
     end,
 }
-
--- this one might move
-
-interfaces.implement {
-    name    = "unsupportedcs",
-    public  = true,
-    actions = function()
-        logs.newline()
-        logs.report("fatal error","unsupported cs \\%s",tokens.scanners.csname())
-        logs.newline()
-        luatex.abort()
-    end
-}
-

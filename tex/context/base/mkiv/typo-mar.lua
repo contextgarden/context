@@ -59,6 +59,8 @@ local v_paragraph        = variables.paragraph
 local v_line             = variables.line
 
 local nuts               = nodes.nuts
+local nodepool           = nuts.pool
+
 local tonode             = nuts.tonode
 
 local hpack_nodes        = nuts.hpack
@@ -80,6 +82,7 @@ local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
+local getprop            = nuts.getprop
 
 local setattrlist        = nuts.setattrlist
 
@@ -100,8 +103,9 @@ local userdefined_code   = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 
-local new_hlist          = nodepool.hlist
 local new_usernode       = nodepool.usernode
+local new_hlist          = nodepool.hlist
+
 local latelua            = nodepool.latelua
 
 local texgetdimen        = tex.getdimen
@@ -455,8 +459,7 @@ local function sa(specification) -- maybe l/r keys ipv left/right keys
         end
         p.p = true
         p.y = true
-        -- maybe settobesaved first
-        setposition("md:v",tag,p)
+        setposition('md:v',tag,p)
         cache[tag] = nil -- do this later, per page a cleanup
     end
 end
@@ -589,7 +592,7 @@ local function inject(parent,head,candidate)
         elseif previous == current then
             firstonstack = false
         elseif ap and ac and ap.p == ac.p then
-            local distance = (ap.y or 0) - (ac.y or 0)
+            local distance = ap.y - ac.y
             if trace_margindata then
                 report_margindata("distance %p",distance)
             end
@@ -680,7 +683,7 @@ local function inject(parent,head,candidate)
     setwidth(box,0) -- not needed when wrapped
     --
     if isstacked then
-        setlink(box,addtoanchor(v_anchors,nofinjected))
+        setlink(box,addtoanchor(v_anchor,nofinjected))
         box = new_hlist(box)
         -- set height / depth ?
     end
@@ -733,7 +736,7 @@ local function flushinline(parent,head)
                         -- for now we also check for inline+yes/continue, maybe someday no such check
                         -- will happen; we can assume most inlines are one line heigh; also this
                         -- together feature can become optional
-                        registertogether(parent,room)
+                        registertogether(tonode(parent),room) -- !! tonode
                     end
                 end
             end
@@ -768,7 +771,7 @@ local function flushed(scope,parent) -- current is hlist
                         continue  = continue or con
                         nofstored = nofstored - 1
                         if room then
-                            registertogether(parent,room)
+                            registertogether(tonode(parent),room) -- !! tonode
                         end
                     else
                         break

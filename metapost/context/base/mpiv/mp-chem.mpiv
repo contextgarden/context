@@ -513,21 +513,10 @@ def chem_transformed (suffix $) = % not vardef!
     fi
 enddef ;
 
-% vardef chem_draw (expr what, r, c) (text extra) =
-%     draw what
-%         withpen pencircle scaled r
-%         withcolor c
-%         extra ;
-% enddef ;
-
 vardef chem_draw (expr what, r, c) (text extra) =
     draw what
         withpen pencircle scaled r
-        if string c :
-            if c <> "" : withcolor c fi
-        else :
-            withcolor c
-        fi
+        withcolor c
         extra ;
 enddef ;
 

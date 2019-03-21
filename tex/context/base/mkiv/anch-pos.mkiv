@@ -279,9 +279,9 @@
 
 % beware we need to pass \somethingexpanded or { }
 
-\unexpanded\def\anch_mark_column_box#1#2% box n
+\unexpanded\def\anch_mark_column_box#1%
   {\global\advance\c_anch_column\plusone
-   \clf_markregionboxtaggedn#1{columnarea:\the\c_anch_column}#2\relax} % extra height
+   \clf_markregionboxtagged#1{columnarea:\the\c_anch_column}} % extra height
 
 \unexpanded\def\anch_mark_region_box
   {\iftrialtypesetting
@@ -496,11 +496,5 @@
 \unexpanded\def\doifelsepositionsused{\clf_doifelsepositionsused}
 
 \let\doifpositionsusedelse\doifelsepositionsused
-
-%D Moved here:
-
-\unexpanded\def\savepos {\clf_savepos}
-\unexpanded\def\lastxpos{\numexpr\clf_lastxpos\relax}
-\unexpanded\def\lastypos{\numexpr\clf_lastypos\relax}
 
 \protect \endinput

@@ -30,8 +30,6 @@ local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
 local sortedhash           = table.sortedhash
 
-local new_hlist            = nodes.pool.hlist
-
 local starttiming          = statistics.starttiming
 local stoptiming           = statistics.stoptiming
 
@@ -255,18 +253,14 @@ local function preset(t,k)
     return v
 end
 
-local function startjob(plugmode,kind,mpx)
+local function startjob(plugmode,kind)
     insert(stack,top)
     top = {
         textexts   = { },                          -- all boxes, optionally with a different color
         texstrings = { },
-        mapstrings = { },
-        mapindices = { },
-        mapmoves   = { },
         texlast    = 0,
         texdata    = setmetatableindex({},preset), -- references to textexts in order or usage
         plugmode   = plugmode,                     -- some day we can then skip all pre/postscripts
-        extradata  = mpx and metapost.getextradata(mpx),
     }
     if trace_runs then
         report_metapost("starting %s run at level %i in %s mode",
@@ -586,8 +580,8 @@ end
 -- side effect of going single pass).
 
 function metapost.graphic_base_pass(specification)
+    local top             = startjob(true,"base")
     local mpx             = specification.mpx -- mandate
-    local top             = startjob(true,"base",mpx)
     local data            = specification.data or ""
     local inclusions      = specification.inclusions or ""
     local initializations = specification.initializations or ""
@@ -635,7 +629,7 @@ function metapost.process(specification,...)
     if type(specification) ~= "table" then
         oldschool(specification,...)
     else
-        startjob(specification.incontext or specification.useplugins,"process",false)
+        startjob(specification.incontext or specification.useplugins,"process")
         runmetapost(specification)
         stopjob()
     end
@@ -696,7 +690,7 @@ metapost.splitprescript = splitprescript
 -- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
-    if top and top.plugmode then -- hm, what about other features
+    if top.plugmode then -- hm, what about other features
         for i=1,#what do
             local wi = what[i]
             if type(wi) == "function" then
@@ -713,19 +707,19 @@ function metapost.pluginactions(what,t,flushfigure) -- before/after object, depe
 end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
-    if top and top.plugmode then
+    if top.plugmode then
         outercolormodel = colors.currentmodel() -- currently overloads the one set at the tex end
         resetteractions.runner(t)
     end
 end
 
 function metapost.processplugins(object) -- each object (second pass)
-    if top and top.plugmode then
+    if top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
             local before = { }
             local after = { }
-            processoractions.runner(object,splitprescript(prescript) or { },before,after)
+            processoractions.runner(object,splitprescript(prescript) or {},before,after)
             return #before > 0 and before, #after > 0 and after
         else
             local c = object.color
@@ -839,7 +833,7 @@ local tx_reset, tx_process  do
             end
         elseif #mp_c == 3 then
             if mp_a and mp_t then
-                ctx_MPLIBsetCtext(mp_target,f_rgb_yes(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
+                ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
             else
                 ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3]),mp_text)
             end
@@ -855,8 +849,6 @@ local tx_reset, tx_process  do
         end
     end
 
-    local madetext = nil
-
     function mp.mf_some_text(index,str)
         mp_target = index
         mp_index  = index
@@ -871,132 +863,24 @@ local tx_reset, tx_process  do
         madetext = nil
     end
 
+    local madetext = nil
+
     function mp.mf_made_text(index)
         mp.mf_some_text(index,madetext)
     end
 
-    -- a label can be anything, also something mp doesn't like in strings
-    -- so we return an index instead
-
-    function metapost.processing()
-        return top and true or false
-    end
-
-    function metapost.remaptext(replacement)
-        if top then
-            local mapstrings = top.mapstrings
-            local mapindices = top.mapindices
-            local label      = replacement.label
-            local index      = 0
-            if label then
-                local found = mapstrings[label]
-                if found then
-                    setmetatableindex(found,replacement)
-                    index = found.index
-                else
-                    index = #mapindices + 1
-                    replacement.index = index
-                    mapindices[index] = replacement
-                    mapstrings[label] = replacement
-                end
-            end
-            return index
-        else
-            return 0
-        end
-    end
-
-    function metapost.remappedtext(what)
-        return top and (top.mapstrings[what] or top.mapindices[tonumber(what)])
-    end
-
-    function mp.mf_map_move(index)
-        mp.triplet(top.mapmoves[index])
-    end
-
-    function mp.mf_map_text(index,str)
-        local map = top.mapindices[tonumber(str)]
-        if type(map) == "table" then
-            local text     = map.text
-            local overload = map.overload
-            local offset   = 0
-            local width    = 0
-            local where    = nil
-            --
-            mp_index = index
-            -- the image text
-            if overload then
-                top.texstrings[mp_index] = map.template or map.label or "error"
-                tex.runtoks("mptexttoks")
-                local box = textakebox("mptextbox") or new_hlist()
-                width = bp * box.width
-                where = overload.where
-            end
-            -- the real text
-            top.texstrings[mp_index] = overload and overload.text or text or "error"
-            tex.runtoks("mptexttoks")
-            local box = textakebox("mptextbox") or new_hlist()
-            local twd = bp * box.width
-            local tht = bp * box.height
-            local tdp = bp * box.depth
-            -- the check
-            if where then
-                local scale = 1 --  / (map.scale or 1)
-                if where == "l" or where == "left" then
-                    offset = scale * (twd - width)
-                elseif where == "m" or where == "middle" then
-                    offset = scale * (twd - width) / 2
-                end
-            end
-            -- the result
-            top.textexts[mp_index] = box
-            top.mapmoves[mp_index] = { offset, map.dx or 0, map.dy or 0 }
-            --
-            mp.triplet(twd,tht,tdp)
-            madetext = nil
-            return
-        else
-            map = type(map) == "string" and map or str
-            return mp.mf_some_text(index,context.escape(map) or map)
-        end
-    end
-
-    -- This is a bit messy. In regular metapost it's a kind of immediate replacement
-    -- so embedded btex ... etex is not really working as one would expect. We now have
-    -- a mix: it's immediate when we are at the outer level (rawmadetext) and indirect
-    -- (with the danger of stuff that doesn't work well in strings) when we are for
-    -- instance in a macro definition (rawtextext (pass back string)) ... of course one
-    -- should use textext so this is just a catch. When not in lmtx it's never immediate.
-
-    local reported  = false
-    local awayswrap = CONTEXTLMTXMODE <= 1
-
     function metapost.maketext(s,mode)
-        if not reported then
-            reported = true
-            report_metapost("use 'textext(.....)' instead of 'btex ..... etex'")
-        end
         if mode and mode == 1 then
             if trace_btexetex then
                 report_metapost("ignoring verbatimtex: [[%s]]",s)
             end
-        elseif alwayswrap then
-            if trace_btexetex then
-                report_metapost("rewrapping btex ... etex [[%s]]",s)
-            end
-            return 'rawtextext("' .. gsub(s,'"','"&ditto&"') .. '")' -- nullpicture
-        elseif metapost.currentmpxstatus() ~= 0 then
-            if trace_btexetex then
-                report_metapost("rewrapping btex ... etex at the outer level [[%s]]",s)
-            end
-            return 'rawtextext("' .. gsub(s,'"','"&ditto&"') .. '")' -- nullpicture
         else
             if trace_btexetex then
                 report_metapost("handling btex ... etex: [[%s]]",s)
             end
          -- madetext = utilities.strings.collapse(s)
             madetext = s
-            return "rawmadetext" -- is assuming immediate processing
+            return "rawmadetext"
         end
     end
 
@@ -1026,7 +910,7 @@ local tx_reset, tx_process  do
     end
 
     tx_process = function(object,prescript,before,after)
-        local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
+        local data  = top.texdata[metapost.properties.number]
         local index = tonumber(prescript.tx_index)
         if index then
             if trace_textexts then
@@ -1048,45 +932,19 @@ local tx_reset, tx_process  do
             top.texlast = mp_target
             --
             local mp_text = top.texstrings[mp_index]
-            local mp_hash = prescript.tx_cache
             local box
-            if mp_hash == "no" then
+            if prescript.tx_cache == "no" then
                 tex.runtoks("mptexttoks")
                 box = textakebox("mptextbox")
             else
-                local cache = data.texhash
-                if mp_hash then
-                    mp_hash = tonumber(mp_hash)
-                end
-                if mp_hash then
-                    local extradata = top.extradata
-                    if extradata then
-                        cache = extradata.globalcache
-                        if not cache then
-                            cache = { }
-                            extradata.globalcache = cache
-                        end
-                        if trace_runs then
-                            if cache[mp_hash] then
-                                report_textexts("reusing global entry %i",mp_hash)
-                            else
-                                report_textexts("storing global entry %i",mp_hash)
-                            end
-                        end
-                    else
-                        mp_hash = nil
-                    end
-                end
-                if not mp_hash then
-                    mp_hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
-                end
-                box = cache[mp_hash]
+                local hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
+                box = data.texhash[hash]
                 if box then
                     box = copy_list(box)
                 else
                     tex.runtoks("mptexttoks")
                     box = textakebox("mptextbox")
-                    cache[mp_hash] = box
+                    data.texhash[hash] = box
                 end
             end
             top.textexts[mp_target] = box

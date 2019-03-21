@@ -45,21 +45,10 @@ pages.collected = collected
 pages.tobesaved = tobesaved
 pages.nofpages  = 0
 
--- utilitydata.structures.counters.collected.realpage[1]
-
 local function initializer()
     collected = pages.collected
     tobesaved = pages.tobesaved
-    -- tricky, with pageinjection we can have holes
- -- pages.nofpages = #collected
- -- pages.nofpages = table.count(collected) -- could be a helper
-    local n = 0
-    for k in next, collected do
-        if k > n then
-            n = k
-        end
-    end
-    pages.nofpages = n
+    pages.nofpages = #collected
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)
@@ -183,18 +172,18 @@ function pages.analyze(entry,pagespecification)
     if not sectiondata then
         return pagedata, false, "no sectiondata"
     end
-    local v_no = variables.no
+    local no = variables.no
     -- local preferences
-    if pagespecification and pagespecification.prefix == v_no then
+    if pagespecification and pagespecification.prefix == no then
         return pagedata, false, "current spec blocks prefix"
     end
     -- stored preferences
- -- if entry.prefix == v_no then
+ -- if entry.prefix == no then
  --     return pagedata, false, "entry blocks prefix"
  -- end
     -- stored page state
     pagespecification = pagedata.prefixdata
-    if pagespecification and pagespecification.prefix == v_no then
+    if pagespecification and pagespecification.prefix == no then
         return pagedata, false, "pagedata blocks prefix"
     end
     -- final verdict
@@ -269,18 +258,11 @@ function helpers.analyze(entry,specification)
     return entry, sectiondata, "okay"
 end
 
-function helpers.prefix(data,prefixspec,nosuffix)
+function helpers.prefix(data,prefixspec)
     if data then
         local _, prefixdata, status = helpers.analyze(data,prefixspec)
         if prefixdata then
-            if nosuffix and prefixspec then
-                local connector = prefixspec.connector
-                prefixspec.connector = nil
-                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
-                prefixspec.connector = connector
-            else
-                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
-            end
+            sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
         end
     end
 end
@@ -321,11 +303,6 @@ end
 
 function pages.in_body(n)
     return texgetcount("pagebodymode") > 0
-end
-
-function pages.fraction(n)
-    local lastpage = texgetcount("lastpageno") -- can be cached
-    return lastpage > 1 and (texgetcount("realpageno")-1)/(lastpage-1) or 1
 end
 
 -- move to strc-pag.lua

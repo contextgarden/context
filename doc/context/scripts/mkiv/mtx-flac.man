@@ -1,6 +1,6 @@
 .TH "mtx-flac" "1" "01-01-2019" "version 0.10" "ConTeXt Flac Helpers"
 .SH NAME
- mtx-flac - ConTeXt Flac Helpers
+.B mtx-flac
 .SH SYNOPSIS
 .B mtxrun --script flac [
 .I OPTIONS ...

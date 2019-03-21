@@ -18,7 +18,7 @@ local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
-local sortedkeys, concat = table.sortedkeys, table.concat
+local sortedkeys = table.sortedkeys
 
 local backends, lpdf = backends, lpdf
 
@@ -93,7 +93,7 @@ local pdfrectangle            = lpdf.rectangle
 
 -- todo: 3dview
 
------ pdf_annot               = pdfconstant("Annot")
+local pdf_annot               = pdfconstant("Annot")
 local pdf_uri                 = pdfconstant("URI")
 local pdf_gotor               = pdfconstant("GoToR")
 local pdf_goto                = pdfconstant("GoTo")
@@ -132,99 +132,6 @@ local function checkautoprefixes(destinations)
         end
     end
 end
-
-local maxslice = 32 -- could be made configureable ... 64 is also ok
-
-local function pdfmakenametree(list,apply)
-    if not next(list) then
-        return
-    end
-    local slices   = { }
-    local sorted   = sortedkeys(list)
-    local size     = #sorted
-    local maxslice = maxslice
-    if size <= 1.5*maxslice then
-        maxslice = size
-    end
-    for i=1,size,maxslice do
-        local amount = min(i+maxslice-1,size)
-        local names  = pdfarray { }
-        local n      = 0
-        for j=i,amount do
-            local name   = sorted[j]
-            local target = list[name]
-            n = n + 1 ; names[n] = tostring(name)
-            n = n + 1 ; names[n] = apply and apply(target) or target
-        end
-        local first = sorted[i]
-        local last  = sorted[amount]
-        local limits = pdfarray {
-            first,
-            last,
-        }
-        local d = pdfdictionary {
-            Names  = names,
-            Limits = limits,
-        }
-        slices[#slices+1] = {
-            reference = pdfreference(pdfflushobject(d)),
-            limits    = limits,
-        }
-    end
-    local function collectkids(slices,first,last)
-        local f = slices[first]
-        local l = slices[last]
-        if f and l then
-            local k = pdfarray()
-            local n = 0
-            local d = pdfdictionary {
-                Kids   = k,
-                Limits = pdfarray {
-                    f.limits[1],
-                    l.limits[2],
-                },
-            }
-            for i=first,last do
-                n = n + 1 ; k[n] = slices[i].reference
-            end
-            return d
-        end
-    end
-    if #slices == 1 then
-        return slices[1].reference
-    else
-        while true do
-            local size = #slices
-            if size > maxslice then
-                local temp = { }
-                local n    = 0
-                for i=1,size,maxslice do
-                    local kids = collectkids(slices,i,min(i+maxslice-1,size))
-                    if kids then
-                        n = n + 1
-                        temp[n] = {
-                            reference = pdfreference(pdfflushobject(kids)),
-                            limits    = kids.Limits,
-                        }
-                    else
-                        -- error
-                    end
-                end
-                slices = temp
-            else
-                local kids = collectkids(slices,1,size)
-                if kids then
-                    return pdfreference(pdfflushobject(kids))
-                else
-                    -- error
-                    return
-                end
-            end
-        end
-    end
-end
-
-lpdf.makenametree = pdfmakenametree
 
 -- Bah, I hate this kind of features .. anyway, as we have delayed resolving we
 -- only support a document-wide setup and it has to be set before the first one
@@ -330,6 +237,8 @@ end
 
 lpdf.registerdestination = pdfregisterdestination
 
+local maxslice = 32 -- could be made configureable ... 64 is also ok
+
 logs.registerfinalactions(function()
     if log_destinations and next(destinations) then
         local report = logs.startfilelogging("references","used destinations")
@@ -343,10 +252,98 @@ logs.registerfinalactions(function()
     end
 end)
 
+local function pdfnametree(destinations)
+    local slices = { }
+    checkautoprefixes(destinations)
+    if not next(destinations) then
+        return
+    end
+    local sorted = sortedkeys(destinations)
+    local size   = #sorted
+
+    if size <= 1.5*maxslice then
+        maxslice = size
+    end
+
+    for i=1,size,maxslice do
+        local amount = min(i+maxslice-1,size)
+        local names  = pdfarray { }
+        local n      = 0
+        for j=i,amount do
+            local destination = sorted[j]
+            local pagenumber  = destinations[destination]
+            n = n + 1 ; names[n] = tostring(destination) -- tostring is a safeguard
+            n = n + 1 ; names[n] = pdfreference(pagenumber)
+        end
+        local first = sorted[i]
+        local last  = sorted[amount]
+        local limits = pdfarray {
+            first,
+            last,
+        }
+        local d = pdfdictionary {
+            Names  = names,
+            Limits = limits,
+        }
+        slices[#slices+1] = {
+            reference = pdfreference(pdfflushobject(d)),
+            limits    = limits,
+        }
+    end
+    local function collectkids(slices,first,last)
+        local f = slices[first]
+        local l = slices[last]
+        if f and l then
+            local k = pdfarray()
+            local n = 0
+            local d = pdfdictionary {
+                Kids   = k,
+                Limits = pdfarray {
+                    f.limits[1],
+                    l.limits[2],
+                },
+            }
+            for i=first,last do
+                n = n + 1 ; k[n] = slices[i].reference
+            end
+            return d
+        end
+    end
+    if #slices == 1 then
+        return slices[1].reference
+    else
+        while true do
+            if #slices > maxslice then
+                local temp = { }
+                local size = #slices
+                for i=1,size,maxslice do
+                    local kids = collectkids(slices,i,min(i+maxslice-1,size))
+                    if kids then
+                        temp[#temp+1] = {
+                            reference = pdfreference(pdfflushobject(kids)),
+                            limits    = kids.Limits,
+                        }
+                    else
+                        -- error
+                    end
+                end
+                slices = temp
+            else
+                local kids = collectkids(slices,1,#slices)
+                if kids then
+                    return pdfreference(pdfflushobject(kids))
+                else
+                    -- error
+                    return
+                end
+            end
+        end
+    end
+end
+
 local function pdfdestinationspecification()
     if next(destinations) then -- safeguard
-        checkautoprefixes(destinations)
-        local r = pdfmakenametree(destinations,pdfreference)
+        local r = pdfnametree(destinations)
         if r then
             pdfaddtonames("Dests",r)
         end
@@ -356,6 +353,7 @@ local function pdfdestinationspecification()
     end
 end
 
+lpdf.nametree                 = pdfnametree
 lpdf.destinationspecification = pdfdestinationspecification
 
 lpdf.registerdocumentfinalizer(pdfdestinationspecification,"collect destinations")
@@ -636,9 +634,9 @@ local function pdffilelink(filename,destination,page,actions)
         destination = pdfarray { (page or 1) - 1, pdf_fit }
     end
     return pdfdictionary {
-        S         = pdf_gotor, -- can also be pdf_launch
-        F         = filename,
-        D         = destination or defaultdestination,
+        S = pdf_gotor, -- can also be pdf_launch
+        F = filename,
+        D = destination or defaultdestination,
         NewWindow = actions.newwindow and true or nil,
     }
 end
@@ -761,11 +759,9 @@ local nofspecial = 0
 local share      = true
 
 local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
-local f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
 
 directives.register("pdf.stripzeros",function()
     f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
-    f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
 end)
 
 directives.register("references.sharelinks", function(v)
@@ -781,41 +777,10 @@ setmetatableindex(hashed,function(t,k)
     return v
 end)
 
-local function toquadpoints(paths)
-    local t, n = { }, 0
-    for i=1,#paths do
-        local path = paths[i]
-        local size = #path
-        for j=1,size do
-            local p = path[j]
-            n = n + 1 ; t[n] = p[1]
-            n = n + 1 ; t[n] = p[2]
-        end
-        local m = size % 4
-        if m > 0 then
-            local p = path[size]
-            for j=size+1,m do
-                n = n + 1 ; t[n] = p[1]
-                n = n + 1 ; t[n] = p[2]
-            end
-        end
-    end
-    return concat(t," ")
-end
-
-local function finishreference(specification)
-    local prerolled  = specification.prerolled
-    local quadpoints = specification.mesh
-    local llx, lly,
-          urx, ury   = pdfrectangle(specification.width,specification.height,specification.depth)
-    local specifier  = nil
-    if quadpoints and #quadpoints > 0 then
-        specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
-    else
-        specifier = f_annot(prerolled,llx,lly,urx,ury)
-    end
+local function finishreference(specification) -- %0.2f looks okay enough (no scaling anyway)
+    local annot = hashed[f_annot(specification.prerolled,pdfrectangle(specification.width,specification.height,specification.depth))]
     nofused = nofused + 1
-    return pdfregisterannotation(hashed[specifier])
+    return pdfregisterannotation(annot)
 end
 
 local function finishannotation(specification)
@@ -834,7 +799,7 @@ local function finishannotation(specification)
     return pdfregisterannotation(objref)
 end
 
-function nodeinjections.reference(width,height,depth,prerolled,mesh)
+function nodeinjections.reference(width,height,depth,prerolled)
     if prerolled then
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
@@ -845,7 +810,6 @@ function nodeinjections.reference(width,height,depth,prerolled,mesh)
             height    = height,
             depth     = depth,
             prerolled = prerolled,
-            mesh      = mesh,
         }
     end
 end

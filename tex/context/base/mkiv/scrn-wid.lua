@@ -143,7 +143,6 @@ implement {
             { "file" },
             { "name" },
             { "buffer" },
-            { "mimetype" },
         }
     }
 }
@@ -173,7 +172,6 @@ implement {
             { "file" },
             { "name" },
             { "buffer" },
-            { "mimetype" },
         }
     }
 }

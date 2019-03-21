@@ -410,13 +410,14 @@ end
 
 local latelua     = nodepool.latelua
 local setposition = jobpositions.setspec
+local t_anchor    = { x = true, c = true } -- needs checking
 
 local function setanchor(h_anchor)
     return latelua {
         action = setposition,
         name   = "md:h",
         index  = h_anchor,
-        value  = { x = true, c = true },
+        value  = t_anchor, -- really shared ?
     }
 end
 

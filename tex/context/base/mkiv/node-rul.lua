@@ -22,7 +22,7 @@ local tonumber           = tonumber
 local context            = context
 local attributes         = attributes
 local nodes              = nodes
-local properties         = nodes.properties.data
+local properties         = nodes.properties
 
 local enableaction       = nodes.tasks.enableaction
 
@@ -30,6 +30,7 @@ local nuts               = nodes.nuts
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
+local getfield           = nuts.getfield
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setlink            = nuts.setlink
@@ -49,10 +50,7 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
-
------ getfield           = nuts.getfield
------ getdata            = nuts.getdata
-local getruledata        = nuts.getruledata
+local getdata            = nuts.getdata
 
 local isglyph            = nuts.isglyph
 
@@ -124,9 +122,6 @@ local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 local setmetatableindex  = table.setmetatableindex
 
-local magicconstants     = tex.magicconstants
-local running            = magicconstants.running
-
 --
 
 local striprange         = nuts.striprange
@@ -171,7 +166,7 @@ rules   .ruleactions = ruleactions
 nutrules.ruleactions = ruleactions -- convenient
 
 local function mathaction(n,h,v,what)
-    local font    = getruledata(n)
+    local font    = CONTEXTLMTXMODE > 1 and getdata(n) or getfield(n,"transform")
     local actions = fontresources[font].mathruleactions
     if actions then
         local action = actions[what]
@@ -188,8 +183,6 @@ end
 local function mathrule(n,h,v)
     mathaction(n,h,v,"hruleaction")
 end
-
-local x
 
 local function useraction(n,h,v)
     local p = properties[n]
@@ -229,7 +222,7 @@ local trace_ruled   = false  trackers.register("nodes.rules", function(v) trace_
 local report_ruled  = logs.reporter("nodes","rules")
 
 function rules.define(settings)
-    local nofdata = #data + 1
+    local nofdata = #data+1
     data[nofdata] = settings
     local text = settings.text
     if text then
@@ -241,7 +234,7 @@ function rules.define(settings)
             settings.text = nil
         end
     end
-    return nofdata
+    context(nofdata)
 end
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
@@ -270,7 +263,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local wd, ht, dp    = getrangedimensions(parent,f,getnext(l))
+    local w, ht, dp     = getrangedimensions(parent,f,getnext(l))
     local method        = d.method
     local empty         = d.empty == v_yes
     local offset        = d.offset
@@ -311,7 +304,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         m = 0
     end
 
-    local function inject(r,wd,ht,dp)
+    local function inject(r,w,ht,dp)
         if layer then
             setattr(r,a_viewerlayer,layer)
         end
@@ -322,7 +315,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             setnext(l)
             flushlist(f)
         else
-            local k = new_kern(-wd)
+            local k = new_kern(-w)
             if foreground then
                 insert_node_after(head,l,k)
                 insert_node_after(head,k,r)
@@ -334,12 +327,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         end
         if trace_ruled then
             report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
-                level,wd,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
+                level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
     if mp and mp ~= "" then
         local r = usernutrule {
-            width  = wd,
+            width  = w,
             height = ht,
             depth  = dp,
             type   = "mp",
@@ -351,26 +344,22 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             ca     = color,
             ta     = transparency,
         }
-        inject(r,wd,ht,dp)
+        inject(r,w,ht,dp)
     else
         local tx = d.text
         if tx then
             local l = copy_list(tx)
             if d["repeat"] == v_yes then
-                l = new_leader(wd,l)
+                l = new_leader(w,l)
                 setattrlist(l,tx)
             end
-            l = hpack_nodes(l,wd,"exactly")
-            inject(l,wd,ht,dp)
+            l = hpack_nodes(l,w,"exactly")
+            inject(l,w,ht,dp)
         else
             for i=1,level do
-                local hd = (offset+(i-1)*dy)*e - m
---                 local ht =  hd + rulethickness - m
---                 local dp = -hd + rulethickness + m
-                local ht =  hd + rulethickness
-                local dp = -hd + rulethickness
-                local r = new_rule(wd,ht,dp)
-                -- can be done more efficient
+                local ht =  (offset+(i-1)*dy)*e + rulethickness - m
+                local dp = -(offset+(i-1)*dy)*e + rulethickness + m
+                local r = new_rule(w,ht,dp)
                 if color then
                     setattr(r,a_colormodel,colorspace)
                     setattr(r,a_color,color)
@@ -378,7 +367,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
                 if transparency then
                     setattr(r,a_transparency,transparency)
                 end
-                inject(r,wd,ht,dp)
+                inject(r,w,ht,dp)
             end
         end
     end
@@ -399,18 +388,16 @@ local report_shifted = logs.reporter("nodes","shifting")
 
 local a_shifted = attributes.private('shifted')
 
-local shifts = nodes.shifts or { }
-nodes.shifts = shifts
-shifts.data  = shifts.data or { }
+nodes.shifts      = nodes.shifts      or { }
+nodes.shifts.data = nodes.shifts.data or { }
 
-storage.register("nodes/shifts/data", shifts.data, "nodes.shifts.data")
+storage.register("nodes/shifts/data", nodes.shifts.data, "nodes.shifts.data")
 
-local data = shifts.data
+local data = nodes.shifts.data
 
-function shifts.define(settings)
-    local nofdata = #data + 1
-    data[nofdata] = settings
-    return nofdata
+function nodes.shifts.define(settings)
+    data[#data+1] = settings
+    context(#data)
 end
 
 local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
@@ -441,28 +428,26 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     return head
 end
 
-shifts.handler = function(head)
+nodes.shifts.handler = function(head)
     return processwords(a_shifted,data,flush_shifted,head)
 end
 
-function shifts.enable()
+function nodes.shifts.enable()
     enableaction("shipouts","nodes.shifts.handler")
 end
 
 -- linefillers
 
-local linefillers = nodes.linefillers or { }
-nodes.linefillers = linefillers
-linefillers.data  = linefillers.data or { }
+nodes.linefillers      = nodes.linefillers      or { }
+nodes.linefillers.data = nodes.linefillers.data or { }
 
-storage.register("nodes/linefillers/data", linefillers.data, "nodes.linefillers.data")
+storage.register("nodes/linefillers/data", nodes.linefillers.data, "nodes.linefillers.data")
 
-local data = linefillers.data
+local data = nodes.linefillers.data
 
-function linefillers.define(settings)
-    local nofdata = #data + 1
-    data[nofdata] = settings
-    return nofdata
+function nodes.linefillers.define(settings)
+    data[#data+1] = settings
+    context(#data)
 end
 
 local function linefiller(current,data,width,location)
@@ -499,7 +484,7 @@ local function linefiller(current,data,width,location)
     end
 end
 
-function linefillers.filler(current,data,width,height,depth)
+function nodes.linefillers.filler(current,data,width,height,depth)
     if width and width > 0 then
         local height = height or data.height or 0
         local depth  = depth  or data.depth  or 0
@@ -547,9 +532,9 @@ local function find_attr(head,attr)
     end
 end
 
-function linefillers.handler(head)
-    for current, subtype in nexthlist, head do
-        if current and subtype == linelist_code then
+function nodes.linefillers.handler(head)
+    for current, subtype, list in nexthlist, head do
+        if list and subtype == linelist_code then
             -- why doesn't leftskip take the attributes
             -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)
             local a = getattr(current,a_linefiller)
@@ -572,8 +557,6 @@ function linefillers.handler(head)
                         leftlocal  = true
                         rightlocal = true
                     end
-                    --
-                    local list = getlist(current)
                     --
                     if location == v_left or location == v_both then
                         local lskip = nil -- leftskip
@@ -673,7 +656,7 @@ end
 
 local enable = false
 
-function linefillers.enable()
+function nodes.linefillers.enable()
     if not enable then
     -- we could now nil it
         enableaction("finalizers","nodes.linefillers.handler")
@@ -715,7 +698,7 @@ implement {
 
 implement {
     name      = "defineshift",
-    actions   = { shifts.define, context },
+    actions   = { nodes.shifts.define, context },
     arguments = {
         {
             { "continue" },
@@ -729,12 +712,12 @@ implement {
 implement {
     name     = "enableshifts",
     onlyonce = true,
-    actions  = shifts.enable
+    actions  = nodes.shifts.enable
 }
 
 implement {
     name      = "definelinefiller",
-    actions   = { linefillers.define, context },
+    actions   = { nodes.linefillers.define, context },
     arguments = {
         {
             { "method", "integer" },
@@ -756,7 +739,7 @@ implement {
 implement {
     name     = "enablelinefillers",
     onlyonce = true,
-    actions  = linefillers.enable
+    actions  = nodes.linefillers.enable
 }
 
 -- We add a bonus feature here (experiment):
@@ -776,9 +759,9 @@ interfaces.implement {
     },
     actions   = function(t)
         local n = new_rule(
-            t.width or running,
-            t.height or running,
-            t.depth or running
+            t.width,
+            t.height,
+            t.depth
         )
         setattrlist(n,true)
         setoffsets(n,t.xoffset,t.yoffset) -- ,t.left, t.right

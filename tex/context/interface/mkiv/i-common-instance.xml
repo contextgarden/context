@@ -187,7 +187,6 @@
     <cd:define name="instance-mixedcolumns">
         <cd:constant value="itemgroupcolumns"/>
         <cd:constant value="boxedcolumns"/>
-        <cd:constant value="columns"/>
     </cd:define>
 
     <cd:define name="instance-note">

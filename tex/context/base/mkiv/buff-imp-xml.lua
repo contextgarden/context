@@ -41,9 +41,7 @@ local handler = visualizers.newhandler {
 }
 
 local comment          = P("--")
-local alsoname         = patterns.utf8two + patterns.utf8three + patterns.utf8four
------ alsoname         = R("\128\255") -- basically any encoding without checking (fast)
-local name             = (patterns.letter + patterns.digit + S('_-.') + alsoname)^1
+local name             = (patterns.letter + patterns.digit + S('_-.'))^1
 local entity           = P("&") * (1-P(";"))^1 * P(";")
 local openbegin        = P("<")
 local openend          = P("</")
@@ -59,11 +57,11 @@ local closecdata       = P("]]>")
 local grammar = visualizers.newgrammar("default", { "visualizer",
     sstring =
         makepattern(handler,"string",patterns.dquote)
-      * (V("whitespace") + makepattern(handler,"default",(1-patterns.dquote)^0))
+      * (V("whitespace") + makepattern(handler,"default",1-patterns.dquote))^0
       * makepattern(handler,"string",patterns.dquote),
     dstring =
         makepattern(handler,"string",patterns.squote)
-      * (V("whitespace") + makepattern(handler,"default",(1-patterns.squote)^0))
+      * (V("whitespace") + makepattern(handler,"default",1-patterns.squote))^0
       * makepattern(handler,"string",patterns.squote),
     entity =
         makepattern(handler,"entity",entity),

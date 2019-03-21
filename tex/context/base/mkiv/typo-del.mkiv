@@ -674,29 +674,22 @@
    \dostoptagged}
 
 \def\typo_delimited_nextleft_symbol#1%
-  {\let\typo_delimited_reset_next_symbol\typo_delimited_reset_next_symbol_indeed
-   \localleftbox\bgroup
+  {\localleftbox\bgroup
      \swapmacros\leftboundarycharacter\rightboundarycharacter
      \boundarycharactermode\plusone
      \typo_delimited_left_symbol#1%
    \egroup}
 
 \def\typo_delimited_nextright_symbol#1%
-  {\let\typo_delimited_reset_next_symbol\typo_delimited_reset_next_symbol_indeed
-   \localrightbox\bgroup
+  {\localrightbox\bgroup
      \swapmacros\leftboundarycharacter\rightboundarycharacter
      \boundarycharactermode\plusone
      \typo_delimited_right_symbol#1%
    \egroup}
 
-\unexpanded\def\typo_delimited_reset_next_symbol_indeed
-  {\localleftbox {}%
-   \localrightbox{}}%
-
-\let\typo_delimited_reset_next_symbol\relax
-
 \appendtoks
-    \typo_delimited_reset_next_symbol
+    \localleftbox {}%
+    \localrightbox{}%
 \to \everyforgetall
 
 % \starttext

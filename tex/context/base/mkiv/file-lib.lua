@@ -61,18 +61,13 @@ function resolvers.uselibrary(specification) -- todo: reporter
                 if not foundname then
                     -- pattern based search
                     for i=1,#patterns do
-                        local pattern = patterns[i]
-                        if pattern and pattern ~= "" then
-                            local wanted = format(pattern,barename)
-                            foundname = found(wanted)
-                            if trace_libraries then
-                                report_library("checking %a as %a: %s",filename,wanted,foundname or "not found")
-                            end
-                            if foundname then
-                                break
-                            end
-                        else
-                            -- can be a bogus path (coming from a test)
+                        local wanted = format(patterns[i],barename)
+                        foundname = found(wanted)
+                        if trace_libraries then
+                            report_library("checking %a as %a: %s",filename,wanted,foundname or "not found")
+                        end
+                        if foundname then
+                            break
                         end
                     end
                 end

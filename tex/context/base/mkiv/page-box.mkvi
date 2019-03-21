@@ -63,8 +63,8 @@
       \v_page_target_bottom}}
 
 \def\page_boxes_apply_offset % #box
-  {\ifzeropt\topoffset
-     \ifzeropt\backoffset
+  {\ifdim\topoffset=\zeropoint
+     \ifdim\backoffset=\zeropoint
        \doubleexpandafter\gobbleoneargument
      \else
        \doubleexpandafter\page_boxes_apply_offset_indeed
