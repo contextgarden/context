@@ -83,8 +83,6 @@ local whatsit_code    = nodecodes.whatsit
 local dimenfactors    = number.dimenfactors
 local formatters      = string.formatters
 
-local start_of_par    = nuts.start_of_par
-
 -- this will be reorganized:
 
 function nodes.showlist(head, message)
@@ -167,7 +165,7 @@ local function tosequence(start,stop,compact)
             elseif id == dir_code then
                 local d, p = getdirection(start)
                 n = n + 1 ; t[n] = "[<" .. (p and "-" or "+") .. d .. ">]" -- todo l2r etc
-            elseif id == localpar_code and start_of_par(current) then
+            elseif id == localpar_code and getsubtype(start) == 0 then
                 n = n + 1 ; t[n] = "[<" .. getdirection(start) .. ">]" -- todo l2r etc
             elseif compact then
                 n = n + 1 ; t[n] = "[]"
@@ -357,9 +355,7 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
                     n = n + 1 ; w[n] = " "
                 end
             elseif id == hlist_code or id == vlist_code then
-                n = n + 1 ; w[n] = "["
-                n = n + 1 ; w[n] = listtoutf(getlist(h),joiner,textonly,last,nodisc)
-                n = n + 1 ; w[n] = "]"
+                n = n + 1 ; w[n] = "[]"
             end
         else
             n = n + 1 ; w[n] = "[-]"

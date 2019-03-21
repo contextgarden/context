@@ -90,7 +90,7 @@ local getboth            = nuts.getboth
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setoffsets         = nuts.setoffsets
-local ischar             = nuts.ischar
+local ischar             = nuts.is_char
 local getkern            = nuts.getkern
 local setkern            = nuts.setkern
 local setlink            = nuts.setlink
@@ -836,8 +836,8 @@ local function inject_positions_only(head,where)
                                 if replace then
                                     -- error, we expect an empty one
                                 else
-                              -- KE setfield(next,"replace",fontkern(rightkern)) -- maybe also leftkern
-                                    replace = fontkern(rightkern) -- maybe also leftkern
+--KE                                    setfield(next,"replace",fontkern(rightkern)) -- maybe also leftkern
+                                    replace = fontkern(rightkern) -- maybe also leftkern	--KE
                                     done = true	--KE
                                 end
                             end

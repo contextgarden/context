@@ -4,30 +4,6 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:define name="assignment-setupfittingpage">
-        <cd:assignments list="yes">
-            <cd:parameter name="pagestate">
-                <cd:constant type="start"/>
-                <cd:constant type="stop" default="yes"/>
-            </cd:parameter>
-            <cd:parameter name="command">
-                <cd:constant type="cd:oneargument"/>
-            </cd:parameter>
-            <cd:parameter name="margin">
-                <cd:constant type="page"/>
-            </cd:parameter>
-            <cd:parameter name="scale">
-                <cd:constant type="cd:number"/>
-            </cd:parameter>
-            <cd:parameter name="paper">
-                <cd:constant type="auto"/>
-                <cd:constant type="default" default="yes"/>
-                <cd:constant type="cd:name"/>
-            </cd:parameter>
-            <cd:inherit name="setupframed"/>
-        </cd:assignments>
-    </cd:define>
-
     <cd:command name="definefittingpage" level="style" category="background layout" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
@@ -41,7 +17,27 @@
     <cd:command name="setupfittingpage" level="style" category="background layout" file="page-app.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
-            <cd:resolve name="assignment-setupfittingpage"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="pagestate">
+                    <cd:constant type="start"/>
+                    <cd:constant type="stop" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="page"/>
+                </cd:parameter>
+                <cd:parameter name="scale">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="paper">
+                    <cd:constant type="auto"/>
+                    <cd:constant type="default" default="yes"/>
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 
@@ -70,17 +66,17 @@
 
     <!--
 
-        <cd:command name="setupTEXpage" level="style" category="background layout" file="page-app.mkiv">
+        <cd:command name="TEXpage" type="environment" level="document" category="background layout" file="page-app.mkiv">
             <cd:arguments>
-                <cd:assignments list="yes">
+                <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupfittingpage"/>
                 </cd:assignments>
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="setupMPpage" level="style" category="background layout metapost" file="meta-fig.mkiv">
+        <cd:command name="MPpage" type="environment" level="document" category="background layout metapost" file="meta-fig.mkiv">
             <cd:arguments>
-                <cd:assignments list="yes">
+                <cd:assignments list="yes" optional="yes">
                     <cd:inherit name="setupfittingpage"/>
                 </cd:assignments>
             </cd:arguments>
@@ -90,13 +86,17 @@
 
     <cd:command name="setupTEXpage" level="style" category="background layout" file="page-app.mkiv">
         <cd:arguments>
-            <cd:resolve name="assignment-setupfittingpage"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupfittingpage"/>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="setupMPpage" level="style" category="background layout metapost" file="meta-fig.mkiv">
         <cd:arguments>
-            <cd:resolve name="assignment-setupfittingpage"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupfittingpage"/>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 

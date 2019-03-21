@@ -56,6 +56,7 @@ local kern_code        = nodecodes.kern
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 
+local getfield         = nuts.getfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
@@ -63,7 +64,6 @@ local getfont          = nuts.getfont
 local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
-local getreplace       = nuts.getreplace
 local isglyph          = nuts.isglyph
 local getkern          = nuts.getkern
 local getdirection     = nuts.getdirection
@@ -77,7 +77,6 @@ local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local flush_node_list  = nuts.flush_list
 local protect_glyphs   = nuts.protect_glyphs
-local start_of_par     = nuts.start_of_par
 
 local nextnode         = nuts.traversers.node
 local nextglyph        = nuts.traversers.glyph
@@ -396,7 +395,7 @@ function step_tracers.codes(i,command,space)
         local char, id = isglyph(c)
         if char then
             showchar(char,id)
-        elseif id == dir_code or (id == localpar_code and start_of_par(c)) then
+        elseif id == dir_code or (id == localpar_code and getsubtype(c) == 0) then
             context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)
@@ -520,8 +519,7 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
                     result[nofresult] = f_badcode(c)
                 end
             elseif id == disc_code then
-                local replace = getreplace(n)
-                result, nofresult = toutf(replace,result,nofresult,false,true) -- needed?
+                result, nofresult = toutf(getfield(n,"replace"),result,nofresult,false,true) -- needed?
             elseif id == hlist_code or id == vlist_code then
              -- if nofresult > 0 and result[nofresult] ~= " " then
              --     nofresult = nofresult + 1

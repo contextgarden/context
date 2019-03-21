@@ -648,8 +648,8 @@ end
 
 -- todo : make lpeg for splitter
 
-local sign  = S("+p")  /  "1"
-            + S("-mn") / "-1"
+local sign  = S("+p") /  "1"
+            + S("-m") / "-1"
 
 local full  = C(P("left"))
             + C(P("right"))
@@ -962,7 +962,6 @@ local function makechart_indeed(chart)
     local labeloffset   = chartsettings.labeloffset
     local exitoffset    = chartsettings.exitoffset
     local commentoffset = chartsettings.commentoffset
-    local clipoffset    = chartsettings.clipoffset
     ctx_tographic(g,"flow_grid_width     := %p ;", gridwidth)
     ctx_tographic(g,"flow_grid_height    := %p ;", gridheight)
     ctx_tographic(g,"flow_shape_width    := %p ;", shapewidth)
@@ -997,7 +996,6 @@ local function makechart_indeed(chart)
         offset = radius -- or rulethickness?
     end
     ctx_tographic(g,"flow_chart_offset := %p ;",offset)
-    ctx_tographic(g,"flow_chart_clip_offset := %p ;",clipoffset)
     --
     ctx_tographic(g,"flow_reverse_y := true ;")
     if chartsettings.option == v_test then
@@ -1128,7 +1126,6 @@ implement {
                     { "ny", "integer" },
                     { "x", "integer" },
                     { "y", "integer" },
-                    { "clipoffset", "dimension" },
                     { "labeloffset", "dimension" },
                     { "commentoffset", "dimension" },
                     { "exitoffset", "dimension" },

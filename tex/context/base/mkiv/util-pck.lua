@@ -55,6 +55,7 @@ local function pack(t,keys,skip,hash,index)
             local k = sk[i]
             if not skip or not skip[k] then
                 local v = t[k]
+                --
                 if type(v) == "table" then
                     pack(v,keys,skip,hash,index)
                     if keys[k] then

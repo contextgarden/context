@@ -57,60 +57,31 @@
 \def\attr_basics_define       {\attr_basics_define_indeed\s!public}
 \def\attr_basics_define_system{\attr_basics_define_indeed\s!private}
 
-% todo: define global !
-
-% here public means 'visible' so it's not to be confused with 'public' at the lua end
-
-% \def\attr_basics_define_indeed#1[#2][#3]%
-%   {\ifcsname\??attributecount#2\endcsname\else
-%      \scratchcounter\clf_defineattribute{#2}{#1}\relax
-%     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-%      \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
-%      \expandafter\newconstant \csname\??attributeid#2\endcsname
-%      \csname\??attributeid#2\endcsname\scratchcounter
-%      % some attributes are always global
-%      \doifelseinset\s!global{#3}%
-%        {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%        {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%      \doifinset\s!nomath{#3}%
-%        {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%      \doifinset\s!public{#3}%
-%        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
-%      \doifinset\s!pickup{#3}%
-%        {\expandafter\newconstant\csname\??attributepickup#2\endcsname
-%         \csname\??attributepickup#2\endcsname\attributeunsetvalue
-%         \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
-%         \ifcsname#2\s!attribute\endcsname
-%           \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
-%             {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
-%           \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
-%             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
-%         \fi}%
-%    \fi}
+     % here public means 'visible' so it's not to be confused with 'public' at the lua end
 
 \def\attr_basics_define_indeed#1[#2][#3]%
   {\ifcsname\??attributecount#2\endcsname\else
      \scratchcounter\clf_defineattribute{#2}{#1}\relax
     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-     \global\expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
-     \global\expandafter\newconstant \csname\??attributeid#2\endcsname
-     \global\csname\??attributeid#2\endcsname\scratchcounter
+     \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+     \expandafter\newconstant \csname\??attributeid#2\endcsname
+     \csname\??attributeid#2\endcsname\scratchcounter
      % some attributes are always global
      \doifelseinset\s!global{#3}%
-       {\xtoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-       {\xtoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!nomath{#3}%
-       {\xtoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!public{#3}%
-       {\expandafter\glet\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+       {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
      \doifinset\s!pickup{#3}%
-       {\global\expandafter\newconstant\csname\??attributepickup#2\endcsname
-        \global\csname\??attributepickup#2\endcsname\attributeunsetvalue
-        \xtoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
+       {\expandafter\newconstant\csname\??attributepickup#2\endcsname
+        \csname\??attributepickup#2\endcsname\attributeunsetvalue
+        \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
         \ifcsname#2\s!attribute\endcsname
-          \expandafter\xdef\csname\s!pickup#2\s!attribute\endcsname
+          \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
             {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
-          \expandafter\xdef\csname\s!forget#2\s!attribute\endcsname
+          \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
         \fi}%
    \fi}
@@ -124,13 +95,9 @@
 % \unexpanded\def\pickupattributelater#1%
 %   {\csname\??attributepickup#1\endcsname\csname\??attributecount#1\endcsname}
 
-% \unexpanded\def\newattribute#1%
-%   {\attr_basics_define_indeed\s!public[\csstring#1][]%
-%    \expandafter\let\expandafter#1\csname\??attributeid\csstring#1\endcsname}
-
 \unexpanded\def\newattribute#1%
   {\attr_basics_define_indeed\s!public[\csstring#1][]%
-   \expandafter\glet\expandafter#1\csname\??attributeid\csstring#1\endcsname}
+   \expandafter\let\expandafter#1\csname\??attributeid\csstring#1\endcsname}
 
 % expandable so we can \edef them for speed
 
@@ -141,13 +108,8 @@
 
 \let\dompattribute\gobbletwoarguments
 
-\ifcase\contextlmtxmode
-    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
-    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
-\else
-    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield     \zerocount}
-    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield     \zerocount}
-\fi
+\unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
+\unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
 
 \let\resetallattributes\resetlocalattributes
 
@@ -190,7 +152,7 @@
 % for the luatex list:
 %
 % \attributedef\zeroattribute=0
-% \attributedef\someattribute=999
+% \attributedef\someatriubute=999
 %
 % \directlua {
 %     local createtoken = newtoken.create

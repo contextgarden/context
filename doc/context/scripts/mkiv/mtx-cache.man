@@ -1,6 +1,6 @@
-.TH "mtx-cache" "1" "01-01-2019" "version 1.01" "ConTeXt & MetaTeX Cache Management"
+.TH "mtx-cache" "1" "01-01-2019" "version 0.10" "ConTeXt & MetaTeX Cache Management"
 .SH NAME
- mtx-cache - ConTeXt & MetaTeX Cache Management
+.B mtx-cache
 .SH SYNOPSIS
 .B mtxrun --script cache [
 .I OPTIONS ...
@@ -11,8 +11,8 @@
 .B ConTeXt & MetaTeX Cache Management
 .SH OPTIONS
 .TP
-.B --make
-generate databases and formats
+.B --purge
+remove not used files
 .TP
 .B --erase
 completely remove cache

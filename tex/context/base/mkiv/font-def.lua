@@ -45,6 +45,7 @@ specifiers.variants = variants
 definers.methods    = definers.methods or { }
 
 local internalized  = allocate() -- internal tex numbers (private)
+local lastdefined   = nil -- we don't want this one to end up in s-tra-02
 
 local loadedfonts   = constructors.loadedfonts
 local designsizes   = constructors.designsizes
@@ -454,6 +455,10 @@ not gain much. By the way, passing id's back to in the callback was
 introduced later in the development.</p>
 --ldx]]--
 
+function definers.current() -- or maybe current
+    return lastdefined
+end
+
 function definers.registered(hash)
     local id = internalized[hash]
     return id, id and fontdata[id]
@@ -506,6 +511,7 @@ function definers.read(specification,size,id) -- id can be optional, name can al
             end
         end
     end
+    lastdefined = tfmdata or id -- todo ! ! ! ! !
     if not tfmdata then -- or id?
         report_defining( "unknown font %a, loading aborted",specification.name)
     elseif trace_defining and type(tfmdata) == "table" then
@@ -527,6 +533,4 @@ end
 <p>We overload the <l n='tfm'/> reader.</p>
 --ldx]]--
 
-if not context then
-    callbacks.register('define_font', definers.read, "definition of fonts (tfmdata preparation)")
-end
+callbacks.register('define_font', definers.read, "definition of fonts (tfmdata preparation)")

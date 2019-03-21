@@ -72,7 +72,6 @@ local a_characters    = attributes.private("characters")
 local a_suspecting    = attributes.private('suspecting')
 local a_suspect       = attributes.private('suspect')
 local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
 local enabled         = false
 
 local enableaction    = nodes.tasks.enableaction

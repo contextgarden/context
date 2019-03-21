@@ -1,6 +1,6 @@
 .TH "mtx-fcd" "1" "01-01-2019" "version 1.00" "Fast Directory Change"
 .SH NAME
- mtx-fcd - Fast Directory Change
+.B mtx-fcd
 .SH SYNOPSIS
 .B mtxrun --script fcd [
 .I OPTIONS ...

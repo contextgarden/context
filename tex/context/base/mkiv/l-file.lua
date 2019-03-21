@@ -76,27 +76,17 @@ local P, R, S, C, Cs, Cp, Cc, Ct = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg
 local attributes = lfs.attributes
 
 function lfs.isdir(name)
-    if name then
-        return attributes(name,"mode") == "directory"
-    end
+    return attributes(name,"mode") == "directory"
 end
 
 function lfs.isfile(name)
-    if name then
-        local a = attributes(name,"mode")
-        return a == "file" or a == "link" or nil
-    end
+    local a = attributes(name,"mode")
+    return a == "file" or a == "link" or nil
 end
 
 function lfs.isfound(name)
-    if name then
-        local a = attributes(name,"mode")
-        return (a == "file" or a == "link") and name or nil
-    end
-end
-
-function lfs.modification(name)
-    return name and attributes(name,"modification") or nil
+    local a = attributes(name,"mode")
+    return (a == "file" or a == "link") and name or nil
 end
 
 if sandbox then

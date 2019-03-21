@@ -39,7 +39,7 @@ local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getsubtype          = nuts.getsubtype
 local getchar             = nuts.getchar
-local ischar              = nuts.ischar
+local ischar              = nuts.is_char
 
 local end_of_math         = nuts.end_of_math
 

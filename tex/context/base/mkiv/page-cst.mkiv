@@ -181,12 +181,6 @@
    \setupoutputroutine[\s!pagegrid]%
    \page_grd_command_set_hsize
    \page_grd_command_set_vsize
-   %
-   \columnwidth   \d_page_grd_column_width
-   \columndistance\d_page_grd_distance
-   \nofcolumns    \c_page_grd_n_of_left    % not always ok
-   \textwidth     \d_page_grd_column_width % kind of redundant but we had it so ...
-   %
    }%\begingroup}
 
 \unexpanded\def\stoppagegrid
@@ -227,7 +221,6 @@
   {\begingroup
    \letdummyparameter\c!c\zerocount
    \letdummyparameter\c!r\zerocount
-   \letdummyparameter\c!method\v!here
    \letdummyparameter\c!option\v!none
    \getdummyparameters[#1]%
    \dowithnextboxcs\page_grd_set_indeed\hbox}
@@ -238,7 +231,6 @@
      c      \dummyparameter\c!c
      r      \dummyparameter\c!r
      box    \nextbox
-     method {\dummyparameter\c!method}
      option {\dummyparameter\c!option}
    }%
    \ifcase\c_page_grd_reserved_state
@@ -257,7 +249,6 @@
      }%
    \fi
    \endgroup}
-
 
 \unexpanded\def\page_grd_command_set_vsize
   {\clf_setvsizecolumnset{\currentpagegrid}%
@@ -302,9 +293,9 @@
 % todo line numbers and marks
 
 \unexpanded\def\page_grd_command_flush_page_column#1%
-  {\privatescratchcounter#1\relax % or just currentcolumn as in page-col.mkiv
+  {\privatescratchcounter#1\relax
    \clf_flushcolumnsetcolumn{\currentpagegrid}\privatescratchcounter
-   \anch_mark_column_box\b_page_grd_column\privatescratchcounter
+   \anch_mark_column_box\b_page_grd_column
    \page_marks_synchronize_column\c_page_grd_first_column\c_page_grd_last_column\privatescratchcounter\b_page_grd_column
    \ifnum\privatescratchcounter>\c_page_grd_n_of_left
      \advance\privatescratchcounter-\c_page_grd_n_of_left
@@ -407,13 +398,11 @@
    \global\setfalse\c_page_floats_flushing}
 
 \def\page_grd_command_flush_floats_indeed % much in common with OTRSET
-  {\ifconditional\c_page_floats_some_waiting
-     \ifconditional\c_page_floats_compress_flushed
-       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
+  {\wait\ifconditional\c_page_floats_some_waiting
+     \ifconditional\c_page_floats_pack_flushed
+       \page_floats_collect\s!text\hsize\emwidth
        \ifcase\nofcollectedfloats
          \page_floats_get
-     % \or
-     %   \page_floats_get
        \else
          \setfalse\c_page_floats_center_box % not needed as we do call directly
          \global\setbox\floatbox\hbox to \hsize
@@ -651,12 +640,11 @@
    \edef\currentpagegridspan{#1}%
    \clf_sethsizecolumnspan{\currentpagegrid}\pagegridspanparameter\c!n\relax
    \setbox\scratchbox\hbox\bgroup\inheritedpagegridspanframed\bgroup
-     \def\page_grd_span_stop{\page_grd_span_stop_indeed{#2}}%
      \usepagegridspanstyleandcolor\c!style\c!color
      \pagegridspanparameter\c!before
      \ignorespaces}
 
-\unexpanded\def\page_grd_span_stop_indeed#1%
+\unexpanded\def\stoppagegridspan
   {\removeunwantedspaces
    \par
    \verticalstrut
@@ -665,13 +653,10 @@
    \endgraf
    \pagegridspanparameter\c!after
    \egroup\egroup
-   \setpagegrid[#1]{\box\scratchbox}%
+   \setpagegrid{\box\scratchbox}%
    % todo: push into slot
    \egroup
    \endgraf}
-
-\unexpanded\def\stoppagegridspan % indirectness permits aliasing
-  {\page_grd_span_stop}
 
 \def\pagegridspanwidth#1% assumes equal distances
   {\the\dimexpr

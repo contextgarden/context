@@ -141,10 +141,6 @@ return {
         "Ux", "eUx", "Umathaccents",
         --
         "parfillleftskip", "parfillrightskip",
-        --
-        "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
-        --
-        "wildcardsymbol",
     },
     ["helpers"] = {
         --
@@ -244,9 +240,7 @@ return {
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
         "boxisempty",
         --
-        "givenwidth", "givenheight", "givendepth", "scangivendimensions",
-        --
-        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance", "scratchtotal",
+        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
         "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",
         "scratchxposition", "scratchyposition",
@@ -269,7 +263,6 @@ return {
         "doifinset", "doifnotinset",
         "doifelseinset", "doifinsetelse",
         "doifelsenextchar", "doifnextcharelse",
-        "doifelsenextcharcs", "doifnextcharcselse",
         "doifelsenextoptional", "doifnextoptionalelse",
         "doifelsenextoptionalcs", "doifnextoptionalcselse",
         "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",
@@ -291,10 +284,7 @@ return {
         "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
         "doifelseassignment", "doifassignmentelse", "docheckassignment", "doifelseassignmentcs", "doifassignmentelsecs",
-        "validassignment", "novalidassignment",
         "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
-        --
-        "quitcondition", "truecondition", "falsecondition",
         --
         "tracingall", "tracingnone", "loggingall",
         --
@@ -313,11 +303,7 @@ return {
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
-        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure",
-        "measure", "measured", "directmeasure",
-        "setquantity", "setequantity", "setgquantity", "setxquantity", "definequantity", "freezequantity",
-        "quantity", "quantitied", "directquantity",
-     -- "quantified",
+        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure", "measured",
         --
         "installcorenamespace",
         --
@@ -380,8 +366,6 @@ return {
         --
         "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
-        --
-        "shiftbox", "vpackbox", "hpackbox", "vpackedbox", "hpackedbox",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
         "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
@@ -474,7 +458,5 @@ return {
         "compoundhyphenpenalty",
         --
         "start", "stop",
-        --
-        "unsupportedcs",
     }
 }

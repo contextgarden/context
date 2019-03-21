@@ -227,10 +227,7 @@ local launchers = {
 }
 
 function os.launch(str)
-    local command = format(launchers[os.name] or launchers.unix,str)
-    -- todo: pcall
---     print(command)
-    execute(command)
+    execute(format(launchers[os.name] or launchers.unix,str))
 end
 
 local gettimeofday = os.gettimeofday or os.clock

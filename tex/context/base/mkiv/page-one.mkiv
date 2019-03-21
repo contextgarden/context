@@ -29,8 +29,7 @@
   {\page_otr_eject_page_and_flush_inserts}
 
 \unexpanded\def\page_one_command_set_hsize
-  {\global\hsize\textwidth
-   \columnwidth\textwidth} % bonus so that it's not zero
+  {\global\hsize\textwidth}
 
 \unexpanded\def\page_one_command_set_float_hsize
   {\global\hsize\textwidth}
@@ -77,7 +76,7 @@
    \global\advance\vsize\d_page_adapts_delta
    % alternatively we could set it in builders.buildpage_filter
  % \ifdim\pagegoal<\maxdimen .. \fi
-   \pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
+   \global\pagegoal\dimexpr\vsize-\d_page_floats_inserted_top-\d_page_floats_inserted_bottom\relax}
 
 
 % 1 = partial page, 2 = whole page, 3 = partial page
@@ -147,18 +146,14 @@
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
-        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
       \else\ifcase\bottomraggednessmode
         % ragged (default)
-        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
-        % these have whitespace before but we can have some more options
-        % like a \vfill or so
         \page_otr_command_flush_bottom_insertions
         \vfil
       \or
@@ -166,7 +161,6 @@
         \page_otr_command_flush_bottom_insertions
       \or
         % baseline
-        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
       \fi\fi
@@ -379,37 +373,35 @@
    \fi \fi
    \snaptogrid\hpack{\box\floatbox}} % was copy
 
-\def\page_one_command_floats_get_compressed
-  {\setfalse\c_page_floats_center_box % not needed as we do call directly
-   %% no longer (interferes with footnotes):
-   %%
-   %% \page_one_command_set_vsize % test 2011.06.24.001
-   %%
-   \global\setbox\floatbox\hbox to \hsize
-     {\hfil
-      \dorecurse\nofcollectedfloats
-        {\ifcase\columndirection % nog document wide
-           \page_floats_flush\s!text\plusone
-         \else
-           \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
-         \fi
-         \hpack to \ifdim\naturalfloatwd>\makeupwidth\makeupwidth\else\naturalfloatwd\fi
-           {\hss\box\floatbox\hss}%
-         \ifnum\recurselevel<\nofcollectedfloats
-           \hfil
-         \fi}%
-      \hfil}}
-
-\def\page_one_command_flush_floats_indeed
+\def\page_one_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
-       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
+       \page_floats_collect\s!text\hsize\emwidth
        \ifcase\nofcollectedfloats
          \page_floats_get
-       \or
-         \page_floats_get
        \else
-         \page_one_command_floats_get_compressed
+         \setfalse\c_page_floats_center_box % not needed as we do call directly
+         %% no longer (interferes with footnotes):
+         %%
+         %% \page_one_command_set_vsize % test 2011.06.24.001
+         %%
+         \global\setbox\floatbox\hbox to \hsize
+           {\hfil
+            \dorecurse\nofcollectedfloats
+              {\ifcase\columndirection % nog document wide
+                 \page_floats_flush\s!text\plusone
+               \else
+                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+               \fi
+               \ifdim\wd\floatbox>\makeupwidth % \hsize
+                 \hpack to \makeupwidth{\hss\box\floatbox\hss}%
+               \else
+                 \box\floatbox
+               \fi
+               \ifnum\recurselevel<\nofcollectedfloats
+                 \hfil
+               \fi}%
+            \hfil}%
        \fi
      \else
        \page_floats_get
@@ -446,13 +438,7 @@
      \fi
      % should be an option
      \endgroup
-     \scratchdimenone\dimexpr
-        \pagetotal
-       +\floatheight
-       +\d_strc_floats_top
-       +\d_strc_floats_overflow
-       -\pageshrink
-     \relax
+     \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
      \scratchdimentwo\pagegoal
      \relax % needed
      \ifcase\c_page_one_float_method

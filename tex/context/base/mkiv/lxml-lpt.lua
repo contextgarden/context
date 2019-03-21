@@ -614,6 +614,27 @@ local lp_doequal = P("=")  / "=="
 local lp_or      = P("|")  / " or "
 local lp_and     = P("&")  / " and "
 
+-- local lp_builtin = (
+--         P("text")         / "(ll.dt[1] or '')" + -- fragile
+--         P("content")      / "ll.dt" +
+--         P("name")         / "((ll.ns~='' and ll.ns..':'..ll.tg) or ll.tg)" +
+--         P("tag")          / "ll.tg" +
+--         P("position")     / "l" + -- is element in finalizer
+--         P("firstindex")   / "1" +
+--         P("lastindex")    / "(#ll.__p__.dt or 1)" +
+--         P("firstelement") / "1" +
+--         P("lastelement")  / "(ll.__p__.en or 1)" +
+--         P("first")        / "1" +
+--         P("last")         / "#list" +
+--         P("rootposition") / "order" +
+--         P("order")        / "order" +
+--         P("element")      / "(ll.ei or 1)" +
+--         P("index")        / "(ll.ni or 1)" +
+--         P("match")        / "(ll.mi or 1)" +
+--         P("namespace")    / "ll.ns" +
+--         P("ns")           / "ll.ns"
+--     ) * ((spaces * P("(") * spaces * P(")"))/"")
+
 local builtin = {
     text         = "(ll.dt[1] or '')", -- fragile
     content      = "ll.dt",
@@ -626,8 +647,6 @@ local builtin = {
     lastindex    = "(#ll.__p__.dt or 1)",
     lastelement  = "(ll.__p__.en or 1)",
     last         = "#list",
-    list         = "list",
-    self         = "ll",
     rootposition = "order",
     order        = "order",
     element      = "(ll.ei or 1)",
@@ -635,7 +654,6 @@ local builtin = {
     match        = "(ll.mi or 1)",
     namespace    = "ll.ns",
     ns           = "ll.ns",
-
 }
 
 local lp_builtin   = lpeg.utfchartabletopattern(builtin)/builtin * ((spaces * P("(") * spaces * P(")"))/"")
@@ -788,9 +806,7 @@ end
 
 local function register_expression(expression)
     local converted = lpegmatch(converter,expression)
-    local wrapped   = format(template_e,converted)
-    local runner = load(wrapped)
- -- print(wrapped)
+    local runner = load(format(template_e,converted))
     runner = (runner and runner()) or function() errorrunner_e(expression,converted) end
     return { kind = "expression", expression = expression, converted = converted, evaluator = runner }
 end
@@ -1290,21 +1306,6 @@ expressions.count = function(e,pattern) -- what if pattern == empty or nil
     return pattern and (collected and #collected) or 0
 end
 
-expressions.attribute = function(e,name,value)
-    if type(e) == "table" and name then
-        local a = e.at
-        if a then
-            local v = a[name]
-            if value then
-                return v == value
-            else
-                return v
-            end
-        end
-    end
-    return nil
-end
-
 -- external
 
 -- expressions.oneof = function(s,...)
@@ -1370,7 +1371,7 @@ function expressions.contains(str,pattern)
     return false
 end
 
-function expressions.idstring(str)
+function xml.expressions.idstring(str)
     return type(str) == "string" and gsub(str,"^#","") or ""
 end
 

@@ -65,7 +65,6 @@ local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local end_of_math        = nuts.end_of_math
-local start_of_par       = nuts.start_of_par
 
 local nodepool           = nuts.pool
 
@@ -332,7 +331,7 @@ local function process(start)
                 end
                 textdir = autodir
                 setprop(current,"direction",true)
-            elseif id == localpar_code and start_of_par(current) then
+            elseif id == localpar_code and getsubtype(current) == 0 then
                 local direction = getdirection(current)
                 if direction == righttoleft_code then
                     autodir = -1

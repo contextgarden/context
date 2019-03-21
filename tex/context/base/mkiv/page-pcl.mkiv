@@ -94,9 +94,7 @@
    \else
      \numexpr\c_page_col_n_of_columns-\plusone\relax
      \dimexpr\d_page_col_column_width+\d_page_col_distance\relax
-   \fi
-   % consistent with mixed:
-   \textwidth\d_page_col_column_width}
+   \fi}
 
 %D \unknown
 
@@ -114,19 +112,13 @@
 
 %D \unknown
 
-\def\page_col_registered_text_area_b#1%
-  {\begingroup
-   \makeupwidth\d_page_col_column_width
-   \page_one_registered_text_area_b{#1}%
-   \endgroup}
-
 \unexpanded\def\page_col_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \setbox\b_page_one_contents\vbox to \textheight
      {\page_one_registered_text_area_a#1#2}%
    \page_one_command_package_show_state
    \ht\b_page_one_contents\textheight
-   \page_col_registered_text_area_b
+   \page_one_registered_text_area_b
      {\box\b_page_one_contents}%
    \egroup}
 
@@ -182,13 +174,13 @@
       \ht\b_page_one_bottom_notes\zeropoint
       \wd\b_page_one_bottom_notes\zeropoint
       \wd\b_page_one_bottom_notes\d_page_col_column_width
-       \page_col_registered_text_area_b
+       \page_one_registered_text_area_b
          {\vpack to \textheight
-            {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
+            {\hbox{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
      \else
        \ht\b_page_one_contents\textheight
        \wd\b_page_one_contents\d_page_col_column_width
-       \page_col_registered_text_area_b
+       \page_one_registered_text_area_b
          {\box\b_page_one_contents}%
      \fi
    \egroup}
@@ -246,7 +238,7 @@
    \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_col_n_of_columns\plusone % new
    \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\recurselevel\scratchbox
    % backgrounds
-   \anch_mark_column_box\scratchbox\recurselevel
+   \anch_mark_column_box\scratchbox
    \mixedcolumnseparatorheight\ht\scratchbox
    \mixedcolumnseparatordepth \dp\scratchbox
    \inheritedpagecolumnsframedbox\recurselevel\scratchbox}
@@ -400,9 +392,10 @@
 
 \def\page_col_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
-     \ifconditional\c_page_floats_compress_flushed
+     \ifconditional\c_page_floats_pack_flushed
        \setfalse\c_page_floats_center_box % not needed as we do call directly
-       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
+       %
+       \page_floats_collect\s!text\hsize\emwidth
        %
        \ifnum\nofcollectedfloats=\plusone
          \ifdim\naturalfloatwd>\hsize
@@ -422,7 +415,7 @@
                % this could happen at the lua end instead
                \scratchdimen\dimexpr\wd\floatbox-\naturalfloatwd\relax
                \ifdim\scratchdimen<\zeropoint
-                 \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
+                   \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
                \fi
                %
                \ifdim\wd\floatbox>\textwidth % \hsize
@@ -731,6 +724,9 @@
     \setuevalue{\e!stop \currentpagecolumns}{\stoppagecolumns}%
 \to \everydefinepagecolumns
 
+\ifdefined \columnwidth    \else \newdimen\columnwidth    \fi
+\ifdefined \columndistance \else \newdimen\columndistance \fi
+
 \def\page_col_pickup_preceding
   {\begingroup
    \setupoutputroutine[\s!mixedcolumn]%
@@ -799,8 +795,6 @@
    %
    \columnwidth    \d_page_col_column_width
    \columndistance \d_page_col_distance
-   \nofcolumns     \c_page_col_n_of_columns
-   \textwidth      \columnwidth % kind of redundant
    %
    \nopenalties
    %
@@ -835,6 +829,8 @@
    %
    \page_col_command_set_vsize
    \page_col_command_set_hsize
+   %
+   \nofcolumns\c_page_mix_n_of_columns
    %
    \unexpanded\def\page_col_start[##1]%
      {\page_col_start_nop}%

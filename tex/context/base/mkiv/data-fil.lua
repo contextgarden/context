@@ -6,57 +6,48 @@ if not modules then modules = { } end modules ['data-fil'] = {
     license   = "see context related readme files"
 }
 
-local ioopen = io.open
-local isdir = lfs.isdir
-
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_files = logs.reporter("resolvers","files")
 
-local resolvers        = resolvers
-local resolveprefix    = resolvers.resolve
-local findfile         = resolvers.findfile
-local scanfiles        = resolvers.scanfiles
-local registerfilehash = resolvers.registerfilehash
-local appendhash       = resolvers.appendhash
+local resolvers     = resolvers
+local resolveprefix = resolvers.resolve
 
-local loadcachecontent = caches.loadcontent
+local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
+local locators, hashers, generators, concatinators = resolvers.locators, resolvers.hashers, resolvers.generators, resolvers.concatinators
 
-local checkgarbage     = utilities.garbagecollector and utilities.garbagecollector.check
+local checkgarbage = utilities.garbagecollector and utilities.garbagecollector.check
 
-function resolvers.locators.file(specification)
+function locators.file(specification)
     local filename = specification.filename
     local realname = resolveprefix(filename) -- no shortcut
-    if realname and realname ~= '' and isdir(realname) then
+    if realname and realname ~= '' and lfs.isdir(realname) then
         if trace_locating then
             report_files("file locator %a found as %a",filename,realname)
         end
-        appendhash('file',filename,true) -- cache
+        resolvers.appendhash('file',filename,true) -- cache
     elseif trace_locating then
         report_files("file locator %a not found",filename)
     end
 end
 
-function resolvers.hashers.file(specification)
+function hashers.file(specification)
     local pathname = specification.filename
-    local content  = loadcachecontent(pathname,'files')
-    registerfilehash(pathname,content,content==nil)
+    local content  = caches.loadcontent(pathname,'files')
+    resolvers.registerfilehash(pathname,content,content==nil)
 end
 
-function resolvers.generators.file(specification)
+function generators.file(specification)
     local pathname = specification.filename
-    local content  = scanfiles(pathname,false,true) -- scan once
-    registerfilehash(pathname,content,true)
+    local content  = resolvers.scanfiles(pathname,false,true) -- scan once
+    resolvers.registerfilehash(pathname,content,true)
 end
 
-resolvers.concatinators.file = file.join
-
-local finders  = resolvers.finders
-local notfound = finders.notfound
+concatinators.file = file.join
 
 function finders.file(specification,filetype)
     local filename  = specification.filename
-    local foundname = findfile(filename,filetype)
+    local foundname = resolvers.findfile(filename,filetype)
     if foundname and foundname ~= "" then
         if trace_locating then
             report_files("file finder: %a found",filename)
@@ -66,64 +57,42 @@ function finders.file(specification,filetype)
         if trace_locating then
             report_files("file finder: %a not found",filename)
         end
-        return notfound()
+        return finders.notfound()
     end
 end
 
 -- The default textopener will be overloaded later on.
 
-local openers    = resolvers.openers
-local notfound   = openers.notfound
-local overloaded = false
-
-local function textopener(tag,filename,f)
+function openers.helpers.textopener(tag,filename,f)
     return {
-        reader = function() return f:read () end,
-        close  = function() return f:close() end,
+        reader = function()                           return f:read () end,
+        close  = function() logs.show_close(filename) return f:close() end,
     }
-end
-
-function openers.helpers.textopener(...)
-    return textopener(...)
-end
-
-function openers.helpers.settextopener(opener)
-    if overloaded then
-        report_files("file opener: %s overloaded","already")
-    else
-        if trace_locating then
-            report_files("file opener: %s overloaded","once")
-        end
-        overloaded = true
-        textopener = opener
-    end
 end
 
 function openers.file(specification,filetype)
     local filename = specification.filename
     if filename and filename ~= "" then
-        local f = ioopen(filename,"r")
+        local f = io.open(filename,"r")
         if f then
             if trace_locating then
                 report_files("file opener: %a opened",filename)
             end
-            return textopener("file",filename,f)
+            return openers.helpers.textopener("file",filename,f)
         end
     end
     if trace_locating then
         report_files("file opener: %a not found",filename)
     end
-    return notfound()
+    return openers.notfound()
 end
-
-local loaders  = resolvers.loaders
-local notfound = loaders.notfound
 
 function loaders.file(specification,filetype)
     local filename = specification.filename
     if filename and filename ~= "" then
-        local f = ioopen(filename,"rb")
+        local f = io.open(filename,"rb")
         if f then
+            logs.show_load(filename)
             if trace_locating then
                 report_files("file loader: %a loaded",filename)
             end
@@ -140,5 +109,5 @@ function loaders.file(specification,filetype)
     if trace_locating then
         report_files("file loader: %a not found",filename)
     end
-    return notfound()
+    return loaders.notfound()
 end

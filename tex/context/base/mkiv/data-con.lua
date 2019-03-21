@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['data-con'] = {
     license   = "see context related readme files"
 }
 
-local setmetatable = setmetatable
 local format, lower, gsub = string.format, string.lower, string.gsub
 
 local trace_cache      = false  trackers.register("resolvers.cache",      function(v) trace_cache      = v end)
@@ -14,28 +13,21 @@ local trace_containers = false  trackers.register("resolvers.containers", functi
 local trace_storage    = false  trackers.register("resolvers.storage",    function(v) trace_storage    = v end)
 
 --[[ldx--
-<p>Once we found ourselves defining similar cache constructs several times,
-containers were introduced. Containers are used to collect tables in memory and
-reuse them when possible based on (unique) hashes (to be provided by the calling
-function).</p>
+<p>Once we found ourselves defining similar cache constructs
+several times, containers were introduced. Containers are used
+to collect tables in memory and reuse them when possible based
+on (unique) hashes (to be provided by the calling function).</p>
 
-<p>Caching to disk is disabled by default. Version numbers are stored in the
-saved table which makes it possible to change the table structures without
-bothering about the disk cache.</p>
+<p>Caching to disk is disabled by default. Version numbers are
+stored in the saved table which makes it possible to change the
+table structures without bothering about the disk cache.</p>
 
-<p>Examples of usage can be found in the font related code. This code is not
-ideal but we need it in generic too so we compromise.</p>
+<p>Examples of usage can be found in the font related code.</p>
 --ldx]]--
 
-containers              = containers or { }
-local containers        = containers
-containers.usecache     = true
-
-local getwritablepath   = caches.getwritablepath
-local getreadablepaths  = caches.getreadablepaths
-local cacheiswritable   = caches.is_writable
-local loaddatafromcache = caches.loaddata
-local savedataincache   = caches.savedata
+containers          = containers or { }
+local containers    = containers
+containers.usecache = true
 
 local report_containers = logs.reporter("resolvers","containers")
 
@@ -44,11 +36,11 @@ local allocated = { }
 local mt = {
     __index = function(t,k)
         if k == "writable" then
-            local writable = getwritablepath(t.category,t.subcategory) or { "." }
+            local writable = caches.getwritablepath(t.category,t.subcategory) or { "." }
             t.writable = writable
             return writable
         elseif k == "readables" then
-            local readables = getreadablepaths(t.category,t.subcategory) or { "." }
+            local readables = caches.getreadablepaths(t.category,t.subcategory) or { "." }
             t.readables = readables
             return readables
         end
@@ -72,8 +64,8 @@ function containers.define(category, subcategory, version, enabled)
                 enabled     = enabled,
                 version     = version or math.pi, -- after all, this is TeX
                 trace       = false,
-             -- writable    = getwritablepath  and getwritablepath (category,subcategory) or { "." },
-             -- readables   = getreadablepaths and getreadablepaths(category,subcategory) or { "." },
+             -- writable    = caches.getwritablepath  and caches.getwritablepath (category,subcategory) or { "." },
+             -- readables   = caches.getreadablepaths and caches.getreadablepaths(category,subcategory) or { "." },
             }
             setmetatable(s,mt)
             c[subcategory] = s
@@ -83,7 +75,7 @@ function containers.define(category, subcategory, version, enabled)
 end
 
 function containers.is_usable(container,name)
-    return container.enabled and caches and cacheiswritable(container.writable, name)
+    return container.enabled and caches and caches.is_writable(container.writable, name)
 end
 
 function containers.is_valid(container,name)
@@ -99,7 +91,7 @@ function containers.read(container,name)
     local storage = container.storage
     local stored = storage[name]
     if not stored and container.enabled and caches and containers.usecache then
-        stored = loaddatafromcache(container.readables,name,container.writable)
+        stored = caches.loaddata(container.readables,name,container.writable)
         if stored and stored.cache_version == container.version then
             if trace_cache or trace_containers then
                 report_containers("action %a, category %a, name %a","load",container.subcategory,name)
@@ -116,20 +108,17 @@ function containers.read(container,name)
     return stored
 end
 
-function containers.write(container, name, data, fast)
+function containers.write(container, name, data)
     if data then
         data.cache_version = container.version
         if container.enabled and caches then
-            local unique = data.unique
-            local shared = data.shared
-            data.unique  = nil
-            data.shared  = nil
-            savedataincache(container.writable, name, data, fast)
+            local unique, shared = data.unique, data.shared
+            data.unique, data.shared = nil, nil
+            caches.savedata(container.writable, name, data)
             if trace_cache or trace_containers then
                 report_containers("action %a, category %a, name %a","save",container.subcategory,name)
             end
-            data.unique = unique
-            data.shared = shared
+            data.unique, data.shared = unique, shared
         end
         if trace_cache or trace_containers then
             report_containers("action %a, category %a, name %a","store",container.subcategory,name)

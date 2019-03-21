@@ -1,6 +1,6 @@
 % PDF/A-1a:2005
 
-\enabletrackers[structure.tags,backend.tags,backend.xmp]
+\enabletrackers[structure.tags,backend.tags]
 
 \setupbackend
   [format=PDF/A-1a:2005,
@@ -13,11 +13,9 @@
 
 \setupcolors[cmyk=no]
 \definecolor[rgbblack][b=0.01]
-\definecolor[transtest][r=1,g=1,t=0.25]% transparency is not allowed
+\definecolor[transtest][r=1,g=1,t=.5]
 
 \placebookmarks[chapter][all][force=yes]
-
-
 
 \starttext
 
@@ -25,7 +23,7 @@
 
 \startchapter[title=aa,bookmark=bb,list=cc,marking=dd]
 
-Test for PDF/A-1a:2005
+Test it
 
 \stopchapter
 

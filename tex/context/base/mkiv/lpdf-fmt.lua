@@ -81,12 +81,9 @@ local prefixes = {
     cmyk = "DefaultCMYK",
 }
 
-local formatspecification = nil
-local formatname          = nil
+local formatspecification, formatname = nil, nil
 
 -- * correspondent document wide flags (write once) needed for permission tests
-
--- defaults as mt
 
 local formats = utilities.storage.allocate {
     version = {
@@ -98,7 +95,6 @@ local formats = utilities.storage.allocate {
         optional_content        = 1.5,
         transparency            = 1.4,
         object_compression      = 1.5,
-        attachments             = 1.7,
     },
     default = {
         pdf_version             = 1.7,  -- todo: block tex primitive
@@ -117,11 +113,10 @@ local formats = utilities.storage.allocate {
         open_prepress_interface = true, -- unknown
         optional_content        = true, -- todo: block at lua level
         transparency            = true, -- todo: block at lua level
-        jbig2_compression       = true, -- todo: block at lua level (dropped anyway)
-        jpeg2000_compression    = true, -- todo: block at lua level (dropped anyway)
+        jbig2_compression       = true, -- todo: block at lua level
+        jpeg2000_compression    = true, -- todo: block at lua level
         include_cidsets         = true,
         include_charsets        = true,
-        attachments             = true,
         inject_metadata         = function()
             -- nothing
         end
@@ -138,7 +133,6 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
@@ -155,7 +149,6 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
@@ -176,7 +169,6 @@ local formats = utilities.storage.allocate {
             include_intents         = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2002")
             end
@@ -197,7 +189,6 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2003")
             end
@@ -222,7 +213,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
                 insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -250,7 +240,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
                 insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
@@ -278,7 +267,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 -- todo
             end
@@ -305,7 +293,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 -- todo
             end
@@ -331,7 +318,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 -- todo
             end
@@ -348,12 +334,11 @@ local formats = utilities.storage.allocate {
             calibrated_rgb_colors   = true, -- unknown
             cielab_colors           = true, -- unknown
             include_intents         = true,
-            forms                   = true, -- new: forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
-            tagging                 = true, -- new: the only difference to PDF/A-1b
+            forms                   = true, -- NEW; forms are allowed (with limitations); no JS,  other restrictions are unknown (TODO)
+            tagging                 = true, -- NEW; the only difference to PDF/A-1b
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -374,14 +359,11 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
-            attachments             = false,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
             end
         },
-        -- Only PDF/A Attachments are allowed but we don't check the attachments
-        -- for any quality: they are just blobs.
-        ["pdf/a-2a"] = {
+        ["pdf/a-2a"] = { -- untested; only PDF/A Attachments are allowed
             pdf_version             = 1.7,
             format_name             = "pdf/a-2a",
             xmp_file                = "lpdf-pda.xml",
@@ -396,74 +378,17 @@ local formats = utilities.storage.allocate {
             forms                   = true,
             tagging                 = true,
             internal_icc_profiles   = true,
-            transparency            = true, -- new
+            transparency            = true, -- NEW
             jbig2_compression       = true,
-            jpeg2000_compression    = true, -- new
-            object_compression      = true, -- new
+            jpeg2000_compression    = true, -- NEW
+            object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = true, -- new
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
         },
-		["pdf/a-2b"] = {
-            pdf_version             = 1.7,
-            format_name             = "pdf/a-2b",
-            xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA1",
-            gray_scale              = true,
-            cmyk_colors             = true,
-            rgb_colors              = true,
-            spot_colors             = true,
-            calibrated_rgb_colors   = true, -- unknown
-            cielab_colors           = true, -- unknown
-            include_intents         = true,
-            forms                   = true,
-            tagging                 = false,
-            internal_icc_profiles   = true,
-            transparency            = true,
-            jbig2_compression       = true,
-            jpeg2000_compression    = true,
-            object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
-            attachments             = true,
-            inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
-            end
-        },
-        -- This is like the b variant, but it requires Unicode mapping of fonts
-        -- which we do anyway.
-		["pdf/a-2u"] = {
-            pdf_version             = 1.7,
-            format_name             = "pdf/a-2u",
-            xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA1",
-            gray_scale              = true,
-            cmyk_colors             = true,
-            rgb_colors              = true,
-            spot_colors             = true,
-            calibrated_rgb_colors   = true, -- unknown
-            cielab_colors           = true, -- unknown
-            include_intents         = true,
-            forms                   = true,
-            tagging                 = false,
-            internal_icc_profiles   = true,
-            transparency            = true,
-            jbig2_compression       = true,
-            jpeg2000_compression    = true,
-            object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
-            attachments             = true,
-            inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
-            end
-        },
-        -- Any type of attachment is allowed but we don't check the quality
-        -- of them.
-        ["pdf/a-3a"] = {
+        ["pdf/a-3a"] = { -- untested; NEW: any type of attachment is allowed
             pdf_version             = 1.7,
             format_name             = "pdf/a-3a",
             xmp_file                = "lpdf-pda.xml",
@@ -484,61 +409,8 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-            end
-        },
-      ["pdf/a-3b"] = {
-            pdf_version             = 1.7,
-            format_name             = "pdf/a-3b",
-            xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA1",
-            gray_scale              = true,
-            cmyk_colors             = true,
-            rgb_colors              = true,
-            spot_colors             = true,
-            calibrated_rgb_colors   = true, -- unknown
-            cielab_colors           = true, -- unknown
-            include_intents         = true,
-            forms                   = true,
-            tagging                 = false,
-            internal_icc_profiles   = true,
-            transparency            = true,
-            jbig2_compression       = true,
-            jpeg2000_compression    = true,
-            object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
-            attachments             = true,
-            inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
-            end
-        },
-      ["pdf/a-3u"] = {
-            pdf_version             = 1.7,
-            format_name             = "pdf/a-3u",
-            xmp_file                = "lpdf-pda.xml",
-            gts_flag                = "GTS_PDFA1",
-            gray_scale              = true,
-            cmyk_colors             = true,
-            rgb_colors              = true,
-            spot_colors             = true,
-            calibrated_rgb_colors   = true, -- unknown
-            cielab_colors           = true, -- unknown
-            include_intents         = true,
-            forms                   = true,
-            tagging                 = false,
-            internal_icc_profiles   = true,
-            transparency            = true,
-            jbig2_compression       = true,
-            jpeg2000_compression    = true,
-            object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
-            attachments             = true,
-            inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
             end
         },
         ["pdf/ua-1"] = { -- based on PDF/A-3a, but no 'gts_flag'
@@ -561,7 +433,6 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true, --- really ?
-            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
@@ -755,16 +626,10 @@ local function handledefaultprofile(s,spec) -- specification
     end
 end
 
-local loadedintents = { }
-local intents       = pdfarray()
+local loadedintents, intents = { }, pdfarray()
 
 local function handleoutputintent(s,spec)
-    local url             = s.url or ""
-    local filename        = s.filename or ""
-    local name            = s.info or filename
-    local id              = s.id or ""
-    local outputcondition = s.outputcondition or ""
-    local info            = s.info or ""
+    local name, url, filename, id, outputcondition, info = s.info or s.filename or "", s.url or "", s.filename or "", s.id or "", s.outputcondition or "", s.info or ""
     if name == "" or id == "" then
         report_backend("error in output intent specification: %s",serialize(s,false))
     elseif not loadedintents[name] then
@@ -906,13 +771,8 @@ function codeinjections.setformat(s)
             -- cid sets can always omitted now, but those validators still complain so let's
             -- for a while keep it (for luigi):
             --
-            lpdf.setomitcidset (formatspecification.include_cidsets  == false and 1 or 0) -- why a number
-            lpdf.setomitcharset(formatspecification.include_charsets == false and 1 or 0) -- why a number
-            --
-            -- maybe block by pdf version
-            --
-            codeinjections.settaggingsupport(formatspecification.tagging)
-            codeinjections.setattachmentsupport(formatspecification.attachments)
+            lpdf.setomitcidset (formatspecification.include_cidsets  == false and 1 or 0)
+            lpdf.setomitcharset(formatspecification.include_charsets == false and 1 or 0)
             --
             -- context.setupcolors { -- not this way
             --     cmyk = spec.cmyk_colors and variables.yes or variables.no,
@@ -986,10 +846,6 @@ interfaces.implement {
 function codeinjections.getformatoption(key)
     return formatspecification and formatspecification[key]
 end
-
--- function codeinjections.getformatspecification()
---     return formatspecification
--- end
 
 function codeinjections.supportedformats()
     local t = { }

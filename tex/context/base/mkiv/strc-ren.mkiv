@@ -261,7 +261,7 @@
    \d_strc_rendering_hang_height\htdp\b_strc_rendering_head
    \getnoflines\d_strc_rendering_hang_height
    \normalexpanded{\endgroup\n_strc_rendering_hang_lines\the\numexpr\noflines-\plusone\relax}% brrr
-   \setbox\b_strc_rendering_head\hpack{\lower\n_strc_rendering_hang_lines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
+   \setbox\b_strc_rendering_head\hbox{\lower\n_strc_rendering_hang_lines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
    \d_strc_rendering_hang_height\dimexpr\htdp\b_strc_rendering_head-\d_strc_rendering_local_height+\strutdp\relax
    \ht\b_strc_rendering_head\strutht
    \dp\b_strc_rendering_head\strutdp
@@ -599,24 +599,24 @@
     \vbox {
         \headsetupspacing
         \ifconditional\headshownumber
-            \ifzeropt\headwidth \else
-                \ifzeropt\headnumberwidth
-                    \ifzeropt\headtextwidth \else
+            \ifdim\headwidth=\zeropoint \else
+                \ifdim\headnumberwidth=\zeropoint
+                    \ifdim\headtextwidth=\zeropoint \else
                         \headnumberwidth\dimexpr\headwidth-\headtextwidth\relax
                     \fi
                 \else
-                    \ifzeropt\headtextwidth
+                    \ifdim\headtextwidth=\zeropoint
                         \headtextwidth\dimexpr\headwidth-\headnumberwidth\relax
                     \fi
                 \fi
                 \hsize\headwidth
             \fi
-            \ifzeropt\headnumberwidth \else
+            \ifdim\headnumberwidth=\zeropoint\else
                 \headnumberdistance\zeropoint
             \fi
-            \setbox\scratchbox\hbox \ifzeropt\headnumberwidth\else to \headnumberwidth\fi{\headnumbercontent}
+            \setbox\scratchbox\hbox \ifdim\headnumberwidth=\zeropoint\else to \headnumberwidth\fi{\headnumbercontent}
             \scratchdimen\dimexpr\wd\scratchbox+\headnumberdistance\relax
-            \ifzeropt\headtextwidth \else
+            \ifdim\headtextwidth=\zeropoint\else
                 \hsize\dimexpr\scratchdimen+\headtextwidth\relax
             \fi
             \hangindent\scratchdimen
@@ -625,8 +625,8 @@
             \box\scratchbox
             \hskip\headnumberdistance
         \else
-            \ifzeropt\headtextwidth
-                \ifzeropt\headwidth \else
+            \ifdim\headtextwidth=\zeropoint
+                \ifdim\headwidth=\zeropoint \else
                     \hsize\headwidth
                 \fi
             \else
@@ -795,7 +795,7 @@
             \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
-        \hpack {
+        \hbox {
             \box\scratchboxone
             \hskip\headnumberdistance
             \box\scratchboxtwo
@@ -824,7 +824,7 @@
             \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
-        \hpack {
+        \hbox {
             \box\scratchboxone
             \hskip\headnumberdistance
             \box\scratchboxtwo

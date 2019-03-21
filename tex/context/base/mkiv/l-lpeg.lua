@@ -295,7 +295,7 @@ patterns.longtostring  = Cs(whitespace^0/"" * ((patterns.quoted + nonwhitespace^
 --     return P { P(pattern) + 1 * V(1) }
 -- end
 
-local function anywhere(pattern) -- faster
+function anywhere(pattern) -- faster
     return (1-P(pattern))^0 * P(pattern)
 end
 

@@ -203,7 +203,7 @@
 % oeps, hsize can be 0pt in which case we get a strange division
 % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
 
-\def\spac_align_set_raggedness_middle{\ifzeropt\hsize\plussix\bodyfontsize\else.5\hsize\fi}
+\def\spac_align_set_raggedness_middle{\ifdim\hsize=\zeropoint\plussix\bodyfontsize\else.5\hsize\fi}
 
 \unexpanded\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
   {\ifnum\tolerance<\c_spac_tolerance_minimum
@@ -691,8 +691,8 @@
                                              \c_spac_align_state_horizontal\zerocount}
 \setvalue{\??aligncommand\v!inner          }{\c_spac_align_state_horizontal\plusfour }
 \setvalue{\??aligncommand\v!outer          }{\c_spac_align_state_horizontal\plusfive }
-\setvalue{\??aligncommand\v!flushinner     }{\c_spac_align_state_horizontal\plusfour }
-\setvalue{\??aligncommand\v!flushouter     }{\c_spac_align_state_horizontal\plusfive }
+\setvalue{\??aligncommand\v!flushinner     }{\c_spac_align_state_horizontal\plusfive }
+\setvalue{\??aligncommand\v!flushouter     }{\c_spac_align_state_horizontal\plusfour }
 \setvalue{\??aligncommand\v!right          }{\c_spac_align_state_horizontal\plustwo  }
 \setvalue{\??aligncommand\v!left           }{\c_spac_align_state_horizontal\plusthree}
 \setvalue{\??aligncommand\v!center         }{\c_spac_align_state_horizontal\plusone
@@ -701,6 +701,7 @@
 \setvalue{\??aligncommand\v!last           }{\c_spac_align_state_horizontal\plusseven}
 \setvalue{\??aligncommand\v!end            }{\c_spac_align_state_horizontal\pluseight}
 \setvalue{\??aligncommand\v!paragraph      }{\c_spac_align_state_horizontal\plusnine}
+
 
 \setvalue{\??aligncommand\v!lefttoright    }{\c_spac_align_state_direction \plusone  }
 \setvalue{\??aligncommand\v!righttoleft    }{\c_spac_align_state_direction \plustwo  }
@@ -715,7 +716,6 @@
 \setvalue{\??aligncommand\v!morehyphenation}{\toksapp\t_spac_align_collected{\morehyphens}}
 
 \setvalue{\??aligncommand\v!hanging        }{\toksapp\t_spac_align_collected{\font_protruding_enable }}
-\setvalue{\??aligncommand\v!hangingboth    }{\toksapp\t_spac_align_collected{\font_protruding_enable_b}}
 \setvalue{\??aligncommand\v!nothanging     }{\toksapp\t_spac_align_collected{\font_protruding_disable}}
 \setvalue{\??aligncommand\v!hz             }{\toksapp\t_spac_align_collected{\font_expansion_enable  }}
 \setvalue{\??aligncommand\v!fullhz         }{\toksapp\t_spac_align_collected{\font_expansion_enable_k}}

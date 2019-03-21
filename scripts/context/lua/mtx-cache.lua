@@ -12,12 +12,12 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-cache</entry>
   <entry name="detail">ConTeXt &amp; MetaTeX Cache Management</entry>
-  <entry name="version">1.01</entry>
+  <entry name="version">0.10</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="make"><short>generate databases and formats</short></flag>
+    <flag name="purge"><short>remove not used files</short></flag>
     <flag name="erase"><short>completely remove cache</short></flag>
     <flag name="list"><short>show cache</short></flag>
    </subcategory>
@@ -48,86 +48,97 @@ scripts.cache = scripts.cache or { }
 
 local function collect(path)
     local all = dir.glob(path .. "/**/*")
-    local ext = table.setmetatableindex("table")
+    local tmas, tmcs, rest = { }, { }, { }
     for i=1,#all do
         local name = all[i]
-        local list = ext[filesuffix(name)]
-        list[#list+1] = name
+        local suffix = filesuffix(name)
+        if suffix == "tma" then
+            tmas[#tmas+1] = name
+        elseif suffix == "tmc" then
+            tmcs[#tmcs+1] = name
+        else
+            rest[#rest+1] = name
+        end
     end
-    return ext
+    return tmas, tmcs, rest, all
 end
 
-local function list(banner,path,ext)
-    local total = 0
+local function list(banner,path,tmas,tmcs,rest)
     report("%s: %s",banner,path)
     report()
-    for k, v in table.sortedhash(ext) do
-        total = total + #v
-        report("%-6s : %4i",k,#v)
-    end
-    report()
-    report("total  : %4i",total)
+    report("tma   : %4i",#tmas)
+    report("tmc   : %4i",#tmcs)
+    report("rest  : %4i",#rest)
+    report("total : %4i",#tmas+#tmcs+#rest)
     report()
 end
 
-local function erase(banner,path,list)
+local function purge(banner,path,list,all)
     report("%s: %s",banner,path)
     report()
-    for ext, list in table.sortedhash(list) do
-        local gone = 0
-        local kept = 0
-        for i=1,#list do
-            local filename = list[i]
-            if find(filename,"luatex%-cache") then
+    local fonts = environment.argument("fonts")
+    local n = 0
+    for i=1,#list do
+        local filename = list[i]
+        if find(filename,"luatex%-cache") then -- safeguard
+            if fonts and not find(filename,"fonts") then
+                -- skip
+            elseif all then
                 remove(filename)
-                if isfile(filename) then
-                    kept = kept + 1
-                else
-                    gone = gone + 1
+                n = n + 1
+            elseif not fonts or find(filename,"fonts") then
+                local suffix = filesuffix(filename)
+                if suffix == "tma" then
+                    local checkname = replacesuffix(filename,"tma","tmc")
+                    if isfile(checkname) then
+                        remove(filename)
+                        n = n + 1
+                    end
                 end
             end
         end
-        report("%-6s : %4i gone, %4i kept",ext,gone,kept)
     end
+    report("removed tma files : %i",n)
     report()
+    return n
 end
 
-function scripts.cache.make()
-    os.execute("mtxrun --generate")
-    os.execute("context --make")
-    os.execute("mtxrun --script font --reload")
+function scripts.cache.purge()
+    local writable = caches.getwritablepath()
+    local tmas, tmcs, rest = collect(writable)
+    list("writable path",writable,tmas,tmcs,rest)
+    purge("writable path",writable,tmas)
+    list("writable path",writable,tmas,tmcs,rest)
 end
 
 function scripts.cache.erase()
     local writable = caches.getwritablepath()
-    local groups   = collect(writable)
-    list("writable path",writable,groups)
-    erase("writable path",writable,groups)
-    if environment.argument("make") then
-        scripts.cache.make()
-    end
+    local tmas, tmcs, rest, all = collect(writable)
+    list("writable path",writable,tmas,tmcs,rest)
+    purge("writable path",writable,all,true)
+    list("writable path",writable,tmas,tmcs,rest)
 end
 
 function scripts.cache.list()
     local readables = caches.getreadablepaths()
-    local writable  = caches.getwritablepath()
-    local groups    = collect(writable)
-    list("writable path",writable,groups)
+    local writable = caches.getwritablepath()
+    local tmas, tmcs, rest = collect(writable)
+    list("writable path",writable,tmas,tmcs,rest)
     for i=1,#readables do
         local readable = readables[i]
         if readable ~= writable then
-            local groups = collect(readable)
-            list("readable path",readable,groups)
+            local tmas, tmcs = collect(readable)
+            list("readable path",readable,tmas,tmcs,rest)
         end
     end
 end
 
-if environment.argument("erase") then
+if environment.argument("purge") then
+    scripts.cache.purge()
+elseif environment.argument("erase") then
     scripts.cache.erase()
 elseif environment.argument("list") then
     scripts.cache.list()
-elseif environment.argument("make") then
-    scripts.cache.make()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

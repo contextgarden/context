@@ -289,7 +289,6 @@ visualizers.register("cld",   visualizer)
 visualizers.register("tex",   visualizer)
 visualizers.register("lua",   visualizer)
 visualizers.register("mps",   visualizer)
-visualizers.register("mp",    visualizer)
 visualizers.register("pdf",   visualizer)
 visualizers.register("xml",   visualizer)
 visualizers.register("bibtex",visualizer)
@@ -301,21 +300,13 @@ visualizers.register("bnf",   visualizer)
 visualizers.register("sql",   visualizer)
 visualizers.register("json",  visualizer)
 
-visualizers.register("sas",   visualizer)
-
-function scite.register(name)
-    visualizers.register(name,visualizer)
-end
-
-moduledata.scite = scite
-
 \stopluacode
 
 \definetyping[TEX] [option=cld]
 \definetyping[LUA] [option=lua]
 \definetyping[BTX] [option=bibtex]
 \definetyping[MPS] [option=mps]
-\definetyping[MP]  [option=mp]
+\definetyping[MP]  [option=mps]
 \definetyping[PDF] [option=pdf]
 \definetyping[CPP] [option=web]
 \definetyping[WEB] [option=web]
@@ -325,8 +316,6 @@ moduledata.scite = scite
 \definetyping[JSON][option=json]   % To be tested in an upcoming manual.
 \definetyping[NONE][option=none]
 
-\definetyping[SAS] [option=sas]
-
 % This is a preliminary interface.
 
 \unprotect
@@ -334,12 +323,9 @@ moduledata.scite = scite
 \newdimen\scitespaceskip
 
 \unexpanded\def\buff_scite_slxb#1%
-  {% we can have a side float
-   \advance\hangindent\numexpr#1+2\relax\scitespaceskip
+  {\hangindent\numexpr#1+2\relax\scitespaceskip
    \begstrut\hskip#1\scitespaceskip
-   \ifcase\hangafter
-     \hangafter\plusone\relax
-   \fi}
+   \hangafter 1\relax}
 
 \unexpanded\def\buff_scite_slxe
   {\endstrut\par}

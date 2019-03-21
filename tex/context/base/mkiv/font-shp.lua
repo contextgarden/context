@@ -17,15 +17,11 @@ local pfb          = fonts.handlers.pfb
 local hashes       = fonts.hashes
 local identifiers  = hashes.identifiers
 
-local version      = 0.009
+local version      = 0.007
 local shapescache  = containers.define("fonts", "shapes",  version, true)
 local streamscache = containers.define("fonts", "streams", version, true)
 
 -- shapes (can be come a separate file at some point)
-
-local compact_streams = false
-
-directives.register("fonts.streams.compact", function(v) compact_streams = v end)
 
 local function packoutlines(data,makesequence)
     local subfonts = data.subfonts
@@ -44,27 +40,26 @@ local function packoutlines(data,makesequence)
         return
     end
     if makesequence then
-        for index=0,#glyphs do
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
             local glyph = glyphs[index]
-            if glyph then
-                local segments = glyph.segments
-                if segments then
-                    local sequence    = { }
-                    local nofsequence = 0
-                    for i=1,#segments do
-                        local segment    = segments[i]
-                        local nofsegment = #segment
-                        -- why last first ... needs documenting
+            local segments = glyph.segments
+            if segments then
+                local sequence    = { }
+                local nofsequence = 0
+                for i=1,#segments do
+                    local segment    = segments[i]
+                    local nofsegment = #segment
+                    -- why last first ... needs documenting
+                    nofsequence = nofsequence + 1
+                    sequence[nofsequence] = segment[nofsegment]
+                    for i=1,nofsegment-1 do
                         nofsequence = nofsequence + 1
-                        sequence[nofsequence] = segment[nofsegment]
-                        for i=1,nofsegment-1 do
-                            nofsequence = nofsequence + 1
-                            sequence[nofsequence] = segment[i]
-                        end
+                        sequence[nofsequence] = segment[i]
                     end
-                    glyph.sequence = sequence
-                    glyph.segments = nil
                 end
+                glyph.sequence = sequence
+                glyph.segments = nil
             end
         end
     else
@@ -72,36 +67,32 @@ local function packoutlines(data,makesequence)
         local common  = { }
         local reverse = { }
         local last    = 0
-        for index=0,#glyphs do
-            local glyph = glyphs[index]
-            if glyph then
-                local segments = glyph.segments
-                if segments then
-                    for i=1,#segments do
-                        local h = concat(segments[i]," ")
-                        hash[h] = (hash[h] or 0) + 1
-                    end
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
+            local segments = glyphs[index].segments
+            if segments then
+                for i=1,#segments do
+                    local h = concat(segments[i]," ")
+                    hash[h] = (hash[h] or 0) + 1
                 end
             end
         end
-        for index=0,#glyphs do
-            local glyph = glyphs[index]
-            if glyph then
-                local segments = glyph.segments
-                if segments then
-                    for i=1,#segments do
-                        local segment = segments[i]
-                        local h = concat(segment," ")
-                        if hash[h] > 1 then -- minimal one shared in order to hash
-                            local idx = reverse[h]
-                            if not idx then
-                                last = last + 1
-                                reverse[h] = last
-                                common[last] = segment
-                                idx = last
-                            end
-                            segments[i] = idx
+--         for index=1,#glyphs do
+        for index=0,#glyphs-1 do
+            local segments = glyphs[index].segments
+            if segments then
+                for i=1,#segments do
+                    local segment = segments[i]
+                    local h = concat(segment," ")
+                    if hash[h] > 1 then -- minimal one shared in order to hash
+                        local idx = reverse[h]
+                        if not idx then
+                            last = last + 1
+                            reverse[h] = last
+                            common[last] = segment
+                            idx = last
                         end
+                        segments[i] = idx
                     end
                 end
             end
@@ -128,16 +119,14 @@ local function unpackoutlines(data)
     if not glyphs then
         return
     end
-    for index=0,#glyphs do
-        local glyph = glyphs[index]
-        if glyph then
-            local segments = glyph.segments
-            if segments then
-                for i=1,#segments do
-                    local c = common[segments[i]]
-                    if c then
-                        segments[i] = c
-                    end
+--     for index=1,#glyphs do
+    for index=0,#glyphs-1 do
+        local segments = glyphs[index].segments
+        if segments then
+            for i=1,#segments do
+                local c = common[segments[i]]
+                if c then
+                    segments[i] = c
                 end
             end
         end
@@ -213,11 +202,6 @@ local function loadoutlines(cache,filename,sub,instance)
     return data
 end
 
-local function cachethem(cache,hash,data)
-    containers.write(cache,hash,data,compact_streams) -- arg 4 aka fast
-    return containers.read(cache,hash) -- frees old mem
-end
-
 local function loadstreams(cache,filename,sub,instance)
     local base = file.basename(filename)
     local name = file.removesuffix(base)
@@ -226,7 +210,7 @@ local function loadstreams(cache,filename,sub,instance)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
     local sub  = tonumber(sub)
-    if size > 0 and (kind == "otf" or kind == "ttf" or kind == "ttc") then
+    if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then
         local hash = makehash(filename,sub,instance)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
@@ -235,13 +219,8 @@ local function loadstreams(cache,filename,sub,instance)
                 local glyphs  = data.glyphs
                 local streams = { }
                 if glyphs then
-                    for i=0,#glyphs do
-                        local glyph = glyphs[i]
-                        if glyph then
-                            streams[i] = glyph.stream or ""
-                        else
-                            streams[i] = ""
-                        end
+                    for i=0,#glyphs-1 do
+                        streams[i] = glyphs[i].stream or ""
                     end
                 end
                 data.streams = streams
@@ -249,7 +228,8 @@ local function loadstreams(cache,filename,sub,instance)
                 data.size    = size
                 data.format  = data.format or (kind == "otf" and "opentype") or "truetype"
                 data.time    = time
-                data = cachethem(cache,hash,data)
+                containers.write(cache,hash,data)
+                data = containers.read(cache,hash) -- frees old mem
             end
         end
     elseif size > 0 and (kind == "pfb") then
@@ -303,7 +283,8 @@ local function loadstreams(cache,filename,sub,instance)
                         weight             = metadata.weight,
                     },
                 }
-                data = cachethem(cache,hash,data)
+                containers.write(cache,hash,data)
+                data = containers.read(cache,hash) -- frees old mem
             end
         end
     else
@@ -352,11 +333,8 @@ end
 
 local function loadstreamdata(fontdata)
     local properties = fontdata.properties
-    local shared     = fontdata.shared
-    local rawdata    = shared and shared.rawdata
-    local metadata   = rawdata and rawdata.metadata
     local filename   = properties.filename
-    local subindex   = metadata and metadata.subfontindex
+    local subindex   = fontdata.subindex
     local instance   = properties.instance
     local hash       = makehash(filename,subindex,instance)
     local loaded     = loadedstreams[hash]
@@ -370,14 +348,16 @@ end
 hashes.streams = table.setmetatableindex(function(t,k)
     local f = identifiers[k]
     if f then
-        return loadstreamdata(f)
+        return loadstreamdata(f,true)
     end
 end)
 
 otf.loadoutlinedata = loadoutlinedata -- not public
 otf.loadstreamdata  = loadstreamdata  -- not public
 otf.loadshapes      = loadshapes
-otf.getstreamhash   = getstreamhash   -- not public, might move to other namespace
+otf.getstreamhash   = getstreamhash -- not public, might move to other namespace
+
+-- experimental code, for me only ... unsupported (todo: use %N)
 
 local f_c = formatters["%F %F %F %F %F %F c"]
 local f_l = formatters["%F %F l"]

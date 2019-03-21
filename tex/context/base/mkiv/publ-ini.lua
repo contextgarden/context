@@ -43,7 +43,7 @@ local trace              = false  trackers.register("publications",             
 local trace_cite         = false  trackers.register("publications.cite",            function(v) trace_cite       = v end)
 local trace_missing      = false  trackers.register("publications.cite.missing",    function(v) trace_missing    = v end)
 local trace_references   = false  trackers.register("publications.cite.references", function(v) trace_references = v end)
-local trace_details      = false  trackers.register("publications.details",         function(v) trace_details    = v end)
+local trace_detail       = false  trackers.register("publications.detail",          function(v) trace_detail     = v end)
 local trace_suffixes     = false  trackers.register("publications.suffixes",        function(v) trace_suffixes   = v end)
 
 publications             = publications or { }
@@ -456,7 +456,7 @@ do
                 end
             end
         end
-        if trace_details then
+        if trace_detail then
             report("%s unique references, %s reused entries",nofunique,nofreused)
         end
         initialize = nil
@@ -502,18 +502,13 @@ local findallused do
         local luadata  = current.luadata
         local details  = current.details
         local ordered  = current.ordered
-        if allused then -- always true
+        if allused then
             local registered = { }
             local function register(tag)
                 local entry = forcethem and luadata[tag]
                 if entry then
                     if registered[tag] then
-                        if trace_cite then
-                            report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"already cited (1)")
-                        end
                         return
-                    elseif trace_cite then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"okay")
                     end
                     okay[#okay+1] = entry
                  -- todo[tag] = true
@@ -521,9 +516,6 @@ local findallused do
                     return tag
                 end
                 entry = allused[tag]
-                if trace_cite then
-                    report_cite("dataset: %s, tag: %s, used: % t",dataset,tag,table.sortedkeys(allused))
-                end
                 if not entry then
                     local parent = details[tag].parent
                     if parent then
@@ -532,16 +524,9 @@ local findallused do
                     if entry then
                         report("using reference of parent %a for %a",parent,tag)
                         tag = parent
-                    elseif trace_cite then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"not used")
                     end
-                elseif trace_cite then
-                    report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"used")
                 end
                 if registered[tag] then
-                    if trace_cite then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"already cited (2)")
-                    end
                     return
                 end
                 if entry then
@@ -579,17 +564,7 @@ local findallused do
                             entry = entry[1]
                         end
                     end
-                    if not entry then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"no entry (1)")
-                    elseif trace_cite then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"new entry")
-                    end
                     okay[#okay+1] = entry
-                elseif not entry then
-                    if trace_cite then
-                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"no entry (2)")
-                    end
-        -- okay[#okay+1] = luadata[tag]
                 end
                 todo[tag] = true
                 registered[tag] = true
@@ -695,7 +670,7 @@ end
 
 local function unknowncite(reference)
     ctx_btxsettag(reference)
-    if trace_details then
+    if trace_detail then
         report("expanding %a cite setup %a","unknown","unknown")
     end
     ctx_btxcitesetup("unknown")
@@ -718,7 +693,7 @@ local function marknocite(dataset,tag,nofcitations,setup)
     ctx_btxsetdataset(dataset)
     ctx_btxsettag(tag)
     ctx_btxsetbacklink(nofcitations)
-    if trace_details then
+    if trace_detail then
         report("expanding cite setup %a",setup)
     end
     ctx_btxcitesetup(setup)
@@ -1478,10 +1453,10 @@ do
                     local name, value = found(dataset,tag,field,valid,fields)
                     if value then
                         typesetters[currentspecification.types[name]](field,value,manipulator)
-                    elseif trace_details then
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","entry",field,category,tag,name)
                     end
-                elseif trace_details then
+                elseif trace_detail then
                     report("%s %s %a in category %a for tag %a in dataset %a","invalid","entry",field,category,tag,name)
                 end
             else
@@ -1503,10 +1478,10 @@ do
                     local value = fields[field]
                     if value then
                         typesetters[currentspecification.types[field]](field,value,manipulator)
-                    elseif trace_details then
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","unknown","field",field,category,tag,name)
                     end
-                elseif trace_details then
+                elseif trace_detail then
                     report("%s %s %a in category %a for tag %a in dataset %a","invalid","field",field,category,tag,name)
                 end
             else
@@ -1530,10 +1505,10 @@ do
                         local value = details[field]
                         if value then
                             typesetters[currentspecification.types[field]](field,value,manipulator)
-                        elseif trace_details then
+                        elseif trace_detail then
                             report("%s %s %a in category %a for tag %a in dataset %a","unknown","detail",field,category,tag,name)
                         end
-                    elseif trace_details then
+                    elseif trace_detail then
                         report("%s %s %a in category %a for tag %a in dataset %a","invalid","detail",field,category,tag,name)
                     end
                 else
@@ -1556,7 +1531,7 @@ do
                 local value = fields[field]
                 if value then
                     context(typesetters.default(field,value,manipulator))
-                elseif trace_details then
+                elseif trace_detail then
                     report("field %a of tag %a in dataset %a has no value",field,tag,name)
                 end
             else
@@ -1737,6 +1712,7 @@ do
         end
     end
 
+
     -- tag | listindex | reference | userdata | dataindex
 
     local methods = { }
@@ -1818,7 +1794,7 @@ do
                         if traced then
                             local l = traced[tag]
                             if l then
-                                l[#l+1] = u.btxint -- tonumber ?
+                                l[#l+1] = u.btxint
                             else
                                 local data = luadata[tag]
                                 local l = { tag, listindex, 0, u, data and data.index or 0 }
@@ -2058,7 +2034,7 @@ do
                 ctx_btxsetlastinternal(last[2].internal)
                 ctx_btxsetlastpage(last[1])
             end
-            if trace_details then
+            if trace_detail then
                 report("expanding page setup")
             end
             ctx_btxpagesetup("") -- nothing yet
@@ -2124,12 +2100,12 @@ do
                     local prealpage = plist.references.realpage
                     if crealpage ~= prealpage then
                         if method == v_always or not conditionals.layoutisdoublesided then
-                            if trace_details then
+                            if trace_detail then
                                 report("previous %a, current %a, different page",previous,current)
                             end
                             return false
                         elseif crealpage % 2 == 0 then
-                            if trace_details then
+                            if trace_detail then
                                 report("previous %a, current %a, different page",previous,current)
                             end
                             return false
@@ -2149,7 +2125,7 @@ do
                     sameentry = identical(c_casted,p_casted)
                 end
             end
-            if trace_details then
+            if trace_detail then
                 if sameentry then
                     report("previous %a, current %a, same entry",previous,current)
                 else
@@ -2760,7 +2736,7 @@ do
                     ctx_btxsetfirst("") -- (f_missing(tag))
                 end
                 ctx_btxsetconcat(concatstate(i,n))
-                if trace_details then
+                if trace_detail then
                     report("expanding cite setup %a",setup)
                 end
                 ctx_btxcitesetup(setup)
@@ -3217,7 +3193,7 @@ do
                         end
                     end
                     ctx_btxsetconcat(concatstate(i,nofcollected))
-                    if trace_details then
+                    if trace_detail then
                         report("expanding %a cite setup %a","multiple author",setup)
                     end
                     ctx_btxsubcitesetup(setup)
@@ -3236,7 +3212,7 @@ do
             if suffix then
                 ctx_btxsetsuffix(entry.suffix)
             end
-            if trace_details then
+            if trace_detail then
                 report("expanding %a cite setup %a","single author",setup)
             end
             ctx_btxcitesetup(setup)
@@ -3408,7 +3384,7 @@ do
 
     function listvariants.default(dataset,block,tag,variant)
         ctx_btxsetfirst("?")
-        if trace_details then
+        if trace_detail then
             report("expanding %a list setup %a","default",variant)
         end
         ctx_btxnumberingsetup("default")
@@ -3416,7 +3392,7 @@ do
 
     function listvariants.num(dataset,block,tag,variant,listindex)
         ctx_btxsetfirst(listindex)
-        if trace_details then
+        if trace_detail then
             report("expanding %a list setup %a","num",variant)
         end
         ctx_btxnumberingsetup(variant or "num")
@@ -3427,7 +3403,7 @@ do
     function listvariants.index(dataset,block,tag,variant,listindex)
         local index = getdetail(dataset,tag,"index")
         ctx_btxsetfirst(index or "?")
-        if trace_details then
+        if trace_detail then
             report("expanding %a list setup %a","index",variant)
         end
         ctx_btxnumberingsetup(variant or "index")
@@ -3435,7 +3411,7 @@ do
 
     function listvariants.tag(dataset,block,tag,variant,listindex)
         ctx_btxsetfirst(tag)
-        if trace_details then
+        if trace_detail then
             report("expanding %a list setup %a","tag",variant)
         end
         ctx_btxnumberingsetup(variant or "tag")
@@ -3450,7 +3426,7 @@ do
         if suffix then
             ctx_btxsetsuffix(suffix)
         end
-        if trace_details then
+        if trace_detail then
             report("expanding %a list setup %a","short",variant)
         end
         ctx_btxnumberingsetup(variant or "short")

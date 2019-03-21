@@ -198,14 +198,14 @@
 
 %D Some placeholders:
 
-\unexpanded\def\eTeX      {\mathematics{\varepsilon}-\TeX}
-\unexpanded\def\pdfTeX    {pdf\wordboundary\TeX}
-\unexpanded\def\pdfeTeX   {pdfe-\wordboundary\TeX}
-\unexpanded\def\luaTeX    {lua\wordboundary\TeX}
-\unexpanded\def\Lua       {Lua}
-\unexpanded\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
-\unexpanded\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
-%unexpanded\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+\unexpanded\def\eTeX     {\mathematics{\varepsilon}-\TeX}
+\unexpanded\def\pdfTeX   {pdf\wordboundary\TeX}
+\unexpanded\def\pdfeTeX  {pdfe-\wordboundary\TeX}
+\unexpanded\def\luaTeX   {lua\wordboundary\TeX}
+\unexpanded\def\Lua      {Lua}
+\unexpanded\def\luajitTeX{luajit\wordboundary\TeX}
+\unexpanded\def\metaTeX  {meta\wordboundary\TeX}
+%unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
 
@@ -229,15 +229,13 @@
       \fi}%
    \kern-.1667\emwidth\TeX}
 
-\let\ETEX      \eTeX
-\let\PDFTEX    \pdfTeX
-\let\PDFETEX   \pdfeTeX
-\let\LUATEX    \luaTeX
-\let\LUAJITTEX \luajitTeX
-\let\LuaTeX    \luaTeX
-\let\LuaMetaTeX\luametaTeX
-\let\LUAMETATEX\luametaTeX
-\let\XETEX     \XeTeX
+\let\ETEX     \eTeX
+\let\PDFTEX   \pdfTeX
+\let\PDFETEX  \pdfeTeX
+\let\LUATEX   \luaTeX
+\let\LUAJITTEX\luajitTeX
+\let\LuaTeX   \luaTeX
+\let\XETEX    \XeTeX
 
 \unexpanded\def\LuaTeX
   {\dontleavehmode
@@ -275,33 +273,28 @@
 \let\LUATEX   \LuaTeX
 \let\LUAJITTEX\LuajitTeX
 
-\unexpanded\def\MKII{MkII} % MarkTwo
-\unexpanded\def\MKIV{MkIV} % MarkFour   : MKIV
-\unexpanded\def\MKVI{MkVI} % MarkSix    : MKIV
-\unexpanded\def\MKXL{MkXL} % MarkFourty : LMTX
-\unexpanded\def\MKLX{MkLX} % MarkSixty  : LMTX
-\unexpanded\def\MKIX{MkIX} %            : MKIV / LMTX
-\unexpanded\def\MKXI{MkXI} %            : MKIV / LMTX
+\unexpanded\def\MKII{MkII}
+\unexpanded\def\MKIV{MkIV}
+\unexpanded\def\MKVI{MkVI}
+\unexpanded\def\MKIX{MkIX}
+\unexpanded\def\MKXI{MkXI}
 
-\unexpanded\def\MPII{MpII} % MarkTwo
-\unexpanded\def\MPIV{MpIV} % MarkFour   : MetaFun
-\unexpanded\def\MPVI{MpVI} % MarkSix    : MetaFun
-\unexpanded\def\MPXL{MpXL} % MarkFourty : LuaMetaFun
-\unexpanded\def\MPLX{MpLX} % MarkSixty  : LuaMetaFun
+\unexpanded\def\MPII{MpII}
+\unexpanded\def\MPIV{MpIV}
+\unexpanded\def\MPVI{MpVI}
 
-\unexpanded\def\LMTX{lmtx} % for LuaMetaTeX
+\unexpanded\def\LMTX{lmtx}
 
 \appendtoks
-    \def\ConTeXt   {ConTeXt}%
-    \def\MetaPost  {MetaPost}%
-    \def\MetaFont  {MetaFont}%
-    \def\MetaFun   {MetaFun}%
-    \def\TeX       {TeX}%
-    \def\TeXsuffix {TeX}%
-    \def\TeXprefix {TeX}%
-    \def\LuaTeX    {LuaTeX}%
-    \def\LuajitTeX {LuajitTeX}%
-    \def\LuaMetaTeX{LuaMetaTeX}%
+    \def\ConTeXt  {ConTeXt}%
+    \def\MetaPost {MetaPost}%
+    \def\MetaFont {MetaFont}%
+    \def\MetaFun  {MetaFun}%
+    \def\TeX      {TeX}%
+    \def\TeXsuffix{TeX}%
+    \def\TeXprefix{TeX}%
+    \def\LuaTeX   {LuaTeX}%
+    \def\LuajitTeX{LuajitTeX}%
     \let\wordboundary\empty
 \to \everysimplifycommands
 

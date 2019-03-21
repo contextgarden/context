@@ -1,0 +1,199 @@
+% language=uk
+
+% Please try to be original and don't just copy this cover page as I don't want
+% confusion and be associated with (or responsibility for the look of) similar
+% looking documents.
+
+\startenvironment manuals-explaining-cover
+
+\startsetups document:abstract
+    \framed [
+        foregroundstyle=bold,
+        foregroundcolor=white,
+        width=7.5cm,
+        align={normal,tolerant},
+        frame=off,
+        strut=no,
+    ] {
+        \getbuffer[abstract]
+    }
+\stopsetups
+
+\startMPinclusions
+
+    def DrawCoverPage (expr what) =
+
+        numeric variant ; variant := 1 ;
+
+        StartCover ;
+
+            save width, height, size, anchor, offset, colors ;
+
+            numeric width, height, size ; pair anchor, offset ; string colors[] ;
+
+            colors[1] := "\documentvariable{cover:color:1}" ;
+            colors[2] := "\documentvariable{cover:color:2}" ;
+            colors[3] := "\documentvariable{cover:color:3}" ;
+            colors[4] := "\documentvariable{cover:color:4}" ;
+            colors[5] := "\documentvariable{cover:color:5}" ;
+
+            fill CoverPage enlarged PaperBleed withcolor colors[5] ;
+
+            fill Spine bottomenlarged  -.5PaperHeight withcolor colors[3] ;
+            fill Spine topenlarged     -.5PaperHeight withcolor colors[2] ;
+
+            width  := FrontPageWidth ;
+            height := FrontPageHeight ;
+            size   := 4 * width / 3 ;
+            offset := (-1cm,1cm) ;
+            anchor := .5[lrcorner CoverPage,urcorner CoverPage] ;
+
+            fill anchored.llft(lltriangle scaled size, urcorner FrontPage) withcolor colors[1] ;
+            fill anchored.urt (urtriangle scaled size, llcorner FrontPage) withcolor colors[2] ;
+            fill anchored.lrt (lrtriangle scaled size, ulcorner FrontPage) withcolor colors[3] ;
+            fill anchored.ulft(ultriangle scaled size, lrcorner FrontPage) withcolor colors[4] ;
+
+            fill anchored.lrt (lrtriangle scaled size, ulcorner BackPage) withcolor colors[1] ;
+            fill anchored.llft(lltriangle scaled size, urcorner BackPage) withcolor colors[3] ;
+            fill anchored.ulft(ultriangle scaled size, lrcorner BackPage) withcolor colors[2] ;
+            fill anchored.urt (urtriangle scaled size, llcorner BackPage) withcolor colors[4] ;
+
+            draw thetextext.llft(
+                textext("\bf \documentvariable{title}\hskip-.1em")
+                rotated 45 ysized .350height,
+                anchor shifted (6*offset+offset)
+            ) withcolor white ;
+            draw thetextext.llft(
+                textext("\bf \documentvariable{subtitle}")
+                rotated 45 ysized .275height,
+                anchor shifted (5*offset+offset)
+            ) withcolor white ;
+            draw thetextext.llft(
+                textext("\bf \documentvariable{author}")
+                rotated 45 ysized .200height,
+                anchor shifted (2*offset+offset)
+            ) withcolor white ;
+            draw thetextext.llft(
+                textext("\bf \documentvariable{affiliation}")
+                rotated 45 ysized .200height,
+                anchor shifted (1*offset+offset)
+            ) withcolor white ;
+
+            % for the moment
+
+            if (what = "back") or (what = "cover") :
+
+                draw
+                    thetextext.top(
+                        textext("\bf \documentvariable{comment}")
+                        xsized 4cm,
+                        lrcorner Page shifted (-3cm,1cm)
+                    ) withcolor white ;
+
+            fi ;
+
+            % till here
+
+            width := BackPageWidth ;
+
+            if (what = "back") or (what = "cover") :
+
+                draw thetextext(
+                    textext("\bf\setups[document:abstract]")
+                    xsized .65width rotated 45,
+                    center BackPage
+                ) withcolor white ;
+
+            fi ;
+
+            if what = "cover" :
+
+                draw thetextext.bot(
+                    textext("\bf \documentvariable{title}\hskip-.1em")
+                    rotated 90 xsized .8SpineWidth,
+                    .5[ulcorner Spine,urcorner Spine] shifted (0,-1cm)
+                ) withcolor white ;
+
+                draw thetextext.top(
+                    textext("\bf \documentvariable{author}")
+                    rotated 90 xsized .8SpineWidth,
+                    .5[llcorner Spine,lrcorner Spine] shifted (0,1cm)
+                ) withcolor white ;
+
+            fi ;
+
+        StopCover ;
+
+        if what = "front" :
+            clip currentpicture to FrontPage ;
+        elseif what = "back" :
+            clip currentpicture to BackPage ;
+        else :
+            drawboundary CoverPage ;
+        fi ;
+
+    enddef ;
+
+\stopMPinclusions
+
+\startsetups document:start
+
+    % \startcovermatter[front]
+
+    \setupbackgrounds[page][background=]
+
+    \doifmodeelse {simple} {
+
+        \startMPpage
+            DrawCoverPage("front") ;
+        \stopMPpage
+
+    } {
+
+        \startMPpage
+            DrawCoverPage("cover") ;
+        \stopMPpage
+
+    }
+
+    \page[dummy]
+
+    \setupbackgrounds[page][background=page]
+
+    \resetuserpagenumber
+
+    % \stopcovermatter
+
+\stopsetups
+
+\startsetups document:stop
+
+    \doifmodeelse {simple} {
+
+        % \startcovermatter[back]
+
+        \page
+
+        \setuppagenumbering[page=]
+
+        \setupbackgrounds[page][background=]
+
+        \page[empty,left]
+
+        \setupmakeup[doublesided=no,page=no]
+
+        \startMPpage
+            DrawCoverPage("back") ;
+        \stopMPpage
+
+        % \stopcovermatter
+
+    } {
+
+       % not needed as it's part of the cover page
+
+    }
+
+\stopsetups
+
+\stopenvironment

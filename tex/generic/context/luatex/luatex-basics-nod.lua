@@ -12,7 +12,7 @@ end
 
 -- Don't depend on code here as it is only needed to complement the font handler
 -- code. I will move some to another namespace as I don't see other macro packages
--- use the context logic. It's a subset anyway. More will be stripped.
+-- use the context logic. It's a subset anyway.
 
 -- Attributes:
 
@@ -73,12 +73,80 @@ nodes.disccodes    = disccodes
 nodes.handlers.protectglyphs   = node.protect_glyphs   -- beware: nodes!
 nodes.handlers.unprotectglyphs = node.unprotect_glyphs -- beware: nodes!
 
+-- These are now gone in generic as they are context specific.
+
+-- local flush_node   = node.flush_node
+-- local remove_node  = node.remove
+-- local traverse_id  = node.traverse_id
+--
+-- function nodes.remove(head, current, free_too)
+--    local t = current
+--    head, current = remove_node(head,current)
+--    if t then
+--         if free_too then
+--             flush_node(t)
+--             t = nil
+--         else
+--             t.next, t.prev = nil, nil
+--         end
+--    end
+--    return head, current, t
+-- end
+--
+-- function nodes.delete(head,current)
+--     return nodes.remove(head,current,true)
+-- end
+
+----- getfield = node.getfield
+----- setfield = node.setfield
+
+-----.getfield = getfield
+-----.setfield = setfield
+-----.getattr  = getfield
+-----.setattr  = setfield
+
+-----.tostring             = node.tostring or tostring
+-----.copy                 = node.copy
+-----.copy_node            = node.copy
+-----.copy_list            = node.copy_list
+-----.delete               = node.delete
+-----.dimensions           = node.dimensions
+-----.end_of_math          = node.end_of_math
+-----.flush_list           = node.flush_list
+-----.flush_node           = node.flush_node
+-----.flush                = node.flush_node
+-----.free                 = node.free
+-----.insert_after         = node.insert_after
+-----.insert_before        = node.insert_before
+-----.hpack                = node.hpack
+-----.new                  = node.new
+-----.tail                 = node.tail
+-----.traverse             = node.traverse
+-----.traverse_id          = node.traverse_id
+-----.slide                = node.slide
+-----.vpack                = node.vpack
+
+-----.first_glyph          = node.first_glyph
+-----.has_glyph            = node.has_glyph or node.first_glyph
+-----.current_attr         = node.current_attr
+-----.has_field            = node.has_field
+-----.usedlist             = node.usedlist
+-----.protrusion_skippable = node.protrusion_skippable
+-----.write                = node.write
+
+-----.has_attribute        = node.has_attribute
+-----.set_attribute        = node.set_attribute
+-----.unset_attribute      = node.unset_attribute
+
+-----.protect_glyphs       = node.protect_glyphs
+-----.unprotect_glyphs     = node.unprotect_glyphs
+-----.mlist_to_hlist       = node.mlist_to_hlist
+
 -- in generic code, at least for some time, we stay nodes, while in context
 -- we can go nuts (e.g. experimental); this split permits us us keep code
 -- used elsewhere stable but at the same time play around in context
 
--- much of this will go away .. it's part of the context interface and not
--- officially in luatex-*.lua
+-- much of this will go away
 
 local direct             = node.direct
 local nuts               = { }
@@ -97,13 +165,16 @@ nuts.getattr             = direct.get_attribute
 nuts.getboth             = direct.getboth
 nuts.getchar             = direct.getchar
 nuts.getcomponents       = direct.getcomponents
+----.getdepth            = direct.getdepth
+----.getdir              = direct.getdir
 nuts.getdirection        = direct.getdirection
 nuts.getdisc             = direct.getdisc
-nuts.getreplace          = direct.getreplace
 nuts.getfield            = direct.getfield
 nuts.getfont             = direct.getfont
+----.getheight           = direct.getheight
 nuts.getid               = direct.getid
 nuts.getkern             = direct.getkern
+----.getleader           = direct.getleader
 nuts.getlist             = direct.getlist
 nuts.getnext             = direct.getnext
 nuts.getoffsets          = direct.getoffsets
@@ -114,11 +185,15 @@ nuts.setattr             = direct.setfield
 nuts.setboth             = direct.setboth
 nuts.setchar             = direct.setchar
 nuts.setcomponents       = direct.setcomponents
+----.setdepth            = direct.setdepth
+nuts.setdir              = direct.setdir
 nuts.setdirection        = direct.setdirection
 nuts.setdisc             = direct.setdisc
-nuts.setreplace          = direct.setreplace
 nuts.setfield            = setfield
+----.setfont             = direct.setfont
+----.setheight           = direct.setheight
 nuts.setkern             = direct.setkern
+----.setleader           = direct.setleader
 nuts.setlink             = direct.setlink
 nuts.setlist             = direct.setlist
 nuts.setnext             = direct.setnext
@@ -128,9 +203,8 @@ nuts.setsplit            = direct.setsplit
 nuts.setsubtype          = direct.setsubtype
 nuts.setwidth            = direct.setwidth
 
-nuts.getglyphdata        = nuts.getattr
-nuts.setglyphdata        = nuts.setattr
-
+nuts.is_char             = direct.is_char
+nuts.is_glyph            = direct.is_glyph
 nuts.ischar              = direct.is_char
 nuts.isglyph             = direct.is_glyph
 
@@ -155,6 +229,26 @@ nuts.traverse            = direct.traverse
 nuts.traverse_char       = direct.traverse_char
 nuts.traverse_glyph      = direct.traverse_glyph
 nuts.traverse_id         = direct.traverse_id
+
+-- for now
+
+if not nuts.getdirection then
+
+    local getdir = direct.getdir
+
+    function nuts.getdirection(n)
+        local d = getdir(n)
+        if     d ==  "TLT" then return 0
+        elseif d ==  "TRT" then return 1
+        elseif d == "+TLT" then return 0, false
+        elseif d == "+TRT" then return 1, false
+        elseif d == "-TLT" then return 0, true
+        elseif d == "-TRT" then return 1, true
+        else                    return 0
+        end
+    end
+
+end
 
 -- properties as used in the (new) injector:
 
@@ -261,32 +355,5 @@ do
 
         node     = nuts.traverse(dummy),
     }
-
-end
-
-if not nuts.setreplace then
-
-    local getdisc  = nuts.getdisc
-    local setfield = nuts.setfield
-
-    function nuts.getreplace(n)
-        local _, _, h, _, _, t = getdisc(n,true)
-        return h, t
-    end
-
-    function nuts.setreplace(n,h)
-        setfield(n,"replace",h)
-    end
-
-end
-
-do
-
-    local getsubtype = nuts.getsubtype
-
-    function nuts.start_of_par(n)
-        local s = getsubtype(n)
-        return s == 0 or s == 2 -- sorry, hardcoded, won't change anyway
-    end
 
 end

@@ -184,9 +184,6 @@ local grammars = {
     tex  = contextgrammar,
     mkii = contextgrammar,
     mkiv = contextgrammar,
-    mkvi = contextgrammar,
-    mkil = contextgrammar,
-    mkli = contextgrammar,
 }
 
 function validator.check(str,filetype)

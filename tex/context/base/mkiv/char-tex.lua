@@ -692,6 +692,7 @@ if not csletters then
 
 else
     mark(csletters)
+
 end
 
 lpegpatterns.csletter = utfchartabletopattern(csletters)

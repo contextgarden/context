@@ -26,7 +26,6 @@ local formatters, topattern = string.formatters, string.topattern
 local round = math.round
 local P, R, S, C, Cc, Ct, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.Cs
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local isfile, modificationtime = lfs.isfile, lfs.modification
 
 local allocate             = utilities.storage.allocate
 local sparse               = utilities.storage.sparse
@@ -46,6 +45,9 @@ local exists               = io.exists
 local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
 local resolveprefix        = resolvers.resolve
+
+----- fontloader           = fontloader -- still needed for pfb (now)
+----- get_font_info        = fontloader.info
 
 local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
@@ -466,11 +468,11 @@ function names.getpaths(trace)
             if name == "" then
                 -- after all, fontconfig is a unix thing
                 name = filejoin("/etc",confname)
-                if not isfile(name) then
+                if not lfs.isfile(name) then
                     name = "" -- force quit
                 end
             end
-            if name ~= "" and isfile(name) then
+            if name ~= "" and lfs.isfile(name) then
                 if trace_names then
                     report_names("%s fontconfig file %a","loading",name)
                 end
@@ -483,7 +485,7 @@ function names.getpaths(trace)
                             incname = filejoin(path,incname)
                         end
                     end
-                    if isfile(incname) then
+                    if lfs.isfile(incname) then
                         if trace_names then
                             report_names("%s fontconfig file %a","merging included",incname)
                         end
@@ -1097,7 +1099,7 @@ local function analyzefiles(olddata)
             end
             -- needs checking with ttc / ttx : date not updated ?
             local result = nil
-            local modification = modificationtime(completename)
+            local modification = lfs.attributes(completename,"modification")
             if olddata and modification and modification > 0 then
                 local oldindex = oldindices[storedname] -- index into specifications
                 if oldindex then

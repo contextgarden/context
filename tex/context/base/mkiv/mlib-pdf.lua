@@ -274,34 +274,6 @@ local function flushconcatpath(path, t, open)
     return t
 end
 
-local function toboundingbox(path)
-    local size = #path
-    if size == 4 then
-        local pth = path[1]
-        local x = pth.x_coord
-        local y = pth.y_coord
-        local llx, lly, urx, ury = x, y, x, y
-        for i=2,size do
-            pth = path[i]
-            x   = pth.x_coord
-            y   = pth.y_coord
-            if x < llx then
-                llx = x
-            elseif x > urx then
-                urx = x
-            end
-            if y < lly then
-                lly = y
-            elseif y > ury then
-                ury = y
-            end
-        end
-        return { llx, lly, urx, ury }
-    else
-        return { 0, 0, 0, 0 }
-    end
-end
-
 metapost.flushnormalpath = flushnormalpath
 
 -- The flusher is pdf based, if another backend is used, we need to overload the
@@ -311,10 +283,8 @@ metapost.flushnormalpath = flushnormalpath
 -- We can avoid the before table but I like symmetry. There is of course a small
 -- performance penalty, but so is passing extra arguments (result, flusher, after)
 -- and returning stuff.
---
--- This variable stuff will change in lmtx.
 
-local ignore   = function() end
+local ignore   = function () end
 
 local space    = P(" ")
 local equal    = P("=")
@@ -410,10 +380,10 @@ function metapost.flush(specification,result)
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
-            local resetplugins       = metapost.resetplugins       or ignore -- before figure
-            local processplugins     = metapost.processplugins     or ignore -- each object
+            local resetplugins       = metapost.resetplugins or ignore -- before figure
+            local processplugins     = metapost.processplugins or ignore -- each object
             local synchronizeplugins = metapost.synchronizeplugins or ignore
-            local pluginactions      = metapost.pluginactions      or ignore -- before / after
+            local pluginactions      = metapost.pluginactions or ignore -- before / after
             local startfigure        = flusher.startfigure
             local stopfigure         = flusher.stopfigure
             local flushfigure        = flusher.flushfigure
@@ -430,7 +400,6 @@ function metapost.flush(specification,result)
                     local linecap    = -1
                     local linejoin   = -1
                     local dashed     = false
-                    local linewidth  = false
                     local llx        = properties.llx
                     local lly        = properties.lly
                     local urx        = properties.urx
@@ -442,8 +411,6 @@ function metapost.flush(specification,result)
                     else
 
                         -- we need to be indirect if we want the one-pass solution
-
-                        local groupstack = { }
 
                         local function processfigure()
                             result[#result+1] = "q"
@@ -476,35 +443,6 @@ function metapost.flush(specification,result)
                                         miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
                                     elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                         -- skip
-                                    elseif objecttype == "start_group" then
-                                        if lpdf.flushgroup then
-                                            local before, after = processplugins(object)
-                                            if before then
-                                                result[#result+1] = "q"
-                                                result = pluginactions(before,result,flushfigure)
-                                                insert(groupstack, {
-                                                    after  = after,
-                                                    result = result,
-                                                    bbox   = toboundingbox(object.path),
-                                                })
-                                                result = { }
-miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                            else
-                                                insert(groupstack,false)
-                                            end
-                                        else
-                                            insert(groupstack,false)
-                                        end
-                                    elseif objecttype == "stop_group" then
-                                        local data = remove(groupstack)
-                                        if data then
-                                            local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
-                                            result = data.result
-                                            result[#result+1] = reference
-                                            result = pluginactions(data.after,result,flushfigure)
-                                            result[#result+1] = "Q"
-miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                        end
                                     else
                                         -- we use an indirect table as we want to overload
                                         -- entries but this is not possible in userdata
@@ -512,7 +450,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         -- can be optimized if no path
                                         --
                                         local original = object
-                                        local object   = { }
+                                        local object = { }
                                         setmetatable(object, {
                                             __index = original
                                         })
@@ -521,15 +459,12 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         local evenodd    = false
                                         local collect    = false
                                         local both       = false
-                                        local flush      = false
                                         local postscript = object.postscript
                                         if not object.istext then
                                             if postscript == "evenodd" then
                                                 evenodd = true
                                             elseif postscript == "collect" then
                                                 collect = true
-                                            elseif postscript == "flush" then
-                                                flush   = true
                                             elseif postscript == "both" then
                                                 both = true
                                             elseif postscript == "eoboth" then
@@ -538,9 +473,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                             end
                                         end
                                         --
-                                        if flush and not savedpath then
-                                            -- forget about it
-                                        elseif collect then
+                                        if collect then
                                             if not savedpath then
                                                 savedpath = { object.path or false }
                                                 savedhtap = { object.htap or false }
@@ -594,10 +527,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                             if pen then
                                                if pen.type == "elliptical" then
                                                     transformed, penwidth = pen_characteristics(original) -- boolean, value
-                                                    if penwidth ~= linewidth then
-                                                        result[#result+1] = f_w(penwidth)
-                                                        linewidth = penwidth
-                                                    end
+                                                    result[#result+1] = f_w(penwidth) -- todo: only if changed
                                                     if objecttype == "fill" then
                                                         objecttype = "both"
                                                     end
@@ -620,9 +550,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                                     end
                                                     savedpath = nil
                                                 end
-                                                if flush then
-                                                    -- ignore this path
-                                                elseif transformed then
+                                                if transformed then
                                                     flushconcatpath(path,result,open)
                                                 else
                                                     flushnormalpath(path,result,open)
@@ -685,7 +613,7 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                         end
                                         if object.grouped then
                                             -- can be qQ'd so changes can end up in groups
-                                            miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                            miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
                                         end
                                     end
                                 end

@@ -6,25 +6,22 @@ if not modules then modules = { } end modules ['data-bin'] = {
     license   = "see context related readme files"
 }
 
-local resolvers     = resolvers
+local resolvers = resolvers
 local methodhandler = resolvers.methodhandler
-local notfound      = resolvers.loaders.notfound
 
 function resolvers.findbinfile(filename,filetype)
     return methodhandler('finders',filename,filetype)
 end
 
-local function openbinfile(filename)
+function resolvers.openbinfile(filename)
     return methodhandler('loaders',filename) -- a bit weird: load
 end
-
-resolvers.openbinfile = openbinfile
 
 function resolvers.loadbinfile(filename,filetype)
     local fname = methodhandler('finders',filename,filetype)
     if fname and fname ~= "" then
-        return openbinfile(fname) -- a bit weird: open
+        return resolvers.openbinfile(fname) -- a bit weird: open
     else
-        return notfound()
+        return resolvers.loaders.notfound()
     end
 end

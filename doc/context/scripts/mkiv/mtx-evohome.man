@@ -1,6 +1,6 @@
 .TH "mtx-evohome" "1" "01-01-2019" "version 1.00" "Evohome Fetcher"
 .SH NAME
- mtx-evohome - Evohome Fetcher
+.B mtx-evohome
 .SH SYNOPSIS
 .B mtxrun --script evohome [
 .I OPTIONS ...

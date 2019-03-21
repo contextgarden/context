@@ -7,32 +7,28 @@ if not modules then modules = { } end modules ['data-tmp'] = {
 }
 
 --[[ldx--
-<p>This module deals with caching data. It sets up the paths and implements
-loaders and savers for tables. Best is to set the following variable. When not
-set, the usual paths will be checked. Personally I prefer the (users) temporary
-path.</p>
+<p>This module deals with caching data. It sets up the paths and
+implements loaders and savers for tables. Best is to set the
+following variable. When not set, the usual paths will be
+checked. Personally I prefer the (users) temporary path.</p>
 
 </code>
 TEXMFCACHE=$TMP;$TEMP;$TMPDIR;$TEMPDIR;$HOME;$TEXMFVAR;$VARTEXMF;.
 </code>
 
-<p>Currently we do no locking when we write files. This is no real problem
-because most caching involves fonts and the chance of them being written at the
-same time is small. We also need to extend luatools with a recache feature.</p>
+<p>Currently we do no locking when we write files. This is no real
+problem because most caching involves fonts and the chance of them
+being written at the same time is small. We also need to extend
+luatools with a recache feature.</p>
 --ldx]]--
 
-local next, type = next, type
-local pcall, loadfile, collectgarbage = pcall, loadfile, collectgarbage
-local format, lower, gsub = string.format, string.lower, string.gsub
-local concat, serialize, fastserialize, serializetofile = table.concat, table.serialize, table.fastserialize, table.tofile
-local mkdirs, expanddirname, isdir, isfile = dir.mkdirs, dir.expandname, lfs.isdir, lfs.isfile
-local is_writable, is_readable = file.is_writable, file.is_readable
-local collapsepath, joinfile, addsuffix, dirname = file.collapsepath, file.join, file.addsuffix, file.dirname
-local savedata = file.savedata
+local format, lower, gsub, concat = string.format, string.lower, string.gsub, table.concat
+----- serialize, serializetofile = table.serialize, table.tofile -- overloaded so no local
+local concat = table.concat
+local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
+local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
-local osexit, osdate, osuuid = os.exit, os.date, os.uuid
-local removefile = os.remove
-local md5hex = md5.hex
+local next, type = next, type
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -40,79 +36,43 @@ local trace_cache    = false  trackers.register("resolvers.cache",    function(v
 local report_caches    = logs.reporter("resolvers","caches")
 local report_resolvers = logs.reporter("resolvers","caching")
 
-local resolvers    = resolvers
-local cleanpath    = resolvers.cleanpath
-local resolvepath  = resolvers.resolve
-
-local luautilities = utilities.lua
+local resolvers = resolvers
+local cleanpath = resolvers.cleanpath
 
 -- intermezzo
 
-do
+local directive_cleanup = false  directives.register("system.compile.cleanup", function(v) directive_cleanup = v end)
+local directive_strip   = false  directives.register("system.compile.strip",   function(v) directive_strip   = v end)
 
-    local directive_cleanup = false  directives.register("system.compile.cleanup", function(v) directive_cleanup = v end)
-    local directive_strip   = false  directives.register("system.compile.strip",   function(v) directive_strip   = v end)
+local compile = utilities.lua.compile
 
-    local compilelua = luautilities.compile
-
-    function luautilities.compile(luafile,lucfile,cleanup,strip)
-        if cleanup == nil then cleanup = directive_cleanup end
-        if strip   == nil then strip   = directive_strip   end
-        return compilelua(luafile,lucfile,cleanup,strip)
-    end
-
+function utilities.lua.compile(luafile,lucfile,cleanup,strip)
+    if cleanup == nil then cleanup = directive_cleanup end
+    if strip   == nil then strip   = directive_strip   end
+    return compile(luafile,lucfile,cleanup,strip)
 end
 
 -- end of intermezzo
 
-caches              = caches or { }
-local caches        = caches
-local writable      = nil
-local readables     = { }
-local usedreadables = { }
+caches       = caches or { }
+local caches = caches
 
-local compilelua    = luautilities.compile
-local luasuffixes   = luautilities.suffixes
+local luasuffixes = utilities.lua.suffixes
 
-caches.base         = caches.base or "luatex-cache"  -- can be local
-caches.more         = caches.more or "context"       -- can be local
-caches.defaults     = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
+caches.base     = caches.base or "luatex-cache"
+caches.more     = caches.more or "context"
+caches.direct   = false -- true is faster but may need huge amounts of memory
+caches.tree     = false
+caches.force    = true
+caches.ask      = false
+caches.relocate = false
+caches.defaults = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
-local direct_cache  = false -- true is faster but may need huge amounts of memory
-local fast_cache    = false
-local cache_tree    = false
+directives.register("system.caches.fast",function(v) caches.fast = true end)
 
-directives.register("system.caches.direct",function(v) direct_cache = true end)
-directives.register("system.caches.fast",  function(v) fast_cache   = true end)
+local writable, readables, usedreadables = nil, { }, { }
 
 -- we could use a metatable for writable and readable but not yet
-
-local function configfiles()
-    return concat(resolvers.configurationfiles(),";")
-end
-
-local function hashed(tree)
-    tree = gsub(tree,"[\\/]+$","")
-    tree = lower(tree)
-    local hash = md5hex(tree)
-    if trace_cache or trace_locating then
-        report_caches("hashing tree %a, hash %a",tree,hash)
-    end
-    return hash
-end
-
-local function treehash()
-    local tree = configfiles()
-    if not tree or tree == "" then
-        return false
-    else
-        return hashed(tree)
-    end
-end
-
-caches.hashed      = hashed
-caches.treehash    = treehash
-caches.configfiles = configfiles
 
 local function identify()
     -- Combining the loops makes it messy. First we check the format cache path
@@ -122,9 +82,9 @@ local function identify()
         for k=1,#texmfcaches do
             local cachepath = texmfcaches[k]
             if cachepath ~= "" then
-                cachepath = resolvepath(cachepath)
-                cachepath = cleanpath(cachepath)
-                cachepath = collapsepath(cachepath)
+                cachepath = resolvers.resolve(cachepath)
+                cachepath = resolvers.cleanpath(cachepath)
+                cachepath = file.collapsepath(cachepath)
                 local valid = isdir(cachepath)
                 if valid then
                     if is_readable(cachepath) then
@@ -133,14 +93,16 @@ local function identify()
                             writable = cachepath
                         end
                     end
-                elseif not writable then
-                    local cacheparent = dirname(cachepath)
-                    if is_writable(cacheparent) then -- we go on anyway (needed for mojca's kind of paths)
-                        mkdirs(cachepath)
-                        if isdir(cachepath) and is_writable(cachepath) then
-                            report_caches("path %a created",cachepath)
-                            writable = cachepath
-                            readables[#readables+1] = cachepath
+                elseif not writable and caches.force then
+                    local cacheparent = file.dirname(cachepath)
+                    if is_writable(cacheparent) and true then -- we go on anyway (needed for mojca's kind of paths)
+                        if not caches.ask or io.ask(format("\nShould I create the cache path %s?",cachepath), "no", { "yes", "no" }) == "yes" then
+                            mkdirs(cachepath)
+                            if isdir(cachepath) and is_writable(cachepath) then
+                                report_caches("path %a created",cachepath)
+                                writable = cachepath
+                                readables[#readables+1] = cachepath
+                            end
                         end
                     end
                 end
@@ -155,8 +117,8 @@ local function identify()
             local cachepath = texmfcaches[k]
             cachepath = resolvers.expansion(cachepath) -- was getenv
             if cachepath ~= "" then
-                cachepath = resolvepath(cachepath)
-                cachepath = cleanpath(cachepath)
+                cachepath = resolvers.resolve(cachepath)
+                cachepath = resolvers.cleanpath(cachepath)
                 local valid = isdir(cachepath)
                 if valid and is_readable(cachepath) then
                     if not writable and is_writable(cachepath) then
@@ -172,27 +134,25 @@ local function identify()
     -- quit.
     if not writable then
         report_caches("fatal error: there is no valid writable cache path defined")
-        osexit()
+        os.exit()
     elseif #readables == 0 then
         report_caches("fatal error: there is no valid readable cache path defined")
-        osexit()
+        os.exit()
     end
     -- why here
-    writable = expanddirname(cleanpath(writable)) -- just in case
-    -- moved here ( we have only one writable tree)
-    local base = caches.base
-    local more = caches.more
-    local tree = cache_tree or treehash() -- we have only one writable tree
+    writable = dir.expandname(resolvers.cleanpath(writable)) -- just in case
+    -- moved here
+    local base, more, tree = caches.base, caches.more, caches.tree or caches.treehash() -- we have only one writable tree
     if tree then
-        cache_tree = tree
+        caches.tree = tree
         writable = mkdirs(writable,base,more,tree)
         for i=1,#readables do
-            readables[i] = joinfile(readables[i],base,more,tree)
+            readables[i] = file.join(readables[i],base,more,tree)
         end
     else
         writable = mkdirs(writable,base,more)
         for i=1,#readables do
-            readables[i] = joinfile(readables[i],base,more)
+            readables[i] = file.join(readables[i],base,more)
         end
     end
     -- end
@@ -232,8 +192,30 @@ function caches.usedpaths(separator)
     end
 end
 
-local r_cache = { }
-local w_cache = { }
+function caches.configfiles()
+    return concat(resolvers.configurationfiles(),";")
+end
+
+function caches.hashed(tree)
+    tree = gsub(tree,"[\\/]+$","")
+    tree = lower(tree)
+    local hash = md5.hex(tree)
+    if trace_cache or trace_locating then
+        report_caches("hashing tree %a, hash %a",tree,hash)
+    end
+    return hash
+end
+
+function caches.treehash()
+    local tree = caches.configfiles()
+    if not tree or tree == "" then
+        return false
+    else
+        return caches.hashed(tree)
+    end
+end
+
+local r_cache, w_cache = { }, { } -- normally w in in r but who cares
 
 local function getreadablepaths(...)
     local tags = { ... }
@@ -244,7 +226,7 @@ local function getreadablepaths(...)
         if #tags > 0 then
             done = { }
             for i=1,#readables do
-                done[i] = joinfile(readables[i],...)
+                done[i] = file.join(readables[i],...)
             end
         else
             done = readables
@@ -270,21 +252,31 @@ local function getwritablepath(...)
     return done
 end
 
-local function setfirstwritablefile(filename,...)
-    local wr = getwritablepath(...)
-    local fullname = joinfile(wr,filename)
-    return fullname, wr
-end
+caches.getreadablepaths = getreadablepaths
+caches.getwritablepath  = getwritablepath
 
-local function setluanames(path,name)
-    return
-        format("%s/%s.%s",path,name,luasuffixes.tma),
-        format("%s/%s.%s",path,name,luasuffixes.tmc)
-end
+-- this can be tricky as we can have a pre-generated format while at the same time
+-- use e.g. a home path where we have updated file databases and so maybe we need
+-- to check first if we do have a writable one
 
-local function getfirstreadablefile(filename,...)
+-- function caches.getfirstreadablefile(filename,...)
+--     local rd = getreadablepaths(...)
+--     for i=1,#rd do
+--         local path = rd[i]
+--         local fullname = file.join(path,filename)
+--         if is_readable(fullname) then
+--             usedreadables[i] = true
+--             return fullname, path
+--         end
+--     end
+--     return caches.setfirstwritablefile(filename,...)
+-- end
+
+-- next time we have an issue, we can test this instead:
+
+function caches.getfirstreadablefile(filename,...)
     -- check if we have already written once
-    local fullname, path = setfirstwritablefile(filename,...)
+    local fullname, path = caches.setfirstwritablefile(filename,...)
     if is_readable(fullname) then
         return fullname, path -- , true
     end
@@ -292,7 +284,7 @@ local function getfirstreadablefile(filename,...)
     local rd = getreadablepaths(...)
     for i=1,#rd do
         local path = rd[i]
-        local fullname = joinfile(path,filename)
+        local fullname = file.join(path,filename)
         if is_readable(fullname) then
             usedreadables[i] = true
             return fullname, path -- , false
@@ -302,19 +294,21 @@ local function getfirstreadablefile(filename,...)
     return fullname, path -- , true
 end
 
-caches.getreadablepaths     = getreadablepaths
-caches.getwritablepath      = getwritablepath
-caches.setfirstwritablefile = setfirstwritablefile
-caches.getfirstreadablefile = getfirstreadablefile
-caches.setluanames          = setluanames
+function caches.setfirstwritablefile(filename,...)
+    local wr = getwritablepath(...)
+    local fullname = file.join(wr,filename)
+    return fullname, wr
+end
 
--- -- not used:
---
--- function caches.define(category,subcategory)
---     return function()
---         return getwritablepath(category,subcategory)
---     end
--- end
+function caches.define(category,subcategory) -- not used
+    return function()
+        return getwritablepath(category,subcategory)
+    end
+end
+
+function caches.setluanames(path,name)
+    return format("%s/%s.%s",path,name,luasuffixes.tma), format("%s/%s.%s",path,name,luasuffixes.tmc)
+end
 
 -- This works best if the first writable is the first readable too. In practice
 -- we can have these situations for file databases:
@@ -331,23 +325,22 @@ function caches.loaddata(readables,name,writable)
     for i=1,#readables do
         local path   = readables[i]
         local loader = false
-        local state  = false
-        local tmaname, tmcname = setluanames(path,name)
+        local tmaname, tmcname = caches.setluanames(path,name)
         if isfile(tmcname) then
-            state, loader = pcall(loadfile,tmcname)
+            loader = loadfile(tmcname)
         end
         if not loader and isfile(tmaname) then
             -- can be different paths when we read a file database from disk
-            local tmacrap, tmcname = setluanames(writable,name)
+            local tmacrap, tmcname = caches.setluanames(writable,name)
             if isfile(tmcname) then
-                state, loader = pcall(loadfile,tmcname)
+                loader = loadfile(tmcname)
             end
-            compilelua(tmaname,tmcname)
+            utilities.lua.compile(tmaname,tmcname)
             if isfile(tmcname) then
-                state, loader = pcall(loadfile,tmcname)
+                loader = loadfile(tmcname)
             end
             if not loader then
-                state, loader = pcall(loadfile,tmaname)
+                loader = loadfile(tmaname)
             end
         end
         if loader then
@@ -360,23 +353,27 @@ function caches.loaddata(readables,name,writable)
 end
 
 function caches.is_writable(filepath,filename)
-    local tmaname, tmcname = setluanames(filepath,filename)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
     return is_writable(tmaname)
 end
 
 local saveoptions = { compact = true }
 
-function caches.savedata(filepath,filename,data,fast)
-    local tmaname, tmcname = setluanames(filepath,filename)
-    data.cache_uuid = osuuid()
-    if fast or fast_cache then
-        savedata(tmaname,fastserialize(data,true))
-    elseif direct_cache then
-        savedata(tmaname,serialize(data,true,saveoptions))
+-- add some point we will only use the internal bytecode compiler and
+-- then we can flag success in the tma so that it can trigger a compile
+-- if the other engine
+
+function caches.savedata(filepath,filename,data,raw)
+    local tmaname, tmcname = caches.setluanames(filepath,filename)
+    data.cache_uuid = os.uuid()
+    if caches.fast then
+        file.savedata(tmaname,table.fastserialize(data,true))
+    elseif caches.direct then
+        file.savedata(tmaname,table.serialize(data,true,saveoptions))
     else
-        serializetofile(tmaname,data,true,saveoptions)
+        table.tofile(tmaname,data,true,saveoptions)
     end
-    compilelua(tmaname,tmcname)
+    utilities.lua.compile(tmaname,tmcname)
 end
 
 -- moved from data-res:
@@ -389,14 +386,11 @@ end
 
 function caches.loadcontent(cachename,dataname,filename)
     if not filename then
-        local name = hashed(cachename)
-        local full, path = getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
-        filename = joinfile(path,name)
+        local name = caches.hashed(cachename)
+        local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name)
     end
-    local state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.luc))
-    if not blob then
-        state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.lua))
-    end
+    local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
     if blob then
         local data = blob()
         if data and data.content then
@@ -431,9 +425,9 @@ end
 
 function caches.savecontent(cachename,dataname,content,filename)
     if not filename then
-        local name = hashed(cachename)
-        local full, path = setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
-        filename = joinfile(path,name) -- is full
+        local name = caches.hashed(cachename)
+        local full, path = caches.setfirstwritablefile(addsuffix(name,luasuffixes.lua),"trees")
+        filename = file.join(path,name) -- is full
     end
     local luaname = addsuffix(filename,luasuffixes.lua)
     local lucname = addsuffix(filename,luasuffixes.luc)
@@ -444,17 +438,17 @@ function caches.savecontent(cachename,dataname,content,filename)
         type    = dataname,
         root    = cachename,
         version = resolvers.cacheversion,
-        date    = osdate("%Y-%m-%d"),
-        time    = osdate("%H:%M:%S"),
+        date    = os.date("%Y-%m-%d"),
+        time    = os.date("%H:%M:%S"),
         content = content,
-        uuid    = osuuid(),
+        uuid    = os.uuid(),
     }
-    local ok = savedata(luaname,serialize(data,true))
+    local ok = io.savedata(luaname,table.serialize(data,true))
     if ok then
         if trace_locating then
             report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)
         end
-        if compilelua(luaname,lucname) then
+        if utilities.lua.compile(luaname,lucname) then
             if trace_locating then
                 report_resolvers("%a compiled to %a",dataname,lucname)
             end
@@ -463,7 +457,7 @@ function caches.savecontent(cachename,dataname,content,filename)
             if trace_locating then
                 report_resolvers("compiling failed for %a, deleting file %a",dataname,lucname)
             end
-            removefile(lucname)
+            os.remove(lucname)
         end
     elseif trace_locating then
         report_resolvers("unable to save %a in %a (access error)",dataname,luaname)

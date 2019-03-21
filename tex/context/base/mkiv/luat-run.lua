@@ -7,9 +7,8 @@ if not modules then modules = { } end modules ['luat-run'] = {
 }
 
 local next = next
-local find = string.find
+local format, find = string.format, string.find
 local insert, remove = table.insert, table.remove
-local osexit = os.exit
 
 -- trace_job_status is also controlled by statistics.enable that is set via the directive system.nostatistics
 
@@ -119,17 +118,13 @@ end
 
 -- For Taco ...
 
-local sequencers     = utilities.sequencers
-local appendgroup    = sequencers.appendgroup
-local appendaction   = sequencers.appendaction
-local wrapupactions  = sequencers.new { }
-local cleanupactions = sequencers.new { }
+local sequencers    = utilities.sequencers
+local appendgroup   = sequencers.appendgroup
+local appendaction  = sequencers.appendaction
+local wrapupactions = sequencers.new { }
 
 appendgroup(wrapupactions,"system")
 appendgroup(wrapupactions,"user")
-
-appendgroup(cleanupactions,"system")
-appendgroup(cleanupactions,"user")
 
 local function wrapup_run()
     local runner = wrapupactions.runner
@@ -138,24 +133,8 @@ local function wrapup_run()
     end
 end
 
-local function cleanup_run()
-    local runner = cleanupactions.runner
-    if runner then
-        runner()
-    end
-end
-
 function luatex.wrapup(action)
     appendaction(wrapupactions,"user",action)
-end
-
-function luatex.cleanup(action)
-    appendaction(cleanupactions,"user",action)
-end
-
-function luatex.abort()
-    cleanup_run()
-    osexit(1)
 end
 
 appendaction(wrapupactions,"system",synctex.wrapup)
@@ -225,8 +204,7 @@ end
 
 luatex.registerstopactions(luatex.cleanuptempfiles)
 
--- Reporting filenames has been simplified since lmtx because we don't need  the
--- traditional () {} <> etc methods (read: that directive option was never chosen).
+-- filenames
 
 local report_open  = logs.reporter("open source")
 local report_close = logs.reporter("close source")
@@ -237,20 +215,13 @@ local register     = callbacks.register
 local level = 0
 local total = 0
 local stack = { }
+local all   = false
 
 function luatex.currentfile()
     return stack[#stack] or tex.jobname
 end
 
-local function report_start(name,rest)
-    if rest then
-        -- luatex
-        if name ~= 1 then
-            insert(stack,false)
-            return
-        end
-        name = rest
-    end
+local function report_start(name)
     if find(name,"virtual://",1,true) then
         insert(stack,false)
     else
@@ -273,6 +244,39 @@ local function report_stop()
     end
 end
 
+if CONTEXTLMTXMODE < 2 then
+
+    local types = {
+        "data",
+        "font map",
+        "image",
+        "font subset",
+        "full font",
+    }
+
+    local do_report_start = report_start
+    local do_report_stop  = report_stop
+
+    report_start = function(left,name)
+        if not left then
+            -- skip
+        elseif left ~= 1 then
+            if all then
+                report_load("type %a, name %a",types[left],name or "?")
+            end
+        else
+            do_report_start(name)
+        end
+    end
+
+    report_stop = function(right)
+        if level == 1 or not right or right == 1 then
+            do_report_stop()
+        end
+    end
+
+end
+
 local function report_none()
 end
 
@@ -280,9 +284,17 @@ register("start_file",report_start)
 register("stop_file", report_stop)
 
 directives.register("system.reportfiles", function(v)
-    if v then
+    if v == "noresources" then
+        all = false
         register("start_file",report_start)
         register("stop_file", report_stop)
+    elseif toboolean(v) or v == "all" then
+        all = true
+        register("start_file",report_start)
+        register("stop_file", report_stop)
+    elseif v == "traditional" then
+        register("start_file",nil)
+        register("stop_file", nil)
     else
         register("start_file",report_none)
         register("stop_file", report_none)

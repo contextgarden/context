@@ -11,8 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\normalprotected\def\writestring  {\immediate\write\statuswrite}
-\normalprotected\def\writeline    {\writestring{}}
-                \let\message       \normalmessage
+\def\writestring  {\immediate\write\statuswrite}
+\def\writeline    {\writestring{}}
+\let\message       \normalmessage
 
 \endinput

@@ -18,10 +18,10 @@ utilities.scite = scite
 local report = logs.reporter("scite")
 
 do
---     local lexerroot = "c:/data/system/scite/wscite/context/lexers"
---     if not lexerroot then
-        lexerroot = file.dirname(resolvers.findfile("scite-context-lexer.lua"))
---     end
+    local lexerroot = "c:/data/system/scite/wscite/context/lexers"
+    if not lexerroot then
+        lexerroot = file.dirname(resolvers.find_file("scite-context-lexer.lua"))
+    end
     if lfs.isdir(lexerroot) then
         package.extraluapath(lexerroot)
         package.extraluapath(lexerroot.."/themes")
@@ -33,28 +33,14 @@ do
 end
 
 local knownlexers  = {
-    tex  = "tex",
-    mkiv = "tex", mkvi = "tex",
-    mkxl = "tex", mklx = "tex",
-    mkxi = "tex", mkix = "tex",
-    mkii = "tex",
-    bib  = "bibtex",
-    cld  = "tex",
-    lua  = "lua", lmt = "lua",
-    lfg  = "lua", lus = "lua", luv = "lua",
-    mp   = "mps",
-    mpiv = "mps",
-    mpxl = "mps",
-    mpii = "mps",
-    w    = "web", ww  = "web",
-    c    = "cpp", h   = "cpp",
-    cpp  = "cpp", hpp = "cpp",
-    cxx  = "cpp", hxx = "cpp",
-    xml  = "xml", xsl = "xml", xsd = "xml", dtd = "xml",
-    lmx  = "xml", ctx = "xml", rlx = "xml",
-    css  = "xml",
-    rme  = "txt",
-    txt  = "txt",
+    tex  = "tex", mkiv = "tex", mkvi = "tex", mkxi = "tex", mkix = "tex", mkii = "tex", cld  = "tex",
+    lua  = "lua", lfg  = "lua", lus = "lua",
+    mp = "mps", mpiv = "mps", mpii = "mps",
+    w = "web", ww = "web",
+    c = "cpp", h = "cpp", cpp = "cpp", hpp = "cpp", cxx = "cpp", hxx = "cpp",
+    xml = "xml", lmx  = "xml", ctx = "xml", xsl = "xml", xsd = "xml", rlx = "xml", css = "xml", dtd = "xml",
+    bib = "bibtex",
+    rme = "txt",
  -- todo: pat/hyp ori
 }
 
@@ -84,15 +70,13 @@ scite.loadedlexers   = loadedlexers
 scite.knownlexers    = knownlexers
 scite.loadscitelexer = loadscitelexer
 
-local f_fore_bold  = formatters['.%s { display:inline; font-weight:bold; color:#%02X%02X%02X; }']
-local f_fore_none  = formatters['.%s { display:inline; font-weight:normal; color:#%02X%02X%02X; }']
-local f_none_bold  = formatters['.%s { display:inline; font-weight:bold; }']
-local f_none_none  = formatters['.%s { display:inline; font-weight:normal; }']
+local f_fore_bold  = formatters['.%s { display: inline ; font-weight: bold   ; color: #%02X%02X%02X ; }']
+local f_fore_none  = formatters['.%s { display: inline ; font-weight: normal ; color: #%02X%02X%02X ; }']
+local f_none_bold  = formatters['.%s { display: inline ; font-weight: bold   ; }']
+local f_none_none  = formatters['.%s { display: inline ; font-weight: normal ; }']
 local f_div_class  = formatters['<div class="%s">%s</div>']
 local f_linenumber = formatters['<div class="linenumber">%s</div>\n']
-local f_lineerror  = formatters['<div class="linenumber lineerror">%s</div>\n']
-local f_div_number = formatters['.linenumber { display:inline-block; font-weight:normal; width:%sem; margin-right:2em; padding-right:.25em; text-align:right; color:#000000; }'] -- background-color:#C7C7C7;
-local s_div_error  =            '.lineerror { font-weight:bold; color:#FFFFFF; background-color:#000000; }'
+local f_div_number = formatters['.linenumber { display: inline-block ; font-weight: normal ; width: %sem ; margin-right: 2em ; padding-right: .25em ; text-align: right ; background-color: #C7C7C7 ; }']
 
 local replacer_regular = lpeg.replacer {
     ["<"]  = "&lt;",
@@ -101,7 +85,6 @@ local replacer_regular = lpeg.replacer {
 }
 
 local linenumber  = 0
-local lineerror   = 0
 local linenumbers = { }
 
 local replacer_numbered = lpeg.replacer {
@@ -110,7 +93,7 @@ local replacer_numbered = lpeg.replacer {
     ["&"]  = "&amp;",
     [lpeg.patterns.newline] = function()
         linenumber = linenumber + 1
-        linenumbers[linenumber] = (linenumber == lineerror and f_lineerror or f_linenumber)(linenumber)
+        linenumbers[linenumber] = f_linenumber(linenumber)
         return "\n"
     end,
 }
@@ -156,7 +139,6 @@ local function exportstyled(lexer,text,numbered)
     local b      = 0
     linenumber   = 0
     linenumbers  = { }
-    lineerror    = tonumber(numbered) or 0
     local replacer = numbered and replacer_numbered or replacer_regular
     local n = #result
     for i=1,n,2 do
@@ -173,11 +155,12 @@ local function exportstyled(lexer,text,numbered)
         end
         start = position
     end
-    return concat(buffer), concat(linenumbers)
+    buffer = concat(buffer)
+    return buffer, concat(linenumbers)
 end
 
 local function exportcsslinenumber()
-    return f_div_number(#tostring(linenumber)/2+1) .. "\n" .. s_div_error
+    return f_div_number(#tostring(linenumber)/2+1)
 end
 
 local htmlfile = utilities.templates.replacer([[
@@ -191,7 +174,7 @@ local htmlfile = utilities.templates.replacer([[
 %numberstyles%
     --></style>
     <body>
-        <table style="padding:0; margin:0; background-color:#FFFFFF;">
+        <table style="padding:0; margin:0;">
             <tr>
                 <td><pre>%linenumbers%</pre></td>
                 <td><pre>%lexedcontent%</pre></td>
@@ -201,30 +184,15 @@ local htmlfile = utilities.templates.replacer([[
 </html>
 ]])
 
-local htmlblob = utilities.templates.replacer([[
-<style type="text/css"><!--
-%lexingstyles%
-%numberstyles%
---></style>
-<table style="padding:0; margin:0; background-color:#FFFFFF;">
-    <tr>
-        <td><pre>%linenumbers%</pre></td>
-        <td><pre>%lexedcontent%</pre></td>
-    </tr>
-</table>
-]])
-
 function scite.tohtml(data,lexname,numbered,title)
     local source, lines = exportstyled(loadedlexers[lexname],data or "",numbered)
-    if source then
-        return (title == false and htmlblob or htmlfile) {
-            lexedcontent = source, -- before numberstyles
-            lexingstyles = exportcsslexing(),
-            numberstyles = exportcsslinenumber(),
-            title        = title or "context source file",
-            linenumbers  = lines,
-        }
-    end
+    return htmlfile {
+        lexedcontent = source, -- before numberstyles
+        lexingstyles = exportcsslexing(),
+        numberstyles = exportcsslinenumber(),
+        title        = title or "context source file",
+        linenumbers  = lines,
+    }
 end
 
 local function maketargetname(name)

@@ -27,7 +27,6 @@ local nodes, node = nodes, node
 
 local nuts               = nodes.nuts
 
-local getboth            = nuts.getboth
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
@@ -132,10 +131,11 @@ local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     if getattr(current,a_alignstate) == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
+        setsubtype(current,spaceskip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
+        setsubtype(current,spaceskip_code)
     end
-    setsubtype(current,spaceskip_code)
     return head, current
 end
 
@@ -199,7 +199,7 @@ local methods = {
     end,
 
     [0x00A0] = function(head,current) -- nbsp
-        local prev, next = getboth(current)
+        local next = getnext(current)
         if next then
             local char = isglyph(current)
             if not char then
@@ -216,6 +216,7 @@ local methods = {
                 return false
             end
         end
+        local prev = getprev(current)
         if prev then
             local char = isglyph(prev)
             if char and nbsphash[char] then

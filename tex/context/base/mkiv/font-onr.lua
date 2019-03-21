@@ -235,6 +235,7 @@ do
         binary = decrypt(binary,55665,4)
 
         local names    = { }
+
         local encoding = lpegmatch(p_filterencoding,ascii)
         local metadata = lpegmatch(p_filtermetadata,ascii,1,{})
         local glyphs   = { }
@@ -254,7 +255,7 @@ do
                 },
             }
             -- only cff 1 in type 1 fonts
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams)
         else
             lpegmatch(p_filternames,binary,1,filename)
         end

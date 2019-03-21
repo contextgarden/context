@@ -28,24 +28,16 @@ luautilities.nofstrippedbytes  = 0
 local strippedchunks           = { } -- allocate()
 luautilities.strippedchunks    = strippedchunks
 
-if not LUATEXENGINE then
-    --- probably mtxrun ...
-    LUATEXENGINE    = status.luatex_engine and string.lower(status.luatex_engine)
-    JITSUPPORTED    = LUATEXENGINE == "luajittex" or jit
-    CONTEXTLMTXMODE = CONTEXTLMTXMODE or (LUATEXENGINE == "luametatex" and 1) or 0
-end
-
 luautilities.suffixes = {
     tma = "tma",
-    tmc = (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and "tmd") or (jit and "tmb") or "tmc",
+    tmc = jit and "tmb" or "tmc",
     lua = "lua",
-    luc = (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and "lud") or (jit and "lub") or "luc",
+    luc = jit and "lub" or "luc",
     lui = "lui",
     luv = "luv",
     luj = "luj",
     tua = "tua",
- -- tuc = "tuc",
-    tuc = (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and "tud") or (jit and "tub") or "tuc",
+    tuc = "tuc",
 }
 
 -- environment.loadpreprocessedfile can be set to a preprocessor

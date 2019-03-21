@@ -31,8 +31,7 @@ texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
-texconfig.properties_size = 262144 -- after that, we're a hash
-texconfig.fix_mem_init    = 750000
+texconfig.properties_size =  65536
 
 local stub = [[
 
@@ -61,37 +60,18 @@ function texconfig.init()
 
     libraries = { -- we set it here as we want libraries also 'indexed'
         basiclua = {
-            -- always
-            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
-            -- bonus
-            "bit32", "utf8",
+            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
         },
-        basictex = {
-            -- always
-            "callback", "font", "lang", "lua", "node", "status", "tex", "texconfig", "texio", "token",
-             -- not in luametatex
-            "img", "pdf",
+        basictex = { -- noad
+            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
         },
         extralua = {
-            -- not in luametatex
-            "unicode", "utf", "gzip",  "zip", "zlib",
-            -- in luametatex
-            "xzip", "xmath", "xcomplex", "basexx",
-            -- maybe some day in luametatex
-            "lz4", "lzo",
-            -- always (mime can go)
-            "lfs","socket", "mime", "md5", "sha2", "fio", "sio",
+            "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "fio", "unicode", "utf",
         },
         extratex = {
-            -- not in luametatex
-            "kpse",
-            -- always
-            "pdfe", "mplib",
-            -- in luametatex
-            "pdfdecode", "pngdecode",
+            "epdf", "kpse", "mplib", -- "fontloader",
         },
         obsolete = {
-            "epdf",
             "fontloader", -- can be filled by luat-log
             "kpse",
         },
@@ -122,7 +102,7 @@ function texconfig.init()
                 local tv = type(gv)
                 if tv == "table" then
                     for k, v in next, gv do
-                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloads functions (security)
+                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
                     end
                 end
                 lib[v] = keys
@@ -141,24 +121,16 @@ function texconfig.init()
 
     -- shortcut and helper
 
-    local setbytecode  = lua.setbytecode
-    local getbytecode  = lua.getbytecode
-    local callbytecode = lua.callbytecode or function(i)
-        local b = getbytecode(i)
-        if b then
-            b()
-            return true
-        else
-            return false
-        end
-    end
+    local setbytecode = lua.setbytecode
+    local getbytecode = lua.getbytecode
 
     local function init(start)
         local i = start
         local t = os.clock()
         while true do
-            local b = callbytecode(i)
+            local b = getbytecode(i)
             if b then
+                b() ;
                 setbytecode(i,nil) ;
                 i = i + 1
             else
@@ -246,9 +218,7 @@ local function makestub()
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
-    t[#t+1] = ""
-    t[#t+1] = format(stub,firsttable,tostring(CONTEXTLMTXMODE or 0))
-    io.savedata(name,concat(t,"\n"))
+    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable,tostring(CONTEXTLMTXMODE) or 0)))
     logs.newline()
 end
 

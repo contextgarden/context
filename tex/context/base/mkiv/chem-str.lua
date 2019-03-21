@@ -69,8 +69,7 @@ local chemistry = chemistry
 chemistry.instance   = "chemistry"
 chemistry.format     = "metafun"
 chemistry.method     = "double"
-
-local nofstructures  = 0
+chemistry.structures = 0
 
 local common_keys = {
     b      = "line",
@@ -740,7 +739,7 @@ function chemistry.start(settings)
         return
     end
     --
-    nofstructures = nofstructures + 1
+    chemistry.structures = chemistry.structures + 1
     --
     rotation = tonumber(rotation) or 0
     --
@@ -750,7 +749,7 @@ function chemistry.start(settings)
         report_chemistry("%s scale %a, rotation %a, width %s, height %s, left %s, right %s, top %s, bottom %s","used",scale,rotation,width,height,left,right,top,bottom)
     end
     metacode[#metacode+1] = f_start_structure(
-        nofstructures,
+        chemistry.structures,
         left, right, top, bottom,
         rotation, topoints(unit), bondlength, scale, topoints(offset),
         tostring(settings.axis == v_on), topoints(rulethickness), axiscolor
@@ -789,8 +788,8 @@ function chemistry.component(spec,text,rulethickness,rulecolor)
 end
 
 statistics.register("chemical formulas", function()
-    if nofstructures > 0 then
-        return format("%s chemical structure formulas",nofstructures) -- no timing needed, part of metapost
+    if chemistry.structures > 0 then
+        return format("%s chemical structure formulas",chemistry.structures) -- no timing needed, part of metapost
     end
 end)
 

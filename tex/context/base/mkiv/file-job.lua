@@ -46,7 +46,7 @@ local dirname           = file.dirname
 local is_qualified_path = file.is_qualified_path
 
 local cleanpath         = resolvers.cleanpath
-local toppath           = resolvers.toppath
+local inputstack        = resolvers.inputstack
 local resolveprefix     = resolvers.resolve
 
 local hasscheme         = url.hasscheme
@@ -172,8 +172,8 @@ implement {
 
 -- moved from tex to lua:
 
-local texpatterns = { "%s.mkvi", "%s.mkiv", "%s.mklx", "%s.mkxl", "%s.tex" }
-local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua", "%s.lmt" }
+local texpatterns = { "%s.mkvi", "%s.mkiv", "%s.tex" }
+local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lua" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
 
@@ -789,7 +789,7 @@ end
 
 local function autoname(name)
     if name == "*" then
-        name = nameonly(toppath() or name)
+        name = nameonly(inputstack[#inputstack] or name)
     end
     return name
 end

@@ -66,11 +66,3 @@ implement { name = "tand", actions = { math.tand, nicenumber, context }, argumen
 -- only as commands
 
 function commands.format(fmt,...) context((gsub(fmt,"@","%%")),...) end
-
-implement {
-    name      = "formatone",
-    public    = true,
-    protected = true,
-    arguments = "2 strings",
-    actions   = function(f,s) context((gsub(f,"@","%%")),s) end,
-}

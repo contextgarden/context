@@ -1,6 +1,9 @@
 % PDF/A-3a
 
-\enabletrackers[structure.tags,backend.tags,backend.xmp]
+\nopdfcompression
+
+
+\enabletrackers[structure.tags,backend.tags]
 
 \setupbackend
   [format=PDF/A-3a,
@@ -10,16 +13,11 @@
 
 \setuptagging[state=start]
 
-\setupinteraction[state=start]% needed for attachment
-%\setupattachment[method=hidden]
-
 \setupcolors[cmyk=no]
 \definecolor[rgbblack][b=0.01]
-\definecolor[transtest][r=1,g=1,t=.25]
+\definecolor[transtest][r=1,g=1,t=.5]
 
 \placebookmarks[chapter][all][force=yes]
-
-
 
 \starttext
 
@@ -27,7 +25,7 @@
 
 \startchapter[title=aa,bookmark=bb,list=cc,marking=dd]
 
-Test for PDF/A-3a
+Test it
 
 \stopchapter
 
@@ -41,9 +39,5 @@ Test for PDF/A-3a
     \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
     \blackrule[width=1cm,height=1cm,color=transtest]
 \egroup
-
-
-% inclusion of any file type is allowed
-\attachment[file=cow.pdf, type={application/pdf}]
 
 \stoptext

@@ -73,7 +73,6 @@ local setattrlist         = nuts.setattrlist
 local remove_node         = nuts.remove
 local insert_node_after   = nuts.insert_after
 local insert_node_before  = nuts.insert_before
-local start_of_par        = nuts.start_of_par
 
 local nodepool            = nuts.pool
 local new_direction       = nodepool.direction
@@ -398,7 +397,7 @@ end
 local function get_baselevel(head,list,size,direction)
     if direction == lefttoright_code or direction == righttoleft_code then
         return direction, true
-    elseif getid(head) == localpar_code and start_of_par(head) then
+    elseif getid(head) == localpar_code and getsubtype(head) == 0 then
         direction = getdirection(head)
         if direction == lefttoright_code or direction == righttoleft_code then
             return direction, true
@@ -908,7 +907,7 @@ local function apply_to_list(list,size,head,pardir)
                 enddir = false
             end
         elseif begindir then
-            if id == localpar_code and start_of_par(current) then
+            if id == localpar_code and getsubtype(current) == 0 then
                 -- localpar should always be the 1st node
                 local d = new_direction(begindir)
              -- setprop(d,"directions",true)

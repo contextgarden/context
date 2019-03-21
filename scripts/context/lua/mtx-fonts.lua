@@ -16,7 +16,7 @@ local lower = string.lower
 local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
-local otlversion  = 3.110
+local otlversion  = 3.106
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -268,7 +268,7 @@ local function showfeatures(tag,specification)
         report()
         indeed("instances : % t",instancenames)
     end
-    local features, tables = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
+    local features = fonts.helpers.getfeatures(specification.filename,not getargument("nosave"))
     if features then
         for what, v in table.sortedhash(features) do
             local data = features[what]
@@ -276,7 +276,7 @@ local function showfeatures(tag,specification)
                 report()
                 report("%s features:",what)
                 report()
-                report("  feature  script   languages")
+                report("feature  script   languages")
                 report()
                 for f,ff in table.sortedhash(data) do
                     local done = false
@@ -288,31 +288,13 @@ local function showfeatures(tag,specification)
                         else
                             done = true
                         end
-                        report("  % -8s % -8s % -8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
+                        report("% -8s % -8s % -8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
                     end
                 end
             end
         end
     else
         report("no features")
-    end
-    if tables then
-        tables = table.tohash(tables)
-        local methods = {
-            overlay = (tables.colr or tables.cpal) and { format = "cff/ttf", feature = "color:overlay" } or nil,
-            bitmap  = (tables.cblc or tables.cbdt) and { format = "png",     feature = "color:bitmap"  } or nil,
-            outline = (tables.svg                ) and { format = "svg",     feature = "color:svg"     } or nil,
-        }
-        if next(methods) then
-            report()
-            report("color features:")
-            report()
-            report("  method   feature         formats")
-            report()
-            for k, v in table.sortedhash(methods) do
-                report("  % -8s % -14s  %s",k,v.feature,v.format)
-            end
-        end
     end
     report()
     collectgarbage("collect")

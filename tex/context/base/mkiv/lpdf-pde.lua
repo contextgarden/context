@@ -60,29 +60,29 @@ if not (number and number.dimenfactors) then
     require("util-dim")
 end
 
-local pdfe              = pdfe
+local epdf              = pdfe
       lpdf              = lpdf or { }
 local lpdf              = lpdf
 local lpdf_epdf         = { }
-      lpdf.epdf         = lpdf_epdf
+lpdf.epdf               = lpdf_epdf
 
-local pdfopen           = pdfe.open
-local pdfnew            = pdfe.new
-local pdfclose          = pdfe.close
+local openPDF           = epdf.open
+local newPDF            = epdf.new
+local closePDF          = epdf.close
 
-local getcatalog        = pdfe.getcatalog
-local getinfo           = pdfe.getinfo
-local gettrailer        = pdfe.gettrailer
-local getnofpages       = pdfe.getnofpages
-local getversion        = pdfe.getversion
-local getbox            = pdfe.getbox
-local getstatus         = pdfe.getstatus
-local unencrypt         = pdfe.unencrypt
+local getcatalog        = epdf.getcatalog
+local getinfo           = epdf.getinfo
+local gettrailer        = epdf.gettrailer
+local getnofpages       = epdf.getnofpages
+local getversion        = epdf.getversion
+local getbox            = epdf.getbox
+local getstatus         = epdf.getstatus
+local unencrypt         = epdf.unencrypt
 
-local dictionarytotable = pdfe.dictionarytotable
-local arraytotable      = pdfe.arraytotable
-local pagestotable      = pdfe.pagestotable
-local readwholestream   = pdfe.readwholestream
+local dictionarytotable = epdf.dictionarytotable
+local arraytotable      = epdf.arraytotable
+local pagestotable      = epdf.pagestotable
+local readwholestream   = epdf.readwholestream
 
 local getfromreference  = pdfe.getfromreference
 
@@ -437,9 +437,9 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
         statistics.starttiming(lpdf_epdf)
         local __data__
         if fromstring then
-            __data__ = pdfnew(filename,#filename)
+            __data__ = newPDF(filename,#filename)
         else
-            __data__ = pdfopen(filename)
+            __data__ = openPDF(filename)
         end
         if __data__ then
             if userpassword and getstatus(__data__) < 0 then
@@ -491,7 +491,8 @@ function lpdf_epdf.unload(filename)
     if type(filename) == "string" then
         local document = loaded[filename]
         if document then
-         -- pdfclose(document)
+-- report_epdf("%04i closed: %s",nofloaded,filename)
+-- nofloaded = nofloaded - 1
             loaded[document] = nil
             loaded[filename] = nil
         end
@@ -518,7 +519,6 @@ lpdf_epdf.expanded = expanded
 
 local spaces    = lpegpatterns.whitespace^1
 local optspaces = lpegpatterns.whitespace^0
-local comment   = P("%") * (1 - lpegpatterns.newline)^0
 local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(tonumber(s,8)) end)
                 + P("\\") * P(1)
 local key       = P("/") * C(R("AZ","az","09","__")^1)
@@ -527,7 +527,7 @@ local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
 local grammar   = P { "start",
-    start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    start      = (keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = key * optspaces * V("start"),
     array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1)         * P("]")),
     dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1)      * P(">>")),
@@ -635,8 +635,6 @@ local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for b
     return fonts
 end
 
-lpdf_epdf.analyzefonts = analyzefonts
-
 local more = 0
 local unic = nil -- cheaper than passing each time as Carg(1)
 
@@ -682,34 +680,27 @@ function lpdf_epdf.getpagecontent(document,pagenumber)
         local size     = #entry
         local operator = entry[size]
         if operator == "Tf" then
-            font = fonts[entry[1][2]]
-            unic = font and font.tounicode or { }
-        elseif operator == "TJ" then
-            local data = entry[1] -- { "array", { ... } }
-            local list = data[2]  -- { { ... }, { ... } }
+            font = fonts[entry[1]]
+            unic = font.tounicode
+        elseif operator == "TJ" then -- { array,  TJ }
+            local list = entry[1]
             for i=1,#list do
                 local li = list[i]
---                 if type(li) == "table" then
-                    local kind = li[1]
-                    if kind == "hex" then
+                if type(li) == "table" then
+                    if li[1] == "hex" then
                         list[i] = lpegmatch(p_hex_to_utf,li[2])
-                    elseif kind == "string" then
-                        list[i] = lpegmatch(p_dec_to_utf,li[2])
                     else
-                        list[i] = li[2] -- kern
+                        list[i] = lpegmatch(p_dec_to_utf,li[2])
                     end
---                 else
---                     -- kern
---                 end
+                else
+                    -- kern
+                end
             end
-        elseif operator == "Tj" or operator == "'" or operator == '"' then
-            -- { string,  Tj } { string, ' } { n, m, string, " }
-            local data = entry[size-1]
-            local list = data[2]
-            local kind = list[1]
-            if kind == "hex" then
+        elseif operator == "Tj" or operator == "'" or operator == '"' then -- { string,  Tj } { string, ' } { n, m, string, " }
+            local list = entry[size-1]
+            if list[1] == "hex" then
                 list[2] = lpegmatch(p_hex_to_utf,li[2])
-            elseif kind == "string" then
+            else
                 list[2] = lpegmatch(p_dec_to_utf,li[2])
             end
         end
@@ -738,32 +729,25 @@ function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
         local size     = #entry
         local operator = entry[size]
         if operator == "Tf" then
-            last_f = entry[2][2] -- size
+            last_f = entry[2]
         elseif operator == "TJ" then
-            local data = entry[1] -- { "array", { ... } }
-            local list = data[2]  -- { { ... }, { ... } }
+            local list = entry[1]
             for i=1,#list do
                 local li = list[i]
-                local kind = type(li)
-                if kind == "string" then
+                if type(li) == "string" then
                     last = last + 1
                     text[last] = li
-                elseif kind == "number" and li < -50 then
+                elseif li < -50 then
                     last = last + 1
                     text[last] = " "
                 end
             end
+            line = concat(list)
         elseif operator == "Tj" then
             last = last + 1
-            local li = entry[size-1]
-            local kind = type(li)
-            if kind == "string" then
-                last = last + 1
-                text[last] = li
-            end
+            text[last] = entry[size-1]
         elseif operator == "cm" or operator == "Tm" then
-            local data = entry
-            local ty = entry[6][2]
+            local ty = entry[6]
             local dy = abs(last_y - ty)
             if dy > linefactor*last_f then
                 if last > 0 then
@@ -809,7 +793,7 @@ function lpdf_epdf.getstructure(document,list) -- just a test
     end
 end
 
-if images then do
+if img then do
 
     -- This can be made a bit faster (just get raw data and pass it) but I will
     -- do that later. In the end the benefit is probably neglectable.
@@ -903,8 +887,6 @@ if images then do
                             value = pdfnull()
                         elseif kind == reference_object_code then
                             value = deepcopyobject(xref,copied,entry)
-                        elseif entry == nil then
-                            value = pdfnull()
                         else
                             value = tostring(entry)
                         end
@@ -1037,7 +1019,7 @@ if images then do
             local root = pdfdoc.Catalog
             local page = pdfdoc.pages[pagenumber]
             if page then
-                local sizetag  = sizes[size or "crop"] or sizes.crop
+                local sizetag  = sizes[size or "crop"] or sizes.cro
                 local mediabox = page.MediaBox or { 0, 0, 0, 0 }
                 local cropbox  = page[sizetag] or mediabox
                 return {
@@ -1064,96 +1046,92 @@ if images then do
             local page     = pdfdoc.pages[pagenumber or 1]
             local pageinfo = querypdf(pdfdoc,pagenumber)
             local contents = page.Contents
-            if contents then
-                local xref     = pdfdoc.__xrefs__
-                local copied   = pdfdoc.__copied__
-                if compact and lpdf_epdf.plugin then
-                    plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
-                end
-                local xobject = pdfdictionary {
-                    Type           = pdfconstant("XObject"),
-                    Subtype        = pdfconstant("Form"),
-                    FormType       = 1,
-                    Group          = copyobject(xref,copied,page,"Group"),
-                    LastModified   = copyobject(xref,copied,page,"LastModified"),
-                    Metadata       = copyobject(xref,copied,page,"Metadata"),
-                    PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
-                    Resources      = copyresources(pdfdoc,xref,copied,page),
-                    SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
-                } + attr
-                if attributes then
-                    for k, v in expanded(attributes) do
-                        page[k] = v -- maybe nested
-                    end
-                end
-                local content  = ""
-                local nolength = nil
-                local ctype    = contents.__type__
-                -- we always recompress because image object streams can not be
-                -- influenced (yet)
-                if ctype == stream_object_code then
-                    if stripmarked then
-                        content = contents() -- uncompressed
-                        local stripped = lpdf_epdf.stripcontent(content)
-                        if stripped ~= content then
-                         -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
-                            content = stripped
-                        end
-                    elseif recompress then
-                        content = contents() -- uncompressed
-                    else
-                        local Filter = copyobject(xref,copied,contents,"Filter")
-                        local Length = copyobject(xref,copied,contents,"Length")
-                        if Length and Filter then
-                            nolength = true
-                            xobject.Length = Length
-                            xobject.Filter = Filter
-                            content = contents(false) -- uncompressed
-                        else
-                            content = contents() -- uncompressed
-                        end
-                    end
-                elseif ctype == array_object_code then
-                    content = { }
-                    for i=1,#contents do
-                        content[i] = contents[i]() -- uncompressed
-                    end
-                    content = concat(content," ")
-                end
-                -- still not nice: we double wrap now
-                plugins = nil
-                local rotation    = pageinfo.rotation
-                local boundingbox = pageinfo.boundingbox
-                local transform   = nil
-                if rotation == 90 then
-                    transform = 3
-                elseif rotation == 180 then
-                    transform = 2
-                elseif rotation == 270 then
-                    transform = 1
-                elseif rotation > 1 and rotation < 4 then
-                    transform = rotation
-                end
-                xobject.BBox = pdfarray {
-                    boundingbox[1] * bpfactor,
-                    boundingbox[2] * bpfactor,
-                    boundingbox[3] * bpfactor,
-                    boundingbox[4] * bpfactor,
-                }
-                -- maybe like bitmaps
-                return createimage { -- beware: can be a img.new or a dummy
-                    bbox      = boundingbox,
-                    transform = transform,
-                    nolength  = nolength,
-                    nobbox    = true,
-                    notype    = true,
-                    stream    = content, -- todo: no compress, pass directly also length, filter etc
-                    attr      = xobject(),
-                    kind      = images.types.stream,
-                }
-            else
-                -- maybe report an error
+            local xref     = pdfdoc.__xrefs__
+            local copied   = pdfdoc.__copied__
+            if compact and lpdf_epdf.plugin then
+                plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
             end
+            local xobject = pdfdictionary {
+                Type           = pdfconstant("XObject"),
+                Subtype        = pdfconstant("Form"),
+                FormType       = 1,
+                Group          = copyobject(xref,copied,page,"Group"),
+                LastModified   = copyobject(xref,copied,page,"LastModified"),
+                Metadata       = copyobject(xref,copied,page,"Metadata"),
+                PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
+                Resources      = copyresources(pdfdoc,xref,copied,page),
+                SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
+            } + attr
+            if attributes then
+                for k, v in expanded(attributes) do
+                    page[k] = v -- maybe nested
+                end
+            end
+            local content  = ""
+            local nolength = nil
+            local ctype    = contents.__type__
+            -- we always recompress because image object streams can not be
+            -- influenced (yet)
+            if ctype == stream_object_code then
+                if stripmarked then
+                    content = contents() -- uncompressed
+                    local stripped = lpdf_epdf.stripcontent(content)
+                    if stripped ~= content then
+                     -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
+                        content = stripped
+                    end
+                elseif recompress then
+                    content = contents() -- uncompressed
+                else
+                    local Filter = copyobject(xref,copied,contents,"Filter")
+                    local Length = copyobject(xref,copied,contents,"Length")
+                    if Length and Filter then
+                        nolength = true
+                        xobject.Length = Length
+                        xobject.Filter = Filter
+                        content = contents(false) -- uncompressed
+                    else
+                        content = contents() -- uncompressed
+                    end
+                end
+            elseif ctype == array_object_code then
+                content = { }
+                for i=1,#contents do
+                    content[i] = contents[i]() -- uncompressed
+                end
+                content = concat(content," ")
+            end
+            -- still not nice: we double wrap now
+            plugins = nil
+            local rotation    = pageinfo.rotation
+            local boundingbox = pageinfo.boundingbox
+            local transform   = nil
+            if rotation == 90 then
+                transform = 3
+            elseif rotation == 180 then
+                transform = 2
+            elseif rotation == 270 then
+                transform = 1
+            elseif rotation > 1 and rotation < 4 then
+                transform = rotation
+            end
+            xobject.BBox = pdfarray {
+                boundingbox[1] * bpfactor,
+                boundingbox[2] * bpfactor,
+                boundingbox[3] * bpfactor,
+                boundingbox[4] * bpfactor,
+            }
+            -- maybe like bitmaps
+            return createimage { -- beware: can be a img.new or a dummy
+                bbox      = boundingbox,
+                transform = transform,
+                nolength  = nolength,
+                nobbox    = true,
+                notype    = true,
+                stream    = content, -- todo: no compress, pass directly also length, filter etc
+                attr      = xobject(),
+                kind      = images.types.stream,
+            }
         end
     end
 

@@ -87,6 +87,8 @@ local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local setsubtype          = nuts.setsubtype
 
+local texgetattribute     = tex.getattribute
+local texsetattribute     = tex.setattribute
 local texgetdimen         = tex.getdimen
 local texsetcount         = tex.setcount
 local texget              = tex.get
@@ -168,34 +170,10 @@ addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ s
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
-    constructors.fixprotrusion = false
-end
-
 constructors.sharefonts        = true -- experimental
 constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
-constructors.autocleanup       = true
-
--- we can get rid of the tfm instance when we have fast access to the
--- scaled character dimensions at the tex end, e.g. a fontobject.width
--- actually we already have some of that now as virtual keys in glyphs
---
--- flushing the kern and ligature tables from memory saves a lot (only
--- base mode) but it complicates vf building where the new characters
--- demand this data .. solution: functions that access them
-
--- font.getcopy = font.getfont -- we always want the table that context uses
-
-function constructors.cleanuptable(tfmdata)
-    if constructors.autocleanup and tfmdata.properties.virtualized then
-        for k, v in next, tfmdata.characters do
-            if v.commands then v.commands = nil end
-        --  if v.kerns    then v.kerns    = nil end
-        end
-    end
-end
 
 do
 
@@ -203,7 +181,7 @@ do
     local hashes = { }
 
     local nofinstances = 0
-    local instances    = setmetatableindex(function(t,k)
+    local instances    = table.setmetatableindex(function(t,k)
         nofinstances = nofinstances + 1
         t[k] = nofinstances
         return nofinstances
@@ -594,21 +572,6 @@ end
 -- \definefontfeature[demo][a={b,c}]
 -- \definefontfeature[demo][a={b=12,c={34,35}}]
 
-local h = setmetatableindex(function(t,k)
-    local v = "," .. k .. ","
-    t[k] = v
-    return v
-end)
-
--- local function removefromhash(hash,key)
---     local pattern = h[key]
---     for k in next, hash do
---         if k ~= key and find(h[k],pattern) then -- if find(k,",") and ...
---             hash[k] = nil
---         end
---     end
--- end
-
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=",1,true) then
         features = parent
@@ -674,23 +637,14 @@ local function presetcontext(name,parent,features) -- will go to con and shared
      -- if v then t[k] = v end
         t[k] = v
     end
-    -- the number is needed for dynamic features; maybe number should always be
-    -- renewed as we can redefine features ... i need a test
-    local number = setups[name] and setups[name].number or 0
+    -- needed for dynamic features
+    -- maybe number should always be renewed as we can redefine features
+    local number = setups[name] and setups[name].number or 0 -- hm, numbers[name]
     if number == 0 then
         number = #numbers + 1
         numbers[number] = name
     end
-    --
     t.number = number
-    -- there is the special case of combined features as we have in math but maybe
-    -- this has to change some day ... otherwise we mess up dynamics (ok, we could
-    -- impose a limit there: no combined features)
-    --
-    -- done elsewhere (!)
-    --
- -- removefromhash(setups,name) -- can have changed (like foo,extramath)
-    --
     setups[name] = t
     return number, t
 end
@@ -961,37 +915,14 @@ end
 --     return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
 -- end
 
--- local function splitcontext(features) -- presetcontext creates dummy here
---     local sf = setups[features]
---     if not sf then
---         local n -- number
---         if find(features,",") then
---             -- let's assume a combination which is not yet defined but just specified (as in math)
---             n, sf = presetcontext(features,features,"")
---         else
---             -- we've run into an unknown feature and or a direct spec so we create a dummy
---             n, sf = presetcontext(features,"","")
---         end
---     end
---     return fastcopy(sf)
--- end
-
 local function splitcontext(features) -- presetcontext creates dummy here
-    local n, sf
-    if find(features,",") then
-        --
-        -- from elsewhere (!)
-        --
-        -- this will become:
-        --
-     -- if find(features,"^reset," then
-            setups[features] = nil
-     -- end
-        -- let's assume a combination which is not yet defined but just specified (as in math)
-        n, sf = presetcontext(features,features,"")
-    else
-        sf = setups[features]
-        if not sf then
+    local sf = setups[features]
+    if not sf then
+        local n -- number
+        if find(features,",",a,true) then
+            -- let's assume a combination which is not yet defined but just specified (as in math)
+            n, sf = presetcontext(features,features,"")
+        else
             -- we've run into an unknown feature and or a direct spec so we create a dummy
             n, sf = presetcontext(features,"","")
         end
@@ -1198,17 +1129,199 @@ do  -- else too many locals
         end
     end
 
+    local n = 0
+
+    -- we can also move rscale to here (more consistent)
+    -- the argument list will become a table
+
     local function nice_cs(cs)
         return (gsub(cs,".->", ""))
     end
 
-    local n               = 0
-    local busy            = false
-    local combinefeatures = false
+ -- function commands.definefont_two(global,cs,str,size,inheritancemode,classfeatures,fontfeatures,classfallbacks,fontfallbacks,
+ --     mathsize,textsize,relativeid,classgoodies,goodies,classdesignsize,fontdesignsize,scaledfontmode)
 
-    directives.register("fonts.features.combine",function(v)
-        combinefeatures = v
-    end)
+--     scanners.definefont_two = function()
+
+--         local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
+--         local cs              = scanstring () -- {#csname}%
+--         local str             = scanstring () -- \somefontfile
+--         local size            = scaninteger() -- \d_font_scaled_font_size
+--         local inheritancemode = scaninteger() -- \c_font_feature_inheritance_mode
+--         local classfeatures   = scanstring () -- \m_font_class_features
+--         local fontfeatures    = scanstring () -- \m_font_features
+--         local classfallbacks  = scanstring () -- \m_font_class_fallbacks
+--         local fontfallbacks   = scanstring () -- \m_font_fallbacks
+--         local mathsize        = scaninteger() -- \fontface
+--         local textsize        = scaninteger() -- \d_font_scaled_text_face
+--         local relativeid      = scaninteger() -- \relativefontid
+--         local classgoodies    = scanstring () -- \m_font_class_goodies
+--         local goodies         = scanstring () -- \m_font_goodies
+--         local classdesignsize = scanstring () -- \m_font_class_designsize
+--         local fontdesignsize  = scanstring () -- \m_font_designsize
+--         local scaledfontmode  = scaninteger() -- \scaledfontmode
+
+--         if trace_defining then
+--             report_defining("start stage two: %s, size %s, features %a & %a",str,size,classfeatures,fontfeatures)
+--         end
+--         -- name is now resolved and size is scaled cf sa/mo
+--         local lookup, name, sub, method, detail = getspecification(str or "")
+--         -- new (todo: inheritancemode)
+--         local designsize = fontdesignsize ~= "" and fontdesignsize or classdesignsize or ""
+--         local designname = designsizefilename(name,designsize,size)
+--         if designname and designname ~= "" then
+--             if trace_defining or trace_designsize then
+--                 report_defining("remapping name %a, specification %a, size %a, designsize %a",name,designsize,size,designname)
+--             end
+--             -- we don't catch detail here
+--             local o_lookup, o_name, o_sub, o_method, o_detail = getspecification(designname)
+--             if o_lookup and o_lookup ~= "" then lookup = o_lookup end
+--             if o_method and o_method ~= "" then method = o_method end
+--             if o_detail and o_detail ~= "" then detail = o_detail end
+--             name = o_name
+--             sub = o_sub
+--         end
+--         -- so far
+--         -- some settings can have been overloaded
+--         if lookup and lookup ~= "" then
+--             specification.lookup = lookup
+--         end
+--         if relativeid and relativeid ~= "" then -- experimental hook
+--             local id = tonumber(relativeid) or 0
+--             specification.relativeid = id > 0 and id
+--         end
+--         --
+--         specification.name      = name
+--         specification.size      = size
+--         specification.sub       = (sub and sub ~= "" and sub) or specification.sub
+--         specification.mathsize  = mathsize
+--         specification.textsize  = textsize
+--         specification.goodies   = goodies
+--         specification.cs        = cs
+--         specification.global    = global
+--         specification.scalemode = scaledfontmode -- context specific
+--         if detail and detail ~= "" then
+--             specification.method = method or "*"
+--             specification.detail = detail
+--         elseif specification.detail and specification.detail ~= "" then
+--             -- already set
+--         elseif inheritancemode == 0 then
+--             -- nothing
+--         elseif inheritancemode == 1 then
+--             -- fontonly
+--             if fontfeatures and fontfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = fontfeatures
+--             end
+--             if fontfallbacks and fontfallbacks ~= "" then
+--                 specification.fallbacks = fontfallbacks
+--             end
+--         elseif inheritancemode == 2 then
+--             -- classonly
+--             if classfeatures and classfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = classfeatures
+--             end
+--             if classfallbacks and classfallbacks ~= "" then
+--                 specification.fallbacks = classfallbacks
+--             end
+--         elseif inheritancemode == 3 then
+--             -- fontfirst
+--             if fontfeatures and fontfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = fontfeatures
+--             elseif classfeatures and classfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = classfeatures
+--             end
+--             if fontfallbacks and fontfallbacks ~= "" then
+--                 specification.fallbacks = fontfallbacks
+--             elseif classfallbacks and classfallbacks ~= "" then
+--                 specification.fallbacks = classfallbacks
+--             end
+--         elseif inheritancemode == 4 then
+--             -- classfirst
+--             if classfeatures and classfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = classfeatures
+--             elseif fontfeatures and fontfeatures ~= "" then
+--                 specification.method = "*"
+--                 specification.detail = fontfeatures
+--             end
+--             if classfallbacks and classfallbacks ~= "" then
+--                 specification.fallbacks = classfallbacks
+--             elseif fontfallbacks and fontfallbacks ~= "" then
+--                 specification.fallbacks = fontfallbacks
+--             end
+--         end
+--         local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
+--         --
+--         local lastfontid = 0
+--         if not tfmdata then
+--             report_defining("unable to define %a as %a",name,nice_cs(cs))
+--             lastfontid = -1
+--             texsetcount("scaledfontsize",0)
+--          -- ctx_letvaluerelax(cs) -- otherwise the current definition takes the previous one
+--         elseif type(tfmdata) == "number" then
+--             if trace_defining then
+--                 report_defining("reusing %s, id %a, target %a, features %a / %a, fallbacks %a / %a, goodies %a / %a, designsize %a / %a",
+--                     name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
+--             end
+--             csnames[tfmdata] = specification.cs
+--             texdefinefont(global,cs,tfmdata)
+--             -- resolved (when designsize is used):
+--             local size = fontdata[tfmdata].parameters.size or 0
+--          -- ctx_setsomefontsize(size .. "sp")
+--             setmacro("somefontsize",size.."sp")
+--             texsetcount("scaledfontsize",size)
+--             lastfontid = tfmdata
+--         else
+--             -- setting the extra characters will move elsewhere
+--             local characters = tfmdata.characters
+--             local parameters = tfmdata.parameters
+--             -- we use char0 as signal; cf the spec pdf can handle this (no char in slot)
+--             characters[0] = nil
+--          -- characters[0x00A0] = { width = parameters.space }
+--          -- characters[0x2007] = { width = characters[0x0030] and characters[0x0030].width or parameters.space } -- figure
+--          -- characters[0x2008] = { width = characters[0x002E] and characters[0x002E].width or parameters.space } -- period
+--             --
+--             local id = definefont(tfmdata)
+--             csnames[id] = specification.cs
+--             tfmdata.properties.id = id
+--             definers.register(tfmdata,id) -- to be sure, normally already done
+--             texdefinefont(global,cs,id)
+--             constructors.cleanuptable(tfmdata)
+--             constructors.finalize(tfmdata)
+--             if trace_defining then
+--                 report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a",
+--                     name,id,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks)
+--             end
+--             -- resolved (when designsize is used):
+--             local size = tfmdata.parameters.size or 655360
+--             setmacro("somefontsize",size.."sp")
+--          -- ctx_setsomefontsize(size .. "sp")
+--             texsetcount("scaledfontsize",size)
+--             lastfontid = id
+--         end
+--         if trace_defining then
+--             report_defining("memory usage after: %s",statistics.memused())
+--             report_defining("stop stage two")
+--         end
+--         --
+--         texsetcount("global","lastfontid",lastfontid)
+--         specifiers[lastfontid] = { str, size }
+--         if not mathsize then
+--             -- forget about it
+--         elseif mathsize == 0 then
+--             lastmathids[1] = lastfontid
+--         else
+--             lastmathids[mathsize] = lastfontid
+--         end
+--         --
+--         stoptiming(fonts)
+--     end
+
+    local busy = false
 
     scanners.definefont_two = function()
         local global          = scanboolean() -- \ifx\fontclass\empty\s!false\else\s!true\fi
@@ -1230,7 +1343,7 @@ do  -- else too many locals
         local scaledfontmode  = scaninteger() -- \scaledfontmode
 
         if trace_defining then
-            report_defining("start stage two: %s, size %s, features %a & %a, mode %a",str,size,classfeatures,fontfeatures,inheritancemode)
+            report_defining("start stage two: %s, size %s, features %a & %a",str,size,classfeatures,fontfeatures)
         end
         -- name is now resolved and size is scaled cf sa/mo
         local lookup, name, sub, method, detail = getspecification(str or "")
@@ -1295,26 +1408,12 @@ do  -- else too many locals
             end
         elseif inheritancemode == 3 then
             -- fontfirst
-            if combinefeatures then
-                if classfeatures and classfeatures ~= "" then
-                    specification.method = "*"
-                    if fontfeatures and fontfeatures ~= "" and fontfeatures ~= classfeatures then
-                        specification.detail = classfeatures .. "," .. fontfeatures
-                    else
-                        specification.detail = classfeatures
-                    end
-                elseif fontfeatures and fontfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = fontfeatures
-                end
-            else
-                if fontfeatures and fontfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = fontfeatures
-                elseif classfeatures and classfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = classfeatures
-                end
+            if fontfeatures and fontfeatures ~= "" then
+                specification.method = "*"
+                specification.detail = fontfeatures
+            elseif classfeatures and classfeatures ~= "" then
+                specification.method = "*"
+                specification.detail = classfeatures
             end
             if fontfallbacks and fontfallbacks ~= "" then
                 specification.fallbacks = fontfallbacks
@@ -1323,26 +1422,12 @@ do  -- else too many locals
             end
         elseif inheritancemode == 4 then
             -- classfirst
-            if combinefeatures then
-                if fontfeatures and fontfeatures ~= "" then
-                    specification.method = "*"
-                    if classfeatures and classfeatures ~= "" and classfeatures ~= fontfeatures then
-                        specification.detail = fontfeatures .. "," .. classfeatures
-                    else
-                        specification.detail = fontfeatures
-                    end
-                elseif classfeatures and classfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = classfeatures
-                end
-            else
-                if classfeatures and classfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = classfeatures
-                elseif fontfeatures and fontfeatures ~= "" then
-                    specification.method = "*"
-                    specification.detail = fontfeatures
-                end
+            if classfeatures and classfeatures ~= "" then
+                specification.method = "*"
+                specification.detail = classfeatures
+            elseif fontfeatures and fontfeatures ~= "" then
+                specification.method = "*"
+                specification.detail = fontfeatures
             end
             if classfallbacks and classfallbacks ~= "" then
                 specification.fallbacks = classfallbacks
@@ -1498,7 +1583,7 @@ do  -- else too many locals
 
     --
 
-    local function define(specification)
+    function definers.define(specification)
         --
         local name = specification.name
         if not name or name == "" then
@@ -1546,7 +1631,6 @@ do  -- else too many locals
                     texdefinefont(specification.global,cs,tfmdata)
                     csnames[tfmdata] = cs
                 end
-                stoptiming(fonts)
                 return tfmdata, fontdata[tfmdata]
             else
                 local id = definefont(tfmdata)
@@ -1558,13 +1642,11 @@ do  -- else too many locals
                 end
                 constructors.cleanuptable(tfmdata)
                 constructors.finalize(tfmdata)
-                stoptiming(fonts)
                 return id, tfmdata
             end
+            stoptiming(fonts)
         end
     end
-
-    definers.define = define
 
     -- local id, cs = fonts.definers.internal { }
     -- local id, cs = fonts.definers.internal { number = 2 }
@@ -1592,7 +1674,7 @@ do  -- else too many locals
             else
                 specification.cs = cs
             end
-            id = define {
+            id = definers.define {
                 name = name,
                 size = size,
                 cs   = cs,
@@ -1604,25 +1686,13 @@ do  -- else too many locals
         return id, csnames[id]
     end
 
-    local read
-
-    if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then -- maybe always
-        read = function(name,size)
-            return (define { name = name, size = size } or 0)
-        end
-    else
-        read = definers.read
-    end
-
-    callbacks.register('define_font', read, "definition of fonts (tfmdata preparation)")
-
     -- here
 
     local infofont = 0
 
     function fonts.infofont()
         if infofont == 0 then
-            infofont = define { name = "dejavusansmono", size = texsp("6pt") }
+            infofont = definers.define { name = "dejavusansmono", size = texsp("6pt") }
         end
         return infofont
     end
@@ -2359,26 +2429,6 @@ to scale virtual characters.</p>
 
 do
 
-    -- can become luat-tex.lua
-
-    local texsetglyphdata = tex.setglyphdata
-    local texgetglyphdata = tex.getglyphdata
-
-    if not texsetglyphdata then
-
-        local texsetattribute = tex.setattribute
-        local texgetattribute = tex.getattribute
-
-        texsetglyphdata = function(n) return texsetattribute(0,n) end
-        texgetglyphdata = function()  return texgetattribute(0)   end
-
-        tex.setglyphdata = texsetglyphdata
-        tex.getglyphdata = texgetglyphdata
-
-    end
-
-    -- till here
-
     local setmacro = tokens.setters.macro
 
     function constructors.currentfonthasfeature(n)
@@ -2402,63 +2452,6 @@ do
     local f_strip  = formatters["%0.2fpt"] -- normally this value is changed only once
     local stripper = lpeg.patterns.stripzeros
 
-    local cache = { }
-
-    local hows = {
-        ["+"] = "add",
-        ["-"] = "subtract",
-        ["="] = "replace",
-    }
-
-    local function setfeature(how,parent,name,font) -- 0/1 test temporary for testing
-        if not how or how == 0 then
-            if trace_features and texgetglyphdata() ~= 0 then
-                report_cummulative("font %!font:name!, reset",fontdata[font or true])
-            end
-            texsetglyphdata(0)
-        elseif how == true or how == 1 then
-            local hash = "feature > " .. parent
-            local done = cache[hash]
-            if trace_features and done then
-                report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
-            end
-            texsetglyphdata(done or 0)
-        else
-            local full = parent .. how .. name
-            local hash = "feature > " .. full
-            local done = cache[hash]
-            if not done then
-                local n = setups[full]
-                if n then
-                    -- already defined
-                else
-                    n = mergecontextfeatures(parent,name,how,full)
-                end
-                done = registercontextfeature(hash,full,how)
-                cache[hash] = done
-                if trace_features then
-                    report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
-                end
-            end
-            texsetglyphdata(done)
-        end
-    end
-
-    local function resetfeature()
-        if trace_features and texgetglyphdata() ~= 0 then
-            report_cummulative("font %!font:name!, reset",fontdata[true])
-        end
-        texsetglyphdata(0)
-    end
-
-    local function setfontfeature(tag)
-        texsetglyphdata(contextnumber(tag))
-    end
-
-    local function resetfontfeature()
-        texsetglyphdata(0)
-    end
-
     implement {
         name      = "nbfs",
         arguments = "dimen",
@@ -2476,13 +2469,13 @@ do
     implement {
         name      = "setfontfeature",
         arguments = "string",
-        actions   = setfontfeature,
+        actions   = function(tag) texsetattribute(0,contextnumber(tag)) end
     }
 
     implement {
         name      = "resetfontfeature",
-     -- arguments = { 0, 0 },
-        actions   = resetfontfeature,
+        arguments = { 0, 0 },
+        actions   = texsetattribute,
     }
 
     implement {
@@ -2511,11 +2504,61 @@ do
         actions   = function(name) ctx_doif(contextnumber(name) == 0) end,
     }
 
+
     implement {
         name      = "adaptfontfeature",
         arguments = "2 strings",
         actions   = adaptcontext
     }
+
+    local cache = { }
+
+    local hows = {
+        ["+"] = "add",
+        ["-"] = "subtract",
+        ["="] = "replace",
+    }
+
+    local function setfeature(how,parent,name,font) -- 0/1 test temporary for testing
+        if not how or how == 0 then
+            if trace_features and texgetattribute(0) ~= 0 then
+                report_cummulative("font %!font:name!, reset",fontdata[font or true])
+            end
+            texsetattribute(0,0)
+        elseif how == true or how == 1 then
+            local hash = "feature > " .. parent
+            local done = cache[hash]
+            if trace_features and done then
+                report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
+            end
+            texsetattribute(0,done or 0)
+        else
+            local full = parent .. how .. name
+            local hash = "feature > " .. full
+            local done = cache[hash]
+            if not done then
+                local n = setups[full]
+                if n then
+                    -- already defined
+                else
+                    n = mergecontextfeatures(parent,name,how,full)
+                end
+                done = registercontextfeature(hash,full,how)
+                cache[hash] = done
+                if trace_features then
+                    report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
+                end
+            end
+            texsetattribute(0,done)
+        end
+    end
+
+    local function resetfeature()
+        if trace_features and texgetattribute(0) ~= 0 then
+            report_cummulative("font %!font:name!, reset",fontdata[true])
+        end
+        texsetattribute(0,0)
+    end
 
     local function registerlanguagefeatures()
         local specifications = languages.data.specifications
@@ -3141,9 +3184,9 @@ end
 
 do
 
-    local getfontoffamily = font.getfontoffamily
-    local new_glyph       = nodes.pool.glyph
-    local fontproperties  = fonts.hashes.properties
+    local family_font    = node.family_font
+    local new_glyph      = nodes.pool.glyph
+    local fontproperties = fonts.hashes.properties
 
     local function getprivateslot(id,name)
         if not name then
@@ -3212,7 +3255,7 @@ do
         name      = "getprivatemathchar",
         arguments = "string",
         actions   = function(name)
-            local p = getprivateslot(getfontoffamily(0),name)
+            local p = getprivateslot(family_font(0),name)
             if p then
                 context(utfchar(p))
             end
@@ -3337,9 +3380,4 @@ function fonts.helpers.collectanchors(tfmdata)
 
     return anchors
 
-end
-
-if CONTEXTLMTXMODE > 0 then
-    fonts.constructors.addtounicode = false
-    fonts.constructors.autocleanup  = false
 end

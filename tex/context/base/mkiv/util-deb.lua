@@ -30,15 +30,7 @@ local names        = { }
 
 local initialize = false
 
-if lua.getpreciseticks then
-
-    initialize = function()
-        ticks      = lua.getpreciseticks
-        seconds    = lua.getpreciseseconds
-        initialize = false
-    end
-
-elseif not (FFISUPPORTED and ffi) then
+if not (FFISUPPORTED and ffi) then
 
     -- we have no precise timer
 

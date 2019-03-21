@@ -29,7 +29,7 @@ statistics.threshold    = 0.01
 local statusinfo, n, registered, timers = { }, 0, { }, { }
 
 setmetatableindex(timers,function(t,k)
-    local v = { timing = 0, loadtime = 0, offset = 0 }
+    local v = { timing = 0, loadtime = 0 }
     t[k] = v
     return v
 end)
@@ -39,7 +39,7 @@ local function hastiming(instance)
 end
 
 local function resettiming(instance)
-    timers[instance or "notimer"] = { timing = 0, loadtime = 0, offset = 0 }
+    timers[instance or "notimer"] = { timing = 0, loadtime = 0 }
 end
 
 local ticks   = clock
@@ -118,27 +118,12 @@ local function stoptiming(instance)
     return 0
 end
 
-local function benchmarktimer(instance)
-    local timer = timers[instance or "notimer"]
-    local it = timer.timing
-    if it > 1 then
-        timer.timing = it - 1
-    else
-        local starttime = timer.starttime
-        if starttime and starttime > 0 then
-            timer.offset = ticks() - starttime
-        else
-            timer.offset = 0
-        end
-    end
-end
-
 local function elapsed(instance)
     if type(instance) == "number" then
         return instance
     else
         local timer = timers[instance or "notimer"]
-        return timer and seconds(timer.loadtime - 2*(timer.offset or 0)) or 0
+        return timer and seconds(timer.loadtime) or 0
     end
 end
 
@@ -153,7 +138,7 @@ local function currenttime(instance)
         else
             local starttime = timer.starttime
             if starttime and starttime > 0 then
-                return seconds(timer.loadtime + ticks() - starttime -  2*(timer.offset or 0))
+                return seconds(timer.loadtime + ticks() - starttime)
             end
         end
         return 0
@@ -183,7 +168,6 @@ statistics.elapsed        = elapsed
 statistics.elapsedtime    = elapsedtime
 statistics.elapsedindeed  = elapsedindeed
 statistics.elapsedseconds = elapsedseconds
-statistics.benchmarktimer = benchmarktimer
 
 -- general function .. we might split this module
 
@@ -209,17 +193,10 @@ function statistics.show()
      -- register("luatex banner", function()
      --     return lower(status.banner)
      -- end)
-        if LUATEXENGINE == "luametatex" then
-            register("used engine", function()
-                return format("%s version %s, functionality level %s, format id %s",
-                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, LUATEXFORMATID)
-            end)
-        else
-            register("used engine", function()
-                return format("%s version %s with functionality level %s, banner: %s",
-                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
-            end)
-        end
+        register("used engine", function()
+            return format("%s version %s with functionality level %s, banner: %s",
+                LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
+        end)
         register("control sequences", function()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)
@@ -262,11 +239,7 @@ end
 
 function statistics.memused() -- no math.round yet -)
     local round = math.round or math.floor
-    return format("%s MB, ctx: %s MB, max: %s MB)",
-        round(collectgarbage("count")/1000),
-        round(status.luastate_bytes/1000000),
-        status.luastate_bytes_max and round(status.luastate_bytes_max/1000000) or "unknown"
-    )
+    return format("%s MB (ctx: %s MB)",round(collectgarbage("count")/1000), round(status.luastate_bytes/1000000))
 end
 
 starttiming(statistics)

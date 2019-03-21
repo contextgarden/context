@@ -733,15 +733,7 @@ local function repackpoints(glyphs,shapes)
                     currentx = px
                     currenty = py
                     if lastflag == fl then
-                        if nofflags == 255 then
-                            -- This happens in koeieletters!
-                            lastflag = lastflag + 0x08
-                            r = r + 1 result[r] = char(lastflag,nofflags-1)
-                            nofflags = 1
-                            lastflag = fl
-                        else
-                            nofflags = nofflags + 1
-                        end
+                        nofflags = nofflags + 1
                     else -- if > 255
                         if nofflags == 1 then
                          -- r = r + 1 result[r] = char(lastflag)

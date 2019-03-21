@@ -89,6 +89,7 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- h2,5:4661756,12973165:22918783,655360,327680
 -- h2,6:27884864,12973165:4746833,655360,327680
 -- h2,6:4661756,13922231:18320732,655360,327680
+-- )
 -- ]
 -- !533
 -- }1
@@ -105,6 +106,7 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- h3,4:8459505,11075033:19885281,655360,327680
 -- h3,5:28571312,11075033:4060385,655360,327680
 -- h3,5:4661756,12024099:15344870,655360,327680
+-- )
 -- ]
 -- !441
 -- }2
@@ -154,10 +156,7 @@ local kern_code          = nodecodes.kern
 ----- rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
-local dir_code           = nodecodes.dir
 local fontkern_code      = kerncodes.fontkern
-
-local cancel_code        = nodes.dircodes.cancel
 
 local insert_before      = nuts.insert_before
 local insert_after       = nuts.insert_after
@@ -171,7 +170,7 @@ local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
 
 local get_synctex_fields = nuts.get_synctex_fields
------ set_synctex_fields = nuts.set_synctex_fields
+local set_synctex_fields = nuts.set_synctex_fields
 local set_synctex_line   = tex.set_synctex_line
 local set_synctex_tag    = tex.set_synctex_tag
 local force_synctex_tag  = tex.force_synctex_tag
@@ -228,8 +227,6 @@ local blockedsuffixes    = {
     mkii = true,
     mkiv = true,
     mkvi = true,
-    mkxl = true,
-    mklx = true,
     mkix = true,
     mkxi = true,
  -- lfg  = true,
@@ -644,19 +641,6 @@ local function collect_max(head,parent)
                 current = getnext(current)
                 if current then
                     id = getid(current)
-
--- while id == dir_code do
---     current = getnext(current)
---     if current then
---         id = getid(current)
---     else
---         if tag > 0 then
---             head = inject(parent,head,first,last,tag,line)
---         end
---         return head
---     end
--- end
-
                 else
                     if tag > 0 then
                         head = inject(parent,head,first,last,tag,line)
@@ -665,12 +649,12 @@ local function collect_max(head,parent)
                 end
             end
         end
-        -- pick up (as id can have changed)
+        -- pick up(as id can have changed)
         if id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then
                 local l = collect(list,current)
-                if l and l ~= list then
+                if l ~= list then
                     setlist(current,l)
                 end
             end
@@ -708,8 +692,7 @@ end
 
 function synctex.stop()
     if enabled then
-     -- filehandle:write(s_vlist,s_hlist)
-        filehandle:write(s_hlist)
+        filehandle:write(s_vlist,s_hlist)
         writeanchor()
         filehandle:write("}",nofsheets,eol)
         nofobjects = nofobjects + 2

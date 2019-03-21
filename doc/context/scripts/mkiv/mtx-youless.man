@@ -1,6 +1,6 @@
 .TH "mtx-youless" "1" "01-01-2019" "version 1.100" "youless Fetcher"
 .SH NAME
- mtx-youless - youless Fetcher
+.B mtx-youless
 .SH SYNOPSIS
 .B mtxrun --script youless [
 .I OPTIONS ...

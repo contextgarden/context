@@ -26,8 +26,6 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 
 local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
-local filenameonly, basefilename, filesuffix, addfilesuffix = file.nameonly, file.basename, file.suffix, file.addsuffix
-local isfile, modificationtime = lfs.isfile, lfs.modification
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -57,7 +55,6 @@ local v_max                    = variables.max
 local v_yes                    = variables.yes
 
 local pdfconstant              = lpdf.constant
-local pdfnull                  = lpdf.null
 local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
 local pdfreference             = lpdf.reference
@@ -225,15 +222,6 @@ local referenced        = { }
 local ignorereferenced  = true -- fuzzy pdf spec .. twice in attachment list, can become an option
 local tobesavedobjrefs  = utilities.storage.allocate()
 local collectedobjrefs  = utilities.storage.allocate()
-local permitted         = true
-local enabled           = true
-
-function codeinjections.setattachmentsupport(option)
-    if option == false then
-        permitted = false
-        enabled   = false
-    end
-end
 
 local fileobjreferences = {
     collected = collectedobjrefs,
@@ -250,13 +238,12 @@ end
 job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 
 local function flushembeddedfiles()
-    if enabled and next(filestreams) then
+    if next(filestreams) then
         local e = pdfarray()
         for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
---             elseif referenced[tag] == "hidden" then
-            elseif referenced[tag] ~= "hidden" then
+            elseif referenced[tag] == "hidden" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
             else
@@ -272,195 +259,177 @@ end
 lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
 function codeinjections.embedfile(specification)
-    if enabled then
-        local data      = specification.data
-        local filename  = specification.file
-        local name      = specification.name or ""
-        local title     = specification.title or ""
-        local hash      = specification.hash or filename
-        local keepdir   = specification.keepdir -- can change
-        local usedname  = specification.usedname
-        local filetype  = specification.filetype
-        local compress  = specification.compress
-        local mimetype  = specification.mimetype or specification.mime
-        if filename == "" then
-            filename = nil
-        end
-        if compress == nil then
-            compress = true
-        end
-        if data then
-            local r = filestreams[hash]
-            if r == false then
-                return nil
-            elseif r then
-                return r
-            elseif not filename then
-                filename = specification.tag
-                if not filename or filename == "" then
-                    filename = specification.registered
-                end
-                if not filename or filename == "" then
-                    filename = hash
-                end
-            end
-        else
-            if not filename then
-                return nil
-            end
-            local r = filestreams[hash]
-            if r == false then
-                return nil
-            elseif r then
-                return r
-            else
-                local foundname = resolvers.findbinfile(filename) or ""
-                if foundname == "" or not isfile(foundname) then
-                    filestreams[filename] = false
-                    return nil
-                else
-                    specification.foundname = foundname
-                end
-            end
-        end
-        -- needs to be cleaned up:
-        usedname = usedname ~= "" and usedname or filename or name
-        local basename  = keepdir == true and usedname or basefilename(usedname)
-        local basename  = gsub(basename,"%./","")
-        local savename  = name ~= "" and name or basename
-        local foundname = specification.foundname or filename
-        if not filetype or filetype == "" then
-            filetype = name and (filename and filesuffix(filename)) or "txt"
-        end
-        savename = addfilesuffix(savename,filetype) -- type is mandate for proper working in viewer
-        local a = pdfdictionary {
-            Type    = pdfconstant("EmbeddedFile"),
-            Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
-        }
-        local f
-        if data then
-            f = pdfflushstreamobject(data,a)
-            specification.data = true -- signal that still data but already flushed
-        else
-            local modification = modificationtime(foundname)
-            if attributes then
-                a.Params = {
-                    Size    = attributes.size,
-                    ModDate = lpdf.pdftimestamp(modification),
-                }
-            end
-            f = pdfflushstreamfileobject(foundname,a,compress)
-        end
-        local d = pdfdictionary {
-            Type           = pdfconstant("Filespec"),
-            F              = pdfstring(savename),
-         -- UF             = pdfstring(savename),
-            UF             = pdfunicode(savename),
-            EF             = pdfdictionary { F = pdfreference(f) },
-            Desc           = title ~= "" and pdfunicode(title) or nil,
-            AFRelationship = pdfconstant("Unspecified"), -- Supplement, Data, Source, Alternative, Data
-        }
-        local r = pdfreference(pdfflushobject(d))
-        filestreams[hash] = r
-        return r
+    local data     = specification.data
+    local filename = specification.file
+    local name     = specification.name or ""
+    local title    = specification.title or ""
+    local hash     = specification.hash or filename
+    local keepdir  = specification.keepdir -- can change
+    local usedname = specification.usedname
+    local filetype = specification.filetype
+    local compress = specification.compress
+    if filename == "" then
+        filename = nil
     end
-end
-
-function nodeinjections.attachfile(specification)
-    if enabled then
-        local registered = specification.registered or "<unset>"
-        local data = specification.data
-        local hash
-        local filename
-        if data then
-            hash = md5.HEX(data)
-        else
-            filename = specification.file
+    if compress == nil then
+        compress = true
+    end
+    if data then
+        local r = filestreams[hash]
+        if r == false then
+            return nil
+        elseif r then
+            return r
+        elseif not filename then
+            filename = specification.tag
             if not filename or filename == "" then
-                report_attachment("no file specified, using registered %a instead",registered)
-                filename = registered
-                specification.file = registered
+                filename = specification.registered
             end
+            if not filename or filename == "" then
+                filename = hash
+            end
+        end
+    else
+        if not filename then
+            return nil
+        end
+        local r = filestreams[hash]
+        if r == false then
+            return nil
+        elseif r then
+            return r
+        else
             local foundname = resolvers.findbinfile(filename) or ""
-            if foundname == "" or not isfile(foundname) then
-                report_attachment("invalid filename %a, ignoring registered %a",filename,registered)
+            if foundname == "" or not lfs.isfile(foundname) then
+                filestreams[filename] = false
                 return nil
             else
                 specification.foundname = foundname
             end
-            hash = filename
         end
-        specification.hash = hash
-        nofattachments = nofattachments + 1
-        local registered = specification.registered or ""
-        local title      = specification.title      or ""
-        local subtitle   = specification.subtitle   or ""
-        local author     = specification.author     or ""
-        local onlyname   = filename and filenameonly(filename) or ""
-        if registered == "" then
-            registered = filename
+    end
+    -- needs to cleaned up:
+    usedname = usedname ~= "" and usedname or filename or name
+    local basename = keepdir == true and usedname or file.basename(usedname)
+    local basename = gsub(basename,"%./","")
+    local savename = name ~= "" and name or basename
+    if not filetype or filetype == "" then
+        filetype = name and (filename and file.suffix(filename)) or "txt"
+    end
+    savename = file.addsuffix(savename,filetype) -- type is mandate for proper working in viewer
+    local mimetype = specification.mimetype
+    local a = pdfdictionary {
+        Type    = pdfconstant("EmbeddedFile"),
+        Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
+    }
+    local f
+    if data then
+        f = pdfflushstreamobject(data,a)
+        specification.data = true -- signal that still data but already flushed
+    else
+        local foundname = specification.foundname or filename
+        f = pdfflushstreamfileobject(foundname,a,compress)
+    end
+    local d = pdfdictionary {
+        Type = pdfconstant("Filespec"),
+        F    = pdfstring(savename),
+     -- UF   = pdfstring(savename),
+        UF   = pdfunicode(savename),
+        EF   = pdfdictionary { F = pdfreference(f) },
+        Desc = title ~= "" and pdfunicode(title) or nil,
+     -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate
+    }
+    local r = pdfreference(pdfflushobject(d))
+    filestreams[hash] = r
+    return r
+end
+
+function nodeinjections.attachfile(specification)
+    local registered = specification.registered or "<unset>"
+    local data = specification.data
+    local hash
+    local filename
+    if data then
+        hash = md5.HEX(data)
+    else
+        filename = specification.file
+        if not filename or filename == "" then
+            report_attachment("no file specified, using registered %a instead",registered)
+            filename = registered
+            specification.file = registered
         end
-        if author == "" and title ~= "" then
-            author = title
-            title  = onlyname or ""
-        end
-        if author == "" then
-            author = onlyname or "<unknown>"
-        end
-        if title == "" then
-            title = registered
-        end
-        if title == "" and filename then
-            title = onlyname
-        end
-        local aref = attachments[registered]
-        if not aref then
-            aref = codeinjections.embedfile(specification)
-            attachments[registered] = aref
-        end
-        local reference = specification.reference
-        if reference and aref then
-            tobesavedobjrefs[reference] = aref[1]
-        end
-        if not aref then
-            report_attachment("skipping attachment, registered %a",registered)
-            -- already reported
-        elseif specification.method == v_hidden then
-            referenced[hash] = "hidden"
+        local foundname = resolvers.findbinfile(filename) or ""
+        if foundname == "" or not lfs.isfile(foundname) then
+            report_attachment("invalid filename %a, ignoring registered %a",filename,registered)
+            return nil
         else
-            referenced[hash] = "annotation"
-            local name, appearance = analyzesymbol(specification.symbol,attachment_symbols)
-            local d = pdfdictionary {
-                Subtype  = pdfconstant("FileAttachment"),
-                FS       = aref,
-                Contents = pdfunicode(title),
-                Name     = name,
-                NM       = pdfstring("attachment:"..nofattachments),
-                T        = author ~= "" and pdfunicode(author) or nil,
-                Subj     = subtitle ~= "" and pdfunicode(subtitle) or nil,
-                C        = analyzecolor(specification.colorvalue,specification.colormodel),
-                CA       = analyzetransparency(specification.transparencyvalue),
-                AP       = appearance,
-                OC       = analyzelayer(specification.layer),
-                F        = pdfnull(), -- another rediculous need to satisfy validation
-            }
-            local width  = specification.width  or 0
-            local height = specification.height or 0
-            local depth  = specification.depth  or 0
-            local box    = hpack_node(nodeinjections.annotation(width,height,depth,d()))
-            box.width    = width
-            box.height   = height
-            box.depth    = depth
-            return box
+            specification.foundname = foundname
         end
+        hash = filename
+    end
+    specification.hash = hash
+    nofattachments = nofattachments + 1
+    local registered = specification.registered or ""
+    local title      = specification.title      or ""
+    local subtitle   = specification.subtitle   or ""
+    local author     = specification.author     or ""
+    if registered == "" then
+        registered = filename
+    end
+    if author == "" and title ~= "" then
+        author = title
+        title  = filename or ""
+    end
+    if author == "" then
+        author = filename or "<unknown>"
+    end
+    if title == "" then
+        title = registered
+    end
+    local aref = attachments[registered]
+    if not aref then
+        aref = codeinjections.embedfile(specification)
+        attachments[registered] = aref
+    end
+    local reference = specification.reference
+    if reference and aref then
+        tobesavedobjrefs[reference] = aref[1]
+    end
+    if not aref then
+        report_attachment("skipping attachment, registered %a",registered)
+        -- already reported
+    elseif specification.method == v_hidden then
+        referenced[hash] = "hidden"
+    else
+        referenced[hash] = "annotation"
+        local name, appearance = analyzesymbol(specification.symbol,attachment_symbols)
+        local d = pdfdictionary {
+            Subtype  = pdfconstant("FileAttachment"),
+            FS       = aref,
+            Contents = pdfunicode(title),
+            Name     = name,
+            NM       = pdfstring("attachment:"..nofattachments),
+            T        = author ~= "" and pdfunicode(author) or nil,
+            Subj     = subtitle ~= "" and pdfunicode(subtitle) or nil,
+            C        = analyzecolor(specification.colorvalue,specification.colormodel),
+            CA       = analyzetransparency(specification.transparencyvalue),
+            AP       = appearance,
+            OC       = analyzelayer(specification.layer),
+        }
+        local width  = specification.width  or 0
+        local height = specification.height or 0
+        local depth  = specification.depth  or 0
+        local box    = hpack_node(nodeinjections.annotation(width,height,depth,d()))
+        box.width    = width
+        box.height   = height
+        box.depth    = depth
+        return box
     end
 end
 
 function codeinjections.attachmentid(filename) -- not used in context
     return filestreams[filename]
 end
-
--- Comments
 
 local nofcomments      = 0
 local usepopupcomments = false
@@ -509,16 +478,17 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     local subtitle = specification.subtitle or "" -- as author
     local author   = specification.author   or ""
     local option   = settings_to_hash(specification.option or "")
-    if author ~= "" then
+    if author == "" then
+        if title == "" then
+            title = tag
+        end
+    else
         if subtitle == "" then
             subtitle = title
         elseif title ~= "" then
             subtitle = subtitle .. ", " .. title
         end
         title = author
-    end
-    if title == "" then
-        title = tag
     end
     local content, richcontent = checkcontent(text,option)
     local d = pdfdictionary {
@@ -534,7 +504,6 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         Name      = name,
         NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
-        F         = pdfnull(), -- another rediculous need to satisfy validation
     }
     local width  = specification.width  or 0
     local height = specification.height or 0

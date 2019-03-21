@@ -6,14 +6,9 @@ if not modules then modules = { } end modules ['data-sch'] = {
     license   = "see context related readme files"
 }
 
--- this one will be redone / localized
-
 local load, tonumber = load, tonumber
-local gsub, format = string.gsub, string.format
-local sortedhash, concat = table.sortedhash, table.concat
+local gsub, concat, format = string.gsub, table.concat, string.format
 local finders, openers, loaders = resolvers.finders, resolvers.openers, resolvers.loaders
-local addsuffix, suffix, splitbase = file.addsuffix, file.suffix, file.splitbase
-local md5hex = md5.hex
 
 local trace_schemes  = false  trackers.register("resolvers.schemes",function(v) trace_schemes = v end)
 local report_schemes = logs.reporter("resolvers","schemes")
@@ -44,7 +39,7 @@ end
 -- end
 
 function cleaners.strip(specification) -- keep suffixes
-    local path, name = splitbase(specification.original)
+    local path, name = file.splitbase(specification.original)
     if path == "" then
         return (gsub(name,"[^%a%d%.]+","-"))
     else
@@ -53,7 +48,7 @@ function cleaners.strip(specification) -- keep suffixes
 end
 
 function cleaners.md5(specification)
-    return addsuffix(md5hex(specification.original),suffix(specification.path))
+    return file.addsuffix(md5.hex(specification.original),file.suffix(specification.path))
 end
 
 local cleaner = cleaners.strip
@@ -77,7 +72,7 @@ local runner     = sandbox.registerrunner {
     name     = "curl resolver",
     method   = "execute",
     program  = "curl",
-    template = '--silent --insecure --create-dirs --output "%cachename%" "%original%"',
+    template = "--silent --insecure --create-dirs --output %cachename% %original%",
     checkers = {
         cachename = "cache",
         original  = "url",
@@ -154,10 +149,10 @@ schemes.install = install
 
 local function http_handler(specification,cachename)
     local tempname = cachename .. ".tmp"
-    local handle   = io.open(tempname,"wb")
+    local f = io.open(tempname,"wb")
     local status, message = http.request {
         url  = specification.original,
-        sink = ltn12.sink.file(handle)
+        sink = ltn12.sink.file(f)
     }
     if not status then
         os.remove(tempname)
@@ -174,13 +169,13 @@ install('ftp')
 
 statistics.register("scheme handling time", function()
     local l, r, nl, nr = { }, { }, 0, 0
-    for k, v in sortedhash(loaded) do
+    for k, v in table.sortedhash(loaded) do
         if v > 0 then
             nl = nl + 1
             l[nl] = k .. ":" .. v
         end
     end
-    for k, v in sortedhash(reused) do
+    for k, v in table.sortedhash(reused) do
         if v > 0 then
             nr = nr + 1
             r[nr] = k .. ":" .. v
@@ -188,10 +183,10 @@ statistics.register("scheme handling time", function()
     end
     local n = nl + nr
     if n > 0 then
-        if nl == 0 then l = { "none" } end
-        if nr == 0 then r = { "none" } end
+        l = nl > 0 and concat(l) or "none"
+        r = nr > 0 and concat(r) or "none"
         return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
-            statistics.elapsedtime(schemes), n, threshold, concat(l," "), concat(l," "))
+            statistics.elapsedtime(schemes), n, threshold, l, r)
     else
         return nil
     end

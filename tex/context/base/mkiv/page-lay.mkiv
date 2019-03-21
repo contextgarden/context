@@ -166,8 +166,6 @@
 
 \def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
 
-% \newconditional\reverselayout
-
 \def\page_layouts_set_dimensions
   {\global\naturalmarginwidth        \layoutparameter\c!margin
    \global\naturaledgewidth          \layoutparameter\c!edge
@@ -196,7 +194,8 @@
    \global\headerdistance            \layoutdistance\headerheight    \naturalheaderdistance
    \global\textdistance                                              \naturaltextdistance
    \global\footerdistance            \layoutdistance\footerheight    \naturalfooterdistance
-   \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance}
+   \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance
+   }
 
 \def\page_layouts_set_distances % local in \setreducedvsize
   {\headerdistance\layoutdistance\headerheight\naturalheaderdistance
@@ -368,16 +367,16 @@
   {\edef\currentlayouttarget{#1}%
    \ifx\currentlayouttarget\empty
      % invalid target
-   \else\ifcondition\validassignment{#2}%
-     \definelayouttarget[#1][#2]%
    \else
-     \setevalue{\??layoutpaper#1}{#2}%
-     \ifthirdargument
-       \setevalue{\??layoutprint#1}{#3}%
-     \else
-       \setevalue{\??layoutprint#1}{#2}%
-     \fi
-   \fi\fi}
+     \doifelseassignment{#2}
+       {\definelayouttarget[#1][#2]}
+       {\setevalue{\??layoutpaper#1}{#2}%
+        \ifthirdargument
+          \setevalue{\??layoutprint#1}{#3}%
+        \else
+          \setevalue{\??layoutprint#1}{#2}%
+        \fi}%
+   \fi}
 
 \appendtoks
     \letvalue{\??layoutcurrent\currentlayouttarget}\relax
@@ -401,13 +400,11 @@
 
 \unexpanded\def\page_paper_setup_size[#1][#2]%
   {\iffirstargument
-     \ifcondition\validassignment{#1}%
-       \page_paper_setup_size_settings[#1]%
-     \else\ifcondition\validassignment{#2}%
-       \page_paper_setup_size_settings_by_name[#1][#2]%
-     \else
-       \page_paper_setup_size_change_size[#1][#2]%
-     \fi\fi
+     \doifelseassignment{#1}
+       {\page_paper_setup_size_settings[#1]}
+       {\doifelseassignment{#2}
+          {\page_paper_setup_size_settings_by_name[#1][#2]}
+          {\page_paper_setup_size_change_size[#1][#2]}}%
    \else
      \page_paper_restore
    \fi}
@@ -615,6 +612,10 @@
 
 \fi
 
+\ifdefined\setups \else
+    \unexpanded\def\setups[#1]{\setdefaultpenalties}  % still needed?
+\fi
+
 \ifdefined\synchronizegridsnapping \else
     \let\synchronizegridsnapping\relax
 \fi
@@ -643,12 +644,12 @@
    \global\cutspace\layoutparameter\c!cutspace\relax
    \edef\p_page_layouts_width{\layoutparameter\c!width}%
    \ifx\p_page_layouts_width\v!middle
-     \ifzeropt\cutspace
+     \ifdim\cutspace=\zeropoint
        \global\cutspace\backspace
      \fi
      \global\makeupwidth\dimexpr\paperwidth-\backspace-\cutspace\relax
    \else\ifx\p_page_layouts_width\v!fit
-     \ifzeropt\cutspace
+     \ifdim\cutspace=\zeropoint
        \global\cutspace\backspace
      \fi
      \global\makeupwidth\dimexpr\paperwidth-\cutspace\relax
@@ -664,7 +665,7 @@
        -\scratchdimen\relax
    \else
      \global\makeupwidth\p_page_layouts_width\relax
-     \ifzeropt\cutspace
+     \ifdim\cutspace=\zeropoint
        \global\cutspace\dimexpr\paperwidth-\makeupwidth-\backspace\relax
    % \else
        % A kind of inconsistent specification, but used
@@ -674,7 +675,7 @@
      \fi
    \fi\fi
    \scratchdimen\layoutparameter\c!bottomspace\relax
-  %\ifzeropt\scratchdimen
+  %\ifdim\scratchdimen=\zeropoint
   %  \scratchdimen\topspace
   %\fi
    \global\bottomspace\layoutparameter\c!bottomspace\relax
@@ -682,12 +683,12 @@
    \ifcase\layoutlines
      \edef\p_page_layouts_height{\layoutparameter\c!height}%
      \ifx\p_page_layouts_height\v!middle
-       \ifzeropt\bottomspace
+       \ifdim\bottomspace=\zeropoint
          \global\bottomspace\topspace
        \fi
        \global\makeupheight\dimexpr\paperheight-\topspace-\bottomspace\relax
      \else\ifx\p_page_layouts_height\v!fit
-       \ifzeropt\bottomspace
+       \ifdim\bottomspace=\zeropoint
          \global\bottomspace\topspace
        \fi
        \global\makeupheight\dimexpr\paperheight-\bottomspace\relax
@@ -698,7 +699,7 @@
        \global\advance\makeupheight\dimexpr-\bottomdistance-\bottomheight-\scratchdimen\relax
      \else
        \global\makeupheight\layoutparameter\c!height\relax
-       \ifzeropt\bottomspace
+       \ifdim\bottomspace=\zeropoint
          \global\bottomspace\dimexpr\paperheight-\makeupheight-\topspace\relax
      % \else
          % inconsistent specification
@@ -730,28 +731,12 @@
      +\rightedgetotal
    \relax
    % \page_layouts_check_next % here ?
-   \page_layouts_check_direction
    \page_layouts_calculate_extras
    \page_target_check_centering
    \calculatehsizes
    \calculatevsizes
    \page_layouts_check_pseudo_columns
    \page_backgrounds_recalculate}
-
-\def\page_layouts_check_direction
-  {\edef\p_direction{\layoutparameter\c!direction}%
-   \ifx\p_direction\v!reverse
-     \globalswapdimens\naturalleftedgedistance  \naturalrightedgedistance
-     \globalswapdimens\naturalleftmargindistance\naturalrightmargindistance
-     \globalswapdimens\leftedgedistance         \rightedgedistance
-     \globalswapdimens\leftmargindistance       \rightmargindistance
-     \globalswapdimens\leftmarginwidth          \rightmarginwidth
-     \globalswapdimens\leftedgewidth            \rightedgewidth
-     \globalswapdimens\backspace                \cutspace
-     \expandafter\setsystemmode
-   \else
-     \expandafter\resetsystemmode
-   \fi{reverselayout}}
 
 \def\page_layouts_check_pseudo_columns
   {\global\layoutcolumns\layoutparameter\c!columns
@@ -1355,7 +1340,6 @@
 %D \showsetup{showsetups}
 %D %showsetup{showmargins}
 %D %showsetup{showgrid}
-%D %showsetup{showusage}
 
 \fetchruntimecommand \showprint   \f!page_run
 \fetchruntimecommand \showframe   \f!page_run
@@ -1363,7 +1347,6 @@
 \fetchruntimecommand \showsetups  \f!page_run
 \fetchruntimecommand \showmargins \f!page_run
 \fetchruntimecommand \showgrid    \f!page_run
-\fetchruntimecommand \showusage   \f!page_run
 
 \glet\page_grids_add_to_box\gobbleoneargument
 \glet\page_grids_add_to_one\gobbleoneargument
@@ -1425,7 +1408,6 @@
                       \c!dx=\zeropoint,
                       \c!dy=\zeropoint,
                     \c!grid=\v!no,
-               \c!direction=\v!normal,
                   \c!preset=,
                   \c!setups=\systemsetupsprefix\s!default,
               \c!clipoffset=\zeropoint,

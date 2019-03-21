@@ -87,32 +87,22 @@ end
 local function setdimensions(t,b)
     local bw, bh, bd = 0, 0, 0
     local nw, nh, nd = 0, 0, 0
-    local cw, ch, cd = 0, 0, 0
     if b then
         bw = b.width
         bh = b.height
         bd = b.depth
-        cw = b.cwidth
-        ch = b.cheight
-        cd = b.cdepth
     end
     if t then
-        nw = t.width   or bw
-        nh = t.height  or bh
-        nd = t.depth   or bd
-        cw = t.cwidth  or cw
-        ch = t.cheight or ch
-        cd = t.cdepth  or cd
+        nw = t.width  or bw
+        nh = t.height or bh
+        nd = t.depth  or bd
     end
     setdimen("global","floatwidth",     bw)
     setdimen("global","floatheight",    bh+bd)
     setdimen("global","naturalfloatwd", nw)
     setdimen("global","naturalfloatht", nh)
     setdimen("global","naturalfloatdp", nd)
-    setdimen("global","floatcaptionwd", cw)
-    setdimen("global","floatcaptionht", ch)
-    setdimen("global","floatcaptiondp", cd)
-    return bw, bh, bd, nw, nh, dp, cw, xh, xp
+    return bw, bh, bd, nw, nh, dp
 end
 
 local function get(stack,n,bylabel)
@@ -135,22 +125,19 @@ local function get(stack,n,bylabel)
     end
 end
 
-function floats.save(which,data) -- todo: just pass
+function floats.save(which,data)
     which = which or default
     local b = textakebox("floatbox")
     if b then
         local stack = stacks[which]
         noffloats = noffloats + 1
         local t = {
-            n       = noffloats,
-            data    = data or { },
-            width   = getdimen("naturalfloatwd"),
-            height  = getdimen("naturalfloatht"),
-            depth   = getdimen("naturalfloatdp"),
-            cwidth  = getdimen("floatcaptionwd"),
-            cheight = getdimen("floatcaptionht"),
-            cdepth  = getdimen("floatcaptiondp"),
-            box     = b,
+            n      = noffloats,
+            data   = data or { },
+            width  = getdimen("naturalfloatwd"),
+            height = getdimen("naturalfloatht"),
+            depth  = getdimen("naturalfloatdp"),
+            box    = b,
         }
         insert(stack,t)
 -- inspect(stacks)
@@ -253,15 +240,11 @@ function floats.collect(which,maxwidth,distance)
     for i=1,stacksize do
         local t, b, n = get(stack,i)
         if t then
-            local w, h, d, nw, nh, nd, cw, ch, cd = setdimensions(t,b)
+            local w, h, d, nw = setdimensions(t,b)
             -- we use the real width
-            if cw > nw then
-                w = cw
-            else
-                w = nw
-            end
+            w = nw
             -- which could be an option
-            local rest = maxwidth - w - distance
+            local rest = maxwidth - w - (1 == 1 and 0 or distance)
             local fits = rest > -10
             if trace_collecting then
                 report_collecting("%s, category %a, number %a, slot %a width %p, rest %p, fit %a","collecting",

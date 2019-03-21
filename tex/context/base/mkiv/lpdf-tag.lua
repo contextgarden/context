@@ -6,11 +6,11 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
     license   = "see context related readme files"
 }
 
-local next, type = next, type
-local format, match, gmatch = string.format, string.match, string.gmatch
-local concat, sortedhash = table.concat, table.sortedhash
+local next = next
+local format, match, concat = string.format, string.match, table.concat
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash = utilities.parsers.settings_to_hash
+local sortedhash = table.sortedhash
 local formatters = string.formatters
 
 local trace_tags = false  trackers.register("structures.tags",      function(v) trace_tags = v end)
@@ -26,7 +26,6 @@ local nodeinjections      = backends.pdf.nodeinjections
 local codeinjections      = backends.pdf.codeinjections
 
 local enableaction        = nodes.tasks.enableaction
-local disableaction       = nodes.tasks.disableaction
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -37,7 +36,6 @@ local pdfunicode          = lpdf.unicode
 local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
-local pdfmakenametree     = lpdf.makenametree
 
 local addtocatalog        = lpdf.addtocatalog
 local addtopageattributes = lpdf.addtopageattributes
@@ -64,7 +62,6 @@ local getattr             = nuts.getattr
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
-local getchar             = nuts.getchar
 
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
@@ -78,7 +75,7 @@ local structure_kids   -- delayed
 local structure_ref    -- delayed
 local parent_ref       -- delayed
 local root             -- delayed
-local names               = { }
+local names            -- delayed
 local tree                = { }
 local elements            = { }
 
@@ -93,49 +90,29 @@ local usedmapping         = { }
 
 ----- tagsplitter         = structurestags.patterns.splitter
 
-local embeddedtags        = false -- true will id all, for tracing, otherwise table
-local f_tagid             = formatters["%s-%04i"]
-local embeddedfilelist    = pdfarray() -- /AF crap
+-- local embeddedtags        = false -- true will id all, for tracing
+-- local f_tagid             = formatters["%s-%04i"]
+-- local embeddedfilelist    = pdfarray() -- /AF crap
+--
+-- directives.register("structures.tags.embedmath",function(v)
+--     if not v then
+--         -- only enable
+--     elseif embeddedtags == true then
+--         -- already all tagged
+--     elseif embeddedtags then
+--         embeddedtags.math = true
+--     else
+--         embeddedtags = { math = true }
+--     end
+-- end)
 
--- for testing, not that it was ever used:
-
-directives.register("structures.tags.embed",function(v)
-    if type(v) == "string" then
-        if type(embeddedtags) ~= "table" then
-            embeddedtags = { }
-        end
-        for s in gmatch(v,"([^, ]+)") do
-            embeddedtags[s] = true
-        end
-    elseif v and not embeddedtags then
-        embeddedtags = true
-    end
-end)
-
--- for old times sake, not that it was ever used:
-
-directives.register("structures.tags.embedmath",function(v)
-    if not v then
-        -- only enable
-    elseif embeddedtags == true then
-        -- already all tagged
-    elseif embeddedtags then
-        embeddedtags.math = true
-    else
-        embeddedtags = { math = true }
-    end
-end)
-
-function codeinjections.maptag(original,target,kind)
-    mapping[original] = { target, kind or "inline" }
-end
-
--- mostly the same as the annotations tree
+-- function codeinjections.maptag(original,target,kind)
+--     mapping[original] = { target, kind or "inline" }
+-- end
 
 local function finishstructure()
     if root and #structure_kids > 0 then
-        local nums   = pdfarray()
-        local n      = 0
+        local nums, n = pdfarray(), 0
         for i=1,#tree do
             n = n + 1 ; nums[n] = i - 1
             n = n + 1 ; nums[n] = pdfreference(pdfflushobject(tree[i]))
@@ -143,7 +120,17 @@ local function finishstructure()
         local parenttree = pdfdictionary {
             Nums = nums
         }
-        local idtree = pdfmakenametree(names)
+        -- we need to split names into smaller parts (e.g. alphabetic or so)
+        -- we already have code for that somewhere
+        if #names > 0 then
+            local kids = pdfdictionary {
+                Limits = pdfarray { names[1], names[#names-1] },
+                Names  = names,
+            }
+            local idtree = pdfdictionary {
+                Kids = pdfarray { pdfreference(pdfflushobject(kids)) },
+            }
+        end
         --
         local rolemap = pdfdictionary()
         for k, v in next, usedmapping do
@@ -155,7 +142,7 @@ local function finishstructure()
             Type       = pdfconstant("StructTreeRoot"),
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
-            IDTree     = idtree,
+            IDTree     = #names > 0 and pdfreference(pdfflushobject(idtree)) or nil,
             RoleMap    = rolemap, -- sorted ?
         }
         pdfflushobject(structure_ref,structuretree)
@@ -204,9 +191,6 @@ end
 
 local pdf_userproperties = pdfconstant("UserProperties")
 
--- /O /Table
--- /Headers [ ]
-
 local function makeattribute(t)
     if t and next(t) then
         local properties = pdfarray()
@@ -225,65 +209,40 @@ end
 
 local function makeelement(fulltag,parent)
     local specification = specifications[fulltag]
-    local tagname       = specification.tagname
-    local tagnameused   = tagname
-    local attributes    = nil
-    if tagname == "ignore" then
+    local tag = specification.tagname
+    if tag == "ignore" then
         return false
-    elseif tagname == "mstackertop" or tagname == "mstackerbot" or tagname == "mstackermid"then
+    elseif tag == "mstackertop" or tag == "mstackerbot" or tag == "mstackermid"then
         -- TODO
         return true
-    elseif tagname == "tabulatecell" then
-        local d = structurestags.gettabulatecell(fulltag)
-        if d and d.kind == 1 then
-            tagnameused = "tabulateheadcell"
-        end
-    elseif tagname == "tablecell" then
-        -- will become a plugin model
-        local d = structurestags.gettablecell(fulltag)
-        if d then
-            if d.kind == 1 then
-                tagnameused = "tableheadcell"
-            end
-            local rows = d.rows    or 1
-            local cols = d.columns or 1
-            if rows > 1 or cols > 1 then
-                attributes = pdfdictionary {
-                    O       = pdfconstant("Table"),
-                    RowSpan = rows > 1 and rows or nil,
-                    ColSpan = cols > 1 and cols or nil,
-                }
-            end
-
-        end
     end
     --
     local detail   = specification.detail
     local userdata = specification.userdata
     --
-    usedmapping[tagname] = true
+    usedmapping[tag] = true
     --
     -- specification.attribute is unique
     --
     local id = nil
-    local af = nil
-    if embeddedtags then
-        local tagindex = specification.tagindex
-        if embeddedtags == true or embeddedtags[tagname] then
-            id = f_tagid(tagname,tagindex)
-            af = job.fileobjreferences.collected[id]
-            if af then
-                local r = pdfreference(af)
-                af = pdfarray { r }
-             -- embeddedfilelist[#embeddedfilelist+1] = r
-            end
-        end
-    end
+ -- local af = nil
+ -- if embeddedtags then
+ --     local tagname  = specification.tagname
+ --     local tagindex = specification.tagindex
+ --     if embeddedtags == true or embeddedtags[tagname] then
+ --         id = f_tagid(tagname,tagindex)
+ --         af = job.fileobjreferences.collected[id]
+ --         if af then
+ --             local r = pdfreference(af)
+ --             af = pdfarray { r }
+ --          -- embeddedfilelist[#embeddedfilelist+1] = r
+ --         end
+ --     end
+ -- end
     --
     local k = pdfarray()
     local r = pdfreserveobject()
-    local t = usedlabels[tagnameused] or tagnameused
- -- local a = nil
+    local t = usedlabels[tag] or tag
     local d = pdfdictionary {
         Type       = pdf_struct_element,
         S          = pdfconstant(t),
@@ -292,15 +251,16 @@ local function makeelement(fulltag,parent)
         P          = parent.pref,
         Pg         = pageref,
         K          = pdfreference(r),
-     -- A          = a and makeattribute(a) or nil,
-        A          = attributes,
+        A          = a and makeattribute(a) or nil,
      -- Alt        = " Who cares ",
      -- ActualText = " Hi Hans ",
         AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
     if id and names then
-        names[id] = s
+        local size = #names
+        names[size+1] = id
+        names[size+2] = s
     end
     local kids = parent.kids
     kids[#kids+1] = s
@@ -381,7 +341,6 @@ function nodeinjections.addtags(head)
         for n, id in nextnode, head do
             if id == glyph_code then
                 -- maybe also disc
-if getchar(n) ~= 0 then
                 local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
              -- if not at then
              --     range = nil
@@ -393,7 +352,6 @@ if getchar(n) ~= 0 then
                 elseif range then
                     range[4] = n -- stop
                 end
-end
             elseif id == hlist_code or id == vlist_code then
                 local at = getattr(n,a_image)
                 if at then
@@ -405,10 +363,7 @@ end
                  -- end
                     last = nil
                 else
-                    local list = getlist(n)
-                    if list then
-                        collectranges(list,n)
-                    end
+                    collectranges(getlist(n),n)
                 end
             end
         end
@@ -435,6 +390,7 @@ end
     local top    = nil
     local noftop = 0
 
+
     local function inject(start,stop,list,literal,left,right)
         local prev = getprev(start)
         if prev then
@@ -445,7 +401,7 @@ end
         else
             setlink(literal,start)
         end
-        if list and not prev then
+        if list and getlist(list) == start then
             setlist(list,literal)
         end
         local literal = copy_node(EMCliteral)
@@ -505,6 +461,7 @@ end
                     prev = prv
                 end
             end
+
             if prev then
                 literal = pageliteral(makecontent(prev,id,specification))
             elseif ignore then
@@ -698,36 +655,13 @@ end
 
 -- this belongs elsewhere (export is not pdf related)
 
-local permitted = true
-local enabled   = false
-
-function codeinjections.settaggingsupport(option)
-    if option == false then
-        if enabled then
-            disableaction("shipouts","structures.tags.handler")
-            disableaction("shipouts","nodes.handlers.accessibility") -- maybe not this one
-            disableaction("math","noads.handlers.tags")
-            enabled = false
-        end
-        if permitted then
-            if trace_tags then
-                report_tags("blocking structure tags")
-            end
-            permitted = false
-        end
-    end
-end
-
-function codeinjections.enabletags()
-    if permitted and not enabled then
-        structures.tags.handler = nodeinjections.addtags
-        enableaction("shipouts","structures.tags.handler")
-        enableaction("shipouts","nodes.handlers.accessibility")
-        enableaction("math","noads.handlers.tags")
-        -- maybe also textblock
-        if trace_tags then
-            report_tags("enabling structure tags")
-        end
-        enabled = true
+function codeinjections.enabletags(tg,lb)
+    structures.tags.handler = nodeinjections.addtags
+    enableaction("shipouts","structures.tags.handler")
+    enableaction("shipouts","nodes.handlers.accessibility")
+    enableaction("math","noads.handlers.tags")
+    -- maybe also textblock
+    if trace_tags then
+        report_tags("enabling structure tags")
     end
 end

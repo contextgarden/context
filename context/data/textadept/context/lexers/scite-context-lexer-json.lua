@@ -36,10 +36,9 @@ local spaces       = space^1
 local operator     = S(':,{}[]')
 local fence        = openarray + closearray + openhash + closehash
 
-local escape_un    = P("\\u") * S("09","AF","af")
-local escape_bs    = P("\\") * P(1)
------ content      = (escape_un + escape_bs + (1-double))^0
-local content      = (escape_bs + (1-double))^0
+local escape_un    = P("\\u") / "0x" * S("09","AF","af")
+local escape_bs    = P([[\]]) * P(1)
+local content      = (escape_un + escape_bs + (1-double))^0
 
 local reserved     = P("true")
                    + P("false")

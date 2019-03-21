@@ -55,7 +55,6 @@ local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local odd = math.odd
-local isfile, isdir, modificationtime = lfs.isfile, lfs.isdir, lfs.modification
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -158,11 +157,36 @@ function checkimage(figure)
     end
 end
 
--- This is a bit of abstraction. Fro a while we will follow the luatex image
--- model.
+--- begin of mapping / this will become graphics & code|nodeinjections but not this year
 
-local imagekeys  = {
-    -- only relevant ones (permitted in luatex)
+local  __img__ = type(img) == "table" and img or { }
+images.__img__ =__img__
+
+local imgnew   = __img__.new
+local imgscan  = __img__.scan
+local imgcopy  = __img__.copy
+local imgwrap  = __img__.node
+local imgembed = __img__.immediatewrite
+
+if imgnew then
+    -- catch (actually we should be less picky in img)
+    local __img__new__ = imgnew
+    imgnew = function(t)
+        t.kind = nil
+        return __img__new__(t)
+    end
+end
+
+updaters.register("backend.update.img",function()
+    local img = images.__img__
+    imgnew   = img.new
+    imgscan  = img.scan
+    imgcopy  = img.copy
+    imgwrap  = img.wrap
+    imgembed = img.embed
+end)
+
+local imagekeys  = { -- only relevant ones
     "width", "height", "depth", "bbox",
     "colordepth", "colorspace",
     "filename", "filepath", "visiblefilename",
@@ -190,26 +214,28 @@ images.keys  = imagekeys
 images.types = imagetypes
 images.sizes = imagesizes
 
+-- new interface
+
 local function createimage(specification)
-    return backends.codeinjections.newimage(specification)
+    return imgnew(specification)
 end
 
 local function copyimage(specification)
-    return backends.codeinjections.copyimage(specification)
+    return imgcopy(specification)
 end
 
 local function scanimage(specification)
-    return backends.codeinjections.scanimage(specification)
+    return imgscan(specification)
 end
 
 local function embedimage(specification)
     -- write the image to file
-    return backends.codeinjections.embedimage(specification)
+    return imgembed(specification)
 end
 
 local function wrapimage(specification)
     -- create an image rule
-    return backends.codeinjections.wrapimage(specification)
+    return imgwrap(specification)
 end
 
 images.create = createimage
@@ -218,20 +244,20 @@ images.copy   = copyimage
 images.wrap   = wrapimage
 images.embed  = embedimage
 
--- If really needed we can provide:
---
--- img = {
---     new                  = createimage,
---     scan                 = scanimage,
---     copy                 = copyimage,
---     node                 = wrapimage,
---     write                = function(specification) context(wrapimage(specification)) end,
---     immediatewrite       = embedimage,
---     immediatewriteobject = function() end, -- not upported, experimental anyway
---     boxes                = function() return sortedkeys(imagesizes) end,
---     fields               = function() return imagekeys end,
---     types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
--- }
+-- now we reimplement img:
+
+img = {
+    new                  = createimage,
+    scan                 = scanimage,
+    copy                 = copyimage,
+    node                 = wrapimage,
+    write                = function(specification) context(wrapimage(specification)) end,
+    immediatewrite       = embedimage,
+    immediatewriteobject = function() end, -- not upported, experimental anyway
+    boxes                = function() return sortedkeys(imagesizes) end,
+    fields               = function() return imagekeys end,
+    types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
+}
 
 -- end of copies / mapping
 
@@ -299,7 +325,6 @@ local figures_resources = allocate()   figures.resources   = figures_resources
 local existers          = allocate()   figures.existers    = existers
 local checkers          = allocate()   figures.checkers    = checkers
 local includers         = allocate()   figures.includers   = includers
-local remappers         = allocate()   figures.remappers   = remappers
 local converters        = allocate()   figures.converters  = converters
 local identifiers       = allocate()   figures.identifiers = identifiers
 local programs          = allocate()   figures.programs    = programs
@@ -326,7 +351,7 @@ local figures_order =  allocate {
 
 local figures_formats = allocate { -- magic and order will move here
     ["pdf"]    = { list = { "pdf" } },
-    ["mps"]    = { patterns = { "^mps$", "^%d+$" } }, -- we need to anchor
+    ["mps"]    = { patterns = { "mps", "%d+" } },
     ["jpg"]    = { list = { "jpg", "jpeg" } },
     ["png"]    = { list = { "png" } },
     ["jp2"]    = { list = { "jp2" } },
@@ -781,32 +806,24 @@ local function register(askedname,specification)
                     arguments  or ""
                 )
             end
-            -- begin of quick hack
-            local remapper = remappers[format]
-            if remapper then
-                remapper = remapper[conversion]
-                if remapper then
-                    specification = remapper(specification) or specification
-                    format        = specification.format
-                    newformat     = format
-                    conversion    = nil
-                end
-            end
-            -- end of quick hack
-            local converter = (not remapper) and (newformat ~= format or resolution or arguments) and converters[format]
+            -- quick hack
+            local converter = (newformat ~= format or resolution or arguments) and converters[format]
             if converter then
-                local okay = converter[newformat]
-                if okay then
-                    converter = okay
+                if converter[newformat] then
+                    converter = converter[newformat]
                 else
                     newformat = defaultformat
-                    converter = converter[newformat]
+                    if converter[newformat] then
+                        converter = converter[newformat]
+                    else
+                        converter = nil
+                        newformat = defaultformat
+                    end
                 end
             elseif trace_conversion then
                 report_inclusion("no converter for %a to %a",format,newformat)
             end
             if converter then
-                -- todo: make this a function
                 --
                 -- todo: outline as helper function
                 --
@@ -833,7 +850,7 @@ local function register(askedname,specification)
                 if subpath and subpath ~= "" and subpath ~= "."  then
                     newpath = newpath .. "/" .. subpath
                 end
-                if not isdir(newpath) then
+                if not lfs.isdir(newpath) then
                     dir.makedirs(newpath)
                     if not file.is_writable(newpath) then
                         if trace_conversion then
@@ -871,8 +888,8 @@ local function register(askedname,specification)
                 local newname = file.join(newpath,newbase)
                 oldname = collapsepath(oldname)
                 newname = collapsepath(newname)
-                local oldtime = modificationtime(oldname) or 0
-                local newtime = modificationtime(newname) or 0
+                local oldtime = lfs.attributes(oldname,'modification') or 0
+                local newtime = lfs.attributes(newname,'modification') or 0
                 if newtime == 0 or oldtime > newtime then
                     if trace_conversion then
                         report_inclusion("converting %a (%a) from %a to %a",askedname,oldname,format,newformat)
@@ -901,7 +918,7 @@ local function register(askedname,specification)
                             format = suffix
                         end
                     end
-                    specification.format = format
+specification.format = format
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
                     if format and imagetypes[format] then
@@ -1004,7 +1021,7 @@ local function locate(request) -- name, format, cache
         end
     else
         local foundname = resolvers.findbinfile(askedname)
-        if not foundname or not isfile(foundname) then -- foundname can be dummy
+        if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
             if trace_figures then
                 report_inclusion("unknown url %a",askedname)
             end
@@ -1391,7 +1408,7 @@ function existers.generic(askedname,resolve)
     local result
     if hasscheme(askedname) then
         result = resolvers.findbinfile(askedname)
-    elseif isfile(askedname) then
+    elseif lfs.isfile(askedname) then
         result = askedname
     elseif resolve then
         result = resolvers.findbinfile(askedname)
@@ -1435,7 +1452,6 @@ local transforms = setmetatableindex (
 
 local function checktransform(figure,forced)
     if auto_transform then
-
         local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
         local transform   = transforms["orientation-"..orientation]
         figure.transform = transform
@@ -1519,11 +1535,6 @@ function checkers.generic(data)
             if figure.attr and not f.attr then
                 -- tricky as img doesn't allow it
                 f.attr = figure.attr
-            end
-            if dr.cmyk == v_yes then
-                f.enforcecmyk = true
-            elseif dr.cmyk == v_auto and attributes.colors.model == "cmyk" then
-                f.enforcecmyk = true
             end
             figure = f
         end
@@ -2075,7 +2086,6 @@ implement {
             { "conversion" },
             { "resolution" },
             { "color" },
-            { "cmyk" },
             { "arguments" },
             { "repeat" },
             { "transform" },

@@ -15,7 +15,7 @@ return {
         "false", "nullpicture", "pencircle", "penspec", "true",
         "and", "angle", "arclength", "arctime", "ASCII", "boolean", "bot",
         "char", "color", "cosd", "cycle", "decimal", "directiontime", "floor", "fontsize",
-        "hex", "infont", "intersectiontimes", "known", "void", "length", "llcorner",
+        "hex", "infont", "intersectiontimes", "known", "length", "llcorner",
         "lrcorner", "makepath", "makepen", "mexp", "mlog", "normaldeviate", "not",
         "numeric", "oct", "odd", "or", "path", "pair", "pen", "penoffset", "picture", "point",
         "postcontrol", "precontrol", "reverse", "rotated", "scaled",
@@ -23,7 +23,7 @@ return {
         "transform", "transformed", "ulcorner", "uniformdeviate", "unknown",
         "urcorner", "xpart", "xscaled", "xxpart", "xypart", "ypart", "yscaled", "yxpart",
         "yypart", "zscaled",
-        "addto", "clip", "input", "interim", "let", "newinternal", "save", "setbounds", "setgroup",
+        "addto", "clip", "input", "interim", "let", "newinternal", "save", "setbounds",
         "shipout", "show", "showdependencies", "showtoken", "showvariable",
         "special",
         "begingroup", "endgroup", "of", "curl", "tension", "and", "controls",
@@ -49,7 +49,7 @@ return {
         "extra_beginfig", "extra_endfig", "mpxbreak",
         "endinput",
         "message", "delimiters", "turningnumber", "errmessage",
-        "scantokens", "end", "outer", "inner", "write", "to", "readfrom", "closefrom",
+        "readstring", "scantokens", "end", "outer", "inner", "write", "to", "readfrom",
         "withprescript", "withpostscript",
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --
@@ -67,7 +67,7 @@ return {
         "outputformat", "outputtemplate", "filenametemplate", "fontmapfile", "fontmapline",
         "fontpart", "fontsize", "glyph", "restoreclipcolor", "troffmode",
         --
-        "runscript", "maketext", "numbersystem",
+        "runscript", "maketext",
     },
     commands = {
         "upto", "downto",
@@ -117,8 +117,7 @@ return {
         --
         "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in",
         --
-        "triplet", "quadruplet", "totransform", "bymatrix",
-        --
+        "triplet", "quadruplet",
     },
     internals = { -- we need to remove duplicates above
         --
