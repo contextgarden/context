@@ -42,7 +42,7 @@
 %D has to match \type {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.03.21 21:39}
+\edef\contextversion{2019.04.04 13:31}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -135,7 +135,7 @@
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
 
-\doifelsefileexists{core-lmt.mkiv} {\loadmarkfile{core-lmt}} {}
+\loadmarkfile{core-lmt}
 
 % needs more checking for clashes:
 %
@@ -598,7 +598,7 @@
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
-\doifelsefileexists{driv-shp.mkiv} {\loadmarkfile{driv-shp}} {}
+\loadmarkfile{driv-shp}
 
 \setupcurrentlanguage[\defaultlanguagetag]
 

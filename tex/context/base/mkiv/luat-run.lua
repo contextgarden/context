@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['luat-run'] = {
 local next = next
 local format, find = string.format, string.find
 local insert, remove = table.insert, table.remove
+local osexit = os.exit
 
 -- trace_job_status is also controlled by statistics.enable that is set via the directive system.nostatistics
 
@@ -118,13 +119,17 @@ end
 
 -- For Taco ...
 
-local sequencers    = utilities.sequencers
-local appendgroup   = sequencers.appendgroup
-local appendaction  = sequencers.appendaction
-local wrapupactions = sequencers.new { }
+local sequencers     = utilities.sequencers
+local appendgroup    = sequencers.appendgroup
+local appendaction   = sequencers.appendaction
+local wrapupactions  = sequencers.new { }
+local cleanupactions = sequencers.new { }
 
 appendgroup(wrapupactions,"system")
 appendgroup(wrapupactions,"user")
+
+appendgroup(cleanupactions,"system")
+appendgroup(cleanupactions,"user")
 
 local function wrapup_run()
     local runner = wrapupactions.runner
@@ -133,8 +138,24 @@ local function wrapup_run()
     end
 end
 
+local function cleanup_run()
+    local runner = cleanupactions.runner
+    if runner then
+        runner()
+    end
+end
+
 function luatex.wrapup(action)
     appendaction(wrapupactions,"user",action)
+end
+
+function luatex.cleanup(action)
+    appendaction(cleanupactions,"user",action)
+end
+
+function luatex.abort()
+    cleanup_run()
+    osexit(1)
 end
 
 appendaction(wrapupactions,"system",synctex.wrapup)

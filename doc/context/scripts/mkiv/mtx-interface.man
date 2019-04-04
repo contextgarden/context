@@ -1,6 +1,6 @@
 .TH "mtx-interface" "1" "01-01-2019" "version 0.13" "ConTeXt Interface Related Goodies"
 .SH NAME
-.B mtx-interface
+ mtx-interface - ConTeXt Interface Related Goodies
 .SH SYNOPSIS
 .B mtxrun --script interface [
 .I OPTIONS ...

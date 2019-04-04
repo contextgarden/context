@@ -295,6 +295,12 @@ function codeinjections.mergereferences(specification)
                 if annotation.Subtype == "Link" then
                     local a = annotation.A
                     if not a then
+                        local d = annotation.Dest
+                        if d then
+                            annotation.A = { S = "GoTo", D = d } -- no need for a dict
+                        end
+                    end
+                    if not a then
                         report_link("missing link annotation")
                     else
                         local x, y, w, h = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_link)

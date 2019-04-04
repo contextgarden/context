@@ -1027,3 +1027,22 @@ do
     mp.mf_path_reset  = mf_path_reset    mp.pathreset  = mf_path_reset
 
 end
+
+do
+
+    -- if needed we can optimize the sub (cache last split)
+
+    local utflen, utfsub = utf.len, utf.sub
+
+    local mpnumeric = aux.numeric
+    local mpquoted  = aux.quoted
+
+    function mp.utflen(s)
+        mpnumeric(utflen(s))
+    end
+
+    function mp.utfsub(s,f,t)
+        mpquoted(utfsub(s,f,t or f))
+    end
+
+end

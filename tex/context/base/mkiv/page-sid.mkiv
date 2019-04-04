@@ -84,6 +84,8 @@
 \newcount       \c_page_sides_m_of_lines
 \newconditional \c_page_sides_delayed
 
+\newconditional \c_page_sides_check_same_page
+
 \newif          \iftracesidefloats % public (might change)
 
 %D Defaults:
@@ -399,10 +401,18 @@
   {\iftracesidefloats
      \begingroup
      \c_page_force_strut_depth_trace_mode\plusone
-     \forcestrutdepth
+     \ifconditional\c_page_sides_check_same_page
+       \forcestrutdepthplus
+     \else
+       \forcestrutdepth
+     \fi
      \endgroup
    \else
-     \forcestrutdepth
+     \ifconditional\c_page_sides_check_same_page
+       \forcestrutdepthplus
+     \else
+       \forcestrutdepth
+     \fi
    \fi
    \page_otr_command_set_vsize} % new
 
@@ -712,7 +722,7 @@
      \advance\d_page_sides_progress-\pagetotal
    \fi}
 
-\def\page_sides_analyse_space
+\def\page_sides_analyse_space_stage_one
   {\global\settrue\c_page_sides_flag
 % \ifdim\pagegoal=\maxdimen
 %     \pagegoal\textheight % maybe
@@ -751,8 +761,10 @@
    % \advance\scratchdimenone -\onepoint (maybe)
    \else
      \advance\scratchdimentwo -\strutdp
-   \fi
-   % how about \pagedepth
+   \fi}
+
+\def\page_sides_analyse_space_stage_two
+  {% how about \pagedepth
    \ifdim\scratchdimenone>\scratchdimentwo
      \global\setfalse\c_page_floats_room
    \else
@@ -766,6 +778,22 @@
      \fi
      \global\settrue\c_page_floats_room
    \fi}
+
+\def\page_sides_analyse_space
+  {\page_sides_analyse_space_stage_one
+   \ifconditional\c_page_sides_check_same_page
+     \ifdim\d_spac_prevcontent>\zeropoint
+       \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
+         \clf_pushatsame
+         \setbox\scratchbox\vpack{\clf_popatsame}%
+         \page
+         \box\scratchbox
+         \vskip-\lineskip
+         \page_sides_analyse_space_stage_one
+       \fi
+     \fi
+   \fi
+   \page_sides_analyse_space_stage_two}
 
 %D As we have no clear end of one or more paragraphs we only have pre float
 %D skips.

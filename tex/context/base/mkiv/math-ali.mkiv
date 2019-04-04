@@ -968,9 +968,14 @@
   {\c_math_eqalign_column\zerocount
    \rawprocesscommacommand[\mathmatrixparameter\c!align]\math_matrix_set_columns_step}
 
+\newcount\c_math_eqalign_column_saved
+\newcount\c_math_eqalign_first_saved
+
 \unexpanded\def\math_matrix_start#1%
   {\begingroup
    \globalpushmacro\c_math_matrix_first
+   \c_math_eqalign_column_saved\c_math_eqalign_column
+   \c_math_eqalign_first_saved \c_math_eqalign_first
    \edef\currentmathmatrix{#1}%
    \dosingleempty\math_matrix_start_indeed}
 
@@ -985,6 +990,8 @@
 
 \def\math_matrix_stop
   {\math_matrix_stop_processing
+   \global\c_math_eqalign_first\c_math_eqalign_first_saved
+   \global\c_math_eqalign_column\c_math_eqalign_column_saved
    \globalpopmacro\c_math_matrix_first
    \endgroup}
 

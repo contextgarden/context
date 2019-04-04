@@ -31,6 +31,7 @@ local strings     = tracers.strings
 local texgetdimen = tex.getdimen
 local texgettoks  = tex.gettoks
 local texgetcount = tex.getcount
+local texgethelp  = tex.gethelptext or function() end
 
 local implement   = interfaces.implement
 
@@ -183,7 +184,7 @@ local function processerror(offset)
     local linenumber   = tonumber(status.linenumber) or 0
     local lastcontext  = status.lasterrorcontext
     local lasttexerror = status.lasterrorstring or "?"
-    local lastluaerror = status.lastluaerrorstring or lasttexerror
+    local lastluaerror = status.lastluaerrorstring or "?" -- lasttexerror
     local luaerrorline = match(lastluaerror,[[lua%]?:.-(%d+)]]) or (lastluaerror and find(lastluaerror,"?:0:",1,true) and 0)
     local lastmpserror = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
     resetmessages()
@@ -194,57 +195,82 @@ local function processerror(offset)
         offset       = tonumber(offset) or 10,
         lasttexerror = lasttexerror,
         lastmpserror = lastmpserror,
-        lastluaerror = lastluaerror,
+        lastluaerror = lastluaerror, -- can be the same as lasttexerror
         luaerrorline = luaerrorline,
         lastcontext  = lastcontext,
+        lasttexhelp  = texgethelp(),
     }
 end
 
 -- so one can overload the printer if (really) needed
 
+local quitonerror = true
+
+directives.register("system.quitonerror",function(v) quitonerror = toboolean(v) end)
+
+local busy = false
+
 function tracers.printerror(specification)
-    local filename     = specification.filename
-    local linenumber   = specification.linenumber
-    local lasttexerror = specification.lasttexerror
-    local lastmpserror = specification.lastmpserror
-    local lastluaerror = specification.lastluaerror
-    local lastcontext  = specification.lasterrorcontext
-    local luaerrorline = specification.luaerrorline
-    local errortype    = specification.errortype
-    local offset       = specification.offset
-    local report       = errorreporter(luaerrorline)
-    if not filename then
-        report("error not related to input file: %s ...",lasttexerror)
-    elseif type(filename) == "number" then
-        report("error on line %s of filehandle %s: %s ...",linenumber,lasttexerror)
-    else
-        report_nl()
-        if luaerrorline then
-            if linenumber == 0 or not filename or filename == "" then
-                print("\nfatal lua error:\n\n",lastluaerror,"\n")
-                os.exit(1)
-                return
-            else
-                report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
-            end
-        elseif lastmpserror then
-            report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
+    if not busy then
+        busy = true
+        local filename     = specification.filename
+        local linenumber   = specification.linenumber
+        local lasttexerror = specification.lasttexerror
+        local lastmpserror = specification.lastmpserror
+        local lastluaerror = specification.lastluaerror
+        local lastcontext  = specification.lasterrorcontext
+        local luaerrorline = specification.luaerrorline
+        local errortype    = specification.errortype
+        local offset       = specification.offset
+        local report       = errorreporter(luaerrorline)
+        if not filename then
+            report("error not related to input file: %s ...",lasttexerror)
+        elseif type(filename) == "number" then
+            report("error on line %s of filehandle %s: %s ...",linenumber,lasttexerror)
         else
-            report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
-            if lastcontext then
-                report_nl()
-                report_str(lastcontext)
-                report_nl()
-            elseif tex.show_context then
-                report_nl()
-                tex.show_context()
+            report_nl()
+            if luaerrorline then
+                if linenumber == 0 or not filename or filename == "" then
+                    print("\nfatal lua error:\n\n",lastluaerror,"\n")
+                    luatex.abort()
+                    return
+                else
+                    report("lua error on line %s in file %s:\n\n%s",linenumber,filename,lastluaerror)
+                end
+            elseif lastmpserror then
+                report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
+            else
+                report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
+                if lastcontext then
+                    report_nl()
+                    report_str(lastcontext)
+                    report_nl()
+                elseif tex.show_context then
+                    report_nl()
+                    tex.show_context()
+                end
             end
+            report_nl()
+            report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
+            report_nl()
         end
-        report_nl()
-        report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))
-        report_nl()
+        local errname = file.addsuffix(tex.jobname .. "-error","log")
+        if quitonerror then
+            table.save(errname,specification)
+            local help = specification.lasttexhelp
+            if help and #help > 0 then
+                report_nl()
+                report_str(help)
+                report_nl()
+                report_nl()
+            end
+            luatex.abort()
+        end
+        busy = false
     end
 end
+
+luatex.wrapup(function() os.remove(file.addsuffix(tex.jobname .. "-error","log")) end)
 
 local function processwarning(offset)
  -- local inputstack   = resolvers.inputstack
@@ -324,6 +350,7 @@ function lmx.showerror(lmxname)
     else
         lmx.show(lmxname or 'context-error.lmx',variables)
     end
+    luatex.abort()
 end
 
 function lmx.overloaderror()

@@ -939,6 +939,18 @@
    \fi
    \popcurrentregister}
 
+\newconditional\c_strc_registers_following
+
+\appendtoks
+    \edef\p_compress{\registerparameter\c!compress}%
+    \ifx\p_compress\v!text
+      \settrue\c_strc_registers_following
+      \letregisterparameter\c!compress\v!yes
+    \else
+      \setfalse\c_strc_registers_following
+    \fi
+\to \everyplaceregister
+
 \unexpanded\def\registerpagerange#1#2#3#4#5#6#7#8% #1:class #2:processor  content, content todo: -- configurable
   {\pushcurrentregister{#1}%
    \edef\p_pagenumber{\registerparameter\c!pagenumber}%
@@ -949,9 +961,17 @@
      \dostarttagged\t!registerfrompage\empty
      \withregisterpagecommand{#2}{#3}{#4}{#5}%
      \dostoptagged
-     \registeronepagerangeseparator
-     \dostarttagged\t!registertopage\empty
-     \withregisterpagecommand{#2}{#6}{#7}{#8}%
+     \ifconditional\c_strc_registers_following
+       \ifnum#3=\numexpr#6-1\relax
+         \labeltext{following:\s!singular}%
+       \else
+         \labeltext{following:\s!plural}%
+       \fi
+    \else
+       \registeronepagerangeseparator
+       \dostarttagged\t!registertopage\empty
+       \withregisterpagecommand{#2}{#6}{#7}{#8}%
+     \fi
      \dostoptagged
      \dostoptagged
    \fi

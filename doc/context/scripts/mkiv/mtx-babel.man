@@ -1,6 +1,6 @@
 .TH "mtx-babel" "1" "01-01-2019" "version 1.20" "Babel Input To UTF Conversion"
 .SH NAME
-.B mtx-babel
+ mtx-babel - Babel Input To UTF Conversion
 .SH SYNOPSIS
 .B mtxrun --script babel [
 .I OPTIONS ...

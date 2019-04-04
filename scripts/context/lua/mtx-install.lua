@@ -164,6 +164,12 @@ function install.identify()
         end
     end
 
+    savetable("./tex/status.tma",{
+        name    = "context",
+        version = "lmtx",
+        date    = os.date("%Y-%m-%d"),
+    })
+
 end
 
 function install.update()
@@ -371,39 +377,50 @@ function install.update()
 
     local targetroot = dir.current()
 
-    local server   = environment.arguments.server   or ""
-    local port     = environment.arguments.port     or ""
-    local instance = environment.arguments.instance or ""
-
-    if server == "" then
-        report("provide server")
-        return
-    end
-
-    local url = "http://" .. server
-
-    if port ~= "" then
-        url = url .. ":" .. port
-    end
-
-    url = url .. "/"
-
-    if instance ~= "" then
-        url = url .. instance .. "/"
-    end
-
+    local server     = environment.arguments.server   or ""
+    local instance   = environment.arguments.instance or ""
     local osplatform = os.platform
     local platform   = platforms[osplatform]
 
+    if server == "" then
+        server = "lmtx.contextgarden.net,lmtx.pragma-ade.com,lmtx.pragma-ade.nl,dmz.pragma-ade.nl"
+    end
+    if instance == "" then
+        instance = "install-lmtx"
+    end
     if not platform then
         report("unknown platform")
         return
     end
 
+    local list   = utilities.parsers.settings_to_array(server)
+    local server = false
+
+    for i=1,#list do
+        local host = list[i]
+        local data, status, detail = fetch("http://" .. host .. "/" .. instance .. "/tex/status.tma")
+        if status == 200 and type(data) == "string" then
+            local t = loadstring(data)
+            if type(t) == "function" then
+                t = t()
+            end
+            if type(t) == "table" and t.name == "context" and t.version == "lmtx" then
+                server = host
+                break
+            end
+        end
+    end
+
+    if not server then
+        report("provide valid server and instance")
+        return
+    end
+
+    local url = "http://" .. server .. "/" .. instance .. "/"
+
     local texmfplatform = "texmf-" .. platform
 
     report("server   : %s",server)
-    report("port     : %s",port == "" and 80 or "80")
     report("instance : %s",instance)
     report("platform : %s",osplatform)
     report("system   : %s",ostype)

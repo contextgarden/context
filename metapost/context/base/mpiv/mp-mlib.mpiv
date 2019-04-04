@@ -22,7 +22,8 @@ boolean context_mlib ; context_mlib := true ;
 
 vardef isobject expr p =
     if picture p :
-        lua.mp.isobject(prescriptpart p)
+      % lua.mp.isobject(prescriptpart p)
+        runscript("mp.isobject(" & prescriptpart p & ")")
     else :
         false
     fi

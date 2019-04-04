@@ -401,7 +401,8 @@ end
 -- use that one instead of a table (so, a 3rd / 4th argument: key, e.g. "x")
 
 local function set(name,index,value) -- ,key
-    local data = enhance(tobesaved[value or index])
+    -- officially there should have been a settobesaved
+    local data = enhance(value or {})
     if value then
         container = tobesaved[name]
         if not container then
@@ -420,7 +421,7 @@ local function setspec(specification)
     local name  = specification.name
     local index = specification.index
     local value = specification.value
-    local data  = enhance(tobesaved[value or index])
+    local data  = enhance(value or {})
     if value then
         container = tobesaved[name]
         if not container then
@@ -612,6 +613,13 @@ function jobpositions.gettobesaved(name,tag)
         return t[tag]
     else
         return t
+    end
+end
+
+function jobpositions.settobesaved(name,tag,data)
+    local t = tobesaved[name]
+    if t and tag and data then
+        t[tag] = data
     end
 end
 

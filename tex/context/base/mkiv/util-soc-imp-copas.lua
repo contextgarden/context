@@ -50,6 +50,8 @@ local copas = {
 
     report       = report,
 
+    trace        = false,
+
 }
 
 local function statushandler(status, ...)
@@ -60,7 +62,9 @@ local function statushandler(status, ...)
     if type(err) == "table" then
         err = err[1]
     end
-    report("error: %s",tostring(err))
+    if copas.trace then
+        report("error: %s",tostring(err))
+    end
     return nil, err
 end
 
@@ -76,7 +80,9 @@ function socket.newtry(finalizer)
         if not status then
             local detail = select(2,...)
             pcall(finalizer,detail)
-            report("error: %s",tostring(detail))
+            if copas.trace then
+                report("error: %s",tostring(detail))
+            end
             return
         end
         return ...

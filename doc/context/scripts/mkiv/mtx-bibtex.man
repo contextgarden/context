@@ -1,6 +1,6 @@
 .TH "mtx-bibtex" "1" "01-01-2019" "version 1.00" "bibtex helpers"
 .SH NAME
-.B mtx-bibtex
+ mtx-bibtex - bibtex helpers
 .SH SYNOPSIS
 .B mtxrun --script bibtex [
 .I OPTIONS ...

@@ -165,6 +165,8 @@ return {
         --
         "inpath", "pointof", "leftof", "rightof",
         --
+        "utflen", "utfsub",
+        --
         "newhash", "disposehash", "inhash", "tohash",
         --
         "isarray", "prefix", "isobject",

@@ -244,6 +244,7 @@
 \newskip \s_spac_lastskip
 \newdimen\d_spac_prevdepth
 \newcount\c_spac_spacefactor
+\newdimen\d_spac_prevcontent % set by lua
 
 \unexpanded\def\removelastskip
   {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}

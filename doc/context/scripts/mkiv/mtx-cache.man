@@ -1,6 +1,6 @@
 .TH "mtx-cache" "1" "01-01-2019" "version 0.10" "ConTeXt & MetaTeX Cache Management"
 .SH NAME
-.B mtx-cache
+ mtx-cache - ConTeXt & MetaTeX Cache Management
 .SH SYNOPSIS
 .B mtxrun --script cache [
 .I OPTIONS ...

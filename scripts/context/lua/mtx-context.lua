@@ -209,7 +209,11 @@ local persistent_runfiles = {
 }
 
 local special_runfiles = {
-    "%-mpgraph", "%-mprun", "%-temp%-"
+    "%-mpgraph", "%-mprun", "%-temp%-",
+}
+
+local extra_runfiles = {
+    "^l_m_t_x_.-%.pdf$",
 }
 
 local function purge_file(dfile,cfile)
@@ -1360,6 +1364,11 @@ function scripts.context.purge(all,pattern,mkiitoo)
                 if find(name,special_runfiles[i]) then
                     deleted[#deleted+1] = purge_file(name)
                 end
+            end
+        end
+        for i=1,#extra_runfiles do
+            if find(basename,extra_runfiles[i]) then
+                deleted[#deleted+1] = purge_file(name)
             end
         end
     end

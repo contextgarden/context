@@ -244,8 +244,15 @@ def inpath suffix p = % permits p[0]
     endgroup
 enddef ;
 
-vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
-vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
-vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
+% vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
+% vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
+% vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
+
+vardef pointof primary i = runscript("mp.mf_path_point(" & decimal i & ")") enddef ;
+vardef leftof  primary i = runscript("mp.mf_path_left("  & decimal i & ")") enddef ;
+vardef rightof primary i = runscript("mp.mf_path_right(" & decimal i & ")") enddef ;
 
 extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;
+
+vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
+vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;

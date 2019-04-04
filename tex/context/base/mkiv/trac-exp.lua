@@ -64,7 +64,7 @@ function exporters.man(specification,...)
     end
     --
     result[#result+1] = formatters['.TH "%s" "1" "%s" "version %s" "%s"'](name,os.date("01-01-%Y"),version,detail)
-    result[#result+1] = formatters[".SH NAME\n.B %s"](name)
+    result[#result+1] = formatters[".SH NAME\n %s - %s"](name,detail) -- KB/TL wants 'detail' in this line too
     result[#result+1] = formatters[".SH SYNOPSIS\n.B %s [\n.I OPTIONS ...\n.B ] [\n.I FILENAMES\n.B ]"](runner)
     result[#result+1] = formatters[".SH DESCRIPTION\n.B %s"](detail)
     --

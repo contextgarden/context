@@ -1,6 +1,6 @@
 .TH "ctxtools" "1" "01-01-2019" "version 1.3.5" "CtxTools"
 .SH NAME
-.B ctxtools
+ ctxtools - CtxTools
 .SH SYNOPSIS
 .B ctxtools [
 .I OPTIONS ...

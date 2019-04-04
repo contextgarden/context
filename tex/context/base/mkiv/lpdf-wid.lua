@@ -268,6 +268,7 @@ function codeinjections.embedfile(specification)
     local usedname = specification.usedname
     local filetype = specification.filetype
     local compress = specification.compress
+    local mimetype = specification.mimetype or specification.mime
     if filename == "" then
         filename = nil
     end
@@ -317,7 +318,6 @@ function codeinjections.embedfile(specification)
         filetype = name and (filename and file.suffix(filename)) or "txt"
     end
     savename = file.addsuffix(savename,filetype) -- type is mandate for proper working in viewer
-    local mimetype = specification.mimetype
     local a = pdfdictionary {
         Type    = pdfconstant("EmbeddedFile"),
         Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
@@ -327,17 +327,24 @@ function codeinjections.embedfile(specification)
         f = pdfflushstreamobject(data,a)
         specification.data = true -- signal that still data but already flushed
     else
-        local foundname = specification.foundname or filename
+        local foundname  = specification.foundname or filename
+        local attributes = lfs.attributes(foundname)
+        if attributes then
+            a.Params = {
+                Size    = attributes.size,
+                ModDate = lpdf.pdftimestamp(attributes.modification),
+            }
+        end
         f = pdfflushstreamfileobject(foundname,a,compress)
     end
     local d = pdfdictionary {
-        Type = pdfconstant("Filespec"),
-        F    = pdfstring(savename),
-     -- UF   = pdfstring(savename),
-        UF   = pdfunicode(savename),
-        EF   = pdfdictionary { F = pdfreference(f) },
-        Desc = title ~= "" and pdfunicode(title) or nil,
-     -- AFRelationship = pdfconstant("Source"), -- some day maybe, not mandate
+        Type           = pdfconstant("Filespec"),
+        F              = pdfstring(savename),
+     -- UF             = pdfstring(savename),
+        UF             = pdfunicode(savename),
+        EF             = pdfdictionary { F = pdfreference(f) },
+        Desc           = title ~= "" and pdfunicode(title) or nil,
+        AFRelationship = pdfconstant("Unspecified"), -- Supplement, Data, Source, Alternative, Data
     }
     local r = pdfreference(pdfflushobject(d))
     filestreams[hash] = r

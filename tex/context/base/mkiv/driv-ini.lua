@@ -21,11 +21,13 @@ local instances         = { }
 local helpers           = { }
 local prepared          = { }
 local wrappedup         = { }
+local cleanedup         = { }
 local currentdriver     = "default"
 
 local prepare           = nil
 local convert           = nil
 local wrapup            = nil
+local cleanup           = nil
 local outputfilename    = nil
 
 drivers = drivers or {
@@ -42,6 +44,7 @@ local defaulthandlers = {
     finalize        = dummy,
     updatefontstate = dummy,
     wrapup          = dummy,
+    cleanup         = dummy,
     convert         = dummy,
     outputfilename  = dummy,
 }
@@ -78,13 +81,23 @@ function drivers.outputfilename()
     return outputfilename()
 end
 
-
 luatex.wrapup(function()
-    if not wrappedup[currentdriver] then
+    if wrapup and not wrappedup[currentdriver] then
         starttiming(drivers)
         wrapup()
         stoptiming(drivers)
         wrappedup[currentdriver] = true
+        cleanedup[currentdriver] = true
+    end
+end)
+
+luatex.cleanup(function()
+    if cleanup and not cleanedup[currentdriver] then
+        starttiming(drivers)
+        cleanup()
+        stoptiming(drivers)
+        wrappedup[currentdriver] = true
+        cleanedup[currentdriver] = true
     end
 end)
 
@@ -93,6 +106,7 @@ function drivers.enable(name)
     local actions   = instances[currentdriver].actions
     prepare         = actions.prepare
     wrapup          = actions.wrapup
+    cleanup         = actions.cleanup
     convert         = actions.convert
     outputfilename  = actions.outputfilename
     --

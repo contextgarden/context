@@ -203,6 +203,7 @@ function metapost.load(name,method)
         make_text    = metapost.maketext,
         extensions   = 1,
      -- random_seed  = seed,
+        utf8_mode    = true,
     }
     report_metapost("initializing number mode %a",method)
     local result

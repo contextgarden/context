@@ -188,87 +188,87 @@ fi ;
 
 string CurrentLayout ; CurrentLayout := "default" ;
 
-% runscript("mp.PaperHeight()") % way faster of course
+% runscript("mp.PaperHeight()") is much faster than lua.mp.PaperHeight() so we use that now:
 
-vardef PaperHeight          = lua.mp.PaperHeight         () enddef ;
-vardef PaperWidth           = lua.mp.PaperWidth          () enddef ;
-vardef PrintPaperHeight     = lua.mp.PrintPaperHeight    () enddef ;
-vardef PrintPaperWidth      = lua.mp.PrintPaperWidth     () enddef ;
-vardef TopSpace             = lua.mp.TopSpace            () enddef ;
-vardef BottomSpace          = lua.mp.BottomSpace         () enddef ;
-vardef BackSpace            = lua.mp.BackSpace           () enddef ;
-vardef CutSpace             = lua.mp.CutSpace            () enddef ;
-vardef MakeupHeight         = lua.mp.MakeupHeight        () enddef ;
-vardef MakeupWidth          = lua.mp.MakeupWidth         () enddef ;
-vardef TopHeight            = lua.mp.TopHeight           () enddef ;
-vardef TopDistance          = lua.mp.TopDistance         () enddef ;
-vardef HeaderHeight         = lua.mp.HeaderHeight        () enddef ;
-vardef HeaderDistance       = lua.mp.HeaderDistance      () enddef ;
-vardef TextHeight           = lua.mp.TextHeight          () enddef ;
-vardef FooterDistance       = lua.mp.FooterDistance      () enddef ;
-vardef FooterHeight         = lua.mp.FooterHeight        () enddef ;
-vardef BottomDistance       = lua.mp.BottomDistance      () enddef ;
-vardef BottomHeight         = lua.mp.BottomHeight        () enddef ;
-vardef LeftEdgeWidth        = lua.mp.LeftEdgeWidth       () enddef ;
-vardef LeftEdgeDistance     = lua.mp.LeftEdgeDistance    () enddef ;
-vardef LeftMarginWidth      = lua.mp.LeftMarginWidth     () enddef ;
-vardef LeftMarginDistance   = lua.mp.LeftMarginDistance  () enddef ;
-vardef TextWidth            = lua.mp.TextWidth           () enddef ;
-vardef RightMarginDistance  = lua.mp.RightMarginDistance () enddef ;
-vardef RightMarginWidth     = lua.mp.RightMarginWidth    () enddef ;
-vardef RightEdgeDistance    = lua.mp.RightEdgeDistance   () enddef ;
-vardef RightEdgeWidth       = lua.mp.RightEdgeWidth      () enddef ;
-vardef InnerMarginDistance  = lua.mp.InnerMarginDistance () enddef ;
-vardef InnerMarginWidth     = lua.mp.InnerMarginWidth    () enddef ;
-vardef OuterMarginDistance  = lua.mp.OuterMarginDistance () enddef ;
-vardef OuterMarginWidth     = lua.mp.OuterMarginWidth    () enddef ;
-vardef InnerEdgeDistance    = lua.mp.InnerEdgeDistance   () enddef ;
-vardef InnerEdgeWidth       = lua.mp.InnerEdgeWidth      () enddef ;
-vardef OuterEdgeDistance    = lua.mp.OuterEdgeDistance   () enddef ;
-vardef OuterEdgeWidth       = lua.mp.OuterEdgeWidth      () enddef ;
-vardef PageOffset           = lua.mp.PageOffset          () enddef ;
-vardef PageDepth            = lua.mp.PageDepth           () enddef ;
-vardef LayoutColumns        = lua.mp.LayoutColumns       () enddef ;
-vardef LayoutColumnDistance = lua.mp.LayoutColumnDistance() enddef ;
-vardef LayoutColumnWidth    = lua.mp.LayoutColumnWidth   () enddef ;
+vardef PaperHeight          = runscript("mp.PaperHeight()")          enddef ;
+vardef PaperWidth           = runscript("mp.PaperWidth()")           enddef ;
+vardef PrintPaperHeight     = runscript("mp.PrintPaperHeight()")     enddef ;
+vardef PrintPaperWidth      = runscript("mp.PrintPaperWidth()")      enddef ;
+vardef TopSpace             = runscript("mp.TopSpace()")             enddef ;
+vardef BottomSpace          = runscript("mp.BottomSpace()")          enddef ;
+vardef BackSpace            = runscript("mp.BackSpace()")            enddef ;
+vardef CutSpace             = runscript("mp.CutSpace()")             enddef ;
+vardef MakeupHeight         = runscript("mp.MakeupHeight()")         enddef ;
+vardef MakeupWidth          = runscript("mp.MakeupWidth()")          enddef ;
+vardef TopHeight            = runscript("mp.TopHeight()")            enddef ;
+vardef TopDistance          = runscript("mp.TopDistance()")          enddef ;
+vardef HeaderHeight         = runscript("mp.HeaderHeight()")         enddef ;
+vardef HeaderDistance       = runscript("mp.HeaderDistance()")       enddef ;
+vardef TextHeight           = runscript("mp.TextHeight()")           enddef ;
+vardef FooterDistance       = runscript("mp.FooterDistance()")       enddef ;
+vardef FooterHeight         = runscript("mp.FooterHeight()")         enddef ;
+vardef BottomDistance       = runscript("mp.BottomDistance()")       enddef ;
+vardef BottomHeight         = runscript("mp.BottomHeight()")         enddef ;
+vardef LeftEdgeWidth        = runscript("mp.LeftEdgeWidth()")        enddef ;
+vardef LeftEdgeDistance     = runscript("mp.LeftEdgeDistance()")     enddef ;
+vardef LeftMarginWidth      = runscript("mp.LeftMarginWidth()")      enddef ;
+vardef LeftMarginDistance   = runscript("mp.LeftMarginDistance()")   enddef ;
+vardef TextWidth            = runscript("mp.TextWidth()")            enddef ;
+vardef RightMarginDistance  = runscript("mp.RightMarginDistance()")  enddef ;
+vardef RightMarginWidth     = runscript("mp.RightMarginWidth()")     enddef ;
+vardef RightEdgeDistance    = runscript("mp.RightEdgeDistance()")    enddef ;
+vardef RightEdgeWidth       = runscript("mp.RightEdgeWidth()")       enddef ;
+vardef InnerMarginDistance  = runscript("mp.InnerMarginDistance()")  enddef ;
+vardef InnerMarginWidth     = runscript("mp.InnerMarginWidth()")     enddef ;
+vardef OuterMarginDistance  = runscript("mp.OuterMarginDistance()")  enddef ;
+vardef OuterMarginWidth     = runscript("mp.OuterMarginWidth()")     enddef ;
+vardef InnerEdgeDistance    = runscript("mp.InnerEdgeDistance()")    enddef ;
+vardef InnerEdgeWidth       = runscript("mp.InnerEdgeWidth()")       enddef ;
+vardef OuterEdgeDistance    = runscript("mp.OuterEdgeDistance()")    enddef ;
+vardef OuterEdgeWidth       = runscript("mp.OuterEdgeWidth()")       enddef ;
+vardef PageOffset           = runscript("mp.PageOffset()")           enddef ;
+vardef PageDepth            = runscript("mp.PageDepth()")            enddef ;
+vardef LayoutColumns        = runscript("mp.LayoutColumns()")        enddef ;
+vardef LayoutColumnDistance = runscript("mp.LayoutColumnDistance()") enddef ;
+vardef LayoutColumnWidth    = runscript("mp.LayoutColumnWidth()")    enddef ;
 
-vardef OnRightPage          = lua.mp.OnRightPage         () enddef ;
-vardef OnOddPage            = lua.mp.OnOddPage           () enddef ;
-vardef InPageBody           = lua.mp.InPageBody          () enddef ;
+vardef OnRightPage          = runscript("mp.OnRightPage()")          enddef ;
+vardef OnOddPage            = runscript("mp.OnOddPage()")            enddef ;
+vardef InPageBody           = runscript("mp.InPageBody()")           enddef ;
 
-vardef RealPageNumber       = lua.mp.RealPageNumber      () enddef ;
-vardef LastPageNumber       = lua.mp.LastPageNumber      () enddef ; % duplicates
+vardef RealPageNumber       = runscript("mp.RealPageNumber()")       enddef ;
+vardef LastPageNumber       = runscript("mp.LastPageNumber()")       enddef ; % duplicates
 
-vardef PageNumber           = lua.mp.PageNumber          () enddef ;
-vardef NOfPages             = lua.mp.NOfPages            () enddef ;
+vardef PageNumber           = runscript("mp.PageNumber()")           enddef ;
+vardef NOfPages             = runscript("mp.NOfPages()")             enddef ;
 
-vardef SubPageNumber        = lua.mp.SubPageNumber       () enddef ;
-vardef NOfSubPages          = lua.mp.NOfSubPages         () enddef ;
+vardef SubPageNumber        = runscript("mp.SubPageNumber()")        enddef ;
+vardef NOfSubPages          = runscript("mp.NOfSubPages()")          enddef ;
 
-vardef CurrentColumn        = lua.mp.CurrentColumn       () enddef ;
-vardef NOfColumns           = lua.mp.NOfColumns          () enddef ;
+vardef CurrentColumn        = runscript("mp.CurrentColumn()")        enddef ;
+vardef NOfColumns           = runscript("mp.NOfColumns()")           enddef ;
 
-vardef BaseLineSkip         = lua.mp.BaseLineSkip        () enddef ;
-vardef LineHeight           = lua.mp.LineHeight          () enddef ;
-vardef BodyFontSize         = lua.mp.BodyFontSize        () enddef ;
+vardef BaseLineSkip         = runscript("mp.BaseLineSkip()")         enddef ;
+vardef LineHeight           = runscript("mp.LineHeight()")           enddef ;
+vardef BodyFontSize         = runscript("mp.BodyFontSize()")         enddef ;
 
-vardef TopSkip              = lua.mp.TopSkip             () enddef ;
-vardef StrutHeight          = lua.mp.StrutHeight         () enddef ;
-vardef StrutDepth           = lua.mp.StrutDepth          () enddef ;
+vardef TopSkip              = runscript("mp.TopSkip()")              enddef ;
+vardef StrutHeight          = runscript("mp.StrutHeight()")          enddef ;
+vardef StrutDepth           = runscript("mp.StrutDepth()")           enddef ;
 
-vardef CurrentWidth         = lua.mp.CurrentWidth        () enddef ;
-vardef CurrentHeight        = lua.mp.CurrentHeight       () enddef ;
+vardef CurrentWidth         = runscript("mp.CurrentWidth()")         enddef ;
+vardef CurrentHeight        = runscript("mp.CurrentHeight()")        enddef ;
 
-vardef HSize                = lua.mp.HSize               () enddef ; % duplicates
-vardef VSize                = lua.mp.VSize               () enddef ; % duplicates
+vardef HSize                = runscript("mp.HSize()")                enddef ; % duplicates
+vardef VSize                = runscript("mp.VSize()")                enddef ; % duplicates
 
-vardef EmWidth              = lua.mp.EmWidth             () enddef ;
-vardef ExHeight             = lua.mp.ExHeight            () enddef ;
+vardef EmWidth              = runscript("mp.EmWidth()")              enddef ;
+vardef ExHeight             = runscript("mp.ExHeight()")             enddef ;
 
-vardef PageFraction         = lua.mp.PageFraction        () enddef ;
+vardef PageFraction         = runscript("mp.PageFraction()")         enddef ;
 
-vardef SpineWidth           = lua.mp.SpineWidth          () enddef ;
-vardef PaperBleed           = lua.mp.PaperBleed          () enddef ;
+vardef SpineWidth           = runscript("mp.SpineWidth()")           enddef ;
+vardef PaperBleed           = runscript("mp.PaperBleed()")           enddef ;
 
 boolean mfun_swapped ;
 
@@ -278,33 +278,33 @@ enddef ;
 
 extra_beginfig := extra_beginfig & "mfun_swapped := false ;" ;
 
-vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : lua.mp.RightMarginWidth   () else : lua.mp.LeftMarginWidth    () fi enddef ;
-vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginWidth    () else : lua.mp.RightMarginWidth   () fi enddef ;
-vardef LeftMarginDistance  = if mfun_swapped and not OnRightPage : lua.mp.RightMarginDistance() else : lua.mp.LeftMarginDistance () fi enddef ;
-vardef RightMarginDistance = if mfun_swapped and not OnRightPage : lua.mp.LeftMarginDistance () else : lua.mp.RightMarginDistance() fi enddef ;
+vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : runscript("mp.RightMarginWidth()")    else : runscript("mp.LeftMarginWidth()")     fi enddef ;
+vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : runscript("mp.LeftMarginWidth()")     else : runscript("mp.RightMarginWidth()")    fi enddef ;
+vardef LeftMarginDistance  = if mfun_swapped and not OnRightPage : runscript("mp.RightMarginDistance()") else : runscript("mp.LeftMarginDistance()")  fi enddef ;
+vardef RightMarginDistance = if mfun_swapped and not OnRightPage : runscript("mp.LeftMarginDistance()")  else : runscript("mp.RightMarginDistance()") fi enddef ;
 
-vardef LeftEdgeWidth       = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeWidth     () else : lua.mp.LeftEdgeWidth      () fi enddef ;
-vardef RightEdgeWidth      = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeWidth      () else : lua.mp.RightEdgeWidth     () fi enddef ;
-vardef LeftEdgeDistance    = if mfun_swapped and not OnRightPage : lua.mp.RightEdgeDistance  () else : lua.mp.LeftEdgeDistance   () fi enddef ;
-vardef RightEdgeDistance   = if mfun_swapped and not OnRightPage : lua.mp.LeftEdgeDistance   () else : lua.mp.RightEdgeDistance  () fi enddef ;
+vardef LeftEdgeWidth       = if mfun_swapped and not OnRightPage : runscript("mp.RightEdgeWidth()")    else : runscript("mp.LeftEdgeWidth()")     fi enddef ;
+vardef RightEdgeWidth      = if mfun_swapped and not OnRightPage : runscript("mp.LeftEdgeWidth()")     else : runscript("mp.RightEdgeWidth()")    fi enddef ;
+vardef LeftEdgeDistance    = if mfun_swapped and not OnRightPage : runscript("mp.RightEdgeDistance()") else : runscript("mp.LeftEdgeDistance()")  fi enddef ;
+vardef RightEdgeDistance   = if mfun_swapped and not OnRightPage : runscript("mp.LeftEdgeDistance()")  else : runscript("mp.RightEdgeDistance()") fi enddef ;
 
-vardef BackSpace           = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi  lua.mp.BackSpace() enddef ;
-vardef CutSpace            = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi  lua.mp.CutSpace () enddef ;
+vardef BackSpace           = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi runscript("mp.BackSpace()") enddef ;
+vardef CutSpace            = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi runscript("mp.CutSpace()")  enddef ;
 
 % better use:
 
-vardef OuterMarginWidth    = if not OnRightPage : lua.mp.LeftMarginWidth    () else : lua.mp.RightMarginWidth   () fi enddef ;
-vardef InnerMarginWidth    = if not OnRightPage : lua.mp.RightMarginWidth   () else : lua.mp.LeftMarginWidth    () fi enddef ;
-vardef OuterMarginDistance = if not OnRightPage : lua.mp.LeftMarginDistance () else : lua.mp.RightMarginDistance() fi enddef ;
-vardef InnerMarginDistance = if not OnRightPage : lua.mp.RightMarginDistance() else : lua.mp.LeftMarginDistance () fi enddef ;
+vardef OuterMarginWidth    = if not OnRightPage : runscript("mp.LeftMarginWidth()")     else : runscript("mp.RightMarginWidth()")    fi enddef ;
+vardef InnerMarginWidth    = if not OnRightPage : runscript("mp.RightMarginWidth()")    else : runscript("mp.LeftMarginWidth()")     fi enddef ;
+vardef OuterMarginDistance = if not OnRightPage : runscript("mp.LeftMarginDistance()")  else : runscript("mp.RightMarginDistance()") fi enddef ;
+vardef InnerMarginDistance = if not OnRightPage : runscript("mp.RightMarginDistance()") else : runscript("mp.LeftMarginDistance()")  fi enddef ;
 
-vardef OuterEdgeWidth      = if not OnRightPage : lua.mp.LeftEdgeWidth      () else : lua.mp.RightEdgeWidth     () fi enddef ;
-vardef InnerEdgeWidth      = if not OnRightPage : lua.mp.RightEdgeWidth     () else : lua.mp.LeftEdgeWidth      () fi enddef ;
-vardef OuterEdgeDistance   = if not OnRightPage : lua.mp.LeftEdgeDistance   () else : lua.mp.RightEdgeDistance  () fi enddef ;
-vardef InnerEdgeDistance   = if not OnRightPage : lua.mp.RightEdgeDistance  () else : lua.mp.LeftEdgeDistance   () fi enddef ;
+vardef OuterEdgeWidth      = if not OnRightPage : runscript("mp.LeftEdgeWidth()")     else : runscript("mp.RightEdgeWidth()")    fi enddef ;
+vardef InnerEdgeWidth      = if not OnRightPage : runscript("mp.RightEdgeWidth()")    else : runscript("mp.LeftEdgeWidth()")     fi enddef ;
+vardef OuterEdgeDistance   = if not OnRightPage : runscript("mp.LeftEdgeDistance()")  else : runscript("mp.RightEdgeDistance()") fi enddef ;
+vardef InnerEdgeDistance   = if not OnRightPage : runscript("mp.RightEdgeDistance()") else : runscript("mp.LeftEdgeDistance()")  fi enddef ;
 
-vardef OuterSpaceWidth     = if not OnRightPage : lua.mp.BackSpace          () else : lua.mp.CutSpace           () fi enddef ;
-vardef InnerSpaceWidth     = if not OnRightPage : lua.mp.CutSpace           () else : lua.mp.BackSpace          () fi enddef ;
+vardef OuterSpaceWidth     = if not OnRightPage : runscript("mp.BackSpace()") else : runscript("mp.CutSpace()")  fi enddef ;
+vardef InnerSpaceWidth     = if not OnRightPage : runscript("mp.CutSpace()")  else : runscript("mp.BackSpace()") fi enddef ;
 
 % indices
 
@@ -314,19 +314,19 @@ vardef InnerMargin = if not OnRightPage : RightMargin else : LeftMargin  fi endd
 vardef OuterEdge   = if not OnRightPage : LeftEdge    else : RightEdge   fi enddef ;
 vardef InnerEdge   = if not OnRightPage : Rightedge   else : LeftEdge    fi enddef ;
 
-% vardef CurrentLayout = lua.mp.CurrentLayout () enddef ;
+% vardef CurrentLayout = runscript("mp.CurrentLayout()") enddef ;
 
-vardef OverlayWidth      = lua.mp.OverlayWidth    ()  enddef ;
-vardef OverlayHeight     = lua.mp.OverlayHeight   ()  enddef ;
-vardef OverlayDepth      = lua.mp.OverlayDepth    ()  enddef ;
-vardef OverlayLineWidth  = lua.mp.OverlayLineWidth()  enddef ;
-vardef OverlayOffset     = lua.mp.OverlayOffset   ()  enddef ;
-vardef OverlayRegion     = lua.mp.OverlayRegion   ()  enddef ;
+vardef OverlayWidth      = runscript("mp.OverlayWidth()")     enddef ;
+vardef OverlayHeight     = runscript("mp.OverlayHeight()")    enddef ;
+vardef OverlayDepth      = runscript("mp.OverlayDepth()")     enddef ;
+vardef OverlayLineWidth  = runscript("mp.OverlayLineWidth()") enddef ;
+vardef OverlayOffset     = runscript("mp.OverlayOffset()")    enddef ;
+vardef OverlayRegion     = runscript("mp.OverlayRegion()")    enddef ;
 
-vardef defaultcolormodel = lua.mp.mf_default_color_model() enddef ;
+vardef defaultcolormodel = runscript("mp.mf_default_color_model()") enddef ;
 
-%  def OverlayLineColor  = lua.mp.OverlayLineColor()  enddef ;
-%  def OverlayColor      = lua.mp.OverlayColor    ()  enddef ;
+%  def OverlayLineColor  = runscript("mp.OverlayLineColor()")  enddef ;
+%  def OverlayColor      = runscript("mp.OverlayColor()")  enddef ;
 
 % Next we implement the the page area model. First some constants.
 

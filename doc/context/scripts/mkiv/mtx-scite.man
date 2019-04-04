@@ -1,6 +1,6 @@
 .TH "mtx-scite" "1" "01-01-2019" "version 1.00" "Scite Helper Script"
 .SH NAME
-.B mtx-scite
+ mtx-scite - Scite Helper Script
 .SH SYNOPSIS
 .B mtxrun --script scite [
 .I OPTIONS ...

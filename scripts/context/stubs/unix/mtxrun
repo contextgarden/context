@@ -3765,7 +3765,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 18916, stripped down to: 10126
+-- original size: 18985, stripped down to: 10149
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3930,7 +3930,8 @@ local launchers={
  unix="xdg-open %s &> /dev/null &",
 }
 function os.launch(str)
- execute(format(launchers[os.name] or launchers.unix,str))
+ local command=format(launchers[os.name] or launchers.unix,str)
+ execute(command)
 end
 local gettimeofday=os.gettimeofday or os.clock
 os.gettimeofday=gettimeofday
@@ -6467,7 +6468,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 43488, stripped down to: 21595
+-- original size: 44146, stripped down to: 22098
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6821,8 +6822,8 @@ local environment={
  formattednumber=number.formatted,
  sparseexponent=number.sparseexponent,
  formattedfloat=number.formattedfloat,
- stripzero=lpeg.patterns.stripzero,
- stripzeros=lpeg.patterns.stripzeros,
+ stripzero=patterns.stripzero,
+ stripzeros=patterns.stripzeros,
  FORMAT=string.f9,
 }
 local arguments={ "a1" } 
@@ -7265,9 +7266,9 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=patterns.xmlescape })
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=patterns.texescape })
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=patterns.luaescape })
 local dquote=patterns.dquote 
 local equote=patterns.escaped+dquote/'\\"'+1
 local cquote=Cc('"')
@@ -7298,6 +7299,27 @@ end
 local f_16_16=formatters["%0.5N"]
 function number.to16dot16(n)
  return f_16_16(n/65536.0)
+end
+if not string.explode then
+ local tsplitat=lpeg.tsplitat
+ local p_utf=patterns.utf8character
+ local p_check=C(p_utf)*(P("+")*Cc(true))^0
+ local p_split=Ct(C(p_utf)^0)
+ local p_space=Ct((C(1-P(" ")^1)+P(" ")^1)^0)
+ function string.explode(str,symbol)
+  if symbol=="" then
+   return lpegmatch(p_split,str)
+  elseif symbol then
+   local a,b=lpegmatch(p_check,symbol)
+   if b then
+    return lpegmatch(tsplitat(P(a)^1),str)
+   else
+    return lpegmatch(tsplitat(a),str)
+   end
+  else
+   return lpegmatch(p_space,str)
+  end
+ end
 end
 
 
@@ -9801,7 +9823,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-copas"] = package.loaded["util-soc-imp-copas"] or true
 
--- original size: 25844, stripped down to: 14821
+-- original size: 25959, stripped down to: 14893
 
 
 local socket=socket or require("socket")
@@ -9838,6 +9860,7 @@ local copas={
  autoclose=true,
  running=false,
  report=report,
+ trace=false,
 }
 local function statushandler(status,...)
  if status then
@@ -9847,7 +9870,9 @@ local function statushandler(status,...)
  if type(err)=="table" then
   err=err[1]
  end
- report("error: %s",tostring(err))
+ if copas.trace then
+  report("error: %s",tostring(err))
+ end
  return nil,err
 end
 function socket.protect(func)
@@ -9861,7 +9886,9 @@ function socket.newtry(finalizer)
   if not status then
    local detail=select(2,...)
    pcall(finalizer,detail)
-   report("error: %s",tostring(detail))
+   if copas.trace then
+    report("error: %s",tostring(detail))
+   end
    return
   end
   return...
@@ -14186,7 +14213,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 9955, stripped down to: 6693
+-- original size: 10136, stripped down to: 6832
 
 if not modules then modules={} end modules ['util-deb']={
  version=1.001,
@@ -14210,7 +14237,13 @@ local dummycalls=10*1000
 local nesting=0
 local names={}
 local initialize=false
-if not (FFISUPPORTED and ffi) then
+if lua.getpreciseticks then
+ initialize=function()
+  ticks=lua.getpreciseticks
+  seconds=lua.getpreciseseconds
+  initialize=false
+ end
+elseif not (FFISUPPORTED and ffi) then
 elseif os.type=="windows" then
  initialize=function()
   local kernel=ffilib("kernel32","system") 
@@ -25582,8 +25615,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1019480
--- stripped bytes    : 403728
+-- original bytes    : 1020503
+-- stripped bytes    : 404014
 
 -- end library merge
 

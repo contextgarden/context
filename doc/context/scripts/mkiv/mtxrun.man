@@ -1,6 +1,6 @@
 .TH "mtxrun" "1" "01-01-2019" "version 1.33" "ConTeXt TDS Runner Tool"
 .SH NAME
-.B mtxrun
+ mtxrun - ConTeXt TDS Runner Tool
 .SH SYNOPSIS
 .B mtxrun [
 .I OPTIONS ...

@@ -64,6 +64,8 @@ local languages = languages
 languages.data  = languages.data or utilities.storage.allocate { }
 local data      = languages.data
 
+local hairspace = utf.char(0x200A)
+
 data.labels={
  ["btx"]={
   ["In"]={
@@ -627,6 +629,18 @@ data.labels={
   },
  },
  ["texts"]={
+  ["following:singular"]={
+   ["labels"]={
+    ["en"]="f.",
+    ["fr"]=hairspace .. "sq",
+   },
+  },
+  ["following:plural"]={
+   ["labels"]={
+    ["en"]="ff.",
+    ["fr"]=hairspace .. "sqq",
+   },
+  },
   ["and"]={
    ["labels"]={
     ["af"]="",

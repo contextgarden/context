@@ -1,6 +1,6 @@
 .TH "mtx-modules" "1" "01-01-2019" "version 1.00" "ConTeXt Module Documentation Generators"
 .SH NAME
-.B mtx-modules
+ mtx-modules - ConTeXt Module Documentation Generators
 .SH SYNOPSIS
 .B mtxrun --script modules [
 .I OPTIONS ...
