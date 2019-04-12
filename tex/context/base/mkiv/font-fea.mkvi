@@ -137,11 +137,28 @@
 \def\font_basics_features_list[#name][#separator]% todo: arg voor type
   {\clf_featurelist{#name}{\detokenize{#separator}}}
 
-\attribute\zerocount\zerocount % first in list, so fast match
+\ifcase\contextlmtxmode
 
-\prependtoks
-    \attribute\zerocount\attributeunsetvalue % new per 2017-08-30
-\to \t_attr_list_local
+    \attribute\zerocount\zerocount % first in list, so fast match
+
+    \prependtoks
+        \attribute\zerocount\attributeunsetvalue % new per 2017-08-30 / why not zero
+    \to \t_attr_list_local
+
+    \def\font_dynamic_value{\attribute\zerocount}
+
+\else
+
+    \glyphdatafield\zerocount
+    \attribute\zerocount\attributeunsetvalue
+
+    \prependtoks
+        \glyphdatafield\attributeunsetvalue % why not zero
+    \to \t_attr_list_local
+
+    \let\font_dynamic_value\glyphdatafield
+
+\fi
 
 % beware: these are global features on top of existing font features
 

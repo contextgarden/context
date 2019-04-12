@@ -40,8 +40,9 @@ local getchar            = nuts.getchar
 local getdisc            = nuts.getdisc
 local getglue            = nuts.getglue
 local getkern            = nuts.getkern
+local getglyphdata       = nuts.getglyphdata
+
 local isglyph            = nuts.isglyph
-local setchar            = nuts.setchar
 
 local setfield           = nuts.setfield
 local getattr            = nuts.getattr
@@ -51,11 +52,11 @@ local setlink            = nuts.setlink
 local setdisc            = nuts.setdisc
 local setglue            = nuts.setglue
 local setkern            = nuts.setkern
+local setchar            = nuts.setchar
+local setglue            = nuts.setglue -- todo
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
-
-local setglue            = nuts.setglue -- todo
 
 local new_kern           = nodepool.kern
 local new_glue           = nodepool.glue
@@ -139,7 +140,7 @@ local gluefactor = 4 -- assumes quad = .5 enspace
 
 function kerns.keepligature(n) -- might become default
     local f = getfont(n)
-    local a = getattr(n,0) or 0
+    local a = getglyphdata(n) or 0
     if trace_ligatures then
         local c = getchar(n)
         local d = fontdescriptions[f][c].name

@@ -38,8 +38,14 @@
 \unexpanded\def\setupindenting
   {\doifelsenextoptionalcs\spac_indentation_setup_options\spac_indentation_setup_size}
 
+% \unexpanded\def\spac_indentation_setup_size
+%   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
+
 \unexpanded\def\spac_indentation_setup_size
-  {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}}
+  {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}%
+   \ifdim\parindent=\zeropoint\else
+     \parindent\d_spac_indentation_par\relax % new per 2019-04-12 : just in case it has been set beforehand
+   \fi}
 
 \let\synchronizeindenting\spac_indentation_setup_size
 

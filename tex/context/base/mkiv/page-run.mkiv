@@ -215,4 +215,10 @@
    \global\setbox#1\vpack{\backgroundline[layout:mix]{\box#1}}%
    \endgroup}
 
+%D Ths next command shows some statistics (we might add more in due time):
+
+\unexpanded\gdef\showusage
+  {\gtoksapp\everyaftershipout{\ctxcommand{showusage()}}%
+   \glet\showusage\relax}
+
 \protect \endinput

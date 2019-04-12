@@ -89,7 +89,6 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- h2,5:4661756,12973165:22918783,655360,327680
 -- h2,6:27884864,12973165:4746833,655360,327680
 -- h2,6:4661756,13922231:18320732,655360,327680
--- )
 -- ]
 -- !533
 -- }1
@@ -106,7 +105,6 @@ if not modules then modules = { } end modules ['node-syn'] = {
 -- h3,4:8459505,11075033:19885281,655360,327680
 -- h3,5:28571312,11075033:4060385,655360,327680
 -- h3,5:4661756,12024099:15344870,655360,327680
--- )
 -- ]
 -- !441
 -- }2
@@ -692,7 +690,8 @@ end
 
 function synctex.stop()
     if enabled then
-        filehandle:write(s_vlist,s_hlist)
+--         filehandle:write(s_vlist,s_hlist)
+        filehandle:write(s_hlist)
         writeanchor()
         filehandle:write("}",nofsheets,eol)
         nofobjects = nofobjects + 2

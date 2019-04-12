@@ -37,7 +37,7 @@ JITSUPPORTED        = LUATEXENGINE == "luajittex" or jit
 
 INITEXMODE          = status.ini_version
 
-CONTEXTLMTXMODE     = CONTEXTLMTXMODE or (status.obj_ptr == nil and 2 or 1)
+CONTEXTLMTXMODE     = CONTEXTLMTXMODE or (LUATEXENGINE == "luametatex" and 1) or 0
 
 function os.setlocale()
     -- no need for a message

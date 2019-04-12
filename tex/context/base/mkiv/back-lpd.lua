@@ -2346,7 +2346,8 @@ do
     local isfile     = lfs.isfile
     local removefile = os.remove
     local renamefile = os.rename
---     local addsuffix  = file.addsuffix
+ -- local copyfile   = file.copy
+ -- local addsuffix  = file.addsuffix
 
     local pdfname    = nil
     local tmpname    = nil
@@ -2408,6 +2409,7 @@ do
             end
             if isfile(pdfname) then
                 ok = false
+                file.copy(tmpname,pdfname)
             else
                 renamefile(tmpname,pdfname)
                 if isfile(tmpname) then

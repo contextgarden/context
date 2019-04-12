@@ -47,6 +47,7 @@ local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
 local setfont            = nuts.setfont
+local setglyphdata       = nuts.setglyphdata
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
@@ -135,10 +136,10 @@ actions[v_line] = function(head,setting)
     local temp       = copy_node_list(head)
     local linebreaks = { }
 
-    local function set(head)
+    set = function(head)
         for g in nextglyph, head do
             if dynamic > 0 then
-                setattr(g,0,dynamic)
+                setglyphdata(g,dynamic)
             end
             setfont(g,font)
         end
@@ -234,7 +235,7 @@ actions[v_line] = function(head,setting)
 
     local function update(start)
         if dynamic > 0 then
-            setattr(start,0,dynamic)
+            setglyphdata(start,dynamic)
         end
         setfont(start,font)
         if ca and ca > 0 then
@@ -348,7 +349,7 @@ actions[v_word] = function(head,setting)
                 setattr(start,a_transparency,ta)
             end
             if dynamic > 0 then
-                setattr(start,0,dynamic)
+                setglyphdata(start,dynamic)
             end
             setfont(start,font)
         elseif id == disc_code then

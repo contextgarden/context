@@ -39,7 +39,7 @@ local function newgraf(mode,indented)
     local runner = actions.runner
     if runner then
         starttiming(builders)
-        indent = runner(mode,indented)
+        indented = runner(mode,indented)
         stoptiming(builders)
     end
     return indented

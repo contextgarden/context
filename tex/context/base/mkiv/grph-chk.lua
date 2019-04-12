@@ -27,7 +27,7 @@ local placeholder       = graphics.bitmaps.placeholder
 -- but opens up some possibilities (like merging fonts) that I will look into some
 -- day.
 
-local function pdf_checker(data)
+function checkers.pdf(data)
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
@@ -130,7 +130,7 @@ local function wrappedidentify(identify,filename)
     end
 end
 
-local function jpg_checker(data)
+function checkers.jpg(data)
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
@@ -166,7 +166,7 @@ local function jpg_checker(data)
     return checkers.generic(data)
 end
 
-local function jp2_checker(data) -- idem as jpg
+function checkers.jp2(data) -- idem as jpg
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
@@ -202,7 +202,7 @@ local function jp2_checker(data) -- idem as jpg
     return checkers.generic(data)
 end
 
-local function png_checker(data) -- same as jpg (for now)
+function checkers.png(data) -- same as jpg (for now)
     local request = data.request
     local used    = data.used
     if request and used and not request.scanimage then
@@ -246,31 +246,4 @@ local function png_checker(data) -- same as jpg (for now)
         end
     end
     return checkers.generic(data)
-end
-
-
-if CONTEXTLMTXMODE then
-
-    checkers.pdf = pdf_checker
-    checkers.jpg = jpg_checker
-    checkers.jp2 = jp2_checker
-    checkers.png = png_checker
-
-else
-
-    -- yes or no ...
-
-    directives.register("graphics.pdf.uselua",function(v)
-        checkers.pdf = v and pdf_checker or nil
-        report("%s Lua based PDF inclusion",v and "enabling" or "disabling")
-    end)
-
- -- directives.register("graphics.uselua",function(v)
- --     checkers.pdf = v and pdf_checker or nil
- --     checkers.jpg = v and jpg_checker or nil
- --     checkers.jp2 = v and jp2_checker or nil
- --     checkers.png = v and png_checker or nil
- --  -- report("%s Lua based PDF, PNG, JPG and JP2 inclusion",v and "enabling" or "disabling")
- -- end)
-
 end

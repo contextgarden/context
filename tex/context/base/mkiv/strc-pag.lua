@@ -45,10 +45,21 @@ pages.collected = collected
 pages.tobesaved = tobesaved
 pages.nofpages  = 0
 
+-- utilitydata.structures.counters.collected.realpage[1]
+
 local function initializer()
     collected = pages.collected
     tobesaved = pages.tobesaved
-    pages.nofpages = #collected
+    -- tricky, with pageinjection we can have holes
+ -- pages.nofpages = #collected
+ -- pages.nofpages = table.count(collected) -- could be a helper
+    local n = 0
+    for k in next, collected do
+        if k > n then
+            n = k
+        end
+    end
+    pages.nofpages = n
 end
 
 job.register('structures.pages.collected', tobesaved, initializer)

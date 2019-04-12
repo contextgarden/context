@@ -61,14 +61,6 @@ local new_token       = token.new
 local is_defined      = token.is_defined
 local is_token        = token.is_token
 
-if not is_defined then
-
-    is_defined = function(name)
-        return get_cmdname(create_token(name)) ~= "undefined_cs"
-    end
-
-end
-
 tokens.new            = new_token
 tokens.create         = create_token
 tokens.istoken        = is_token
@@ -104,14 +96,10 @@ local bits = {
 
 tokens.bits = bits
 
-local space_bits = bits.space
-
 -- words are space or \relax terminated and the trailing space is gobbled; a word
--- can contain any non-space letter/other
+-- can contain any non-space letter/other (see archive for implementation in lua)
 
-local t = { } -- small optimization, a shared variable that is not reset
-
-if scan_word then
+if not scan_number then
 
     scan_number = function(base)
         local s = scan_word()
@@ -124,69 +112,7 @@ if scan_word then
         end
     end
 
-else
-
-    scan_word = function()
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = utfchar(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
-                    break
-                end
-            elseif n > 0 then
-                break
-            else
-                return
-            end
-        end
-        return concat(t,"",1,n)
-    end
-
-    -- so we gobble the space (like scan_int) (number has to be space or non-char terminated
-    -- as we accept 0xabcd and such so there is no clear separator for a keyword
-
-    scan_number = function(base)
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = char(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
-                    break
-                end
-            elseif n > 0 then
-                break
-            else
-                return
-            end
-        end
-        local s = concat(t,"",1,n)
-        if base then
-            return tonumber(s,base)
-        else
-            return tonumber(s)
-        end
-    end
-
 end
-
--- -- the next one cannot handle \iftrue true\else false\fi
---
--- local function scan_boolean()
---     if scan_keyword("true") then
---         return true
---     elseif scan_keyword("false") then
---         return false
---     else
---         return nil
---     end
--- end
 
 local function scan_boolean()
     local kw = scan_word()
@@ -197,16 +123,6 @@ local function scan_boolean()
     else
         return nil
     end
-end
-
-if not scan_csname then
-
-    scan_csname = function()
-        local t = get_next()
-        local n = t.csname
-        return n ~= "" and n or nil
-    end
-
 end
 
 local function scan_verbatim()

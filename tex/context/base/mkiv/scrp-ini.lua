@@ -57,8 +57,11 @@ local getnext            = nuts.getnext
 local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
+local getglyphdata       = nuts.getglyphdata
+
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+
 local isglyph            = nuts.isglyph
 
 local insert_node_after  = nuts.insert_after
@@ -894,7 +897,7 @@ function autofontfeature.handler(head)
      -- else
             local script = otfscripts[char]
             if script then
-                local dynamic = getattr(n,0) or 0
+                local dynamic = getglyphdata(n) or 0
                 if dynamic > 0 then
                     local slot = cache_yes[font]
                     local attr = slot[script]

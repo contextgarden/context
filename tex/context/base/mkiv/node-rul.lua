@@ -30,7 +30,6 @@ local nuts               = nodes.nuts
 local tonode             = nuts.tonode
 local tonut              = nuts.tonut
 
-local getfield           = nuts.getfield
 local setnext            = nuts.setnext
 local setprev            = nuts.setprev
 local setlink            = nuts.setlink
@@ -50,7 +49,10 @@ local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
-local getdata            = nuts.getdata
+
+----- getfield           = nuts.getfield
+----- getdata            = nuts.getdata
+local getruledata        = nuts.getruledata
 
 local isglyph            = nuts.isglyph
 
@@ -166,7 +168,7 @@ rules   .ruleactions = ruleactions
 nutrules.ruleactions = ruleactions -- convenient
 
 local function mathaction(n,h,v,what)
-    local font    = CONTEXTLMTXMODE > 1 and getdata(n) or getfield(n,"transform")
+    local font    = getruledata(n)
     local actions = fontresources[font].mathruleactions
     if actions then
         local action = actions[what]

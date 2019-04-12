@@ -193,34 +193,12 @@ context.registers = {
     newchar   = function(name,u) context([[\chardef\%s=%s\relax]],name,u) end,
 }
 
-do
-
-    if CONTEXTLMTXMODE > 1 then
-
-        function context.latelua(f)
-            -- table check moved elsewhere
-            local latelua = new_latelua(f)
-            setattrlist(latelua,true) -- will become an option
-            ctx_flushnode(latelua,true)
-        end
-
-    else
-
-        function context.latelua(f)
-            if type(f) == "table" then
-                local action        = f.action
-                local specification = f.specification or f
-                f = function() action(specification) end
-            end
-            local latelua = new_latelua(f)
-            setattrlist(latelua,true) -- will become an option
-            ctx_flushnode(latelua,true)
-        end
-
-    end
-
+function context.latelua(f)
+    -- table check moved elsewhere
+    local latelua = new_latelua(f)
+    setattrlist(latelua,true) -- will become an option
+    ctx_flushnode(latelua,true)
 end
--- yes or no
 
 do
 

@@ -90,7 +90,7 @@ function converters.convertgraphic(kind,oldname,newname)
         local command = converters[kind](oldname,tmpname)
         report("command: %s",command)
         io.flush()
-        os.spawn(command)
+        os.execute(command)
         os.remove(newname)
         os.rename(tmpname,newname)
         if lfs.attributes(newname,"size") == 0 then

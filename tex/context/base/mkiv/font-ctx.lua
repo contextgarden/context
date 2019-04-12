@@ -87,8 +87,6 @@ local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local setsubtype          = nuts.setsubtype
 
-local texgetattribute     = tex.getattribute
-local texsetattribute     = tex.setattribute
 local texgetdimen         = tex.getdimen
 local texsetcount         = tex.setcount
 local texget              = tex.get
@@ -2429,6 +2427,26 @@ to scale virtual characters.</p>
 
 do
 
+    -- can become luat-tex.lua
+
+    local texsetglyphdata = tex.setglyphdata
+    local texgetglyphdata = tex.getglyphdata
+
+    if not texsetglyphdata then
+
+        local texsetattribute = tex.setattribute
+        local texgetattribute = tex.getattribute
+
+        texsetglyphdata = function(n) return texsetattribute(0,n) end
+        texgetglyphdata = function()  return texgetattribute(0)   end
+
+        tex.setglyphdata = texsetglyphdata
+        tex.getglyphdata = texgetglyphdata
+
+    end
+
+    -- till here
+
     local setmacro = tokens.setters.macro
 
     function constructors.currentfonthasfeature(n)
@@ -2452,6 +2470,63 @@ do
     local f_strip  = formatters["%0.2fpt"] -- normally this value is changed only once
     local stripper = lpeg.patterns.stripzeros
 
+    local cache = { }
+
+    local hows = {
+        ["+"] = "add",
+        ["-"] = "subtract",
+        ["="] = "replace",
+    }
+
+    local function setfeature(how,parent,name,font) -- 0/1 test temporary for testing
+        if not how or how == 0 then
+            if trace_features and texgetglyphdata() ~= 0 then
+                report_cummulative("font %!font:name!, reset",fontdata[font or true])
+            end
+            texsetglyphdata(0)
+        elseif how == true or how == 1 then
+            local hash = "feature > " .. parent
+            local done = cache[hash]
+            if trace_features and done then
+                report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
+            end
+            texsetglyphdata(done or 0)
+        else
+            local full = parent .. how .. name
+            local hash = "feature > " .. full
+            local done = cache[hash]
+            if not done then
+                local n = setups[full]
+                if n then
+                    -- already defined
+                else
+                    n = mergecontextfeatures(parent,name,how,full)
+                end
+                done = registercontextfeature(hash,full,how)
+                cache[hash] = done
+                if trace_features then
+                    report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
+                end
+            end
+            texsetglyphdata(done)
+        end
+    end
+
+    local function resetfeature()
+        if trace_features and texgetglyphdata() ~= 0 then
+            report_cummulative("font %!font:name!, reset",fontdata[true])
+        end
+        texsetglyphdata(0)
+    end
+
+    local function setfontfeature(tag)
+        texsetglyphdata(contextnumber(tag))
+    end
+
+    local function resetfontfeature()
+        texsetglyphdata(0)
+    end
+
     implement {
         name      = "nbfs",
         arguments = "dimen",
@@ -2469,13 +2544,13 @@ do
     implement {
         name      = "setfontfeature",
         arguments = "string",
-        actions   = function(tag) texsetattribute(0,contextnumber(tag)) end
+        actions   = setfontfeature,
     }
 
     implement {
         name      = "resetfontfeature",
         arguments = { 0, 0 },
-        actions   = texsetattribute,
+        actions   = resetfontfeature,
     }
 
     implement {
@@ -2504,61 +2579,11 @@ do
         actions   = function(name) ctx_doif(contextnumber(name) == 0) end,
     }
 
-
     implement {
         name      = "adaptfontfeature",
         arguments = "2 strings",
         actions   = adaptcontext
     }
-
-    local cache = { }
-
-    local hows = {
-        ["+"] = "add",
-        ["-"] = "subtract",
-        ["="] = "replace",
-    }
-
-    local function setfeature(how,parent,name,font) -- 0/1 test temporary for testing
-        if not how or how == 0 then
-            if trace_features and texgetattribute(0) ~= 0 then
-                report_cummulative("font %!font:name!, reset",fontdata[font or true])
-            end
-            texsetattribute(0,0)
-        elseif how == true or how == 1 then
-            local hash = "feature > " .. parent
-            local done = cache[hash]
-            if trace_features and done then
-                report_cummulative("font %!font:name!, revive %a : %!font:features!",fontdata[font or true],parent,setups[numbers[done]])
-            end
-            texsetattribute(0,done or 0)
-        else
-            local full = parent .. how .. name
-            local hash = "feature > " .. full
-            local done = cache[hash]
-            if not done then
-                local n = setups[full]
-                if n then
-                    -- already defined
-                else
-                    n = mergecontextfeatures(parent,name,how,full)
-                end
-                done = registercontextfeature(hash,full,how)
-                cache[hash] = done
-                if trace_features then
-                    report_cummulative("font %!font:name!, %s %a : %!font:features!",fontdata[font or true],hows[how],full,setups[numbers[done]])
-                end
-            end
-            texsetattribute(0,done)
-        end
-    end
-
-    local function resetfeature()
-        if trace_features and texgetattribute(0) ~= 0 then
-            report_cummulative("font %!font:name!, reset",fontdata[true])
-        end
-        texsetattribute(0,0)
-    end
 
     local function registerlanguagefeatures()
         local specifications = languages.data.specifications

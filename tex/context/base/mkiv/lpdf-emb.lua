@@ -1146,13 +1146,6 @@ do
             local stdhw              = cffinfo.stdhw
             local stdvw              = cffinfo.stdvw
             --
--- bluescale    = 0.039625
--- blueshift    = 7
--- bluefuzz     = 1
--- defaultwidth = 500
--- nominalwidth = 696
--- stdhw        = { 28, 36, 42, 48, 60 }
--- stdvw        = { 40, 60, 66, 72, 76, 80, 88, 94 }
             if defaultwidth == 0 then defaultwidth     = nil end
             if nomimalwidth == 0 then nominalwidth     = nil end
             if bluevalues        then bluevalues       = todictarray(bluevalues) end
@@ -1162,10 +1155,8 @@ do
             if bluescale         then bluescale        = todictnumber(bluescale) end
             if blueshift         then blueshift        = todictnumber(blueshift) end
             if bluefuzz          then bluefuzz         = todictnumber(bluefuzz) end
---             if stdhw             then stdhw            = todictarray(stdhw) end
---             if stdvw             then stdvw            = todictarray(stdvw) end
-if stdhw             then stdhw            = todictdeltas(stdhw) end
-if stdvw             then stdvw            = todictdeltas(stdvw) end
+            if stdhw             then stdhw            = todictdeltas(stdhw) end
+            if stdvw             then stdvw            = todictdeltas(stdvw) end
             --
             local fontversion        = todictstring(fontfile,fontheader.fontversion or "uknown version")
             local familyname         = todictstring(fontfile,cffinfo.familyname or names.family or basefontname)

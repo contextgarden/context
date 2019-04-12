@@ -16,7 +16,11 @@
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 \registerctxluafile{lpdf-ini}{optimize}
-\registerctxluafile{lpdf-nod}{}
+
+\ifcase\contextlmtxmode\relax
+    \registerctxluafile{lpdf-nod}{}
+\fi
+
 \registerctxluafile{lpdf-col}{}
 \registerctxluafile{lpdf-xmp}{}
 \registerctxluafile{lpdf-ano}{}
@@ -72,9 +76,10 @@
 %D \type {\pdfextension} and \type {\pdffeedback} primitives but it will probably
 %D have bad side effects.
 
-%D For the moment we put these here as they are pdf related but they might move to
-%D a better place. We overload the primitives with our own but use a bit of indirection
-%D for the purpose of tracing.
+%D For the moment we put these here as they are pdf related but they might move to a
+%D better place. We overload the primitives with our own but use a bit of
+%D indirection for the purpose of tracing. Some of these are needes for packages like
+%D tikz.
 
 \unexpanded\def\saveboxresource            {\clf_saveboxresource}
 \unexpanded\def\lastsavedboxresourceindex  {\numexpr\clf_lastsavedboxresourceindex\relax}
@@ -85,54 +90,53 @@
 \unexpanded\def\lastsavedimageresourcepages{\numexpr\clf_lastsavedimageresourcepages\relax}
 \unexpanded\def\useimageresource           {\clf_useimageresource}
 
-\unexpanded\def\savepos                    {\clf_savepos}
-           \def\lastxpos                   {\clf_lastxpos}
-           \def\lastypos                   {\clf_lastypos}
+%D Maybe these are used:
 
-\unexpanded\def\pdfextension               {\clf_pdfextension}
-           \def\pdffeedback                {\clf_pdffeedback}
+\unexpanded\def\savepos {\clf_savepos}
+           \def\lastxpos{\clf_lastxpos}
+           \def\lastypos{\clf_lastypos}
 
-%D These are no-ops and don't even intercept what comes next. Maybe some day
-%D I'll write a parser that maps onto \CONTEXT.
+%D We do some interception:
 
-\unexpanded\def\unsupportedpdfprimitive#1%
-  {\writestatus{fatal error}{the primitive \string#1\space is not supported}%
-   \directlua{os.exit()}}
+\unexpanded\def\pdfextension{\clf_pdfextension}
+           \def\pdffeedback {\clf_pdffeedback}
 
-\unexpanded\def\pdfcolorstack    {\unsupportedpdfprimitive\pdfcolorstack}
-\unexpanded\def\pdfcolorstackinit{\unsupportedpdfprimitive\pdfcolorstackinit}
-%               pdfannot
-\unexpanded\def\pdfstartlink     {\unsupportedpdfprimitive\pdfstartlink}
-\unexpanded\def\pdfendlink       {\unsupportedpdfprimitive\pdfendlink}
-\unexpanded\def\pdfoutline       {\unsupportedpdfprimitive\pdfoutline}
-%               pdfdest
-\unexpanded\def\pdfthread        {\unsupportedpdfprimitive\pdfthread}
-\unexpanded\def\pdfstartthread   {\unsupportedpdfprimitive\pdfstartthread}
-\unexpanded\def\pdfendthread     {\unsupportedpdfprimitive\pdfendthread}
-\unexpanded\def\pdffontattr      {\unsupportedpdfprimitive\pdffontattr}
-\unexpanded\def\pdfglyphtounicode{\unsupportedpdfprimitive\pdfglyphtounicode}
+%D These are no-ops and don't even intercept what comes next. We used to use
+%D token registers for some so that they kept working but now we just abort the
+%D run.
 
 \unexpanded\def\pdfannot         {\clf_pdfannot}
+\unexpanded\def\pdfcolorstack    {\unsupportedcs\pdfcolorstack}
+\unexpanded\def\pdfcolorstackinit{\unsupportedcs\pdfcolorstackinit}
 \unexpanded\def\pdfdest          {\clf_pdfdest}
+\unexpanded\def\pdfendlink       {\unsupportedcs\pdfendlink}
+\unexpanded\def\pdfendthread     {\unsupportedcs\pdfendthread}
+\unexpanded\def\pdffontattr      {\unsupportedcs\pdffontattr}
+\unexpanded\def\pdfglyphtounicode{\unsupportedcs\pdfglyphtounicode}
+\unexpanded\def\pdfoutline       {\unsupportedcs\pdfoutline}
+\unexpanded\def\pdfstartlink     {\unsupportedcs\pdfstartlink}
+\unexpanded\def\pdfstartthread   {\unsupportedcs\pdfstartthread}
+\unexpanded\def\pdfthread        {\unsupportedcs\pdfthread}
 
-%D Here we do intercept (silently) what gets passed. One should use the \CONTEXT\
-%D interfaces instead.
+\unexpanded\def\pdfcatalog       {\unsupportedcs\pdfcatalog}
+\unexpanded\def\pdfinfo          {\unsupportedcs\pdfinfo}
+\unexpanded\def\pdfnames         {\unsupportedcs\pdfnames}
+\unexpanded\def\pdftrailer       {\unsupportedcs\pdftrailer}
+\unexpanded\def\pdfpageresources {\unsupportedcs\pdfpageresources}
+\unexpanded\def\pdfpageattr      {\unsupportedcs\pdfpageattr}
+\unexpanded\def\pdfpagesattr     {\unsupportedcs\pdfpagesattr}
+\unexpanded\def\pdfxformattr     {\unsupportedcs\pdfxformattr}
+\unexpanded\def\pdfxformresources{\unsupportedcs\pdfxformresources}
 
-\let\pdfcatalog       \relax  \newtoks\pdfcatalog
-\let\pdfinfo          \relax  \newtoks\pdfinfo
-\let\pdfnames         \relax  \newtoks\pdfnames
-\let\pdftrailer       \relax  \newtoks\pdftrailer
-\let\pdfpageresources \relax  \newtoks\pdfpageresources
-\let\pdfpageattr      \relax  \newtoks\pdfpageattr
-\let\pdfpagesattr     \relax  \newtoks\pdfpagesattr
-\let\pdfxformattr     \relax  \newtoks\pdfxformattr
-\let\pdfxformresources\relax  \newtoks\pdfxformresources
+%D There is no need for these:
 
-%D We use the \LUA\ interface (which then permits more control over possible pdf/x
-%D extensions).
+\unexpanded\def\pdfmapfile       {\unsupportedcs\pdfmapfile}
+\unexpanded\def\pdfmapline       {\unsupportedcs\pdfmapline}
 
-\let\pdfcompresslevel   \relax  \newcount\pdfcompresslevel
-\let\pdfobjcompresslevel\relax  \newcount\pdfobjcompresslevel
+%D These have been no-ops for a long time so now we just abort on their usage.
+
+\unexpanded\def\pdfcompresslevel   {\unsupportedcs\pdfcompresslevel}
+\unexpanded\def\pdfobjcompresslevel{\unsupportedcs\pdfobjcompresslevel}
 
 %D But we still provide:
 
@@ -141,53 +145,48 @@
 \unexpanded\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
 \unexpanded\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
 
-%D These might even become no-ops as we don't need them in \CONTEXT:
-
-\unexpanded\def\pdfmapfile#1{} % obsolete
-\unexpanded\def\pdfmapline#1{} % obsolete
-
 %D We don't support these directives, at least not this way. If they are needed
 %D by third party modules we can provide some interface.
 
-%pdfcreationdate
-\let\pdfdecimaldigits          \relax \newcount\pdfdecimaldigits
-\let\pdfdestmargin             \relax \newdimen\pdfdestmargin
+%    pdfcreationdate
+\def\pdfdecimaldigits          {\unsupportedcs\pdfdecimaldigits}
+\def\pdfdestmargin             {\unsupportedcs\pdfdestmargin}
 %    pdffontname
 %    pdffontobjnum
-\let\pdffontsize               \relax \newcount\pdffontsize
-\let\pdfgamma                  \relax \newcount\pdfgamma
-\let\pdfgentounicode           \relax \newcount\pdfgentounicode
-\let\pdfhorigin                \relax \newcount\pdfhorigin
-\let\pdfignoreunknownimages    \relax \newcount\pdfignoreunknownimages
-\let\pdfimageaddfilename       \relax \newcount\pdfimageaddfilename
-\let\pdfimageapplygamma        \relax \newcount\pdfimageapplygamma
-\let\pdfimagegamma             \relax \newcount\pdfimagegamma
-\let\pdfimagehicolor           \relax \newcount\pdfimagehicolor
-\let\pdfimageresolution        \relax \newcount\pdfimageresolution
-\let\pdfincludechars           \relax \newtoks \pdfincludechars
-\let\pdfinclusioncopyfonts     \relax \newcount\pdfinclusioncopyfonts
-\let\pdfinclusionerrorlevel    \relax \newcount\pdfinclusionerrorlevel
-\let\pdfinfoomitdate           \relax \newcount\pdfinfoomitdate
+\def\pdffontsize               {\unsupportedcs\pdffontsize}
+\def\pdfgamma                  {\unsupportedcs\pdfgamma}
+\def\pdfgentounicode           {\unsupportedcs\pdfgentounicode}
+\def\pdfhorigin                {\unsupportedcs\pdfhorigin}
+\def\pdfignoreunknownimages    {\unsupportedcs\pdfignoreunknownimages}
+\def\pdfimageaddfilename       {\unsupportedcs\pdfimageaddfilename}
+\def\pdfimageapplygamma        {\unsupportedcs\pdfimageapplygamma}
+\def\pdfimagegamma             {\unsupportedcs\pdfimagegamma}
+\def\pdfimagehicolor           {\unsupportedcs\pdfimagehicolor}
+\def\pdfimageresolution        {\unsupportedcs\pdfimageresolution}
+\def\pdfincludechars           {\unsupportedcs\pdfincludechars}
+\def\pdfinclusioncopyfonts     {\unsupportedcs\pdfinclusioncopyfonts}
+\def\pdfinclusionerrorlevel    {\unsupportedcs\pdfinclusionerrorlevel}
+\def\pdfinfoomitdate           {\unsupportedcs\pdfinfoomitdate}
 %    pdflastannot
 %    pdflastlink
-\let\pdflinkmargin             \relax \newdimen\pdflinkmargin
-\let\pdfmajorversion           \relax \newcount\pdfmajorversion
-\let\pdfminorversion           \relax \newcount\pdfminorversion
-\let\pdfpagebox                \relax \newcount\pdfpagebox
+\def\pdflinkmargin             {\unsupportedcs\pdflinkmargin}
+\def\pdfmajorversion           {\unsupportedcs\pdfmajorversion}
+\def\pdfminorversion           {\unsupportedcs\pdfminorversion}
+\def\pdfpagebox                {\unsupportedcs\pdfpagebox}
 %    pdfpageref
-\let\pdfpkfixeddpi             \relax \newcount\pdfpkfixeddpi
-\let\pdfpkmode                 \relax \newtoks \pdfpkmode
-\let\pdfpkresolution           \relax \newcount\pdfpkresolution
+\def\pdfpkfixeddpi             {\unsupportedcs\pdfpkfixeddpi}
+\def\pdfpkmode                 {\unsupportedcs\pdfpkmode}
+\def\pdfpkresolution           {\unsupportedcs\pdfpkresolution}
 %    pdfretval
-\let\pdfsuppressoptionalinfo   \relax \newcount\pdfsuppressoptionalinfo
-\let\pdfsuppressptexinfo       \relax \newcount\pdfsuppressptexinfo
+\def\pdfsuppressoptionalinfo   {\unsupportedcs\pdfsuppressoptionalinfo}
+\def\pdfsuppressptexinfo       {\unsupportedcs\pdfsuppressptexinfo}
 %    pdftexrevision
 %    pdftexversion
-\let\pdfthreadmargin           \relax \newdimen\pdfthreadmargin
-\let\pdftrailerid              \relax \newtoks \pdftrailerid
-\let\pdfuniqueresname          \relax \newcount\pdfuniqueresname
-\let\pdfvorigin                \relax \newcount\pdfvorigin
-\let\pdfxformmargin            \relax \newdimen\pdfxformmargin
+\def\pdfthreadmargin           {\unsupportedcs\pdfthreadmargin}
+\def\pdftrailerid              {\unsupportedcs\pdftrailerid}
+\def\pdfuniqueresname          {\unsupportedcs\pdfuniqueresname}
+\def\pdfvorigin                {\unsupportedcs\pdfvorigin}
+\def\pdfxformmargin            {\unsupportedcs\pdfxformmargin}
 %   \pdfxformname
 
 %D These are still accepted but are normally not needed.
@@ -210,15 +209,15 @@
 %D For the moment we keep these as they are but they will become \LUA\ calls
 %D eventually, after which we will nil the three \type {\pdf} interface primitives.
 
-\normalprotected\def\pdfliteral  {\clf_pdfliteral}%
+\unexpanded\def\pdfliteral  {\clf_pdfliteral}%
 
-\normalprotected\def\pdfobj      {\clf_pdfobj}%
-\normalprotected\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}%
+\unexpanded\def\pdfobj      {\clf_pdfobj}%
+\unexpanded\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}%
 
-\normalprotected\def\pdfrefobj   {\pdfextension refobj }
-\normalprotected\def\pdfrestore  {\clf_restore}
-\normalprotected\def\pdfsave     {\clf_save}
-\normalprotected\def\pdfsetmatrix{\clf_setmatrix}
+\unexpanded\def\pdfrefobj   {\pdfextension refobj }
+\unexpanded\def\pdfrestore  {\clf_restore}
+\unexpanded\def\pdfsave     {\clf_save}
+\unexpanded\def\pdfsetmatrix{\clf_setmatrix}
 
 %D This one can be consulted by users although the suffix is also a system mode.
 

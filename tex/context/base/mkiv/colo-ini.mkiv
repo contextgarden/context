@@ -485,7 +485,7 @@
 \def\colo_palet_prepare#1%
   {\edef\colo_palet_name{#1}%
    \ifcsname\??paletlist\colo_palet_name\endcsname
-     \csname\??paletsize#1\endcsname\zerocount
+     \csname\??paletsize\colo_palet_name\endcsname\zerocount
    \else
      \colo_palet_allocate\colo_palet_name
    \fi
@@ -804,21 +804,21 @@
 \def\colo_helpers_fast_activate_yes#1%
   {\ifcsname\??colorsetter\currentcolorprefix#1\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorprefix#1\endcsname
+     \begincsname\??transparencysetter\currentcolorprefix#1\endcsname
    \else\ifcsname\??colorsetter#1\endcsname
      \lastnamedcs
-     \csname\??transparencysetter#1\endcsname
+     \begincsname\??transparencysetter#1\endcsname
    \fi\fi}
 
 \def\colo_helpers_fast_activate_nop#1%
   {\ifcsname\??colorsetter#1\endcsname
      \lastnamedcs
-     \csname\??transparencysetter#1\endcsname
+     \begincsname\??transparencysetter#1\endcsname
    \fi}
 
 \def\colo_helpers_activate_dummy
-  {\csname\??colorsetter       \v_colo_dummy_name\endcsname
-   \csname\??transparencysetter\v_colo_dummy_name\endcsname}
+  {\begincsname\??colorsetter       \v_colo_dummy_name\endcsname
+   \begincsname\??transparencysetter\v_colo_dummy_name\endcsname}
 
 \let\dofastcoloractivation\colo_helpers_fast_activate
 
@@ -835,16 +835,16 @@
 \def\colo_helpers_activate_yes
   {\ifcsname\??colorsetter\currentcolorprefix\currentcolorname\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorprefix\currentcolorname\endcsname
+     \begincsname\??transparencysetter\currentcolorprefix\currentcolorname\endcsname
    \else\ifcsname\??colorsetter\currentcolorname\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorname\endcsname
+     \begincsname\??transparencysetter\currentcolorname\endcsname
    \fi\fi}
 
 \def\colo_helpers_activate_nop
   {\ifcsname\??colorsetter\currentcolorname\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorname\endcsname
+     \begincsname\??transparencysetter\currentcolorname\endcsname
    \fi}
 
 \def\colo_helpers_activate_yes_only
@@ -870,10 +870,10 @@
   {\let\currentcolorname\currentcolorparameter % maybe only when success
    \ifcsname\??colorsetter\currentcolorprefix\currentcolorparameter\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorprefix\currentcolorparameter\endcsname
+     \begincsname\??transparencysetter\currentcolorprefix\currentcolorparameter\endcsname
    \else\ifcsname\??colorsetter\currentcolorparameter\endcsname
      \lastnamedcs
-     \csname\??transparencysetter\currentcolorparameter\endcsname
+     \begincsname\??transparencysetter\currentcolorparameter\endcsname
    \fi\fi}
 
 \let\dosetcolorattribute\dousecolorhashparameter % for a while

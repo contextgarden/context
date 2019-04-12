@@ -229,9 +229,13 @@ nuts.getid                 = direct.getid
 nuts.getprev               = direct.getprev
 nuts.setprev               = direct.setprev
 
-nuts.getattr               = direct.get_attribute
-nuts.setattr               = direct.set_attribute
-nuts.takeattr              = direct.unset_attribute -- ?
+local get_attribute        = direct.get_attribute
+local set_attribute        = direct.set_attribute
+local unset_attribute      = direct.unset_attribute
+
+nuts.getattr               = get_attribute
+nuts.setattr               = set_attribute
+nuts.takeattr              = unset_attribute -- ?
 
 nuts.is_zero_glue          = direct.is_zero_glue
 nuts.effective_glue        = direct.effective_glue
@@ -246,10 +250,13 @@ nuts.setdisc               = direct.setdisc
 nuts.getdiscretionary      = direct.getdisc
 nuts.setdiscretionary      = direct.setdisc
 
-nuts.getdata               = direct.getdata
-nuts.setdata               = direct.setdata
-nuts.getvalue              = direct.getdata
-nuts.setvalue              = direct.setdata
+local getdata = direct.getdata
+local setdata = direct.setdata
+
+nuts.getdata               = getdata
+nuts.setdata               = setdata
+nuts.getvalue              = getdata
+nuts.setvalue              = setdata
 
 nuts.getexpansion          = direct.getexpansion
 nuts.setexpansion          = direct.setexpansion
@@ -264,8 +271,19 @@ nuts.getdepth              = direct.getdepth
 nuts.setdepth              = direct.setdepth
 nuts.getshift              = direct.getshift
 nuts.setshift              = direct.setshift
+
+-- lmtx compatibility
+
 nuts.getorientation        = direct.getorientation or function() end
 nuts.setorientation        = direct.setorientation or function() end
+
+nuts.getglyphdata          = direct.getglyphdata or get_attribute
+nuts.setglyphdata          = direct.setglyphdata or set_attribute
+
+nuts.getruledata           = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
+nuts.setruledata           = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end
+
+-- so far
 
 nuts.getnucleus            = direct.getnucleus
 nuts.setnucleus            = direct.setnucleus

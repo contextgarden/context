@@ -96,6 +96,7 @@ local setsubtype   = nuts.setsubtype
 local setleader    = nuts.setleader
 
 local setdata      = nuts.setdata
+local setruledata  = nuts.setruledata
 local setvalue     = nuts.setvalue
 
 local copy_nut     = nuts.copy
@@ -172,7 +173,7 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
-if CONTEXTLMTXMODE < 2 then
+if CONTEXTLMTXMODE == 0 then
     setfield(user_node,"type",usercodes.number)
 end
 
@@ -394,7 +395,7 @@ function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let t
         setwhd(n,width,height,depth)
     end
     if line then
-        if CONTEXTLMTXMODE > 1 then setdata(n,line) else setfield(n,"transform",line) end
+        setruledata(n,line)
     end
     return n
 end
@@ -414,15 +415,7 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-if CONTEXTLMTXMODE > 1 then
-
-    function nutpool.latelua(code)
-        local n = copy_nut(latelua)
-        nodeproperties[n] = { data = code }
-        return n
-    end
-
-else
+if CONTEXTLMTXMODE == 0 then
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)
@@ -432,6 +425,14 @@ else
             code = function() action(specification) end
         end
         setdata(n,code)
+        return n
+    end
+
+else
+
+    function nutpool.latelua(code)
+        local n = copy_nut(latelua)
+        nodeproperties[n] = { data = code }
         return n
     end
 

@@ -108,8 +108,13 @@
 
 \let\dompattribute\gobbletwoarguments
 
-\unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
-\unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
+\ifcase\contextlmtxmode
+    \unexpanded\def\resetglobalattributes{\attribute\zerocount\zerocount\the\t_attr_list_global\relax}
+    \unexpanded\def\resetlocalattributes {\attribute\zerocount\zerocount\the\t_attr_list_local \relax}
+\else
+    \unexpanded\def\resetglobalattributes{\glyphdatafield     \zerocount\the\t_attr_list_global\relax}
+    \unexpanded\def\resetlocalattributes {\glyphdatafield     \zerocount\the\t_attr_list_local \relax}
+\fi
 
 \let\resetallattributes\resetlocalattributes
 
@@ -152,7 +157,7 @@
 % for the luatex list:
 %
 % \attributedef\zeroattribute=0
-% \attributedef\someatriubute=999
+% \attributedef\someattribute=999
 %
 % \directlua {
 %     local createtoken = newtoken.create

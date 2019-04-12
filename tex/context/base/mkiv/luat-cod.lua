@@ -136,7 +136,7 @@ if LUATEXENGINE == nil then
                 or (find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")
 end
 
-if LUATEXVERION == nil then
+if LUATEXVERSION == nil then
     LUATEXVERSION = status.luatex_revision
     LUATEXVERSION = status.luatex_version/100
                -- + tonumber(LUATEXVERSION)/1000
@@ -144,15 +144,7 @@ if LUATEXVERION == nil then
 end
 
 if CONTEXTLMTXMODE == nil then
-    if status.obj_ptr == nil then
-        CONTEXTLMTXMODE = 2
-    else
-        CONTEXTLMTXMODE = 0
-        for i=1,#arg do if arg[i] == "--c:lmtx" then
-            CONTEXTLMTXMODE, pdf, img = 1, nil, nil
-            break
-        end end
-    end
+    CONTEXTLMTXMODE = LUATEXENGINE == "luametatex" and 1 or 0
 end
 
 if LUATEXFUNCTIONALITY == nil then

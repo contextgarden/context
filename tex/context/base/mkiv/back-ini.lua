@@ -76,7 +76,7 @@ local lmtx_mode  = nil
 
 local function lmtxmode()
     if lmtx_mode == nil then
-        lmtx_mode = ((tonumber(CONTEXTLMTXMODE) or 0) > 0) and drivers and drivers.lmtxversion
+        lmtx_mode = CONTEXTLMTXMODE > 0 and drivers and drivers.lmtxversion
     end
     return lmtx_mode
 end

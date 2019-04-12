@@ -909,7 +909,7 @@
 
 \let\tabl_tabulate_hook\tabl_tabulate_hook_nop
 
-\def\tabl_tabulate_hook_yes{\csname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
+\def\tabl_tabulate_hook_yes{\begincsname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
 
 \def\tabl_tabulate_pheight_reset
   {\global\c_tabl_tabulate_plines_min\plusone
@@ -1090,12 +1090,12 @@
 
 \def\tabl_tabulate_insert_head_content
   {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
-   \csname\??tabulatehead\currenttabulation\endcsname
+   \begincsname\??tabulatehead\currenttabulation\endcsname
    \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
 
 \def\tabl_tabulate_insert_foot_content
   {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
-   \csname\??tabulatefoot\currenttabulation\endcsname
+   \begincsname\??tabulatefoot\currenttabulation\endcsname
    \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
@@ -1364,7 +1364,7 @@
    \fi
    %
    \settrue\c_tabl_tabulate_split
-   \csname\??tabulatesplit\tabulationparameter\c!split\endcsname
+   \begincsname\??tabulatesplit\tabulationparameter\c!split\endcsname
    %
    \let\m_tabl_tabulate_blank_default\p_blank
    %

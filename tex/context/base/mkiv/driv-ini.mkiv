@@ -17,9 +17,15 @@
 
 \unprotect
 
-\def\page_shipout_box#1%
+\unexpanded\def\page_shipout_box#1%
   {\clf_shipoutpage#1\relax
-   \setbox#1\emptybox
+   \global\setbox#1\emptybox
    \global\deadcycles\zerocount}
+
+\ifdefined\page_otr_shipout_yes \else
+
+    \let\page_otr_shipout_yes\page_shipout_box
+
+\fi
 
 \protect \endinput

@@ -445,11 +445,11 @@
 %D The following macro has to be called after a page is flushed.
 
 \unexpanded\def\resetlayouttextlines % public
-  {\csname\??layouttextsreset\v!top   \endcsname
-   \csname\??layouttextsreset\v!header\endcsname
-   \csname\??layouttextsreset\v!text  \endcsname
-   \csname\??layouttextsreset\v!footer\endcsname
-   \csname\??layouttextsreset\v!bottom\endcsname
+  {\begincsname\??layouttextsreset\v!top   \endcsname
+   \begincsname\??layouttextsreset\v!header\endcsname
+   \begincsname\??layouttextsreset\v!text  \endcsname
+   \begincsname\??layouttextsreset\v!footer\endcsname
+   \begincsname\??layouttextsreset\v!bottom\endcsname
    \ifconditional\resyncaftertextline
      \calculateglobalvsizes
      \page_backgrounds_recalculate

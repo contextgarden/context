@@ -115,8 +115,6 @@ local instances         = drivers.instances
 
 ---------------------------------------------------------------------------------------
 
-local synctex          = false
-
 local lastfont         = nil
 local fontcharacters   = nil
 
@@ -330,11 +328,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
         return 0, 0, 0
     end
 
-    local width, height, depth
+    local width, height, depth, naturalwidth
     if current then
---         width, height, depth = getwhd(current)
---         factor = getexpansion(current)
         width, height, depth, factor = getwhd(current,true)
+        naturalwidth = width
         if factor ~= 0 then
             width = (1.0 + factor/1000000.0) * width
         end
@@ -342,6 +339,7 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
         width  = data.width or 0
         height = data.height or 0
         depth  = data.depth or 0
+        naturalwidth = width
         if not factor then
             factor = 0
         end
@@ -366,10 +364,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
                 pos_v = pos_v + y
             end
             pushorientation(orientation,pos_h,pos_v)
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,width,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,naturalwidth,f,e)
             poporientation(orientation,pos_h,pos_v)
         else
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,width,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,naturalwidth,f,e)
         end
     end
     return width, height, depth
@@ -551,10 +549,6 @@ local hlist_out, vlist_out  do
             current = getlist(this_box)
         end
 
-     -- if synctex then
-     --     synctexhlist(this_box)
-     -- end
-
         while current do
             local char, id = isglyph(current)
             if char then
@@ -664,17 +658,9 @@ local hlist_out, vlist_out  do
                             cur_h = edge - 10
                         else
                             cur_h = cur_h + gluewidth
-                         -- if synctex then
-                         --     synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v)
-                         --     synctexhorizontalruleorglue(p, this_box)
-                         -- end
                         end
                     else
                         cur_h = cur_h + gluewidth
-                     -- if synctex then
-                     --     synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v)
-                     --     synctexhorizontalruleorglue(p, this_box)
-                     -- end
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
@@ -685,9 +671,11 @@ local hlist_out, vlist_out  do
                 if list then
                     local shift, orientation = getshift(current)
                     if not orientation then
--- local width, height, depth, list, boxdir, shift, orientation = getall(current)
--- if list then
---     if not orientation then
+                     --
+                     -- local width, height, depth, list, boxdir, shift, orientation = getall(current)
+                     -- if list then
+                     --     if not orientation then
+                     --
                         local basepoint_h = boxdir ~= pos_r and width or 0
                      -- local basepoint_v = shift
                         -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
@@ -754,14 +742,6 @@ local hlist_out, vlist_out  do
                         end
                         poporientation(orientation,pos_h,pos_v,pos_r)
                     end
-                else
-                 -- if synctex then
-                 --     if id == vlist_code then
-                 --         synctexvoidvlist(p,this_box)
-                 --     else
-                 --         synctexvoidhlist(p,this_box)
-                 --     end
-                 -- end
                 end
                 cur_h = cur_h + width
             elseif id == disc_code then
@@ -773,11 +753,6 @@ local hlist_out, vlist_out  do
                     setfield(current,"replace")
                 end
             elseif id == kern_code then
-             -- if synctex then
-             --     synctexkern(p, this_box)
-             -- end
---                 local kern   = getkern(current)
---                 local factor = getexpansion(current)
                 local kern, factor = getkern(current,true)
                 if kern ~= 0 then
                     if factor and factor ~= 0 then
@@ -817,9 +792,6 @@ local hlist_out, vlist_out  do
                     cur_h = cur_h + width
                 end
             elseif id == math_code then
-             -- if synctex then
-             --     synctexmath(p, this_box)
-             -- end
                 local kern = getkern(current)
                 if kern ~= 0 then
                     cur_h = cur_h + kern
@@ -904,9 +876,6 @@ local hlist_out, vlist_out  do
             pos_v = ref_v - cur_v
             -- synced
         end
-     -- if synctex then
-     --     synctextsilh(this_box)
-     -- end
         pos_h = ref_h
         pos_v = ref_v
         pos_r = ref_r
@@ -944,10 +913,6 @@ local hlist_out, vlist_out  do
         if not current then
             current = getlist(this_box)
         end
-
-     -- if synctex then
-     --     synctexvlist(this_box)
-     -- end
 
      -- while current do
      --     local id = getid(current)
@@ -1111,15 +1076,6 @@ local hlist_out, vlist_out  do
                         end
                         poporientation(orientation,pos_h,pos_v,pos_r)
                     end
-                else
-                 -- if synctex then
-                 --     synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v)
-                 --     if id == vlist_code then
-                 --         synctexvoidvlist(current, this_box)
-                 --     else
-                 --         synctexvoidhlist(current, this_box)
-                 --     end
-                 -- end
                 end
                 cur_v = cur_v + height + depth
             elseif id == kern_code then
@@ -1180,9 +1136,6 @@ local hlist_out, vlist_out  do
             pos_v = ref_v - cur_v
             -- synced
         end
-     -- if synctex then
-     --     synctextsilh(this_box)
-     -- end
         pos_h = ref_h
         pos_v = ref_v
         pos_r = ref_r
@@ -1230,12 +1183,6 @@ function lpdf.convert(box,smode,objnum,specification) -- temp name
     reset_state()
 
     shippingmode = smode
-
- -- synctex      = texget("synctex")
-
- -- if synctex then
- --     synctexsheet(1000)
- -- end
 
     local width, height, depth = getwhd(box)
 
@@ -1335,10 +1282,6 @@ function lpdf.convert(box,smode,objnum,specification) -- temp name
     end
 
     ::DONE::
-
- -- if synctex then
- --     synctexteehs()
- -- end
 
     finalize(objnum,specification)
     shippingmode = "none"

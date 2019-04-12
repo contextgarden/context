@@ -1723,8 +1723,8 @@
   {\setvalue{\??framedlocatorbefore#1}{#2}%
    \setvalue{\??framedlocatorafter #1}{#3}}
 
-\def\pack_framed_locator_before#1{\csname\??framedlocatorbefore#1\endcsname}
-\def\pack_framed_locator_after #1{\csname\??framedlocatorafter #1\endcsname}
+\def\pack_framed_locator_before#1{\begincsname\??framedlocatorbefore#1\endcsname}
+\def\pack_framed_locator_after #1{\begincsname\??framedlocatorafter #1\endcsname}
 
 \newdimen\d_framed_locator_ht
 \newdimen\d_framed_locator_dp

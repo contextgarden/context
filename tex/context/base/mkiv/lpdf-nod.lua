@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
     license   = "see context related readme files"
 }
 
-if CONTEXTLMTXMODE > 1 then
+if CONTEXTLMTXMODE > 0 then
     return
 end
 

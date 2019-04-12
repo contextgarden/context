@@ -458,5 +458,7 @@ return {
         "compoundhyphenpenalty",
         --
         "start", "stop",
+        --
+        "unsupportedcs",
     }
 }

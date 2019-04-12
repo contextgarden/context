@@ -349,7 +349,6 @@ implement { name = "pdfdest", actions = pdfdest }
 
 -- management
 
-
 local function pdfsave()
     context(newsave())
 end
@@ -361,7 +360,6 @@ end
 local function pdfsetmatrix()
     context(newsetmatrix(scanstring()))
 end
-
 
 -- extras
 

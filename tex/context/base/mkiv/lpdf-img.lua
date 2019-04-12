@@ -169,10 +169,10 @@ do
     -- The amount of code is larger that I like and looks somewhat redundant but we sort of
     -- optimize a few combinations that happen often.
 
-    local pngapplyfilter = pnge and pnge.applyfilter
-    local pngsplitmask   = pnge and pnge.splitmask
-    local pnginterlace   = pnge and pnge.interlace
-    local pngexpand      = pnge and pnge.expand
+    local pngapplyfilter = pngdecode.applyfilter
+    local pngsplitmask   = pngdecode.splitmask
+    local pnginterlace   = pngdecode.interlace
+    local pngexpand      = pngdecode.expand
 
     local filtermask, decodemask, decodestrip, transpose, expand
 

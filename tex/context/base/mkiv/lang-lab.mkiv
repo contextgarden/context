@@ -350,7 +350,7 @@
 
 \unexpanded\def\assigntranslation[#1]\to#2% bad, this \to
   {\getparameters[\??translation][#1]%
-   \edef#2{\csname\??translation\currentlanguage\endcsname}}
+   \edef#2{\begincsname\??translation\currentlanguage\endcsname}}
 
 %D \macros
 %D   {commalistsentence}

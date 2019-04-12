@@ -876,11 +876,9 @@ function scripts.context.run(ctxdata,filename)
                     --
                     report("run %s: %s",currentrun,command)
                     print("") -- cleaner, else continuation on same line
---                     local returncode, errorstring = os.spawn(command)
                     local returncode = os.execute(command)
                     -- todo: remake format when no proper format is found
                     if not returncode then
---                         report("fatal error: no return code, message: %s",errorstring or "?")
                         report("fatal error: no return code")
                         if resultname then
                             result_save_error(oldbase,newbase)
@@ -929,7 +927,7 @@ function scripts.context.run(ctxdata,filename)
                     local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
                     --
                     report("arrange run: %s",command)
-                    local returncode, errorstring = os.spawn(command)
+                    local returncode, errorstring = os.execute(command)
                     if not returncode then
                         report("fatal error: no return code, message: %s",errorstring or "?")
                         os.exit(1)
@@ -1052,7 +1050,7 @@ function scripts.context.pipe() -- still used?
             report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
         local command = luatex_command(l_flags,c_flags,filename)
-        os.spawn(command)
+        os.execute(command)
         if getargument("purge") then
             scripts.context.purge_job(filename)
         elseif getargument("purgeall") then

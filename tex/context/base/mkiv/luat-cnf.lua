@@ -218,7 +218,9 @@ local function makestub()
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
-    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable,tostring(CONTEXTLMTXMODE) or 0)))
+    t[#t+1] = ""
+    t[#t+1] = format(stub,firsttable,tostring(CONTEXTLMTXMODE or 0))
+    io.savedata(name,concat(t,"\n"))
     logs.newline()
 end
 

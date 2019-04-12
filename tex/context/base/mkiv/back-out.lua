@@ -7,35 +7,6 @@ if not modules then modules = { } end modules ['back-out'] = {
 }
 
 if CONTEXTLMTXMODE == 0 then
-
-    return
-
-elseif CONTEXTLMTXMODE == 1 then
-
-    local type       = type
-    local getdata    = nodes.nuts.getdata
-    local loadstring = loadstring
-
-    function backends.latelua(current,pos_h,pos_v,cur_h,cur_v)
-        data = getdata(current)
-        local kind = type(data)
-        if kind == "function" then
-            data()
-        elseif kind == "table" then
-            data.action(data)
-        else
-         -- if kind ~= "string" then
-         --     data = tokentostring(data)
-         -- end
-            if #data ~= "" then
-                local code = loadstring(data)
-                if code then
-                    code()
-                end
-            end
-        end
-    end
-
     return
 end
 
@@ -57,6 +28,7 @@ local tokentostring       = token.to_string
 
 local logwriter           = logs.writer
 local openfile            = io.open
+local flushio             = io.flush
 
 local nuts                = nodes.nuts
 local tonode              = nuts.tonode
@@ -93,15 +65,17 @@ local setmatrixnode       = register(newnut(whatsit_code,whatsitcodes.setmatrix)
 
 local tomatrix            = drivers.helpers.tomatrix
 
+local immediately         = false -- not watertight
+
 local open_command, write_command, close_command
 
 backends = backends or { }
 
-local function openout(immediate)
+local function openout()
     local channel = scaninteger()
     scankeyword("=") -- hack
     local filename = scanstring()
-    if not immediate then
+    if not immediately then
         local n = copynode(opennode)
         nodeproperties[n] = { channel = channel, filename = filename } -- action = "open"
         return context(tonode(n))
@@ -113,6 +87,7 @@ local function openout(immediate)
             -- error
         end
     end
+    immediately = false
 end
 
 function backends.openout(n)
@@ -127,9 +102,9 @@ function backends.openout(n)
     end
 end
 
-local function write(immediate)
+local function write()
     local channel = scaninteger()
-    if not immediate then
+    if not immediately then
         local t = scantokenlist()
         local n = copynode(writenode)
         nodeproperties[n] = { channel = channel, data = t } -- action = "write"
@@ -143,6 +118,7 @@ local function write(immediate)
            logwriter(content,"\n")
         end
     end
+    immediately = false
 end
 
 function backends.writeout(n)
@@ -158,9 +134,9 @@ function backends.writeout(n)
     end
 end
 
-local function closeout(immediate)
+local function closeout()
     local channel = scaninteger()
-    if not immediate then
+    if not immediately then
         local n = copynode(closenode)
         nodeproperties[n] = { channel = channel } -- action = "close"
         return context(tonode(n))
@@ -169,10 +145,12 @@ local function closeout(immediate)
         if handle then
             handle:close()
             channels[channel] = false
+            flushio()
         else
             -- error
         end
     end
+    immediately = false
 end
 
 function backends.closeout(n)
@@ -183,6 +161,7 @@ function backends.closeout(n)
         if handle then
             handle:close()
             channels[channel] = false
+            flushio()
         else
             -- error
         end
@@ -190,14 +169,7 @@ function backends.closeout(n)
 end
 
 local function immediate()
-    local command = scancode()
-    if command == write_command then
-        write(true)
-    elseif command == open_command then
-        openout(true)
-    elseif command == close_command then
-        closeout(true)
-    end
+    immediately = true
 end
 
 local noflatelua = 0

@@ -45,6 +45,7 @@ local setchar           = nuts.setchar
 local setwhd            = nuts.setwhd
 local setkern           = nuts.setkern
 local setoffsets        = nuts.setoffsets
+local setglyphdata      = nuts.setglyphdata
 
 local hpack_nodes       = nuts.hpack
 
@@ -257,7 +258,7 @@ actions[v_default] = function(head,setting)
                         setfont(current,font)
                     end
                     if dynamic > 0 then
-                        setattr(current,0,dynamic)
+                        setglyphdata(current,dynamic)
                     end
 -- apply font
 
