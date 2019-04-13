@@ -1525,7 +1525,9 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
               classdef1    = readclassdef(f,tableoffset+classdef1,coverage)
               classdef2    = readclassdef(f,tableoffset+classdef2,nofglyphs)
         local usedcoverage = { }
-local shared = { } -- partial sparse
+        --
+        local shared       = { } -- partial sparse
+        --
         for g1, c1 in next, classdef1 do
             if coverage[g1] then
                 local l1 = classlist[c1]
@@ -1537,18 +1539,21 @@ local shared = { } -- partial sparse
                             local first  = offsets[1]
                             local second = offsets[2]
                             if first or second then
-local s1 = shared[first]
-if not s1 then
-    s1 = { }
-    shared[first] = s1
-end
-local s2 = s1[second]
-if not s2 then
-    s2 = { first, second or nil }
-    s1[second] = s2
-end
-hash[paired] = s2
---                                 hash[paired] = { first, second or nil }
+                                --
+                                local s1 = shared[first]
+                                if not s1 then
+                                    s1 = { }
+                                    shared[first] = s1
+                                end
+                                local s2 = s1[second]
+                                if not s2 then
+                                    s2 = { first, second or nil }
+                                    s1[second] = s2
+                                end
+                                hash[paired] = s2
+                                --
+                             -- hash[paired] = { first, second or nil }
+                                --
                             else
                                 -- upto the next lookup for this combination
                             end

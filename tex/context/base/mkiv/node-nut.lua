@@ -218,8 +218,11 @@ if not nuts.mlist_to_hlist then
 
 end
 
-nuts.getfield              = direct.getfield
-nuts.setfield              = direct.setfield
+local getfield             = direct.getfield
+local setfield             = direct.setfield
+
+nuts.getfield              = getfield
+nuts.setfield              = setfield
 
 nuts.getnext               = direct.getnext
 nuts.setnext               = direct.setnext
@@ -342,10 +345,11 @@ nuts.setpenalty            = direct.setpenalty
 nuts.getbox                = direct.getbox
 nuts.setbox                = direct.setbox
 
-nuts.is_char               = direct.is_char
 nuts.ischar                = direct.is_char
-nuts.is_glyph              = direct.is_glyph
 nuts.isglyph               = direct.is_glyph
+
+----.is_char               = nuts.ischar
+----.is_glyph              = nuts.isglyph
 
 local d_remove_node        = direct.remove
 local d_flush_node         = direct.flush_node

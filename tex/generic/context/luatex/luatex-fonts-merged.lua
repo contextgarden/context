@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/12/19 17:43:58
+-- merge date  : 04/13/19 17:01:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -4860,7 +4860,6 @@ nuts.setattr=direct.setfield
 nuts.setboth=direct.setboth
 nuts.setchar=direct.setchar
 nuts.setcomponents=direct.setcomponents
-nuts.setdir=direct.setdir
 nuts.setdirection=direct.setdirection
 nuts.setdisc=direct.setdisc
 nuts.setfield=setfield
@@ -4873,10 +4872,8 @@ nuts.setprev=direct.setprev
 nuts.setsplit=direct.setsplit
 nuts.setsubtype=direct.setsubtype
 nuts.setwidth=direct.setwidth
-nuts.getglyphdata=direct.getattr
-nuts.setglyphdata=direct.setattr
-nuts.is_char=direct.is_char
-nuts.is_glyph=direct.is_glyph
+nuts.getglyphdata=nuts.getattr
+nuts.setglyphdata=nuts.setattr
 nuts.ischar=direct.is_char
 nuts.isglyph=direct.is_glyph
 nuts.copy=direct.copy
@@ -4900,20 +4897,6 @@ nuts.traverse=direct.traverse
 nuts.traverse_char=direct.traverse_char
 nuts.traverse_glyph=direct.traverse_glyph
 nuts.traverse_id=direct.traverse_id
-if not nuts.getdirection then
- local getdir=direct.getdir
- function nuts.getdirection(n)
-  local d=getdir(n)
-  if  d=="TLT" then return 0
-  elseif d=="TRT" then return 1
-  elseif d=="+TLT" then return 0,false
-  elseif d=="+TRT" then return 1,false
-  elseif d=="-TLT" then return 0,true
-  elseif d=="-TRT" then return 1,true
-  else     return 0
-  end
- end
-end
 local propertydata=direct.get_properties_table()
 nodes.properties={ data=propertydata }
 if direct.set_properties_mode then
@@ -17933,7 +17916,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
      classdef1=readclassdef(f,tableoffset+classdef1,coverage)
      classdef2=readclassdef(f,tableoffset+classdef2,nofglyphs)
   local usedcoverage={}
-local shared={} 
+  local shared={}
   for g1,c1 in next,classdef1 do
    if coverage[g1] then
     local l1=classlist[c1]
@@ -17945,17 +17928,17 @@ local shared={}
        local first=offsets[1]
        local second=offsets[2]
        if first or second then
-local s1=shared[first]
-if not s1 then
- s1={}
- shared[first]=s1
-end
-local s2=s1[second]
-if not s2 then
- s2={ first,second or nil }
- s1[second]=s2
-end
-hash[paired]=s2
+        local s1=shared[first]
+        if not s1 then
+         s1={}
+         shared[first]=s1
+        end
+        local s2=s1[second]
+        if not s2 then
+         s2={ first,second or nil }
+         s1[second]=s2
+        end
+        hash[paired]=s2
        else
        end
       end
@@ -23737,7 +23720,7 @@ local getboth=nuts.getboth
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local setoffsets=nuts.setoffsets
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local getkern=nuts.getkern
 local setkern=nuts.setkern
 local setlink=nuts.setlink
@@ -25168,7 +25151,7 @@ local getprop=nuts.getprop
 local setprop=nuts.setprop
 local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local end_of_math=nuts.end_of_math
 local nodecodes=nodes.nodecodes
 local disc_code=nodecodes.disc
@@ -25599,7 +25582,7 @@ local setcomponents=nuts.setcomponents
 local getwidth=nuts.getwidth
 local getattr=nuts.getattr
 local getglyphdata=nuts.getglyphdata
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local isglyph=nuts.isglyph
 local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
@@ -29166,7 +29149,7 @@ local setprev=nuts.setprev
 local setchar=nuts.setchar
 local getprop=nuts.getprop
 local setprop=nuts.setprop
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
 local remove_node=nuts.remove
