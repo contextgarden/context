@@ -212,8 +212,7 @@
 %D Recent \TEX\ engines have a primitive \type {\expanded} and we will use that when
 %D possible. After all, we can make not expandable macros now.
 
-% We cannot use the next variant as first we need to adapt \type {##}'s
-% in callers:
+% We cannot use the next variant as first we need to adapt \type {##}'s in callers:
 %
 % \def\expanded#1%
 %   {\normalexpanded{\noexpand#1}}
@@ -1549,6 +1548,9 @@
      \expandafter\firstofoneargument
    \fi}
 
+\def\isnonumbercondition#1% does not accept counters (fully expandable)
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space}
+
 %D \macros
 %D   {setpercentdimen}
 %D
@@ -1850,7 +1852,7 @@
    \fi#4}
 
 \def\syst_helpers_get_parameters#1]%
-  {\xprocesscommaitem#1,],\_e_o_p_}
+  {\xprocesscommaitem#1,],\_e_o_t_}
 
 \def\syst_helpers_process_comma_item#1,#2% #2 takes space before ,
   {\if,#1,% dirty trick for testing #1=empty
@@ -1858,14 +1860,14 @@
    \else\if]#1%
      \doubleexpandafter\gobbleoneargument
    \else
-     \syst_helpers_get_parameters_assign\_e_o_p_#1==\empty\_e_o_p_
+     \syst_helpers_get_parameters_assign\_e_o_t_#1==\empty\_e_o_t_
      \doubleexpandafter\syst_helpers_process_comma_item
    \fi\fi#2}
 
 \def\syst_helpers_assign_error#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-\def\syst_helpers_get_parameters_assign_normal#1\_e_o_p_#2=#3=#4#5\_e_o_p_
+\def\syst_helpers_get_parameters_assign_normal#1\_e_o_t_#2=#3=#4#5\_e_o_t_
   {\ifx\empty#2\empty
      \expandafter\syst_helpers_assign_error
    \else\ifx#4\empty
@@ -1875,7 +1877,7 @@
    \fi\fi
    {#1}{#2}{#3}}
 
-\def\syst_helpers_get_parameters_assign_error#1\_e_o_p_#2=#3=#4#5\_e_o_p_
+\def\syst_helpers_get_parameters_assign_error#1\_e_o_t_#2=#3=#4#5\_e_o_t_
   {\ifx\empty#2\empty
      \expandafter\syst_helpers_assign_error
    \else\ifx#4\empty
@@ -1892,9 +1894,9 @@
 
 \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_normal
 
-\unexpanded\def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \syst_helpers_get_parameters_assign_indeed#1\_e_o_p_#2==\empty\_e_o_p_}
-\unexpanded\def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \syst_helpers_get_parameters_assign_indeed#1\_e_o_p_#2==\empty\_e_o_p_}
-\unexpanded\def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\syst_helpers_get_parameters_assign_indeed#1\_e_o_p_#2==\empty\_e_o_p_}
+\unexpanded\def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
+\unexpanded\def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
+\unexpanded\def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
 
 %D \macros
 %D   {processassignmentlist,processassignmentcommand,
@@ -1960,14 +1962,14 @@
 %D Here we hook in the code (beware, this is the optimized get **):
 
 \def\syst_helpers_get_parameters_normal#1]%
-  {\syst_helpers_process_comma_item#1,],\_e_o_p_}
+  {\syst_helpers_process_comma_item#1,],\_e_o_t_}
 
 \def\syst_helpers_get_parameters_expanded#1]%
   {\let\dosetnvalue\setsomevalue
    \let\setsomevalue\dosetevalue
    \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_error
    \let\setsomevalue\dosetevalue
-   \syst_helpers_process_comma_item#1,],\_e_o_p_
+   \syst_helpers_process_comma_item#1,],\_e_o_t_
    \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_normal
    \let\setsomevalue\dosetnvalue
    \let\syst_helpers_get_parameters\syst_helpers_get_parameters_normal
@@ -2045,10 +2047,10 @@
 \newif\ifparameters
 
 \def\syst_helpers_check_parameters#1=#2#3\_e_o_s_
-  {\if#2@\parametersfalse\else\parameterstrue\fi}
+  {\if#2\_e_t_x_\parametersfalse\else\parameterstrue\fi}
 
 \unexpanded\def\checkparameters[#1]%
-  {\syst_helpers_check_parameters#1=@@\_e_o_s_}
+  {\syst_helpers_check_parameters#1=\_e_t_x_\_e_t_x_\_e_o_s_}
 
 %D \macros
 %D   {getfromcommalist,getfromcommacommand,
@@ -4621,52 +4623,46 @@
 \unexpanded\def\forgeteverypar
   {\everypar{\the\neverypar}}
 
-%D Which we're going to use indeed! When the second argument
-%D equals \type {\relax}, the first token list is created
-%D unless it is already defined.
-
-%D Technically spoken we could have used the method we are
-%D going to present in the visual debugger. First we save
-%D the primitive \type{\everypar}:
+%D Which we're going to use indeed! When the second argument equals \type {\relax},
+%D the first token list is created unless it is already defined.
+%D
+%D Technically spoken we could have used the method we are going to present in the
+%D visual debugger. First we save the primitive \type{\everypar}:
 %D
 %D \starttyping
 %D \let\normaleverypar=\everypar
 %D \stoptyping
 %D
-%D Next we allocate a \TOKENLIST\ named \type{\everypar},
-%D which means that \type{\everypar} is no longer a primitive
-%D but something like \type{\toks44}.
+%D Next we allocate a \TOKENLIST\ named \type{\everypar}, which means that
+%D \type{\everypar} is no longer a primitive but something like \type{\toks44}.
 %D
 %D \starttyping
 %D \newtoks\everypar
 %D \stoptyping
 %D
-%D Because \TEX\ now executes \type{\normaleverypar} instead
-%D of \type{\everypar}, we are ready to assign some tokens to
-%D this internally known and used \TOKENLIST.
+%D Because \TEX\ now executes \type{\normaleverypar} instead of \type{\everypar}, we
+%D are ready to assign some tokens to this internally known and used \TOKENLIST.
 %D
 %D \starttyping
 %D \normaleverypar={all the things the system wants to do \the\everypar}
 %D \stoptyping
 %D
-%D Where the user can provide his own tokens to be expanded
-%D every time he expects them to expand.
+%D Where the user can provide his own tokens to be expanded every time he expects
+%D them to expand.
 %D
 %D \starttyping
 %D \everypar={something the user wants to do}
 %D \stoptyping
 %D
-%D We don't use this method because it undoubtly leads to
-%D confusing situations, especially when other packages are
-%D used, but it's this kind of tricks that make \TEX\ so
-%D powerful.
+%D We don't use this method because it undoubtly leads to confusing situations,
+%D especially when other packages are used, but it's this kind of tricks that make
+%D \TEX\ so powerful.
 
 %D \macros
 %D   {convertargument,convertcommand,convertvalue}
 %D
-%D Some persistent experimenting led us to the next macro. This
-%D macro converts a parameter or an expanded macro to it's
-%D textual meaning.
+%D Some persistent experimenting led us to the next macro. This macro converts a
+%D parameter or an expanded macro to it's textual meaning.
 %D
 %D \starttyping
 %D \convertargument ... \to \command
@@ -4678,9 +4674,9 @@
 %D \convertargument{one \two \three{four}}\to\ascii
 %D \stoptyping
 %D
-%D The resulting macro \type{\ascii} can be written to a file
-%D or the terminal without problems. In \CONTEXT\ we use this
-%D macro for generating registers and tables of contents.
+%D The resulting macro \type{\ascii} can be written to a file or the terminal
+%D without problems. In \CONTEXT\ we use this macro for generating registers and
+%D tables of contents.
 %D
 %D The second conversion alternative accepts a command:
 %D
@@ -4688,8 +4684,7 @@
 %D \convertcommand\command\to\ascii
 %D \stoptyping
 %D
-%D Both commands accept the prefix \type{\doglobal} for global
-%D assignments.
+%D Both commands accept the prefix \type{\doglobal} for global assignments.
 
 \unexpanded\def\convertvalue#1\to
   {\expandafter\convertcommand\csname#1\endcsname\to}
@@ -4700,8 +4695,7 @@
 %D \macros
 %D   {doifassignmentelse}
 %D
-%D A lot of \CONTEXT\ commands take optional arguments, for
-%D instance:
+%D A lot of \CONTEXT\ commands take optional arguments, for instance:
 %D
 %D \starttyping
 %D \dothisorthat[alfa,beta]
@@ -4709,25 +4703,25 @@
 %D \dothisorthat[alfa,beta][first=foo,second=bar]
 %D \stoptyping
 %D
-%D Although a combined solution is possible, we prefer a
-%D seperation. The next command takes care of propper
-%D handling of such multi||faced commands.
+%D Although a combined solution is possible, we prefer a seperation. The next
+%D command takes care of propper handling of such multi||faced commands.
 %D
 %D \starttyping
 %D \doifassignmentelse {...} {then ...} {else ...}
 %D \stoptyping
 
-\def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_p_{\if#2@}%
+\def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_t_{\if#2\_e_t_x_}%
+\def\syst_helpers_check_else_assignment_if#1=#2#3\_e_o_t_{\unless\if#2\_e_t_x_}%
 
 \unexpanded\def\doifelseassignment#1%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
 \unexpanded\def\doifelseassignmentcs#1#2#3%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
      \expandafter#3%
    \else
      \expandafter#2%
@@ -4739,11 +4733,19 @@
 \newif\ifassignment
 
 \unexpanded\def\docheckassignment#1%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=@@\_e_o_p_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
      \assignmentfalse
    \else
      \assignmenttrue
    \fi}
+
+%D These can be used for cases where we want less tracing noise.
+
+\unexpanded\def\validassignment#1%
+  {\expandafter\syst_helpers_check_else_assignment_if\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_}
+
+\unexpanded\def\novalidassignment#1%
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some
 %D speed, but in general far less that 1\% for \type
@@ -7168,18 +7170,17 @@
 \let\gobblesingleempty\dogobblesingleempty % also used
 \let\gobbledoubleempty\dogobbledoubleempty % also used
 
-%D \macros
-%D   {@True, @False, @Not, @And}
-%D
-%D Some predicate logic functions, used in for instance the
-%D math module.
-
-% These have rather ugly names ... will change:
-
-\def\@True    {00}
-\def\@False   {01}
-\def\@Not   #1{0\ifcase#11 \or\expandafter 1\else \expandafter 0\fi}
-\def\@And #1#2{0\ifcase#1#2 \expandafter 0\else \expandafter 1\fi}
+% %D \macros
+% %D   {@True, @False, @Not, @And}
+% %D
+% %D Some predicate logic functions, used in for instance the math module.
+%
+% % These have rather ugly names ... will change:
+%
+% \def\@True    {00}
+% \def\@False   {01}
+% \def\@Not   #1{0\ifcase#11 \or\expandafter 1\else \expandafter 0\fi}
+% \def\@And #1#2{0\ifcase#1#2 \expandafter 0\else \expandafter 1\fi}
 
 %D \macros
 %D   {setdimensionwithunit, freezedimensionwithunit}
@@ -8102,6 +8103,21 @@
 % Could have been useful but not faster that addtocommalist and also expansion mess:
 %
 % \def\additemtolist#1#2{\normalexpanded{\noexpand\clf_additemtolist{#1}{#2}}}
+
+%D Experiment (sometimes looks nicer in code):
+
+\unexpanded\def\sameargumentscondition#1#2%
+  {\edef\m_syst_string_one{#1}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two}
+
+\unexpanded\def\emptyargumentcondition#1%
+  {\edef\m_syst_string_one{#1}%
+   \ifx\m_syst_string_one\empty}
+
+% \unexpanded\def\hascommonargumentcondition#1#2{\clf_hascommonargumentcondition{#1}{#2}}
+%            \let\hascommonargumentcondition     \clf_hascommonargumentcondition
+% \unexpanded\def\hascommonargumentcondition{\clf_hascommonargumentcondition}
 
 \protect \endinput
 

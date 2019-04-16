@@ -423,6 +423,9 @@ context.secondoftwoarguments   = ctx_secondoftwoarguments
 context.firstofoneargument     = ctx_firstofoneargument
 context.gobbleoneargument      = ctx_gobbleoneargument
 
+local ctx_iftrue  = context.iftrue
+local ctx_iffalse = context.iffalse
+
 local hash = utilities.parsers.hashes.settings_to_set
 
 local function doifelsecommon(a,b)
@@ -554,6 +557,45 @@ local function doifnotcommon(a,b)
     ctx_firstofoneargument()
 end
 
+-- local function hascommonargumentcondition(a,b)
+--     if a == b then
+--         setmacro("commalistelement",a)
+--         if a == "" then
+--             ctx_iffalse()
+--         else
+--             ctx_iftrue()
+--         end
+--         return
+--     end
+--     local ba = find(a,",",1,true)
+--     local bb = find(b,",",1,true)
+--     if ba and bb then
+--         local ha = hash[a]
+--         local hb = hash[b]
+--         for k in next, ha do
+--             if hb[k] then
+--                 setmacro("commalistelement",k)
+--                 ctx_iftrue()
+--                 return
+--             end
+--         end
+--     elseif ba then
+--         if hash[a][b] then
+--             setmacro("commalistelement",b)
+--             ctx_iftrue()
+--             return
+--         end
+--     elseif bb then
+--         if hash[b][a] then
+--             setmacro("commalistelement",a)
+--             ctx_iftrue()
+--             return
+--         end
+--     end
+--     setmacro("commalistelement","")
+--     ctx_iffalse()
+-- end
+
 local function doifelseinset(a,b)
     if a == b then
         setmacro("commalistelement",a)
@@ -640,6 +682,13 @@ implement {
     actions   = doifnotcommon,
     arguments = "2 strings",
 }
+
+-- implement {
+--     name      = "hascommonargumentcondition",
+--     actions   = hascommonargumentcondition,
+--     arguments = "2 strings",
+--     arguments = { "argument", "argument" },
+-- }
 
 implement {
     name      = "doifelseinset",

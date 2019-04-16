@@ -2549,7 +2549,7 @@ do
 
     implement {
         name      = "resetfontfeature",
-        arguments = { 0, 0 },
+     -- arguments = { 0, 0 },
         actions   = resetfontfeature,
     }
 

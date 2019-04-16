@@ -109,11 +109,11 @@
 \let\dompattribute\gobbletwoarguments
 
 \ifcase\contextlmtxmode
-    \unexpanded\def\resetglobalattributes{\attribute\zerocount\zerocount\the\t_attr_list_global\relax}
-    \unexpanded\def\resetlocalattributes {\attribute\zerocount\zerocount\the\t_attr_list_local \relax}
+    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
+    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
 \else
-    \unexpanded\def\resetglobalattributes{\glyphdatafield     \zerocount\the\t_attr_list_global\relax}
-    \unexpanded\def\resetlocalattributes {\glyphdatafield     \zerocount\the\t_attr_list_local \relax}
+    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield     \zerocount}
+    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield     \zerocount}
 \fi
 
 \let\resetallattributes\resetlocalattributes

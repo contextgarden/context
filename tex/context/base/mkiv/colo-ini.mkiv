@@ -131,42 +131,6 @@
 
 \unexpanded\def\switchtocolor[#1]{\begincsname#1\endcsname}
 
-% \unexpanded\def\color        [#1]{\bgroup
-%                                   \def\g_color{\colo_helpers_activate{#1}}%
-%                                   \afterassignment\g_color
-%                                   \let\nexttoken}
-%
-% \unexpanded\def\graycolor    [#1]{\bgroup
-%                                   \def\g_color{\colo_helpers_set_model\s!gray\colo_helpers_activate{#1}}%
-%                                   \afterassignment\g_color
-%                                   \let\nexttoken}
-%
-% \unexpanded\def\startcolor   [#1]{\begingroup
-%                                   \colo_helpers_activate{#1}}
-%
-% \unexpanded\def\stopcolor        {\endgroup}
-%
-% \unexpanded\def\colored      [#1]{\bgroup
-%                                   \def\g_color{\colo_basics_defined_and_activated{#1}}%
-%                                   \afterassignment\g_color
-%                                   \let\nexttoken}
-%
-% \unexpanded\def\fastcolored[#1]#2{\begingroup % is this command still needed?
-%                                   \colo_basics_defined_and_activated{#1}%
-%                                   #2%
-%                                   \endgroup}
-%
-% \unexpanded\def\directcolored[#1]{\colo_basics_defined_and_activated{#1}}
-%
-% \unexpanded\def\fastcolor  [#1]#2{\begingroup % is this command still needed?
-%                                   \colo_helpers_activate{#1}%
-%                                   #2%
-%                                   \endgroup}
-%
-% \unexpanded\def\directcolor  [#1]{\colo_helpers_activate{#1}}
-%
-% \afterassignment was a left-over artifact
-
 % transparency
 
 \unexpanded\def\transparent[#1]%
@@ -527,14 +491,25 @@
      \expandafter\colo_palets_define_a
    \fi}
 
+% \unexpanded\def\colo_palets_define_a[#1][#2][#3]%
+%   {\colo_palet_prepare{#1}%
+%    \doifelseassignment{#2}
+%      {\setevalue{\??colorpaletspecification#1}{#2}%
+%       \processcommalist[#2]{\colo_palets_define_one{#1}}}
+%      {\ifcsname\??colorpaletspecification#2\endcsname
+%         \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
+%       \fi}}
+
 \unexpanded\def\colo_palets_define_a[#1][#2][#3]%
   {\colo_palet_prepare{#1}%
-   \doifelseassignment{#2}
-     {\setevalue{\??colorpaletspecification#1}{#2}%
-      \processcommalist[#2]{\colo_palets_define_one{#1}}}
-     {\ifcsname\??colorpaletspecification#2\endcsname
-        \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
-      \fi}}
+   \ifcondition\validassignment{#2}%
+     \setevalue{\??colorpaletspecification#1}{#2}%
+     \processcommalist[#2]{\colo_palets_define_one{#1}}%
+   \else
+     \ifcsname\??colorpaletspecification#2\endcsname
+       \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
+     \fi
+   \fi}
 
 \unexpanded\def\colo_palets_define_b[#1][#2][#3]%
   {\colo_palet_prepare{#1}%
@@ -542,10 +517,17 @@
    \colo_palet_extend{#2}%
    \colo_palets_define_assign{#1}{#2}{#3}}
 
+% \def\colo_palets_define_one#1#2% get rid of { }
+%   {\doifelseassignment{#2} % catch empty entries
+%      {\colo_palets_define_two{#1}[#2]}
+%      {\colo_palets_define_three{#1}{#2}}}
+
 \def\colo_palets_define_one#1#2% get rid of { }
-  {\doifelseassignment{#2} % catch empty entries
-     {\colo_palets_define_two{#1}[#2]}
-     {\colo_palets_define_three{#1}{#2}}}
+  {\ifcondition\validassignment{#2}% catch empty entries
+     \colo_palets_define_two{#1}[#2]%
+   \else
+     \colo_palets_define_three{#1}{#2}%
+   \fi}
 
 \def\colo_palets_define_two#1[#2=#3]%
   {\colo_palet_extend{#2}%
@@ -1233,16 +1215,28 @@
    \fi
 \to \everysetupcolors
 
+% \def\colo_palets_define_set#1#2#3%
+%   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
+%      {\colo_palets_define_assign}%
+%      {\ifcsname\??colorsetter#3\endcsname
+%         % \definepalet[test][xx=green]
+%         \expandafter\colo_palets_define_inherit
+%       \else
+%         % not entered when making format
+%         \expandafter\colo_palets_define_undefine
+%       \fi}%
+%    {#1}{#2}{#3}}
+
 \def\colo_palets_define_set#1#2#3%
-  {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
-     {\colo_palets_define_assign}%
-     {\ifcsname\??colorsetter#3\endcsname
-        % \definepalet[test][xx=green]
-        \expandafter\colo_palets_define_inherit
-      \else
-        % not entered when making format
-        \expandafter\colo_palets_define_undefine
-      \fi}%
+  {\ifcondition\validassignment{#3}% \definepalet[test][xx={y=.4}]
+     \expandafter\colo_palets_define_assign
+   \else\ifcsname\??colorsetter#3\endcsname
+     % \definepalet[test][xx=green]
+     \doubleexpandafter\colo_palets_define_inherit
+   \else
+     % not entered when making format
+     \doubleexpandafter\colo_palets_define_undefine
+   \fi\fi
    {#1}{#2}{#3}}
 
 \def\colo_palets_define_inherit#1#2#3%

@@ -210,7 +210,7 @@ local function loadstreams(cache,filename,sub,instance)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
     local sub  = tonumber(sub)
-    if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then
+    if size > 0 and (kind == "otf" or kind == "ttf" or kind == "ttc") then
         local hash = makehash(filename,sub,instance)
         data = containers.read(cache,hash)
         if not data or data.time ~= time or data.size  ~= size then
@@ -333,8 +333,11 @@ end
 
 local function loadstreamdata(fontdata)
     local properties = fontdata.properties
+    local shared     = fontdata.shared
+    local rawdata    = shared and shared.rawdata
+    local metadata   = rawdata and rawdata.metadata
     local filename   = properties.filename
-    local subindex   = fontdata.subindex
+    local subindex   = metadata and metadata.subfontindex
     local instance   = properties.instance
     local hash       = makehash(filename,subindex,instance)
     local loaded     = loadedstreams[hash]

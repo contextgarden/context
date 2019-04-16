@@ -244,7 +244,12 @@ end
 
 local function report_start(name,rest)
     if rest then
-        name = rest -- luatex
+        -- luatex
+        if name ~= 1 then
+            insert(stack,false)
+            return
+        end
+        name = rest
     end
     if find(name,"virtual://",1,true) then
         insert(stack,false)

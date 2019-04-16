@@ -1184,10 +1184,18 @@
       \singleexpandafter\tabl_start_defined_zero
    \fi}
 
+% \def\tabl_start_defined_one[#1][#2]%
+%   {\doifelseassignment{#1}
+%      {\setuptabulation[\currenttabulation][#1]}%
+%      {\edef\currenttabulation{\currenttabulation:#1}}%
+%    \tabl_tabulate_start_building}
+
 \def\tabl_start_defined_one[#1][#2]%
-  {\doifelseassignment{#1}
-     {\setuptabulation[\currenttabulation][#1]}%
-     {\edef\currenttabulation{\currenttabulation:#1}}%
+  {\ifcondition\validassignment{#1}%
+     \setuptabulation[\currenttabulation][#1]%
+   \else
+     \edef\currenttabulation{\currenttabulation:#1}%
+   \fi
    \tabl_tabulate_start_building}
 
 \def\tabl_start_defined_two[#1][#2]%
@@ -1215,15 +1223,28 @@
 
 \def\tabl_default_format{|l|p|}
 
+% \def\tabl_start_regular_one[#1][#2]%
+%   {\doifelseassignment{#1}
+%      {\lettabulationparameter\c!format\tabl_default_format
+%       \setupcurrenttabulation[#1]}
+%      {\def\p_format{#1}%
+%       \ifx\p_format\empty
+%         \def\p_format{|l|p|}%
+%       \fi
+%       \lettabulationparameter\c!format\p_format}%
+%    \tabl_tabulate_start_building}
+
 \def\tabl_start_regular_one[#1][#2]%
-  {\doifelseassignment{#1}
-     {\lettabulationparameter\c!format\tabl_default_format
-      \setupcurrenttabulation[#1]}
-     {\def\p_format{#1}%
-      \ifx\p_format\empty
-        \def\p_format{|l|p|}%
-      \fi
-      \lettabulationparameter\c!format\p_format}%
+  {\ifcondition\validassignment{#1}%
+     \lettabulationparameter\c!format\tabl_default_format
+     \setupcurrenttabulation[#1]%
+   \else
+     \def\p_format{#1}%
+     \ifx\p_format\empty
+       \def\p_format{|l|p|}%
+     \fi
+     \lettabulationparameter\c!format\p_format
+   \fi
    \tabl_tabulate_start_building}
 
 \def\tabl_start_regular_two[#1][#2]%

@@ -386,6 +386,29 @@
      \expandafter\font_typescripts_start_gobble
    \fi}
 
+% \def\font_typescripts_check#asked#target#followup[#value]% script use value next
+%   {\donefalse
+%    \edef\m_font_typescripts_check{#value}%
+%    \ifx\m_font_typescripts_check\empty % no longer needed / met
+%      \ifcase\typescriptmethod\or\donetrue\fi
+%    \else\ifx#asked\s!all
+%      \donetrue
+%    \else\ifx\m_font_typescripts_check\s!all
+%      \donetrue
+%    \else\ifx#asked\m_font_typescripts_check % saves 10% trace so probably faster too
+%      \donetrue
+%      \let#target\m_font_typescripts_check
+%    \else\ifcondition\hascommonargumentcondition\m_font_typescripts_check#asked%
+%      \donetrue
+%      \let#target\commalistelement
+%    \fi\fi\fi\fi\fi
+%    \ifdone
+%      \iftracetypescripts\extendtypescriptmatch\fi
+%      \expandafter#followup%
+%    \else
+%      \expandafter\font_typescripts_start_gobble
+%    \fi}
+
 \def\extendtypescriptmatch
   {\edef\m_font_typescripts_match{\m_font_typescripts_match\space[\m_font_typescripts_check]}}
 

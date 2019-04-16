@@ -284,6 +284,7 @@ return {
         "doifelsecommon", "doifcommonelse", "doifcommon", "doifnotcommon",
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
         "doifelseassignment", "doifassignmentelse", "docheckassignment", "doifelseassignmentcs", "doifassignmentelsecs",
+        "validassignment", "novalidassignment",
         "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
         --
         "tracingall", "tracingnone", "loggingall",

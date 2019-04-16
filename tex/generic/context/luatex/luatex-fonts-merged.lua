@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/13/19 17:01:11
+-- merge date  : 04/16/19 08:54:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -17916,7 +17916,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
      classdef1=readclassdef(f,tableoffset+classdef1,coverage)
      classdef2=readclassdef(f,tableoffset+classdef2,nofglyphs)
   local usedcoverage={}
-  local shared={}
+  local shared={} 
   for g1,c1 in next,classdef1 do
    if coverage[g1] then
     local l1=classlist[c1]
@@ -17928,17 +17928,21 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
        local first=offsets[1]
        local second=offsets[2]
        if first or second then
-        local s1=shared[first]
-        if not s1 then
-         s1={}
-         shared[first]=s1
+        if shared then
+         local s1=shared[first]
+         if s1==nil then
+          s1={}
+          shared[first]=s1
+         end
+         local s2=s1[second]
+         if s2==nil then
+          s2={ first,second or nil }
+          s1[second]=s2
+         end
+         hash[paired]=s2
+        else
+         hash[paired]={ first,second or nil }
         end
-        local s2=s1[second]
-        if not s2 then
-         s2={ first,second or nil }
-         s1[second]=s2
-        end
-        hash[paired]=s2
        else
        end
       end
@@ -17948,6 +17952,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
    end
   end
   return {
+   shared=shared and true or nil,
    format="pair",
    coverage=usedcoverage,
   }
@@ -21239,16 +21244,30 @@ function readers.pack(data)
        if kind=="gpos_pair" then
         local c=step.coverage
         if c then
-         if step.format=="pair" then
+         if step.format~="pair" then
+          for g1,d1 in next,c do
+           c[g1]=pack_normal(d1)
+          end
+         elseif step.shared then
+          local shared={}
+          for g1,d1 in next,c do
+           for g2,d2 in next,d1 do
+            if not shared[d2] then
+             local f=d2[1] if f and f~=true then d2[1]=pack_indexed(f) end
+             local s=d2[2] if s and s~=true then d2[2]=pack_indexed(s) end
+             shared[d2]=true
+            end
+           end
+          end
+          if pass==2 then
+           step.shared=nil 
+          end
+         else
           for g1,d1 in next,c do
            for g2,d2 in next,d1 do
             local f=d2[1] if f and f~=true then d2[1]=pack_indexed(f) end
             local s=d2[2] if s and s~=true then d2[2]=pack_indexed(s) end
            end
-          end
-         else
-          for g1,d1 in next,c do
-           c[g1]=pack_normal(d1)
           end
          end
         end
@@ -22534,7 +22553,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.107 
+otf.version=3.108 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

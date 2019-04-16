@@ -254,11 +254,25 @@
 \def\math_m_yes_math[#1]#2%
   {#2}
 
+% \def\math_m_yes_text[#1]%
+%   {\begingroup
+%    \doifassignmentelse{#1}%
+%      {\setupcurrentmathematics[#1]}%
+%      {\edef\currentmathematics{#1}}% check for valid
+%    \edef\p_openup{\mathematicsparameter\c!openup}%
+%    \ifx\p_openup\v!yes
+%      \expandafter\math_m_yes_text_openedup
+%    \else
+%      \expandafter\math_m_yes_text_normal
+%    \fi}
+
 \def\math_m_yes_text[#1]%
   {\begingroup
-   \doifassignmentelse{#1}%
-     {\setupcurrentmathematics[#1]}%
-     {\edef\currentmathematics{#1}}% check for valid
+   \ifcondition\validassignment{#1}%
+     \setupcurrentmathematics[#1]%
+   \else
+     \edef\currentmathematics{#1}% check for valid
+   \fi
    \edef\p_openup{\mathematicsparameter\c!openup}%
    \ifx\p_openup\v!yes
      \expandafter\math_m_yes_text_openedup

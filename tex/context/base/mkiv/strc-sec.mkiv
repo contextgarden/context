@@ -637,10 +637,20 @@
    \triggerautostructurelevel
    \strc_sectioning_handle{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
 
+% \unexpanded\def\strc_sectioning_handle_nop_indeed[#1][#2]% for taco: [key=value] variant
+%   {\setfalse\currentstructureown
+%    \triggerautostructurelevel
+%    \doifelseassignment{#2}\strc_sectioning_handle_nop_indeed_yes\strc_sectioning_handle_nop_indeed_nop{#1}{#2}}
+
 \unexpanded\def\strc_sectioning_handle_nop_indeed[#1][#2]% for taco: [key=value] variant
   {\setfalse\currentstructureown
    \triggerautostructurelevel
-   \doifelseassignment{#2}\strc_sectioning_handle_nop_indeed_yes\strc_sectioning_handle_nop_indeed_nop{#1}{#2}}
+   \ifcondition\validassignment{#2}%
+     \expandafter\strc_sectioning_handle_nop_indeed_yes
+   \else
+     \expandafter\strc_sectioning_handle_nop_indeed_nop
+   \fi
+   {#1}{#2}}
 
 \unexpanded\def\strc_sectioning_handle_nop_indeed_yes#1#2%
   {\strc_sectioning_handle{#1}{#2}{}}

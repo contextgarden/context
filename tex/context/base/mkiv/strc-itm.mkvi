@@ -625,10 +625,17 @@
 
 % can be made a bit faster
 
+% \def\strc_itemgroups_setup_each#category#whatever%
+%   {\doifelseassignment{#whatever}
+%      {\strc_itemgroups_normal_setup[#category][#whatever]}
+%      {\strc_itemgroups_normal_setup[#category][\c!option={#whatever}]}}
+
 \def\strc_itemgroups_setup_each#category#whatever%
-  {\doifelseassignment{#whatever}
-     {\strc_itemgroups_normal_setup[#category][#whatever]}
-     {\strc_itemgroups_normal_setup[#category][\c!option={#whatever}]}}
+  {\ifcondition\validassignment{#whatever}%
+     \strc_itemgroups_normal_setup[#category][#whatever]%
+   \else
+     \strc_itemgroups_normal_setup[#category][\c!option={#whatever}]%
+   \fi}
 
 \def\strc_itemgroups_setup_list_level_a#category#whatever#level%
   {\strc_itemgroups_normal_setup[#category:#level][#whatever]}
@@ -636,10 +643,17 @@
 \def\strc_itemgroups_setup_list_level_b#category#whatever#level%
   {\strc_itemgroups_normal_setup[#category:#level][\c!option={#whatever}]}
 
+% \def\strc_itemgroups_setup_list#subcategories#category#whatever%
+%   {\doifelseassignment{#whatever}
+%      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}}
+%      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
+
 \def\strc_itemgroups_setup_list#subcategories#category#whatever%
-  {\doifelseassignment{#whatever}
-     {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}}
-     {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
+  {\ifcondition\validassignment{#whatever}%
+     \processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}%
+   \else
+     \processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}%
+   \fi}
 
 \def\strc_itemgroups_increment_item_counter
   {\ifconditional\c_strc_itemgroups_sub \else
@@ -774,6 +788,25 @@
 \unexpanded\def\startitemgroup
   {\dotripleempty\strc_itemgroups_start}
 
+% \def\strc_itemgroups_start[#category][#options][#settings]%
+%   {\begingroup % (1)
+%    \def\currentitemgroup{#category}% no nested mixing of itemgroups
+%    \let\currentparentitemgroup\currentitemgroup
+%    \global\advance\c_strc_itemgroups_nesting\plusone
+%    \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%
+%    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
+%    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
+%    %
+%    \ifthirdargument
+%      \strc_itemgroups_start_indeed[#options][#settings]%
+%    \else\ifsecondargument
+%      \doifelseassignment{#options}
+%        {\strc_itemgroups_start_indeed[][#options]}
+%        {\strc_itemgroups_start_indeed[#options][]}%
+%    \else
+%      \strc_itemgroups_start_indeed[][]%
+%    \fi\fi}
+
 \def\strc_itemgroups_start[#category][#options][#settings]%
   {\begingroup % (1)
    \def\currentitemgroup{#category}% no nested mixing of itemgroups
@@ -786,9 +819,11 @@
    \ifthirdargument
      \strc_itemgroups_start_indeed[#options][#settings]%
    \else\ifsecondargument
-     \doifelseassignment{#options}
-       {\strc_itemgroups_start_indeed[][#options]}
-       {\strc_itemgroups_start_indeed[#options][]}%
+     \ifcondition\validassignment{#options}%
+       \strc_itemgroups_start_indeed[][#options]%
+     \else
+       \strc_itemgroups_start_indeed[#options][]%
+     \fi
    \else
      \strc_itemgroups_start_indeed[][]%
    \fi\fi}

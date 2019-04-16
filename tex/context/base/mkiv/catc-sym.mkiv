@@ -55,6 +55,20 @@
 
 .egroup
 
+\bgroup
+
+\catcode`_=\lettercatcode
+
+%xdef\_n_u_l_{\expandafter\string\Uchar1} % nul(l)
+%xdef\_s_o_h_{\expandafter\string\Uchar1} % start of header
+\xdef\_s_t_x_{\expandafter\string\Uchar2} % start of text
+\xdef\_e_t_x_{\expandafter\string\Uchar3} % end of text
+\xdef\_e_o_t_{\expandafter\string\Uchar4} % end of transmission
+%xdef\_e_n_q_{\expandafter\string\Uchar5} % enquiry
+%xdef\_a_c_k_{\expandafter\string\Uchar6} % aknowledgement
+
+\egroup
+
 %D \macros
 %D   {uncatcodespecials,setnaturalcatcodes,setnormalcatcodes,
 %D    uncatcodecharacters,uncatcodeallcharacters,

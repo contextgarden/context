@@ -1565,17 +1565,33 @@
      \font_basics_define_body_font_name
      [#whatever]}
 
+% \unexpanded\def\font_basics_define_body_font_body[#body][#style][#specification]%
+%   {\doifelseassignment{#specification}
+%      \font_basics_define_body_font_body_assignment
+%      \font_basics_define_body_font_body_identifier
+%      [#body][#style][#specification]}%
+
 \unexpanded\def\font_basics_define_body_font_body[#body][#style][#specification]%
-  {\doifelseassignment{#specification}
-     \font_basics_define_body_font_body_assignment
-     \font_basics_define_body_font_body_identifier
-     [#body][#style][#specification]}%
+  {\ifcondition\validassignment{#specification}%
+     \expandafter\font_basics_define_body_font_body_assignment
+   \else
+     \expandafter\font_basics_define_body_font_body_identifier
+   \fi
+   [#body][#style][#specification]}%
+
+% \unexpanded\def\font_basics_define_body_font_name[#name][#style][#specification]%
+%   {\doifelseassignment{#specification}
+%      \font_basics_define_body_font_name_assignment
+%      \font_basics_define_body_font_name_identifier
+%      [#name][#style][#specification]}%
 
 \unexpanded\def\font_basics_define_body_font_name[#name][#style][#specification]%
-  {\doifelseassignment{#specification}
-     \font_basics_define_body_font_name_assignment
-     \font_basics_define_body_font_name_identifier
-     [#name][#style][#specification]}%
+  {\ifcondition\validassignment{#specification}%
+     \expandafter\font_basics_define_body_font_name_assignment
+   \else
+     \expandafter\font_basics_define_body_font_name_identifier
+   \fi
+   [#name][#style][#specification]}%
 
 \unexpanded\def\font_basics_define_body_font_body_assignment[#bodylist][#stylelist][#assignments]%
   {\processcommalist[#bodylist]{\font_basics_define_body_font_body_assignment_a{#stylelist}{#assignments}}}
