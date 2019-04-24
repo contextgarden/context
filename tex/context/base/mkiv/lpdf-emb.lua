@@ -1708,6 +1708,8 @@ function lpdf.flushfonts()
         end
     end
 
+    -- this is no not yet ok for tfm / type 1
+
     for hash, details in sortedhash(mainfonts) do
         if next(details.indices) then
             local filename = details.filename
@@ -1729,9 +1731,49 @@ function lpdf.flushfonts()
                 local format = properties.format
                 local writer = mainwriters[format]
                 if not writer then
-                    -- at some point we should do this in the frontend but
-                    -- luatex does it anyway then
+                    -- This will move to the tpk module where we will also deal
+                    -- with bitmaps then.
                     local encoding, pfbfile, encfile = getmapentry(filename)
+                    if encoding and pfbfile then
+                        filename = pfbfile
+                        format   = "type1"
+                        --
+                        -- another (temp) hack
+                        local size   = details.fontdata.parameters.size
+                        local factor = details.fontdata.parameters.factor
+                        local descriptions = { }
+                        local characters   = details.fontdata.characters
+                        --
+                        local names, _, _, metadata = fonts.constructors.handlers.pfb.loadvector(pfbfile)
+                        local reverse  = table.swapped(names)
+                        local vector   = encoding.vector
+                        local indices  = details.indices
+                        local remapped = { }
+                        local factor   = number.dimenfactors.bp * size / 65536
+                        for k, v in next, indices do
+                            local name  = vector[k]
+                            local index = reverse[name] or 0
+                            local width = factor * (characters[k].width or 0)
+                            descriptions[k] = {
+                                width = width,
+                                index = index,
+                                name  = name,
+                            }
+                            remapped[index] = true
+                        end
+                        details.indices = remapped
+                        --
+                        details.rawdata.descriptions = descriptions
+                        details.filename             = filename
+                        details.rawdata.metadata     = { }
+                        --
+                        properties.filename = filename
+                        properties.format   = format
+                        writer = mainwriters[format]
+                    end
+                end
+                if not writer then
+                    local pfbfile = file.replacesuffix(filename,"pfb")
                     if encoding and pfbfile then
                         filename = pfbfile
                         format   = "type1"

@@ -123,6 +123,8 @@ local function doreshapeframedbox(n)
                     for h, id, subtype, list in nextlist, list do
                         if list and id == hlist_code then
                             if subtype == boxlist_code or subtype == linelist_code then
+                                -- getdirection is irrelevant here so it will go
+                                -- somehow a parfillskip also can get influenced
                                 local p = hpack(list,maxwidth,'exactly',getdirection(h)) -- multiple return value
                                 local set, order, sign = getboxglue(p)
                                 setboxglue(h,set,order,sign)

@@ -175,8 +175,7 @@ local pdfcharacters
 local horizontalmode = true
 ----- widefontmode   = true
 local scalefactor    = 1
-local minthreshold   = -65536 * 5
-local maxthreshold   =  65536 * 5
+local threshold      = 655360 / (10 * 5) -- default is 5
 local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
@@ -191,8 +190,7 @@ local function updatefontstate(font)
     horizontalmode   = fontparameters.writingmode ~= "vertical"
  -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
-    maxthreshold     = designsize
-    minthreshold     = - maxthreshold
+    threshold        = designsize / (10 * (fontproperties.threshold or 5))
 end
 
 -- helpers
@@ -480,7 +478,7 @@ local flushcharacter  do
         cur_tmrx = tmrx
     end
 
- -- local f_skip  = formatters["%i"]
+    local f_skip  = formatters["%.1f"]
  -- local f_octal = formatters["\\%o"]
  -- local f_char  = formatters["%c"]
     local f_hex   = formatters["%04X"]
@@ -506,13 +504,13 @@ local flushcharacter  do
                 if horizontalmode then
                     if (saved_text_pos_v + tmty) ~= pdf_v then
                         need_tm = true
-                    elseif tj_delta >= maxthreshold or tj_delta <= minthreshold then
+                    elseif tj_delta >= threshold or tj_delta <= -threshold then
                         need_tm = true
                     end
                 else
                     if (saved_text_pos_h + tmtx) ~= pdf_h then
                         need_tm = true
-                    elseif tj_delta >= maxthreshold or tj_delta <= minthreshold then
+                    elseif tj_delta >= threshold or tj_delta <= -threshold then
                         need_tm = true
                     end
                 end
@@ -527,7 +525,7 @@ local flushcharacter  do
              -- local d = round(tj_delta * scalefactor)
              -- if d ~= 0 then
                 local d = tj_delta * scalefactor
-                if d <= -0.5 or d >= 0.5  then
+                if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
                     end
@@ -535,6 +533,12 @@ local flushcharacter  do
                  -- b = b + 1 ; buffer[b] = d
                     b = b + 1 ; buffer[b] = round(d)
                 end
+-- if d <= -0.25 or d >= 0.25 then
+--     if mode == "char" then
+--         end_charmode()
+--     end
+--     b = b + 1 ; buffer[b] = f_skip(d)
+-- end
                 cw = cw - tj_delta
             end
         end

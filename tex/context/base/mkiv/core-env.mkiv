@@ -129,9 +129,13 @@
 \unexpanded\def\globalenablemode {\let\syst_mode_prefix\global\unprotect\syst_modes_enable }
 \unexpanded\def\globaldisablemode{\let\syst_mode_prefix\global\unprotect\syst_modes_disable}
 
-\def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
-\def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
-\def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
+% \def\syst_modes_prevent[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
+% \def\syst_modes_enable [#1]{\protect\rawprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
+% \def\syst_modes_disable[#1]{\protect\rawprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
+
+\def\syst_modes_prevent[#1]{\protect\fastprocesscommacommand[#1]\syst_modes_prevent_indeed\let\syst_mode_prefix\relax}
+\def\syst_modes_enable [#1]{\protect\fastprocesscommacommand[#1]\syst_modes_enable_indeed \let\syst_mode_prefix\relax}
+\def\syst_modes_disable[#1]{\protect\fastprocesscommacommand[#1]\syst_modes_disable_indeed\let\syst_mode_prefix\relax}
 
 \def\syst_modes_prevent_indeed#1%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
@@ -174,7 +178,8 @@
 \def\syst_modes_define[#1][#2]%
   {\protect
    \edef\m_modes_asked{#2}%
-   \rawprocesscommacommand[#1]\syst_modes_define_indeed}
+ % \rawprocesscommacommand[#1]\syst_modes_define_indeed}
+   \fastprocesscommacommand[#1]\syst_modes_define_indeed}
 
 % \def\syst_modes_define_indeed#1%
 %   {\ifcsname\??mode#1\endcsname
@@ -230,7 +235,8 @@
 
 \def\syst_modes_check_nop#1#2#3%
   {\let\syst_modes_check_step\syst_modes_check_indeed
-   \rawprocesscommacommand[#3]\syst_modes_check_step
+ % \rawprocesscommacommand[#3]\syst_modes_check_step
+   \fastprocesscommacommand[#3]\syst_modes_check_step
    \ifx\syst_modes_check_step\gobbleoneargument
      \expandafter#1%
    \else
@@ -277,7 +283,8 @@
 
 \def\syst_modes_check_all_lr#1#2#3%
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
-   \rawprocesscommacommand[#3]\syst_modes_check_all_step
+ % \rawprocesscommacommand[#3]\syst_modes_check_all_step
+   \fastprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
      \expandafter#2%
    \else
@@ -286,7 +293,8 @@
 
 \def\syst_modes_check_all_ss#1#2[#3]%
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
-   \rawprocesscommacommand[#3]\syst_modes_check_all_step
+ % \rawprocesscommacommand[#3]\syst_modes_check_all_step
+   \fastprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
      \expandafter#2%
    \else

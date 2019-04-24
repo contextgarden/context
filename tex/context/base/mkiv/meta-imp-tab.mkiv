@@ -34,7 +34,7 @@
 
 \unexpanded\def\tallynumeral#1%
   {\dontleavehmode
-   \lower.25\exheight\hbox{\useMPgraphic{TallyBar}{n=#1}}}
+   \lower.25\exheight\hpack{\useMPgraphic{TallyBar}{n=#1}}}
 
 \unexpanded\def\tallynumerals#1%
   {\dontleavehmode
@@ -42,11 +42,11 @@
    \scratchcounter#1\relax
    \doloop
      {\ifnum\scratchcounter>\plusfive
-        \lower.25\exheight\hbox{\useMPgraphic{TallyBar}{n=5}}%
+        \lower.25\exheight\hpack{\useMPgraphic{TallyBar}{n=5}}%
         \advance\scratchcounter-\plusfive
         \space
       \else
-        \lower.25\exheight\hbox{\useMPgraphic{TallyBar}{n=\the\scratchcounter}}%
+        \lower.25\exheight\hpack{\useMPgraphic{TallyBar}{n=\the\scratchcounter}}%
         \exitloop
       \fi}%
    \endgroup}

@@ -92,7 +92,7 @@ local forceraw           = false
 
 local p_texescape        = patterns.texescape
 
-local tokenizedcs        = context.tokenizedcs
+local tokenizedxmlw      = context.tokenizedcs and context.tokenizedcs.xmlw
 
 directives.enable("xml.path.keeplastmatch")
 
@@ -501,15 +501,14 @@ function lxml.checkindex(name)
     return root and root.index or 0
 end
 
-if tokenizedcs then
+if tokenizedxmlw then
 
     function lxml.withindex(name,n,command) -- will change as name is always there now
         local i, p = lpegmatch(splitter,n)
-        local w = tokenizedcs.xmlw
         if p then
-            contextsprint(ctxcatcodes,w,"{",command,"}{",n,"}")
+            contextsprint(ctxcatcodes,tokenizedxmlw,"{",command,"}{",n,"}")
         else
-            contextsprint(ctxcatcodes,w,"{",command,"}{",name,"::",n,"}")
+            contextsprint(ctxcatcodes,tokenizedxmlw,"{",command,"}{",name,"::",n,"}")
         end
     end
 
@@ -770,7 +769,7 @@ end)
 
 local tex_element
 
-if tokenizedcs then
+if tokenizedxmlw then
 
     tex_element = function(e,handlers)
         if setfilename then
@@ -788,16 +787,15 @@ if tokenizedcs then
             local tc = type(command)
             if tc == "string" then
                 local rootname, ix = e.name, e.ix
-                local w = tokenizedcs.xmlw
                 if rootname then
                     if not ix then
                         addindex(rootname,false,true)
                         ix = e.ix
                     end
-                    contextsprint(ctxcatcodes,w,"{",command,"}{",rootname,"::",ix,"}")
+                    contextsprint(ctxcatcodes,tokenizedxmlw,"{",command,"}{",rootname,"::",ix,"}")
                 else
                     report_lxml("fatal error: no index for %a",command)
-                    contextsprint(ctxcatcodes,w,"{",command,"}{",ix or 0,"}")
+                    contextsprint(ctxcatcodes,tokenizedxmlw,"{",command,"}{",ix or 0,"}")
                 end
             elseif tc == "function" then
                 command(e)
@@ -1488,11 +1486,10 @@ end
 
 local command
 
-if tokenizedcs then
+if tokenizedxmlw then
 
     command = function(collected,cmd,otherwise)
         local n = collected and #collected
-        local w = tokenizedcs.xmlw
         if n and n > 0 then
             local wildcard = find(cmd,"*",1,true)
             for c=1,n do -- maybe optimize for n=1
@@ -1506,13 +1503,13 @@ if tokenizedcs then
                 if not ix or not name then
                     report_lxml("no valid node index for element %a using command %s",name or "?",cmd)
                 elseif wildcard then
-                    contextsprint(ctxcatcodes,w,"{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
+                    contextsprint(ctxcatcodes,tokenizedxmlw,"{",(gsub(cmd,"%*",e.tg)),"}{",name,"::",ix,"}")
                 else
-                    contextsprint(ctxcatcodes,w,"{",cmd,"}{",name,"::",ix,"}")
+                    contextsprint(ctxcatcodes,tokenizedxmlw,"{",cmd,"}{",name,"::",ix,"}")
                 end
             end
         elseif otherwise then
-            contextsprint(ctxcatcodes,w,"{",otherwise,"}{#1}")
+            contextsprint(ctxcatcodes,tokenizedxmlw,"{",otherwise,"}{#1}")
         end
     end
 
@@ -2215,16 +2212,15 @@ function lxml.direct(id)
     end
 end
 
-if tokenizedcs then
+if tokenizedxmlw then
 
     function lxml.command(id,pattern,cmd)
         local i, p = getid(id,true)
-        local collected = xmlapplylpath(getid(i),pattern)
+        local collected = xmlapplylpath(getid(i),pattern) -- again getid?
         if collected then
             local nc = #collected
             if nc > 0 then
                 local rootname = p or i.name
-                local w = tokenizedcs.xmlw
                 for c=1,nc do
                     local e = collected[c]
                     local ix = e.ix
@@ -2232,7 +2228,7 @@ if tokenizedcs then
                         addindex(rootname,false,true)
                         ix = e.ix
                     end
-                    contextsprint(ctxcatcodes,w,"{",cmd,"}{",rootname,"::",ix,"}")
+                    contextsprint(ctxcatcodes,tokenizedxmlw,"{",cmd,"}{",rootname,"::",ix,"}")
                 end
             end
         end
@@ -2242,7 +2238,7 @@ else
 
     function lxml.command(id,pattern,cmd)
         local i, p = getid(id,true)
-        local collected = xmlapplylpath(getid(i),pattern)
+        local collected = xmlapplylpath(getid(i),pattern) -- again getid?
         if collected then
             local nc = #collected
             if nc > 0 then

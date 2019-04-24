@@ -510,7 +510,7 @@ local glyphexpansion do
 
     glyphexpansion = function(head,current)
         local extra = getexpansion(current)
-        if extra ~= 0 then
+        if extra and extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then

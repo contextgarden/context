@@ -68,9 +68,9 @@ do -- eps | ps
             -dPDFSETTINGS=/%presets%
             -dEPSCrop
             -dCompatibilityLevel=%level%
-            -sOutputFile="%newname%"
+            -sOutputFile=%newname%
             %colorspace%
-            "%oldname%"
+            %oldname%
             -c quit
         ]],
         checkers = {
@@ -197,9 +197,9 @@ do -- svg
         name     = "svg to something",
         program  = "inkscape",
         template = longtostring [[
-            "%oldname%"
+            %oldname%
             --export-dpi=%resolution%
-            --export-%format%="%newname%"
+            --export-%format%=%newname%
         ]],
         checkers = {
             oldname    = "readable",
@@ -324,7 +324,7 @@ do -- png | jpg | profiles
     local pngtocmykpdf = sandbox.registerrunner {
         name     = "png to cmyk pdf",
         program  = "gm",
-        template = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -compress Zip  -strip +profile "*" -profile %rgbprofile% -profile %cmykprofile% -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -332,7 +332,7 @@ do -- png | jpg | profiles
     local jpgtocmykpdf = sandbox.registerrunner {
         name     = "jpg to cmyk pdf",
         program  = "gm",
-        template = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -compress JPEG -strip +profile "*" -profile %rgbprofile% -profile %cmykprofile% -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -340,7 +340,7 @@ do -- png | jpg | profiles
     local pngtograypdf = sandbox.registerrunner {
         name     = "png to gray pdf",
         program  = "gm",
-        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -348,7 +348,7 @@ do -- png | jpg | profiles
     local jpgtograypdf = sandbox.registerrunner {
         name     = "jpg to gray pdf",
         program  = "gm",
-        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -401,7 +401,7 @@ do -- png | jpg | profiles
     local recolorpng = sandbox.registerrunner {
         name     = "recolor png",
         program  = "gm",
-        template = [[convert -recolor "%color%" "%oldname%" "%newname%"]],
+        template = [[convert -recolor %color% %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }

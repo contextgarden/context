@@ -254,6 +254,8 @@ return {
   "fixupboxesmode",
   "fontid",
   "formatname",
+  "futureexpand",
+  "futureexpandis",
   "gleaders",
   "gtoksapp",
   "gtokspre",

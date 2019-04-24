@@ -68,7 +68,7 @@
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
-   \d_math_eqalign_distance\mathalignmentparameter\c!distance
+   \d_math_eqalign_distance\mathalignmentparameter\c!distance\relax
    \scratchcounterone\mathalignmentparameter\c!m
    \scratchcountertwo\mathalignmentparameter\c!n
    \etoksapp\scratchtoks{\the\t_math_align_a}%
@@ -1824,31 +1824,31 @@
    \or
      \bgroup \hsize\displaywidth
    \fi
-     \ifcase\mathnumberstatus
+   \ifcase\mathnumberstatus
+     \strc_math_flush_box
+   \or % status 1
+     \ifcase\c_strc_math_number_location
        \strc_math_flush_box
-     \or % status 1
-       \ifcase\c_strc_math_number_location
-         \strc_math_flush_box
-       \or % number left
-         \ifzeropt\wd\b_strc_formulas_number
-           \strc_math_flush_number_no
-         \else
-           \strc_math_flush_number_left
-         \fi
-       \else % number right
-         \ifzeropt\wd\b_strc_formulas_number
-           \strc_math_flush_number_no
-         \else
-           \strc_math_flush_number_right
-         \fi
+     \or % number left
+       \ifzeropt\wd\b_strc_formulas_number
+         \strc_math_flush_number_no
+       \else
+         \strc_math_flush_number_left
        \fi
-     \or % status 2
-        \hskip\d_math_number_correction % probably no longer used
-        \strc_math_flush_box
-        \hss
-     \else
-       \strc_math_flush_box
+     \else % number right
+       \ifzeropt\wd\b_strc_formulas_number
+         \strc_math_flush_number_no
+       \else
+         \strc_math_flush_number_right
+       \fi
      \fi
+   \or % status 2
+      \hskip\d_math_number_correction % probably no longer used
+      \strc_math_flush_box
+      \hss
+   \else
+     \strc_math_flush_box
+   \fi
    \ifcase\c_strc_math_vertical
    \or
    \or

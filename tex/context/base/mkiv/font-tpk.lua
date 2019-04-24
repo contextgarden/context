@@ -1277,6 +1277,9 @@ do
             data.characters = glyphs
             data.glyphs     = nil
             data.size       = size
+            -- we assume type1 for now ... maybe the format should be unknown
+            data.filename   = tfmfile -- file.replacesuffix(tfmfile,"pfb")
+            data.format     = "unknown"
             --
             return data
         end

@@ -356,12 +356,12 @@
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \clf_setinterfacemessage{#1}{#2}{#3}}
 
-\unexpanded\def\setmessagetext   #1#2{\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
-\unexpanded\def\getmessage       #1#2{\clf_getmessage{#1}{#2}}
-\unexpanded\def\doifelsemessage  #1#2{\clf_doifelsemessage{#1}{#2}}
-\unexpanded\def\showmessage    #1#2#3{\clf_showmessage{#1}{#2}{#3}}
-\unexpanded\def\writestatus      #1#2{\clf_writestatus{#1}{#2}}
-\unexpanded\def\message              {\clf_message}
+\unexpanded\def\setmessagetext   #1#2{\relax\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
+\unexpanded\def\getmessage       #1#2{\relax\clf_getmessage{#1}{#2}}
+\unexpanded\def\doifelsemessage  #1#2{\relax\clf_doifelsemessage{#1}{#2}}
+\unexpanded\def\showmessage    #1#2#3{\relax\clf_showmessage{#1}{#2}{#3}}
+\unexpanded\def\writestatus      #1#2{\relax\clf_writestatus{#1}{#2}}
+\unexpanded\def\message              {\relax\clf_message}
 
 \let\doifmessageelse\doifelsemessage
 

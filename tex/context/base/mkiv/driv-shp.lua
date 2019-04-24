@@ -321,10 +321,12 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
 
     local data = fontcharacters[char]
     if not data then
-        if not onetimemessage then
-            onetimemessage = fonts.loggers.onetimemessage
+        if char > 0 then
+            if not onetimemessage then
+                onetimemessage = fonts.loggers.onetimemessage
+            end
+            onetimemessage(font,char,"missing")
         end
-        onetimemessage(font,char,"missing")
         return 0, 0, 0
     end
 

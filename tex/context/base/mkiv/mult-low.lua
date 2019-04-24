@@ -263,6 +263,7 @@ return {
         "doifinset", "doifnotinset",
         "doifelseinset", "doifinsetelse",
         "doifelsenextchar", "doifnextcharelse",
+        "doifelsenextcharcs", "doifnextcharcselse",
         "doifelsenextoptional", "doifnextoptionalelse",
         "doifelsenextoptionalcs", "doifnextoptionalcselse",
         "doifelsefastoptionalcheck", "doiffastoptionalcheckelse",

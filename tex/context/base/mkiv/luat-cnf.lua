@@ -32,6 +32,7 @@ texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
 texconfig.properties_size =  65536
+texconfig.fix_mem_init    = 750000
 
 local stub = [[
 

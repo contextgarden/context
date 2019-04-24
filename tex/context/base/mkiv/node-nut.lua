@@ -280,8 +280,8 @@ nuts.setshift              = direct.setshift
 nuts.getorientation        = direct.getorientation or function() end
 nuts.setorientation        = direct.setorientation or function() end
 
-nuts.getglyphdata          = direct.getglyphdata or get_attribute
-nuts.setglyphdata          = direct.setglyphdata or set_attribute
+nuts.getglyphdata          = direct.getglyphdata or               get_attribute
+nuts.setglyphdata          = direct.setglyphdata or function(n,d) set_attribute(n,0,d) end
 
 nuts.getruledata           = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
 nuts.setruledata           = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end

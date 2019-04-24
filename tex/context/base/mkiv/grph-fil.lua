@@ -45,7 +45,7 @@ job.register('job.files.collected', tobesaved, initializer)
 local runner = sandbox.registerrunner {
     name     = "hashed context run",
     program  = "context",
-    template = [[%options% "%filename%"]],
+    template = [[%options% %filename%]],
     checkers = {
         options  = "string",
         filename = "readable",

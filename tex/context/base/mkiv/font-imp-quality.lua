@@ -153,15 +153,11 @@ registerafmfeature(specification)
 
 fonts.goodies.register("expansions",  function(...) return fonts.goodies.report("expansions", trace_expansion, ...) end)
 
-if context then
-
-    implement {
-        name      = "setupfontexpansion",
-        arguments = "2 strings",
-        actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
-    }
-
-end
+implement {
+    name      = "setupfontexpansion",
+    arguments = "2 strings",
+    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+}
 
 -- -- -- -- -- --
 -- protrusion
@@ -516,12 +512,35 @@ registerafmfeature(specification)
 
 fonts.goodies.register("protrusions", function(...) return fonts.goodies.report("protrusions", trace_protrusion, ...) end)
 
-if context then
+implement {
+    name      = "setupfontprotrusion",
+    arguments = "2 strings",
+    actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
+}
 
-    implement {
-        name      = "setupfontprotrusion",
-        arguments = "2 strings",
-        actions   = function(class,settings) getparameters(classes,class,'preset',settings) end
-    }
-
+local function initialize(tfmdata,value)
+    local properties = tfmdata.properties
+    if properties then
+        value = tonumber(value)
+        if value then
+            if value < 5 then
+                value = 5
+            elseif value > 100 then
+                value = 100
+            end
+        end
+        properties.threshold = value or nil -- nil enforces default
+    end
 end
+
+local specification = {
+    name         = "threshold",
+    description  = "threshold for quality features",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)

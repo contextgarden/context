@@ -22,7 +22,7 @@ local scaninteger         = token.scan_int
 local scanstring          = token.scan_string
 local scankeyword         = token.scan_keyword
 local scantokenlist       = token.scan_tokenlist
-local scancode            = token.scan_code
+----- scancode            = token.scan_code
 
 local tokentostring       = token.to_string
 

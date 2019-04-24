@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 04/16/19 08:54:10
+-- merge date  : 04/24/19 23:17:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -9098,11 +9098,11 @@ function constructors.finalize(tfmdata)
  if not properties.virtualized then
   properties.virtualized=tfmdata.type=="virtual"
  end
- properties.fontname=tfmdata.fontname
- properties.filename=tfmdata.filename
- properties.fullname=tfmdata.fullname
- properties.name=tfmdata.name
- properties.psname=tfmdata.psname
+ properties.fontname=properties.fontname or tfmdata.fontname
+ properties.filename=properties.filename or tfmdata.filename
+ properties.fullname=properties.fullname or tfmdata.fullname
+ properties.name=properties.name  or tfmdata.name
+ properties.psname=properties.psname   or tfmdata.psname
  properties.encodingbytes=tfmdata.encodingbytes or 1
  properties.embedding=tfmdata.embedding  or "subset"
  properties.tounicode=tfmdata.tounicode  or 1
@@ -33053,8 +33053,9 @@ local function copytotfm(data)
   local filename=constructors.checkedfilename(resources)
   local fontname=metadata.fontname or metadata.fullname
   local fullname=metadata.fullname or metadata.fontname
-  local endash=0x0020 
+  local endash=0x2013
   local emdash=0x2014
+  local space=0x0020 
   local spacer="space"
   local spaceunits=500
   local monospaced=metadata.monospaced
@@ -33065,26 +33066,32 @@ local function copytotfm(data)
   parameters.italicangle=italicangle
   parameters.charwidth=charwidth
   parameters.charxheight=charxheight
+  local d_endash=descriptions[endash]
+  local d_emdash=descriptions[emdash]
+  local d_space=descriptions[space]
+  if not d_space or d_space==0 then
+   d_space=d_endash
+  end
+  if d_space then
+   spaceunits,spacer=d_space.width or 0,"space"
+  end
   if properties.monospaced then
-   if descriptions[endash] then
-    spaceunits,spacer=descriptions[endash].width,"space"
-   end
-   if not spaceunits and descriptions[emdash] then
-    spaceunits,spacer=descriptions[emdash].width,"emdash"
-   end
-   if not spaceunits and charwidth then
-    spaceunits,spacer=charwidth,"charwidth"
+   if spaceunits==0 and d_emdash then
+    spaceunits,spacer=d_emdash.width or 0,"emdash"
    end
   else
-   if descriptions[endash] then
-    spaceunits,spacer=descriptions[endash].width,"space"
-   end
-   if not spaceunits and charwidth then
-    spaceunits,spacer=charwidth,"charwidth"
+   if spaceunits==0 and d_endash then
+    spaceunits,spacer=d_emdash.width or 0,"endash"
    end
   end
-  spaceunits=tonumber(spaceunits)
-  if spaceunits<200 then
+  if spaceunits==0 and charwidth then
+   spaceunits,spacer=charwidth or 0,"charwidth"
+  end
+  if spaceunits==0 then
+   spaceunits=tonumber(spaceunits) or 500
+  end
+  if spaceunits==0 then
+   spaceunits=500
   end
   parameters.slant=0
   parameters.space=spaceunits

@@ -351,7 +351,7 @@ end
 hashes.streams = table.setmetatableindex(function(t,k)
     local f = identifiers[k]
     if f then
-        return loadstreamdata(f,true)
+        return loadstreamdata(f)
     end
 end)
 

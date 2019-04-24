@@ -574,17 +574,37 @@
 \def\meta_prepare_variable_dimension
   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
 
-\def\meta_prepare_variable_yes
-  {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
-   \doifelsecolor \ascii                              % with 2\bodyfontsize
-     {\meta_prepare_variable_color}
-     {\begingroup
-      \setbox\b_meta_variable_box\hpack{\scratchdimen\m_meta_current_variable sp}%
-      \ifzeropt\wd\b_meta_variable_box
-        \endgroup\meta_prepare_variable_number
-      \else
-        \endgroup\meta_prepare_variable_dimension
-      \fi}}
+
+\startmkivmode
+
+    \def\meta_prepare_variable_yes
+      {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
+       \doifelsecolor \ascii                              % with 2\bodyfontsize
+         {\meta_prepare_variable_color}
+         {\begingroup
+          \setbox\b_meta_variable_box\hpack{\scratchdimen\m_meta_current_variable sp}%
+          \ifzeropt\wd\b_meta_variable_box
+            \endgroup\meta_prepare_variable_number
+          \else
+            \endgroup\meta_prepare_variable_dimension
+          \fi}}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \def\meta_prepare_variable_yes
+      {\ifdimen\m_meta_current_variable\or
+         \meta_prepare_variable_dimension
+       \else\ifnumber\m_meta_current_variable\or
+         \meta_prepare_variable_number
+       \else
+          \doifelsecolor\m_meta_current_variable
+            \meta_prepare_variable_color
+            \meta_prepare_variable_dimension
+       \fi\fi}
+
+\stoplmtxmode
 
 % \def\meta_prepare_variable_yes
 %   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname
