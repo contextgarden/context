@@ -3972,94 +3972,252 @@
 %D \type {conditional} token. Okay, these macros are not called that often but it
 %D saves crap when tracing.
 
-\unexpanded\def\syst_helpers_get_grouped_argument#1#2%
-  {\let\syst_helpers_get_grouped_argument_yes#1%
-   \let\syst_helpers_get_grouped_argument_nop#2%
-   \futurelet\nextargument\syst_helpers_get_grouped_argument_indeed}
+\startmkivmode
 
-\def\syst_helpers_get_grouped_argument_indeed
-  {\ifx\nextargument\bgroup
-     \expandafter\syst_helpers_get_grouped_argument_a
-   \else
-     \expandafter\syst_helpers_get_grouped_argument_b
-   \fi}
+    \unexpanded\def\syst_helpers_get_grouped_argument#1#2%
+      {\let\syst_helpers_get_grouped_argument_yes#1%
+       \let\syst_helpers_get_grouped_argument_nop#2%
+       \futurelet\nextargument\syst_helpers_get_grouped_argument_indeed}
 
-\def\syst_helpers_get_grouped_argument_a
-  {%syst_helpers_argument_reset
-   \syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nested}
+    \def\syst_helpers_get_grouped_argument_indeed
+      {\ifx\nextargument\bgroup
+         \expandafter\syst_helpers_get_grouped_argument_a
+       \else
+         \expandafter\syst_helpers_get_grouped_argument_b
+       \fi}
 
-\def\syst_helpers_get_grouped_argument_b
-  {\ifconditional\c_syst_helpers_permit_spaces_between_groups
-     \expandafter\syst_helpers_get_grouped_argument_f
-   \else
-     \expandafter\syst_helpers_get_grouped_argument_d
-   \fi}
+    \def\syst_helpers_get_grouped_argument_a
+      {%syst_helpers_argument_reset
+       \syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nested}
 
-\def\syst_helpers_get_grouped_argument_d
-  {%syst_helpers_argument_error
-   \syst_helpers_get_grouped_argument_nop\syst_helpers_get_grouped_argument_nested{}}
+    \def\syst_helpers_get_grouped_argument_b
+      {\ifconditional\c_syst_helpers_permit_spaces_between_groups
+         \expandafter\syst_helpers_get_grouped_argument_f
+       \else
+         \expandafter\syst_helpers_get_grouped_argument_d
+       \fi}
 
-\begingroup
-  \def\\ {\syst_helpers_get_grouped_argument\syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nop}
-  \glet\syst_helpers_get_grouped_argument_e\\
-\endgroup
+    \def\syst_helpers_get_grouped_argument_d
+      {%syst_helpers_argument_error
+       \syst_helpers_get_grouped_argument_nop\syst_helpers_get_grouped_argument_nested{}}
 
-\def\syst_helpers_get_grouped_argument_f
-  {\ifx\nextargument\blankspace
-     \expandafter\syst_helpers_get_grouped_argument_e % g
-   \else
-     \expandafter\syst_helpers_get_grouped_argument_d % h
-   \fi}
+    \begingroup
+      \def\\ {\syst_helpers_get_grouped_argument\syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nop}
+      \glet\syst_helpers_get_grouped_argument_e\\
+    \endgroup
 
-\unexpanded\def\dosinglegroupempty#1%
-  {\def\syst_helpers_get_grouped_argument_nested
-     {\dontpermitspacesbetweengroups
-      #1}%
-   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+    \def\syst_helpers_get_grouped_argument_f
+      {\ifx\nextargument\blankspace
+         \expandafter\syst_helpers_get_grouped_argument_e % g
+       \else
+         \expandafter\syst_helpers_get_grouped_argument_d % h
+       \fi}
 
-\unexpanded\def\dodoublegroupempty#1%
-  {\def\syst_helpers_get_grouped_argument_nested##1%
-     {\def\syst_helpers_get_grouped_argument_nested
-        {\dontpermitspacesbetweengroups
-         #1{##1}}%
-      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+    \unexpanded\def\dosinglegroupempty#1%
+      {\def\syst_helpers_get_grouped_argument_nested
+         {\dontpermitspacesbetweengroups
+          #1}%
+       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-\unexpanded\def\dotriplegroupempty#1%
-  {\def\syst_helpers_get_grouped_argument_nested##1%
-     {\def\syst_helpers_get_grouped_argument_nested####1%
-        {\def\syst_helpers_get_grouped_argument_nested
-           {\dontpermitspacesbetweengroups
-            #1{##1}{####1}}%
-         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+    \unexpanded\def\dodoublegroupempty#1%
+      {\def\syst_helpers_get_grouped_argument_nested##1%
+         {\def\syst_helpers_get_grouped_argument_nested
+            {\dontpermitspacesbetweengroups
+             #1{##1}}%
+          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-\unexpanded\def\doquadruplegroupempty#1%
-  {\def\syst_helpers_get_grouped_argument_nested##1%
-     {\def\syst_helpers_get_grouped_argument_nested####1%
-        {\def\syst_helpers_get_grouped_argument_nested########1%
-           {\def\syst_helpers_get_grouped_argument_nested
-              {\dontpermitspacesbetweengroups
-               #1{##1}{####1}{########1}}%
-            \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
-         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+    \unexpanded\def\dotriplegroupempty#1%
+      {\def\syst_helpers_get_grouped_argument_nested##1%
+         {\def\syst_helpers_get_grouped_argument_nested####1%
+            {\def\syst_helpers_get_grouped_argument_nested
+               {\dontpermitspacesbetweengroups
+                #1{##1}{####1}}%
+             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-\unexpanded\def\doquintuplegroupempty#1%
-  {\def\syst_helpers_get_grouped_argument_nested##1%
-     {\def\syst_helpers_get_grouped_argument_nested####1%
-        {\def\syst_helpers_get_grouped_argument_nested########1%
-           {\def\syst_helpers_get_grouped_argument_nested################1%
-             {\def\syst_helpers_get_grouped_argument_nested
-                {\dontpermitspacesbetweengroups
-                 #1{##1}{####1}{########1}{################1}}%
-              \syst_helpers_get_grouped_argument\fifthargumenttrue\fifthargumentfalse}%
-            \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
-         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+    \unexpanded\def\doquadruplegroupempty#1%
+      {\def\syst_helpers_get_grouped_argument_nested##1%
+         {\def\syst_helpers_get_grouped_argument_nested####1%
+            {\def\syst_helpers_get_grouped_argument_nested########1%
+               {\def\syst_helpers_get_grouped_argument_nested
+                  {\dontpermitspacesbetweengroups
+                   #1{##1}{####1}{########1}}%
+                \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
+             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+
+    \unexpanded\def\doquintuplegroupempty#1%
+      {\def\syst_helpers_get_grouped_argument_nested##1%
+         {\def\syst_helpers_get_grouped_argument_nested####1%
+            {\def\syst_helpers_get_grouped_argument_nested########1%
+               {\def\syst_helpers_get_grouped_argument_nested################1%
+                 {\def\syst_helpers_get_grouped_argument_nested
+                    {\dontpermitspacesbetweengroups
+                     #1{##1}{####1}{########1}{################1}}%
+                  \syst_helpers_get_grouped_argument\fifthargumenttrue\fifthargumentfalse}%
+                \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
+             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\dosinglegroupempty#1%
+      {\t_syst_aux{#1}%
+       \futureexpand\bgroup\syst_helpers_single_empty_one_yes\syst_helpers_single_group_empty_one_nop}
+
+    \def\syst_helpers_single_group_empty_one_nop
+      {\firstargumentfalse
+       \the\t_syst_aux{}}
+
+    \unexpanded\def\dodoublegroupempty#1%
+      {\t_syst_aux{#1}%
+       \futureexpand\bgroup\syst_helpers_group_double_empty_one_yes\syst_helpers_group_double_empty_one_nop}
+
+    \def\syst_helpers_group_double_empty_one_yes#1%
+      {\firstargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_double_empty_two_yes\syst_helpers_group_double_empty_two_nop}
+
+    \def\syst_helpers_group_double_empty_one_nop
+      {\firstargumentfalse
+       \secondargumentfalse
+       \the\t_syst_aux{}{}}
+
+    \def\syst_helpers_group_double_empty_two_nop
+      {\secondargumentfalse
+       \the\t_syst_aux{}}
+
+    \unexpanded\def\dotriplegroupempty#1%
+      {\t_syst_aux{#1}%
+       \futureexpand\bgroup\syst_helpers_group_triple_empty_one_yes\syst_helpers_group_triple_empty_one_nop}
+
+    \def\syst_helpers_group_triple_empty_one_yes#1%
+      {\firstargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_triple_empty_two_yes\syst_helpers_group_triple_empty_two_nop}
+
+    \def\syst_helpers_group_triple_empty_two_yes#1%
+      {\secondargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_triple_empty_three_yes\syst_helpers_group_triple_empty_three_nop}
+
+    \def\syst_helpers_group_triple_empty_one_nop
+      {\firstargumentfalse
+       \secondargumentfalse
+       \thirdargumentfalse
+       \the\t_syst_aux{}{}{}}
+
+    \def\syst_helpers_group_triple_empty_two_nop
+      {\secondargumentfalse
+       \thirdargumentfalse
+       \the\t_syst_aux{}{}}
+
+    \def\syst_helpers_group_triple_empty_three_nop
+      {\thirdargumentfalse
+       \the\t_syst_aux{}}
+
+    \unexpanded\def\doquadruplegroupempty#1%
+      {\t_syst_aux{#1}%
+       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_one_yes\syst_helpers_group_quadruple_empty_one_nop}
+
+    \def\syst_helpers_group_quadruple_empty_one_yes#1%
+      {\firstargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_two_yes\syst_helpers_group_quadruple_empty_two_nop}
+
+    \def\syst_helpers_group_quadruple_empty_two_yes#1%
+      {\secondargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_three_yes\syst_helpers_group_quadruple_empty_three_nop}
+
+    \def\syst_helpers_group_quadruple_empty_three_yes#1%
+      {\thirdargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_quadruple_empty_four_yes\syst_helpers_group_quadruple_empty_four_nop}
+
+    \def\syst_helpers_group_quadruple_empty_one_nop
+      {\firstargumentfalse
+       \secondargumentfalse
+       \thirdargumentfalse
+       \fourthargumentfalse
+       \the\t_syst_aux{}{}{}{}}
+
+    \def\syst_helpers_group_quadruple_empty_two_nop
+      {\secondargumentfalse
+       \thirdargumentfalse
+       \fourthargumentfalse
+       \the\t_syst_aux{}{}{}}
+
+    \def\syst_helpers_group_quadruple_empty_three_nop
+      {\thirdargumentfalse
+       \fourthargumentfalse
+       \the\t_syst_aux{}{}}
+
+    \def\syst_helpers_group_quadruple_empty_four_nop
+      {\fourthargumentfalse
+       \the\t_syst_aux{}}
+
+    \unexpanded\def\doquintuplegroupempty#1%
+      {\t_syst_aux{#1}%
+       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_one_yes\syst_helpers_group_quintuple_empty_one_nop}
+
+    \def\syst_helpers_group_quintuple_empty_one_yes#1%
+      {\firstargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_two_yes\syst_helpers_group_quintuple_empty_two_nop}
+
+    \def\syst_helpers_group_quintuple_empty_two_yes#1%
+      {\secondargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_three_yes\syst_helpers_group_quintuple_empty_three_nop}
+
+    \def\syst_helpers_group_quintuple_empty_three_yes#1%
+      {\thirdargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_four_yes\syst_helpers_group_quintuple_empty_four_nop}
+
+    \def\syst_helpers_group_quintuple_empty_four_yes#1%
+      {\fourthargumenttrue
+       \toksapp\t_syst_aux{{#1}}%
+       \futureexpand\bgroup\syst_helpers_quintuple_empty_five_yes\syst_helpers_group_quintuple_empty_five_nop}
+
+    \def\syst_helpers_group_quintuple_empty_one_nop
+      {\firstargumentfalse
+       \secondargumentfalse
+       \thirdargumentfalse
+       \fourthargumentfalse
+       \fifthargumentfalse
+       \the\t_syst_aux{}{}{}{}{}}
+
+    \def\syst_helpers_group_quintuple_empty_two_nop
+      {\secondargumentfalse
+       \thirdargumentfalse
+       \fourthargumentfalse
+       \fifthargumentfalse
+       \the\t_syst_aux{}{}{}{}}
+
+    \def\syst_helpers_group_quintuple_empty_three_nop
+      {\thirdargumentfalse
+       \fourthargumentfalse
+       \fifthargumentfalse
+       \the\t_syst_aux{}{}{}}
+
+    \def\syst_helpers_group_quintuple_empty_four_nop
+      {\fourthargumentfalse
+       \fifthargumentfalse
+       \the\t_syst_aux{}{}}
+
+    \def\syst_helpers_group_quintuple_empty_five_nop
+      {\fifthargumentfalse
+       \the\t_syst_aux{}}
+
+\stoplmtxmode
 
 %D These macros can explictly take care of spaces, which means
 %D that the next definition and calls are valid:
@@ -7958,6 +8116,9 @@
 
     \def\doifelsedimension#1%
       {\afterassignment\syst_helpers_if_dimension_else\privatescratchdimen#1pt\relax}
+
+  % \def\doifelsedimension#1%
+  %   {\expandafter\syst_helpers_if_dimension_else\immediateassignment\privatescratchdimen#1pt\relax}
 
     \def\syst_helpers_if_dimension_else#1%
       {\ifx#1\relax

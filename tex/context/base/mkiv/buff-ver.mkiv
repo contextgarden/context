@@ -286,10 +286,6 @@
   {\setupcurrenttype[#1]%
    \buff_verbatim_type_nop}
 
-\def\buff_verbatim_type_nop
-  {\buff_verbatim_left_of_type
-   \futurelet\next\buff_verbatim_type_one}
-
 \def\buff_verbatim_typ#1%
   {\dontleavehmode
    \bgroup
@@ -298,17 +294,38 @@
    \let\specialobeyedspace\specialstretchedspace
    \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
-\def\buff_verbatim_type_one
-  {\ifx\next\bgroup
-     \expandafter\buff_verbatim_type_a
-   \else
-     \expandafter\buff_verbatim_type_two
-   \fi}
+\startmkivmode
 
-\def\buff_verbatim_type_two
-  {\catcode`<=\othercatcode % old precaution
-   \catcode`>=\othercatcode % old precaution
-   \futurelet\next\buff_verbatim_type_three}
+    \def\buff_verbatim_type_nop
+      {\buff_verbatim_left_of_type
+       \futurelet\next\buff_verbatim_type_one}
+
+    \def\buff_verbatim_type_one
+      {\ifx\next\bgroup
+         \expandafter\buff_verbatim_type_a
+       \else
+         \expandafter\buff_verbatim_type_two
+       \fi}
+
+    \def\buff_verbatim_type_two
+      {\catcode`<=\othercatcode % old precaution
+       \catcode`>=\othercatcode % old precaution
+       \futurelet\next\buff_verbatim_type_three}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \def\buff_verbatim_type_nop
+      {\buff_verbatim_left_of_type
+       \futureexpand\bgroup\buff_verbatim_type_a\buff_verbatim_type_one}
+
+    \def\buff_verbatim_type_one
+      {\catcode`<=\othercatcode % old precaution
+       \catcode`>=\othercatcode % old precaution
+       \futureexpandis<\buff_verbatim_type_b\buff_verbatim_type_c}
+
+\stoplmtxmode
 
 \def\buff_verbatim_type_three
   {\if\next<%
@@ -473,18 +490,32 @@
 \let\beginofverbatimlines\relax % hooks
 \let\endofverbatimlines  \relax % hooks
 
-\unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
-  {\begingroup
-   \edef\currenttyping{#1}%
-   \obeylines
-   \futurelet\nexttoken\buff_verbatim_typing_start_indeed}
+\startmkivmode
 
-\def\buff_verbatim_typing_start_indeed
-  {\ifx\nexttoken[%
-     \expandafter\buff_verbatim_typing_start_yes
-   \else
-     \expandafter\buff_verbatim_typing_start_nop
-   \fi}
+    \unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
+      {\begingroup
+       \edef\currenttyping{#1}%
+       \obeylines
+       \futurelet\nexttoken\buff_verbatim_typing_start_indeed}
+
+    \def\buff_verbatim_typing_start_indeed
+      {\ifx\nexttoken[%
+         \expandafter\buff_verbatim_typing_start_yes
+       \else
+         \expandafter\buff_verbatim_typing_start_nop
+       \fi}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
+      {\begingroup
+       \edef\currenttyping{#1}%
+       \obeylines
+       \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
+
+\stoplmtxmode
 
 \unexpanded\def\buff_verbatim_setup_keep_together
   {\edef\p_keeptogether{\typingparameter\c!keeptogether}%

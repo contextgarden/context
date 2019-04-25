@@ -2151,13 +2151,38 @@
 
 \installcorenamespace{vspacing}
 
-\unexpanded\def\directvspacing#1%
-  {\par
-   \ifcsname\??vspacing#1\endcsname
-     \lastnamedcs
-   \else
-     \spac_vspacing_yes_preset{#1}%
-   \fi}
+\startmkivmode
+
+    \unexpanded\def\directvspacing#1%
+      {\par
+       \ifcsname\??vspacing#1\endcsname
+         \lastnamedcs
+       \else
+         \spac_vspacing_yes_preset{#1}%
+       \fi}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\directvspacing#1%
+      {\par
+       \ifdimen#1\or
+         \spac_vspacing_dim_preset{\the\dimexpr#1}%
+       \else\ifcsname\??vspacing#1\endcsname
+         \lastnamedcs
+       \else
+         \spac_vspacing_yes_preset{#1}%
+       \fi\fi}
+
+    \def\spac_vspacing_dim_preset#1%
+      {\ifcsname\??vspacing#1\endcsname
+         \lastnamedcs
+       \else
+         \spac_vspacing_yes_preset{#1}%
+       \fi}
+
+\stoplmtxmode
 
 \def\spac_vspacing_yes_preset#1%
   {\setxvalue{\??vspacing#1}{\clf_vspacing{#1}}%
