@@ -594,9 +594,9 @@
 \startlmtxmode
 
     \def\meta_prepare_variable_yes
-      {\ifdimen\m_meta_current_variable\or
+      {\ifchkdim\m_meta_current_variable\or
          \meta_prepare_variable_dimension
-       \else\ifnumber\m_meta_current_variable\or
+       \else\ifchknum\m_meta_current_variable\or
          \meta_prepare_variable_number
        \else
           \doifelsecolor\m_meta_current_variable

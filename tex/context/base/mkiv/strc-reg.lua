@@ -719,14 +719,30 @@ function registers.compare(a,b)
         local ka = a.metadata.kind
         local kb = b.metadata.kind
         if ka == kb then
-            local page_a = a.references.realpage
-            local page_b = b.references.realpage
-            if not page_a or not page_b then
+            local ra = a.references
+            local rb = b.references
+            local pa = ra.realpage
+            local pb = rb.realpage
+            if not pa or not pb then
                 return 0
-            elseif page_a < page_b then
+            elseif pa < pb then
                 return -1
-            elseif page_a > page_b then
+            elseif pa > pb then
                 return  1
+            else
+                -- new, we need to pick the right one of multiple and
+                -- we want to prevent oscillation in the tuc file so:
+                local ia = ra.internal
+                local ib = rb.internal
+                if not ia or not ib then
+                    return 0
+                elseif ia < ib then
+                    return -1
+                elseif ia > ib then
+                    return  1
+                else
+                    return 0
+                end
             end
         elseif ka == "see" then
             return 1

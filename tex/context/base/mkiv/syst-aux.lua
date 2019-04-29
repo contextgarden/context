@@ -390,6 +390,13 @@ implement {
 }
 
 implement {
+    name    = "benchmarktimer",
+    actions = function()
+        statistics.benchmarktimer("whatever")
+    end
+}
+
+implement {
     name    = "elapsedtime",
     actions = function()
         statistics.stoptiming("whatever")

@@ -24,36 +24,32 @@
 %D {\expanded} primitive were mentioned in talks.} trip. For now I don't really see
 %D other useful applications.
 
-\ifdefined\immediateassignment
+\def\expandeddoif#1#2%
+  {\immediateassignment\edef\m_syst_string_one{#1}%
+   \immediateassignment\edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \def\expandeddoif#1#2%
-      {\immediateassignment\edef\m_syst_string_one{#1}%
-       \immediateassignment\edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
+\def\expandeddoifnot#1#2%
+  {\immediateassignment\edef\m_syst_string_one{#1}%
+   \immediateassignment\edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \def\expandeddoifnot#1#2%
-      {\immediateassignment\edef\m_syst_string_one{#1}%
-       \immediateassignment\edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \def\expandeddoifelse#1#2%
-      {\immediateassignment\edef\m_syst_string_one{#1}%
-       \immediateassignment\edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-\fi
+\def\expandeddoifelse#1#2%
+  {\immediateassignment\edef\m_syst_string_one{#1}%
+   \immediateassignment\edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5

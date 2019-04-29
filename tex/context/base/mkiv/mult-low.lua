@@ -141,6 +141,8 @@ return {
         "Ux", "eUx", "Umathaccents",
         --
         "parfillleftskip", "parfillrightskip",
+        --
+        "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode"
     },
     ["helpers"] = {
         --

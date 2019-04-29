@@ -293,7 +293,7 @@
 \def\tabl_lines_wrap_up_auto
   {\edef\p_height{\linetablerparameter{x\c!height}}%
    \edef\p_depth {\linetablerparameter{x\c!depth }}%
-   \hbox
+   \hpack
      {\blackrule
         [ \c!color=\linetablecparameter\c!backgroundcolor,
          \c!height=\ifx\p_height\empty\ht\scratchbox\else\p_height\fi,
@@ -340,7 +340,7 @@
             \nointerlineskip % fix topskip
           \fi
           \noindent\strut
-          \hbox to \hsize{\box\tablebox\c_tabl_lines_part\hss}%
+          \hpack to \hsize{\box\tablebox\c_tabl_lines_part\hss}%
           \endgraf
           \ifnum\c_tabl_lines_part<\c_tabl_lines_n_of_parts\relax
             \linetableparameter\c!inbetween
@@ -755,8 +755,6 @@
 \starttext
 
 \showframe \showstruts
-
-\setupcolors[state=start]
 
 \setuppagenumbering[alternative=doublesided]\page[left]
 

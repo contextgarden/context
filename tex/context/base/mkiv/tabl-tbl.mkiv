@@ -2335,7 +2335,7 @@
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
-   \edef\v_tabl_tabulate_align{\executeifdefined{\??tabulatealigning\p_align}0}%
+   \edef\v_tabl_tabulate_align{\ifcsname\??tabulatealigning\p_align\endcsname\lastnamedcs\else0\fi}%
    \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
    \s_tabl_tabulate_last\s_tabl_tabulate_first
    \s_tabl_tabulate_pre\zeropoint
@@ -2357,11 +2357,16 @@
    \else
      \donetrue
    \fi\fi
-   \ifdone
-     \global\c_tabl_tabulate_repeathead\executeifdefined{\??tabulateheader\tabulationparameter\c!header}\zerocount
-   \else
-     \global\c_tabl_tabulate_repeathead\zerocount
-   \fi
+   \global\c_tabl_tabulate_repeathead
+     \ifdone
+       \ifcsname\??tabulateheader\tabulationparameter\c!header\endcsname
+         \lastnamedcs
+       \else
+         \zerocount
+       \fi
+     \else
+       \zerocount
+     \fi
    %
    \the\t_tabl_tabulate_initializers_first % collect more here
    %

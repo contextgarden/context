@@ -36,6 +36,7 @@ local scanstring        = scanners.string
 local scaninteger       = scanners.integer
 local scanboolean       = scanners.boolean
 local scancode          = scanners.code
+local scantokencode     = scanners.tokencode
 ----- scantoken         = scanners.token
 
 local getters           = tokens.getters
@@ -357,6 +358,23 @@ local split = table.setmetatableindex(function(t,k)
     return v
 end)
 
+local tochar = {
+    [ 0] = "\\",
+    [ 1] = "{",
+    [ 2] = "}",
+    [ 3] = "$",
+    [ 4] = "&",
+    [ 5] = "\n",
+    [ 6] = "#",
+    [ 7] = "^",
+    [ 8] = "_",
+    [10] = " ",
+    [14] = "%",
+}
+
+local experiment = false
+local experiment = scantokencode and true
+
 function tokens.pickup(start,stop)
     local stoplist     = split[stop] -- totable(stop)
     local stoplength   = #stoplist
@@ -367,7 +385,8 @@ function tokens.pickup(start,stop)
     local list         = { }
     local size         = 0
     local depth        = 0
---     local done         = 32
+--  local done         = 32
+    local scancode     = experiment and scantokencode or scancode
     while true do -- or use depth
         local char = scancode()
         if char then
@@ -418,15 +437,37 @@ function tokens.pickup(start,stop)
             local t = gettoken()
             if t then
                 -- we're skipping leading stuff, like obeyedlines and relaxes
+                if experiment and size > 0 then
+                    -- we're probably in a macro
+                    local char = tochar[token.get_command(t)] -- could also be char(token.get_mode(t))
+                    if char then
+                        size = size + 1 ; list[size] = char
+                    else
+                        local csname = token.get_csname(t)
+                        if csname == stop then
+                            stoplength = 0
+                            break
+                        else
+                            size = size + 1 ; list[size] = "\\"
+                            size = size + 1 ; list[size] = csname
+                            size = size + 1 ; list[size] = " "
+                        end
+                    end
+                else
+                    -- ignore and hope for the best
+                end
             else
                 break
             end
         end
     end
     local start = 1
-    local stop  = size-stoplength-1
+    local stop  = size - stoplength - 1
     -- not good enough: only empty lines, but even then we miss the leading
     -- for verbatim
+    --
+    -- the next is not yet adapted to the new scanner ... we don't need lpeg here
+    --
     for i=start,stop do
         local li = list[i]
         if lpegmatch(blackspace,li) then
@@ -445,6 +486,7 @@ function tokens.pickup(start,stop)
             break
         end
     end
+    --
     if start <= stop then
         return concat(list,"",start,stop)
     else

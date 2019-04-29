@@ -1827,14 +1827,14 @@
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\strutht
    \dp\b_framed_normal\strutdp
-   \hpack{\box\b_framed_normal}} % why pack
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 \installframedlocator \v!line
   {}
   {\setbox\b_framed_normal\hpack{\lower.5\ht\b_framed_normal\box\b_framed_normal}%
    \ht\b_framed_normal.5\lineheight
    \dp\b_framed_normal.5\lineheight
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 \installframedlocator \v!low
   {}
@@ -1850,7 +1850,7 @@
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 \installframedlocator \v!middle
   {}
@@ -1858,7 +1858,7 @@
    \setbox\b_framed_normal\hpack{\lower\scratchdimen\box\b_framed_normal}%
    \ht\b_framed_normal\scratchdimen
    \dp\b_framed_normal\scratchdimen
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 \installframedlocator \v!lohi % maybe also \v!center
   {\pack_framed_locator_before\v!middle}
@@ -1870,7 +1870,7 @@
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_ht\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_dp
    \dp\b_framed_normal\d_framed_locator_ht
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 \installframedlocator \v!keep % retains height/depth
   {\pack_framed_remove_depth}
@@ -1884,7 +1884,7 @@
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
-   \hpack{\box\b_framed_normal}}
+   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
 
 % also used in fastlocalframed
 

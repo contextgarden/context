@@ -15154,6 +15154,10 @@ return {
    ["pe"]="بدون‌نشانه‌گذاری",
    ["ro"]="faramarcare",
   },
+  ["nomenubar"]={
+   ["en"]="nomenubar",
+   ["nl"]="geenmenubalk",
+  },
   ["none"]={
    ["cs"]="zadny",
    ["de"]="kein",

@@ -145,14 +145,16 @@
 \setvalue{\??blackruletype mp}%
   {\frule
      type {mp}%
-     data {\includeMPgraphic{\directblackrulesparameter\c!mp}}}
+     data {\includeMPgraphic{\directblackrulesparameter\c!mp}}
+     line \dimexpr\directblackrulesparameter\c!rulethickness\relax
+   }
 
 \letvalue{\??blackruletype\s!no }\novrule
 %letvalue{\??blackruletype\s!yes}\vrule
 
-
 \setupblackrules
   [\c!n=3,
+   \c!rulethickness=\linewidth,
    \c!alternative=\c!a,
    \c!distance=.25\emwidth,
    \c!color=]

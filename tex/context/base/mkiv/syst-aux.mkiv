@@ -572,7 +572,7 @@
 % \def\syst_helpers_ignore_par_partoken
 %   {\afterassignment\m_syst_action\let\nexttoken}
 
-\unexpanded\def\assumelongusagecs#1% can be relaxed when we have long support in \hbox etc
+\unexpanded\def\assumelongusagecs#1%
   {\let\m_syst_action#1%
    \futurelet\nexttoken\syst_helpers_ignore_spacing}
 
@@ -696,9 +696,9 @@
 %D \macros
 %D   {globallet,glet}
 %D
-%D In \CONTEXT\ of May 2000 using \type {\globallet} instead of the two
-%D tokens will save us some $300\times4=1200$ bytes of format file on a 32~bit
-%D system. Not that it matters much today. This shortcut is already defined:
+%D In \CONTEXT\ of May 2000 using \type {\globallet} instead of the two tokens will
+%D save us some $300\times4=1200$ bytes of format file on a 32~bit system. Not that
+%D it matters much today. This shortcut is already defined:
 
 \let\globallet\glet
 
@@ -766,13 +766,13 @@
 %D {\undefined}! In \ETEX\ we have \type {\ifcsname} and that way of testing on
 %D existance is not the same as the one described here. Therefore we introduce:
 
-\def\letbeundefined#1% potential stack buildup when used \global
+\unexpanded\def\letbeundefined#1% potential stack buildup when used \global
   {\expandafter\let\csname#1\endcsname\undefined} % or use \undefinevalue to match \setvalue
 
-\def\localundefine#1% conditional
+\unexpanded\def\localundefine#1% conditional
   {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}
 
-\def\globalundefine#1% conditional
+\unexpanded\def\globalundefine#1% conditional
   {\ifcsname#1\endcsname\expandafter\glet\csname#1\endcsname\undefined\fi}
 
 %D Beware, being \type {\undefined} in \ETEX\ means that the macro {\em is} defined!
@@ -842,23 +842,6 @@
    \else
      \expandafter\secondoftwoarguments
    \fi}
-
-%D Slightly faster on longer arguments (0.179 downto 0.141):
-%D
-%D \testfeatureonce{100000}{\doifelse{aaaaaaaaaaaaaaa}{bbbbbbbbbbbbbbb}\relax\relax}
-
-% \unexpanded\def\doifelse
-%   {\afterassignment\doifelse_n\edef\m_syst_string_one}
-%
-% \unexpanded\def\doifelse_n
-%   {\afterassignment\doifelse_n_n\edef\m_syst_string_two}
-%
-% \unexpanded\def\doifelse_n_n
-%   {\ifx\m_syst_string_one\m_syst_string_two
-%      \expandafter\firstoftwoarguments
-%    \else
-%      \expandafter\secondoftwoarguments
-%    \fi}
 
 %D \macros
 %D   {doifempty,doifemptyelse,doifnotempty}
@@ -1228,7 +1211,7 @@
 % \else
 %
 %     \def\syst_helpers_do_process_comma_item
-%       {\futureexpandis]\gobbleoneargument\syst_helpers_do_do_do_process_comma_item_indeed}
+%       {\futureexpandis]\gobbleoneargument\syst_helpers_do_do_do_process_comma_item}
 %
 % \fi
 
@@ -1374,8 +1357,8 @@
 %D \processallactionsinset  [x,y,z] [a=>\a,b=>\b,c=>\c]
 %D \stoptyping
 %D
-%D We can supply both a \type{default} action and an action
-%D to be undertaken when an \type{unknown} value is met:
+%D We can supply both a \type {default} action and an action to be undertaken when
+%D an \type {unknown} value is met:
 %D
 %D \starttyping
 %D \processallactionsinset
@@ -1664,21 +1647,21 @@
 \startlmtxmode
 
     \def\doifelsenumber#1%
-      {\ifnumber#1\or
+      {\ifchknum#1\or
          \expandafter\firstoftwoarguments
        \else
          \expandafter\secondoftwoarguments
        \fi}
 
     \def\doifnumber#1%
-      {\ifnumber#1\or
+      {\ifchknum#1\or
          \expandafter\firstoftwoarguments
        \else
          \expandafter\gobbleoneargument
        \fi}
 
     \def\doifnotnumber#1%
-      {\ifnumber#1\or
+      {\ifchknum#1\or
          \expandafter\gobbleoneargument
        \else
          \expandafter\firstofoneargument
@@ -7241,12 +7224,12 @@
 \let\syst_helpers_with_set_step     \relax
 
 \def\syst_helpers_with_set_double[#1][#2]%
-  {\doifsomething{#1}
+  {\doifsomething{#1}%
      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2]}%
       \processcommalist[#1]\syst_helpers_with_set_step}}
 
 \def\syst_helpers_with_set_triple[#1][#2][#3]%
-  {\doifsomething{#1}
+  {\doifsomething{#1}%
      {\def\syst_helpers_with_set_step##1{\m_syst_helpers_with_set_command[##1][#2][#3]}%
       \processcommalist[#1]\syst_helpers_with_set_step}}
 
@@ -8132,7 +8115,7 @@
 \startlmtxmode
 
     \def\doifelsedimension#1%
-      {\ifdimen#1\or
+      {\ifchkdim#1\or
          \expandafter\firstoftwoarguments
        \else
          \expandafter\secondoftwoarguments
@@ -8357,6 +8340,8 @@
       \expandafter\secondoftwoarguments
    \fi}
 
+% used ?
+
 \def\doifelsenonzeropositive#1%
   {\begingroup\afterassignment\syst_helpers_if_non_zero_positive_else\privatescratchcounter=0#1\relax\empty\end}
 
@@ -8408,20 +8393,28 @@
 
 \unexpanded\def\testfeature#1#2%
   {\chardef\c_syst_helpers_test_feature_m#1\relax
-   \def\syst_helpers_test_feature_step
+   \def\syst_helpers_test_feature_yes
      {\advance\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
-        #2\expandafter\syst_helpers_test_feature_step
+        #2\expandafter\syst_helpers_test_feature_yes
+      \fi}%
+   \def\syst_helpers_test_feature_nop
+     {\advance\c_syst_helpers_test_feature_n\plusone
+      \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
+          \expandafter\syst_helpers_test_feature_nop
       \fi}%
    \retestfeature}
 
 \unexpanded\def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
-   \writestatus\m!system{starting feature test (n=\number\c_syst_helpers_test_feature_m)}\wait
-   \resettimer
+   \clf_resettimer
    \c_syst_helpers_test_feature_n\zerocount
-   \syst_helpers_test_feature_step
+   \syst_helpers_test_feature_nop
+   \clf_benchmarktimer
+   \writestatus\m!system{starting feature test (n=\number\c_syst_helpers_test_feature_m)}\wait
+   \c_syst_helpers_test_feature_n\zerocount
+   \syst_helpers_test_feature_yes
    \writestatus\m!system{\number\c_syst_helpers_test_feature_m\space feature tests done (\elapsedseconds s)}%
    \wait
    \egroup}
