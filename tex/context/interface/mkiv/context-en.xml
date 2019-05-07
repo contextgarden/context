@@ -20946,28 +20946,16 @@
  </cd:interface>
  <cd:interface file="i-logo.xml">
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="ConTeXt"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PPCHTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PRAGMA"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LaTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TaBlE"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PiCTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="AmSTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LamSTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TEX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="Context"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="ConTeXt"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="CONTEXT"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MetaFont"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAFONT"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MetaPost"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAPOST"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MetaFun"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="eTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="pdfTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="pdfeTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="Lua"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="luaTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="luajitTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="metaTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="XeTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LuaTeX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LuajitTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAFUN"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKII"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKIV"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKVI"/>
@@ -20976,23 +20964,37 @@
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPII"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPIV"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPVI"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAFONT"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAPOST"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PPCHTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PPCHTEX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="CONTEXT"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="METAFUN"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PRAGMA"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LaTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LATEX"/>
-  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PICTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TaBlE"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="TABLE"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PiCTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PICTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="AmSTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="AMSTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LamSTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LAMSTEX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="INRSTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="eTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="ETEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="pdfTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PDFTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="pdfeTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PDFETEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="Lua"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="luaTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LuaTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LUATEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="luajitTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LuajitTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LUAJITTEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="luametaTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LuaMetaTeX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="LUAMETATEX"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="XeTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="XETEX"/>
  </cd:interface>
  <cd:interface file="i-lohi.xml">

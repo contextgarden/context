@@ -920,6 +920,15 @@ local function handlenewline()
     currentline = currentline + 1
 end
 
+-- first = ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#x00F8-#x02FF] |
+--         [#x0370-#x037D] | [#x037F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] |
+--         [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] |
+--         [#x10000-#xEFFFF]
+-- rest  = "-" | "." | [0-9] | #xB7 | [#x300-#x36F] | [#x203F-#x2040]
+-- name  = first + (first + rest)^1
+--
+-- We assume utf and do no real checking!
+
 local spacetab         = S(' \t')
 local space            = S(' \r\n\t')
 local newline          = lpegpatterns.newline / handlenewline
@@ -933,7 +942,11 @@ local slash            = P('/')
 local colon            = P(':')
 local semicolon        = P(';')
 local ampersand        = P('&')
-local valid            = R('az', 'AZ', '09') + S('_-.')
+----- valid_0          = lpegpatterns.utf8two + lpegpatterns.utf8three + lpegpatterns.utf8four
+local valid_0          = R("\128\255") -- basically any encoding without checking (fast)
+local valid_1          = R('az', 'AZ') + S('_') + valid_0
+local valid_2          = valid_1 + R('09') + S('-.')
+local valid            = valid_1 * valid_2^0
 local name_yes         = C(valid^1) * colon * C(valid^1)
 local name_nop         = C(P(true)) * C(valid^1)
 local name             = name_yes + name_nop

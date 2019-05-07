@@ -112,13 +112,19 @@
 
 %D \unknown
 
+\def\page_col_registered_text_area_b#1%
+  {\begingroup
+   \makeupwidth\d_page_col_column_width
+   \page_one_registered_text_area_b{#1}%
+   \endgroup}
+
 \unexpanded\def\page_col_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \setbox\b_page_one_contents\vbox to \textheight
      {\page_one_registered_text_area_a#1#2}%
    \page_one_command_package_show_state
    \ht\b_page_one_contents\textheight
-   \page_one_registered_text_area_b
+   \page_col_registered_text_area_b
      {\box\b_page_one_contents}%
    \egroup}
 
@@ -174,13 +180,13 @@
       \ht\b_page_one_bottom_notes\zeropoint
       \wd\b_page_one_bottom_notes\zeropoint
       \wd\b_page_one_bottom_notes\d_page_col_column_width
-       \page_one_registered_text_area_b
+       \page_col_registered_text_area_b
          {\vpack to \textheight
-            {\hbox{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
+            {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
      \else
        \ht\b_page_one_contents\textheight
        \wd\b_page_one_contents\d_page_col_column_width
-       \page_one_registered_text_area_b
+       \page_col_registered_text_area_b
          {\box\b_page_one_contents}%
      \fi
    \egroup}

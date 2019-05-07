@@ -234,6 +234,9 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                     if fnt then
                         pos_h = pos_h + flushchar(font,char,fnt,chr,f,e)
                     end
+                else
+                    -- safeguard, we assume the font itself (often index 1)
+                    pos_h = pos_h + flushchar(font,char,font,chr,f,e)
                 end
             end
         elseif command == "right" then

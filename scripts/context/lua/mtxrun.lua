@@ -16205,7 +16205,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 60383, stripped down to: 35698
+-- original size: 61099, stripped down to: 35798
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -16929,7 +16929,10 @@ local slash=P('/')
 local colon=P(':')
 local semicolon=P(';')
 local ampersand=P('&')
-local valid=R('az','AZ','09')+S('_-.')
+local valid_0=R("\128\255") 
+local valid_1=R('az','AZ')+S('_')+valid_0
+local valid_2=valid_1+R('09')+S('-.')
+local valid=valid_1*valid_2^0
 local name_yes=C(valid^1)*colon*C(valid^1)
 local name_nop=C(P(true))*C(valid^1)
 local name=name_yes+name_nop
@@ -25630,8 +25633,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1021229
--- stripped bytes    : 404237
+-- original bytes    : 1021945
+-- stripped bytes    : 404853
 
 -- end library merge
 

@@ -127,9 +127,7 @@ local tounicode_template = [[
         <0000> <FFFF>
       endcodespacerange
       %i beginbfchar
-
 %s
-
       endbfchar
     endcmap
     CMapName currentdict /CMap defineresource pop
@@ -1709,7 +1707,6 @@ function lpdf.flushfonts()
     end
 
     -- this is no not yet ok for tfm / type 1
-
     for hash, details in sortedhash(mainfonts) do
         if next(details.indices) then
             local filename = details.filename
@@ -1860,7 +1857,7 @@ updaters.register("backend.update.pdf",function()
         function pdf.includechar            ()  end -- maybe, when we need it
         function pdf.includefont            ()  end -- maybe, when we need it
         function pdf.includecharlist        ()  end -- maybe, when we need it
-        function pdf.setomitcidset          (v) includecidset = not v end
+        function pdf.setomitcidset          (v) includecidset = not toboolean(v) end
         function pdf.setomitcharset         ()  end -- we don't need that in lmtx
         function pdf.setsuppressoptionalinfo()  end -- we don't need that in lmtx
         function pdf.mapfile                (n) loadmapfile(n) end

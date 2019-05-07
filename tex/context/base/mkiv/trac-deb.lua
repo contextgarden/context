@@ -32,6 +32,7 @@ local texgetdimen = tex.getdimen
 local texgettoks  = tex.gettoks
 local texgetcount = tex.getcount
 local texgethelp  = tex.gethelptext or function() end
+local fatalerror  = tex.fatalerror
 
 local implement   = interfaces.implement
 
@@ -204,9 +205,25 @@ end
 
 -- so one can overload the printer if (really) needed
 
+
+if fatalerror then
+    callback.register("terminal_input",function(what)
+        if what == "*" then
+            fatalerror("some kind of input expected, file ends too soon, quitting now")
+        else
+            fatalerror("bad input, quitting now")
+        end
+    end)
+else
+ -- tex.print("\\nonstopmode")
+end
+
 local quitonerror = true
 
-directives.register("system.quitonerror",function(v) quitonerror = toboolean(v) end)
+directives.register("system.quitonerror",function(v)
+    quitonerror = toboolean(v)
+ -- tex.print("\\errorstopmode")
+end)
 
 local busy = false
 

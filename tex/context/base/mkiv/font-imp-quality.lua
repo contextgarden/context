@@ -523,8 +523,8 @@ local function initialize(tfmdata,value)
     if properties then
         value = tonumber(value)
         if value then
-            if value < 5 then
-                value = 5
+            if value < 0 then
+                value = 0
             elseif value > 100 then
                 value = 100
             end

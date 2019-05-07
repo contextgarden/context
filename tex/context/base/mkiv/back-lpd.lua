@@ -175,7 +175,8 @@ local pdfcharacters
 local horizontalmode = true
 ----- widefontmode   = true
 local scalefactor    = 1
-local threshold      = 655360 / (10 * 5) -- default is 5
+----- threshold      = 655360 / (10 * 5) -- default is 5
+local threshold      = 655360 * 50 / 100
 local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
@@ -190,7 +191,8 @@ local function updatefontstate(font)
     horizontalmode   = fontparameters.writingmode ~= "vertical"
  -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
-    threshold        = designsize / (10 * (fontproperties.threshold or 5))
+ -- threshold        = designsize / (10 * (fontproperties.threshold or 5))
+    threshold        = designsize * (fontproperties.threshold or 50) / 100
 end
 
 -- helpers
@@ -502,6 +504,7 @@ local flushcharacter  do
         if move or need_tm then
             if not need_tm then
                 if horizontalmode then
+-- print(tj_delta,threshold)
                     if (saved_text_pos_v + tmty) ~= pdf_v then
                         need_tm = true
                     elseif tj_delta >= threshold or tj_delta <= -threshold then

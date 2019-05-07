@@ -198,14 +198,14 @@
 
 %D Some placeholders:
 
-\unexpanded\def\eTeX     {\mathematics{\varepsilon}-\TeX}
-\unexpanded\def\pdfTeX   {pdf\wordboundary\TeX}
-\unexpanded\def\pdfeTeX  {pdfe-\wordboundary\TeX}
-\unexpanded\def\luaTeX   {lua\wordboundary\TeX}
-\unexpanded\def\Lua      {Lua}
-\unexpanded\def\luajitTeX{luajit\wordboundary\TeX}
-\unexpanded\def\metaTeX  {meta\wordboundary\TeX}
-%unexpanded\def\XeTeX    {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
+\unexpanded\def\eTeX      {\mathematics{\varepsilon}-\TeX}
+\unexpanded\def\pdfTeX    {pdf\wordboundary\TeX}
+\unexpanded\def\pdfeTeX   {pdfe-\wordboundary\TeX}
+\unexpanded\def\luaTeX    {lua\wordboundary\TeX}
+\unexpanded\def\Lua       {Lua}
+\unexpanded\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
+\unexpanded\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
+%unexpanded\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
 % Adapted from a patch by Mojca:
 
@@ -229,13 +229,15 @@
       \fi}%
    \kern-.1667\emwidth\TeX}
 
-\let\ETEX     \eTeX
-\let\PDFTEX   \pdfTeX
-\let\PDFETEX  \pdfeTeX
-\let\LUATEX   \luaTeX
-\let\LUAJITTEX\luajitTeX
-\let\LuaTeX   \luaTeX
-\let\XETEX    \XeTeX
+\let\ETEX      \eTeX
+\let\PDFTEX    \pdfTeX
+\let\PDFETEX   \pdfeTeX
+\let\LUATEX    \luaTeX
+\let\LUAJITTEX \luajitTeX
+\let\LuaTeX    \luaTeX
+\let\LuaMetaTeX\luametaTeX
+\let\LUAMETATEX\luametaTeX
+\let\XETEX     \XeTeX
 
 \unexpanded\def\LuaTeX
   {\dontleavehmode
@@ -286,15 +288,16 @@
 \unexpanded\def\LMTX{lmtx}
 
 \appendtoks
-    \def\ConTeXt  {ConTeXt}%
-    \def\MetaPost {MetaPost}%
-    \def\MetaFont {MetaFont}%
-    \def\MetaFun  {MetaFun}%
-    \def\TeX      {TeX}%
-    \def\TeXsuffix{TeX}%
-    \def\TeXprefix{TeX}%
-    \def\LuaTeX   {LuaTeX}%
-    \def\LuajitTeX{LuajitTeX}%
+    \def\ConTeXt   {ConTeXt}%
+    \def\MetaPost  {MetaPost}%
+    \def\MetaFont  {MetaFont}%
+    \def\MetaFun   {MetaFun}%
+    \def\TeX       {TeX}%
+    \def\TeXsuffix {TeX}%
+    \def\TeXprefix {TeX}%
+    \def\LuaTeX    {LuaTeX}%
+    \def\LuajitTeX {LuajitTeX}%
+    \def\LuaMetaTeX{LuaMetaTeX}%
     \let\wordboundary\empty
 \to \everysimplifycommands
 

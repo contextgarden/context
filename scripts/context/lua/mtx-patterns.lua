@@ -163,8 +163,6 @@ scripts.patterns.list = {
 
 -- stripped down from lpeg example:
 
-local utf = unicode.utf8
-
 function utf.check(str)
     return lpegmatch(lpegpatterns.validutf8,str)
 end

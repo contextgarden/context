@@ -1,0 +1,44 @@
+--------------------------------------------------------------------------------
+documentation
+--------------------------------------------------------------------------------
+
+The code will be stepwise cleaned up a it (removing the web2c side effects),
+making the many branches stand out etc so that some aspects can be documented
+a bit better (in due time).
+
+--------------------------------------------------------------------------------
+libdeflate
+--------------------------------------------------------------------------------
+
+As experiment we provide an interface to libdeflate. This library (in principle)
+has:
+
+-- much faster decompression
+-- slower compression on relative small data blobs (few k, like context.mkiv)
+-- faster compression on huge blobs (char-def.lua)
+
+It is more or less ok to use in:
+
+-- unzipping files
+-- decompressing pdf object
+
+where we know the size but it would be handy if the library could reallocate
+the target stream because now we need to allocate way too much. In practice we
+don't measure much difference but the library is definitely cleaner. There are
+probably some compiler options that need to be set, which will happen when
+
+-- there is support for streaming (then zlib will go away)
+-- there os a proper cmake file in the source tree
+
+--------------------------------------------------------------------------------
+reboot
+--------------------------------------------------------------------------------
+
+I'll experiment with a reboot engine option but for sure that also interferes
+with a macro package initialization so it's a long term experiment.
+
+--------------------------------------------------------------------------------
+whatever
+--------------------------------------------------------------------------------
+
+-- tokenlist_to_cstring: use buffer instead of malloc every time

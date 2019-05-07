@@ -43,7 +43,12 @@ local new_baselineskip   = nodepool.baselineskip
 local new_lineskip       = nodepool.lineskip
 local insert_node_before = nodes.insert_before
 local hpack_node         = nodes.hpack
-local count_nodes        = nodes.countall
+
+local nuts               = nodes.nuts
+local tonode             = nodes.tonode
+local tonut              = nodes.tonut
+local count_nodes        = nuts.countall
+local getattr            = nuts.getattr
 
 local starttiming        = statistics.starttiming
 local stoptiming         = statistics.stoptiming
@@ -114,7 +119,7 @@ function constructors.handler(head,followed_by_display)
     if type(head) == "boolean" then
         return head
     else
-        local attribute = head[a_parbuilder] -- or mainconstructor
+        local attribute = getattr(head,a_parbuilder) -- or mainconstructor
         if attribute then
             local method = names[attribute]
             if method then
@@ -167,7 +172,9 @@ local function processor(head,followed_by_display)
     -- todo: not again in otr so we need to flag
     if enabled then
         starttiming(parbuilders)
-        local head = actions(head,followed_by_display)
+        head = tonut(head)
+        head = actions(head,followed_by_display)
+        head = tonode(head)
         stoptiming(parbuilders)
         return head
     else
@@ -195,6 +202,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
     local done = false
     if head then
         starttiming(builders)
+        head = tonut(head)
         if trace_vbox_builder then
             local before = count_nodes(head)
             head, done = vboxactions(head,groupcode,size,packtype,maxdepth,direction)
@@ -203,6 +211,7 @@ function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
         else
             head, done = vboxactions(head,groupcode)
         end
+        head = tonode(head)
         stoptiming(builders)
     end
     return head, done

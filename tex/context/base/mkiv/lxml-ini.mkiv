@@ -38,9 +38,14 @@
 
 \def\xmlconcat          #1#2#3{\clf_xmlconcat     {#1}{#2}{\detokenize{#3}}}
 \def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange{#1}{#2}{#3}{#4}{\detokenize{#5}}}
-\def\xmlload              #1#2{\clf_xmlload       {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloadbuffer        #1#2{\clf_xmlloadbuffer {#1}{#2}{\directxmlparameter\c!compress}}
-\def\xmlloaddata          #1#2{\clf_xmlloaddata   {#1}{#2}{\directxmlparameter\c!compress}}
+
+%D Maybe I should add \type {\unexpanded} here:
+
+\def\xmlloadfile  #1#2{\clf_xmlloadfile  {#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloadbuffer#1#2{\clf_xmlloadbuffer{#1}{#2}{\directxmlparameter\c!compress}}
+\def\xmlloaddata  #1#2{\clf_xmlloaddata  {#1}{#2}{\directxmlparameter\c!compress}}
+
+\let\xmlload\xmlloadfile
 
 % aliased
 

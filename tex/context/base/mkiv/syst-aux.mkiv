@@ -816,32 +816,61 @@
 %D \doifelse {string1} {string2} {then ...}{else ...}
 %D \stoptyping
 
-\unexpanded\def\doif#1#2%
-  {\edef\m_syst_string_one{#1}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+\startmkivmode
 
-\unexpanded\def\doifnot#1#2%
-  {\edef\m_syst_string_one{#1}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+    \unexpanded\def\doif#1#2%
+      {\edef\m_syst_string_one{#1}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
 
-\unexpanded\def\doifelse#1#2%
-  {\edef\m_syst_string_one{#1}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+    \unexpanded\def\doifnot#1#2%
+      {\edef\m_syst_string_one{#1}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifelse#1#2%
+      {\edef\m_syst_string_one{#1}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\doifelse#1#2%
+      {\iftok{#1}{#2}%
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+    \unexpanded\def\doif#1#2%
+      {\iftok{#1}{#2}%
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+    \unexpanded\def\doifnot#1#2%
+      {\iftok{#1}{#2}%
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+\stoplmtxmode
 
 %D \macros
 %D   {doifempty,doifemptyelse,doifnotempty}
@@ -6999,88 +7028,166 @@
 %D three tokens per call. Anyone familiar with the not||values ones, can derive
 %D their meaning from the definitions.
 
-\unexpanded\def\doifvalue#1#2%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+\startmkivmode
 
-\unexpanded\def\doifnotvalue#1#2%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+    \unexpanded\def\doifvalue#1#2%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
 
-\unexpanded\def\doifelsevalue#1#2%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \edef\m_syst_string_two{#2}%
-   \ifx\m_syst_string_one\m_syst_string_two
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+    \unexpanded\def\doifnotvalue#1#2%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
 
-\unexpanded\def\doifnothing#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+    \unexpanded\def\doifelsevalue#1#2%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \edef\m_syst_string_two{#2}%
+       \ifx\m_syst_string_one\m_syst_string_two
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
 
-\unexpanded\def\doifsomething#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+    \unexpanded\def\doifnothing#1%
+      {\edef\m_syst_string_one{#1}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
 
-\unexpanded\def\doifelsenothing#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+    \unexpanded\def\doifsomething#1%
+      {\edef\m_syst_string_one{#1}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
 
-\unexpanded\def\doifelsesomething#1%
-  {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\firstoftwoarguments
-   \fi}
+    \unexpanded\def\doifelsenothing#1%
+      {\edef\m_syst_string_one{#1}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
 
-\unexpanded\def\doifvaluenothing#1%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+    \unexpanded\def\doifelsesomething#1%
+      {\edef\m_syst_string_one{#1}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\secondoftwoarguments
+       \else
+         \expandafter\firstoftwoarguments
+       \fi}
 
-\unexpanded\def\doifvaluesomething#1%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+    \unexpanded\def\doifvaluenothing#1%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
 
-\unexpanded\def\doifelsevaluenothing#1%
-  {\edef\m_syst_string_one{\csname#1\endcsname}%
-   \ifx\m_syst_string_one\empty
-     \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+    \unexpanded\def\doifvaluesomething#1%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifelsevaluenothing#1%
+      {\edef\m_syst_string_one{\csname#1\endcsname}%
+       \ifx\m_syst_string_one\empty
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\doifvalue#1#2%
+      {\iftok{\csname#1\endcsname}{#2}%
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+    \unexpanded\def\doifnotvalue#1#2%
+      {\iftok{\csname#1\endcsname}{#2}%
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifelsevalue#1#2%
+      {\iftok{\csname#1\endcsname}{#2}%
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+    \unexpanded\def\doifnothing#1%
+      {\iftok{#1}\emptytoks
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+    \unexpanded\def\doifsomething#1%
+      {\iftok{#1}\emptytoks
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifelsenothing#1%
+      {\iftok{#1}\emptytoks
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+    \unexpanded\def\doifelsesomething#1%
+      {\iftok{#1}\emptytoks
+         \expandafter\secondoftwoarguments
+       \else
+         \expandafter\firstoftwoarguments
+       \fi}
+
+    \unexpanded\def\doifvaluenothing#1%
+      {\iftok{\csname#1\endcsname}\emptytoks
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+    \unexpanded\def\doifvaluesomething#1%
+      {\iftok{\csname#1\endcsname}\emptytoks
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifelsevaluenothing#1%
+      {\iftok{\csname#1\endcsname}\emptytoks
+         \expandafter\firstoftwoarguments
+       \else
+         \expandafter\secondoftwoarguments
+       \fi}
+
+\stoplmtxmode
 
 \let\doifvalueelse       \doifelsevalue
 \let\doifnothingelse     \doifelsenothing
@@ -7860,31 +7967,60 @@
 %D
 %D Not that fast I guess, but here's a way to test for token registers being empty.
 
-\unexpanded\def\doifelsesometoks#1%
-  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-   \ifx\m_syst_string_one\empty
-     \expandafter\secondoftwoarguments
-   \else
-     \expandafter\firstoftwoarguments
-   \fi}
+\startmkivmode
+
+    \unexpanded\def\doifelsesometoks#1%
+      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+       \ifx\m_syst_string_one\empty
+         \expandafter\secondoftwoarguments
+       \else
+         \expandafter\firstoftwoarguments
+       \fi}
+
+    \unexpanded\def\doifsometoks#1%
+      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+       \ifx\m_syst_string_one\empty
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifemptytoks#1%
+      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+       \ifx\m_syst_string_one\empty
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    \unexpanded\def\doifelsesometoks#1%
+      {\iftok#1\emptytoks
+         \expandafter\secondoftwoarguments
+       \else
+         \expandafter\firstoftwoarguments
+       \fi}
+
+    \unexpanded\def\doifsometoks#1%
+      {\iftok#1\emptytoks
+         \expandafter\gobbleoneargument
+       \else
+         \expandafter\firstofoneargument
+       \fi}
+
+    \unexpanded\def\doifemptytoks#1%
+      {\iftok#1\emptytoks
+         \expandafter\firstofoneargument
+       \else
+         \expandafter\gobbleoneargument
+       \fi}
+
+\stoplmtxmode
 
 \let\doifsometokselse\doifelsesometoks
-
-\unexpanded\def\doifsometoks#1%
-  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-   \ifx\m_syst_string_one\empty
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
-
-\unexpanded\def\doifemptytoks#1%
-  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-   \ifx\m_syst_string_one\empty
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
 
 %D \macros
 %D   {startstrictinspectnextcharacter}

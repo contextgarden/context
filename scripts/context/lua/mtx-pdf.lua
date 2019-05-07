@@ -90,6 +90,7 @@ function scripts.pdf.info(filename)
         report("%-17s > %s","title",             info.Title           or unset)
         report("%-17s > %s","creator",           info.Creator         or unset)
         report("%-17s > %s","producer",          info.Producer        or unset)
+        report("%-17s > %s","author",            info.Author          or unset)
         report("%-17s > %s","creation date",     info.CreationDate    or unset)
         report("%-17s > %s","modification date", info.ModDate         or unset)
 

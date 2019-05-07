@@ -1,0 +1,302 @@
+% language=uk
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[present-luatex]
+
+\logo [LUAMETATEX] {LuaMeta\TeX}
+
+\setupbodyfont[12pt]
+
+\setupalign[verytolerant]
+
+\setupdocument
+  [title={The follow up},
+   subtitle={\LUAMETATEX},
+   location={Bacho\TeX\ May 2019},
+   author={Hans & Alan},
+   mp:title={\LUAMETATEX}]
+
+\startdocument
+
+\page \setupdocument[mp:subtitle={From lead to gold}]
+
+\startitemize
+    \startitem
+        This talk is {\bf not} about how we can use \LUATEX\ to control domotica
+        applications. We already discussed that.
+    \stopitem
+    \startitem
+        This talk is {\bf not} about how we can use \CONTEXT\ in advanced
+        rendering, for instance as part of web|-|based workflows. That's old
+        news.
+    \stopitem
+    \startitem
+        This talk is {\bf not} about how much fun it would be to have a
+        \MICROSOFT\ HoloLens and see what \CONTEXT\ and \LUATEX\ could do with
+        it. We just can't afford it.
+    \stopitem
+    \startitem
+        This talk is {\bf not} about more complexity, but it is about keeping
+        things simple. It's about turning a burden into a pleasure.
+    \stopitem
+    \startitem
+        To quote the Riverside \footnote {A Polish progrock band I recently saw
+        live in the Netherlands. A band related to Lunatic Soul.} frontman: I
+        hope you all leave here a bit younger than you felt when you came here.
+        This talk is about turning lead into gold.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Where do we stand}]
+
+\startitemize
+    \startitem
+        We have the weight and experience of about 40 years of \TEX\ and its
+        usage on our shoulders.
+    \stopitem
+    \startitem
+        Good old \TEX\ got extended: \ETEX, \OMEGA\ (\ALEPH), \PDFTEX, \XETEX,
+        [e][u][p]\TEX\ and \LUATEX\ (& \LUAJITTEX) showed up.
+    \stopitem
+    \startitem
+        The \DVI\ output got complemented by \PDF.
+    \stopitem
+    \startitem
+        Bitmap fonts were replaced by \TYPEONE\ that itself got replaced by the
+        container formats \OPENTYPE\ and \TRUETYPE. Variable fonts were
+        introduced.
+    \stopitem
+    \startitem
+        Math got upgraded to \OPENTYPE\ math, thanks to \MICROSOFT.
+    \stopitem
+    \startitem
+        \UNICODE\ got accepted and \UTF\ is nowadays the preferred input
+        encoding.
+    \stopitem
+    \startitem
+        The community supported the development of many fonts that found their
+        place in distributions.
+    \stopitem
+    \startitem
+        Alongside plain \TEX\ the macro packages \LATEX\ and \CONTEXT\ both
+        evolved into large collections of resources.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Are we good?}]
+
+\startitemize
+    \startitem
+        There is no doubt that \TEX\ is a success. We can find nice examples but
+        also some   horrible looking documents.
+    \stopitem
+    \startitem
+        A large distribution is no guarantee for quality and continuous success,
+        nor is the number of incidental (forced) users.
+    \stopitem
+    \startitem
+        A \CONTEXT\ user doesn't need that much: just the \LUATEX\ binary will
+        do, plus a bunch of \MKIV\ macros, completed by a reasonable set of
+        fonts.
+    \stopitem
+    \startitem
+        Currently all that is embedded in a large ecosystem, although we always
+        use only a small, reasonable subset.
+    \stopitem
+    \startitem
+        Getting the whole machinery up and running from scratch (source code) is
+        not trivial.
+    \stopitem
+    \startitem
+        The source code base is rather large and compilation is complex: it builds on
+        decades of being nice for all platforms and fulfilling all demands.
+    \stopitem
+    \startitem
+        What we consider gold could also be seen as lead in disguise. Some
+        alchemy might be needed to go back to where we came from.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={The Status Quo}]
+
+\startitemize
+    \startitem
+        At some point you need to stabilize and for \LUATEX, version 1.10 is that
+        moment.
+    \stopitem
+    \startitem
+        But some ideas and experiments have been delayed because the engine was
+        already in use, also outside of \CONTEXT.
+    \stopitem
+    \startitem
+        Compatibility is a {\bf big} issue in the \TEX\ community (which is good)
+        so we're in a sort of a deadlock (which is bad).
+    \stopitem
+    \startitem
+        And we wanted to take a next step in \CONTEXT\ development. It's not
+        strictly necessary to make drastic changes, but we need to adapt.
+    \stopitem
+    \startitem
+        The question is how we can guarantee users a long|-|term stability of
+        the both macro package as well as the engine it runs on.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={What Is Needed}]
+
+\startitemize
+    \startitem
+        For \CONTEXT\ we want just one binary. We don't really need \LUAJITTEX\
+        for \LUAJIT\ is not following \LUA\ anyway.
+    \stopitem
+    \startitem
+        We don't want (for windows) a special stub binary. After all we already
+        have the \type {context} job manager and \type {mtxrun} script manager.
+        All platforms should be treated alike.
+    \stopitem
+    \startitem
+        Performance should be stable and not influenced by code added to the
+        binary. In fact, performance should constantly improve!
+    \stopitem
+    \startitem
+        The engine should not depend on libraries that are floating, get updated
+        frequently, and can come from places out of our control (versions).
+    \stopitem
+    \startitem
+        The memory footprint should be acceptable for running in containers (or
+        small virtual machines). Energy consumption matters too.
+    \stopitem
+    \startitem
+        The binary should be kept small because it also serves as the \LUA\
+        interpreter.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={How It Went}]
+
+\startitemize
+    \startitem
+        Around the \CONTEXT\ meeting I took \LUATEX\ 1.09.0 experimental as
+        starting point and began stripping.
+    \stopitem
+    \startitem
+        Before that, I already had written some test code to see what could be
+        replaced.
+    \stopitem
+    \startitem
+        Stepwise redundant components were removed. This took time because each
+        (small) step was tested on real documents, the test suite, etc.
+    \stopitem
+    \blank[2*big]
+    \startitem
+        \unknown\ maybe some examples & \type {/install-lmtx/*} \unknown
+    \stopitem
+    \blank[2*big]
+    \startitem
+        I played with some ideas that were put on hold, some were accepted and
+        some were rejected and more and more got in the mood.
+    \stopitem
+    \startitem
+        Also \LUAJIT\ was dropped, but its removal was compensated by large
+        performance boosts in other areas.
+    \stopitem
+    \startitem
+        The build was simplified (it took some time to find what was irrelevant)
+        and compilation now is about half a minute, or less!
+    \stopitem
+\stopitemize
+
+% we found out the hard way in the past (generalizing, other use, backfire)
+
+\page \setupdocument[mp:subtitle={Where are we}]
+
+\startitemize
+    \startitem
+        We have an experimental new installer for \CONTEXT\ \LMTX\ (the new
+        name). It uses \HTTP: and just the engine for fetching data. Updating
+        goes fast.
+    \stopitem
+    \startitem
+        The \LMTX\ distribution is \MKIV\ only and much smaller than the full
+        installation.
+    \stopitem
+    \startitem
+        Eventually (soon) the source code of the used engine will be in the
+        distribution so that we have a self contained package. Users on
+        new or unique systems can compile.
+    \stopitem
+    \startitem
+        The development of the engine is under control of the \CONTEXT\
+        developers: that way there is no danger that things break. We like to
+        have a playground.
+    \stopitem
+    \startitem
+        Extensions can make it into \LUATEX\ once found useful and stable as
+        long as they don't break \LUATEX\ upward compatibility (unlikely on the
+        short term).
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Some highlights}]
+
+\startitemize
+    \startitem
+        There is no backend code. We generate the \PDF\ output in \LUA\ (this was
+        already the case for much of it.)
+    \stopitem
+    \startitem
+        There is no bitmap image inclusion code present. All is done in \LUA.
+    \stopitem
+    \startitem
+        There is no font loading code present. This already happened mostly in
+        \LUA\ anyway.
+    \stopitem
+    \startitem
+        Some libraries have been removed and some have been simplified. A few
+        experimental helper libraries were added (like math). The dependencies
+        are minimal.
+    \stopitem
+    \startitem
+        The code is undergoing some restructuring but it might take some years
+        before I've reached the (informal) goals.
+    \stopitem
+    \startitem
+        Alan and I are exploring new possibilities that this setup gives
+        (especially in combining \TEX, \METAPOST\ and \LUA. Stay tuned.
+    \stopitem
+\stopitemize
+
+\page \setupdocument[mp:subtitle={The agenda}]
+
+\startitemize
+    \startitem
+        As of April 1, 2019, users can test the experimental distribution. A few
+        were already in the loop.
+    \stopitem
+    \startitem
+        It looks like there are no big issues, and speed gains can be impressive.
+    \stopitem
+    \startitem
+        As a consequence we can start dropping in replacement code in regular \MKIV\
+        some day soon too.
+    \stopitem
+    \startitem
+        Around the next \CONTEXT\ meeting the source code will become part of the
+        regular distribution (given that I'm satisfied with it).
+    \stopitem
+    \startitem
+        Before that we hope to have the compile farm up and running for \LUAMETATEX.
+    \stopitem
+    \startitem
+        From that moment on, the \CONTEXT\ users will have a self contained, archival,
+        independent, lean and mean installation available, which will become the
+        default.
+    \stopitem
+    \startitem
+        Because \LUAMETATEX\ is a subset of \LUATEX, there are no plans right now
+        for supporting plain \TEX. We'll see. (I might come up with generic
+        backend code some day.)
+    \stopitem
+\stopitemize
+
+\stopdocument
