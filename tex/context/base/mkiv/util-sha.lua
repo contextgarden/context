@@ -38,9 +38,12 @@ end
 --
 -- On short strings 256 seems faster than 512 while on a megabyte blob 512 wins
 -- from 256 (64 bit internals).
+--
+-- Using the stream reader we can probably speed up the following code a bit
+-- because it's faster than unpack.
 
-local packstring, unpackstring = string.pack, string.unpack
-local unpack, setmetatable = unpack, setmetatable
+local packstring, unpackstring, formatstring = string.pack, string.unpack, string.format
+local repstring = string.rep
 
 local constants256 = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -72,31 +75,6 @@ local constants512 = {
     0x431d67c49c100d4c, 0x4cc5d4becb3e42b6, 0x597f299cfc657e2a, 0x5fcb6fab3ad6faec, 0x6c44198c4a475817,
 }
 
--- Not really needed, but more in tune with md5. In fact, as we use the mtxlib
--- helpers I might as well assume more.
-
-local tohex, toHEX
-
-if lpeg then local lpegpatterns = lpeg.patterns if lpegpatterns then
-
-    local lpegmatch  = lpeg.match
-    local bytestohex = lpegpatterns.bytestohex
-    local bytestoHEX = lpegpatterns.bytestoHEX
-
-    tohex = function(s) return lpegmatch(bytestohex,s) end
-    toHEX = function(s) return lpegmatch(bytestoHEX,s) end
-
-end end
-
-if not tohex then
-
-    local format, byte, gsub = string.format, string.byte, string.gsub
-
-    tohex = function(s) return (gsub(s,".",function(c) return format("%02X",byte(c)) end)) end
-    toHEX = function(s) return (gsub(s,".",function(c) return format("%02X",byte(c)) end)) end
-
-end
-
 local prepare = { }
 
 if utilities and utilities.strings then
@@ -112,13 +90,11 @@ if utilities and utilities.strings then
 
 else
 
-    local rep = string.rep
-
     prepare[256] = function(str,len)
-        return str .. "\128" .. rep("\0",-(1 +  8 + len) %  64) .. packstring(">I8",  8 * len)
+        return str .. "\128" .. repstring("\0",-(1 +  8 + len) %  64) .. packstring(">I8",  8 * len)
     end
     prepare[512] = function(str,len)
-        return str .. "\128" .. rep("\0",-(1 + 16 + len) % 128) .. packstring(">I16", 8 * len)
+        return str .. "\128" .. repstring("\0",-(1 + 16 + len) % 128) .. packstring(">I16", 8 * len)
     end
 
 end
@@ -162,9 +138,10 @@ local list   = { } -- some 5% faster
 
 digest[256] = function(str,i,hash)
 
-    for i=1,#str,64 do
+    local hash1, hash2, hash3, hash4 = hash[1], hash[2], hash[3], hash[4]
+    local hash5, hash6, hash7, hash8 = hash[5], hash[6], hash[7], hash[8]
 
-     -- local w = { unpackstring(">I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4",str,i) }
+    for i=1,#str,64 do
 
         list[ 1], list[ 2], list[ 3], list[ 4], list[ 5], list[ 6], list[ 7], list[ 8],
         list[ 9], list[10], list[11], list[12], list[13], list[14], list[15], list[16] =
@@ -183,7 +160,7 @@ digest[256] = function(str,i,hash)
                      & 0xffffffff
         end
 
-        local a, b, c, d, e, f, g, h = -- unpack(hash)
+        local a, b, c, d, e, f, g, h =
             hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8]
 
         for i=1,64 do
@@ -208,23 +185,27 @@ digest[256] = function(str,i,hash)
             a = (t1 + t2) & 0xffffffff
         end
 
-        hash[1] = (hash[1] + a) & 0xffffffff
-        hash[2] = (hash[2] + b) & 0xffffffff
-        hash[3] = (hash[3] + c) & 0xffffffff
-        hash[4] = (hash[4] + d) & 0xffffffff
-        hash[5] = (hash[5] + e) & 0xffffffff
-        hash[6] = (hash[6] + f) & 0xffffffff
-        hash[7] = (hash[7] + g) & 0xffffffff
-        hash[8] = (hash[8] + h) & 0xffffffff
+        hash1 = (hash1 + a) & 0xffffffff
+        hash2 = (hash2 + b) & 0xffffffff
+        hash3 = (hash3 + c) & 0xffffffff
+        hash4 = (hash4 + d) & 0xffffffff
+        hash5 = (hash5 + e) & 0xffffffff
+        hash6 = (hash6 + f) & 0xffffffff
+        hash7 = (hash7 + g) & 0xffffffff
+        hash8 = (hash8 + h) & 0xffffffff
 
     end
+
+    return hash1, hash2, hash3, hash4, hash5, hash6, hash7, hash8
+
 end
 
 digest[512] = function(str,i,hash)
 
-    for i=1,#str,128 do
+    local hash1, hash2, hash3, hash4 = hash[1], hash[2], hash[3], hash[4]
+    local hash5, hash6, hash7, hash8 = hash[5], hash[6], hash[7], hash[8]
 
-    -- local w = { unpackstring(">I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4",str,i) }
+    for i=1,#str,128 do
 
         list[ 1], list[ 2], list[ 3], list[ 4], list[ 5], list[ 6], list[ 7], list[ 8],
         list[ 9], list[10], list[11], list[12], list[13], list[14], list[15], list[16] =
@@ -243,7 +224,7 @@ digest[512] = function(str,i,hash)
                   -- & 0xffffffffffffffff
         end
 
-        local a, b, c, d, e, f, g, h = -- unpack(hash)
+        local a, b, c, d, e, f, g, h =
             hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8]
 
         for i=1,80 do
@@ -268,70 +249,159 @@ digest[512] = function(str,i,hash)
             a = (t1 + t2) -- & 0xffffffffffffffff
         end
 
-        hash[1] = (hash[1] + a) -- & 0xffffffffffffffff
-        hash[2] = (hash[2] + b) -- & 0xffffffffffffffff
-        hash[3] = (hash[3] + c) -- & 0xffffffffffffffff
-        hash[4] = (hash[4] + d) -- & 0xffffffffffffffff
-        hash[5] = (hash[5] + e) -- & 0xffffffffffffffff
-        hash[6] = (hash[6] + f) -- & 0xffffffffffffffff
-        hash[7] = (hash[7] + g) -- & 0xffffffffffffffff
-        hash[8] = (hash[8] + h) -- & 0xffffffffffffffff
+        hash1 = (hash1 + a) -- & 0xffffffffffffffff
+        hash2 = (hash2 + b) -- & 0xffffffffffffffff
+        hash3 = (hash3 + c) -- & 0xffffffffffffffff
+        hash4 = (hash4 + d) -- & 0xffffffffffffffff
+        hash5 = (hash5 + e) -- & 0xffffffffffffffff
+        hash6 = (hash6 + f) -- & 0xffffffffffffffff
+        hash7 = (hash7 + g) -- & 0xffffffffffffffff
+        hash8 = (hash8 + h) -- & 0xffffffffffffffff
 
     end
+
+    return hash1, hash2, hash3, hash4, hash5, hash6, hash7, hash8
+
 end
 
 digest[224] = digest[256]
 digest[384] = digest[512]
 
-local finalize = {
-    [224] = function(hash,tohex) local s = packstring(">I4I4I4I4I4I4I4",  unpack(hash)) return tohex and tohex(s) or s end, -- #  56
-    [256] = function(hash,tohex) local s = packstring(">I4I4I4I4I4I4I4I4",unpack(hash)) return tohex and tohex(s) or s end, -- #  64
-    [384] = function(hash,tohex) local s = packstring(">I8I8I8I8I8I8",    unpack(hash)) return tohex and tohex(s) or s end, -- #  96
-    [512] = function(hash,tohex) local s = packstring(">I8I8I8I8I8I8I8I8",unpack(hash)) return tohex and tohex(s) or s end, -- # 128
-}
-
 local hash = { }
 
-local function hashed(str,method,tohex)
+local function hashed(str,method,convert,pattern)
     local s = prepare[method](str,#str)
     local h = initialize[method](hash)
-    digest[method](s,i,h)
-    return finalize[method](h,tohex)
+    return convert(pattern,digest[method](s,i,h))
 end
 
 local sha2 = {
-    digest224 = function(str) return hashed(str,224) end,
-    digest256 = function(str) return hashed(str,256) end,
-    digest384 = function(str) return hashed(str,384) end,
-    digest512 = function(str) return hashed(str,512) end,
-    hash224   = function(str) return hashed(str,224,tohex) end,
-    hash256   = function(str) return hashed(str,256,tohex) end,
-    hash384   = function(str) return hashed(str,384,tohex) end,
-    hash512   = function(str) return hashed(str,512,tohex) end,
-    HASH224   = function(str) return hashed(str,224,toHEX) end,
-    HASH256   = function(str) return hashed(str,256,toHEX) end,
-    HASH384   = function(str) return hashed(str,384,toHEX) end,
-    HASH512   = function(str) return hashed(str,512,toHEX) end,
+    digest224 = function(str) return hashed(str,224,packstring,">I4I4I4I4I4I4I4")   end,
+    digest256 = function(str) return hashed(str,256,packstring,">I4I4I4I4I4I4I4I4") end,
+    digest384 = function(str) return hashed(str,384,packstring,">I8I8I8I8I8I8")     end,
+    digest512 = function(str) return hashed(str,512,packstring,">I8I8I8I8I8I8I8I8") end,
+    hash224   = function(str) return hashed(str,224,formatstring,"%0x04%0x04%0x04%0x04%0x04%0x04%0x04")      end,
+    hash256   = function(str) return hashed(str,256,formatstring,"%0x04%0x04%0x04%0x04%0x04%0x04%0x04%0x04") end,
+    hash384   = function(str) return hashed(str,384,formatstring,"%0x08%0x08%0x08%0x08%0x08%0x08")           end,
+    hash512   = function(str) return hashed(str,512,formatstring,"%0x08%0x08%0x08%0x08%0x08%0x08%0x08%0x08") end,
+    HASH224   = function(str) return hashed(str,224,formatstring,"%0X04%0X04%0X04%0X04%0X04%0X04%0X04")      end,
+    HASH256   = function(str) return hashed(str,256,formatstring,"%0X04%0X04%0X04%0X04%0X04%0X04%0X04%0X04") end,
+    HASH384   = function(str) return hashed(str,384,formatstring,"%0X08%0X08%0X08%0X08%0X08%0X08")           end,
+    HASH512   = function(str) return hashed(str,512,formatstring,"%0X08%0X08%0X08%0X08%0X08%0X08%0X08%0X08") end,
 }
 
--- local setmetatableindex = table.setmetatableindex
+-- The wikipedia provides the code:
 --
--- if setmetatableindex then
---     sha2.hashed = setmetatableindex(function(t,k)
---         local v = digest[k] and function(str) return hashed(str,k,tohex) end or false
---         t[k] = v
---         return v
---     end)
---     sha2.HASHED = setmetatableindex(function(t,k)
---         local v = digest[k] and function(str) return hashed(str,k,toHEX) end or false
---         t[k] = v
---         return v
---     end)
--- end
+--   https://en.wikipedia.org/wiki/SHA-1
+--
+-- and (nor being in th emood to writ it myself) a bit of googling gave a decent
+-- starting point:
+--
+--   https://github.com/gdyr/LuaSHA1/blob/master/sha1.lua
+--
+-- and after that it was just a matter of optimizing the code a bit. I just put
+-- it here as reference as we probably don't use it. We could use a repeater as
+-- we do with sha2.
+
+local function digest(str)
+
+    local h1 = 0x67452301
+    local h2 = 0xEFCDAB89
+    local h3 = 0x98BADCFE
+    local h4 = 0x10325476
+    local h5 = 0xC3D2E1F0
+
+    local len  = #str
+    local list = { } -- we can even move this outside the function
+
+    str = str .. "\128" .. repstring("\0", (120 - ((len + 1) % 64)) % 64) .. packstring(">I8", 8 * len)
+
+    for i=1,#str,64 do
+
+        list[ 1], list[ 2], list[ 3], list[ 4], list[ 5], list[ 6], list[ 7], list[ 8],
+        list[ 9], list[10], list[11], list[12], list[13], list[14], list[15], list[16] =
+            unpackstring(">I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4I4",str,i)
+
+        for i=17,80 do
+            local v = list[i-3] ~ list[i-8] ~ list[i-14] ~ list[i-16]
+            list[i] = ((v << 1) | (v >> 31)) & 0xFFFFFFFF
+        end
+
+        local a, b, c, d, e = h1, h2, h3, h4, h5
+
+        for i=1,20 do
+            local f = (b & c) | ((~b) & d)
+            local r = (a << 5) | (a >> 27)
+            local s = (f + r + e + 0x5A827999 + list[i]) & 0xFFFFFFFF
+            e = d
+            d = c
+            c = (b << 30) | (b >> 2)
+            b = a
+            a = s
+        end
+
+        for i=21,40 do
+            local f = b ~ c ~ d
+            local r = (a << 5) | (a >> 27)
+            local s = (f + r + e + 0x6ED9EBA1 + list[i]) & 0xFFFFFFFF
+            e = d
+            d = c
+            c = (b << 30) | (b >> 2)
+            b = a
+            a = s
+        end
+
+        for i=41,60 do
+            local f = (b & c) | (b & d) | (c & d)
+            local r = (a << 5) | (a >> 27)
+            local s = (f + r + e + 0x8F1BBCDC + list[i]) & 0xFFFFFFFF
+            e = d
+            d = c
+            c = (b << 30) | (b >> 2)
+            b = a
+            a = s
+        end
+
+        for i=61,80 do
+            local f = b ~ c ~ d
+            local r = (a << 5) | (a >> 27)
+            local s = (f + r + e + 0xCA62C1D6 + list[i]) & 0xFFFFFFFF
+            e = d
+            d = c
+            c = (b << 30) | (b >> (32 - 30))
+            b = a
+            a = s
+        end
+
+        h1 = (h1 + a) & 0xFFFFFFFF
+        h2 = (h2 + b) & 0xFFFFFFFF
+        h3 = (h3 + c) & 0xFFFFFFFF
+        h4 = (h4 + d) & 0xFFFFFFFF
+        h5 = (h5 + e) & 0xFFFFFFFF
+
+    end
+
+    return h1, h2, h3, h4, h5
+
+end
+
+-- A similar wrapper as we use for sha2:
+
+local sha1 = {
+    digest = function(str)
+        return packstring(">I4I4I4I4I4",digest(str))
+    end,
+    hash = function(str)
+        return formatstring("%08x%08x%08x%08x%08x",digest(str))
+    end,
+    HASH = function(str)
+        return formatstring("%08X%08X%08X%08X%08X",digest(str))
+    end,
+}
 
 if utilities then
     utilities.sha2 = sha2
+    utilities.sha1 = sha1
 end
 
 return sha2
-

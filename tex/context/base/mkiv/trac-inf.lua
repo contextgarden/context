@@ -209,10 +209,16 @@ function statistics.show()
      -- register("luatex banner", function()
      --     return lower(status.banner)
      -- end)
-        register("used engine", function()
-            return format("%s version %s with functionality level %s, banner: %s",
-                LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
-        end)
+        if LUATEXENGINE == "luametatex" then
+            register("used engine", function()
+                return format("%s version %s", LUATEXENGINE, LUATEXVERSION)
+            end)
+        else
+            register("used engine", function()
+                return format("%s version %s with functionality level %s, banner: %s",
+                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
+            end)
+        end
         register("control sequences", function()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)

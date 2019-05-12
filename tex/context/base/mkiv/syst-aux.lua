@@ -701,6 +701,7 @@ implement {
     name      = "doifelseinset",
     actions   = doifelseinset,
     arguments = "2 strings",
+--     arguments = { "argument", "argument" },
 }
 
 implement {

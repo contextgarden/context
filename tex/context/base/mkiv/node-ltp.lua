@@ -7,10 +7,8 @@ if not modules then modules = { } end modules ['node-par'] = {
     comment   = "a translation of the built in parbuilder, initial convertsin by Taco Hoekwater",
 }
 
--- todo: check if last merge is done ok (lmtx stuff) (not yet in sync with the experimental variant)
+-- todo: not yet in sync with the experimental variant on my disk
 -- todo: remove nest_stack from linebreak.w
--- todo: use ex field as signal (index in ?)
--- todo: attr driven unknown/on/off
 -- todo: permit global steps i.e. using an attribute that sets min/max/step and overloads the font parameters
 -- todo: split the three passes into three functions
 -- todo: simplify the direction stack, no copy needed
@@ -20,10 +18,8 @@ if not modules then modules = { } end modules ['node-par'] = {
 -- todo: maybe split expansion code paths
 -- todo: fix line numbers (cur_list.pg_field needed)
 -- todo: check and improve protrusion
--- todo: arabic etc (we could use pretty large scales there) .. marks and cursive
--- todo: see: we need to check this with the latest patches to the tex kernel
+-- todo: I need to check this with the latest patches to the tex kernel
 -- todo: adapt math glue spacing to new model (left/right)
-
 -- todo: optimize a bit more (less par.*)
 
 --[[
@@ -155,8 +151,12 @@ local report_parbuilders  = logs.reporter("nodes","parbuilders")
 ----- report_hpackers     = logs.reporter("nodes","hpackers")
 
 local calculate_badness   = tex.badness
-local texnest             = tex.nest
+----- texnest             = tex.nest
 local texlists            = tex.lists
+local texget              = tex.get
+local texset              = tex.set
+local texgetglue          = tex.getglue
+
 
 -- (t == 0 and 0) or (s <= 0 and 10000) or calculate_badness(t,s)
 
@@ -856,7 +856,6 @@ do
         local head_field = par.head_field
         local tail_field = head_field and find_tail(head_field)
         local is_hlist   = getid(b) == hlist_code
-     -- if prev_depth > par.ignored_dimen then
         if prev_depth > ignore_depth then
             if is_hlist then
                 -- we can fetch the skips values earlier if needed
@@ -887,7 +886,7 @@ do
         if is_hlist then
             local pd = getdepth(b)
             par.prev_depth = pd
-            texnest[texnest.ptr].prevdepth = pd
+            texset("prevdepth",pd)
         end
     end
 
@@ -907,18 +906,18 @@ do
 
     local function initialize_line_break(head,display)
 
-        local hang_indent    = tex.hangindent or 0
-        local hsize          = tex.hsize or 0
-        local hang_after     = tex.hangafter or 0
-        local par_shape_ptr  = tex.parshape
-        local left_skip      = tonut(tex.leftskip)  -- nodes
-        local right_skip     = tonut(tex.rightskip) -- nodes
-        local pretolerance   = tex.pretolerance
-        local tolerance      = tex.tolerance
-        local adjust_spacing = tex.adjustspacing
-        local protrude_chars = tex.protrudechars
-        local last_line_fit  = tex.lastlinefit
-        local par_dir        = tex.pardirection
+        local hang_indent    = texget("hangindent")
+        local hsize          = texget("hsize")
+        local hang_after     = texget("hangafter")
+        local par_shape_ptr  = texget("parshape")
+        local left_skip      = tonut(texget("leftskip"))  -- nodes
+        local right_skip     = tonut(texget("rightskip")) -- nodes
+        local pretolerance   = texget("pretolerance")
+        local tolerance      = texget("tolerance")
+        local adjust_spacing = texget("adjustspacing")
+        local protrude_chars = texget("protrudechars")
+        local last_line_fit  = texget("lastlinefit")
+        local par_dir        = texget("pardirection")
 
         local newhead = new_temp()
         setnext(newhead,head)
@@ -963,37 +962,27 @@ do
             max_shrink_ratio             = adjust_spacing_status,
             cur_font_step                = adjust_spacing_status,
             checked_expansion            = false,
-            tracing_paragraphs           = tex.tracingparagraphs > 0,
+            tracing_paragraphs           = texget("tracingparagraphs") > 0,
 
-            emergency_stretch            = tex.emergencystretch     or 0,
-            looseness                    = tex.looseness            or 0,
-            line_penalty                 = tex.linepenalty          or 0,
-            hyphen_penalty               = tex.hyphenpenalty        or 0,
-            broken_penalty               = tex.brokenpenalty        or 0,
-            inter_line_penalty           = tex.interlinepenalty     or 0,
-            club_penalty                 = tex.clubpenalty          or 0,
-            widow_penalty                = tex.widowpenalty         or 0,
-            display_widow_penalty        = tex.displaywidowpenalty  or 0,
-            ex_hyphen_penalty            = tex.exhyphenpenalty      or 0,
+            emergency_stretch            = texget("emergencystretch")     or 0,
+            looseness                    = texget("looseness")            or 0,
+            line_penalty                 = texget("linepenalty")          or 0,
+            broken_penalty               = texget("brokenpenalty")        or 0,
+            inter_line_penalty           = texget("interlinepenalty")     or 0,
+            club_penalty                 = texget("clubpenalty")          or 0,
+            widow_penalty                = texget("widowpenalty")         or 0,
+            display_widow_penalty        = texget("displaywidowpenalty")  or 0,
 
-            adj_demerits                 = tex.adjdemerits          or 0,
-            double_hyphen_demerits       = tex.doublehyphendemerits or 0,
-            final_hyphen_demerits        = tex.finalhyphendemerits  or 0,
+            adj_demerits                 = texget("adjdemerits")          or 0,
+            double_hyphen_demerits       = texget("doublehyphendemerits") or 0,
+            final_hyphen_demerits        = texget("finalhyphendemerits")  or 0,
 
-            first_line                   = 0, -- texnest[texnest.ptr].modeline, -- 0, -- cur_list.pg_field
+            first_line                   = texget("prevgraf"),
+            prev_depth                   = texget("prevdepth"),
 
-         -- each_line_height             = tex.pdfeachlineheight    or 0, -- this will go away
-         -- each_line_depth              = tex.pdfeachlinedepth     or 0, -- this will go away
-         -- first_line_height            = tex.pdffirstlineheight   or 0, -- this will go away
-         -- last_line_depth              = tex.pdflastlinedepth     or 0, -- this will go away
-
-         -- ignored_dimen                = tex.pdfignoreddimen      or 0,
-
-            baseline_skip                = { tex.getglue("baselineskip") },
-            lineskip                     = { tex.getglue("lineskip") },
-            line_skip_limit              = tex.lineskiplimit,
-
-            prev_depth                   = texnest[texnest.ptr].prevdepth,
+            baseline_skip                = { texgetglue("baselineskip") },
+            lineskip                     = { texgetglue("lineskip") },
+            line_skip_limit              = texget("lineskiplimit"),
 
             final_par_glue               = find_tail(head),
 
@@ -1189,21 +1178,17 @@ do
 
     local function post_line_break(par)
 
-        local prevgraf       = texnest[texnest.ptr].prevgraf
+        local prevgraf       = par.first_line -- or texget("prevgraf")
         local current_line   = prevgraf + 1 -- the current line number being justified
-
         local adjust_spacing = par.adjust_spacing
         local protrude_chars = par.protrude_chars
         local statistics     = par.statistics
-
-        local stack          = new_dir_stack()
-
         local leftskip       = par.used_left_skip -- used or normal ?
         local rightskip      = par.right_skip
         local parshape       = par.par_shape_ptr
-        ----- ignored_dimen  = par.ignored_dimen
-
         local adapt_width    = par.adapt_width
+
+        local stack          = new_dir_stack()
 
         -- reverse the links of the relevant passive nodes, goto first breakpoint
 
@@ -1403,22 +1388,7 @@ do
             local pre_adjust_head = texlists.pre_adjust_head
             --
             setshift(finished_line,cur_indent)
-         --
-         -- -- this is gone:
-         --
-         -- if par.each_line_height ~= ignored_dimen then
-         --     setheight(finished_line,par.each_line_height)
-         -- end
-         -- if par.each_line_depth ~= ignored_dimen then
-         --     setdepth(finished_line,par.each_line_depth)
-         -- end
-         -- if par.first_line_height ~= ignored_dimen and (current_line == par.first_line + 1) then
-         --     setheight(finished_line,par.first_line_height)
-         -- end
-         -- if par.last_line_depth ~= ignored_dimen and current_line + 1 == par.best_line then
-         --     setdepth(finished_line,par.last_line_depth)
-         -- end
-         --
+            --
             if texlists.pre_adjust_head ~= pre_adjust_head then
                 append_list(par, texlists.pre_adjust_head)
                 texlists.pre_adjust_head = pre_adjust_head
@@ -1519,7 +1489,7 @@ do
         if trace_basic then
             report_parbuilders("paragraph broken into %a lines",current_line)
         end
-        texnest[texnest.ptr].prevgraf  = current_line
+        texset("prevgraf",current_line)
     end
 
     local function wrap_up(par)
@@ -2282,7 +2252,6 @@ par.right_skip = nil
                 elseif id == hlist_code or id == vlist_code then
                     active_width.size = active_width.size + getwidth(current)
                 elseif id == glue_code then
-    --                 if par.auto_breaking then
                     if auto_breaking then
                         local prev_p = getprev(current)
                         if prev_p and prev_p ~= temp_head then
@@ -2309,10 +2278,7 @@ par.right_skip = nil
                     if subtype ~= seconddisc_code then
                         local line_break_dir = par.line_break_dir
                         if second_pass or subtype <= automaticdisc_code then
-                            local actual_pen = subtype == automaticdisc_code and par.ex_hyphen_penalty or par.hyphen_penalty
-                            -- 0.81 :
-                            -- local actual_pen = getpenalty(current)
-                            --
+                            local actual_pen = getpenalty(current)
                             local pre, post, replace = getdisc(current)
                             if not pre then    --  trivial pre-break
                                 disc_width.size = 0
@@ -2383,43 +2349,36 @@ par.right_skip = nil
                     end
                 elseif id == kern_code then
                     local s = getsubtype(current)
+                    local kern = getkern(current)
                     if s == userkern_code or s == italickern_code then
                         local v = getnext(current)
-                   --   if par.auto_breaking and getid(v) == glue_code then
                         if auto_breaking and getid(v) == glue_code then
                             p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                         end
                         local active_width = par.active_width
-                        active_width.size = active_width.size + getkern(current)
-                    else
-                        local kern = getkern(current)
-                        if kern ~= 0 then
-                            active_width.size = active_width.size + kern
-                            if checked_expansion and expand_kerns and getsubtype(current) == fontkern_code then
-                                local stretch, shrink = kern_stretch_shrink(current,kern)
-                                if expand_kerns == "stretch" then
-                                    active_width.adjust_stretch = active_width.adjust_stretch + stretch
-                                elseif expand_kerns == "shrink" then
-                                    active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
-                                else
-                                    active_width.adjust_stretch = active_width.adjust_stretch + stretch
-                                    active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
-                                end
+                        active_width.size = active_width.size + kern
+                    elseif kern ~= 0 then
+                        active_width.size = active_width.size + kern
+                        if checked_expansion and expand_kerns and s == fontkern_code then
+                            local stretch, shrink = kern_stretch_shrink(current,kern)
+                            if expand_kerns == "stretch" then
+                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                            elseif expand_kerns == "shrink" then
+                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
+                            else
+                                active_width.adjust_stretch = active_width.adjust_stretch + stretch
+                                active_width.adjust_shrink  = active_width.adjust_shrink  + shrink
                             end
                         end
                     end
                 elseif id == math_code then
-    --                 par.auto_breaking = getsubtype(current) == endmath_code
                     auto_breaking = getsubtype(current) == endmath_code
                     local v = getnext(current)
-    --                 if par.auto_breaking and getid(v) == glue_code then
                     if auto_breaking and getid(v) == glue_code then
                         p_active, n_active = try_break(0, unhyphenated_code, par, first_p, current, checked_expansion)
                     end
                     local active_width = par.active_width
-                    active_width.size = active_width.size + getkern(current) -- surround
-                    -- new in luatex
-                    + getwidth(current)
+                    active_width.size = active_width.size + getkern(current) + getwidth(current)
                 elseif id == rule_code then
                     active_width.size = active_width.size + getwidth(current)
                 elseif id == penalty_code then
@@ -2510,7 +2469,7 @@ end
 do
 
     local function write_esc(cs)
-        local esc = tex.escapechar
+        local esc = texget("escapechar")
         if esc then
             write("log",utfchar(esc),cs)
         else
@@ -2858,7 +2817,7 @@ do
 
         local cal_expand_ratio  = method == "cal_expand_ratio" or method == "subst_ex_font"
 
-        direction               = direction or tex.textdir
+        direction               = direction or texget("textdir")
 
         local line              = 0
 
@@ -2985,9 +2944,7 @@ do
                         depth = dp
                     end
                 elseif id == math_code then
-                    natural = natural + getkern(current) -- surround
-                    -- new in luatex
-                    + getwidth(current)
+                    natural = natural + getkern(current) + getwidth(current)
                 elseif id == unset_code then
                     local wd, ht, dp = getwhd(current)
                     local sh = getshift(current)
@@ -3107,7 +3064,7 @@ do
                 -- todo
             elseif order == 0 then -- and getlist(hlist) then
                 last_badness = calculate_badness(delta,total_stretch[0])
-                if last_badness > tex.hbadness then
+                if last_badness > texget("hbadness") then
                     if last_badness > 100 then
                         diagnostics.underfull_hbox(hlist,line,last_badness)
                     else
@@ -3165,16 +3122,16 @@ do
                 last_badness = 1000000
                 setfield(hlist,"glue_set",1)
                 local fuzz = - delta - total_shrink[0]
-                local hfuzz = tex.hfuzz
-                if fuzz > hfuzz or tex.hbadness < 100 then
-                    local overfullrule = tex.overfullrule
+                local hfuzz = texget("hfuzz")
+                if fuzz > hfuzz or texget("hbadness") < 100 then
+                    local overfullrule = texget("overfullrule")
                     if fuzz > hfuzz and overfullrule > 0 then
                         -- weird, is always called and no rules shows up
                         setnext(find_tail(list),new_rule(overfullrule,nil,nil,getdirection(hlist)))
                     end
                     diagnostics.overfull_hbox(hlist,line,-delta)
                 end
-            elseif order == 0 and getlist(hlist) and last_badness > tex.hbadness then
+            elseif order == 0 and getlist(hlist) and last_badness > texget("hbadness") then
                 diagnostics.bad_hbox(hlist,line,last_badness)
             end
         end

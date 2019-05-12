@@ -425,7 +425,12 @@
 \def\strc_registers_finish_entry_indeed#1#2#3% register data userdata
   {\begingroup
    \edef\currentregister{#1}%
-   \setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]% todo: fast setter
+  %\setupcurrentregister[\c!entries=,\c!label=,\c!keys=,\c!alternative=,#2]% todo: fast setter
+   \resetregisterparameter\c!entries
+   \resetregisterparameter\c!label
+   \resetregisterparameter\c!keys
+   \resetregisterparameter\c!alternative
+   \setupcurrentregister[#2]%
    \edef\currentregisterlabel    {\registerparameter\c!label}%
    \edef\currentregisterexpansion{\registerparameter\c!expansion}%
    \edef\currentregisterownnumber{\registerparameter\c!ownnumber}%

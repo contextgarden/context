@@ -34,8 +34,8 @@ local report            = logs.reporter("sequencer")
 local usedcount         = 0
 local usednames         = { }
 
-trackers.register("sequencers.used",  function(v) trace_used   = true end)
-trackers.register("sequencers.detail",function(v) trace_detail = true end)
+trackers.register("sequencers.used",  function(v) trace_used   = v end)
+trackers.register("sequencers.detail",function(v) trace_detail = v end)
 
 local sequencers        = { }
 utilities.sequencers    = sequencers

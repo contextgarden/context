@@ -312,30 +312,86 @@
 \let\floatcaptionsuffix\empty % an optional suffix
 \let\floatcaptionnumber\empty % a logical counter
 
-% the split is needed when for instance the float goes into
-% a multi page field and the list of figs becomes larger than
-% one page: cycle between 'only flush when object ref ok'
-% and 'one/many page fig list'; see "uguide finometer"
+% For a while these were placeholders:
 %
-% potential sync bug with sectionblocks, see uguide.tex
+%D \starttyping
+%D \unexpanded\def\placefloatcaption{\dodoubleempty\strc_floats_place_caption}
+%D \unexpanded\def\setfloatcaption  {\dodoubleempty\strc_floats_set_caption}
+%D
+%D \def\strc_floats_place_caption[#tag][#reference]#caption{[not supported]}
+%D \def\strc_floats_set_caption  [#tag][#reference]#caption{[not supported]}
+%D
+%D \unexpanded\def\placefloatcaptiontext     [#tag]{[not suported yet]}
+%D \unexpanded\def\placefloatcaptionnumber   [#tag]{[not suported yet]}
+%D \unexpanded\def\placefloatcaptionreference[#tag]{[not suported yet]}
+%D \stoptyping
+%D
+%D because in \MKII\ we had:
+%D
+%D \starttyping
+%D \let\placefloatlabel         \placefloatcaption
+%D \let\placefloatlabeltext     \placefloatcaptiontext
+%D \let\placefloatlabelreference\placefloatcaptionreference
+%D \stoptyping
+%D
+%D But as it was never advertised we don't provide it in \MKIV. However, at some
+%D point HvdM wanted this:
+%D
+%D \starttyping
+%D \placefigure                     {labeltext-1}  {\externalfigure[figure-1]}
+%D \placefloatcaption[figure][title={labeltext-2}]  \externalfigure[figure-2]
+%D \placefigure                     {labeltext-3}  {\externalfigure[figure-3]}
+%D \stoptyping
+%D
+%D So there you have it:
 
-% begin of todo
+\unexpanded\def\placefloatcaption
+  {\dotripleempty\strc_floats_place_caption}
 
-\unexpanded\def\placefloatcaption{\dodoubleempty\strc_floats_place_caption}
-\unexpanded\def\setfloatcaption  {\dodoubleempty\strc_floats_set_caption}
-
-\def\strc_floats_place_caption[#tag][#reference]#caption{[not supported]}
-\def\strc_floats_set_caption  [#tag][#reference]#caption{[not supported]}
-
-\unexpanded\def\placefloatcaptiontext     [#tag]{[not suported yet]}
-\unexpanded\def\placefloatcaptionnumber   [#tag]{[not suported yet]}
-\unexpanded\def\placefloatcaptionreference[#tag]{[not suported yet]}
-
-\let\placefloatlabel         \placefloatcaption
-\let\placefloatlabeltext     \placefloatcaptiontext
-\let\placefloatlabelreference\placefloatcaptionreference
-
-% end of todo
+\def\strc_floats_place_caption[#category][#settings][#userdata]%
+  {\ifsecondargument
+     % we need at least a category and title
+     \dontleavehmode
+     \bgroup
+     \edef\currentfloat{#category}%
+     \let\currentfloatcaption\currentfloat
+     \resetfloatcaptionparameter\c!reference
+     \resetfloatcaptionparameter\c!title
+     \resetfloatcaptionparameter\c!marking
+     \resetfloatcaptionparameter\c!list
+     \resetfloatcaptionparameter\c!bookmark
+     \setupcurrentfloatcaption[#settings]%
+     \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
+     \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
+     \strc_counters_increment\currentfloatcounter
+     \strc_counters_register_component
+       \s!float
+       \setupcurrentfloatcaption
+       \floatcaptionparameter
+       \detokenizedfloatcaptionparameter
+       \relax
+       \relax
+       \relax
+       [\s!name=\currentfloat,
+        \s!counter=\currentfloatcounter,%
+        \s!hascaption=\v!yes,%
+        \s!hasnumber=\v!yes,%
+        \s!hastitle=\v!yes]%
+       [#userdata]%
+     \glet\previousfloatnumber    \m_strc_counters_last_registered_index
+     \glet\currentfloatnumber     \m_strc_counters_last_registered_index
+     \glet\currentfloatattribute  \m_strc_counters_last_registered_attribute
+     \glet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
+     %
+   % \iflocation
+   %    \attribute\destinationattribute\currentfloatattribute\relax
+   % \fi
+     \currentfloatsynchronize
+     \strc_floats_make_complete_caption
+     %
+     \iftrialtypesetting\strc_counters_restore\currentfloatcounter\fi
+     \egroup
+   \fi}
 
 \newbox  \b_strc_floats_caption
 \newbox  \b_strc_floats_content
