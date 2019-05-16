@@ -713,6 +713,8 @@
 
 \let\math_cases_NR\math_align_NR_generic
 
+\installmacrostack\math_cases_NC
+
 \unexpanded\def\math_cases_start_indeed[#1]%
   {\iffirstargument
      \setupcurrentmathcases[#1]%
@@ -725,7 +727,7 @@
    \fi
    \mathcasesparameter\c!left
    \vcenter\bgroup
-   \pushmacro\math_cases_NC
+   \push_macro_math_cases_NC
    \let\endmath\relax
    \let\NC\math_cases_NC_zero
    \let\MC\math_cases_MC_zero
@@ -744,7 +746,7 @@
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!distance\relax
-     \popmacro\math_cases_NC
+     \pop_macro_math_cases_NC
      \math_cases_strut % looks better
      \alignmark\alignmark
      \hfil
@@ -972,9 +974,11 @@
 \newcount\c_math_eqalign_column_saved
 \newcount\c_math_eqalign_first_saved
 
+% \installglobalmacrostack\c_math_matrix_first
+
 \unexpanded\def\math_matrix_start#1%
   {\begingroup
-   \globalpushmacro\c_math_matrix_first
+   \globalpushmacro\c_math_matrix_first % hm, does that work?
    \c_math_eqalign_column_saved\c_math_eqalign_column
    \c_math_eqalign_first_saved \c_math_eqalign_first
    \edef\currentmathmatrix{#1}%

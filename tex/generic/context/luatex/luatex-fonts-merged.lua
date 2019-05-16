@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/12/19 19:05:50
+-- merge date  : 05/16/19 19:12:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -15391,8 +15391,8 @@ function readers.cff(f,fontdata,specification)
   if private then
    local data=private.data
    if type(data)=="table" then
-    cffinfo.defaultwidth=data.defaultwidth or cffinfo.defaultwidth
-    cffinfo.nominalwidth=data.nominalwidth or cffinfo.nominalwidth
+    cffinfo.defaultwidth=data.defaultwidthx or cffinfo.defaultwidth
+    cffinfo.nominalwidth=data.nominalwidthx or cffinfo.nominalwidth
     cffinfo.bluevalues=data.bluevalues
     cffinfo.otherblues=data.otherblues
     cffinfo.familyblues=data.familyblues
@@ -17881,6 +17881,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
   local sets=readarray(f)
      sets=readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdelta)
      coverage=readcoverage(f,tableoffset+coverage)
+  local shared={} 
   for index,newindex in next,coverage do
    local set=sets[newindex+1]
    local hash={}
@@ -17888,18 +17889,24 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
     local value=set[i]
     if value then
      local other=value[1]
-     local first=value[2]
-     local second=value[3]
-     if first or second then
-      hash[other]={ first,second or nil } 
-     else
-      hash[other]=nil 
+     local share=shared[value]
+     if share==nil then
+      local first=value[2]
+      local second=value[3]
+      if first or second then
+       share={ first,second or nil } 
+      else
+       share=false
+      end
+      shared[value]=share
      end
+     hash[other]=share or nil 
     end
    end
    coverage[index]=hash
   end
   return {
+   shared=shared and true or nil,
    format="pair",
    coverage=coverage,
   }
@@ -17928,22 +17935,17 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
        local first=offsets[1]
        local second=offsets[2]
        if first or second then
-        if shared then
-         local s1=shared[first]
-         if s1==nil then
-          s1={}
-          shared[first]=s1
-         end
-         local s2=s1[second]
-         if s2==nil then
-          s2={ first,second or nil }
-          s1[second]=s2
-         end
-         hash[paired]=s2
-        else
-         hash[paired]={ first,second or nil }
+        local s1=shared[first]
+        if s1==nil then
+         s1={}
+         shared[first]=s1
         end
-       else
+        local s2=s1[second]
+        if s2==nil then
+         s2={ first,second or nil }
+         s1[second]=s2
+        end
+        hash[paired]=s2
        end
       end
      end

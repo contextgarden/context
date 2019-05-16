@@ -185,6 +185,15 @@
      {\processcommalist[#1]\buff_get_stored_indeed}%
    \namedbufferparameter\empty\c!after\relax}
 
+% \installcommalistprocessorcommand \buff_get_stored_list \empty \buff_get_stored_indeed
+%
+% \unexpanded\def\buff_get[#1]% [name]
+%   {\namedbufferparameter\empty\c!before\relax
+%    \doifelsenothing{#1}
+%      {\buff_get_stored_indeed\empty}
+%      {\buff_get_stored_list[#1]}%
+%    \namedbufferparameter\empty\c!after\relax}
+
 \unexpanded\def\buff_get_stored#1#2%
   {\namedbufferparameter{#1}\c!before\relax
    \buff_get_stored_indeed{#2}%

@@ -1606,8 +1606,8 @@
 
 \unexpanded\def\syst_helpers_do_if_in_string_else#1#2% ##2 can be {abc}
   {\expandafter\def\expandafter\syst_helpers_do_do_if_in_string_else
-     \expandafter##\expandafter1#1##2##3\_e_o_s_{\unless\if##2@}% expand #1 here
-   \expandafter\syst_helpers_do_do_if_in_string_else\normalexpanded{#2#1}@@\_e_o_s_} % expand #2 here
+     \expandafter##\expandafter1#1##2##3^^^^0004{\unless\if##2@}% expand #1 here
+   \expandafter\syst_helpers_do_do_if_in_string_else\normalexpanded{#2#1}@@^^^^0004} % expand #2 here
 
 %D The next alternative proved to be upto twice as fast on tasks like checking
 %D reserved words in pretty verbatim typesetting! This is mainly due to the fact
@@ -1621,9 +1621,9 @@
 %D alternative does minimal (one level) expansion.
 
 \unexpanded\def\syst_helpers_do_if_in_csname_else#1#2%
-  {\def\syst_helpers_do_do_if_in_csname_else##1#1##2##3\_e_o_s_
+  {\def\syst_helpers_do_do_if_in_csname_else##1#1##2##3^^^^0004%
      {\unless\if##2@}%
-   \expandafter\syst_helpers_do_do_if_in_csname_else#2#1@@\_e_o_s_}
+   \expandafter\syst_helpers_do_do_if_in_csname_else#2#1@@^^^^0004}
 
 \unexpanded\def\doifelseincsname#1#2%
   {\normalexpanded{\syst_helpers_do_if_in_csname_else{#1}}{#2}%
@@ -1821,11 +1821,11 @@
 %D Some more raw material:
 
 \def\syst_helpers_do_raw_process_action[#1][#2]%
-  {\def\syst_helpers_do_do_raw_process_action##1,#1=>##2,##3\_e_o_s_
+  {\def\syst_helpers_do_do_raw_process_action##1,#1=>##2,##3^^^^0004%
      {\if##3@\else
         \def\m_syst_helpers_process_action{##2}%
       \fi}%
-   \syst_helpers_do_do_raw_process_action,#2,#1=>,@\_e_o_s_}
+   \syst_helpers_do_do_raw_process_action,#2,#1=>,@^^^^0004}
 
 \unexpanded\def\rawprocessaction[#1]#2[#3]%
   {\edef\m_syst_string_one{#1}%
@@ -2014,7 +2014,7 @@
    \fi#4}
 
 \def\syst_helpers_get_parameters#1]%
-  {\xprocesscommaitem#1,],\_e_o_t_}
+  {\xprocesscommaitem#1,],^^^^0004}
 
 \def\syst_helpers_process_comma_item#1,#2% #2 takes space before ,
   {\if,#1,% dirty trick for testing #1=empty
@@ -2022,14 +2022,14 @@
    \else\if]#1%
      \doubleexpandafter\gobbleoneargument
    \else
-     \syst_helpers_get_parameters_assign\_e_o_t_#1==\empty\_e_o_t_
+     \syst_helpers_get_parameters_assign^^^^0004#1==\empty^^^^0004%
      \doubleexpandafter\syst_helpers_process_comma_item
    \fi\fi#2}
 
 \def\syst_helpers_assign_error#1#2#3%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-\def\syst_helpers_get_parameters_assign_normal#1\_e_o_t_#2=#3=#4#5\_e_o_t_
+\def\syst_helpers_get_parameters_assign_normal#1^^^^0004#2=#3=#4#5^^^^0004%
   {\ifx\empty#2\empty
      \expandafter\syst_helpers_assign_error
    \else\ifx#4\empty
@@ -2039,7 +2039,7 @@
    \fi\fi
    {#1}{#2}{#3}}
 
-\def\syst_helpers_get_parameters_assign_error#1\_e_o_t_#2=#3=#4#5\_e_o_t_
+\def\syst_helpers_get_parameters_assign_error#1^^^^0004#2=#3=#4#5^^^^0004%
   {\ifx\empty#2\empty
      \expandafter\syst_helpers_assign_error
    \else\ifx#4\empty
@@ -2056,9 +2056,9 @@
 
 \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_normal
 
-\unexpanded\def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
-\unexpanded\def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
-\unexpanded\def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\syst_helpers_get_parameters_assign_indeed#1\_e_o_t_#2==\empty\_e_o_t_}
+\unexpanded\def\doassign  [#1][#2]{\let\setsomevalue\dosetvalue  \syst_helpers_get_parameters_assign_indeed#1^^^^0004#2==\empty^^^^0004}
+\unexpanded\def\doeassign [#1][#2]{\let\setsomevalue\dosetevalue \syst_helpers_get_parameters_assign_indeed#1^^^^0004#2==\empty^^^^0004}
+\unexpanded\def\undoassign[#1][#2]{\let\setsomevalue\doresetvalue\syst_helpers_get_parameters_assign_indeed#1^^^^0004#2==\empty^^^^0004}
 
 %D \macros
 %D   {processassignmentlist,processassignmentcommand,
@@ -2124,14 +2124,14 @@
 %D Here we hook in the code (beware, this is the optimized get **):
 
 \def\syst_helpers_get_parameters_normal#1]%
-  {\syst_helpers_process_comma_item#1,],\_e_o_t_}
+  {\syst_helpers_process_comma_item#1,],^^^^0004}
 
 \def\syst_helpers_get_parameters_expanded#1]%
   {\let\dosetnvalue\setsomevalue
    \let\setsomevalue\dosetevalue
    \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_error
    \let\setsomevalue\dosetevalue
-   \syst_helpers_process_comma_item#1,],\_e_o_t_
+   \syst_helpers_process_comma_item#1,],^^^^0004%
    \let\syst_helpers_get_parameters_assign_indeed\syst_helpers_get_parameters_assign_normal
    \let\setsomevalue\dosetnvalue
    \let\syst_helpers_get_parameters\syst_helpers_get_parameters_normal
@@ -2205,11 +2205,11 @@
 
 \newif\ifparameters
 
-\def\syst_helpers_check_parameters#1=#2#3\_e_o_s_
-  {\if#2\_e_t_x_\parametersfalse\else\parameterstrue\fi}
+\def\syst_helpers_check_parameters#1=#2#3^^^^0004%
+  {\if#2^^^^0003\parametersfalse\else\parameterstrue\fi}
 
 \unexpanded\def\checkparameters[#1]%
-  {\syst_helpers_check_parameters#1=\_e_t_x_\_e_t_x_\_e_o_s_}
+  {\syst_helpers_check_parameters#1=^^^^0003^^^^0003^^^^0004}
 
 %D \macros
 %D   {getfromcommalist,getfromcommacommand,
@@ -5366,18 +5366,18 @@
 %D \doifassignmentelse {...} {then ...} {else ...}
 %D \stoptyping
 
-\def\syst_helpers_check_if_assignment_else#1=#2#3\_e_o_t_{\if#2\_e_t_x_}%
-\def\syst_helpers_check_else_assignment_if#1=#2#3\_e_o_t_{\unless\if#2\_e_t_x_}%
+\def\syst_helpers_check_if_assignment_else#1=#2#3^^^^0004{\if#2^^^^0003}%
+\def\syst_helpers_check_else_assignment_if#1=#2#3^^^^0004{\unless\if#2^^^^0003}%
 
 \unexpanded\def\doifelseassignment#1%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=^^^^0003^^^^0003^^^^0004%
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
 \unexpanded\def\doifelseassignmentcs#1#2#3%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=^^^^0003^^^^0003^^^^0004%
      \expandafter#3%
    \else
      \expandafter#2%
@@ -5389,7 +5389,7 @@
 \newif\ifassignment
 
 \unexpanded\def\docheckassignment#1%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=^^^^0003^^^^0003^^^^0004%
      \assignmentfalse
    \else
      \assignmenttrue
@@ -5398,10 +5398,10 @@
 %D These can be used for cases where we want less tracing noise.
 
 \unexpanded\def\validassignment#1%
-  {\expandafter\syst_helpers_check_else_assignment_if\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_}
+  {\expandafter\syst_helpers_check_else_assignment_if\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
 
 \unexpanded\def\novalidassignment#1%
-  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_}
+  {\expandafter\syst_helpers_check_if_assignment_else\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some speed, but in general far
 %D less that 1\% for \type {\convertargument} and nil for \type {\convertcommand}.
@@ -6255,9 +6255,9 @@
    \fi}
 
 \def\doifelsestringinstring#1#2%
-  {\expandafter\def\expandafter\syst_helpers_if_instring_else\expandafter##\expandafter1#1##2##3\_e_o_s_
+  {\expandafter\def\expandafter\syst_helpers_if_instring_else\expandafter##\expandafter1#1##2##3^^^^0004%
      {\syst_helpers_if_instring_else_indeed##2}%
-   \expandafter\expandafter\expandafter\syst_helpers_if_instring_else\expandafter#2#1@@\_e_o_s_}
+   \expandafter\expandafter\expandafter\syst_helpers_if_instring_else\expandafter#2#1@@^^^^0004}
 
 \let\doifstringinstringelse\doifelsestringinstring
 
@@ -6435,10 +6435,10 @@
 % {\scratchtoks{a\relax b} \removetoks \relax\from\scratchtoks [\showthe\scratchtoks]}
 
 \unexpanded\def\removetoks#1\from#2%
-  {\def\syst_helpers_remove_toks##1#1##2\empty\empty\empty##3\_e_o_t_
+  {\def\syst_helpers_remove_toks##1#1##2\empty\empty\empty##3^^^^0004%
      {\def\m_syst_string_one{##3}%
       \ifx\m_syst_string_one\empty#2{##1}\else#2{##1##2}\fi}%
-   \expandafter\syst_helpers_remove_toks\the#2\empty\empty\empty#1\empty\empty\empty\_e_o_t_}
+   \expandafter\syst_helpers_remove_toks\the#2\empty\empty\empty#1\empty\empty\empty^^^^0004}
 
 %D Also:
 
@@ -7435,10 +7435,10 @@
 
 %D Is this one still needed?
 
-\def\syst_helpers_if_some_space_else#1 #2#3\_e_o_s_{\if\noexpand#2@}
+\def\syst_helpers_if_some_space_else#1 #2#3^^^^0004{\if\noexpand#2@}
 
 \def\doifelsesomespace#1%                     % #2#3%
-  {\syst_helpers_if_some_space_else#1 @ @\_e_o_s_ % #3\else#2\fi}
+  {\syst_helpers_if_some_space_else#1 @ @^^^^0004% #3\else#2\fi}
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments

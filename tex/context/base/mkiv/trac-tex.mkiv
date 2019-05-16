@@ -39,4 +39,31 @@
 
 \unexpanded\def\nomkivstatistics{\enabledirectives[system.nostatistics]}
 
+%D This is not really a tracker but for decades it lived in my \type {cont-loc}
+%D file. I moved it here because I wanted someone else to use it. This macro is not
+%D really useful for users. I kept the \LUA\ variant in \type {cont-loc.mkiv}.
+
+\installcorenamespace{profilemacrocount}
+\installcorenamespace{profilemacromacro}
+
+\newtoks\t_syst_profile
+
+\appendtoks
+    \the\t_syst_profile
+\to \everystoptext
+
+\unexpanded\def\profilemacro#1% an oldie, but modernized a bit
+  {\edef\p_name{\csstring#1}%
+   \ifcsname\??profilemacrocount\p_name\endcsname \else
+     \expandafter\newcount\csname\??profilemacrocount\p_name\endcsname
+     \expandafter\let\csname\??profilemacromacro\p_name\endcsname#1%
+     \xtoksapp\t_syst_profile
+       {\writestatus
+          {profile}%
+          {\string#1: \noexpand\the\csname\??profilemacrocount\p_name\endcsname}}%
+     \unexpanded\xdef#1%
+       {\global\advance\csname\??profilemacrocount\p_name\endcsname\plusone
+        \expandafter\noexpand\csname\??profilemacromacro\p_name\endcsname}%
+   \fi}
+
 \protect \endinput

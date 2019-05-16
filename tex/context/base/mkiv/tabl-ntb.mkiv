@@ -208,20 +208,23 @@
 
 \newcount\c_tabl_level
 
+\installglobalmacrostack\m_tabl_ntb_saved_row
+\installglobalmacrostack\m_tabl_ntb_saved_col
+
 \unexpanded\def\tabl_ntb_table_push
   {\ifnum\m_tabl_tbl_level>\plusone
      \tabl_ntb_parameters_reset
      % we need a proper count push/pop
-     \xdef\m_tabl_ntb_saved_row{\the\c_tabl_ntb_row}\globalpushmacro\m_tabl_ntb_saved_row
-     \xdef\m_tabl_ntb_saved_col{\the\c_tabl_ntb_col}\globalpushmacro\m_tabl_ntb_saved_col
+     \xdef\m_tabl_ntb_saved_row{\the\c_tabl_ntb_row}\push_macro_m_tabl_ntb_saved_row
+     \xdef\m_tabl_ntb_saved_col{\the\c_tabl_ntb_col}\push_macro_m_tabl_ntb_saved_col
    \else
      \global\intabletrue
    \fi}
 
 \unexpanded\def\tabl_ntb_table_pop
   {\ifnum\m_tabl_tbl_level>\plusone
-     \globalpopmacro\m_tabl_ntb_saved_row\global\c_tabl_ntb_row\m_tabl_ntb_saved_row
-     \globalpopmacro\m_tabl_ntb_saved_col\global\c_tabl_ntb_col\m_tabl_ntb_saved_col
+     \pop_macro_m_tabl_ntb_saved_row\global\c_tabl_ntb_row\m_tabl_ntb_saved_row
+     \pop_macro_m_tabl_ntb_saved_col\global\c_tabl_ntb_col\m_tabl_ntb_saved_col
    \else
      \global\intablefalse
    \fi}

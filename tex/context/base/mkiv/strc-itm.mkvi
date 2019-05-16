@@ -390,6 +390,11 @@
 \unexpanded\def\strc_itemgroups_process_options#options%
   {\processcommacommand[#options]\strc_itemgroups_process_option} % expansion of options is handy for xml
 
+% \installcommalistprocessorcommand \strc_itemgroups_process_option_list \strc_itemgroups_process_option
+%
+% \unexpanded\def\strc_itemgroups_process_options#options%
+%   {\normalexpanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
+
 \def\strc_itemgroups_process_option#option%
   {\edef\itemgroupconstantvalue{#option}%
    \ifx\itemgroupconstantvalue\empty\else
@@ -525,6 +530,11 @@
 
 \def\strc_itemgroups_preset_stage_one#options%
   {\processcommacommand[#options]\strc_itemgroups_preset_stage_one_indeed}
+
+% \installcommalistprocessorcommand \strc_itemgroups_preset_stage_one_list \strc_itemgroups_preset_stage_one_indeed
+%
+% \def\strc_itemgroups_preset_stage_one#options%
+%   {\normalexpanded{\strc_itemgroups_preset_stage_one_list[#options]}}
 
 \def\strc_itemgroups_preset_stage_one_indeed#option%
   {\ifcsname\??itemgroupfirst#option\endcsname

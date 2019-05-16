@@ -101,7 +101,7 @@
    \fi#2}
 
 \def\mult_interfaces_get_parameters_indeed#1]% namespace already set
-  {\mult_interfaces_get_parameters_item#1,],\_e_o_t_}
+  {\mult_interfaces_get_parameters_item#1,],^^^^0004}
 
 \def\mult_interfaces_get_parameters_item#1,#2% #2 takes space before ,
   {\if,#1,% dirty trick for testing #1=empty
@@ -109,7 +109,7 @@
    \else\if]#1%
      \doubleexpandafter\gobbleoneargument
    \else
-     \mult_interfaces_get_parameters_assign#1==\empty\_e_o_t_
+     \mult_interfaces_get_parameters_assign#1==\empty^^^^0004%
    % \doubleexpandafter\mult_interfaces_get_parameters_item % saves skipping when at end
    \fi\fi#2}
 
@@ -120,7 +120,7 @@
 \def\mult_interfaces_get_parameters_error_indeed#1#2%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-\def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_t_
+\def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
   {\ifx\empty#1\empty
      \expandafter\mult_interfaces_get_parameters_error
    \else\ifx#3\empty
@@ -143,7 +143,7 @@
     \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
 
-    \def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_t_
+    \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
       {\ifx\empty#1\empty
          \mult_interfaces_get_parameters_error_one
        \else\ifx#3\empty
@@ -161,7 +161,7 @@
     % \def\mult_interfaces_get_parameters_error_two#1\m_mult_interfaces_namespace#2\fi\fi%
     %   {\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#2}\m_mult_interfaces_namespace\s!dummy\fi\fi}
     %
-    % \def\mult_interfaces_get_parameters_assign#1=#2=#3#4\_e_o_t_
+    % \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
     %   {\expandafter\def\csname
     %      \ifx\empty#1\empty
     %        \mult_interfaces_get_parameters_error_one
@@ -177,14 +177,14 @@
 
 \newif\ifassignment
 
-\def\mult_check_for_assignment_indeed#1=#2#3\_e_o_t_
-  {\if#2\_e_t_x_\assignmentfalse\else\assignmenttrue\fi}
+\def\mult_check_for_assignment_indeed#1=#2#3^^^^0004%
+  {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
 
-\def\mult_check_for_assignment_indeed_begin_#1=#2#3\_e_o_t_
-  {\if#2\_e_t_x_}
+\def\mult_check_for_assignment_indeed_begin_#1=#2#3^^^^0004%
+  {\if#2^^^^0003}
 
 \def\mult_check_for_assignment#1%
-  {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=\_e_t_x_\_e_t_x_\_e_o_t_}
+  {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
 
 % End of experimental code.
 
@@ -373,7 +373,7 @@
 %         \mult_interfaces_get_parameters{#1#4:}[##3]%
 %       \else\ifsecondargument
 %         \the#6% predefine
-%         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=\_e_t_x_\_e_t_x_\_e_o_t_
+%         \expandafter\mult_check_for_assignment_indeed\detokenize{##2}=^^^^0003^^^^0003^^^^0004%
 %         \ifassignment
 %           \let#8\empty
 %           \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
@@ -411,7 +411,7 @@
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \else\ifsecondargument
         \the#6% predefine
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=\_e_t_x_\_e_t_x_\_e_o_t_
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=^^^^0003^^^^0003^^^^0004%
           \edef#8{##2}%
           \mult_check_for_parent{#1}{#3}#4#8%
           \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
@@ -508,7 +508,7 @@
 %         \let#3#7%
 %       \else\iffirstargument
 %         % \mult_check_for_assignment{##1}%
-%         \expandafter\mult_check_for_assignment_indeed\detokenize{##1}=\_e_t_x_\_e_t_x_\_e_o_t_
+%         \expandafter\mult_check_for_assignment_indeed\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
 %         \ifassignment
 %           % \setuplayout[key=value]
 %           \let#7#3%
@@ -557,7 +557,7 @@
         \let#3#7%
       \else\iffirstargument
         % \mult_check_for_assignment{##1}%
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=\_e_t_x_\_e_t_x_\_e_o_t_
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
           % \setuplayout[whatever]
           \let#6#3%   % previous becomes current
           \edef#3{##1}% this will catch reset so one needs to test for it
@@ -829,7 +829,7 @@
         \edef#2{##1}%
         #3[##2]%
       \else\iffirstargument
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=\_e_t_x_\_e_t_x_\_e_o_t_
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
           \edef#2{##1}%
         \else
           \let#2\empty
@@ -1347,22 +1347,22 @@
 
 \unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
-   \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
-     {\noexpand\expandafter\glet
-         \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
-         \noexpand#1%
-       \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
-   \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
-     {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
-      \noexpand\expandafter#2%
-         \noexpand\expandafter\noexpand#1%
-         \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}}
+   \ifcsname#3\m_syst_helpers_push_macro\endcsname\else
+     \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
+     \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
+       {\noexpand\expandafter\glet
+           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
+           \noexpand#1%
+         \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
+     \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
+       {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
+        \noexpand\expandafter#2%
+           \noexpand\expandafter\noexpand#1%
+           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}%
+   \fi}
 
 \unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
 \unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
-
-\protect
 
 %  \unprotect
 %
@@ -1385,87 +1385,123 @@
 %
 %  \starttext
 %    \definetest[foo] \definetest[bar][foo] \setuptest[bar][before=indeed]
-%    \resettimer \dorecurse{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
-%    \resettimer \dorecurse{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
-%    \resettimer \dorecurse{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
-%    \resettimer \dorecurse{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
+%    \testfeatureonce{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
+%    \testfeatureonce{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
+%    \testfeatureonce{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
+%    \testfeatureonce{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
 %  \stoptext
 
-% There is no real demand for this ... even if this is twice as fast we only gain
-% a few milliseconds:
+% There is no real demand for this ... even if this is two to three times as fast we
+% only gain a few milliseconds:
 %
-%   \unexpanded\def\foo#1{[foo:#1]}
+% \starttyping
+% \unexpanded\def\foo#1{[foo:#1]}
 %
-%   \installcommalistprocessor                        {foo} \foo
-%   \installcommalistprocessorcommand \processfoolist {foo} \foo
+% \installcommalistprocessor                        {foo} \foo
+% \installcommalistprocessorcommand \processfoolist \foo
 %
-%   \commalistprocessor{foo}[a,b,c,d]
-%   \processfoolist         [a, b, c, d]
+% \infofont
 %
-%   \testfeatureonce{30000}{}                                           \elapsedtime\par % 0.01 -> 0.00
-%   \testfeatureonce{30000}{\processfoolist         [fixed,middle]}     \elapsedtime\par % 0.07 -> 0.06
-%   \testfeatureonce{30000}{\commalistprocessor{foo}[fixed,middle]}     \elapsedtime\par % 0.09 -> 0.08
-%   \testfeatureonce{30000}{\processcommalist       [fixed,middle]\foo} \elapsedtime\par % 0.13 -> 0.12
+% \commalistprocessor{foo}[a,b,c,{x,y,z},d]\par
+% \processfoolist[a, b, c, {x,y,z}, d]\par
+% \processcommalist[{x,y,z}]\foo\blank
+%
+% \commalistprocessor{foo}[{x,y,z},a]\par
+% \commalistprocessor{foo}[{x,y,z}]\par
+% \processfoolist[{x,y,z},a]\par
+% \processfoolist[{x,y,z}]\par
+% \processcommalist[{x,y,z}]\foo\blank
+%
+% \unexpanded\def\foo#1{}
+%
+% \testfeatureonce{400000}{\processfoolist         [fixed,middle,bar]}     \elapsedtime\quad
+%%\testfeatureonce{400000}{\commalistprocessor{foo}[fixed,middle,bar]}     \elapsedtime\quad
+% \testfeatureonce{400000}{\processcommalist       [fixed,middle,bar]\foo} \elapsedtime\quad
+% \stoptyping
 %
 % For instance the luatex manual only has some 3000 calls. But I keep this around as one
 % never knows when we might need it.
-%
-%  \installcorenamespace{commalistprocessor}
-%  \installcorenamespace{commalistprocessorcheck}
-%  \installcorenamespace{commalistprocessorwrap}
-%  \installcorenamespace{commalistprocessorfirst}
-%  \installcorenamespace{commalistprocessorcheckspace}
-%  \installcorenamespace{commalistprocessorcheckfinish}
-%  \installcorenamespace{commalistprocessoraction}
-%  \installcorenamespace{commalistprocessorgobblespace}
-%
-%  \unexpanded\def\installcommalistprocessor#1#2% 7 macro names overhead
-%    {\let\nexttoken\relax
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
-%       {\futurelet\nexttoken\csname\??commalistprocessorcheck#1\endcsname}%
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheck#1\endcsname
-%       {\noexpand\ifx\nexttoken]%
-%          \noexpand\expandafter\noexpand\gobblethreearguments
-%        \noexpand\else
-%          \noexpand\expandafter\csname\??commalistprocessorwrap#1\endcsname
-%        \noexpand\fi
-%        \relax}% this one preserved the next {}
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
-%       {\csname\??commalistprocessorfirst#1\endcsname##1,]\relax}%
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname##1% picks up \relax
-%       {\csname\??commalistprocessorcheckspace#1\endcsname}%
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheckspace#1\endcsname
-%       {\noexpand\ifx\nexttoken\noexpand\blankspace
-%          \noexpand\expandafter\csname\??commalistprocessorgobblespace#1\endcsname
-%        \noexpand\else
-%          \noexpand\expandafter\csname\??commalistprocessorcheckfinish#1\endcsname
-%        \noexpand\fi}%
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessorcheckfinish#1\endcsname
-%       {\noexpand\ifx\nexttoken]%
-%          \noexpand\expandafter\noexpand\gobbleoneargument
-%        \noexpand\else
-%          \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
-%        \noexpand\fi}%
-%     %
-%     \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
-%       {\noexpand#2{##1}%
-%        \futurelet\nexttoken\csname\??commalistprocessorcheckspace#1\endcsname}%
-%     %
-%     \let\next\:%
-%     \unexpanded\edef            \:{\csname\??commalistprocessorgobblespace#1\endcsname}%
-%     \unexpanded\expandafter\edef\: {\futurelet\nexttoken\csname\??commalistprocessorcheckspace#1\endcsname}%
-%     \let\:\next
-%     %
-%     }
-%
-%  \unexpanded\def\installcommalistprocessorcommand#1#2#3%
-%    {\installcommalistprocessor{#2}{#3}%
-%     \expandafter\let\expandafter#1\csname\??commalistprocessor#2\endcsname}
-%
-%  \unexpanded\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
+
+\installcorenamespace{commalistprocessor}
+\installcorenamespace{commalistprocessorwrap}
+\installcorenamespace{commalistprocessorfirst}
+\installcorenamespace{commalistprocessornext}
+\installcorenamespace{commalistprocessoraction}
+
+\startmkivmode
+
+    \installcorenamespace{commalistprocessorcheck}
+    \installcorenamespace{commalistprocessorspace}
+    \installcorenamespace{commalistprocessorpickup}
+    \installcorenamespace{commalistprocessorfinish}
+
+    \unexpanded\def\installcommalistprocessor#1#2% 8 macro names overhead
+      {\let\nexttoken\relax
+       \unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+         {\futurelet\nexttoken\csname\??commalistprocessorcheck#1\endcsname}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessorcheck#1\endcsname
+         {\noexpand\ifx\nexttoken]%
+            \noexpand\expandafter\noexpand\gobblethreearguments
+          \noexpand\else
+            \noexpand\expandafter\csname\??commalistprocessorwrap#1\endcsname
+          \noexpand\fi
+          \relax}% this one preserved the next {}
+       \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+         {\csname\??commalistprocessorfirst#1\endcsname##1,]\relax}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname##1% picks up \relax
+         {\csname\??commalistprocessornext#1\endcsname}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
+         {\noexpand\ifx\nexttoken\noexpand\blankspace
+            \noexpand\expandafter\csname\??commalistprocessorspace#1\endcsname
+          \noexpand\else
+            \noexpand\expandafter\csname\??commalistprocessorfinish#1\endcsname
+          \noexpand\fi}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessorfinish#1\endcsname
+         {\noexpand\ifx\nexttoken]%
+            \noexpand\expandafter\noexpand\gobbleoneargument
+          \noexpand\else
+            \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
+          \noexpand\fi}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+         {\noexpand#2{##1}%
+          \futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
+       \let\next\:%
+       \unexpanded\edef            \:{\csname\??commalistprocessorspace#1\endcsname}%
+       \unexpanded\expandafter\edef\: {\futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
+       \let\:\next}
+
+\stopmkivmode
+
+\startlmtxmode
+
+    %installcorenamespace{commalistprocessorpickup}
+
+    \unexpanded\def\installcommalistprocessor#1#2% 5 macro names overhead
+      {\unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+      %  {\noexpand\futureexpandis]%
+      %     \noexpand\gobbleoneargument
+      %     \csname\??commalistprocessorpickup#1\endcsname}
+      %\unexpanded\expandafter\edef\csname\??commalistprocessorpickup#1\endcsname
+         {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
+       \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+         {\csname\??commalistprocessorfirst#1\endcsname##1,]}
+       \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname\relax
+         {\csname\??commalistprocessornext#1\endcsname}%
+       \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
+         {\noexpand\futureexpandis]%
+            \noexpand\gobbleoneargument
+            \csname\??commalistprocessoraction#1\endcsname}
+       \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+         {\noexpand#2{##1}%
+          \csname\??commalistprocessornext#1\endcsname}}
+
+\stoplmtxmode
+
+\unexpanded\def\installcommalistprocessorcommand#1#2% \processor \action
+  {\edef\p_name{\csstring#2}%
+   \installcommalistprocessor\p_name{#2}%
+   \expandafter\let\expandafter#1\csname\??commalistprocessor\p_name\endcsname}
+
+\unexpanded\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
+
+\protect \endinput

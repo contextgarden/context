@@ -442,11 +442,13 @@ local function here(c,r,nr,nofcolumns,nofrows,cells,width,spans)
     return c, r, nc
 end
 
+-- we use c/r as range limiters
+
 local methods = {
     [v_here] = here,
     [v_fixed] = here,
     tblr = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=1,nofrows-nr+1 do
+        for j=r,nofrows-nr+1 do
             for i=c,nofcolumns do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -459,7 +461,7 @@ local methods = {
     end,
     lrtb = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=c,nofcolumns do
-            for j=1,nofrows-nr+1 do
+            for j=r,nofrows-nr+1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -470,7 +472,7 @@ local methods = {
         end
     end,
     tbrl = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=1,nofrows-nr+1 do
+        for j=r,nofrows-nr+1 do
             for i=nofcolumns,c,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -483,7 +485,7 @@ local methods = {
     end,
     rltb = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=nofcolumns,c,-1 do
-            for j=1,nofrows-nr+1 do
+            for j=r,nofrows-nr+1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -494,7 +496,8 @@ local methods = {
         end
     end,
     btlr = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=nofrows-nr+1,1,-1 do
+     -- for j=nofrows-nr+1,1,-1 do
+        for j=nofrows-nr+1-r+1,1,-1 do
             for i=c,nofcolumns do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -507,7 +510,8 @@ local methods = {
     end,
     lrbt = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=c,nofcolumns do
-            for j=nofrows-nr+1,1,-1 do
+         -- for j=nofrows-nr+1,1,-1 do
+            for j=nofrows-nr+1-r+1,1,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -518,7 +522,8 @@ local methods = {
         end
     end,
     btrl = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
-        for j=nofrows-nr+1,1,-1 do
+     -- for j=nofrows-nr+1,1,-1 do
+        for j=nofrows-nr+1-r+1,1,-1 do
             for i=nofcolumns,c,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
@@ -531,7 +536,8 @@ local methods = {
     end,
     rlbt = function(c,r,nr,nofcolumns,nofrows,cells,width,spans)
         for i=nofcolumns,c,-1 do
-            for j=nofrows-nr+1,1,-1 do
+         -- for j=nofrows-nr+1,1,-1 do
+            for j=nofrows-nr+1-r+1,1,-1 do
                 if not cells[i][j] then
                     local c, r, cc = here(i,j,nr,nofcolumns,nofrows,cells,width,spans)
                     if c then
@@ -1318,6 +1324,7 @@ interfaces.implement {
         { "r", "integer" },
         { "nc", "integer" },
         { "nr", "integer" },
+        { "method", "string" },
         { "box", "integer" },
     } }
 }
@@ -1330,6 +1337,7 @@ interfaces.implement {
         { "method", "string" },
         { "c", "integer" },
         { "r", "integer" },
+        { "method", "string" },
         { "box", "integer" },
         { "width", "dimension" },
         { "height", "dimension" },
@@ -1344,6 +1352,7 @@ interfaces.implement {
         { "name", "string" },
         { "c", "integer" },
         { "r", "integer" },
+        { "method", "string" },
         { "box", "integer" },
     } }
 }
@@ -1415,6 +1424,7 @@ interfaces.implement {
         { "name", "string" },
         { "c", "integer" },
         { "r", "integer" },
+        { "method", "string" },
         { "box", "integer" },
     } }
 }

@@ -221,6 +221,7 @@
   {\begingroup
    \letdummyparameter\c!c\zerocount
    \letdummyparameter\c!r\zerocount
+   \letdummyparameter\c!method\v!here
    \letdummyparameter\c!option\v!none
    \getdummyparameters[#1]%
    \dowithnextboxcs\page_grd_set_indeed\hbox}
@@ -231,6 +232,7 @@
      c      \dummyparameter\c!c
      r      \dummyparameter\c!r
      box    \nextbox
+     method {\dummyparameter\c!method}
      option {\dummyparameter\c!option}
    }%
    \ifcase\c_page_grd_reserved_state
@@ -249,6 +251,7 @@
      }%
    \fi
    \endgroup}
+
 
 \unexpanded\def\page_grd_command_set_vsize
   {\clf_setvsizecolumnset{\currentpagegrid}%
@@ -640,11 +643,12 @@
    \edef\currentpagegridspan{#1}%
    \clf_sethsizecolumnspan{\currentpagegrid}\pagegridspanparameter\c!n\relax
    \setbox\scratchbox\hbox\bgroup\inheritedpagegridspanframed\bgroup
+     \def\page_grd_span_stop{\page_grd_span_stop_indeed{#2}}%
      \usepagegridspanstyleandcolor\c!style\c!color
      \pagegridspanparameter\c!before
      \ignorespaces}
 
-\unexpanded\def\stoppagegridspan
+\unexpanded\def\page_grd_span_stop_indeed#1%
   {\removeunwantedspaces
    \par
    \verticalstrut
@@ -653,10 +657,13 @@
    \endgraf
    \pagegridspanparameter\c!after
    \egroup\egroup
-   \setpagegrid{\box\scratchbox}%
+   \setpagegrid[#1]{\box\scratchbox}%
    % todo: push into slot
    \egroup
    \endgraf}
+
+\unexpanded\def\stoppagegridspan % indirectness permits aliasing
+  {\page_grd_span_stop}
 
 \def\pagegridspanwidth#1% assumes equal distances
   {\the\dimexpr

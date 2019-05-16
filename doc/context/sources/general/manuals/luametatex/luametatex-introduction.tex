@@ -1,0 +1,82 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-introduction
+
+\startchapter[title=Introduction]
+
+Around 2005 we started the \LUATEX\ projects and it took about a decade to reach
+a state where we could consider the experiments to have reached a stable state.
+Already for a while one could use \LUATEX\ in production but some of the
+interfaces evolved. In 2018 the functionality was more or less frozen. Of course
+we might add some features in due time but nothing fundamental will change as we
+consider version 1.10 to be reasonable feature complete. Among the reasons is
+that this engine is now used outside \CONTEXT\ too which means that we cannot
+simply change much without affecting other macro packages.
+
+However, in reaching that state some decisions were delayed because they didn't
+go well with a current stable version. This is why at the 2018 \CONTEXT\ meeting
+those present agreed that we could move on with a follow up tagged \METATEX, a
+name we already had in mind for a while, but as \LUA\ is an important component,
+it got expanded to \LUAMETATEX. This follow up is a lightweight companion to
+\LUATEX\ that will be maintained alongside. More about the reasons for this
+follow up as well as the philosophy behind it can be found on the document(s)
+describing the development. During \LUATEX\ development I kept track of what
+happened in a series of documents, parts of which were published as articles in
+user group journals, but all are in the \CONTEXT\ distribution. I did the same
+with the development of \LUAMETATEX.
+
+The \LUAMETATEX\ engine is, as said, a lightweight version of \LUATEX, that for
+now targets \CONTEXT. We will use it for possibly drastic experiments but without
+affecting \LUATEX. As we can easily adapt \CONTEXT\ to support both, no other
+macro package will be harmed when (for instance) interfaces change as part of an
+experiment. Of course, when we consider something to be useful, it can be back
+ported to \LUATEX, but only when there are good reasons for doing so. When
+considering this follow up one consideration was that a lean and mean version
+with an extension mechanism is a bit closer to original \TEX. Of course, because
+we have new primitives, this is not entirely true.
+
+This manual currently has quite a bit of overlap with the \LUATEX\ manual but
+some chapters are removed, others added and the rest has been adapted. We also
+discusses the (main) differences. Some of the new primitives or functions that
+show up in \LUAMETATEX\ might show up in \LUATEX\ at some point, others might
+not. For now it is an experimental engine in which we can change things at will
+but with \CONTEXT\ in tandem so it will keep working.
+
+For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. Because we
+can keep both \LUAMETATEX\ and \CONTEXT\ in sync. The \CONTEXT\ variant is tagged
+\LMTX. The pair can be used in production, just as with \LUATEX\ and \MKIV. In
+fact, most users will probably not really notice the difference.
+
+As this follow up is closely related to \CONTEXT\ development, and because we
+expect stock \LUATEX\ to be used outside the \CONTEXT\ proper, there will be no
+special mailing list nor coverage (or polution) on the \LUATEX\ related mailing
+lists. We have the \CONTEXT\ mailing lists for that. In due time the source code
+will be part of the regular \CONTEXT\ distribution.
+
+% \testpage[8]
+
+This manual refers to \LUATEX, when we talk of features common to both engine, as
+well as \LUAMETATEX, when it is more specific to the follow up.
+
+\blank[big]
+
+Hans Hagen
+
+% \blank[2*big]
+\page
+
+\starttabulate[|||]
+\NC Version       \EQ \currentdate \NC \NR
+\NC \LUAMETATEX   \EQ \cldcontext{LUATEXENGINE} %
+                      \cldcontext{LUATEXVERSION} / %
+                      \cldcontext{LUATEXFUNCTIONALITY}
+                      \NC \NR
+\NC \CONTEXT      \EQ MkIV \contextversion \NC \NR
+\NC \LUATEX\ Team \EQ Hans Hagen, Hartmut Henkel, Taco Hoekwater, Luigi Scarso \NC \NR
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent
