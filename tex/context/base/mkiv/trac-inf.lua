@@ -211,7 +211,8 @@ function statistics.show()
      -- end)
         if LUATEXENGINE == "luametatex" then
             register("used engine", function()
-                return format("%s version %s", LUATEXENGINE, LUATEXVERSION)
+                return format("%s version %s, functionality level %s, format id %s",
+                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, LUATEXFORMATID)
             end)
         else
             register("used engine", function()

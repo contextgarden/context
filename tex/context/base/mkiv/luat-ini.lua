@@ -33,6 +33,8 @@ LUATEXENGINE        = status.luatex_engine and string.lower(status.luatex_engine
 
 LUATEXFUNCTIONALITY = status.development_id or 6346
 
+LUATEXFORMATID      = status.format_id or 0
+
 JITSUPPORTED        = LUATEXENGINE == "luajittex" or jit
 
 INITEXMODE          = status.ini_version

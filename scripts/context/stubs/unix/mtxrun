@@ -13679,7 +13679,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 9682, stripped down to: 6526
+-- original size: 9777, stripped down to: 6605
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -13824,7 +13824,8 @@ function statistics.show()
   end)
   if LUATEXENGINE=="luametatex" then
    register("used engine",function()
-    return format("%s version %s",LUATEXENGINE,LUATEXVERSION)
+    return format("%s version %s, functionality level %s, format id %s",
+     LUATEXENGINE,LUATEXVERSION,LUATEXFUNCTIONALITY,LUATEXFORMATID)
    end)
   else
    register("used engine",function()
@@ -23900,7 +23901,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 4434, stripped down to: 3180
+-- original size: 5203, stripped down to: 3765
 
 if not modules then modules={} end modules ['data-use']={
  version=1.001,
@@ -23955,6 +23956,8 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner)
    sourcehash=md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
    sourcefile=sourcefile,
    luaversion=LUAVERSION,
+   formatid=LUATEXFORMATID,
+   functionality=LUATEXFUNCTIONALITY,
   }
   io.savedata(luvname,table.serialize(luvdata,true))
   lua.registerfinalizer(function()
@@ -23984,8 +23987,19 @@ function statistics.checkfmtstatus(texname)
      return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
     end
     local luvluaversion=luv.luaversion or 0
-    if luvluaversion~=LUAVERSION then
-     return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,LUAVERSION)
+    local engluaversion=LUAVERSION or 0
+    if luvluaversion~=engluaversion then
+     return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,engluaversion)
+    end
+    local luvfunctionality=luv.functionality or 0
+    local engfunctionality=status.development_id or 0
+    if luvfunctionality~=engfunctionality then
+     return format("functionality mismatch (luv: %s <> bin: %s)",luvfunctionality,engfunctionality)
+    end
+    local luvformatid=luv.formatid or 0
+    local engformatid=status.format_id or 0
+    if luvformatid~=engformatid then
+     return format("formatid mismatch (luv: %s <> bin: %s)",luvformatid,engformatid)
     end
    else
     return "invalid status file"
@@ -25639,8 +25653,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1022171
--- stripped bytes    : 404918
+-- original bytes    : 1023035
+-- stripped bytes    : 405118
 
 -- end library merge
 

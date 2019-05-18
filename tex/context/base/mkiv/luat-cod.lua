@@ -152,6 +152,10 @@ if LUATEXFUNCTIONALITY == nil then
     LUATEXFUNCTIONALITY = status.development_id or 6346
 end
 
+if LUATEXFORMATID == nil then
+    LUATEXFORMATID = status.format_id or 0
+end
+
 if JITSUPPORTED == nil then
     JITSUPPORTED = LUATEXENGINE == "luajittex" or jit
 end
