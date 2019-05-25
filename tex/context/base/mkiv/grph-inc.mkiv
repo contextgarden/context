@@ -20,11 +20,10 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\ifcase\contextlmtxmode
-    \registerctxluafile{grph-inc}{}
-\else
-    \registerctxluafile{grph-img}{}
-    \registerctxluafile{grph-inc}{}
+\registerctxluafile{grph-img}{}
+\registerctxluafile{grph-inc}{}
+
+\ifcase\contextlmtxmode \else
     \registerctxluafile{grph-bmp}{}
     \registerctxluafile{grph-chk}{}
 \fi

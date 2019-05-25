@@ -60,29 +60,29 @@ if not (number and number.dimenfactors) then
     require("util-dim")
 end
 
-local epdf              = pdfe
+local pdfe              = pdfe
       lpdf              = lpdf or { }
 local lpdf              = lpdf
 local lpdf_epdf         = { }
-lpdf.epdf               = lpdf_epdf
+      lpdf.epdf         = lpdf_epdf
 
-local openPDF           = epdf.open
-local newPDF            = epdf.new
-local closePDF          = epdf.close
+local pdfopen           = pdfe.open
+local pdfnew            = pdfe.new
+local pdfclose          = pdfe.close
 
-local getcatalog        = epdf.getcatalog
-local getinfo           = epdf.getinfo
-local gettrailer        = epdf.gettrailer
-local getnofpages       = epdf.getnofpages
-local getversion        = epdf.getversion
-local getbox            = epdf.getbox
-local getstatus         = epdf.getstatus
-local unencrypt         = epdf.unencrypt
+local getcatalog        = pdfe.getcatalog
+local getinfo           = pdfe.getinfo
+local gettrailer        = pdfe.gettrailer
+local getnofpages       = pdfe.getnofpages
+local getversion        = pdfe.getversion
+local getbox            = pdfe.getbox
+local getstatus         = pdfe.getstatus
+local unencrypt         = pdfe.unencrypt
 
-local dictionarytotable = epdf.dictionarytotable
-local arraytotable      = epdf.arraytotable
-local pagestotable      = epdf.pagestotable
-local readwholestream   = epdf.readwholestream
+local dictionarytotable = pdfe.dictionarytotable
+local arraytotable      = pdfe.arraytotable
+local pagestotable      = pdfe.pagestotable
+local readwholestream   = pdfe.readwholestream
 
 local getfromreference  = pdfe.getfromreference
 
@@ -437,9 +437,9 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
         statistics.starttiming(lpdf_epdf)
         local __data__
         if fromstring then
-            __data__ = newPDF(filename,#filename)
+            __data__ = pdfnew(filename,#filename)
         else
-            __data__ = openPDF(filename)
+            __data__ = pdfopen(filename)
         end
         if __data__ then
             if userpassword and getstatus(__data__) < 0 then
@@ -491,8 +491,7 @@ function lpdf_epdf.unload(filename)
     if type(filename) == "string" then
         local document = loaded[filename]
         if document then
--- report_epdf("%04i closed: %s",nofloaded,filename)
--- nofloaded = nofloaded - 1
+         -- pdfclose(document)
             loaded[document] = nil
             loaded[filename] = nil
         end
@@ -793,7 +792,7 @@ function lpdf_epdf.getstructure(document,list) -- just a test
     end
 end
 
-if img then do
+if images then do
 
     -- This can be made a bit faster (just get raw data and pass it) but I will
     -- do that later. In the end the benefit is probably neglectable.

@@ -157,36 +157,11 @@ function checkimage(figure)
     end
 end
 
---- begin of mapping / this will become graphics & code|nodeinjections but not this year
+-- This is a bit of abstraction. Fro a while we will follow the luatex image
+-- model.
 
-local  __img__ = type(img) == "table" and img or { }
-images.__img__ =__img__
-
-local imgnew   = __img__.new
-local imgscan  = __img__.scan
-local imgcopy  = __img__.copy
-local imgwrap  = __img__.node
-local imgembed = __img__.immediatewrite
-
-if imgnew then
-    -- catch (actually we should be less picky in img)
-    local __img__new__ = imgnew
-    imgnew = function(t)
-        t.kind = nil
-        return __img__new__(t)
-    end
-end
-
-updaters.register("backend.update.img",function()
-    local img = images.__img__
-    imgnew   = img.new
-    imgscan  = img.scan
-    imgcopy  = img.copy
-    imgwrap  = img.wrap
-    imgembed = img.embed
-end)
-
-local imagekeys  = { -- only relevant ones
+local imagekeys  = {
+    -- only relevant ones (permitted in luatex)
     "width", "height", "depth", "bbox",
     "colordepth", "colorspace",
     "filename", "filepath", "visiblefilename",
@@ -214,28 +189,26 @@ images.keys  = imagekeys
 images.types = imagetypes
 images.sizes = imagesizes
 
--- new interface
-
 local function createimage(specification)
-    return imgnew(specification)
+    return backends.codeinjections.newimage(specification)
 end
 
 local function copyimage(specification)
-    return imgcopy(specification)
+    return backends.codeinjections.copyimage(specification)
 end
 
 local function scanimage(specification)
-    return imgscan(specification)
+    return backends.codeinjections.scanimage(specification)
 end
 
 local function embedimage(specification)
     -- write the image to file
-    return imgembed(specification)
+    return backends.codeinjections.embedimage(specification)
 end
 
 local function wrapimage(specification)
     -- create an image rule
-    return imgwrap(specification)
+    return backends.codeinjections.wrapimage(specification)
 end
 
 images.create = createimage
@@ -244,20 +217,20 @@ images.copy   = copyimage
 images.wrap   = wrapimage
 images.embed  = embedimage
 
--- now we reimplement img:
-
-img = {
-    new                  = createimage,
-    scan                 = scanimage,
-    copy                 = copyimage,
-    node                 = wrapimage,
-    write                = function(specification) context(wrapimage(specification)) end,
-    immediatewrite       = embedimage,
-    immediatewriteobject = function() end, -- not upported, experimental anyway
-    boxes                = function() return sortedkeys(imagesizes) end,
-    fields               = function() return imagekeys end,
-    types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
-}
+-- If really needed we can provide:
+--
+-- img = {
+--     new                  = createimage,
+--     scan                 = scanimage,
+--     copy                 = copyimage,
+--     node                 = wrapimage,
+--     write                = function(specification) context(wrapimage(specification)) end,
+--     immediatewrite       = embedimage,
+--     immediatewriteobject = function() end, -- not upported, experimental anyway
+--     boxes                = function() return sortedkeys(imagesizes) end,
+--     fields               = function() return imagekeys end,
+--     types                = function() return { unpack(imagetypes,0,#imagetypes) } end,
+-- }
 
 -- end of copies / mapping
 

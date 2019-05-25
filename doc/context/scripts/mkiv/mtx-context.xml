@@ -4,7 +4,7 @@
     <metadata>
         <entry name="name">mtx-context</entry>
         <entry name="detail">ConTeXt Process Management</entry>
-        <entry name="version">1.01</entry>
+        <entry name="version">1.03</entry>
         <entry name="comment">external helpinfo file</entry>
     </metadata>
     <flags>
@@ -172,12 +172,12 @@
                 <flag name="touch">
                     <short>update context version number (also provide <ref name="expert"/>, optionally provide <ref name="basepath"/>)</short>
                 </flag>
-                    <flag name="nostatistics">
+                <flag name="nostatistics">
                     <short>omit runtime statistics at the end of the run</short>
                 </flag>
-                    <flag name="update">
+                <!-- flag name="update">
                     <short>update context from website (not to be confused with contextgarden)</short>
-                </flag>
+                </flag -->
                 <flag name="profile">
                     <short>profile job (use: mtxrun <ref name="script"/> profile <ref name="analyze"/>)</short>
                 </flag>

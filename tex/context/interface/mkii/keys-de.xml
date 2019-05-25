@@ -376,6 +376,7 @@
 		<cd:variable name='nohz' value='nohz'/>
 		<cd:variable name='noline' value='noline'/>
 		<cd:variable name='nomarking' value='keinebeschriftung'/>
+		<cd:variable name='nomenubar' value='nomenubar'/>
 		<cd:variable name='none' value='kein'/>
 		<cd:variable name='nonumber' value='nonumber'/>
 		<cd:variable name='norepeat' value='norepeat'/>

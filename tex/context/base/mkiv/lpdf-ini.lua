@@ -205,8 +205,6 @@ do
         return pdfprint(...)
     end
 
-    pdfbackend.codeinjections.print = lpdf.print -- will go
-
     -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
     --     local x1 = llx * rx + lly * sy
     --     local y1 = llx * sx + lly * ry

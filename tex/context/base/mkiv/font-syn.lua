@@ -46,9 +46,6 @@ local findfile             = resolvers.findfile
 local cleanpath            = resolvers.cleanpath
 local resolveprefix        = resolvers.resolve
 
------ fontloader           = fontloader -- still needed for pfb (now)
------ get_font_info        = fontloader.info
-
 local settings_to_hash     = utilities.parsers.settings_to_hash_tolerant
 
 local trace_names          = false  trackers.register("fonts.names",          function(v) trace_names          = v end)

@@ -9,7 +9,8 @@ if not modules then modules = { } end modules ['back-pdp'] = {
 -- This is temporary ... awaiting a better test .. basically we can
 -- always use this: pdf primitives.
 
-local context          = context
+local context           = context
+local lpdf              = lpdf
 
 local lpdfreserveobject = lpdf.reserveobject
 local lpdfcompresslevel = lpdf.compresslevel
@@ -17,22 +18,17 @@ local lpdfobj           = lpdf.obj
 local lpdfpagereference = lpdf.pagereference
 local lpdfxformname     = lpdf.xformname
 
-local jobpositions      = job.positions
-local gethpos           = jobpositions.gethpos
-local getvpos           = jobpositions.getvpos
-
 local tokenscanners     = tokens.scanners
 local scanword          = tokenscanners.word
 local scankeyword       = tokenscanners.keyword
 local scanstring        = tokenscanners.string
 local scaninteger       = tokenscanners.integer
-local scandimension     = tokenscanners.dimension
+local scanwhd           = tokenscanners.whd
 
-local trace             = false  trackers.register("commands", function(v) trace = v end)
-local report            = logs.reporter("command")
+local trace             = false  trackers.register("backend", function(v) trace = v end)
+local report            = logs.reporter("backend")
 
 local nodepool          = nodes.pool
-local newsavepos        = nodepool.savepos
 local newliteral        = nodepool.literal
 local newsave           = nodepool.save
 local newrestore        = nodepool.restore
@@ -42,182 +38,11 @@ local implement         = interfaces.implement
 local constants         = interfaces.constants
 local variables         = interfaces.variables
 
--- helper
-
-local function scanwhd()
-    local width, height, depth
-    while true do
-        if scankeyword("width") then
-            width = scandimension()
-        elseif scankeyword("height") then
-            height = scandimension()
-        elseif scankeyword("depth") then
-            depth = scandimension()
-        else
-            break
-        end
-    end
-    if width or height or depth then
-        return width or 0, height or 0, depth or 0
-    else
-        -- we inherit
-    end
-end
-
--- positions
-
-local function savepos()
-    context(newsavepos())
-end
-
-local function lastxpos()
-    context(gethpos())
-end
-
-local function lastypos()
-    context(getvpos())
-end
-
-implement { name = "savepos",  actions = savepos }
-implement { name = "lastxpos", actions = lastxpos }
-implement { name = "lastypos", actions = lastypos }
-
 -- literals
 
 local function pdfliteral()
     context(newliteral(scanword() or "origin",scanstring()))
 end
-
-implement { name = "pdfliteral", actions = pdfliteral }
-
--- box resources
-
-local boxresources = tex.boxresources
-local savebox      = boxresources.save
-local usebox       = boxresources.use
-
-local lastindex    = 0
-
-local function saveboxresource()
-    local immediate  = true
-    local kind       = scankeyword("type") and scaninteger() or 0
-    local attributes = scankeyword("attr") and scanstring() or nil
-    local resources  = scankeyword("resources") and scanstring() or nil
-    local margin     = scankeyword("margin") and scandimension() or 0 -- register
-    local boxnumber  = scaninteger()
-    --
-    lastindex = savebox(boxnumber,attributes,resources,immediate,kind,margin)
-    if trace then
-        report("\\saveboxresource: index %i",lastindex)
-    end
-end
-
-local function lastsavedboxresourceindex()
-    if trace then
-        report("\\lastsaveboxresource: index %i",lastindex)
-    end
-    context("%i",lastindex)
-end
-
-local function useboxresource()
-    local width, height, depth = scanwhd()
-    local index = scaninteger()
-    local node  = usebox(index,width,height,depth)
-    if trace then
-        report("\\useboxresource: index %i",index)
-    end
-    context(node)
-end
-
-implement { name = "saveboxresource",           actions = saveboxresource }
-implement { name = "lastsavedboxresourceindex", actions = lastsavedboxresourceindex }
-implement { name = "useboxresource",            actions = useboxresource }
-
--- image resources (messy: will move)
-
-local imageresources = { }
-local lastindex      = 0
-local lastpages      = 1
-
-local function saveimageresource()
-    local width, height, depth = scanwhd()
-    local page       = 1
-    local immediate  = true
-    local margin     = 0 -- or dimension
-    local attributes = scankeyword("attr") and scanstring() or nil
-    if scankeyword("named") then
-        scanstring() -- ignored
-    elseif scankeyword("page") then
-        page = scaninteger()
-    end
-    local userpassword    = scankeyword("userpassword") and scanstring() or nil
-    local ownerpassword   = scankeyword("ownerpassword") and scanstring() or nil
-    local visiblefilename = scankeyword("visiblefilename") and scanstring() or nil
-    local colorspace      = scankeyword("colorspace") and scaninteger() or nil
-    local pagebox         = scanword() or nil
-    local filename        = scanstring()
--- pcall
-    context.getfiguredimensions( { filename }, {
-        [constants.userpassword]  = userpassword,
-        [constants.ownerpassword] = ownerpassword,
-        [constants.page]          = page or 1,
-        [constants.size]          = pagebox,
-    })
-    context.relax()
-    lastindex = lastindex + 1
-    lastpages = 1
-    imageresources[lastindex] = {
-        filename = filename,
-        page     = page or 1,
-        size     = pagebox,
-        width    = width,
-        height   = height,
-        depth    = depth,
-        attr     = attributes,
-     -- margin   = margin,
-     }
-end
-
-local function lastsavedimageresourceindex()
-    context("%i",lastindex or 0)
-end
-
-local function lastsavedimageresourcepages()
-    context("%i",lastpages or 0) -- todo
-end
-
-local function useimageresource()
-    local width, height, depth = scanwhd()
-    if scankeyword("keepopen") then
-        -- ignored
-    end
-    local index = scaninteger()
-    local l = imageresources[index]
-    if l then
-        if not (width or height or depth) then
-            width  = l.width
-            height = l.height
-            depth  = l.depth
-        end
--- pcall
-        context.externalfigure( { l.filename }, {
-            [constants.userpassword]  = l.userpassword,
-            [constants.ownerpassword] = l.ownerpassword,
-            [constants.width]         = width and (width .. "sp") or nil,
-            [constants.height]        = height and (height .. "sp") or nil,
-            [constants.page]          = l.page or 1,
-            [constants.size]          = pagebox,
-        })
-        context.relax()
-    else
-        print("no image resource",index)
-    end
-end
-
-implement { name = "saveimageresource",           actions = saveimageresource }
-implement { name = "lastsavedimageresourceindex", actions = lastsavedimageresourceindex }
-implement { name = "lastsavedimageresourcepages", actions = lastsavedimageresourcepages }
-implement { name = "useimageresource",            actions = useimageresource }
 
 -- objects
 
@@ -271,10 +96,6 @@ local function pdfrefobj()
     end
 end
 
-implement { name = "pdfobj",     actions = pdfobj }
-implement { name = "pdflastobj", actions = pdflastobj }
-implement { name = "pdfrefobj",  actions = pdfrefobj }
-
 -- annotations
 
 local lastobjnum = 0
@@ -305,8 +126,6 @@ local function pdfannot()
         context(backends.nodeinjections.annotation(width or 0,height or 0,depth or 0,data or ""))
     end
 end
-
-implement { name = "pdfannot", actions = pdfannot }
 
 local function pdfdest()
     local name   = false
@@ -344,8 +163,6 @@ local function pdfdest()
     end
     context(backends.nodeinjections.destination(width or 0,height or 0,depth or 0,{ name or "" },view or "fit"))
 end
-
-implement { name = "pdfdest", actions = pdfdest }
 
 -- management
 
@@ -398,8 +215,6 @@ local function pdfextension()
     end
 end
 
-implement { name = "pdfextension", actions = pdfextension }
-
 -- feedbacks: colorstackinit creationdate fontname fontobjnum fontsize lastannot
 -- lastlink lastobj pageref retval revision version xformname
 
@@ -420,8 +235,6 @@ local function pdffeedback()
         end
     end
 end
-
-implement { name = "pdffeedback", actions = pdffeedback }
 
 -- variables: (integers:) compresslevel decimaldigits gamma gentounicode
 -- ignoreunknownimages imageaddfilename imageapplygamma imagegamma imagehicolor
@@ -448,4 +261,17 @@ implement { name = "pdffeedback", actions = pdffeedback }
 --     end
 -- end
 
---------- { name = "pdfvariable",                 actions = pdfvariable }
+-- kept:
+
+implement { name = "pdfextension", actions = pdfextension }
+implement { name = "pdffeedback",  actions = pdffeedback }
+--------- { name = "pdfvariable",  actions = pdfvariable }
+
+-- for the moment (tikz)
+
+implement { name = "pdfliteral", actions = pdfliteral }
+implement { name = "pdfobj",     actions = pdfobj }
+implement { name = "pdflastobj", actions = pdflastobj }
+implement { name = "pdfrefobj",  actions = pdfrefobj }
+--------- { name = "pdfannot",   actions = pdfannot }
+--------- { name = "pdfdest",    actions = pdfdest }

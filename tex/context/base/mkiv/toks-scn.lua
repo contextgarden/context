@@ -144,6 +144,26 @@ scanners.list        = scanlist
 scanners.table       = scantable
 scanners.conditional = scanconditional
 
+function scanners.whd()
+    local width, height, depth
+    while true do
+        if scankeyword("width") then
+            width = scandimen()
+        elseif scankeyword("height") then
+            height = scandimen()
+        elseif scankeyword("depth") then
+            depth = scandimen()
+        else
+            break
+        end
+    end
+    if width or height or depth then
+        return width or 0, height or 0, depth or 0
+    else
+        -- we inherit
+    end
+end
+
 local shortcuts = {
     tokens          = tokens,
     bits            = tokenbits,

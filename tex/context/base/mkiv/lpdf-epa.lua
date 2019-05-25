@@ -31,7 +31,6 @@ local report_field      = logs.reporter("backend","field")
 local report_outline    = logs.reporter("backend","outline")
 
 local lpdf              = lpdf
-local epdf              = epdf
 local backends          = backends
 local context           = context
 

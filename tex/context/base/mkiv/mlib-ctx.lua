@@ -245,6 +245,8 @@ implement {
     arguments = "string",
 }
 
+-- this has to become a codeinjection
+
 function metapost.getclippath(specification) -- why not a special instance for this
     local mpx  = metapost.pushformat(specification)
     local data = specification.data or ""
@@ -304,7 +306,14 @@ end
 implement {
     name      = "mpsetclippath",
     actions   = function(specification)
-        setmacro("MPclippath",metapost.theclippath(specification),"global")
+        local p = specification.data and metapost.theclippath(specification)
+        if not p or p == "" then
+            local b = number.dimenfactors.bp
+            local w = b * (specification.width or 0)
+            local h = b * (specification.height or 0)
+            p = formatters["0 0 m %.6N 0 l %.6N %.6N l 0 %.6N l"](w,w,h,h)
+        end
+        setmacro("MPclippath",p,"global")
     end,
     arguments = {
         {
@@ -316,6 +325,8 @@ implement {
             { "inclusions" },
             { "method" },
             { "namespace" },
+            { "width", "dimension" },
+            { "height", "dimension" },
         },
     }
 }

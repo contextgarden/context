@@ -4231,8 +4231,8 @@
 
 \stoplmtxmode
 
-%D These macros can explictly take care of spaces, which means
-%D that the next definition and calls are valid:
+%D These macros can explictly take care of spaces, which means that the next
+%D definition and calls are valid:
 %D
 %D \starttyping
 %D \def\test#1#2#3{[#1#2#3]}
@@ -4673,8 +4673,7 @@
 \unexpanded\def\newcounter#1%
   {\dodoglobal\let#1\zerocountervalue}
 
-%D Nowadays we don't mind a few more tokens if we can gain a
-%D bit of speed.
+%D Nowadays we don't mind a few more tokens if we can gain a bit of speed.
 
 \def\syst_helpers_do_increment#1{\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\plusone \relax}}
 \def\syst_helpers_do_decrement#1{\dodoglobal\edef#1{\the\numexpr\ifdefined#1\ifx#1\relax\else#1\fi\fi+\minusone\relax}}
@@ -4870,24 +4869,22 @@
      #2\expandafter\doexpandedrecurse\expandafter{\the\numexpr#1-\plusone\relax}{#2}%
    \fi}
 
-%D As we can see here, the simple command \type{\dorecurse} is
-%D a special case of the more general:
+%D As we can see here, the simple command \type{\dorecurse} is a special case of the
+%D more general:
 %D
 %D \starttyping
 %D \dostepwiserecurse {from} {to} {step} {action}
 %D \stoptyping
 %D
-%D This commands accepts positive and negative steps. Illegal
-%D values are handles as good as possible and the macro accepts
-%D numbers and \COUNTERS.
+%D This commands accepts positive and negative steps. Illegal values are handles as
+%D good as possible and the macro accepts numbers and \COUNTERS.
 %D
 %D \starttyping
 %D \dostepwiserecurse  {1} {10}  {2} {...}
 %D \dostepwiserecurse {10}  {1} {-2} {...}
 %D \stoptyping
 %D
-%D Because the simple case is used often, we implement it
-%D more efficiently:
+%D Because the simple case is used often, we implement it more efficiently:
 
 \unexpanded\def\dorecurse#1%
   {\ifcase#1\relax
@@ -7952,9 +7949,8 @@
 %D \freezedimensionwithunit\SomeDepth{\dp\strutbox}
 %D \stoptyping
 %D
-%D As an alternative for the next macro we can use a global
-%D assignment inside a box. The \type{\empty}'s permits
-%D gobbling while preventing spurious \type{\relax}'s.
+%D As an alternative for the next macro we can use a global assignment inside a box.
+%D The \type {\empty}'s permits gobbling while preventing spurious \type {\relax}'s.
 
 \unexpanded\def\setdimensionwithunit#1#2#3% number unit dimension / nice trick
   {\afterassignment\gobblefourarguments#1=#2#3pt\relax\empty\empty\empty\empty}

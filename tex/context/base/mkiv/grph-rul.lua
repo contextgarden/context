@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['grph-rul'] = {
 }
 
 local tonumber, next, type = tonumber, next, type
+local concat = table.concat
 
 local attributes       = attributes
 local nodes            = nodes
@@ -15,6 +16,7 @@ local context          = context
 local bpfactor         = number.dimenfactors.bp
 
 local nuts             = nodes.nuts
+local nodepool         = nuts.pool
 local userrule         = nuts.rules.userrule
 local outlinerule      = nuts.pool.outlinerule
 local ruleactions      = nuts.rules.ruleactions
@@ -24,6 +26,8 @@ local setattr          = nuts.setattr
 local tonode           = nuts.tonode
 
 local getattribute     = tex.getattribute
+local getwhd           = nuts.getwhd
+local setwhd           = nuts.setwhd
 
 local lefttoright_code = nodes.dirvalues.lefttoright
 
@@ -143,6 +147,184 @@ end
 
 do
 
+    -- This is the old oval method that we keep it for compatibility reasons. Of
+    -- course one can use mp instead. It could be improved but at the cost of more
+    -- code than I'm willing to add for something hardly used.
+
+    local function round(p,kind)
+        local method = tonumber(p.corner) or 0
+        if method < 0 or method > 27 then
+            method = 0
+        end
+        local width  = p.width or 0
+        local height = p.height or 0
+        local depth  = p.depth or 0
+        local total  = height + depth
+        local radius = p.radius or 655360
+        local line   = p.line or 65536
+        local how    = (method > 8 or kind ~= "fill") and "S" or "f"
+        local half   = line / 2
+        local xmin   =            half  * bpfactor
+        local xmax   = ( width  - half) * bpfactor
+        local ymax   = ( height - half) * bpfactor
+        local ymin   = (-depth  + half) * bpfactor
+        local full   = ( radius + half)
+        local xxmin  =            full  * bpfactor
+        local xxmax  = ( width  - full) * bpfactor
+        local yymax  = ( height - full) * bpfactor
+        local yymin  = (-depth  + full) * bpfactor
+              line   =            line  * bpfactor
+        if xxmin <= xxmax and yymin <= yymax then
+            local list = nil
+            if method == 0 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
+                    xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y", xxmin, ymax, "l", xmin, ymax,
+                    xmin, yymax, "y", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", "h", how, "Q",
+                }
+            elseif method == 1 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
+                    xmax, ymax, "l", xmin, ymax, "l", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y",
+                    "h", how, "Q",
+                }
+            elseif method == 2 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxmin, ymax,
+                    "l", xmin, ymax, xmin, yymax, "y", xmin, yymin, "l", xmin, ymin, xxmin, ymin,
+                    "y", "h", how, "Q",
+                }
+            elseif method == 3 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yymax, "l", xmax, ymax,
+                    xxmax, ymax, "y", xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y", xmin, ymin,
+                    "l", "h", how, "Q",
+                }
+
+            elseif method == 4 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
+                    xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l",
+                    "h", how, "Q",
+                }
+            elseif method == 5 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, yymax, "l", xmax, ymax,
+                    xxmax, ymax, "y", xmin, ymax, "l", xmin, ymin, "l", "h", how, "Q",
+                }
+            elseif method == 6 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y",
+                    xmax, ymax, "l", xmin, ymax, "l", xmin, ymin, "l", "h", how, "Q",
+                }
+            elseif method == 7 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xmin, ymax,
+                    "l", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", "h", how, "Q",
+                }
+            elseif method == 8 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xmax, ymin, "l", xmax, ymax, "l", xxmin, ymax,
+                    "l", xmin, ymax, xmin, yymax, "y", xmin, ymin, "l", "h", how, "Q",
+                }
+            elseif method == 9 then
+                list = {
+                    "q", line, "w", xmin, ymax, "m", xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y",
+                    xxmax, ymin, "l", xmax, ymin, xmax, yymin, "y", xmax, ymax, "l", how, "Q",
+                }
+            elseif method == 10 then
+                list = {
+                    "q", line, "w", xmax, ymax, "m", xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y",
+                    xmin, yymin, "l", xmin, ymin, xxmin, ymin, "y", xmax, ymin, "l", how, "Q",
+                }
+            elseif method == 11 then
+                list = {
+                    "q", line, "w", xmax, ymin, "m", xmax, yymax, "l", xmax, ymax, xxmax, ymax, "y",
+                    xxmin, ymax, "l", xmin, ymax, xmin, yymax, "y", xmin, ymin, "l", how, "Q",
+                }
+            elseif method == 12 then
+                list = {
+                    "q", line, "w", xmin, ymax, "m", xxmax, ymax, "l", xmax, ymax, xmax, yymax, "y",
+                    xmax, yymin, "l", xmax, ymin, xxmax, ymin, "y", xmin, ymin, "l", how, "Q",
+                }
+            elseif method == 13 then
+                list = {
+                    "q", line, "w", xmin, ymax, "m", xxmax, ymax, "l", xmax, ymax, xmax, yymax, "y",
+                    xmax, ymin, "l", how, "Q",
+                }
+            elseif method == 14 then
+                list = {
+                    "q", line, "w", xmax, ymax, "m", xmax, yymin, "l", xmax, ymin, xxmax, ymin, "y",
+                    xmin, ymin, "l", how, "Q",
+                }
+            elseif method == 15 then
+                list = {
+                    "q", line, "w", xmax, ymin, "m", xxmin, ymin, "l", xmin, ymin, xmin, yymin, "y",
+                    xmin, ymax, "l", how, "Q",
+                }
+            elseif method == 16 then
+                list = {
+                    "q", line, "w", xmin, ymin, "m", xmin, yymax, "l", xmin, ymax, xxmin, ymax, "y",
+                    xmax, ymax, "l", how, "Q",
+                }
+            elseif method == 17 then
+                list = {
+                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", how, "Q",
+                }
+            elseif method == 18 then
+                list = {
+                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", how, "Q",
+                }
+            elseif method == 19 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y", how, "Q",
+                }
+            elseif method == 20 then
+                list = {
+                    "q", line, "w", xmin, yymax, "m", xmin, ymax, xxmin, ymax, "y", how, "Q",
+                }
+            elseif method == 21 then
+                list = {
+                    "q", line, "w", xxmax, ymax, m, xmax, ymax, xmax, yymax, "y", xmin, yymax, "m",
+                    xmin, ymax, xxmin, ymax, "y", how, "Q",
+                }
+            elseif method == 22 then
+                list = {
+                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmax, yymin, "m",
+                    xmax, ymin, xxmax, ymin, "y", how, "Q",
+                }
+            elseif method == 23 then
+                list = {
+                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", xxmin, ymin, "m",
+                    xmin, ymin, xmin, yymin, "y", how, "Q",
+                }
+            elseif method == 24 then
+                list = {
+                    "q", line, "w", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y", xmin, yymax, "m",
+                    xmin, ymax, xxmin, ymax, "y", how, "Q",
+                }
+            elseif method == 25 then
+                list = {
+                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmax, yymin, "m",
+                    xmax, ymin, xxmax, ymin, "y", xxmin, ymin, "m", xmin, ymin, xmin, yymin, "y",
+                    xmin, yymax, "m", xmin, ymax, xxmin, ymax, "y", how, "Q",
+                }
+            elseif method == 26 then
+                list = {
+                    "q", line, "w", xmax, yymin, "m", xmax, ymin, xxmax, ymin, "y", xmin, yymax, "m",
+                    xmin, ymax, xxmin, ymax, "y", how, "Q",
+                }
+
+            elseif method == 27 then
+                list = {
+                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xxmin, ymin, "m",
+                    xmin, ymin, xmin, yymin, "y", how, "Q",
+                }
+            end
+            pdfprint("direct",concat(list," "))
+        end
+    end
+
     -- maybe %.6F
 
     local f_rectangle = formatters["%.6F w %.6F %.6F %.6F %.6F re %s"]
@@ -172,29 +354,31 @@ h %s]]
     end)
 
     ruleactions.fill = function(p,h,v,i,n)
-        local l = (p.line or 65536)*bpfactor
-        local r = p and (p.radius or 0)*bpfactor or 0
-        local w = h * bpfactor
-        local h = v * bpfactor
-        local m = nil
-        local t = i == "fill" and "f" or "s"
-        local o = l / 2
-        if r > 0 then
-            w = w - o
-            h = h - o
-            m = f_radtangle(l, r,o, w-r,o, w,o,w,r, w,h-r, w,h,w-r,h, r,h, o,h,o,h-r, o,r, o,o,r,o, t)
+        if p.corner then
+            return round(p,i)
         else
-            w = w - l
-            h = h - l
-            m = f_rectangle(l,o,o,w,h,t)
+            local l = (p.line or 65536)*bpfactor
+            local r = p and (p.radius or 0)*bpfactor or 0
+            local w = h * bpfactor
+            local h = v * bpfactor
+            local m = nil
+            local t = i == "fill" and "f" or "s"
+            local o = l / 2
+            if r > 0 then
+                w = w - o
+                h = h - o
+                m = f_radtangle(l, r,o, w-r,o, w,o,w,r, w,h-r, w,h,w-r,h, r,h, o,h,o,h-r, o,r, o,o,r,o, t)
+            else
+                w = w - l
+                h = h - l
+                m = f_rectangle(l,o,o,w,h,t)
+            end
+            pdfprint("direct",m)
         end
-        pdfprint("direct",m)
     end
 
     ruleactions.draw   = ruleactions.fill
     ruleactions.stroke = ruleactions.fill
-
-    local getwhd = nodes.nuts.getwhd
 
     ruleactions.box = function(p,h,v,i,n)
         local w, h, d = getwhd(n)
@@ -231,22 +415,17 @@ interfaces.implement {
         { "type",   "string" },
         { "data",   "string" },
         { "name",   "string" },
+        { "radius", "dimension" },
+        { "corner", "string" },
     } } ,
     actions = function(t)
-        -- no nuts !
         local rule = userrule(t)
-        local ma = getattribute(a_colormodel) or 1
-        local ca = getattribute(a_color)
-        local ta = getattribute(a_transparency)
-        setattrlist(rule,true)
         if t.type == "mp" then
-            t.ma = ma
-            t.ca = ca
-            t.ta = ta
+            t.ma = getattribute(a_colormodel) or 1
+            t.ca = getattribute(a_color)
+            t.ta = getattribute(a_transparency)
         else
-            setattr(rule,a_colormodel,ma)
-            setattr(rule,a_color,ca)
-            setattr(rule,a_transparency,ta)
+            setattrlist(rule,true)
         end
         context(tonode(rule)) -- will become context.nodes.flush
     end
@@ -306,5 +485,3 @@ interfaces.implement {
         context(tonode(rule))
     end
 }
-
-

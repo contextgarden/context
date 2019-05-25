@@ -1,8 +1,8 @@
 %D \module
-%D   [       file=driv-shp,
+%D   [       file=back-lua,
 %D        version=2018.07.26,
-%D          title=\CONTEXT\ Driver Macros,
-%D       subtitle=Shipout,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=\LUA,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
@@ -12,13 +12,7 @@
 %C details.
 
 \ifcase\contextlmtxmode \else
-    \registerctxluafile{driv-shp}{optimize}
+    \registerctxluafile{back-lua}{optimize}
 \fi
 
-\unprotect
-
-\appendtoks
-    \clf_enabledriver{pdf}%
-\to \everyjob
-
-\protect \endinput
+\endinput

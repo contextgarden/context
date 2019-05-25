@@ -1,4 +1,4 @@
-.TH "mtx-context" "1" "01-01-2019" "version 1.01" "ConTeXt Process Management"
+.TH "mtx-context" "1" "01-01-2019" "version 1.03" "ConTeXt Process Management"
 .SH NAME
  mtx-context - ConTeXt Process Management
 .SH SYNOPSIS
@@ -152,9 +152,6 @@ update context version number (also provide --expert, optionally provide --basep
 .TP
 .B --nostatistics
 omit runtime statistics at the end of the run
-.TP
-.B --update
-update context from website (not to be confused with contextgarden)
 .TP
 .B --profile
 profile job (use: mtxrun --script profile --analyze)

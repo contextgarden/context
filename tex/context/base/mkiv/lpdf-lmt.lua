@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['back-lpd'] = {
+if not modules then modules = { } end modules ['lpdf-lmt'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -6,11 +6,18 @@ if not modules then modules = { } end modules ['back-lpd'] = {
     license   = "see context related readme files"
 }
 
+-- The code below was originally in back-lpd.lua but it makes more sense in
+-- this namespace.
+
+if CONTEXTLMTXMODE == 0 then
+    return
+end
+
 -- If you consider this complex, watch:
 --
 -- https://www.youtube.com/watch?v=6H-cAzfB2qo
 --
--- or in distactionmode:
+-- or in distractionmode:
 --
 -- https://www.youtube.com/watch?v=TYuTE_1jvvE
 -- https://www.youtube.com/watch?v=nnicGKX3lvM
@@ -20,7 +27,7 @@ if not modules then modules = { } end modules ['back-lpd'] = {
 
 local type, next, unpack, tonumber = type, next, unpack, tonumber
 local char, rep, find = string.char, string.rep, string.find
-local formatters, splitstring = string.formatters, string.split
+local formatters, splitupstring = string.formatters, string.splitup
 local band, extract = bit32.band, bit32.extract
 local concat, keys, sortedhash = table.concat, table.keys, table.sortedhash
 local setmetatableindex = table.setmetatableindex
@@ -68,26 +75,6 @@ local parameters           = fonthashes.parameters
 local properties           = fonthashes.properties
 
 local report               = logs.reporter("backend")
-
-do
-
-    local dummy = function() end
-
-    local function unavailable(t,k)
-        report("calling unavailable pdf.%s function",k)
-        t[k] = dummy
-        return dummy
-    end
-
-    updaters.register("backend.update.pdf",function()
-        setmetatableindex(pdf,unavailable)
-    end)
-
-    updaters.register("backend.update",function()
-        pdf = setmetatableindex(unavailable)
-    end)
-
-end
 
 -- used variables
 
@@ -716,17 +703,17 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
 
     local function pdf_set_matrix(str,pos_h,pos_v)
         if shippingmode == "page" then
-            local rx, sx, sy, ry = splitstring(str," ")
+            local rx, sx, sy, ry = splitupstring(str," ")
             if rx and ry and sx and ry then
-                rx, sx, sy, ry = tonumber(rx), tonumber(ry), tonumber(sx), tonumber(sy)
+                rx, sx, sy, ry = tonumber(rx), tonumber(sx), tonumber(sy), tonumber(ry)
                 local tx = pos_h * (1 - rx) - pos_v * sy
                 local ty = pos_v * (1 - ry) - pos_h * sx
                 if nofmatrices > 1 then
                     local t = matrices[nofmatrices]
                     local r_x, s_x, s_y, r_y, te, tf = t[1], t[2], t[3], t[4], t[5], t[6]
-                    rx, sx = rx * r_x + sx * s_y,       rx * s_x + sx * r_y
-                    sy, ry = sy * r_x + ry * s_y,       sy * s_x + ry * r_y
-                    tx, ty = tx * r_x + ty * s_y + t_x, tx * s_x + ty * r_y + t_y
+                    rx, sx = rx * r_x + sx * s_y, rx * s_x + sx * r_y
+                    sy, ry = sy * r_x + ry * s_y, sy * s_x + ry * r_y
+                    tx, ty = tx * r_x + ty * s_y, tx * s_x + ty * r_y
                 end
                 nofmatrices = nofmatrices + 1
                 matrices[nofmatrices] = { rx, sx, sy, ry, tx, ty }
@@ -766,7 +753,7 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
             if nofmatrices > 0 then
                 return unpack(matrices[nofmatrices])
             else
-                return 0, 0, 0, 0, 0, 0 -- or 1 0 0 1 0 0
+                return 1, 0, 0, 1, 0, 0
             end
         end
 
@@ -817,7 +804,7 @@ end
 
 local flushedxforms = { } -- actually box resources but can also be direct
 
-local flushrule, flushsimplerule  do
+local flushrule, flushsimplerule, flushpdfimage  do
 
     local rulecodes         = nodes.rulecodes
     local newrule           = nodes.pool.rule
@@ -1152,8 +1139,6 @@ local flushrule, flushsimplerule  do
 
     -- For the moment we need this hack because the engine checks the 'image'
     -- command in virtual fonts (so we use lua instead).
-
-    pdf.flushpdfimage = flushpdfimage
 
     flushrule = function(current,pos_h,pos_v,pos_r,size_h,size_v)
 
@@ -1535,7 +1520,6 @@ local info          = ""
 local catalog       = ""
 local level         = 0
 local lastdeferred  = false
-local enginepdf     = pdf
 local majorversion  = 1
 local minorversion  = 7
 local trailerid     = true
@@ -1599,12 +1583,6 @@ do
         pdf.setpagesattributes  = setpagesattributes
     end)
 
-end
-
-local function pdfreserveobj()
-    nofobjects = nofobjects + 1
-    objects[nofobjects] = false
-    return nofobjects
 end
 
 local addtocache, flushcache, cache do
@@ -1678,6 +1656,12 @@ local addtocache, flushcache, cache do
         end
     end
 
+end
+
+local function pdfreserveobj()
+    nofobjects = nofobjects + 1
+    objects[nofobjects] = false
+    return nofobjects
 end
 
 local pages = table.setmetatableindex(function(t,k)
@@ -2148,6 +2132,8 @@ updaters.register("backend.update.pdf",function()
     -- reimplement what we need in context. This will change completely i.e.
     -- we will drop the low level interface!
 
+    local codeinjections = backends.pdf.codeinjections
+
     local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream memstream
     local img_none       = imagetypes.none
 
@@ -2163,19 +2149,19 @@ updaters.register("backend.update.pdf",function()
 
     local bpfactor       = number.dimenfactors.bp
 
-    local function new_img(specification)
+    function codeinjections.newimage(specification)
         return specification
     end
 
-    local function copy_img(original)
+    function codeinjections.copyimage(original)
         return setmetatableindex(original)
     end
 
-    local function scan_img(specification)
+    function codeinjections.scanimgage(specification)
         return specification
     end
 
-    local function embed_img(specification)
+    local function embedimage(specification)
         lastindex = lastindex + 1
         index     = lastindex
         specification.index = index
@@ -2239,11 +2225,13 @@ updaters.register("backend.update.pdf",function()
         return specification
     end
 
-    local function wrap_img(specification)
+    codeinjections.embedimage = embedimage
+
+    function codeinjections.wrapimage(specification)
         --
         local index = specification.index
         if not index then
-            embed_img(specification)
+            embedimage(specification)
         end
         --
         local width  = specification.width  or 0
@@ -2255,15 +2243,6 @@ updaters.register("backend.update.pdf",function()
         setprop(tonut(n),"index",specification.index)
         return n
     end
-
-    -- plugged into the old stuff
-
-    local img = images.__img__
-    img.new   = new_img
-    img.copy  = copy_img
-    img.scan  = scan_img
-    img.embed = embed_img
-    img.wrap  = wrap_img
 
     function pdf.includeimage(index)
         local specification = indices[index]
@@ -2332,7 +2311,7 @@ updaters.register("backend.update.lpdf",function()
             topdf[id] = index
         end
         -- pdf.print or pdf.literal
-        pdf.flushpdfimage(index,wd,ht,dp,pos_h,pos_v)
+        flushpdfimage(index,wd,ht,dp,pos_h,pos_v)
     end
 
     local function pdfvfimage(wd,ht,dp,data,name)
@@ -2365,7 +2344,7 @@ do
 
     local function prepare()
         if not environment.initex then
-        -- install new functions in pdf namespace
+            -- install new functions in pdf namespace
             updaters.apply("backend.update.pdf")
             -- install new functions in lpdf namespace
             updaters.apply("backend.update.lpdf")
@@ -2373,10 +2352,6 @@ do
             updaters.apply("backend.update.tex")
             -- adapt existing shortcuts to tex namespace
             updaters.apply("backend.update")
-            --
-            updaters.apply("backend.update.img")
-            --
-            directives.enable("graphics.uselua")
             --
          -- if rawget(pdf,"setforcefile") then
          --     pdf.setforcefile(false) -- default anyway
@@ -2446,20 +2421,8 @@ do
         lpdf.convert(tex.box[boxnumber],"page")
     end
 
-    drivers.install {
-        name     = "pdf",
-        actions  = {
-            prepare         = prepare,
-            wrapup          = wrapup,
-            convert         = convert,
-            cleanup         = cleanup,
-            --
-            initialize      = initialize,
-            finalize        = finalize,
-            updatefontstate = updatefontstate,
-            outputfilename  = outputfilename,
-        },
-        flushers = {
+    function lpdf.flushers()
+        return {
             character       = flushcharacter,
             rule            = flushrule,
             simplerule      = flushsimplerule,
@@ -2471,7 +2434,27 @@ do
             pdfsave         = flushpdfsave,
             pdfrestore      = flushpdfrestore,
             pdfimage        = flushpdfimage,
-        },
+        }
+    end
+
+    function lpdf.actions()
+        return {
+            prepare         = prepare,
+            wrapup          = wrapup,
+            convert         = convert,
+            cleanup         = cleanup,
+            --
+            initialize      = initialize,
+            finalize        = finalize,
+            updatefontstate = updatefontstate,
+            outputfilename  = outputfilename,
+        }
+    end
+
+    drivers.install {
+        name     = "pdf",
+        flushers = lpdf.flushers(),
+        actions  = lpdf.actions(),
     }
 
 end

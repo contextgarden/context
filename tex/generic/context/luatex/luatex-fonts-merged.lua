@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/16/19 19:12:45
+-- merge date  : 05/25/19 10:45:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -31241,32 +31241,17 @@ do
  local f_used=context and formatters[ [[original:///%s]] ] or formatters[ [[%s]] ]
  local hashed={}
  local cache={}
- if epdf then
-  local openpdf=epdf.openMemStream
-  function otf.storepdfdata(pdf)
-   local done=hashed[pdf]
-   if not done then
-    nofstreams=nofstreams+1
-    local o,n=openpdf(pdf,#pdf,f_name(nofstreams))
-    cache[n]=o 
-    done=f_used(n)
-    hashed[pdf]=done
-   end
-   return done
+ local openpdf=pdfe.new
+ function otf.storepdfdata(pdf)
+  local done=hashed[pdf]
+  if not done then
+   nofstreams=nofstreams+1
+   local f=f_name(nofstreams)
+   local n=openpdf(pdf,#pdf,f)
+   done=f_used(n)
+   hashed[pdf]=done
   end
- else
-  local openpdf=pdfe.new
-  function otf.storepdfdata(pdf)
-   local done=hashed[pdf]
-   if not done then
-    nofstreams=nofstreams+1
-    local f=f_name(nofstreams)
-    local n=openpdf(pdf,#pdf,f)
-    done=f_used(n)
-    hashed[pdf]=done
-   end
-   return done
-  end
+  return done
  end
 end
 local function pdftovirtual(tfmdata,pdfshapes,kind) 

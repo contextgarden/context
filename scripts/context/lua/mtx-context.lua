@@ -12,7 +12,7 @@ if not modules then modules = { } end modules['mtx-context'] = {
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
 local quote, validstring = string.quote, string.valid
-local sort, concat, insert, sortedhash = table.sort, table.concat, table.insert, table.sortedhash
+local sort, concat, insert, sortedhash, tohash = table.sort, table.concat, table.insert, table.sortedhash, table.tohash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
 local lpegpatterns, lpegmatch, Cs, P = lpeg.patterns, lpeg.match, lpeg.Cs, lpeg.P
@@ -34,7 +34,7 @@ local formatters    = string.formatters
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 1.02",
+    banner   = "ConTeXt Process Management 1.03",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -1233,7 +1233,7 @@ function scripts.context.autoctx()
             if chunk then
                 ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
             end
-        elseif suffix == "tex" or suffix == "mkiv" then
+        elseif suffix == "tex" or suffix == "mkiv" or suffix == "mkil" then
             local analysis = preamble_analyze(firstfile)
             ctxname = analysis.ctxfile or analysis.ctx
         end
@@ -1342,15 +1342,15 @@ function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
 end
 
 function scripts.context.purge(all,pattern,mkiitoo)
-    local all = all or getargument("all")
-    local pattern = getargument("pattern") or (pattern and (pattern.."*")) or "*.*"
-    local files = dir.glob(pattern)
-    local obsolete = table.tohash(obsolete_results)
-    local temporary = table.tohash(temporary_runfiles)
-    local synctex = table.tohash(synctex_runfiles)
-    local persistent = table.tohash(persistent_runfiles)
-    local generic = table.tohash(generic_files)
-    local deleted = { }
+    local all        = all or getargument("all")
+    local pattern    = getargument("pattern") or (pattern and (pattern.."*")) or "*.*"
+    local files      = dir.glob(pattern)
+    local obsolete   = tohash(obsolete_results)
+    local temporary  = tohash(temporary_runfiles)
+    local synctex    = tohash(synctex_runfiles)
+    local persistent = tohash(persistent_runfiles)
+    local generic    = tohash(generic_files)
+    local deleted    = { }
     for i=1,#files do
         local name = files[i]
         local suffix = filesuffix(name)
@@ -1429,17 +1429,19 @@ local function touchfiles(suffix,kind,path)
     end
 end
 
+local tobetouched = tohash { "mkii", "mkiv", "mkvi", "mkil", "mkli" }
+
 function scripts.context.touch()
     if getargument("expert") then
         local touch = getargument("touch")
         local kind  = getargument("kind")
         local path  = getargument("basepath")
-        if touch == "mkii" or touch == "mkiv" or touch == "mkvi" then -- mkix mkxi
+        if tobetouched[touch] then -- mkix mkxi ctix ctxi
             touchfiles(touch,kind,path)
         else
-            touchfiles("mkii",kind,path)
-            touchfiles("mkiv",kind,path)
-            touchfiles("mkvi",kind,path)
+            for touch in sortedhash(tobetouched) do
+                touchfiles(touch,kind,path)
+            end
         end
     else
         report("touching needs --expert")
@@ -1449,7 +1451,8 @@ end
 -- modules
 
 local labels = { "title", "comment", "status" }
-local cards  = { "*.mkvi", "*.mkiv", "*.mkxi", "*.mkix", "*.tex" }
+local cards  = { "*.mkiv", "*.mkvi",  "*.mkix", "*.mkxi", "*.mkil", "*.mkli", "*.tex" }
+local valid  = tohash { "mkiv", "mkvi", "mkix", "mkxi", "mkil", "mkli", "tex" }
 
 function scripts.context.modules(pattern)
     local list = { }
@@ -1475,7 +1478,7 @@ function scripts.context.modules(pattern)
         if not done[base] then
             done[base] = true
             local suffix = filesuffix(base)
-            if suffix == "tex" or suffix == "mkiv" or suffix == "mkvi" or suffix == "mkix" or suffix == "mkxi" then
+            if valid[suffix] then
                 local prefix, rest = match(base,"^([xmst])%-(.*)")
                 if prefix then
                     v = resolvers.findfile(base) -- so that files on my dev path are seen
@@ -1595,147 +1598,147 @@ function scripts.context.logcategories()
     scripts.context.run()
 end
 
--- updating (often one will use mtx-update instead)
-
 function scripts.context.timed(action)
     statistics.timed(action,true)
 end
 
-local zipname     = "cont-tmf.zip"
-local mainzip     = "http://www.pragma-ade.com/context/latest/" .. zipname
-local validtrees  = { "texmf-local", "texmf-context" }
-local selfscripts = { "mtxrun.lua" } -- was: { "luatools.lua", "mtxrun.lua" }
-
-function zip.loaddata(zipfile,filename) -- should be in zip lib
-    local f = zipfile:open(filename)
-    if f then
-        local data = f:read("*a")
-        f:close()
-        return data
-    end
-    return nil
-end
-
-function scripts.context.update()
-    local force = getargument("force")
-    local socket = require("socket")
-    local http   = require("socket.http")
-    local basepath = resolvers.findfile("context.mkiv") or ""
-    if basepath == "" then
-        report("quiting, no 'context.mkiv' found")
-        return
-    end
-    local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
-    if basetree == "" then
-        report("quiting, no proper tds structure (%s)",basepath)
-        return
-    end
-    local function is_okay(basetree)
-        for _, tree in next, validtrees do
-            local pattern = gsub(tree,"%-","%%-")
-            if find(basetree,pattern) then
-                return tree
-            end
-        end
-        return false
-    end
-    local okay = is_okay(basetree)
-    if not okay then
-        report("quiting, tree '%s' is protected",okay)
-        return
-    else
-        report("updating tree '%s'",okay)
-    end
-    if not lfs.chdir(basetree) then
-        report("quiting, unable to change to '%s'",okay)
-        return
-    end
-    report("fetching '%s'",mainzip)
-    local latest = http.request(mainzip)
-    if not latest then
-        report("context tree '%s' can be updated, use --force",okay)
-        return
-    end
-    io.savedata("cont-tmf.zip",latest)
-    if false then
-        -- variant 1
-        os.execute("mtxrun --script unzip cont-tmf.zip")
-    else
-        -- variant 2
-        local zipfile = zip.open(zipname)
-        if not zipfile then
-            report("quiting, unable to open '%s'",zipname)
-            return
-        end
-        local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
-        if not newfile then
-            report("quiting, unable to open '%s'","context.mkiv")
-            return
-        end
-        local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
-        local function versiontonumber(what,str)
-            local version = match(str,"\\edef\\contextversion{(.-)}") or ""
-            local year, month, day, hour, minute = match(str,"\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
-            if year and minute then
-                local time = os.time { year=year,month=month,day=day,hour=hour,minute=minute}
-                report("%s version: %s (%s)",what,version,time)
-                return time
-            else
-                report("%s version: %s (unknown)",what,version)
-                return nil
-            end
-        end
-        local oldversion = versiontonumber("old",oldfile)
-        local newversion = versiontonumber("new",newfile)
-        if not oldversion or not newversion then
-            report("quiting, version cannot be determined")
-            return
-        elseif oldversion == newversion then
-            report("quiting, your current version is up-to-date")
-            return
-        elseif oldversion > newversion then
-            report("quiting, your current version is newer")
-            return
-        end
-        for k in zipfile:files() do
-            local filename = k.filename
-            if find(filename,"/$") then
-                lfs.mkdir(filename)
-            else
-                local data = zip.loaddata(zipfile,filename)
-                if data then
-                    if force then
-                        io.savedata(filename,data)
-                    end
-                    report(filename)
-                end
-            end
-        end
-        for _, scriptname in next, selfscripts do
-            local oldscript = resolvers.findfile(scriptname) or ""
-            if oldscript ~= "" and is_okay(oldscript) then
-                local newscript = "./scripts/context/lua/" .. scriptname
-                local data = io.loaddata(newscript) or ""
-                if data ~= "" then
-                    report("replacing script '%s' by '%s'",oldscript,newscript)
-                    if force then
-                        io.savedata(oldscript,data)
-                    end
-                end
-            else
-                report("keeping script '%s'",oldscript)
-            end
-        end
-        if force then
-            scripts.context.make()
-        end
-    end
-    if force then
-        report("context tree '%s' has been updated",okay)
-    else
-        report("context tree '%s' can been updated (use --force)",okay)
-    end
-end
+-- -- updating (often one will use mtx-update instead)
+--
+-- local zipname     = "cont-tmf.zip"
+-- local mainzip     = "http://www.pragma-ade.com/context/latest/" .. zipname
+-- local validtrees  = { "texmf-local", "texmf-context" }
+-- local selfscripts = { "mtxrun.lua" } -- was: { "luatools.lua", "mtxrun.lua" }
+--
+-- function zip.loaddata(zipfile,filename) -- should be in zip lib
+--     local f = zipfile:open(filename)
+--     if f then
+--         local data = f:read("*a")
+--         f:close()
+--         return data
+--     end
+--     return nil
+-- end
+--
+-- function scripts.context.update()
+--     local force = getargument("force")
+--     local socket = require("socket")
+--     local http   = require("socket.http")
+--     local basepath = resolvers.findfile("context.mkiv")
+--     if basepath == "" then
+--         report("quiting, no 'context.mkiv' found")
+--         return
+--     end
+--     local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
+--     if basetree == "" then
+--         report("quiting, no proper tds structure (%s)",basepath)
+--         return
+--     end
+--     local function is_okay(basetree)
+--         for _, tree in next, validtrees do
+--             local pattern = gsub(tree,"%-","%%-")
+--             if find(basetree,pattern) then
+--                 return tree
+--             end
+--         end
+--         return false
+--     end
+--     local okay = is_okay(basetree)
+--     if not okay then
+--         report("quiting, tree '%s' is protected",okay)
+--         return
+--     else
+--         report("updating tree '%s'",okay)
+--     end
+--     if not lfs.chdir(basetree) then
+--         report("quiting, unable to change to '%s'",okay)
+--         return
+--     end
+--     report("fetching '%s'",mainzip)
+--     local latest = http.request(mainzip)
+--     if not latest then
+--         report("context tree '%s' can be updated, use --force",okay)
+--         return
+--     end
+--     io.savedata("cont-tmf.zip",latest)
+--     if false then
+--         -- variant 1
+--         os.execute("mtxrun --script unzip cont-tmf.zip")
+--     else
+--         -- variant 2
+--         local zipfile = zip.open(zipname)
+--         if not zipfile then
+--             report("quiting, unable to open '%s'",zipname)
+--             return
+--         end
+--         local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
+--         if not newfile then
+--             report("quiting, unable to open '%s'","context.mkiv")
+--             return
+--         end
+--         local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
+--         local function versiontonumber(what,str)
+--             local version = match(str,"\\edef\\contextversion{(.-)}") or ""
+--             local year, month, day, hour, minute = match(str,"\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
+--             if year and minute then
+--                 local time = os.time { year=year,month=month,day=day,hour=hour,minute=minute}
+--                 report("%s version: %s (%s)",what,version,time)
+--                 return time
+--             else
+--                 report("%s version: %s (unknown)",what,version)
+--                 return nil
+--             end
+--         end
+--         local oldversion = versiontonumber("old",oldfile)
+--         local newversion = versiontonumber("new",newfile)
+--         if not oldversion or not newversion then
+--             report("quiting, version cannot be determined")
+--             return
+--         elseif oldversion == newversion then
+--             report("quiting, your current version is up-to-date")
+--             return
+--         elseif oldversion > newversion then
+--             report("quiting, your current version is newer")
+--             return
+--         end
+--         for k in zipfile:files() do
+--             local filename = k.filename
+--             if find(filename,"/$") then
+--                 lfs.mkdir(filename)
+--             else
+--                 local data = zip.loaddata(zipfile,filename)
+--                 if data then
+--                     if force then
+--                         io.savedata(filename,data)
+--                     end
+--                     report(filename)
+--                 end
+--             end
+--         end
+--         for _, scriptname in next, selfscripts do
+--             local oldscript = resolvers.findfile(scriptname) or ""
+--             if oldscript ~= "" and is_okay(oldscript) then
+--                 local newscript = "./scripts/context/lua/" .. scriptname
+--                 local data = io.loaddata(newscript) or ""
+--                 if data ~= "" then
+--                     report("replacing script '%s' by '%s'",oldscript,newscript)
+--                     if force then
+--                         io.savedata(oldscript,data)
+--                     end
+--                 end
+--             else
+--                 report("keeping script '%s'",oldscript)
+--             end
+--         end
+--         if force then
+--             scripts.context.make()
+--         end
+--     end
+--     if force then
+--         report("context tree '%s' has been updated",okay)
+--     else
+--         report("context tree '%s' can been updated (use --force)",okay)
+--     end
+-- end
 
 -- getting it done
 
@@ -1800,8 +1803,8 @@ elseif getargument("version") then
     scripts.context.version()
 elseif getargument("touch") then
     scripts.context.touch()
-elseif getargument("update") then
-    scripts.context.update()
+-- elseif getargument("update") then
+--     scripts.context.update()
 elseif getargument("expert") then
     application.help("expert", "special")
 elseif getargument("showmodules") or getargument("modules") then

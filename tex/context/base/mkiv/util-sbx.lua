@@ -637,16 +637,7 @@ end
 -- these are used later on
 
 if zip then
-    zip.open        = register(zip.open,       filehandlerone,"zip.open")
-end
-
-if fontloader then
-    fontloader.open = register(fontloader.open,filehandlerone,"fontloader.open")
-    fontloader.info = register(fontloader.info,filehandlerone,"fontloader.info")
-end
-
-if epdf then
-    epdf.open       = register(epdf.open,      filehandlerone,"epdf.open")
+    zip.open = register(zip.open, filehandlerone,"zip.open")
 end
 
 sandbox.registerroot    = registerroot

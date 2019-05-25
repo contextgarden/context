@@ -38,29 +38,39 @@ function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
     }
 end
 
+-- function backends.codeinjections.bitmap(bitmap)
+--     return lpdf.injectors.bitmap(bitmap)
+-- end
+
 local function flush(bitmap)
-    return wrapimage(lpdf.injectors.bitmap(bitmap))
+    local specification = backends.codeinjections.bitmap(bitmap)
+    if specification then
+        return wrapimage(specification)
+    end
 end
 
 bitmaps.flush = flush
 
 function bitmaps.tocontext(bitmap,width,height)
-    if type(width) == "number" then
-        width = width .. "sp"
-    end
-    if type(height) == "number" then
-        height = height .. "sp"
-    end
-    if width or height then
-        context.scale (
-            {
-                width  = width,
-                height = height,
-            },
-            flush(bitmap)
-        )
-    else
-        context(flush(bitmap))
+    local bmp = flush(bitmap)
+    if bmp then
+        if type(width) == "number" then
+            width = width .. "sp"
+        end
+        if type(height) == "number" then
+            height = height .. "sp"
+        end
+        if width or height then
+            context.scale (
+                {
+                    width  = width,
+                    height = height,
+                },
+                bmp
+            )
+        else
+            context(bmp)
+        end
     end
 end
 

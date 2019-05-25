@@ -268,6 +268,9 @@ function processors.mkxi(str,filename)
     return str
 end
 
+processors.mkli = processors.mkvi
+processors.mkil = processors.mkiv
+
 function macros.processmk(str,filename)
     if filename then
         local suffix = filesuffix(filename)
@@ -279,8 +282,18 @@ function macros.processmk(str,filename)
     return str
 end
 
+local function validvi(filename,str)
+    local suffix = filesuffix(filename)
+    if suffix == "mkvi" or suffix == "mkli" then
+        return true
+    else
+        local check = lpegmatch(checker,str)
+        return check == "mkvi" or check == "mkli"
+    end
+end
+
 function macros.processmkvi(str,filename)
-    if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
+    if filename and filename ~= "" and validvi(filename,str) then
         local oldsize = #str
         str = lpegmatch(parser,str,1,true) or str
         pushtarget("logfile")
@@ -289,6 +302,8 @@ function macros.processmkvi(str,filename)
     end
     return str
 end
+
+macros.processmkli = macros.processmkvi
 
 local sequencers = utilities.sequencers
 
@@ -308,7 +323,7 @@ if resolvers.schemes then
         local path = hashed.path
         if path and path ~= "" then
             local str = resolvers.loadtexfile(path)
-            if filesuffix(path) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
+            if validvi(path,str) then
                 -- already done automatically
                 io.savedata(cachename,str)
             else
@@ -323,6 +338,7 @@ if resolvers.schemes then
     end
 
     resolvers.schemes.install('mkvi',handler,1) -- this will cache !
+    resolvers.schemes.install('mkli',handler,1) -- bonus, best use just mkvi
 
 end
 

@@ -1065,7 +1065,7 @@ do
             }
         end
         if trace then
-            report_png("%s: width %i, height %i, colordepth: %i, size: %i, palette %l, mask: %l, transparent %l, decode %l",filename,xsize,ysize,colordepth,#content,palette,mask,transparent,decode)
+            report_png("%s: width %i, height %i, colordepth %i, size %i, palette %l, mask %l, transparent %l, decode %l",filename,xsize,ysize,colordepth,#content,palette,mask,transparent,decode)
         end
         if specification.colorref then
             xobject.ColorSpace = pdfreference(specification.colorref)
@@ -1179,6 +1179,8 @@ do
             attr     = xobject(),
         }
     end
+
+    backends.pdf.codeinjections.bitmap = injectors.bitmap
 
 end
 

@@ -502,13 +502,18 @@ local findallused do
         local luadata  = current.luadata
         local details  = current.details
         local ordered  = current.ordered
-        if allused then
+        if allused then -- always true
             local registered = { }
             local function register(tag)
                 local entry = forcethem and luadata[tag]
                 if entry then
                     if registered[tag] then
+                        if trace_cite then
+                            report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"already cited (1)")
+                        end
                         return
+                    elseif trace_cite then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"okay")
                     end
                     okay[#okay+1] = entry
                  -- todo[tag] = true
@@ -516,6 +521,9 @@ local findallused do
                     return tag
                 end
                 entry = allused[tag]
+                if trace_cite then
+                    report_cite("dataset: %s, tag: %s, used: % t",dataset,tag,table.sortedkeys(allused))
+                end
                 if not entry then
                     local parent = details[tag].parent
                     if parent then
@@ -524,9 +532,16 @@ local findallused do
                     if entry then
                         report("using reference of parent %a for %a",parent,tag)
                         tag = parent
+                    elseif trace_cite then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"not used")
                     end
+                elseif trace_cite then
+                    report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"used")
                 end
                 if registered[tag] then
+                    if trace_cite then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"already cited (2)")
+                    end
                     return
                 end
                 if entry then
@@ -564,7 +579,17 @@ local findallused do
                             entry = entry[1]
                         end
                     end
+                    if not entry then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"no entry (1)")
+                    elseif trace_cite then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"new entry")
+                    end
                     okay[#okay+1] = entry
+                elseif not entry then
+                    if trace_cite then
+                        report_cite("dataset: %s, tag: %s, state: %s",dataset,tag,"no entry (2)")
+                    end
+        -- okay[#okay+1] = luadata[tag]
                 end
                 todo[tag] = true
                 registered[tag] = true
@@ -1712,7 +1737,6 @@ do
         end
     end
 
-
     -- tag | listindex | reference | userdata | dataindex
 
     local methods = { }
@@ -1794,7 +1818,7 @@ do
                         if traced then
                             local l = traced[tag]
                             if l then
-                                l[#l+1] = u.btxint
+                                l[#l+1] = u.btxint -- tonumber ?
                             else
                                 local data = luadata[tag]
                                 local l = { tag, listindex, 0, u, data and data.index or 0 }

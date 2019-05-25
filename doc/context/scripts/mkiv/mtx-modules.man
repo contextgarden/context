@@ -12,10 +12,10 @@
 .SH OPTIONS
 .TP
 .B --convert
-convert source files (tex, mkii, mkiv, mp) to 'ted' files
+convert source files (tex, mkii, mkiv, mp, etc.) to 'ted' files
 .TP
 .B --process
-process source files (tex, mkii, mkiv, mp) to 'pdf' files
+process source files (tex, mkii, mkiv, mp, etc.) to 'pdf' files
 .TP
 .B --prep
 use original name with suffix 'prep' appended

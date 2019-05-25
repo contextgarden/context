@@ -54,8 +54,6 @@ local texget            = tex.get
 local texsp             = tex.sp
 ----- texsp             = string.todimen -- because we cache this is much faster but no rounding
 
-local pdf               = pdf -- h and v are variables
-
 local setmetatableindex    = table.setmetatableindex
 local setmetatablenewindex = table.setmetatablenewindex
 
@@ -1449,3 +1447,12 @@ statistics.register("positions", function()
         return nil
     end
 end)
+
+-- We support the low level positional commands too:
+
+local newsavepos = nodes.pool.savepos
+local implement  = interfaces.implement
+
+implement { name = "savepos",  actions = function() context(newsavepos()) end }
+implement { name = "lastxpos", actions = function() context(gethpos()) end }
+implement { name = "lastypos", actions = function() context(getvpos()) end }

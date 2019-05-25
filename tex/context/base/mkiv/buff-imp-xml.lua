@@ -59,11 +59,11 @@ local closecdata       = P("]]>")
 local grammar = visualizers.newgrammar("default", { "visualizer",
     sstring =
         makepattern(handler,"string",patterns.dquote)
-      * (V("whitespace") + makepattern(handler,"default",1-patterns.dquote))^0
+      * (V("whitespace") + makepattern(handler,"default",(1-patterns.dquote)^0))
       * makepattern(handler,"string",patterns.dquote),
     dstring =
         makepattern(handler,"string",patterns.squote)
-      * (V("whitespace") + makepattern(handler,"default",1-patterns.squote))^0
+      * (V("whitespace") + makepattern(handler,"default",(1-patterns.squote)^0))
       * makepattern(handler,"string",patterns.squote),
     entity =
         makepattern(handler,"entity",entity),

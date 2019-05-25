@@ -32,9 +32,9 @@ local getposition        = files.getposition
 local setmetatableindex  = table.setmetatableindex
 local setmetatablecall   = table.setmetatablecall
 
-local lpdf               = lpdf or { }
-local pdfmajorversion    = lpdf.majorversion
-local pdfminorversion    = lpdf.minorversion
+----- lpdf               = lpdf or { }
+----- pdfmajorversion    = lpdf.majorversion
+----- pdfminorversion    = lpdf.minorversion
 
 local graphics       = graphics or { }
 local identifiers    = { }
@@ -254,8 +254,8 @@ do
         local orientation  = 1
         local okay         = false
         local filesize     = getsize(f) -- seek end
-        local majorversion = pdfmajorversion and pdfmajorversion() or 2
-        local minorversion = pdfminorversion and pdfminorversion() or 2
+     -- local majorversion = pdfmajorversion and pdfmajorversion() or 1
+     -- local minorversion = pdfminorversion and pdfminorversion() or 7
         while getposition(f) < filesize do
             local b = readbyte(f)
             if not b then
@@ -280,10 +280,14 @@ do
             end
             local name = tagdata.name
             if name == "SOF0" or name == "SOF1" or name == "SOF2" then
-                if majorversion == 1 and minorversion <= 2 then
-                    specification.error = "no progressive DCT in PDF <= 1.2"
-                    break
-                end
+                --
+                -- It makes no sense to support pdf < 1.3 so we now just omit this
+                -- test. There is no need to polute the code with useless tests.
+                --
+             -- if majorversion == 1 and minorversion <= 2 then
+             --     specification.error = "no progressive DCT in PDF <= 1.2"
+             --     break
+             -- end
                 length = readcardinal2(f)
                 specification.colordepth = readcardinal(f)
                 specification.ysize      = readcardinal2(f)
@@ -477,8 +481,6 @@ do
         local orientation  = 1
         local okay         = false
         local filesize     = getsize(f) -- seek end
-        local majorversion = pdfmajorversion and pdfmajorversion() or 2
-        local minorversion = pdfminorversion and pdfminorversion() or 2
         --
         local pos = 0
         --  signature

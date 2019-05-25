@@ -100,7 +100,7 @@ local relations = allocate { -- todo: handlers also here
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
-            suffixes = { "tex", "mkvi", "mkiv", "mkii", "cld", "lfg", "xml" }, -- known suffixes have less lookups
+            suffixes = { "tex", "mkvi", "mkiv", "mkli", "mkil", "mkii", "cld", "lfg", "xml" }, -- known suffixes have less lookups
             usertype = true,
         },
         icc = {

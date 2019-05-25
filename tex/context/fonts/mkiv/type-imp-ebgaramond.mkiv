@@ -13,6 +13,19 @@
 
 % Why so many features ... dead slow too
 
+% renewed:
+%
+% Regular
+% Italic
+% Medium
+% MediumItalic
+% SemiBold
+% SemiBoldItalic
+% Bold
+% BoldItalic
+% ExtraBold
+% ExtraBoldItalic
+
 \definefontfeature
   [eb-garamond-normal]
   [default]
@@ -29,17 +42,32 @@
 
 \starttypescriptcollection[ebgaramond]
 
+  % \starttypescript [serif] [ebgaramond]
+  %     \loadfontgoodies[ebgaramond]
+  %     \setups[font:fallback:serif]
+  %     \definefontsynonym [Serif]       [file:ebgaramond-regular] [features=eb-garamond-normal]
+  %     \definefontsynonym [SerifItalic] [file:ebgaramond-italic]  [features=eb-garamond-normal]
+  %     \definefontsynonym [SerifBold]   [file:ebgaramond-regular] [features=eb-garamond-normal] % there is no bold
+  %     \definefontsynonym [SerifCaps]   [Serif]                   [features=eb-garamond-smallcaps]
+  % \stoptypescript
+
+  % \starttypescript[ebgaramond]
+  %     \definetypeface [ebgaramond] [rm] [serif] [ebgaramond] [default] [designsize=auto]
+  %     \definetypeface [ebgaramond] [tt] [mono]  [dejavu]     [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
+  %     \definetypeface [ebgaramond] [mm] [math]  [bonum]      [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
+  % \stoptypescript
+
     \starttypescript [serif] [ebgaramond]
-        \loadfontgoodies[ebgaramond]
         \setups[font:fallback:serif]
-        \definefontsynonym [Serif]       [file:ebgaramond-regular] [features=eb-garamond-normal]
-        \definefontsynonym [SerifItalic] [file:ebgaramond-italic]  [features=eb-garamond-normal]
-        \definefontsynonym [SerifBold]   [file:ebgaramond-regular] [features=eb-garamond-normal] % there is no bold
-        \definefontsynonym [SerifCaps]   [Serif]                   [features=eb-garamond-smallcaps]
+        \definefontsynonym [Serif]          [file:ebgaramond-regular]   [features=eb-garamond-normal]
+        \definefontsynonym [SerifItalic]    [file:ebgaramond-italic]    [features=eb-garamond-normal]
+        \definefontsynonym [SerifBold]      [file:ebgaramond-bold]      [features=eb-garamond-normal]
+        \definefontsynonym [SerifBoldItalic][file:ebgaramond-bolditalic][features=eb-garamond-normal]
+        \definefontsynonym [SerifCaps]      [Serif]                     [features=eb-garamond-smallcaps]
     \stoptypescript
 
     \starttypescript[ebgaramond]
-        \definetypeface [ebgaramond] [rm] [serif] [ebgaramond] [default] [designsize=auto]
+        \definetypeface [ebgaramond] [rm] [serif] [ebgaramond] [default]
         \definetypeface [ebgaramond] [tt] [mono]  [dejavu]     [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
         \definetypeface [ebgaramond] [mm] [math]  [bonum]      [default] [rscale=0.8] % rather arbitrary but seldom mixed anyway
     \stoptypescript

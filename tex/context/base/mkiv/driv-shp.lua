@@ -150,7 +150,7 @@ local flushpdfsetmatrix
 local flushpdfsave
 local flushpdfrestore
 local flushspecial
-local flushpdfimage
+----- flushpdfimage
 
 -- make local
 
@@ -1182,7 +1182,7 @@ function lpdf.convert(box,smode,objnum,specification) -- temp name
     flushpdfsetmatrix = flushers.pdfsetmatrix
     flushpdfsave      = flushers.pdfsave
     flushpdfrestore   = flushers.pdfrestore
-    flushpdfimage     = flushers.pdfimage
+ -- flushpdfimage     = flushers.pdfimage
 
     reset_dir_stack()
     reset_state()

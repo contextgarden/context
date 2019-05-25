@@ -29,7 +29,7 @@
 
 \unprotect
 
-\edef\??empty{\Uchar25}  \letvalue{\Uchar25}\empty % cancel: dec:24 hex:18
+\edef\??empty{\Uchar25}  \letvalue{\Uchar25}\empty % hex 19
 
 % \edef\s!parent{\Uchar29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
 
@@ -227,7 +227,8 @@
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
   %\def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
-   \def#5##1##2{\ifx##1\relax\??empty\else#4##1{##2}\fi}% is {} needed around ##1 ?
+  %\def#5##1##2{\ifx##1\relax\??empty\else#4##1{##2}\fi}% is {} needed around ##1 ?
+   \def#5##1##2{\ifx##1\relax^^^^0019\else#4##1{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \def#8##1{\begincsname#1#2:##1\endcsname}}

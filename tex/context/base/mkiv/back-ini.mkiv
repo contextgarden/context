@@ -11,34 +11,11 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Most will go away here as it is replaced by \LUA\ calls to
-%D backend functions.
-
 \writestatus{loading}{ConTeXt Backend Macros / Initialization}
 
-%D The exact page model depends on the backend so we just define some
-%D variables that are used. A helper at the \LUA\ end will synchronize
-%D with the internal variables. We store these in the format.
-
-% \newdimen\backendpageheight
-% \newdimen\backendpagewidth
-% \newdimen\backendinchoffset    \backendinchoffset=1in
-
-%D Now we load the \LUA\ code:
-
 \registerctxluafile{back-ini}{}
-\registerctxluafile{back-res}{}
-
-\doifelsefileexists{back-out.mkiv}{\loadmarkfile{back-out}}{}
-
-%D We currently have a curious mix between tex and lua backend handling but
-%D eventually most will move to \LUA.
 
 \unprotect
-
-\ifdefined\everybackendshipout       \else \newtoks\everybackendshipout       \fi
-\ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
-\ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi % e.g. finalize via latelua
 
 %D Right from the start \CONTEXT\ had a backend system based on runtime pluggable
 %D code. As most backend issues involved specials and since postprocessors had not
@@ -52,104 +29,30 @@
 %D At this moment \DVI\ is no longer used for advanced document output and we
 %D therefore dropped support for this format. Future versions might support more
 %D backends again, but this has a low priority.
-%D
-%D Not everything here makes sense and the content of this file will definitely
-%D change (or even go away).
 
-% rotation
+\ifdefined\outputmode
+    \outputmode\plusone
+    \let\outputmode\relax
+    \newcount\outputmode
+    \outputmode\plusone
+    \let\normaloutputmode\outputmode
+\fi
 
-\unexpanded\def\dostartrotation#1%
-  {\forcecolorhack
-   \clf_startrotation#1\relax} % todo: implement without Q q
+%D The exact page model depends on the backend so we just define some variables that
+%D are used. A helper at the \LUA\ end will synchronize with the internal variables.
+%D We store these in the format.
 
-\unexpanded\def\dostoprotation
-  {\clf_stoprotation
-   \forcecolorhack}
-
-% scaling
-
-\unexpanded\def\dostartscaling#1#2%
-  {\forcecolorhack
-   \clf_startscaling rx #1 ry #2\relax}
-
-\unexpanded\def\dostopscaling
-  {\clf_stopscaling
-   \forcecolorhack}
-
-% mirroring
-
-\unexpanded\def\dostartmirroring
-  {\clf_startmirroring}
-
-\unexpanded\def\dostopmirroring
-  {\clf_stopmirroring}
-
-% transform
-
-\unexpanded\def\dotransformnextbox#1#2#3#4#5#6%
-  {\dowithnextbox{\dodotransformnextbox{#1}{#2}{#3}{#4}{#5}{#6}}}
-
-\unexpanded\def\dodotransformnextbox#1#2#3#4#5#6%
-  {\hpack
-     {\kern #5\onebasepoint
-      \raise#6\onebasepoint
-      \hpack
-        {\clf_startmatrix rx #1 sx #2 sy #3 ry #4\relax
-         \box\nextbox
-         \clf_stopmatrix}}}
-
-%D \macros
-%D   {back_ovalbox}
-%D
-%D When we look at the implementation, this is a complicated one. There are seven
-%D arguments.
-%D
-%D \starttyping
-%D \back_ovalbox {w} {h} {d} {linewidth} {radius} {stroke} {fill} {variant}
-%D \stoptyping
-%D
-%D This command has to return a \type {\vbox} which can be used to lay over another
-%D one (with text). The radius is in degrees, the stroke and fill are~\type {1}
-%D (true) of~\type {0} (false).
-
-\let\back_ovalbox \gobbleeightarguments
-
-%D \macros
-%D   {dostartclipping,dostopclipping}
-%D
-%D Clipping is implemented in such a way that an arbitrary code can be fed.
-%D
-%D \starttyping
-%D \dostartclipping {pathname} {width} {height}
-%D \dostopclipping
-%D \stoptyping
-
-\let \dostartclipping \gobblethreearguments
-\let \dostopclipping  \donothing
-
-%D \macros
-%D   {jobsuffix}
-%D
-%D By default, \TEX\ produces \DVI\ files which can be converted to other filetypes.
-%D Sometimes it is handy to know what the target file will be. In other driver
-%D modules we wil set \type {\jobsuffix} to \type {pdf}.
-
-%D Backend configuration:
+\ifdefined\everybackendshipout       \else \newtoks\everybackendshipout       \fi
+\ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
+\ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi
 
 \installcorenamespace{backend}
 
 \installsetuponlycommandhandler \??backend {backend}
 
-\let\jobsuffix\empty
-
-\unexpanded\def\back_job_set_suffix#1% % checking could happen in mode
-  {\ifx\jobsuffix\empty\else\resetsystemmode\jobsuffix\fi
-   \edef\jobsuffix{#1}%
-   \ifx\jobsuffix\empty\else\setsystemmode  \jobsuffix\fi}
-
-\back_job_set_suffix{pdf} % default
-
-% \setupbackend[space=yes] % replace spacing in (pdf) file
+%D \starttyping
+%D \setupbackend[space=yes]
+%D \stoptyping
 
 \appendtoks
     \clf_setrealspaces{\backendparameter\c!space}%
