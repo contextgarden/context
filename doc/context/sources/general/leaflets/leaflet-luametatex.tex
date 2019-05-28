@@ -1,0 +1,106 @@
+\environment leaflet-common
+
+\startdocument[graphic=2]
+
+\startbuffer[1]
+    The \LUAMETATEX\ engine is a follow up on \LUATEX. It integrates the \TEX\
+    text rendering engine, the \METAPOST\ graphic engine and the \LUA\ script
+    interpreter. The development is part of the \CONTEXT\ macro package
+    development. This macro package tightly integrates the three subsystems. The
+    \LUAMETATEX\ code is part of the \CONTEXT\ distribution.
+\stopbuffer
+
+\startbuffer[2]
+    The \LUAMETATEX\ engine is lean and mean. There is for instance no backend
+    code present. In \CONTEXT\ this is handled in \LUA. Graphic inclusion is also
+    delegated to \LUA. The \TEX\ frontend is a slightly extended version of the
+    \LUATEX\ one. System depedencies are minimized. Where possible we stay close
+    to the original \TEX\ concept because that is a well documented reference.
+    The binary can also be used as stand alone \LUA\ engine.
+\stopbuffer
+
+\startbuffer[3]
+    The \METAPOST\ library also has access to \LUA, which means that the language
+    can be enhanced and functionality added on demand. There are several graphic
+    libraries provided in \CONTEXT. This graphical language is efficient in
+    runtime and graphical output. In combination with \LUA\ we have a high
+    performance graphical subsystem that can handle a huge amount of data.
+    Additional text (like labels) is typeset at high quality.
+\stopbuffer
+
+\startbuffer[4]
+    The \LUA\ code that comes with \CONTEXT\ contains a lot of helper code which
+    means that one can set up selfcontained workflows without many extra
+    dependencies. Documents can be encoded in \TEX, \LUA, \XML\ or whatever
+    suits. There is support for databases too.
+\stopbuffer
+
+\startbuffer[5]
+    The \CONTEXT\ code base evolved over time. The basic functionality is quite stable.
+    The move from \MKII\ to \MKIV\ to \LMTX\ has been gradual. The efficiency in terms
+    of code and performance has been improved stepwise. Development continues and beta
+    releases occur on a regular basis. The \CONTEXT\ user community is quite willing
+    to experiment with betas that can be installed alongside stable snapshots.
+
+    \blank
+
+    The installation is relatively small (fonts make up much of it) and updating is
+    easy. We operate in the \TEX\ Directory Structure, which is a proven concept.
+\stopbuffer
+
+\startpagemakeup
+    \offinterlineskip
+    \vskip24pt
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[1]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hskip1cm
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[2]
+        \stopframed
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[3]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \setupitemize[after=]
+        \startframed[align=normal,width=\dimexpr\textwidth-2cm\relax,frame=off]
+            \getbuffer[4]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[5]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \vfill
+    \vfill
+    \hbox to \hsize \bgroup
+        \hskip1cm
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \bfd \LUAMETATEX \enspace \emdash \enspace factsheet
+        \stopframed
+        \hss
+    \egroup
+    \vskip12pt
+\stoppagemakeup
+
+\stopdocument

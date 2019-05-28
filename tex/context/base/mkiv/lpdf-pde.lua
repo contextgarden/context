@@ -518,6 +518,7 @@ lpdf_epdf.expanded = expanded
 
 local spaces    = lpegpatterns.whitespace^1
 local optspaces = lpegpatterns.whitespace^0
+local comment   = P("%") * (1 - lpegpatterns.newline)^0
 local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(tonumber(s,8)) end)
                 + P("\\") * P(1)
 local key       = P("/") * C(R("AZ","az","09","__")^1)
@@ -526,7 +527,7 @@ local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
 local grammar   = P { "start",
-    start      = (keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = key * optspaces * V("start"),
     array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1)         * P("]")),
     dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1)      * P(">>")),
@@ -634,6 +635,8 @@ local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for b
     return fonts
 end
 
+lpdf_epdf.analyzefonts = analyzefonts
+
 local more = 0
 local unic = nil -- cheaper than passing each time as Carg(1)
 
@@ -679,27 +682,34 @@ function lpdf_epdf.getpagecontent(document,pagenumber)
         local size     = #entry
         local operator = entry[size]
         if operator == "Tf" then
-            font = fonts[entry[1]]
-            unic = font.tounicode
-        elseif operator == "TJ" then -- { array,  TJ }
-            local list = entry[1]
+            font = fonts[entry[1][2]]
+            unic = font and font.tounicode or { }
+        elseif operator == "TJ" then
+            local data = entry[1] -- { "array", { ... } }
+            local list = data[2]  -- { { ... }, { ... } }
             for i=1,#list do
                 local li = list[i]
-                if type(li) == "table" then
-                    if li[1] == "hex" then
+--                 if type(li) == "table" then
+                    local kind = li[1]
+                    if kind == "hex" then
                         list[i] = lpegmatch(p_hex_to_utf,li[2])
-                    else
+                    elseif kind == "string" then
                         list[i] = lpegmatch(p_dec_to_utf,li[2])
+                    else
+                        list[i] = li[2] -- kern
                     end
-                else
-                    -- kern
-                end
+--                 else
+--                     -- kern
+--                 end
             end
-        elseif operator == "Tj" or operator == "'" or operator == '"' then -- { string,  Tj } { string, ' } { n, m, string, " }
-            local list = entry[size-1]
-            if list[1] == "hex" then
+        elseif operator == "Tj" or operator == "'" or operator == '"' then
+            -- { string,  Tj } { string, ' } { n, m, string, " }
+            local data = entry[size-1]
+            local list = data[2]
+            local kind = list[1]
+            if kind == "hex" then
                 list[2] = lpegmatch(p_hex_to_utf,li[2])
-            else
+            elseif kind == "string" then
                 list[2] = lpegmatch(p_dec_to_utf,li[2])
             end
         end
@@ -728,25 +738,32 @@ function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
         local size     = #entry
         local operator = entry[size]
         if operator == "Tf" then
-            last_f = entry[2]
+            last_f = entry[2][2] -- size
         elseif operator == "TJ" then
-            local list = entry[1]
+            local data = entry[1] -- { "array", { ... } }
+            local list = data[2]  -- { { ... }, { ... } }
             for i=1,#list do
                 local li = list[i]
-                if type(li) == "string" then
+                local kind = type(li)
+                if kind == "string" then
                     last = last + 1
                     text[last] = li
-                elseif li < -50 then
+                elseif kind == "number" and li < -50 then
                     last = last + 1
                     text[last] = " "
                 end
             end
-            line = concat(list)
         elseif operator == "Tj" then
             last = last + 1
-            text[last] = entry[size-1]
+            local li = entry[size-1]
+            local kind = type(li)
+            if kind == "string" then
+                last = last + 1
+                text[last] = li
+            end
         elseif operator == "cm" or operator == "Tm" then
-            local ty = entry[6]
+            local data = entry
+            local ty = entry[6][2]
             local dy = abs(last_y - ty)
             if dy > linefactor*last_f then
                 if last > 0 then

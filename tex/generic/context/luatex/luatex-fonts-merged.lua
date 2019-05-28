@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 05/25/19 10:45:25
+-- merge date  : 05/28/19 21:21:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -28095,7 +28095,7 @@ local function testrun(disc,t_run,c_run,...)
  end
  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
  local renewed=false
- if (post or replace) and prev then
+ if (post or replace) then 
   if post then
    setlink(posttail,next)
   else
@@ -28288,6 +28288,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
           ss=nil
          end
         end
+lookupmatch=lg
        else
         break
        end
@@ -28441,6 +28442,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
            ss=nil
           end
          end
+lookupmatch=lg
         else
          break
         end
@@ -29145,7 +29147,7 @@ if not modules then modules={} end modules ['font-osd']={
  copyright="TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local insert,imerge,copy=table.insert,table.imerge,table.copy
+local insert,imerge,copy,tohash=table.insert,table.imerge,table.copy,table.tohash
 local next,type=next,type
 local report=logs.reporter("otf","devanagari")
 fonts=fonts       or {}
@@ -29436,6 +29438,7 @@ local valid={
 local scripts={}
 local scripts_one={ "deva","mlym","beng","gujr","guru","knda","orya","taml","telu" }
 local scripts_two={ "dev2","mlm2","bng2","gjr2","gur2","knd2","ory2","tml2","tel2" }
+local scripts_old={} for i=1,#scripts_one do local v=scripts_one[i] scripts_old[v]=v end 
 local nofscripts=#scripts_one
 for i=1,nofscripts do
  local one=scripts_one[i]
@@ -29498,6 +29501,7 @@ local function initializedevanagi(tfmdata)
    local pre_base_reordering_consonants={}
    reorder_pre_base_reordering_consonants.steps[1].coverage=pre_base_reordering_consonants
    resources.devanagari=devanagari
+   local old=scripts_old[script] or false
    for s=1,#sequences do
     local sequence=sequences[s]
     local steps=sequence.steps
@@ -29505,9 +29509,9 @@ local function initializedevanagi(tfmdata)
     local features=sequence.features
     local has_rphf=features.rphf
     local has_blwf=features.blwf
-    if has_rphf and has_rphf.deva then
+    if has_rphf and has_rphf[old] then
      devanagari.reph=true
-    elseif has_blwf and has_blwf.deva then
+    elseif has_blwf and has_blwf[old] then
      devanagari.vattu=true
      for i=1,nofsteps do
       local step=steps[i]
@@ -29578,13 +29582,13 @@ local function initializedevanagi(tfmdata)
      end
     end
    end
-   if script=="deva" then
+   if script=="deva" or script=="knda" then
     sharedfeatures["dv04"]=true 
-   elseif script=="dev2" then
+   elseif script=="dev2" or script=="knd2" then
     sharedfeatures["dv01"]=true 
     sharedfeatures["dv02"]=true 
     sharedfeatures["dv03"]=true 
-    sharedfeatures["dv04"]=true 
+    sharedfeatures["dv04"]=true
    elseif script=="mlym" then
     sharedfeatures["pstf"]=true
    elseif script=="mlm2" then

@@ -40,26 +40,27 @@ local function packoutlines(data,makesequence)
         return
     end
     if makesequence then
---         for index=1,#glyphs do
-        for index=0,#glyphs-1 do
+        for index=0,#glyphs do
             local glyph = glyphs[index]
-            local segments = glyph.segments
-            if segments then
-                local sequence    = { }
-                local nofsequence = 0
-                for i=1,#segments do
-                    local segment    = segments[i]
-                    local nofsegment = #segment
-                    -- why last first ... needs documenting
-                    nofsequence = nofsequence + 1
-                    sequence[nofsequence] = segment[nofsegment]
-                    for i=1,nofsegment-1 do
+            if glyph then
+                local segments = glyph.segments
+                if segments then
+                    local sequence    = { }
+                    local nofsequence = 0
+                    for i=1,#segments do
+                        local segment    = segments[i]
+                        local nofsegment = #segment
+                        -- why last first ... needs documenting
                         nofsequence = nofsequence + 1
-                        sequence[nofsequence] = segment[i]
+                        sequence[nofsequence] = segment[nofsegment]
+                        for i=1,nofsegment-1 do
+                            nofsequence = nofsequence + 1
+                            sequence[nofsequence] = segment[i]
+                        end
                     end
+                    glyph.sequence = sequence
+                    glyph.segments = nil
                 end
-                glyph.sequence = sequence
-                glyph.segments = nil
             end
         end
     else
@@ -67,32 +68,36 @@ local function packoutlines(data,makesequence)
         local common  = { }
         local reverse = { }
         local last    = 0
---         for index=1,#glyphs do
-        for index=0,#glyphs-1 do
-            local segments = glyphs[index].segments
-            if segments then
-                for i=1,#segments do
-                    local h = concat(segments[i]," ")
-                    hash[h] = (hash[h] or 0) + 1
+        for index=0,#glyphs do
+            local glyph = glyphs[index]
+            if glyph then
+                local segments = glyph.segments
+                if segments then
+                    for i=1,#segments do
+                        local h = concat(segments[i]," ")
+                        hash[h] = (hash[h] or 0) + 1
+                    end
                 end
             end
         end
---         for index=1,#glyphs do
-        for index=0,#glyphs-1 do
-            local segments = glyphs[index].segments
-            if segments then
-                for i=1,#segments do
-                    local segment = segments[i]
-                    local h = concat(segment," ")
-                    if hash[h] > 1 then -- minimal one shared in order to hash
-                        local idx = reverse[h]
-                        if not idx then
-                            last = last + 1
-                            reverse[h] = last
-                            common[last] = segment
-                            idx = last
+        for index=0,#glyphs do
+            local glyph = glyphs[index]
+            if glyph then
+                local segments = glyph.segments
+                if segments then
+                    for i=1,#segments do
+                        local segment = segments[i]
+                        local h = concat(segment," ")
+                        if hash[h] > 1 then -- minimal one shared in order to hash
+                            local idx = reverse[h]
+                            if not idx then
+                                last = last + 1
+                                reverse[h] = last
+                                common[last] = segment
+                                idx = last
+                            end
+                            segments[i] = idx
                         end
-                        segments[i] = idx
                     end
                 end
             end
@@ -119,14 +124,16 @@ local function unpackoutlines(data)
     if not glyphs then
         return
     end
---     for index=1,#glyphs do
-    for index=0,#glyphs-1 do
-        local segments = glyphs[index].segments
-        if segments then
-            for i=1,#segments do
-                local c = common[segments[i]]
-                if c then
-                    segments[i] = c
+    for index=0,#glyphs do
+        local glyph = glyphs[index]
+        if glyph then
+            local segments = glyph.segments
+            if segments then
+                for i=1,#segments do
+                    local c = common[segments[i]]
+                    if c then
+                        segments[i] = c
+                    end
                 end
             end
         end
@@ -219,8 +226,13 @@ local function loadstreams(cache,filename,sub,instance)
                 local glyphs  = data.glyphs
                 local streams = { }
                 if glyphs then
-                    for i=0,#glyphs-1 do
-                        streams[i] = glyphs[i].stream or ""
+                    for i=0,#glyphs do
+                        local glyph = glyphs[i]
+                        if glyph then
+                            streams[i] = glyph.stream or ""
+                        else
+                            streams[i] = ""
+                        end
                     end
                 end
                 data.streams = streams

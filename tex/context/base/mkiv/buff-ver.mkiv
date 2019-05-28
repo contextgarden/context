@@ -684,7 +684,9 @@
    \else
      \buff_verbatim_type_file_checked\v!file{#3}%
    \fi\fi
-   \endgroup}
+   \useindentnextparameter\typingparameter % needs checking
+   \endgroup
+   \dorechecknextindentation} % needs checking
 
 \def\buff_verbatim_type_file_checked#1#2%
   {\doifelsetypingfile{#2}
@@ -895,7 +897,8 @@
    \else
      \buff_verbatim_type_buffer_indeed\currenttyping\empty% []
    \fi\fi
-   \endgroup}
+   \endgroup
+   \dorechecknextindentation}
 
 \unexpanded\def\buff_verbatim_type_buffer_class#1%
   {\begingroup
@@ -934,7 +937,8 @@
    \endofverbatimlines
    \dostoptagged
    \stoppacked
-   \typingparameter\c!after}
+   \typingparameter\c!after
+   \dorechecknextindentation}
 
 \unexpanded\def\typeinlinebuffer
   {\dontleavehmode

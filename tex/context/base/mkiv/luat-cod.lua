@@ -260,6 +260,10 @@ local function find_write_file(id,name)
     return target_file(name)
 end
 
+local function find_log_file(name)
+    return target_file(name)
+end
+
 local function open_read_file(name)
     local f = io.open(name,'rb')
     return {
@@ -278,6 +282,7 @@ local open_data_file = open_read_file
 callback.register('find_read_file' , find_read_file )
 callback.register('open_read_file' , open_read_file )
 callback.register('find_write_file', find_write_file)
+callback.register('find_log_file',   find_log_file)
 
 callback.register('find_data_file' , find_data_file )
 callback.register('open_data_file' , open_data_file )

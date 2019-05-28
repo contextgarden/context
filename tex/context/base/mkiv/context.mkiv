@@ -22,10 +22,14 @@
 %D shares cq. when no files are cached by the os it's of course much worse. A zero
 %D run is .27 sec with luajittex. In luametatex it's faster anyway (2.4 sec).
 
-% http://build.contextgarden.net/waterfall?tag=c/luatex
+%D The real minimal startup time can be measured by uncommenting \type {\normalend}
+%D in the \type {cont-new.mkiv} file. When we subtract .250 for \LUA\ initialization
+%D from 0.300 runtime and also subtract some 0.030 for the resolver, we get about
+%D 0.020 for format loading which is pretty fast. We're talking \LUAMETATEX\ here.
 
-% Welcome to context, pronounced as kontekst (rather dutch) and not as
-% conτεχt.
+% http://build.contextgarden.net/waterfall?tag=c/lua(meta)tex
+
+%D Welcome to context, pronounced as kontekst (rather dutch) and not as conτεχt.
 
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
 
@@ -41,7 +45,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.05.25 10:45}
+\edef\contextversion{2019.05.28 21:21}
 \edef\contextkind   {beta}
 
 %D Kind of special:

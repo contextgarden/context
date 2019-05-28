@@ -1,0 +1,129 @@
+\environment leaflet-common
+
+\startdocument[graphic=1]
+
+\startbuffer[1]
+    There are several ways to deploy \CONTEXT. Most common is to let it render a
+    document, in which case you install it on a system and use an editor to input
+    your document and from a console or by clicking some key trigger a run. The
+    input can be structured using \TEX\ macros but it can also be \XML, or some
+    other format that gets converted to \CONTEXT\ commands before processing.
+\stopbuffer
+
+\startbuffer[2]
+    Instead you can also use \CONTEXT\ as a more hidden application, for instance
+    in a web service or rendering component in a larger application. In that case
+    the end user is not really aware that \TEX\ is being used.
+\stopbuffer
+
+\startbuffer[3]
+    No matter how you use \CONTEXT, you need to install it first. You can for
+    instance use \TEX live or another distribution to pick up \CONTEXT, but you
+    can also install it using the archive (snapshot), in which case you also need
+    to pick up the engine (for instance \LUATEX) and a basic set of fonts. In
+    order to make installation easy we provide a so called standalone
+    distribution that has all you need.
+\stopbuffer
+
+\startbuffer[4]
+
+    The standalone \CONTEXT\ distribution has the following characteristics:
+
+    \startitemize
+        \startitem
+            The installation is self contained. Apart from resources like fonts,
+            the \TEX\ macros, \LUA\ code and \METAPOST\ helpers are provided in
+            one package.
+        \stopitem
+        \startitem
+            There is only one binary involved: \LUAMETATEX. The source code of
+            this program is integral part of the \CONTEXT\ distribution (per end
+            2019). A user should be able to compile the program if needed. There
+            is no dependency on additional libraries other than those that make
+            up the operating system.
+        \stopitem
+        \startitem
+            The core system is able to typeset documents in an efficient way. The
+            memory footprint is decent and performance acceptable, also on on low
+            power devices and virtual machines. We try not to provide bloatware.
+        \stopitem
+        \startitem
+            The official user interface is stable and the implementation of core
+            components will not change fundamentally. When something can be
+            improved it will be. One can use a snapshot for long term stability.
+        \stopitem
+        \startitem
+            Support is provided by means of a mailing list, a wiki,
+            documentation, meetings, etc. If needed you can consult (or hire)
+            support. There are enough experienced users out there to get you
+            going.
+        \stopitem
+    \stopitemize
+\stopbuffer
+
+\startbuffer[5]
+    The first version of \CONTEXT, now tagged \MKII, has been around since 1995
+    and (still) runs on top of \PDFTEX. The development of its successor \MKIV\
+    started in 2005 as part of the \LUATEX\ development and still carries on. The
+    most recent incarnation is \LMTX, which is \MKIV\ but tuned for \LUAMETATEX,
+    the lean and mean successor of \LUATEX.
+\stopbuffer
+
+% we could use a collector
+
+\startpagemakeup
+    \offinterlineskip
+    \vskip24pt
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[1]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hskip1cm
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[2]
+        \stopframed
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[3]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \setupitemize[after=]
+        \startframed[align=normal,width=\dimexpr\textwidth-2cm\relax,frame=off]
+            \getbuffer[4]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \hbox to \hsize \bgroup
+        \hss
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \getbuffer[5]
+        \stopframed
+        \hskip1cm
+    \egroup
+    \vfill
+    \vfill
+    \vfill
+    \hbox to \hsize \bgroup
+        \hskip1cm
+        \startframed[align=normal,width=.7\textwidth,frame=off]
+            \bfd \CONTEXT\ \LMTX \enspace \emdash \enspace factsheet
+        \stopframed
+        \hss
+    \egroup
+    \vskip12pt
+\stoppagemakeup
+
+\stopdocument

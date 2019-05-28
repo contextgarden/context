@@ -1,0 +1,80 @@
+\startenvironment leaflet-common
+
+%D Please don't abuse this style for your own purpose as the look and feel
+%D is reserved for our own purpose. Be creative instead.
+
+\usemodule
+  [abbreviations-logos]
+
+\setupbodyfont
+  [plex,12pt]
+
+\setuplayout
+  [page]
+
+\setupalign
+  [verytolerant,stretch]
+
+\startluacode
+    function document.graphic()
+        local min, max, random, round = math.min, math.max, math.random, math.round
+
+        local width   = 210
+        local height  = 297
+        local r, g, b = 3, 3, 3
+
+        local bitmap  = graphics.bitmaps.new(width,height,"rgb",1)
+        local data    = bitmap.data
+
+        local graphic = tonumber(documentdata.variable("graphic"))
+
+        if graphic == 1 then
+            r, g, b = 4, 3, 2
+        elseif graphic == 2 then
+            r, g, b = 2, 3, 4
+        end
+
+        for i=1,height do
+            local d = data[i]
+            for j=1,width do
+                local c = random(128,255)
+             -- d[j] = { 0, 0, c }
+                d[j] = { c//r, c//g, c//b }
+            end
+        end
+
+        graphics.bitmaps.tocontext(bitmap,"210bp","297bp")
+    end
+\stopluacode
+
+\definelayer
+  [page]
+  [width=\paperwidth,
+   height=\paperheight]
+
+\setupcolors
+  [textcolor=white]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setupmakeup
+  [page]
+  [style=\bf,
+   top=,
+   bottom=]
+
+\startsetups document:start
+
+    \setlayerframed
+      [page]
+      [offset=overlay]
+      {\scale
+         [width=\textwidth,
+          height=\textheight]
+         {\ctxlua{document.graphic()}}}
+
+\stopsetups
+
+\stopenvironment
