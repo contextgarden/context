@@ -17,6 +17,8 @@
 
 \unprotect
 
+\def\wildcardsymbol{*}
+
 %D Modes:
 %D
 %D \starttyping
@@ -35,12 +37,11 @@
 %D
 %D system modes have a * as prefix
 %D
-%D Sometimes, we want to prevent a mode for being set. Think
-%D of situations where a style enables a mode, but an outer
-%D level style does not want that. Preventing can be
-%D considered a permanent disabling on forehand.
+%D Sometimes, we want to prevent a mode for being set. Think of situations where a
+%D style enables a mode, but an outer level style does not want that. Preventing can
+%D be considered a permanent disabling on forehand.
 
-\def\systemmodeprefix{*}
+\let\systemmodeprefix\wildcardsymbol
 
 % we will have \installcorenamespace{mode} but need some hackery at the lua end then
 
@@ -141,18 +142,6 @@
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \syst_mode_prefix\lastnamedcs\preventedmode}
 
-% \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
-%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-%    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-%      \syst_mode_prefix\lastnamedcs\enabledmode
-%    \fi}
-%
-% \def\syst_modes_disable_indeed#1%
-%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-%    \ifnum\csname\??mode#1\endcsname=\preventedmode \else
-%      \syst_mode_prefix\lastnamedcs\disabledmode
-%    \fi}
-
 \def\syst_modes_enable_indeed#1% we can speed it up by moving the new outside
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
    \ifnum\lastnamedcs=\preventedmode\else
@@ -180,18 +169,6 @@
    \edef\m_modes_asked{#2}%
  % \rawprocesscommacommand[#1]\syst_modes_define_indeed}
    \fastprocesscommacommand[#1]\syst_modes_define_indeed}
-
-% \def\syst_modes_define_indeed#1%
-%   {\ifcsname\??mode#1\endcsname
-%      % already set
-%    \else
-%      \syst_modes_new{#1}
-%    \fi
-%    \ifx\m_modes_asked\v!keep
-%      % not changes, disabled when undefined
-%    \else
-%      \csname\??mode#1\endcsname\ifx\m_modes_asked\v!yes\enabledmode\else\disabledmode\fi
-%    \fi}
 
 \def\syst_modes_define_indeed#1%
   {\ifcsname\??mode#1\endcsname
@@ -283,7 +260,6 @@
 
 \def\syst_modes_check_all_lr#1#2#3%
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
- % \rawprocesscommacommand[#3]\syst_modes_check_all_step
    \fastprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
      \expandafter#2%
@@ -293,7 +269,6 @@
 
 \def\syst_modes_check_all_ss#1#2[#3]%
   {\let\syst_modes_check_all_step\syst_modes_check_all_indeed
- % \rawprocesscommacommand[#3]\syst_modes_check_all_step
    \fastprocesscommacommand[#3]\syst_modes_check_all_step
    \ifx\syst_modes_check_all_step\gobbleoneargument
      \expandafter#2%
@@ -326,28 +301,6 @@
 \def\syst_modes_stop_all_nop#1\stopnotallmodes{}
 
 %D Pushing/popping:
-
-% \unexpanded\def\pushmode[#1]%
-%   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
-%    \expandafter\edef\csname\??modestack#1\endcsname{\number\csname\??mode#1\endcsname}%
-%    \expandafter\pushmacro\csname\??modestack#1\endcsname}
-%
-% \unexpanded\def\popmode[#1]%
-%   {\ifcsname\??modestack#1\endcsname
-%      \expandafter\popmacro\csname\??modestack#1\endcsname
-%      \csname\??mode#1\endcsname\csname\??modestack#1\endcsname\relax
-%    \fi}
-%
-% \def\pushsystemmode#1%
-%   {\ifcsname\??mode\systemmodeprefix#1\endcsname\else\syst_modes_new{\systemmodeprefix#1}\fi
-%    \expandafter\edef\csname\??modestack\systemmodeprefix#1\endcsname{\number\csname\??mode\systemmodeprefix#1\endcsname}%
-%    \expandafter\pushmacro\csname\??modestack\systemmodeprefix#1\endcsname}
-%
-% \def\popsystemmode#1%
-%   {\ifcsname\??modestack\systemmodeprefix#1\endcsname
-%      \expandafter\popmacro\csname\??modestack\systemmodeprefix#1\endcsname
-%      \csname\??mode\systemmodeprefix#1\endcsname\csname\??modestack\systemmodeprefix#1\endcsname\relax
-%    \fi}
 
 \unexpanded\def\pushmode[#1]%
   {\ifcsname\??mode#1\endcsname\else\syst_modes_new{#1}\fi
@@ -458,14 +411,6 @@
 \unexpanded\def\startsetups{} % to please dep checker
 \unexpanded\def\stopsetups {} % to please dep checker
 
-% \expanded % will become obsolete
-%   {\def\expandafter\noexpand\csname\e!start\v!setups\endcsname
-%      {\begingroup\noexpand\doifnextoptionalcselse
-%         {\noexpand\dostartsetupsA\expandafter\noexpand\csname\e!stop\v!setups\endcsname}
-%         {\noexpand\dostartsetupsB\expandafter\noexpand\csname\e!stop\v!setups\endcsname}}}
-%
-% \letvalue{\e!stop\v!setups}\relax
-
 \unexpanded\def\setups{\doifelsenextbgroup\syst_setups_a\syst_setups_b} % {..} or [..]
 \unexpanded\def\setup {\doifelsenextbgroup\syst_setups  \syst_setups_c} % {..} or [..]
 
@@ -506,9 +451,6 @@
    \ifx\m_syst_setups_asked\empty\else
      \expandafter\syst_setups_process_local
    \fi}
-
-% \def\syst_setups_process_local
-%   {\expandafter\processcommalist\expandafter[\m_syst_setups_asked]\syst_setups}
 
 % setups=S1
 % setups=lua(S2)
@@ -674,9 +616,9 @@
 
 \def\luasetup#1{\ctxlua{\syst_setups{#1}}}
 
-% % % %
+%D System setups:
 
-\def\systemsetupsprefix{*}
+\let\systemsetupsprefix\wildcardsymbol
 
 \def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
 
@@ -687,18 +629,8 @@
      \dodoglobal\undefinevalue{\??setup:#1}%
    \fi}
 
-% \unexpanded\def\resetsetups[#1]% see x-fo for usage
-%   {\dodoglobal\expandafter\let\csname\??setup
-%      \ifgridsnapping\ifcsname\??setup\v!grid:#1\endcsname\v!grid\fi
-%    :#1\endcsname\undefined}
-
 \unexpanded\def\copysetups
   {\dodoubleargument\syst_setups_copy}
-
-% \def\syst_setups_copy[#1][#2]%
-%   {\ifcsname\??setup:#2\endcsname
-%       \expandafter\let\csname\??setup:#1\expandafter\endcsname\csname\??setup:#2\endcsname
-%    \fi}
 
 \def\syst_setups_copy[#1][#2]%
   {\ifcsname\??setup:#2\endcsname
@@ -747,11 +679,6 @@
 \unexpanded\def\setgvariable#1#2#3{\expandafter\gdef\csname\??variables#1:#2\endcsname{#3}}
 \unexpanded\def\setxvariable#1#2#3{\expandafter\xdef\csname\??variables#1:#2\endcsname{#3}}
 
-% \def\getvariable#1#2%
-%   {\csname
-%      \ifcsname\??variables#1:#2\endcsname\??variables#1:#2\else\s!empty\fi
-%    \endcsname}
-
 \def\getvariable#1#2%
   {\begincsname\??variables#1:#2\endcsname}
 
@@ -775,7 +702,6 @@
 
 \def\syst_variables_check_value#1#2#3%
   {\ifcsname\??variables#1:#2\endcsname
-    %\edef\m_syst_variables_temp{\csname\??variables#1:#2\endcsname}%
      \edef\m_syst_variables_temp{\lastnamedcs}%
      \ifx\m_syst_variables_temp\empty
        \expandafter\def\csname\??variables#1:#2\endcsname{#3}%
@@ -812,13 +738,12 @@
      \expandafter\firstofoneargument
    \fi}
 
-%D A few more (we could use a public test variable so that we only need
-%D to expand once, assuming expandable variables):
+%D A few more (we could use a public test variable so that we only need to expand
+%D once, assuming expandable variables):
 
 \letvalue{\??variables:}\empty
 
 \unexpanded\def\doifelseemptyvariable#1#2%
- %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstoftwoarguments
@@ -829,7 +754,6 @@
 \let\doifemptyvariableelse\doifelseemptyvariable
 
 \unexpanded\def\doifemptyvariable#1#2%
- %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\firstofoneargument
@@ -838,7 +762,6 @@
    \fi}
 
 \unexpanded\def\doifnotemptyvariable#1#2%
- %{\edef\m_syst_string_one{\csname\??variables\ifcsname\??variables#1:#2\endcsname#1:#2\else:\fi\endcsname}%
   {\edef\m_syst_string_one{\begincsname\??variables#1:#2\endcsname}%
    \ifx\m_syst_string_one\empty
      \expandafter\gobbleoneargument
@@ -847,7 +770,6 @@
    \fi}
 
 \def\getvariabledefault#1#2% #3% can be command
- %{\executeifdefined{\??variables#1:#2}}% {#3}
   {\ifcsname\??variables#1:#2\endcsname
      \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
    \else

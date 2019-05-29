@@ -113,6 +113,12 @@
                 <cd:parameter name="rightmargin">
                     <cd:resolve name="value-rightskip"/>
                 </cd:parameter>
+                <cd:parameter name="leftmargindistance">
+                    <cd:resolve name="value-leftskip"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargindistance">
+                    <cd:resolve name="value-rightskip"/>
+                </cd:parameter>
                 <cd:parameter name="align">
                     <cd:inherit name="setupalign"/>
                 </cd:parameter>

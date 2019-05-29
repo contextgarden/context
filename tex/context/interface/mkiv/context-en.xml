@@ -17583,6 +17583,18 @@
       <cd:constant type="standard"/>
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="leftmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
      <cd:parameter name="align">
       <cd:inherit name="setupalign"/>
      </cd:parameter>

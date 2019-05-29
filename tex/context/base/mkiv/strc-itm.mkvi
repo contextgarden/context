@@ -906,6 +906,10 @@
      \doadaptleftskip {\itemgroupparameter\c!leftmargin}%
      \doadaptrightskip{\itemgroupparameter\c!rightmargin}%
    \fi
+   %
+   \doadaptleftskip {\itemgroupparameter\c!leftmargindistance}%
+   \doadaptrightskip{\itemgroupparameter\c!rightmargindistance}%
+   %
    \usealignparameter\itemgroupparameter
    \edef\m_strc_itemgroups_indenting{\itemgroupparameter\c!indenting}%
    \ifnum\c_strc_itemgroups_nesting>\zerocount
@@ -1808,6 +1812,8 @@
   [\c!margin=\zeropoint,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\zeropoint,
+   \c!leftmargindistance=\zeropoint,
+   \c!rightmargindistance=\zeropoint,
    \c!indentnext=\v!yes,
    \c!width=1.5\emwidth,
    \c!factor=0,

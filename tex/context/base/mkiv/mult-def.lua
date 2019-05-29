@@ -13368,6 +13368,10 @@ return {
    ["pe"]="ته‌نوشت",
    ["ro"]="endnote",
   },
+  ["textnote"]={
+   ["en"]="textnote",
+   ["nl"]="tekstnoot",
+  },
   ["enumeration"]={
    ["cs"]="vycet",
    ["de"]="nummerierung",

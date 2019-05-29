@@ -224,7 +224,7 @@ local trace_ruled   = false  trackers.register("nodes.rules", function(v) trace_
 local report_ruled  = logs.reporter("nodes","rules")
 
 function rules.define(settings)
-    local nofdata = #data+1
+    local nofdata = #data + 1
     data[nofdata] = settings
     local text = settings.text
     if text then
@@ -236,7 +236,7 @@ function rules.define(settings)
             settings.text = nil
         end
     end
-    context(nofdata)
+    return nofdata
 end
 
 local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
@@ -265,7 +265,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
     if not f then
         return head
     end
-    local w, ht, dp     = getrangedimensions(parent,f,getnext(l))
+    local wd, ht, dp    = getrangedimensions(parent,f,getnext(l))
     local method        = d.method
     local empty         = d.empty == v_yes
     local offset        = d.offset
@@ -306,7 +306,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         m = 0
     end
 
-    local function inject(r,w,ht,dp)
+    local function inject(r,wd,ht,dp)
         if layer then
             setattr(r,a_viewerlayer,layer)
         end
@@ -317,7 +317,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             setnext(l)
             flushlist(f)
         else
-            local k = new_kern(-w)
+            local k = new_kern(-wd)
             if foreground then
                 insert_node_after(head,l,k)
                 insert_node_after(head,k,r)
@@ -329,12 +329,12 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
         end
         if trace_ruled then
             report_ruled("level %a, width %p, height %p, depth %p, nodes %a, text %a",
-                level,w,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
+                level,wd,ht,dp,n_tostring(f,l),n_tosequence(f,l,true))
         end
     end
     if mp and mp ~= "" then
         local r = usernutrule {
-            width  = w,
+            width  = wd,
             height = ht,
             depth  = dp,
             type   = "mp",
@@ -346,22 +346,26 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
             ca     = color,
             ta     = transparency,
         }
-        inject(r,w,ht,dp)
+        inject(r,wd,ht,dp)
     else
         local tx = d.text
         if tx then
             local l = copy_list(tx)
             if d["repeat"] == v_yes then
-                l = new_leader(w,l)
+                l = new_leader(wd,l)
                 setattrlist(l,tx)
             end
-            l = hpack_nodes(l,w,"exactly")
-            inject(l,w,ht,dp)
+            l = hpack_nodes(l,wd,"exactly")
+            inject(l,wd,ht,dp)
         else
             for i=1,level do
-                local ht =  (offset+(i-1)*dy)*e + rulethickness - m
-                local dp = -(offset+(i-1)*dy)*e + rulethickness + m
-                local r = new_rule(w,ht,dp)
+                local hd = (offset+(i-1)*dy)*e - m
+--                 local ht =  hd + rulethickness - m
+--                 local dp = -hd + rulethickness + m
+                local ht =  hd + rulethickness
+                local dp = -hd + rulethickness
+                local r = new_rule(wd,ht,dp)
+                -- can be done more efficient
                 if color then
                     setattr(r,a_colormodel,colorspace)
                     setattr(r,a_color,color)
@@ -369,7 +373,7 @@ local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but a
                 if transparency then
                     setattr(r,a_transparency,transparency)
                 end
-                inject(r,w,ht,dp)
+                inject(r,wd,ht,dp)
             end
         end
     end
@@ -390,16 +394,18 @@ local report_shifted = logs.reporter("nodes","shifting")
 
 local a_shifted = attributes.private('shifted')
 
-nodes.shifts      = nodes.shifts      or { }
-nodes.shifts.data = nodes.shifts.data or { }
+local shifts = nodes.shifts or { }
+nodes.shifts = shifts
+shifts.data  = shifts.data or { }
 
-storage.register("nodes/shifts/data", nodes.shifts.data, "nodes.shifts.data")
+storage.register("nodes/shifts/data", shifts.data, "nodes.shifts.data")
 
-local data = nodes.shifts.data
+local data = shifts.data
 
-function nodes.shifts.define(settings)
-    data[#data+1] = settings
-    context(#data)
+function shifts.define(settings)
+    local nofdata = #data + 1
+    data[nofdata] = settings
+    return nofdata
 end
 
 local function flush_shifted(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
@@ -430,26 +436,28 @@ local function flush_shifted(head,first,last,data,level,parent,strip) -- not tha
     return head
 end
 
-nodes.shifts.handler = function(head)
+shifts.handler = function(head)
     return processwords(a_shifted,data,flush_shifted,head)
 end
 
-function nodes.shifts.enable()
+function shifts.enable()
     enableaction("shipouts","nodes.shifts.handler")
 end
 
 -- linefillers
 
-nodes.linefillers      = nodes.linefillers      or { }
-nodes.linefillers.data = nodes.linefillers.data or { }
+local linefillers = nodes.linefillers or { }
+nodes.linefillers = linefillers
+linefillers.data  = linefillers.data or { }
 
-storage.register("nodes/linefillers/data", nodes.linefillers.data, "nodes.linefillers.data")
+storage.register("nodes/linefillers/data", linefillers.data, "nodes.linefillers.data")
 
-local data = nodes.linefillers.data
+local data = linefillers.data
 
-function nodes.linefillers.define(settings)
-    data[#data+1] = settings
-    context(#data)
+function linefillers.define(settings)
+    local nofdata = #data + 1
+    data[nofdata] = settings
+    return nofdata
 end
 
 local function linefiller(current,data,width,location)
@@ -486,7 +494,7 @@ local function linefiller(current,data,width,location)
     end
 end
 
-function nodes.linefillers.filler(current,data,width,height,depth)
+function linefillers.filler(current,data,width,height,depth)
     if width and width > 0 then
         local height = height or data.height or 0
         local depth  = depth  or data.depth  or 0
@@ -534,7 +542,7 @@ local function find_attr(head,attr)
     end
 end
 
-function nodes.linefillers.handler(head)
+function linefillers.handler(head)
     for current, subtype, list in nexthlist, head do
         if list and subtype == linelist_code then
             -- why doesn't leftskip take the attributes
@@ -658,7 +666,7 @@ end
 
 local enable = false
 
-function nodes.linefillers.enable()
+function linefillers.enable()
     if not enable then
     -- we could now nil it
         enableaction("finalizers","nodes.linefillers.handler")
@@ -700,7 +708,7 @@ implement {
 
 implement {
     name      = "defineshift",
-    actions   = { nodes.shifts.define, context },
+    actions   = { shifts.define, context },
     arguments = {
         {
             { "continue" },
@@ -714,12 +722,12 @@ implement {
 implement {
     name     = "enableshifts",
     onlyonce = true,
-    actions  = nodes.shifts.enable
+    actions  = shifts.enable
 }
 
 implement {
     name      = "definelinefiller",
-    actions   = { nodes.linefillers.define, context },
+    actions   = { linefillers.define, context },
     arguments = {
         {
             { "method", "integer" },
@@ -741,7 +749,7 @@ implement {
 implement {
     name     = "enablelinefillers",
     onlyonce = true,
-    actions  = nodes.linefillers.enable
+    actions  = linefillers.enable
 }
 
 -- We add a bonus feature here (experiment):

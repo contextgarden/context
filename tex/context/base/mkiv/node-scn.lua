@@ -124,7 +124,7 @@ local function processwords(attribute,data,flush,head,parent,skip) -- we have hl
         local continue, leaders, done, strip, level = false, false, false, true, -1
         while n do
             local id = getid(n)
-            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext) == 1) then
+            if id == glyph_code or id == rule_code or (id == hlist_code and getattr(n,a_runningtext)) then
                 local aa = getattr(n,attribute)
                 if aa and aa ~= skip then
                     if aa == a then

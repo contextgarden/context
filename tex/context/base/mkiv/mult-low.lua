@@ -142,7 +142,9 @@ return {
         --
         "parfillleftskip", "parfillrightskip",
         --
-        "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode"
+        "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
+        --
+        "wildcardsymbol",
     },
     ["helpers"] = {
         --

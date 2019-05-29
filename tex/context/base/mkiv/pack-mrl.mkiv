@@ -843,32 +843,32 @@
 \unexpanded\def\fillinline
   {\dosingleempty\pack_fillinline}
 
-\ifdefined\endpar % experiment with \endpar
-
-    \def\pack_fillinline[#1]%
-      {% \endpar % no, as it interferes with \definedescription cum suis
-       \begingroup
-       \setupcurrentfillinlines[#1]%
-       \directfillinlinesparameter\c!before
-       \begingroup
-       \advance\rightskip \directfillinlinesparameter\c!margin\relax
-       \parfillskip\zeropoint
-       \pushmacro\endpar
-       \def\endpar
-         {\popmacro\endpar
-          \ifhmode\unskip\hfill\fi
-          \scratchwidth\dimexpr\directfillinlinesparameter\c!width-\directfillinlinesparameter\c!distance\relax
-          \ifdim\scratchwidth>\directfillinlinesparameter\c!margin\else\expandafter\rlap\fi
-            {\kern\directfillinlinesparameter\c!distance
-             \scratchheight\dimexpr\directfillinlinesparameter\c!rulethickness/\plustwo\relax
-             \color[\directfillinlinesparameter\c!color]{\vrule\s!width\scratchwidth\s!height\scratchheight\s!depth\scratchheight}}%
-          \endpar
-          \endgroup
-          \endpar
-          \directfillinlinesparameter\c!after
-          \endgroup}} % carryover ?
-
-\else
+% \ifdefined\endpar % experiment with \endpar
+%
+%     \def\pack_fillinline[#1]%
+%       {% \endpar % no, as it interferes with \definedescription cum suis
+%        \begingroup
+%        \setupcurrentfillinlines[#1]%
+%        \directfillinlinesparameter\c!before
+%        \begingroup
+%        \advance\rightskip \directfillinlinesparameter\c!margin\relax
+%        \parfillskip\zeropoint
+%        \pushmacro\endpar
+%        \def\endpar
+%          {\popmacro\endpar
+%           \ifhmode\unskip\hfill\fi
+%           \scratchwidth\dimexpr\directfillinlinesparameter\c!width-\directfillinlinesparameter\c!distance\relax
+%           \ifdim\scratchwidth>\directfillinlinesparameter\c!margin\else\expandafter\rlap\fi
+%             {\kern\directfillinlinesparameter\c!distance
+%              \scratchheight\dimexpr\directfillinlinesparameter\c!rulethickness/\plustwo\relax
+%              \color[\directfillinlinesparameter\c!color]{\vrule\s!width\scratchwidth\s!height\scratchheight\s!depth\scratchheight}}%
+%           \endpar
+%           \endgroup
+%           \endpar
+%           \directfillinlinesparameter\c!after
+%           \endgroup}} % carryover ?
+%
+% \else
 
     \def\pack_fillinline[#1]%
       {%\endgraf % no, as it interferes with \definedescription cum suis
@@ -892,6 +892,6 @@
           \directfillinlinesparameter\c!after
           \endgroup}} % carryover ?
 
-\fi
+% \fi
 
 \protect \endinput

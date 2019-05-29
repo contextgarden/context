@@ -1273,4 +1273,13 @@
 
 \def\obeyfollowingtoken{{}}  % end \cs scanning
 
+%D Something new:
+
+\unexpanded\def\interwordspacebefore{\wordboundary\zwnj\hskip\interwordspace\relax}
+\unexpanded\def\interwordspaceafter {\hskip\interwordspace\relax\zwnj\wordboundary}
+
+\unexpanded\def\interwordspacesbefore#1{\dofastloopcs{#1}\interwordspacebefore}
+\unexpanded\def\interwordspacesafter #1{\dofastloopcs{#1}\interwordspaceafter}
+\unexpanded\def\interwordspaces      #1{\wordboundary\zwnj\dofastloopcs{\numexpr#1+\minusone}\interwordspaceafter}
+
 \protect \endinput

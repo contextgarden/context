@@ -5149,19 +5149,26 @@
 
 \let\m_syst_helpers_fast_loop_cs\relax
 
-\unexpanded\def\dofastloopcs#1#2%
-  {\let\m_syst_helpers_fast_loop_cs#2%
-   \fastloopindex\plusone
-   \fastloopfinal#1\relax
-   \syst_helpers_fast_loop_cs}
+\unexpanded\def\dofastloopcs#1%
+  {\fastloopfinal#1\relax
+   \ifcase\fastloopfinal
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\syst_helpers_fast_loop_cs
+   \fi}
 
-\unexpanded\def\syst_helpers_fast_loop_cs
+\unexpanded\def\syst_helpers_fast_loop_cs#1%
+  {\let\m_syst_helpers_fast_loop_cs#1%
+   \fastloopindex\plusone
+   \syst_helpers_fast_loop_cs_step}
+
+\unexpanded\def\syst_helpers_fast_loop_cs_step
   {\ifnum\fastloopindex>\fastloopfinal
      \let\m_syst_helpers_fast_loop_cs\relax
    \else
      \m_syst_helpers_fast_loop_cs
      \advance\fastloopindex\plusone
-     \expandafter\syst_helpers_fast_loop_cs
+     \expandafter\syst_helpers_fast_loop_cs_step
    \fi}
 
 % Helper:
