@@ -773,6 +773,23 @@
      \hss
    \egroup}
 
+% \unexpanded\def\page_mix_command_package_column
+%   {\page_mix_hbox to \d_page_mix_column_width \bgroup
+%      % maybe intercept empty
+%      \ruledhpack\bgroup
+%        \clf_mixgetsplit\recurselevel\relax
+%      \egroup
+%      \hskip-\d_page_mix_column_width
+%      \ruledhpack \bgroup
+%        \hsize\d_page_mix_column_width
+%        \ifconditional\c_page_mix_process_notes
+%          \placenoteinserts
+%        \fi
+%      \egroup
+%      \hss
+%    \egroup}
+
+
 \unexpanded\def\page_mix_routine_continue
   {\bgroup
    \forgetall

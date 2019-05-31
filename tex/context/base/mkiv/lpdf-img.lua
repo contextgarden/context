@@ -855,11 +855,19 @@ do
         switch(true)
     end
 
-    local alwaysdecode = false
+    local alwaysdecode  = false
+    local compresslevel = 3
 
- -- directives.register("graphics.png.decode", function(v)
- --     alwaysdecode = v
- -- end)
+    directives.register("graphics.png.recompress", function(v)
+        alwaysdecode = v
+    end)
+
+    directives.register("graphics.png.compresslevel", function(v)
+        v = tonumber(v)
+        if compresslevel >= 0 or compresslevel <= 9 then
+            compresslevel = v
+        end
+    end)
 
     function injectors.png(specification)
 -- inspect(specification)
@@ -946,6 +954,7 @@ do
         end
         --
         local decode = alwaysdecode
+        local filter = pdfconstant("FlateDecode")
         local major  = pdfmajorversion()
         local minor  = pdfminorversion()
         if major > 1 then
@@ -994,8 +1003,12 @@ do
             else
                 content = convert(r) -- can be in deinterlace if needed
             end
-            content = zlibcompress(content,3)
-            decode  = true
+            if compresslevel > 0 then
+                content = zlibcompress(content,compresslevel)
+            else
+                filter = nil
+            end
+            decode = true
         elseif mask then
             if not (colordepth == 8 or colordepth == 16) then
                 report_png("mask can't be split from the image")
@@ -1003,10 +1016,15 @@ do
             end
             content = zlibdecompress(content)
             content, mask = decodemask(content,xsize,ysize,colordepth,colorspace)
-            content = zlibcompress(content,3)
+            if compresslevel > 0 then
+                content = zlibcompress(content,compresslevel)
+            else
+                filter = nil
+            end
             decode  = true -- we don't copy the filter byte
         elseif transparent then
             -- in test suite
+            -- how about decode/recompress here
             if palette then
                 mask = createmask(content,palette,transparent,xsize,ysize,colordepth,colorspace)
             else
@@ -1017,8 +1035,12 @@ do
             local bytes = analyze(colordepth,colorspace)
             if bytes then
                 content = zlibdecompress(content)
-                content = applyfilter(content,xsize,ysize,bytes)
-                content = zlibcompress(content,3)
+                content = decodestrip(openstring(content),xsize,ysize,bytes)
+                if compresslevel > 0 then
+                    content = zlibcompress(content,compresslevel)
+                else
+                    filter = nil
+                end
             else
                 return
             end
@@ -1041,7 +1063,7 @@ do
             Width            = xsize,
             Height           = ysize,
             BitsPerComponent = colordepth,
-            Filter           = pdfconstant("FlateDecode"),
+            Filter           = filter,
             ColorSpace       = palette or pdfconstant(colorspace),
             Length           = #content,
         } + specification.attr

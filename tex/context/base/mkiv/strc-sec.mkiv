@@ -1153,16 +1153,6 @@
      \prevdepth\strutdepth
    \fi}
 
-\def\strc_sectioning_after_yes
-  {\ifconditional\headisdisplay
-     \ifconditional\c_strc_sectioning_auto_break
-     % \vspacing[\v!samepage-\currentheadlevel]%
-       \vspacing[\v!samepage]%
-     \fi
-     \strc_sectioning_empty_correction
-     \headparameter\c!after
-   \fi}
-
 \def\strc_sectioning_after_nop
   {}
 
@@ -1225,6 +1215,47 @@
    \fi
    \glet\previoushead\currenthead}
 
+% \def\strc_sectioning_handle_page_yes
+%   {\ifconditional\c_strc_sectioning_ignore_page
+%      \setfalse\c_strc_sectioning_ignore_page
+%    \else
+%      % beware, these numbers are not yet know here
+%      \strc_sectioning_handle_page_nop
+%      \edef\p_aligntitle{\headparameter\c!aligntitle}%
+%      \ifx\p_aligntitle\v!float
+%          \ifconditional\c_strc_sectioning_auto_break
+%            \vspacing[\v!samepage-\currentheadlevel]%
+%          \fi
+%          \headparameter\c!before\relax
+%          \indent
+%      \else
+%          \page_otr_command_flush_side_floats
+%          \ifconditional\c_strc_sectioning_auto_break
+%            \vspacing[\v!samepage-\currentheadlevel]%
+%          \fi
+%          \headparameter\c!before\relax
+%      \fi
+%      \global\c_strc_sectioning_preceding_level\currentheadlevel
+%    \fi
+%    \glet\previoushead\currenthead}
+%
+% \unexpanded\def\strc_sectioning_prevent_page_break% see strc-con
+%   {\ifconditional\c_strc_sectioning_auto_break
+%       \vspacing[\v!samepage-\the\numexpr\currentheadlevel+\plusone\relax]%
+%    \fi}
+%
+% \def\strc_sectioning_after_yes
+%   {\ifconditional\headisdisplay
+%      \ifconditional\c_strc_sectioning_auto_break
+%      % \vspacing[\v!samepage-\currentheadlevel]%
+%        \vspacing[\v!samepage]%
+%      \fi
+%      \strc_sectioning_empty_correction
+%      \headparameter\c!after
+%    \fi}
+
+% This works better in columns ... but also elsewhere?
+
 \def\strc_sectioning_handle_page_yes
   {\ifconditional\c_strc_sectioning_ignore_page
      \setfalse\c_strc_sectioning_ignore_page
@@ -1234,14 +1265,14 @@
      \edef\p_aligntitle{\headparameter\c!aligntitle}%
      \ifx\p_aligntitle\v!float
          \ifconditional\c_strc_sectioning_auto_break
-           \vspacing[\v!samepage-\currentheadlevel]%
+           \spac_vspacing_same_page\currentheadlevel\zerocount
          \fi
          \headparameter\c!before\relax
          \indent
      \else
          \page_otr_command_flush_side_floats
          \ifconditional\c_strc_sectioning_auto_break
-           \vspacing[\v!samepage-\currentheadlevel]%
+           \spac_vspacing_same_page\currentheadlevel\zerocount
          \fi
          \headparameter\c!before\relax
      \fi
@@ -1249,10 +1280,20 @@
    \fi
    \glet\previoushead\currenthead}
 
-\unexpanded\def\strc_sectioning_prevent_page_break#1% see strc-con
-  {\ifconditional\c_strc_sectioning_auto_break
-      \vspacing[\v!samepage-\the\numexpr\currentheadlevel+\ifx#1\empty\plusone\else#1\fi\relax]%
+\def\strc_sectioning_after_yes
+  {\ifconditional\headisdisplay
+     \ifconditional\c_strc_sectioning_auto_break
+       \spac_vspacing_same_page\currentheadlevel\plusone
+     \fi
+     \strc_sectioning_empty_correction
+     \headparameter\c!after
    \fi}
+
+\unexpanded\def\strc_sectioning_prevent_page_break % see strc-con
+  {\ifconditional\c_strc_sectioning_auto_break
+     \spac_vspacing_same_page\currentheadlevel\plustwo
+   \fi}
+
 
 % We do support negative numbers but it can have side effects that we won't catch:
 %

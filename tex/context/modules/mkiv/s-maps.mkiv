@@ -7,30 +7,38 @@
 %D   date=\currentdate,
 %D   copyright=NTG/MAPS]
 
-% This module implements the MAPS style for use with the Context
-% macro package. The original MAPS layout was designed and
-% implemented in LaTeX by Taco Hoekwater and Siep Kroonenberg.
-
-% - three layouts:
-%   1. two columns
-%   2. one column, with wide outer margins (option onecolumn)
-%   3. one column, with wide left margin (option asym)
-% - font sizes deviate from TeX's usual geometric progression
-% - use of sans-serif for headers and various details
-% - option realfonts uses Linux Libertine, Euler Math and Inconsolata.
-%   This is used for final typesetting.
-%   The default font setup, intended for authors, uses Computer
-%   Modern Math instead of Euler Math (which is still in beta),
-%   and LM Mono instead of Inconsolata.
-
-% A mode nosubsub defines only two levels of sectioning. If you
-% don't need more and use the two-column layout, then this option
-% will probably improve the looks of your paper.
+%D This module implements the MAPS style for use with the Context macro package. The
+%D original MAPS layout was designed and implemented in LaTeX by Taco Hoekwater and
+%D Siep Kroonenberg.
+%D
+%D \startitemize
+%D \startitem
+%D     four layouts:
+%D     \startitemize
+%D         \startitem two columns \stopitem
+%D         \startitem one column, with wide outer margins (option onecolumn) \stopitem
+%D         \startitem one column, with wide left margin (option asym) \stopitem
+%D         \startitem one column, with wide right margin (option single) \stopitem
+%D     \stopitemize
+%D \stopitem
+%D \startitem
+%D     font sizes deviate from TeX's usual geometric progression
+%D \stopitem
+%D \startitem
+%D     use of sans-serif for headers and various details
+%D \stopitem
+%D \stopitemize
+%D
+%D A mode nosubsub defines only two levels of sectioning. If you don't need more and
+%D use the two-column layout, then this option will probably improve the looks of
+%D your paper.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newif\ifMapsInColumns
-\doifmode{asym}{\enablemode[onecolumn]} % implies onecolumn
+
+\doifmode   {asym}     {\enablemode[onecolumn]}      % implies onecolumn
+\doifmode   {single}   {\enablemode[asym,onecolumn]} % implies onecolumn
 \doifnotmode{onecolumn}{\MapsInColumnstrue}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -98,31 +106,31 @@
 
 %%% font families
 
-\starttypescript [maps]
-\definetypeface [maps] [rm] [serif] [modern]      [default] [rscale=0.95]
-\definetypeface [maps] [mm] [math]  [modern]      [latin-modern]
-\definetypeface [maps] [tt] [mono]  [modern]      [default] [rscale=0.90]
-\definetypeface [maps] [ss] [sans]  [modern]      [default] [rscale=0.95]
+\definefontfeature[mapsdef][default][mode=node,onum=yes,lnum=no]
+
+\starttypescript [serif] [libertine] [name]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]            [file:LinLibertine_R.otf]   [features=mapsdef]
+    \definefontsynonym [SerifItalic]      [file:LinLibertine_RI.otf]  [features=mapsdef]
+    \definefontsynonym [SerifSlanted]     [file:LinLibertine_RI.otf]  [features=mapsdef]
+    \definefontsynonym [SerifBold]        [file:LinLibertine_RB.otf]  [features=mapsdef]
+    \definefontsynonym [SerifBoldItalic]  [file:LinLibertine_RBI.otf] [features=mapsdef]
+    \definefontsynonym [SerifBoldSlanted] [file:LinLibertine_RBI.otf] [features=mapsdef]
+    \definefontsynonym [SerifCaps]        [file:LinLibertine_R.otf]   [features=smallcaps]
 \stoptypescript
 
-\startmode[realfonts]
-\usetypescriptfile[type-libertine]
-
-\usetypescriptfile[type-inconsolata]
-
 \starttypescript [maps]
-\definetypeface [maps] [rm] [serif] [libertine]   [default]
-\definetypeface [maps] [mm] [math]  [euler]       [default] [rscale=0.9]
-\definetypeface [maps] [tt] [mono]  [inconsolata] [default] [rscale=0.92]
-\definetypeface [maps] [ss] [sans]  [modern]      [default] [rscale=0.95]
+   \definetypeface [maps] [rm] [serif] [libertine]   [default]
+   \definetypeface [maps] [mm] [math]  [euler]       [default] [rscale=0.9]
+   \definetypeface [maps] [tt] [mono]  [modern]      [default]
+   \definetypeface [maps] [ss] [sans]  [modern]      [default] [rscale=0.95]
 \stoptypescript
-\stopmode
 
 \setupbodyfont[maps,10pt,rm]
 
-% activate protruding
 \setupinterlinespace[line=11pt]
 
+% activate protruding
 \setupfontsynonym[handling=pure]
 
 \setupalign[hanging]
@@ -142,7 +150,7 @@
 \setuppapersize
   [maps][maps]
 
-\setuplayout[
+\setuplayout
   [topspace=40pt,
    height=688pt,
    header=33pt,
@@ -166,154 +174,137 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% sectioning
 
-\setupheads[sectionnumber=no, align=right]
+\setupheads
+  [number=no,
+   align=flushleft]
 
-\def\hfonti{\ssbfa}
-\def\hfontii{\ssbf}
-\def\hfontiii{\rm\it}
+\unexpanded\def\hfonti    {\ssbfa}
+\unexpanded\def\hfontii   {\ssbf}
+\unexpanded\def\hfontiii  {\rm\bi}
+\unexpanded\def\runin   #1{#1}
 
-\doifelsemode{nosubsub}{%
-\setuphead [section][%
-  style=\hfontii,
-  before={\blank[line]},
-  after={}%
-]
-\setuphead [subsection][%
-  style=\hfontiii,
-  alternative=text,
-  distance=6pt,
-  before={\blank[halfline]}%
-]}{%
-\setuphead [section][%
-  style=\hfonti,
-  before={\blank[line]},
-  after={\blank[halfline]}%
-]
-\setuphead [subsection][%
-  style=\hfontii,
-  before={\blank[halfline]},
-  after={}%
-]
-\setuphead [subsubsection][%
-  style=\hfontiii,
-  distance=6pt,
-  alternative=text,
-  before={\blank[halfline]}%
-]}
+\setuphead [section,subject]
+  [style=\hfonti,
+   before={\blank[line]},
+   after={\blank[halfline]}]
+\setuphead [subsection,subsubject]
+  [style=\hfontii,
+   before={\blank[halfline]},
+   after={}]
+\setuphead [subsubsection,subsubsubject]
+  [style=\hfontiii,
+   deeptextcommand=\runin,
+   distance=6pt,
+   alternative=text,
+   before={\blank[halfline]}]
 
-\doifelsemode{nosubsub}{%
-\setuphead [subject][%
-  style=\hfontii,
-  before={\blank[halfline]},
-  after={}%
-]
-\setuphead [subsubject][%
-  style=\hfontiii,
-  alternative=text,
-  before={\blank[halfline]}%
-]}{%
-\setuphead [subject][%
-  style=\hfonti,
-  before={\blank},
-  after={\blank[halfline]}%
-]
-\setuphead [subsubject][%
-  style=\hfontii,
-  before={\blank[halfline]},
-  after={}%
-]
-\setuphead [subsubsubject][%
-  style=\hfontiii,
-  alternative=text,
-  before={\blank[halfline]}%
-]}
+\startmode[nosubsub]
+\setuphead [section,subject]
+  [style=\hfontii,
+   before={\blank[line]},
+   after={}]
+\setuphead [subsection,subsubject]
+  [style=\hfontiii,
+   deeptextcommand=\runin,
+   alternative=text,
+   distance=6pt,
+   before={\blank[halfline]}]
+\stopmode
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% floats
 
-\setupfloats [location=center, before={\ss}]
-\setupcaptions [headstyle={\ssbf},style={\ssx},
-   suffix=.,distance=6pt,
+\setupfloats
+  [location=left,
+   before={\ss}]
+
+\setupcaptions
+  [align=flushleft,
+   headstyle={\ssbf},
+   style={\ssx},
+   suffix=.,
+   distance=6pt,
    inbetween={\blank[halfline]}]
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% various document elements
 
-\definesymbol [1][\getnamedglyphdirect{file:stmary10}{boxempty}]
+\setupitemize
+  [1]
+  [symbol=8]
 
-\setupitemize[1][packed]
-
-\setupitemize [each][%
-  indentnext=no,
-  align=right,
-  width=1em,
-  distance=0pt%
-]
+\setupitemize
+  [each]
+  [before={\blank[line]},
+   after={\blank[line]},
+   inbetween=,
+   indentnext=no,
+   width=12pt,
+   distance=0pt]
 
 % an outer form of itemize that does not indent
 % the paragraph.
 
 \definecomplexorsimpleempty\startouteritemize
-\def\complexstartouteritemize[#1]{\begingroup
-  \startitemize[width=1sp,#1]
-  \let\doitem\item
-  \def\item{\doitem[]\hbox{}\kern12pt\rightskip=0pt}%
-}
 
-\def\stopouteritemize{\stopitemize\endgroup}
+\def\complexstartouteritemize[#1]%
+  {\begingroup
+   \setupitemize[width=0pt,inbetween={\blank},before={\blank},after={\blank}]
+   \startitemize[#1]
+   \let\doitem\item
+   \def\item{\doitem[]\hbox{}\kern12pt\rightskip=0pt}}
 
+\def\stopouteritemize
+  {\stopitemize\endgroup}
 
-\setupenumerations [indentnext=no]
-
-\setupdescriptions [indentnext=no]
-
-\unexpanded\def\smalltyping{%
-  \switchtobodyfont[tt]%
-  \parindent=0pt
-}
+\definedescription
+   [description]
+   [alternative=hanging,width=fit]
 
 % typing:
 % - prettyverbatim is NOT the default
-% - smaller size
 
-\unexpanded\def
-  \XeTeX{X\lower.5ex\hbox{\kern-.1em\mirror{E}}\kern-.1667em\TeX}
+\setuptyping
+  [style={\switchtobodyfont[small,tt]},
+   option=none,
+   indentnext=no]
 
-\setuptyping [%
-  style={\smalltyping},
-  option=none,
-  indentnext=no%
-]
-
-\def\footnum#1{#1.}
+% normally we have endnotes, but in the title there
+% could be a \thanks command. Since the new column mode
+% does not deal with footnotes all that well, we more
+% or less have to roll our own.
 
 \setupnotation
-   [footnote]
-   [alternative=serried,
-    before=,
-    after=,
-    location=none,
-    width=\textwidth,
-    before={\blank},
-    numbercommand=,
-    command=\footnum,
-    distance=0.5em]
+  [footnote]
+  [margin=0cm,
+   before={},
+   after={},
+   way=bypage,
+   number=no]
+
+\setupnote
+  [footnote]
+  [location=page,
+   spacebefore=,
+   before=,
+   after=]
+
+\unexpanded\def\thanks#1{\xdef\MapsThanks{#1}*}
 
 \setuptabulate
-   [before=\blank,
-    inner=\ss,
-    after=\blank]
+  [before=\blank,
+   inner=\ss,
+   after=\blank]
 
 \def\startIntroEntry#1%
- {\startlinecorrection
-  \bgroup
+ {\bgroup
   \setupalign[right]
   \setuptolerance[verytolerant]
   \setupindenting[no]
   \noindent
   \switchtobodyfont[9pt]%
   \setuplocalinterlinespace[line=10pt]%
-  %\hyphenpenalty10000
   \parfillskip 0pt plus 1fill
   \rightskip6pt plus 1fill
   \ss
@@ -321,15 +312,15 @@
   \ignorespaces }
 
 \def\stopIntroEntry
-  {\par\egroup \stoplinecorrection
+  {\par\egroup
    \blank[line] }
 
-\def\defineIntroEntry[#1][#2][#3]%
+\def\defineIntroEntry[#1][#2]
   {\setvalue{start#1}{\startIntroEntry{#2}}%
-   \setvalue {stop#1}{\stopIntroEntry#3}}
+   \setvalue {stop#1}{\stopIntroEntry}}
 
-\defineIntroEntry[Keywords][Keywords][]
-\defineIntroEntry[Abstract][Abstract][]
+\defineIntroEntry[Keywords][Keywords]
+\defineIntroEntry[Abstract][Abstract]
 
 % article parameters (other fields and defaults)
 \def\MapsBibData[#1]%
@@ -345,81 +336,140 @@
      Period=,
      Number=,
      Year=,
+     SkipHeader=,
+     SkipFooter=,
+     Abstract=,
+     Keywords=,
+     Thanks=,
      #1]%
-  \doifnothing{\MapsPeriod}{%
-    \ifnum \normalmonth<6 \gdef\MapsPeriod{VOORJAAR}\else \gdef\MapsPeriod{NAJAAR}\fi}
-  \doifelseinstring{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
-  \doifelseinstring{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
-  \doifelseinstring{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
-  \doifelseinstring{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifnothing{\MapsPeriod}%
+    {\ifnum \normalmonth<6 \gdef\MapsPeriod{VOORJAAR}\else \gdef\MapsPeriod{NAJAAR}\fi}
+  \doifinstringelse{oorjaar}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{pring}{\MapsPeriod}{\gdef\MapsPeriod{VOORJAAR}}{}%
+  \doifinstringelse{ajaar}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
+  \doifinstringelse{utumn}{\MapsPeriod}{\gdef\MapsPeriod{NAJAAR}}{}%
   \doifnothing{\MapsYear}{\gdef\MapsYear{\the\year}}%
-  \doifnothing{\MapsNumber}{%
-    \ifnum \normalmonth<6
+  \doifnothing{\MapsNumber}%
+    {\ifnum \normalmonth<6
       \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2\relax}%
-    \else
+     \else
       \xdef\MapsNumber{\the\numexpr (\the\year-1990)*2+1\relax}%
-    \fi }%
+     \fi }%
   \doifnothing\MapsRunningAuthor
-    {\glet\MapsRunningAuthor\MapsAuthor}%
+    {\global\let\MapsRunningAuthor\MapsAuthor}%
   \doifnothing\MapsRunningTitle
-    {\glet\MapsRunningTitle\MapsTitle}}%
+    {\global\let\MapsRunningTitle\MapsTitle}}%
 
-\def\dostartArticle[#1]{%
-  \MapsBibData[#1]
-  \pageno=\MapsPage
-  \setupuserpagenumber[start=\MapsPage]
-  \startbaselinecorrection
-  \bgroup
-    \hsize = 457pt
-    \let\\\crlf
-    \blank[35pt,force]
-    \switchtobodyfont[24pt]
-    \setupalign[right]
-    {\noindent\bf\MapsTitle\par}
-    \ifx\MapsSubTitle\empty
-      \blank[30pt]
-    \else
-      \bgroup
-      \blank[12pt]
-      \switchtobodyfont[18pt]\noindent \it
-      \advance \rightskip 0pt plus 2em
-      \MapsSubTitle\par
-      \egroup
-      \blank[30pt]
-    \fi
-  \egroup
-  \setupalign[width]
-  \switchtobodyfont[rm,10pt]
-  \stopbaselinecorrection
-  \ifMapsInColumns
-    \startcolumns\hyphenpenalty1000
-  \else
-    \clubpenalty10000
-    \widowpenalty10000
-  \fi
-}
+\def\doarticleheader
+  {\startbaselinecorrection
+   \bgroup
+     \hsize = 457pt
+     \let\\\crlf
+     \blank[35pt,force]
+     \switchtobodyfont[24pt]
+     \startalign[flushleft,verytolerant,extremestretch]
+     {\noindent\bf\language=-1\MapsTitle\par}
+     \ifx\MapsSubTitle\empty
+       \blank[line]
+     \else
+       \bgroup
+       \blank[12pt]
+       \switchtobodyfont[14pt]\noindent \it
+       \advance \rightskip 0pt plus 2em
+       \MapsSubTitle\par
+       \egroup
+       \blank[line]
+     \fi
+     \stopalign
+   \egroup
+   \setupalign[width]
+   \switchtobodyfont[rm,10pt]
+   \stopbaselinecorrection }
 
-\def\startArticle{\dosingleempty\dostartArticle}
+\newif\ifintroentries
 
-\def\signArticle{%
-  \blank\let\\\crlf
-  \noindent\switchtobodyfont[ss,9pt]%
-  \MapsAuthor
-  \doifsomething{\MapsAddress}{\\\MapsAddress}%
-  \doifsomething{\MapsEmail}{\\\MapsEmail}%
-  \switchtobodyfont[10pt]%
-  \def\signArticle{}%
-}
+\def\dostartArticle[#1]%
+  {\MapsBibData[#1]
+   \pageno=\MapsPage
+   \setnumber[realpage][\MapsPage]
+   \setnumber[userpage][\MapsPage]
+   \doifnothing{\MapsSkipHeader}{\doarticleheader}%
+   \ifMapsInColumns
+     \startcolumns\hyphenpenalty1000
+   \else
+     \clubpenalty10000
+     \widowpenalty10000
+   \fi
+   \introentriesfalse
+   \startbaselinecorrection
+   \doifsomething{\MapsAbstract}{\startAbstract \MapsAbstract \stopAbstract \introentriestrue }
+   \doifsomething{\MapsKeywords}{\startKeywords \MapsKeywords \stopKeywords \introentriestrue }
+   \stopbaselinecorrection
+   \ifintroentries
+     \blank[2*line]
+   \fi
+   \doifsomething\MapsThanks
+     {\expanded{\footnote[thanks]{*\quad\strut\MapsThanks}}%
+      \kern -22pt }% need to unskip because of the silent \footnote
+   \let\footnote\endnote }
 
-\def\stopArticle{%
-  \par\signArticle
-  \ifMapsInColumns \stopcolumns \fi
-  \page
-}
+\def\startArticle
+  {\dosingleempty\dostartArticle}
+
+\def\signArticle
+  {\doifnothing
+    {\MapsSkipFooter}
+    {\blank[line]\let\\\crlf
+     \noindent\switchtobodyfont[ss,9pt]%
+     \MapsAuthor
+     \doifsomething{\MapsAddress}{\\\MapsAddress}%
+     \doifsomething{\MapsEmail}{\\\MapsEmail}}%
+   \switchtobodyfont[10pt]%
+   \def\signArticle{}}
+
+% endnotes aka footnotes
+
+\def\footnum#1{#1.}
+
+\setupnotation
+  [endnote]
+  [alternative=serried,
+   style={\switchtobodyfont[9pt]},
+   margin=0cm,
+   width=12pt,
+   before=,
+   after=,
+   margin=0cm,
+   numbercommand=\footnum]
+
+\setupnote
+  [endnote]
+  [location=none]
+
+\def\endnotessubjectname{Footnotes}
+\def\endnotesubjectname{Footnote}
+
+\def\stopArticle
+  {\ifcase\rawcountervalue[endnote]\relax
+   \or
+     \startsubject[title=\endnotesubjectname] % single
+       \placenotes[endnote]
+     \stopsubject
+   \else
+     \startsubject[title=\endnotessubjectname]
+       \placenotes[endnote]
+     \stopsubject
+   \fi
+   \par\signArticle
+   \ifMapsInColumns \stopcolumns \fi
+   \page }
 
 \installpagebreakmethod{last}{}
 
 %%% `logos' %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\unexpanded\def\XeTeX
+  {X\lower.5ex\hbox{\kern-.1em\mirror{E}}\kern-.1667em\TeX}
 
 \unexpanded\def\LaTeX % requested by erik frambach
   {{\setbox\scratchbox\hbox{L}%
@@ -429,66 +479,306 @@
     \raise\scratchdimen\hbox{\lower\ht\scratchbox\copy\scratchbox}%
     \kern-.2\wd\scratchbox\TeX}}
 
+\unexpanded\def\CONTEXT   {Con{\TeX}t}
+\unexpanded\def\ConTeXt   {Con{\TeX}t}
+\unexpanded\def\METAFONT  {Metafont}
+\unexpanded\def\METAPOST  {MetaPost}
+\unexpanded\def\POSTSCRIPT{PostScript}
 
-\def\CONTEXT{Con{\TeX}t}
-\def\ConTeXt{Con{\TeX}t}
-\def\METAFONT{Metafont}
-\def\METAPOST{MetaPost}
-\def\POSTSCRIPT{PostScript}
+\unexpanded\def\acro#1{{\switchtobodyfont[9pt]#1}}
 
-\def\acro#1{{\switchtobodyfont[9pt]#1}}
+\definefontfeature[smallcapitals] [smcp=yes]
+\def\sc{\addff{smallcapitals}}
 
+\def\NTG{{\sc ntg}}
+\def\TUG{{\sc tug}}
 
 %%%%%%%%%%%
+% headers and footers and other mode-related things
+\setuplayout
+  [width=457pt]
 
-\doifelsemode{onecolumn}{%
-  \setuplayout[width=340pt]
-  \doifelsemode{asym}{% one col, asymmetric
-    \setuplayout[backspace=187.3pt]%
-    \setuptyping [widetyping][oddmargin=-117pt]
-    \setuppagenumbering [alternative={singlesided,doublesided}]
-    \setupheadertexts
+\setupcolumns
+  [n=2,tolerance=verytolerant,distance=11pt]
+
+\setuplayout
+  [backspace=70.3pt,grid=yes]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setuptyping
+  [blank=halfline]
+
+\setupheadertexts
+  [\TiHead]
+  [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-30pt\hbox{}}]
+  [{\hbox{}\hskip-30pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+  [\AuHead]
+
+\setupfootertexts % empty
+
+\startmode[onecolumn]
+
+\setuplayout[width=340pt]
+
+\startmode[asym]% one col, asymmetric
+  \setuppagenumbering
+    [alternative={singlesided,doublesided}]
+  \doifmodeelse
+    {single}
+    {\setupheadertexts
+      [\TiHead]
+      [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-147pt\hbox{}}]
+      [{\hbox{}\hskip-30pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+      [\AuHead\hskip-110pt]}
+    {\setuptyping
+      [widetyping]
+      [oddmargin=-117pt]
+     \setuplayout[backspace=187.3pt]
+     \setupheadertexts
       [{\hbox{}\hskip-117pt\TiHead}]
       [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-30pt\hbox{}}]
       [{\hbox{}\hskip-147pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
-      [\AuHead]
-    \setupfootertexts
-  }{% one col, symmetric
-    \setuplayout[backspace=70.3pt]
-    \setuppagenumbering [alternative=doublesided]
-    \setuptyping[blank=halfline]
-    \setupheadertexts
-      [\TiHead]
-      [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-147pt\hbox{}}]
-      [{\hbox{}\hskip-147pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
-      [\AuHead]
-    \setupfootertexts
-}}{% two col
-  \setuplayout[width=457pt]
-  \setupcolumns[n=2,tolerance=verytolerant,distance=11pt]
-  \setuplayout[backspace=70.3pt,grid=yes]
-  \setuppagenumbering [alternative=doublesided]
-   \setuptyping[blank=halfline]
-   \setupheadertexts
+      [\AuHead]}
+\stopmode
+
+\startnotmode[asym]
+  \setupheadertexts
     [\TiHead]
-    [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-30pt\hbox{}}]
-    [{\hbox{}\hskip-30pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
+    [{\cap{\MapsPeriod\ \MapsYear}\quad\bf \pagenumber\hskip-147pt\hbox{}}]
+    [{\hbox{}\hskip-147pt{\bf \pagenumber}\quad \cap {maps\ \MapsNumber}}]
     [\AuHead]
-  \setupfootertexts
-}
+\stopnotmode
+
+\stopmode % onecolumn
+
 
 \def\fulltextwidth{457pt}
 
-\def\startdescription
-  {\blank
-   \bgroup
-   \def\sym##1{\par\noindent\hbox{\bf\kern -16pt ##1}\hskip 12pt}
-   \startnarrower[left]
-   }
-\def\stopdescription
-  {\par \stopnarrower \egroup \blank \noindentation }
+\def\startfullwidth
+  {\par\begingroup
+   \doifmode
+     {onecolumn}
+     {\hsize=\fulltextwidth
+      \doifmodeelse
+        {asym}
+        {\doifmodeelse{single}{\textwidth=\fulltextwidth }{\leftskip-117pt }}
+        {\ifodd\pageno \else \leftskip-117pt \hsize=340pt \fi }}}
 
-\frenchspacing
-\setuptolerance[tolerant]
+\def\stopfullwidth
+  {\par\endgroup}
 
-\endinput
+% Taco: \setupalign[tolerant,fixed} where fixed is french spacing
+
+\setupalign
+  [tolerant,fixed]
+
+\continueifinputfile{s-maps.mkiv}
+
+% \enabletrackers[mixedcolumns.*]
+
+% \enablemode[nosubsub]  % if you need at most two levels of sectioning
+% \enablemode[onecolumn] % for symmetric single-column layout
+% \enablemode[asym]      % for asymmetric single-column layout, left aligned
+% \enablemode[single]    % for asymmetric single-column layout, right aligned
+
+% \usemodule[map-20]
+
+\usebtxdataset[samplmaps.bib]
+\usebtxdefinitions[apa]
+
+\starttext
+\startArticle[% Use {} if argument contains comma's!
+% titel
+           Title={An example document for the Maps module, demonstrating its
+                  various features\thanks{Thanks should be short}
+                 },
+    RunningTitle=An example document,
+        SubTitle=with an optional subtitle,
+% auteur
+          Author=Anton Ulrich Thor,
+           Email=a.u.thor@uu.am.dw,
+         Address=Institute of Indefinite Studies\\
+                 Unseen University\\
+                 Ankh Morpork,
+% tijdstip
+          Period=voorjaar,
+          Number=36,
+            Year=2008,
+            Page=1,
+% Taal
+        Language=english,
+% Intro
+        Abstract={%
+This is a sample input file for the Maps module version 2.0,
+which mimics the associated \LaTeX\ class file.
+It demonstrates various standard and non-standard features.
+\crlf
+Use of the abstract- and keywords environments is highly appreciated.},
+        Keywords={Maps, \ConTeXt\ module, sample}]
+
+\startsection[title=Ordinary Text]
+
+The ends  of words and sentences are marked
+  by   spaces. It  doesn't matter how many
+spaces    you type; one is as good as 100.  The
+end of   a line counts as a space.
+
+One   or more   blank lines denote the  end
+of  a paragraph.
+
+Footnotes\footnote{This is an example of an endnote.} are converted to
+endnotes\endnote{This is another one, with more text to it, to see how
+it will wrap to the next line.}. These will automatically be typeset at
+the end of the article. The title of the notes section is defined by the
+command \type{\endnotessubjectname} (for multiple notes) or
+\type{\endnotesubjectname} (in case of a single note).
+
+\stopsection
+
+\startsection[title=Fonts]
+The Maps uses Linux Libertine for main text,
+with Latin Modern Sans and Mono, and Euler for math. The Linux Libertine
+OpenType fonts are part of \TeX\ Live. If they are not found,
+Latin Modern Serif fallbacks will be used.
+
+\stopsection
+
+\startsection[title=Sectioning]
+
+The maps module defaults to unnumbered sections. If you really must,
+you can restore section numbering with \emph{e.g.}
+\type{\setupheads[number=yes]}
+
+\startsubsection[title=Subsection]
+This is a second-level section header. You can go down one more
+level:
+
+% \penalty0
+
+\startsubsubsection[title=A subsubsection]
+This is supposed to be a run-in header, so make sure you start the
+text right after \type{\startsubsubsection}.
+
+\stopsubsubsection
+
+\startsubsubsection[title=Tip]
+If you only need one or two levels of header, then you can get a
+better layout with the \type{nosubsub} document option.
+The Maps editors may decide to turn on this option for you.
+\stopsubsubsection
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Lists]
+
+Another frequently-displayed structure is a list.
+The following is an example of an \emph{itemized}
+list.
+\startitemize
+  \item This is the first item of an itemized list.
+    Each item in the list is marked with a \quote{tick}.
+  \item This is the second item of the list.  It
+    contains another list nested inside it.  The inner
+    list is an \emph{enumerated} list.
+
+    \startitemize[n]
+      \startitem This is the first item of an enumerated
+        list that is nested within the itemized list.
+       \stopitem
+      \item This is the second item of the inner list.
+        \ConTeXt\ allows you to nest lists deeper than
+          you really should.
+      \stopitem
+    \stopitemize
+
+    \noindent
+    This is the rest of the second item of the outer
+    list.  It is no more interesting than any other
+    part of the item.
+  \startitem This is the third item of the list. \stopitem
+\stopitemize
+
+In a two-column layout, protracted indenting doesn't look very
+good. Therefore, the Maps module provides an \type{outeritemize}
+environment:
+
+\startouteritemize
+\item This is the first item of a non-indented itemized list,
+  produced with the \mono{outeritemize} environment.
+\item This is the second item.
+\stopouteritemize
+
+Now an enumerated version:
+
+\startouteritemize[n]
+\item This is the first item of a non-indented enumerated list,
+  produced with the \mono{outeritemize} environment.
+\item This is the second item.
+\stopouteritemize
+
+There is also a definition for description lists:
+
+\startdescription{cow}
+A milk-producing animal that grazes grass and has multiple stomachs
+\stopdescription
+\startdescription{kangoroo}
+An Australian hopping animal
+\stopdescription
+
+\stopsection
+
+\startsection[title=Wide typesetting in single-column layout]
+
+For both single-column layouts, there are environments \type{fullwidth} and
+\type{widetyping} which typeset their content across the full page,
+including most of the wide margin.
+
+\startfullwidth
+x x x x x x x x x x x x x x x x x x x x x
+x x x x x x x x x x x x x x x x x x x x x
+x x x x x x x x x x x x x x x x x x x x x
+x x x x x x x x x x x x x x x x x x x x x
+\stopfullwidth
+
+\startwidetyping
+{}\/$xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+\stopwidetyping
+The implementation of \type{fullwidth} is rather simplistic and
+may easily break, in which case more sophisticated hackery will be
+needed.
+
+\stopsection
+
+\startsection[title=Assembling your submission]
+
+Please check whether all non-standard modules and all
+non-standard fonts are included. We do have a current \TeX{} Live but,
+although we do have access to CTAN, finding the right stuff by
+name can occasionally be a challenge.
+
+Avoid jpeg compression for screenshots. Conversion to pdf may
+sometimes result in jpeg compression as well. Use \emph{e.g.} png
+format instead.
+
+Finally, a pdf of your article is appreciated. This way, we can
+check more reliably whether your article compiles
+correctly on our own systems.
+
+\stopsection
+\startsection[title=References]
+
+If you have references, use whatever suits you. A few sample references:
+see \cite[knuth], or \cite[lamport].
+
+\stopsection
+
+\startsection[title=References]
+        \placelistofpublications
+\stopsection
+\stopArticle
+\stoptext
+

@@ -107,7 +107,7 @@ end
 
 registerotffeature {
     name        = "realdimensions",
-    description = "accept negative dimenions",
+    description = "accept negative dimensions",
     initializers = {
         base = initialize,
         node = initialize,

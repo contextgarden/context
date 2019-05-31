@@ -322,6 +322,8 @@
 \unexpanded\def\startxmldisplayverbatim
   {\dosingleempty\lxml_start_display_verbatim}
 
+\let\stopxmldisplayverbatim\relax
+
 \def\lxml_start_display_verbatim[#1]%
   {\startpacked
    \edef\currenttyping{#1}%
@@ -338,6 +340,8 @@
 
 \unexpanded\def\startxmlinlineverbatim
   {\dosingleempty\lxml_start_inline_verbatim}
+
+\let\stopxmlinlineverbatim\relax
 
 \unexpanded\def\lxml_start_inline_verbatim[#1]%
   {\begingroup

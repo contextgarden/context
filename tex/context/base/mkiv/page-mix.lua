@@ -326,70 +326,73 @@ local function preparesplit(specification) -- a rather large function
         report_state("setting collector to column %s",column)
     end
 
-    local function unlock(penalty)
+    local function unlock(case,penalty)
         if lastlocked then
             if trace_state then
-                report_state("penalty %s, unlocking in column %s",penalty or "-",column)
+                report_state("penalty %s, unlocking in column %s, case %i",penalty or "-",column,case)
             end
             lastlocked  = nil
+        else
+            if trace_state then
+                report_state("penalty %s, ignoring in column %s, case %i",penalty or "-",column,case)
+            end
         end
         lastcurrent = nil
         lastcontent = nil
     end
 
-    local function lock(penalty,current)
+    local function lock(case,penalty,current)
         if trace_state then
-            report_state("penalty %s, locking in column %s",penalty,column)
+            report_state("penalty %s, locking in column %s, case %i",penalty,column,case)
         end
         lastlocked  = penalty
         lastcurrent = current or lastcurrent
         lastcontent = nil
     end
 
-    local function backtrack(start)
-        local current = start
-        -- first skip over glue and penalty
-        while current do
-            local id = getid(current)
-            if id == glue_code then
-                if trace_state then
-                    report_state("backtracking over %s in column %s","glue",column)
-                end
-                current = getprev(current)
-            elseif id == penalty_code then
-                if trace_state then
-                    report_state("backtracking over %s in column %s","penalty",column)
-                end
-                current = getprev(current)
-            else
-                break
-            end
-        end
-        -- then skip over content
-        while current do
-            local id = getid(current)
-            if id == glue_code then
-                if trace_state then
-                    report_state("quitting at %s in column %s","glue",column)
-                end
-                break
-            elseif id == penalty_code then
-                if trace_state then
-                    report_state("quitting at %s in column %s","penalty",column)
-                end
-                break
-            else
-                current = getprev(current)
-            end
-        end
-        if not current then
-            if trace_state then
-                report_state("no effective backtracking in column %s",column)
-            end
-            current = start
-        end
-        return current
-    end
+ -- local function backtrack(start)
+ --     local current = start
+ --     -- first skip over glue and penalty
+ --     while current do
+ --         local id = getid(current)
+ --         if id == glue_code then
+ --             if trace_state then
+ --                 report_state("backtracking over %s in column %s, value %p","glue",column,getwidth(current))
+ --             end
+ --             current = getprev(current)
+ --         elseif id == penalty_code then
+ --             if trace_state then
+ --                 report_state("backtracking over %s in column %s, value %i","penalty",column,getpenalty(current))
+ --             end
+ --         else
+ --             break
+ --         end
+ --     end
+ --     -- then skip over content
+ --     while current do
+ --         local id = getid(current)
+ --         if id == glue_code then
+ --             if trace_state then
+ --                 report_state("quitting at %s in column %s, value %p","glue",column,getwidth(current))
+ --             end
+ --             break
+ --         elseif id == penalty_code then
+ --             if trace_state then
+ --                 report_state("quitting at %s in column %s, value %i","penalty",column,getpenalty(current))
+ --             end
+ --             break
+ --         else
+ --             current = getprev(current)
+ --         end
+ --     end
+ --     if not current then
+ --         if trace_state then
+ --             report_state("no effective backtracking in column %s",column)
+ --         end
+ --         current = start
+ --     end
+ --     return current
+ -- end
 
     local function gotonext()
         if lastcurrent then
@@ -398,7 +401,8 @@ local function preparesplit(specification) -- a rather large function
                     report_state("backtracking to preferred break in column %s",column)
                 end
                 -- todo: also remember height/depth
-                current = backtrack(lastcurrent)
+             -- current = backtrack(lastcurrent) -- not ok, we go to far back so why was this needed
+                current = lastcurrent
                 backtracked = true
             end
             lastcurrent = nil
@@ -483,6 +487,8 @@ local function preparesplit(specification) -- a rather large function
     --
     -- ok, we could use vsplit but we don't have that one opened up yet .. maybe i should look into the c-code
     -- .. something that i try to avoid so let's experiment more before we entry dirty trick mode
+    --
+    -- what if we can do a preroll in lua, get head and tail and then slice of a bit and push that ahead
 
     head = current
 
@@ -517,7 +523,7 @@ local function preparesplit(specification) -- a rather large function
             -- what else? ignore? treat as valid as usual?
         end
         if lastcontent then
-            unlock()
+            unlock(1)
         end
     end
 
@@ -578,7 +584,7 @@ local function preparesplit(specification) -- a rather large function
     local function process_penalty(current,nxt)
         local penalty = getpenalty(current)
         if penalty == 0 then
-            unlock(penalty)
+            unlock(2,penalty)
         elseif penalty == forcedbreak then
             local needed  = getattribute(current,a_checkedbreak)
             local proceed = not needed or needed == 0
@@ -590,7 +596,7 @@ local function preparesplit(specification) -- a rather large function
                 end
             end
             if proceed then
-                unlock(penalty)
+                unlock(3,penalty)
                 local okay, skipped = gotonext()
                 if okay then
                     if trace_state then
@@ -611,15 +617,17 @@ local function preparesplit(specification) -- a rather large function
             end
         elseif penalty < 0 then
             -- we don't care too much
-            unlock(penalty)
+            unlock(4,penalty)
         elseif penalty >= 10000 then
             if not lastcurrent then
-                lock(penalty,current)
+                lock(1,penalty,current)
             elseif penalty > lastlocked then
-                lock(penalty)
+                lock(2,penalty)
+            elseif trace_state then
+                report_state("penalty %s, ignoring in column %s, case %i",penalty,column,3)
             end
         else
-            unlock(penalty)
+            unlock(5,penalty)
         end
     end
 
@@ -686,6 +694,10 @@ local function preparesplit(specification) -- a rather large function
 
         local id  = getid(current)
         local nxt = getnext(current)
+
+        if trace_state then
+            report_state("%-8s > column %s, height %p, depth %p, id %s","node",column,height,depth,nodecodes[id])
+        end
 
         backtracked = false
 
@@ -971,8 +983,8 @@ local function getsplit(result,n)
             setdepth(list[i],0)
         end
         local b = vpack(l) -- multiple arguments, todo: fastvpack
-     -- setbox("global",c,b)
-        setbox(c,b)
+setbox("global",c,b)  -- when we wrap in a box
+     --   setbox(c,b)
         r.inserts[c] = nil
     end
 

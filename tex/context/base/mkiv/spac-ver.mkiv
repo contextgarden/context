@@ -2348,7 +2348,10 @@
      [\v!samepage-#1]%
      [penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*#1\relax]}}
 
-\dorecurse{20}{\spac_vspacing_define_same_page{#1}}
+\dorecurse{60}{\spac_vspacing_define_same_page{#1}}
+
+\def\spac_vspacing_same_page#1#2% level offset (starts at 0)
+  {\vspacing[\v!samepage-\the\numexpr\plusthree*#1+#2\relax]}
 
 \ifdefined\everydefinesection
     \appendtoks

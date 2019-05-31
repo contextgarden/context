@@ -58,16 +58,20 @@ local function pdfobj()
         local immediate    = true
         local objnum       = scankeyword("useobjnum") and scaninteger() or lpdfreserveobject()
         local uncompress   = scankeyword("uncompressed") or lpdfcompresslevel() == 0
-        local streamobject = scankeyword("stream") and true or false
-        local attributes   = scankeyword("attr") and scanstring()
+        local streamobject = scankeyword("stream")
+        local attributes   = scankeyword("attr") and scanstring() or nil
         local fileobject   = scankeyword("file")
         local content      = scanstring()
-        local object = {
+        local object = streamobject and {
+            type          = "stream",
+            objnum        = objnum,
             immediate     = immediate,
             attr          = attributes,
-            objnum        = objnum,
-            type          = streamobject and "stream" or nil,
             compresslevel = uncompress and 0 or nil,
+        } or {
+            type          = "raw",
+            objnum        = objnum,
+            immediate     = immediate,
         }
         if fileobject then
             object.filename = content
