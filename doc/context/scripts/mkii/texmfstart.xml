@@ -8,7 +8,7 @@
   <category name="basic">
    <subcategory>
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
-    <flag name="evaluate"><short>run code passed on the commandline (between quotes)</short></flag>
+    <flag name="evaluate"><short>run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>

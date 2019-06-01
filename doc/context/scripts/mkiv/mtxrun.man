@@ -15,7 +15,7 @@
 run an mtx script (lua prefered method) (--noquotes), no script gives list
 .TP
 .B --evaluate
-run code passed on the commandline (between quotes)
+run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)
 .TP
 .B --execute
 run a script or program (texmfstart method) (--noquotes)

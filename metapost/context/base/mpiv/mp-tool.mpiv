@@ -1392,7 +1392,7 @@ def drawcontrollines  expr c = path _c_ ; _c_ := c ; mfun_draw_controllines  end
 def drawpointlabels   expr c = path _c_ ; _c_ := c ; mfun_draw_pointlabels   enddef ;
 
 def mfun_draw_points text t =
-    for _i_=0 upto length(_c_) :
+    for _i_=0 upto length(_c_) if cycle _c_ : -1 fi :
         normaldraw point _i_ of _c_ _pnt_opt_ t ;
     endfor ;
 enddef;
@@ -1416,7 +1416,7 @@ numeric pointlabelscale ; pointlabelscale := 0 ;
 string  pointlabelfont  ; pointlabelfont  := "" ;
 
 def mfun_draw_pointlabels text t =
-    for _i_=0 upto length(_c_) :
+    for _i_=0 upto length(_c_) if cycle _c_ : -1 fi :
         pair _u_ ; _u_ := unitvector(direction _i_ of _c_) rotated if swappointlabels : - fi 90 ;
         pair _p_ ; _p_ := (point _i_ of _c_) ;
         begingroup ;

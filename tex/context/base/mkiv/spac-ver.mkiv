@@ -27,8 +27,8 @@
 %
 % There might be more namespace protection.
 
-%D There are two ways to influence the interline spacing. The
-%D most general and often most consistent way is using
+%D There are two ways to influence the interline spacing. The most general and often
+%D most consistent way is using
 %D
 %D \showsetup{setupinterlinespace}
 %D
@@ -38,23 +38,21 @@
 %D \setupinterlinespace[line=2.8ex]
 %D \stoptyping
 %D
-%D This setting adapts itself to the bodyfontsize, while for
-%D instance saying
+%D This setting adapts itself to the bodyfontsize, while for instance saying
 %D
 %D \starttyping
 %D \setupinterlinespace[line=12pt]
 %D \stoptyping
 %D
-%D sets things fixed for all sizes, which is definitely not
-%D what we want. Therefore one can also say:
+%D sets things fixed for all sizes, which is definitely not what we want. Therefore
+%D one can also say:
 %D
 %D \starttyping
 %D \definebodyfontenvironment[9pt][interlinespace=11pt]
 %D \stoptyping
 %D
-%D One can still use \type{\setupinterlinespace} (without
-%D arguments) to set the interline space according to the
-%D current font, e.g. a \type{\bfa}.
+%D One can still use \type {\setupinterlinespace} (without arguments) to set the
+%D interline space according to the current font, e.g. a \type {\bfa}.
 
 % will be cleaned up but it will stay messy because we accept so
 % many variants
@@ -629,46 +627,35 @@
 \unexpanded\def\verticalstrut  {\vpack{\hsize\zeropoint\forgetall\strut}}
 \unexpanded\def\horizontalstrut{\hpack                          {\strut}}
 
-% Hieronder volgen enkele instellingen en macro's ten behoeve
-% van de interlinie en \strut. De waarden 2.8, 0.07, 0.72 en
-% 0.28 zijn ooit eens ontleend aan INRS-TEX en moeten wellicht
-% nog eens instelbaar worden.
-%
-%   \lineheight        : de hoogte van een regel
-%   \spacing{getal}    : instellen interlinie
-%   \normalbaselines   : instellen regelafstend
-%
-%   \setstrut          : instellen \strut
-%   \setnostrut        : resetten \strut, \endstrut, \begstrut
-%   \setnonestrut      : resetten \strut (fast one)
-%
-%   \setteststrut      : instellen zichtbare struts
-%   \resetteststrut    : instellen onzichtbare struts
-%
-%   \setfontparameters : instellen na fontset
-%
-% De hoogte van een regel (\lineheight) is gelijk aan de
-% som van de hoogte (\ht) en diepte (\dp) van \strutbox.
-%
-%   \strut            : denkbeeldig blokje met hoogte en diepte
-%
-% Een \hbox kan als deze aan het begin van een regel staat
-% een breedte \hsize krijgen. Dit is soms te voorkomen met het
-% commando \leavevmode. Binnen een \vbox geeft dit echter
-% niet altijd het gewenste resultaat, vandaar het commando
-%
-%   \dontleavehmode
+%D Here follow some presets related to interline spacing and therefore also struts.
+%D The values 2.8, 0.07, 0.72 and 0.28 originate in \INRSTEX, a package that we used
+%D a while after we decided that \LATEX\ was not flexible enough. After that
+%D \CONTEXT\ evolved, from some wrapper code around (old) \LATEX\ (on a floppy
+%D disk), to using modules from \INRSTEX\ (which also fit on a floppy) and finally
+%D all written from scratch. I simply didn't understand all that \TEX\ code at that
+%D time, and it was easier to figure it out myself. But \unknown\ some settings
+%D stayed, as the height|/|depth ratios, and they never proved to be bad ones! The
+%D same is true for the font size relations.
 
-% Pas op: niet zomaar \topskip en \baselineskip aanpassen
-% en zeker niet \widowpenalty. Dit kan ernstige gevolgen
-% hebben voor kolommen.
-%
-% Enige glue kan op zich geen kwaad, echter als blanko=vast,
-% dan moet ook de rek 0 zijn. Binnen kolommen is rek ook
-% niet bepaald mooi. Een hele kleine waarde (0.025) voldoet,
-% omdat een positieve glue eindeloos rekbaar is.
-
-% more of the next will become private:
+%D \starttabulate
+%D \NC  \type {\lineheight}        \NC the height of a line \NC \NR
+%D \NC  \type {\spacing{number}}   \NC adapting the interline space \NC \NR
+%D \NC  \type {\normalbaselines}   \NC initialize the interline spacing \NC \NR
+%D \NC  \type {\setstrut}          \NC initialize \type {\strut} \NC \NR
+%D \NC  \type {\setnostrut}        \NC disable the \type {\strut}, \type {\endstrut}, \type {\begstrut} \NC \NR
+%D \NC  \type {\setteststrut}      \NC initialize the visual \type {\strut} \NC \NR
+%D \NC  \type {\resetteststrut}    \NC disable the visual \type {\strut} \NC \NR
+%D \NC  \type {\setfontparameters} \NC synchronize parameters with foints \NC \NR
+%D \stoptabulate
+%D
+%D \unknown\ and many more (this is a decades old list).
+%D
+%D The lineheight is the sum of the height and depth of \type {strut}, which is
+%D an invisible blob that can be used to enforce the proper dimensions.
+%D
+%D Such a blob, when placed at the beginning of a paragraph can have side effects
+%D that can be prevented with \type {\dontleavehmode}. Never use \type
+%D {\leavevmode}!
 
 \newdimen\strutdimen
 \newdimen\lineheight
@@ -837,13 +824,19 @@
       \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight}%
       \noexpand\normalbaselines}}
 
-% plain definition:
-%
-% \def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
-%
-% could be:
-%
-% \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
+%D This is the plain definition:
+%D
+%D \starttyping
+%D \def\strut{\relax\ifmmode\copy\strutbox\else\unhcopy\strutbox\fi}
+%D \stoptyping
+%D
+%D which could be:
+%D
+%D \starttyping
+%D \def\strut{\relax\ifmmode\copy\else\unhcopy\fi\strutbox}
+%D \stoptyping
+%D
+%D But we do things differently.
 
 \newbox\strutbox
 
@@ -857,8 +850,7 @@
 
 \let\normalstrut\strut
 
-% The double \hbox construction enables us to \backtrack
-% boxes.
+%D The double \type {\hbox} construction enables us to backtrack boxes.
 
 \let\strutht\undefined \newdimen\strutht
 \let\strutdp\undefined \newdimen\strutdp
@@ -929,10 +921,10 @@
    \vrule\s!width\zeropoint\s!depth\strutdp\s!height\zeropoint
    \endgroup}
 
-% because of all the callbacks in mkiv, we avoid unnecessary boxes ...
-% maybe use an attribute so that we can tag boxes that don't need a
-% treatment; tests with using an attribute so far have shown that
-% it's slower because testing the attribute takes time too
+%D Because of all the callbacks in mkiv, we avoid unnecessary boxes ... maybe use an
+%D attribute so that we can tag boxes that don't need a treatment; tests with using
+%D an attribute so far have shown that it's slower because testing the attribute
+%D takes time too.
 
 \unexpanded\def\dosetstrut
   {\let\strut\normalstrut
@@ -1005,11 +997,9 @@
 
 \let\spac_struts_vide_hbox\hbox % overloaded in trac-vis.mkiv
 
-%D The dimen \type {\struttotal} holds the exact size of the
-%D strut; occasionally a one scaled point difference can show
-%D up with the lineheight.
-
-% This is more efficient (less callbacks):
+%D The dimen \type {\struttotal} holds the exact size of the strut; occasionally a
+%D one scaled point difference can show up with the lineheight. This is more
+%D efficient (less callbacks):
 
 \newbox\b_spac_struts_empty \setbox\b_spac_struts_empty\emptyhbox
 
@@ -1085,7 +1075,7 @@
 %D \NC A B \unknown \NC a character strut (e.g. A) \NC {\showstruts\setupstrut[A]\strut}   \NC \NR
 %D \NC              \NC a normal strut             \NC {\showstruts\setupstrut\strut}      \NC \NR
 %D \stoptabulate
-
+%D
 %D Beware: using an unknown value results in char struts.
 
 \installcorenamespace{struts}
@@ -1166,10 +1156,8 @@
     \let\begstrut\empty
 \to \everysetnostrut
 
-% when enabled, sigstruts will remove themselves if nothing
-% goes inbetween
-
-%D For practical reasons we define some boundary characters here.
+%D When enabled, sigstruts will remove themselves if nothing goes inbetween. For
+%D practical reasons we define some boundary characters here.
 
 \unexpanded\def\leftboundary   {\protrusionboundary\plusone}
 \unexpanded\def\rightboundary  {\protrusionboundary\plustwo}
@@ -1197,11 +1185,6 @@
    \penalty\plustenthousand
    \hskip-\strutsignal
    \hskip\strutsignal}
-
-% \def\spac_struts_beg_normal
-%   {\strut
-%    \penalty\plustenthousand
-%    \hskip\zeropoint}
 
 \def\spac_struts_beg_normal
   {\boundary\plusone
@@ -1238,12 +1221,6 @@
      \hskip\zeropoint
      \strut
    \fi}
-
-% \def\spac_struts_end_normal
-%   {\removeunwantedspaces
-%    \penalty\plustenthousand
-%    \hskip\zeropoint
-%    \strut}
 
 \def\spac_struts_end_normal
   {\removeunwantedspaces
@@ -1299,10 +1276,9 @@
 
 \def\baselinedistance{\the\lineheight}
 
-%D We need \type{\normaloffinterlineskip} because the new
-%D definition contains an assignment, and |<|don't ask me
-%D why|>| this assignment gives troubles in for instance the
-%D visual debugger.
+%D We need \type {\normaloffinterlineskip} because the new definition contains an
+%D assignment, and |<|don't ask me why|>| this assignment gives troubles in for
+%D instance the visual debugger.
 
 \unexpanded\def\offinterlineskip
   {\baselineskip-\thousandpoint
@@ -1323,8 +1299,8 @@
 %D So, here we kick in a checker but it has to happen after the output group and it
 %D only has to be done once (output can trigger itself!).
 %D
-%D However, prevgraf is somehow bound to hangindent so we can get very
-%D nasty side effects. So, in tne end we use our own variable!
+%D However, prevgraf is somehow bound to hangindent so we can get very nasty side
+%D effects. So, in tne end we use our own variable!
 
 \ifdefined\getnofpreviouslines
     % defined public at the lua end
@@ -1446,7 +1422,7 @@
     \resetpenalties\interlinepenalties
 \stopsetups
 
-% we use \directsetup because it's faster and we know there is no csl
+%D We use \directsetup because it's faster and we know there is no csl:
 
 \startsetups [\systemsetupsprefix\s!default]
 
@@ -1476,7 +1452,7 @@
 
 \stopsetups
 
-% as an illustration:
+%D As an illustration:
 
 \startsetups [\systemsetupsprefix\v!strict]
 
@@ -2223,7 +2199,7 @@
      \directvspacing\m_spac_blank_asked
    \fi}
 
-% handy (and faster):
+%D Handy (and faster):
 
 \unexpanded\def\directvpenalty#1%
   {\begingroup
@@ -2241,7 +2217,7 @@
    \vskip#1\relax
    \endgroup}
 
-% these depend on bigskipamount cum suis so we'd better sync them
+%D These depend on bigskipamount cum suis so we'd better sync them:
 
 \unexpanded\def\setupvspacing
   {\doifelsenextoptionalcs\setupvspacing_yes\setupvspacing_nop}
@@ -2264,9 +2240,7 @@
 
 \let\synchronizevspacing\setupvspacing_nop
 
-% category:4 is default
-
-% this interface might change (into an \install, but we will then keep this one hidden)
+%D The \type {category:4} is default.
 
 \definevspacingamount[\v!none]        [\zeropoint]         [\zeropoint]
 \definevspacingamount[\v!big]         [\bigskipamount]     [\bodyfontlineheight]
@@ -2293,7 +2267,7 @@
      \fi\fi
    \relax}
 
-% used in itemize ... always test this
+%D used in itemize \unknown\ always test this:
 
 \newdimen\d_spac_overlay
 
@@ -2342,24 +2316,33 @@
 
 \newcount\c_spac_vspacing_special_base \c_spac_vspacing_special_base = 32250 % 4000
 \newcount\c_spac_vspacing_special_step \c_spac_vspacing_special_step =    10 %  250
+\newcount\c_spac_vspacing_special_done
+
+% 2019-05-31 : upgraded a bit to more distinctive samepage-[level]-[0|1|2] names
+
+\unexpanded\def\spac_vspacing_define_same_step#1#2% alternatively we could have samepage-n-m
+  {\begingroup
+   \scratchcounterone\numexpr\plusthree*#1+#2\relax
+   \scratchcountertwo\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\scratchcounterone\relax
+  %\writestatus{defined}{\v!samepage-\number#1-\number#2\space=>\space penalty:\the\scratchcountertwo}%
+   \normalexpanded{\definevspacing[\v!samepage-\number#1-\number#2][penalty:\the\scratchcountertwo]}%
+   \endgroup}
 
 \unexpanded\def\spac_vspacing_define_same_page#1%
-  {\normalexpanded{\definevspacing
-     [\v!samepage-#1]%
-     [penalty:\the\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*#1\relax]}}
+  {\dostepwiserecurse\c_spac_vspacing_special_done{#1}\plusone
+     {\spac_vspacing_define_same_step\recurselevel\zerocount % before
+      \spac_vspacing_define_same_step\recurselevel\plusone   % after
+      \spac_vspacing_define_same_step\recurselevel\plustwo}% % whatever
+   \global\c_spac_vspacing_special_done#1\relax}
 
-\dorecurse{60}{\spac_vspacing_define_same_page{#1}}
+\spac_vspacing_define_same_page{10} % 10 levels should be more than enough as a start
 
 \def\spac_vspacing_same_page#1#2% level offset (starts at 0)
-  {\vspacing[\v!samepage-\the\numexpr\plusthree*#1+#2\relax]}
-
-\ifdefined\everydefinesection
-    \appendtoks
-        \spac_vspacing_define_same_page\maxstructuredepth
-    \to \everydefinesection
-\else
-    % the order has changed so this code has to move to strf-def.mkiv then
-\fi
+  {\ifnum#1>\c_spac_vspacing_special_done
+     \spac_vspacing_define_same_page{#1}%
+   \fi
+  %\writestatus{used}{\v!samepage-\number#1-\number#2}%
+   \vspacing[\v!samepage-\number#1-\number#2]}
 
 \definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
 \definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
@@ -2369,9 +2352,8 @@
 \setupvspacing
   [\v!big] % alternatively [\v!standard]
 
-%D Maybe at some point we will differ between \type {\vspacing} and
-%D \type {\blank} (we needed the first one while playing with the
-%D new code).
+%D Maybe at some point we will differ between \type {\vspacing} and \type {\blank}
+%D (we needed the first one while playing with the new code).
 
 % We keep this one as reference
 %
@@ -2396,9 +2378,8 @@
 \let\synchronizeblank \synchronizevspacing
 \let\defineblankmethod\definevspacingamount
 
-%D The following command is for Wolfgang. It has to be used with
-%D care as it does {\em not} work in tandem with the other spacing
-%D commands.
+%D The following command is for Wolfgang. It has to be used with care as it does
+%D {\em not} work in tandem with the other spacing commands.
 
 \installcorenamespace{vspace}
 
@@ -2480,8 +2461,7 @@
      \relax
    \fi}
 
-%D Some preliminary code: a simple and fast hanger, for usage in
-%D macros (moved from cont-new).
+%D Some preliminary code: a simple and fast hanger, for usage in macros.
 
 \installcorenamespace {hanging}
 

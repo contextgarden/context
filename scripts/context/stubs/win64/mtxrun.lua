@@ -25910,7 +25910,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
-    <flag name="evaluate"><short>run code passed on the commandline (between quotes)</short></flag>
+    <flag name="evaluate"><short>run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
@@ -26581,16 +26581,22 @@ function runners.associate(filename)
 end
 
 function runners.evaluate(code,filename) -- for Luigi
+    local environment = table.setmetatableindex(_G)
     if code == "loop" then
         while true do
-            io.write("> ")
+            io.write("lua > ")
             local code = io.read()
-            if code ~= "" then
+            if code == "quit" or code == "exit"  then
+                break
+            elseif code ~= "" then
                 local temp = string.match(code,"^= (.*)$")
                 if temp then
-                    code = "print("..temp..")"
+                    code = "inspect("..temp..")"
                 end
-                local compiled, message = loadstring(code)
+                local compiled, message = load(code,"console","t",environment)
+                if type(compiled) ~= "function" then
+                    compiled = load("inspect("..code..")","console","t",environment)
+                end
                 if type(compiled) ~= "function" then
                     io.write("! " .. (message or code).."\n")
                 else
@@ -26603,7 +26609,10 @@ function runners.evaluate(code,filename) -- for Luigi
             code = filename
         end
         if code ~= "" then
-            local compiled, message = loadstring(code)
+            local compiled, message = load(code,"console","t",environment)
+            if type(compiled) ~= "function" then
+                compiled = load("inspect("..code..")","console","t",environment)
+            end
             if type(compiled) ~= "function" then
                 io.write("invalid lua code: " .. (message or code))
                 return
