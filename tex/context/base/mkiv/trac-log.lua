@@ -395,7 +395,7 @@ if runningtex and texio then
         status_yes    = f.status_yes
         status_nop    = f.status_nop
         if variant == "ansi" then
-            useluawrites() -- because tex escapes ^^
+            useluawrites() -- because tex escapes ^^, not needed in lmtx
         end
         settarget(whereto)
     end

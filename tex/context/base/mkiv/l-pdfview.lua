@@ -28,8 +28,6 @@ local allcalls   -- a table with templates that close all open pdf documents
 local runner     -- runner function
 local expander   -- filename cleanup function
 
--- maybe spawn/execute spec in calls
-
 if os.type == "windows" then
 
     -- os.setenv("path",os.getenv("path") .. ";" .. "c:/data/system/pdf-xchange")

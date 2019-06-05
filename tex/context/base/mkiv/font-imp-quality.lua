@@ -520,13 +520,18 @@ implement {
 
 local function initialize(tfmdata,value)
     local properties = tfmdata.properties
+    local parameters = tfmdata.parameters
     if properties then
         value = tonumber(value)
         if value then
             if value < 0 then
                 value = 0
-            elseif value > 100 then
-                value = 100
+            elseif value > 10 then
+                report_expansions("threshold for %a @ %p limited to 10 pct",properties.fontname,parameters.size)
+                value = 10
+            end
+            if value > 5 then
+                report_expansions("threshold for %a @ %p exceeds 5 pct",properties.fontname,parameters.size)
             end
         end
         properties.threshold = value or nil -- nil enforces default

@@ -338,7 +338,9 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
         width, height, depth, factor = getwhd(current,true)
         naturalwidth = width
         if factor ~= 0 then
-            width = (1.0 + factor/1000000.0) * width
+         -- width = (1.0 + factor/1000000.0) * width
+            width = width + width * factor/1000000.0
+         -- width = width + width * 0.000001 * factor
         end
     else
         width  = data.width or 0
@@ -369,10 +371,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
                 pos_v = pos_v + y
             end
             pushorientation(orientation,pos_h,pos_v)
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,naturalwidth,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
             poporientation(orientation,pos_h,pos_v)
         else
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,factor,naturalwidth,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
         end
     end
     return width, height, depth
@@ -1279,6 +1281,8 @@ function lpdf.convert(box,smode,objnum,specification) -- temp name
         boundingbox  = { 0, 0, page_size_h, page_size_v },
         objectnumber = objnum,
     }
+
+    lastfont = nil -- this forces a sync each page / object
 
     if getid(box) == vlist_code then
         vlist_out(box)

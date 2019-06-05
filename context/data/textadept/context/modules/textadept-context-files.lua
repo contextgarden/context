@@ -71,41 +71,41 @@ do
 
     newmenu.file = {
 
-        title = '_File',
+        title = "_File",
 
-        { '_New',          buffer.new },
-        { '_Open',         io.open_file },
-        { 'Open _Recent',  io.open_recent_file },
-        { 'Re_load',       io.reload_file },
-        { '_Save',         io.save_file },
-        { 'Save _As',      io.save_file_as },
-        { 'Save All',      io.save_all_files },
+        { "_New",          buffer.new },
+        { "_Open",         io.open_file },
+        { "Open _Recent",  io.open_recent_file },
+        { "Re_load",       io.reload_file },
+        { "_Save",         io.save_file },
+        { "Save _As",      io.save_file_as },
+        { "Save All",      io.save_all_files },
 
         SEPARATOR,
 
-        { '_Close',        io.close_buffer },
-        { 'Close All',     io.close_all_buffers },
+        { "_Close",        io.close_buffer },
+        { "Close All",     io.close_all_buffers },
 
      -- SEPARATOR,
 
-     -- { 'Loa_d Session', textadept.session.load },
-     -- { 'Sav_e Session', textadept.session.save },
+     -- { "Loa_d Session", textadept.session.load },
+     -- { "Sav_e Session", textadept.session.save },
 
         SEPARATOR,
 
-        { _L['_Quit'],     quit },
+        { _L["_Quit"],     quit },
 
     }
 
     -- maybe just the same keys on all ... or duplicate on osx
 
-    newkeys[OSX and 'mn'  or 'cn']  = buffer.new
-    newkeys[OSX and 'mo'  or 'co']  = io.open_file
-    newkeys[OSX and 'cmo' or 'cao'] = io.open_recent_file
-    newkeys[OSX and 'ms'  or 'cs']  = io.save_file
-    newkeys[OSX and 'mS'  or 'cS']  = io.save_file_as
-    newkeys[OSX and 'mw'  or 'cw']  = io.close_buffer
-    newkeys[OSX and 'mW'  or 'cW']  = io.close_all_buffers
+    newkeys[OSX and "mn"  or "cn"]  = buffer.new
+    newkeys[OSX and "mo"  or "co"]  = io.open_file
+    newkeys[OSX and "cmo" or "cao"] = io.open_recent_file
+    newkeys[OSX and "ms"  or "cs"]  = io.save_file
+    newkeys[OSX and "mS"  or "cS"]  = io.save_file_as
+    newkeys[OSX and "mw"  or "cw"]  = io.close_buffer
+    newkeys[OSX and "mW"  or "cW"]  = io.close_all_buffers
 
 end
 
@@ -117,80 +117,82 @@ do
 
     newmenu.edit = {
 
-        title = '_Edit',
+        title = "_Edit",
 
         SEPARATOR,
 
-        { '_Undo',                 buffer.undo },
-        { '_Redo',                 buffer.redo },
+        { "_Undo",                 buffer.undo },
+        { "_Redo",                 buffer.redo },
 
         SEPARATOR,
 
-        { 'Cu_t',                  buffer.cut },
-        { '_Copy',                 buffer.copy },
-        { '_Paste',                buffer.paste },
-        { '_Delete',               buffer.clear },
-        { 'Select _All',           buffer.select_all },
+        { "Cu_t",                  buffer.cut },
+        { "_Copy",                 buffer.copy },
+        { "_Paste",                buffer.paste },
+        { "_Delete",               buffer.clear },
+        { "Select _All",           buffer.select_all },
 
         SEPARATOR,
 
-        { 'Duplicate _Line',       buffer.line_duplicate },
+        { "Duplicate _Line",       buffer.line_duplicate },
 
         SEPARATOR,
 
-        { 'Toggle _Block Comment', textadept.editing.block_comment },
-        { '_Upper Case Selection', buffer.upper_case },
-        { '_Lower Case Selection', buffer.lower_case },
+        { "Toggle _Block Comment", runner.blockcomment },
+        { "_Upper Case Selection", buffer.upper_case },
+        { "_Lower Case Selection", buffer.lower_case },
 
     }
 
-    newkeys[OSX and 'mz' or 'cz']  = buffer.undo
-    newkeys[OSX and 'my' or 'cy']  = buffer.redo
-    newkeys[OSX and 'mx' or 'cx']  = buffer.cut
-    newkeys[OSX and 'mc' or 'cc']  = buffer.copy
-    newkeys[OSX and 'mv' or 'cv']  = buffer.paste
-    newkeys[OSX and 'ma' or 'ca']  = buffer.select_all
+    newkeys[OSX and "mz" or "cz"]  = buffer.undo
+    newkeys[OSX and "my" or "cy"]  = buffer.redo
+    newkeys[OSX and "mx" or "cx"]  = buffer.cut
+    newkeys[OSX and "mc" or "cc"]  = buffer.copy
+    newkeys[OSX and "mv" or "cv"]  = buffer.paste
+    newkeys[OSX and "ma" or "ca"]  = buffer.select_all
 
-    newkeys[OSX and 'mD' or 'cD']  = textadept.editing.select_word
-    newkeys[OSX and 'mN' or 'cN']  = textadept.editing.select_line
-    newkeys[OSX and 'mP' or 'cP']  = textadept.editing.select_paragraph
+    newkeys[OSX and "mD" or "cD"]  = textadept.editing.select_word
+    newkeys[OSX and "mN" or "cN"]  = textadept.editing.select_line
+    newkeys[OSX and "mP" or "cP"]  = textadept.editing.select_paragraph
 
-    newkeys['del']                 = buffer.clear
-    newkeys['cy']                  = buffer.redo
+    newkeys["del"]                 = buffer.clear
+    newkeys["cy"]                  = buffer.redo
 
-    newkeys[OSX and 'md' or 'cd']  = buffer.line_duplicate
-    newkeys[OSX and 'cu' or 'cau'] = buffer.upper_case
-    newkeys[OSX and 'cU' or 'caU'] = buffer.lower_case
+    newkeys[OSX and "md" or "cd"]  = buffer.line_duplicate
+    newkeys[OSX and "cu" or "cau"] = buffer.upper_case
+    newkeys[OSX and "cU" or "caU"] = buffer.lower_case
 
-    newkeys[OSX and 'mq' or 'cq']  = textadept.editing.block_comment
+    newkeys[OSX and "mq" or "cq"]  = runner.blockcomment
+
+    newkeys[OSX and "ml" or "cl"]  = buffer.line_delete
 
     -- Do I ever use these?
 
- -- newkeys['cf']     = buffer.char_right
- -- newkeys['cF']     = buffer.char_right_extend
- -- newkeys['cmf']    = buffer.word_right
- -- newkeys['cmF']    = buffer.word_right_extend
- -- newkeys['cb']     = buffer.char_left
- -- newkeys['cB']     = buffer.char_left_extend
- -- newkeys['cmb']    = buffer.word_left
- -- newkeys['cmB']    = buffer.word_left_extend
- -- newkeys['cn']     = buffer.line_down
- -- newkeys['cN']     = buffer.line_down_extend
- -- newkeys['cp']     = buffer.line_up
- -- newkeys['cP']     = buffer.line_up_extend
- -- newkeys['ca']     = buffer.vc_home
- -- newkeys['cA']     = buffer.vc_home_extend
- -- newkeys['ce']     = buffer.line_end
- -- newkeys['cE']     = buffer.line_end_extend
- -- newkeys['aright'] = buffer.word_right
- -- newkeys['aleft']  = buffer.word_left
- -- newkeys['cdv']    = buffer.clear
- -- newkeys['ck']     = function() buffer:line_end_extend() buffer:cut()  end
- -- newkeys['cl']     = buffer.vertical_centre_caret
+ -- newkeys["cf"]     = buffer.char_right
+ -- newkeys["cF"]     = buffer.char_right_extend
+ -- newkeys["cmf"]    = buffer.word_right
+ -- newkeys["cmF"]    = buffer.word_right_extend
+ -- newkeys["cb"]     = buffer.char_left
+ -- newkeys["cB"]     = buffer.char_left_extend
+ -- newkeys["cmb"]    = buffer.word_left
+ -- newkeys["cmB"]    = buffer.word_left_extend
+ -- newkeys["cn"]     = buffer.line_down
+ -- newkeys["cN"]     = buffer.line_down_extend
+ -- newkeys["cp"]     = buffer.line_up
+ -- newkeys["cP"]     = buffer.line_up_extend
+ -- newkeys["ca"]     = buffer.vc_home
+ -- newkeys["cA"]     = buffer.vc_home_extend
+ -- newkeys["ce"]     = buffer.line_end
+ -- newkeys["cE"]     = buffer.line_end_extend
+ -- newkeys["aright"] = buffer.word_right
+ -- newkeys["aleft"]  = buffer.word_left
+ -- newkeys["cdv"]    = buffer.clear
+ -- newkeys["ck"]     = function() buffer:line_end_extend() buffer:cut()  end
+ -- newkeys["cl"]     = buffer.vertical_centre_caret
 
     newkeys.fn = OSX and function() return true end or nil
 
-    newkeys[OSX and 'c@' or 'c '] = complete_symbol
+    newkeys[OSX and "c@" or "c "] = complete_symbol
 
 end
 
@@ -216,47 +218,47 @@ do
 
     newmenu.search = {
 
-        title = '_Search',
+        title = "_Search",
 
         SEPARATOR,
 
-        { '_Find',                     find_in_file },
-        { 'Find _Next',                ui.find.find_next },
-        { 'Find _Previous',            ui.find.find_prev },
-        { '_Replace',                  ui.find.replace },
-        { 'Replace _All',              ui.find.replace_all },
-        { 'Find _Incremental',         ui.find.find_incremental },
+        { "_Find",                     find_in_file },
+        { "Find _Next",                ui.find.find_next },
+        { "Find _Previous",            ui.find.find_prev },
+        { "_Replace",                  ui.find.replace },
+        { "Replace _All",              ui.find.replace_all },
+        { "Find _Incremental",         ui.find.find_incremental },
 
         SEPARATOR,
 
-        { 'Find in Fi_les',            find_in_files },
-        { 'Goto Nex_t File Found',     find_next_in_files },
-        { 'Goto Previou_s File Found', find_previous_in_files },
+        { "Find in Fi_les",            find_in_files },
+        { "Goto Nex_t File Found",     find_next_in_files },
+        { "Goto Previou_s File Found", find_previous_in_files },
 
         SEPARATOR,
 
-        { '_Jump to',                  textadept.editing.goto_line }
+        { "_Jump to",                  textadept.editing.goto_line }
 
     }
 
     -- The few times I use osx I want the same keys ... better explicitly handle
     -- "not GUI" but I have to test the curses version first anyway.
 
-    newkeys[OSX and 'mf' or 'cf']    = find_in_file
-    newkeys[OSX and 'mg' or 'cg']    = ui.find.find_next
-    newkeys[OSX and 'mG' or 'cG']    = ui.find.find_prev
-    newkeys[OSX and 'mg' or 'cg']    = textadept.editing.goto_line
+    newkeys[OSX and "mf" or "cf"]    = find_in_file
+    newkeys[OSX and "mg" or "cg"]    = ui.find.find_next
+    newkeys[OSX and "mG" or "cG"]    = ui.find.find_prev
+    newkeys[OSX and "mg" or "cg"]    = textadept.editing.goto_line
 
-    newkeys['f3']                    = not OSX and ui.find.find_next or nil
-    newkeys['sf3']                   = not OSX and ui.find.find_prev or nil
+    newkeys["f3"]                    = not OSX and ui.find.find_next or nil
+    newkeys["sf3"]                   = not OSX and ui.find.find_prev or nil
 
-    newkeys[OSX and 'cr'  or 'car']  = ui.find.replace
-    newkeys[OSX and 'cR'  or 'caR']  = ui.find.replace_all
-    newkeys[OSX and 'cmf' or 'caf']  = ui.find.find_incremental
+    newkeys[OSX and "cr"  or "car"]  = ui.find.replace
+    newkeys[OSX and "cR"  or "caR"]  = ui.find.replace_all
+    newkeys[OSX and "cmf" or "caf"]  = ui.find.find_incremental
 
-    newkeys[OSX and 'mF'  or 'cF']   = find_in_files
-    newkeys[OSX and 'cmg' or 'cag']  = find_next_in_files
-    newkeys[OSX and 'cmG' or 'caG']  = find_previous_in_files
+    newkeys[OSX and "mF"  or "cF"]   = find_in_files
+    newkeys[OSX and "cmg" or "cag"]  = find_next_in_files
+    newkeys[OSX and "cmG" or "caG"]  = find_previous_in_files
 
 end
 
@@ -265,7 +267,7 @@ do
     io.quick_open_max = 5000
 
     local function isdir(path)
-        return path and path ~= "" and lfs.attributes(path,'mode') == 'directory'
+        return path and path ~= "" and lfs.attributes(path,"mode") == "directory"
     end
 
     local function resolveroot(path)
@@ -327,52 +329,62 @@ do
 
     newmenu.tools = {
 
-        title = '_Tools',
+        title = "_Tools",
 
         SEPARATOR,
 
-        { 'Check Source',            runner.check },
-        { 'Process Source',          runner.process },
-        { 'Preview Result',          runner.preview },
-        { 'Show Log File',           runner.install("logfile") },
-        { 'Quit',                    runner.quit },
+        { "Check Source",            runner.check },
+        { "Process Source",          runner.process },
+        { "Preview Result",          runner.preview },
+        { "Show Log File",           runner.install("logfile") },
+        { "Quit",                    runner.quit },
 
         SEPARATOR,
 
-        { 'Open Current Directory',  opencurrentdirectory },
-        { 'Open User Directory',     openuserdirectory },
-        { 'Open Base Directory',     openbasedirectory },
+        { "Open Current Directory",  opencurrentdirectory },
+        { "Open User Directory",     openuserdirectory },
+        { "Open Base Directory",     openbasedirectory },
 
         SEPARATOR,
 
-        { 'Purge Files',             runner.install("purge") },
-        { 'Clear Cache',             runner.install("clear") },
-        { 'Generate File Database',  runner.install("generate") },
-        { 'Generate Font Database',  runner.install("fonts") },
+        { "Purge Files",             runner.install("purge") },
+        { "Clear Cache",             runner.install("clear") },
+        { "Generate File Database",  runner.install("generate") },
+        { "Generate Font Database",  runner.install("fonts") },
 
         SEPARATOR,
 
-        { 'Typeset Listing',         runner.install("listing") },
-        { 'Process and Arrange',     runner.install("arrange") },
+        { "Typeset Listing",         runner.install("listing") },
+        { "Process and Arrange",     runner.install("arrange") },
 
         SEPARATOR,
 
-        { 'Start Document Service',  startservice },
-        { 'Goto Document Service',   showcommand },
+        { "Start Document Service",  startservice },
+        { "Goto Document Service",   showcommand },
 
         SEPARATOR,
 
-        { 'Show Unicodes',           runner.install("unicodes") },
+        { "Show Unicodes",           runner.unicodes },
 
-    }
+        -- We need this bogus entry because otherwise we get a message due to macros.lua. I 
+        -- might need to come up with some proper placeholder. Well, let's for now just 
+        -- live with the crash. 
 
- -- newkeys[OSX and 'mc' or 'cc'] = runner.check
-    newkeys[OSX and 'mr' or 'cr'] = runner.process
-    newkeys[OSX and 'mp' or 'cp'] = runner.preview
- -- newkeys[OSX and 'mx' or 'cx'] = runner.quit -- makes no sense
+     -- SEPARATOR,
+     --
+     -- { "Select Co_mmand",         textadept.editing.goto_line },
+    
+}
 
-    newkeys['f7']  = runner.process
-    newkeys['f12'] = runner.process
+ -- newkeys[OSX and "mc" or "cc"] = runner.check
+    newkeys[OSX and "mr" or "cr"] = runner.process
+    newkeys[OSX and "mp" or "cp"] = runner.preview
+ -- newkeys[OSX and "mx" or "cx"] = runner.quit -- makes no sense
+
+    newkeys["f7"]  = runner.process
+    newkeys["f12"] = runner.process
+
+    newkeys["f2"]  = runner.unicodes
 
 end
 
@@ -408,19 +420,19 @@ do
     end
 
     function set_endoding_utf8()
-        set_encoding('UTF-8')
+        set_encoding("UTF-8")
     end
 
     function set_encoding_ascii()
-        set_encoding('ASCII')
+        set_encoding("ASCII")
     end
 
     function set_endoding_utf16le()
-        set_encoding('UTF-16LE')
+        set_encoding("UTF-16LE")
     end
 
     function set_endoding_utf16Be()
-        set_encoding('UTF-16BE')
+        set_encoding("UTF-16BE")
     end
 
     function goto_prev_buffer()
@@ -433,50 +445,50 @@ do
 
     newmenu.buffer = {
 
-        title = '_Buffer',
+        title = "_Buffer",
 
         SEPARATOR,
 
-        { '_Previous Buffer',  goto_prev_buffer },
-        { '_Next Buffer',      goto_next_buffer },
-        { '_Switch to Buffer', ui.switch_buffer },
+        { "_Previous Buffer",  goto_prev_buffer },
+        { "_Next Buffer",      goto_next_buffer },
+        { "_Switch to Buffer", ui.switch_buffer },
 
         SEPARATOR,
 
-        { '_Toggle Use Tabs', use_tabs },
+        { "_Toggle Use Tabs", use_tabs },
         {
-            title = 'EOL Mode',
+            title = "EOL Mode",
 
-            { '_CRLF', set_eol_mode_crlf },
-            { '_LF',   set_eol_mode_lf },
+            { "_CRLF", set_eol_mode_crlf },
+            { "_LF",   set_eol_mode_lf },
         },
         {
-            title = 'Encoding',
+            title = "Encoding",
 
-            { '_ASCII',     set_encoding_ascii },
-            { '_UTF-8',     set_encoding_utf8 },
-            { 'UTF-16-_BE', set_encoding_utf16le },
-            { 'UTF-16-_LE', set_encoding_utf16be },
+            { "_ASCII",     set_encoding_ascii },
+            { "_UTF-8",     set_encoding_utf8 },
+            { "UTF-16-_BE", set_encoding_utf16le },
+            { "UTF-16-_LE", set_encoding_utf16be },
         },
 
         SEPARATOR,
 
-        { 'Toggle View _EOL',     show_eol },
-        { 'Toggle _Wrap Mode',    wrap_mode  },
-        { 'Toggle View _Spacing', show_whitespace },
+        { "Toggle View _EOL",     show_eol },
+        { "Toggle _Wrap Mode",    wrap_mode  },
+        { "Toggle View _Spacing", show_whitespace },
 
         SEPARATOR,
 
-        { 'Select _Lexer',                textadept.file_types.select_lexer },
-        { 'Refresh _Syntax Highlighting', update_lexing }
+        { "Select _Lexer",                textadept.file_types.select_lexer },
+        { "Refresh _Syntax Highlighting", update_lexing }
 
     }
 
-    newkeys['f5'] = update_lexing
+    newkeys["f5"] = update_lexing
 
-    newkeys[OSX and 'mp' or 'cs\t'] = goto_prev_buffer
-    newkeys[OSX and 'mn' or 'c\t']  = goto_next_buffer
-    newkeys[OSX and 'mb' or 'cb']   = ui.switch_buffer
+    newkeys[OSX and "mp" or "cs\t"] = goto_prev_buffer
+    newkeys[OSX and "mn" or "c\t"]  = goto_next_buffer
+    newkeys[OSX and "mb" or "cb"]   = ui.switch_buffer
 
 end
 
@@ -502,34 +514,34 @@ do
 
     newmenu.view = {
 
-        title = '_View',
+        title = "_View",
 
         SEPARATOR,
 
-        { 'Toggle Current _Fold' ,      toggle_current_fold },
+        { "Toggle Current _Fold" ,      toggle_current_fold },
 
         SEPARATOR,
 
-        { 'Toggle Show In_dent Guides', toggle_show_guides },
-        { 'Toggle _Virtual Space',      toggle_virtual_space },
+        { "Toggle Show In_dent Guides", toggle_show_guides },
+        { "Toggle _Virtual Space",      toggle_virtual_space },
 
         SEPARATOR,
 
-        { 'Zoom _In',                   buffer.zoom_in },
-        { 'Zoom _Out',                  buffer.zoom_out },
-        { '_Reset Zoom',                reset_zoom },
+        { "Zoom _In",                   buffer.zoom_in },
+        { "Zoom _Out",                  buffer.zoom_out },
+        { "_Reset Zoom",                reset_zoom },
 
     }
 
-    newkeys[OSX and 'm=' or 'c='] = buffer.zoom_in
-    newkeys[OSX and 'm-' or 'c-'] = buffer.zoom_out
-    newkeys[OSX and 'm0' or 'c0'] = reset_zoom
+    newkeys[OSX and "m=" or "c="] = buffer.zoom_in
+    newkeys[OSX and "m-" or "c-"] = buffer.zoom_out
+    newkeys[OSX and "m0" or "c0"] = reset_zoom
 
 end
 
 do
 
-    -- It's a pitt y that we can't have a proper monospaced font here so we try to make the best of it:
+    -- It"s a pitt y that we can"t have a proper monospaced font here so we try to make the best of it:
 
     local template = "\n\trelease info: %s\t\n\n\tcopyright: %s\t\n\n\tvariant: ConTeXt related editing\t\n\n\tadapted by: Hans Hagen\t"
 
@@ -541,24 +553,51 @@ do
     end
 
     local function open_url(url) -- adapted from non public open_page
-        local cmd = (WIN32 and 'start ""') or (OSX and 'open') or 'xdg-open'
-        spawn(format('%s "%s"', cmd, url))
+        local cmd = (WIN32 and 'start ""') or (OSX and "open") or "xdg-open"
+        os.spawn(format('%s "%s"', cmd, url))
     end
 
 
     newmenu.help = {
 
-        title = '_Help',
+        title = "_Help",
 
         SEPARATOR,
 
-        { 'ConTeXt garden wiki', function() open_url("http://www.contextgarden.net") end },
+        { "ConTeXt garden wiki", function() open_url("http://www.contextgarden.net") end },
 
      -- SEPARATOR,
 
-        { '_About', show_about }
+        { "_About", show_about }
 
     }
+
+end
+
+do 
+
+    -- from shift F11 and startup script 
+
+    table.insert(textadept.menu.context_menu, SEPARATOR)
+
+    table.insert(textadept.menu.context_menu, { "wrap",     runner.wrap })
+    table.insert(textadept.menu.context_menu, { "unwrap",   runner.unwrap })
+    table.insert(textadept.menu.context_menu, { "sort",     runner.sort })
+ -- table.insert(textadept.menu.context_menu, { "document", function() end })
+ -- table.insert(textadept.menu.context_menu, { "quote",    function() end })
+ -- table.insert(textadept.menu.context_menu, { "compound", function() end })
+ -- table.insert(textadept.menu.context_menu, { "add",      function() end })
+ -- table.insert(textadept.menu.context_menu, { "bidi",     function() end })
+ -- table.insert(textadept.menu.context_menu, { "strip",    function() end })
+
+
+ -- cM wrap 
+ -- cR reset spelling 
+ -- cI insert template  
+ -- cE show log 
+ -- c+ toggle strip 
+
+    newkeys[OSX and "mm" or "cm"] = runner.wrap
 
 end
 
@@ -575,13 +614,13 @@ do
         end
     end
 
-    replace(textadept.menu.menubar [_L['_File']],   newmenu.file)
-    replace(textadept.menu.menubar [_L['_Edit']],   newmenu.edit)
-    replace(textadept.menu.menubar [_L['_Search']], newmenu.search)
-    replace(textadept.menu.menubar [_L['_Tools']],  newmenu.tools)
-    replace(textadept.menu.menubar [_L['_Buffer']], newmenu.buffer)
-    replace(textadept.menu.menubar [_L['_View']],   newmenu.view)
-    replace(textadept.menu.menubar [_L['_Help']],   newmenu.help)
+    replace(textadept.menu.menubar [_L["_File"]],   newmenu.file)
+    replace(textadept.menu.menubar [_L["_Edit"]],   newmenu.edit)
+    replace(textadept.menu.menubar [_L["_Search"]], newmenu.search)
+    replace(textadept.menu.menubar [_L["_Tools"]],  newmenu.tools)
+    replace(textadept.menu.menubar [_L["_Buffer"]], newmenu.buffer)
+    replace(textadept.menu.menubar [_L["_View"]],   newmenu.view)
+    replace(textadept.menu.menubar [_L["_Help"]],   newmenu.help)
 
     local char = string.char
 
@@ -634,6 +673,19 @@ do
     for k, v in next, newkeys do
         keys[k] = v
     end
+
+    -- add helper to textadept-context-runner.lua instead 
+
+    events.connect(events.INITIALIZED, function()
+        for i=1,#_BUFFERS do
+            local buffer = _BUFFERS[i]
+            if buffer._type == OUTPUT_BUFFER then
+                view:goto_buffer(i)
+                io.close_buffer()
+                return 
+            end 
+        end
+    end)
 
 end
 

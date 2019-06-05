@@ -8526,12 +8526,12 @@
 \let\elapsedseconds \elapsedtime
 
 \newcount\c_syst_helpers_test_feature_n
-\chardef \c_syst_helpers_test_feature_m\zerocount
+\newcount\c_syst_helpers_test_feature_m
 
 \def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 
 \unexpanded\def\testfeature#1#2%
-  {\chardef\c_syst_helpers_test_feature_m#1\relax
+  {\c_syst_helpers_test_feature_m#1\relax
    \def\syst_helpers_test_feature_yes
      {\advance\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else

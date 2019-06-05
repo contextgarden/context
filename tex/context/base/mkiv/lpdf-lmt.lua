@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 }
 
 -- The code below was originally in back-lpd.lua but it makes more sense in
--- this namespace.
+-- this namespace. I will rename variables.
 
 if CONTEXTLMTXMODE == 0 then
     return
@@ -22,14 +22,15 @@ end
 -- https://www.youtube.com/watch?v=TYuTE_1jvvE
 -- https://www.youtube.com/watch?v=nnicGKX3lvM
 --
--- For the moment we have to support the built in backend as well as the alternative. So the
--- next interface is suboptimal and will change at some time.
+-- For the moment we have to support the built in backend as well as the alternative. So
+-- the next interface is suboptimal and will change at some time. At that moment I will
+-- also optimize and extend.
 
 local type, next, unpack, tonumber = type, next, unpack, tonumber
 local char, rep, find = string.char, string.rep, string.find
 local formatters, splitupstring = string.formatters, string.splitup
 local band, extract = bit32.band, bit32.extract
-local concat, keys, sortedhash = table.concat, table.keys, table.sortedhash
+local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
 local bpfactor             = number.dimenfactors.bp
@@ -37,9 +38,6 @@ local bpfactor             = number.dimenfactors.bp
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
 local zlibcompress         = flate.zip_compress or zlib.compress
-
-local starttiming          = statistics.starttiming
-local stoptiming           = statistics.stoptiming
 
 local nuts                 = nodes.nuts
 local tonut                = nodes.tonut
@@ -128,10 +126,6 @@ local function reset_variables(specification)
     usedxforms    = { }
     usedximages   = { }
     boundingbox   = specification.boundingbox
-    --
---     if overload then
---         overload()
---     end
 end
 
 -- buffer
@@ -140,16 +134,7 @@ local buffer = { }
 local b      = 0
 
 local function reset_buffer()
- -- buffer = { }
-    b      = 0
-end
-
-local function flush_buffer()
     b = 0
-end
-
-local function show_buffer()
-    print(concat(buffer,"\n",1,b))
 end
 
 -- fonts
@@ -159,11 +144,11 @@ local fontparameters
 local fontproperties
 local usedcharacters = setmetatableindex("table")
 local pdfcharacters
+
 local horizontalmode = true
 ----- widefontmode   = true
 local scalefactor    = 1
------ threshold      = 655360 / (10 * 5) -- default is 5
-local threshold      = 655360 * 50 / 100
+local threshold      = 655360 * 5 / 100
 local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
@@ -178,8 +163,7 @@ local function updatefontstate(font)
     horizontalmode   = fontparameters.writingmode ~= "vertical"
  -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
- -- threshold        = designsize / (10 * (fontproperties.threshold or 5))
-    threshold        = designsize * (fontproperties.threshold or 50) / 100
+    threshold        = size * (fontproperties.threshold or 5) / 100
 end
 
 -- helpers
@@ -393,6 +377,10 @@ local flushcharacter  do
 
     local round = math.round
 
+    -- across pages ... todo: clean up because we don't need to pass the font
+    -- as fontparameters already has checked / set it we can also have a variable
+    -- for it so
+
     local function setup_fontparameters(font,factor,f,e)
         local slant   = (fontparameters.slantfactor   or    0) / 1000
         local extend  = (fontparameters.extendfactor  or 1000) / 1000
@@ -472,13 +460,13 @@ local flushcharacter  do
  -- local f_char  = formatters["%c"]
     local f_hex   = formatters["%04X"]
 
-    local h_hex = setmetatableindex(function(t,k)
+    local h_hex = setmetatableindex(function(t,k) -- we already have this somewhere
         local v = f_hex(k)
         t[k] = v
         return v
     end)
 
-    flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,factor,width,f,e)
+    flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
         if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
             setup_fontparameters(font,factor,f,e)
@@ -488,10 +476,15 @@ local flushcharacter  do
             need_tm = true
         end
         local move = calc_pdfpos(pos_h,pos_v)
+
+     -- report(
+     --     "factor %i, width %p, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
+     --     factor,width,naturalwidth,move,need_tm,pos_h,tj_delta,threshold,cw
+     -- )
+
         if move or need_tm then
             if not need_tm then
                 if horizontalmode then
--- print(tj_delta,threshold)
                     if (saved_text_pos_v + tmty) ~= pdf_v then
                         need_tm = true
                     elseif tj_delta >= threshold or tj_delta <= -threshold then
@@ -512,23 +505,13 @@ local flushcharacter  do
                 move = calc_pdfpos(pos_h,pos_v)
             end
             if move then
-             -- local d = round(tj_delta * scalefactor)
-             -- if d ~= 0 then
                 local d = tj_delta * scalefactor
-                if d <= -0.5 or d >= 0.5 then
+                if d <= -0.5 or d >= 0.5 then -- 0.25
                     if mode == "char" then
                         end_charmode()
                     end
-                 -- b = b + 1 ; buffer[b] = f_skip(d)
-                 -- b = b + 1 ; buffer[b] = d
-                    b = b + 1 ; buffer[b] = round(d)
+                    b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
                 end
--- if d <= -0.25 or d >= 0.25 then
---     if mode == "char" then
---         end_charmode()
---     end
---     b = b + 1 ; buffer[b] = f_skip(d)
--- end
                 cw = cw - tj_delta
             end
         end
@@ -550,9 +533,8 @@ local flushcharacter  do
      --     buffer[b] = f_char(char)
      -- end
 
-        cw = cw + width
+        cw = cw + naturalwidth
 
-     -- pdfcharacters[fontcharacters[char].index or char] = true
         pdfcharacters[index] = true
 
     end
@@ -1241,12 +1223,6 @@ local wrapup, registerpage  do
     end
 
     wrapup = function()
-
-     -- local includechar = lpdf.includecharlist
-     --
-     -- for font, list in next, usedcharacters do
-     --     includechar(font,keys(list))
-     -- end
 
         -- hook (to reshuffle pages)
         local pagetree = { }

@@ -307,8 +307,8 @@ end
 -- runners can be strings or tables
 --
 -- os.execute : string
--- os.exec    : string or table with program in [0|1]
--- os.spawn   : string or table with program in [0|1]
+-- os.exec    : string or table with program in [0|1] -- no longer there
+-- os.spawn   : string or table with program in [0|1] -- no longer there
 --
 -- our execute: registered program with specification
 
@@ -609,8 +609,8 @@ end
 
 if os then
     overload(os.execute,           binaryrunner,  "os.execute")
-    overload(os.spawn,             dummyrunner,   "os.spawn")
-    overload(os.exec,              dummyrunner,   "os.exec")
+    overload(os.spawn,             dummyrunner,   "os.spawn")    -- no longer there
+    overload(os.exec,              dummyrunner,   "os.exec")     -- no longer there
     overload(os.resultof,          binaryrunner,  "os.resultof")
     overload(os.pipeto,            binaryrunner,  "os.pipeto")
     overload(os.rename,            filehandlertwo,"os.rename")

@@ -418,15 +418,6 @@ local basic_shaping_forms =  {
 }
 
 local valid = {
- -- akhn = true, -- malayalam
- -- rphf = true,
- -- pref = true,
- -- half = true,
- -- blwf = true,
- -- pstf = true,
- -- pres = true, -- malayalam
- -- blws = true, -- malayalam
- -- psts = true, -- malayalam
     abvs = true,
     akhn = true,
     blwf = true,
@@ -619,43 +610,88 @@ local function initializedevanagi(tfmdata)
                 end
             end
             --
-            -- needs checking: this might be needed per instance ?
+            -- The following presets need checking (by Kai). Most of these scripts share a common
+            -- handling (some need less but that doesn't hurt). The question is: what to enable.
             --
-            if script == "deva" or script == "knda" then
-                sharedfeatures["dv04"] = true -- dv04_remove_joiners
-            elseif script == "dev2" or script == "knd2" then
-                sharedfeatures["dv01"] = true -- dv01_reorder_matras
-                sharedfeatures["dv02"] = true -- dv02_reorder_reph
-                sharedfeatures["dv03"] = true -- dv03_reorder_pre_base_reordering_consonants
-                sharedfeatures["dv04"] = true -- dv04_remove_joiners
-         -- elseif script == "knda" then -- see deva, needs checking by Kai
-         -- elseif script == "knd2" then -- see dev2, needs checking by Kai
+            -- dv01_reorder_matras
+            -- dv02_reorder_reph
+            -- dv03_reorder_pre_base_reordering_consonants
+            -- dv04_remove_joiners
+            --
+            if     script == "deva" then
+                sharedfeatures["dv04"] = true
+            elseif script == "dev2" then
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
+            elseif script == "knda" then
+                -- needs checking
+                sharedfeatures["dv04"] = true
+            elseif script == "knd2" then
+                -- needs checking
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
+            elseif script == "beng" then
+                -- needs checking
+                sharedfeatures["dv04"] = true
+            elseif script == "bng2" then
+                -- needs checking
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
+            elseif script == "gurj" then
+                -- needs checking
+                sharedfeatures["dv04"] = true
+            elseif script == "grj2" then
+                -- needs checking
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
+            elseif script == "guru" then
+                -- needs checking
+                sharedfeatures["dv04"] = true
+            elseif script == "gur2" then
+                -- needs checking
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
+            elseif script == "telu" then
+                -- needs checking
+                sharedfeatures["dv04"] = true
+            elseif script == "tel2" then
+                -- needs checking
+                sharedfeatures["dv01"] = true
+                sharedfeatures["dv02"] = true
+                sharedfeatures["dv03"] = true
+                sharedfeatures["dv04"] = true
+
             elseif script == "mlym" then
                 sharedfeatures["pstf"] = true
             elseif script == "mlm2" then
                 sharedfeatures["pstf"] = true
                 sharedfeatures["pref"] = true
-                sharedfeatures["dv03"] = true -- dv03_reorder_pre_base_reordering_consonants
-                gsubfeatures  ["dv03"] = two_defaults -- reorder pre base reordering consonants
+                sharedfeatures["dv03"] = true
+                gsubfeatures  ["dv03"] = two_defaults
                 insert(sequences,insertindex,sequence_reorder_pre_base_reordering_consonants)
-         -- elseif script == "beng" then
-         -- elseif script == "bng2" then
-         -- elseif script == "gujr" then
-         -- elseif script == "gjr2" then
-         -- elseif script == "guru" then
-         -- elseif script == "gur2" then
+
             elseif script == "taml" then
-                sharedfeatures["dv04"] = true -- dv04_remove_joiners
-sharedfeatures["pstf"] = true
+                -- needs checking
+                sharedfeatures["dv04"] = true
+                sharedfeatures["pstf"] = true
             elseif script == "tml2" then
--- sharedfeatures["pstf"] = true
--- sharedfeatures["pref"] = true
---                 sharedfeatures["dv01"] = true -- dv01_reorder_matras
---                 sharedfeatures["dv02"] = true -- dv02_reorder_reph
---                 sharedfeatures["dv03"] = true -- dv03_reorder_pre_base_reordering_consonants
---                 sharedfeatures["dv04"] = true -- dv04_remove_joiners
-         -- elseif script == "telu" then
-         -- elseif script == "tel2" then
+                -- needs checking
+
             else
                 report("todo: enable the right features for script %a",script)
             end
