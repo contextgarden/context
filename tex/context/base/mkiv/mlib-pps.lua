@@ -253,7 +253,7 @@ local function preset(t,k)
     return v
 end
 
-local function startjob(plugmode,kind)
+local function startjob(plugmode,kind,mpx)
     insert(stack,top)
     top = {
         textexts   = { },                          -- all boxes, optionally with a different color
@@ -261,6 +261,7 @@ local function startjob(plugmode,kind)
         texlast    = 0,
         texdata    = setmetatableindex({},preset), -- references to textexts in order or usage
         plugmode   = plugmode,                     -- some day we can then skip all pre/postscripts
+        extradata  = mpx and metapost.getextradata(mpx),
     }
     if trace_runs then
         report_metapost("starting %s run at level %i in %s mode",
@@ -580,8 +581,8 @@ end
 -- side effect of going single pass).
 
 function metapost.graphic_base_pass(specification)
-    local top             = startjob(true,"base")
     local mpx             = specification.mpx -- mandate
+    local top             = startjob(true,"base",mpx)
     local data            = specification.data or ""
     local inclusions      = specification.inclusions or ""
     local initializations = specification.initializations or ""
@@ -629,7 +630,7 @@ function metapost.process(specification,...)
     if type(specification) ~= "table" then
         oldschool(specification,...)
     else
-        startjob(specification.incontext or specification.useplugins,"process")
+        startjob(specification.incontext or specification.useplugins,"process",false)
         runmetapost(specification)
         stopjob()
     end
@@ -910,7 +911,7 @@ local tx_reset, tx_process  do
     end
 
     tx_process = function(object,prescript,before,after)
-        local data  = top.texdata[metapost.properties.number]
+        local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
         local index = tonumber(prescript.tx_index)
         if index then
             if trace_textexts then
@@ -932,19 +933,45 @@ local tx_reset, tx_process  do
             top.texlast = mp_target
             --
             local mp_text = top.texstrings[mp_index]
+            local mp_hash = prescript.tx_cache
             local box
-            if prescript.tx_cache == "no" then
+            if mp_hash == "no" then
                 tex.runtoks("mptexttoks")
                 box = textakebox("mptextbox")
             else
-                local hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
-                box = data.texhash[hash]
+                local cache = data.texhash
+                if mp_hash then
+                    mp_hash = tonumber(mp_hash)
+                end
+                if mp_hash then
+                    local extradata = top.extradata
+                    if extradata then
+                        cache = extradata.globalcache
+                        if not cache then
+                            cache = { }
+                            extradata.globalcache = cache
+                        end
+                        if trace_runs then
+                            if cache[mp_hash] then
+                                report_textexts("reusing global entry %i",mp_hash)
+                            else
+                                report_textexts("storing global entry %i",mp_hash)
+                            end
+                        end
+                    else
+                        mp_hash = nil
+                    end
+                end
+                if not mp_hash then
+                    mp_hash = fmt(mp_text,mp_a or "-",mp_t or "-",mp_c or "-")
+                end
+                box = cache[mp_hash]
                 if box then
                     box = copy_list(box)
                 else
                     tex.runtoks("mptexttoks")
                     box = textakebox("mptextbox")
-                    data.texhash[hash] = box
+                    cache[mp_hash] = box
                 end
             end
             top.textexts[mp_target] = box

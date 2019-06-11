@@ -91,7 +91,7 @@ end
 
 -- A couple of shared helpers.
 
-local tounicodedictionary, widtharray, collectindices, subsetname, includecidset, tocidsetdictionary
+local tounicodedictionary, widtharray, collectindices, subsetname, includecidset, forcecidset, tocidsetdictionary
 
 do
 
@@ -230,14 +230,20 @@ end
     end
 
     includecidset = false
+    forcecidset   = false -- for private testing only
+
+    directives.register("backend.pdf.forcecidset",function(v)
+        forcecidset = v
+    end)
 
     tocidsetdictionary = function(indices,min,max)
-        if includecidset then
+        if includecidset or forcecidset then
             local b = { }
             local m = idiv(max+7,8)
             for i=0,max do
                 b[i] = 0
             end
+            b[0] = bor(b[0],lshift(1,7)) -- force notdef into the file
             for i=min,max do
                 if indices[i] then
                     local bi = idiv(i,8)

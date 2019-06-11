@@ -288,6 +288,11 @@ metapost.defaultmethod   = "default"
 local mpxformats   = { }
 local nofformats   = 0
 local mpxpreambles = { }
+local mpxextradata = { }
+
+function metapost.getextradata(mpx)
+    return mpxextradata[mpx]
+end
 
 function metapost.pushformat(specification,f,m) -- was: instance, name, method
     if type(specification) ~= "table" then
@@ -338,6 +343,7 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
         report_metapost("initializing instance %a using format %a and method %a",usedinstance,format,method)
         mpx = metapost.checkformat(format,method)
         mpxformats[usedinstance] = mpx
+        mpxextradata[mpx] = { }
         if mpp ~= "" then
             preamble = mpp
         end
@@ -348,7 +354,6 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
     specification.mpx = mpx
     return mpx
 end
-
 
 -- luatex.wrapup(function()
 --     for k, mpx in next, mpxformats do
@@ -365,14 +370,16 @@ function metapost.reset(mpx)
         -- nothing
     elseif type(mpx) == "string" then
         if mpxformats[mpx] then
-            mpxformats[mpx]:finish()
+            mpxextradata[mpx] = nil
             mpxformats[mpx] = nil
+            mpxformats[mpx]:finish()
         end
     else
         for name, instance in next, mpxformats do
             if instance == mpx then
+                mpxextradata[mpx] = nil
+                mpxformats[mpx] = nil
                 mpx:finish()
-                mpxformats[name] = nil
                 break
             end
         end

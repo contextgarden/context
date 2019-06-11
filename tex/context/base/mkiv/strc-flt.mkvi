@@ -826,11 +826,47 @@
       \strc_floats_finish_placement}
      \vbox}
 
+%D \starttyping
+%D \definefloat
+%D   [one] [figure]
+%D   [default=right,
+%D    rightmargindistance=-20cm,
+%D    criterium=129pt,
+%D    fallback=rightmargin]
+%D
+%D \definefloat
+%D   [two] [figure]
+%D   [default=right,
+%D    rightmargindistance=-20cm,
+%D    criterium=129pt,
+%D    fallback=three]
+%D
+%D \definefloat
+%D   [three] [figure]
+%D   [default=rightmargin,
+%D    rightmargindistance=0cm]
+%D
+%D \placefloat[one]{}{\blackrule[width=30pt]}  \samplefile{tufte}
+%D \placefloat[one]{}{\blackrule[width=60pt]}  \samplefile{tufte}
+%D \placefloat[one]{}{\blackrule[width=90pt]}  \samplefile{tufte}
+%D \placefloat[one]{}{\blackrule[width=130pt]} \samplefile{tufte}
+%D \placefloat[two]{}{\blackrule[width=130pt]} \samplefile{tufte}
+%D \stoptyping
+
 \def\strc_floats_finish_placement
   {\doifsomething{\floatparameter\c!criterium}
      {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
         \edef\forcedfloatmethod{\floatparameter\c!fallback}%
-        \ifx\forcedfloatmethod\empty\let\forcedfloatmethod\v!here\fi
+        \ifx\forcedfloatmethod\empty \else
+          \doifelsecommandhandler\??float\forcedfloatmethod
+            {\let\currentfloat\forcedfloatmethod
+             \edef\floatlocation{\floatparameter\c!default}%
+             \let\forcedfloatmethod\floatlocation}
+            \donothing
+        \fi
+        \ifx\forcedfloatmethod\empty
+          \let\forcedfloatmethod\v!here
+        \fi
       \fi}%
    \strc_floats_check_extra_actions
    \strc_floats_analyze_variables_two

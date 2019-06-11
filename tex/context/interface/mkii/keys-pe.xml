@@ -573,6 +573,7 @@
 		<cd:variable name='temporary' value='موقتی'/>
 		<cd:variable name='test' value='تست'/>
 		<cd:variable name='text' value='متن'/>
+		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='سه'/>
 		<cd:variable name='thursday' value='پنج‌شنبه'/>
 		<cd:variable name='tight' value='tight'/>

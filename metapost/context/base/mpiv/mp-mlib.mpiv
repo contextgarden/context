@@ -190,8 +190,16 @@ extra_beginfig := extra_beginfig & "mfun_reset_tex_texts ;" ;
 % and once at the end because we need to flush missing ones.
 
 boolean mfun_onetime_textext ; mfun_onetime_textext := false ;
+numeric mfun_global_textext ; mfun_global_textext := 0 ;
 
-def notcached = withprescript "tx_cache=no" enddef ;
+def keepcached =
+    hide(mfun_global_textext := mfun_global_textext + 1;)
+    withprescript ("tx_cache=" & decimal mfun_global_textext)
+enddef ;
+
+def notcached =
+    withprescript "tx_cache=no"
+enddef ;
 
 % todo: onetime
 
