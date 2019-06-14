@@ -1,0 +1,278 @@
+{
+ "name" : "context.json",
+ "patterns" : [
+  {
+   "include" : "#content"
+  }
+ ],
+ "repository" : {
+  "array" : {
+   "begin" : "\u005C[",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.grouping.array.open.json"
+    }
+   },
+   "end" : "\u005C]",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.grouping.array.close.json"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#content"
+    }
+   ]
+  },
+  "content" : {
+   "patterns" : [
+    {
+     "include" : "#string"
+    },
+    {
+     "include" : "#hexnumber"
+    },
+    {
+     "include" : "#decnumber"
+    },
+    {
+     "include" : "#reserved"
+    },
+    {
+     "include" : "#hash"
+    },
+    {
+     "include" : "#array"
+    },
+    {
+     "include" : "#separator"
+    }
+   ]
+  },
+  "decnumber" : {
+   "match" : "\u005Cs*([\u005C-]?[0-9]+(\u005C.[0-9]+)?([eEpP]\u005C-?[0-9]+)?)",
+   "name" : "context.number.dec.json"
+  },
+  "hash" : {
+   "begin" : "\u005C{",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.grouping.hash.open.json"
+    }
+   },
+   "end" : "\u005C}",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.grouping.hash.close.json"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#kv_content"
+    }
+   ]
+  },
+  "hexnumber" : {
+   "match" : "\u005Cs*([\u005C-]?0[xX][A-Fa-f0-9]+(\u005C.[A-Fa-f0-9]+)?([eEpP]\u005C-?[A-Fa-f0-9]+)?)",
+   "name" : "context.number.hex.json"
+  },
+  "kv_array" : {
+   "begin" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*(\u005C[)",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.quote.array.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.array.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.array.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.array.becomes.json"
+    },
+    "5" : {
+     "name" : "context.grouping.array.value.open.json"
+    }
+   },
+   "end" : "\u005C]",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.grouping.array.value.close.json"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#content"
+    }
+   ]
+  },
+  "kv_content" : {
+   "patterns" : [
+    {
+     "include" : "#kv_string"
+    },
+    {
+     "include" : "#kv_hexnumber"
+    },
+    {
+     "include" : "#kv_decnumber"
+    },
+    {
+     "include" : "#kv_reserved"
+    },
+    {
+     "include" : "#kv_hash"
+    },
+    {
+     "include" : "#kv_array"
+    },
+    {
+     "include" : "#separator"
+    }
+   ]
+  },
+  "kv_decnumber" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.quote.dec.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.dec.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.dec.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.dec.becomes.json"
+    },
+    "5" : {
+     "name" : "context.number.dec.value.json"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*([\u005C-]?[0-9]+(\u005C.[0-9]+)?([eEpP]\u005C-?[0-9]+)?)"
+  },
+  "kv_hash" : {
+   "begin" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*(\u005C{)",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.quote.hash.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.hash.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.hash.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.hash.becomes.json"
+    },
+    "5" : {
+     "name" : "context.grouping.hash.value.open.json"
+    }
+   },
+   "end" : "\u005C}",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.grouping.hash.value.close.json"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#kv_content"
+    }
+   ]
+  },
+  "kv_hexnumber" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.quote.hex.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.hex.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.hex.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.hex.becomes.json"
+    },
+    "5" : {
+     "name" : "context.number.hex.value.json"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*([\u005C-]?0[xX][A-Fa-f0-9]+(\u005C.[A-Fa-f0-9]+)?([eEpP]\u005C-?[A-Fa-f0-9]+)?)"
+  },
+  "kv_reserved" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.quote.reserved.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.reserved.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.reserved.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.reserved.becomes.json"
+    },
+    "5" : {
+     "name" : "context.primitive.reserved.value.json"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*(true|null|false)"
+  },
+  "kv_string" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.quote.string.key.open.json"
+    },
+    "2" : {
+     "name" : "context.text.string.key.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.string.key.close.json"
+    },
+    "4" : {
+     "name" : "context.operator.string.becomes.json"
+    },
+    "5" : {
+     "name" : "context.quote.string.value.open.json"
+    },
+    "6" : {
+     "name" : "context.string.string.value.text.json"
+    },
+    "7" : {
+     "name" : "context.quote.string.value.close.json"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*(\u005C:)\u005Cs*(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)"
+  },
+  "reserved" : {
+   "match" : "\u005Cs*(true|null|false)",
+   "name" : "context.primitive.reserved.json"
+  },
+  "separator" : {
+   "match" : "\u005Cs*(\u005C,)",
+   "name" : "context.operator.separator.json"
+  },
+  "string" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.quote.string.open.json"
+    },
+    "2" : {
+     "name" : "context.string.string.text.json"
+    },
+    "3" : {
+     "name" : "context.quote.string.close.json"
+    }
+   },
+   "match" : "\u005Cs*(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)"
+  }
+ },
+ "scopeName" : "source.context.json",
+ "version" : "1.0.0"
+}

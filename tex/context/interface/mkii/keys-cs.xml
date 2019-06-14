@@ -573,6 +573,7 @@
 		<cd:variable name='temporary' value='docasne'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='text'/>
+		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='tri'/>
 		<cd:variable name='thursday' value='ctvrtek'/>
 		<cd:variable name='tight' value='tight'/>

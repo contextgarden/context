@@ -1,0 +1,267 @@
+{
+ "name" : "context.bibtex",
+ "patterns" : [
+  {
+   "include" : "#forget"
+  },
+  {
+   "include" : "#comment"
+  },
+  {
+   "include" : "#shortcut"
+  },
+  {
+   "include" : "#definition"
+  }
+ ],
+ "repository" : {
+  "comment" : {
+   "begin" : "\u005Cs*(@(?:comment|Comment|COMMENT))\u005Cs*\u005Cs*({)\u005Cs*",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.keyword.comment.name.bibtex"
+    },
+    "2" : {
+     "name" : "context.grouping.comment.open.bibtex"
+    }
+   },
+   "end" : "\u005Cs*(})\u005Cs*",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.grouping.comment.close.bibtex"
+    }
+   },
+   "name" : "context.comment.comment.comment.content.bibtex"
+  },
+  "concatinator" : {
+   "match" : "\u005Cs*(#)\u005Cs*",
+   "name" : "context.operator.definition.concatinator.bibtex"
+  },
+  "definition" : {
+   "begin" : "\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*({)\u005Cs*\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*(,)\u005Cs*",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.keyword.definition.category.bibtex"
+    },
+    "2" : {
+     "name" : "context.grouping.definition.open.bibtex"
+    },
+    "3" : {
+     "name" : "context.operator.definition.label.separator.bibtex"
+    }
+   },
+   "end" : "\u005Cs*(})\u005Cs*",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.grouping.definition.close.bibtex"
+    }
+   },
+   "name" : "context.warning.definition.error.bibtex",
+   "patterns" : [
+    {
+     "include" : "#string_double"
+    },
+    {
+     "include" : "#string_single"
+    },
+    {
+     "include" : "#string_grouped"
+    },
+    {
+     "include" : "#string_value"
+    },
+    {
+     "include" : "#string_concat"
+    },
+    {
+     "include" : "#separator"
+    }
+   ]
+  },
+  "forget" : {
+   "match" : "%.*$\u005Cn?",
+   "name" : "context.comment.comment.comment.inline.bibtex"
+  },
+  "separator" : {
+   "match" : "\u005Cs*(,)\u005Cs*",
+   "name" : "context.operator.definition.separator.bibtex"
+  },
+  "shortcut" : {
+   "begin" : "\u005Cs*(@(?:string|String|STRING))\u005Cs*\u005Cs*({)\u005Cs*",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.keyword.shortcut.name.bibtex"
+    },
+    "2" : {
+     "name" : "context.grouping.shortcut.open.bibtex"
+    }
+   },
+   "end" : "\u005Cs*(})\u005Cs*",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.grouping.shortcut.close.bibtex"
+    }
+   },
+   "name" : "context.warning.shortcut.error.bibtex",
+   "patterns" : [
+    {
+     "include" : "#string_double"
+    },
+    {
+     "include" : "#string_single"
+    },
+    {
+     "include" : "#string_grouped"
+    },
+    {
+     "include" : "#string_value"
+    },
+    {
+     "include" : "#string_concat"
+    }
+   ]
+  },
+  "string_concat" : {
+   "patterns" : [
+    {
+     "captures" : {
+      "1" : {
+       "name" : "context.operator.concat.doublequoted.concatinator.bibtex"
+      },
+      "2" : {
+       "name" : "context.special.concat.doublequoted.open.bibtex"
+      },
+      "3" : {
+       "name" : "context.text.concat.doublequoted.text.bibtex"
+      },
+      "4" : {
+       "name" : "context.special.concat.doublequoted.close.bibtex"
+      }
+     },
+     "match" : "\u005Cs*(#)\u005Cs*\u005Cs*(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*"
+    },
+    {
+     "captures" : {
+      "1" : {
+       "name" : "context.operator.concat.singlequoted.concatinator.bibtex"
+      },
+      "2" : {
+       "name" : "context.special.concat.singlequoted.open.bibtex"
+      },
+      "3" : {
+       "name" : "context.text.concat.singlequoted.text.bibtex"
+      },
+      "4" : {
+       "name" : "context.special.concat.singlequoted.close.bibtex"
+      }
+     },
+     "match" : "\u005Cs*(#)\u005Cs*\u005Cs*(')((?:\u005C\u005C'|[^'])*)(')\u005Cs*"
+    },
+    {
+     "captures" : {
+      "1" : {
+       "name" : "context.operator.concat.grouped.concatinator.bibtex"
+      },
+      "2" : {
+       "name" : "context.operator.concat.grouped.open.bibtex"
+      },
+      "3" : {
+       "name" : "context.text.concat.grouped.text.bibtex"
+      },
+      "4" : {
+       "name" : "context.operator.concat.grouped.close.bibtex"
+      }
+     },
+     "match" : "\u005Cs*(#)\u005Cs*\u005Cs*({)((?:\u005C\u005C{|\u005C\u005C}|[^\u005C{\u005C}])*)(})\u005Cs*"
+    },
+    {
+     "captured" : {
+      "1" : {
+       "name" : "context.operator.concat.value.concatinator.bibtex"
+      },
+      "2" : {
+       "name" : "context.text.concat.value.text.bibtex"
+      }
+     },
+     "match" : "\u005Cs*(#)\u005Cs*\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*"
+    }
+   ]
+  },
+  "string_double" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.command.doublequoted.key.bibtex"
+    },
+    "2" : {
+     "name" : "context.operator.doublequoted.equal.bibtex"
+    },
+    "3" : {
+     "name" : "context.special.doublequoted.open.bibtex"
+    },
+    "4" : {
+     "name" : "context.text.doublequoted.text.bibtex"
+    },
+    "5" : {
+     "name" : "context.special.doublequoted.close.bibtex"
+    }
+   },
+   "match" : "\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*(=)\u005Cs*\u005Cs*(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)\u005Cs*"
+  },
+  "string_grouped" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.command.grouped.key.bibtex"
+    },
+    "2" : {
+     "name" : "context.operator.grouped.equal.bibtex"
+    },
+    "3" : {
+     "name" : "context.operator.grouped.open.bibtex"
+    },
+    "4" : {
+     "name" : "context.text.grouped.text.bibtex"
+    },
+    "5" : {
+     "name" : "context.operator.grouped.close.bibtex"
+    }
+   },
+   "match" : "\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*(=)\u005Cs*\u005Cs*({)((?:\u005C\u005C{|\u005C\u005C}|[^\u005C{\u005C}])*)(})\u005Cs*"
+  },
+  "string_single" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.command.singlequoted.key.bibtex"
+    },
+    "2" : {
+     "name" : "context.operator.singlequoted.equal.bibtex"
+    },
+    "3" : {
+     "name" : "context.special.singlequoted.open.bibtex"
+    },
+    "4" : {
+     "name" : "context.text.singlequoted.text.bibtex"
+    },
+    "5" : {
+     "name" : "context.special.singlequoted.close.bibtex"
+    }
+   },
+   "match" : "\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*(=)\u005Cs*\u005Cs*(')((?:\u005C\u005C'|[^'])*)(')\u005Cs*"
+  },
+  "string_value" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.command.value.key.bibtex"
+    },
+    "2" : {
+     "name" : "context.operator.value.equal.bibtex"
+    },
+    "3" : {
+     "name" : "context.text.value.text.bibtex"
+    }
+   },
+   "match" : "\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*\u005Cs*(=)\u005Cs*\u005Cs*([a-zA-Z0-9\u005C_@:\u005C-]+)\u005Cs*"
+  }
+ },
+ "scopeName" : "source.context.bibtex",
+ "version" : "1.0.0"
+}

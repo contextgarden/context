@@ -82,6 +82,11 @@ do
         currentmpx = remove(stack,mpx)
     end
 
+    function metapost.currentmpx()
+        return currentmpx
+    end
+
+
 end
 
 do

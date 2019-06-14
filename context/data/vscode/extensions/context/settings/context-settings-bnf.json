@@ -1,0 +1,11 @@
+{
+ "autoClosingPairs" : [
+  [ "<", ">" ]
+ ],
+ "brackets" : [
+  [ "<", ">" ]
+ ],,
+ "surroundingPairs" : [
+  [ "<", ">" ]
+ ]
+}

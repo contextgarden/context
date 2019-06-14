@@ -204,7 +204,8 @@ process = function(start) -- we cannot use the processor as we have no finalizer
     local mtexttag = nil
     while start do
         local id = getid(start)
-     -- showtag(start,id,true)
+-- print("!!!!!!!!!!",nodecodes[id])
+-- showtag(start,id,true)
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -265,7 +266,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == noad_code then
              -- setattr(start,a_tagged,tags.current())
                 processsubsup(start)
-            elseif id == dubbox_code or id == hlist_code or id == vlist_code then
+            elseif id == subbox_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on subbox_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
                 if not attr then
@@ -372,7 +373,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         end
                     end
                 end
-            elseif id == submlistcode then -- normally a hbox
+            elseif id == submlist_code then -- normally a hbox
                 local list = getlist(start)
                 if list then
                     local attr = getattr(start,a_tagged)
