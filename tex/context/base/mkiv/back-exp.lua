@@ -2086,6 +2086,29 @@ do
 
 end
 
+do
+
+    local usedparagraphs = { }
+
+    function structurestags.setparagraph(align)
+        if align ~= "" then
+            usedparagraphs[locatedtag("paragraph")] = {
+                dataset = dataset,
+                tag     = tag,
+                align   = align,
+            }
+        end
+    end
+
+    function extras.paragraph(di,element,n,fulltag)
+        local hash = usedparagraphs[fulltag]
+        if hash then
+            setattribute(di,"align",hash.align)
+        end
+    end
+
+end
+
 -- flusher
 
 do
@@ -4249,4 +4272,10 @@ implement {
     name      = "settagpublication",
     actions   = structurestags.setpublication,
     arguments = "2 strings"
+}
+
+implement {
+    name      = "settagparagraph",
+    actions   = structurestags.setparagraph,
+    arguments = "string"
 }

@@ -2527,7 +2527,7 @@ function scripts.vscode.generate(targetpath)
         }
 
         local capturedluatex = words { -- new
-            "halfword", "scaled", "pointer",
+            "word", "halfword", "quarterword", "scaled", "pointer", "glueratio",
         }
 
         local capturedmacros = words { -- copied from cpp.lua
@@ -3177,5 +3177,4 @@ else
     application.help()
 end
 
--- scripts.vscode.generate([[t:/vscode/data/extensions]])
--- scripts.vscode.generate([[e:\tex-context\tex\texmf-context\context\data\vscode\extensions]])
+scripts.vscode.generate([[t:/vscode/data/context/extensions]])

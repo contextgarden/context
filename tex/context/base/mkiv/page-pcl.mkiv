@@ -398,10 +398,9 @@
 
 \def\page_col_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
-     \ifconditional\c_page_floats_pack_flushed
+     \ifconditional\c_page_floats_compress_flushed
        \setfalse\c_page_floats_center_box % not needed as we do call directly
-       %
-       \page_floats_collect\s!text\hsize\emwidth
+       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
        %
        \ifnum\nofcollectedfloats=\plusone
          \ifdim\naturalfloatwd>\hsize
@@ -421,7 +420,7 @@
                % this could happen at the lua end instead
                \scratchdimen\dimexpr\wd\floatbox-\naturalfloatwd\relax
                \ifdim\scratchdimen<\zeropoint
-                   \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
+                 \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
                \fi
                %
                \ifdim\wd\floatbox>\textwidth % \hsize

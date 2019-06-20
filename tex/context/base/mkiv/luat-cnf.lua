@@ -31,7 +31,7 @@ texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
-texconfig.properties_size =  65536
+texconfig.properties_size = 262144 -- after that, we're a hash
 texconfig.fix_mem_init    = 750000
 
 local stub = [[

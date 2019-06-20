@@ -10311,6 +10311,13 @@
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
      </cd:parameter>
+     <cd:parameter name="compress">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="compressdistance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
      <cd:inherit name="setupframed"/>
     </cd:assignments>
    </cd:arguments>

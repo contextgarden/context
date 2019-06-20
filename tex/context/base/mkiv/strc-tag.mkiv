@@ -463,11 +463,14 @@
   {\let\currentparagraph\empty
    \paragraph_start_indeed}
 
+\ifdefined\dotagparagraph \else \let\dotagparagraph \gobbleoneargument \fi
+
 \def\paragraph_start_indeed
   {\useparagraphstyleandcolor\c!style\c!color
    \usealignparameter\paragraphparameter
    \usesetupsparameter\paragraphparameter
-   \dostarttagged\t!paragraph\currentparagraph}
+   \dostarttagged\t!paragraph\currentparagraph
+   \dotagparagraph{\paragraphparameter\c!align}}
 
 \unexpanded\def\stopparagraph
   {\dostoptagged

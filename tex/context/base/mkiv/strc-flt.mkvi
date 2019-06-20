@@ -173,12 +173,25 @@
   %\c!bottomafter=,
   %\c!default=, % default location
    \c!sidethreshold=.5\strutdp, % set to "old" to check with old method
-   \c!numbering=\v!yes]
+   \c!numbering=\v!yes,
+   \c!compress=\v!yes, % when possible pack floats when flushing
+   \c!compressdistance=\emwidth]
 
 \setupfloatframed
   [\c!frame=\v!off,
    \c!offset=\v!overlay,
    \c!strut=\v!no]
+
+\appendtoks
+    \doifelse{\floatparameter\c!compress}\v!yes\settrue\setfalse\c_page_floats_pack_flushed
+    \d_page_floats_compress_distance\floatparameter\c!compressdistance\relax
+\to \everysetupfloat
+
+%D We need to do it again here:
+
+\setupfloat
+  [\c!compress=\v!yes, % when possible pack floats when flushing
+   \c!compressdistance=\emwidth]
 
 %D Individial settings:
 
@@ -1014,14 +1027,27 @@
 \def\naturalfloatwidth {\the\naturalfloatht}
 \def\naturalfloatdepth {\the\naturalfloatdp}
 
+\def\floatcaptionheight{\the\floatcaptionwd}
+\def\floatcaptionwidth {\the\floatcaptionht}
+\def\floatcaptiondepth {\the\floatcaptiondp}
+
 \newdimen\naturalfloatwd
 \newdimen\naturalfloatht
 \newdimen\naturalfloatdp
+
+\newdimen\floatcaptionwd
+\newdimen\floatcaptionht
+\newdimen\floatcaptiondp
 
 \def\strc_floats_set_natural_dimensions#box%
   {\global\naturalfloatwd\wd#box\relax
    \global\naturalfloatht\ht#box\relax
    \global\naturalfloatdp\dp#box\relax}
+
+\def\strc_floats_set_caption_dimensions#box%
+  {\global\floatcaptionwd\wd#box\relax
+   \global\floatcaptionht\ht#box\relax
+   \global\floatcaptiondp\dp#box\relax}
 
 \def\doifelsemainfloatbody
   {\ifinsidesplitfloat
@@ -1573,8 +1599,9 @@
      % nothing
    \or
      % automatic
-    \ifnofloatcaption
+     \ifnofloatcaption
        \strc_floats_prepare_no_caption
+       \strc_floats_set_caption_dimensions\voidbox
       %\page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
      \else
        % todo: installable maken, variant/method=auto vs macro
@@ -1582,6 +1609,7 @@
       %\page_backgrounds_add_local_to_box\b_strc_floats_content
        \setbox\b_strc_floats_caption\hbox % text
          {\floatcaptionparameter\c!command{\box\b_strc_floats_caption}}%
+       \strc_floats_set_caption_dimensions\b_strc_floats_caption
        \moveboxontogrid\b_strc_floats_caption{\floatcaptionparameter\c!grid}\d_strc_floats_caption_height
       %\page_backgrounds_add_local_to_box\b_strc_floats_caption
        \strc_floats_build_box

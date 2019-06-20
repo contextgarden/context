@@ -506,7 +506,7 @@ local hlist_out, vlist_out  do
         return ot, x + xoffset, y - yoffset
     end
 
-    -- rangedir can stick to widths only
+    -- to be checked: begin- or enddir kan nil zijn, weird
 
     rangedimensions = node.direct.naturalwidth or rangedimensions
 

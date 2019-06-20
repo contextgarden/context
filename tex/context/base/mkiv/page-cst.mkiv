@@ -401,11 +401,13 @@
    \global\setfalse\c_page_floats_flushing}
 
 \def\page_grd_command_flush_floats_indeed % much in common with OTRSET
-  {\wait\ifconditional\c_page_floats_some_waiting
-     \ifconditional\c_page_floats_pack_flushed
-       \page_floats_collect\s!text\hsize\emwidth
+  {\ifconditional\c_page_floats_some_waiting
+     \ifconditional\c_page_floats_compress_flushed
+       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
        \ifcase\nofcollectedfloats
          \page_floats_get
+     % \or
+     %   \page_floats_get
        \else
          \setfalse\c_page_floats_center_box % not needed as we do call directly
          \global\setbox\floatbox\hbox to \hsize

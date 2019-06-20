@@ -68,7 +68,7 @@
    "name" : "context.comment.long.c"
   },
   "luatex" : {
-   "match" : "\u005Cb(scaled|halfword)\u005Cb",
+   "match" : "\u005Cb(word|scaled|quarterword|pointer|halfword|glueratio)\u005Cb",
    "name" : "context.command.luatex.c"
   },
   "macro" : {

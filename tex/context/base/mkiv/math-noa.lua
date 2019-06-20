@@ -28,7 +28,7 @@ local utfchar, utfbyte = utf.char, utf.byte
 local formatters, gmatch = string.formatters, string.gmatch
 local sortedhash = table.sortedhash
 local insert, remove = table.insert, table.remove
-local div = math.div
+local div, round = math.div, math.round
 local bor, band = bit32.bor, bit32.band
 
 local fonts              = fonts
@@ -1557,6 +1557,7 @@ do
                         else
                             correction = correction - 100
                         end
+                        correction = round(correction)
                         setattr(pointer,a_mathitalics,correction)
                         setattr(parent,a_mathitalics,correction)
                         return -- so no reset later on

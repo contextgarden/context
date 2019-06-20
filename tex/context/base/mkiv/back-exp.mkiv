@@ -262,6 +262,13 @@
        \fi}%
 \to \everyenableelements
 
+\appendtoks
+    \unexpanded\def\dotagparagraph#1%
+      {\iftrialtypesetting\else
+         \clf_settagparagraph{#1}\relax
+       \fi}%
+\to \everyenableelements
+
 % The action: \setupbackend[export=yes] % or filename
 
 % maybe xhtml css settings will move to setupexport

@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['typo-ovl'] = {
 -- we have hardly any private code. For convenience I hooked it into the existing
 -- replacement module (as it used the same code anyway). I did some cleanup.
 
-local next = next
+local next, type = next, type
 
 local context      = context
 
@@ -114,7 +114,11 @@ function attributes.applyoverloads(specification,start,stop)
         else
             oldlist = getattrlist(current)
             for k, v in next, overloads do
-                setattr(current,k,v)
+                if type(v) == "number" then
+                    setattr(current,k,v)
+                else
+                    -- can be: ["font"] = number
+                end
             end
             newlist = current -- getattrlist(current)
         end

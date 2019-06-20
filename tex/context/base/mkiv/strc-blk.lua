@@ -118,10 +118,12 @@ function blocks.select(state,name,tag,criterium)
                 printblock(ri.index,name,ri.data,hide)
             else
                 local mtags = metadata.tags
-                for tag, sta in next, tags do
-                    if mtags[tag] then
-                        printblock(ri.index,name,ri.data,hide)
-                        break
+                if mtags then
+                    for tag, sta in next, tags do
+                        if mtags[tag] then
+                            printblock(ri.index,name,ri.data,hide)
+                            break
+                        end
                     end
                 end
             end

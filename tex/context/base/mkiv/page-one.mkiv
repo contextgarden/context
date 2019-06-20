@@ -146,14 +146,18 @@
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping
+        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
       \else\ifcase\bottomraggednessmode
         % ragged (default)
+        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
         \prevdepth\openstrutdepth
+        % these have whitespace before but we can have some more options
+        % like a \vfill or so
         \page_otr_command_flush_bottom_insertions
         \vfil
       \or
@@ -161,6 +165,7 @@
         \page_otr_command_flush_bottom_insertions
       \or
         % baseline
+        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
         \page_otr_command_flush_bottom_insertions
       \fi\fi
@@ -373,35 +378,37 @@
    \fi \fi
    \snaptogrid\hpack{\box\floatbox}} % was copy
 
-\def\page_one_command_flush_floats_indeed % much in common with OTRSET
+\def\page_one_command_floats_get_compressed
+  {\setfalse\c_page_floats_center_box % not needed as we do call directly
+   %% no longer (interferes with footnotes):
+   %%
+   %% \page_one_command_set_vsize % test 2011.06.24.001
+   %%
+   \global\setbox\floatbox\hbox to \hsize
+     {\hfil
+      \dorecurse\nofcollectedfloats
+        {\ifcase\columndirection % nog document wide
+           \page_floats_flush\s!text\plusone
+         \else
+           \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+         \fi
+         \hpack to \ifdim\naturalfloatwd>\makeupwidth\makeupwidth\else\naturalfloatwd\fi
+           {\hss\box\floatbox\hss}%
+         \ifnum\recurselevel<\nofcollectedfloats
+           \hfil
+         \fi}%
+      \hfil}}
+
+\def\page_one_command_flush_floats_indeed
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_pack_flushed
-       \page_floats_collect\s!text\hsize\emwidth
+       \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
        \ifcase\nofcollectedfloats
          \page_floats_get
+       \or
+         \page_floats_get
        \else
-         \setfalse\c_page_floats_center_box % not needed as we do call directly
-         %% no longer (interferes with footnotes):
-         %%
-         %% \page_one_command_set_vsize % test 2011.06.24.001
-         %%
-         \global\setbox\floatbox\hbox to \hsize
-           {\hfil
-            \dorecurse\nofcollectedfloats
-              {\ifcase\columndirection % nog document wide
-                 \page_floats_flush\s!text\plusone
-               \else
-                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
-               \fi
-               \ifdim\wd\floatbox>\makeupwidth % \hsize
-                 \hpack to \makeupwidth{\hss\box\floatbox\hss}%
-               \else
-                 \box\floatbox
-               \fi
-               \ifnum\recurselevel<\nofcollectedfloats
-                 \hfil
-               \fi}%
-            \hfil}%
+         \page_one_command_floats_get_compressed
        \fi
      \else
        \page_floats_get

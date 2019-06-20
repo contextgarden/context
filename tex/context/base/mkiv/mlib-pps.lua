@@ -834,7 +834,7 @@ local tx_reset, tx_process  do
             end
         elseif #mp_c == 3 then
             if mp_a and mp_t then
-                ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
+                ctx_MPLIBsetCtext(mp_target,f_rgb_yes(mp_c[1],mp_c[2],mp_c[3],mp_a,mp_t),mp_text)
             else
                 ctx_MPLIBsetCtext(mp_target,f_rgb_nop(mp_c[1],mp_c[2],mp_c[3]),mp_text)
             end

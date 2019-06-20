@@ -7337,6 +7337,9 @@ return {
   ["compressseparator"]={
    ["en"]="compressseparator",
   },
+  ["compressdistance"]={
+   ["en"]="compressdistance",
+  },
   ["concerns"]={
    ["en"]="concerns",
    ["nl"]="betreft",
