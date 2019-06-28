@@ -2350,9 +2350,7 @@ do
             luatex.registerpageactions(1,function()
                 lpdf.finalizepage(true)
             end)
-            --
-            fonts.constructors.autocleanup = false
-            --
+            --            --
             lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
         end
         --

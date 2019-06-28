@@ -1,0 +1,222 @@
+%D \module
+%D   [       file=m-simulate,
+%D        version=2016.02.18, % follow up on m-visual of 2000.01.10
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Visualization and Faking Redone,
+%D         author={Hans Hagen \& Ton Otten},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\definepalet
+  [fakerule]
+  [fr1c=darkred,
+   fr2c=darkgreen,
+   fr3c=darkblue,
+   fr4c=darkyellow,
+   fr5c=darkgray,
+   fr6c=darkred,
+   fr7c=darkgreen,
+   fr8c=darkblue,
+   fr9c=darkyellow,
+   fr0c=darkgray]
+
+\installcorenamespace {simulatewords}
+
+\installcommandhandler \??simulatewords {simulatewords} \??simulatewords
+
+\setupsimulatewords
+  [\c!n       =\plusten,
+   \c!m       =40,
+   \c!min     =\plusone,
+   \c!max     =\plusfive,
+   \c!minwidth=0.50\emwidth,
+   \c!maxwidth=1.25\emwidth,
+   \c!color   =\empty,
+   \c!hyphen  =\v!yes,
+   \c!distance=-.2\onebasepoint]
+
+\unexpanded\def\dosimulatedword
+  {\clf_fakeword
+      factor \exheight
+      name   {\p_line}
+      min    \scratchdimenone
+      max    \scratchdimentwo
+   \relax}
+
+\def\simulatedhyphen
+  {\kern.2\points-\kern.2\points}
+
+\unexpanded\def\simulatewords
+  {\dodoubleempty\dosimulatewords}
+
+\unexpanded\def\dosimulatewords[#1][#2]%
+  {\dontleavehmode
+   \begingroup
+   \begstrut
+   \ifsecondargument
+     \edef\currentsimulatewords{#1}%
+     \setupcurrentsimulatewords[#2]%
+   \else
+     \doifassignmentelse{#1}
+       {\let\currentsimulatewords\empty
+        \setupcurrentsimulatewords[#1]}
+       {\edef\currentsimulatewords{#1}%
+        \setupcurrentsimulatewords[#2]}%
+   \fi
+   \scratchcounterone\simulatewordsparameter\c!n
+   \scratchcountertwo\simulatewordsparameter\c!m
+   \scratchmin       \simulatewordsparameter\c!min
+   \scratchmax       \simulatewordsparameter\c!max
+   \scratchdimenone  \simulatewordsparameter\c!minwidth
+   \scratchdimentwo  \simulatewordsparameter\c!maxwidth
+   \scratchdimenthree\simulatewordsparameter\c!distance
+   \edef\p_random{\simulatewordsparameter\c!random}%
+   \edef\p_color {\simulatewordsparameter\c!color}%
+   \edef\p_line  {\simulatewordsparameter\c!line}%
+   \edef\p_hyphen{\simulatewordsparameter\c!hyphen}%
+   \edef\p_line  {fake:\ifx\p_line\v!yes word\else rule\fi}%
+   \ifx\p_color\v!text
+     % no need
+   \else
+     \setuppalet[fakerule]%
+     \ifx\p_color\empty
+       \directcolored[fakerulecolor]%
+     \else\ifx\p_color\v!auto
+       % different
+     \else
+       \directcolored[\p_color]%
+     \fi\fi
+   \fi
+   \edef\p_hyphen
+     {\ifx\p_hyphen\v!yes
+        \discretionary{\bf\simulatedhyphen}{}{\kern\scratchdimenthree}%
+      \else\ifx\p_hyphen\v!margin
+        \discretionary{\hpack to \zeropoint{\bf\simulatedhyphen\hss}}{}{\kern\scratchdimenthree}%
+      \else\ifx\p_hyphen\v!none
+        \allowbreak\kern\scratchdimenthree
+      \else\ifx\p_hyphen\v!no
+        \allowbreak\kern\scratchdimenthree
+      \else\ifx\p_hyphen\v!both
+        \discretionary{\bf\simulatedhyphen}{\bf\simulatedhyphen}{\kern\scratchdimenthree}%
+      \else\ifx\p_hyphen\empty
+        \allowbreak\kern\scratchdimenthree
+      \else
+        \discretionary{\p_hyphen}{}{\kern\scratchdimenthree}%
+      \fi\fi\fi\fi\fi\fi}%
+   \edef\truncated##1##2\relax{##1}%
+   % trialtypesetting: tricky
+   \ifx\p_random\empty \else
+     \pushrandomseed
+     \setrandomseed\p_random
+   \fi
+   \dorecurse{\randomnumber\scratchcounterone\scratchcountertwo} {%
+     \let\dosimulatedhyphen\relax
+     \dorecurse{\randomnumber\scratchmin\scratchmax} {%
+       \dosimulatedhyphen
+       \begingroup
+         \ifx\p_color\v!auto
+           \directcolored[fr\truncated####1\relax c]%
+         \fi
+         \dosimulatedword
+       \endgroup
+       \let\dosimulatedhyphen\p_hyphen
+     }%
+     \relax
+     \space
+   }%
+   \ifx\p_random\empty \else
+     \poprandomseed
+   \fi
+   \removeunwantedspaces
+   \endstrut
+   \endgroup}
+
+%D For old times sake:
+
+\unexpanded\def\fakewords#1#2%
+  {\simulatewords[\c!n=#1,\c!m=#2,\c!min=1,\c!max=5,\c!hyphen=\v!none,\c!color=\v!text,\c!line=\v!yes]}
+
+%D Lines
+
+\unexpanded\def\fakeline
+  {\dosingleempty\dofakeline}
+
+\unexpanded\def\dofakeline[#1]%
+  {\par
+   \dontleavehmode
+   \hpack\bgroup
+     \scratchwidth \availablehsize
+     \scratchheight.8\strutht
+     \scratchdepth .8\strutdp
+     \iffirstargument
+       \letsimulatewordsparameter\c!width \scratchwidth
+       \letsimulatewordsparameter\c!height\scratchheight
+       \letsimulatewordsparameter\c!depth \scratchdepth
+       \getcurrentsimulatewords[#1]%
+       \scratchwidth \simulatewordsparameter\c!width
+       \scratchheight\simulatewordsparameter\c!height
+       \scratchdepth \simulatewordsparameter\c!depth
+     \fi
+     \edef\p_color{\simulatewordsparameter\c!color}%
+     \begingroup
+     \ifx\p_color\empty
+       \directcolored[fakerulecolor]%
+     \else\ifx\p_color\v!auto
+       % text color
+     \else
+       \directcolored[\p_color]%
+     \fi\fi
+     \vrule
+        \s!width \scratchwidth
+        \s!height\scratchheight
+        \s!depth \scratchdepth
+     \endgroup
+     \hskip-\scratchwidth
+     \directcolored[\s!white]%
+     \scratchdimen.5\onepoint
+     \vrule
+        \s!width \scratchwidth
+        \s!height\scratchdimen
+        \s!depth \scratchdimen
+   \egroup
+   \par}
+
+\protect
+
+\continueifinputfile{m-simulate.mkiv}
+
+\starttext
+
+    \simulatewords[n=50,m=100,min=1,max=5,color=auto,hyphen=margin,line=yes]\par
+    \simulatewords[n=50,m=100,min=3,max=9,color=auto,hyphen=margin,line=yes]\par
+    \simulatewords[n=50,m=100,min=3,max=9,color=auto,hyphen=margin,line=yes]\par
+    \page
+    \simulatewords[n=50,m=100,min=2,max=6,hyphen=yes]\par
+    \simulatewords[n=50,m=100,min=2,max=6,hyphen=both]\par
+    \simulatewords[n=50,m=100,min=2,max=6,hyphen=both]\par
+
+    \startcolor[red]
+    \simulatewords[n=50,m=100,min=2,max=6,color=text]\par
+    \stopcolor
+
+    \definesimulatewords[foo][n=50,m=100,min=2,max=6,color=text]
+
+    \startcolor[green]
+    \simulatewords[foo][color=darkyellow,random=1234]
+    \stopcolor
+
+    \page
+
+    \fakeline
+
+    \startnarrower
+        \fakeline
+    \stopnarrower
+
+\stoptext

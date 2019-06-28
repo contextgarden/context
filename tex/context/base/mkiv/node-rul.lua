@@ -543,8 +543,8 @@ local function find_attr(head,attr)
 end
 
 function linefillers.handler(head)
-    for current, subtype, list in nexthlist, head do
-        if list and subtype == linelist_code then
+    for current, subtype in nexthlist, head do
+        if current and subtype == linelist_code then
             -- why doesn't leftskip take the attributes
             -- or list[linefiller] or maybe first match (maybe we need a fast helper for that)
             local a = getattr(current,a_linefiller)
@@ -567,6 +567,8 @@ function linefillers.handler(head)
                         leftlocal  = true
                         rightlocal = true
                     end
+                    --
+                    local list = getlist(current)
                     --
                     if location == v_left or location == v_both then
                         local lskip = nil -- leftskip

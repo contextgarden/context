@@ -1068,8 +1068,9 @@
 
 \def\floatcaptionattribute
   {\iflocation
-    %\ifnofloatnumber
-    %\else
+      \ifx\currentfloatattribute\empty
+        % safeguard, can be samepage too
+      \else
        \ifnofloatcaption
        \else
          \ifinsidesplitfloat
@@ -1081,7 +1082,7 @@
            attr \destinationattribute \currentfloatattribute
          \fi
        \fi
-    %\fi
+     \fi
    \fi}
 
 \newconditional\usesamefloatnumber
@@ -1144,7 +1145,7 @@
      \glet\currentfloatsynchronize\m_strc_counters_last_registered_synchronize
    \fi
    %
-   \global\setfalse\usesamefloatnumber % one shot
+   \iftrialtypesetting\else\global\setfalse\usesamefloatnumber\fi % one shot
    % check float box
    \strc_floats_set_natural_dimensions\nextbox
    \global\setbox\floatbox\vbox{\floatparameter\c!command{\box\nextbox}}% can be anything so no pack
@@ -1169,6 +1170,7 @@
    \strc_floats_set_box
    \strc_floats_get_box
    \global\insidefloatfalse}
+
 
 \newdimen\availablefloatwidth
 \newdimen\availablefloatheight

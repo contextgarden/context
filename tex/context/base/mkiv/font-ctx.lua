@@ -3252,3 +3252,8 @@ function fonts.helpers.collectanchors(tfmdata)
     return anchors
 
 end
+
+if CONTEXTLMTXMODE > 0 then
+    fonts.constructors.addtounicode = false
+    fonts.constructors.autocleanup  = false
+end

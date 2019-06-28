@@ -15,7 +15,7 @@ return {
         "false", "nullpicture", "pencircle", "penspec", "true",
         "and", "angle", "arclength", "arctime", "ASCII", "boolean", "bot",
         "char", "color", "cosd", "cycle", "decimal", "directiontime", "floor", "fontsize",
-        "hex", "infont", "intersectiontimes", "known", "length", "llcorner",
+        "hex", "infont", "intersectiontimes", "known", "void", "length", "llcorner",
         "lrcorner", "makepath", "makepen", "mexp", "mlog", "normaldeviate", "not",
         "numeric", "oct", "odd", "or", "path", "pair", "pen", "penoffset", "picture", "point",
         "postcontrol", "precontrol", "reverse", "rotated", "scaled",

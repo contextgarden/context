@@ -1848,10 +1848,6 @@ statistics.register("font embedding time",function()
     end
 end)
 
-updaters.register("backend.update.pdf",function()
-    fonts.constructors.addtounicode = false
-end)
-
 -- this is temporary
 
 local done = false

@@ -110,7 +110,7 @@ def mlib_luas_luadone =
     exitif numeric begingroup mfun_luas_b := 1 ; endgroup ;
 enddef ;
 
-vardef mlib_luas_lualist(expr c)(text t) =
+vardef mlib_luas_lualist(expr c)(text t) = % we could use mlib_luas_s instead of c
     interim mfun_luas_b := 0 ;
     runscript(c & for s = t :
         if mfun_luas_b = 0 :

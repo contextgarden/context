@@ -75,7 +75,7 @@ local t_reference = token("label",p_reference) * token("function",(1-p_endofweb)
 
 -- @'char' (ascii code)
 
-local p_character = p_beginofweb * S("'")
+local p_character = p_beginofweb * squote
 local t_character = token("label",p_character) * token("reserved",(1-squote)^1) * token("label",squote)
 
 -- @l nonascii
@@ -128,6 +128,5 @@ websnippets.pattern = P (
   + t_nonascii
   + t_escape
 )
-
 
 return websnippets

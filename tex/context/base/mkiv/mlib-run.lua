@@ -77,7 +77,7 @@ local mpbasepath = lpeg.instringchecker(P("/metapost/") * (P("context") + P("bas
 -- for some reason mp sometimes calls this function twice which is inefficient
 -- but we cannot catch this
 
-do
+local realtimelogging  do
 
     local finders = { }
     mplib.finders = finders -- also used in meta-lua.lua
@@ -115,8 +115,42 @@ do
         return (mode == "w" and o_finder or i_finder)(name,mode,validftype(ftype))
     end
 
+    local report_logger = logs.reporter("metapost log")
+    local report_error  = logs.reporter("metapost error")
+
+    local l, nl, dl = { }, 0, false
+    local t, nt, dt = { }, 0, false
+    local e, ne, de = { }, 0, false
+
+    local function logger(target,str)
+        if target == 1 then
+            -- log
+        elseif target == 2 or target == 3 then
+            -- term
+            if str == "\n" then
+                realtimelogging = true
+                if nl > 0 then
+                    report_logger(concat(l,"",1,nl))
+                    nl, dl = 0, false
+                elseif not dl then
+                    report_logger("")
+                    dl = true
+                end
+            else
+                nl = nl + 1
+                l[nl] = str
+            end
+        elseif target == 4 then
+            report_error(str)
+        end
+    end
+
     function mplib.new(specification)
-        specification.find_file = finder -- so we block an overload
+        specification.find_file  = finder -- so we block an overload
+        specification.run_logger = logger
+        if CONTEXTLMTXMODE > 0 then
+            specification.interaction = "silent"
+        end
         return new_instance(specification)
     end
 
@@ -130,6 +164,8 @@ local find_file    = mplib.finder
 function metapost.reporterror(result)
     if not result then
         report_metapost("error: no result object returned")
+    elseif realtimelogging then
+        -- we already reported
     elseif result.status > 0 then
         local t = result.term
         local e = result.error

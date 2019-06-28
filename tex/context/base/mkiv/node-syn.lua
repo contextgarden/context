@@ -168,7 +168,7 @@ local getdimensions      = nuts.dimensions
 local getrangedimensions = nuts.rangedimensions
 
 local get_synctex_fields = nuts.get_synctex_fields
-local set_synctex_fields = nuts.set_synctex_fields
+----- set_synctex_fields = nuts.set_synctex_fields
 local set_synctex_line   = tex.set_synctex_line
 local set_synctex_tag    = tex.set_synctex_tag
 local force_synctex_tag  = tex.force_synctex_tag

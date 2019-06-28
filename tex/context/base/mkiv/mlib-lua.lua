@@ -28,12 +28,13 @@ local trace_enabled  = true
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
-local get, set, aux = { }, { }, { }
+local get, set, aux, scan = { }, { }, { }, { }
 
 mp = mp or {  -- system namespace
-    set = set,
-    get = get,
-    aux = aux,
+    set  = set,
+    get  = get,
+    aux  = aux,
+    scan = scan,
 }
 
 MP = MP or { -- user namespace
@@ -51,27 +52,176 @@ MP = MP or { -- user namespace
 --
 --   lua.mp("somedefdname","foo")
 
+do
+
+    metapost.codes = { [0] =
+        "undefined",
+        "btex",            -- btex verbatimtex
+        "etex",            -- etex
+        "if",              -- if
+        "fi_or_else",      -- elseif else fi
+        "input",           -- input endinput
+        "iteration",       -- for forsuffixes forever endfor
+        "repeat_loop",     -- used in repeat loop (endfor)
+        "exitif",          -- exitif
+        "relax",           -- \\
+        "scantokens",      -- scantokens
+        "runscript",       -- runscript
+        "maketext",        -- maketext
+        "expandafter",     -- expandafter
+        "definedmacro",    --
+        "save",            -- save
+        "interim",         -- interim
+        "let",             -- let
+        "newinternal",     -- newinternal
+        "def",             -- def vardef (etc)
+        "shipout",         -- shipout
+        "addto",           -- addto
+        "setbounds",       -- setbounds clip
+        "scope",           -- outer inner
+        "show",            -- show showvariable (etc)
+        "mode",            -- batchmode (etc)
+        "randomseed",      -- randomseed
+        "message",         -- message errmessage
+        "everyjob",        -- everyjob
+        "delimiters",      -- delimiters
+        "special",         -- special
+        "write",           -- write
+        "declare",         -- (declare) numeric pair
+        "leftdelimiter",   -- the left delimiter of a matching pair
+        "begingroup",      -- begingroup
+        "nullary",         -- operator without arguments: normaldeviate (etc)
+        "unary",           -- operator with one argument: sqrt (etc)
+        "str",             -- convert a suffix to a string: str
+        "void",            -- convert a suffix to a boolean: void
+        "cycle",           -- cycle
+        "ofbinary",        -- binary operation taking "of", like "point of"
+        "capsule",         --
+        "string",          --
+        "internal",        --
+        "tag",             -- a symbolic token without a primitive meaning
+        "numeric",         -- numeric constant
+        "plus_or_minus",   -- + -
+        "secondarydef",    -- secondarydef
+        "tertiarybinary",  -- an operator at the tertiary level: ++ (etc)
+        "leftbrace",       -- {
+        "join",            -- ..
+        "ampersand",       -- &
+        "tertiarydef",     -- tertiarydef
+        "primarybinary",   -- < (etc)
+        "equals",          -- =
+        "and",             -- and
+        "primarydef",      -- primarydef
+        "slash",           -- /
+        "secondarybinary", -- an operator at the binary level: shifted (etc)
+        "parametertype",   -- primary expr suffix (etc)
+        "controls",        -- controls
+        "tension",         -- tension
+        "atleast",         -- atleast
+        "curl",            -- curl
+        "macrospecial",    -- quote, #@ (etc)
+        "rightdelimiter",  -- the right delimiter of a matching pair
+        "leftbracket",     -- [
+        "rightbracket",    -- ]
+        "rightbrace",      -- }
+        "with",            -- withpen (etc)
+        "thingstoadd",     -- addto contour doublepath also
+        "of",              -- of
+        "to",              -- to
+        "step",            -- step
+        "until",           -- until
+        "within",          -- within
+        "assignment",      -- :=
+        "skip",            -- skipto
+        "colon",           -- :
+        "comma",           -- ,
+        "semicolon",       -- ;
+        "endgroup",        -- endgroup
+        "stop",            -- end dump
+        "outertag",        -- protection code added to command code
+        "undefinedcs",     -- protection code added to command code
+    }
+
+    metapost.types = { [0] =
+        "undefined",
+        "vacuous",
+        "boolean",
+        "unknownboolean",
+        "string",
+        "unknownstring",
+        "pen",
+        "unknownpen",
+        "pathtype",
+        "unknownpath",
+        "picture",
+        "unknownpicture",
+        "transform",
+        "color",
+        "cmykcolor",
+        "pair",
+        "numeric",
+        "known",
+        "dependent",
+        "protodependent",
+        "independent",
+        "tokenlist",
+        "structured",
+        "unsuffixedmacro",
+        "suffixedmacro",
+    }
+
+    table.hashed(metapost.codes)
+    table.hashed(metapost.types)
+
+end
+
 table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
 table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)
 
 do
 
-    local currentmpx  = nil
-    local stack       = { }
+    local currentmpx = nil
+    local stack      = { }
 
     local get_numeric = mplib.get_numeric
     local get_string  = mplib.get_string
     local get_boolean = mplib.get_boolean
     local get_path    = mplib.get_path
-    local set_path    = mplib.set_path
 
     get.numeric = function(s) return get_numeric(currentmpx,s) end
+    get.number  = function(s) return get_numeric(currentmpx,s) end
     get.string  = function(s) return get_string (currentmpx,s) end
     get.boolean = function(s) return get_boolean(currentmpx,s) end
     get.path    = function(s) return get_path   (currentmpx,s) end
-    get.number  = function(s) return get_numeric(currentmpx,s) end
 
-    set.path    = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
+    local set_path = mplib.set_path
+
+    set.path = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
+
+    local scan_next       = mplib.scan_next
+    local scan_expression = mplib.scan_expression
+    local scan_token      = mplib.scan_token
+    local scan_symbol     = mplib.scan_symbol
+    local scan_numeric    = mplib.scan_numeric
+    local scan_boolean    = mplib.scan_boolean
+    local scan_string     = mplib.scan_string
+    local scan_pair       = mplib.scan_pair
+    local scan_color      = mplib.scan_color
+    local scan_cmykcolor  = mplib.scan_cmykcolor
+    local scan_transform  = mplib.scan_transform
+
+    scan.next       = function(k) return scan_next      (currentmpx,k) end
+    scan.expression = function(k) return scan_expression(currentmpx,k) end
+    scan.token      = function(k) return scan_token     (currentmpx,k) end
+    scan.symbol     = function(k) return scan_symbol    (currentmpx,k) end
+    scan.numeric    = function()  return scan_numeric   (currentmpx)   end
+    scan.number     = function()  return scan_numeric   (currentmpx)   end
+    scan.boolean    = function()  return scan_boolean   (currentmpx)   end
+    scan.string     = function()  return scan_string    (currentmpx)   end
+    scan.pair       = function(t) return scan_pair      (currentmpx,t) end
+    scan.color      = function(t) return scan_color     (currentmpx,t) end
+    scan.cmykcolor  = function(t) return scan_cmykcolor (currentmpx,t) end
+    scan.transform  = function(t) return scan_transform (currentmpx,t) end
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)
@@ -101,14 +251,14 @@ do
         if trace_enabled and trace_luarun then
             local result = concat(buffer," ",1,n)
             if n > max then
-                buffer = { }
+                buffer = { } -- newtable(20,0)
             end
             n = 0
             report_luarun("%i: data: %s",nesting,result)
             return result
         else
             if n == 0 then
-                return ""
+                return "" -- can be nil
             end
             local result
             if n == 1 then
@@ -117,7 +267,7 @@ do
                 result = concat(buffer," ",1,n)
             end
             if n > max then
-                buffer = { }
+                buffer = { } -- newtable(20,0)
             end
             n = 0
             return result
@@ -483,6 +633,9 @@ do
                 end
             end
         end
+
+        -- returning nil is more efficient and a signel not to scan in mp
+
         if f then
             local _buffer_ = buffer
             local _n_      = n

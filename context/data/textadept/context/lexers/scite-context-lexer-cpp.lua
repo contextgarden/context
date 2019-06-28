@@ -28,6 +28,7 @@ local keywords = { -- copied from cpp.lua
     "restrict",
     -- hm
     "_Bool", "_Complex", "_Pragma", "_Imaginary",
+    "boolean",
     -- c++.
     "catch", "class", "const_cast", "delete", "dynamic_cast", "explicit",
     "export", "friend", "mutable", "namespace", "new", "operator", "private",
