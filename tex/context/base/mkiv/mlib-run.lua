@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['mlib-run'] = {
     license   = "see context related readme files",
 }
 
--- todo mpx :execute -> mlib.execute(mpx,)
-
 -- cmyk       -> done, native
 -- spot       -> done, but needs reworking (simpler)
 -- multitone  ->
@@ -40,8 +38,10 @@ local P = lpeg.P
 
 local trace_graphics   = false  trackers.register("metapost.graphics",   function(v) trace_graphics   = v end)
 local trace_tracingall = false  trackers.register("metapost.tracingall", function(v) trace_tracingall = v end)
+local trace_terminal   = false  trackers.register("metapost.terminal",   function(v) trace_terminal   = v end)
 
 local report_metapost = logs.reporter("metapost")
+local report_terminal = logs.reporter("metapost","terminal")
 local texerrormessage = logs.texerrormessage
 
 local starttiming     = statistics.starttiming
@@ -55,11 +55,53 @@ local metapost        = metapost
 
 metapost.showlog      = false
 metapost.lastlog      = ""
-metapost.collapse     = true -- currently mplib cannot deal with begingroup/endgroup mismatch in stepwise processing
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
 
--- metapost.collapse  = false
+local mpxformats      = { }
+local mpxterminals    = { }
+local nofformats      = 0
+local mpxpreambles    = { }
+local mpxextradata    = { }
+
+-- The flatten hack is needed because the library currently barks on \n\n and the
+-- collapse because mp cannot handle snippets due to grouping issues.
+
+-- todo: pass tables to executempx instead of preparing beforehand,
+-- as it's more efficient for the terminal
+
+local function flatten(source,target)
+    for i=1,#source do
+        local d = source[i]
+        if type(d) == "table" then
+            flatten(d,target)
+        elseif d and d ~= "" then
+            target[#target+1] = d
+        end
+    end
+    return target
+end
+
+local function prepareddata(data)
+    if data and data ~= "" then
+        if type(data) == "table" then
+            data = flatten(data,{ })
+            data = #data > 1 and concat(data,"\n") or data[1]
+        end
+        return data
+    end
+end
+
+local function executempx(mpx,data)
+    local terminal = mpxterminals[mpx]
+    if terminal then
+        terminal.writer(data)
+        data = ""
+    elseif type(d) == "table" then
+        data = prepareddata(data,collapse)
+    end
+    return mpx:execute(data)
+end
 
 directives.register("mplib.texerrors",  function(v) metapost.texerrors = v end)
 trackers.register  ("metapost.showlog", function(v) metapost.showlog   = v end)
@@ -85,18 +127,15 @@ local realtimelogging  do
     local new_instance = mplib.new
 
     local function validftype(ftype)
-        if ftype == "" then
-            -- whatever
-        elseif ftype == 0 then
-            -- mplib bug
-        else
-            return ftype
-        end
+        -- catch old mplib issue
+        return type(ftype) == "string" and ftype or "mp"
     end
 
     finders.file = function(specification,name,mode,ftype)
         return resolvers.findfile(name,validftype(ftype))
     end
+
+    -- this will be redone in lmtx
 
     local function i_finder(name,mode,ftype) -- fake message for mpost.map and metafun.mpvi
         local specification = url.hashed(name)
@@ -145,13 +184,112 @@ local realtimelogging  do
         end
     end
 
-    function mplib.new(specification)
-        specification.find_file  = finder -- so we block an overload
-        specification.run_logger = logger
-        if CONTEXTLMTXMODE > 0 then
-            specification.interaction = "silent"
+    -- experiment, todo: per instance, just a push / pop ?
+
+    local findtexfile = resolvers.findtexfile
+    local opentexfile = resolvers.opentexfile
+    local splitlines  = string.splitlines
+
+    local function fileopener()
+
+        -- these can go into the table itself
+
+        local terminaldata = { }
+        local maxterm      = 0
+        local nowterm      = 0
+
+        local terminal = {
+            name   = "terminal",
+            close  = function()
+             -- terminal = { }
+             -- maxterm  = 0
+             -- nowterm  = 0
+            end,
+            reader = function()
+                if nowterm >= maxterm then
+                    terminaldata[nowterm] = false
+                    maxterm = 0
+                    nowterm = 0
+                    if trace_terminal then
+                        report_metapost("resetting, maxcache %i",#terminaldata)
+                    end
+                else
+                    if nowterm > 0 then
+                        terminaldata[nowterm] = false
+                    end
+                    nowterm = nowterm + 1
+                    if trace_terminal then
+                        report_metapost("reading line %i",nowterm)
+                    end
+                    return terminaldata[nowterm]
+                end
+            end,
+            writer = function(d)
+                local t = type(d)
+                if t == "string" then
+                    d = splitlines(d)
+                elseif t ~= "table" then
+                    return
+                end
+                for i=1,#d do
+                    maxterm = maxterm + 1
+                    terminaldata[maxterm] = d[i]
+                end
+                if trace_terminal then
+                    report_metapost("writing %i lines, in cache %s",#d,maxterm)
+                end
+            end,
+        }
+
+        return function(name,mode,kind)
+            if name == "terminal" then
+             -- report_metapost("opening terminal")
+                return terminal
+            elseif mode == "w" then
+                local f = io.open(name,"wb")
+                if f then
+                 -- report_metapost("opening file %a for writing",full)
+                    return {
+                        name   = full,
+                        writer = function(s) return f:write(s) end, -- io.write(f,s)
+                        close  = function()  f:close() end,
+                    }
+                end
+            else
+                local full = findtexfile(name,validftype(ftype))
+                if full then
+                 -- report_metapost("opening file %a for reading",full)
+                    return opentexfile(full)
+                end
+            end
         end
-        return new_instance(specification)
+
+    end
+
+    -- end of experiment
+
+    if CONTEXTLMTXMODE > 0 then
+
+        function mplib.new(specification)
+            local openfile = fileopener()
+            specification.find_file     = finder
+            specification.run_logger    = logger
+            specification.open_file     = openfile
+            specification.interaction   = "silent"
+            specification.halt_on_error = true
+            local instance = new_instance(specification)
+            mpxterminals[instance] = openfile("terminal")
+            return instance
+        end
+
+    else
+
+        function mplib.new(specification)
+            specification.find_file  = finder
+            specification.run_logger = logger
+            return instance
+        end
+
     end
 
     mplib.finder = finder
@@ -164,9 +302,11 @@ local find_file    = mplib.finder
 function metapost.reporterror(result)
     if not result then
         report_metapost("error: no result object returned")
+    elseif result.status == 0 then
+        return false
     elseif realtimelogging then
-        -- we already reported
-    elseif result.status > 0 then
+        return false -- we already reported
+    else
         local t = result.term
         local e = result.error
         local l = result.log
@@ -186,10 +326,8 @@ function metapost.reporterror(result)
         else
             report_metapost("error: unknown, no error, terminal or log messages")
         end
-    else
-        return false
+        return true
     end
-    return true
 end
 
 local f_preamble = formatters [ [[
@@ -246,7 +384,7 @@ function metapost.load(name,method)
     if not mpx then
         result = { status = 99, error = "out of memory"}
     else
-        result = mpx:execute(f_preamble(file.addsuffix(name,"mp"),seed)) -- addsuffix is redundant
+        result = executempx(mpx,f_preamble(file.addsuffix(name,"mp"),seed))
     end
     stoptiming(mplib)
     metapost.reporterror(result)
@@ -290,41 +428,9 @@ function metapost.unload(mpx)
     stoptiming(mplib)
 end
 
--- The flatten hack is needed because the library currently barks on \n\n and the
--- collapse because mp cannot handle snippets due to grouping issues.
-
-local function flatten(source,target)
-    for i=1,#source do
-        local d = source[i]
-        if type(d) == "table" then
-            flatten(d,target)
-        elseif d and d ~= "" then
-            target[#target+1] = d
-        end
-    end
-    return target
-end
-
-local function prepareddata(data,collapse)
-    if data and data ~= "" then
-        if type(data) == "table" then
-            data = flatten(data,{ })
-            if collapse then
-                data = #data > 1 and concat(data,"\n") or data[1]
-            end
-        end
-        return data
-    end
-end
-
 metapost.defaultformat   = "metafun"
 metapost.defaultinstance = "metafun"
 metapost.defaultmethod   = "default"
-
-local mpxformats   = { }
-local nofformats   = 0
-local mpxpreambles = { }
-local mpxextradata = { }
 
 function metapost.getextradata(mpx)
     return mpxextradata[mpx]
@@ -368,24 +474,24 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
     end
     nofformats = nofformats + 1
     local usedinstance = instance .. ":" .. nofformats
-    local mpx = mpxformats[usedinstance]
+    local mpx = mpxformats  [usedinstance]
     local mpp = mpxpreambles[instance] or ""
     if preamble then
-        preamble = prepareddata(preamble,true)
+        preamble = prepareddata(preamble)
         mpp = mpp .. "\n" .. preamble
         mpxpreambles[instance] = mpp
     end
     if not mpx then
         report_metapost("initializing instance %a using format %a and method %a",usedinstance,format,method)
         mpx = metapost.checkformat(format,method)
-        mpxformats[usedinstance] = mpx
+        mpxformats  [usedinstance] = mpx
         mpxextradata[mpx] = { }
         if mpp ~= "" then
             preamble = mpp
         end
     end
     if preamble then
-        mpx:execute(preamble)
+        executempx(mpx,preamble)
     end
     specification.mpx = mpx
     return mpx
@@ -406,16 +512,19 @@ function metapost.reset(mpx)
         -- nothing
     elseif type(mpx) == "string" then
         if mpxformats[mpx] then
-            mpxextradata[mpx] = nil
-            mpxformats[mpx] = nil
-            mpxformats[mpx]:finish()
+            local instance = mpxformats[mpx]
+            instance:finish()
+            mpxterminals[instance] = nil
+            mpxextradata[mpx]      = nil
+            mpxformats  [mpx]      = nil
         end
     else
         for name, instance in next, mpxformats do
             if instance == mpx then
-                mpxextradata[mpx] = nil
-                mpxformats[mpx] = nil
                 mpx:finish()
+                mpxextradata[mpx] = nil
+                mpxformats  [mpx] = nil
+                mpxterminals[mpx] = nil
                 break
             end
         end
@@ -523,20 +632,25 @@ function metapost.run(specification)
             tra.inp:write(banner)
             tra.log:write(banner)
         end
-        local data = prepareddata(data,metapost.collapse)
         local function process(d,i)
             if d then
                 if trace_graphics then
                     if i then
                         tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
                     end
-                    tra.inp:write(d)
+                    if type(d) == "table" then
+                        for i=1,#da do
+                            tra.inp:write(d[i])
+                        end
+                    else
+                        tra.inp:write(d)
+                    end
                     if i then
                         tra.inp:write(formatters["\n%% end snippet %s\n"](i))
                     end
                 end
                 starttiming(metapost.exectime)
-                result = mpx:execute(d)
+                result = executempx(mpx,d)
                 stoptiming(metapost.exectime)
                 if trace_graphics and result then
                     local str = result.log or result.error
@@ -546,6 +660,7 @@ function metapost.run(specification)
                 end
                 if not metapost.reporterror(result) then
                     if metapost.showlog then
+                        -- make function and overload in lmtx
                         local str = result.term ~= "" and result.term or "no terminal output"
                         if not emptystring(str) then
                             metapost.lastlog = metapost.lastlog .. "\n" .. str
@@ -563,14 +678,16 @@ function metapost.run(specification)
             end
         end
 
+--         local data = prepareddata(data)
         if type(data) == "table" then
             if trace_tracingall then
-                mpx:execute("tracingall;")
+                execute(mpx,"tracingall;")
             end
-            for i=1,#data do
-                process(data[i],i)
-            end
-       else
+                process(data)
+--             for i=1,#data do
+--                 process(data[i],i)
+--             end
+        else
             if trace_tracingall then
                 data = "tracingall;" .. data
             end
@@ -598,67 +715,71 @@ if not metapost.convert then
 
 end
 
--- handy
+-- This will be redone as we no longer output svg of ps!
+
+-- function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
+--     local fullname = file.addsuffix(filename,"mp")
+--     local data = mpdata or io.loaddata(fullname)
+--     if outputformat ~= "svg" then
+--         outputformat = "mps"
+--     end
+--     if not data then
+--         report_metapost("unknown file %a",filename)
+--     else
+--         local mpx = metapost.checkformat(formatname)
+--         if not mpx then
+--             report_metapost("unknown format %a",formatname)
+--         else
+--             report_metapost("processing %a",(mpdata and (filename or "data")) or fullname)
+--             local result = executempx(mpx,data)
+--             if not result then
+--                 report_metapost("error: no result object returned")
+--             elseif result.status > 0 then
+--                 report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
+--             else
+--                 if metapost.showlog then
+--                     metapost.lastlog = metapost.lastlog .. "\n" .. result.term
+--                     report_metapost("info: %s",result.term or "no-term")
+--                 end
+--                 local figures = result.fig
+--                 if figures then
+--                     local sorted = table.sortedkeys(figures)
+--                     if astable then
+--                         local result = { }
+--                         report_metapost("storing %s figures in table",#sorted)
+--                         for k=1,#sorted do
+--                             local v = sorted[k]
+--                             if outputformat == "mps" then
+--                                 result[v] = figures[v]:postscript()
+--                             else
+--                                 result[v] = figures[v]:svg() -- (3) for prologues
+--                             end
+--                         end
+--                         return result
+--                     else
+--                         local basename = file.removesuffix(file.basename(filename))
+--                         for k=1,#sorted do
+--                             local v = sorted[k]
+--                             local output
+--                             if outputformat == "mps" then
+--                                 output = figures[v]:postscript()
+--                             else
+--                                 output = figures[v]:svg() -- (3) for prologues
+--                             end
+--                             local outname = formatters["%s-%s.%s"](basename,v,outputformat)
+--                             report_metapost("saving %s bytes in %a",#output,outname)
+--                             io.savedata(outname,output)
+--                         end
+--                         return #sorted
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
-    local fullname = file.addsuffix(filename,"mp")
-    local data = mpdata or io.loaddata(fullname)
-    if outputformat ~= "svg" then
-        outputformat = "mps"
-    end
-    if not data then
-        report_metapost("unknown file %a",filename)
-    else
-        local mpx = metapost.checkformat(formatname)
-        if not mpx then
-            report_metapost("unknown format %a",formatname)
-        else
-            report_metapost("processing %a",(mpdata and (filename or "data")) or fullname)
-            local result = mpx:execute(data)
-            if not result then
-                report_metapost("error: no result object returned")
-            elseif result.status > 0 then
-                report_metapost("error: %s",(result.term or "no-term") .. "\n" .. (result.error or "no-error"))
-            else
-                if metapost.showlog then
-                    metapost.lastlog = metapost.lastlog .. "\n" .. result.term
-                    report_metapost("info: %s",result.term or "no-term")
-                end
-                local figures = result.fig
-                if figures then
-                    local sorted = table.sortedkeys(figures)
-                    if astable then
-                        local result = { }
-                        report_metapost("storing %s figures in table",#sorted)
-                        for k=1,#sorted do
-                            local v = sorted[k]
-                            if outputformat == "mps" then
-                                result[v] = figures[v]:postscript()
-                            else
-                                result[v] = figures[v]:svg() -- (3) for prologues
-                            end
-                        end
-                        return result
-                    else
-                        local basename = file.removesuffix(file.basename(filename))
-                        for k=1,#sorted do
-                            local v = sorted[k]
-                            local output
-                            if outputformat == "mps" then
-                                output = figures[v]:postscript()
-                            else
-                                output = figures[v]:svg() -- (3) for prologues
-                            end
-                            local outname = formatters["%s-%s.%s"](basename,v,outputformat)
-                            report_metapost("saving %s bytes in %a",#output,outname)
-                            io.savedata(outname,output)
-                        end
-                        return #sorted
-                    end
-                end
-            end
-        end
-    end
+    report_metapost("producing postscript and svg is no longer supported")
 end
 
 -- goodie
