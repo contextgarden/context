@@ -52,129 +52,6 @@ MP = MP or { -- user namespace
 --
 --   lua.mp("somedefdname","foo")
 
-do
-
-    metapost.codes = { [0] =
-        "undefined",
-        "btex",            -- btex verbatimtex
-        "etex",            -- etex
-        "if",              -- if
-        "fi_or_else",      -- elseif else fi
-        "input",           -- input endinput
-        "iteration",       -- for forsuffixes forever endfor
-        "repeat_loop",     -- used in repeat loop (endfor)
-        "exitif",          -- exitif
-        "relax",           -- \\
-        "scantokens",      -- scantokens
-        "runscript",       -- runscript
-        "maketext",        -- maketext
-        "expandafter",     -- expandafter
-        "definedmacro",    --
-        "save",            -- save
-        "interim",         -- interim
-        "let",             -- let
-        "newinternal",     -- newinternal
-        "def",             -- def vardef (etc)
-        "shipout",         -- shipout
-        "addto",           -- addto
-        "setbounds",       -- setbounds clip
-        "scope",           -- outer inner
-        "show",            -- show showvariable (etc)
-        "mode",            -- batchmode (etc)
-        "randomseed",      -- randomseed
-        "message",         -- message errmessage
-        "everyjob",        -- everyjob
-        "delimiters",      -- delimiters
-        "special",         -- special
-        "write",           -- write
-        "declare",         -- (declare) numeric pair
-        "leftdelimiter",   -- the left delimiter of a matching pair
-        "begingroup",      -- begingroup
-        "nullary",         -- operator without arguments: normaldeviate (etc)
-        "unary",           -- operator with one argument: sqrt (etc)
-        "str",             -- convert a suffix to a string: str
-        "void",            -- convert a suffix to a boolean: void
-        "cycle",           -- cycle
-        "ofbinary",        -- binary operation taking "of", like "point of"
-        "capsule",         --
-        "string",          --
-        "internal",        --
-        "tag",             -- a symbolic token without a primitive meaning
-        "numeric",         -- numeric constant
-        "plus_or_minus",   -- + -
-        "secondarydef",    -- secondarydef
-        "tertiarybinary",  -- an operator at the tertiary level: ++ (etc)
-        "leftbrace",       -- {
-        "join",            -- ..
-        "ampersand",       -- &
-        "tertiarydef",     -- tertiarydef
-        "primarybinary",   -- < (etc)
-        "equals",          -- =
-        "and",             -- and
-        "primarydef",      -- primarydef
-        "slash",           -- /
-        "secondarybinary", -- an operator at the binary level: shifted (etc)
-        "parametertype",   -- primary expr suffix (etc)
-        "controls",        -- controls
-        "tension",         -- tension
-        "atleast",         -- atleast
-        "curl",            -- curl
-        "macrospecial",    -- quote, #@ (etc)
-        "rightdelimiter",  -- the right delimiter of a matching pair
-        "leftbracket",     -- [
-        "rightbracket",    -- ]
-        "rightbrace",      -- }
-        "with",            -- withpen (etc)
-        "thingstoadd",     -- addto contour doublepath also
-        "of",              -- of
-        "to",              -- to
-        "step",            -- step
-        "until",           -- until
-        "within",          -- within
-        "assignment",      -- :=
-        "skip",            -- skipto
-        "colon",           -- :
-        "comma",           -- ,
-        "semicolon",       -- ;
-        "endgroup",        -- endgroup
-        "stop",            -- end dump
-        "outertag",        -- protection code added to command code
-        "undefinedcs",     -- protection code added to command code
-    }
-
-    metapost.types = { [0] =
-        "undefined",
-        "vacuous",
-        "boolean",
-        "unknownboolean",
-        "string",
-        "unknownstring",
-        "pen",
-        "unknownpen",
-        "pathtype",
-        "unknownpath",
-        "picture",
-        "unknownpicture",
-        "transform",
-        "color",
-        "cmykcolor",
-        "pair",
-        "numeric",
-        "known",
-        "dependent",
-        "protodependent",
-        "independent",
-        "tokenlist",
-        "structured",
-        "unsuffixedmacro",
-        "suffixedmacro",
-    }
-
-    table.hashed(metapost.codes)
-    table.hashed(metapost.types)
-
-end
-
 table.setmetatablecall(mp,function(t,k,...) return t[k](...) end)
 table.setmetatablecall(MP,function(t,k,...) return t[k](...) end)
 
@@ -209,6 +86,7 @@ do
     local scan_color      = mplib.scan_color
     local scan_cmykcolor  = mplib.scan_cmykcolor
     local scan_transform  = mplib.scan_transform
+    local scan_path       = mplib.scan_path
 
     scan.next       = function(k) return scan_next      (currentmpx,k) end
     scan.expression = function(k) return scan_expression(currentmpx,k) end
@@ -222,6 +100,7 @@ do
     scan.color      = function(t) return scan_color     (currentmpx,t) end
     scan.cmykcolor  = function(t) return scan_cmykcolor (currentmpx,t) end
     scan.transform  = function(t) return scan_transform (currentmpx,t) end
+    scan.path       = function(t) return scan_path      (currentmpx,t) end
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)

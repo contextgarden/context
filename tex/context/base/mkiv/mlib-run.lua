@@ -30,7 +30,7 @@ nears zero.</p>
 --ldx]]--
 
 local type, tostring, tonumber, next = type, tostring, tonumber, next
-local striplines = utilities.strings.striplines
+local find, striplines = string.find, utilities.strings.striplines
 local concat, insert, remove = table.concat, table.insert, table.remove
 
 local emptystring = string.is_empty
@@ -190,6 +190,62 @@ local realtimelogging  do
     local opentexfile = resolvers.opentexfile
     local splitlines  = string.splitlines
 
+    local function writetoterminal(terminaldata,maxterm,d)
+        local t = type(d)
+        local n = 0
+        if t == "string" then
+            d = splitlines(d)
+            n = #d
+            for i=1,#d do
+                maxterm = maxterm + 1
+                terminaldata[maxterm] = d[i]
+            end
+        elseif t == "table" then
+            for i=1,#d do
+                local l = d[i]
+                if find(l,"[\n\r]") then
+                    local s = splitlines(l)
+                    local m = #s
+                    for i=1,m do
+                        maxterm = maxterm + 1
+                        terminaldata[maxterm] = s[i]
+                    end
+                    n = n + m
+                else
+                    maxterm = maxterm + 1
+                    terminaldata[maxterm] = d[i]
+                    n = 1
+                end
+            end
+        end
+        if trace_terminal then
+            report_metapost("writing %i lines, in cache %s",n,maxterm)
+        end
+        return maxterm
+    end
+
+    local function readfromterminal(terminaldata,maxterm,nowterm)
+        if nowterm >= maxterm then
+            terminaldata[nowterm] = false
+            maxterm = 0
+            nowterm = 0
+            if trace_terminal then
+                report_metapost("resetting, maxcache %i",#terminaldata)
+            end
+            return maxterm, nowterm, nil
+        else
+            if nowterm > 0 then
+                terminaldata[nowterm] = false
+            end
+            nowterm = nowterm + 1
+            local s = terminaldata[nowterm]
+            if trace_terminal then
+                report_metapost("reading line %i: %s",nowterm,s)
+            end
+            return maxterm, nowterm, s
+        end
+    end
+
     local function fileopener()
 
         -- these can go into the table itself
@@ -206,38 +262,12 @@ local realtimelogging  do
              -- nowterm  = 0
             end,
             reader = function()
-                if nowterm >= maxterm then
-                    terminaldata[nowterm] = false
-                    maxterm = 0
-                    nowterm = 0
-                    if trace_terminal then
-                        report_metapost("resetting, maxcache %i",#terminaldata)
-                    end
-                else
-                    if nowterm > 0 then
-                        terminaldata[nowterm] = false
-                    end
-                    nowterm = nowterm + 1
-                    if trace_terminal then
-                        report_metapost("reading line %i",nowterm)
-                    end
-                    return terminaldata[nowterm]
-                end
+                local line
+                maxterm, nowterm, line = readfromterminal(terminaldata,maxterm,nowterm)
+                return line
             end,
             writer = function(d)
-                local t = type(d)
-                if t == "string" then
-                    d = splitlines(d)
-                elseif t ~= "table" then
-                    return
-                end
-                for i=1,#d do
-                    maxterm = maxterm + 1
-                    terminaldata[maxterm] = d[i]
-                end
-                if trace_terminal then
-                    report_metapost("writing %i lines, in cache %s",#d,maxterm)
-                end
+                maxterm = writetoterminal(terminaldata,maxterm,d)
             end,
         }
 
@@ -639,7 +669,7 @@ function metapost.run(specification)
                         tra.inp:write(formatters["\n%% begin snippet %s\n"](i))
                     end
                     if type(d) == "table" then
-                        for i=1,#da do
+                        for i=1,#d do
                             tra.inp:write(d[i])
                         end
                     else
@@ -681,7 +711,7 @@ function metapost.run(specification)
 --         local data = prepareddata(data)
         if type(data) == "table" then
             if trace_tracingall then
-                execute(mpx,"tracingall;")
+                executempx(mpx,"tracingall;")
             end
                 process(data)
 --             for i=1,#data do
