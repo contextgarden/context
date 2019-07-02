@@ -847,15 +847,15 @@ do
         return f
     end
 
- -- local function show(where,pointer)
- --     print("")
- --     local i = 0
- --     for n in nuts.traverse(pointer) do
- --         i = i + 1
- --         print(i,where,nuts.tonode(n))
- --     end
- --     print("")
- -- end
+-- local function show(where,pointer)
+--     print("")
+--     local i = 0
+--     for n in nuts.traverse(pointer) do
+--         i = i + 1
+--         print(i,where,nuts.tonode(n))
+--     end
+--     print("")
+-- end
 
     local function makelist(middle, noad, f_o,o_next,c_prev,f_c)
         local list = new_submlist()
@@ -924,7 +924,9 @@ do
         local f_prev, f_next = getboth(first)
         makelist(middle, close, f_o,f_next,c_prev,f_c)
         -- close is now a list
-        setlink(first,close)
+        if c_prev ~= first then
+            setlink(first,close)
+        end
         return close
     end
 

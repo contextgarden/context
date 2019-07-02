@@ -15,8 +15,10 @@
 %D prevent dependency problems and in the end even may use a patched version,
 %D we prefer to use a copy.
 
-prologues := 0 ;
-mpprocset := 1 ;
+boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: true fi;
+
+prologues := 0 ; % not used
+mpprocset := 1 ; % not used
 
 input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;

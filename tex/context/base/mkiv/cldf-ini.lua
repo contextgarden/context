@@ -326,6 +326,39 @@ end
 
 setmetatablecall(knownfunctions,function(t,n) return knownfunctions[n](n) end)
 
+-- some protection
+
+do
+
+    local stub    = { }
+    local done    = false
+    local message = function()
+        -- one time message
+        if not done then
+            report_cld("")
+            report_cld("use : slot = context.functions.register(f)")
+            report_cld("and : context.functions.unregister(slot)")
+            report_cld("")
+            done = true
+        end
+    end
+
+    setmetatable(stub, {
+        __index    = message,
+        __newindex = message,
+    })
+
+    function lua.getfunctionstable()
+        message()
+        return stub
+    end
+
+    lua.get_functions_table = lua.getfunctionstable
+
+end
+
+-- so far
+
 -- The next hack is a convenient way to define scanners at the Lua end and
 -- get them available at the TeX end. There is some dirty magic needed to
 -- prevent overload during format loading.

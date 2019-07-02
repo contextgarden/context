@@ -14,6 +14,8 @@
 %D This is a minimal \METAFUN\ instance which can be handy for isolated
 %D subruns.
 
+boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: true fi;
+
 prologues := 0 ;
 mpprocset := 1 ;
 

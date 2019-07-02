@@ -49,7 +49,7 @@ return {
         "extra_beginfig", "extra_endfig", "mpxbreak",
         "endinput",
         "message", "delimiters", "turningnumber", "errmessage",
-        "readstring", "scantokens", "end", "outer", "inner", "write", "to", "readfrom",
+        "scantokens", "end", "outer", "inner", "write", "to", "readfrom", "closefrom",
         "withprescript", "withpostscript",
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --

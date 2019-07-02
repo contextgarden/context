@@ -97,7 +97,7 @@ local function executempx(mpx,data)
     if terminal then
         terminal.writer(data)
         data = ""
-    elseif type(d) == "table" then
+    elseif type(data) == "table" then
         data = prepareddata(data,collapse)
     end
     return mpx:execute(data)
@@ -127,8 +127,11 @@ local realtimelogging  do
     local new_instance = mplib.new
 
     local function validftype(ftype)
-        -- catch old mplib issue
-        return type(ftype) == "string" and ftype or "mp"
+        if ftype == "mp" then
+            return "mp"
+        else
+            return nil
+        end
     end
 
     finders.file = function(specification,name,mode,ftype)
@@ -317,7 +320,7 @@ local realtimelogging  do
         function mplib.new(specification)
             specification.find_file  = finder
             specification.run_logger = logger
-            return instance
+            return new_instance(specification)
         end
 
     end
@@ -332,6 +335,7 @@ local find_file    = mplib.finder
 function metapost.reporterror(result)
     if not result then
         report_metapost("error: no result object returned")
+        return true
     elseif result.status == 0 then
         return false
     elseif realtimelogging then
@@ -377,7 +381,7 @@ local methods = {
 }
 
 function metapost.runscript(code)
-    return code
+    return ""
 end
 
 function metapost.scripterror(str)
@@ -414,7 +418,10 @@ function metapost.load(name,method)
     if not mpx then
         result = { status = 99, error = "out of memory"}
     else
+        -- pushing permits advanced features
+        metapost.pushscriptrunner(mpx)
         result = executempx(mpx,f_preamble(file.addsuffix(name,"mp"),seed))
+        metapost.popscriptrunner()
     end
     stoptiming(mplib)
     metapost.reporterror(result)
@@ -644,7 +651,7 @@ function metapost.run(specification)
     end
     if mpx and data then
         local tra = nil
-        starttiming(metapost)
+        starttiming(metapost) -- why not at the outer level ...
         metapost.variables = { } -- todo also push / pop
         metapost.pushscriptrunner(mpx)
         if trace_graphics then

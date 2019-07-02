@@ -573,6 +573,7 @@
 		<cd:variable name='temporary' value='temporaneo'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='testo'/>
+		<cd:variable name='textnote' value='textnote'/>
 		<cd:variable name='three' value='tre'/>
 		<cd:variable name='thursday' value='giovedi'/>
 		<cd:variable name='tight' value='tight'/>
@@ -736,6 +737,7 @@
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='compress'/>
+		<cd:constant name='compressdistance' value='compressdistance'/>
 		<cd:constant name='compressseparator' value='compressseparator'/>
 		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>

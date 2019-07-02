@@ -281,6 +281,31 @@ intermediate versions of the \LUA\ 5.3 binary will end up on the \CONTEXT\
 garden, probably with number 1.08 and 1.09 (who knows what else we will add or
 change in the meantime).
 
+\subsubject{addendum}
+
+Around the 2018 meeting I started with what is to become the next major upgrade
+of \CONTEXT, this time using \LUAMETATEX. When working on that I decided to try
+\LUA\ 5.4 and see what consequences that would have for us. There are no real
+conceptual changes, as with the number model in 5.3, so the tests didn't reveal
+any issues. But as an additional step towards a bit cleaner distinction between
+strings and numbers, I disabled the casting so that mixing them in expression for
+instance is no longer permitted. If I remember right only in one place I had to
+adapt the source (and in the meantime we're talking of a pretty large code base).
+
+There is a new mechanism for freezing constants but I'm not yet sure if it makes
+much sense to use it. It goes along with some other restrictions, like the
+possibility to adapt loop counters inside the loop. Inside the body of a loop one
+could always adapt such a variable, which (I can imagine) can come in handy. I
+didn't check yet the source code for that, but probably I don't do that.
+
+Another new features is an alternative garbage collector which seems to perform
+better when there are many variables with s short live span. For now I decided
+to default to this variant in future releases.
+
+Overall the performance of \LUA\ 5.4 is better than its predecessors which means
+that the gape between \LUATEX\ and \LUAJITTEX\ is closing. This is good because
+in \LUAMETATEX\ I will not support that variant.
+
 \stopchapter
 
 \stopcomponent

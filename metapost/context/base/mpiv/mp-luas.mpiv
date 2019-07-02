@@ -24,6 +24,23 @@ if known context_luas : endinput ; fi ;
 
 boolean context_luas ; context_luas := true ;
 
+% Experimental
+
+if contextlmtxmode :
+
+    % not yet (timing issue)
+
+    newinternal mfid_scriptindex ;
+    mfid_scriptindex := runscript("mp.mf_script_index('scriptindex')") ;
+
+    def scriptindex = runscript mfid_scriptindex enddef ;
+
+%   def scriptindex expr name =
+%       lua.mp.mf_script_index(name)
+%   enddef ;
+
+fi ;
+
 % First variant:
 %
 % let lua = runscript ;
@@ -164,6 +181,32 @@ def message expr t =
     lua.mp.report(tostring(t)) ;
 enddef ;
 
+% Color:
+
+% We do a low level runscript:
+%
+% lua.mp.namedcolor(s)       % conflicts with macro namedcolor
+% lua.mp.mf_named_color(s)   % okay but, can also be
+% lua.mp("mf_named_color",s) % which gives expansion mess
+
+if contextlmtxmode :
+
+    newinternal mfid_resolvedcolor ; mfid_resolvedcolor := scriptindex "namedcolor" ;
+
+    def resolvedcolor = runscript mfid_resolvedcolor enddef ;
+
+else :
+
+    def resolvedcolor primary s = % no vardef
+        if string s :
+            runscript("mp.mf_named_color('" & s & "')") % faster anyway
+        else :
+            s
+        fi
+    enddef ;
+
+fi ;
+
 % Modes:
 
 vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
@@ -214,45 +257,53 @@ vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
 
 %D New experimental feature for Alan-The-Number-Cruncher:
 
-% \startMPcode{doublefun}
-%     path p ; p := (
-%         for i=1 upto 20000 :
-%             origin randomized 10000 ..
-%         endfor cycle
-%     ) xysized (TextWidth,TextHeight) ;
-%     draw for i inpath p:
-%         pointof i .. controls (leftof i) and (rightof i) ..
-%     endfor cycle ;
-% \stopMPcode
+if contextlmtxmode :
 
-% def inpath suffix p =
-%     = 1 step 1 until lua.mp.mf_path_length(str p)
-% enddef ;
+    newinternal mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
+    newinternal mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;
+    newinternal mfid_path_leftof   ; mfid_path_leftof   := scriptindex "pathleftof" ;
+    newinternal mfid_path_rightof  ; mfid_path_rightof  := scriptindex "pathrightof" ;
+    newinternal mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
 
-% def inpath suffix p =
-%  %  = 1 step 1 until lua.mp.mf_path_length(str p)
-%     = 1 step 1 until (begingroup save n ; n := lua.mp.mf_path_length(str p) ; if n = 0 : 1 else : n fi endgroup)
-% enddef ;
+    % 25 pct gain
 
-def inpath suffix p = % permits p[0]
-    = 1 step 1 until
-    begingroup
-    save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
-    mfun_inpath_r = p ;
-    mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
-    if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
-    endgroup
-enddef ;
+       def inpath            = = 1 step 1 until runscript mfid_path_lengthof   enddef ;
+    vardef pointof primary i =                  runscript mfid_path_pointof  i enddef ;
+    vardef leftof  primary i =                  runscript mfid_path_leftof   i enddef ;
+    vardef rightof primary i =                  runscript mfid_path_rightof  i enddef ;
 
-% vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
-% vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
-% vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
+    % another 10 pct gain
 
-vardef pointof primary i = runscript("mp.mf_path_point(" & decimal i & ")") enddef ;
-vardef leftof  primary i = runscript("mp.mf_path_left("  & decimal i & ")") enddef ;
-vardef rightof primary i = runscript("mp.mf_path_right(" & decimal i & ")") enddef ;
+  % def inpath   = = 1 step 1 until runscript mfid_path_lengthof enddef ;
+  % def pointof  =                  runscript mfid_path_pointof  enddef ;
+  % def leftof   =                  runscript mfid_path_leftof   enddef ;
+  % def rightof  =                  runscript mfid_path_rightof  enddef ;
 
-extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;
+    extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
+
+else :
+
+    def inpath suffix p = % permits p[0]
+        = 1 step 1 until
+        begingroup
+        save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
+        mfun_inpath_r = p ;
+        mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
+        if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
+        endgroup
+    enddef ;
+
+    % vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
+    % vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
+    % vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
+
+    vardef pointof primary i = runscript("mp.mf_path_point(" & decimal i & ")") enddef ;
+    vardef leftof  primary i = runscript("mp.mf_path_left("  & decimal i & ")") enddef ;
+    vardef rightof primary i = runscript("mp.mf_path_right(" & decimal i & ")") enddef ;
+
+    extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;
+
+fi ;
 
 vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
 vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;

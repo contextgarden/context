@@ -1681,22 +1681,6 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 %     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi
 % enddef ;
 
-% so we can do: withcolor "red"
-
-% We do a low level runscript:
-%
-% lua.mp.namedcolor(s)       % conflicts with macro namedcolor
-% lua.mp.mf_named_color(s)   % okay but, can also be
-% lua.mp("mf_named_color",s) % which gives expansion mess
-
-def resolvedcolor primary s = % no vardef
-    if string s :
-        runscript("mp.mf_named_color('" & s & "')") % faster anyway
-    else :
-        s
-    fi
-enddef ;
-
 % A comment will end up on top of the graphic in the output. This can be handy for
 % locating a graphic: comment("test graphic").
 

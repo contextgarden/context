@@ -134,14 +134,17 @@ which can also be achieved by
 \directlua{print("Hi there!")}
 \stoptyping
 
-which sometimes can be more convenient. Anyway, a function call is what we can
-use for our purpose as it doesn't involve interpretation and effectively behaves
-like a tail call. The following snippet shows what we have in mind:
+which sometimes can be more convenient. Don't overestimate the gain in speed
+because \type {directlua} is quite efficient too, and on an average run a user
+doesn't call it that often (millions of times that is). Anyway, a function call
+is what we can use for our purpose as it doesn't involve interpretation and
+effectively behaves like a tail call. The following snippet shows what we have in
+mind:
 
 \startbuffer[code]
 local stepper = nil
 local stack   = { }
-local fid     = 0xFFFFFF
+local fid     = 2 -- make sure to take a frees slot
 local goback  = "\\luafunction" .. fid .. "\\relax"
 
 function tex.resume()
@@ -165,6 +168,14 @@ function tex.routine(f)
     table.insert(stack,stepper)
     stepper = coroutine.create(f)
     tex.sprint(goback)
+end
+
+-- Because we protect against abuse and overload of functions, in ConTeXt we
+-- need to do the following:
+
+if context then
+    fid    = context.functions.register(tex.resume)
+    goback = "\\luafunction" .. fid .. "\\relax"
 end
 \stopbuffer
 
@@ -238,7 +249,7 @@ course figuring it out took a while):
 \startbuffer[code]
 local stepper = nil
 local stack   = { }
-local fid     = 0xFFFFFF
+local fid     = 3 -- make sure to take a frees slot
 local goback  = "\\luafunction" .. fid .. "\\relax"
 
 function tex.resume()
@@ -269,6 +280,13 @@ function tex.routine(f)
     table.insert(stack,stepper)
     stepper = coroutine.create(f)
     tex.sprint(goback)
+end
+
+-- Again we need to do it as follows in ConTeXt:
+
+if context then
+    fid     = context.functions.register(tex.resume)
+    goback  = "\\luafunction" .. fid .. "\\relax"
 end
 \stopbuffer
 

@@ -19,7 +19,15 @@
 \registerctxluafile{mlib-run}{}
 \registerctxluafile{mlib-ctx}{}
 \registerctxluafile{mlib-lua}{}
-\registerctxluafile{mlib-int}{} % here ?
+
+\doifelsefileexists{mlib-scn.lua} {
+    \registerctxluafile{mlib-scn}{}
+} {
+    % experimental code for Alan and me
+}
+
+\registerctxluafile{mlib-lmp}{}
+\registerctxluafile{mlib-int}{}
 
 \unprotect
 

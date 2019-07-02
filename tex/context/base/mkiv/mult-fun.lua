@@ -17,6 +17,7 @@ return {
         "drawoptionsfactor",
         "dq", "sq",
         "crossingscale", "crossingoption",
+        "contextlmtxmode",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",
@@ -174,5 +175,7 @@ return {
         "comment", "report", "lua", "mp", "MP", "luacall",
         --
         "mirrored", "mirroredabout",
+        --
+        "scriptindex",
     },
 }
