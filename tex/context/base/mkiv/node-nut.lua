@@ -147,8 +147,9 @@ local nuts                   = nodes.nuts
 
 nuts.check_discretionaries   = direct.check_discretionaries
 nuts.copy                    = direct.copy
-nuts.copy_list               = direct.copy_list
 nuts.copy_node               = direct.copy
+nuts.copy_only               = direct.copy_only or direct.copy
+nuts.copy_list               = direct.copy_list
 nuts.count                   = direct.count
 nuts.current_attr            = direct.current_attr
 nuts.delete                  = direct.delete
@@ -367,7 +368,7 @@ local d_setlink            = direct.setlink
 local d_setboth            = direct.setboth
 local d_getboth            = direct.getboth
 
-local function remove(head,current,free_too)
+local remove = (CONTEXTLMTXMODE > 0 and LUATEXFUNCTIONALITY >= 20190704) and d_remove_node or function(head,current,free_too)
     if current then
         local h, c = d_remove_node(head,current)
         if free_too then

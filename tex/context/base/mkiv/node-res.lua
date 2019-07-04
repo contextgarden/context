@@ -99,7 +99,7 @@ local setdata      = nuts.setdata
 local setruledata  = nuts.setruledata
 local setvalue     = nuts.setvalue
 
-local copy_nut     = nuts.copy
+local copy_nut     = nuts.copy_only or nuts.copy
 local new_nut      = nuts.new
 local flush_nut    = nuts.flush
 

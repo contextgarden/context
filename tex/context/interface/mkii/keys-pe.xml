@@ -737,6 +737,7 @@
 		<cd:constant name='component' value='مولفه'/>
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='فشردن'/>
+		<cd:constant name='compressdistance' value='compressdistance'/>
 		<cd:constant name='compressseparator' value='compressseparator'/>
 		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>
