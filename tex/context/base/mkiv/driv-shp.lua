@@ -1150,7 +1150,9 @@ local hlist_out, vlist_out  do
 
 end
 
-function lpdf.convert(box,smode,objnum,specification) -- temp name
+-- bad namespace:
+
+function lpdf.convert(box,smode,objnum,specification)
 
     if box then
         box = tonut(box)
@@ -1159,7 +1161,7 @@ function lpdf.convert(box,smode,objnum,specification) -- temp name
         return
     end
 
-    local driver = instances.pdf
+    local driver = drivers.current or instances.pdf
     if driver then
         -- tracing
     else

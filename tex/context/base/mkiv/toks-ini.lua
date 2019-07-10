@@ -42,13 +42,21 @@ local scan_glue       = token.scan_glue
 local scan_keyword    = token.scan_keyword
 local scan_keyword_cs = token.scan_keyword_cs or scan_keyword
 local scan_token      = token.scan_token
+local scan_list       = token.scan_list
 local scan_word       = token.scan_word
+local scan_key        = token.scan_key
+local scan_value      = token.scan_value
+local scan_char       = token.scan_char
 local scan_number     = token.scan_number
 local scan_csname     = token.scan_csname
 local scan_real       = token.scan_real
 local scan_float      = token.scan_float
 
 local get_next        = token.get_next
+local get_next_token  = token.get_next_token
+local skip_next       = token.skip_next
+local peek_next_char  = token.peek_next_char
+local is_next_char    = token.is_next_char
 
 local set_macro       = token.set_macro
 local get_macro       = token.get_macro
@@ -134,6 +142,7 @@ tokens.scanners = { -- these expand
     token     = scan_token,
     toks      = scan_toks,
     tokens    = scan_toks,
+    list      = scan_list,
     dimen     = scan_dimen,
     dimension = scan_dimen,
     glue      = scan_glue,
@@ -149,11 +158,17 @@ tokens.scanners = { -- these expand
     code      = scan_code,
     tokencode = scan_token_code,
     word      = scan_word,
+    key       = scan_key,
+    value     = scan_value,
+    char      = scan_char,
     number    = scan_number,
     boolean   = scan_boolean,
     keyword   = scan_keyword,
     keywordcs = scan_keyword_cs,
     csname    = scan_csname,
+    peek      = peek_next_char,
+    skip      = skip_next,
+    ischar    = is_next_char,
 }
 
 tokens.getters = { -- these don't expand
@@ -225,6 +240,7 @@ if setinspector then
                     active     = t.active,
                     expandable = t.expandable,
                     protected  = t.protected,
+                    frozen     = t.frozen,
                     mode       = t.mode,
                     index      = t.index,
                     cmdname    = cmdname,

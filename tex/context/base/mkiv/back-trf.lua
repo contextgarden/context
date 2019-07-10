@@ -141,14 +141,23 @@ implement { name = "stopmirroring",  actions = startmirroring } -- not: stopsome
 
 -- this could also run on top of pack-rul ... todo
 
+-- local function startclipping()
+--  -- context(savenode())
+--     context(literalnode("origin",formatters["q 0 w %s W n"](scanstring())))
+-- end
+--
+-- local function stopclipping()
+--  -- context(restorenode())
+--     context(literalnode("Q"))
+-- end
+
 local function startclipping()
- -- context(savenode())
-    context(literalnode("origin",formatters["q 0 w %s W n"](scanstring())))
+    context(savenode())
+    context(literalnode("origin",formatters["0 w %s W n"](scanstring())))
 end
 
 local function stopclipping()
- -- context(restorenode())
-    context(literalnode("Q"))
+    context(restorenode())
 end
 
 implement { name = "startclipping", actions = startclipping }

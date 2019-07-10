@@ -25,6 +25,7 @@ local getattr            = nuts.getattr
 local getwidth           = nuts.getwidth
 local getwhd             = nuts.getwhd
 local getorientation     = nuts.getorientation
+local has_dimensions     = nuts.has_dimensions
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -182,7 +183,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
     local leader = nil
     for stack, id in nextnode, head do
         if id == glyph_code or id == disc_code then
-            check = true -- disc no longer needed as we flatten replace
+            check = true
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
@@ -235,8 +236,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
                 -- end nested --
             end
         elseif id == rule_code then
-            local wd, ht, dp = getwhd(stack)
-            check = wd ~= 0 or (ht+dp) ~= 0
+            check = has_dimensions(stack)
         end
         -- much faster this way than using a check() and nested() function
         if check then
@@ -309,7 +309,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
     local leader = nil
     for stack, id, subtype in nextnode, head do
         if id == glyph_code or id == disc_code then
-            check = true -- disc no longer needed as we flatten replace
+            check = true
         elseif id == glue_code then
             leader = getleader(stack)
             if leader then
@@ -374,8 +374,7 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 -- so no redundant color stuff (only here, layers for instance should obey)
                 check = false
             else
-                local wd, ht, dp = getwhd(stack)
-                check = wd ~= 0 or (ht+dp) ~= 0
+                check = has_dimensions(stack)
             end
         end
         if check then
@@ -485,8 +484,7 @@ local function stacked(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
-            local wd, ht, dp = getwhd(stack)
-            check = wd ~= 0 or (ht+dp) ~= 0
+            check = has_dimensions(stack)
         end
         if check then
             local a = getattr(stack,attribute)
@@ -571,8 +569,7 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                 end
             end
         elseif id == rule_code then
-            local wd, ht, dp = getwhd(current)
-            check = wd ~= 0 or (ht+dp) ~= 0
+            check = has_dimensions(current)
         end
 
         if check then

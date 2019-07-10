@@ -203,6 +203,7 @@ nuts.vpack                   = direct.vpack
 nuts.writable_spec           = direct.writable_spec
 nuts.write                   = direct.write
 nuts.mlist_to_hlist          = direct.mlist_to_hlist
+nuts.has_dimensions          = direct.has_dimensions
 
 if not nuts.mlist_to_hlist then
 
@@ -215,6 +216,17 @@ if not nuts.mlist_to_hlist then
                 return tonut(head)
             end
         end
+    end
+
+end
+
+if not nuts.has_dimensions then
+
+    local getwhd = direct.getwhd
+
+    function nuts.has_dimensions(n)
+        local wd, ht, dp = getwhd(n)
+        return wd ~= 0 or (ht + dp) ~= 0
     end
 
 end

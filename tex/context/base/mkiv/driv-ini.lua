@@ -65,7 +65,8 @@ function drivers.install(specification)
         report("no flushers for driver %a",name)
         return
     end
-    setmetatableindex(actions,defaulthandlers)
+    setmetatableindex(actions, defaulthandlers)
+    setmetatableindex(flushers, function() return dummy end)
     instances[name] = specification
 end
 
@@ -103,7 +104,9 @@ end)
 
 function drivers.enable(name)
     currentdriver   = name or "default"
-    local actions   = instances[currentdriver].actions
+    local instance  = instances[currentdriver]
+    drivers.current = instance
+    local actions   = instance.actions
     prepare         = actions.prepare
     wrapup          = actions.wrapup
     cleanup         = actions.cleanup

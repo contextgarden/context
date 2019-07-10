@@ -761,6 +761,8 @@ local seeindex = 0
 
 -- meerdere loops, seewords, dan words, anders seewords
 
+-- todo: split seeword
+
 local function crosslinkseewords(result,check) -- all words
     -- collect all seewords
     local seewords = { }
@@ -778,23 +780,68 @@ local function crosslinkseewords(result,check) -- all words
             end
         end
     end
+
     -- mark seeparents
+
+ -- local seeparents = { }
+ -- for i=1,#result do
+ --     local data = result[i]
+ --     local word = data.list[1]
+ --     local okay = word and word[1]
+ --     if okay then
+ --         local seeindex = seewords[okay]
+ --         if seeindex then
+ --             seeparents[okay] = data
+ --             data.references.seeparent = seeindex
+ --             if trace_registers then
+ --                 report_registers("see parent %03i: %s",seeindex,okay)
+ --             end
+ --         end
+ --     end
+ -- end
+
+    local entries    = { }
+    local keywords   = { }
     local seeparents = { }
     for i=1,#result do
         local data = result[i]
-        local word = data.list[1]
-        word = word and word[1]
-        if word then
-            local seeindex = seewords[word]
+        local word = data.list
+        local size = #word
+        if data.seeword then
+            -- beware: a seeword has an extra entry for sorting purposes
+            size = size - 1
+        end
+        for i=1,size do
+            local w = word[i]
+            local e = w[1]
+            local k = w[2] or e
+            entries [i] = e
+            keywords[i] = k
+        end
+        -- first try the keys
+        local okay, seeindex
+        for n=size,1,-1 do
+            okay = concat(keywords,"+",1,n)
+            seeindex = seewords[okay]
+            -- first try the entries
             if seeindex then
-                seeparents[word] = data
-                data.references.seeparent = seeindex
-                if trace_registers then
-                    report_registers("see parent %03i: %s",seeindex,word)
-                end
+                break
+            end
+            okay = concat(entries,"+",1,n)
+            seeindex = seewords[okay]
+            if seeindex then
+                break
+            end
+        end
+        if seeindex then
+            seeparents[okay] = data
+            data.references.seeparent = seeindex
+            if trace_registers then
+                report_registers("see parent %03i: %s",seeindex,okay)
             end
         end
     end
+
     -- mark seewords and extend sort list
     for i=1,#result do
         local data = result[i]

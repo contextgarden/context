@@ -672,8 +672,15 @@ local function process(index,numbers,ownnumbers,criterium,separatorset,conversio
     end
 end
 
-function sections.typesetnumber(entry,kind,...) -- kind='section','number','prefix'
-    if entry and entry.hidenumber ~= true then -- can be nil
+-- kind : section number prefix
+
+function sections.typesetnumber(entry,kind,...)
+    --
+    -- Maybe the hiding becomes an option .. after all this test was there
+    -- for a reason, but for now we have this:
+    --
+ -- if entry and entry.hidenumber ~= true then
+    if entry then
         local separatorset  = ""
         local conversionset = ""
         local conversion    = ""

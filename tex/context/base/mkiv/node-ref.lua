@@ -166,33 +166,33 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
         -- todo: if no prev and no next and parent
         -- todo: we need a a list_dimensions for a vlist
         if getid(parent) == vlist_code then
-            if false then
-                local l = getlist(parent)
-                local c = l
-                local ok = false
-                while c do
-                    if c == start then
-                        ok = true
-                    end
-                    if ok and getid(c) == hlist_code then
-                        break
-                    else
-                        c = getnext(c)
-                    end
-                end
-                if ok and c then
-                    if trace_areas then
-                        report_area("dimensions taken of first line in vlist")
-                    end
-                    local w, h, d = getwhd(c)
-                    return w, h, d, c
-                else
-                    if trace_areas then
-                        report_area("dimensions taken of vlist (probably wrong)")
-                    end
-                    return hlist_dimensions(start,stop,parent)
-                end
-            else
+         -- if false then
+         --     local l = getlist(parent)
+         --     local c = l
+         --     local ok = false
+         --     while c do
+         --         if c == start then
+         --             ok = true
+         --         end
+         --         if ok and getid(c) == hlist_code then
+         --             break
+         --         else
+         --             c = getnext(c)
+         --         end
+         --     end
+         --     if ok and c then
+         --         if trace_areas then
+         --             report_area("dimensions taken of first line in vlist")
+         --         end
+         --         local w, h, d = getwhd(c)
+         --         return w, h, d, c
+         --     else
+         --         if trace_areas then
+         --             report_area("dimensions taken of vlist (probably wrong)")
+         --         end
+         --         return hlist_dimensions(start,stop,parent)
+         --     end
+         -- else
                 --
                 -- we can as well calculate here because we only have kerns and glue
                 --
@@ -200,7 +200,7 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                 local last     = nil
                 local current  = start
                 local noflines = 0
-                while current do
+                while current do -- can be loop
                     local id = getid(current)
                     if id == hlist_code or id == vlist_code or id == rule_code then
                         if noflines == 0 then
@@ -239,7 +239,7 @@ local function dimensions(parent,start,stop) -- in principle we could move some 
                         return hlist_dimensions(start,stop,parent)
                     end
                 end
-            end
+         -- end
         else
             if trace_areas then
                 report_area("dimensions taken of range starting with %a using parent",nodecodes[id])
@@ -928,7 +928,6 @@ local function makedestination(width,height,depth,reference)
         report_destination("unable to resolve attribute %a",reference)
     end
 end
-
 
 function nodes.destinations.handler(head)
     if head and topofstack > 0 then

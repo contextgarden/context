@@ -1098,20 +1098,26 @@
     \let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
 \fi
 
-%D Handy.
+%D Handy (this will change, again).
 
-\suppresslongerror    \plusone
-\suppressoutererror   \plusone
-\suppressmathparerror \plusone
-\suppressifcsnameerror\plusone
+\ifdefined\suppresslongerror        \suppresslongerror        \plusone  \fi
+\ifdefined\suppressoutererror       \suppressoutererror       \plusone  \fi
+\ifdefined\suppressmathparerror     \suppressmathparerror     \plusone  \fi
+\ifdefined\suppressifcsnameerror    \suppressifcsnameerror    \plusone  \fi
+\ifdefined\suppressfontnotfounderror\suppressfontnotfounderror\zerocount\fi
 
-\let     \suppresslongerror    \relax
-\newcount\suppresslongerror                       \let\normalsuppresslongerror    \suppresslongerror
-\let     \suppressoutererror   \suppresslongerror \let\normalsuppressoutererror   \suppresslongerror
-\let     \suppressmathparerror \suppresslongerror \let\normalsuppressmathparerror \suppresslongerror
-\let     \suppressifcsnameerror\suppresslongerror \let\normalsuppressifcsnameerror\suppresslongerror
+\let     \suppresslongerror        \relax
+\newcount\suppresslongerror                           \let\normalsuppresslongerror        \suppresslongerror
+\let     \suppressoutererror       \suppresslongerror \let\normalsuppressoutererror       \suppresslongerror
+\let     \suppressmathparerror     \suppresslongerror \let\normalsuppressmathparerror     \suppresslongerror
+\let     \suppressifcsnameerror    \suppresslongerror \let\normalsuppressifcsnameerror    \suppresslongerror
+\let     \suppressfontnotfounderror\suppresslongerror \let\normalsuppressfontnotfounderror\suppresslongerror
 
 \matheqnogapstep\zerocount % for now
+
+%D Experiment:
+
+\ifdefined\frozen \else \def\frozen{} \let\normalfrozen\frozen \fi
 
 %D Now we define a few helpers that we need in a very early stage. We have no
 %D message system yet but redundant definitions are fatal anyway.

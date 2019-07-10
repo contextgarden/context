@@ -244,12 +244,12 @@ do
                             n = n + 1 t[n] = f_key_val_num(depth,k,v)
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
-                            n = n + 1 t[n] = f_key_val_str(depth,k,v)
+                            n = n + 1 t[n] = f_key_val_num(depth,k,v)
                         end
                     elseif tv == "string" then
                         if tk == "number" then
                             v = lpegmatch(escaper,v) or v
-                            n = n + 1 t[n] = f_key_val_num(depth,k,v)
+                            n = n + 1 t[n] = f_key_val_str(depth,k,v)
                         elseif tk == "string" then
                             k = lpegmatch(escaper,k) or k
                             v = lpegmatch(escaper,v) or v

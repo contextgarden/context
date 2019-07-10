@@ -104,7 +104,7 @@ function texconfig.init()
                 local tv = type(gv)
                 if tv == "table" then
                     for k, v in next, gv do
-                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
+                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloads functions (security)
                     end
                 end
                 lib[v] = keys

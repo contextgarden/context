@@ -254,6 +254,7 @@ return {
   "fixupboxesmode",
   "fontid",
   "formatname",
+  "frozen",
   "futureexpand",
   "futureexpandis",
   "gleaders",

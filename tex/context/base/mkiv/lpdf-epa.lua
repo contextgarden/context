@@ -72,7 +72,7 @@ local maxdimen          = 0x3FFFFFFF -- 2^30-1
 
 local bpfactor          = number.dimenfactors.bp
 
-local layerspec = { -- predefining saves time
+local layerspec = {
     "epdfcontent"
 }
 
@@ -143,11 +143,18 @@ end
 
 local layerused = false
 
+-- local function initializelayer(height,width)
+--     if not layerused then
+--         context.definelayer(layerspec, { height = height .. "bp", width = width .. "bp" })
+--         layerused = true
+--     end
+-- end
+
 local function initializelayer(height,width)
-    if not layerused then
-        context.definelayer(layerspec, { height = height .. "bp", width = width .. "bp" })
+--     if not layerused then
+        context.setuplayer(layerspec, { height = height .. "bp", width = width .. "bp" })
         layerused = true
-    end
+--     end
 end
 
 function codeinjections.flushmergelayer()
