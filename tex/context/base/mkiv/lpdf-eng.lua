@@ -63,7 +63,7 @@ img = table.setmetatableindex (
 
 do
 
-    local function prepare()
+    local function prepare(driver)
         if not environment.initex then
             -- install new functions in pdf namespace
             updaters.apply("backend.update.pdf")
@@ -77,29 +77,23 @@ do
         end
     end
 
-    local function outputfilename()
+    local function outputfilename(driver)
         if not filename then
             filename = addsuffix(tex.jobname,"pdf")
         end
         return filename
     end
 
-    function lpdf.flushers()
-        return { }
-    end
-
-    function lpdf.actions()
-        return {
-            convert        = tex.shipout,
-            outputfilename = outputfilename,
-            prepare        = prepare,
-        }
-    end
-
     drivers.install {
         name     = "pdf",
-        flushers = lpdf.flushers(),
-        actions  = lpdf.actions(),
+        flushers = {
+            -- nothing here
+        },
+        actions  = {
+            convert        = drivers.converters.engine,
+            outputfilename = outputfilename,
+            prepare        = prepare,
+        },
     }
 
 end

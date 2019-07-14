@@ -19,10 +19,20 @@ local report            = logs.reporter("drivers")
 
 local instances         = { }
 local helpers           = { }
+local converters        = { }
 local prepared          = { }
 local wrappedup         = { }
 local cleanedup         = { }
 local currentdriver     = "default"
+local currentinstance   = nil
+
+local shipout           = tex.shipout
+local texgetbox         = tex.getbox
+local texgetcount       = tex.getcount
+
+function converters.engine(driver,boxnumber,mode,number,specification)
+    return shipout(boxnumber)
+end
 
 local prepare           = nil
 local convert           = nil
@@ -33,7 +43,9 @@ local outputfilename    = nil
 drivers = drivers or {
     instances   = instances,
     helpers     = helpers,
+    converters  = converters,
     lmtxversion = 0.10,
+    report      = report,
 }
 
 local dummy = function() end
@@ -65,27 +77,32 @@ function drivers.install(specification)
         report("no flushers for driver %a",name)
         return
     end
+ -- report("driver %a is installed",name)
     setmetatableindex(actions, defaulthandlers)
     setmetatableindex(flushers, function() return dummy end)
     instances[name] = specification
 end
 
 function drivers.convert(boxnumber)
-    callbacks.functions.start_page_number()
-    starttiming(drivers)
-    convert(boxnumber)
-    stoptiming(drivers)
-    callbacks.functions.stop_page_number()
+    if currentinstance then
+        callbacks.functions.start_page_number()
+        starttiming(drivers)
+        convert(currentinstance,boxnumber,texgetcount("realpageno"))
+        stoptiming(drivers)
+        callbacks.functions.stop_page_number()
+    end
 end
 
 function drivers.outputfilename()
-    return outputfilename()
+    if currentinstance then
+        return outputfilename(currentinstance)
+    end
 end
 
 luatex.wrapup(function()
-    if wrapup and not wrappedup[currentdriver] then
+    if currentinstance and wrapup and not wrappedup[currentdriver] then
         starttiming(drivers)
-        wrapup()
+        wrapup(currentinstance)
         stoptiming(drivers)
         wrappedup[currentdriver] = true
         cleanedup[currentdriver] = true
@@ -93,9 +110,9 @@ luatex.wrapup(function()
 end)
 
 luatex.cleanup(function()
-    if cleanup and not cleanedup[currentdriver] then
+    if currentinstance and cleanup and not cleanedup[currentdriver] then
         starttiming(drivers)
-        cleanup()
+        cleanup(currentinstance)
         stoptiming(drivers)
         wrappedup[currentdriver] = true
         cleanedup[currentdriver] = true
@@ -103,21 +120,31 @@ luatex.cleanup(function()
 end)
 
 function drivers.enable(name)
-    currentdriver   = name or "default"
-    local instance  = instances[currentdriver]
-    drivers.current = instance
-    local actions   = instance.actions
-    prepare         = actions.prepare
-    wrapup          = actions.wrapup
-    cleanup         = actions.cleanup
-    convert         = actions.convert
-    outputfilename  = actions.outputfilename
-    --
-    if prepare and not prepared[currentdriver] then
-        starttiming(drivers)
-        prepare()
-        stoptiming(drivers)
-        prepared[currentdriver] = true
+    if name ~= currentdriver then
+        if currentinstance then
+            starttiming(drivers)
+            cleanup(currentinstance)
+            stoptiming(drivers)
+        end
+        currentdriver   = name or "default"
+        currentinstance = instances[currentdriver]
+        if currentinstance then
+            local actions   = currentinstance.actions
+            prepare         = actions.prepare
+            wrapup          = actions.wrapup
+            cleanup         = actions.cleanup
+            convert         = actions.convert
+            outputfilename  = actions.outputfilename
+            --
+            if prepare and not prepared[currentdriver] then
+                starttiming(drivers)
+                prepare(currentinstance)
+                stoptiming(drivers)
+                prepared[currentdriver] = true
+            end
+        else
+            report("bad driver")
+        end
     end
 end
 
@@ -146,8 +173,8 @@ do
     drivers.install {
         name     = "default",
         actions  = {
-            convert        = tex.shipout,
-            outputfilename = function()
+            convert        = drivers.converters.engine,
+            outputfilename = function(driver)
                 if not filename then
                     filename = addsuffix(tex.jobname,"pdf")
                 end
@@ -160,6 +187,41 @@ do
     }
 
 end
+
+-- No driver:
+
+do
+
+    drivers.install {
+        name     = "none",
+        actions  = { },
+        flushers = { },
+    }
+
+end
+
+do
+
+    local function prepare(driver)
+        converter = drivers.converters.lmtx
+    end
+
+    local function convert(driver,boxnumber,pagenumber)
+        converter(driver,texgetbox(boxnumber),"page",pagenumber)
+    end
+
+    drivers.install {
+        name     = "empty",
+        actions  = {
+            prepare = prepare,
+            convert = convert,
+        },
+        flushers = { },
+    }
+
+end
+
+--
 
 setmetatableindex(instances,function() return instances.default end)
 

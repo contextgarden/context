@@ -8,6 +8,15 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 
 -- The code below was originally in back-lpd.lua but it makes more sense in
 -- this namespace. I will rename variables.
+--
+-- There is no way that a lua based backend can compete with the original one
+-- for relative simple text runs. And we're talking seconds here on say 500
+-- pages with paragraphs alternativng between three fonts and colors. But such
+-- documents are rare so in practice we are quite okay, especially because in
+-- ConTeXt we can gain quite a bit elsewhere. So, when we loose 30% on such
+-- simple documents, we break even on for instance the manual, and gain 30% on
+-- Thomas's turture test (also for other reasons). But .. who knows what magic
+-- I can cook up in due time.
 
 if CONTEXTLMTXMODE == 0 then
     return
@@ -244,29 +253,20 @@ local function calc_pdfpos(h,v)
     if mode == "page" then
         cmtx = h - pdf_h
         cmty = v - pdf_v
-        if h ~= pdf_h or v ~= pdf_v then
-            return true
-        end
+        return h ~= pdf_h or v ~= pdf_v
     elseif mode == "text" then
         tmtx = h - saved_text_pos_h
         tmty = v - saved_text_pos_v
-        if h ~= pdf_h or v ~= pdf_v then
-            return true
-        end
+        return h ~= pdf_h or v ~= pdf_v
     elseif horizontalmode then
         tmty = v - saved_text_pos_v
         tj_delta = cw - h -- + saved_chararray_pos_h
-        if tj_delta ~= 0 or v ~= pdf_v then
-            return true
-        end
+        return tj_delta ~= 0 or v ~= pdf_v
     else
         tmtx = h - saved_text_pos_h
         tj_delta = cw + v -- - saved_chararray_pos_v
-        if tj_delta ~= 0 or h ~= pdf_h then
-            return true
-        end
+        return tj_delta ~= 0 or h ~= pdf_h
     end
-    return false
 end
 
 local function pdf_set_pos(h,v)
@@ -316,12 +316,14 @@ local function pdf_set_pos_temp(h,v)
     end
 end
 
+-- these dummy returns makes using them a bit faster
+
 local function pdf_end_string_nl()
     if mode == "char" then
         end_charmode()
-        end_chararray()
+        return end_chararray()
     elseif mode == "chararray" then
-        end_chararray()
+        return end_chararray()
     end
 end
 
@@ -329,13 +331,13 @@ local function pdf_goto_textmode()
     if mode == "page" then
      -- pdf_set_pos(0,0)
         pdf_reset_pos()
-        begin_text()
+        return begin_text()
     elseif mode ~= "text" then
         if mode == "char" then
             end_charmode()
-            end_chararray()
+            return end_chararray()
         else -- if mode == "chararray" then
-            end_chararray()
+            return end_chararray()
         end
     end
 end
@@ -345,12 +347,12 @@ local function pdf_goto_pagemode()
         if mode == "char" then
             end_charmode()
             end_chararray()
-            end_text()
+            return end_text()
         elseif mode == "chararray" then
             end_chararray()
-            end_text()
+            return end_text()
         elseif mode == "text" then
-            end_text()
+            return end_text()
         end
     end
 end
@@ -411,6 +413,49 @@ local flushcharacter  do
         end
     end
 
+    -- This only saves a little on hz because there we switch a lot of
+    -- instances.
+
+ -- local lastslant, lastextend, lastsqueeze, lastformat, lastsize, lastwidth, lastmode, lastused, lastfont
+ --
+ -- local function setup_fontparameters(font,factor,f,e)
+ --     if font ~= lastfont then
+ --         lastslant   = (fontparameters.slantfactor   or    0) / 1000
+ --         lastextend  = (fontparameters.extendfactor  or 1000) / 1000
+ --         lastsqueeze = (fontparameters.squeezefactor or 1000) / 1000
+ --         lastformat  = fontproperties.format
+ --         lastsize    = fontparameters.size * bpfactor
+ --         if format == "opentype" or format == "type1" then
+ --             lastsize = lastsize * 1000 / fontparameters.units -- can we avoid this ?
+ --         end
+ --         lastwidth = fontparameters.width
+ --         lastmode  = fontparameters.mode
+ --         lastused  = usedfonts[font] -- cache
+ --         lastfont  = font
+ --     end
+ --     local expand = 1 + factor / 1000000
+ --     if e then
+ --         tmrx = expand * lastextend * e
+ --     else
+ --         tmrx = expand * lastextend
+ --     end
+ --     tmsy       = lastslant
+ --     tmry       = lastsqueeze
+ --     need_width = lastwidth
+ --     need_mode  = lastmode
+ --     f_cur      = lastfont
+ --     f_pdf      = lastused
+ --     cur_factor = factor
+ --     cur_f      = f
+ --     cur_e      = e
+ --     tj_delta   = 0
+ --     if f then
+ --         fs = lastsize * f
+ --     else
+ --         fs = lastsize
+ --     end
+ -- end
+
     local f_width = formatters["%.6F w"]
     local f_mode  = formatters["%i Tr"]
     local f_font  = formatters["/F%i %.6F Tf"]
@@ -455,15 +500,23 @@ local flushcharacter  do
         cur_tmrx = tmrx
     end
 
-    local f_skip  = formatters["%.1f"]
+ -- local f_skip  = formatters["%.1f"]
  -- local f_octal = formatters["\\%o"]
  -- local f_char  = formatters["%c"]
     local f_hex   = formatters["%04X"]
 
     local h_hex = setmetatableindex(function(t,k) -- we already have this somewhere
-        local v = f_hex(k)
-        t[k] = v
-        return v
+        if k < 256 then
+            -- not sparse in this range
+            for i=0,255 do
+                t[i] = f_hex(i)
+            end
+            return t[k]
+        else
+            local v = f_hex(k)
+            t[k] = v
+            return v
+        end
     end)
 
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
@@ -535,7 +588,9 @@ local flushcharacter  do
 
         cw = cw + naturalwidth
 
+if not pdfcharacters[index] then
         pdfcharacters[index] = true
+end
 
     end
 
@@ -543,7 +598,7 @@ end
 
 -- literals
 
-local flushpdfliteral  do
+local flushliteral  do
 
     local literalvalues        = nodes.literalvalues
 
@@ -556,7 +611,7 @@ local flushpdfliteral  do
 
     local nodeproperties       = nodes.properties.data
 
-    flushpdfliteral = function(current,pos_h,pos_v,mode,str)
+    flushliteral = function(current,pos_h,pos_v,mode,str)
         if mode then
             if not str then
                 mode, str = originliteral_code, mode
@@ -650,7 +705,7 @@ end
 
 -- grouping & orientation
 
-local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
+local flushsave, flushrestore, flushsetmatrix  do
 
     local matrices     = { }
     local positions    = { }
@@ -659,7 +714,7 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
 
     local f_matrix = formatters["%s 0 0 cm"]
 
-    flushpdfsave = function(current,pos_h,pos_v)
+    flushsave = function(current,pos_h,pos_v)
         nofpositions = nofpositions + 1
         positions[nofpositions] = { pos_h, pos_v, nofmatrices }
         pdf_goto_pagemode()
@@ -667,7 +722,7 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
         b = b + 1 ; buffer[b] = "q"
     end
 
-    flushpdfrestore = function(current,pos_h,pos_v)
+    flushrestore = function(current,pos_h,pos_v)
         if nofpositions < 1 then
             return
         end
@@ -705,7 +760,7 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
 
     local nodeproperties = nodes.properties.data
 
-    flushpdfsetmatrix = function(current,pos_h,pos_v)
+    flushsetmatrix = function(current,pos_h,pos_v)
         local str
         if type(current) == "string" then
             str = current
@@ -766,27 +821,28 @@ local flushpdfsave, flushpdfrestore, flushpdfsetmatrix  do
     end
 
 --     pushorientation = function(orientation,pos_h,pos_v,pos_r)
---         flushpdfsave(false,pos_h,pos_v)
+--         flushsave(false,pos_h,pos_v)
 --         if orientation == 1 then
---             flushpdfsetmatrix("0 -1 1 0",pos_h,pos_v)
+--             flushsetmatrix("0 -1 1 0",pos_h,pos_v)
 --         elseif orientation == 2 then
---             flushpdfsetmatrix("-1 0 0 -1",pos_h,pos_v)
+--             flushsetmatrix("-1 0 0 -1",pos_h,pos_v)
 --         elseif orientation == 3 then
---             flushpdfsetmatrix("0 1 -1 0",pos_h,pos_v)
+--             flushsetmatrix("0 1 -1 0",pos_h,pos_v)
 --         end
 --     end
 
 --     poporientation = function(orientation,pos_h,pos_v,pos_r)
---         flushpdfrestore(false,pos_h,pos_v)
+--         flushrestore(false,pos_h,pos_v)
 --     end
 
 end
 
 -- rules
 
-local flushedxforms = { } -- actually box resources but can also be direct
+local flushedxforms   = { } -- actually box resources but can also be direct
+local localconverter  = nil -- will be set
 
-local flushrule, flushsimplerule, flushpdfimage  do
+local flushrule, flushsimplerule, flushimage  do
 
     local rulecodes         = nodes.rulecodes
     local newrule           = nodes.pool.rule
@@ -869,7 +925,7 @@ local flushrule, flushsimplerule, flushpdfimage  do
         }
         boxresources[objnum] = l
         if immediate then
-            lpdf.convert(list,"xform",objnum,l)
+            localconverter(list,"xform",objnum,l)
             flushedxforms[objnum] = { true , objnum }
             flushlist(list)
         else
@@ -1085,7 +1141,7 @@ local flushrule, flushsimplerule, flushpdfimage  do
         b = b + 1 ; buffer[b] = s_e
     end
 
-    flushpdfimage = function(index,width,height,depth,pos_h,pos_v)
+    flushimage = function(index,width,height,depth,pos_h,pos_v)
 
         -- used in vf characters
 
@@ -1222,7 +1278,7 @@ local wrapup, registerpage  do
         }
     end
 
-    wrapup = function()
+    wrapup = function(driver)
 
         -- hook (to reshuffle pages)
         local pagetree = { }
@@ -1300,8 +1356,8 @@ end
 
 pdf_h, pdf_v  = 0, 0
 
-local function initialize(specification)
-    reset_variables(specification)
+local function initialize(driver,details)
+    reset_variables(details)
     reset_buffer()
 end
 
@@ -1316,11 +1372,14 @@ local f_image = formatters["Im%d"]
 
 local pushmode, popmode
 
-local function finalize(objnum,specification)
+local function finalize(driver,details)
 
     pushmode()
 
     pdf_goto_pagemode() -- for now
+
+    local objnum        = details.objnum
+    local specification = details.objnum
 
     local content = concat(buffer,"\n",1,b)
 
@@ -1451,7 +1510,7 @@ local function finalize(objnum,specification)
             local objnum        = f[2] -- specification.objnum
             local specification = boxresources[objnum]
             local list          = specification.list
-            lpdf.convert(list,"xform",f[2],specification)
+            localconverter(list,"xform",f[2],specification)
         end
     end
 
@@ -1487,7 +1546,7 @@ local streams       = { } -- maybe just parallel to objects (no holes)
 local nofobjects    = 0
 local offset        = 0
 local f             = false
-local flush         = false
+----- flush         = false
 local threshold     = 40 -- also #("/Filter /FlateDecode")
 local objectstream  = true
 local compress      = true
@@ -1621,9 +1680,9 @@ local addtocache, flushcache, cache do
             else
                 b = f_stream_b_d_u(cache,strobj(),#data)
             end
-            flush(f,b)
-            flush(f,data)
-            flush(f,e)
+            f:write(b)
+            f:write(data)
+            f:write(e)
             offset = offset + #b + #data + #e
             data, d = { }, 0
             list, l = { }, 0
@@ -1663,7 +1722,7 @@ local function flushnormalobj(data,n)
     if level == 0 then
         objects[n] = offset
         offset = offset + #data
-        flush(f,data)
+        f:write(data)
     else
         if not lastdeferred then
             lastdeferred = n
@@ -1706,9 +1765,9 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         else
             b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
         end
-        flush(f,b)
-        flush(f,data)
-        flush(f,e)
+        f:write(b)
+        f:write(data)
+        f:write(e)
         objects[n] = offset
         offset = offset + #b + #data + #e
     else
@@ -1746,7 +1805,7 @@ local function flushdeferred()
             if type(o) == "string" then
                 objects[n] = offset
                 offset = offset + #o
-                flush(f,o)
+                f:write(o)
             end
         end
         lastdeferred = false
@@ -1865,6 +1924,14 @@ updaters.register("backend.update.pdf",function()
     pdf.immediateobj   = obj
 end)
 
+-- Bah, in lua 5.4 we cannot longer use flush = getmetatable(f).write as efficient
+-- flusher due to some change in the metatable definitions (more indirectness) ...
+-- so maybe we should introduce our own helper for this as now we get a lookup for
+-- each write (and writing isn't already the fastest). A little Lua charm gone as
+-- now the memory variant also needs to use this 'object' model. (Ok, the <const>
+-- is a new charm but for that to work in our advance I need to patch quite some
+-- files.)
+
 local openfile, closefile  do
 
     local f_used       = formatters["%010i 00000 n \010"]
@@ -1878,34 +1945,45 @@ local openfile, closefile  do
 
     local inmemory = false
  -- local inmemory = environment.arguments.inmemory
-    local close    = nil
+ -- local close    = nil
 
     openfile = function(filename)
         if inmemory then
-            f = { }
+         -- local n = 0
+         -- f = { }
+         -- flush = function(f,s)
+         --     n = n + 1 f[n] = s
+         -- end
+         -- close = function(f)
+         --     f = concat(f)
+         --     io.savedata(filename,f)
+         --     f = false
+         -- end
             local n = 0
-            flush = function(f,s)
-                n = n + 1 f[n] = s
-            end
-            close = function(f)
-                f = concat(f)
-                io.savedata(filename,f)
-                f = false
-            end
-        else
+            f = {
+                write = function(self,s)
+                    n = n + 1 f[n] = s
+                end,
+                close = function(self)
+                    f = concat(f)
+                    io.savedata(filename,f)
+                    f = false
+                end,
+            }
+         else
             f = io.open(filename,"wb")
             if not f then
                 -- message
                 os.exit()
             end
-            flush = getmetatable(f).write
-            close = getmetatable(f).close
+         -- flush = getmetatable(f).write
+         -- close = getmetatable(f).close
         end
         local v = f_pdf(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
-        flush(f,v)
-        flush(f,b)
+        f:write(v)
+        f:write(b)
         offset = #v + #b
     end
 
@@ -2051,20 +2129,20 @@ local openfile, closefile  do
                     local comp = zlibcompress(data,3)
                     if comp then
                         data = comp
-                        flush(f,f_stream_b_d_c(nofobjects,xref(),#data))
+                        f:write(f_stream_b_d_c(nofobjects,xref(),#data))
                     else
-                        flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
+                        f:write(f_stream_b_d_u(nofobjects,xref(),#data))
                     end
                 else
-                    flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
+                    f:write(f_stream_b_d_u(nofobjects,xref(),#data))
                 end
-                flush(f,data)
-                flush(f,s_stream_e)
-                flush(f,f_startxref(xrefoffset))
+                f:write(data)
+                f:write(s_stream_e)
+                f:write(f_startxref(xrefoffset))
             else
                 flushdeferred()
                 xrefoffset = offset
-                flush(f,f_xref(nofobjects+1))
+                f:write(f_xref(nofobjects+1))
                 local trailer = pdfdictionary {
                     Size = nofobjects+1,
                     Root = catalog,
@@ -2084,16 +2162,16 @@ local openfile, closefile  do
                     end
                 end
                 objects[0] = f_first(lastfree)
-                flush(f,concat(objects,"",0,nofobjects))
+                f:write(concat(objects,"",0,nofobjects))
                 trailer.Size = nofobjects + 1
                 if trailerid then
-                    flush(f,f_trailer_id(trailer(),trailerid,trailerid,xrefoffset))
+                    f:write(f_trailer_id(trailer(),trailerid,trailerid,xrefoffset))
                 else
-                    flush(f,f_trailer_no(trailer(),xrefoffset))
+                    f:write(f_trailer_no(trailer(),xrefoffset))
                 end
             end
         end
-        close(f)
+        f:close()
         io.flush()
     end
 
@@ -2287,7 +2365,7 @@ updaters.register("backend.update.lpdf",function()
             topdf[id] = index
         end
         -- pdf.print or pdf.literal
-        flushpdfimage(index,wd,ht,dp,pos_h,pos_v)
+        flushimage(index,wd,ht,dp,pos_h,pos_v)
     end
 
     local function pdfvfimage(wd,ht,dp,data,name)
@@ -2310,15 +2388,20 @@ do
     local renamefile = os.rename
  -- local copyfile   = file.copy
  -- local addsuffix  = file.addsuffix
+    local texgetbox  = tex.getbox
 
     local pdfname    = nil
     local tmpname    = nil
+    local converter  = nil
+    local useddriver = nil -- a bit of a hack
 
-    local function outputfilename()
+    local function outputfilename(driver)
         return pdfname
     end
 
-    local function prepare()
+    -- todo: prevent twice
+
+    local function prepare(driver)
         if not environment.initex then
             -- install new functions in pdf namespace
             updaters.apply("backend.update.pdf")
@@ -2343,21 +2426,29 @@ do
             openfile(tmpname)
             --
             luatex.registerstopactions(1,function()
-                lpdf.finalizedocument()
-                closefile()
+                if pdfname then
+                    lpdf.finalizedocument()
+                    closefile()
+                end
             end)
             --
             luatex.registerpageactions(1,function()
-                lpdf.finalizepage(true)
+                if pdfname then
+                    lpdf.finalizepage(true)
+                end
             end)
             --            --
             lpdf.registerdocumentfinalizer(wrapup,nil,"wrapping up")
+            --
         end
         --
         environment.lmtxmode = CONTEXTLMTXMODE
+        --
+        converter  = drivers.converters.lmtx
+        useddriver = driver
     end
 
-    local function wrapup()
+    local function wrapup(driver)
         if pdfname then
             local ok = true
             if isfile(pdfname) then
@@ -2380,7 +2471,7 @@ do
         end
     end
 
-    local function cleanup()
+    local function cleanup(driver)
         if tmpname then
             closefile(true)
             if isfile(tmpname) then
@@ -2391,44 +2482,42 @@ do
         end
     end
 
-    local function convert(boxnumber)
-        lpdf.convert(tex.box[boxnumber],"page")
+    local function convert(driver,boxnumber)
+        converter(driver,texgetbox(boxnumber),"page")
     end
 
-    function lpdf.flushers()
-        return {
+    localconverter = function(...)
+        converter(useddriver,...)
+    end
+
+    drivers.install {
+        name     = "pdf",
+        flushers = {
             character       = flushcharacter,
             rule            = flushrule,
             simplerule      = flushsimplerule,
             pushorientation = pushorientation,
             poporientation  = poporientation,
             --
-            pdfliteral      = flushpdfliteral,
-            pdfsetmatrix    = flushpdfsetmatrix,
-            pdfsave         = flushpdfsave,
-            pdfrestore      = flushpdfrestore,
-            pdfimage        = flushpdfimage,
-        }
-    end
-
-    function lpdf.actions()
-        return {
+            literal         = flushliteral,
+            setmatrix       = flushsetmatrix,
+            save            = flushsave,
+            restore         = flushrestore,
+            image           = flushimage,
+            --
+            updatefontstate = updatefontstate,
+        },
+        actions  = {
             prepare         = prepare,
             wrapup          = wrapup,
-            convert         = convert,
             cleanup         = cleanup,
             --
             initialize      = initialize,
+            convert         = convert,
             finalize        = finalize,
-            updatefontstate = updatefontstate,
+            --
             outputfilename  = outputfilename,
-        }
-    end
-
-    drivers.install {
-        name     = "pdf",
-        flushers = lpdf.flushers(),
-        actions  = lpdf.actions(),
+        },
     }
 
 end

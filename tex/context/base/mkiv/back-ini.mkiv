@@ -64,8 +64,27 @@
     \fi
 \to \everysetupbackend
 
-%D For older styles:
+%D For the moment this is an experiment (defauls is pdf, but we also
+%D have lua, json and mps).
+%D
+%D \starttyping
+%D % \setupoutput[lua]
+%D % \setupoutput[json]
+%D % \setupoutput[mps]
+%D % \setupoutput[none]  % for testing only
+%D % \setupoutput[empty] % for testing only
+%D
+%D \starttext
+%D     \dorecurse{1000}{
+%D         {\tf \red   \samplefile{tufte}} \par
+%D         {\bf \green \samplefile {ward}} \par
+%D         {\sl \blue  \samplefile{davis}} \par
+%D     }
+%D \stoptext
+%D \stoptyping
 
-\let\setupoutput\gobbleoneoptional
+\unexpanded\def\setupoutput[#1]%
+  {\clf_enabledriver{#1}}
+
 
 \protect \endinput

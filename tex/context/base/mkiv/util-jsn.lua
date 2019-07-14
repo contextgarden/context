@@ -217,7 +217,7 @@ do
                             if st then
                                 n = n + 1 t[n] = f_val_seq(depth,st)
                             else
-                                tojsonpp(v,k,depth,level+1,0)
+                                tojsonpp(v,nil,depth,level+1,#v)
                             end
                         end
                     elseif tv == "boolean" then
@@ -377,10 +377,9 @@ do
             n = 0
             if pretty then
                 tojsonpp(value,name,0,0,#value)
---                 value = concat(t,"\n",1,n)
                 value = concat(t,"",1,n)
             else
-                tojson(value,0)
+                t, n = tojson(value,0)
                 value = concat(t,"",1,n)
             end
             t = nil

@@ -266,6 +266,13 @@ nuts.setdisc               = direct.setdisc
 nuts.getdiscretionary      = direct.getdisc
 nuts.setdiscretionary      = direct.setdisc
 
+nuts.getpre                = direct.getpre
+nuts.setpre                = direct.setpre
+nuts.getpost               = direct.getpost
+nuts.setpost               = direct.setpost
+nuts.getreplace            = direct.getreplace
+nuts.setreplace            = direct.setreplace
+
 local getdata = direct.getdata
 local setdata = direct.setdata
 
@@ -392,6 +399,23 @@ local remove = (CONTEXTLMTXMODE > 0 and LUATEXFUNCTIONALITY >= 20190704) and d_r
         end
     end
     return head, current
+end
+
+-- for now
+
+if not nuts.getpre then
+
+    local d_getdisc  = direct.getdisc
+    local d_setfield = direct.setfield
+
+    function nuts.getpre(d)       local h, _, _, t, _, _ = d_getdisc(d,true) return h, t end
+    function nuts.getpost(d)      local _, h, _, _, t, _ = d_getdisc(d,true) return h, t end
+    function nuts.getreplace(d)   local _, _, h, _, _, t = d_getdisc(d,true) return h, t end
+
+    function nuts.setpre(d,n)     d_setfield("pre",    n) end
+    function nuts.setpost(d,n)    d_setfield("post",   n) end
+    function nuts.setreplace(d,n) d_setfield("replace",n) end
+
 end
 
 -- alias

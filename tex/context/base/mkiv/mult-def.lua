@@ -7340,6 +7340,12 @@ return {
   ["compressdistance"]={
    ["en"]="compressdistance",
   },
+  ["compressmethod"]={
+   ["en"]="compressmethod",
+  },
+  ["compressstopper"]={
+   ["en"]="compressstopper",
+  },
   ["concerns"]={
    ["en"]="concerns",
    ["nl"]="betreft",
@@ -13122,6 +13128,9 @@ return {
   ["compressseparator"]={
    ["en"]="compressseparator",
   },
+  ["compressstopper"]={
+   ["en"]="compressstopper",
+  },
   ["concept"]={
    ["cs"]="koncept",
    ["de"]="konzept",
@@ -16107,6 +16116,10 @@ return {
   },
   ["selectfont"]={
    ["en"]="selectfont",
+  },
+  ["separator"]={
+   ["en"]="separator",
+   ["nl"]="scheider",
   },
   ["september"]={
    ["cs"]="zari",

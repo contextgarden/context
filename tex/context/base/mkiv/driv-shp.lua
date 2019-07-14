@@ -9,109 +9,111 @@ if not modules then modules = { } end modules ['driv-shp'] = {
 local type, next = type, next
 local round = math.round
 
-local setmetatableindex       = table.setmetatableindex
-local formatters              = string.formatters
-local concat                  = table.concat
-local keys                    = table.keys
-local sortedhash              = table.sortedhash
-local splitstring             = string.split
-local idiv                    = number.idiv
-local extract                 = bit32.extract
-local nuts                    = nodes.nuts
+local setmetatableindex = table.setmetatableindex
+local formatters        = string.formatters
+local concat            = table.concat
+local keys              = table.keys
+local sortedhash        = table.sortedhash
+local splitstring       = string.split
+local idiv              = number.idiv
+local extract           = bit32.extract
+local nuts              = nodes.nuts
 
-local tonut                   = nodes.tonut
-local tonode                  = nodes.tonode
+local tonut             = nodes.tonut
+local tonode            = nodes.tonode
 
-local getdirection            = nuts.getdirection
-local getlist                 = nuts.getlist
-local getoffsets              = nuts.getoffsets
-local getorientation          = nuts.getorientation
-local getfield                = nuts.getfield
-local getwhd                  = nuts.getwhd
-local getkern                 = nuts.getkern
-local getheight               = nuts.getheight
-local getdepth                = nuts.getdepth
-local getwidth                = nuts.getwidth
-local getnext                 = nuts.getnext
-local getsubtype              = nuts.getsubtype
-local getid                   = nuts.getid
-local getleader               = nuts.getleader
-local getglue                 = nuts.getglue
-local getshift                = nuts.getshift
-local getdata                 = nuts.getdata
-local getboxglue              = nuts.getboxglue
-local getexpansion            = nuts.getexpansion
+local getdirection      = nuts.getdirection
+local getlist           = nuts.getlist
+local getoffsets        = nuts.getoffsets
+local getorientation    = nuts.getorientation
+local getfield          = nuts.getfield
+local getwhd            = nuts.getwhd
+local getkern           = nuts.getkern
+local getheight         = nuts.getheight
+local getdepth          = nuts.getdepth
+local getwidth          = nuts.getwidth
+local getnext           = nuts.getnext
+local getsubtype        = nuts.getsubtype
+local getid             = nuts.getid
+local getleader         = nuts.getleader
+local getglue           = nuts.getglue
+local getshift          = nuts.getshift
+local getdata           = nuts.getdata
+local getboxglue        = nuts.getboxglue
+local getexpansion      = nuts.getexpansion
+local getreplace        = nuts.getreplace
+local setreplace        = nuts.setreplace
 
------ getall                  = node.direct.getall
+local setdirection      = nuts.setdirection
+local setfield          = nuts.setfield
+local setlink           = nuts.setlink
 
-local setdirection            = nuts.setdirection
-local setfield                = nuts.setfield
-local setlink                 = nuts.setlink
+local isglyph           = nuts.isglyph
+local findtail          = nuts.tail
+local nextdir           = nuts.traversers.dir
+local nextnode          = nuts.traversers.node
 
-local isglyph                 = nuts.isglyph
-local findtail                = nuts.tail
-local nextdir                 = nuts.traversers.dir
-local nextnode                = nuts.traversers.node
+local rangedimensions   = node.direct.naturalwidth or nuts.rangedimensions
+local effectiveglue     = nuts.effective_glue
 
-local rangedimensions         = nuts.rangedimensions
-local effectiveglue           = nuts.effective_glue
+local texget            = tex.get
 
-local nodecodes               = nodes.nodecodes
-local whatsitcodes            = nodes.whatsitcodes
-local leadercodes             = nodes.leadercodes
-local subtypes                = nodes.subtypes
+local fonthashes        = fonts.hashes
+local fontdata          = fonthashes.identifiers
+local characters        = fonthashes.characters
+local parameters        = fonthashes.parameters
 
-local dircodes                = nodes.dircodes
-local normaldir_code          = dircodes.normal
+local nodecodes         = nodes.nodecodes
+local whatsitcodes      = nodes.whatsitcodes
+local leadercodes       = nodes.leadercodes
+local dircodes          = nodes.dircodes
+local dirvalues         = nodes.dirvalues
+local subtypes          = nodes.subtypes
 
-local dirvalues               = nodes.dirvalues
-local lefttoright_code        = dirvalues.lefttoright
-local righttoleft_code        = dirvalues.righttoleft
+local <const> normaldir_code          = dircodes.normal
 
-local glyph_code              = nodecodes.glyph
-local kern_code               = nodecodes.kern
-local glue_code               = nodecodes.glue
-local hlist_code              = nodecodes.hlist
-local vlist_code              = nodecodes.vlist
-local dir_code                = nodecodes.dir
-local disc_code               = nodecodes.disc
-local math_code               = nodecodes.math
-local rule_code               = nodecodes.rule
-local marginkern_code         = nodecodes.marginkern
-local whatsit_code            = nodecodes.whatsit
+local <const> lefttoright_code        = dirvalues.lefttoright
+local <const> righttoleft_code        = dirvalues.righttoleft
 
-local leader_code             = leadercodes.leader
-local cleader_code            = leadercodes.cleader
-local xleader_code            = leadercodes.xleader
-local gleader_code            = leadercodes.gleader
+local <const> glyph_code              = nodecodes.glyph
+local <const> kern_code               = nodecodes.kern
+local <const> glue_code               = nodecodes.glue
+local <const> hlist_code              = nodecodes.hlist
+local <const> vlist_code              = nodecodes.vlist
+local <const> dir_code                = nodecodes.dir
+local <const> disc_code               = nodecodes.disc
+local <const> math_code               = nodecodes.math
+local <const> rule_code               = nodecodes.rule
+local <const> marginkern_code         = nodecodes.marginkern
+local <const> whatsit_code            = nodecodes.whatsit
+----- <const> penalty_code            = nodecodes.penalty
+----- <const> boundary_code           = nodecodes.boundary
 
-local saveposwhatsit_code     = whatsitcodes.savepos
-local userdefinedwhatsit_code = whatsitcodes.userdefined
-local openwhatsit_code        = whatsitcodes.open
-local writewhatsit_code       = whatsitcodes.write
-local closewhatsit_code       = whatsitcodes.close
-local lateluawhatsit_code     = whatsitcodes.latelua
-local literalwhatsit_code     = whatsitcodes.literal
-local setmatrixwhatsit_code   = whatsitcodes.setmatrix
-local savewhatsit_code        = whatsitcodes.save
-local restorewhatsit_code     = whatsitcodes.restore
+local <const> leaders_code            = leadercodes.leaders
+local <const> cleaders_code           = leadercodes.cleaders
+local <const> xleaders_code           = leadercodes.xleaders
+local <const> gleaders_code           = leadercodes.gleaders
 
-local texget                  = tex.get
-
-local fonthashes              = fonts.hashes
-local fontdata                = fonthashes.identifiers
-local characters              = fonthashes.characters
-local parameters              = fonthashes.parameters
-
-local report                  = logs.reporter("drivers")
+local <const> saveposwhatsit_code     = whatsitcodes.savepos
+local <const> userdefinedwhatsit_code = whatsitcodes.userdefined
+local <const> openwhatsit_code        = whatsitcodes.open
+local <const> writewhatsit_code       = whatsitcodes.write
+local <const> closewhatsit_code       = whatsitcodes.close
+local <const> lateluawhatsit_code     = whatsitcodes.latelua
+local <const> literalwhatsit_code     = whatsitcodes.literal
+local <const> setmatrixwhatsit_code   = whatsitcodes.setmatrix
+local <const> savewhatsit_code        = whatsitcodes.save
+local <const> restorewhatsit_code     = whatsitcodes.restore
 
 local getpagedimensions  getpagedimensions = function()
     getpagedimensions = backends.codeinjections.getpagedimensions
     return getpagedimensions()
 end
 
-local drivers           = drivers
-local instances         = drivers.instances
+local drivers   = drivers
+local instances = drivers.instances
+
+local report    = logs.reporter("drivers")
 
 ---------------------------------------------------------------------------------------
 
@@ -145,27 +147,18 @@ local pushorientation
 local poporientation
 local flushcharacter
 local flushrule
-local flushpdfliteral
-local flushpdfsetmatrix
-local flushpdfsave
-local flushpdfrestore
+local flushliteral
+local flushsetmatrix
+local flushsave
+local flushrestore
 local flushspecial
------ flushpdfimage
+----- flushimage
 
 -- make local
 
 function drivers.getpos () return round(pos_h), round(pos_v) end
 function drivers.gethpos() return round(pos_h)               end
 function drivers.getvpos() return               round(pos_v) end
-
--- local function synch_pos_with_cur(ref_h, ref_v, h, v)
---     if pos_r == righttoleft_code then
---         pos_h = ref_h - h
---     else
---         pos_h = ref_h + h
---     end
---     pos_v = ref_v - v
--- end
 
 -- characters
 
@@ -261,7 +254,7 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 level = level - 1
             end
         elseif command == "pdf" then
-            flushpdfliteral(false,pos_h,pos_v,packet[2],packet[3])
+            flushliteral(false,pos_h,pos_v,packet[2],packet[3])
         elseif command == "rule" then
             local size_v = packet[2]
             local size_h = packet[3]
@@ -308,7 +301,6 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
     pos_v = saved_v
     pos_r = saved_r
 
- -- synch_pos_with_cur(ref_h, ref_v, pos_h,pos_v)
     nesting = nesting - 1
 end
 
@@ -436,34 +428,6 @@ end
 
 local hlist_out, vlist_out  do
 
-    -- effective_glue :
-    --
-    -- local cur_g      = 0
-    -- local cur_glue   = 0.0
-    --
-    -- local width, stretch, shrink, stretch_order, shrink_order = getglue(current)
-    -- if g_sign == 1 then -- stretching
-    --     if stretch_order == g_order then
-    --      -- rule_wd  = width - cur_g
-    --      -- cur_glue = cur_glue + stretch
-    --      -- cur_g    = g_set * cur_glue
-    --      -- rule_wd  = rule_wd + cur_g
-    --         rule_ht = width + g_set * stretch
-    --     else
-    --         rule_wd  = width
-    --     end
-    -- else
-    --     if shrink_order == g_order then
-    --      -- rule_wd  = width - cur_g
-    --      -- cur_glue = cur_glue - shrink
-    --      -- cur_g    = g_set * cur_glue
-    --      -- rule_wd  = rule_wd + cur_g
-    --         rule_ht = width - g_set * shrink
-    --     else
-    --         rule_wd  = width
-    --     end
-    -- end
-
     local function applyanchor(orientation,x,y,width,height,depth,woffset,hoffset,doffset,xoffset,yoffset)
         local ot = extract(orientation, 0,4)
         local ay = extract(orientation, 4,4)
@@ -508,8 +472,6 @@ local hlist_out, vlist_out  do
 
     -- to be checked: begin- or enddir kan nil zijn, weird
 
-    rangedimensions = node.direct.naturalwidth or rangedimensions
-
     local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
         local dir_nest = 1
         local enddir   = begindir
@@ -545,9 +507,6 @@ local hlist_out, vlist_out  do
         local boxwidth,
               boxheight,
               boxdepth   = getwhd(this_box)
-        local g_set,
-              g_order,
-              g_sign     = getboxglue(this_box)
 
         local cur_h      = 0
         local cur_v      = 0
@@ -556,12 +515,14 @@ local hlist_out, vlist_out  do
             current = getlist(this_box)
         end
 
-        while current do
-            local char, id = isglyph(current)
-            if char then
+        -- we can encounter localpar, boundary and penalty nodes but a special
+        -- iterator over content nodes won't save much
+
+        for current, id, subtype in nextnode, current do
+            if id == glyph_code then
+                local char, font = isglyph(current)
                 local x_offset, y_offset = getoffsets(current)
                 if x_offset ~= 0 or y_offset ~= 0 then
-                    -- synch_pos_with_cur(ref_h, ref_v, cur_h + x_offset, cur_v - y_offset)
                     if pos_r == righttoleft_code then
                         pos_h = ref_h - (cur_h + x_offset)
                     else
@@ -570,99 +531,98 @@ local hlist_out, vlist_out  do
                     pos_v = ref_v - (cur_v - y_offset)
                     -- synced
                 end
-                local wd, ht, dp = flush_character(current,id,char,false,true,pos_h,pos_v,pos_r)
+                local wd, ht, dp = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
                 cur_h = cur_h + wd
             elseif id == glue_code then
-                local gluewidth
-                if g_sign == 0 then
-                    gluewidth = getwidth(current)
-                else
-                    gluewidth = effectiveglue(current,this_box)
-                end
+                local gluewidth = effectiveglue(current,this_box)
                 if gluewidth ~= 0 then
-                    local leader = getleader(current)
-                    if leader then
-                        local width, height, depth = getwhd(leader)
-                        if getid(leader) == rule_code then
-                            if gluewidth > 0 then
-                                if height == running then
-                                    height = boxheight
-                                end
-                                if depth == running then
-                                    depth = boxdepth
-                                end
-                                local total = height + depth
-                                if total > 0 then
-                                    if pos_r == righttoleft_code then
-                                        pos_h = pos_h - gluewidth
+                    if subtype >= leaders_code then
+                        local leader = getleader(current)
+                        if leader then
+                            local width, height, depth = getwhd(leader)
+                            if getid(leader) == rule_code then
+                                if gluewidth > 0 then
+                                    if height == running then
+                                        height = boxheight
                                     end
-                                    pos_v = pos_v - depth
-                                    flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total)
+                                    if depth == running then
+                                        depth = boxdepth
+                                    end
+                                    local total = height + depth
+                                    if total > 0 then
+                                        if pos_r == righttoleft_code then
+                                            pos_h = pos_h - gluewidth
+                                        end
+                                        pos_v = pos_v - depth
+                                        flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total)
+                                    end
+                                    cur_h = cur_h + gluewidth
                                 end
+                            elseif width > 0 and gluewidth > 0 then
+                                local boxdir = getdirection(leader) or lefttoright_code
+                                gluewidth = gluewidth + 10
+                                local edge = cur_h + gluewidth
+                                local lx = 0
+    --                             local subtype = getsubtype(current)
+                                if subtype == gleaders_code then
+                                    local save_h = cur_h
+                                    if pos_r == righttoleft_code then
+                                        cur_h = ref_h - shipbox_h - cur_h
+                                        cur_h = width * (cur_h / width)
+                                        cur_h = ref_h - shipbox_h - cur_h
+                                    else
+                                        cur_h = cur_h + ref_h - shipbox_h
+                                        cur_h = width * (cur_h / width)
+                                        cur_h = cur_h - ref_h - shipbox_h
+                                    end
+                                    if cur_h < save_h then
+                                        cur_h = cur_h + width
+                                    end
+                                elseif subtype == leaders_code then
+                                    local save_h = cur_h
+                                    cur_h = width * (cur_h / width)
+                                    if cur_h < save_h then
+                                        cur_h = cur_h + width
+                                    end
+                                else
+                                    lq = gluewidth / width
+                                    lr = gluewidth % width
+                                    if subtype == cleaders_code then
+                                        cur_h = cur_h + lr / 2
+                                    else
+                                        lx = lr / (lq + 1)
+                                        cur_h = cur_h + (lr - (lq - 1) * lx) / 2
+                                    end
+                                end
+                                local shift = getshift(leader)
+                                while cur_h + width <= edge do
+                                    local basepoint_h = 0
+                                 -- local basepoint_v = shift
+                                    if boxdir ~= pos_r then
+                                        basepoint_h = boxwidth
+                                    end
+                                    -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
+                                    if pos_r == righttoleft_code then
+                                        pos_h = ref_h - (cur_h + basepoint_h)
+                                    else
+                                        pos_h = ref_h + (cur_h + basepoint_h)
+                                    end
+                                    pos_v = ref_v - shift
+                                    -- synced
+                                    outer_doing_leaders = doing_leaders
+                                    doing_leaders       = true
+                                    if getid(leader) == vlist_code then
+                                        vlist_out(leader)
+                                    else
+                                        hlist_out(leader)
+                                    end
+                                    doing_leaders = outer_doing_leaders
+                                    cur_h = cur_h + width + lx
+                                end
+                                cur_h = edge - 10
+                            else
                                 cur_h = cur_h + gluewidth
                             end
-                        elseif width > 0 and gluewidth > 0 then
-                            local boxdir = getdirection(leader) or lefttoright_code
-                            gluewidth = gluewidth + 10
-                            local edge = cur_h + gluewidth
-                            local lx = 0
-                            local subtype = getsubtype(current)
-                            if subtype == gleader_code then
-                                local save_h = cur_h
-                                if pos_r == righttoleft_code then
-                                    cur_h = ref_h - shipbox_h - cur_h
-                                    cur_h = width * (cur_h / width)
-                                    cur_h = ref_h - shipbox_h - cur_h
-                                else
-                                    cur_h = cur_h + ref_h - shipbox_h
-                                    cur_h = width * (cur_h / width)
-                                    cur_h = cur_h - ref_h - shipbox_h
-                                end
-                                if cur_h < save_h then
-                                    cur_h = cur_h + width
-                                end
-                            elseif subtype == leader_code then -- aleader ?
-                                local save_h = cur_h
-                                cur_h = width * (cur_h / width)
-                                if cur_h < save_h then
-                                    cur_h = cur_h + width
-                                end
-                            else
-                                lq = gluewidth / width
-                                lr = gluewidth % width
-                                if subtype == cleader_code then
-                                    cur_h = cur_h + lr / 2
-                                else
-                                    lx = lr / (lq + 1)
-                                    cur_h = cur_h + (lr - (lq - 1) * lx) / 2
-                                end
-                            end
-                            local shift = getshift(leader)
-                            while cur_h + width <= edge do
-                                local basepoint_h = 0
-                             -- local basepoint_v = shift
-                                if boxdir ~= pos_r then
-                                    basepoint_h = boxwidth
-                                end
-                                -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
-                                if pos_r == righttoleft_code then
-                                    pos_h = ref_h - (cur_h + basepoint_h)
-                                else
-                                    pos_h = ref_h + (cur_h + basepoint_h)
-                                end
-                                pos_v = ref_v - shift
-                                -- synced
-                                outer_doing_leaders = doing_leaders
-                                doing_leaders       = true
-                                if getid(leader) == vlist_code then
-                                    vlist_out(leader)
-                                else
-                                    hlist_out(leader)
-                                end
-                                doing_leaders = outer_doing_leaders
-                                cur_h = cur_h + width + lx
-                            end
-                            cur_h = edge - 10
                         else
                             cur_h = cur_h + gluewidth
                         end
@@ -671,21 +631,14 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
-                -- w h d dir l, s, o = getall(current)
                 local boxdir = getdirection(current) or lefttoright_code
                 local width, height, depth = getwhd(current)
                 local list = getlist(current)
                 if list then
                     local shift, orientation = getshift(current)
                     if not orientation then
-                     --
-                     -- local width, height, depth, list, boxdir, shift, orientation = getall(current)
-                     -- if list then
-                     --     if not orientation then
-                     --
                         local basepoint_h = boxdir ~= pos_r and width or 0
                      -- local basepoint_v = shift
-                        -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h,shift)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - (cur_h + basepoint_h)
                         else
@@ -702,7 +655,6 @@ local hlist_out, vlist_out  do
                         local orientation, xoffset, yoffset = getorientation(current)
                         local basepoint_h = boxdir ~= pos_r and width or 0
                      -- local basepoint_v = shift
-                        -- synch_pos_with_cur(ref_h,ref_v,cur_h + basepoint_h + xoffset,shift - yoffset)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - (cur_h + basepoint_h + xoffset)
                         else
@@ -733,7 +685,6 @@ local hlist_out, vlist_out  do
                                 basepoint_v = basepoint_v - height
                             end
                         end
-                        -- synch_pos_with_cur(ref_h,ref_v,cur_h+basepoint_h,cur_v + basepoint_v)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - (cur_h + basepoint_h)
                         else
@@ -752,12 +703,12 @@ local hlist_out, vlist_out  do
                 end
                 cur_h = cur_h + width
             elseif id == disc_code then
-                local replace = getfield(current,"replace")
-                if replace and getsubtype(current) ~= select_disc then
+                local replace, tail = getreplace(current)
+                if replace and subtype ~= select_disc then
                     -- we could flatten .. no gain
-                    setlink(findtail(replace),getnext(current))
+                    setlink(tail,getnext(current))
                     setlink(current,replace)
-                    setfield(current,"replace")
+                    setreplace(current)
                 end
             elseif id == kern_code then
                 local kern, factor = getkern(current,true)
@@ -769,7 +720,6 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == rule_code then
-                -- w h d x y = getall(current)
                 local width, height, depth = getwhd(current)
                 if width > 0 then
                     if height == running then
@@ -799,14 +749,12 @@ local hlist_out, vlist_out  do
                     cur_h = cur_h + width
                 end
             elseif id == math_code then
-                local kern = getkern(current)
-                if kern ~= 0 then
-                    cur_h = cur_h + kern
-                elseif g_sign == 0 then
-                    cur_h = cur_h + getwidth(current)
-                else
-                    cur_h = cur_h + effectiveglue(current,this_box)
-                end
+             -- local kern = getkern(current)
+             -- if kern ~= 0 then
+             --     cur_h = cur_h + kern
+             -- else
+                  cur_h = cur_h + effectiveglue(current,this_box)
+             -- end
             elseif id == dir_code then
                 -- we normally have proper begin-end pairs
                 -- a begin without end is (silently) handled
@@ -834,7 +782,6 @@ local hlist_out, vlist_out  do
                         ds.ref_v = ref_v
                         setdirection(enddir,pos_r)
                     end
-                    -- synch_pos_with_cur(ref_h,ref_v,cur_h,cur_v)
                     if pos_r == righttoleft_code then
                         pos_h = ref_h - cur_h
                     else
@@ -849,20 +796,19 @@ local hlist_out, vlist_out  do
                     pos_r = dir
                 end
             elseif id == whatsit_code then
-                local subtype = getsubtype(current)
                 if subtype == literalwhatsit_code then
-                    flushpdfliteral(current,pos_h,pos_v)
+                    flushliteral(current,pos_h,pos_v)
                 elseif subtype == lateluawhatsit_code then
                     flushlatelua(current,pos_h,pos_v,cur_h,cur_v)
                 elseif subtype == setmatrixwhatsit_code then
-                    flushpdfsetmatrix(current,pos_h,pos_v)
+                    flushsetmatrix(current,pos_h,pos_v)
                 elseif subtype == savewhatsit_code then
-                    flushpdfsave(current,pos_h,pos_v)
+                    flushsave(current,pos_h,pos_v)
                 elseif subtype == restorewhatsit_code then
-                    flushpdfrestore(current,pos_h,pos_v)
+                    flushrestore(current,pos_h,pos_v)
                 elseif subtype == saveposwhatsit_code then
-                    last_position_x = pos_h -- or pdf_h
-                    last_position_y = pos_v -- or pdf_v
+                    last_position_x = pos_h
+                    last_position_y = pos_v
                 elseif subtype == writewhatsit_code then
                     flushwriteout(current)
                 elseif subtype == closewhatsit_code then
@@ -873,8 +819,6 @@ local hlist_out, vlist_out  do
             elseif id == marginkern_code then
                 cur_h = cur_h + getkern(current)
             end
-            current = getnext(current)
-            -- synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v) -- already done in list so skip
             if pos_r == righttoleft_code then
                 pos_h = ref_h - cur_h
             else
@@ -899,16 +843,12 @@ local hlist_out, vlist_out  do
         local boxwidth,
               boxheight,
               boxdepth   = getwhd(this_box)
-        local g_set,
-              g_order,
-              g_sign     = getboxglue(this_box)
 
         local cur_h      = 0
         local cur_v      = - boxheight
 
         local top_edge   = cur_v
 
-        -- synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v)
         if pos_r == righttoleft_code then
             pos_h = ref_h - cur_h
         else
@@ -925,104 +865,96 @@ local hlist_out, vlist_out  do
      --     local id = getid(current)
         for current, id, subtype in nextnode, current do
             if id == glue_code then
-                local glueheight
-                if g_sign == 0 then
-                    glueheight = getwidth(current)
-                else
-                    glueheight = effectiveglue(current,this_box)
-                end
-                local leader = getleader(current)
-                if leader then
-                    local width, height, depth = getwhd(leader)
-                    local total = height + depth
-                    if getid(leader) == rule_code then
-                        depth = 0 -- hm
-                        if total > 0 then
-                            if width == running then
-                                width = boxwidth
-                            end
-                            if width > 0 then
-                                if pos_r == righttoleft_code then
-                                    cur_h = cur_h - width
+                local glueheight = effectiveglue(current,this_box)
+                if glueheight ~= 0 then
+                    if subtype >= leaders_code then
+                        local leader = getleader(current)
+                        if leader then
+                            local width, height, depth = getwhd(leader)
+                            local total = height + depth
+                            if getid(leader) == rule_code then
+                                depth = 0 -- hm
+                                if total > 0 then
+                                    if width == running then
+                                        width = boxwidth
+                                    end
+                                    if width > 0 then
+                                        if pos_r == righttoleft_code then
+                                            cur_h = cur_h - width
+                                        end
+                                        flushrule(leader,pos_h,pos_v - total,pos_r,width,total)
+                                    end
+                                    cur_v = cur_v + total
                                 end
-                                flushrule(leader,pos_h,pos_v - total,pos_r,width,total)
+                            elseif total > 0 and glueheight > 0 then
+                                glueheight = glueheight + 10
+                                local edge = cur_v + glueheight
+                                local ly   = 0
+                                if subtype == gleaders_code then
+                                    save_v = cur_v
+                                    cur_v  = ref_v - shipbox_v - cur_v
+                                    cur_v  = total * (cur_v / total)
+                                    cur_v  = ref_v - shipbox_v - cur_v
+                                    if cur_v < save_v then
+                                        cur_v = cur_v + total
+                                    end
+                                elseif subtype == leaders_code then -- aleader
+                                    save_v = cur_v
+                                    cur_v = top_edge + total * ((cur_v - top_edge) / total)
+                                    if cur_v < save_v then
+                                        cur_v = cur_v + total
+                                    end
+                                else
+                                    lq = glueheight / total
+                                    lr = glueheight % total
+                                    if subtype == cleaders_code then
+                                        cur_v = cur_v + lr / 2
+                                    else
+                                        ly = lr / (lq + 1)
+                                        cur_v = cur_v + (lr - (lq - 1) * ly) / 2
+                                    end
+                                end
+                                local shift = getshift(leader)
+                                while cur_v + total <= edge do -- todo: <= edge - total
+                                    -- synch_pos_with_cur(ref_h, ref_v, getshift(leader), cur_v + height)
+                                    if pos_r == righttoleft_code then
+                                        pos_h = ref_h - shift
+                                    else
+                                        pos_h = ref_h + shift
+                                    end
+                                    pos_v = ref_v - (cur_v + height)
+                                    -- synced
+                                    outer_doing_leaders = doing_leaders
+                                    doing_leaders = true
+                                    if getid(leader) == vlist_code then
+                                        vlist_out(leader)
+                                    else
+                                        hlist_out(leader)
+                                    end
+                                    doing_leaders = outer_doing_leaders
+                                    cur_v = cur_v + total + ly
+                                end
+                                cur_v = edge - 10
+                            else
+                                cur_v = cur_v + glueheight
                             end
-                            cur_v = cur_v + total
                         end
                     else
-                        if total > 0 and glueheight > 0 then
-                            glueheight = glueheight + 10
-                            local edge = cur_v + glueheight
-                            local ly   = 0
-                            if subtype == gleader_code then
-                                save_v = cur_v
-                                cur_v  = ref_v - shipbox_v - cur_v
-                                cur_v  = total * (cur_v / total)
-                                cur_v  = ref_v - shipbox_v - cur_v
-                                if cur_v < save_v then
-                                    cur_v = cur_v + total
-                                end
-                            elseif subtype == leader_code then -- aleader
-                                save_v = cur_v
-                                cur_v = top_edge + total * ((cur_v - top_edge) / total)
-                                if cur_v < save_v then
-                                    cur_v = cur_v + total
-                                end
-                            else
-                                lq = glueheight / total
-                                lr = glueheight % total
-                                if subtype == cleaders_code then
-                                    cur_v = cur_v + lr / 2
-                                else
-                                    ly = lr / (lq + 1)
-                                    cur_v = cur_v + (lr - (lq - 1) * ly) / 2
-                                end
-                            end
-                            local shift = getshift(leader)
-                            while cur_v + total <= edge do -- todo: <= edge - total
-                                -- synch_pos_with_cur(ref_h, ref_v, getshift(leader), cur_v + height)
-                                if pos_r == righttoleft_code then
-                                    pos_h = ref_h - shift
-                                else
-                                    pos_h = ref_h + shift
-                                end
-                                pos_v = ref_v - (cur_v + height)
-                                -- synced
-                                outer_doing_leaders = doing_leaders
-                                doing_leaders = true
-                                if getid(leader) == vlist_code then
-                                    vlist_out(leader)
-                                else
-                                    hlist_out(leader)
-                                end
-                                doing_leaders = outer_doing_leaders
-                                cur_v = cur_v + total + ly
-                            end
-                            cur_v = edge - 10
-                        else
-                            cur_v = cur_v + glueheight
-                        end
+                        cur_v = cur_v + glueheight
                     end
-                else
-                    cur_v = cur_v + glueheight
                 end
             elseif id == hlist_code or id == vlist_code then
-                -- w h d dir l, s, o = getall(current)
                 local boxdir = getdirection(current) or lefttoright_code
                 local width, height, depth = getwhd(current)
                 local list = getlist(current)
                 if list then
                     local shift, orientation = getshift(current)
                     if not orientation then
--- local width, height, depth, list, boxdir, shift, orientation = getall(current)
--- if list then
---     if not orientation then
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
                         if boxdir ~= pos_r then
                             shift = shift + width
                         end
-                        -- synch_pos_with_cur(ref_h,ref_v,shift,cur_v + height)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - shift
                         else
@@ -1042,7 +974,6 @@ local hlist_out, vlist_out  do
                         if boxdir ~= pos_r then
                             shift = shift + width
                         end
-                        -- synch_pos_with_cur(ref_h,ref_v,shift + xoffset,cur_v + height - yoffset)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - (shift + xoffset)
                         else
@@ -1067,7 +998,6 @@ local hlist_out, vlist_out  do
                         elseif orientation == 3 then -- weird
                             basepoint_h = basepoint_h + height
                         end
-                        -- synch_pos_with_cur(ref_h,ref_v,basepoint_h,cur_v + basepoint_v)
                         if pos_r == righttoleft_code then
                             pos_h = ref_h - basepoint_h
                         else
@@ -1088,7 +1018,6 @@ local hlist_out, vlist_out  do
             elseif id == kern_code then
                 cur_v = cur_v + getkern(current)
             elseif id == rule_code then
-                -- w h d x y = getall(current)
                 local width, height, depth = getwhd(current)
                 local total = height + depth
                 if total > 0 then
@@ -1114,18 +1043,18 @@ local hlist_out, vlist_out  do
                 end
             elseif id == whatsit_code then
                 if subtype == literalwhatsit_code then
-                    flushpdfliteral(current,pos_h,pos_v)
+                    flushliteral(current,pos_h,pos_v)
                 elseif subtype == lateluawhatsit_code then
                     flushlatelua(current,pos_h,pos_v,cur_h,cur_v)
                 elseif subtype == setmatrixwhatsit_code then
-                    flushpdfsetmatrix(current,pos_h,pos_v)
+                    flushsetmatrix(current,pos_h,pos_v)
                 elseif subtype == savewhatsit_code then
-                    flushpdfsave(current,pos_h,pos_v)
+                    flushsave(current,pos_h,pos_v)
                 elseif subtype == restorewhatsit_code then
-                    flushpdfrestore(current,pos_h,pos_v)
+                    flushrestore(current,pos_h,pos_v)
                 elseif subtype == saveposwhatsit_code then
-                    last_position_x = pos_h -- or pdf_h
-                    last_position_y = pos_v -- or pdf_v
+                    last_position_x = pos_h
+                    last_position_y = pos_v
                 elseif subtype == writewhatsit_code then
                     flushwriteout(current)
                 elseif subtype == closewhatsit_code then
@@ -1134,7 +1063,6 @@ local hlist_out, vlist_out  do
                     flushopenout(current)
                 end
             end
-            -- synch_pos_with_cur(ref_h, ref_v, cur_h, cur_v)
             if pos_r == righttoleft_code then
                 pos_h = ref_h - cur_h
             else
@@ -1150,9 +1078,12 @@ local hlist_out, vlist_out  do
 
 end
 
--- bad namespace:
+function drivers.converters.lmtx(driver,box,smode,objnum,specification)
 
-function lpdf.convert(box,smode,objnum,specification)
+    if not driver then
+        report("error in converter, no driver")
+        return
+    end
 
     if box then
         box = tonut(box)
@@ -1161,19 +1092,13 @@ function lpdf.convert(box,smode,objnum,specification)
         return
     end
 
-    local driver = drivers.current or instances.pdf
-    if driver then
-        -- tracing
-    else
-        return
-    end
-
     local actions     = driver.actions
     local flushers    = driver.flushers
 
     initialize        = actions.initialize
     finalize          = actions.finalize
-    updatefontstate   = actions.updatefontstate
+
+    updatefontstate   = flushers.updatefontstate
 
     pushorientation   = flushers.pushorientation
     poporientation    = flushers.poporientation
@@ -1182,16 +1107,18 @@ function lpdf.convert(box,smode,objnum,specification)
     flushrule         = flushers.rule
     flushsimplerule   = flushers.simplerule
     flushspecial      = flushers.special
-    flushpdfliteral   = flushers.pdfliteral
-    flushpdfsetmatrix = flushers.pdfsetmatrix
-    flushpdfsave      = flushers.pdfsave
-    flushpdfrestore   = flushers.pdfrestore
- -- flushpdfimage     = flushers.pdfimage
+    flushliteral      = flushers.literal
+    flushsetmatrix    = flushers.setmatrix
+    flushsave         = flushers.save
+    flushrestore      = flushers.restore
+ -- flushimage        = flushers.image
 
     reset_dir_stack()
     reset_state()
 
     shippingmode = smode
+
+    local details = nil -- must be outside labels
 
     local width, height, depth = getwhd(box)
 
@@ -1224,7 +1151,9 @@ function lpdf.convert(box,smode,objnum,specification)
         -- We have zero offsets in ConTeXt.
 
         local pagewidth, pageheight = getpagedimensions()
-     -- local h_offset_par, v_offset_par = texget("hoffset"), texget("voffset")
+
+     -- local h_offset_par = texget("hoffset")
+     -- local v_offset_par = texget("voffset")
 
      -- page_h_origin = trueinch
      -- page_v_origin = trueinch
@@ -1254,12 +1183,7 @@ function lpdf.convert(box,smode,objnum,specification)
         local refpoint_h = 0           -- + page_h_origin + h_offset_par
         local refpoint_v = page_size_v -- - page_v_origin - v_offset_par
 
-        -- synch_pos_with_cur(refpoint_h,refpoint_v,0,height)
-        if pos_r == righttoleft_code then
-            pos_h = refpoint_h
-        else
-            pos_h = refpoint_h
-        end
+        pos_h = refpoint_h
         pos_v = refpoint_v - height
         -- synced
 
@@ -1278,11 +1202,15 @@ function lpdf.convert(box,smode,objnum,specification)
     shipbox_ref_h = pos_h
     shipbox_ref_v = pos_v
 
-    initialize {
-        shippingmode = smode, -- target
-        boundingbox  = { 0, 0, page_size_h, page_size_v },
-        objectnumber = objnum,
+    details = {
+        shippingmode  = smode, -- target
+        boundingbox   = { 0, 0, page_size_h, page_size_v },
+        objectnumber  = smode ~= "page" and objnum or nil,
+        pagenumber    = smode == "page" and objnum or nil,
+        specification = specification,
     }
+
+    initialize(driver,details)
 
     lastfont = nil -- this forces a sync each page / object
 
@@ -1294,7 +1222,8 @@ function lpdf.convert(box,smode,objnum,specification)
 
     ::DONE::
 
-    finalize(objnum,specification)
+    finalize(driver,details)
+
     shippingmode = "none"
 end
 

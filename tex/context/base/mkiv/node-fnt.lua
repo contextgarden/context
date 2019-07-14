@@ -210,12 +210,12 @@ do
 
     local usedfonts
     local attrfonts
-    local basefonts
+    local basefonts  -- could be reused
     local basefont
     local prevfont
     local prevattr
     local variants
-    local redundant
+    local redundant  -- could be reused
     local firstnone
     local lastfont
     local lastproc
