@@ -554,7 +554,7 @@ local hlist_out, vlist_out  do
                                             pos_h = pos_h - gluewidth
                                         end
                                         pos_v = pos_v - depth
-                                        flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total)
+                                        flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total,getsubtype(leader))
                                     end
                                     cur_h = cur_h + gluewidth
                                 end
@@ -744,7 +744,7 @@ local hlist_out, vlist_out  do
                             xoffset = - xoffset
                         end
                         pos_v = pos_v - depth
-                        flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total)
+                        flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
                     end
                     cur_h = cur_h + width
                 end
@@ -882,7 +882,7 @@ local hlist_out, vlist_out  do
                                         if pos_r == righttoleft_code then
                                             cur_h = cur_h - width
                                         end
-                                        flushrule(leader,pos_h,pos_v - total,pos_r,width,total)
+                                        flushrule(leader,pos_h,pos_v - total,pos_r,width,total,getsubtype(leader))
                                     end
                                     cur_v = cur_v + total
                                 end
@@ -1037,7 +1037,7 @@ local hlist_out, vlist_out  do
                             cur_h   = cur_h - width
                             xoffset = - xoffset
                         end
-                        flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total)
+                        flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype)
                     end
                     cur_v = cur_v + total
                 end

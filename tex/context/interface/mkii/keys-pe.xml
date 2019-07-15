@@ -150,6 +150,7 @@
 		<cd:variable name='comment' value='توضیح'/>
 		<cd:variable name='component' value='مولفه'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
+		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='مفهوم'/>
 		<cd:variable name='construction' value='construction'/>
 		<cd:variable name='content' value='محتوا'/>
@@ -480,6 +481,7 @@
 		<cd:variable name='sectionnumber' value='شماره‌بخش'/>
 		<cd:variable name='see' value='ببینید'/>
 		<cd:variable name='selectfont' value='selectfont'/>
+		<cd:variable name='separator' value='separator'/>
 		<cd:variable name='september' value='سپتامبر'/>
 		<cd:variable name='serif' value='سریف'/>
 		<cd:variable name='serifbold' value='serifbold'/>
@@ -738,7 +740,9 @@
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='فشردن'/>
 		<cd:constant name='compressdistance' value='compressdistance'/>
+		<cd:constant name='compressmethod' value='compressmethod'/>
 		<cd:constant name='compressseparator' value='compressseparator'/>
+		<cd:constant name='compressstopper' value='compressstopper'/>
 		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='ادامه'/>

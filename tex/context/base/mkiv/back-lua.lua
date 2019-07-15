@@ -6,14 +6,26 @@ if not modules then modules = { } end modules ['back-lua'] = {
     license   = "see context related readme files"
 }
 
-local fontproperties = fonts.hashes.properties
-local fontparameters = fonts.hashes.parameters
+local fontproperties    = fonts.hashes.properties
+local fontparameters    = fonts.hashes.parameters
 
-local starttiming    = statistics.starttiming
-local stoptiming     = statistics.stoptiming
+local starttiming       = statistics.starttiming
+local stoptiming        = statistics.stoptiming
 
-local bpfactor       = number.dimenfactors.bp
-local texgetbox      = tex.getbox
+local bpfactor          = number.dimenfactors.bp
+local texgetbox         = tex.getbox
+
+local rulecodes         = nodes.rulecodes
+local normalrule_code   = rulecodes.normal
+----- boxrule_code      = rulecodes.box
+----- imagerule_code    = rulecodes.image
+----- emptyrule_code    = rulecodes.empty
+----- userrule_code     = rulecodes.user
+----- overrule_code     = rulecodes.over
+----- underrule_code    = rulecodes.under
+----- fractionrule_code = rulecodes.fraction
+----- radicalrule_code  = rulecodes.radical
+local outlinerule_code  = rulecodes.outline
 
 local pages     = { }
 local fonts     = { }
@@ -24,7 +36,7 @@ local converter = nil
 local sparse    = true
 local compact   = false -- true
 
-local x, y, d, f, c, w, h, t
+local x, y, d, f, c, w, h, t, r, o
 
 local function reset()
     buffer = { }
@@ -37,6 +49,8 @@ local function reset()
     c      = nil
     w      = nil
     h      = nil
+    r      = nil
+    o      = nil
 end
 
 local function result()
@@ -98,11 +112,16 @@ end
 local function updatefontstate(id)
     if not fonts[id] then
         for i=1,id-1 do
-            fonts[i] = false -- so we're not sparse and have numbers as index (in json)
+            if not fonts[i] then
+                fonts[i] = false -- so we're not sparse and have numbers as index (in json)
+            end
         end
+        local properties = fontproperties[id]
+        local parameters = fontparameters[id]
         fonts[id] = {
-            filename = file.basename(fontproperties[id].filename),
-            size     = fontparameters[id].size * bpfactor,
+            filename = file.basename(properties.filename),
+            name     = properties.fullname or properties.fontname,
+            size     = parameters.size * bpfactor,
         }
     end
 end
@@ -136,11 +155,13 @@ local function flushcharacter(current, pos_h, pos_v, pos_r, font, char)
     end
 end
 
-local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v)
+local function rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
     b = b + 1
     if sparse then
         buffer[b] = {
             t = "rule" ~= t and "rule" or nil,
+            r = rule_s ~= r and rule_s or nil,
+            o = rule_s == "outline" and rule_o ~= o and (rule_o * bpfactor) or nil,
             w = size_h ~= w and (size_h * bpfactor) or nil,
             h = size_v ~= h and (size_v * bpfactor) or nil,
             x = pos_h  ~= x and (pos_h  * bpfactor) or nil,
@@ -160,9 +181,28 @@ local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v)
             size_v,
             pos_h * bpfactor,
             pos_v * bpfactor,
-            pos_r
+            pos_r,
+            rule_s,
+            rule_s = "outline" and rule_o
         }
     end
+end
+
+local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
+    local rule_s, rule_o
+    if subtype == normalrule_code then
+        rule_s = "normal"
+    elseif subtype == outlinerule_code then
+        rule_s = "outline"
+        rule_o = getdata(current)
+    else
+        return
+    end
+    return rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
+end
+
+local function flushsimplerule(current, pos_h, pos_v, pos_r, size_h, size_v)
+    return rule(pos_h, pos_v, pos_r, size_h, size_v, "normal", nil)
 end
 
 -- file stuff too

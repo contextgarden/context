@@ -1178,9 +1178,8 @@ local flushrule, flushsimplerule, flushimage  do
     -- For the moment we need this hack because the engine checks the 'image'
     -- command in virtual fonts (so we use lua instead).
 
-    flushrule = function(current,pos_h,pos_v,pos_r,size_h,size_v)
+    flushrule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
 
-        local subtype = getsubtype(current)
         if subtype == emptyrule_code then
             return
         elseif subtype == boxrule_code then

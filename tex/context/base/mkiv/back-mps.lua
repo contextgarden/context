@@ -6,15 +6,27 @@ if not modules then modules = { } end modules ['back-mps'] = {
     license   = "see context related readme files"
 }
 
-local fontproperties = fonts.hashes.properties
-local fontparameters = fonts.hashes.parameters
+local fontproperties    = fonts.hashes.properties
+local fontparameters    = fonts.hashes.parameters
 
-local starttiming    = statistics.starttiming
-local stoptiming     = statistics.stoptiming
+local starttiming       = statistics.starttiming
+local stoptiming        = statistics.stoptiming
 
-local bpfactor       = number.dimenfactors.bp
-local texgetbox      = tex.getbox
-local formatters     = string.formatters
+local bpfactor          = number.dimenfactors.bp
+local texgetbox         = tex.getbox
+local formatters        = string.formatters
+
+local rulecodes         = nodes.rulecodes
+local normalrule_code   = rulecodes.normal
+----- boxrule_code      = rulecodes.box
+----- imagerule_code    = rulecodes.image
+----- emptyrule_code    = rulecodes.empty
+----- userrule_code     = rulecodes.user
+----- overrule_code     = rulecodes.over
+----- underrule_code    = rulecodes.under
+----- fractionrule_code = rulecodes.fraction
+----- radicalrule_code  = rulecodes.radical
+local outlinerule_code  = rulecodes.outline
 
 local fonts     = { }
 local pages     = { }
@@ -27,10 +39,11 @@ local function reset()
     b      = 0
 end
 
-local f_font  = formatters[ "\\definefont[%s][file:%s*none @ %sbp]\n" ]
+local f_font    = formatters[ "\\definefont[%s][file:%s*none @ %sbp]\n" ]
 
-local f_glyph = formatters[ [[draw textext.drt("\%s\char%i\relax") shifted (%N,%N);]] ]
-local f_rule  = formatters[ [[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
+local f_glyph   = formatters[ [[draw textext.drt("\%s\char%i\relax") shifted (%N,%N);]] ]
+local f_rule    = formatters[ [[fill unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
+local f_outline = formatters[ [[draw unitsquare xscaled %N yscaled %N shifted (%N,%N);]] ]
 
 -- actions
 
@@ -113,11 +126,20 @@ local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
     buffer[b] = f_glyph(last,char,pos_h*bpfactor,pos_v*bpfactor)
 end
 
-local function flushrule(current, pos_h, pos_v, pod_r, size_h, size_v)
+local function flushrule(current, pos_h, pos_v, pod_r, size_h, size_v, subtype)
+    if subtype == normalrule_code then
+        b = b + 1
+        buffer[b] = f_rule(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
+    elseif subtype == outlinerule_code then
+        b = b + 1
+        buffer[b] = f_outline(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
+    end
+end
+
+local function flushsimplerule(current, pos_h, pos_v, pod_r, size_h, size_v)
     b = b + 1
     buffer[b] = f_rule(size_h*bpfactor,size_v*bpfactor,pos_h*bpfactor,pos_v*bpfactor)
 end
-
 
 -- installer
 
@@ -136,6 +158,7 @@ drivers.install {
         updatefontstate = updatefontstate,
         character       = flushcharacter,
         rule            = flushrule,
+        simplerule      = flushsimplerule,
     }
 }
 

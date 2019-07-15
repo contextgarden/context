@@ -894,8 +894,19 @@ enddef ;
 
 let normalwithcolor = withcolor ;
 
+% def withcolor expr c =
+%      normalwithcolor if string c : resolvedcolor(c) else : c fi
+% enddef ;
+
+% I don't want a "withcolor black" in case of an empty string ... who knows
+% how that can interfere with outer colors.
+
 def withcolor expr c =
-    normalwithcolor if string c : resolvedcolor(c) else : c fi
+    if not string c :
+        normalwithcolor c
+    elseif c <> "" :
+        normalwithcolor resolvedcolor(c)
+    fi
 enddef ;
 
 vardef colortype expr c =
