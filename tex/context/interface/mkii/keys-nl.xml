@@ -150,6 +150,7 @@
 		<cd:variable name='comment' value='commentaar'/>
 		<cd:variable name='component' value='onderdeel'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
+		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='concept'/>
 		<cd:variable name='construction' value='construction'/>
 		<cd:variable name='content' value='inhoud'/>
@@ -376,6 +377,7 @@
 		<cd:variable name='nohz' value='geenhz'/>
 		<cd:variable name='noline' value='noline'/>
 		<cd:variable name='nomarking' value='geenmarkering'/>
+		<cd:variable name='nomenubar' value='geenmenubalk'/>
 		<cd:variable name='none' value='geen'/>
 		<cd:variable name='nonumber' value='geennummer'/>
 		<cd:variable name='norepeat' value='norepeat'/>
@@ -479,6 +481,7 @@
 		<cd:variable name='sectionnumber' value='sectienummer'/>
 		<cd:variable name='see' value='zie'/>
 		<cd:variable name='selectfont' value='selectfont'/>
+		<cd:variable name='separator' value='scheider'/>
 		<cd:variable name='september' value='september'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serifbold' value='serifbold'/>
@@ -572,6 +575,7 @@
 		<cd:variable name='temporary' value='voorlopig'/>
 		<cd:variable name='test' value='test'/>
 		<cd:variable name='text' value='tekst'/>
+		<cd:variable name='textnote' value='tekstnoot'/>
 		<cd:variable name='three' value='drie'/>
 		<cd:variable name='thursday' value='donderdag'/>
 		<cd:variable name='tight' value='krap'/>
@@ -735,7 +739,10 @@
 		<cd:constant name='component' value='component'/>
 		<cd:constant name='compoundhyphen' value='koppelteken'/>
 		<cd:constant name='compress' value='comprimeren'/>
+		<cd:constant name='compressdistance' value='compressdistance'/>
+		<cd:constant name='compressmethod' value='compressmethod'/>
 		<cd:constant name='compressseparator' value='compressseparator'/>
+		<cd:constant name='compressstopper' value='compressstopper'/>
 		<cd:constant name='concerns' value='betreft'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='doorgaan'/>

@@ -122,11 +122,14 @@ do
     local f_key_val_num     = f_key_val_seq
     local f_key_val_yes     = formatters[ "\n" .. '%w"%s" : true'  ]
     local f_key_val_nop     = formatters[ "\n" .. '%w"%s" : false' ]
+    local f_key_val_null    = formatters[ "\n" .. '%w"%s" : null'  ]
 
     local f_val_num         = formatters[ "\n" .. '%w%s'    ]
     local f_val_str         = formatters[ "\n" .. '%w"%s"'  ]
     local f_val_yes         = formatters[ "\n" .. '%wtrue'  ]
     local f_val_nop         = formatters[ "\n" .. '%wfalse' ]
+    local f_val_null        = formatters[ "\n" .. '%wnull'  ]
+    local f_val_empty       = formatters[ "\n" .. '%w{ }'  ]
     local f_val_seq         = f_val_num
 
     -- no empty tables because unknown if table or hash
@@ -158,8 +161,10 @@ do
                     n = n + 1 t[n] = '"'
                 elseif tv == "boolean" then
                     n = n + 1 t[n] = v and "true" or "false"
-                else
+                elseif v then
                     n = n + 1 t[n] = tostring(v)
+                else
+                    n = n + 1 t[n] = "null"
                 end
             end
             n = n + 1 t[n] = " ]"
@@ -219,6 +224,9 @@ do
                             else
                                 tojsonpp(v,nil,depth,level+1,#v)
                             end
+                        else
+                            n = n + 1
+                            t[n] = f_val_empty(depth)
                         end
                     elseif tv == "boolean" then
                         n = n + 1
@@ -227,6 +235,9 @@ do
                         else
                             t[n] = f_val_nop(depth,v)
                         end
+                    else
+                        n = n + 1
+                        t[n] = f_val_null(depth)
                     end
                 end
             elseif next(root) then
@@ -286,6 +297,15 @@ do
                             else
                                 t[n] = f_key_val_nop(depth,k)
                             end
+                        end
+                    else
+                        if tk == "number" then
+                            n = n + 1
+                            t[n] = f_key_val_null(depth,k)
+                        elseif tk == "string" then
+                            k = lpegmatch(escaper,k) or k
+                            n = n + 1
+                            t[n] = f_key_val_null(depth,k)
                         end
                     end
                 end
@@ -348,6 +368,8 @@ do
             n = n + 1 ; t[n] = value
         elseif kind == "boolean" then
             n = n + 1 ; t[n] = tostring(value)
+        else
+            n = n + 1 ; t[n] = "null"
         end
         return t, n
     end

@@ -6,8 +6,11 @@ if not modules then modules = { } end modules ['back-lua'] = {
     license   = "see context related readme files"
 }
 
+-- we can remap fonts
+
 local fontproperties    = fonts.hashes.properties
 local fontparameters    = fonts.hashes.parameters
+local fontshapes        = fonts.hashes.shapes
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
@@ -27,14 +30,21 @@ local normalrule_code   = rulecodes.normal
 ----- radicalrule_code  = rulecodes.radical
 local outlinerule_code  = rulecodes.outline
 
+-- todo : per instance
+
 local pages     = { }
 local fonts     = { }
+local names     = { }
+local mapping   = { }
+local used      = { }
+local shapes    = { }
+local glyphs    = { }
 local buffer    = { }
 local b         = 0
 local converter = nil
 
-local sparse    = true
 local compact   = false -- true
+local shapestoo = true
 
 local x, y, d, f, c, w, h, t, r, o
 
@@ -54,13 +64,25 @@ local function reset()
 end
 
 local function result()
+    -- todo: we're now still in the pdf backend but need different codeinjections
+    local codeinjections = backends.pdf.codeinjections
+    local getvariable    = codeinjections.getidentityvariable or function() end
+    local jobname        = environment.jobname or tex.jobname or "unknown"
     return {
         metadata = {
-            page = pagenumber,
-            unit = "bp",
+            unit     = "bp",
+            jobname  = jobname,
+            title    = getvariable("title") or jobname,
+            subject  = getvariable("subject"),
+            author   = getvariable("author"),
+            keywords = getvariable("keywords"),
+            time     = os.date("%Y-%m-%d %H:%M"),
+            engine   = environment.luatexengine .. " " .. environment.luatexversion,
+            context  = environment.version,
         },
-        fonts = fonts,
-        pages = pages,
+        fonts  = fonts,
+        pages  = pages,
+        shapes = shapes,
     }
 end
 
@@ -93,7 +115,18 @@ local function initialize(driver,details)
 end
 
 local function finalize(driver,details)
-    pages[details.pagenumber] = buffer
+    local n = details.pagenumber
+    local b = details.boundingbox
+    pages[n] = {
+        number      = n,
+        content     = buffer,
+        boundingbox = {
+            b[1] * bpfactor,
+            b[2] * bpfactor,
+            b[3] * bpfactor,
+            b[4] * bpfactor,
+        },
+    }
 end
 
 local function wrapup(driver)
@@ -110,82 +143,75 @@ end
 -- flushers
 
 local function updatefontstate(id)
-    if not fonts[id] then
-        for i=1,id-1 do
-            if not fonts[i] then
-                fonts[i] = false -- so we're not sparse and have numbers as index (in json)
-            end
-        end
+    if not mapping[id] then
+        local fn = #fonts + 1
+        mapping[id] = fn
         local properties = fontproperties[id]
         local parameters = fontparameters[id]
-        fonts[id] = {
-            filename = file.basename(properties.filename),
-            name     = properties.fullname or properties.fontname,
+        local filename   = file.basename(properties.filename)
+        local fontname   = properties.fullname or properties.fontname
+        if shapestoo then
+            if not names[fontname] then
+                local sn = #shapes+1
+                names[fontname] = sn
+                shapes[sn] = { }
+                glyphs[sn] = fontshapes[id].glyphs
+            end
+        end
+        fonts[fn] = {
+            filename = filename,
+            name     = fontname,
             size     = parameters.size * bpfactor,
+            shapes   = shapestoo and names[fontname] or nil,
         }
     end
 end
 
 local function flushcharacter(current, pos_h, pos_v, pos_r, font, char)
+    local fnt = mapping[font]
     b = b + 1
-    if sparse then
-        buffer[b] = {
-            t = "glyph" ~= t and "glyph" or nil,
-            f = font    ~= f and font or nil,
-            c = char    ~= c and char or nil,
-            x = pos_h   ~= x and (pos_h * bpfactor) or nil,
-            y = pos_v   ~= y and (pos_v * bpfactor) or nil,
-            d = pos_r   ~= d and (pos_r == 1 and "r2l" or "l2r") or nil,
-        }
-        t = "glyph"
-        f = font
-        c = char
-        x = pos_h
-        y = pos_v
-        d = pos_r
-    else
-        buffer[b] = {
-            "glyph",
-            font,
-            char,
-            pos_h * bpfactor,
-            pos_v * bpfactor,
-            pos_r
-        }
+    buffer[b] = {
+        t = "glyph" ~= t and "glyph" or nil,
+        f = font    ~= f and fnt or nil,
+        c = char    ~= c and char or nil,
+        x = pos_h   ~= x and (pos_h * bpfactor) or nil,
+        y = pos_v   ~= y and (pos_v * bpfactor) or nil,
+        d = pos_r   ~= d and (pos_r == 1 and "r2l" or "l2r") or nil,
+    }
+    t = "glyph"
+    f = font
+    c = char
+    x = pos_h
+    y = pos_v
+    d = pos_r
+    if shapestoo then
+        -- can be sped up if needed
+        local sn = fonts[fnt].shapes
+        local shp = shapes[sn]
+        if not shp[char] then
+            shp[char] = glyphs[sn][char]
+        end
     end
 end
 
 local function rule(pos_h, pos_v, pos_r, size_h, size_v, rule_s, rule_o)
     b = b + 1
-    if sparse then
-        buffer[b] = {
-            t = "rule" ~= t and "rule" or nil,
-            r = rule_s ~= r and rule_s or nil,
-            o = rule_s == "outline" and rule_o ~= o and (rule_o * bpfactor) or nil,
-            w = size_h ~= w and (size_h * bpfactor) or nil,
-            h = size_v ~= h and (size_v * bpfactor) or nil,
-            x = pos_h  ~= x and (pos_h  * bpfactor) or nil,
-            y = pos_v  ~= y and (pos_v  * bpfactor) or nil,
-            d = pos_r  ~= d and (pos_r == 1 and "r2l" or "l2r") or nil,
-        }
-        t = "rule"
-        w = size_h
-        h = size_v
-        x = pos_h
-        y = pos_v
-        d = pos_r
-    else
-        buffer[b] = {
-            "rule",
-            size_h,
-            size_v,
-            pos_h * bpfactor,
-            pos_v * bpfactor,
-            pos_r,
-            rule_s,
-            rule_s = "outline" and rule_o
-        }
-    end
+    buffer[b] = {
+        t = "rule" ~= t and "rule" or nil,
+        r = rule_s ~= r and rule_s or nil,
+        o = rule_s == "outline" and rule_o ~= o and (rule_o * bpfactor) or nil,
+        w = size_h ~= w and (size_h * bpfactor) or nil,
+        h = size_v ~= h and (size_v * bpfactor) or nil,
+        x = pos_h  ~= x and (pos_h  * bpfactor) or nil,
+        y = pos_v  ~= y and (pos_v  * bpfactor) or nil,
+        d = pos_r  ~= d and (pos_r == 1 and "r2l" or "l2r") or nil,
+    }
+    t = "rule"
+    w = size_h
+    h = size_v
+    x = pos_h
+    y = pos_v
+    d = pos_r
 end
 
 local function flushrule(current, pos_h, pos_v, pos_r, size_h, size_v, subtype)
@@ -207,8 +233,6 @@ end
 
 -- file stuff too
 -- todo: default flushers
--- json also here
--- sparse, only deltas
 -- also color (via hash)
 
 -- installer
@@ -219,15 +243,15 @@ drivers.install {
         prepare         = prepare,
         initialize      = initialize,
         finalize        = finalize,
-        updatefontstate = updatefontstate,
         wrapup          = wrapup,
         cleanup         = cleanup,
         convert         = convert,
         outputfilename  = outputfilename,
     },
     flushers = {
-        character = flushcharacter,
-        rule      = flushrule,
+        updatefontstate = updatefontstate,
+        character       = flushcharacter,
+        rule            = flushrule,
     }
 }
 
@@ -262,6 +286,57 @@ end
 
 drivers.install {
     name    = "json",
+    actions = {
+        prepare         = prepare,
+        initialize      = initialize,
+        finalize        = finalize,
+        wrapup          = wrapup,
+        cleanup         = cleanup,
+        convert         = convert,
+        outputfilename  = outputfilename,
+    },
+    flushers = {
+        updatefontstate = updatefontstate,
+        character       = flushcharacter,
+        rule            = flushrule,
+    }
+}
+
+-- actions
+
+local function outputfilename(driver)
+    return tex.jobname .. "-output.js"
+end
+
+local function save() -- might become a driver function that already is plugged into stopactions
+    local filename = outputfilename()
+    drivers.report("saving result in %a",filename)
+    starttiming(drivers)
+    local data = result()
+    if data then
+        if not utilities.json then
+            require("util-jsn")
+        end
+        io.savedata(filename,
+            "const JSON_CONTEXT = JSON.parse ( `" ..
+            utilities.json.tostring(data,not compact) ..
+            "` ) ;\n"
+        )
+    end
+    stoptiming(drivers)
+end
+
+local function prepare(driver)
+    converter = drivers.converters.lmtx
+    luatex.registerstopactions(1,function()
+        save()
+    end)
+end
+
+-- installer
+
+drivers.install {
+    name    = "js",
     actions = {
         prepare         = prepare,
         initialize      = initialize,

@@ -894,20 +894,36 @@ enddef ;
 
 let normalwithcolor = withcolor ;
 
-% def withcolor expr c =
-%      normalwithcolor if string c : resolvedcolor(c) else : c fi
-% enddef ;
+def withcolor expr c =
+     normalwithcolor if string c : resolvedcolor(c) else : c fi
+enddef ;
 
 % I don't want a "withcolor black" in case of an empty string ... who knows
-% how that can interfere with outer colors.
+% how that can interfere with outer colors. Somehow the next one doesn't
+% always work out ok, but why ... must be some parsing issue. Anyway, when
+% we cannot do that, we need to fix some chem macros instead as empty strings
+% now lead to black while everywhere else in context empty means: leave color
+% untouched.
 
-def withcolor expr c =
-    if not string c :
-        normalwithcolor c
-    elseif c <> "" :
-        normalwithcolor resolvedcolor(c)
-    fi
-enddef ;
+% def withcolor expr c =
+%     if not string c :
+%         normalwithcolor c
+%     elseif c <> "" :
+%         normalwithcolor resolvedcolor(c)
+%     fi
+% enddef ;
+
+% So why does this work better than the above:
+%
+% def withcolor expr c =
+%     if string c :
+%         if c <> "" :
+%             normalwithcolor resolvedcolor(c)
+%         fi
+%     else :
+%         normalwithcolor c
+%     fi
+% enddef ;
 
 vardef colortype expr c =
         if cmykcolor c : cmykcolor

@@ -315,7 +315,7 @@ directives.register("system.errorcontext", function(v)
         register('show_error_message',  nop)
         register('show_warning_message',function() processwarning(v) end)
         register('show_error_hook',     function() processerror(v) end)
-        register('show_lua_error_hook', nop)
+        register('show_lua_error_hook', function() processerror(v) end)
     else
         register('show_error_message',  nil)
         register('show_error_hook',     nil)
@@ -371,7 +371,8 @@ function lmx.showerror(lmxname)
 end
 
 function lmx.overloaderror()
-    callback.register('show_error_hook', function() lmx.showerror() end) -- prevents arguments being passed
+    callback.register('show_error_hook',     function() lmx.showerror() end) -- prevents arguments being passed
+    callback.register('show_lua_error_hook', function() lmx.showerror() end) -- prevents arguments being passed
 end
 
 directives.register("system.showerror", lmx.overloaderror)

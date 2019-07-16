@@ -42,7 +42,7 @@ local band, extract = bit32.band, bit32.extract
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
-local bpfactor             = number.dimenfactors.bp
+local <const> bpfactor     = number.dimenfactors.bp
 
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
@@ -600,16 +600,15 @@ end
 
 local flushliteral  do
 
-    local literalvalues        = nodes.literalvalues
+    local <const> nodeproperties       = nodes.properties.data
+    local <const> literalvalues        = nodes.literalvalues
 
-    local originliteral_code   = literalvalues.origin
-    local pageliteral_code     = literalvalues.page
-    local alwaysliteral_code   = literalvalues.always
-    local rawliteral_code      = literalvalues.raw
-    local textliteral_code     = literalvalues.text
-    local fontliteral_code     = literalvalues.font
-
-    local nodeproperties       = nodes.properties.data
+    local <const> originliteral_code   = literalvalues.origin
+    local <const> pageliteral_code     = literalvalues.page
+    local <const> alwaysliteral_code   = literalvalues.always
+    local <const> rawliteral_code      = literalvalues.raw
+    local <const> textliteral_code     = literalvalues.text
+    local <const> fontliteral_code     = literalvalues.font
 
     flushliteral = function(current,pos_h,pos_v,mode,str)
         if mode then
@@ -844,22 +843,22 @@ local localconverter  = nil -- will be set
 
 local flushrule, flushsimplerule, flushimage  do
 
-    local rulecodes         = nodes.rulecodes
-    local newrule           = nodes.pool.rule
+    local rulecodes = nodes.rulecodes
+    local newrule   = nodes.pool.rule
 
-    local setprop           = nuts.setprop
-    local getprop           = nuts.getprop
+    local setprop   = nuts.setprop
+    local getprop   = nuts.getprop
 
-    local normalrule_code   = rulecodes.normal
-    local boxrule_code      = rulecodes.box
-    local imagerule_code    = rulecodes.image
-    local emptyrule_code    = rulecodes.empty
-    local userrule_code     = rulecodes.user
-    local overrule_code     = rulecodes.over
-    local underrule_code    = rulecodes.under
-    local fractionrule_code = rulecodes.fraction
-    local radicalrule_code  = rulecodes.radical
-    local outlinerule_code  = rulecodes.outline
+    local <const> normalrule_code   = rulecodes.normal
+    local <const> boxrule_code      = rulecodes.box
+    local <const> imagerule_code    = rulecodes.image
+    local <const> emptyrule_code    = rulecodes.empty
+    local <const> userrule_code     = rulecodes.user
+    local <const> overrule_code     = rulecodes.over
+    local <const> underrule_code    = rulecodes.under
+    local <const> fractionrule_code = rulecodes.fraction
+    local <const> radicalrule_code  = rulecodes.radical
+    local <const> outlinerule_code  = rulecodes.outline
 
     local rule_callback = callbacks.functions.process_rule
 
@@ -1015,13 +1014,13 @@ local flushrule, flushsimplerule, flushimage  do
     -- place image also used in vf but we can use a different one if
     -- we need it
 
-    local imagetypes    = images.types -- pdf png jpg jp2 jbig2 stream memstream
-    local img_none      = imagetypes.none
-    local img_pdf       = imagetypes.pdf
-    local img_stream    = imagetypes.stream
-    local img_memstream = imagetypes.memstream
+    local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream memstream
+    local img_none       = imagetypes.none
+    local img_pdf        = imagetypes.pdf
+    local img_stream     = imagetypes.stream
+    local img_memstream  = imagetypes.memstream
 
-    local one_bp        = 65536 * bpfactor
+    local <const> one_bp = 65536 * bpfactor
 
     local imageresources, n = { }, 0
 
@@ -1378,7 +1377,7 @@ local function finalize(driver,details)
     pdf_goto_pagemode() -- for now
 
     local objnum        = details.objnum
-    local specification = details.objnum
+    local specification = details.specification
 
     local content = concat(buffer,"\n",1,b)
 
@@ -1449,7 +1448,9 @@ local function finalize(driver,details)
         local margin     = specification.margin or 0
         local attributes = specification.attributes or ""
         local resources  = specification.resources or ""
+
         local wrapper    = nil
+
         if xformtype == 0 then
             wrapper = pdfdictionary {
                 Type      = pdf_xobject,
@@ -1621,12 +1622,13 @@ end
 
 local addtocache, flushcache, cache do
 
-    local data, d  = { }, 0
-    local list, l  = { }, 0
-    local coffset  = 0
-    local maxsize  = 32 * 1024 -- uncompressed
-    local maxcount = 0xFF
+    local data, d = { }, 0
+    local list, l = { }, 0
+    local coffset = 0
     local indices = { }
+
+    local <const> maxsize  = 32 * 1024 -- uncompressed
+    local <const> maxcount = 0xFF
 
     addtocache = function(n,str)
         local size = #str
@@ -2191,7 +2193,6 @@ updaters.register("backend.update.pdf",function()
     local img_none       = imagetypes.none
 
     local rulecodes      = nodes.rulecodes
-    local imagerule_code = rulecodes.image
 
     local setprop        = nodes.nuts.setprop
 
@@ -2200,7 +2201,8 @@ updaters.register("backend.update.pdf",function()
     local lastindex      = 0
     local indices        = { }
 
-    local bpfactor       = number.dimenfactors.bp
+    local <const> bpfactor       = number.dimenfactors.bp
+    local <const> imagerule_code = rulecodes.image
 
     function codeinjections.newimage(specification)
         return specification

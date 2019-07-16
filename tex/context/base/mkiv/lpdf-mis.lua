@@ -196,6 +196,10 @@ function codeinjections.setupidentity(specification)
     end
 end
 
+function codeinjections.getidentityvariable(name)
+    return identity[name]
+end
+
 local done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
 
 local function setupidentity()

@@ -31,41 +31,49 @@ The \LUAMETATEX\ engine is, as said, a lightweight version of \LUATEX, that for
 now targets \CONTEXT. We will use it for possibly drastic experiments but without
 affecting \LUATEX. As we can easily adapt \CONTEXT\ to support both, no other
 macro package will be harmed when (for instance) interfaces change as part of an
-experiment. Of course, when we consider something to be useful, it can be back
-ported to \LUATEX, but only when there are good reasons for doing so. When
-considering this follow up one consideration was that a lean and mean version
-with an extension mechanism is a bit closer to original \TEX. Of course, because
-we have new primitives, this is not entirely true.
+experiment. Of course, when we consider something to be useful, it can be ported
+back to \LUATEX, but only when there are good reasons for doing so and when no
+compatibility issues are involved. When considering this follow up one
+consideration was that a lean and mean version with an extension mechanism is a
+bit closer to original \TEX. Of course, because we also have new primitives, this
+is not entirely true. The move to \LUA\ already meant that some aspects,
+especially system dependent ones, no longer made sense and therefore had
+consequences for the interface at the system level.
 
 This manual currently has quite a bit of overlap with the \LUATEX\ manual but
-some chapters are removed, others added and the rest has been adapted. We also
-discusses the (main) differences. Some of the new primitives or functions that
-show up in \LUAMETATEX\ might show up in \LUATEX\ at some point, others might
-not. For now it is an experimental engine in which we can change things at will
-but with \CONTEXT\ in tandem so it will keep working.
+some chapters are removed, others added and the rest has been (and will be
+further) adapted. We also discusses the (main) differences. Some of the new
+primitives or functions that show up in \LUAMETATEX\ might show up in \LUATEX\ at
+some point, others might not, so don't take this manual as reference for \LUATEX
+! For now it is an experimental engine in which we can change things at will but
+with \CONTEXT\ in tandem so that this macro package will keep working.
 
 For \CONTEXT\ users the \LUAMETATEX\ engine will become the default. Because we
 can keep both \LUAMETATEX\ and \CONTEXT\ in sync. The \CONTEXT\ variant is tagged
 \LMTX. The pair can be used in production, just as with \LUATEX\ and \MKIV. In
-fact, most users will probably not really notice the difference.
+fact, most users will probably not really notice the difference. In some cases
+there will be a drop in performance, due to more work being delegated to \LUA,
+but on the average performance will be better, also due to some changes below the
+hood of the engine.
 
 As this follow up is closely related to \CONTEXT\ development, and because we
 expect stock \LUATEX\ to be used outside the \CONTEXT\ proper, there will be no
-special mailing list nor coverage (or polution) on the \LUATEX\ related mailing
+special mailing list nor coverage (or pollution) on the \LUATEX\ related mailing
 lists. We have the \CONTEXT\ mailing lists for that. In due time the source code
 will be part of the regular \CONTEXT\ distribution.
 
 % \testpage[8]
 
-This manual refers to \LUATEX, when we talk of features common to both engine, as
-well as \LUAMETATEX, when it is more specific to the follow up.
+This manual sometimes refers to \LUATEX, especially when we talk of features
+common to both engine, as well as to \LUAMETATEX, when it is more specific to the
+follow up. A substantial amount of time went into the transition and more will go
+in, so if you want to complain about \LUAMETATEX, don't bother me.
 
 \blank[big]
 
 Hans Hagen
 
-% \blank[2*big]
-\page
+\blank[2*big]
 
 \starttabulate[|||]
 \NC Version       \EQ \currentdate \NC \NR
