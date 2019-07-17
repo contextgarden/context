@@ -307,3 +307,27 @@ fi ;
 
 vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
 vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;
+
+if contextlmtxmode :
+
+    newinternal mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
+    newinternal mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
+    newinternal mfid_getparameter         ; mfid_getparameter         := scriptindex "getparameter" ;
+    newinternal mfid_getparametercount    ; mfid_getparametercount    := scriptindex "getparametercount" ;
+    newinternal mfid_getparameterentry    ; mfid_getparameterentry    := scriptindex "getparameterentry" ;
+    newinternal mfid_getparametersets     ; mfid_getparametersets     := scriptindex "getparametersets" ;
+    newinternal mfid_getparametersetcount ; mfid_getparametersetcount := scriptindex "getparametersetcount" ;
+    newinternal mfid_getparametersetentry ; mfid_getparametersetentry := scriptindex "getparametersetentry" ;
+    newinternal mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
+
+    def getparameters        = runscript mfid_getparameters        enddef ;
+    def presetparameters     = runscript mfid_presetparameters     enddef ;
+    def getparameter         = runscript mfid_getparameter         enddef ;
+    def getparametercount    = runscript mfid_getparametercount    enddef ;
+    def getparameterentry    = runscript mfid_getparameterentry    enddef ;
+    def getparametersets     = runscript mfid_getparametersets     enddef ;
+    def getparametersetcount = runscript mfid_getparametersetcount enddef ;
+    def getparametersetentry = runscript mfid_getparametersetentry enddef ;
+    def applyparameters      = runscript mfid_applyparameters      enddef ;
+
+fi ;

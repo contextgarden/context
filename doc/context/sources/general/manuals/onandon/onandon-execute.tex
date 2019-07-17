@@ -6,12 +6,12 @@
 
 \startchapter[title={Executing \TEX}]
 
-Much of the \LUA\ code in \CONTEXT\ originates from experiments. When it survives
-in the source code it is probably used, waiting to be used or kept for
+Much of the \LUA\ code in \CONTEXT\ originates from experiments. What survives in
+the source code is probably either used, waiting to be used, or kept for
 educational purposes. The functionality that we describe here has already been
-present for a while in \CONTEXT, but improved a little starting with \LUATEX\
-1.08 due to an extra helper. The code shown here is generic and not used in
-\CONTEXT\ as such.
+present for a while in \CONTEXT, but has been improved a little starting with
+\LUATEX\ 1.08 due to an extra helper. The code shown here is generic and is not
+used in \CONTEXT\ as such.
 
 Say that we have this code:
 
@@ -33,8 +33,8 @@ end
 % \ctxluabuffer
 
 When we call \type {\directlua} with this snippet we get some 30 pages of \type
-{12345345345}. The printed text is saved till the end of the \LUA\ call, so
-basically we pipe some 170.000 characters to \TEX\ that get interpreted as one
+{12345345345}. The printed text is saved until the end of the \LUA\ call so
+basically we pipe some 170\,000 characters to \TEX\ that get interpreted as one
 paragraph.
 
 Now imagine this:
@@ -45,7 +45,8 @@ Now imagine this:
 
 \typebuffer
 
-which gives \getbuffer. If we check the box in \LUA, with:
+which gives \getbuffer (the width of the \type {box0} register). If we check the
+box in \LUA, with:
 
 \startbuffer
 tex.sprint(tex.box[0].width)
@@ -56,10 +57,11 @@ tex.sprint(tex.box[0].width)
 
 \typebuffer
 
-the result is {\tttf \ctxluabuffer}, which is not what you would expect at first
-sight. However, if you consider that we just pipe to a \TEX\ buffer that gets
-parsed after the \LUA\ call, it will be clear that the reported width is the
-width that we started with. It will work all right if we say:
+the result is {\tttf \ctxluabuffer} i.e. the same number repeated, which is not
+what you would expect at first sight. However, if you consider that we just pipe
+to a \TEX\ buffer that gets parsed \italic {after} the \LUA\ call, it will be
+clear that the reported width is each time the width that we started with. Our
+code will work all right if we use:
 
 \startbuffer
 tex.sprint(tex.box[0].width)
@@ -70,9 +72,11 @@ tex.sprint("\\directlua{tex.sprint(tex.box[0].width)}")
 
 \typebuffer
 
-because now we get: {\tttf\ctxluabuffer}. It's not that complex to write some
-support code that makes this more convenient. This can work out quite well but
-there is a drawback. If we use this code:
+and now we get: {\tttf\ctxluabuffer}, but this use is a bit awkward.
+
+It's not that complex to write some support code that is convenient and this can
+work out quite well but there is a drawback. If we add references to the status
+of the input pointer:
 
 \startbuffer
 print(status.input_ptr)
@@ -85,24 +89,24 @@ tex.sprint("\\directlua{print(status.input_ptr)\
 
 \typebuffer
 
-Here we get \type {6} and \type {7} reported. You can imagine that when a lot of
-nested \type {\directlua} calls happen, we can get an overflow of the input level
-or (depending on what we do) the input stack size. Ideally we want to do a \LUA\
-call, temporarily go to \TEX, return to \LUA, etc.\ without needing to worry
-about nesting and possible crashes due to \LUA\ itself running into problems. One
-charming solution is to use so|-|called coroutines: independent \LUA\ threads
-that one can switch between --- you jump out from the current routine to another
-and from there back to the current one. However, when we use \type {\directlua}
-for that, we still have this nesting issue and what is worse, we keep nesting
-function calls too. This can be compared to:
+we then get \type {6} and \type {7} reported. You can imagine that when a lot of
+nested \type {\directlua} calls happen, this can lead to an overflow of the input
+level or (depending on what we do) the input stack size. Ideally we want to do a
+\LUA\ call, temporarily go to \TEX, return to \LUA, etc.\ without needing to
+worry about nesting and possible crashes due to \LUA\ itself running into
+problems. One charming solution is to use so|-|called coroutines: independent
+\LUA\ threads that one can switch between --- you jump out from the current
+routine to another and from there back to the current one. However, when we use
+\type {\directlua} for that, we still have this nesting issue and what is worse,
+we keep nesting function calls too. This can be compared to:
 
 \starttyping
 \def\whatever{\ifdone\whatever\fi}
 \stoptyping
 
-where at some point \type {\ifdone} is false so we quit. But we keep nesting when
-the condition is met, so eventually we can end up with some nesting related
-overflow. The following:
+where at some point \type {\ifdone} would be false so we quit, but we keep
+nesting when the condition is met and eventually we will end up with some nesting
+related overflow. The following:
 
 \starttyping
 \def\whatever{\ifdone\expandafter\whatever\fi}
@@ -122,7 +126,7 @@ and call that one with:
 \luafunction 1
 \stoptyping
 
-This is a bit faster than calling a function like:
+This is a bit faster than calling a function such as:
 
 \starttyping
 \directlua{HiThere()}
@@ -134,17 +138,28 @@ which can also be achieved by
 \directlua{print("Hi there!")}
 \stoptyping
 
-which sometimes can be more convenient. Don't overestimate the gain in speed
-because \type {directlua} is quite efficient too, and on an average run a user
-doesn't call it that often (millions of times that is). Anyway, a function call
-is what we can use for our purpose as it doesn't involve interpretation and
-effectively behaves like a tail call. The following snippet shows what we have in
-mind:
+and is sometimes more convenient. Don't overestimate the gain in speed because
+\type {directlua} is quite efficient too (and on an average run a user doesn't
+call it that often, millions of times that is). Anyway, a function call is what
+we can use for our purpose as it doesn't involve interpretation and effectively
+behaves like a tail call. The following snippet shows what we have in mind:
+
+\startbuffer[demo]
+tex.routine(function()
+    tex.sprint(tex.box[0].width)
+    tex.sprint("\\enspace")
+    tex.sprint("\\setbox0\\hbox{!}")
+    tex.yield()
+    tex.sprint(tex.box[0].width)
+end)
+\stopbuffer
+
+\typebuffer[demo]
 
 \startbuffer[code]
 local stepper = nil
 local stack   = { }
-local fid     = 2 -- make sure to take a frees slot
+local fid     = 2 -- make sure to take a free slot
 local goback  = "\\luafunction" .. fid .. "\\relax"
 
 function tex.resume()
@@ -179,25 +194,14 @@ if context then
 end
 \stopbuffer
 
-\ctxluabuffer[code]
-
-\startbuffer[demo]
-tex.routine(function()
-    tex.sprint(tex.box[0].width)
-    tex.sprint("\\enspace")
-    tex.sprint("\\setbox0\\hbox{!}")
-    tex.yield()
-    tex.sprint(tex.box[0].width)
-end)
-\stopbuffer
-
-\typebuffer[demo]
 We start a routine, jump out to \TEX\ in the middle, come back when we're done
-and continue. This gives us: \ctxluabuffer [demo], which is what we expect.
+and continue. This gives us: \ctxluabuffer [code,demo], which is what we expect.
 
-\setbox0\hbox{xxxxxxxxxxx}
-
-\ctxluabuffer[demo]
+% What does this accomplish (or is it left over)?
+%
+% \setbox0\hbox{xxxxxxxxxxx}
+%
+% \ctxluabuffer[demo]
 
 This mechanism permits efficient (nested) loops like:
 
@@ -230,9 +234,10 @@ e.g.\ the space) then the main difference is that instead of a small delay due t
 the loop unfolding in a large set of prints and accumulated content, we now get a
 steady flushing and processing.
 
-However, we can still have an overflow of input buffers because we still nest
-them: the limitation at the \TEX\ end has moved to a limitation at the \LUA\ end.
-How come? Here is the code that we use:
+However, even using this scheme we can still have an overflow of input buffers
+because we still nest them: the limitation at the \TEX\ end has moved to a
+limitation at the \LUA\ end. How come? Here is the code that we use defining the
+function \type {tex.yield()}:
 
 \typebuffer[code]
 
@@ -244,7 +249,7 @@ then you will not easily overflow.
 When I picked up this side project and wondered how to get around it, it suddenly
 struck me that if we could just quit the current input level then nesting would
 not be a problem. Adding a simple helper to the engine made that possible (of
-course figuring it out took a while):
+course figuring this out took a while):
 
 \startbuffer[code]
 local stepper = nil
@@ -294,10 +299,11 @@ end
 
 \typebuffer[code]
 
-The trick is in \type {texio.closeinput}, a recent helper and one that should be
-used with care. We assume that the user knows what she or he is doing. On an old
-laptop with a i7-3840 processor running \WINDOWS\ 10 the following snippet takes
-less than 0.35 seconds with \LUATEX\ and 0.26 seconds with \LUAJITTEX.
+The trick is in \type {texio.closeinput}, a recent helper to the engine and one
+that should be used with care. We assume that the user knows what she or he is
+doing. On an older laptop with a i7-3840 processor running \WINDOWS\ 10 the
+following snippet takes less than 0.35 seconds with \LUATEX\ and 0.26 seconds
+with \LUAJITTEX.
 
 \startbuffer[code]
 tex.routine(function()
@@ -320,7 +326,7 @@ end)
 
 % \testfeatureonce {1} {\setbox0\hpack{\ctxluabuffer[code]}} \elapsedtime
 
-Say that we run the bad snippet:
+Say that we were to run the bad snippet:
 
 \startbuffer[code]
 for i=1,10000 do
@@ -337,7 +343,7 @@ end
 
 % \testfeatureonce {1} {\setbox0\hpack{\ctxluabuffer[code]}} \elapsedtime
 
-This time we need 0.12 seconds in both engines. So what if we run this:
+This executes in only 0.12 seconds in both engines. So what if we run this:
 
 \startbuffer[code]
 \dorecurse{10000}{%
@@ -357,7 +363,7 @@ This time we need 0.12 seconds in both engines. So what if we run this:
 Pure \TEX\ needs 0.30 seconds for both engines but there we lose 0.13 seconds on
 the loop code. In the \LUA\ example where we yield, the loop code takes hardly
 any time. As we need only 0.05 seconds more it demonstrates that when we use the
-power of \LUA\ the performance hit of the switch is quite small: we yield 40.000
+power of \LUA, the performance hit of the switch is quite small: we yield 40.000
 times! In general, such differences are far exceeded by the overhead: the time
 needed to typeset the content (which \type {\hpack} doesn't do), breaking
 paragraphs into lines, constructing pages and other overhead involved in the run.
@@ -403,11 +409,11 @@ Now, in order to stay realistic, this macro can also be defined as:
 
 We get the same result: \quotation {\getbuffer}.
 
-We have been using a \LUA|-|\TEX\ mix for over a decade now in \CONTEXT, and have
+We have been using a \LUA|-|\TEX\ mix for over a decade now in \CONTEXT\ and have
 never really needed this mixed model. There are a few places where we could
-(have) benefitted from it and we might use it in a few places, but so far we have
-done fine without it. In fact, in most cases typesetting can be done fine at the
-\TEX\ end. It's all a matter of imagination.
+(have) benefited from it and now we might use it in a few places, but so far we
+have done fine without it. In fact, in most cases typesetting can be done fine at
+the \TEX\ end. It's all a matter of imagination.
 
 \stopchapter
 
