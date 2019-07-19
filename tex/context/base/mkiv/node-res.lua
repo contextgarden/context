@@ -162,8 +162,7 @@ local kern              = register_nut(new_nut(kern_code,kerncodes.userkern))
 local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
 local italickern        = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
 local penalty           = register_nut(new_nut(nodecodes.penalty))
-local glue              = register_nut(new_nut(glue_code)) -- glue.spec = nil
-local glue_spec         = register_nut(new_nut(nodecodes.gluespec))
+local glue              = register_nut(new_nut(glue_code))
 local glyph             = register_nut(new_nut(glyph_code,0))
 
 local textdir           = register_nut(new_nut(nodecodes.dir))
@@ -271,15 +270,6 @@ function nutpool.italickern(k)
         setkern(n,k)
     end
     return n
-end
-
-function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
-    -- maybe setglue
-    local s = copy_nut(glue_spec)
-    if width or stretch or shrink or stretch_order or shrink_order then
-        setglue(s,width,stretch,shrink,stretch_order,shrink_order)
-    end
-    return s
 end
 
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)

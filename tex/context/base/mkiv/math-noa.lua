@@ -197,6 +197,7 @@ local mathchar_code      = nodecodes.mathchar       -- attr fam char
 local mathtextchar_code  = nodecodes.mathtextchar   -- attr fam char
 local delim_code         = nodecodes.delim          -- attr small_fam small_char large_fam large_char
 ----- style_code         = nodecodes.style          -- attr style
+----- parameter_code     = nodecodes.parameter      -- attr style
 local math_choice        = nodecodes.choice         -- attr display text script scriptscript
 local fence_code         = nodecodes.fence          -- attr subtype
 
@@ -298,6 +299,8 @@ local function process(start,what,n,parent)
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
      -- elseif id == style_code then
+     --     -- has a next
+     -- elseif id == parameter_code then
      --     -- has a next
      -- else
      --     -- glue, penalty, etc

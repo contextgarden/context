@@ -779,12 +779,7 @@ local ruledbox do
                 setlink(info,next)
             end
             if prev and prev > 0 then
-             -- if getid(prev) == gluespec_code then
-             --     report_visualize("ignoring invalid prev")
-             --     -- weird, how can this happen, an inline glue-spec, probably math
-             -- else
-                    setlink(prev,info)
-             -- end
+                setlink(prev,info)
             end
             if head == current then
                 return info, info

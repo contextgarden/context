@@ -619,48 +619,64 @@
 %D have number 0 (used to be char node) and ligature nodes are mapped to 7. That way
 %D macro packages can use the same symbolic names as in traditional \ETEX. Keep in
 %D mind that the internal node numbers are different and that there are more node
-%D types that 15.
+%D types that 15. The mode parameter forces \LUAMETATEX\ to use the real node
+%D numbers.
 
-\chardef\charnodecode          =  0
-\chardef\hlistnodecode         =  1
-\chardef\vlistnodecode         =  2
-\chardef\rulenodecode          =  3
-\chardef\insertnodecode        =  4
-\chardef\marknodecode          =  5
-\chardef\adjustnodecode        =  6
-\chardef\ligaturenodecode      =  7
-\chardef\discretionarynodecode =  8
-\chardef\whatsitnodecode       =  9
-\chardef\mathnodecode          = 10
-\chardef\gluenodecode          = 11
-\chardef\kernnodecode          = 12
-\chardef\penaltynodecode       = 13
-\chardef\unsetnodecode         = 14
-\chardef\mathsnodecode         = 15
+\ifdefined\internalcodesmode
+
+    \internalcodesmode\plusone
+
+  % \chardef\gluenodecode          = 12
+  % \chardef\kernnodecode          = 13
+  % \chardef\penaltynodecode       = 14
+
+\else
+
+  % \chardef\charnodecode          =  0
+  % \chardef\hlistnodecode         =  1
+  % \chardef\vlistnodecode         =  2
+  % \chardef\rulenodecode          =  3
+  % \chardef\insertnodecode        =  4
+  % \chardef\marknodecode          =  5
+  % \chardef\adjustnodecode        =  6
+  % \chardef\ligaturenodecode      =  7
+  % \chardef\discretionarynodecode =  8
+  % \chardef\whatsitnodecode       =  9
+  % \chardef\mathnodecode          = 10
+    \chardef\gluenodecode          = 11
+    \chardef\kernnodecode          = 12
+    \chardef\penaltynodecode       = 13
+  % \chardef\unsetnodecode         = 14
+  % \chardef\mathsnodecode         = 15
+
+\fi
 
 %D Constants to be used with \type {\currentiftype}. I wonder if we will ever
-%D use these in \CONTEXT.
+%D use these in \CONTEXT. We have a few more anyway and in \LUAMETATEX\ we
+%D have different numbers. So for now let's just not define them. The
+%D previously mentioned mode parameters enables the real numbers (we have
+%D some more and they are therefore ordered differently).
 
-\chardef\charifcode     =  1
-\chardef\catifcode      =  2
-\chardef\numifcode      =  3
-\chardef\dimifcode      =  4
-\chardef\oddifcode      =  5
-\chardef\vmodeifcode    =  6
-\chardef\hmodeifcode    =  7
-\chardef\mmodeifcode    =  8
-\chardef\innerifcode    =  9
-\chardef\voidifcode     = 10
-\chardef\hboxifcode     = 11
-\chardef\vboxifcode     = 12
-\chardef\xifcode        = 13
-\chardef\eofifcode      = 14
-\chardef\trueifcode     = 15
-\chardef\falseifcode    = 16
-\chardef\caseifcode     = 17
-\chardef\definedifcode  = 18
-\chardef\csnameifcode   = 19
-\chardef\fontcharifcode = 20
+% \chardef\charifcode     =  1
+% \chardef\catifcode      =  2
+% \chardef\numifcode      =  3
+% \chardef\dimifcode      =  4
+% \chardef\oddifcode      =  5
+% \chardef\vmodeifcode    =  6
+% \chardef\hmodeifcode    =  7
+% \chardef\mmodeifcode    =  8
+% \chardef\innerifcode    =  9
+% \chardef\voidifcode     = 10
+% \chardef\hboxifcode     = 11
+% \chardef\vboxifcode     = 12
+% \chardef\xifcode        = 13
+% \chardef\eofifcode      = 14
+% \chardef\trueifcode     = 15
+% \chardef\falseifcode    = 16
+% \chardef\caseifcode     = 17
+% \chardef\definedifcode  = 18
+% \chardef\csnameifcode   = 19
+% \chardef\fontcharifcode = 20
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.

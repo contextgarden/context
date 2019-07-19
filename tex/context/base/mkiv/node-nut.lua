@@ -423,8 +423,6 @@ end
 nuts.getsurround = nuts.getkern
 nuts.setsurround = nuts.setkern
 
--- bad: we can have prev's being glue_spec
-
 nuts.remove = remove
 
 function nuts.delete(head,current)

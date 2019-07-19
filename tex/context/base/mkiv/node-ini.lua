@@ -523,3 +523,19 @@ end
 if node.fix_node_lists then
     node.fix_node_lists(false)
 end
+
+-- We use the real node code numbers.
+
+if CONTEXTLMTXMODE > 0 then
+
+    local texchardef = tex.chardef
+
+    if texchardef then
+        for i=0,nodecodes.glyph do
+            texchardef(nodecodes[i] .. "nodecode",i)
+        end
+        tex.set("internalcodesmode",1)
+    end
+
+end
+

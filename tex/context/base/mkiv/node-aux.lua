@@ -380,25 +380,6 @@ function nodes.rehpack(n,...)
     rehpack(tonut(n),...)
 end
 
--- I have no use for this yet:
---
--- \skip0=10pt plus 2pt minus 2pt
--- \cldcontext{"\letterpercent p",tex.stretch_amount(tex.skip[0],1000)} -- 14.30887pt
---
--- local gluespec_code = nodes.nodecodes.gluespec
---
--- function tex.badness_to_ratio(badness)
---     return (badness/100)^(1/3)
--- end
---
--- function tex.stretch_amount(skip,badness) -- node no nut
---     if skip.id == gluespec_code then
---         return skip.width + (badness and (badness/100)^(1/3) or 1) * skip.stretch
---     else
---         return 0
---     end
--- end
-
 -- nodemode helper: the next and prev pointers are untouched
 
 function nuts.copy_no_components(g,copyinjection)
