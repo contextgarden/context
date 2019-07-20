@@ -82,6 +82,8 @@ local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
 local a_colormodel       = attributes.private('colormodel')
 
+local texget             = tex.get
+
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
@@ -128,9 +130,9 @@ actions[v_line] = function(head,setting)
     local ma         = setting.ma or 0
     local ca         = setting.ca
     local ta         = setting.ta
-    local hangafter  = tex.hangafter
-    local hangindent = tex.hangindent
-    local parindent  = tex.parindent
+    local hangafter  = texget("hangafter")
+    local hangindent = texget("hangindent")
+    local parindent  = texget("parindent")
     local nofchars   = 0
     local n          = 0
     local temp       = copy_node_list(head)
@@ -164,7 +166,7 @@ actions[v_line] = function(head,setting)
     local list  = temp
     local prev  = temp
     for i=1,noflines do
-        local hsize = tex.hsize - tex.leftskip.width - tex.rightskip.width
+        local hsize = texget("hsize") - texget("leftskip",false) - texget("rightskip",false)
         if i == 1 then
             hsize = hsize - parindent
         end

@@ -63,52 +63,63 @@
   [headcolor=darkblue]
 
 \startluacode
-    local skipped = table.tohash { 'id', 'subtype', 'next', 'prev' }
+    local skipped = { 'id', 'subtype', 'next', 'prev' }
+
+    local function showlist(l,skipped)
+        if l then
+            l = table.tohash(l)
+            if skipped then
+                for i=1,#skipped do
+                    l[skipped[i]] = nil
+                end
+            end
+            l = table.sortedkeys(l)
+            local n = #l
+            for i=1,n do
+                context("%s{\\tttf %s}", (i == 1 and "") or (i == n and " and ") or ", ", l[i])
+            end
+        end
+    end
+
+    function document.functions.showvalues(l)
+        if l then
+            local n = table.count(l)
+            local i = 0
+            for k, v in table.sortedhash(l) do
+                i = i + 1
+                context("%s{\\tttf %s} (%i)", (i == 1 and "") or (i == n and " and ") or ", ", v,k)
+            end
+        end
+    end
 
     function document.functions.showfields(s)
         local t = string.split(s,',')
-        local f = node.fields(t[1],t[2])
-        if f then
-            local d = false
-            for i=1,#f do
-                local fi = f[i]
-                if skipped[fi] then
-                    -- okay
-                elseif d then
-                    context(', {\tttf %s}', fi)
-                else
-                    context('{\tttf %s}', fi)
-                    d = true
-                end
-            end
-        end
+        showlist(node.fields(t[1],t[2]),skipped)
     end
 
     function document.functions.showid(s)
         local t = string.split(s,',')
-        context('{tttf %s}',node.id(t[1]))
-        if t[2] then
-            context(', {tttf %s}',node.subtype(t[2]))
+        local i = t[1] and node.id(t[1])
+        local s = t[2] and node.subtype(t[2])
+        if s then
+            context('{\\tttf %s}, {\\tttf %s}',i,s)
+        else
+            context('{\\tttf %s}',i)
         end
     end
 
     function document.functions.showsubtypes(s)
-        local s = node.subtypes(s)
-        local d = false
-        for k, v in table.sortedhash(s) do
-            if d then
-                context(', %s = {\\tttf %s}',k,v)
-            else
-                context('%s = {\\tttf %s}',k,v)
-                d = true
-            end
-        end
+        showlist(node.subtypes(s))
     end
+
 \stopluacode
 
 \unexpanded\def\showfields  #1{\ctxlua{document.functions.showfields("#1")}}
 \unexpanded\def\showid      #1{\ctxlua{document.functions.showid("#1")}}
 \unexpanded\def\showsubtypes#1{\ctxlua{document.functions.showsubtypes("#1")}}
+\unexpanded\def\showvalues  #1{\ctxlua{document.functions.showvalues(node.values("#1"))}}
+\unexpanded\def\showtypes     {\ctxlua{document.functions.showvalues(node.types())}}
+
 
 \definecolor[blue]      [b=.5]
 \definecolor[red]       [r=.5]

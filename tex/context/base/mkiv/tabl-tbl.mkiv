@@ -17,17 +17,15 @@
 
 \registerctxluafile{tabl-tbl}{} % experiment
 
-%D I can probably reimplement this using a \LUATEX\ combination
-%D but it does not pay of in development time. If I need something
-%D else I will write it from scratch anyway. This module looks
-%D a bit complex which is a consequence of it dealing with paragraphs
-%D being split over pages and that there are several passes over the
-%D data set. We can probably do some cleanup (combine/split).
+%D I can probably reimplement this using a \LUATEX\ combination but it does not pay
+%D of in development time. If I need something else I will write it from scratch
+%D anyway. This module looks a bit complex which is a consequence of it dealing with
+%D paragraphs being split over pages and that there are several passes over the data
+%D set. We can probably do some cleanup (combine/split).
 %D
-%D Caching the preamble does not save much (compared to other
-%D bits and pieces of \CONTEXT). There are not that many ways to
-%D deal with preambles and this is just one of them. The keys are
-%D somewhat similar to those of the \TABLE\ package.
+%D Caching the preamble does not save much (compared to other bits and pieces of
+%D \CONTEXT). There are not that many ways to deal with preambles and this is just
+%D one of them. The keys are somewhat similar to those of the \TABLE\ package.
 
 % |p2|p3| 2:3 -> spanning (maybe)
 %
@@ -579,15 +577,17 @@
 \installtabulatepreambleoption{ }{\tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{A}{\tabl_tabulate_set_alignment}
 
-% We no longer deal with '~' here but map it onto 'd' instead. Of course
-% we could prefix a key with \type {\meaning} instead, which works ok (and
-% is needed in order to pseudo expand \type {\next}, but is ugly at the
-% same time. The 'd' stands for digitspace.
-%
-% \installtabulatepreambleoption{~}{...} % see 'd'
-%
-% Also, as there is always a key, we no longer do some after assigment or
-% future let but just pick up the key.
+%D We no longer deal with \type {~} here but map it onto \type {d} instead. Of
+%D course we could prefix a key with \type {\meaning} instead, which works ok (and
+%D is needed in order to pseudo expand \type {\next}, but is ugly at the same time.
+%D The type {d} stands for digitspace.
+
+%D \starttyping
+%D \installtabulatepreambleoption{~}{...} % see 'd'
+%D \stoptyping
+%D
+%D Also, as there is always a key, we no longer do some after assigment or future
+%D let but just pick up the key.
 
 % \installtabulatepreambleoption \s!unknown %
 %   {\writestatus{tabulate}{unknown preamble key [\normalmeaning\next]}%
@@ -976,9 +976,8 @@
 %D
 %D \typebuffer {\tracetabulatetrue\getbuffer}
 
-%D As we want to be compatible we use an indirect way to
-%D implement the definers. The next examples demonstrate
-%D the difference:
+%D Because we want to be compatible we use an indirect way to implement the
+%D definers. The next examples demonstrate the difference:
 %D
 %D \starttyping
 %D \definetabulate[test][|l|c|r|]
@@ -1151,15 +1150,6 @@
 \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
 \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
 
-% \def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[]}
-% \def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[]}
-
-% \unexpanded\def\tabl_start_defined[#1]%
-%   {\bgroup
-%    \edef\currenttabulationparent{#1}%
-%    \let\currenttabulation\currenttabulationparent
-%    \dodoubleargument\tabl_start_defined_indeed}
-
 \unexpanded\def\tabl_start_defined[#1]%
   {\bgroup
    \edef\currenttabulationparent{#1}%
@@ -1183,12 +1173,6 @@
    \else
       \singleexpandafter\tabl_start_defined_zero
    \fi}
-
-% \def\tabl_start_defined_one[#1][#2]%
-%   {\doifelseassignment{#1}
-%      {\setuptabulation[\currenttabulation][#1]}%
-%      {\edef\currenttabulation{\currenttabulation:#1}}%
-%    \tabl_tabulate_start_building}
 
 \def\tabl_start_defined_one[#1][#2]%
   {\ifcondition\validassignment{#1}%
@@ -1222,17 +1206,6 @@
    \fi}
 
 \def\tabl_default_format{|l|p|}
-
-% \def\tabl_start_regular_one[#1][#2]%
-%   {\doifelseassignment{#1}
-%      {\lettabulationparameter\c!format\tabl_default_format
-%       \setupcurrenttabulation[#1]}
-%      {\def\p_format{#1}%
-%       \ifx\p_format\empty
-%         \def\p_format{|l|p|}%
-%       \fi
-%       \lettabulationparameter\c!format\p_format}%
-%    \tabl_tabulate_start_building}
 
 \def\tabl_start_regular_one[#1][#2]%
   {\ifcondition\validassignment{#1}%
@@ -1499,15 +1472,6 @@
    \tabl_tabulate_column_normal\zerocount#1}
 
 % normal columns:
-
-% \def\tabl_tabulate_column_normal#1#2%
-%   {\unskip
-%    \aligntab
-%    \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
-%    \aligntab
-%    \global\c_tabl_tabulate_kind#1%
-%    \global\c_tabl_tabulate_type#2%
-%    \aligntab}
 
 \def\tabl_tabulate_column_normal#1#2%
   {\unskip
@@ -1855,9 +1819,8 @@
 
 \def\tabl_tabulate_digits{\digits}
 
-%D Beware, we cannot use \type {\unexpanded} on \type {\HL}
-%D cum suis, since \TEX's hard coded noalign lookahead fails
-%D on it! I mistakenly added this for a while.
+%D Beware, we cannot use \type {\unexpanded} on \type {\HL} cum suis, since \TEX's
+%D hard coded noalign lookahead fails on it! I mistakenly added this for a while.
 
 \setvalue{\??tabulatealigning\v!normal}{0}
 \setvalue{\??tabulatealigning\v!right }{1}
@@ -1898,27 +1861,6 @@
 
 \installcorenamespace{tabulatenobreak}
 
-% \def\tabl_tabulate_break_state_set
-%   {%\writestatus{SET}{\the\c_tabl_tabulate_noflines}%
-%    \expandafter\glet\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\conditionaltrue}
-%
-% \def\tabl_tabulate_break_state_reset
-%   {\ifcsname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname
-%     %\writestatus{RESET}{\the\c_tabl_tabulate_noflines}%
-%      \expandafter\glet\csname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname\undefined
-%    \fi}
-%
-% \def\tabl_tabulate_break_state_allowbreak
-%   {\ifcsname\??tabulatenobreak\the\c_tabl_tabulate_noflines\endcsname
-%     %\writestatus{TRUE}{\the\c_tabl_tabulate_noflines}%
-%    \else
-%     %\writestatus{FALSE}{\the\c_tabl_tabulate_noflines}%
-%      \tabl_tabulate_break_allow % needed with pbreak prevention
-%    \fi}
-%
-% \let\tabl_tabulate_break_allow\allowbreak
-% \let\tabl_tabulate_break_no   \nobreak
-
 \def\tabl_tabulate_break_allow{\directvpenalty\zerocount}
 \def\tabl_tabulate_break_maybe{\directvpenalty\zerocount}
 \def\tabl_tabulate_break_no   {\directvpenalty\plustenthousand} % ,order:2}}
@@ -1936,11 +1878,6 @@
 \unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \plustwo  \zerocount}
 \unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \zerocount\plusone}
 \unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \zerocount\plustwo}
-
-%unexpanded\def\tabl_tabulate_NG_first{\NC\tabl_tabulate_charalign}
-%unexpanded\def\tabl_tabulate_NG_first{\NC}
-%unexpanded\def\tabl_tabulate_NN_first{\NC\tabl_tabulate_digits} % new, undocumented, test first
-%unexpanded\def\tabl_tabulate_ND_first{\NC\tabl_tabulate_digits} % same, for old times sake
 
 \unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount\zerocount}
 \unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % new, undocumented, test first
@@ -1987,8 +1924,6 @@
 \def\tabl_tbl_NI_nop    {\NC \itemtag    \NC}
 
 %D The following shortcut is handy for tables where one needs bold headers:
-
-%unexpanded\def\tabl_tabulate_BC_first{\NC\let\fontstyle\globalfontstyle\bf}
 
 \unexpanded\def\tabl_tabulate_BC_first
   {\tabl_tabulate_column_normal\plusone\zerocount
@@ -2176,15 +2111,6 @@
    \tabl_tabulate_nobreak_inject
    \stoptabulatenoalign}
 
-% \unexpanded\def\tabl_tabulate_ML_second_indeed
-%   {\tabl_tabulate_column_rule_separator_inject
-%    \tabl_tabulate_hrule_inject
-%    \vskip-\p_rulethickness\relax
-%    \tabl_tabulate_hrule_inject
-%    \tabl_tabulate_break_no
-%    \tabl_tabulate_column_rule_separator_inject
-%    \stoptabulatenoalign}
-
 \def\spac_vspacing_no_topskip % use grouped
   {\attribute\skipcategoryattribute\plusten}
 
@@ -2307,13 +2233,12 @@
 \def\tabulateautorule{\HR}%
 \def\tabulateautoline{\HL} % no longer different (to be looked into)
 
-% When support for vertical rules we needed a way to pick up the
-% specification for the final rule and a \type {|{}} interface was
-% chosen. As a result parsing had to become more complex and I was
-% not in the mood for messing up the code too much. Therefore from
-% now on the preamble is split by \LUA. There are definitely more
-% places where we can use \LUA\ code (for instance in alignment of
-% numbers. The repeat parser is replace at the \LUA\ end as well.
+%D When support for vertical rules we needed a way to pick up the specification for
+%D the final rule and a \type {|{}} interface was chosen. As a result parsing had to
+%D become more complex and I was not in the mood for messing up the code too much.
+%D Therefore from now on the preamble is split by \LUA. There are definitely more
+%D places where we can use \LUA\ code (for instance in alignment of numbers. The
+%D repeat parser is replace at the \LUA\ end as well.
 
 \let\tabl_tabulate_flush_collected       \empty
 \let\tabl_tabulate_flush_collected_indeed\empty
@@ -2757,9 +2682,9 @@
 %D \stopwhatever
 %D \stoptyping
 
-%D This is needed because we sometimes use the english command in
-%D tracing macros. In fact, most detailed tracing macros that
-%D are done with \LUA\ only work in the english interface anyway.
+%D This is needed because we sometimes use the english command in tracing macros. In
+%D fact, most detailed tracing macros that are done with \LUA\ only work in the
+%D english interface anyway.
 
 % \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
 
@@ -3069,16 +2994,16 @@
    \ignorespaces}
 
 \appendtoks
-    \let\NL\tabl_tabulate_NL_first  % NC with Line
-    \let\ND\tabl_tabulate_ND_first  % NC with Default Line
-    \let\LB\tabl_tabulate_LB_first  % BC with Line
-    \let\DB\tabl_tabulate_DB_first  % BC with Default Line
-    \let\NF\tabl_tabulate_NF_first  % NC with Filler
-    \let\NP\tabl_tabulate_NP_first  % NC with Predefined Filler
-    \let\FB\tabl_tabulate_FB_first  % BC with Filler
-    \let\PB\tabl_tabulate_PB_first  % BC with Predefined Filler
-    \let\NA\tabl_tabulate_NA_first  % NC with Auto Line
-    \let\BA\tabl_tabulate_BA_first  % NC with Auto Line
+    \let\NL\tabl_tabulate_NL_first % NC with Line
+    \let\ND\tabl_tabulate_ND_first % NC with Default Line
+    \let\LB\tabl_tabulate_LB_first % BC with Line
+    \let\DB\tabl_tabulate_DB_first % BC with Default Line
+    \let\NF\tabl_tabulate_NF_first % NC with Filler
+    \let\NP\tabl_tabulate_NP_first % NC with Predefined Filler
+    \let\FB\tabl_tabulate_FB_first % BC with Filler
+    \let\PB\tabl_tabulate_PB_first % BC with Predefined Filler
+    \let\NA\tabl_tabulate_NA_first % NC with Auto Line
+    \let\BA\tabl_tabulate_BA_first % NC with Auto Line
 \to \t_tabl_tabulate_initializers_first
 
 \appendtoks
