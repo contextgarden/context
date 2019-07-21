@@ -459,4 +459,15 @@
 
 % \setstructurepageregister[][keys:1=,entries:1=]
 
+\unexpanded\def\inlineluavalue#1%
+  {{\maincolor \ctxlua {
+       local t = #1
+       if type(t) == "table" then
+           t = string.gsub(table.serialize(t,false),"="," = ")
+       else
+           t = tostring(t)
+       end
+       context.typ(t)
+  }}}
+
 \stopenvironment

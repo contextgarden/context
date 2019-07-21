@@ -337,7 +337,7 @@ enddef ;
 %         takepower y of x
 %     fi
 % enddef ;
-% 
+%
 % def takepower expr y of x =
 %     if x>0 :
 %         mexp(y*mlog x)

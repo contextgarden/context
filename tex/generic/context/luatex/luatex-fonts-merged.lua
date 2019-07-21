@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/20/19 03:03:43
+-- merge date  : 07/21/19 16:54:25
 
 do -- begin closure to overcome local limits and interference
 
@@ -1988,7 +1988,7 @@ end
 local function sequenced(t,sep,simple)
  if not t then
   return ""
- elseif type(t)=="string" then
+ elseif type(t)~="table" then
   return t 
  end
  local n=#t
@@ -2027,7 +2027,11 @@ local function sequenced(t,sep,simple)
    end
   end
  end
- return concat(s,sep or " | ")
+ if sep==true then
+  return "{ "..concat(s,", ").." }"
+ else
+  return concat(s,sep or " | ")
+ end
 end
 table.sequenced=sequenced
 function table.print(t,...)

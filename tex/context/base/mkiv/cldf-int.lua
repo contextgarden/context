@@ -45,7 +45,7 @@ if CONTEXTLMTXMODE > 0 then
     local equal     = byte('=')
     local comma     = byte(',')
 
-    function scanhash(t)
+    function scanhash(scanners)
         if scanpeek() == open then
             local data = { }
             scanskip()
@@ -61,7 +61,16 @@ if CONTEXTLMTXMODE > 0 then
                     if key then
                         if scanpeek() == equal then
                             scanskip()
-                            data[key] = scanvalue(comma,close) or ""
+                            if scanners then
+                                local scanner = scanners[key]
+                                if scanner then
+                                    data[key] = scanner()
+                                else
+                                    data[key] = scanvalue(comma,close) or ""
+                                end
+                            else
+                                data[key] = scanvalue(comma,close) or ""
+                            end
                         else
                             break
                         end
@@ -74,7 +83,7 @@ if CONTEXTLMTXMODE > 0 then
         end
     end
 
-    function scanarray(t)
+    function scanarray()
         if scanpeek() == open then
             local data = { }
             local d = 0

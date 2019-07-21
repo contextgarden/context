@@ -922,12 +922,7 @@ do
     end
 
     function mp.positionpage(name)
-        local p = getpage(name)
-        if p then
-            fprint("%p",p)
-        else
-            mprint("0")
-        end
+        fprint("%i",getpage(name) or 0)
     end
 
     function mp.positionregion(name)
