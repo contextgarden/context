@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/21/19 16:54:25
+-- merge date  : 07/23/19 23:26:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -11497,7 +11497,7 @@ readers.vmtx=function(f,fontdata,specification)
   local glyphs=fontdata.glyphs
   local nofglyphs=fontdata.nofglyphs
   local vheight=0
-  local vdefault=verticalheader.ascender+verticalheader.descender
+  local vdefault=verticalheader.ascender-verticalheader.descender
   local topsidebearing=0
   for i=0,nofmetrics-1 do
    local glyph=glyphs[i]
@@ -11505,6 +11505,9 @@ readers.vmtx=function(f,fontdata,specification)
    topsidebearing=readshort(f)
    if vheight~=0 and vheight~=vdefault then
     glyph.vheight=vheight
+   end
+   if topsidebearing~=0 then
+    glyph.tsb=topsidebearing
    end
   end
   for i=nofmetrics,nofglyphs-1 do
@@ -12070,6 +12073,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
   local postscript=fontdata.postscript  or {}
   local fontheader=fontdata.fontheader  or {}
   local cffinfo=fontdata.cffinfo  or {}
+  local verticalheader=fontdata.verticalheader or {}
   local filename=fontdata.filename
   local weight=getname(fontdata,"weight") or (cffinfo and cffinfo.weight) or (metrics and metrics.weight)
   local width=getname(fontdata,"width")  or (cffinfo and cffinfo.width ) or (metrics and metrics.width )
@@ -12135,6 +12139,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
    platformnames=platformnames or nil,
    instancenames=instancenames or nil,
    tableoffsets=fontdata.tableoffsets,
+   defaultvheight=(verticalheader.ascender or 0)-(verticalheader.descender or 0)
   }
   if metricstoo then
    local keys={
@@ -22999,7 +23004,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.108 
+otf.version=3.109 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -23361,6 +23366,7 @@ local function copytotfm(data,cache_id)
   parameters.ascender=abs(metadata.ascender  or 0)
   parameters.descender=abs(metadata.descender or 0)
   parameters.units=units
+  parameters.vheight=metadata.defaultvheight
   properties.space=spacer
   properties.encodingbytes=2
   properties.format=data.format or formats.otf

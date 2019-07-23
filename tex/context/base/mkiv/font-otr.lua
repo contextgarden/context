@@ -1213,7 +1213,7 @@ readers.vmtx = function(f,fontdata,specification)
         local glyphs         = fontdata.glyphs
         local nofglyphs      = fontdata.nofglyphs
         local vheight        = 0
-        local vdefault       = verticalheader.ascender + verticalheader.descender
+        local vdefault       = verticalheader.ascender - verticalheader.descender
         local topsidebearing = 0
         for i=0,nofmetrics-1 do
             local glyph     = glyphs[i]
@@ -1222,9 +1222,9 @@ readers.vmtx = function(f,fontdata,specification)
             if vheight ~= 0 and vheight ~= vdefault then
                 glyph.vheight = vheight
             end
-         -- if topsidebearing ~= 0 then
-         --     glyph.tsb = topsidebearing
-         -- end
+            if topsidebearing ~= 0 then
+                glyph.tsb = topsidebearing
+            end
         end
         -- The next can happen in for instance a monospace font or in a cjk font
         -- with fixed heights.
@@ -1233,9 +1233,6 @@ readers.vmtx = function(f,fontdata,specification)
             if vheight ~= 0 and vheight ~= vdefault then
                 glyph.vheight = vheight
             end
-         -- if topsidebearing ~= 0 then
-         --     glyph.tsb = topsidebearing
-         -- end
         end
     end
 end
@@ -1904,6 +1901,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
         local postscript     = fontdata.postscript     or { }
         local fontheader     = fontdata.fontheader     or { }
         local cffinfo        = fontdata.cffinfo        or { }
+        local verticalheader = fontdata.verticalheader or { }
         local filename       = fontdata.filename
         local weight         = getname(fontdata,"weight") or (cffinfo and cffinfo.weight) or (metrics and metrics.weight)
         local width          = getname(fontdata,"width")  or (cffinfo and cffinfo.width ) or (metrics and metrics.width )
@@ -1973,6 +1971,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
             platformnames  = platformnames or nil,
             instancenames  = instancenames or nil,
             tableoffsets   = fontdata.tableoffsets,
+            defaultvheight = (verticalheader.ascender or 0) - (verticalheader.descender or 0)
         }
         if metricstoo then
             local keys = {

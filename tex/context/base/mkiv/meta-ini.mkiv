@@ -570,7 +570,7 @@
 \def\meta_prepare_variable_nop
   {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
 
-\def\meta_prepare_variable_color
+\def\meta_prepare_variable_color % we use the attribute so we dont' go through namedcolor (why not)
   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
 
 \def\meta_prepare_variable_number

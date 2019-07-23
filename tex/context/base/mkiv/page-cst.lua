@@ -21,7 +21,7 @@ local report       = logs.reporter("column sets")
 
 local setmetatableindex = table.setmetatableindex
 
-local properties        = nodes.properties
+local properties        = nodes.properties.data
 
 local nodecodes         = nodes.nodecodes
 

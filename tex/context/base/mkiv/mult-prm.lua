@@ -686,6 +686,7 @@ return {
   "omit",
   "openin",
   "or",
+  "orelse",
   "outer",
   "output",
   "outputpenalty",

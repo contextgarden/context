@@ -125,7 +125,8 @@
    \c!width=5\emwidth,
    \c!height=\v!fit, % \v!line = faster
    \c!background=,
-   \c!backgroundcolor=]
+   \c!backgroundcolor=,
+   \c!rulethickness=\linewidth]
 
 \def\linetableparameter#1%
   {\begincsname\??linetable#1\endcsname}
@@ -290,14 +291,46 @@
      \box\scratchbox
    \fi}
 
+% \startuseMPgraphic{one}
+%     path p, q ;
+%     numeric r ;
+%     r := RuleThickness ;
+%     p := unitsquare xysized(RuleWidth,RuleHeight+RuleDepth) ;
+%     q := p topenlarged -r bottomenlarged -r ;
+%     draw q ;
+%     setbounds currentpicture to p;
+% \stopuseMPgraphic
+%
+% \setuplinetable[r][odd] [type=mp,mp=one,backgroundcolor=gray,rulethickness=1pt]
+% \setuplinetable[r][even][type=mp,mp=one,backgroundcolor=green,rulethickness=1pt]
+%
+% \startlinetable
+%     \dorecurse{10}{\NC aaa \NC bb \NC c \NC ddddd \NC eeee \NC ff \NC \NR}
+% \stoplinetable
+
 \def\tabl_lines_wrap_up_auto
   {\edef\p_height{\linetablerparameter{x\c!height}}%
    \edef\p_depth {\linetablerparameter{x\c!depth }}%
    \hpack
      {\blackrule
         [ \c!color=\linetablecparameter\c!backgroundcolor,
+           \c!type=\linetablecparameter\c!type,
+             \c!mp=\linetablecparameter\c!mp,
+  \c!rulethickness=\linetablecparameter\c!rulethickness,
          \c!height=\ifx\p_height\empty\ht\scratchbox\else\p_height\fi,
           \c!depth=\ifx\p_depth \empty\dp\scratchbox\else\p_depth \fi,
+          \c!width=\wd\scratchbox]%
+      \hskip-\wd\scratchbox\box\scratchbox}}
+
+\def\tabl_lines_wrap_up_auto_r
+  {\hpack
+     {\blackrule
+        [ \c!color=\linetablerparameter\c!backgroundcolor,
+           \c!type=\linetablerparameter\c!type,
+             \c!mp=\linetablerparameter\c!mp,
+  \c!rulethickness=\linetablerparameter\c!rulethickness,
+         \c!height=\ht\scratchbox,
+          \c!depth=\dp\scratchbox,
           \c!width=\wd\scratchbox]%
       \hskip-\wd\scratchbox\box\scratchbox}}
 
@@ -306,14 +339,22 @@
 
 \def\tabl_lines_save_part
   {\global\setbox\tablebox\c_tabl_lines_part
-   \ifnum\c_tabl_lines_part=\zerocount
+   \ifcase\c_tabl_lines_part\relax
      \box\scratchbox % just storing
    \else
      \vbox
        {\ifvoid\tablebox\c_tabl_lines_part\else\unvbox\tablebox\c_tabl_lines_part\fi
-        \doif{\linetablerparameter\c!background}\v!color
-          {\backgroundline[\linetablerparameter\c!backgroundcolor]}%
-          {\box\scratchbox}% is also arg to \backgroundline
+        \edef\p_background{\linetablerparameter\c!background}%
+        \ifx\p_background\v!color
+          \backgroundline[\linetablerparameter\c!backgroundcolor]{\box\scratchbox}%
+        \else
+          \edef\p_type{\linetablerparameter\c!type}%
+          \ifx\p_type\empty
+            \box\scratchbox
+          \else
+            \tabl_lines_wrap_up_auto_r
+          \fi
+        \fi
         \endgraf
         \linetablerparameter\c!after}%
    \fi}

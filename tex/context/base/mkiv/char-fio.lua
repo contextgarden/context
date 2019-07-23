@@ -95,7 +95,7 @@ directives.register("filters.utf.decompose", function(v) configure("characters.f
 utffilters.setskippable {
     "mkiv", "mkvi",
     "mkix", "mkxi",
-    "mkil", "mkli",
+    "mkxl", "mklx",
 }
 
 interfaces.implement {

@@ -958,7 +958,7 @@ function scripts.vscode.generate(targetpath)
 
             category    = "tex",
             description = "ConTeXt TEX",
-            suffixes    = { "tex", "mkiv", "mkvi", "mkix", "mkxi", "mkil", "mkli", "mkii" },
+            suffixes    = { "tex", "mkiv", "mkvi", "mkix", "mkxi", "mkil", "mkxl", "mklx" },
             version     = "1.0.0",
 
             setup       = configuration {
@@ -1248,7 +1248,7 @@ function scripts.vscode.generate(targetpath)
 
             category    = "mps",
             description = "ConTeXt MetaFun",
-            suffixes    = { "mp", "mpii", "mpiv", "mpvi" },
+            suffixes    = { "mp", "mpii", "mpiv", "mpxl" },
             version     = "1.0.0",
 
             setup       = configuration {

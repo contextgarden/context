@@ -734,10 +734,13 @@ local function namedcolorattributes(name)
         elseif color == true then
             color = paletnamespace .. prefix .. name
         end
-    elseif valid[name] then
-        color = name
     else
-        return space, l_color.black
+        color = valid[name]
+        if not color then
+            return space, l_color.black
+        elseif color == true then
+            color = name
+        end
     end
     color = counts[color]
     if color then

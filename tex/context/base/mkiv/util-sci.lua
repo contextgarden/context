@@ -35,7 +35,7 @@ end
 local knownlexers  = {
     tex  = "tex",
     mkiv = "tex", mkvi = "tex",
-    mkil = "tex", mkli = "tex",
+    mkxl = "tex", mklx = "tex",
     mkxi = "tex", mkix = "tex",
     mkii = "tex",
     bib  = "bibtex",
@@ -44,6 +44,7 @@ local knownlexers  = {
     lfg  = "lua", lus = "lua", luv = "lua",
     mp   = "mps",
     mpiv = "mps",
+    mpxl = "mps",
     mpii = "mps",
     w    = "web", ww  = "web",
     c    = "cpp", h   = "cpp",

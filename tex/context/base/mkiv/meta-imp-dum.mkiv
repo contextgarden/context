@@ -66,7 +66,7 @@
     if cmykcolor \MPvar{color} :
         cmykcolor c, b ; b := (0,0,0,0)
     else :
-        color c, b ;  ; b := (1,1,1)
+        color c, b ; b := (1,1,1)
     fi ;
     c := \MPvar{color} ;
     w := \MPvar{width} ;
@@ -92,7 +92,7 @@
      {width=\figurewidth,%
       height=\figureheight,%
       reduction=\externalfigureparameter\c!reduction,%
-      color=placeholder:\the\c_grph_replacement_n}]
+      color=placeholder:\the\c_grph_replacement_n}] % weird, why do we need to prefix the palette
 
 \definepalet
   [placeholder]
@@ -108,6 +108,7 @@
 
 \unexpanded\def\grph_include_replacement#1#2#3%
   {\begingroup
+%    \setuppalet[placeholder]%
    \getpaletsize[placeholder]%
    \ifnum\c_grph_replacement_n=\zerocount
      \getrandomnumber \m_grph_replacement_n\plusone\paletsize

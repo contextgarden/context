@@ -94,13 +94,13 @@ local relations = allocate { -- todo: handlers also here
         mp = {
             names    = { "mp" },
             variable = 'MPINPUTS',
-            suffixes = { 'mp', 'mpvi', 'mpiv', 'mpii' },
+            suffixes = { 'mp', 'mpvi', 'mpiv', 'mpxl', 'mpii' },
             usertype = true,
         },
         tex = {
             names    = { "tex" },
             variable = 'TEXINPUTS',
-            suffixes = { "tex", "mkvi", "mkiv", "mkli", "mkil", "mkii", "cld", "lfg", "xml" }, -- known suffixes have less lookups
+            suffixes = { "tex", "mkiv", "mkvi", "mkxl", "mklx", "mkii", "cld", "lfg", "xml" }, -- known suffixes have less lookups
             usertype = true,
         },
         icc = {

@@ -22,7 +22,7 @@ local tonumber           = tonumber
 local context            = context
 local attributes         = attributes
 local nodes              = nodes
-local properties         = nodes.properties
+local properties         = nodes.properties.data
 
 local enableaction       = nodes.tasks.enableaction
 
@@ -185,6 +185,8 @@ end
 local function mathrule(n,h,v)
     mathaction(n,h,v,"hruleaction")
 end
+
+local x
 
 local function useraction(n,h,v)
     local p = properties[n]

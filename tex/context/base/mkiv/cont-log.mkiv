@@ -275,19 +275,21 @@
 \let\LUATEX   \LuaTeX
 \let\LUAJITTEX\LuajitTeX
 
-\unexpanded\def\MKII{MkII}
-\unexpanded\def\MKIV{MkIV}
-\unexpanded\def\MKVI{MkVI}
-\unexpanded\def\MKIL{MkIL}
-\unexpanded\def\MKLI{MkLI}
-\unexpanded\def\MKIX{MkIX}
-\unexpanded\def\MKXI{MkXI}
+\unexpanded\def\MKII{MkII} % MarkTwo
+\unexpanded\def\MKIV{MkIV} % MarkFour   : MKIV
+\unexpanded\def\MKVI{MkVI} % MarkSix    : MKIV
+\unexpanded\def\MKXL{MkXL} % MarkFourty : LMTX
+\unexpanded\def\MKLX{MkLX} % MarkSixty  : LMTX
+\unexpanded\def\MKIX{MkIX} %            : MKIV / LMTX
+\unexpanded\def\MKXI{MkXI} %            : MKIV / LMTX
 
-\unexpanded\def\MPII{MpII}
-\unexpanded\def\MPIV{MpIV}
-\unexpanded\def\MPVI{MpVI}
+\unexpanded\def\MPII{MpII} % MarkTwo
+\unexpanded\def\MPIV{MpIV} % MarkFour   : MetaFun
+\unexpanded\def\MPVI{MpVI} % MarkSix    : MetaFun
+\unexpanded\def\MPXL{MpXL} % MarkFourty : LuaMetaFun
+\unexpanded\def\MPLX{MpLX} % MarkSixty  : LuaMetaFun
 
-\unexpanded\def\LMTX{lmtx}
+\unexpanded\def\LMTX{lmtx} % for LuaMetaTeX
 
 \appendtoks
     \def\ConTeXt   {ConTeXt}%

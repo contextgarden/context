@@ -268,8 +268,8 @@ function processors.mkxi(str,filename)
     return str
 end
 
-processors.mkli = processors.mkvi
-processors.mkil = processors.mkiv
+processors.mklx = processors.mkvi
+processors.mkxl = processors.mkiv
 
 function macros.processmk(str,filename)
     if filename then
@@ -284,11 +284,11 @@ end
 
 local function validvi(filename,str)
     local suffix = filesuffix(filename)
-    if suffix == "mkvi" or suffix == "mkli" then
+    if suffix == "mkvi" or suffix == "mklx" then
         return true
     else
         local check = lpegmatch(checker,str)
-        return check == "mkvi" or check == "mkli"
+        return check == "mkvi" or check == "mklx"
     end
 end
 
@@ -303,7 +303,7 @@ function macros.processmkvi(str,filename)
     return str
 end
 
-macros.processmkli = macros.processmkvi
+macros.processmklx = macros.processmkvi
 
 local sequencers = utilities.sequencers
 
@@ -338,7 +338,7 @@ if resolvers.schemes then
     end
 
     resolvers.schemes.install('mkvi',handler,1) -- this will cache !
-    resolvers.schemes.install('mkli',handler,1) -- bonus, best use just mkvi
+    resolvers.schemes.install('mklx',handler,1) -- bonus, best use just mkvi
 
 end
 

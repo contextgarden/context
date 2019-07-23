@@ -82,13 +82,13 @@
    {
     "aliases" : [ "ConTeXt TEX" ],
     "configuration" : "./settings/context-settings-tex.json",
-    "extensions" : [ ".mkii", ".mkil", ".mkiv", ".mkix", ".mkli", ".mkvi", ".mkxi", ".tex" ],
+    "extensions" : [ ".mkil", ".mkiv", ".mkix", ".mklx", ".mkvi", ".mkxi", ".mkxl", ".tex" ],
     "id" : "context.tex"
    },
    {
     "aliases" : [ "ConTeXt MetaFun" ],
     "configuration" : "./settings/context-settings-mps.json",
-    "extensions" : [ ".mp", ".mpii", ".mpiv", ".mpvi" ],
+    "extensions" : [ ".mp", ".mpii", ".mpiv", ".mpxl" ],
     "id" : "context.mps"
    },
    {
