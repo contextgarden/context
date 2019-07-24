@@ -29,6 +29,7 @@ local mkdirs, isdir, isfile = dir.mkdirs, lfs.isdir, lfs.isfile
 local addsuffix, is_writable, is_readable = file.addsuffix, file.is_writable, file.is_readable
 local formatters = string.formatters
 local next, type = next, type
+----- pcall, loadfile = pcall, loadfile
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 local trace_cache    = false  trackers.register("resolvers.cache",    function(v) trace_cache    = v end)
@@ -325,22 +326,23 @@ function caches.loaddata(readables,name,writable)
     for i=1,#readables do
         local path   = readables[i]
         local loader = false
+        local state  = false
         local tmaname, tmcname = caches.setluanames(path,name)
         if isfile(tmcname) then
-            loader = loadfile(tmcname)
+            state, loader = pcall(loadfile,tmcname)
         end
         if not loader and isfile(tmaname) then
             -- can be different paths when we read a file database from disk
             local tmacrap, tmcname = caches.setluanames(writable,name)
             if isfile(tmcname) then
-                loader = loadfile(tmcname)
+                state, loader = pcall(loadfile,tmcname)
             end
             utilities.lua.compile(tmaname,tmcname)
             if isfile(tmcname) then
-                loader = loadfile(tmcname)
+                state, loader = pcall(loadfile,tmcname)
             end
             if not loader then
-                loader = loadfile(tmaname)
+                state, loader = pcall(loadfile,tmaname)
             end
         end
         if loader then
@@ -390,7 +392,10 @@ function caches.loadcontent(cachename,dataname,filename)
         local full, path = caches.getfirstreadablefile(addsuffix(name,luasuffixes.lua),"trees")
         filename = file.join(path,name)
     end
-    local blob = loadfile(addsuffix(filename,luasuffixes.luc)) or loadfile(addsuffix(filename,luasuffixes.lua))
+    local state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.luc))
+    if not blob then
+        state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.lua))
+    end
     if blob then
         local data = blob()
         if data and data.content then

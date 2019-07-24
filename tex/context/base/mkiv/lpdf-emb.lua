@@ -42,7 +42,7 @@ local fontstreams          = fonts.hashes.streams
 
 local report_fonts         = logs.reporter("backend","fonts")
 local trace_fonts          = false
-local trace_detail         = false
+local trace_details        = false
 
 trackers.register("backend.pdf.fonts",function(v) trace_fonts = v end)
 
@@ -889,7 +889,7 @@ do
         pdfflushobject(reserved,descriptor)
         pdfflushobject(object,parent)
         --
-     -- if trace_detail then
+     -- if trace_details then
      --     local name = "temp.ttf"
      --     report_fonts("saving %a",name)
      --     io.savedata(name,fontdata)
@@ -1314,7 +1314,7 @@ do
             target[dictof] = topdict .. topvars
             --
             target = concat(target)
-         -- if trace_detail then
+         -- if trace_details then
          --     local name = "temp.cff"
          --     report_fonts("saving %a",name)
          --     io.savedata(name,target)

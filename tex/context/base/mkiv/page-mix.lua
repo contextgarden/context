@@ -19,8 +19,8 @@ local next, type = next, type
 local concat = table.concat
 local ceil = math.ceil
 
-local trace_state  = false  trackers.register("mixedcolumns.trace",  function(v) trace_state  = v end)
-local trace_detail = false  trackers.register("mixedcolumns.detail", function(v) trace_detail = v end)
+local trace_state   = false  trackers.register("mixedcolumns.trace",   function(v) trace_state   = v end)
+local trace_details = false  trackers.register("mixedcolumns.details", function(v) trace_details = v end)
 
 local report_state = logs.reporter("mixed columns")
 
@@ -124,7 +124,7 @@ local function collectinserts(result,nxt,nxtid)
             inserttotal = inserttotal + getheight(nxt) -- height includes depth (hm, still? needs checking)
             local s = getsubtype(nxt)
             local c = inserts[s]
-            if trace_detail then
+            if trace_details then
                 report_state("insert of class %s found",s)
             end
             if not c then
@@ -138,7 +138,7 @@ local function collectinserts(result,nxt,nxtid)
             end
             c[#c+1] = nxt
         elseif nxtid == mark_code then
-            if trace_detail then
+            if trace_details then
                 report_state("mark found")
             end
         else
@@ -445,7 +445,7 @@ local function preparesplit(specification) -- a rather large function
                 report_state("setting collector to column %s",column)
             end
             current, skipped = discardtopglue(current,discarded)
-            if trace_detail and skipped ~= 0 then
+            if trace_details and skipped ~= 0 then
                 report_state("check > column 1, discarded %p",skipped)
             end
             head = current
@@ -469,7 +469,7 @@ local function preparesplit(specification) -- a rather large function
                 state = "quit"
             end
         end
-        if trace_detail then
+        if trace_details then
             report_state("%-8s > column %s, delta %p, threshold %p, advance %p, total %p, target %p => %a (height %p, depth %p, skip %p)",
                 where,curcol,delta,threshold,advance,total,target,state,height,depth,skip)
         end
@@ -477,7 +477,7 @@ local function preparesplit(specification) -- a rather large function
     end
 
     current, skipped = discardtopglue(current,discarded)
-    if trace_detail and skipped ~= 0 then
+    if trace_details and skipped ~= 0 then
         report_state("check > column 1, discarded %p",skipped)
     end
 

@@ -38,7 +38,7 @@ local setmetatableindex = table.setmetatableindex
 local luasuffixes       = utilities.lua.suffixes
 
 local trace_locating    = false  trackers  .register("resolvers.locating",   function(v) trace_locating    = v end)
-local trace_detail      = false  trackers  .register("resolvers.details",    function(v) trace_detail      = v end)
+local trace_details     = false  trackers  .register("resolvers.details",    function(v) trace_details     = v end)
 local trace_expansions  = false  trackers  .register("resolvers.expansions", function(v) trace_expansions  = v end)
 local trace_paths       = false  trackers  .register("resolvers.paths",      function(v) trace_paths       = v end)
 local resolve_otherwise = true   directives.register("resolvers.otherwise",  function(v) resolve_otherwise = v end)
@@ -957,7 +957,7 @@ end
 
 local function isreadable(name)
     local readable = isfile(name) -- not file.is_readable(name) asit can be a dir
-    if trace_detail then
+    if trace_details then
         if readable then
             report_resolving("file %a is readable",name)
         else
@@ -977,7 +977,7 @@ local function collect_files(names) -- potential files .. sort of too much when 
             local variant = hash.type
             local search  = filejoin(root,path,name) -- funny no concatinator
             local result  = methodhandler('concatinators',variant,root,path,name)
-            if trace_detail then
+            if trace_details then
                 report_resolving("match: variant %a, search %a, result %a",variant,search,result)
             end
             noffiles = noffiles + 1
@@ -986,7 +986,7 @@ local function collect_files(names) -- potential files .. sort of too much when 
     end
     for k=1,#names do
         local filename = names[k]
-        if trace_detail then
+        if trace_details then
             report_resolving("checking name %a",filename)
         end
         local basename = filebasename(filename)
@@ -1003,7 +1003,7 @@ local function collect_files(names) -- potential files .. sort of too much when 
             local hashname = hash.name
             local content  = hashname and instance.files[hashname]
             if content then
-                if trace_detail then
+                if trace_details then
                     report_resolving("deep checking %a, base %a, pattern %a",hashname,basename,pathname)
                 end
                 local path, name = lookup(content,basename)
@@ -1123,7 +1123,7 @@ end
 
 local function find_direct(filename,allresults)
     if not dangerous[askedformat] and isreadable(filename) then
-        if trace_detail then
+        if trace_details then
             report_resolving("file %a found directly",filename)
         end
         return "direct", { filename }
@@ -1150,12 +1150,12 @@ local function find_qualified(filename,allresults,askedformat,alsostripped) -- t
         report_resolving("checking qualified name %a", filename)
     end
     if isreadable(filename) then
-        if trace_detail then
+        if trace_details then
             report_resolving("qualified file %a found", filename)
         end
         return "qualified", { filename }
     end
-    if trace_detail then
+    if trace_details then
         report_resolving("locating qualified file %a", filename)
     end
     local forcedname, suffix = "", suffixonly(filename)
@@ -1231,7 +1231,7 @@ end
 
 local function check_subpath(fname)
     if isreadable(fname) then
-        if trace_detail then
+        if trace_details then
             report_resolving("found %a by deep scanning",fname)
         end
         return fname
@@ -1300,7 +1300,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                 dirlist[i] = filedirname(filelist[i][3]) .. "/" -- was [2] .. gamble
             end
         end
-        if trace_detail then
+        if trace_details then
             report_resolving("checking filename %a in tree",filename)
         end
         for k=1,#pathlist do
@@ -1312,7 +1312,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
             if filelist then -- database
                 -- compare list entries with permitted pattern -- /xx /xx//
                 local expression = entry.expression
-                if trace_detail then
+                if trace_details then
                     report_resolving("using pattern %a for path %a",expression,pathname)
                 end
                 for k=1,#filelist do
@@ -1325,16 +1325,16 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                         result[#result+1] = resolveprefix(fl[3]) -- no shortcut
                         done = true
                         if allresults then
-                            if trace_detail then
+                            if trace_details then
                                 report_resolving("match to %a in hash for file %a and path %a, continue scanning",expression,f,d)
                             end
                         else
-                            if trace_detail then
+                            if trace_details then
                                 report_resolving("match to %a in hash for file %a and path %a, quit scanning",expression,f,d)
                             end
                             break
                         end
-                    elseif trace_detail then
+                    elseif trace_details then
                         report_resolving("no match to %a in hash for file %a and path %a",expression,f,d)
                     end
                 end
@@ -1355,9 +1355,8 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                             -- that are not hashed (like sources on my machine) .. so, this is slightly
                             -- out of order but at least fast (and we seldom end up here, only when a file
                             -- is not already found
--- inspect(entry)
                             if not done and not entry.prescanned then
-                                if trace_detail then
+                                if trace_details then
                                     report_resolving("quick root scan for %a",pname)
                                 end
                                 for k=1,#wantedfiles do
@@ -1373,7 +1372,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
                                 end
                                 if not done and entry.recursive then -- maybe also when allresults
                                     -- collect files in path (and cache the result)
-                                    if trace_detail then
+                                    if trace_details then
                                         report_resolving("scanning filesystem for %a",pname)
                                     end
                                     local files = resolvers.simplescanfiles(pname,false,true)
@@ -1446,7 +1445,7 @@ local function find_intree(filename,filetype,wantedfiles,allresults)
 end
 
 local function find_onpath(filename,filetype,wantedfiles,allresults)
-    if trace_detail then
+    if trace_details then
         report_resolving("checking filename %a, filetype %a, wanted files %a",filename,filetype,concat(wantedfiles," | "))
     end
     local result = { }
@@ -1510,7 +1509,7 @@ collect_instance_files = function(filename,askedformat,allresults) -- uses neste
                 end
             end
         end
-        if trace_detail then
+        if trace_details then
             report_resolving("lookup status: %s",table.serialize(status,filename))
         end
         return result, status

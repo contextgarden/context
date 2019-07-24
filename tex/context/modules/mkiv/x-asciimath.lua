@@ -20,7 +20,7 @@ ugly and unsatisfying code mess down here. Don't take this as an example.</p>
 -- todo: filter from files listed in tuc file
 
 local trace_mapping    = false  if trackers then trackers.register("modules.asciimath.mapping", function(v) trace_mapping = v end) end
-local trace_detail     = false  if trackers then trackers.register("modules.asciimath.detail",  function(v) trace_detail  = v end) end
+local trace_details    = false  if trackers then trackers.register("modules.asciimath.details", function(v) trace_details = v end) end
 local trace_digits     = false  if trackers then trackers.register("modules.asciimath.digits",  function(v) trace_digits  = v end) end
 
 local report_asciimath = logs.reporter("mathematics","asciimath")
@@ -1775,7 +1775,7 @@ collapse = function(t,level)
         return ""
     end
     -- tracing
-    if trace_detail then
+    if trace_details then
         if level then
             level = level + 1
         else
@@ -1784,19 +1784,19 @@ collapse = function(t,level)
         show_state(t,level,"parsed")
     end
     -- steps
-    t = collapse_matrices   (t) if trace_detail then show_state(t,level,"matrices")      end
-    t = collapse_bars       (t) if trace_detail then show_state(t,level,"bars")          end
-    t = collapse_stupids    (t) if trace_detail then show_state(t,level,"stupids")         end
-    t = collapse_pairs      (t) if trace_detail then show_state(t,level,"pairs")         end
-    t = collapse_parentheses(t) if trace_detail then show_state(t,level,"parentheses")   end
-    t = collapse_signs      (t) if trace_detail then show_state(t,level,"signs")         end
-    t = collapse_binaries   (t) if trace_detail then show_state(t,level,"binaries")      end
-    t = collapse_infixes_1  (t) if trace_detail then show_state(t,level,"infixes (1)")   end
-    t = collapse_limits     (t) if trace_detail then show_state(t,level,"limits")        end
-    t = collapse_tables     (t) if trace_detail then show_state(t,level,"tables")        end
-    t = collapse_infixes_2  (t) if trace_detail then show_state(t,level,"infixes (2)")   end
-    t = collapse_fractions_1(t) if trace_detail then show_state(t,level,"fractions (1)") end
-    t = collapse_fractions_2(t) if trace_detail then show_state(t,level,"fractions (2)") end
+    t = collapse_matrices   (t) if trace_details then show_state(t,level,"matrices")      end
+    t = collapse_bars       (t) if trace_details then show_state(t,level,"bars")          end
+    t = collapse_stupids    (t) if trace_details then show_state(t,level,"stupids")         end
+    t = collapse_pairs      (t) if trace_details then show_state(t,level,"pairs")         end
+    t = collapse_parentheses(t) if trace_details then show_state(t,level,"parentheses")   end
+    t = collapse_signs      (t) if trace_details then show_state(t,level,"signs")         end
+    t = collapse_binaries   (t) if trace_details then show_state(t,level,"binaries")      end
+    t = collapse_infixes_1  (t) if trace_details then show_state(t,level,"infixes (1)")   end
+    t = collapse_limits     (t) if trace_details then show_state(t,level,"limits")        end
+    t = collapse_tables     (t) if trace_details then show_state(t,level,"tables")        end
+    t = collapse_infixes_2  (t) if trace_details then show_state(t,level,"infixes (2)")   end
+    t = collapse_fractions_1(t) if trace_details then show_state(t,level,"fractions (1)") end
+    t = collapse_fractions_2(t) if trace_details then show_state(t,level,"fractions (2)") end
     -- done
     return collapse_result(t)
 end
@@ -2009,7 +2009,7 @@ local context = context
 if not context then
 
 --     trace_mapping = true
---     trace_detail  = true
+--     trace_details = true
 
 --     report_asciimath(cleanedup([[ac+sinx+xsqrtx+sinsqrtx+sinsqrt(x)]]))
 --     report_asciimath(cleanedup([[a "αsinsqrtx" b]]))

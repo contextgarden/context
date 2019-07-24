@@ -20,11 +20,13 @@
 \registerctxluafile{mlib-ctx}{}
 \registerctxluafile{mlib-lua}{}
 
-\doifelsefileexists{mlib-scn.lua} {
-    \registerctxluafile{mlib-scn}{}
-} {
-    % experimental code for Alan and me
-}
+\startlmtxmode
+    \doifelsefileexists{mlib-scn.lua} {
+        \registerctxluafile{mlib-scn}{}
+    } {
+        % experimental code for Alan and me
+    }
+\stoplmtxmode
 
 \registerctxluafile{mlib-lmp}{}
 \registerctxluafile{mlib-int}{}

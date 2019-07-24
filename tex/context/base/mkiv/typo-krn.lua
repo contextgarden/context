@@ -110,8 +110,8 @@ local kerns              = typesetters.kerns or { }
 typesetters.kerns        = kerns
 
 local report             = logs.reporter("kerns")
-local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",       function(v) trace_ligatures   = v end)
-local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures.detail",function(v) trace_ligatures_d = v end)
+local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",        function(v) trace_ligatures   = v end)
+local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures.details", function(v) trace_ligatures_d = v end)
 
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }

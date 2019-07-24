@@ -41,7 +41,7 @@ local v_positive          = variables.positive
 local v_current           = variables.current
 
 local trace_sectioning    = false  trackers.register("structures.sectioning", function(v) trace_sectioning = v end)
-local trace_detail        = false  trackers.register("structures.detail",     function(v) trace_detail     = v end)
+local trace_details       = false  trackers.register("structures.details",    function(v) trace_details    = v end)
 
 local report_structure    = logs.reporter("structure","sectioning")
 local report_used         = logs.reporter("structure")
@@ -335,7 +335,7 @@ function sections.setentry(given)
     -- a trick to permit userdata to overload title, ownnumber and reference
     -- normally these are passed as argument but nowadays we provide several
     -- interfaces (we need this because we want to be compatible)
-    if trace_detail then
+    if trace_details then
         report_structure("name %a, mapped level %a, old depth %a, new depth %a, reset set %a",
             givenname,mappedlevel,olddepth,newdepth,resetset)
     end
@@ -354,7 +354,7 @@ function sections.setentry(given)
     if newdepth > olddepth then
         for i=olddepth+1,newdepth do
             local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
-            if trace_detail then
+            if trace_details then
                 report_structure("new depth %s, old depth %s, reset set %a, reset value %a, current %a",olddepth,newdepth,resetset,s,numbers[i])
             end
             if not s or s == 0 then
@@ -369,7 +369,7 @@ function sections.setentry(given)
     elseif newdepth < olddepth then
         for i=olddepth,newdepth+1,-1 do
             local s = tonumber(sets.get("structure:resets",data.block,saveset and saveset[i] or resetset,i))
-            if trace_detail then
+            if trace_details then
                 report_structure("new depth %s, old depth %s, reset set %a, reset value %a, current %a",olddepth,newdepth,resetset,s,numbers[i])
             end
             if not s or s == 0 then
@@ -402,12 +402,12 @@ function sections.setentry(given)
                 newn = 1 -- maybe zero is nicer
             end
             forced[newdepth] = nil
-            if trace_detail then
+            if trace_details then
                 report_structure("old depth %a, new depth %a, old n %a, new n %a, forced %t",olddepth,newdepth,oldn,newn,fd)
             end
         else
             newn = oldn + 1
-            if trace_detail then
+            if trace_details then
                 report_structure("old depth %a, new depth %a, old n %a, new n %a, increment",olddepth,newdepth,oldn,newn)
             end
         end
@@ -426,7 +426,7 @@ function sections.setentry(given)
     if #ownnumbers > 0 then
         numberdata.ownnumbers = fastcopy(ownnumbers) -- { unpack(ownnumbers) }
     end
-    if trace_detail then
+    if trace_details then
         report_structure("name %a, numbers % a, own numbers % a",givenname,numberdata.numbers,numberdata.ownnumbers)
     end
     if not references.block then

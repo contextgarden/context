@@ -58,7 +58,7 @@ lpdf.flags = lpdf.flags or { } -- will be filled later
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 local trace_objects    = false  trackers.register("backend.objects",    function(v) trace_objects    = v end)
-local trace_detail     = false  trackers.register("backend.detail",     function(v) trace_detail     = v end)
+local trace_details    = false  trackers.register("backend.details",    function(v) trace_details    = v end)
 
 do
 
@@ -906,7 +906,7 @@ function lpdf.flushobject(name,data)
         local named = names[name]
         if named then
             if not trace_objects then
-            elseif trace_detail then
+            elseif trace_details then
                 report_objects("flushing data to reserved object with name %a, data: %S",name,data)
             else
                 report_objects("flushing data to reserved object with name %a",name)
@@ -914,7 +914,7 @@ function lpdf.flushobject(name,data)
             return pdfimmediateobject(named,tostring(data))
         else
             if not trace_objects then
-            elseif trace_detail then
+            elseif trace_details then
                 report_objects("flushing data to reserved object with number %s, data: %S",name,data)
             else
                 report_objects("flushing data to reserved object with number %s",name)
@@ -922,7 +922,7 @@ function lpdf.flushobject(name,data)
             return pdfimmediateobject(name,tostring(data))
         end
     else
-        if trace_objects and trace_detail then
+        if trace_objects and trace_details then
             report_objects("flushing data: %S",name)
         end
         return pdfimmediateobject(tostring(name))

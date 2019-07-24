@@ -29,13 +29,13 @@ local formatters        = string.formatters
 local replacer          = utilities.templates.replacer
 
 local trace_used        = false
-local trace_detail      = false
+local trace_details     = false
 local report            = logs.reporter("sequencer")
 local usedcount         = 0
 local usednames         = { }
 
-trackers.register("sequencers.used",  function(v) trace_used   = v end)
-trackers.register("sequencers.detail",function(v) trace_detail = v end)
+trackers.register("sequencers.used",    function(v) trace_used    = v end)
+trackers.register("sequencers.details", function(v) trace_details = v end)
 
 local sequencers        = { }
 utilities.sequencers    = sequencers
@@ -369,7 +369,7 @@ function sequencers.nodeprocessor(t,nofarguments)
     local steps = 0
     usedcount   = usedcount + 1
     --
-    if trace_detail then
+    if trace_details then
         naliases = naliases + 1
         aliases[naliases] = formatters["local report = logs.reporter('sequencer',%q)"](name)
         ncalls = ncalls + 1
@@ -383,12 +383,12 @@ function sequencers.nodeprocessor(t,nofarguments)
                 local action = actions[i]
                 if not askip[action] then
                     steps = steps + 1
-                    if trace_used or trace_detail then
+                    if trace_used or trace_details then
                         local action = tostring(action)
                         report("%02i: category %a, group %a, action %a",usedcount,name,group,action)
                         usednames[action] = true
                     end
-                    if trace_detail then
+                    if trace_details then
                         ncalls = ncalls + 1
                         calls[ncalls] = formatters[ [[report("  step %a, action %a")]] ](steps,tostring(action))
                     end
@@ -407,7 +407,7 @@ function sequencers.nodeprocessor(t,nofarguments)
     if steps == 0 then
         processor = templates.default or construct { }
     else
-        if trace_detail then
+        if trace_details then
             ncalls = ncalls + 1
             calls[ncalls] = [[report("stop")]]
         end

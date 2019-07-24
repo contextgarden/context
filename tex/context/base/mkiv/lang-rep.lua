@@ -34,8 +34,8 @@ local splitter = Ct((
 
 local stripper = P("{") * Cs((1-P(-2))^0) * P("}") * P(-1)
 
-local trace_replacements = false  trackers.register("languages.replacements",        function(v) trace_replacements = v end)
-local trace_detail       = false  trackers.register("languages.replacements.detail", function(v) trace_detail       = v end)
+local trace_replacements = false  trackers.register("languages.replacements",         function(v) trace_replacements = v end)
+local trace_details      = false  trackers.register("languages.replacements.details", function(v) trace_details      = v end)
 
 local report_replacement = logs.reporter("languages","replacements")
 
@@ -179,7 +179,7 @@ local function hit(a,head)
                     else
                         local final = newroot.final
                         if final then
-                            if trace_detail then
+                            if trace_details then
                                 report_replacement("hitting word %a, replacement %a",final.word,final.replacement)
                             end
                             lastrun   = current

@@ -13,9 +13,9 @@ local ceil, odd, round = math.ceil, math.odd, math.round
 local lower = string.lower
 local copy = table.copy
 
-local trace_state  = false  trackers.register("columnsets.trace",  function(v) trace_state  = v end)
-local trace_detail = false  trackers.register("columnsets.detail", function(v) trace_detail = v end)
-local trace_cells  = false  trackers.register("columnsets.cells",  function(v) trace_cells  = v end)
+local trace_state   = false  trackers.register("columnsets.trace",   function(v) trace_state  = v end)
+local trace_details = false  trackers.register("columnsets.details", function(v) trace_details = v end)
+local trace_cells   = false  trackers.register("columnsets.cells",   function(v) trace_cells  = v end)
 
 local report       = logs.reporter("column sets")
 
@@ -927,7 +927,7 @@ local function findslice(dataset,head,available,column,row)
         local used = getheight(done)
         local rest = takebox("scratchbox")
         if used > (usedsize+slack) then
-            if trace_detail then
+            if trace_details then
                 report("at (%i,%i) available %p, used %p, overflow %p",column,row,usedsize,used,used-usedsize)
             end
             -- flush copy

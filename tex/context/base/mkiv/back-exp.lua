@@ -46,7 +46,7 @@ local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
-local trace_detail  = false  trackers.register  ("export.trace.detail",  function(v) trace_detail  = v end)
+local trace_details = false  trackers.register  ("export.trace.details", function(v) trace_details = v end)
 
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
@@ -2970,7 +2970,7 @@ local collectresults  do -- too many locals otherwise
         local maybewrong
         local pid
         for n, id, subtype in nextnode, head do
-            if trace_detail then
+            if trace_details then
                 showdetail(n,id,subtype)
             end
             if id == glyph_code then

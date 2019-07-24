@@ -10,8 +10,8 @@ if not modules then modules = { } end modules ['supp-ran'] = {
 
 local report_system = logs.reporter("system","randomizer")
 
-local trace_random = false  trackers.register("system.randomizer",       function(v) trace_random    = v end)
-local trace_detail = false  trackers.register("system.randomizer.detail",function(v) trace_detail    = v end)
+local trace_random  = false  trackers.register("system.randomizer",         function(v) trace_random  = v end)
+local trace_details = false  trackers.register("system.randomizer.details", function(v) trace_details = v end)
 
 local insert, remove = table.insert, table.remove
 
@@ -28,7 +28,7 @@ local maxcount   = 0x3FFFFFFF -- 2^30-1
 
 math.random = function(...)
     local n = random(...)
-    if trace_detail then
+    if trace_details then
         report_system("math %s",n)
     end
     return n
@@ -43,7 +43,7 @@ local function setrandomseedi(n)
     n = round(n)
     randomseed(n)
     last = random(0,maxcount) -- we need an initial value
-    if trace_detail then
+    if trace_details then
         report_system("seed %s from %s",last,n)
     elseif trace_random then
         report_system("setting seed %s",n)
@@ -54,7 +54,7 @@ math.setrandomseedi = setrandomseedi
 
 local function getrandomnumber(min,max)
     last = random(min,max)
-    if trace_detail then
+    if trace_details then
         report_system("number %s",last)
     end
     return last
@@ -71,7 +71,7 @@ end
 
 -- local function getmprandomnumber()
 --     last = random(0,4095)
---     if trace_detail then
+--     if trace_details then
 --         report_system("mp number %s",last)
 --     end
 --     return last
@@ -81,7 +81,7 @@ end
 
 local function pushrandomseed()
     insert(stack,last)
-    if trace_random or trace_detail then
+    if trace_random or trace_details then
         report_system("pushing seed %s",last)
     end
 end
@@ -89,7 +89,7 @@ end
 local function reuserandomseed(n)
     local seed = stack[#stack]
     if seed then
-        if trace_random or trace_detail then
+        if trace_random or trace_details then
             report_system("reusing seed %s",last)
         end
         randomseed(seed)
@@ -99,7 +99,7 @@ end
 local function poprandomseed()
     local seed = remove(stack)
     if seed then
-        if trace_random or trace_detail then
+        if trace_random or trace_details then
             report_system("popping seed %s",seed)
         end
         randomseed(seed)
@@ -109,13 +109,13 @@ end
 local function getrandom(where,...)
     if type(where) == "string" then
         local n = random(...)
-        if trace_detail then
+        if trace_details then
             report_system("%s %s",where,n)
         end
         return n
     else
         local n = random(where,...)
-        if trace_detail then
+        if trace_details then
             report_system("utilities %s",n)
         end
         return n

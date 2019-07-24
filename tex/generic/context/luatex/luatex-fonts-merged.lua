@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 07/23/19 23:26:35
+-- merge date  : 07/24/19 11:17:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -10834,8 +10834,9 @@ local sortedhash=table.sortedhash
 local stripstring=string.nospaces
 local utf16_to_utf8_be=utf.utf16_to_utf8_be
 local report=logs.reporter("otf reader")
-local trace_cmap=false 
-local trace_cmap_detail=false
+local report_cmap=logs.reporter("otf reader","cmap")
+local trace_cmap=false  trackers.register("otf.cmap",function(v) trace_cmap=v end)
+local trace_cmap_details=false  trackers.register("otf.cmap.details",function(v) trace_cmap_details=v end)
 fonts=fonts or {}
 local handlers=fonts.handlers or {}
 fonts.handlers=handlers
@@ -11590,7 +11591,7 @@ local sequence={
  { 0,0,6 },
  { 3,0,6 },
  { 0,5,14 },
-{ 0,4,12 },
+ { 0,4,12 },
  { 3,10,13 },
 }
 local supported={}
@@ -11635,7 +11636,7 @@ formatreaders[4]=function(f,fontdata,offset)
   elseif startchar==0xFFFF and offset==0 then
   elseif offset==0xFFFF then
   elseif offset==0 then
-   if trace_cmap_detail then
+   if trace_cmap_details then
     report("format 4.%i segment %2i from %C upto %C at index %H",1,segment,startchar,endchar,(startchar+delta)%65536)
    end
    for unicode=startchar,endchar do
@@ -11667,8 +11668,8 @@ formatreaders[4]=function(f,fontdata,offset)
    end
   else
    local shift=(segment-nofsegments+offset/2)-startchar
-   if trace_cmap_detail then
-    report("format 4.%i segment %2i from %C upto %C at index %H",0,segment,startchar,endchar,(startchar+delta)%65536)
+   if trace_cmap_details then
+    report_cmap("format 4.%i segment %2i from %C upto %C at index %H",0,segment,startchar,endchar,(startchar+delta)%65536)
    end
    for unicode=startchar,endchar do
     local slot=shift+unicode
@@ -11715,8 +11716,8 @@ formatreaders[6]=function(f,fontdata,offset)
  local count=readushort(f)
  local stop=start+count-1
  local nofdone=0
- if trace_cmap_detail then
-  report("format 6 from %C to %C",2,start,stop)
+ if trace_cmap_details then
+  report_cmap("format 6 from %C to %C",2,start,stop)
  end
  for unicode=start,stop do
   local index=readushort(f)
@@ -11748,8 +11749,8 @@ formatreaders[12]=function(f,fontdata,offset)
   local first=readulong(f)
   local last=readulong(f)
   local index=readulong(f)
-  if trace_cmap_detail then
-   report("format 12 from %C to %C starts at index %i",first,last,index)
+  if trace_cmap_details then
+   report_cmap("format 12 from %C to %C starts at index %i",first,last,index)
   end
   for unicode=first,last do
    local glyph=glyphs[index]
@@ -11787,8 +11788,8 @@ formatreaders[13]=function(f,fontdata,offset)
   local last=readulong(f)
   local index=readulong(f)
   if first<privateoffset then
-   if trace_cmap_detail then
-    report("format 13 from %C to %C get index %i",first,last,index)
+   if trace_cmap_details then
+    report_cmap("format 13 from %C to %C get index %i",first,last,index)
    end
    local glyph=glyphs[index]
    local unicode=glyph.unicode
@@ -11860,10 +11861,16 @@ end
 local function checkcmap(f,fontdata,records,platform,encoding,format)
  local data=records[platform]
  if not data then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","no platform",platform,encoding,format)
+  end
   return 0
  end
  data=data[encoding]
  if not data then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","no encoding",platform,encoding,format)
+  end
   return 0
  end
  data=data[format]
@@ -11872,13 +11879,17 @@ local function checkcmap(f,fontdata,records,platform,encoding,format)
  end
  local reader=formatreaders[format]
  if not reader then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","unsupported format",platform,encoding,format)
+  end
   return 0
  end
- local p=platforms[platform]
- local e=encodings[p]
  local n=reader(f,fontdata,data) or 0
  if trace_cmap then
-  report("cmap checked: platform %i (%s), encoding %i (%s), format %i, new unicodes %i",platform,p,encoding,e and e[encoding] or "?",format,n)
+  local p=platforms[platform]
+  local e=encodings[p]
+  report_cmap("checked, platform %i (%s), encoding %i (%s), format %i, new unicodes %i",
+   platform,p,encoding,e and e[encoding] or "?",format,n)
  end
  return n
 end
