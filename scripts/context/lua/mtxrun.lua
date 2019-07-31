@@ -6476,7 +6476,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 44146, stripped down to: 22098
+-- original size: 44656, stripped down to: 22349
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6806,6 +6806,13 @@ local template=[[
 %s
 return function(%s) return %s end
 ]]
+local pattern=Cs(Cc('"')*(
+ (1-S('"\\\n\r'))^1+P('"')/'\\"'+P('\\')/'\\\\'+P('\n')/'\\n'+P('\r')/'\\r'
+)^0*Cc('"'))
+patterns.escapedquotes=pattern
+function string.escapedquotes(s)
+ return lpegmatch(pattern,s)
+end
 local preamble=""
 local environment={
  global=global or _G,
@@ -6832,6 +6839,7 @@ local environment={
  formattedfloat=number.formattedfloat,
  stripzero=patterns.stripzero,
  stripzeros=patterns.stripzeros,
+ escapedquotes=string.escapedquotes,
  FORMAT=string.f9,
 }
 local arguments={ "a1" } 
@@ -6889,7 +6897,7 @@ local format_q=function()
 end
 local format_Q=function() 
  n=n+1
- return format("format('%%q',tostring(a%s))",n)
+ return format("escapedquotes(tostring(a%s))",n)
 end
 local format_i=function(f)
  n=n+1
@@ -7337,7 +7345,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28866, stripped down to: 16134
+-- original size: 28899, stripped down to: 16134
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7574,15 +7582,15 @@ function tables.encapsulate(core,capsule,protect)
   } )
  end
 end
-local f_hashed_string=formatters["[%q]=%q,"]
-local f_hashed_number=formatters["[%q]=%s,"]
-local f_hashed_boolean=formatters["[%q]=%l,"]
-local f_hashed_table=formatters["[%q]="]
-local f_indexed_string=formatters["[%s]=%q,"]
+local f_hashed_string=formatters["[%Q]=%Q,"]
+local f_hashed_number=formatters["[%Q]=%s,"]
+local f_hashed_boolean=formatters["[%Q]=%l,"]
+local f_hashed_table=formatters["[%Q]="]
+local f_indexed_string=formatters["[%s]=%Q,"]
 local f_indexed_number=formatters["[%s]=%s,"]
 local f_indexed_boolean=formatters["[%s]=%l,"]
 local f_indexed_table=formatters["[%s]="]
-local f_ordered_string=formatters["%q,"]
+local f_ordered_string=formatters["%Q,"]
 local f_ordered_number=formatters["%s,"]
 local f_ordered_boolean=formatters["%l,"]
 function table.fastserialize(t,prefix)
@@ -7745,22 +7753,22 @@ local f_start_key_boo=formatters["%w[%l]={"]
 local f_start_key_nop=formatters["%w{"]
 local f_stop=formatters["%w},"]
 local f_key_num_value_num=formatters["%w[%s]=%s,"]
-local f_key_str_value_num=formatters["%w[%q]=%s,"]
+local f_key_str_value_num=formatters["%w[%Q]=%s,"]
 local f_key_boo_value_num=formatters["%w[%l]=%s,"]
-local f_key_num_value_str=formatters["%w[%s]=%q,"]
-local f_key_str_value_str=formatters["%w[%q]=%q,"]
-local f_key_boo_value_str=formatters["%w[%l]=%q,"]
+local f_key_num_value_str=formatters["%w[%s]=%Q,"]
+local f_key_str_value_str=formatters["%w[%Q]=%Q,"]
+local f_key_boo_value_str=formatters["%w[%l]=%Q,"]
 local f_key_num_value_boo=formatters["%w[%s]=%l,"]
-local f_key_str_value_boo=formatters["%w[%q]=%l,"]
+local f_key_str_value_boo=formatters["%w[%Q]=%l,"]
 local f_key_boo_value_boo=formatters["%w[%l]=%l,"]
 local f_key_num_value_not=formatters["%w[%s]={},"]
-local f_key_str_value_not=formatters["%w[%q]={},"]
+local f_key_str_value_not=formatters["%w[%Q]={},"]
 local f_key_boo_value_not=formatters["%w[%l]={},"]
 local f_key_num_value_seq=formatters["%w[%s]={ %, t },"]
-local f_key_str_value_seq=formatters["%w[%q]={ %, t },"]
+local f_key_str_value_seq=formatters["%w[%Q]={ %, t },"]
 local f_key_boo_value_seq=formatters["%w[%l]={ %, t },"]
 local f_val_num=formatters["%w%s,"]
-local f_val_str=formatters["%w%q,"]
+local f_val_str=formatters["%w%Q,"]
 local f_val_boo=formatters["%w%l,"]
 local f_val_not=formatters["%w{},"]
 local f_val_seq=formatters["%w{ %, t },"]
@@ -7768,7 +7776,7 @@ local f_fin_seq=formatters[" %, t }"]
 local f_table_return=formatters["return {"]
 local f_table_name=formatters["%s={"]
 local f_table_direct=formatters["{"]
-local f_table_entry=formatters["[%q]={"]
+local f_table_entry=formatters["[%Q]={"]
 local f_table_finish=formatters["}"]
 local spaces=utilities.strings.newrepeater(" ")
 local original_serialize=table.serialize
@@ -15588,7 +15596,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6134, stripped down to: 4118
+-- original size: 6567, stripped down to: 4329
 
  if not modules then modules={} end modules ['luat-env']={
  version=1.001,
@@ -15644,6 +15652,12 @@ function environment.texfile(filename)
  return resolvers.findfile(filename,'tex')
 end
 function environment.luafile(filename) 
+ if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and file.suffix(filename)=="lua" then
+  local resolved=resolvers.findfile(file.replacesuffix(filename,"lmt")) or ""
+  if resolved~="" then
+   return resolved
+  end
+ end
  local resolved=resolvers.findfile(filename,'tex') or ""
  if resolved~="" then
   return resolved
@@ -21399,7 +21413,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16472, stripped down to: 11057
+-- original size: 16387, stripped down to: 11132
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -21440,6 +21454,7 @@ caches.ask=false
 caches.relocate=false
 caches.defaults={ "TMPDIR","TEMPDIR","TMP","TEMP","HOME","HOMEPATH" }
 directives.register("system.caches.fast",function(v) caches.fast=true end)
+directives.register("system.caches.direct",function(v) caches.direct=true end)
 local writable,readables,usedreadables=nil,{},{}
 local function identify()
  local texmfcaches=resolvers.cleanpathlist("TEXMFCACHE") 
@@ -21671,7 +21686,7 @@ function caches.is_writable(filepath,filename)
  return is_writable(tmaname)
 end
 local saveoptions={ compact=true }
-function caches.savedata(filepath,filename,data,raw)
+function caches.savedata(filepath,filename,data)
  local tmaname,tmcname=caches.setluanames(filepath,filename)
  data.cache_uuid=os.uuid()
  if caches.fast then
@@ -25415,7 +25430,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9637, stripped down to: 7253
+-- original size: 9920, stripped down to: 7476
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25510,8 +25525,16 @@ function environment.make_format(name,arguments)
   lfs.chdir(path)
  end
  report_format("using format path %a",dir.current())
- local texsourcename=file.addsuffix(name,"mkiv")
- local fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
+ local texsourcename=""
+ local fulltexsourcename=""
+ if engine=="luametatex" then
+  texsourcename=file.addsuffix(name,"mkxl")
+  fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
+ end
+ if fulltexsourcename=="" then
+  texsourcename=file.addsuffix(name,"mkiv")
+  fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
+ end
  if fulltexsourcename=="" then
   texsourcename=file.addsuffix(name,"tex")
   fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
@@ -25661,8 +25684,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1023417
--- stripped bytes    : 405356
+-- original bytes    : 1024591
+-- stripped bytes    : 405770
 
 -- end library merge
 

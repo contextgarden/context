@@ -13,7 +13,7 @@
 string base_name, base_version ;
 
 base_name    := "plain" ;
-base_version := "1.004 for metafun iv"  ;
+base_version := "1.004 for metafun iv and xl"  ;
 
 message "loading metafun, including plain.mp version " & base_version ;
 

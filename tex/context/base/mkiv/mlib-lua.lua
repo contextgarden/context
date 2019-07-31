@@ -62,12 +62,14 @@ do
     local stack      = { }
 
     local get_numeric = mplib.get_numeric
+    local get_integer = mplib.get_integer
     local get_string  = mplib.get_string
     local get_boolean = mplib.get_boolean
     local get_path    = mplib.get_path
 
     get.numeric = function(s) return get_numeric(currentmpx,s) end
     get.number  = function(s) return get_numeric(currentmpx,s) end
+    get.integer = function(s) return get_integer(currentmpx,s) end
     get.string  = function(s) return get_string (currentmpx,s) end
     get.boolean = function(s) return get_boolean(currentmpx,s) end
     get.path    = function(s) return get_path   (currentmpx,s) end
@@ -81,6 +83,7 @@ do
     local scan_token      = mplib.scan_token
     local scan_symbol     = mplib.scan_symbol
     local scan_numeric    = mplib.scan_numeric
+    local scan_integer    = mplib.scan_integer
     local scan_boolean    = mplib.scan_boolean
     local scan_string     = mplib.scan_string
     local scan_pair       = mplib.scan_pair
@@ -95,6 +98,7 @@ do
     scan.symbol     = function(k) return scan_symbol    (currentmpx,k) end
     scan.numeric    = function()  return scan_numeric   (currentmpx)   end
     scan.number     = function()  return scan_numeric   (currentmpx)   end
+    scan.integer    = function()  return scan_integer   (currentmpx)   end
     scan.boolean    = function()  return scan_boolean   (currentmpx)   end
     scan.string     = function()  return scan_string    (currentmpx)   end
     scan.pair       = function(t) return scan_pair      (currentmpx,t) end

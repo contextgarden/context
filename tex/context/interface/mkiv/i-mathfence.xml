@@ -69,7 +69,48 @@
 
     <cd:command name="fenced" level="document" category="mathematics" file="math-fen.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="parenthesis"/>
+                <cd:constant type="bracket"/>
+                <cd:constant type="brace"/>
+                <cd:constant type="bar"/>
+                <cd:constant type="doublebar"/>
+                <cd:constant type="triplebar"/>
+                <cd:constant type="angle"/>
+                <cd:constant type="doubleangle"/>
+                <cd:constant type="solidus"/>
+                <cd:constant type="ceiling"/>
+                <cd:constant type="floor"/>
+                <cd:constant type="moustache"/>
+                <cd:constant type="uppercorner"/>
+                <cd:constant type="lowercorner"/>
+                <cd:constant type="group"/>
+                <cd:constant type="openbracket"/>
+                <!--
+                    <cd:constant type="nothing"/>
+                    <cd:constant type="mirrored"/>
+                -->
+                <cd:constant type="mirroredparenthesis"/>
+                <cd:constant type="mirroredbracket"/>
+                <cd:constant type="mirroredbrace"/>
+                <cd:constant type="mirroredbar"/>
+                <cd:constant type="mirroreddoublebar"/>
+                <cd:constant type="mirroredtriplebar"/>
+                <cd:constant type="mirroredangle"/>
+                <cd:constant type="mirroreddoubleangle"/>
+                <cd:constant type="mirroredsolidus"/>
+                <cd:constant type="mirroredceiling"/>
+                <cd:constant type="mirroredfloor"/>
+                <cd:constant type="mirroredmoustache"/>
+                <cd:constant type="mirroreduppercorner"/>
+                <cd:constant type="mirroredlowercorner"/>
+                <cd:constant type="mirroredgroup"/>
+                <cd:constant type="mirroredopenbracket"/>
+                <!--
+                    <cd:constant type="mirrorednothing"/>
+                -->
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -78,7 +119,7 @@
 
     <cd:command name="left" level="document" category="mathematics" file="math-fen.mkiv">
         <cd:arguments>
-            <cd:resolve name="string-character"/>
+            <cd:resolve name="string-leftfence"/>
         </cd:arguments>
     </cd:command>
 
@@ -90,7 +131,7 @@
 
     <cd:command name="right" level="document" category="mathematics" file="math-fen.mkiv">
         <cd:arguments>
-            <cd:resolve name="string-character"/>
+            <cd:resolve name="string-rightfence"/>
         </cd:arguments>
     </cd:command>
 
@@ -192,7 +233,7 @@
 
     <cd:command name="lfence" level="document" category="mathematics" file="math-fen.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-character"/>
+            <cd:resolve name="argument-leftfence"/>
         </cd:arguments>
     </cd:command>
 
@@ -204,7 +245,7 @@
 
     <cd:command name="rfence" level="document" category="mathematics" file="math-fen.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-character"/>
+            <cd:resolve name="argument-rightfence"/>
         </cd:arguments>
     </cd:command>
 

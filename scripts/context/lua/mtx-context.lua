@@ -548,6 +548,8 @@ local function luatex_command(l_flags,c_flags,filename,engine)
     )
 end
 
+-- use mtx-plain instead
+
 local plain_formats = {
     ["plain"]        = "plain",
     ["luatex-plain"] = "luatex-plain",
@@ -1233,7 +1235,7 @@ function scripts.context.autoctx()
             if chunk then
                 ctxname = match(chunk,"<%?context%-directive%s+job%s+ctxfile%s+([^ ]-)%s*?>")
             end
-        elseif suffix == "tex" or suffix == "mkiv" or suffix == "mkil" then
+        elseif suffix == "tex" or suffix == "mkiv" or suffix == "mkxl" then
             local analysis = preamble_analyze(firstfile)
             ctxname = analysis.ctxfile or analysis.ctx
         end
@@ -1247,66 +1249,27 @@ function scripts.context.autoctx()
     scripts.context.run(ctxdata)
 end
 
--- no longer ok as mlib-run misses something:
-
--- local template = [[
--- \starttext
---     \directMPgraphic{%s}{input "%s"}
--- \stoptext
--- ]]
---
--- local loaded = false
---
--- function scripts.context.metapost()
---     local filename = environment.filenames[1] or ""
---     if not loaded then
---         dofile(resolvers.findfile("mlib-run.lua"))
---         loaded = true
---         commands = commands or { }
---         commands.writestatus = report -- no longer needed
---     end
---     local formatname = getargument("format") or "metafun"
---     if formatname == "" or type(formatname) == "boolean" then
---         formatname = "metafun"
---     end
---     if getargument("pdf") then
---         local basename = removesuffix(filename)
---         local resultname = getargument("result") or basename
---         local jobname = "mtx-context-metapost"
---         local tempname = fileaddsuffix(jobname,"tex")
---         io.savedata(tempname,format(template,"metafun",filename))
---         environment.filenames[1] = tempname
---         setargument("result",resultname)
---         setargument("once",true)
---         scripts.context.run()
---         scripts.context.purge_job(jobname,true)
---         scripts.context.purge_job(resultname,true)
---     elseif getargument("svg") then
---         metapost.directrun(formatname,filename,"svg")
---     else
---         metapost.directrun(formatname,filename,"mps")
---     end
--- end
-
--- --
-
 function scripts.context.version()
-    local name = resolvers.findfile("context.mkiv")
-    if name ~= "" then
-        report("main context file: %s",name)
-        local data = io.loaddata(name)
-        if data then
-            local version = match(data,"\\edef\\contextversion{(.-)}")
-            if version then
-                report("current version: %s",version)
+    local list = { "context.mkiv", "context.mkxl" }
+    for i=1,#list do
+        local base = list[i]
+        local name = resolvers.findfile(base)
+        if name ~= "" then
+            report("main context file: %s",name)
+            local data = io.loaddata(name)
+            if data then
+                local version = match(data,"\\edef\\contextversion{(.-)}")
+                if version then
+                    report("current version: %s",version)
+                else
+                    report("context version: unknown, no timestamp found")
+                end
             else
-                report("context version: unknown, no timestamp found")
+                report("context version: unknown, load error")
             end
         else
-            report("context version: unknown, load error")
+            report("main context file: unknown, %a not found",base)
         end
-    else
-        report("main context file: unknown, 'context.mkiv' not found")
     end
 end
 
@@ -1429,7 +1392,7 @@ local function touchfiles(suffix,kind,path)
     end
 end
 
-local tobetouched = tohash { "mkii", "mkiv", "mkvi", "mkil", "mkli" }
+local tobetouched = tohash { "mkii", "mkiv", "mkvi", "mkxl", "mklx" }
 
 function scripts.context.touch()
     if getargument("expert") then
@@ -1451,8 +1414,8 @@ end
 -- modules
 
 local labels = { "title", "comment", "status" }
-local cards  = { "*.mkiv", "*.mkvi",  "*.mkix", "*.mkxi", "*.mkil", "*.mkli", "*.tex" }
-local valid  = tohash { "mkiv", "mkvi", "mkix", "mkxi", "mkil", "mkli", "tex" }
+local cards  = { "*.mkiv", "*.mkvi",  "*.mkix", "*.mkxi", "*.mkxl", "*.mklx", "*.tex" }
+local valid  = tohash { "mkiv", "mkvi", "mkix", "mkxi", "mkxl", "mklx", "tex" }
 
 function scripts.context.modules(pattern)
     local list = { }
@@ -1602,144 +1565,6 @@ function scripts.context.timed(action)
     statistics.timed(action,true)
 end
 
--- -- updating (often one will use mtx-update instead)
---
--- local zipname     = "cont-tmf.zip"
--- local mainzip     = "http://www.pragma-ade.com/context/latest/" .. zipname
--- local validtrees  = { "texmf-local", "texmf-context" }
--- local selfscripts = { "mtxrun.lua" } -- was: { "luatools.lua", "mtxrun.lua" }
---
--- function zip.loaddata(zipfile,filename) -- should be in zip lib
---     local f = zipfile:open(filename)
---     if f then
---         local data = f:read("*a")
---         f:close()
---         return data
---     end
---     return nil
--- end
---
--- function scripts.context.update()
---     local force = getargument("force")
---     local socket = require("socket")
---     local http   = require("socket.http")
---     local basepath = resolvers.findfile("context.mkiv")
---     if basepath == "" then
---         report("quiting, no 'context.mkiv' found")
---         return
---     end
---     local basetree = basepath.match(basepath,"^(.-)tex/context/base/.*context.mkiv$") or ""
---     if basetree == "" then
---         report("quiting, no proper tds structure (%s)",basepath)
---         return
---     end
---     local function is_okay(basetree)
---         for _, tree in next, validtrees do
---             local pattern = gsub(tree,"%-","%%-")
---             if find(basetree,pattern) then
---                 return tree
---             end
---         end
---         return false
---     end
---     local okay = is_okay(basetree)
---     if not okay then
---         report("quiting, tree '%s' is protected",okay)
---         return
---     else
---         report("updating tree '%s'",okay)
---     end
---     if not lfs.chdir(basetree) then
---         report("quiting, unable to change to '%s'",okay)
---         return
---     end
---     report("fetching '%s'",mainzip)
---     local latest = http.request(mainzip)
---     if not latest then
---         report("context tree '%s' can be updated, use --force",okay)
---         return
---     end
---     io.savedata("cont-tmf.zip",latest)
---     if false then
---         -- variant 1
---         os.execute("mtxrun --script unzip cont-tmf.zip")
---     else
---         -- variant 2
---         local zipfile = zip.open(zipname)
---         if not zipfile then
---             report("quiting, unable to open '%s'",zipname)
---             return
---         end
---         local newfile = zip.loaddata(zipfile,"tex/context/base/mkiv/context.mkiv")
---         if not newfile then
---             report("quiting, unable to open '%s'","context.mkiv")
---             return
---         end
---         local oldfile = io.loaddata(resolvers.findfile("context.mkiv")) or ""
---         local function versiontonumber(what,str)
---             local version = match(str,"\\edef\\contextversion{(.-)}") or ""
---             local year, month, day, hour, minute = match(str,"\\edef\\contextversion{(%d+)%.(%d+)%.(%d+) *(%d+)%:(%d+)}")
---             if year and minute then
---                 local time = os.time { year=year,month=month,day=day,hour=hour,minute=minute}
---                 report("%s version: %s (%s)",what,version,time)
---                 return time
---             else
---                 report("%s version: %s (unknown)",what,version)
---                 return nil
---             end
---         end
---         local oldversion = versiontonumber("old",oldfile)
---         local newversion = versiontonumber("new",newfile)
---         if not oldversion or not newversion then
---             report("quiting, version cannot be determined")
---             return
---         elseif oldversion == newversion then
---             report("quiting, your current version is up-to-date")
---             return
---         elseif oldversion > newversion then
---             report("quiting, your current version is newer")
---             return
---         end
---         for k in zipfile:files() do
---             local filename = k.filename
---             if find(filename,"/$") then
---                 lfs.mkdir(filename)
---             else
---                 local data = zip.loaddata(zipfile,filename)
---                 if data then
---                     if force then
---                         io.savedata(filename,data)
---                     end
---                     report(filename)
---                 end
---             end
---         end
---         for _, scriptname in next, selfscripts do
---             local oldscript = resolvers.findfile(scriptname) or ""
---             if oldscript ~= "" and is_okay(oldscript) then
---                 local newscript = "./scripts/context/lua/" .. scriptname
---                 local data = io.loaddata(newscript) or ""
---                 if data ~= "" then
---                     report("replacing script '%s' by '%s'",oldscript,newscript)
---                     if force then
---                         io.savedata(oldscript,data)
---                     end
---                 end
---             else
---                 report("keeping script '%s'",oldscript)
---             end
---         end
---         if force then
---             scripts.context.make()
---         end
---     end
---     if force then
---         report("context tree '%s' has been updated",okay)
---     else
---         report("context tree '%s' can been updated (use --force)",okay)
---     end
--- end
-
 -- getting it done
 
 if getargument("timedlog") then
@@ -1796,15 +1621,11 @@ elseif getargument("generate") then
     scripts.context.timed(function() scripts.context.generate() end)
 elseif getargument("ctx") and not getargument("noctx") then
     scripts.context.timed(scripts.context.ctx)
--- elseif getargument("mp") or getargument("metapost") then
---     scripts.context.timed(scripts.context.metapost)
 elseif getargument("version") then
     application.identify()
     scripts.context.version()
 elseif getargument("touch") then
     scripts.context.touch()
--- elseif getargument("update") then
---     scripts.context.update()
 elseif getargument("expert") then
     application.help("expert", "special")
 elseif getargument("showmodules") or getargument("modules") then

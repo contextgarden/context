@@ -107,8 +107,16 @@ function environment.make_format(name,arguments)
     end
     report_format("using format path %a",dir.current())
     -- check source file
-    local texsourcename = file.addsuffix(name,"mkiv")
-    local fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
+    local texsourcename     = ""
+    local fulltexsourcename = ""
+    if engine == "luametatex" then
+        texsourcename     = file.addsuffix(name,"mkxl")
+        fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
+    end
+    if fulltexsourcename == "" then
+        texsourcename     = file.addsuffix(name,"mkiv")
+        fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
+    end
     if fulltexsourcename == "" then
         texsourcename = file.addsuffix(name,"tex")
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""

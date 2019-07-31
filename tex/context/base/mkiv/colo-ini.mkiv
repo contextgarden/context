@@ -37,16 +37,15 @@
 
 \unprotect
 
-%D In \MKIV\ we have independent color, colorspace and transparency
-%D but I'm still not sure if I keep it that way as it's probably more
-%D efficient to combine them (less attributes and finalizing). If
-%D it becomes a bottleneck we can set up a more complex system
-%D with one shared attribute for colorspace, color and transparency.
+%D In \MKIV\ we have independent color, colorspace and transparency but I'm still
+%D not sure if I keep it that way as it's probably more efficient to combine them
+%D (less attributes and finalizing). If it becomes a bottleneck we can set up a more
+%D complex system with one shared attribute for colorspace, color and transparency.
 %D
-%D When typesetting for paper, we prefer using the \CMYK\ color space,
-%D but for on||screen viewing we prefer \RGB\ (the previous
-%D implementation supported only this scheme). Independant of such
-%D specifications, we support some automatic conversions:
+%D When typesetting for paper, we prefer using the \CMYK\ color space, but for
+%D on||screen viewing we prefer \RGB\ (the previous implementation supported only
+%D this scheme). Independant of such specifications, we support some automatic
+%D conversions:
 %D
 %D \startitemize[packed]
 %D \item  convert all colors to \RGB
@@ -111,8 +110,7 @@
 %D \macros
 %D   {startcolor,stopcolor,color,graycolor}
 %D
-%D The local and global commands are here just for compatibility
-%D with \MKII.
+%D The local and global commands are here just for compatibility with \MKII.
 %D
 %D \showsetup{startcolor}
 %D
@@ -274,11 +272,11 @@
 %D
 %D \showsetup{usecolors}
 %D
-%D Some default colors are specified in \type {colo-imp-rgb},
-%D which is loaded into the format by default.
+%D Some default colors are specified in \type {colo-imp-rgb}, which is loaded into
+%D the format by default.
 %D
-%D Some demo palets and groups are defined in \type {colo-imp-dem}
-%D which can be loaded with:
+%D Some demo palets and groups are defined in \type {colo-imp-dem} which can be
+%D loaded with:
 %D
 %D \starttyping
 %D \usecolors[dem]
@@ -371,33 +369,27 @@
   {\attribute\colorattribute       \c_colo_saved_attribute_color
    \attribute\transparencyattribute\c_colo_saved_attribute_transparency}
 
-%D In this documentation we will not go into too much details
-%D on palets. Curious users can find more information on this
-%D topic in \from[use of color].
+%D In this documentation we will not go into too much details on palets. Curious
+%D users can find more information on this topic in \from[use of color].
 %D
-%D At the moment we implemented color in \CONTEXT\ color
-%D printing was not yet on the desktop. In spite of this lack our
-%D graphics designer made colorfull illustrations. When printed
-%D on a black and white printer, distinctive colors can come
-%D out equally gray. We therefore decided to use only colors
-%D that were distinctive in colors as well as in black and
-%D white print.
+%D At the moment we implemented color in \CONTEXT\ color printing was not yet on the
+%D desktop. In spite of this lack our graphics designer made colorfull
+%D illustrations. When printed on a black and white printer, distinctive colors can
+%D come out equally gray. We therefore decided to use only colors that were
+%D distinctive in colors as well as in black and white print.
 %D
-%D Although none of the graphic packages we used supported
-%D logical colors and global color redefition, we build this
-%D support into \CONTEXT. This enabled us to experiment and
-%D also prepared us for the future.
+%D Although none of the graphic packages we used supported logical colors and global
+%D color redefition, we build this support into \CONTEXT. This enabled us to
+%D experiment and also prepared us for the future.
 
 %D \macros
 %D   {definepalet}
 %D
-%D Colors are grouped in palets. The colors in such a palet can
-%D have colorful names, but best is to use names that specify
-%D their use, like {\em important} or {\em danger}. As a sort
-%D of example \CONTEXT\ has some palets predefined,
-%D like:\footnote{At the time I wrote the palet support, I was
-%D reading 'A hort history of time' of S.~Hawkins, so that's
-%D why we stuck to quarks.}
+%D Colors are grouped in palets. The colors in such a palet can have colorful names,
+%D but best is to use names that specify their use, like {\em important} or {\em
+%D danger}. As a sort of example \CONTEXT\ has some palets predefined,
+%D like:\footnote{At the time I wrote the palet support, I was reading 'A hort
+%D history of time' of S.~Hawkins, so that's why we stuck to quarks.}
 %D
 %D \starttyping
 %D \definepalet
@@ -424,8 +416,8 @@
 %D \getbuffer[palet]
 %D \stoplinecorrection
 %D
-%D This bar shows both the color and gray alternatives of the
-%D palet components (not visible in black and white print).
+%D This bar shows both the color and gray alternatives of the palet components (not
+%D visible in black and white print).
 %D
 %D When needed, one can copy a palet by saying:
 %D
@@ -433,8 +425,8 @@
 %D \definepalet [TEXcolorpretty] [colorpretty]
 %D \stoptyping
 %D
-%D This saves us some typing in for instance the modules that
-%D deal with pretty verbatim typesetting.
+%D This saves us some typing in for instance the modules that deal with pretty
+%D verbatim typesetting.
 
 \installcorenamespace{paletlist}
 \installcorenamespace{paletsize}
@@ -538,8 +530,7 @@
      \processcommacommand[\lastnamedcs]{\colo_palets_define_one{#1}}%
    \fi}
 
-%D Instead of refering to colors, one can also directly specify
-%D a color:
+%D Instead of refering to colors, one can also directly specify a color:
 %D
 %D \starttyping
 %D \definepalet[test][xx=green]
@@ -549,8 +540,8 @@
 %D \macros
 %D   {setuppalet}
 %D
-%D Colors are taken from the current palet, if defined.
-%D Setting the current palet is done by:
+%D Colors are taken from the current palet, if defined. Setting the current palet is
+%D done by:
 %D
 %D \showsetup{setuppalet}
 
@@ -642,8 +633,8 @@
 %D \macros
 %D   {showcolor}
 %D
-%D But let's not forget that we also have the more traditional
-%D non||related colors. These show up after:
+%D But let's not forget that we also have the more traditional non||related colors.
+%D These show up after:
 %D
 %D \starttyping
 %D \showcolor [name]
@@ -655,8 +646,8 @@
 
 \fetchruntimecommand \showcolor \f!colo_run
 
-%D It would make sense to put the following code in \type
-%D {colo-mps}, but it it rather low level.
+%D It would make sense to put the following code in \type {colo-mps}, but it it
+%D rather low level.
 
 %D \macros
 %D   {negatecolorcomponent,negatedcolorcomponent}
@@ -687,8 +678,8 @@
 %D \macros
 %D   {MPcolor}
 %D
-%D A very special macro is \type{\MPcolor}. This one can be
-%D used to pass a \CONTEXT\ color to \METAPOST.
+%D A very special macro is \type{\MPcolor}. This one can be used to pass a \CONTEXT\
+%D color to \METAPOST.
 %D
 %D \starttyping
 %D \MPcolor{my own red}
@@ -697,15 +688,13 @@
 %D This macro returns \METAPOST\ code that represents the
 %D color.
 %D
-%D For the moment we keep the next downward compatibility
-%D switch, i.e.\ expanded colors. However, predefined colors
-%D and palets are no longer expanded (which is what I wanted
-%D in the first place).
+%D For the moment we keep the next downward compatibility switch, i.e.\ expanded
+%D colors. However, predefined colors and palets are no longer expanded (which is
+%D what I wanted in the first place).
 %D
-%D In \MKIV\ we don't support color separation as we might now
-%D assume that printing houses have the right programs to do
-%D it themselves. If it's ever needed in \MKIV\ It is relatively
-%D easy to support it in the backend code.
+%D In \MKIV\ we don't support color separation as we might now assume that printing
+%D houses have the right programs to do it themselves. If it's ever needed in \MKIV\
+%D It is relatively easy to support it in the backend code.
 
 % todo: palets in definecolor
 % todo: {\red xx} vs \red{xx}
@@ -755,12 +744,12 @@
      \fi
    \fi}
 
-% Currently in mkiv transparency is implemented independent of color. This costs
-% a bit more processing time but gives the possibility to apply transparency
-% independently in the future. Is this useful? If not we may as well combine them
-% again in the future. By coupling we are downward compatible. When we decouple we
-% need to do more tricky housekeeping (e.g. persist color independent transparencies
-% when color bound ones are nil.
+%D Currently in mkiv transparency is implemented independent of color. This costs a
+%D bit more processing time but gives the possibility to apply transparency
+%D independently in the future. Is this useful? If not we may as well combine them
+%D again in the future. By coupling we are downward compatible. When we decouple we
+%D need to do more tricky housekeeping (e.g. persist color independent
+%D transparencies when color bound ones are nil.
 
 % Since we couple definitions, we could stick to one test. Todo. Same for mpcolor.
 
@@ -953,10 +942,9 @@
      \unexpanded\setvalue{#1}{\colo_helpers_activate{#1}}%
    \fi}
 
-% Spotcolors used setxvalue but that messes up currentcolor
-% and probably no global is needed either but they are global
-% at the lua end (true argument) so we keep that if only because
-% spot colors often are a document wide property
+%D Spotcolors used setxvalue but that messes up currentcolor and probably no global
+%D is needed either but they are global at the lua end (true argument) so we keep
+%D that if only because spot colors often are a document wide property
 
 \def\colo_basics_define_spot[#1][#2][#3]%
   {\clf_definespotcolorglobal{#1}{#2}{#3}%
@@ -1008,8 +996,8 @@
 %
 % \definecolor[one][two]
 %
-% only color one is actually defined and two is not seen at the
-% \LUA\ end. This means that this doesn't work:
+% Only color one is actually defined and two is not seen at the \LUA\ end. This
+% means that this doesn't work:
 %
 % \definecolor[ColorA][red]
 % \definecolor[ColorB][.5(ColorA)]
@@ -1093,9 +1081,8 @@
 %D \macros
 %D   {doifcolorelse, doifcolor}
 %D
-%D Switching to a color is done by means of the following
-%D command. Later on we will explain the use of palets.  We
-%D define ourselves a color conditional first.
+%D Switching to a color is done by means of the following command. Later on we will
+%D explain the use of palets. We define ourselves a color conditional first.
 
 \def\doifelsecolor#1%
   {\ifcsname\??colorattribute\currentcolorprefix#1\endcsname
@@ -1120,13 +1107,11 @@
 %D \macros
 %D   {startregistercolor,stopregistercolor,permitcolormode}
 %D
-%D If you only want to register a color, the switch \type
-%D {\ifpermitcolormode} can be used. That way the nested
-%D colors know where to go back to.
+%D If you only want to register a color, the switch \type {\ifpermitcolormode} can
+%D be used. That way the nested colors know where to go back to.
 %D
-%D We use these macros for implementing text colors
-%D (actually, the first application was in foreground
-%D colors).
+%D We use these macros for implementing text colors (actually, the first application
+%D was in foreground colors).
 %D
 %D \starttyping
 %D \starttextcolor[red]
@@ -1292,8 +1277,8 @@
 %D \macros
 %D   {colorvalue, grayvalue}
 %D
-%D We can typeset the color components using \type{\colorvalue} and
-%D \type{\grayvalue}. The commands:
+%D We can typeset the color components using \type {\colorvalue} and \type
+%D {\grayvalue}. The commands:
 %D
 %D \startbuffer
 %D color value of SomeKindOfRed: \colorvalue{SomeKindOfRed} \crlf
@@ -1370,8 +1355,8 @@
 %D \macros
 %D   {forcecolorhack}
 %D
-%D We can out this in front of (for instance) a special and so force color
-%D to be applied (only glyphs, rules and leaders are handled).
+%D We can out this in front of (for instance) a special and so force color to be
+%D applied (only glyphs, rules and leaders are handled).
 %D
 %D \startbuffer
 %D \framed

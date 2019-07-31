@@ -36,7 +36,7 @@ local iterator          = utilities.parsers.iterator
 
 -- modules can have a specific suffix or can specify one
 
-local prefixes  = {
+local prefixes = {
     "m", -- module, extends functionality
     "p", -- private code
     "s", -- styles
@@ -47,12 +47,23 @@ local prefixes  = {
 
 -- the order might change and how about cld
 
-local suffixes  = {
-    "mkvi", -- proprocessed mkiv files
+local suffixes = CONTEXTLMTXMODE > 0 and
+{
+    "mklx", -- preprocessed mkiv lmtx files
+    "mkxl", -- mkiv lmtx files
+    "mkvi", -- preprocessed mkiv files
     "mkiv", -- mkiv files
     "tex",  -- normally source code files
     "cld",  -- context lua documents (often stand alone)
     "lua",  -- lua files
+}
+    or
+{
+    "mkvi",
+    "mkiv",
+    "tex",
+    "cld",
+    "lua",
 }
 
 local modstatus = { }

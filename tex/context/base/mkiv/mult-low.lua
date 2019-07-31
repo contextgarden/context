@@ -41,7 +41,7 @@ return {
         "bgroup", "egroup",
         "endline",
         --
-        "conditionaltrue", "conditionalfalse",
+        "conditionaltrue", "conditionalfalse", "quitcondition",
         --
         "attributeunsetvalue",
         --

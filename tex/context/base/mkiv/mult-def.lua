@@ -9560,6 +9560,10 @@ return {
    ["en"]="order",
    ["nl"]="volgorde",
   },
+  ["anchoring"]={
+   ["en"]="anchoring",
+   ["nl"]="verankering",
+  },
   ["orientation"]={
    ["cs"]="orientation",
    ["de"]="orientation",

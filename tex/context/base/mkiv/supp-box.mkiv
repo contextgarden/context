@@ -57,8 +57,8 @@
 %D \macros
 %D   {dontcomplain}
 %D
-%D The next macro suppresses over- and underfull messages which
-%D often makes sense when we deal with boxes.
+%D The next macro suppresses over- and underfull messages which often makes sense
+%D when we deal with boxes.
 
 \unexpanded\def\dontcomplain
   {\hbadness\plustenthousand
@@ -66,18 +66,15 @@
    \hfuzz   \maxdimen
    \vfuzz   \maxdimen}
 
-%D This module implements some box manipulation macros. Some
-%D are quite simple, some are more advanced and when understood
-%D well, all can be of use.
+%D This module implements some box manipulation macros. Some are quite simple, some
+%D are more advanced and when understood well, all can be of use.
 %D
 %D \macros
 %D   {strutdp,strutht,strutwd}
 %D
-%D The next shortcuts save memory and keying. The width is
-%D normally zero points (if not, you're in trouble). These
-%D shortcuts can be used like a dimension, opposite to the
-%D core macros \type {\strutdepth} and alike, which are
-%D values.
+%D The next shortcuts save memory and keying. The width is normally zero points (if
+%D not, you're in trouble). These shortcuts can be used like a dimension, opposite
+%D to the core macros \type {\strutdepth} and alike, which are values.
 
 \def\strutdp  {\dp\strutbox}
 \def\strutht  {\ht\strutbox}
@@ -88,8 +85,8 @@
 %D \macros
 %D   {voidbox,nextbox}
 %D
-%D Let's start with an easy one. The next macro hides the
-%D ugly \type {@} in \type {\voidb@x}.
+%D Let's start with an easy one. The next macro hides the ugly \type {@} in \type
+%D {\voidb@x}.
 
 \ifdefined\voidbox \else \newbox\voidbox \fi
 \ifdefined\nextbox \else \newbox\nextbox \fi
@@ -97,19 +94,17 @@
 %D \macros
 %D   {nextdepth}
 %D
-%D Let's start with a rather simple declaration. Sometimes we
-%D need to save the \TEX\ \DIMENSION\ \type{\prevdepth} and
-%D append it later on. The name \type{\nextdepth} suits
-%D this purpose well.
+%D Let's start with a rather simple declaration. Sometimes we need to save the \TEX\
+%D \DIMENSION\ \type{\prevdepth} and append it later on. The name \type {\nextdepth}
+%D suits this purpose well.
 
 \newdimen\nextdepth
 
 %D \macros
 %D   {smashbox, smashedbox}
 %D
-%D Smashing is introduced in \PLAIN\ \TEX, and stands for
-%D reducing the dimensions of a box to zero. The most resolute
-%D one is presented first.
+%D Smashing is introduced in \PLAIN\ \TEX, and stands for reducing the dimensions of
+%D a box to zero. The most resolute one is presented first.
 
 \unexpanded\def\smashbox#1%
   {\wd#1\zeropoint
@@ -125,8 +120,8 @@
 %D \macros
 %D   {hsmashbox,vsmashbox}
 %D
-%D Smashing can be used for overlaying boxes. Depending on
-%D the mode, horizontal or vertical, one can use:
+%D Smashing can be used for overlaying boxes. Depending on the mode, horizontal or
+%D vertical, one can use:
 
 \unexpanded\def\hsmashbox#1%
   {\wd#1\zeropoint}
@@ -135,8 +130,7 @@
   {\ht#1\zeropoint
    \dp#1\zeropoint}
 
-%D The next implementation is less sensitive for spurious
-%D spaces.
+%D The next implementation is less sensitive for spurious spaces.
 
 \newcount\c_boxes_register
 
@@ -174,10 +168,9 @@
 %D   {hsmash,vsmash,
 %D    hsmashed,vsmashed}
 %D
-%D While the previous macros expected a \BOX, the next act on a
-%D content. They are some subtle differences betreen the smash
-%D and smashed alternatives. The later ones reduce all
-%D dimensions to zero.
+%D While the previous macros expected a \BOX, the next act on a content. They are
+%D some subtle differences betreen the smash and smashed alternatives. The later
+%D ones reduce all dimensions to zero.
 
 \unexpanded\def\hsmash  {\bgroup\dowithnextboxcs\syst_boxes_hsmashed_nextbox\hbox}
 \unexpanded\def\vsmash  {\bgroup\dowithnextboxcs\syst_boxes_vsmashed_nextbox\vbox}
@@ -227,10 +220,9 @@
 %D \macros
 %D   {smash}
 %D
-%D This smash alternative takes an optional arg [whdtb] as
-%D well as is potentially catcode safer. It is needed by the
-%D math module (although the \type {\leavevmode} is not added
-%D here).
+%D This smash alternative takes an optional arg [whdtb] as well as is potentially
+%D catcode safer. It is needed by the math module (although the \type {\leavevmode}
+%D is not added here).
 
 \unexpanded\def\smash
   {\begingroup
@@ -304,12 +296,12 @@
 %D \macros
 %D   {phantom, hphantom, vphantom, mathstrut}
 %D
-%D The next implementation of \type {\phantom} cum suis does
-%D not grab an argument in the non||math case, which is better.
+%D The next implementation of \type {\phantom} cum suis does not grab an argument in
+%D the non||math case, which is better.
 %D
-%D Due to a complicated call to \type {\mathpallete} and
-%D thereby \type {\mathchoice}, the next macro looks ugly.
-%D We also take care of non||braced arguments.
+%D Due to a complicated call to \type {\mathpallete} and thereby \type
+%D {\mathchoice}, the next macro looks ugly. We also take care of non||braced
+%D arguments.
 
 \unexpanded\def\phantom {\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed  }
 \unexpanded\def\vphantom{\begingroup\futurelet\nexttoken\syst_boxes_phantom_indeed_v}
@@ -382,8 +374,7 @@
 %D \macros
 %D   {getboxheight}
 %D
-%D Although often needed, \TEX\ does not support arithmics
-%D like:
+%D Although often needed, \TEX\ does not support arithmics like:
 %D
 %D \starttyping
 %D \dimen0 = \ht0 + \dp0
@@ -409,33 +400,29 @@
 %D   {#1\ht#3\advance#1\dp#3\relax}
 %D \stoptyping
 %D
-%D The next alternative is slightly more clever, since
-%D it accepts \type {{12}} as well as \type {12} as box
-%D number.
+%D The next alternative is slightly more clever, since it accepts \type {{12}} as
+%D well as \type {12} as box number.
 
 \unexpanded\def\getboxheight#1\of#2\box#3%
   {\def\next{#1\dimexpr\ht\c_boxes_register+\dp\c_boxes_register\relax}%
    \afterassignment\next\c_boxes_register=#3}
 
-%D For a long time the following three macros were part of
-%D the grid snapping core module, but it makes more sense to
-%D have them here so that users can see them.
+%D For a long time the following three macros were part of the grid snapping core
+%D module, but it makes more sense to have them here so that users can see them.
 %D
 %D \macros
 %D   {getnoflines, getroundednoflines, getrawnoflines}
 %D
-%D Het commando \type{\getnoflines} converteert een hoogte
-%D (dimensie) in een aantal regels en kent dit toe aan
-%D \type{\noflines}.
+%D Het commando \type {\getnoflines} converteert een hoogte (dimensie) in een aantal
+%D regels en kent dit toe aan \type {\noflines}.
 %D
 %D \starttyping
 %D \getnoflines{dimensie}
 %D \stoptyping
 %D
-%D Er wordt gedeeld door \type{\openlineheight} en een hoogte
-%D van~0pt komt overeen met 0~regels. The raw alternative
-%D does not round.
-
+%D Er wordt gedeeld door \type {\openlineheight} en een hoogte van~0pt komt overeen
+%D met 0~regels. The raw alternative does not round.
+%D
 %D For a long time we had:
 %D
 %D \starttyping
@@ -538,9 +525,9 @@
 %D \macros
 %D   {determinenoflines}
 %D
-%D The next macro determines the number of lines and
-%D returns it it \type {\noflines}. The macro works
-%D reasonable well as long as the content can be unboxed.
+%D The next macro determines the number of lines and returns it it \type
+%D {\noflines}. The macro works reasonable well as long as the content can be
+%D unboxed.
 %D
 %D \starttyping
 %D \determinenoflines{test\\test}
@@ -569,9 +556,8 @@
 %D \macros
 %D   {doiftextelse, doiftext}
 %D
-%D When \type {\doifelse} cum suis hopelessly fail, for
-%D instance because we pass data, we can fall back on the next
-%D macro:
+%D When \type {\doifelse} cum suis hopelessly fail, for instance because we pass
+%D data, we can fall back on the next macro:
 %D
 %D \starttyping
 %D \doiftextelse {data} {then branch} {else branch}
@@ -605,23 +591,19 @@
 %D \macros
 %D   {dowithnextbox,nextbox}
 %D
-%D Sometimes we want a macro to grab a box and do something
-%D on the content. One could pass an argument to a box, but
-%D this can violate the specific \CATCODES\ of its content and
-%D leads to unexpected results. The next macro treats the
-%D following braced text as the content of a box and
-%D manipulates it afterwards in a predefined way.
+%D Sometimes we want a macro to grab a box and do something on the content. One
+%D could pass an argument to a box, but this can violate the specific \CATCODES\ of
+%D its content and leads to unexpected results. The next macro treats the following
+%D braced text as the content of a box and manipulates it afterwards in a predefined
+%D way.
 %D
-%D The first argument specifies what to do with the content.
-%D This content is available in \type{\nextbox}. The second
-%D argument is one of \type{\hbox}, \type{\vbox} or
-%D \type{\vtop}. The third argument must be grouped with
-%D \type{\bgroup} and \type{\egroup}, \type{{...}} or can be
-%D a \type{\box} specification.
+%D The first argument specifies what to do with the content. This content is
+%D available in \type {\nextbox}. The second argument is one of \type {\hbox}, \type
+%D {\vbox} or \type {\vtop}. The third argument must be grouped with \type {\bgroup}
+%D and \type {\egroup}, \type {{...}} or can be a \type {\box} specification.
 %D
-%D In \CONTEXT\ this macro is used for picking up a box and
-%D treating it according to earlier specifications. We use for
-%D instance something like:
+%D In \CONTEXT\ this macro is used for picking up a box and treating it according to
+%D earlier specifications. We use for instance something like:
 %D
 %D \starttyping
 %D \def\getfloat%
@@ -636,9 +618,8 @@
 %D   {...#1...}
 %D \stoptyping
 %D
-%D In this implementation the \type{\aftergroup} construction
-%D is needed because \type{\afterassignment} is executed inside
-%D the box.
+%D In this implementation the \type {\aftergroup} construction is needed because
+%D \type {\afterassignment} is executed inside the box.
 
 \unexpanded\def\dowithnextbox#1%
   {\def\syst_boxes_with_next_box{#1}%
@@ -684,14 +665,14 @@
 %D    \setbox\nextbox#2}
 %D \stoptyping
 %D
-%D This alternative also accepts \type{\box0} and alike, but
-%D we don't really need this functionality now.
+%D This alternative also accepts \type {\box0} and alike, but we don't really need
+%D this functionality now.
 
 %D \macros
 %D   {nextboxht,nextboxwd,nextboxdp,flushnextbox}
 %D
-%D The next couple of shortcuts saves us memory as well as
-%D \type {{}}'s in passing parameters.
+%D The next couple of shortcuts saves us memory as well as \type {{}}'s in passing
+%D parameters.
 
 \def\nextboxht   {\ht\nextbox}
 \def\nextboxwd   {\wd\nextbox}
@@ -703,9 +684,8 @@
 %D \macros
 %D   {dowithnextboxcontent}
 %D
-%D But, occasionally we do need to pass some local settings
-%D without wanting to use additional grouping. Therefore we
-%D provide:
+%D But, occasionally we do need to pass some local settings without wanting to use
+%D additional grouping. Therefore we provide:
 %D
 %D \starttyping
 %D \dowithnextboxcontent{inside}{after}{box content}
@@ -731,8 +711,8 @@
 %D \macros
 %D   {llap, rlap, tlap, blap, clap}
 %D
-%D Some well known friends, but we implement them our own
-%D way. We want the macros to work in both math and text mode.
+%D Some well known friends, but we implement them our own way. We want the macros to
+%D work in both math and text mode.
 
 \def\dodorlap{\hpack to \zeropoint{\box\nextbox\hss}\endgroup}
 \def\dodollap{\hpack to \zeropoint{\hss\box\nextbox}\endgroup}
@@ -764,16 +744,14 @@
 %D    shapebox,
 %D    ifreshapingbox}
 %D
-%D The next utility macro originates from some linenumbering
-%D mechanism. Due to \TEX's advanced way of typesetting
-%D paragraphs, it's not easy to do things on a line||by||line
-%D basis. This macro is able to reprocess a given box and can
-%D act upon its vertical boxed components, such as lines. The
-%D unwinding sequence in this macro is inspired by a \NTG\
-%D workshop of David Salomon in June 1992.
+%D The next utility macro originates from some linenumbering mechanism. Due to
+%D \TEX's advanced way of typesetting paragraphs, it's not easy to do things on a
+%D line||by||line basis. This macro is able to reprocess a given box and can act
+%D upon its vertical boxed components, such as lines. The unwinding sequence in this
+%D macro is inspired by a \NTG\ workshop of David Salomon in June 1992.
 %D
-%D First we have to grab the piece of text we want to act
-%D upon. This is done by means of the duo macros:
+%D First we have to grab the piece of text we want to act upon. This is done by
+%D means of the duo macros:
 %D
 %D \starttyping
 %D \beginofshapebox
@@ -781,16 +759,14 @@
 %D \endofshapebox
 %D \stoptyping
 %D
-%D When all texts is collected, we can call \type{\reshapebox}
-%D and do something with it's vertical components. We can make
-%D as much passes as needed. When we're done, the box can be
-%D unloaded with \type{\flushshapebox}. The only condition in
-%D this scheme is that \type{\reshapebox} must somehow unload
-%D the \BOX\ \type{\shapebox}.
+%D When all texts is collected, we can call \type {\reshapebox} and do something
+%D with it's vertical components. We can make as much passes as needed. When we're
+%D done, the box can be unloaded with \type {\flushshapebox}. The only condition in
+%D this scheme is that \type {\reshapebox} must somehow unload the \BOX\ \type
+%D {\shapebox}.
 %D
-%D An important aspect is that the content is unrolled
-%D bottom||up. The next example illustrates this maybe
-%D unexpected characteristic.
+%D An important aspect is that the content is unrolled bottom||up. The next example
+%D illustrates this maybe unexpected characteristic.
 %D
 %D \startbuffer
 %D \beginofshapebox
@@ -810,8 +786,7 @@
 %D
 %D \getbuffer
 %D
-%D As we can see, when some kind of numbering is done, we have
-%D to add a second pass.
+%D As we can see, when some kind of numbering is done, we have to add a second pass.
 %D
 %D \startbuffer
 %D \newcounter\LineNumber
@@ -835,9 +810,9 @@
 %D
 %D \getbuffer
 %D
-%D This example shows that the content of the box is still
-%D available after flushing. Another feature is that only the
-%D last reshaping counts. Multiple reshaping can be done by:
+%D This example shows that the content of the box is still available after flushing.
+%D Another feature is that only the last reshaping counts. Multiple reshaping can be
+%D done by:
 %D
 %D \startbuffer
 %D \beginofshapebox
@@ -856,26 +831,23 @@
 %D
 %D \getbuffer
 %D
-%D The macros are surprisingly easy to follow and in fact
-%D introduce no new concepts. Nearly all books on \TEX\ show
-%D similar solutions for unwinding \BOXES.
+%D The macros are surprisingly easy to follow and in fact introduce no new concepts.
+%D Nearly all books on \TEX\ show similar solutions for unwinding \BOXES.
 %D
-%D Some macros, like footnote ones, can be sensitive for
-%D reshaping, which can result in an endless loop. We
-%D therefore offer:
+%D Some macros, like footnote ones, can be sensitive for reshaping, which can result
+%D in an endless loop. We therefore offer:
 %D
 %D \starttyping
 %D \ifreshapingbox
 %D \stoptyping
 %D
-%D Some \CONTEXT\ commands are protected this way. Anyhow,
-%D reshaping is aborted after 100 dead cycles.
+%D Some \CONTEXT\ commands are protected this way. Anyhow, reshaping is aborted
+%D after 100 dead cycles.
 %D
-%D By the way, changing the height and depth of \BOX\
-%D \type{\shapebox} results in bad spacing. This means that
-%D for instance linenumbers etc. should be given zero height
-%D and depth before being lapped into the margin. The
-%D previous examples ignore this side effect, but beware!
+%D By the way, changing the height and depth of \BOX\ \type {\shapebox} results in
+%D bad spacing. This means that for instance linenumbers etc. should be given zero
+%D height and depth before being lapped into the margin. The previous examples
+%D ignore this side effect, but beware!
 
 \newif    \ifsomeshapeleft
 \newif    \ifreshapingbox
@@ -1034,9 +1006,8 @@
    % \kern-\dp\newshapebox\relax
    \fi}
 
-%D For absolute control, one can use \type{\doreshapebox}
-%D directly. This macro takes four arguments, that take care
-%D of:
+%D For absolute control, one can use \type {\doreshapebox} directly. This macro
+%D takes four arguments, that take care of:
 %D
 %D \startitemize[n,packed]
 %D \item \type{\shapebox}
@@ -1048,10 +1019,9 @@
 %D \macros
 %D   {shapedhbox}
 %D
-%D When constructing a new box, using the content of \type
-%D {\shapebox}, one can best use \type {\shapedhbox} instead
-%D of \type {\hbox}, since it manages the height and depth of
-%D the line.
+%D When constructing a new box, using the content of \type {\shapebox}, one can best
+%D use \type {\shapedhbox} instead of \type {\hbox}, since it manages the height and
+%D depth of the line.
 
 \unexpanded\def\shapedhbox        % lines with non strutted dimensions have
   {\expanded{\dowithnextbox       % interlineskip so if we want the original
@@ -1066,8 +1036,8 @@
 %D    hyphenatedfile,
 %D    dohyphenateword}
 %D
-%D We no longer use the pure \TEX\ variant. In due time we will
-%D report some more advanced statistics.
+%D We no longer use the pure \TEX\ variant. In due time we will report some more
+%D advanced statistics.
 %D
 %D \starttyping
 %D \showhyphens{dohyphenatedword}
@@ -1104,11 +1074,10 @@
 %D \macros
 %D   {processtokens}
 %D
-%D We fully agree with (most) typographers that inter||letter
-%D spacing is only permitted in fancy titles, we provide a
-%D macro that can be used to do so. Because this is
-%D (definitely and fortunately) no feature of \TEX, we have to
-%D step through the token list ourselves.
+%D We fully agree with (most) typographers that inter||letter spacing is only
+%D permitted in fancy titles, we provide a macro that can be used to do so. Because
+%D this is (definitely and fortunately) no feature of \TEX, we have to step through
+%D the token list ourselves.
 %D
 %D \starttyping
 %D \processtokens {before} {between} {after} {space} {tokens}
@@ -1126,8 +1095,8 @@
 %D
 %D \getbuffer
 %D
-%D The list of tokens may contain spaces, while \type{\\},
-%D \type{{}} and \type{\ } are handled as space too.
+%D The list of tokens may contain spaces, while \type {\\}, \type {{}} and \type {\
+%D } are handled as space too.
 
 \unexpanded\def\processtokens#1#2#3#4#5%
   {\begingroup
@@ -1171,20 +1140,18 @@
 %D \macros
 %D   {doboundtext}
 %D
-%D Sometimes there is not enough room to show the complete
-%D (line of) text. In such a situation we can strip of some
-%D characters by using \type{\doboundtext}. When the text is
-%D wider than the given width, it's split and the third
-%D argument is appended. When the text to be checked is packed
-%D in a command, we'll have to use \type{\expandafter}.
+%D Sometimes there is not enough room to show the complete (line of) text. In such a
+%D situation we can strip of some characters by using \type {\doboundtext}. When the
+%D text is wider than the given width, it's split and the third argument is
+%D appended. When the text to be checked is packed in a command, we'll have to use
+%D \type {\expandafter}.
 %D
 %D \starttyping
 %D \doboundtext{a very, probably to long, text}{3cm}{...}
 %D \stoptyping
 %D
-%D When calculating the room needed, we take the width of the
-%D third argument into account, which leads to a bit more
-%D complex macro than needed at first sight.
+%D When calculating the room needed, we take the width of the third argument into
+%D account, which leads to a bit more complex macro than needed at first sight.
 
 \def\dodoboundtext#1%
   {\setbox\scratchboxone\hbox{#1}%
@@ -1205,18 +1172,17 @@
 %D \macros
 %D   {limitatetext}
 %D
-%D A bit more beautiful alternative for the previous command is
-%D the next one. This command is more robust because we let
-%D \TEX\ do most of the job. The previous command works better
-%D on text that cannot be hyphenated.
+%D A bit more beautiful alternative for the previous command is the next one. This
+%D command is more robust because we let \TEX\ do most of the job. The previous
+%D command works better on text that cannot be hyphenated.
 %D
 %D \starttyping
 %D \limitatetext {text}  {width} {sentinel}
 %D \limitatetext {text} {-width} {prelude}
 %D \stoptyping
 %D
-%D When no width is given, the whole text comes available. The
-%D sentinel is optional. This is about the third version.
+%D When no width is given, the whole text comes available. The sentinel is optional.
+%D This is about the third version.
 
 \ifdefined\fakecompoundhyphen\else \let\fakecompoundhyphen\relax      \fi
 \ifdefined\veryraggedright   \else \def\veryraggedright{\raggedright} \fi
@@ -1477,10 +1443,9 @@
 %D \macros
 %D   {sbox}
 %D
-%D This is a rather strange command. It grabs some box content
-%D and and limits the size to the height and depth of a
-%D \type{\strut}. The resulting bottom||alligned box can be used
-%D aside other ones, without disturbing the normal baseline
+%D This is a rather strange command. It grabs some box content and and limits the
+%D size to the height and depth of a \type {\strut}. The resulting bottom||alligned
+%D box can be used aside other ones, without disturbing the normal baseline
 %D distance.
 %D
 %D \startbuffer
@@ -1496,10 +1461,9 @@
 %D \getbuffer
 %D \stopexample
 %D
-%D Before displaying the result we added some skip, otherwise
-%D the first two lines would have ended up in the text. This
-%D macro can be useful when building complicated menus, headers
-%D and footers and|/|or margin material.
+%D Before displaying the result we added some skip, otherwise the first two lines
+%D would have ended up in the text. This macro can be useful when building
+%D complicated menus, headers and footers and|/|or margin material.
 
 \unexpanded\def\sbox
   {\vbox\bgroup
@@ -1533,8 +1497,7 @@
 %D \macros
 %D   {struttedbox}
 %D
-%D This boxing macro limits the height and depth to those of
-%D a strut.
+%D This boxing macro limits the height and depth to those of a strut.
 
 \unexpanded\def\struttedbox
   {\hpack\bgroup
@@ -1549,9 +1512,8 @@
 %D \macros
 %D   {topskippedbox}
 %D
-%D This macro compensates the difference between the topskip
-%D and strutheight. Watch how we preserve the depth when it
-%D equals strutdepth.
+%D This macro compensates the difference between the topskip and strutheight. Watch
+%D how we preserve the depth when it equals strutdepth.
 
 \unexpanded\def\topskippedbox
   {\hpack\bgroup\dowithnextboxcs\syst_boxes_topskippedbox_finish\hbox}
@@ -1565,13 +1527,12 @@
 %D \macros
 %D   {centeredbox, centerednextbox}
 %D
-%D Here is another strange one. This one offers a sort of overlay
-%D with positive or negative offsets. This command can be used
-%D in well defined areas where no offset options are available.
-%D We first used it when building a button inside the margin
-%D footer, where the button should have a horizontal offset and
-%D should be centered with respect to the surrounding box. The
-%D last of the three examples we show below says:
+%D Here is another strange one. This one offers a sort of overlay with positive or
+%D negative offsets. This command can be used in well defined areas where no offset
+%D options are available. We first used it when building a button inside the margin
+%D footer, where the button should have a horizontal offset and should be centered
+%D with respect to the surrounding box. The last of the three examples we show below
+%D says:
 %D
 %D \starttyping
 %D \vsize=3cm
@@ -1581,8 +1542,8 @@
 %D      {\vrule width \hsize height \vsize}}}
 %D \stoptyping
 %D
-%D Here the \type{\ruledvbox} just shows the surrounding box
-%D and \type{\vrule} is used to show the centered box.
+%D Here the \type {\ruledvbox} just shows the surrounding box and \type {\vrule} is
+%D used to show the centered box.
 %D
 %D \def\AnExample#1#2%
 %D   {\vsize=3cm
@@ -1599,14 +1560,12 @@
 %D \stopcombination
 %D \stoplinecorrection
 %D
-%D This command takes two optional arguments: \type{width} and
-%D \type{height}. Observing readers can see that we use \TEX's
-%D own scanner for grabbing these arguments: \type{#1#} reads
-%D everyting till the next brace and passes it to both rules.
-%D The setting of the box dimensions at the end is needed for
-%D special cases. The dimensions of the surrounding box are kept
-%D intact. This commands handles positive and negative
-%D dimensions (which is why we need two boxes with rules).
+%D This command takes two optional arguments: \type {width} and \type {height}.
+%D Observing readers can see that we use \TEX's own scanner for grabbing these
+%D arguments: \type {#1#} reads everyting till the next brace and passes it to both
+%D rules. The setting of the box dimensions at the end is needed for special cases.
+%D The dimensions of the surrounding box are kept intact. This commands handles
+%D positive and negative dimensions (which is why we need two boxes with rules).
 
 \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
@@ -1666,8 +1625,8 @@
 %D \centerbox <optional specs> {content}
 %D \stoptyping
 %D
-%D When omitted, the current \type {\hsize} and \type
-%D {\vsize} are used. Local dimensions are supported.
+%D When omitted, the current \type {\hsize} and \type {\vsize} are used. Local
+%D dimensions are supported.
 
 \unexpanded\def\centerbox#1#%   optional height +/-dimen width +/-dimen
   {\bgroup
@@ -1684,26 +1643,20 @@
 %D \macros
 %D   {setrigidcolumnhsize,rigidcolumnbalance,rigidcolumnlines}
 %D
-%D These macros are copied from the \TEX book, page~397, and
-%D extended by a macro that sets the \type{\hsize}.
+%D These macros are copied from the \TEX book, page~397, and extended by a macro
+%D that sets the \type {\hsize}.
 %D
 %D \starttyping
 %D \setrigidcolumnhsize {total width} {distance} {n}
 %D \rigidcolumnbalance  {box}
 %D \stoptyping
 %D
-%D Both these macros are for instance used in typesetting
-%D footnotes.
-%D
-%D Men kan het proces van breken enigzins beinvloeden met de
-%D volgende twee switches:
+%D Both these macros are for instance used in typesetting footnotes. The following
+%D flags influence the process.
 
 \newif\ifalignrigidcolumns
 \newif\ifstretchrigidcolumns
 \newif\iftightrigidcolumns    % if true: just a vbox, no depth/noflines/gridsnap corrrections
-
-%D De eerste switch bepaald het uitlijnen, de tweede rekt de
-%D individuele kolommen op naar \type{\vsize}.
 
 \unexpanded\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
   {\xdef\savedrigidhsize{\the\hsize}%
@@ -1791,9 +1744,8 @@
 %D \macros
 %D   {startvboxtohbox,stopvboxtohbox,convertvboxtohbox}
 %D
-%D Here is another of Knuth's dirty tricks, as presented on
-%D pages 398 and 399 of the \TEX book. These macros can be used
-%D like:
+%D Here is another of Knuth's dirty tricks, as presented on pages 398 and 399 of the
+%D \TEX book. These macros can be used like:
 %D
 %D \starttyping
 %D \vbox
@@ -1809,14 +1761,14 @@
 %D   \egroup
 %D \stoptyping
 %D
-%D These macros are used in reformatting footnotes, so they do
-%D what they're meant for.
+%D These macros are used in reformatting footnotes, so they do what they're meant
+%D for.
 
 \newdimen\vboxtohboxslack
 \newdimen\hboxestohboxslack
 
-% Create line and fake height of paragraph by messign with heights:
-% a nice hack by DEK himself.
+%D Create line and fake height of paragraph by messign with heights: a nice hack by
+%D DEK himself.
 
 %\unexpanded\def\setvboxtohbox
 %  {\bgroup
@@ -1933,8 +1885,8 @@
 %D \macros
 %D   {unhhbox}
 %D
-%D The next macro is used in typesetting inline headings.
-%D Let's first look at the macro and then show an example.
+%D The next macro is used in typesetting inline headings. Let's first look at the
+%D macro and then show an example.
 
 \newbox   \unhhedbox
 \newbox   \hhbox
@@ -1977,10 +1929,9 @@
    \afterassignment\dohboxofvbox
    \scratchcounter=}
 
-%D This macro can be used to break a paragraph apart and treat
-%D each line seperately, for instance, making it clickable. The
-%D main complication is that we want to be able to continue the
-%D paragraph, something that's needed in the in line section
+%D This macro can be used to break a paragraph apart and treat each line seperately,
+%D for instance, making it clickable. The main complication is that we want to be
+%D able to continue the paragraph, something that's needed in the in line section
 %D headers.
 %D
 %D \startbuffer
@@ -1999,23 +1950,22 @@
 %D
 %D \typebuffer
 %D
-%D Not that nice a definition, but effective. Note the stretch
-%D we've build in the line that connects the two paragraphs.
+%D Not that nice a definition, but effective. Note the stretch we've build in the
+%D line that connects the two paragraphs.
 
 %D \macros
 %D   {doifcontent}
 %D
-%D When processing depends on the availability of content, one
-%D can give the next macro a try.
+%D When processing depends on the availability of content, one can give the next
+%D macro a try.
 %D
 %D \starttyping
 %D \doifcontent{pre content}{post content}{no content}\somebox
 %D \stoptyping
 %D
-%D Where \type{\somebox} is either a \type{\hbox} or
-%D \type{\vbox}. If the dimension of this box suggest some
-%D content, the resulting box is unboxed and surrounded by the
-%D first two arguments, else the third arguments is executed.
+%D Where \type {\somebox} is either a \type {\hbox} or \type {\vbox}. If the
+%D dimension of this box suggest some content, the resulting box is unboxed and
+%D surrounded by the first two arguments, else the third arguments is executed.
 
 \unexpanded\def\doifcontent#1#2#3%
   {\dowithnextbox
@@ -2049,17 +1999,17 @@
 %D
 %D \getbuffer
 %D
-%D Where the last call of course does not show up in this
-%D document, but definitely generates a confusing message.
+%D Where the last call of course does not show up in this document, but definitely
+%D generates a confusing message.
 
 %D \macros
 %D   {processboxes}
 %D
-%D The next macro gobble boxes and is for instance used for
-%D overlays. First we show the general handler.
+%D The next macro gobble boxes and is for instance used for overlays. First we show
+%D the general handler.
 
-% we cannot use \futurelet here as we want to skip spaces between
-% boxes (see startoverlay for an example usage)
+% We cannot use \futurelet here as we want to skip spaces between boxes (see
+% startoverlay for an example usage)
 
 % \newbox\processbox % public : this is the one where \nextbox's end up in
 %
@@ -2184,8 +2134,7 @@
 %D \hbox{\fakebox0}
 %D \stoptyping
 %D
-%D returns an empty box with the dimensions of the box
-%D specified, here being zero.
+%D returns an empty box with the dimensions of the box specified, here being zero.
 
 \unexpanded\def\fakebox
   {\bgroup
@@ -2210,10 +2159,9 @@
 %D \rbox{text ...}
 %D \stoptyping
 %D
-%D Are similar to \type {\vbox}, which means that they also
-%D accept something like \type{to 3cm}, but align to the left,
-%D middle and right. These box types can be used to typeset
-%D paragraphs.
+%D Are similar to \type {\vbox}, which means that they also accept something like
+%D \type {to 3cm}, but align to the left, middle and right. These box types can be
+%D used to typeset paragraphs.
 
 \def\syst_boxes_lrc_process#1{\bgroup\forgetall\let\\\endgraf#1\let\next}
 
@@ -2225,8 +2173,8 @@
 \unexpanded\def\ctop#1#{\vtop#1\syst_boxes_lrc_process\raggedcenter}
 \unexpanded\def\rtop#1#{\vtop#1\syst_boxes_lrc_process\raggedright }
 
-%D The alternatives \type {\tbox} and \type {\bbox} can be used
-%D to properly align boxes, like in:
+%D The alternatives \type {\tbox} and \type {\bbox} can be used to properly align
+%D boxes, like in:
 %D
 %D \setupexternalfigures[directory={../sample}]
 %D \startbuffer
@@ -2288,16 +2236,15 @@
 %D \macros
 %D   {boxofsize}
 %D
-%D Sometimes we need to construct a box with a height or
-%D width made up of several dimensions. Instead of cumbersome
-%D additions, we can use:
+%D Sometimes we need to construct a box with a height or width made up of several
+%D dimensions. Instead of cumbersome additions, we can use:
 %D
 %D \starttyping
 %D \boxofsize \vbox 10cm 3cm -5cm {the text to be typeset}
 %D \stoptyping
 %D
-%D This example demonstrates that one can use positive and
-%D negative values. Dimension registers are also accepted.
+%D This example demonstrates that one can use positive and negative values.
+%D Dimension registers are also accepted.
 
 \newdimen\sizeofbox
 
@@ -2527,8 +2474,8 @@
 %D \macros
 %D   {initializeboxstack,savebox,foundbox}
 %D
-%D At the cost of some memory, but saving box registers, we
-%D have implemented a box repository.
+%D At the cost of some memory, but saving box registers, we have implemented a box
+%D repository.
 %D
 %D \starttyping
 %D \initializeboxstack{one}
@@ -2665,9 +2612,8 @@
 %D \macros
 %D   {removedepth, obeydepth}
 %D
-%D While \type {\removedepth} removes the preceding depth,
-%D \type {\obeydepth} makes sure we have depth. Both macros
-%D leave the \type {\prevdepth} untouched.
+%D While \type {\removedepth} removes the preceding depth, \type {\obeydepth} makes
+%D sure we have depth. Both macros leave the \type {\prevdepth} untouched.
 
 \unexpanded\def\removedepth
   {\ifvmode
@@ -2700,8 +2646,8 @@
 %D \macros
 %D   {makestrutofbox}
 %D
-%D This macro sets the dimensions of a box to those of a strut. Sort of obsolete
-%D so it will go away.
+%D This macro sets the dimensions of a box to those of a strut. Sort of obsolete so
+%D it will go away.
 
 \unexpanded\def\makestrutofbox % not used
   {\afterassignment\syst_boxes_makestrutofbox\c_boxes_register}
@@ -2714,9 +2660,8 @@
 %D \macros
 %D   {raisebox,lowerbox}
 %D
-%D Some more box stuff, related to positioning (under
-%D construction). Nice stuff for a tips and tricks maps
-%D article.
+%D Some more box stuff, related to positioning (under construction). Nice stuff for
+%D a tips and tricks maps article.
 %D
 %D \starttyping
 %D \raisebox{100pt}\hbox{test}

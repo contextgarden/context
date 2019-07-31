@@ -1,0 +1,625 @@
+%D \module
+%D   [       file=context,
+%D        version=2019.07.24, % 2008.28.10, % 1995.10.10,
+%D          title=\CONTEXT,
+%D       subtitle=\CONTEXT\ Format Generation,
+%D         author=Hans Hagen, % ɦɑns ɦɑˈχən
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% http://build.contextgarden.net/waterfall?tag=c/lua(meta)tex
+
+%D Welcome to context, pronounced as kontekst (rather dutch) and not as conτεχt.
+
+\catcode`\{=1 \catcode`\}=2 \catcode`\#=6
+
+%D From the next string (which is set by the script that assembles the distribution)
+%D later on we will calculate a number that can be used by use modules to identify
+%D the feature level. Starting with version 2004.8.30 the low level interface is
+%D english. Watch out and adapt your styles an modules.
+
+% \everypar{\writestatus{!!!!}{some spurious input in line \the\inputlineno}\wait}
+
+%D The order of loading will change when all modules have been cleaned up and the
+%D dependencies are more consistent. Beware, the version number has to match \type
+%D {YYYY.MM.DD HH:MM} format.
+
+\edef\contextformat {\jobname}
+\edef\contextversion{2019.07.31 18:05}
+\edef\contextkind   {beta}
+
+%D Kind of special:
+
+\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
+
+%D For those who want to use this:
+
+\let\fmtname   \contextformat
+\let\fmtversion\contextversion
+
+%D Loading:
+
+\edef\mksuffix   {mkiv}
+\edef\contextmark{MKIV}
+
+\ifx\normalinput\undefined \let\normalinput\input \fi
+
+\def\loadmarkfile#1{\normalinput{#1.\mksuffix}}
+\def\loadmkivfile#1{\normalinput{#1.mkiv}}
+\def\loadmkvifile#1{\normalinput{#1.mkvi}}
+\def\loadmkxlfile#1{\normalinput{#1.mkxl}}
+\def\loadmklxfile#1{\normalinput{#1.mklx}}
+
+% \def\loadmkxlfile#1{\normalinput{#1.mkiv}}
+% \def\loadmklxfile#1{\normalinput{#1.mkvi}}
+
+%D First we load the system modules. These implement a lot of manipulation macros.
+%D We start with setting up some basic \TEX\ machinery.
+
+\loadmkxlfile{syst-ini}
+
+%D We just quit if new functionality is expected.
+
+\ifnum\luatexversion<200 % also change message
+    \writestatus{!!!!}{Your luametatex binary is too old, you need at least version 2.00!}
+    \expandafter\end
+\fi
+
+%D Some checking (more primitives are now defined):
+
+\ifdefined\defaultinterface   \else \def\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \let\messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \def\defaultlanguagetag{en}              \fi
+
+%D There is only this way to pass the version info to \LUA\ (currently). Hm, we could
+%D now put it into the environment.
+
+\newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion}
+\newtoks\contextkindtoks    \contextkindtoks   \expandafter{\contextkind}
+
+% \normaleverypar{\wait} % uncomment for test of funny injections
+
+%D Now the more fundamental code gets defined.
+
+\loadmarkfile{norm-ctx}
+\loadmarkfile{syst-pln}
+\loadmarkfile{syst-mes}
+
+\loadmarkfile{luat-cod}
+\loadmarkfile{luat-bas}
+\loadmarkfile{luat-lib}
+\loadmarkfile{luat-soc}
+
+\loadmarkfile{catc-ini}
+\loadmarkfile{catc-act}
+\loadmarkfile{catc-def}
+\loadmarkfile{catc-ctx}
+\loadmarkfile{catc-sym}
+
+\loadmarkfile{toks-ini}
+\loadmarkfile{cldf-ini}
+
+% \tracecatcodetables
+
+%D From here on we have \unexpanded being \normalprotected, as we already had
+%D \type {\unexpanded} long before etex came around.
+
+\loadmarkfile{luat-ini}
+\loadmarkfile{toks-scn}
+
+\loadmkxlfile{syst-aux} % LMTX
+\loadmarkfile{syst-lua}
+\loadmarkfile{syst-con}
+
+\loadmarkfile{syst-fnt}
+\loadmarkfile{syst-rtp}
+
+\loadmarkfile{luat-usr}
+
+\loadmkvifile{file-ini}
+\loadmkvifile{file-res}
+\loadmkvifile{file-lib}
+
+\loadmkxlfile{core-lmt} % LMTX
+
+%D This needs more checking for clashes:
+%D
+%D \starttyping
+%D \doifelsefileexists{l-macro-imp-codes.lua}{\registerctxluafile{l-macro-imp-codes}{}}{}
+%D \stoptyping
+
+\loadmarkfile{supp-dir}
+
+\loadmarkfile{char-utf} % generic code (i.e. not much tex) ... could become unic-ini
+\loadmarkfile{char-ini} % tex / context specific
+\loadmarkfile{char-act} % even more specific
+
+\loadmarkfile{mult-ini}
+\loadmarkfile{mult-sys}
+\loadmkxlfile{mult-aux} % LMTX
+\loadmarkfile{mult-def}
+\loadmarkfile{mult-chk}
+\loadmkvifile{mult-dim}
+
+\loadmarkfile{cldf-int} % interface
+
+\loadmarkfile{trac-ctx} % maybe move up
+
+% \loadmarkfile{luat-ini}
+
+\loadmarkfile{toks-tra}
+\loadmarkfile{toks-aux}
+%loadmarkfile{toks-map} % obsolete, never used
+
+\loadmarkfile{attr-ini}
+
+\loadmarkfile{core-ini}
+\loadmarkfile{core-env}
+
+\loadmarkfile{layo-ini}
+
+\loadmarkfile{node-ini}
+
+\loadmarkfile{cldf-bas} % basics / depends on nodes
+
+\loadmkivfile{node-fin}
+\loadmarkfile{node-mig}
+%loadmarkfile{node-pag}
+
+\loadmkxlfile{driv-ini} % LMTX
+
+\loadmkxlfile{back-ini}
+\loadmarkfile{back-res}
+\loadmarkfile{back-trf}
+\loadmkxlfile{back-out}
+
+\loadmarkfile{attr-col}
+\loadmarkfile{attr-lay}
+\loadmarkfile{attr-neg}
+\loadmarkfile{attr-eff}
+\loadmarkfile{attr-mkr}
+
+\loadmarkfile{trac-tex}
+\loadmarkfile{trac-deb} % will move up
+
+%loadmarkfile{blob-ini} % not to be used, we only use a helper
+
+\loadmkxlfile{supp-box} % LMTX
+
+\loadmarkfile{supp-ran}
+\loadmarkfile{supp-mat}
+
+\loadmarkfile{core-uti}
+\loadmkvifile{file-job}
+
+\loadmarkfile{anch-pos}
+
+\loadmarkfile{typo-ini}
+\loadmarkfile{typo-lin}
+\loadmarkfile{typo-bld} % par builders
+
+\loadmarkfile{typo-inj}
+
+\loadmkvifile{file-syn}
+\loadmkvifile{file-mod}
+
+\loadmarkfile{core-sys}
+\loadmarkfile{core-con}
+
+\loadmarkfile{cont-fil}
+
+\loadmarkfile{regi-ini}
+\loadmarkfile{enco-ini}
+\loadmarkfile{hand-ini}
+
+\loadmkxlfile{lang-ini} % LMTX
+\loadmarkfile{lang-hyp} % also loads dis
+\loadmkxlfile{lang-lab} % LMTX
+
+\loadmarkfile{unic-ini}
+
+% \loadmarkfile{core-uti}
+\loadmarkfile{core-two}
+\loadmarkfile{core-dat}
+
+\loadmkxlfile{colo-ini} % LMTX
+\loadmarkfile{colo-grp} % optional
+\loadmarkfile{colo-ext}
+
+\loadmarkfile{node-bck} % overloads anch-pgr (experimental and undocumented)
+
+\loadmarkfile{pack-cut}
+
+\loadmarkfile{lang-mis}
+\loadmarkfile{lang-url}
+\loadmarkfile{lang-def}
+
+% \loadmkvifile{file-job} % why so late?
+
+\loadmarkfile{symb-ini} % brrr depends on fonts
+
+\loadmarkfile{sort-ini}
+
+\loadmkvifile{pack-mis}
+\loadmkxlfile{pack-rul} % LMTX
+\loadmarkfile{pack-mrl}
+\loadmkvifile{pack-bck}
+\loadmarkfile{pack-fen}
+
+\loadmarkfile{lxml-ini}
+\loadmarkfile{lxml-sor}
+
+\loadmkvifile{typo-prc}
+
+% \loadmarkfile{anch-pos}
+
+\loadmkvifile{strc-ini}
+\loadmarkfile{strc-tag}
+\loadmarkfile{strc-doc}
+\loadmarkfile{strc-num}
+\loadmarkfile{strc-mar}
+\loadmarkfile{strc-sbe}
+\loadmkvifile{strc-lst}
+\loadmarkfile{strc-sec}
+\loadmarkfile{strc-pag} % hm, depends on core-num
+\loadmarkfile{strc-ren}
+\loadmarkfile{strc-xml}
+\loadmarkfile{strc-def} % might happen later
+\loadmkvifile{strc-ref}
+%loadmarkfile{strc-reg}
+\loadmkvifile{strc-lev} % experiment
+
+\loadmarkfile{spac-hor}
+\loadmarkfile{spac-ali}
+\loadmarkfile{spac-flr}
+\loadmkxlfile{spac-ver} % LMTX beware, hooks into strc-sec
+\loadmarkfile{spac-lin}
+\loadmarkfile{spac-pag}
+\loadmarkfile{spac-par}
+\loadmarkfile{spac-def}
+\loadmkvifile{spac-prf}
+\loadmarkfile{spac-grd}
+
+%loadmarkfile{anch-pos}
+
+\loadmkvifile{scrn-ini}
+\loadmkvifile{scrn-ref}
+
+\loadmarkfile{pack-obj}
+
+\loadmklxfile{strc-itm} % LMTX
+
+\loadmkvifile{strc-con}
+\loadmkvifile{strc-des}
+\loadmkvifile{strc-enu}
+
+\loadmarkfile{strc-ind}
+\loadmarkfile{strc-lab}
+\loadmarkfile{strc-syn}
+
+% \loadmarkfile{core-sys}
+
+\loadmarkfile{page-var}
+\loadmkvifile{page-otr}
+\loadmarkfile{page-ini}
+\loadmarkfile{page-ins}
+\loadmarkfile{page-fac}
+\loadmarkfile{page-brk}
+\loadmarkfile{page-col}
+\loadmarkfile{page-inf}
+\loadmarkfile{page-flt}
+\loadmarkfile{page-bck}
+\loadmarkfile{page-not}
+\loadmarkfile{page-one}
+\loadmarkfile{page-lay}
+\loadmkvifile{page-box}
+\loadmkvifile{page-txt}
+\loadmarkfile{page-sid} % when
+
+\loadmkvifile{strc-flt}
+
+\loadmarkfile{page-pst}
+\loadmkvifile{page-mbk}
+%loadmarkfile{page-mul} % \usecolumns[old-multicolumns]
+\loadmarkfile{page-mix}
+\loadmarkfile{page-smp}
+%loadmarkfile{page-set} % \usecolumns[old-columnsets]
+\loadmarkfile{page-cst}
+\loadmarkfile{page-pcl} % new
+\loadmarkfile{pack-lyr}
+\loadmarkfile{pack-pos}
+\loadmkvifile{page-mak}
+
+\loadmarkfile{strc-reg} % uses mixed columns
+
+\loadmkvifile{page-lin}
+\loadmarkfile{page-par}
+\loadmarkfile{typo-pag}
+\loadmarkfile{typo-mar}
+\loadmarkfile{typo-itm}
+
+\loadmarkfile{buff-ini}
+\loadmkxlfile{buff-ver} % LMTX
+\loadmkvifile{buff-par}
+
+\loadmarkfile{buff-imp-tex}        % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-mp}         % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-lua}        % optional as also runtime if not loaded
+\loadmarkfile{buff-imp-xml}        % optional as also runtime if not loaded
+
+\loadmarkfile{buff-imp-parsed-xml} % optional
+%loadmarkfile{buff-imp-parsed-lua} % optional
+
+\loadmarkfile{strc-blk}
+
+\loadmarkfile{page-imp}
+\loadmkvifile{page-sel} % optional
+\loadmkvifile{page-inj} % optional
+
+\loadmkvifile{scrn-pag}
+\loadmkvifile{scrn-wid}
+\loadmkvifile{scrn-but}
+\loadmkvifile{scrn-bar}
+
+\loadmarkfile{page-com} % optional (after scrn-pag)
+
+\loadmarkfile{strc-bkm} % bookmarks
+
+\loadmarkfile{java-ini}
+
+\loadmkvifile{scrn-fld}
+\loadmkvifile{scrn-hlp}
+
+\loadmarkfile{char-enc} % will move up
+
+\loadmkvifile{font-lib} % way too late but after language
+\loadmklxfile{font-fil} % LMTX
+\loadmkvifile{font-var}
+\loadmkvifile{font-fea}
+\loadmklxfile{font-mat} % LMTX
+\loadmklxfile{font-ini} % LMTX
+\loadmklxfile{font-sym} % LMTX
+\loadmklxfile{font-sty} % LMTX
+\loadmkvifile{font-set}
+\loadmklxfile{font-emp} % LMTX
+\loadmarkfile{font-pre}
+\loadmarkfile{font-unk}
+\loadmarkfile{font-tra}
+\loadmarkfile{font-chk}
+\loadmarkfile{font-uni}
+\loadmkvifile{font-col}
+\loadmkvifile{font-gds}
+\loadmkvifile{font-aux}
+\loadmkvifile{font-sel}
+
+\loadmarkfile{typo-tal}
+\loadmarkfile{typo-par} % par builders (uses fonts)
+
+\loadmarkfile{tabl-com}
+\loadmarkfile{tabl-pln}
+
+\loadmarkfile{tabl-tab} % thrd-tab stripped and merged
+
+\loadmkxlfile{tabl-tbl} % LMTX
+\loadmkxlfile{tabl-ntb} % LMTX
+\loadmarkfile{tabl-nte}
+\loadmarkfile{tabl-ltb}
+\loadmarkfile{tabl-frm}
+\loadmarkfile{tabl-tsp}
+\loadmkvifile{tabl-xtb}
+\loadmarkfile{tabl-mis}
+
+\loadmarkfile{typo-lan}
+
+\loadmarkfile{lxml-css}
+
+\loadmarkfile{spac-chr} % depends on fonts
+
+\loadmarkfile{blob-ini} % not to be used, we only use a helper
+
+\loadmarkfile{trac-vis}
+\loadmarkfile{trac-jus}
+
+\loadmarkfile{typo-cln}
+\loadmarkfile{typo-wrp}
+\loadmarkfile{typo-spa}
+\loadmarkfile{typo-krn}
+\loadmkvifile{typo-itc}
+\loadmarkfile{typo-dir}
+\loadmarkfile{typo-brk}
+\loadmarkfile{typo-cap}
+\loadmarkfile{typo-dig}
+\loadmarkfile{typo-rep}
+\loadmkvifile{typo-txt}
+\loadmarkfile{typo-drp}
+\loadmarkfile{typo-fln}
+\loadmarkfile{typo-sus}
+\loadmarkfile{typo-lig}
+\loadmarkfile{typo-chr}
+\loadmarkfile{typo-rub}
+\loadmkivfile{typo-fkr}
+\loadmkivfile{typo-pnc}
+
+\loadmklxfile{type-ini} % LMTX
+\loadmarkfile{type-set}
+
+\loadmarkfile{scrp-ini}
+
+\loadmarkfile{symb-emj}
+
+\loadmarkfile{lang-wrd} % can be optional (discussion with mm sideeffect)
+\loadmarkfile{lang-rep} % can be optional (bt 2013 side effect)
+
+\loadmarkfile{prop-ini} % only for downward compatibility
+
+\loadmkxlfile{mlib-ctx} % messy order
+
+\loadmarkfile{meta-ini}
+\loadmarkfile{meta-tex}
+\loadmarkfile{meta-fun}
+\loadmarkfile{meta-pag}
+\loadmarkfile{meta-grd}
+\loadmarkfile{meta-fnt}
+\loadmarkfile{meta-nod}
+\loadmarkfile{meta-lua}
+\loadmkxlfile{meta-mac}
+
+\loadmarkfile{page-mrk} % depends on mp
+
+\loadmarkfile{page-flw}
+\loadmarkfile{page-spr}
+\loadmarkfile{page-plg}
+\loadmarkfile{page-str}
+
+\loadmarkfile{anch-pgr} % can be moved up (nicer for dependencies)
+\loadmkvifile{anch-bck}
+\loadmarkfile{anch-tab} % overloads tabl-tbl
+\loadmarkfile{anch-bar}
+%loadmarkfile{anch-snc} % when needed this one will be redone
+
+\loadmarkfile{math-ini} % way after font-pre !
+\loadmarkfile{math-pln}
+\loadmarkfile{math-for}
+\loadmarkfile{math-def} % also saves some meanings
+\loadmarkfile{math-ali}
+%loadmarkfile{math-arr}
+\loadmkvifile{math-stc}
+\loadmarkfile{math-frc}
+\loadmarkfile{math-mis}
+\loadmarkfile{math-scr}
+\loadmarkfile{math-int}
+\loadmarkfile{math-del}
+\loadmarkfile{math-fen}
+\loadmkvifile{math-acc}
+\loadmkvifile{math-rad}
+\loadmarkfile{math-inl}
+\loadmarkfile{math-dis}
+%loadmarkfile{math-lan}
+
+%loadmarkfile{phys-dim} % moved to after typo-scr
+
+\loadmarkfile{strc-mat}
+
+\loadmarkfile{chem-ini}
+\loadmarkfile{chem-str}
+
+\loadmarkfile{typo-scr}
+\loadmarkfile{phys-dim}
+
+\loadmarkfile{node-rul} % beware, defined \underbar so after math
+\loadmkvifile{font-sol} % font solutions
+
+\loadmkvifile{strc-not}
+\loadmkvifile{strc-lnt}
+\loadmkivfile{strc-tnt}
+\loadmkivfile{strc-usr}
+
+\loadmarkfile{pack-com}
+\loadmarkfile{typo-del}
+
+\loadmarkfile{grph-trf}
+\loadmarkfile{grph-inc}
+\loadmarkfile{grph-fig}
+\loadmarkfile{grph-raw}
+\loadmarkfile{grph-rul}
+\loadmarkfile{grph-pat}
+
+\loadmarkfile{pack-box}
+\loadmarkfile{pack-bar}
+\loadmarkfile{page-app}
+\loadmarkfile{meta-fig}
+
+\loadmarkfile{page-ffl}
+
+\loadmarkfile{lang-spa} % will become obsolete
+
+\loadmarkfile{typo-ovl} % fuzzy project (tracing) code
+
+% old bibtex support: (will be m-oldbibtex.mkiv)
+
+% \loadmarkfile{bibl-bib}
+% \loadmarkfile{bibl-tra}
+
+% new bibtex support:
+
+\loadmarkfile{publ-ini}
+\loadmarkfile{publ-tra}
+\loadmarkfile{publ-xml}
+\loadmarkfile{publ-old}
+
+%loadmarkfile{x-xtag}  % no longer preloaded
+
+\loadmarkfile{meta-xml}
+
+\loadmarkfile{cont-log}
+
+% \loadmarkfile{task-ini}
+
+\loadmarkfile{cldf-ver} % verbatim, this can come late
+\loadmarkfile{cldf-com} % commands, this can come late
+
+\loadmarkfile{core-ctx} % this order might change but we need to check depedencies / move to another namespace
+
+\loadmarkfile{core-def}
+
+%usemodule[x][res-04] % xml resource libraries
+%usemodule[x][res-08] % rlx runtime conversion
+%usemodule[x][res-12] % rli external indentification
+
+% now we hook in backend code (needs checking)
+
+\loadmkxlfile{driv-shp}
+
+\loadmarkfile{back-exp}
+\loadmkxlfile{back-pdf}
+\loadmkxlfile{back-mps}
+\loadmkxlfile{back-lua}
+
+\loadmarkfile{mlib-pdf}
+\loadmarkfile{mlib-pps}
+\loadmarkfile{meta-pdf}
+\loadmarkfile{meta-blb}
+\loadmarkfile{grph-epd}
+
+\loadmarkfile{math-inc} % an experiment
+\loadmarkfile{publ-inc} % an experiment
+
+\loadmarkfile{task-ini}
+
+\loadmarkfile{syst-cmp} % compatibility stuff moved here
+
+\loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
+
+% \loadmkxlfile{driv-shp}
+
+\appendtoks
+    \setupoutput[pdf]
+\to \everyjob
+
+\setupcurrentlanguage[\defaultlanguagetag]
+
+\prependtoks
+    \ctxlua{statistics.starttiming(statistics)}%
+\to \everyjob
+
+\appendtoks
+    \ctxlua{statistics.stoptiming(statistics)}%
+\to \everyjob
+
+% \appendtoks
+%     \ctxlua{job.prepare()}%
+% \to \everyjob
+
+% \appendtoks
+%     \enabletrackers[*]%
+% \to \everyjob
+
+\appendtoks
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkxl","\contextkind","\contextbanner")}% can become automatic
+\to \everydump
+
+\errorstopmode \dump \endinput

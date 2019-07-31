@@ -40,7 +40,7 @@ local knownlexers  = {
     mkii = "tex",
     bib  = "bibtex",
     cld  = "tex",
-    lua  = "lua",
+    lua  = "lua", lmt = "lua",
     lfg  = "lua", lus = "lua", luv = "lua",
     mp   = "mps",
     mpiv = "mps",

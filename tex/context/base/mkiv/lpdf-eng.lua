@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['lpdf-eng'] = {
     license   = "see context related readme files"
 }
 
-if CONTEXTLMTXMODE > 0 then
-    return
-end
-
 -- Here we plug in the regular luatex image handler. The low level module itself
 -- is hidden from the user.
 

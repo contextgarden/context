@@ -30,13 +30,11 @@
 %D therefore dropped support for this format. Future versions might support more
 %D backends again, but this has a low priority.
 
-\ifdefined\outputmode
-    \outputmode\plusone
-    \let\outputmode\relax
-    \newcount\outputmode
-    \outputmode\plusone
-    \let\normaloutputmode\outputmode
-\fi
+\outputmode\plusone
+\let\outputmode\relax
+\newcount\outputmode
+\outputmode\plusone
+\let\normaloutputmode\outputmode
 
 %D The exact page model depends on the backend so we just define some variables that
 %D are used. A helper at the \LUA\ end will synchronize with the internal variables.
@@ -45,6 +43,9 @@
 \ifdefined\everybackendshipout       \else \newtoks\everybackendshipout       \fi
 \ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
 \ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi
+
+%D In \MKIV\ there is just one backend, \PDF, plus an additional export. We never
+%D came to seperate them, but \LMTX\ might do that.
 
 \installcorenamespace{backend}
 
@@ -64,27 +65,7 @@
     \fi
 \to \everysetupbackend
 
-%D For the moment this is an experiment (defauls is pdf, but we also
-%D have lua, json and mps).
-%D
-%D \starttyping
-%D % \setupoutput[lua]
-%D % \setupoutput[json]
-%D % \setupoutput[mps]
-%D % \setupoutput[none]  % for testing only
-%D % \setupoutput[empty] % for testing only
-%D
-%D \starttext
-%D     \dorecurse{1000}{
-%D         {\tf \red   \samplefile{tufte}} \par
-%D         {\bf \green \samplefile {ward}} \par
-%D         {\sl \blue  \samplefile{davis}} \par
-%D     }
-%D \stoptext
-%D \stoptyping
-
 \unexpanded\def\setupoutput[#1]%
   {\clf_enabledriver{#1}}
-
 
 \protect \endinput

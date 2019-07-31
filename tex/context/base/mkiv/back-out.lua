@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['back-out'] = {
     license   = "see context related readme files"
 }
 
-if CONTEXTLMTXMODE == 0 then
-    return
-end
-
 local type = type
 local loadstring = loadstring
 

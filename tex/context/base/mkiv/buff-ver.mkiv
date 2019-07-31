@@ -140,8 +140,7 @@
 %D \macros
 %D   {definetype,setuptype}
 %D
-%D Specific inline verbatim commands can be defined with the
-%D following command.
+%D Specific inline verbatim commands can be defined with the following command.
 
 \installcorenamespace{type}
 
@@ -158,9 +157,8 @@
 %D \macros
 %D   {definetyping,setuptyping}
 %D
-%D For most users the standard \type{\start}||\type{\stop}||pair
-%D will suffice, but for documentation purposes the next
-%D definition command can be of use:
+%D For most users the standard \type {\start}||\type {\stop}||pair will suffice, but
+%D for documentation purposes the next definition command can be of use:
 %D
 %D \starttyping
 %D \definetyping[extratyping][margin=3em]
@@ -198,31 +196,27 @@
 
 \let\doifvisualizerelse\doifelsevisualizer
 
-%D Verbatim command are very sensitive to argument processing,
-%D which is a direct result of the \CATCODES\ being fixed at
-%D reading time.
+%D Verbatim command are very sensitive to argument processing, which is a direct
+%D result of the \CATCODES\ being fixed at reading time.
 %D
-%D Typesetting inline verbatim can be accomplished by
-%D \type{\type}, which in this sentence was typeset by saying
-%D just \type{\type{\type}}, which in turn was typeset by
-%D \unknown. Using the normal grouping characters \type{{}} is
-%D the most natural way of using this command.
+%D Typesetting inline verbatim can be accomplished by \type {\type}, which in this
+%D sentence was typeset by saying just \type {\type {\type}}, which in turn was
+%D typeset by \unknown. Using the normal grouping characters \type {{}} is the most
+%D natural way of using this command.
 %D
-%D A second, more or less redundant, alternative is delimiting
-%D the argument with an own character. This method was
-%D implemented in the context of a publication in the \MAPS,
-%D where this way of delimiting is recognized by \LATEX\ users.
+%D A second, more or less redundant, alternative is delimiting the argument with an
+%D own character. This method was implemented in the context of a publication in the
+%D \MAPS, where this way of delimiting is recognized by \LATEX\ users.
 %D
-%D The third, more original alternative, is the one using
-%D \type{<<} and \type{>>} as delimiters. This alternative can
-%D be used in situations where slanted typeseting is needed.
-
+%D The third, more original alternative, is the one using \type {<<} and \type {>>}
+%D as delimiters. This alternative can be used in situations where slanted
+%D typeseting is needed.
+%D
 %D \macros
 %D   {type}
 %D
-%D We define \type{\type} as a protected command. This command
-%D has several invocations: grouped, wirt boundary characters,
-%D and with font switches.
+%D We define \type {\type} as a protected command. This command has several
+%D invocations: grouped, wirt boundary characters, and with font switches.
 %D
 %D \starttyping
 %D normal: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
@@ -234,17 +228,14 @@
 %D none: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
 %D \stoptyping
 %D
-%D When writing the manual to \CONTEXT\ and documenting this
-%D source we needed to typeset \type{<<} and \type{>>}. Because
-%D we wanted to do this in the natural way, we've adapted the
-%D original definition a bit. This implementation went through
-%D several live cycles. The final implementation looks a bit
-%D further and treats the lone \type{<<} and \type{>>} a bit
-%D different. The \type {\null} prevents ligatures, which
-%D unfortunately turn up in Lucida fonts.
+%D When writing the manual to \CONTEXT\ and documenting this source we needed to
+%D typeset \type {<<} and \type {>>}. Because we wanted to do this in the natural
+%D way, we've adapted the original definition a bit. This implementation went
+%D through several live cycles. The final implementation looks a bit further and
+%D treats the lone \type {<<} and \type {>>} a bit different. The \type {\null}
+%D prevents ligatures, which unfortunately turn up in Lucida fonts.
 %D
-%D The following lines show what happens when we set
-%D \type {option=commands}.
+%D The following lines show what happens when we set \type {option=commands}.
 %D
 %D \startbuffer
 %D \starttyping
@@ -261,9 +252,8 @@
 %D
 %D \typebuffer
 
-% Beware, the command is supposed to do something like \framed and not
-% manipulate content i.e. it gets no argument but something b/egrouped
-% instead:
+% Beware, the command is supposed to do something like \framed and not manipulate
+% content i.e. it gets no argument but something b/egrouped instead:
 
 \def\buff_verbatim_left_of_type
   {\typeparameter\c!left
@@ -294,38 +284,21 @@
    \let\specialobeyedspace\specialstretchedspace
    \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
 
-\startmkivmode
+\def\buff_verbatim_type_nop
+  {\buff_verbatim_left_of_type
+   \futurelet\next\buff_verbatim_type_one}
 
-    \def\buff_verbatim_type_nop
-      {\buff_verbatim_left_of_type
-       \futurelet\next\buff_verbatim_type_one}
+\def\buff_verbatim_type_one
+  {\ifx\next\bgroup
+     \expandafter\buff_verbatim_type_a
+   \else
+     \expandafter\buff_verbatim_type_two
+   \fi}
 
-    \def\buff_verbatim_type_one
-      {\ifx\next\bgroup
-         \expandafter\buff_verbatim_type_a
-       \else
-         \expandafter\buff_verbatim_type_two
-       \fi}
-
-    \def\buff_verbatim_type_two
-      {\catcode`<=\othercatcode % old precaution
-       \catcode`>=\othercatcode % old precaution
-       \futurelet\next\buff_verbatim_type_three}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \def\buff_verbatim_type_nop
-      {\buff_verbatim_left_of_type
-       \futureexpand\bgroup\buff_verbatim_type_a\buff_verbatim_type_one}
-
-    \def\buff_verbatim_type_one
-      {\catcode`<=\othercatcode % old precaution
-       \catcode`>=\othercatcode % old precaution
-       \futureexpandis<\buff_verbatim_type_b\buff_verbatim_type_c}
-
-\stoplmtxmode
+\def\buff_verbatim_type_two
+  {\catcode`<=\othercatcode % old precaution
+   \catcode`>=\othercatcode % old precaution
+   \futurelet\next\buff_verbatim_type_three}
 
 \def\buff_verbatim_type_three
   {\if\next<%
@@ -396,12 +369,11 @@
 %D \macros
 %D   {obeyhyphens,obeybreakpoints}
 %D
-%D Although it's not clear from the macros, one character
-%D trait of this macros, which are build on top of the support
-%D module, is that they don't hyphenate. We therefore offer
-%D the alternative \type{\typ}. The current implementation
-%D works all right, but a decent hyphenation support of
-%D \type{\tt} text will be implemented soon.
+%D Although it's not clear from the macros, one character trait of this macros,
+%D which are build on top of the support module, is that they don't hyphenate. We
+%D therefore offer the alternative \type{\typ}. The current implementation works all
+%D right, but a decent hyphenation support of \type{\tt} text will be implemented
+%D soon.
 
 \unexpanded\def\specialfixedspace     {\kern\interwordspace\relax}
 \unexpanded\def\specialobeyedspace    {\hskip\interwordspace\relax} % better than spaceskip
@@ -435,13 +407,11 @@
 %D \macros
 %D   {tex,arg,mat,dis,astype}
 %D
-%D Sometimes, for instance when we pass verbatim text as an
-%D argument, the fixed \CATCODES\ interfere with our wishes. An
-%D experimental implementation of character by character
-%D processing of verbatim text did overcome this limitation,
-%D but we've decided not to use that slow and sometimes
-%D troublesome solution. Instead we stick to some 'old'
-%D \CONTEXT\ macros for typesetting typical \TEX\ characters.
+%D Sometimes, for instance when we pass verbatim text as an argument, the fixed
+%D \CATCODES\ interfere with our wishes. An experimental implementation of character
+%D by character processing of verbatim text did overcome this limitation, but we've
+%D decided not to use that slow and sometimes troublesome solution. Instead we stick
+%D to some 'old' \CONTEXT\ macros for typesetting typical \TEX\ characters.
 
 \def\lesscharacter    {<} % obsolete
 \def\morecharacter    {>} % obsolete
@@ -490,32 +460,18 @@
 \let\beginofverbatimlines\relax % hooks
 \let\endofverbatimlines  \relax % hooks
 
-\startmkivmode
+\unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
+  {\begingroup
+   \edef\currenttyping{#1}%
+   \obeylines
+   \futurelet\nexttoken\buff_verbatim_typing_start_indeed}
 
-    \unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
-      {\begingroup
-       \edef\currenttyping{#1}%
-       \obeylines
-       \futurelet\nexttoken\buff_verbatim_typing_start_indeed}
-
-    \def\buff_verbatim_typing_start_indeed
-      {\ifx\nexttoken[%
-         \expandafter\buff_verbatim_typing_start_yes
-       \else
-         \expandafter\buff_verbatim_typing_start_nop
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
-      {\begingroup
-       \edef\currenttyping{#1}%
-       \obeylines
-       \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
-
-\stoplmtxmode
+\def\buff_verbatim_typing_start_indeed
+  {\ifx\nexttoken[%
+     \expandafter\buff_verbatim_typing_start_yes
+   \else
+     \expandafter\buff_verbatim_typing_start_nop
+   \fi}
 
 \unexpanded\def\buff_verbatim_setup_keep_together
   {\edef\p_keeptogether{\typingparameter\c!keeptogether}%
@@ -593,8 +549,8 @@
    \endgroup
    \dorechecknextindentation}
 
-%D Line numbering for files is combined with filtering, while
-%D display verbatim has the ability to continue.
+%D Line numbering for files is combined with filtering, while display verbatim has
+%D the ability to continue.
 %D
 %D \starttyping
 %D \typefile[numbering=file,start=10,stop=12]{test.tex}
@@ -640,10 +596,9 @@
 %D \macros
 %D   {typefile}
 %D
-%D Typesetting files verbatim (for the moment) only supports
-%D colorization of \TEX\ sources as valid option. The other
-%D setup values are inherited from display verbatim.
-%D The implementation of \type{\typefile} is straightforward:
+%D Typesetting files verbatim (for the moment) only supports colorization of \TEX\
+%D sources as valid option. The other setup values are inherited from display
+%D verbatim. The implementation of \type {\typefile} is straightforward:
 
 % [category] [settings] {name} % for historic reasons, all filenames are {}
 
@@ -784,10 +739,9 @@
 
 \unexpanded\def\verbatim#1{\detokenize{#1}}
 
-%D The setups for display verbatim and file verbatim are
-%D shared. One can adapt the extra defined typing environments,
-%D but they also default to the values below. Watch the
-%D alternative escape character.
+%D The setups for display verbatim and file verbatim are shared. One can adapt the
+%D extra defined typing environments, but they also default to the values below.
+%D Watch the alternative escape character.
 
 % \tttf   gives problems with {\tx \type...}
 % \tt\tf  does not adapt to e.g. \bf

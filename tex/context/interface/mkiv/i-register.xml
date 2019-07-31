@@ -4,6 +4,178 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <cd:define name="assignment-setupregister">
+        <cd:assignments list="yes">
+            <cd:parameter name="referencemethod">
+                <cd:constant type="forward"/>
+            </cd:parameter>
+            <cd:parameter name="expansion">
+                <cd:constant type="yes"/>
+                <cd:constant type="no" default="yes"/>
+                <cd:constant type="xml"/>
+            </cd:parameter>
+            <cd:parameter name="ownnumber">
+                <cd:constant type="yes"/>
+                <cd:constant type="no" default="yes"/>
+            </cd:parameter>
+            <cd:parameter name="xmlsetup">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="alternative">
+                <cd:constant type="a"/>
+                <cd:constant type="b"/>
+                <cd:constant type="A"/>
+                <cd:constant type="B"/>
+            </cd:parameter>
+            <cd:parameter name="method">
+                <cd:resolve name="value-sortmethod"/>
+            </cd:parameter>
+            <cd:parameter name="compress">
+                <cd:constant type="yes"/>
+                <cd:constant type="no" default="yes"/>
+                <cd:constant type="all"/>
+                <cd:constant type="packed"/>
+                <cd:constant type="text"/>
+            </cd:parameter>
+            <cd:parameter name="check">
+                <cd:constant type="yes" default="yes"/>
+                <cd:constant type="no"/>
+            </cd:parameter>
+            <cd:parameter name="criterium">
+                <cd:constant type="local"/>
+                <cd:constant type="text"/>
+                <cd:constant type="current"/>
+                <cd:constant type="previous"/>
+                <cd:constant type="all" default="yes"/>
+                <cd:constant type="cd:section"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixseparatorset">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixconversionset">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixstarter">
+                <cd:resolve name="value-starter"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixstopper">
+                <cd:resolve name="value-stopper"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixset">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixsegments">
+                <cd:resolve name="value-prefixsegments"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefixconnector">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="pageprefix">
+                <cd:constant type="yes"/>
+                <cd:constant type="no"/>
+            </cd:parameter>
+            <cd:parameter name="pageseparatorset">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="pageconversionset">
+                <cd:constant type="cd:name"/>
+            </cd:parameter>
+            <cd:parameter name="pagestarter">
+                <cd:resolve name="value-starter"/>
+            </cd:parameter>
+            <cd:parameter name="pagestopper">
+                <cd:resolve name="value-stopper"/>
+            </cd:parameter>
+            <cd:parameter name="pagesegments">
+                <cd:resolve name="value-numbersegments"/>
+            </cd:parameter>
+            <cd:parameter name="maxwidth">
+                <cd:constant type="cd:dimension"/>
+            </cd:parameter>
+            <cd:parameter name="indicator">
+                <cd:constant type="yes" default="yes"/>
+                <cd:constant type="no"/>
+            </cd:parameter>
+            <cd:parameter name="before">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="after">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="command">
+                <cd:constant type="cd:oneargument"/>
+            </cd:parameter>
+            <cd:parameter name="textcommand">
+                <cd:constant type="cd:oneargument"/>
+            </cd:parameter>
+            <cd:parameter name="deeptextcommand">
+                <cd:constant type="cd:oneargument"/>
+            </cd:parameter>
+            <cd:parameter name="pagecommand">
+                <cd:constant type="cd:oneargument"/>
+            </cd:parameter>
+            <cd:parameter name="distance">
+                <cd:constant type="cd:dimension"/>
+            </cd:parameter>
+            <cd:parameter name="interaction">
+                <cd:constant type="text"/>
+                <cd:constant type="pagenumber" default="yes"/>
+            </cd:parameter>
+            <cd:parameter name="pagenumber">
+                <cd:constant type="yes" default="yes"/>
+                <cd:constant type="no"/>
+            </cd:parameter>
+            <cd:parameter name="symbol">
+                <cd:constant type="a"/>
+                <cd:constant type="n" default="yes"/>
+                <cd:constant type="none"/>
+                <cd:constant type="1"/>
+                <cd:constant type="2"/>
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="language">
+                <cd:resolve name="value-sortorder"/>
+            </cd:parameter>
+            <cd:parameter name="style">
+                <cd:resolve name="value-style"/>
+            </cd:parameter>
+            <cd:parameter name="color">
+                <cd:constant type="cd:color"/>
+            </cd:parameter>
+            <cd:parameter name="textstyle">
+                <cd:resolve name="value-style"/>
+            </cd:parameter>
+            <cd:parameter name="textcolor">
+                <cd:constant type="cd:color"/>
+            </cd:parameter>
+            <cd:parameter name="pagestyle">
+                <cd:resolve name="value-style"/>
+            </cd:parameter>
+            <cd:parameter name="pagecolor">
+                <cd:constant type="cd:color"/>
+            </cd:parameter>
+            <cd:parameter name="pageleft">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="pageright">
+                <cd:constant type="cd:command"/>
+            </cd:parameter>
+            <cd:parameter name="n">
+                <cd:constant type="cd:number"/>
+            </cd:parameter>
+            <cd:parameter name="balance">
+                <cd:constant type="yes" default="yes"/>
+                <cd:constant type="no"/>
+            </cd:parameter>
+            <cd:parameter name="align">
+                <cd:inherit name="setupalign"/>
+            </cd:parameter>
+            <cd:parameter name="numberorder">
+                <cd:constant type="numbers" default="yes"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
     <cd:command name="defineregister" level="style" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
@@ -18,174 +190,7 @@
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:parameter name="referencemethod">
-                    <cd:constant type="forward"/>
-                </cd:parameter>
-                <cd:parameter name="expansion">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                    <cd:constant type="xml"/>
-                </cd:parameter>
-                <cd:parameter name="ownnumber">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                </cd:parameter>
-                <cd:parameter name="xmlsetup">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="alternative">
-                    <cd:constant type="a"/>
-                    <cd:constant type="b"/>
-                    <cd:constant type="A"/>
-                    <cd:constant type="B"/>
-                </cd:parameter>
-                <cd:parameter name="method">
-                    <cd:resolve name="value-sortmethod"/>
-                </cd:parameter>
-                <cd:parameter name="compress">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                    <cd:constant type="all"/>
-                    <cd:constant type="packed"/>
-                </cd:parameter>
-                <cd:parameter name="check">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="criterium">
-                    <cd:constant type="local"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="current"/>
-                    <cd:constant type="previous"/>
-                    <cd:constant type="all" default="yes"/>
-                    <cd:constant type="cd:section"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixseparatorset">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixconversionset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixstarter">
-                    <cd:resolve name="value-starter"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixstopper">
-                    <cd:resolve name="value-stopper"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixsegments">
-                    <cd:resolve name="value-prefixsegments"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixconnector">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefix">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="pageseparatorset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageconversionset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pagestarter">
-                    <cd:resolve name="value-starter"/>
-                </cd:parameter>
-                <cd:parameter name="pagestopper">
-                    <cd:resolve name="value-stopper"/>
-                </cd:parameter>
-                <cd:parameter name="pagesegments">
-                    <cd:resolve name="value-numbersegments"/>
-                </cd:parameter>
-                <cd:parameter name="maxwidth">
-                    <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-                <cd:parameter name="indicator">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="before">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="after">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="command">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="textcommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="deeptextcommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="pagecommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="distance">
-                    <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-                <cd:parameter name="interaction">
-                    <cd:constant type="text"/>
-                    <cd:constant type="pagenumber" default="yes"/>
-                </cd:parameter>
-                <cd:parameter name="pagenumber">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="symbol">
-                    <cd:constant type="a"/>
-                    <cd:constant type="n" default="yes"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="1"/>
-                    <cd:constant type="2"/>
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="language">
-                    <cd:resolve name="value-sortorder"/>
-                </cd:parameter>
-                <cd:parameter name="style">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="color">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="textstyle">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="textcolor">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="pagestyle">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="pagecolor">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="pageleft">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageright">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="n">
-                    <cd:constant type="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="balance">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="align">
-                    <cd:inherit name="setupalign"/>
-                </cd:parameter>
-                <cd:parameter name="numberorder">
-                    <cd:constant type="numbers" default="yes"/>
-                </cd:parameter>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupregister"/>
         </cd:arguments>
     </cd:command>
 
@@ -195,173 +200,7 @@
                 <cd:constant type="cd:name"/>
                 <cd:constant type="cd:number" prefix="cd:name" method="range"/>
             </cd:keywords>
-            <cd:assignments list="yes">
-                <cd:parameter name="referencemethod">
-                    <cd:constant type="forward"/>
-                </cd:parameter>
-                <cd:parameter name="expansion">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                    <cd:constant type="xml"/>
-                </cd:parameter>
-                <cd:parameter name="ownnumber">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                </cd:parameter>
-                <cd:parameter name="xmlsetup">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="alternative">
-                    <cd:constant type="a"/>
-                    <cd:constant type="b"/>
-                    <cd:constant type="A"/>
-                    <cd:constant type="B"/>
-                </cd:parameter>
-                <cd:parameter name="method">
-                    <cd:resolve name="value-sortmethod"/>
-                </cd:parameter>
-                <cd:parameter name="compress">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                    <cd:constant type="all"/>
-                </cd:parameter>
-                <cd:parameter name="check">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="criterium">
-                    <cd:constant type="local"/>
-                    <cd:constant type="text"/>
-                    <cd:constant type="current"/>
-                    <cd:constant type="previous"/>
-                    <cd:constant type="all" default="yes"/>
-                    <cd:constant type="cd:section"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixseparatorset">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixconversionset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixstarter">
-                    <cd:resolve name="value-starter"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixstopper">
-                    <cd:resolve name="value-stopper"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixsegments">
-                    <cd:resolve name="value-prefixsegments"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefixconnector">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageprefix">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="pageseparatorset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pageconversionset">
-                    <cd:constant type="cd:name"/>
-                </cd:parameter>
-                <cd:parameter name="pagestarter">
-                    <cd:resolve name="value-starter"/>
-                </cd:parameter>
-                <cd:parameter name="pagestopper">
-                    <cd:resolve name="value-stopper"/>
-                </cd:parameter>
-                <cd:parameter name="pagesegments">
-                    <cd:resolve name="value-numbersegments"/>
-                </cd:parameter>
-                <cd:parameter name="maxwidth">
-                    <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-                <cd:parameter name="indicator">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="before">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="after">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="command">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="textcommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="deeptextcommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="pagecommand">
-                    <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="distance">
-                    <cd:constant type="cd:dimension"/>
-                </cd:parameter>
-                <cd:parameter name="interaction">
-                    <cd:constant type="text"/>
-                    <cd:constant type="pagenumber" default="yes"/>
-                </cd:parameter>
-                <cd:parameter name="pagenumber">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="symbol">
-                    <cd:constant type="a"/>
-                    <cd:constant type="n" default="yes"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="1"/>
-                    <cd:constant type="2"/>
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="language">
-                    <cd:resolve name="value-sortorder"/>
-                </cd:parameter>
-                <cd:parameter name="style">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="color">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="textstyle">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="textcolor">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="pagestyle">
-                    <cd:resolve name="value-style"/>
-                </cd:parameter>
-                <cd:parameter name="pagecolor">
-                    <cd:constant type="cd:color"/>
-                </cd:parameter>
-                <cd:parameter name="pageleft">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="pageright">
-                    <cd:constant type="cd:command"/>
-                </cd:parameter>
-                <cd:parameter name="n">
-                    <cd:constant type="cd:number"/>
-                </cd:parameter>
-                <cd:parameter name="balance">
-                    <cd:constant type="yes" default="yes"/>
-                    <cd:constant type="no"/>
-                </cd:parameter>
-                <cd:parameter name="align">
-                    <cd:inherit name="setupalign"/>
-                </cd:parameter>
-                <cd:parameter name="numberorder">
-                    <cd:constant type="numbers" default="yes"/>
-                </cd:parameter>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupregister"/>
         </cd:arguments>
     </cd:command>
 
@@ -369,9 +208,7 @@
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:resolve name="keyword-number-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupregister"/>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupregister"/>
         </cd:arguments>
     </cd:command>
 
@@ -381,9 +218,7 @@
                 <cd:constant type="cd:name"/>
                 <cd:constant type="cd:number" prefix="cd:name" method="range"/>
             </cd:keywords>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupregister"/>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupregister"/>
         </cd:arguments>
     </cd:command>
 
@@ -478,9 +313,7 @@
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-number-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupregister"/>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupregister"/>
         </cd:arguments>
         <cd:instances>
             <cd:resolve name="instance-register"/>
@@ -489,8 +322,13 @@
 
     <!--
 
-        <cd:command name="index" level="document" category="structure" file="strc-reg.mkiv">
+        <cd:command name="startregister" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name"/>
+                <cd:keywords optional="yes">
+                    <cd:constant type="cd:text"/>
+                </cd:keywords>
                 <cd:keywords optional="yes">
                     <cd:constant type="cd:text"/>
                     <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
@@ -499,53 +337,10 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="index" variant="ownnumber" level="document" category="structure" file="strc-reg.mkiv">
+        <cd:command name="stopregister" level="document" category="structure" file="strc-reg.mkiv">
             <cd:arguments>
-                <cd:keywords optional="yes">
-                    <cd:constant type="cd:text"/>
-                    <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
-                </cd:keywords>
-                <cd:resolve name="argument-text"/>
-                <cd:index list="yes"/>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="seeindex" level="document" category="structure" file="strc-reg.mkiv">
-            <cd:arguments>
-                <cd:keywords optional="yes">
-                    <cd:constant type="cd:text"/>
-                    <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
-                </cd:keywords>
-                <cd:index list="yes"/>
-                <cd:keywords delimiters="braces">
-                    <cd:constant type="cd:text"/>
-                    <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
-                </cd:keywords>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="placeindex" level="document" category="structure" file="strc-reg.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupregister"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="completeindex" level="document" category="structure" file="strc-reg.mkiv">
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupregister"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-        <cd:command name="setupindex" level="style" category="structure" file="strc-reg.mkiv">
-            <cd:arguments>
-                <cd:resolve name="keyword-number-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupregister"/>
-                </cd:assignments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name"/>
             </cd:arguments>
         </cd:command>
 
@@ -563,11 +358,8 @@
                 <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
             </cd:keywords>
             <cd:index list="yes"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="stopregister" level="document" category="structure" file="strc-reg.mkiv">
-        <cd:arguments>
+            <cd:resolve name="string-content"/>
+            <cd:delimiter name="stopregister"/>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
@@ -612,17 +404,34 @@
         </cd:arguments>
     </cd:command>
 
+    <!--
+
+        <cd:command name="startstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="assignment-registerdata-list"/>
+                <cd:resolve name="assignment-userdata-list-optional"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="stopstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name"/>
+                <cd:resolve name="keyword-name"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
     <cd:command name="startstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-registerdata-list"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="stopstructurepageregister" level="document" category="structure" file="strc-reg.mkiv">
-        <cd:arguments>
+            <cd:resolve name="string-content"/>
+            <cd:delimiter name="stopstructurepageregister"/>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>

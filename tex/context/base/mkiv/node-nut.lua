@@ -231,163 +231,163 @@ if not nuts.has_dimensions then
 
 end
 
-local getfield             = direct.getfield
-local setfield             = direct.setfield
+local getfield        = direct.getfield
+local setfield        = direct.setfield
 
-nuts.getfield              = getfield
-nuts.setfield              = setfield
+nuts.getfield         = getfield
+nuts.setfield         = setfield
 
-nuts.getnext               = direct.getnext
-nuts.setnext               = direct.setnext
+nuts.getnext          = direct.getnext
+nuts.setnext          = direct.setnext
 
-nuts.getid                 = direct.getid
+nuts.getid            = direct.getid
 
-nuts.getprev               = direct.getprev
-nuts.setprev               = direct.setprev
+nuts.getprev          = direct.getprev
+nuts.setprev          = direct.setprev
 
-local get_attribute        = direct.get_attribute
-local set_attribute        = direct.set_attribute
-local unset_attribute      = direct.unset_attribute
+local get_attribute   = direct.get_attribute
+local set_attribute   = direct.set_attribute
+local unset_attribute = direct.unset_attribute
 
-nuts.getattr               = get_attribute
-nuts.setattr               = set_attribute
-nuts.takeattr              = unset_attribute -- ?
+nuts.getattr          = get_attribute
+nuts.setattr          = set_attribute
+nuts.takeattr         = unset_attribute -- ?
 
-nuts.is_zero_glue          = direct.is_zero_glue
-nuts.effective_glue        = direct.effective_glue
+nuts.is_zero_glue     = direct.is_zero_glue
+nuts.effective_glue   = direct.effective_glue
 
-nuts.getglue               = direct.getglue
-nuts.setglue               = direct.setglue
-nuts.getboxglue            = direct.getglue
-nuts.setboxglue            = direct.setglue
+nuts.getglue          = direct.getglue
+nuts.setglue          = direct.setglue
+nuts.getboxglue       = direct.getglue
+nuts.setboxglue       = direct.setglue
 
-nuts.getdisc               = direct.getdisc
-nuts.setdisc               = direct.setdisc
-nuts.getdiscretionary      = direct.getdisc
-nuts.setdiscretionary      = direct.setdisc
+nuts.getdisc          = direct.getdisc
+nuts.setdisc          = direct.setdisc
+nuts.getdiscretionary = direct.getdisc
+nuts.setdiscretionary = direct.setdisc
 
-nuts.getpre                = direct.getpre
-nuts.setpre                = direct.setpre
-nuts.getpost               = direct.getpost
-nuts.setpost               = direct.setpost
-nuts.getreplace            = direct.getreplace
-nuts.setreplace            = direct.setreplace
+nuts.getpre           = direct.getpre
+nuts.setpre           = direct.setpre
+nuts.getpost          = direct.getpost
+nuts.setpost          = direct.setpost
+nuts.getreplace       = direct.getreplace
+nuts.setreplace       = direct.setreplace
 
-local getdata = direct.getdata
-local setdata = direct.setdata
+local getdata         = direct.getdata
+local setdata         = direct.setdata
 
-nuts.getdata               = getdata
-nuts.setdata               = setdata
-nuts.getvalue              = getdata
-nuts.setvalue              = setdata
+nuts.getdata          = getdata
+nuts.setdata          = setdata
+nuts.getvalue         = getdata
+nuts.setvalue         = setdata
 
-nuts.getexpansion          = direct.getexpansion
-nuts.setexpansion          = direct.setexpansion
+nuts.getexpansion     = direct.getexpansion
+nuts.setexpansion     = direct.setexpansion
 
-nuts.getwhd                = direct.getwhd
-nuts.setwhd                = direct.setwhd
-nuts.getwidth              = direct.getwidth
-nuts.setwidth              = direct.setwidth
-nuts.getheight             = direct.getheight
-nuts.setheight             = direct.setheight
-nuts.getdepth              = direct.getdepth
-nuts.setdepth              = direct.setdepth
-nuts.getshift              = direct.getshift
-nuts.setshift              = direct.setshift
+nuts.getwhd           = direct.getwhd
+nuts.setwhd           = direct.setwhd
+nuts.getwidth         = direct.getwidth
+nuts.setwidth         = direct.setwidth
+nuts.getheight        = direct.getheight
+nuts.setheight        = direct.setheight
+nuts.getdepth         = direct.getdepth
+nuts.setdepth         = direct.setdepth
+nuts.getshift         = direct.getshift
+nuts.setshift         = direct.setshift
 
 -- lmtx compatibility
 
-nuts.getorientation        = direct.getorientation or function() end
-nuts.setorientation        = direct.setorientation or function() end
+nuts.getorientation   = direct.getorientation or function() end
+nuts.setorientation   = direct.setorientation or function() end
 
-nuts.getglyphdata          = direct.getglyphdata or               get_attribute
-nuts.setglyphdata          = direct.setglyphdata or function(n,d) set_attribute(n,0,d) end
+nuts.getglyphdata     = direct.getglyphdata or               get_attribute
+nuts.setglyphdata     = direct.setglyphdata or function(n,d) set_attribute(n,0,d) end
 
-nuts.getruledata           = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
-nuts.setruledata           = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end
+nuts.getruledata      = direct.getglyphdata and getdata or function(n)   return getfield(n,"transform")   end
+nuts.setruledata      = direct.setglyphdata and setdata or function(n,d) return setfield(n,"transform",d) end
 
 -- so far
 
-nuts.getnucleus            = direct.getnucleus
-nuts.setnucleus            = direct.setnucleus
-nuts.getsup                = direct.getsup
-nuts.setsup                = direct.setsup
-nuts.getsub                = direct.getsub
-nuts.setsub                = direct.setsub
+nuts.getnucleus       = direct.getnucleus
+nuts.setnucleus       = direct.setnucleus
+nuts.getsup           = direct.getsup
+nuts.setsup           = direct.setsup
+nuts.getsub           = direct.getsub
+nuts.setsub           = direct.setsub
 
-nuts.getchar               = direct.getchar
-nuts.setchar               = direct.setchar
-nuts.getfont               = direct.getfont
-nuts.setfont               = direct.setfont
-nuts.getfam                = direct.getfam
-nuts.setfam                = direct.setfam
+nuts.getchar          = direct.getchar
+nuts.setchar          = direct.setchar
+nuts.getfont          = direct.getfont
+nuts.setfont          = direct.setfont
+nuts.getfam           = direct.getfam
+nuts.setfam           = direct.setfam
 
-nuts.getboth               = direct.getboth
-nuts.setboth               = direct.setboth
-nuts.setlink               = direct.setlink
-nuts.setsplit              = direct.setsplit
+nuts.getboth          = direct.getboth
+nuts.setboth          = direct.setboth
+nuts.setlink          = direct.setlink
+nuts.setsplit         = direct.setsplit
 
-nuts.getlist               = direct.getlist -- only hlist and vlist !
-nuts.setlist               = direct.setlist
-nuts.getleader             = direct.getleader
-nuts.setleader             = direct.setleader
-nuts.getcomponents         = direct.getcomponents
-nuts.setcomponents         = direct.setcomponents
+nuts.getlist          = direct.getlist -- only hlist and vlist !
+nuts.setlist          = direct.setlist
+nuts.getleader        = direct.getleader
+nuts.setleader        = direct.setleader
+nuts.getcomponents    = direct.getcomponents
+nuts.setcomponents    = direct.setcomponents
 
-nuts.getsubtype            = direct.getsubtype
-nuts.setsubtype            = direct.setsubtype
+nuts.getsubtype       = direct.getsubtype
+nuts.setsubtype       = direct.setsubtype
 
-nuts.getlang               = direct.getlang
-nuts.setlang               = direct.setlang
-nuts.getlanguage           = direct.getlang
-nuts.setlanguage           = direct.setlang
+nuts.getlang          = direct.getlang
+nuts.setlang          = direct.setlang
+nuts.getlanguage      = direct.getlang
+nuts.setlanguage      = direct.setlang
 
-nuts.getattrlist           = direct.getattributelist
-nuts.setattrlist           = direct.setattributelist
-nuts.getattributelist      = direct.getattributelist
-nuts.setattributelist      = direct.setattributelist
+nuts.getattrlist      = direct.getattributelist
+nuts.setattrlist      = direct.setattributelist
+nuts.getattributelist = direct.getattributelist
+nuts.setattributelist = direct.setattributelist
 
-nuts.getoffsets            = direct.getoffsets
-nuts.setoffsets            = direct.setoffsets
+nuts.getoffsets       = direct.getoffsets
+nuts.setoffsets       = direct.setoffsets
 
-nuts.getkern               = direct.getkern
-nuts.setkern               = direct.setkern
+nuts.getkern          = direct.getkern
+nuts.setkern          = direct.setkern
 
-nuts.getdir                = direct.getdir
-nuts.setdir                = direct.setdir
+nuts.getdir           = direct.getdir
+nuts.setdir           = direct.setdir
 
-nuts.getdirection          = direct.getdirection
-nuts.setdirection          = direct.setdirection
+nuts.getdirection     = direct.getdirection
+nuts.setdirection     = direct.setdirection
 
-nuts.getpenalty            = direct.getpenalty
-nuts.setpenalty            = direct.setpenalty
+nuts.getpenalty       = direct.getpenalty
+nuts.setpenalty       = direct.setpenalty
 
-nuts.getbox                = direct.getbox
-nuts.setbox                = direct.setbox
+nuts.getbox           = direct.getbox
+nuts.setbox           = direct.setbox
 
-nuts.ischar                = direct.is_char
-nuts.isglyph               = direct.is_glyph
+nuts.ischar           = direct.is_char
+nuts.isglyph          = direct.is_glyph
 
-----.is_char               = nuts.ischar
-----.is_glyph              = nuts.isglyph
+----.is_char          = nuts.ischar
+----.is_glyph         = nuts.isglyph
 
-local d_remove_node        = direct.remove
-local d_flush_node         = direct.flush_node
-local d_getnext            = direct.getnext
-local d_getprev            = direct.getprev
-local d_getid              = direct.getid
-local d_getlist            = direct.getlist
-local d_find_tail          = direct.tail
-local d_insert_after       = direct.insert_after
-local d_insert_before      = direct.insert_before
-local d_slide              = direct.slide
------ d_copy_node          = direct.copy
-local d_traverse           = direct.traverse
-local d_setlink            = direct.setlink
-local d_setboth            = direct.setboth
-local d_getboth            = direct.getboth
+local d_remove_node   = direct.remove
+local d_flush_node    = direct.flush_node
+local d_getnext       = direct.getnext
+local d_getprev       = direct.getprev
+local d_getid         = direct.getid
+local d_getlist       = direct.getlist
+local d_find_tail     = direct.tail
+local d_insert_after  = direct.insert_after
+local d_insert_before = direct.insert_before
+local d_slide         = direct.slide
+----- d_copy_node     = direct.copy
+local d_traverse      = direct.traverse
+local d_setlink       = direct.setlink
+local d_setboth       = direct.setboth
+local d_getboth       = direct.getboth
 
-local remove = (CONTEXTLMTXMODE > 0 and LUATEXFUNCTIONALITY >= 20190704) and d_remove_node or function(head,current,free_too)
+local remove = CONTEXTLMTXMODE > 0 and d_remove_node or function(head,current,free_too)
     if current then
         local h, c = d_remove_node(head,current)
         if free_too then

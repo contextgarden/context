@@ -652,6 +652,9 @@
      <cd:parameter name="buffer">
       <cd:constant type="cd:buffer"/>
      </cd:parameter>
+     <cd:parameter name="type">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
      <cd:parameter name="state">
       <cd:constant default="yes" type="start"/>
       <cd:constant type="stop"/>
@@ -2432,7 +2435,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" level="system" name="naturalhbox">
+  <cd:command file="supp-dir.mkiv" level="system" name="naturalhbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2440,7 +2443,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" level="system" name="naturalvbox">
+  <cd:command file="supp-dir.mkiv" level="system" name="naturalvbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2448,7 +2451,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" level="system" name="naturalvtop">
+  <cd:command file="supp-dir.mkiv" level="system" name="naturalvtop">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2464,7 +2467,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" level="system" name="naturalhpack">
+  <cd:command file="supp-dir.mkiv" level="system" name="naturalhpack">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2472,7 +2475,63 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
-  <cd:command file="supp-box.mkiv" level="system" name="naturalvpack">
+  <cd:command file="supp-dir.mkiv" level="system" name="naturalvpack">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="naturaltpack">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversehbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversevbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversevtop">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversehpack">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversevpack">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-dir.mkiv" level="system" name="reversetpack">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2711,7 +2770,23 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="rtlhbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="lefttorighthbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="ltrhbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2727,7 +2802,23 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="rtlvbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="lefttorightvbox">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="ltrvbox">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -2743,7 +2834,23 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="rtlvtop">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="lefttorightvtop">
+   <cd:arguments>
+    <cd:keywords delimiters="none" optional="yes">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="spac-ali.mkiv" level="system" name="ltrvtop">
    <cd:arguments>
     <cd:keywords delimiters="none" optional="yes">
      <cd:constant type="cd:text"/>
@@ -3574,6 +3681,13 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="cap">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="mixedcaps">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -3589,6 +3703,20 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="Caps">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="capital">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="typo-cap.mkiv" level="style" name="smallcaps">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:text"/>
@@ -5190,106 +5318,6 @@
    </cd:arguments>
   </cd:command>
  </cd:interface>
- <cd:interface file="i-columns.xml">
-  <cd:command category="columns" file="page-mul.mkiv" level="style" name="setupcolumns">
-   <cd:arguments>
-    <cd:assignments list="yes">
-     <cd:parameter name="n">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="distance">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="option">
-      <cd:constant type="background"/>
-     </cd:parameter>
-     <cd:parameter name="offset">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="command">
-      <cd:constant type="cd:oneargument"/>
-     </cd:parameter>
-     <cd:parameter name="height">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="direction">
-      <cd:constant type="left"/>
-      <cd:constant default="yes" type="right"/>
-     </cd:parameter>
-     <cd:parameter name="balance">
-      <cd:constant default="yes" type="yes"/>
-      <cd:constant type="no"/>
-     </cd:parameter>
-     <cd:parameter name="align">
-      <cd:inherit type="setupalign"/>
-     </cd:parameter>
-     <cd:parameter name="tolerance">
-      <cd:inherit type="setuptolerance"/>
-     </cd:parameter>
-     <cd:parameter name="blank">
-      <cd:inherit name="blank"/>
-     </cd:parameter>
-     <cd:parameter name="ntop">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="rule">
-      <cd:constant type="on"/>
-      <cd:constant default="yes" type="off"/>
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" level="document" name="columns" type="environment">
-   <cd:arguments>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setupcolumns"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" level="style" name="setupcolumnspan">
-   <cd:arguments>
-    <cd:assignments list="yes">
-     <cd:parameter name="n">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:inherit name="setupframed"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" level="document" name="columnspan" type="environment">
-   <cd:arguments>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setupcolumnspan"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" level="system" name="setsimplecolumnhsize">
-   <cd:arguments>
-    <cd:assignments list="yes">
-     <cd:parameter name="n">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-     <cd:parameter name="width">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="distance">
-      <cd:constant type="cd:dimension"/>
-     </cd:parameter>
-     <cd:parameter name="lines">
-      <cd:constant type="cd:number"/>
-     </cd:parameter>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="columns" file="page-mul.mkiv" level="system" name="simplecolumns" type="environment">
-   <cd:arguments>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setsimplecolumnhsize"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
- </cd:interface>
  <cd:interface file="i-combination.xml">
   <cd:command category="tables" file="pack-com.mkiv" level="style" name="definecombination">
    <cd:arguments>
@@ -6336,7 +6364,7 @@
   </cd:command>
   <cd:command category="counter language" file="core-con.mkiv" level="document" name="date">
    <cd:arguments>
-    <cd:assignments list="yes" optional="yes">
+    <cd:assignments list="yes">
      <cd:parameter name="d">
       <cd:constant type="cd:number"/>
      </cd:parameter>
@@ -6493,6 +6521,7 @@
      <cd:constant type="set␣2"/>
      <cd:constant type="set␣3"/>
      <cd:constant type="continued"/>
+     <cd:constant type="zero"/>
      <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:keywords delimiters="braces">
@@ -6667,6 +6696,13 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="counter" file="core-con.mkiv" level="style" name="continuednumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="zeronumberconversion">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
@@ -7857,22 +7893,6 @@
   </cd:command>
   <cd:command category="language alignment" file="typo-dir.mkiv" level="style" name="resetdirection"/>
   <cd:command category="alignment" file="supp-dir.mkiv" level="document" name="showdirsinmargin"/>
-  <cd:command category="alignment" file="supp-dir.mkiv" level="system" name="istltdir">
-   <cd:arguments>
-    <cd:keywords delimiters="none">
-     <cd:constant type="TLT"/>
-     <cd:constant type="TRT"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="alignment" file="supp-dir.mkiv" level="system" name="istrtdir">
-   <cd:arguments>
-    <cd:keywords delimiters="none">
-     <cd:constant type="TLT"/>
-     <cd:constant type="TRT"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
  </cd:interface>
  <cd:interface file="i-document.xml">
   <cd:command category="structure" file="file-job.mkvi" level="document" name="text" type="environment"/>
@@ -10068,14 +10088,50 @@
   <cd:command category="background layout" file="page-app.mkiv" level="style" name="setupTEXpage">
    <cd:arguments>
     <cd:assignments list="yes">
-     <cd:inherit name="setupfittingpage"/>
+     <cd:parameter name="pagestate">
+      <cd:constant type="start"/>
+      <cd:constant default="yes" type="stop"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="margin">
+      <cd:constant type="page"/>
+     </cd:parameter>
+     <cd:parameter name="scale">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="paper">
+      <cd:constant type="auto"/>
+      <cd:constant default="yes" type="default"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:inherit name="setupframed"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
   <cd:command category="background layout metapost" file="meta-fig.mkiv" level="style" name="setupMPpage">
    <cd:arguments>
     <cd:assignments list="yes">
-     <cd:inherit name="setupfittingpage"/>
+     <cd:parameter name="pagestate">
+      <cd:constant type="start"/>
+      <cd:constant default="yes" type="stop"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="margin">
+      <cd:constant type="page"/>
+     </cd:parameter>
+     <cd:parameter name="scale">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="paper">
+      <cd:constant type="auto"/>
+      <cd:constant default="yes" type="default"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:inherit name="setupframed"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -10542,6 +10598,17 @@
      <cd:constant type="effective"/>
      <cd:constant type="header"/>
      <cd:constant type="footer"/>
+     <cd:constant type="tblr"/>
+     <cd:constant type="lrtb"/>
+     <cd:constant type="tbrl"/>
+     <cd:constant type="rltb"/>
+     <cd:constant type="fxtb"/>
+     <cd:constant type="btlr"/>
+     <cd:constant type="lrbt"/>
+     <cd:constant type="btrl"/>
+     <cd:constant type="rlbt"/>
+     <cd:constant type="fxbt"/>
+     <cd:constant type="fixd"/>
     </cd:keywords>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:reference"/>
@@ -10620,6 +10687,17 @@
      <cd:constant type="effective"/>
      <cd:constant type="header"/>
      <cd:constant type="footer"/>
+     <cd:constant type="tblr"/>
+     <cd:constant type="lrtb"/>
+     <cd:constant type="tbrl"/>
+     <cd:constant type="rltb"/>
+     <cd:constant type="fxtb"/>
+     <cd:constant type="btlr"/>
+     <cd:constant type="lrbt"/>
+     <cd:constant type="btrl"/>
+     <cd:constant type="rlbt"/>
+     <cd:constant type="fxbt"/>
+     <cd:constant type="fixd"/>
     </cd:keywords>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:reference"/>
@@ -10705,6 +10783,17 @@
       <cd:constant type="effective"/>
       <cd:constant type="header"/>
       <cd:constant type="footer"/>
+      <cd:constant type="tblr"/>
+      <cd:constant type="lrtb"/>
+      <cd:constant type="tbrl"/>
+      <cd:constant type="rltb"/>
+      <cd:constant type="fxtb"/>
+      <cd:constant type="btlr"/>
+      <cd:constant type="lrbt"/>
+      <cd:constant type="btrl"/>
+      <cd:constant type="rlbt"/>
+      <cd:constant type="fxbt"/>
+      <cd:constant type="fixd"/>
      </cd:parameter>
      <cd:parameter name="reference">
       <cd:constant type="cd:reference"/>
@@ -10798,6 +10887,17 @@
       <cd:constant type="effective"/>
       <cd:constant type="header"/>
       <cd:constant type="footer"/>
+      <cd:constant type="tblr"/>
+      <cd:constant type="lrtb"/>
+      <cd:constant type="tbrl"/>
+      <cd:constant type="rltb"/>
+      <cd:constant type="fxtb"/>
+      <cd:constant type="btlr"/>
+      <cd:constant type="lrbt"/>
+      <cd:constant type="btrl"/>
+      <cd:constant type="rlbt"/>
+      <cd:constant type="fxbt"/>
+      <cd:constant type="fixd"/>
      </cd:parameter>
      <cd:parameter name="reference">
       <cd:constant type="cd:reference"/>
@@ -10872,6 +10972,17 @@
      <cd:constant type="effective"/>
      <cd:constant type="header"/>
      <cd:constant type="footer"/>
+     <cd:constant type="tblr"/>
+     <cd:constant type="lrtb"/>
+     <cd:constant type="tbrl"/>
+     <cd:constant type="rltb"/>
+     <cd:constant type="fxtb"/>
+     <cd:constant type="btlr"/>
+     <cd:constant type="lrbt"/>
+     <cd:constant type="btrl"/>
+     <cd:constant type="rlbt"/>
+     <cd:constant type="fxbt"/>
+     <cd:constant type="fixd"/>
     </cd:keywords>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:reference"/>
@@ -11130,6 +11241,17 @@
      <cd:constant type="effective"/>
      <cd:constant type="header"/>
      <cd:constant type="footer"/>
+     <cd:constant type="tblr"/>
+     <cd:constant type="lrtb"/>
+     <cd:constant type="tbrl"/>
+     <cd:constant type="rltb"/>
+     <cd:constant type="fxtb"/>
+     <cd:constant type="btlr"/>
+     <cd:constant type="lrbt"/>
+     <cd:constant type="btrl"/>
+     <cd:constant type="rlbt"/>
+     <cd:constant type="fxbt"/>
+     <cd:constant type="fixd"/>
     </cd:keywords>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="cd:reference"/>
@@ -14622,7 +14744,7 @@
       <cd:constant type="frame"/>
       <cd:constant type="empty"/>
      </cd:parameter>
-     <cd:parameter name="forgroundcolor">
+     <cd:parameter name="foregroundcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
      <cd:parameter name="reset">
@@ -16825,6 +16947,8 @@
       <cd:constant type="attachment"/>
       <cd:constant type="layer"/>
       <cd:constant type="title"/>
+      <cd:constant type="lefttoright"/>
+      <cd:constant type="righttoleft"/>
       <cd:constant type="nomenubar"/>
      </cd:parameter>
      <cd:parameter name="copies">
@@ -17808,6 +17932,18 @@
       <cd:constant type="standard"/>
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="leftmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
      <cd:parameter name="align">
       <cd:inherit name="setupalign"/>
      </cd:parameter>
@@ -17915,7 +18051,214 @@
      <cd:constant method="range" prefix="cd:name" type="cd:number"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setupitemgroup"/>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="inbetween">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="beforehead">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="afterhead">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="left">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="right">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="factor">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="step">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="option">
+      <cd:constant type="intro"/>
+      <cd:constant type="random"/>
+      <cd:constant type="continue"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="autointro"/>
+      <cd:constant type="broad"/>
+      <cd:constant type="text"/>
+      <cd:constant type="before"/>
+      <cd:constant type="after"/>
+      <cd:constant type="nowhite"/>
+      <cd:constant type="margin"/>
+      <cd:constant type="inmargin"/>
+      <cd:constant type="atmargin"/>
+      <cd:constant type="intext"/>
+      <cd:constant type="loose"/>
+      <cd:constant type="fit"/>
+      <cd:constant type="nofit"/>
+      <cd:constant type="paragraph"/>
+      <cd:constant type="joinedup"/>
+      <cd:constant type="serried"/>
+      <cd:constant type="stopper"/>
+      <cd:constant type="unpacked"/>
+      <cd:constant type="repeat"/>
+      <cd:constant type="norepeat"/>
+      <cd:constant type="reverse"/>
+      <cd:constant type="columns"/>
+      <cd:constant type="one"/>
+      <cd:constant type="two"/>
+      <cd:constant type="three"/>
+      <cd:constant type="four"/>
+      <cd:constant type="five"/>
+      <cd:constant type="six"/>
+      <cd:constant type="seven"/>
+      <cd:constant type="eight"/>
+      <cd:constant type="nine"/>
+      <cd:constant type="standard"/>
+      <cd:constant method="factor" prefix="cd:number" type="broad"/>
+      <cd:constant method="factor" prefix="cd:number" type="serried"/>
+      <cd:constant type="horizontal"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="margin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftmargin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="indenting">
+      <cd:inherit name="setupindenting"/>
+     </cd:parameter>
+     <cd:parameter name="start">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="symalign">
+      <cd:constant type="left"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="right"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="center"/>
+      <cd:constant type="flushright"/>
+     </cd:parameter>
+     <cd:parameter name="symbol">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="indentnext">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="auto"/>
+     </cd:parameter>
+     <cd:parameter name="inner">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:csname"/>
+     </cd:parameter>
+     <cd:parameter name="items">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="maxwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="itemalign">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant type="inner"/>
+      <cd:constant type="outer"/>
+     </cd:parameter>
+     <cd:parameter name="alignsymbol">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="textdistance">
+      <cd:constant type="small"/>
+      <cd:constant type="medium"/>
+      <cd:constant type="big"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="space"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="placestopper">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="headstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="headcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="marstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="marcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="symstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="symcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="grid">
+      <cd:inherit name="definegridsnapping"/>
+     </cd:parameter>
+     <cd:inherit name="setupcounter"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -17930,10 +18273,215 @@
      <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:keywords list="yes" optional="yes">
-     <cd:inherit name="setupitemgroup"/>
+     <cd:constant type="intro"/>
+     <cd:constant type="random"/>
+     <cd:constant type="continue"/>
+     <cd:constant type="packed"/>
+     <cd:constant type="autointro"/>
+     <cd:constant type="broad"/>
+     <cd:constant type="text"/>
+     <cd:constant type="before"/>
+     <cd:constant type="after"/>
+     <cd:constant type="nowhite"/>
+     <cd:constant type="margin"/>
+     <cd:constant type="inmargin"/>
+     <cd:constant type="atmargin"/>
+     <cd:constant type="intext"/>
+     <cd:constant type="loose"/>
+     <cd:constant type="fit"/>
+     <cd:constant type="nofit"/>
+     <cd:constant type="paragraph"/>
+     <cd:constant type="joinedup"/>
+     <cd:constant type="serried"/>
+     <cd:constant type="stopper"/>
+     <cd:constant type="nostopper"/>
+     <cd:constant type="unpacked"/>
+     <cd:constant type="repeat"/>
+     <cd:constant type="norepeat"/>
+     <cd:constant type="reverse"/>
+     <cd:constant type="columns"/>
+     <cd:constant type="one"/>
+     <cd:constant type="two"/>
+     <cd:constant type="three"/>
+     <cd:constant type="four"/>
+     <cd:constant type="five"/>
+     <cd:constant type="six"/>
+     <cd:constant type="seven"/>
+     <cd:constant type="eight"/>
+     <cd:constant type="nine"/>
+     <cd:constant type="standard"/>
+     <cd:constant method="factor" prefix="cd:number" type="broad"/>
+     <cd:constant method="factor" prefix="cd:number" type="serried"/>
+     <cd:constant type="horizontal"/>
+     <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setupitemgroup"/>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="inbetween">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="beforehead">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="afterhead">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="left">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="right">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="factor">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="step">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="margin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftmargin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargin">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightmargindistance">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="standard"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="indenting">
+      <cd:inherit name="setupindenting"/>
+     </cd:parameter>
+     <cd:parameter name="start">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="symalign">
+      <cd:constant type="left"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="right"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="center"/>
+      <cd:constant type="flushright"/>
+     </cd:parameter>
+     <cd:parameter name="symbol">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="indentnext">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+      <cd:constant type="auto"/>
+     </cd:parameter>
+     <cd:parameter name="inner">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:csname"/>
+     </cd:parameter>
+     <cd:parameter name="items">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="maxwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="itemalign">
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant type="inner"/>
+      <cd:constant type="outer"/>
+     </cd:parameter>
+     <cd:parameter name="alignsymbol">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="textdistance">
+      <cd:constant type="small"/>
+      <cd:constant type="medium"/>
+      <cd:constant type="big"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="space"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="placestopper">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="headstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="headcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="marstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="marcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="symstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="symcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="grid">
+      <cd:inherit name="definegridsnapping"/>
+     </cd:parameter>
+     <cd:inherit name="setupcounter"/>
     </cd:assignments>
    </cd:arguments>
    <cd:instances>
@@ -22304,6 +22852,14 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="mathematics" variant="assignment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmathematics"/>
+    </cd:assignments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="math">
    <cd:arguments>
     <cd:keywords optional="yes">
@@ -22312,11 +22868,27 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="math" variant="assignment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmathematics"/>
+    </cd:assignments>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="m">
    <cd:arguments>
     <cd:keywords optional="yes">
      <cd:constant type="cd:name"/>
     </cd:keywords>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="m" variant="assignment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupmathematics"/>
+    </cd:assignments>
     <cd:content/>
    </cd:arguments>
   </cd:command>
@@ -22715,6 +23287,8 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="stackscripts"/>
+  <cd:command category="mathematics" file="math-ini.mkiv" level="document" name="unstackscripts"/>
  </cd:interface>
  <cd:interface file="i-mathalignment.xml">
   <cd:command category="mathematics alignment" file="math-ali.mkiv" level="style" name="definemathalignment">
@@ -22922,6 +23496,38 @@
   <cd:command category="mathematics" file="math-fen.mkiv" level="document" name="fenced">
    <cd:arguments>
     <cd:keywords>
+     <cd:constant type="parenthesis"/>
+     <cd:constant type="bracket"/>
+     <cd:constant type="brace"/>
+     <cd:constant type="bar"/>
+     <cd:constant type="doublebar"/>
+     <cd:constant type="triplebar"/>
+     <cd:constant type="angle"/>
+     <cd:constant type="doubleangle"/>
+     <cd:constant type="solidus"/>
+     <cd:constant type="ceiling"/>
+     <cd:constant type="floor"/>
+     <cd:constant type="moustache"/>
+     <cd:constant type="uppercorner"/>
+     <cd:constant type="lowercorner"/>
+     <cd:constant type="group"/>
+     <cd:constant type="openbracket"/>
+     <cd:constant type="mirroredparenthesis"/>
+     <cd:constant type="mirroredbracket"/>
+     <cd:constant type="mirroredbrace"/>
+     <cd:constant type="mirroredbar"/>
+     <cd:constant type="mirroreddoublebar"/>
+     <cd:constant type="mirroredtriplebar"/>
+     <cd:constant type="mirroredangle"/>
+     <cd:constant type="mirroreddoubleangle"/>
+     <cd:constant type="mirroredsolidus"/>
+     <cd:constant type="mirroredceiling"/>
+     <cd:constant type="mirroredfloor"/>
+     <cd:constant type="mirroredmoustache"/>
+     <cd:constant type="mirroreduppercorner"/>
+     <cd:constant type="mirroredlowercorner"/>
+     <cd:constant type="mirroredgroup"/>
+     <cd:constant type="mirroredopenbracket"/>
      <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:content/>
@@ -22931,6 +23537,56 @@
   <cd:command category="mathematics" file="math-fen.mkiv" level="document" name="left">
    <cd:arguments>
     <cd:keywords delimiters="none">
+     <cd:constant type="\\\\\\\\bgroup"/>
+     <cd:constant type="\\\\\\\\egroup"/>
+     <cd:constant type="\\\\\\\\letteropenbrace"/>
+     <cd:constant type="["/>
+     <cd:constant type="]"/>
+     <cd:constant type="("/>
+     <cd:constant type=")"/>
+     <cd:constant type="&lt;"/>
+     <cd:constant type="&gt;"/>
+     <cd:constant type="/"/>
+     <cd:constant type="|"/>
+     <cd:constant type="⌊"/>
+     <cd:constant type="⌋"/>
+     <cd:constant type="⌈"/>
+     <cd:constant type="⌉"/>
+     <cd:constant type="⟨"/>
+     <cd:constant type="⟩"/>
+     <cd:constant type="⟪"/>
+     <cd:constant type="⟫"/>
+     <cd:constant type="‖"/>
+     <cd:constant type="⦀"/>
+     <cd:constant type="⦗"/>
+     <cd:constant type="\\\\\\\\lbrace"/>
+     <cd:constant type="\\\\\\\\lbracket"/>
+     <cd:constant type="\\\\\\\\lbrack"/>
+     <cd:constant type="\\\\\\\\lparenthesis"/>
+     <cd:constant type="\\\\\\\\lparent"/>
+     <cd:constant type="\\\\\\\\lparen"/>
+     <cd:constant type="\\\\\\\\langle"/>
+     <cd:constant type="\\\\\\\\llangle"/>
+     <cd:constant type="\\\\\\\\lVert"/>
+     <cd:constant type="\\\\\\\\vert"/>
+     <cd:constant type="\\\\\\\\solidus"/>
+     <cd:constant type="\\\\\\\\lfloor"/>
+     <cd:constant type="\\\\\\\\lceiling"/>
+     <cd:constant type="\\\\\\\\lceil"/>
+     <cd:constant type="\\\\\\\\ulcorner"/>
+     <cd:constant type="\\\\\\\\llcorner"/>
+     <cd:constant type="\\\\\\\\lmoustache"/>
+     <cd:constant type="\\\\\\\\llbracket"/>
+     <cd:constant type="\\\\\\\\lgroup"/>
+     <cd:constant type="\\\\\\\\linterval"/>
+     <cd:constant type="\\\\\\\\lointerval"/>
+     <cd:constant type="\\\\\\\\llointerval"/>
+     <cd:constant type="\\\\\\\\lrointerval"/>
+     <cd:constant type="\\\\\\\\{"/>
+     <cd:constant type="\\\\\\\\["/>
+     <cd:constant type="\\\\\\\\("/>
+     <cd:constant type="\\\\\\\\&lt;"/>
+     <cd:constant type="\\\\\\\\|"/>
      <cd:constant type="cd:character"/>
     </cd:keywords>
    </cd:arguments>
@@ -22945,6 +23601,56 @@
   <cd:command category="mathematics" file="math-fen.mkiv" level="document" name="right">
    <cd:arguments>
     <cd:keywords delimiters="none">
+     <cd:constant type="\\\\\\\\egroup"/>
+     <cd:constant type="\\\\\\\\bgroup"/>
+     <cd:constant type="\\\\\\\\letterclosebrace"/>
+     <cd:constant type="]"/>
+     <cd:constant type="["/>
+     <cd:constant type=")"/>
+     <cd:constant type="("/>
+     <cd:constant type="&gt;"/>
+     <cd:constant type="&lt;"/>
+     <cd:constant type="/"/>
+     <cd:constant type="|"/>
+     <cd:constant type="⌋"/>
+     <cd:constant type="⌊"/>
+     <cd:constant type="⌉"/>
+     <cd:constant type="⌈"/>
+     <cd:constant type="⟩"/>
+     <cd:constant type="⟨"/>
+     <cd:constant type="⟫"/>
+     <cd:constant type="⟪"/>
+     <cd:constant type="‖"/>
+     <cd:constant type="⦀"/>
+     <cd:constant type="⦘"/>
+     <cd:constant type="\\\\\\\\rbrace"/>
+     <cd:constant type="\\\\\\\\rbracket"/>
+     <cd:constant type="\\\\\\\\rbracket"/>
+     <cd:constant type="\\\\\\\\rparenthesis"/>
+     <cd:constant type="\\\\\\\\rparent"/>
+     <cd:constant type="\\\\\\\\rparen"/>
+     <cd:constant type="\\\\\\\\rangle"/>
+     <cd:constant type="\\\\\\\\rrangle"/>
+     <cd:constant type="\\\\\\\\rVert"/>
+     <cd:constant type="\\\\\\\\vert"/>
+     <cd:constant type="\\\\\\\\solidus"/>
+     <cd:constant type="\\\\\\\\rfloor"/>
+     <cd:constant type="\\\\\\\\rceiling"/>
+     <cd:constant type="\\\\\\\\rceil"/>
+     <cd:constant type="\\\\\\\\urcorner"/>
+     <cd:constant type="\\\\\\\\lrcorner"/>
+     <cd:constant type="\\\\\\\\rmoustache"/>
+     <cd:constant type="\\\\\\\\rrbracket"/>
+     <cd:constant type="\\\\\\\\rgroup"/>
+     <cd:constant type="\\\\\\\\rinterval"/>
+     <cd:constant type="\\\\\\\\rointerval"/>
+     <cd:constant type="\\\\\\\\rlointerval"/>
+     <cd:constant type="\\\\\\\\rrointerval"/>
+     <cd:constant type="\\\\\\\\}"/>
+     <cd:constant type="\\\\\\\\]"/>
+     <cd:constant type="\\\\\\\\)"/>
+     <cd:constant type="\\\\\\\\&gt;"/>
+     <cd:constant type="\\\\\\\\|"/>
      <cd:constant type="cd:character"/>
     </cd:keywords>
    </cd:arguments>
@@ -23064,6 +23770,56 @@
   <cd:command category="mathematics" file="math-fen.mkiv" level="document" name="lfence">
    <cd:arguments>
     <cd:keywords delimiters="braces">
+     <cd:constant type="\\\\\\\\bgroup"/>
+     <cd:constant type="\\\\\\\\egroup"/>
+     <cd:constant type="\\\\\\\\letteropenbrace"/>
+     <cd:constant type="["/>
+     <cd:constant type="]"/>
+     <cd:constant type="("/>
+     <cd:constant type=")"/>
+     <cd:constant type="&lt;"/>
+     <cd:constant type="&gt;"/>
+     <cd:constant type="/"/>
+     <cd:constant type="|"/>
+     <cd:constant type="⌊"/>
+     <cd:constant type="⌋"/>
+     <cd:constant type="⌈"/>
+     <cd:constant type="⌉"/>
+     <cd:constant type="⟨"/>
+     <cd:constant type="⟩"/>
+     <cd:constant type="⟪"/>
+     <cd:constant type="⟫"/>
+     <cd:constant type="‖"/>
+     <cd:constant type="⦀"/>
+     <cd:constant type="⦗"/>
+     <cd:constant type="\\\\\\\\lbrace"/>
+     <cd:constant type="\\\\\\\\lbracket"/>
+     <cd:constant type="\\\\\\\\lbrack"/>
+     <cd:constant type="\\\\\\\\lparenthesis"/>
+     <cd:constant type="\\\\\\\\lparent"/>
+     <cd:constant type="\\\\\\\\lparen"/>
+     <cd:constant type="\\\\\\\\langle"/>
+     <cd:constant type="\\\\\\\\llangle"/>
+     <cd:constant type="\\\\\\\\lVert"/>
+     <cd:constant type="\\\\\\\\vert"/>
+     <cd:constant type="\\\\\\\\solidus"/>
+     <cd:constant type="\\\\\\\\lfloor"/>
+     <cd:constant type="\\\\\\\\lceiling"/>
+     <cd:constant type="\\\\\\\\lceil"/>
+     <cd:constant type="\\\\\\\\ulcorner"/>
+     <cd:constant type="\\\\\\\\llcorner"/>
+     <cd:constant type="\\\\\\\\lmoustache"/>
+     <cd:constant type="\\\\\\\\llbracket"/>
+     <cd:constant type="\\\\\\\\lgroup"/>
+     <cd:constant type="\\\\\\\\linterval"/>
+     <cd:constant type="\\\\\\\\lointerval"/>
+     <cd:constant type="\\\\\\\\llointerval"/>
+     <cd:constant type="\\\\\\\\lrointerval"/>
+     <cd:constant type="\\\\\\\\{"/>
+     <cd:constant type="\\\\\\\\["/>
+     <cd:constant type="\\\\\\\\("/>
+     <cd:constant type="\\\\\\\\&lt;"/>
+     <cd:constant type="\\\\\\\\|"/>
      <cd:constant type="cd:character"/>
     </cd:keywords>
    </cd:arguments>
@@ -23078,6 +23834,56 @@
   <cd:command category="mathematics" file="math-fen.mkiv" level="document" name="rfence">
    <cd:arguments>
     <cd:keywords delimiters="braces">
+     <cd:constant type="\\\\\\\\egroup"/>
+     <cd:constant type="\\\\\\\\bgroup"/>
+     <cd:constant type="\\\\\\\\letterclosebrace"/>
+     <cd:constant type="]"/>
+     <cd:constant type="["/>
+     <cd:constant type=")"/>
+     <cd:constant type="("/>
+     <cd:constant type="&gt;"/>
+     <cd:constant type="&lt;"/>
+     <cd:constant type="/"/>
+     <cd:constant type="|"/>
+     <cd:constant type="⌋"/>
+     <cd:constant type="⌊"/>
+     <cd:constant type="⌉"/>
+     <cd:constant type="⌈"/>
+     <cd:constant type="⟩"/>
+     <cd:constant type="⟨"/>
+     <cd:constant type="⟫"/>
+     <cd:constant type="⟪"/>
+     <cd:constant type="‖"/>
+     <cd:constant type="⦀"/>
+     <cd:constant type="⦘"/>
+     <cd:constant type="\\\\\\\\rbrace"/>
+     <cd:constant type="\\\\\\\\rbracket"/>
+     <cd:constant type="\\\\\\\\rbracket"/>
+     <cd:constant type="\\\\\\\\rparenthesis"/>
+     <cd:constant type="\\\\\\\\rparent"/>
+     <cd:constant type="\\\\\\\\rparen"/>
+     <cd:constant type="\\\\\\\\rangle"/>
+     <cd:constant type="\\\\\\\\rrangle"/>
+     <cd:constant type="\\\\\\\\rVert"/>
+     <cd:constant type="\\\\\\\\vert"/>
+     <cd:constant type="\\\\\\\\solidus"/>
+     <cd:constant type="\\\\\\\\rfloor"/>
+     <cd:constant type="\\\\\\\\rceiling"/>
+     <cd:constant type="\\\\\\\\rceil"/>
+     <cd:constant type="\\\\\\\\urcorner"/>
+     <cd:constant type="\\\\\\\\lrcorner"/>
+     <cd:constant type="\\\\\\\\rmoustache"/>
+     <cd:constant type="\\\\\\\\rrbracket"/>
+     <cd:constant type="\\\\\\\\rgroup"/>
+     <cd:constant type="\\\\\\\\rinterval"/>
+     <cd:constant type="\\\\\\\\rointerval"/>
+     <cd:constant type="\\\\\\\\rlointerval"/>
+     <cd:constant type="\\\\\\\\rrointerval"/>
+     <cd:constant type="\\\\\\\\}"/>
+     <cd:constant type="\\\\\\\\]"/>
+     <cd:constant type="\\\\\\\\)"/>
+     <cd:constant type="\\\\\\\\&gt;"/>
+     <cd:constant type="\\\\\\\\|"/>
      <cd:constant type="cd:character"/>
     </cd:keywords>
    </cd:arguments>
@@ -24446,7 +25252,15 @@
    <cd:instances>
     <cd:constant value="itemgroupcolumns"/>
     <cd:constant value="boxedcolumns"/>
+    <cd:constant value="columns"/>
    </cd:instances>
+  </cd:command>
+  <cd:command category="structure layout" file="page-smp.mkiv" level="style" name="setupcolumns">
+   <cd:arguments>
+    <cd:assignments list="yes">
+     <cd:inherit name="setupmixedcolumns"/>
+    </cd:assignments>
+   </cd:arguments>
   </cd:command>
  </cd:interface>
  <cd:interface file="i-modes.xml">
@@ -25678,6 +26492,13 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command category="structure notes" file="strc-not.mkvi" level="style" name="setupfootnotes">
+   <cd:arguments>
+    <cd:assignments list="yes">
+     <cd:inherit name="setupnote"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="structure notes" file="strc-not.mkvi" level="document" name="setnote">
    <cd:arguments>
     <cd:keywords>
@@ -25971,6 +26792,54 @@
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:reference"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure notes" file="strc-tnt.mkiv" level="style" name="definetextnote">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setuptextnote"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure notes" file="strc-tnt.mkiv" level="style" name="setuptextnote">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="rule">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="note">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="*"/>
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="empty">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="none"/>
+      <cd:constant type="number"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure notes" file="strc-tnt.mkiv" generated="yes" level="document" name="textnote">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setuptextnote"/>
+    </cd:assignments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:text"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -26925,7 +27794,29 @@
      <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setupcolumnsetspan"/>
+     <cd:parameter name="c">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="r">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="method">
+      <cd:constant type="tblr"/>
+      <cd:constant type="lrtb"/>
+      <cd:constant type="tbrl"/>
+      <cd:constant type="rltb"/>
+      <cd:constant type="fxtb"/>
+      <cd:constant type="btlr"/>
+      <cd:constant type="lrbt"/>
+      <cd:constant type="btrl"/>
+      <cd:constant type="rlbt"/>
+      <cd:constant type="fxbt"/>
+      <cd:constant type="fixd"/>
+     </cd:parameter>
+     <cd:parameter name="option">
+      <cd:constant default="yes" type="none"/>
+      <cd:constant type="wide"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -27201,7 +28092,17 @@
   <cd:command category="counter" file="strc-pag.mkiv" level="style" name="setuppagenumber">
    <cd:arguments>
     <cd:assignments list="yes">
-     <cd:inherit name="setupuserpagenumber"/>
+     <cd:parameter name="viewerprefix">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="none"/>
+      <cd:constant type="keep"/>
+      <cd:constant type="empty"/>
+     </cd:parameter>
+     <cd:inherit name="setupcounter"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -28164,6 +29065,7 @@
   <cd:command category="tables" file="tabl-mis.mkiv" level="style" name="setupparagraphs" variant="assignment">
    <cd:arguments>
     <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
      <cd:constant method="range" prefix="cd:name" type="cd:number"/>
     </cd:keywords>
     <cd:assignments list="yes">
@@ -33560,6 +34462,7 @@
       <cd:constant default="yes" type="no"/>
       <cd:constant type="all"/>
       <cd:constant type="packed"/>
+      <cd:constant type="text"/>
      </cd:parameter>
      <cd:parameter name="check">
       <cd:constant default="yes" type="yes"/>
@@ -33774,6 +34677,8 @@
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
       <cd:constant type="all"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="text"/>
      </cd:parameter>
      <cd:parameter name="check">
       <cd:constant default="yes" type="yes"/>
@@ -33950,7 +34855,212 @@
      <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setupregister"/>
+     <cd:parameter name="referencemethod">
+      <cd:constant type="forward"/>
+     </cd:parameter>
+     <cd:parameter name="expansion">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="xml"/>
+     </cd:parameter>
+     <cd:parameter name="ownnumber">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="xmlsetup">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="alternative">
+      <cd:constant type="a"/>
+      <cd:constant type="b"/>
+      <cd:constant type="A"/>
+      <cd:constant type="B"/>
+     </cd:parameter>
+     <cd:parameter name="method">
+      <cd:constant type="default"/>
+      <cd:constant type="before"/>
+      <cd:constant type="after"/>
+      <cd:constant type="first"/>
+      <cd:constant type="last"/>
+      <cd:constant type="ch"/>
+      <cd:constant type="mm"/>
+      <cd:constant type="zm"/>
+      <cd:constant type="pm"/>
+      <cd:constant type="mc"/>
+      <cd:constant type="zc"/>
+      <cd:constant type="pc"/>
+      <cd:constant type="uc"/>
+     </cd:parameter>
+     <cd:parameter name="compress">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="all"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="text"/>
+     </cd:parameter>
+     <cd:parameter name="check">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="criterium">
+      <cd:constant type="local"/>
+      <cd:constant type="text"/>
+      <cd:constant type="current"/>
+      <cd:constant type="previous"/>
+      <cd:constant default="yes" type="all"/>
+      <cd:constant type="cd:section"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixseparatorset">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixsegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="*"/>
+      <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconnector">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefix">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="pageseparatorset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pagestarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagestopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagesegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+     </cd:parameter>
+     <cd:parameter name="maxwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="indicator">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="textcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="deeptextcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="pagecommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="interaction">
+      <cd:constant type="text"/>
+      <cd:constant default="yes" type="pagenumber"/>
+     </cd:parameter>
+     <cd:parameter name="pagenumber">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="symbol">
+      <cd:constant type="a"/>
+      <cd:constant default="yes" type="n"/>
+      <cd:constant type="none"/>
+      <cd:constant type="1"/>
+      <cd:constant type="2"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="language">
+      <cd:constant type="default"/>
+      <cd:constant type="DIN␣5007-1"/>
+      <cd:constant type="DIN␣5007-2"/>
+      <cd:constant type="Duden"/>
+      <cd:constant type="de-DE"/>
+      <cd:constant type="de-CH"/>
+      <cd:constant type="de-AT"/>
+      <cd:constant type="ru-iso9"/>
+      <cd:constant type="ocs-scn"/>
+      <cd:constant type="cd:language"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="textstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="textcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pagestyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pageleft">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageright">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="balance">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="numberorder">
+      <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -33961,7 +35071,212 @@
      <cd:constant method="range" prefix="cd:name" type="cd:number"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setupregister"/>
+     <cd:parameter name="referencemethod">
+      <cd:constant type="forward"/>
+     </cd:parameter>
+     <cd:parameter name="expansion">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="xml"/>
+     </cd:parameter>
+     <cd:parameter name="ownnumber">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="xmlsetup">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="alternative">
+      <cd:constant type="a"/>
+      <cd:constant type="b"/>
+      <cd:constant type="A"/>
+      <cd:constant type="B"/>
+     </cd:parameter>
+     <cd:parameter name="method">
+      <cd:constant type="default"/>
+      <cd:constant type="before"/>
+      <cd:constant type="after"/>
+      <cd:constant type="first"/>
+      <cd:constant type="last"/>
+      <cd:constant type="ch"/>
+      <cd:constant type="mm"/>
+      <cd:constant type="zm"/>
+      <cd:constant type="pm"/>
+      <cd:constant type="mc"/>
+      <cd:constant type="zc"/>
+      <cd:constant type="pc"/>
+      <cd:constant type="uc"/>
+     </cd:parameter>
+     <cd:parameter name="compress">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="all"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="text"/>
+     </cd:parameter>
+     <cd:parameter name="check">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="criterium">
+      <cd:constant type="local"/>
+      <cd:constant type="text"/>
+      <cd:constant type="current"/>
+      <cd:constant type="previous"/>
+      <cd:constant default="yes" type="all"/>
+      <cd:constant type="cd:section"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixseparatorset">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixsegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="*"/>
+      <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconnector">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefix">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="pageseparatorset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pagestarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagestopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagesegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+     </cd:parameter>
+     <cd:parameter name="maxwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="indicator">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="textcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="deeptextcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="pagecommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="interaction">
+      <cd:constant type="text"/>
+      <cd:constant default="yes" type="pagenumber"/>
+     </cd:parameter>
+     <cd:parameter name="pagenumber">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="symbol">
+      <cd:constant type="a"/>
+      <cd:constant default="yes" type="n"/>
+      <cd:constant type="none"/>
+      <cd:constant type="1"/>
+      <cd:constant type="2"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="language">
+      <cd:constant type="default"/>
+      <cd:constant type="DIN␣5007-1"/>
+      <cd:constant type="DIN␣5007-2"/>
+      <cd:constant type="Duden"/>
+      <cd:constant type="de-DE"/>
+      <cd:constant type="de-CH"/>
+      <cd:constant type="de-AT"/>
+      <cd:constant type="ru-iso9"/>
+      <cd:constant type="ocs-scn"/>
+      <cd:constant type="cd:language"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="textstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="textcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pagestyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pageleft">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageright">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="balance">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="numberorder">
+      <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -34056,7 +35371,212 @@
      <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setupregister"/>
+     <cd:parameter name="referencemethod">
+      <cd:constant type="forward"/>
+     </cd:parameter>
+     <cd:parameter name="expansion">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="xml"/>
+     </cd:parameter>
+     <cd:parameter name="ownnumber">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="xmlsetup">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="alternative">
+      <cd:constant type="a"/>
+      <cd:constant type="b"/>
+      <cd:constant type="A"/>
+      <cd:constant type="B"/>
+     </cd:parameter>
+     <cd:parameter name="method">
+      <cd:constant type="default"/>
+      <cd:constant type="before"/>
+      <cd:constant type="after"/>
+      <cd:constant type="first"/>
+      <cd:constant type="last"/>
+      <cd:constant type="ch"/>
+      <cd:constant type="mm"/>
+      <cd:constant type="zm"/>
+      <cd:constant type="pm"/>
+      <cd:constant type="mc"/>
+      <cd:constant type="zc"/>
+      <cd:constant type="pc"/>
+      <cd:constant type="uc"/>
+     </cd:parameter>
+     <cd:parameter name="compress">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="all"/>
+      <cd:constant type="packed"/>
+      <cd:constant type="text"/>
+     </cd:parameter>
+     <cd:parameter name="check">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="criterium">
+      <cd:constant type="local"/>
+      <cd:constant type="text"/>
+      <cd:constant type="current"/>
+      <cd:constant type="previous"/>
+      <cd:constant default="yes" type="all"/>
+      <cd:constant type="cd:section"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixseparatorset">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixstopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixsegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+      <cd:constant type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="cd:section"/>
+      <cd:constant method="range" prefix="cd:section" type="*"/>
+      <cd:constant method="range" prefix="cd:section" type="all"/>
+      <cd:constant type="current"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefixconnector">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageprefix">
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="pageseparatorset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pageconversionset">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="pagestarter">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagestopper">
+      <cd:constant type="cd:command"/>
+      <cd:constant method="apply" prefix="cd:processor" type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagesegments">
+      <cd:constant type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="cd:number"/>
+      <cd:constant method="range" prefix="cd:number" type="*"/>
+      <cd:constant method="range" prefix="cd:number" type="all"/>
+     </cd:parameter>
+     <cd:parameter name="maxwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="indicator">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="command">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="textcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="deeptextcommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="pagecommand">
+      <cd:constant type="cd:oneargument"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="interaction">
+      <cd:constant type="text"/>
+      <cd:constant default="yes" type="pagenumber"/>
+     </cd:parameter>
+     <cd:parameter name="pagenumber">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="symbol">
+      <cd:constant type="a"/>
+      <cd:constant default="yes" type="n"/>
+      <cd:constant type="none"/>
+      <cd:constant type="1"/>
+      <cd:constant type="2"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="language">
+      <cd:constant type="default"/>
+      <cd:constant type="DIN␣5007-1"/>
+      <cd:constant type="DIN␣5007-2"/>
+      <cd:constant type="Duden"/>
+      <cd:constant type="de-DE"/>
+      <cd:constant type="de-CH"/>
+      <cd:constant type="de-AT"/>
+      <cd:constant type="ru-iso9"/>
+      <cd:constant type="ocs-scn"/>
+      <cd:constant type="cd:language"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="textstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="textcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pagestyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pagecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="pageleft">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="pageright">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="balance">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="align">
+      <cd:inherit name="setupalign"/>
+     </cd:parameter>
+     <cd:parameter name="numberorder">
+      <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
    <cd:instances>
@@ -34079,10 +35599,10 @@
      <cd:constant method="apply" prefix="cd:processor" type="cd:text"/>
     </cd:keywords>
     <cd:index list="yes"/>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="structure" file="strc-reg.mkiv" level="document" name="stopregister">
-   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:content"/>
+    </cd:keywords>
+    <cd:delimiter name="stopregister"/>
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
@@ -34258,10 +35778,10 @@
       <cd:constant type="cd:value"/>
      </cd:parameter>
     </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="structure" file="strc-reg.mkiv" level="document" name="stopstructurepageregister">
-   <cd:arguments>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:content"/>
+    </cd:keywords>
+    <cd:delimiter name="stopstructurepageregister"/>
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
@@ -35128,6 +36648,10 @@
       <cd:constant type="positive"/>
       <cd:constant type="all"/>
      </cd:parameter>
+     <cd:parameter name="hidenumber">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -35319,6 +36843,34 @@
       <cd:constant type="cd:value"/>
      </cd:parameter>
     </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="strc-sec.mkiv" level="system" name="placerawheaddata">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:section"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="strc-sec.mkiv" level="system" name="placerawheadtext">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:section"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="strc-sec.mkiv" level="system" name="placerawheadnumber">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:section"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure" file="strc-sec.mkiv" level="document" name="repeathead">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:section"/>
+    </cd:keywords>
    </cd:arguments>
   </cd:command>
   <cd:command category="structure" file="strc-sec.mkiv" level="system" name="definesection">
@@ -36162,6 +37714,33 @@
    </cd:arguments>
   </cd:command>
  </cd:interface>
+ <cd:interface file="i-simplecolumns.xml">
+  <cd:command category="structure layout" file="page-smp.mkiv" level="system" name="setsimplecolumnshsize">
+   <cd:arguments>
+    <cd:assignments list="yes">
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="lines">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="structure layout" file="page-smp.mkiv" level="system" name="simplecolumns" type="environment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setsimplecolumnshsize"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+ </cd:interface>
  <cd:interface file="i-smash.xml">
   <cd:command file="supp-box.mkiv" level="system" name="smashbox">
    <cd:arguments>
@@ -36984,6 +38563,16 @@
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="symbols" file="symb-ini.mkiv" level="style" name="setupsymbols">
+   <cd:arguments>
+    <cd:assignments list="yes">
+     <cd:parameter name="stylealternative">
+      <cd:constant default="yes" type="text"/>
+      <cd:constant type="math"/>
+     </cd:parameter>
+    </cd:assignments>
    </cd:arguments>
   </cd:command>
  </cd:interface>
@@ -43051,7 +44640,59 @@
      <cd:constant type="edge"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setuplayouttext"/>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="empty"/>
+      <cd:constant type="high"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="nomarking"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="strut">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="rightstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="rightcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -43063,7 +44704,59 @@
      <cd:constant type="edge"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setuplayouttext"/>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="empty"/>
+      <cd:constant type="high"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="nomarking"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="strut">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="rightstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="rightcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -43075,7 +44768,59 @@
      <cd:constant type="edge"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setuplayouttext"/>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="empty"/>
+      <cd:constant type="high"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="nomarking"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="strut">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="rightstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="rightcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -43087,7 +44832,59 @@
      <cd:constant type="edge"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setuplayouttext"/>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="empty"/>
+      <cd:constant type="high"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="nomarking"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="strut">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="rightstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="rightcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -43099,7 +44896,59 @@
      <cd:constant type="edge"/>
     </cd:keywords>
     <cd:assignments list="yes">
-     <cd:inherit name="setuplayouttext"/>
+     <cd:parameter name="state">
+      <cd:constant type="start"/>
+      <cd:constant type="stop"/>
+      <cd:constant type="empty"/>
+      <cd:constant type="high"/>
+      <cd:constant type="none"/>
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="nomarking"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="style">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="color">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="strut">
+      <cd:constant default="yes" type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="rightstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="leftcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="rightcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rightwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -45822,6 +47671,9 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="whitespace" file="typo-wrp.mkiv" level="document" name="crlf"/>
+  <cd:command category="whitespace" file="typo-wrp.mkiv" level="document" name="settestcrlf"/>
+  <cd:command category="whitespace" file="typo-wrp.mkiv" level="document" name="crlfplaceholder"/>
  </cd:interface>
  <cd:interface file="i-whitespace.xml">
   <cd:command category="whitespace" file="spac-ver.mkiv" level="style" name="setupwhitespace">

@@ -18,10 +18,6 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 -- Thomas's turture test (also for other reasons). But .. who knows what magic
 -- I can cook up in due time.
 
-if CONTEXTLMTXMODE == 0 then
-    return
-end
-
 -- If you consider this complex, watch:
 --
 -- https://www.youtube.com/watch?v=6H-cAzfB2qo

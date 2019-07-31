@@ -23,6 +23,10 @@ local streamscache = containers.define("fonts", "streams", version, true)
 
 -- shapes (can be come a separate file at some point)
 
+local compact_streams = false
+
+directives.register("fonts.streams.compact", function(v) compact_streams = v end)
+
 local function packoutlines(data,makesequence)
     local subfonts = data.subfonts
     if subfonts then
@@ -209,6 +213,16 @@ local function loadoutlines(cache,filename,sub,instance)
     return data
 end
 
+local function cachethem(cache,hash,data)
+    local fast = caches.fast
+    if compact_streams then
+        caches.fast = true
+    end
+    containers.write(cache,hash,data)
+    caches.fast = fast
+    return containers.read(cache,hash) -- frees old mem
+end
+
 local function loadstreams(cache,filename,sub,instance)
     local base = file.basename(filename)
     local name = file.removesuffix(base)
@@ -240,8 +254,7 @@ local function loadstreams(cache,filename,sub,instance)
                 data.size    = size
                 data.format  = data.format or (kind == "otf" and "opentype") or "truetype"
                 data.time    = time
-                containers.write(cache,hash,data)
-                data = containers.read(cache,hash) -- frees old mem
+                data = cachethem(cache,hash,data)
             end
         end
     elseif size > 0 and (kind == "pfb") then
@@ -295,8 +308,7 @@ local function loadstreams(cache,filename,sub,instance)
                         weight             = metadata.weight,
                     },
                 }
-                containers.write(cache,hash,data)
-                data = containers.read(cache,hash) -- frees old mem
+                data = cachethem(cache,hash,data)
             end
         end
     else

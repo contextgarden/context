@@ -69,7 +69,8 @@ caches.ask      = false
 caches.relocate = false
 caches.defaults = { "TMPDIR", "TEMPDIR", "TMP", "TEMP", "HOME", "HOMEPATH" }
 
-directives.register("system.caches.fast",function(v) caches.fast = true end)
+directives.register("system.caches.fast",  function(v) caches.fast   = true end)
+directives.register("system.caches.direct",function(v) caches.direct = true end)
 
 local writable, readables, usedreadables = nil, { }, { }
 
@@ -361,11 +362,7 @@ end
 
 local saveoptions = { compact = true }
 
--- add some point we will only use the internal bytecode compiler and
--- then we can flag success in the tma so that it can trigger a compile
--- if the other engine
-
-function caches.savedata(filepath,filename,data,raw)
+function caches.savedata(filepath,filename,data)
     local tmaname, tmcname = caches.setluanames(filepath,filename)
     data.cache_uuid = os.uuid()
     if caches.fast then

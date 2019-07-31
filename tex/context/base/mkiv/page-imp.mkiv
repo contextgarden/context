@@ -162,11 +162,15 @@
    \box\scratchbox
    \endgroup}
 
-\ifdefined \page_shipout_box \else
+%D Also in normal \MKIV\ we nos use the indirect way so that we benefit from timing and
+%D tracing.
 
-    \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+% \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
 
-\fi
+\unexpanded\def\page_shipout_box#1%
+  {\clf_shipoutpage#1\relax
+   \global\setbox#1\emptybox
+   \global\deadcycles\zerocount}
 
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone

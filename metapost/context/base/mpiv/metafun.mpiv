@@ -23,34 +23,21 @@ mpprocset := 1 ; % not used
 input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;
 input "mp-mlib.mpiv" ;
-%     "mp-core.mpiv" ; % todo: namespace and cleanup
-input "mp-luas.mpiv" ; % experimental
-input "mp-page.mpiv" ; % todo: namespace and cleanup
-input "mp-butt.mpiv" ; % todo: namespace and cleanup
-input "mp-shap.mpiv" ; % will be improved
-input "mp-grph.mpiv" ; % todo: namespace and cleanup
-input "mp-grid.mpiv" ; % todo: namespace and cleanup
-input "mp-form.mpiv" ; % under (re)construction
-input "mp-figs.mpiv" ; % obsolete, needs checking
-input "mp-func.mpiv" ; % under construction
-%     "mp-text.mpiv" ; % loaded on demand
-%     "mp-char.mpiv" ; % loaded on demand
-%     "mp-step.mpiv" ; % loaded on demand
-%     "mp-chem.mpiv" ; % loaded on demand
-input "mp-node.mpiv" ; % relatively small so preloaded
+input "mp-luas.mpiv" ;
+input "mp-page.mpiv" ;
+input "mp-butt.mpiv" ;
+input "mp-shap.mpiv" ;
+input "mp-grph.mpiv" ;
+input "mp-grid.mpiv" ;
+input "mp-form.mpiv" ;
+input "mp-figs.mpiv" ;
+input "mp-func.mpiv" ;
+input "mp-node.mpiv" ;
 input "mp-apos.mpiv" ;
 input "mp-abck.mpiv" ;
 input "mp-blob.mpiv" ;
 
-string metafunversion ; metafunversion =
-    "metafun iv"                        & " " &
-    decimal year                        & "-" &
-    decimal month                       & "-" &
-    decimal day                         & " " &
-    if ((time div 60) < 10)           :   "0" & fi
-    decimal (time div 60)               & ":" &
-    if ((time-(time div 60)*60) < 10) :   "0" & fi
-    decimal (time-(time div 60)*60)   ;
+string metafunversion ; metafunversion = "metafun iv " & mfun_timestamp;
 
 let normalend = end ;
 
@@ -60,5 +47,3 @@ if known mplib :
 else :
     def end = ; message "" ; message metafunversion ; message "" ; normalend ; enddef ;
 fi ;
-
-% dump ; % obsolete in mplib

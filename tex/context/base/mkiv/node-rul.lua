@@ -124,6 +124,9 @@ local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 local setmetatableindex  = table.setmetatableindex
 
+local magicconstants     = tex.magicconstants
+local running            = magicconstants.running
+
 --
 
 local striprange         = nuts.striprange
@@ -773,9 +776,9 @@ interfaces.implement {
     },
     actions   = function(t)
         local n = new_rule(
-            t.width,
-            t.height,
-            t.depth
+            t.width or running,
+            t.height or running,
+            t.depth or running
         )
         setattrlist(n,true)
         setoffsets(n,t.xoffset,t.yoffset) -- ,t.left, t.right

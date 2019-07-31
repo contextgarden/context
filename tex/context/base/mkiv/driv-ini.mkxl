@@ -1,0 +1,20 @@
+%D \module
+%D   [       file=driv-ini,
+%D        version=2018.07.26,
+%D          title=\CONTEXT\ Driver Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Driver Macros / Initialization}
+
+\registerctxluafile{driv-ini}{}
+
+\unprotect
+
+\protect \endinput

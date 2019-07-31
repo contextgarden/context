@@ -445,7 +445,7 @@ vardef sinh   primary x = save xx ; xx = exp x ; (xx-1/xx)/2 enddef ;
 vardef cosh   primary x = save xx ; xx = exp x ; (xx+1/xx)/2 enddef ;
 vardef tanh   primary x = save xx ; xx = exp x ; (xx-1/xx)/(xx+1/xx) enddef ;
 
-%D Like mod, but useful for anglesl it returns (-.5d,+.5d] and is used
+%D Like mod, but useful for angles, it returns (-.5d,+.5d] and is used
 %D in for instance mp-chem.
 
 primarydef a zmod b = (-((b/2 - a) mod b) + b/2) enddef ;
@@ -1875,8 +1875,7 @@ def rightarrow  (expr pat,tim,len) = pointarrow(pat,tim,len,-len) enddef ;
 def leftarrow   (expr pat,tim,len) = pointarrow(pat,tim,len,+len) enddef ;
 def centerarrow (expr pat,tim,len) = pointarrow(pat,tim,len,   0) enddef ;
 
-%D The \type {along} and \type {on} operators can be used
-%D as follows:
+%D The \type {along} and \type {on} operators can be used as follows:
 %D
 %D \starttyping
 %D drawdot point .5  along somepath ;
@@ -3629,3 +3628,13 @@ enddef ;
 % 	endfor;
 %     n
 % enddef;
+
+vardef mfun_timestamp =
+    decimal year                        & "-" &
+    decimal month                       & "-" &
+    decimal day                         & " " &
+    if ((time div 60) < 10)           :   "0" & fi
+    decimal (time div 60)               & ":" &
+    if ((time-(time div 60)*60) < 10) :   "0" & fi
+    decimal (time-(time div 60)*60)
+enddef ;

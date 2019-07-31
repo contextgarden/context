@@ -1,0 +1,730 @@
+%D \module
+%D   [       file=lang-ini,
+%D        version=1996.01.25,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module needs a further cleanup (real split between ii/iv).
+
+% \cldcontext{languages.numbers[tex.count.mainlanguagenumber]}
+
+%D This module implements multi||language support of \CONTEXT, which should not be
+%D confused with the multi||lingual interface. This support will be extended when
+%D needed. Properties of languages are defined in \TEX\ files as well as \LUA\
+%D files.
+
+\writestatus{loading}{ConTeXt Language Macros / Initialization}
+
+\registerctxluafile{lang-ini}{}
+\registerctxluafile{lang-def}{}
+\registerctxluafile{lang-cnt}{}
+
+\unprotect
+
+\ifdefined\nonfrenchspacing\else \let\nonfrenchspacing\relax \fi
+\ifdefined\frenchspacing   \else \let\frenchspacing   \relax \fi
+
+%D When loading hyphenation patterns, \TEX\ assign a number to each loaded table,
+%D starting with~0. Switching to a specific table is done by assigning the relevant
+%D number to the predefined \COUNTER\ \type {\language}. However, in \MKIV\ a lot
+%D of management is delegated to \LUA.
+
+%D We keep track of the last loaded patterns by means of a pseudo \COUNTER. This
+%D just one of those situations in which we don't want to spent a real one. Language
+%D zero has no patterns, first of all because I like to start numbering at one. It
+%D may come in handy for special purposes as well.
+
+\normallanguage\zerocount \def\loadedlanguage{1}
+
+%D \macros
+%D   {currentlanguage, setupcurrentlanguage}
+%D
+%D Instead of numbers,we are going to use symbolic names for the languages. The
+%D current langage is saved in the macro \type {\currentlanguage}. The setup macro
+%D is mainly used for cosmetic purposes.
+%D
+%D \starttyping
+%D \dorecurse{3}
+%D   {\language[nl]
+%D    \startmode[*en] english \stopmode
+%D    \startmode[*nl] dutch   \stopmode
+%D    \language[en]
+%D    \startmode[*en] english \stopmode
+%D    \startmode[*nl] dutch   \stopmode}
+%D \stoptyping
+
+\let\currentlanguage    \empty
+\let\currentmainlanguage\empty
+
+%D \macros
+%D   {defaultlanguage,languageparameter,specificlanguageparameter}
+%D
+%D We don't use the commandhandler here (yet) because we have a rather special
+%D fallback mechanism so quite some compatibility testing is needed.
+
+\installcorenamespace{language}
+\installcorenamespace{languagelinked}
+
+\def\currentusedlanguage{\currentlanguage}
+
+\def\defaultlanguage#1%
+  {\ifcsname\??language#1\s!default\endcsname
+     \expandafter\defaultlanguage\lastnamedcs
+   \else
+     #1%
+   \fi}
+
+\def\languageparameter#1%
+  {\ifcsname\??language\currentlanguage#1\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??language\currentlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
+   \orelse\ifcsname\??language\s!default#1\endcsname
+     \lastnamedcs
+   \fi}
+
+\def\specificlanguageparameter#1#2%
+  {\ifcsname\??language#1#2\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??language#1\s!default\endcsname
+     \expandafter\specificlanguageparameter\lastnamedcs{#2}%
+   \orelse\ifcsname\??language\s!default#2\endcsname
+     \lastnamedcs
+   \fi}
+
+\def\mainlanguageparameter#1%
+  {\ifcsname\??language\currentmainlanguage#1\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??language\currentmainlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
+   \orelse\ifcsname\??language\s!default#1\endcsname
+     \lastnamedcs
+   \fi}
+
+\let\usedlanguageparameter\languageparameter
+
+\def\askedlanguageparameter#1% assumes \currentusedlanguage being set
+  {\ifcsname\??language\currentusedlanguage#1\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??language\currentusedlanguage\s!default\endcsname
+     \expandafter\specificlanguageparameter\lastnamedcs{#1}%
+   \orelse\ifcsname\??language\s!default#1\endcsname
+     \lastnamedcs
+   \fi}
+
+\unexpanded\def\setusedlanguage#1%
+  {\edef\currentusedlanguage{\reallanguagetag{#1}}%
+   \ifx\currentusedlanguage\empty
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \orelse\ifx\currentusedlanguage\v!global
+     \let\currentusedlanguage  \currentmainlanguage
+     \let\usedlanguageparameter\mainlanguageparameter
+   \orelse\ifx\currentusedlanguage\v!local
+     \let\currentusedlanguage  \currentlanguage
+     \let\usedlanguageparameter\languageparameter
+   \else
+     \let\usedlanguageparameter\askedlanguageparameter
+   \fi}
+
+\unexpanded\def\setupcurrentlanguage[#1]%
+  {\setcurrentlanguage\currentmainlanguage{#1}}
+
+\unexpanded\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
+  {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
+   \ifx\xaskedlanguage\empty \else
+     \ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
+     \let\currentmainlanguage\xaskedlanguage
+     \setsystemmode{\systemmodeprefix\currentmainlanguage}%
+   \fi
+   \edef\xaskedlanguage{#2}%
+   \ifx\xaskedlanguage\empty \else
+     \ifx\currentlanguage\empty\else\resetsystemmode\currentlanguage\fi
+     \let\currentlanguage\xaskedlanguage
+     \setsystemmode\currentlanguage
+   \fi}
+
+%D The internal macros will be defined later.
+
+%D \macros
+%D   {installlanguage}
+%D
+%D Hyphenation patterns can only be loaded when the format file is prepared. The
+%D next macro takes care of this loading. A language is specified with
+%D
+%D \showsetup{installlanguage}
+%D
+%D When \type {state} equals \type {start}, both patterns and additional hyphenation
+%D specifications are loaded. These files are seached for in the patterns path
+%D have names like \type {lang-nl.lua}.
+%D
+%D The \type {spacing} variable specifies how the spaces after punctuation has to be
+%D handled. English is by tradition more tolerant to inter||sentence spacing than
+%D other languages.
+%D
+%D This macro also defines \type {\identifier} as a shortcut switch to the language.
+%D Furthermore the command defined as being language specific, are executed. With
+%D \type {default} we can default to another language (patterns) at format
+%D generation time. Patterns are loaded at runtime.
+
+\newtoks \everysetuplanguage
+
+\def\installedlanguages{\clf_installedlanguages}
+
+\unexpanded\def\doifelselanguage#1%
+  {\ifcsname\??language#1\c!state\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doiflanguageelse\doifelselanguage
+
+\def\reallanguagetag#1%
+  {\ifcsname\??languagelinked#1\endcsname\lastnamedcs\else#1\fi}
+
+% \language[#1] gave unwanted side effect of loading language specifics
+
+\unexpanded\def\installlanguage
+  {\dodoubleargument\lang_basics_install}
+
+% \def\lang_basics_install[#1][#2]%
+%   {\doifelseassignment{#2}
+%      {\doifelselanguage{#1}
+%         {\getparameters[\??language#1][#2]}
+%         {\setvalue{\??languagelinked#1}{#1}%
+%          \lang_basics_install_indeed{#1}{#1}%
+%          \getparameters[\??language#1][\c!state=\v!start,#2]}%
+%       \edef\currentsetuplanguage{#1}%
+%       \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
+%       \the\everysetuplanguage}
+%      {\setvalue{\??languagelinked#1}{#2}%
+%       \clf_setlanguagesynonym{#1}{#2}%
+%       \lang_basics_install_indeed{#1}{#2}}}
+
+\def\lang_basics_install[#1][#2]%
+  {\ifcondition\validassignment{#2}%
+     \doifelselanguage{#1}
+       {\getparameters[\??language#1][#2]}
+       {\setvalue{\??languagelinked#1}{#1}%
+        \lang_basics_install_indeed{#1}{#1}%
+        \getparameters[\??language#1][\c!state=\v!start,#2]}%
+     \edef\currentsetuplanguage{#1}%
+     \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
+     \the\everysetuplanguage
+   \else
+     \setvalue{\??languagelinked#1}{#2}%
+     \clf_setlanguagesynonym{#1}{#2}%
+     \lang_basics_install_indeed{#1}{#2}%
+  \fi}
+
+\def\lang_basics_install_indeed#1#2%
+  {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}
+
+%D When the second argument is a language identifier, a synonym is created. This
+%D feature is present because we used dutch mnemonics in the dutch version, but
+%D nowadays conform a standard.
+
+\unexpanded\def\doifelsepatterns#1%
+  {\begingroup % will change
+   \lang_basics_set_current[#1]%
+   \ifnum\normallanguage>\zerocount
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifpatternselse\doifelsepatterns
+
+%D \macros
+%D   {setuplanguage}
+%D
+%D Quick and dirty, but useful:
+%D
+%D \showsetup{setuplanguage}
+%D
+%D Beware, this command can only be used when a language is installed.
+
+\unexpanded\def\setuplanguage
+  {\dodoubleempty\lang_basics_setup}
+
+\ifdefined\lang_basics_synchronize \else
+    \let\lang_basics_synchronize\relax % be nice for setups till we have one
+\fi
+
+\installmacrostack\currentlanguage
+
+\def\lang_basics_setup[#1][#2]%
+  {\ifsecondargument
+     \push_macro_currentlanguage % can be default
+     \edef\currentsetuplanguage{\reallanguagetag{#1}}%
+     \getparameters[\??language\currentsetuplanguage][#2]%
+     \the\everysetuplanguage
+     \pop_macro_currentlanguage
+    %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
+   \else
+     \let\currentsetuplanguage\currentlanguage
+     \getparameters[\??language\currentsetuplanguage][#1]%
+     \the\everysetuplanguage
+   \fi
+   \lang_basics_synchronize}
+
+\appendtoks
+    \clf_unloadlanguage{\currentsetuplanguage}%
+\to \everysetuplanguage
+
+\setuplanguage
+  [\s!default]
+  [\s!patterns=,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \s!lefthyphenchar=-1,
+   \s!righthyphenchar=45,
+   % used in compound i.e. interfaced with c! and can be anything so no numbers
+   \c!lefthyphen=,
+   \c!righthyphen=-,
+   \c!hyphen=-,
+   \c!spacing=\v!packed,
+   \c!compoundhyphen=\compoundhyphen,
+   \c!rightcompoundhyphen=\compoundhyphen,
+   \c!leftcompoundhyphen=,
+   \c!midsentence=---,
+   \c!leftsentence=---,
+   \c!rightsentence=---,
+   \c!leftsubsentence=---,
+   \c!rightsubsentence=---,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!leftspeech=\languageparameter\c!leftquotation,
+   \c!middlespeech=,
+   \c!rightspeech=\languageparameter\c!rightquotation,
+   \c!limittext=\unknown,
+   \c!time={h,:,m},
+   \c!date={\v!year,\ ,\v!month,\ ,\v!day},
+   \c!text=Ag,
+   \s!font=] % \v!auto : experimental !
+
+% to be tested:
+%
+% \setuplanguage
+%   [\s!default]
+%   [\c!righthyphenchar="AD]
+
+%D The values \type {leftsentence} and \type {rightsentence} can be (and are) used
+%D to implement automatic subsentence boundary glyphs, like in {\fr |<|french
+%D guillemots|>|} or {\de |<|german guillemots|>|} or {\nl |<|dutch dashes|>|} like
+%D situations. Furthermore \type {leftquotation} and \type {leftquote} come into
+%D view \quotation {when we quote} or \quote {quote} something.
+
+%D \macros
+%D  {currentdatespecification, currenttimespecification}
+%D
+%D Just to make things easy we can ask for the current date specification by saying:
+
+\def\currentdatespecification{\languageparameter\c!date}
+\def\currenttimespecification{\languageparameter\c!time}
+
+%D Carefull reading of these macros shows that it's legal to say
+%D
+%D \starttyping
+%D \installlanguage [du] [de]
+%D \stoptyping
+
+%D \macros
+%D   {language,mainlanguage}
+%D
+%D Switching to another language (actually another hyphenation pattern) is done
+%D with:
+%D
+%D \starttyping
+%D \language[identifier]
+%D \stoptyping
+%D
+%D or with \type {\identifier}. Just to be compatible with \PLAIN\ \TEX, we still
+%D support the original meaning, so
+%D
+%D \starttyping
+%D \language=1
+%D \stoptyping
+%D
+%D is a valid operation, where the relation between number and language depends on
+%D the order in installing languages.
+%D
+%D \showsetup{language}
+%D \showsetup{mainlanguage}
+%D
+%D Both commands take a predefined language identifier as argument. We can use \type
+%D {\mainlanguage[identifier]} for setting the (indeed) main language. This is the
+%D language used for translating labels like {\em figure} and {\em table}. The main
+%D language defaults to the current language.
+
+\newtoks \everylanguage
+
+\installcorenamespace{languagenumbers}
+
+\appendtoks
+    % we need to reassign the number because new patterns can be defined later on
+    % so let's hope not that many \setups happen during a run
+    \expandafter\glet\csname\??languagenumbers\currentlanguage\endcsname\undefined
+\to \everysetuplanguage
+
+\def\lang_basics_synchronize_yes
+  {\zerocount % see below
+   \global\expandafter\chardef\csname\??languagenumbers\currentlanguage\endcsname
+      \clf_languagenumber
+        {\currentlanguage}%
+        {\defaultlanguage\currentlanguage}%
+        {\languageparameter\s!patterns}%
+        {\languageparameter\c!factor}%
+      \relax
+   \normallanguage\csname\??languagenumbers\currentlanguage\endcsname}
+
+\let\lang_basics_synchronize_nop\zerocount % not loaded anyway
+
+\letvalue{\??languagenumbers}\lang_basics_synchronize_nop % initime
+
+\appendtoks
+    \letvalue{\??languagenumbers}\lang_basics_synchronize_yes % runtime
+\to \everydump
+
+\def\lang_basics_synchronize
+  {\normallanguage\csname\??languagenumbers
+     \ifcsname\??languagenumbers\currentlanguage\endcsname
+       \currentlanguage
+     \fi
+   \endcsname
+   \relax
+   \the\everylanguage
+   \relax}
+
+\newcount\hyphenstate
+\newcount\hyphenminoffset
+
+\unexpanded\def\lesshyphens
+  {\advance\hyphenminoffset\plusone
+   \lang_basics_synchronize_min_max}
+
+\unexpanded\def\morehyphens
+  {\ifcase\hyphenminoffset \else
+     \advance\hyphenminoffset\minusone
+   \fi
+   \lang_basics_synchronize_min_max}
+
+\unexpanded\def\nohyphens % nicer for url's
+  {\ifx\dohyphens\relax
+     \unexpanded\edef\dohyphens
+       {\hyphenminoffset\the\hyphenminoffset\relax
+        \lang_basics_synchronize_min_max}%
+   \fi
+   \hyphenminoffset\plusthousand
+   \lang_basics_synchronize_min_max}
+
+\let\dohyphens\relax
+
+\unexpanded\def\lang_basics_synchronize_min_max % maybe store this at the lua end
+  {% these values are stored along with glyph nodes
+   \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
+   \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
+   \hyphenationmin\numexpr0\languageparameter\s!hyphenmin\relax
+   % these values are stored with the language (global!)
+   \prehyphenchar \languageparameter\s!righthyphenchar\relax
+   \posthyphenchar\languageparameter\s!lefthyphenchar \relax}
+
+\appendtoks
+    \lang_basics_synchronize_min_max
+\to \everylanguage
+
+\unexpanded\def\unhyphenated
+  {\groupedcommand{\lefthyphenmin\maxdimen}\donothing}
+
+% \appendtoks
+%     \setups[\languageparameter\c!setups]%
+% \to \everylanguage
+
+%D You can setup the default language to reset settings.
+
+\appendtoks
+    \edef\currentlanguagesetups{\languageparameter\c!setups}%
+    \ifx\currentlanguagesetups\empty \else
+        \setups[\currentlanguagesetups]%
+    \fi
+\to \everylanguage
+
+% new
+
+\appendtoks
+    \usebidiparameter\languageparameter
+\to \everylanguage
+
+% this will move to core-spa !
+
+\appendtoks
+    \edef\p_spacing{\languageparameter\c!spacing}%
+    \ifx\p_spacing\v!broad
+      \nonfrenchspacing
+    \else
+      \frenchspacing
+    \fi
+\to \everylanguage
+
+% \mainlanguage[nl] \setuplanguage[nl][lefthyphen=,righthyphen=?]
+%
+% \dorecurse{100}{dit is toch wel een heel\normalhyphendiscretionary lang\normalhyphendiscretionary woord \recurselevel\ }
+% \dorecurse{100}{dit is toch wel een heellangwoord \recurselevel\ }
+
+% new experimental feature
+
+\unexpanded\def\setuplanguages
+  {\setuplanguage[\s!default]}
+
+% \setuplanguages[\s!font=\v!auto]
+% \setuplanguage[\s!default][\s!font=\v!auto]
+% \setuplanguage[nl][\s!font=\v!auto]
+
+\appendtoks
+    \edef\p_language_font{\languageparameter\s!font}%
+    \ifx\p_language_font\empty
+    \orelse\ifx\p_language_font\v!auto
+      \doaddfeature\currentlanguage
+    \else
+      \doaddfeature\p_language_font
+    \fi
+\to \everylanguage
+
+%D Fast switcher
+
+\def\lang_basics_switch_asked
+  {\ifcsname\??languagelinked\askedlanguage\endcsname
+     \edef\askedlanguage{\lastnamedcs}%
+     \ifx\currentlanguage\askedlanguage \else
+       \setcurrentlanguage\currentmainlanguage\askedlanguage
+       \lang_basics_synchronize
+     \fi
+   \fi}
+
+\unexpanded\def\uselanguageparameter#1%
+  {\edef\askedlanguage{#1\c!language}%
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+
+\unexpanded\def\douselanguageparameter#1% fast setter
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+
+\unexpanded\def\lang_basics_set_current[#1]%
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+
+\unexpanded\def\language
+  {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
+
+\let\setlanguage\language % we make these synonyms
+
+\let\patterns\gobbleoneargument
+
+\newcount\mainlanguagenumber
+
+%D Beware: you might need to use \type {\dontleavehmode} outside and|/|or \type {\par}
+%D inside the group!
+
+\unexpanded\def\startlanguage
+  {\begingroup\language}
+
+\let\stoplanguage\endgroup
+
+\unexpanded\def\mainlanguage[#1]%
+  {\edef\askedlanguage{#1}%
+   \ifx\askedlanguage\empty
+   \orelse\ifcsname\??languagelinked\askedlanguage\endcsname
+    %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
+     \edef\askedlanguage{\lastnamedcs}%
+     \ifx\currentlanguage\askedlanguage
+       \ifx\currentmainlanguage\askedlanguage \else
+         \setcurrentlanguage\askedlanguage\askedlanguage
+         \lang_basics_synchronize
+       \fi
+     \else
+       \setcurrentlanguage\askedlanguage\askedlanguage
+       \lang_basics_synchronize
+     \fi
+   \fi
+   \mainlanguagenumber\normallanguage}
+
+\appendtoks
+    \normallanguage\mainlanguagenumber
+\to \everybeforepagebody
+
+%D Used at all?
+
+\def\splitsequence#1#2%
+  {\doifelse{#1}\v!no{#2}{\doifelse{#1}\v!yes{\languageparameter\c!limittext}{#1}}}
+
+\def\splitsymbol#1%
+  {\splitsequence{#1}{\languageparameter\c!limittext}}
+
+%D Just like with subsentence boundary symbols, quotes placement depends on the
+%D current language, therefore we show the defaults here.
+%D
+%D \def\ShowLanguageValues [#1] [#2] #3 #4
+%D   {\blank
+%D    \startlinecorrection
+%D    \vbox\bgroup
+%D    \language[#1]
+%D    \midaligned{\bf#2 subsentence symbol and quotes}
+%D    \framed[width=\hsize,frame=off,topframe=on,bottomframe=on,offset=.5ex]
+%D      {\hfil\quotation{#3 #4}\hfil\quote{#2}\hfil
+%D       \startsubsentence\startsubsentence#3\stopsubsentence#4\stopsubsentence\hfil}
+%D    \egroup
+%D    \stoplinecorrection
+%D    \blank}
+%D
+%D \ShowLanguageValues [af] [afrikaans]  afrikaanse ...
+%D \ShowLanguageValues [ca] [catalan]    catalan ...
+%D \ShowLanguageValues [cs] [czech]      tjechisch tex
+%D \ShowLanguageValues [cs] [slovak]     slowaakse ...
+%D \ShowLanguageValues [da] [danish]     deense ...
+%D \ShowLanguageValues [de] [german]     duitse degelijkheid
+%D \ShowLanguageValues [en] [english]    engelse humor
+%D \ShowLanguageValues [et] [estonian]   ...
+%D \ShowLanguageValues [fi] [finnish]    finse ...
+%D \ShowLanguageValues [fr] [french]     franse slag
+%D \ShowLanguageValues [it] [italian]    italiaanse ...
+%D \ShowLanguageValues [la] [latin]      latijnse missen
+%D \ShowLanguageValues [nl] [dutch]      nederlandse zuinigheid
+%D \ShowLanguageValues [nb] [bokmal]     noorse zalm
+%D \ShowLanguageValues [nn] [nnynorsk]   noorse zalm
+%D \ShowLanguageValues [pl] [polish]     poolse vlag
+%D \ShowLanguageValues [pt] [portuguese] portugese ...
+%D \ShowLanguageValues [es] [spanish]    spaans benauwd
+%D \ShowLanguageValues [sv] [swedish]    zweedse ...
+%D \ShowLanguageValues [tr] [turkish]    turks fruit
+
+%D We support a lot of languages. These are specified and loaded in separate files,
+%D according to their roots. Here we only take care of (postponed) setting of the
+%D current language.
+%D
+%D \unprotect
+%D \placetable{The germanic languages (\type{lang-ger})}
+%D \starttable[||||]
+%D \HL
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
+%D \HL
+%D \NC \s!nl        \NC dutch        \NC germanic  \NC\FR
+%D \NC \s!en        \NC english      \NC germanic  \NC\MR
+%D \NC \s!de        \NC german       \NC germanic  \NC\MR
+%D \NC \s!da        \NC danish       \NC germanic  \NC\MR
+%D \NC \s!sv        \NC swedish      \NC germanic  \NC\MR
+%D \NC \s!af        \NC afrikaans    \NC germanic  \NC\MR
+%D \NC \s!nb        \NC bokmal       \NC germanic  \NC\LR
+%D \NC \s!nn        \NC nynorsk      \NC germanic  \NC\LR
+%D \HL
+%D \stoptable
+%D \protect
+%D
+%D \unprotect
+%D \placetable{The italic languages (\type{lang-ita})}
+%D \starttable[||||]
+%D \HL
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
+%D \HL
+%D \NC \s!fr        \NC french       \NC italic    \NC\FR
+%D \NC \s!ca        \NC catalan      \NC italic    \NC\MR
+%D \NC \s!es        \NC spanish      \NC italic    \NC\MR
+%D \NC \s!it        \NC italian      \NC italic    \NC\MR
+%D \NC \s!la        \NC latin        \NC italic    \NC\MR
+%D \NC \s!pt        \NC portuguese   \NC italic    \NC\LR
+%D \HL
+%D \stoptable
+%D \protect
+%D
+%D \unprotect
+%D \placetable{The slavic languages (\type{lang-sla})}
+%D \starttable[||||]
+%D \HL
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
+%D \HL
+%D \NC \s!pl        \NC polish       \NC slavic    \NC\FR
+%D \NC \s!cs        \NC czech        \NC slavic    \NC\MR
+%D \NC \s!sk        \NC slavik       \NC slavic    \NC\LR
+%D \HL
+%D \stoptable
+%D \protect
+%D \unprotect
+%D
+%D \placetable{The altaic languages (\type{lang-alt})}
+%D \starttable[||||]
+%D \HL
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
+%D \HL
+%D \NC \s!tr        \NC turkish      \NC altaic    \NC\SR
+%D \HL
+%D \stoptable
+%D
+%D \placetable{The uralic languages (\type{lang-ura})}
+%D \starttable[||||]
+%D \HL
+%D \NC \bf mnemonic \NC \bf language \NC \bf group \NC\SR
+%D \HL
+%D \NC \s!fi        \NC finnish      \NC uralic    \NC\SR
+%D \HL
+%D \stoptable
+%D \protect
+
+\unexpanded\def\nopatterns{\normallanguage\minusone}
+
+%D We default to the language belonging to the interface. This is one of the few
+%D places outside the interface modules where \type {\startinterface} is used.
+
+\setupcurrentlanguage[\s!en]
+
+\unexpanded\def\initializemainlanguage
+  {\mainlanguage[\currentlanguage]%
+   \showmessage\m!languages9\currentlanguage}
+
+%D New:
+
+\let\stopexceptions\relax
+
+\unexpanded\def\startexceptions
+  {\dosingleempty\lang_basics_start_exceptions}
+
+\def\lang_basics_start_exceptions[#1]#2\stopexceptions % multilingual or not?
+  {\begingroup
+   \edef\askedlanguage{\reallanguagetag{#1}}%
+   \ifx\askedlanguage\empty
+     \let\askedlanguage\currentlanguage
+   \fi
+   \clf_setlanguageexceptions{\askedlanguage}{#2}%
+   \endgroup}
+
+\unexpanded\def\hyphenation
+  {\clf_setlanguageexceptions{\currentlanguage}}
+
+%D For the moment here:
+
+\uchyph        1 % also treat uppercase
+\exhyphenchar 45 % to permit breaking at explicit hyphens
+
+%D New:
+
+\unexpanded\def\traceddiscretionary#1#2#3%
+  {\dontleavehmode
+   \discretionary{\darkred#1}{\darkgreen#2}{\darkblue#3}}
+
+\unexpanded\def\samplediscretionary
+  {\traceddiscretionary
+     {pre\clf_currentprehyphenchar}%
+     {\clf_currentposthyphenchar post}%
+     {replace}}
+
+% todo: make this configurable
+
+\protect \endinput

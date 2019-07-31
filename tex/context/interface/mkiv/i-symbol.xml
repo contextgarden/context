@@ -147,4 +147,15 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="setupsymbols" level="style" category="symbols" file="symb-ini.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="stylealternative">
+                    <cd:constant type="text" default="yes"/>
+                    <cd:constant type="math"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

@@ -18,13 +18,11 @@
 %D \macros
 %D  {em,emphasistypeface,emphasisboldface}
 %D
-%D The next macro started as a copy of Donald Arseneau's
-%D \type{\em} (\TUGNEWS\ Vol.~3, no.~1, 1994). His
-%D implementation was a bit more sophisticated version of the
-%D standard \LATEX\ one. We further enhanced the macro, so now
-%D it also adapts itself to boldface mode. Because we favor
-%D {\sl slanted} type over {\it italic}, we made the emphasis
-%D adaptable, for instance:
+%D The next macro started as a copy of Donald Arseneau's \type {\em} (\TUGNEWS\
+%D Vol.~3, no.~1, 1994). His implementation was a bit more sophisticated version of
+%D the standard \LATEX\ one. We further enhanced the macro, so now it also adapts
+%D itself to boldface mode. Because we favor {\sl slanted} type over {\it italic},
+%D we made the emphasis adaptable, for instance:
 %D
 %D \starttyping
 %D \def\emphasistypeface {\it}
@@ -148,10 +146,9 @@
    \fi\fi
    \let\bf\font_emphasis_saved_emphasis_boldface}
 
-%D Donald's (adapted) macros take the next character into
-%D account when placing italic correction. As a bonus we also
-%D look for something that looks like a dash, in which case we
-%D don't correct.
+%D Donald's (adapted) macros take the next character into account when placing
+%D italic correction. As a bonus we also look for something that looks like a dash,
+%D in which case we don't correct.
 
 \let\italiccorrection=\/ % tex primitive
 
@@ -193,9 +190,8 @@
    \fi
    \endgroup}
 
-%D We end with some examples which show the behavior when
-%D some punctuation is met. We also show how the mechanism
-%D adapts itself to bold, italic and slanted typing.
+%D We end with some examples which show the behavior when some punctuation is met.
+%D We also show how the mechanism adapts itself to bold, italic and slanted typing.
 %D
 %D \startbuffer
 %D test {test}test       \par
@@ -223,9 +219,8 @@
 %D \macros
 %D   {emphbf,emphit,emphsl,emphtf}
 %D
-%D The next emphasis alternatives are for \THANH. They adapt
-%D their style as good as possible. These macros are obsolete
-%D in \MKIV.
+%D The next emphasis alternatives are for \THANH. They adapt their style as good as
+%D possible. These macros are obsolete in \MKIV.
 
 % \unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
 % \unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}

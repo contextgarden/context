@@ -36,6 +36,9 @@
                 <cd:parameter name="buffer">
                     <cd:constant type="cd:buffer"/>
                 </cd:parameter>
+                <cd:parameter name="type">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
                 <cd:parameter name="state">
                     <cd:constant type="start" default="yes"/>
                     <cd:constant type="stop"/>

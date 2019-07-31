@@ -20,51 +20,9 @@ if known context_luas : endinput ; fi ;
 % get passed. Of course in the end the real usage got a bit beyong the intended
 % usage. So, in addition to some definitions here there are and will be use in
 % other metafun modules too. Of course in retrospect I should have done this five
-% years earlier.
+% years earlier. Older version sof this module show the way it evolved.
 
 boolean context_luas ; context_luas := true ;
-
-% Experimental
-
-if contextlmtxmode :
-
-    % not yet (timing issue)
-
-    newinternal mfid_scriptindex ;
-    mfid_scriptindex := runscript("mp.mf_script_index('scriptindex')") ;
-
-    def scriptindex = runscript mfid_scriptindex enddef ;
-
-%   def scriptindex expr name =
-%       lua.mp.mf_script_index(name)
-%   enddef ;
-
-fi ;
-
-% First variant:
-%
-% let lua = runscript ;
-%
-% Second variant:
-%
-% vardef lua (text t) =
-%     runscript(for s = t : s & endfor "")
-% enddef;
-%
-% Third variant:
-%
-% vardef lua (text t) =
-%     runscript("" for s = t :
-%         if string s :
-%             & s
-%         elseif numeric s :
-%             & decimal s
-%         elseif boolean s :
-%             & if s : "true" else "false" fi
-%         fi endfor)
-% enddef;
-%
-% Fourth variant:
 
 string mfun_lua_bs ; mfun_lua_bs := "[===[" ;
 string mfun_lua_es ; mfun_lua_es := "]===]" ;
@@ -91,35 +49,6 @@ vardef mlib_luas_luacall(text t) =
         fi endfor
     )
 enddef ;
-
-% vardef mlib_luas_lualist(expr c)(text t) =
-%     save b ; boolean b ; b := false ;
-%     runscript(c & "(" for s = t :
-%         if b :
-%             & ","
-%         else :
-%             hide(b := true)
-%         fi
-%         if string s :
-%           % & ditto & s & ditto
-%             & mfun_lua_bs & s & mfun_lua_es
-%         elseif numeric s :
-%             & decimal s
-%         elseif boolean s :
-%             & if s : "true" else : "false" fi
-%         elseif pair s :
-%             & mfun_pair_to_table(s)
-%         elseif path s :
-%             & mfun_path_to_table(s)
-%         elseif rgbcolor s :
-%             & mfun_rgb_to_table(s)
-%         elseif cmykcolor s :
-%             & mfun_cmyk_to_table(s)
-%         else :
-%             & ditto & tostring(s) & ditto
-%         fi endfor & ")"
-%     )
-% enddef ;
 
 newinternal mfun_luas_b ;
 
@@ -189,23 +118,13 @@ enddef ;
 % lua.mp.mf_named_color(s)   % okay but, can also be
 % lua.mp("mf_named_color",s) % which gives expansion mess
 
-if contextlmtxmode :
-
-    newinternal mfid_resolvedcolor ; mfid_resolvedcolor := scriptindex "namedcolor" ;
-
-    def resolvedcolor = runscript mfid_resolvedcolor enddef ;
-
-else :
-
-    def resolvedcolor primary s = % no vardef
-        if string s :
-            runscript("mp.mf_named_color('" & s & "')") % faster anyway
-        else :
-            s
-        fi
-    enddef ;
-
-fi ;
+def resolvedcolor primary s = % no vardef
+    if string s :
+        runscript("mp.mf_named_color('" & s & "')") % faster anyway
+    else :
+        s
+    fi
+enddef ;
 
 % Modes:
 
@@ -257,77 +176,25 @@ vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
 
 %D New experimental feature for Alan-The-Number-Cruncher:
 
-if contextlmtxmode :
+def inpath suffix p = % permits p[0]
+    = 1 step 1 until
+    begingroup
+    save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
+    mfun_inpath_r = p ;
+    mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
+    if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
+    endgroup
+enddef ;
 
-    newinternal mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
-    newinternal mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;
-    newinternal mfid_path_leftof   ; mfid_path_leftof   := scriptindex "pathleftof" ;
-    newinternal mfid_path_rightof  ; mfid_path_rightof  := scriptindex "pathrightof" ;
-    newinternal mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
+% vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
+% vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
+% vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
 
-    % 25 pct gain
+vardef pointof primary i = runscript("mp.mf_path_point(" & decimal i & ")") enddef ;
+vardef leftof  primary i = runscript("mp.mf_path_left("  & decimal i & ")") enddef ;
+vardef rightof primary i = runscript("mp.mf_path_right(" & decimal i & ")") enddef ;
 
-       def inpath            = = 1 step 1 until runscript mfid_path_lengthof   enddef ;
-    vardef pointof primary i =                  runscript mfid_path_pointof  i enddef ;
-    vardef leftof  primary i =                  runscript mfid_path_leftof   i enddef ;
-    vardef rightof primary i =                  runscript mfid_path_rightof  i enddef ;
-
-    % another 10 pct gain
-
-  % def inpath   = = 1 step 1 until runscript mfid_path_lengthof enddef ;
-  % def pointof  =                  runscript mfid_path_pointof  enddef ;
-  % def leftof   =                  runscript mfid_path_leftof   enddef ;
-  % def rightof  =                  runscript mfid_path_rightof  enddef ;
-
-    extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
-
-else :
-
-    def inpath suffix p = % permits p[0]
-        = 1 step 1 until
-        begingroup
-        save mfun_inpath_r,mfun_inpath_n ; path mfun_inpath_r ;
-        mfun_inpath_r = p ;
-        mfun_inpath_n := lua.mp.mf_path_length(str mfun_inpath_r) ;
-        if mfun_inpath_n = 0 : 1 else : mfun_inpath_n fi
-        endgroup
-    enddef ;
-
-    % vardef pointof primary i = lua.mp.mf_path_point(i) enddef ;
-    % vardef leftof  primary i = lua.mp.mf_path_left (i) enddef ;
-    % vardef rightof primary i = lua.mp.mf_path_right(i) enddef ;
-
-    vardef pointof primary i = runscript("mp.mf_path_point(" & decimal i & ")") enddef ;
-    vardef leftof  primary i = runscript("mp.mf_path_left("  & decimal i & ")") enddef ;
-    vardef rightof primary i = runscript("mp.mf_path_right(" & decimal i & ")") enddef ;
-
-    extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;
-
-fi ;
+extra_endfig := extra_endfig & " lua.mp.mf_path_reset() ; " ;
 
 vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
 vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;
-
-if contextlmtxmode :
-
-    newinternal mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
-    newinternal mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
-    newinternal mfid_getparameter         ; mfid_getparameter         := scriptindex "getparameter" ;
-    newinternal mfid_getparametercount    ; mfid_getparametercount    := scriptindex "getparametercount" ;
-    newinternal mfid_getparameterentry    ; mfid_getparameterentry    := scriptindex "getparameterentry" ;
-    newinternal mfid_getparametersets     ; mfid_getparametersets     := scriptindex "getparametersets" ;
-    newinternal mfid_getparametersetcount ; mfid_getparametersetcount := scriptindex "getparametersetcount" ;
-    newinternal mfid_getparametersetentry ; mfid_getparametersetentry := scriptindex "getparametersetentry" ;
-    newinternal mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
-
-    def getparameters        = runscript mfid_getparameters        enddef ;
-    def presetparameters     = runscript mfid_presetparameters     enddef ;
-    def getparameter         = runscript mfid_getparameter         enddef ;
-    def getparametercount    = runscript mfid_getparametercount    enddef ;
-    def getparameterentry    = runscript mfid_getparameterentry    enddef ;
-    def getparametersets     = runscript mfid_getparametersets     enddef ;
-    def getparametersetcount = runscript mfid_getparametersetcount enddef ;
-    def getparametersetentry = runscript mfid_getparametersetentry enddef ;
-    def applyparameters      = runscript mfid_applyparameters      enddef ;
-
-fi ;

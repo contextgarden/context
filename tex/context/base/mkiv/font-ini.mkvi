@@ -53,8 +53,8 @@
 
 \unprotect
 
-%D There are several ways to specify a font. Three of them are
-%D pure \TeX\ ones, the fourth one is new:
+%D There are several ways to specify a font. Three of them are pure \TEX\ ones, the
+%D fourth one is new:
 %D
 %D \starttyping
 %D \font\name=cmr12
@@ -63,18 +63,15 @@
 %D \font\name=cmr12 sa 1.440
 %D \stoptyping
 %D
-%D The non||\TEX\ alternative \type{sa} stands for {\em scaled
-%D at}. This means as much as: scale the bodyfontsize with this
-%D factor. The scaled option is not that useful as one needs to
-%D know the design size.
+%D The non||\TEX\ alternative \type{sa} stands for {\em scaled at}. This means as
+%D much as: scale the bodyfontsize with this factor. The scaled option is not that
+%D useful as one needs to know the design size.
 %D
-%D Because \type {sa} (scaled at) and \type {mo} (mapped on)
-%D are not low level \TEX\ supported alternatives, we have to
-%D test for it ourselves. In doing so, we need an auxiliary
-%D \DIMENSION. We cannot use \type{\scratchdimen} because font
-%D loading can happen at any moment due to postponed loading.
-%D We could instead have used dirty grouping tricks, but this
-%D one works too.
+%D Because \type {sa} (scaled at) and \type {mo} (mapped on) are not low level \TEX\
+%D supported alternatives, we have to test for it ourselves. In doing so, we need an
+%D auxiliary \DIMENSION. We cannot use \type{\scratchdimen} because font loading can
+%D happen at any moment due to postponed loading. We could instead have used dirty
+%D grouping tricks, but this one works too.
 
 % \enableexperiments[fonts.autorscale]
 %
@@ -101,9 +98,8 @@
 %D \macros
 %D   {rm,ss,tt,hw,cg}
 %D
-%D Fonts are defined in separate files. When we define a font,
-%D we distinguish between several styles. In most cases we will
-%D use:
+%D Fonts are defined in separate files. When we define a font, we distinguish
+%D between several styles. In most cases we will use:
 %D
 %D \startlinecorrection
 %D \starttable[|l||]
@@ -115,8 +111,8 @@
 %D \stoptable
 %D \stoplinecorrection
 %D
-%D The number of styles is not limited to these three. When
-%D using Lucida Bright we can for instance also define:
+%D The number of styles is not limited to these three. When using Lucida Bright we
+%D can for instance also define:
 %D
 %D \startlinecorrection
 %D \starttable[|l||]
@@ -127,8 +123,8 @@
 %D \stoptable
 %D \stoplinecorrection
 %D
-%D Within such a font set (\type{cmr}) and style (\type{\rm})
-%D we can define a number of text font alternatives:
+%D Within such a font set (\type{cmr}) and style (\type{\rm}) we can define a number
+%D of text font alternatives:
 %D
 %D \startlinecorrection
 %D \starttable[|l||]
@@ -145,12 +141,11 @@
 %D \stoplinecorrection
 %D
 %D Internally fonts are stored as combination of size, style
-%D and alternative, e.g. \type{12pt}+\type{\ss}+\type{\bf}.
-%D Users are not confronted with sizes, but use the style or
-%D style+alternative to activate them.
+%D and alternative, e.g. \type{12pt}+\type{\ss}+\type{\bf}. Users are not confronted
+%D with sizes, but use the style or style+alternative to activate them.
 %D
-%D During the definition of a bodyfont one can also declare the
-%D available larger alternatives:
+%D During the definition of a bodyfont one can also declare the available larger
+%D alternatives:
 %D
 %D \starttyping
 %D \tf \tfa \tfb \tfc ...
@@ -167,13 +162,12 @@
 %D \slx \slxx
 %D \stoptyping
 %D
-%D There are only two smaller alternatives per style. The
-%D larger alternatives on the other hand have no limitations.
+%D There are only two smaller alternatives per style. The larger alternatives on the
+%D other hand have no limitations.
 %D
-%D These larger alternatives are mostly used in chapter and
-%D section titles or on title pages. When one switches to a
-%D larger alternative, the bold an other ones automatically
-%D adapt themselves:
+%D These larger alternatives are mostly used in chapter and section titles or on
+%D title pages. When one switches to a larger alternative, the bold an other ones
+%D automatically adapt themselves:
 %D
 %D \startbuffer
 %D \tfd Hi \bf there\sl, here \tfb I \bf am
@@ -189,8 +183,8 @@
 %D \getbuffer
 %D \stopexample
 %D
-%D Maybe this mechanism isn't always as logic, but as said
-%D before, we tried to make it as intuitive as possible.
+%D Maybe this mechanism isn't always as logic, but as said before, we tried to make
+%D it as intuitive as possible.
 %D
 %D So a specific kind of glyph can be characterized by:
 %D
@@ -200,52 +194,43 @@
 %D
 %D The last component (the size) is optional.
 %D
-%D We introduced \type{\tf} as command to call for the current
-%D normally sized typeface. This commands results in roman,
-%D sans serif, teletype or whatever style is in charge. Such
-%D rather massive switches of style sometimes take more
-%D processing time than comfortable. Of course there is a
-%D workaround for this: we can call fonts directly by means of
-%D commands like:
+%D We introduced \type {\tf} as command to call for the current normally sized
+%D typeface. This commands results in roman, sans serif, teletype or whatever style
+%D is in charge. Such rather massive switches of style sometimes take more
+%D processing time than comfortable. Of course there is a workaround for this: we
+%D can call fonts directly by means of commands like:
 %D
 %D \starttyping
 %D \rmtf \sssl \tttf \rmbsa
 %D \stoptyping
 %D
-%D One should realize that this fast calls have limitations,
-%D they lack for instance automatic super- and subscript
-%D support.
+%D One should realize that this fast calls have limitations, they lack for instance
+%D automatic super- and subscript support.
 %D
-%D This leaves us two more commands: \type{\tx} and
-%D \type{\txx}. These activate a smaller and even more smaller
-%D font than the current one and adapt themselves to the
-%D current alternative, so when \type{\bf} is active,
-%D \type{\tx} gives a smaller boldface, which in turn can be
-%D called directly by \type{\bfx}.
+%D This leaves us two more commands: \type {\tx} and \type {\txx}. These activate a
+%D smaller and even more smaller font than the current one and adapt themselves to
+%D the current alternative, so when \type {\bf} is active, \type {\tx} gives a
+%D smaller boldface, which in turn can be called directly by \type {\bfx}.
 %D
-%D These two smaller alternatives are specified by the bodyfont
-%D environment and therefore not necessarily have similar sizes
-%D as \type{\scriptsize} and \type{\scriptscriptsize}. The main
-%D reason for this incompatibility (which can easily be undone)
-%D lays in the fact that we often want a bit bigger characters
-%D than in math mode. In \CONTEXT\ for instance the \type{\tx}
-%D and \type{\txx} commands are used for surrogate
-%D \cap{smallcaps} which support both nesting and alternatives,
-%D like in {\bf\cap{a \cap{small} world}}, which was typeset by
+%D These two smaller alternatives are specified by the bodyfont environment and
+%D therefore not necessarily have similar sizes as \type {\scriptsize} and \type
+%D {\scriptscriptsize}. The main reason for this incompatibility (which can easily
+%D be undone) lays in the fact that we often want a bit bigger characters than in
+%D math mode. In \CONTEXT\ for instance the \type {\tx} and \type {\txx} commands
+%D are used for surrogate \cap {smallcaps} which support both nesting and
+%D alternatives, like in {\bf \cap {a \cap {small} world}}, which was typeset by
 %D
 %D \starttyping
 %D \bf\cap{a \cap{small} world}
 %D \stoptyping
 %D
-%D And compare $\rm \scriptstyle THIS$ with the slightly larger
-%D \cap{THIS}: \ruledhbox{$\rm \scriptstyle scriptstyle: THIS$}
-%D or \ruledhbox{\cap{x style: THIS}} makes a big difference.
+%D And compare $\rm \scriptstyle THIS$ with the slightly larger \cap {THIS}:
+%D \ruledhbox {$\rm \scriptstyle scriptstyle: THIS$} or \ruledhbox {\cap {x style:
+%D THIS}} makes a big difference.
 %D
-%D The \type{x..d} sizes should be used grouped. If you
-%D don't group them, i.e. call them in a row, \CONTEXT\ will
-%D not be able to sort out your intention (\type {x} inside
-%D \type {d} inside \type {x}. etc.). The following table
-%D demonstrates this:
+%D The \type {x..d} sizes should be used grouped. If you don't group them, i.e. call
+%D them in a row, \CONTEXT\ will not be able to sort out your intention (\type {x}
+%D inside \type {d} inside \type {x}. etc.). The following table demonstrates this:
 %D
 %D \def\FontState{\setstrut\ruledhbox{\strut Hello}}
 %D
@@ -398,10 +383,9 @@
 %D \macros
 %D   {everybodyfont,everyglobalbodyfont}
 %D
-%D Every change in bodyfont size has conseqences for the baseline
-%D distance and skips between paragraphs. These are initialized
-%D in other modules. Here we only provide the hooks that
-%D garantees their handling.
+%D Every change in bodyfont size has conseqences for the baseline distance and skips
+%D between paragraphs. These are initialized in other modules. Here we only provide
+%D the hooks that garantees their handling.
 %D
 %D At the system level one can initialize thing like:
 %D
@@ -411,20 +395,19 @@
 
 %D \macros
 %D   {globalbodyfontsize,localbodyfontsize,bodyfontsize}
-
-%D Here we have to distinguish between the global (overal) bodyfont
-%D size and the local (sometimes in the textflow) size. We store
-%D these dimensions in two \DIMENSION\ registers. These registers are
-%D not to be misused in calculations.
+%D
+%D Here we have to distinguish between the global (overal) bodyfont size and the
+%D local (sometimes in the textflow) size. We store these dimensions in two
+%D \DIMENSION\ registers. These registers are not to be misused in calculations.
 
 \ifdefined\globalbodyfontsize\else \newdimen\globalbodyfontsize \fi \globalbodyfontsize=12pt
 \ifdefined\localbodyfontsize \else \newdimen\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
 \ifdefined\bodyfontsize      \else \newdimen\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
-%D When we assign for instance 12pt to a \DIMENSION\ register the \type
-%D {\the}'d value comes out as 12.0pt, which is often not the way users
-%D specify the bodyfont size. Therefore we use normalized values. They
-%D are cached to save overhead in \LUA\ calls.
+%D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d
+%D value comes out as 12.0pt, which is often not the way users specify the bodyfont
+%D size. Therefore we use normalized values. They are cached to save overhead in
+%D \LUA\ calls.
 
 % \setnewconstant\fontdigits\plustwo % from now on always 2
 
@@ -465,11 +448,10 @@
 %D \macros
 %D   {mapfontsize}
 %D
-%D For special purposes, like in math, you may want to use
-%D slightly different sizes than the ones given. This happens
-%D for instance with the Math Times fonts. Mapped font sizes
-%D can be specified by using the \type {mo} key instead of
-%D \type {sa} in font definitions.
+%D For special purposes, like in math, you may want to use slightly different sizes
+%D than the ones given. This happens for instance with the Math Times fonts. Mapped
+%D font sizes can be specified by using the \type {mo} key instead of \type {sa} in
+%D font definitions.
 %D
 %D \startbuffer
 %D \mapfontsize[10pt][11pt]
@@ -558,10 +540,9 @@
 %D \macros
 %D   {definefontstyle,definefontsize,definefontalternative}
 %D
-%D When setting of switching the overall style we can use the
-%D short identifier like rm and ss, but when defined we can
-%D also use more verbose names like roman or sansserif. Such
-%D names are defined by:
+%D When setting of switching the overall style we can use the short identifier like
+%D rm and ss, but when defined we can also use more verbose names like roman or
+%D sansserif. Such names are defined by:
 %D
 %D \starttyping
 %D \definefontstyle [serif,rm] [rm]
@@ -633,12 +614,12 @@
 \definefontstyle [\s!ss] [\s!ss]
 \definefontstyle [\s!tt] [\s!tt]
 
-%D We define all the font switching commands globally. After all they are part
-%D of the formal font interface once defined. The size can be empty (so
-%D checking is needed as \type {\bf} is already defined)
-
-%D The \type {\normal..} variants are available as extras for cases where
-%D the \type {..} is overloaded.
+%D We define all the font switching commands globally. After all they are part of
+%D the formal font interface once defined. The size can be empty (so checking is
+%D needed as \type {\bf} is already defined).
+%D
+%D The \type {\normal..} variants are available as extras for cases where the \type
+%D {..} is overloaded.
 
 \newmacro\m_font_mm
 
@@ -724,23 +705,20 @@
 
 %D Scaling macros:
 %D
-%D This system is somewhat complicated by two (possible conflicting)
-%D demands:
+%D This system is somewhat complicated by two (possible conflicting) demands:
 %D
 %D \startitemize
-%D \item We support wildcards like \type {sa *} which will adapt
-%D       to the current size. This is also the default specification.
-%D \item We support named scales like \type {sa d}; beware: \type
-%D       {x} and \type {xx} are valid scales but they are not alway
-%D       the same as the ones used in for instance \type {\bfx} because
-%D       there the sized come from the bodyfont environment. In the
-%D       future there maybe a switch that also honors the environment
-%D       in named scales.
+%D \item We support wildcards like \type {sa *} which will adapt to the current
+%D       size. This is also the default specification.
+%D \item We support named scales like \type {sa d}; beware: \type {x} and \type {xx}
+%D       are valid scales but they are not alway the same as the ones used in for
+%D       instance \type {\bfx} because there the sized come from the bodyfont
+%D       environment. In the future there maybe a switch that also honors the
+%D       environment in named scales.
 %D \stopitemize
 %D
-%D Keep in mind that the smaller sizes are just for text super and
-%D subscripts while larger sizes can be used in titles where for
-%D instance math follows the size.
+%D Keep in mind that the smaller sizes are just for text super and subscripts while
+%D larger sizes can be used in titles where for instance math follows the size.
 
 % b:x{\definedfont[SerifBold sa  b]x}{\bfb  x $x^x$}\par
 % 1:x{\definedfont[SerifBold sa  1]x}{\bf   x $x^x$}\par
@@ -993,8 +971,7 @@
 %D
 %D We also accept \type{sa a}||\type{sa d} as specification.
 %D
-%D Before we implement the main definition macro, we first show
-%D one for local use:
+%D Before we implement the main definition macro, we first show one for local use:
 %D
 %D \starttyping
 %D \definefont[Some][LucidaBright at 100pt]    \Some some
@@ -1120,9 +1097,8 @@
 %D \macros
 %D   {currentfontbodyscale}
 %D
-%D Sometimes we need to have access to the font scale
-%D including the \type{a}||\type{d} sizes. The next macro
-%D returns the current scaling factor. Take a look at
+%D Sometimes we need to have access to the font scale including the \type {a}||\type
+%D {d} sizes. The next macro returns the current scaling factor. Take a look at
 %D \type {cont-log.tex} for an example of its use.
 
 \installcorenamespace{fontenvironments}
@@ -1192,30 +1168,27 @@
 
 \setvalue{\??fontenvironments\s!default}{1}
 
-%D In the following macros we use \type{\currentxfontsize} to
-%D hold the current x||size of the font. This enables us to
-%D support for instance \type{\sl} inside a \type{\tx} switch.
+%D In the following macros we use \type {\currentxfontsize} to hold the current
+%D x||size of the font. This enables us to support for instance \type {\sl} inside a
+%D \type {\tx} switch.
 
 \newconstant\currentxfontsize
 
 \def\xfontsize{\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}
 
-%D Now we enter the area of font switching. The switching
-%D mechanism has to take care of several situations, like:
+%D Now we enter the area of font switching. The switching mechanism has to take care
+%D of several situations, like:
 %D
 %D \startitemize[packed]
-%D \item  changing the overal document fonts (including margins,
-%D       headers and footers)
-%D \item  changing local fonts (only the running text)
-%D \item  smaller and even more smaller alternatives (super-
-%D       and subscripts)
+%D \item changing the overal document fonts (including margins, headers and footers)
+%D \item changing local fonts (only the running text)
+%D \item smaller and even more smaller alternatives (super- and subscripts)
 %D \stopitemize
 %D
-%D \TEX\ offers a powerfull family mechanism for super- and
-%D subscripts in math mode. In text mode however, we don't use
-%D families for the smaller alternatives, and therefore have
-%D to take care of it otherwise.
-
+%D \TEX\ offers a powerfull family mechanism for super- and subscripts in math mode.
+%D In text mode however, we don't use families for the smaller alternatives, and
+%D therefore have to take care of it otherwise.
+%D
 %D \macros
 %D   {definebodyfontenvironment,setupbodyfontenvironment}
 %D
@@ -1224,8 +1197,8 @@
 %D
 %D \showsetup{definebodyfontenvironment}
 %D
-%D Later on we will see how these parameters are used, so for
-%D the moment we stick with an example:
+%D Later on we will see how these parameters are used, so for the moment we stick
+%D with an example:
 %D
 %D \starttyping
 %D \definebodyfontenvironment
@@ -1239,9 +1212,9 @@
 %D           small=10pt]
 %D \stoptyping
 %D
-%D The first argument specifies the bodyfont size to which the
-%D settings apply. All second parameters are specified in
-%D dimensions and tell us more about related sizes.
+%D The first argument specifies the bodyfont size to which the settings apply. All
+%D second parameters are specified in dimensions and tell us more about related
+%D sizes.
 %D
 %D Afterwards, one can change values with
 %D
@@ -1251,8 +1224,8 @@
 %D passed, fractions (relations) are used instead of fixed
 %D sizes.
 
-%D {\bf Remark:} We need to cover the following cases, otherwise users can
-%D get confused:
+%D {\bf Remark:} We need to cover the following cases, otherwise users can get
+%D confused:
 %D
 %D \starttyping
 %D \setupbodyfont[23pt]
@@ -1265,10 +1238,9 @@
 %D \setupbodyfont[23pt]
 %D \stoptyping
 %D
-%D Beware: while some font defs can be global, the bodyfont
-%D environment checks local. This means that multiple local
-%D checks resulting in definitions are not that efficient.
-%D So, apart from an occasional switch, one should define an
+%D Beware: while some font defs can be global, the bodyfont environment checks
+%D local. This means that multiple local checks resulting in definitions are not
+%D that efficient. So, apart from an occasional switch, one should define an
 %D environment at the outer level.
 
 % \definebodyfontenvironment[33pt]
@@ -1383,8 +1355,8 @@
      \clf_registerbodyfontsize{\m_font_body_normalized}%
    \fi}
 
-%D The empty case uses the same code but needs to ignore the current class
-%D settings (just to be sure, as it's not really needed).
+%D The empty case uses the same code but needs to ignore the current class settings
+%D (just to be sure, as it's not really needed).
 
 \def\font_basics_define_body_font_environment_empty[#body][#settings][#dummy]%
   {\push_macro_fontclass
@@ -1433,36 +1405,33 @@
      \font_helpers_define_unknown_font{#normalizedbody}%
    \fi}
 
-%D We default all parameters to the main bodyfont size, so the next
-%D setup is valid too:
+%D We default all parameters to the main bodyfont size, so the next setup is valid
+%D too:
 %D
 %D \starttyping
 %D \definebodyfontenvironment[24pt]
 %D \stoptyping
 %D
-%D All parameters can be redefined when needed, so one doesnot have to
-%D stick to the default ones.
+%D All parameters can be redefined when needed, so one doesnot have to stick to the
+%D default ones.
 
 %D \macros
 %D   {definebodyfont}
 %D
-%D The next step in defining a bodyfont involves the actual font
-%D files, which can be recognized by their extension
-%D \type{tfm}. Installing those file is often beyond the
-%D scope of the user and up to the system administrator.
+%D The next step in defining a bodyfont involves the actual font files, which can be
+%D recognized by their extension \type {tfm}. Installing those file is often beyond
+%D the scope of the user and up to the system administrator.
 %D
 %D \showsetup{definebodyfont}
 %D
-%D This commands takes three arguments: a (series of) bodyfont
-%D size(s), the style group to which the definitions belong,
-%D and an alternative, as specified by the \TEX\ (math) families,
-%D extended with~a, b~\unknown.
+%D This commands takes three arguments: a (series of) bodyfont size(s), the style
+%D group to which the definitions belong, and an alternative, as specified by the
+%D \TEX\ (math) families, extended with~a, b~\unknown.
 %D
-%D We show two examples, that show all the alternative
-%D scaling options. The \type{\tfa} alternatives can be
-%D extended with \type{\bfa}, \type{\slb}, etc. or even
-%D \type{e} and higher alternatives. The magic scaled
-%D values are derived from plain \TEX's \type {\magstep}:
+%D We show two examples, that show all the alternative scaling options. The \type
+%D {\tfa} alternatives can be extended with \type {\bfa}, \type {\slb}, etc. or even
+%D \type {e} and higher alternatives. The magic scaled values are derived from plain
+%D \TEX's \type {\magstep}:
 %D
 %D \starttyping
 %D \definebodyfont [12pt] [rm]
@@ -1492,29 +1461,25 @@
 %D    sc=lbr  sa 0.833]
 %D \stoptyping
 %D
-%D The second example shows that we can define more sizes at
-%D once. The main difference between these examples is that the
-%D Computer Modern Roman come in many design sizes. This means
-%D that there we cannot define them in bulk using \type{sa}.
-%D Instead of \type{rm} (roman) one can define \type{ss} (sans
-%D serif), \type{tt} (teletype), \type{hw} (hand written),
-%D \type{cg} (calygraphic) and whatever styles.
+%D The second example shows that we can define more sizes at once. The main
+%D difference between these examples is that the Computer Modern Roman come in many
+%D design sizes. This means that there we cannot define them in bulk using \type
+%D {sa}. Instead of \type {rm} (roman) one can define \type {ss} (sans serif), \type
+%D {tt} (teletype), \type {hw} (hand written), \type {cg} (calygraphic) and whatever
+%D styles.
 %D
-%D The first argument may be a comma separated list. This,
-%D combined with specifications using \type{sa} can save a lot
-%D of typing. Although all arguments should be specified, we
-%D treat the second argument as optional.
+%D The first argument may be a comma separated list. This, combined with
+%D specifications using \type{sa} can save a lot of typing. Although all arguments
+%D should be specified, we treat the second argument as optional.
 %D
-%D Defining a bodyfont involves two actions: defining the
-%D specific style related alternatives, like \type{\rma},
-%D \type{\bfa} and \type{\rmsla}, and storing the definitions
-%D of their bodyfont size related fonts. The first step is
-%D bodyfont independant but executed every time. This permits
-%D user definitions like \type{\tfw} or \type{\bfq} for real
-%D large alternatives.
-
-%D If we move design size info to the lfg file (after all only lm
-%D has design sizes) we can get rid of much code .. 2012 or so.
+%D Defining a bodyfont involves two actions: defining the specific style related
+%D alternatives, like \type {\rma}, \type {\bfa} and \type {\rmsla}, and storing the
+%D definitions of their bodyfont size related fonts. The first step is bodyfont
+%D independant but executed every time. This permits user definitions like \type
+%D {\tfw} or \type {\bfq} for real large alternatives.
+%D
+%D If we move design size info to the lfg file (after all only lm has design sizes)
+%D we can get rid of much code .. 2012 or so.
 
 \installcorenamespace{fontdefinitions}
 
@@ -1651,9 +1616,9 @@
     \let\font_basics_define_body_font_defs_nop\font_basics_define_body_font_defs_nop_traced
 \to \t_font_tracers_definitions
 
-% We split into two characters (first part of spec) and the rest: the first two are the style and
-% the rest is a size, although in practice one will seldom define the size directly. We might even
-% drop that as it gives faster code.
+%D We split into two characters (first part of spec) and the rest: the first two are
+%D the style and the rest is a size, although in practice one will seldom define the
+%D size directly. We might even drop that as it gives faster code.
 
 \unexpanded\def\font_basics_define_body_font_nop_xx[#one#two#rest=#value]% local
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
@@ -1844,9 +1809,8 @@
      \showmessage\m!fonts5{#style}%
    \fi}
 
-%D Here comes the main font switching macros. These macros
-%D handle changes in size as well as returning to the global
-%D bodyfont size.
+%D Here comes the main font switching macros. These macros handle changes in size as
+%D well as returning to the global bodyfont size.
 
 \ifdefined\font_preloads_at_definition \else \let\font_preloads_at_definition\relax \fi
 
@@ -2022,8 +1986,8 @@
      \the\everyfontswitch
    \fi}
 
-%D This is the resolver for special cases (sizes) and in practice it is not called that often
-%D so further optimization makes no sense.
+%D This is the resolver for special cases (sizes) and in practice it is not called
+%D that often so further optimization makes no sense.
 
 \def\font_helpers_check_strategy_class_a % --- --- --- --- % pt tt bf a
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\fontsize-\fontface\endcsname
@@ -2135,12 +2099,11 @@
     \fi
 \to \everybodyfont
 
-%D Setting the normal sizes as well as the x and xx smaller
-%D sizes is accomplished by the next set of macros. When in
-%D math mode, the commands \type{\tx} and \type{\txx} are
-%D just a switch to the script and double script styles, but
-%D in text mode the values defined by the bodyfontenvironment are
-%D used. Here we also set \type{\currentxfontsize}.
+%D Setting the normal sizes as well as the x and xx smaller sizes is accomplished by
+%D the next set of macros. When in math mode, the commands \type {\tx} and \type
+%D {\txx} are just a switch to the script and double script styles, but in text mode
+%D the values defined by the bodyfontenvironment are used. Here we also set \type
+%D {\currentxfontsize}.
 
 \def\font_helpers_set_current_font_xxx_alternative#alternative#xsize#scriptstyle%
   {\ifmmode
@@ -2181,15 +2144,14 @@
    \let\tx\empty
    \let\txx\empty}
 
-% This alterative is not really needed, but for old time's sake
-% we keep it there. We can speed it up when needed.
+%D This alterative is not really needed, but for old time's sake we keep it there.
+%D We can speed it up when needed.
 
 \def\font_helpers_set_current_font_x_style_alternative #alternative{\csname#alternative\endcsname\tx}
 \def\font_helpers_set_current_font_xx_style_alternative#alternative{\csname#alternative\endcsname\txx}
 
-%D These macros also show us that when we call for \type{\tx},
-%D this macro is redefined to be \type{\txx}. Therefore calls
-%D like:
+%D These macros also show us that when we call for \type {\tx}, this macro is
+%D redefined to be \type {\txx}. Therefore calls like:
 %D
 %D \startbuffer
 %D {small \tx  is \tx  beautiful}
@@ -2206,9 +2168,8 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D Setting the main size involves the style list and therefore
-%D takes a bit more time. Keep in mind that the fontsize is
-%D represented by a character or empty.
+%D Setting the main size involves the style list and therefore takes a bit more
+%D time. Keep in mind that the fontsize is represented by a character or empty.
 
 % \unexpanded\def\tx {\font_helpers_set_current_font_x_alternative \fontalternative}
 % \unexpanded\def\txx{\font_helpers_set_current_font_xx_alternative\fontalternative}
@@ -2343,13 +2304,11 @@
 \let\normalsx \sx
 \let\normalsxx\sxx
 
-%D When asking for a complete font switch, for instance from 10
-%D to 12~points, the next macro does the job. First we
-%D normalize the size, next we define the current range of
-%D text, script and scriptscript sizes, then we set the text
-%D fonts and the math families and finally we activate the
-%D default typeface and also set the font specific parameters
-%D assigned to \type{\everybodyfont}
+%D When asking for a complete font switch, for instance from 10 to 12~points, the
+%D next macro does the job. First we normalize the size, next we define the current
+%D range of text, script and scriptscript sizes, then we set the text fonts and the
+%D math families and finally we activate the default typeface and also set the font
+%D specific parameters assigned to \type {\everybodyfont}.
 
 \def\textface        {\currentbodyfontdimension\s!text        }
 \def\scriptface      {\currentbodyfontdimension\s!script      }
@@ -2416,16 +2375,16 @@
 %D \macros
 %D   {setupbodyfont,switchtobodyfont}
 %D
-%D The next two macros are user ones. With \type{\setupbodyfont}
-%D one can set the document bodyfont size, font family, style
-%D and/or options defined in files, for example:
+%D The next two macros are user ones. With \type {\setupbodyfont} one can set the
+%D document bodyfont size, font family, style and/or options defined in files, for
+%D example:
 %D
 %D \starttyping
 %D \setupbodyfont[modern,12pt,roman]
 %D \stoptyping
 %D
-%D This command affects the document as a whole: text, headers
-%D and footers. The second macro however affects only the text:
+%D This command affects the document as a whole: text, headers and footers. The
+%D second macro however affects only the text:
 %D
 %D \starttyping
 %D \switchtobodyfont[10pt]
@@ -2436,8 +2395,8 @@
 %D \showsetup{setupbodyfont}
 %D \showsetup{switchtobodyfont}
 %D
-%D Both macros look alike. The second one also has to take
-%D all kind of keywords into account.
+%D Both macros look alike. The second one also has to take all kind of keywords into
+%D account.
 
 \ifx\saveinterlinespace   \undefined \let\saveinterlinespace   \relax \fi
 \ifx\restoreinterlinespace\undefined \let\restoreinterlinespace\relax \fi
@@ -2488,8 +2447,8 @@
   {\font_basics_switch_points\m_font_step
    \font_basics_switch_style \fontstyle}
 
-%D The following alternative is meant for math||to||text
-%D switching and will be optimized.
+%D The following alternative is meant for math||to||text switching and will be
+%D optimized.
 
 \unexpanded\def\fastswitchtobodyfont#name%
   {\ifcsname\??fontenvironments\normalizedbodyfontsize#name\endcsname
@@ -2608,9 +2567,8 @@
 %D \macros
 %D   {definebodyfontswitch}
 %D
-%D \PLAIN\ \TEX\ defines some macro's like \type{\tenpoint}
-%D to switch to a specific bodyfontsize. Just for the sake of
-%D compatibility we can define them like:
+%D \PLAIN\ \TEX\ defines some macro's like \type {\tenpoint} to switch to a specific
+%D bodyfontsize. Just for the sake of compatibility we can define them like:
 %D
 %D \starttyping
 %D \definebodyfontswitch [twelvepoint] [12pt]
@@ -2627,11 +2585,10 @@
 %D \macros
 %D   {setsmallbodyfont,setmainbodyfont,setbigbodyfont}
 %D
-%D When we're typesetting at for instance 10pt, we can call for
-%D the \type{small} as well as the \type{big} alternative,
-%D related to this main size, using \type{\switchtobodyfont[small]}.
-%D The three alternatives can be activated by the next three
-%D system calls and are defined by the bodyfontenvironment.
+%D When we're typesetting at for instance 10pt, we can call for the \type {small} as
+%D well as the \type {big} alternative, related to this main size, using \type
+%D {\switchtobodyfont[small]}. The three alternatives can be activated by the next
+%D three system calls and are defined by the bodyfontenvironment.
 
 \newmacro\m_font_step
 
@@ -2653,17 +2610,15 @@
 %D \macros
 %D   {restoreglobalbodyfont}
 %D
-%D Users can set whatever font available while typesetting text.
-%D Pagenumbers, footers, headers etc. however must be typeset
-%D in the main bodyfont and style of the document. Returning to
-%D the global state can be done with the next macro:
+%D Users can set whatever font available while typesetting text. Pagenumbers,
+%D footers, headers etc. however must be typeset in the main bodyfont and style of
+%D the document. Returning to the global state can be done with the next macro:
 %D
-%D This macro has to be called when entering the pagebody
-%D handling routine as well as the footnote insert routine.
-%D Users can access this feature |<|for instance when one wants
-%D to typeset tables and alike in the main bodyfont and style
-%D while the running text is temporary set to a smaller one|>|
-%D by saying \type{\switchtobodyfont[global]}.
+%D This macro has to be called when entering the pagebody handling routine as well
+%D as the footnote insert routine. Users can access this feature |<|for instance
+%D when one wants to typeset tables and alike in the main bodyfont and style while
+%D the running text is temporary set to a smaller one|>| by saying \type
+%D {\switchtobodyfont [global]}.
 
 \let\globalfontstyle\s!rm
 
@@ -2709,8 +2664,8 @@
 
 % in case of troubles: \let\restorebodyfont\fullrestoreglobalbodyfont
 
-%D Here are some fast variants that can be used in cases where no font
-%D system is needed and where fonts are frozen:
+%D Here are some fast variants that can be used in cases where no font system is
+%D needed and where fonts are frozen:
 %D
 %D \starttyping
 %D \definefont   [TestA][Serif at 10pt]

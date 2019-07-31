@@ -150,6 +150,7 @@
 		<cd:variable name='comment' value='commento'/>
 		<cd:variable name='component' value='componente'/>
 		<cd:variable name='compressseparator' value='compressseparator'/>
+		<cd:variable name='compressstopper' value='compressstopper'/>
 		<cd:variable name='concept' value='concetto'/>
 		<cd:variable name='construction' value='construction'/>
 		<cd:variable name='content' value='indice'/>
@@ -480,6 +481,7 @@
 		<cd:variable name='sectionnumber' value='numerosezione'/>
 		<cd:variable name='see' value='vedi'/>
 		<cd:variable name='selectfont' value='selectfont'/>
+		<cd:variable name='separator' value='separator'/>
 		<cd:variable name='september' value='settembre'/>
 		<cd:variable name='serif' value='serif'/>
 		<cd:variable name='serifbold' value='serifbold'/>
@@ -641,6 +643,7 @@
 		<cd:constant name='aligntitle' value='allineatitolo'/>
 		<cd:constant name='alternative' value='alternativa'/>
 		<cd:constant name='anchor' value='anchor'/>
+		<cd:constant name='anchoring' value='anchoring'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arguments' value='arguments'/>
@@ -738,7 +741,9 @@
 		<cd:constant name='compoundhyphen' value='compoundhyphen'/>
 		<cd:constant name='compress' value='compress'/>
 		<cd:constant name='compressdistance' value='compressdistance'/>
+		<cd:constant name='compressmethod' value='compressmethod'/>
 		<cd:constant name='compressseparator' value='compressseparator'/>
+		<cd:constant name='compressstopper' value='compressstopper'/>
 		<cd:constant name='concerns' value='concerns'/>
 		<cd:constant name='connector' value='connector'/>
 		<cd:constant name='continue' value='continua'/>

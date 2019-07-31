@@ -45,7 +45,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.07.24 11:17}
+\edef\contextversion{2019.07.31 18:05}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -137,8 +137,6 @@
 \loadmkvifile{file-res}
 \loadmkvifile{file-lib}
 
-\loadmarkfile{core-lmt} % lmtx
-
 %D This needs more checking for clashes:
 %D
 %D \starttyping
@@ -188,7 +186,6 @@
 \loadmarkfile{back-ini}
 \loadmarkfile{back-res}
 \loadmarkfile{back-trf}
-\loadmarkfile{back-out}
 
 \loadmarkfile{attr-col}
 \loadmarkfile{attr-lay}
@@ -586,8 +583,6 @@
 
 \loadmarkfile{back-exp}
 \loadmarkfile{back-pdf}
-\loadmarkfile{back-mps}
-\loadmarkfile{back-lua}
 
 \loadmarkfile{mlib-pdf}
 \loadmarkfile{mlib-pps}
@@ -604,7 +599,9 @@
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
-\loadmarkfile{driv-shp}
+\appendtoks
+    \setupoutput[pdf]
+\to \everyjob
 
 \setupcurrentlanguage[\defaultlanguagetag]
 

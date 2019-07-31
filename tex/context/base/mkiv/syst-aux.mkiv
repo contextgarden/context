@@ -11,11 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D There are some references to \LUA\ variants here but these concern (often old)
-%D experiments, moved from local test modules to here, cleaned up, but not really
-%D used. After all it's not that urgent and replacing helpers is a delicate process.
-%D Don't depend on it.
-
 \registerctxluafile{syst-aux}{}
 
 % A dedicated primitive \ifvoidmacro\cs == \ifx\cs\empty is some 10% faster but
@@ -75,20 +70,6 @@
     \let\stopmkivmode \relax
 
 \fi
-
-% %D \macros
-% %D   {expunded}
-% %D
-% %D \unexpanded\edef\TestA{zzz}
-% %D            \edef\TestB{zzz}
-% %D
-% %D \doifelse {\TestA}                   {\TestB} {WRONG} {OKAY} \par
-% %D \doifelse {\TestA}          {\expunded\TestB} {WRONG} {OKAY} \par
-% %D \doifelse {\expunded\TestA}          {\TestB} {OKAY} {WRONG} \par
-% %D \doifelse {\expunded\TestA} {\expunded\TestB} {OKAY} {WRONG} \par
-
-% %def\expunded#1{\normalexpanded\expandafter{#1}}
-% \def\expunded#1{\expandafter\empty#1} % used within an edef anyway
 
 %D As we don't have namespace definers yet, we use a special one:
 
@@ -315,33 +296,17 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\startmkivmode
+\unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
+  {\let\charactertoken=#1% = needed here
+   \def\m_syst_action_yes{#2}%
+   \def\m_syst_action_nop{#3}%
+   \futurelet\nexttoken\syst_helpers_inspect_next_character}
 
-    \unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
-      {\let\charactertoken=#1% = needed here
-       \def\m_syst_action_yes{#2}%
-       \def\m_syst_action_nop{#3}%
-       \futurelet\nexttoken\syst_helpers_inspect_next_character}
-
-    \unexpanded\def\doifelsenextcharcs#1#2#3% #1 should not be {} !
-      {\let\charactertoken=#1% = needed here
-       \let\m_syst_action_yes#2%
-       \let\m_syst_action_nop#3%
-       \futurelet\nexttoken\syst_helpers_inspect_next_character}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
-      {\def\m_syst_action_yes{#2}%
-       \def\m_syst_action_nop{#3}%
-       \futureexpandis#1\m_syst_action_yes\m_syst_action_nop}
-
-    \unexpanded\def\doifelsenextcharcs % #1#2#3% #1 should not be {} !
-      {\futureexpandis}
-
-\stoplmtxmode
+\unexpanded\def\doifelsenextcharcs#1#2#3% #1 should not be {} !
+  {\let\charactertoken=#1% = needed here
+   \let\m_syst_action_yes#2%
+   \let\m_syst_action_nop#3%
+   \futurelet\nexttoken\syst_helpers_inspect_next_character}
 
 \let\doifnextcharelse  \doifelsenextchar
 \let\doifnextcharcselse\doifelsenextcharcs
@@ -378,33 +343,17 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\startmkivmode
+\unexpanded\def\doifelsenextoptional#1#2%
+  {\def\m_syst_action_yes{#1}%
+   \def\m_syst_action_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\doifelsenextoptional#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
-
-    \unexpanded\def\doifelsenextoptionalcs#1#2% \cs \cs (upto 10% faster)
-      {\let\m_syst_action_yes#1%
-       \let\m_syst_action_nop#2%
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsenextoptional#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \futureexpandis[\m_syst_action_yes\m_syst_action_nop}
-
-    \unexpanded\def\doifelsenextoptionalcs
-      {\futureexpandis[}
-
-\stoplmtxmode
+\unexpanded\def\doifelsenextoptionalcs#1#2% \cs \cs (upto 10% faster)
+  {\let\m_syst_action_yes#1%
+   \let\m_syst_action_nop#2%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
 \let\doifnextoptionalelse  \doifelsenextoptional
 \let\doifnextoptionalcselse\doifelsenextoptionalcs
@@ -437,33 +386,17 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\startmkivmode
+\unexpanded\def\doifelsenextbgroup#1#2%
+  {\def\m_syst_action_yes{#1}%
+   \def\m_syst_action_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
 
-    \unexpanded\def\doifelsenextbgroup#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
-
-    \unexpanded\def\doifelsenextbgroupcs#1#2%
-      {\let\m_syst_action_yes#1%
-       \let\m_syst_action_nop#2%
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsenextbgroup#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \futureexpandis\bgroup\m_syst_action_yes\m_syst_action_nop}
-
-    \unexpanded\def\doifelsenextbgroupcs % #1#2
-      {\futureexpandis\bgroup}
-
-\stoplmtxmode
+\unexpanded\def\doifelsenextbgroupcs#1#2%
+  {\let\m_syst_action_yes#1%
+   \let\m_syst_action_nop#2%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_bgroup_character}
 
 \let\doifnextbgroupelse  \doifelsenextbgroup
 \let\doifnextbgroupcselse\doifelsenextbgroupcs
@@ -484,24 +417,11 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\startmkivmode
-
-    \unexpanded\def\doifelsenextparenthesis#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_parenthesis_character}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsenextparenthesis#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \futureexpandis(\m_syst_action_yes\m_syst_action_nop}
-
-\stoplmtxmode
+\unexpanded\def\doifelsenextparenthesis#1#2%
+  {\def\m_syst_action_yes{#1}%
+   \def\m_syst_action_nop{#2}%
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_parenthesis_character}
 
 \let\doifnextparenthesiselse\doifelsenextparenthesis
 
@@ -514,31 +434,15 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\startmkivmode
+\unexpanded\def\doifelsefastoptionalcheck#1#2%
+  {\def\m_syst_action_yes{#1}%
+   \def\m_syst_action_nop{#2}%
+   \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
 
-    \unexpanded\def\doifelsefastoptionalcheck#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
-
-    \unexpanded\def\doifelsefastoptionalcheckcs#1#2% \cs \cs
-      {\let\m_syst_action_yes#1%
-       \let\m_syst_action_nop#2%
-       \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsefastoptionalcheck#1#2%
-      {\def\m_syst_action_yes{#1}%
-       \def\m_syst_action_nop{#2}%
-       \futureexpandis[\m_syst_action_yes\m_syst_action_nop}
-
-    \unexpanded\def\doifelsefastoptionalcheckcs
-      {\futureexpandis[}
-
-\stoplmtxmode
+\unexpanded\def\doifelsefastoptionalcheckcs#1#2% \cs \cs
+  {\let\m_syst_action_yes#1%
+   \let\m_syst_action_nop#2%
+   \futurelet\nexttoken\syst_helpers_do_if_fast_optional_check_else}
 
 \let\doiffastoptionalcheckelse  \doifelsefastoptionalcheck
 \let\doiffastoptionalcheckcselse\doifelsefastoptionalcheckcs
@@ -816,61 +720,32 @@
 %D \doifelse {string1} {string2} {then ...}{else ...}
 %D \stoptyping
 
-\startmkivmode
+\unexpanded\def\doif#1#2%
+  {\edef\m_syst_string_one{#1}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \unexpanded\def\doif#1#2%
-      {\edef\m_syst_string_one{#1}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
+\unexpanded\def\doifnot#1#2%
+  {\edef\m_syst_string_one{#1}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \unexpanded\def\doifnot#1#2%
-      {\edef\m_syst_string_one{#1}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifelse#1#2%
-      {\edef\m_syst_string_one{#1}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelse#1#2%
-      {\iftok{#1}{#2}%
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-    \unexpanded\def\doif#1#2%
-      {\iftok{#1}{#2}%
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \unexpanded\def\doifnot#1#2%
-      {\iftok{#1}{#2}%
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-\stoplmtxmode
+\unexpanded\def\doifelse#1#2%
+  {\edef\m_syst_string_one{#1}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 %D \macros
 %D   {doifempty,doifemptyelse,doifnotempty}
@@ -1648,55 +1523,26 @@
 %D The macro accepts \type {123}, \type {abc}, \type {{}}, \type {\getal} and \type
 %D {\the\count...}. This macro is a rather dirty one.
 
-\startmkivmode
+\def\doifelsenumber#1% does not accept counters (fully expandable)
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
-    \def\doifelsenumber#1% does not accept counters (fully expandable)
-      {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
-         \expandafter\secondoftwoarguments
-       \else
-         \expandafter\firstoftwoarguments
-       \fi}
+\def\doifnumber#1%
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \def\doifnumber#1%
-      {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \def\doifnotnumber#1%
-      {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \def\doifelsenumber#1%
-      {\ifchknum#1\or
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-    \def\doifnumber#1%
-      {\ifchknum#1\or
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \def\doifnotnumber#1%
-      {\ifchknum#1\or
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-\stoplmtxmode
+\def\doifnotnumber#1%
+  {\ifcase0\ifcase1#1\or\or\or\or\or\or\or\or\or\else1\fi\space
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
 \let\doifnumberelse\doifelsenumber
 
@@ -2494,22 +2340,18 @@
 %
 % But we use this as it keeps the original name visible:
 
-\startmkivmode
-
-    \def\syst_helpers_empty_spaced_six  {\the\t_syst_aux[][][][][][] }
-    \def\syst_helpers_empty_normal_six  {\the\t_syst_aux[][][][][][]}
-    \def\syst_helpers_empty_spaced_five {\the\t_syst_aux[][][][][] }
-    \def\syst_helpers_empty_normal_five {\the\t_syst_aux[][][][][]}
-    \def\syst_helpers_empty_spaced_four {\the\t_syst_aux[][][][] }
-    \def\syst_helpers_empty_normal_four {\the\t_syst_aux[][][][]}
-    \def\syst_helpers_empty_spaced_three{\the\t_syst_aux[][][] }
-    \def\syst_helpers_empty_normal_three{\the\t_syst_aux[][][]}
-    \def\syst_helpers_empty_spaced_two  {\the\t_syst_aux[][] }
-    \def\syst_helpers_empty_normal_two  {\the\t_syst_aux[][]}
-    \def\syst_helpers_empty_spaced_one  {\the\t_syst_aux[] }
-    \def\syst_helpers_empty_normal_one  {\the\t_syst_aux[]}
-
-\stopmkivmode
+\def\syst_helpers_empty_spaced_six  {\the\t_syst_aux[][][][][][] }
+\def\syst_helpers_empty_normal_six  {\the\t_syst_aux[][][][][][]}
+\def\syst_helpers_empty_spaced_five {\the\t_syst_aux[][][][][] }
+\def\syst_helpers_empty_normal_five {\the\t_syst_aux[][][][][]}
+\def\syst_helpers_empty_spaced_four {\the\t_syst_aux[][][][] }
+\def\syst_helpers_empty_normal_four {\the\t_syst_aux[][][][]}
+\def\syst_helpers_empty_spaced_three{\the\t_syst_aux[][][] }
+\def\syst_helpers_empty_normal_three{\the\t_syst_aux[][][]}
+\def\syst_helpers_empty_spaced_two  {\the\t_syst_aux[][] }
+\def\syst_helpers_empty_normal_two  {\the\t_syst_aux[][]}
+\def\syst_helpers_empty_spaced_one  {\the\t_syst_aux[] }
+\def\syst_helpers_empty_normal_one  {\the\t_syst_aux[]}
 
 \def\syst_helpers_single_empty_one_yes      {\firstargumenttrue  \the\t_syst_aux}
 \def\syst_helpers_double_empty_two_yes      {\secondargumenttrue \the\t_syst_aux}
@@ -2531,34 +2373,17 @@
 %   {\firstargumentfalse
 %    #1[]}
 
-\startmkivmode
+\unexpanded\def\dosingleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_single_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_single_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\dosingleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_single_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_single_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
-
-    \def\syst_helpers_single_empty_one_nop
-      {\firstargumentfalse
-       \the\t_syst_aux[]}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\dosingleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_single_empty_one_yes\syst_helpers_single_empty_one_nop}
-
-    \def\syst_helpers_single_empty_one_nop
-      {\firstargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_single_empty_one_nop
+  {\firstargumentfalse
+   \the\t_syst_aux[]}
 
 %D Double
 
@@ -2590,61 +2415,34 @@
 % \def\syst_helpers_double_empty_one_spaced#1#2{#1[{#2}][] }
 % \def\syst_helpers_double_empty_one_normal#1#2{#1[{#2}][]}
 
-\startmkivmode
+\unexpanded\def\dodoubleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_double_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_double_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\dodoubleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_double_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_double_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_double_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_double_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_double_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_double_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_double_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_double_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_double_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \the\t_syst_aux[][]}
 
-    \def\syst_helpers_double_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_double_empty_two_nop
-      {\secondargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\dodoubleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_double_empty_one_yes\syst_helpers_double_empty_one_nop}
-
-    \def\syst_helpers_double_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_double_empty_two_yes\syst_helpers_double_empty_two_nop}
-
-    \def\syst_helpers_double_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_double_empty_two_nop
-      {\secondargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_double_empty_two_nop
+  {\secondargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 % Triple
 
@@ -2694,90 +2492,52 @@
 % \def\syst_helpers_triple_empty_three_spaced#1#2#3{#1[{#2}][{#3}][] }
 % \def\syst_helpers_triple_empty_three_normal#1#2#3{#1[{#2}][{#3}][]}
 
-\startmkivmode
+\unexpanded\def\dotripleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_triple_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_triple_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\dotripleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_triple_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_triple_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_triple_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_triple_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_triple_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_triple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_triple_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_triple_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_triple_empty_two_yes[#1]%
+  {\secondargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_triple_empty_three_yes
+   \let\m_syst_action_nop\syst_helpers_triple_empty_three_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_triple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_triple_empty_three_yes
-       \let\m_syst_action_nop\syst_helpers_triple_empty_three_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_triple_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \the\t_syst_aux[][][]}
 
-    \def\syst_helpers_triple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \the\t_syst_aux[][][]}
+\def\syst_helpers_triple_empty_two_nop
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_two
+   \else
+     \expandafter\syst_helpers_empty_normal_two
+   \fi}
 
-    \def\syst_helpers_triple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_two
-       \else
-         \expandafter\syst_helpers_empty_normal_two
-       \fi}
-
-    \def\syst_helpers_triple_empty_three_nop
-      {\thirdargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\dotripleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_triple_empty_one_yes\syst_helpers_triple_empty_one_nop}
-
-    \def\syst_helpers_triple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_triple_empty_two_yes\syst_helpers_triple_empty_two_nop}
-
-    \def\syst_helpers_triple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_triple_empty_three_yes\syst_helpers_triple_empty_three_nop}
-
-    \def\syst_helpers_triple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \the\t_syst_aux[][][]}
-
-    \def\syst_helpers_triple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_triple_empty_three_nop
-      {\thirdargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_triple_empty_three_nop
+  {\thirdargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 %D Quadruple:
 
@@ -2846,121 +2606,71 @@
 % \def\syst_helpers_quadruple_empty_four_spaced #1#2#3#4{#1[{#2}][{#3}][{#4}][] }
 % \def\syst_helpers_quadruple_empty_four_normal #1#2#3#4{#1[{#2}][{#3}][{#4}][]}
 
-\startmkivmode
+\unexpanded\def\doquadrupleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_quadruple_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_quadruple_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\doquadrupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_quadruple_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_quadruple_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quadruple_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quadruple_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_quadruple_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quadruple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quadruple_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_quadruple_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quadruple_empty_two_yes[#1]%
+  {\secondargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quadruple_empty_three_yes
+   \let\m_syst_action_nop\syst_helpers_quadruple_empty_three_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quadruple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quadruple_empty_three_yes
-       \let\m_syst_action_nop\syst_helpers_quadruple_empty_three_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quadruple_empty_three_yes[#1]%
+  {\thirdargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quadruple_empty_four_yes
+   \let\m_syst_action_nop\syst_helpers_quadruple_empty_four_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quadruple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quadruple_empty_four_yes
-       \let\m_syst_action_nop\syst_helpers_quadruple_empty_four_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quadruple_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \the\t_syst_aux[][][][]}
 
-    \def\syst_helpers_quadruple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux[][][][]}
+\def\syst_helpers_quadruple_empty_two_nop
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_three
+   \else
+     \expandafter\syst_helpers_empty_normal_three
+   \fi}
 
-    \def\syst_helpers_quadruple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_three
-       \else
-         \expandafter\syst_helpers_empty_normal_three
-       \fi}
+\def\syst_helpers_quadruple_empty_three_nop
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_two
+   \else
+     \expandafter\syst_helpers_empty_normal_two
+   \fi}
 
-    \def\syst_helpers_quadruple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_two
-       \else
-         \expandafter\syst_helpers_empty_normal_two
-       \fi}
-
-    \def\syst_helpers_quadruple_empty_four_nop
-      {\fourthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doquadrupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_quadruple_empty_one_yes\syst_helpers_quadruple_empty_one_nop}
-
-    \def\syst_helpers_quadruple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quadruple_empty_two_yes\syst_helpers_quadruple_empty_two_nop}
-
-    \def\syst_helpers_quadruple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quadruple_empty_three_yes\syst_helpers_quadruple_empty_three_nop}
-
-    \def\syst_helpers_quadruple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quadruple_empty_four_yes\syst_helpers_quadruple_empty_four_nop}
-
-    \def\syst_helpers_quadruple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux[][][][]}
-
-    \def\syst_helpers_quadruple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux[][][]}
-
-    \def\syst_helpers_quadruple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_quadruple_empty_four_nop
-      {\fourthargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_quadruple_empty_four_nop
+  {\fourthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 %D Quintuple:
 
@@ -3049,154 +2759,91 @@
 % \def\syst_helpers_quintuple_empty_five_spaced #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][] }
 % \def\syst_helpers_quintuple_empty_five_normal #1#2#3#4#5{#1[{#2}][{#3}][{#4}][{#5}][]}
 
-\startmkivmode
+\unexpanded\def\doquintupleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_quintuple_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_quintuple_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\doquintupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_quintuple_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_quintuple_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quintuple_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quintuple_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_quintuple_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quintuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quintuple_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_quintuple_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quintuple_empty_two_yes[#1]%
+  {\secondargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quintuple_empty_three_yes
+   \let\m_syst_action_nop\syst_helpers_quintuple_empty_three_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quintuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quintuple_empty_three_yes
-       \let\m_syst_action_nop\syst_helpers_quintuple_empty_three_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quintuple_empty_three_yes[#1]%
+  {\thirdargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quintuple_empty_four_yes
+   \let\m_syst_action_nop\syst_helpers_quintuple_empty_four_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quintuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quintuple_empty_four_yes
-       \let\m_syst_action_nop\syst_helpers_quintuple_empty_four_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quintuple_empty_four_yes[#1]%
+  {\fourthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_quintuple_empty_five_yes
+   \let\m_syst_action_nop\syst_helpers_quintuple_empty_five_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_quintuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_quintuple_empty_five_yes
-       \let\m_syst_action_nop\syst_helpers_quintuple_empty_five_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_quintuple_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \the\t_syst_aux[][][][][]}
 
-    \def\syst_helpers_quintuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux[][][][][]}
+\def\syst_helpers_quintuple_empty_two_nop
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_four
+   \else
+     \expandafter\syst_helpers_empty_normal_four
+   \fi}
 
-    \def\syst_helpers_quintuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_four
-       \else
-         \expandafter\syst_helpers_empty_normal_four
-       \fi}
+\def\syst_helpers_quintuple_empty_three_nop
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_three
+   \else
+     \expandafter\syst_helpers_empty_normal_three
+   \fi}
 
-    \def\syst_helpers_quintuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_three
-       \else
-         \expandafter\syst_helpers_empty_normal_three
-       \fi}
+\def\syst_helpers_quintuple_empty_four_nop
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_two
+   \else
+     \expandafter\syst_helpers_empty_normal_two
+   \fi}
 
-    \def\syst_helpers_quintuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_two
-       \else
-         \expandafter\syst_helpers_empty_normal_two
-       \fi}
-
-    \def\syst_helpers_quintuple_empty_five_nop
-      {\fifthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doquintupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_quintuple_empty_one_yes\syst_helpers_quintuple_empty_one_nop}
-
-    \def\syst_helpers_quintuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quintuple_empty_two_yes\syst_helpers_quintuple_empty_two_nop}
-
-    \def\syst_helpers_quintuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quintuple_empty_three_yes\syst_helpers_quintuple_empty_three_nop}
-
-    \def\syst_helpers_quintuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quintuple_empty_four_yes\syst_helpers_quintuple_empty_four_nop}
-
-    \def\syst_helpers_quintuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_quintuple_empty_five_yes\syst_helpers_quintuple_empty_five_nop}
-
-    \def\syst_helpers_quintuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux[][][][][]}
-
-    \def\syst_helpers_quintuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux[][][][]}
-
-    \def\syst_helpers_quintuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux[][][]}
-
-    \def\syst_helpers_quintuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_quintuple_empty_five_nop
-      {\fifthargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_quintuple_empty_five_nop
+  {\fifthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 %D Sixtuple:
 
@@ -3306,189 +2953,112 @@
 % \def\syst_helpers_sixtuple_empty_six_spaced  #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][] }
 % \def\syst_helpers_sixtuple_empty_six_normal  #1#2#3#4#5#6{#1[{#2}][{#3}][{#4}][{#5}][{#6}][]}
 
-\startmkivmode
+\unexpanded\def\dosixtupleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\dosixtupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_sixtuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_two_yes[#1]%
+  {\secondargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_three_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_three_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_sixtuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_three_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_three_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_three_yes[#1]%
+  {\thirdargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_four_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_four_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_sixtuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_four_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_four_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_four_yes[#1]%
+  {\fourthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_five_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_five_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_sixtuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_five_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_five_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_five_yes[#1]%
+  {\fifthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_sixtuple_empty_six_yes
+   \let\m_syst_action_nop\syst_helpers_sixtuple_empty_six_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_sixtuple_empty_five_yes[#1]%
-      {\fifthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_sixtuple_empty_six_yes
-       \let\m_syst_action_nop\syst_helpers_sixtuple_empty_six_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_sixtuple_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \the\t_syst_aux[][][][][][]}
 
-    \def\syst_helpers_sixtuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][][][][][]}
+\def\syst_helpers_sixtuple_empty_two_nop
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_five
+   \else
+     \expandafter\syst_helpers_empty_normal_five
+   \fi}
 
-    \def\syst_helpers_sixtuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_five
-       \else
-         \expandafter\syst_helpers_empty_normal_five
-       \fi}
+\def\syst_helpers_sixtuple_empty_three_nop
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_four
+   \else
+     \expandafter\syst_helpers_empty_normal_four
+   \fi}
 
-    \def\syst_helpers_sixtuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_four
-       \else
-         \expandafter\syst_helpers_empty_normal_four
-       \fi}
+\def\syst_helpers_sixtuple_empty_four_nop
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_three
+   \else
+     \expandafter\syst_helpers_empty_normal_three
+   \fi}
 
-    \def\syst_helpers_sixtuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_three
-       \else
-         \expandafter\syst_helpers_empty_normal_three
-       \fi}
+\def\syst_helpers_sixtuple_empty_five_nop
+  {\fifthargumentfalse
+   \sixthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_two
+   \else
+     \expandafter\syst_helpers_empty_normal_two
+   \fi}
 
-    \def\syst_helpers_sixtuple_empty_five_nop
-      {\fifthargumentfalse
-       \sixthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_two
-       \else
-         \expandafter\syst_helpers_empty_normal_two
-       \fi}
-
-    \def\syst_helpers_sixtuple_empty_six_nop
-      {\sixthargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\dosixtupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_sixtuple_empty_one_yes\syst_helpers_sixtuple_empty_one_nop}
-
-    \def\syst_helpers_sixtuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_sixtuple_empty_two_yes\syst_helpers_sixtuple_empty_two_nop}
-
-    \def\syst_helpers_sixtuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_sixtuple_empty_three_yes\syst_helpers_sixtuple_empty_three_nop}
-
-    \def\syst_helpers_sixtuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_sixtuple_empty_four_yes\syst_helpers_sixtuple_empty_four_nop}
-
-    \def\syst_helpers_sixtuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_sixtuple_empty_five_yes\syst_helpers_sixtuple_empty_five_nop}
-
-    \def\syst_helpers_sixtuple_empty_five_yes[#1]%
-      {\fifthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_sixtuple_empty_six_yes\syst_helpers_sixtuple_empty_six_nop}
-
-    \def\syst_helpers_sixtuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][][][][][]}
-
-    \def\syst_helpers_sixtuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][][][][]}
-
-    \def\syst_helpers_sixtuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][][][]}
-
-    \def\syst_helpers_sixtuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][][]}
-
-    \def\syst_helpers_sixtuple_empty_five_nop
-      {\fifthargumentfalse
-       \sixthargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_sixtuple_empty_six_nop
-      {\sixthargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_sixtuple_empty_six_nop
+  {\sixthargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 %D Seventuple:
 
@@ -3620,226 +3190,134 @@
 % \def\syst_helpers_seventuple_empty_seven_spaced#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][] }
 % \def\syst_helpers_seventuple_empty_seven_normal#1#2#3#4#5#6#7{#1[{#2}][{#3}][{#4}][{#5}][{#6}][{#7}][]}
 
-\startmkivmode
+\unexpanded\def\doseventupleempty#1%
+  {%syst_helpers_argument_reset
+   \t_syst_aux{#1}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_one_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_one_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \unexpanded\def\doseventupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_one_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_one_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_one_yes[#1]%
+  {\firstargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_two_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_two_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_two_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_two_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_two_yes[#1]%
+  {\secondargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_three_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_three_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_three_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_three_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_three_yes[#1]%
+  {\thirdargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_four_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_four_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_four_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_four_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_four_yes[#1]%
+  {\fourthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_five_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_five_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_five_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_five_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_five_yes[#1]%
+  {\fifthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_six_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_six_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_five_yes[#1]%
-      {\fifthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_six_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_six_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_six_yes[#1]%
+  {\sixthargumenttrue
+   \toksapp\t_syst_aux{[{#1}]}%
+   \let\m_syst_action_yes\syst_helpers_seventuple_empty_seven_yes
+   \let\m_syst_action_nop\syst_helpers_seventuple_empty_seven_nop
+   \let\if_next_blank_space_token\iffalse
+   \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
 
-    \def\syst_helpers_seventuple_empty_six_yes[#1]%
-      {\sixthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \let\m_syst_action_yes\syst_helpers_seventuple_empty_seven_yes
-       \let\m_syst_action_nop\syst_helpers_seventuple_empty_seven_nop
-       \let\if_next_blank_space_token\iffalse
-       \futurelet\nexttoken\syst_helpers_inspect_next_optional_character}
+\def\syst_helpers_seventuple_empty_one_nop
+  {\firstargumentfalse
+   \secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \the\t_syst_aux[][][][][][][]}
 
-    \def\syst_helpers_seventuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][][][][][]}
+\def\syst_helpers_seventuple_empty_two_nop
+  {\secondargumentfalse
+   \thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_six
+   \else
+     \expandafter\syst_helpers_empty_normal_six
+   \fi}
 
-    \def\syst_helpers_seventuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_six
-       \else
-         \expandafter\syst_helpers_empty_normal_six
-       \fi}
+\def\syst_helpers_seventuple_empty_three_nop
+  {\thirdargumentfalse
+   \fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_five
+   \else
+     \expandafter\syst_helpers_empty_normal_five
+   \fi}
 
-    \def\syst_helpers_seventuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_five
-       \else
-         \expandafter\syst_helpers_empty_normal_five
-       \fi}
+\def\syst_helpers_seventuple_empty_four_nop
+  {\fourthargumentfalse
+   \fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_four
+   \else
+     \expandafter\syst_helpers_empty_normal_four
+   \fi}
 
-    \def\syst_helpers_seventuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_four
-       \else
-         \expandafter\syst_helpers_empty_normal_four
-       \fi}
+\def\syst_helpers_seventuple_empty_five_nop
+  {\fifthargumentfalse
+   \sixthargumentfalse
+   \seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_three
+   \else
+     \expandafter\syst_helpers_empty_normal_three
+   \fi}
 
-    \def\syst_helpers_seventuple_empty_five_nop
-      {\fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_three
-       \else
-         \expandafter\syst_helpers_empty_normal_three
-       \fi}
+\def\syst_helpers_seventuple_empty_six_nop
+  {\sixthargumentfalse
+   \seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_two
+   \else
+     \expandafter\syst_helpers_empty_normal_two
+   \fi}
 
-    \def\syst_helpers_seventuple_empty_six_nop
-      {\sixthargumentfalse
-       \seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_two
-       \else
-         \expandafter\syst_helpers_empty_normal_two
-       \fi}
-
-    \def\syst_helpers_seventuple_empty_seven_nop
-      {\seventhargumentfalse
-       \if_next_blank_space_token
-         \expandafter\syst_helpers_empty_spaced_one
-       \else
-         \expandafter\syst_helpers_empty_normal_one
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doseventupleempty#1%
-      {%syst_helpers_argument_reset
-       \t_syst_aux{#1}%
-       \futureexpand[\syst_helpers_seventuple_empty_one_yes\syst_helpers_seventuple_empty_one_nop}
-
-    \def\syst_helpers_seventuple_empty_one_yes[#1]%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_two_yes\syst_helpers_seventuple_empty_two_nop}
-
-    \def\syst_helpers_seventuple_empty_two_yes[#1]%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_three_yes\syst_helpers_seventuple_empty_three_nop}
-
-    \def\syst_helpers_seventuple_empty_three_yes[#1]%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_four_yes\syst_helpers_seventuple_empty_four_nop}
-
-    \def\syst_helpers_seventuple_empty_four_yes[#1]%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_five_yes\syst_helpers_seventuple_empty_five_nop}
-
-    \def\syst_helpers_seventuple_empty_five_yes[#1]%
-      {\fifthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_six_yes\syst_helpers_seventuple_empty_six_nop}
-
-    \def\syst_helpers_seventuple_empty_six_yes[#1]%
-      {\sixthargumenttrue
-       \toksapp\t_syst_aux{[{#1}]}%
-       \futureexpand[\syst_helpers_seventuple_empty_seven_yes\syst_helpers_seventuple_empty_seven_nop}
-
-    \def\syst_helpers_seventuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][][][][][]}
-
-    \def\syst_helpers_seventuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][][][][]}
-
-    \def\syst_helpers_seventuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][][][]}
-
-    \def\syst_helpers_seventuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][][]}
-
-    \def\syst_helpers_seventuple_empty_five_nop
-      {\fifthargumentfalse
-       \sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][][]}
-
-    \def\syst_helpers_seventuple_empty_six_nop
-      {\sixthargumentfalse
-       \seventhargumentfalse
-       \the\t_syst_aux[][]}
-
-    \def\syst_helpers_seventuple_empty_seven_nop
-      {\seventhargumentfalse
-       \the\t_syst_aux[]}
-
-\stoplmtxmode
+\def\syst_helpers_seventuple_empty_seven_nop
+  {\seventhargumentfalse
+   \if_next_blank_space_token
+     \expandafter\syst_helpers_empty_spaced_one
+   \else
+     \expandafter\syst_helpers_empty_normal_one
+   \fi}
 
 %D Aliases:
 
@@ -3984,252 +3462,94 @@
 %D \type {conditional} token. Okay, these macros are not called that often but it
 %D saves crap when tracing.
 
-\startmkivmode
+\unexpanded\def\syst_helpers_get_grouped_argument#1#2%
+  {\let\syst_helpers_get_grouped_argument_yes#1%
+   \let\syst_helpers_get_grouped_argument_nop#2%
+   \futurelet\nextargument\syst_helpers_get_grouped_argument_indeed}
 
-    \unexpanded\def\syst_helpers_get_grouped_argument#1#2%
-      {\let\syst_helpers_get_grouped_argument_yes#1%
-       \let\syst_helpers_get_grouped_argument_nop#2%
-       \futurelet\nextargument\syst_helpers_get_grouped_argument_indeed}
+\def\syst_helpers_get_grouped_argument_indeed
+  {\ifx\nextargument\bgroup
+     \expandafter\syst_helpers_get_grouped_argument_a
+   \else
+     \expandafter\syst_helpers_get_grouped_argument_b
+   \fi}
 
-    \def\syst_helpers_get_grouped_argument_indeed
-      {\ifx\nextargument\bgroup
-         \expandafter\syst_helpers_get_grouped_argument_a
-       \else
-         \expandafter\syst_helpers_get_grouped_argument_b
-       \fi}
+\def\syst_helpers_get_grouped_argument_a
+  {%syst_helpers_argument_reset
+   \syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nested}
 
-    \def\syst_helpers_get_grouped_argument_a
-      {%syst_helpers_argument_reset
-       \syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nested}
+\def\syst_helpers_get_grouped_argument_b
+  {\ifconditional\c_syst_helpers_permit_spaces_between_groups
+     \expandafter\syst_helpers_get_grouped_argument_f
+   \else
+     \expandafter\syst_helpers_get_grouped_argument_d
+   \fi}
 
-    \def\syst_helpers_get_grouped_argument_b
-      {\ifconditional\c_syst_helpers_permit_spaces_between_groups
-         \expandafter\syst_helpers_get_grouped_argument_f
-       \else
-         \expandafter\syst_helpers_get_grouped_argument_d
-       \fi}
+\def\syst_helpers_get_grouped_argument_d
+  {%syst_helpers_argument_error
+   \syst_helpers_get_grouped_argument_nop\syst_helpers_get_grouped_argument_nested{}}
 
-    \def\syst_helpers_get_grouped_argument_d
-      {%syst_helpers_argument_error
-       \syst_helpers_get_grouped_argument_nop\syst_helpers_get_grouped_argument_nested{}}
+\begingroup
+  \def\\ {\syst_helpers_get_grouped_argument\syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nop}
+  \glet\syst_helpers_get_grouped_argument_e\\
+\endgroup
 
-    \begingroup
-      \def\\ {\syst_helpers_get_grouped_argument\syst_helpers_get_grouped_argument_yes\syst_helpers_get_grouped_argument_nop}
-      \glet\syst_helpers_get_grouped_argument_e\\
-    \endgroup
+\def\syst_helpers_get_grouped_argument_f
+  {\ifx\nextargument\blankspace
+     \expandafter\syst_helpers_get_grouped_argument_e % g
+   \else
+     \expandafter\syst_helpers_get_grouped_argument_d % h
+   \fi}
 
-    \def\syst_helpers_get_grouped_argument_f
-      {\ifx\nextargument\blankspace
-         \expandafter\syst_helpers_get_grouped_argument_e % g
-       \else
-         \expandafter\syst_helpers_get_grouped_argument_d % h
-       \fi}
+\unexpanded\def\dosinglegroupempty#1%
+  {\def\syst_helpers_get_grouped_argument_nested
+     {\dontpermitspacesbetweengroups
+      #1}%
+   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-    \unexpanded\def\dosinglegroupempty#1%
-      {\def\syst_helpers_get_grouped_argument_nested
-         {\dontpermitspacesbetweengroups
-          #1}%
-       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+\unexpanded\def\dodoublegroupempty#1%
+  {\def\syst_helpers_get_grouped_argument_nested##1%
+     {\def\syst_helpers_get_grouped_argument_nested
+        {\dontpermitspacesbetweengroups
+         #1{##1}}%
+      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-    \unexpanded\def\dodoublegroupempty#1%
-      {\def\syst_helpers_get_grouped_argument_nested##1%
-         {\def\syst_helpers_get_grouped_argument_nested
-            {\dontpermitspacesbetweengroups
-             #1{##1}}%
-          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+\unexpanded\def\dotriplegroupempty#1%
+  {\def\syst_helpers_get_grouped_argument_nested##1%
+     {\def\syst_helpers_get_grouped_argument_nested####1%
+        {\def\syst_helpers_get_grouped_argument_nested
+           {\dontpermitspacesbetweengroups
+            #1{##1}{####1}}%
+         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-    \unexpanded\def\dotriplegroupempty#1%
-      {\def\syst_helpers_get_grouped_argument_nested##1%
-         {\def\syst_helpers_get_grouped_argument_nested####1%
-            {\def\syst_helpers_get_grouped_argument_nested
-               {\dontpermitspacesbetweengroups
-                #1{##1}{####1}}%
-             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
+\unexpanded\def\doquadruplegroupempty#1%
+  {\def\syst_helpers_get_grouped_argument_nested##1%
+     {\def\syst_helpers_get_grouped_argument_nested####1%
+        {\def\syst_helpers_get_grouped_argument_nested########1%
+           {\def\syst_helpers_get_grouped_argument_nested
+              {\dontpermitspacesbetweengroups
+               #1{##1}{####1}{########1}}%
+            \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
+         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
-    \unexpanded\def\doquadruplegroupempty#1%
-      {\def\syst_helpers_get_grouped_argument_nested##1%
-         {\def\syst_helpers_get_grouped_argument_nested####1%
-            {\def\syst_helpers_get_grouped_argument_nested########1%
-               {\def\syst_helpers_get_grouped_argument_nested
-                  {\dontpermitspacesbetweengroups
-                   #1{##1}{####1}{########1}}%
-                \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
-             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
-
-    \unexpanded\def\doquintuplegroupempty#1%
-      {\def\syst_helpers_get_grouped_argument_nested##1%
-         {\def\syst_helpers_get_grouped_argument_nested####1%
-            {\def\syst_helpers_get_grouped_argument_nested########1%
-               {\def\syst_helpers_get_grouped_argument_nested################1%
-                 {\def\syst_helpers_get_grouped_argument_nested
-                    {\dontpermitspacesbetweengroups
-                     #1{##1}{####1}{########1}{################1}}%
-                  \syst_helpers_get_grouped_argument\fifthargumenttrue\fifthargumentfalse}%
-                \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
-             \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
-          \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
-       \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\dosinglegroupempty#1%
-      {\t_syst_aux{#1}%
-       \futureexpand\bgroup\syst_helpers_single_empty_one_yes\syst_helpers_single_group_empty_one_nop}
-
-    \def\syst_helpers_single_group_empty_one_nop
-      {\firstargumentfalse
-       \the\t_syst_aux{}}
-
-    \unexpanded\def\dodoublegroupempty#1%
-      {\t_syst_aux{#1}%
-       \futureexpand\bgroup\syst_helpers_group_double_empty_one_yes\syst_helpers_group_double_empty_one_nop}
-
-    \def\syst_helpers_group_double_empty_one_yes#1%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_double_empty_two_yes\syst_helpers_group_double_empty_two_nop}
-
-    \def\syst_helpers_group_double_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \the\t_syst_aux{}{}}
-
-    \def\syst_helpers_group_double_empty_two_nop
-      {\secondargumentfalse
-       \the\t_syst_aux{}}
-
-    \unexpanded\def\dotriplegroupempty#1%
-      {\t_syst_aux{#1}%
-       \futureexpand\bgroup\syst_helpers_group_triple_empty_one_yes\syst_helpers_group_triple_empty_one_nop}
-
-    \def\syst_helpers_group_triple_empty_one_yes#1%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_triple_empty_two_yes\syst_helpers_group_triple_empty_two_nop}
-
-    \def\syst_helpers_group_triple_empty_two_yes#1%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_triple_empty_three_yes\syst_helpers_group_triple_empty_three_nop}
-
-    \def\syst_helpers_group_triple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \the\t_syst_aux{}{}{}}
-
-    \def\syst_helpers_group_triple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \the\t_syst_aux{}{}}
-
-    \def\syst_helpers_group_triple_empty_three_nop
-      {\thirdargumentfalse
-       \the\t_syst_aux{}}
-
-    \unexpanded\def\doquadruplegroupempty#1%
-      {\t_syst_aux{#1}%
-       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_one_yes\syst_helpers_group_quadruple_empty_one_nop}
-
-    \def\syst_helpers_group_quadruple_empty_one_yes#1%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_two_yes\syst_helpers_group_quadruple_empty_two_nop}
-
-    \def\syst_helpers_group_quadruple_empty_two_yes#1%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_quadruple_empty_three_yes\syst_helpers_group_quadruple_empty_three_nop}
-
-    \def\syst_helpers_group_quadruple_empty_three_yes#1%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_quadruple_empty_four_yes\syst_helpers_group_quadruple_empty_four_nop}
-
-    \def\syst_helpers_group_quadruple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux{}{}{}{}}
-
-    \def\syst_helpers_group_quadruple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux{}{}{}}
-
-    \def\syst_helpers_group_quadruple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \the\t_syst_aux{}{}}
-
-    \def\syst_helpers_group_quadruple_empty_four_nop
-      {\fourthargumentfalse
-       \the\t_syst_aux{}}
-
-    \unexpanded\def\doquintuplegroupempty#1%
-      {\t_syst_aux{#1}%
-       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_one_yes\syst_helpers_group_quintuple_empty_one_nop}
-
-    \def\syst_helpers_group_quintuple_empty_one_yes#1%
-      {\firstargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_two_yes\syst_helpers_group_quintuple_empty_two_nop}
-
-    \def\syst_helpers_group_quintuple_empty_two_yes#1%
-      {\secondargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_three_yes\syst_helpers_group_quintuple_empty_three_nop}
-
-    \def\syst_helpers_group_quintuple_empty_three_yes#1%
-      {\thirdargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_group_quintuple_empty_four_yes\syst_helpers_group_quintuple_empty_four_nop}
-
-    \def\syst_helpers_group_quintuple_empty_four_yes#1%
-      {\fourthargumenttrue
-       \toksapp\t_syst_aux{{#1}}%
-       \futureexpand\bgroup\syst_helpers_quintuple_empty_five_yes\syst_helpers_group_quintuple_empty_five_nop}
-
-    \def\syst_helpers_group_quintuple_empty_one_nop
-      {\firstargumentfalse
-       \secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux{}{}{}{}{}}
-
-    \def\syst_helpers_group_quintuple_empty_two_nop
-      {\secondargumentfalse
-       \thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux{}{}{}{}}
-
-    \def\syst_helpers_group_quintuple_empty_three_nop
-      {\thirdargumentfalse
-       \fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux{}{}{}}
-
-    \def\syst_helpers_group_quintuple_empty_four_nop
-      {\fourthargumentfalse
-       \fifthargumentfalse
-       \the\t_syst_aux{}{}}
-
-    \def\syst_helpers_group_quintuple_empty_five_nop
-      {\fifthargumentfalse
-       \the\t_syst_aux{}}
-
-\stoplmtxmode
+\unexpanded\def\doquintuplegroupempty#1%
+  {\def\syst_helpers_get_grouped_argument_nested##1%
+     {\def\syst_helpers_get_grouped_argument_nested####1%
+        {\def\syst_helpers_get_grouped_argument_nested########1%
+           {\def\syst_helpers_get_grouped_argument_nested################1%
+             {\def\syst_helpers_get_grouped_argument_nested
+                {\dontpermitspacesbetweengroups
+                 #1{##1}{####1}{########1}{################1}}%
+              \syst_helpers_get_grouped_argument\fifthargumenttrue\fifthargumentfalse}%
+            \syst_helpers_get_grouped_argument\fourthargumenttrue\fourthargumentfalse}%
+         \syst_helpers_get_grouped_argument\thirdargumenttrue\thirdargumentfalse}%
+      \syst_helpers_get_grouped_argument\secondargumenttrue\secondargumentfalse}%
+   \syst_helpers_get_grouped_argument\firstargumenttrue\firstargumentfalse}
 
 %D These macros can explictly take care of spaces, which means that the next
 %D definition and calls are valid:
@@ -5918,71 +5238,34 @@
 % \unexpanded\def\pickupgroupedcommand#1#2#3%
 %   {\doifelsenextbgroup{\syst_helpers_handle_group_pickup{#1}{#2}{#3}}{\syst_helpers_handle_group_nop{#1}{#2}}}
 
-\startmkivmode
+\unexpanded\def\groupedcommand#1#2%
+  {\def\m_syst_helpers_handle_group_b{#1}%
+   \def\m_syst_helpers_handle_group_a{#2}%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
 
-    \unexpanded\def\groupedcommand#1#2%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
+\unexpanded\def\groupedcommandcs#1#2%
+  {\let\m_syst_helpers_handle_group_b#1%
+   \let\m_syst_helpers_handle_group_a#2%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
 
-    \unexpanded\def\groupedcommandcs#1#2%
-      {\let\m_syst_helpers_handle_group_b#1%
-       \let\m_syst_helpers_handle_group_a#2%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
+\unexpanded\def\simplegroupedcommand#1#2%
+  {\def\m_syst_helpers_handle_group_b{#1}%
+   \def\m_syst_helpers_handle_group_a{#2}%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
 
-    \unexpanded\def\simplegroupedcommand#1#2%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
+\unexpanded\def\pickupgroupedcommand#1#2#3%
+  {\def\m_syst_helpers_handle_group_b{#1}%
+   \def\m_syst_helpers_handle_group_a{#2}%
+   \def\m_syst_helpers_handle_group_p{#2}%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
 
-    \unexpanded\def\pickupgroupedcommand#1#2#3%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \def\m_syst_helpers_handle_group_p{#2}%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
+\unexpanded\def\triggergroupedcommand#1%
+  {\def\m_syst_helpers_handle_group_b{#1}%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
 
-    \unexpanded\def\triggergroupedcommand#1%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
-
-    \unexpanded\def\triggergroupedcommandcs#1%
-      {\let\m_syst_helpers_handle_group_b#1%
-       \doifelsenextbgroupcs\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\groupedcommand#1#2%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \futureexpandis\bgroup\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
-
-    \unexpanded\def\groupedcommandcs#1#2%
-      {\let\m_syst_helpers_handle_group_b#1%
-       \let\m_syst_helpers_handle_group_a#2%
-       \futureexpandis\bgroup\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
-
-    \unexpanded\def\simplegroupedcommand#1#2%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \futureexpandis\bgroup\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
-
-    \unexpanded\def\pickupgroupedcommand#1#2#3%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \def\m_syst_helpers_handle_group_a{#2}%
-       \def\m_syst_helpers_handle_group_p{#2}%
-       \futureexpandis\bgroup\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
-
-    \unexpanded\def\triggergroupedcommand#1%
-      {\def\m_syst_helpers_handle_group_b{#1}%
-       \futureexpandis\bgroup\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
-
-    \unexpanded\def\triggergroupedcommandcs#1%
-      {\let\m_syst_helpers_handle_group_b#1%
-       \futureexpandis\bgroup\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
-
-\stoplmtxmode
+\unexpanded\def\triggergroupedcommandcs#1%
+  {\let\m_syst_helpers_handle_group_b#1%
+   \doifelsenextbgroupcs\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
 
 %D Users should be aware of the fact that grouping can interfere with ones paragraph
 %D settings that are executed after the paragraph is closed. One should therefore
@@ -7032,166 +6315,88 @@
 %D three tokens per call. Anyone familiar with the not||values ones, can derive
 %D their meaning from the definitions.
 
-\startmkivmode
+\unexpanded\def\doifvalue#1#2%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \unexpanded\def\doifvalue#1#2%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
+\unexpanded\def\doifnotvalue#1#2%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \unexpanded\def\doifnotvalue#1#2%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
+\unexpanded\def\doifelsevalue#1#2%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \edef\m_syst_string_two{#2}%
+   \ifx\m_syst_string_one\m_syst_string_two
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
-    \unexpanded\def\doifelsevalue#1#2%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \edef\m_syst_string_two{#2}%
-       \ifx\m_syst_string_one\m_syst_string_two
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
+\unexpanded\def\doifnothing#1%
+  {\edef\m_syst_string_one{#1}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \unexpanded\def\doifnothing#1%
-      {\edef\m_syst_string_one{#1}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
+\unexpanded\def\doifsomething#1%
+  {\edef\m_syst_string_one{#1}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \unexpanded\def\doifsomething#1%
-      {\edef\m_syst_string_one{#1}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
+\unexpanded\def\doifelsenothing#1%
+  {\edef\m_syst_string_one{#1}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
-    \unexpanded\def\doifelsenothing#1%
-      {\edef\m_syst_string_one{#1}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
+\unexpanded\def\doifelsesomething#1%
+  {\edef\m_syst_string_one{#1}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
-    \unexpanded\def\doifelsesomething#1%
-      {\edef\m_syst_string_one{#1}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\secondoftwoarguments
-       \else
-         \expandafter\firstoftwoarguments
-       \fi}
+\unexpanded\def\doifvaluenothing#1%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
-    \unexpanded\def\doifvaluenothing#1%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
+\unexpanded\def\doifvaluesomething#1%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \unexpanded\def\doifvaluesomething#1%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifelsevaluenothing#1%
-      {\edef\m_syst_string_one{\csname#1\endcsname}%
-       \ifx\m_syst_string_one\empty
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifvalue#1#2%
-      {\iftok{\csname#1\endcsname}{#2}%
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \unexpanded\def\doifnotvalue#1#2%
-      {\iftok{\csname#1\endcsname}{#2}%
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifelsevalue#1#2%
-      {\iftok{\csname#1\endcsname}{#2}%
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-    \unexpanded\def\doifnothing#1%
-      {\iftok{#1}\emptytoks
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \unexpanded\def\doifsomething#1%
-      {\iftok{#1}\emptytoks
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifelsenothing#1%
-      {\iftok{#1}\emptytoks
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-    \unexpanded\def\doifelsesomething#1%
-      {\iftok{#1}\emptytoks
-         \expandafter\secondoftwoarguments
-       \else
-         \expandafter\firstoftwoarguments
-       \fi}
-
-    \unexpanded\def\doifvaluenothing#1%
-      {\iftok{\csname#1\endcsname}\emptytoks
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-    \unexpanded\def\doifvaluesomething#1%
-      {\iftok{\csname#1\endcsname}\emptytoks
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifelsevaluenothing#1%
-      {\iftok{\csname#1\endcsname}\emptytoks
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-\stoplmtxmode
+\unexpanded\def\doifelsevaluenothing#1%
+  {\edef\m_syst_string_one{\csname#1\endcsname}%
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
 
 \let\doifvalueelse       \doifelsevalue
 \let\doifnothingelse     \doifelsenothing
@@ -7970,58 +7175,29 @@
 %D
 %D Not that fast I guess, but here's a way to test for token registers being empty.
 
-\startmkivmode
+\unexpanded\def\doifelsesometoks#1%
+  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+   \ifx\m_syst_string_one\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
 
-    \unexpanded\def\doifelsesometoks#1%
-      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-       \ifx\m_syst_string_one\empty
-         \expandafter\secondoftwoarguments
-       \else
-         \expandafter\firstoftwoarguments
-       \fi}
+\unexpanded\def\doifsometoks#1%
+  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+   \ifx\m_syst_string_one\empty
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
 
-    \unexpanded\def\doifsometoks#1%
-      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-       \ifx\m_syst_string_one\empty
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifemptytoks#1%
-      {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
-       \ifx\m_syst_string_one\empty
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \unexpanded\def\doifelsesometoks#1%
-      {\iftok#1\emptytoks
-         \expandafter\secondoftwoarguments
-       \else
-         \expandafter\firstoftwoarguments
-       \fi}
-
-    \unexpanded\def\doifsometoks#1%
-      {\iftok#1\emptytoks
-         \expandafter\gobbleoneargument
-       \else
-         \expandafter\firstofoneargument
-       \fi}
-
-    \unexpanded\def\doifemptytoks#1%
-      {\iftok#1\emptytoks
-         \expandafter\firstofoneargument
-       \else
-         \expandafter\gobbleoneargument
-       \fi}
-
-\stoplmtxmode
+\unexpanded\def\doifemptytoks#1%
+  {\edef\m_syst_string_one{\the#1}% one level expansion so quite ok
+   \ifx\m_syst_string_one\empty
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
 
 \let\doifsometokselse\doifelsesometoks
 
@@ -8234,33 +7410,18 @@
 %D
 %D This is a dirty one: we simply append a unit and discard it when needed.
 
-\startmkivmode
+\def\doifelsedimension#1%
+  {\afterassignment\syst_helpers_if_dimension_else\privatescratchdimen#1pt\relax}
 
-    \def\doifelsedimension#1%
-      {\afterassignment\syst_helpers_if_dimension_else\privatescratchdimen#1pt\relax}
+% \def\doifelsedimension#1%
+%   {\expandafter\syst_helpers_if_dimension_else\immediateassignment\privatescratchdimen#1pt\relax}
 
-  % \def\doifelsedimension#1%
-  %   {\expandafter\syst_helpers_if_dimension_else\immediateassignment\privatescratchdimen#1pt\relax}
-
-    \def\syst_helpers_if_dimension_else#1%
-      {\ifx#1\relax
-         \expandafter\secondoftwoarguments
-       \else % #1=p ... t\relax
-         \expandafter\thirdoffourarguments
-       \fi}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \def\doifelsedimension#1%
-      {\ifchkdim#1\or
-         \expandafter\firstoftwoarguments
-       \else
-         \expandafter\secondoftwoarguments
-       \fi}
-
-\stoplmtxmode
+\def\syst_helpers_if_dimension_else#1%
+  {\ifx#1\relax
+     \expandafter\secondoftwoarguments
+   \else % #1=p ... t\relax
+     \expandafter\thirdoffourarguments
+   \fi}
 
 \let\doifdimensionelse\doifelsedimension
 
@@ -8281,67 +7442,57 @@
 %D \NC 1       \NC  \doifdimenstringelse      {1}{yes}{no} \NC \NR
 %D \stoptabulate
 
-\startmkivmode
+\installsystemnamespace{dimenchecka}
+\installsystemnamespace{dimencheckb}
+\installsystemnamespace{dimencheckc}
 
-    \installsystemnamespace{dimenchecka}
-    \installsystemnamespace{dimencheckb}
-    \installsystemnamespace{dimencheckc}
+\def\doifelsedimenstring#1{\normalexpanded{\noexpand\dodimenteststageone#1}\empty\empty]}
 
-    \def\doifelsedimenstring#1{\normalexpanded{\noexpand\dodimenteststageone#1}\empty\empty]}
+\def\dodimenteststageone  #1#2{\csname \??dimenchecka\ifcsname \??dimenchecka#2\endcsname#2\else x\fi\endcsname#2}
+\def\dodimenteststagetwo  #1#2{\csname \??dimencheckb\ifcsname \??dimencheckb#2\endcsname#2\else x\fi\endcsname#2}
+\def\dodimenteststagethree #1]{\csname \??dimencheckc\ifcsname \??dimencheckc#1\endcsname#1\else x\fi\endcsname}
 
-    \def\dodimenteststageone  #1#2{\csname \??dimenchecka\ifcsname \??dimenchecka#2\endcsname#2\else x\fi\endcsname#2}
-    \def\dodimenteststagetwo  #1#2{\csname \??dimencheckb\ifcsname \??dimencheckb#2\endcsname#2\else x\fi\endcsname#2}
-    \def\dodimenteststagethree #1]{\csname \??dimencheckc\ifcsname \??dimencheckc#1\endcsname#1\else x\fi\endcsname}
+\expandafter\let\csname \??dimenchecka x\endcsname\dodimenteststagethree
+\expandafter\let\csname \??dimencheckb x\endcsname\dodimenteststagethree
+\expandafter\let\csname \??dimencheckc x\endcsname\secondoftwoarguments
 
-    \expandafter\let\csname \??dimenchecka x\endcsname\dodimenteststagethree
-    \expandafter\let\csname \??dimencheckb x\endcsname\dodimenteststagethree
-    \expandafter\let\csname \??dimencheckc x\endcsname\secondoftwoarguments
+\expandafter\let\csname \??dimenchecka.\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimenchecka,\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimenchecka1\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka2\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka3\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka4\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka5\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka6\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka7\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka8\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka9\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimenchecka0\endcsname\dodimenteststageone
 
-    \expandafter\let\csname \??dimenchecka.\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimenchecka,\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimenchecka1\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka2\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka3\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka4\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka5\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka6\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka7\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka8\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka9\endcsname\dodimenteststageone
-    \expandafter\let\csname \??dimenchecka0\endcsname\dodimenteststageone
+\expandafter\let\csname \??dimencheckb1\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb2\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb3\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb4\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb5\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb6\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb7\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb8\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb9\endcsname\dodimenteststagetwo
+\expandafter\let\csname \??dimencheckb0\endcsname\dodimenteststagetwo
 
-    \expandafter\let\csname \??dimencheckb1\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb2\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb3\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb4\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb5\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb6\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb7\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb8\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb9\endcsname\dodimenteststagetwo
-    \expandafter\let\csname \??dimencheckb0\endcsname\dodimenteststagetwo
-
-    \expandafter\let\csname \??dimencheckc pt\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc pc\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc in\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc bp\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc cm\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc mm\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc dd\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc cc\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc sp\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc ex\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc em\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc nd\endcsname\firstoftwoarguments
-    \expandafter\let\csname \??dimencheckc nc\endcsname\firstoftwoarguments
-
-\stopmkivmode
-
-\startlmtxmode
-
-    \let\doifelsedimenstring\doifelsedimension
-
-\stoplmtxmode
+\expandafter\let\csname \??dimencheckc pt\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc pc\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc in\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc bp\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc cm\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc mm\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc dd\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc cc\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc sp\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc ex\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc em\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc nd\endcsname\firstoftwoarguments
+\expandafter\let\csname \??dimencheckc nc\endcsname\firstoftwoarguments
 
 \let\doifdimenstringelse\doifelsedimenstring
 

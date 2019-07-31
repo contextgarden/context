@@ -15,13 +15,13 @@
 
 \registerctxluafile{type-ini}{}
 
-%D The default fontclass is empty. We could demand always using fontclasses,
-%D and then make the calling macros simplier (always assume fontclass) but
-%D apart from downward compatibility issues, it would make global, class
-%D spanning definitions a pain. Some day we will introduce a default class.
+%D The default fontclass is empty. We could demand always using fontclasses, and
+%D then make the calling macros simplier (always assume fontclass) but apart from
+%D downward compatibility issues, it would make global, class spanning definitions a
+%D pain. Some day we will introduce a default class.
 %D
-%D The \type {type-ini} and \type {font-ini} modules come as a pair and have
-%D mutual dependencies.
+%D The \type {type-ini} and \type {font-ini} modules come as a pair and have mutual
+%D dependencies.
 %D
 %D At some point we will only store in memory so some code can go away.
 
@@ -183,8 +183,8 @@
     \preloadtypescripts
 \to \everyjob
 
-% The next will change .. we can load a file inside a typescript but as the state is
-% 1 then, it doesn't get stored without doing that explicitly
+%D The next will change .. we can load a file inside a typescript but as the state is
+%D 1 then, it doesn't get stored without doing that explicitly
 
 \unexpanded\def\loadtypescriptfile[#1]%
   {\push_macro_typescriptstate
@@ -412,8 +412,8 @@
 \def\extendtypescriptmatch
   {\edef\m_font_typescripts_match{\m_font_typescripts_match\space[\m_font_typescripts_check]}}
 
-%D Map files will go away in \LUATEX, but till that happens we
-%D use stripped down support for loading them.
+%D Map files will go away in \LUATEX, but till that happens we use stripped down
+%D support for loading them.
 
 \unexpanded\def\loadmapfile{\dosingleempty\font_map_load_file}
 \unexpanded\def\loadmapline{\dodoubleempty\font_map_load_line}

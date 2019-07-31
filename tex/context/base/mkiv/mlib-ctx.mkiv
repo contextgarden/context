@@ -11,83 +11,14 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This file contains the \MPLIB\ variants of the by now ancient
-%D \MPTOPDF\ code.
-
 \writestatus{loading}{MetaPost Library Graphics / Initializations}
 
 \registerctxluafile{mlib-run}{}
 \registerctxluafile{mlib-ctx}{}
 \registerctxluafile{mlib-lua}{}
-
-\startlmtxmode
-    \doifelsefileexists{mlib-scn.lua} {
-        \registerctxluafile{mlib-scn}{}
-    } {
-        % experimental code for Alan and me
-    }
-\stoplmtxmode
-
 \registerctxluafile{mlib-lmp}{}
 \registerctxluafile{mlib-int}{}
 
 \unprotect
 
 \protect \endinput
-
-% local mpgraphic = [[
-%     for i=1 upto 1000 :
-%         beginfig(0);
-%             draw halfcircle scaled 1cm withcolor green ;
-%             picture p ; p := "oeps" infont defaultfont scaled .75 rotated 45 ;
-%             p := p shifted - (xpart center p,0) ;
-%             draw p ; draw boundingbox p ;
-%         endfig ;
-%         beginfig(0);
-%             draw halfcircle scaled 1cm dashed evenly withcolor green ;
-%         endfig ;
-%         beginfig(0);
-%             pickup pencircle xscaled .5mm yscaled .25mm  rotated 45 ;
-%             draw halfcircle scaled 1cm withcolor red ;
-%         endfig ;
-%         beginfig(0);
-%             draw halfcircle scaled 1cm ;
-%         endfig ;
-%         beginfig(0);
-%            pickup pencircle xscaled .5mm yscaled .25mm  rotated 45 ;
-%             for k:=1 upto 10 :
-%                 draw halfcircle scaled uniformdeviate(1cm) withcolor (red/(k/4)) ;
-%             endfor ;
-%         endfig ;
-%     endfor ;
-% ]]
-% --  local mpx = metapost.format("metafun")
-% metapost.process(metapost.format("metafun"),mpgraphic)
-
-% \starttext
-% \setupcolors[state=start]
-% \definecolor[red] [r=1]
-% \definecolor[cyan][c=1]
-% \setbox\scratchbox\hbox{\startMPcode\stopMPcode} % first specials are forgotten
-% \definecolor[sss][t=.5,a=1,r=1]
-% \definespotcolor[oeps1][green][p=.5]
-% \definespotcolor[oeps2][green][p=.25]
-% \definespotcolor[oeps3][green][p=.25,t=.5,a=1]
-% \startMPpage
-%     fill fullcircle scaled 10cm withcolor \MPcolor{red} ;
-%     fill fullcircle scaled  8cm withcolor cmyk(1,0,0,0) ;
-%     fill fullcircle scaled  6cm withcolor cmyk(0,1,0,0) ;
-%     fill fullcircle scaled  4cm withcolor cmyk(0,0,1,0) ;
-%     fill fullcircle scaled  2cm withcolor cmyk(0,0,0,1) ;
-%     currentpicture := currentpicture shifted (-7.5cm,0) ;
-%     fill fullcircle scaled 10cm withcolor transparent(1,0.75,cmyk(0,0,1,0)) ;
-%     fill fullcircle scaled  8cm withcolor \MPcolor{sss} ;
-%     fill fullcircle scaled  6cm withcolor \MPcolor{oeps1} ;
-%     fill fullcircle scaled  4cm withcolor \MPcolor{oeps2} ;
-%     currentpicture := currentpicture shifted (-7.5cm,0) ;
-%     fill fullcircle scaled 10cm withcolor \MPcolor{oeps3} ;
-%     circular_shade(fullcircle scaled 8cm, 1, red, blue) ;
-%     circular_shade(fullcircle scaled 6cm, 1, (1,0,0,0), (0,1,0,0)) ;
-%     circular_shade(fullcircle scaled 4cm, 1, cmyk(.5,.5,1,0), (0,1,0,0)) ;
-% \stopMPpage
-% \stoptext

@@ -25,15 +25,7 @@ input "mp-mlib.mpiv" ;
 input "mp-luas.mpiv" ;
 input "mp-page.mpiv" ;
 
-string minifunversion ; minifunversion =
-    "minifun iv"                        & " " &
-    decimal year                        & "-" &
-    decimal month                       & "-" &
-    decimal day                         & " " &
-    if ((time div 60) < 10)           :   "0" & fi
-    decimal (time div 60)               & ":" &
-    if ((time-(time div 60)*60) < 10) :   "0" & fi
-    decimal (time-(time div 60)*60)   ;
+string minifunversion ; minifunversion = "minifun iv " & mfun_timestamp;
 
 let normalend = end ;
 
@@ -43,5 +35,3 @@ if known mplib :
 else :
     def end = ; message "" ; message minifunversion ; message "" ; normalend ; enddef ;
 fi ;
-
-% dump ; % obsolete in mplib

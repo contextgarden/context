@@ -11,13 +11,12 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module has a more modern variant in xtables but as we follow a bit
-%D different approach with settings there, this mechanism will stay. In fact
-%D each of them has its advantages. This module could be sped up a bit and made
-%D more efficient by delegating some housekeeping to \LUA\ but it's not worth
-%D the effort. The code could me made more readable but again, there is no
-%D real purpose in it. If needed I can squeeze out a few more percentages
-%D runtime.
+%D This module has a more modern variant in xtables but as we follow a bit different
+%D approach with settings there, this mechanism will stay. In fact each of them has
+%D its advantages. This module could be sped up a bit and made more efficient by
+%D delegating some housekeeping to \LUA\ but it's not worth the effort. The code
+%D could me made more readable but again, there is no real purpose in it. If needed
+%D I can squeeze out a few more percentages runtime.
 
 % columndistance 'optimized' ... needs checking
 %
@@ -27,8 +26,8 @@
 
 % sometimes this helps (with nc going wild): \setupTABLE[maxwidth=100cm]
 %
-% bug: width 3cm is not honored and column becomes too wide
-% as given width is added to distributed width
+% bug: width 3cm is not honored and column becomes too wide as given width is added
+% to distributed width
 %
 % \bTABLE
 %     \bTR
@@ -61,16 +60,14 @@
 %     \stopcelltable
 % \stoptext
 
-%D As always, this is the n\high{th} version. Much time went in
-%D trying to speed up the many cell calculations, some
-%D optimizations were rejected in order not to complicate this
-%D module too much (and in order to prevail extensibility). In the
+%D As always, this is the n\high{th} version. Much time went in trying to speed up
+%D the many cell calculations, some optimizations were rejected in order not to
+%D complicate this module too much (and in order to prevail extensibility). In the
 %D meantime we've sacrified some speed for readability.
 
 \unprotect
 
-%D The next alternative also takes care of preceding and following
-%D white space.
+%D The next alternative also takes care of preceding and following white space.
 %D
 %D \startbuffer
 %D \bTABLE[left={(},right={)},top=\startnarrower,bottom=\stopnarrower]
@@ -203,8 +200,8 @@
 
 \newbox\b_tabl_ntb_final
 
-%D We have already prepared the previous macros for nesting,
-%D so we only have to pop in the right ones:
+%D We have already prepared the previous macros for nesting, so we only have to pop
+%D in the right ones:
 
 \newcount\c_tabl_level
 
@@ -861,8 +858,8 @@
 \def\tabl_ntb_tn[#1]#2\eTN
   {\tabl_ntb_td[#1]\digits#2\relax\eTD}
 
-%D Vit Zyka needed the option to create a distance between columns, so I
-%D added support for individual column distances.
+%D Vit Zyka needed the option to create a distance between columns, so I added
+%D support for individual column distances.
 %D
 %D \startbuffer
 %D % \setupTABLE[c][each][distance=2em]
@@ -884,9 +881,8 @@
 %D
 %D \typebuffer \startlinecorrection \getbuffer \stoplinecorrection
 %D
-%D and he provided patches for the global left and right margin distances
-%D as well as the columndistance (although i changed the names -). Here
-%D is his testcase:
+%D and he provided patches for the global left and right margin distances as well as
+%D the columndistance (although i changed the names -). Here is his testcase:
 %D
 %D \startbuffer
 %D \framed[offset=overlay]\bgroup
@@ -1233,8 +1229,8 @@
 \def\tabl_ntb_prelocate_okay
   {\expandafter\let\expandafter\t_tabl_ntb_row\csname\??naturaltabletok\the\c_tabl_ntb_row\endcsname\t_tabl_ntb_row\emptytoks}
 
-% We use aligments to handle the empty (skipped) columns, so
-% that we don't have to (re|)|calculate these.
+%D We use aligments to handle the empty (skipped) columns, so that we don't have to
+%D (re|)|calculate these.
 
 \let\m_tabl_ntb_saved_row\!!zerocount
 \let\m_tabl_ntb_saved_col\!!zerocount
@@ -1734,6 +1730,8 @@
       \fi}%
    \ifconditional\c_tabl_ntb_trace_widths\tabl_ntb_show_widths E#1\fi}
 
+% todo: use scratchcounters, not !! ones
+
 \def\tabl_ntb_check_heights_one_indeed
   {\!!countb\tabl_ntb_get_row\c_tabl_ntb_current_row_three\c_tabl_ntb_current_col_three\relax
     % check row span
@@ -1815,19 +1813,6 @@
      {\writestatus\m!TABLE{\space\space\recurselevel: \the\dimexpr\tabl_ntb_get_wid\recurselevel}}%
    \endgroup}
 
-% \def\tabl_ntb_char_align
-%   {\doifelse{\naturaltablelocalparameter\c!aligncharacter}\v!yes
-%      \tabl_ntb_char_align_indeed\gobbletwoarguments}
-
-% \def\tabl_ntb_char_align_indeed#1#2#3% row column data
-%   {\edef\alignmentclass{#2}%
-%    \edef\alignmentcharacter{\naturaltablelocalparameter\c!alignmentcharacter}%
-%    \ifcase\c_tabl_tbl_pass\or
-%      \setfirstpasscharacteralign\checkalignment{#3}% {\strut#2\unskip}%
-%    \fi % force hsize, so always a second
-%    \setsecondpasscharacteralign \checkalignment{#3}% {\strut#2\unskip}%
-%    \ignorespaces}
-
 \def\tabl_ntb_char_align % called often
   {\edef\p_characteralign{\naturaltablelocalparameter\c!aligncharacter}%
    \ifx\p_characteralign\v!yes
@@ -1857,24 +1842,11 @@
 \unexpanded\def\tabl_ntb_cell_process_x#1#2[#3]#4%
   {}
 
-% problem: when span doesn't break we can have a span that is the sum of
-% cells but still to small .. chicken egg problem ... for that we should
-% also have a smallest width run
+% problem: when span doesn't break we can have a span that is the sum of cells but
+% still to small .. chicken egg problem ... for that we should also have a smallest
+% width run
 %
 % nilling the background makes a run upto 25% faster
-
-% \def\tabl_ntb_cell_process_a_check_span_one
-%   {\ifautosqueezeTBLspan
-%      \edef\p_width{\naturaltablelocalparameter\c!width}%
-%      \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-%    \else
-%      \donetrue
-%    \fi
-%    \ifdone % brr, 0
-%      \ifnum\scratchcounter>\plusone
-%        \tabl_ntb_set_spn\c_tabl_ntb_col
-%      \fi
-%    \fi}
 
 \def\tabl_ntb_cell_process_a_check_span_one
   {\ifautosqueezeTBLspan
@@ -1888,47 +1860,6 @@
        \tabl_ntb_set_spn\c_tabl_ntb_col
      \fi
    \fi}
-
-% \def\tabl_ntb_cell_process_a_check_span_two_yes
-%   {\iftightTBLcolspan
-%      \donefalse
-%    \else
-%      \ifnum\scratchcounter>\plusone
-%        \begingroup
-%        \edef\p_width{\naturaltablelocalparameter\c!width}%
-%        \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-%        \ifdone
-%          \endgroup
-%          \edef\p_option{\naturaltablelocalparameter\c!option}%
-%          \ifx\p_option\v!tight\donefalse\else\donetrue\fi
-%        \else
-%          % a dimension
-%          \endgroup
-%          \donefalse
-%        \fi
-%      \else
-%        \edef\p_option{\naturaltablelocalparameter\c!option}%
-%        \ifx\p_option\v!tight\donefalse\else\donetrue\fi
-%      \fi
-%    \fi
-%    \ifdone
-%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
-%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
-%       \fi
-%    \fi}
-
-% \def\tabl_ntb_cell_process_a_check_span_two_nop
-%   {\ifnum\scratchcounter>\plusone
-%      \edef\p_width{\naturaltablelocalparameter\c!width}%
-%      \csname\??naturaltablesqueeze\ifcsname\??naturaltablesqueeze\p_width\endcsname\p_width\fi\endcsname
-%    \else
-%      \donetrue
-%    \fi
-%    \ifdone
-%      \ifdim\tabl_ntb_get_wid\c_tabl_ntb_col<\wd\scratchbox
-%         \tabl_ntb_set_wid\c_tabl_ntb_col{\the\wd\scratchbox}%
-%       \fi
-%    \fi}
 
 \let\tabl_ntb_cell_process_a_check_span_two_yes\relax
 
@@ -1953,9 +1884,9 @@
       \anch_backgrounds_text_level_start
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop\tabl_ntb_cell_finalize}%
       \anch_backgrounds_text_level_stop
-\ifcase\c_anch_backgrounds_text_count\else
-      \tabl_ntb_let_bck{#1}{#2}\c_anch_backgrounds_text_state
-\fi
+      \ifcase\c_anch_backgrounds_text_count\else
+        \tabl_ntb_let_bck{#1}{#2}\c_anch_backgrounds_text_state
+      \fi
      }%
    \scratchdimen\tabl_ntb_get_wid\c_tabl_ntb_col\relax
    \ifdim\wd\scratchbox>\scratchdimen
@@ -2059,12 +1990,12 @@
       \else
         \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%
       \fi
-\ifcase\c_anch_backgrounds_text_count\else
-      \edef\p_region{\naturaltablelocalparameter\c!region}%
-      \ifx\p_region\empty\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
-        \letnaturaltablelocalparameter\c!region\v!yes
-      \fi\fi
-\fi
+      \ifcase\c_anch_backgrounds_text_count\else
+        \edef\p_region{\naturaltablelocalparameter\c!region}%
+        \ifx\p_region\empty\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
+          \letnaturaltablelocalparameter\c!region\v!yes
+        \fi\fi
+      \fi
       \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}}%
    \hskip\tabl_ntb_get_dis{#2}}
 
@@ -2197,12 +2128,6 @@
 
 \let\eTDs\relax
 \let\eTRs\relax
-
-% \unexpanded\def\bTDs[#1]#2\eTDs
-%   {\normalexpanded{\bTD[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTD}
-%
-% \unexpanded\def\bTRs[#1]#2\eTRs
-%   {\normalexpanded{\bTR[\ifcsname\??naturaltablesetup#1\endcsname\csname\??naturaltablesetup#1\endcsname\fi]}#2\eTR}
 
 \unexpanded\def\bTDs[#1]#2\eTDs
   {\normalexpanded{\bTD[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTD}

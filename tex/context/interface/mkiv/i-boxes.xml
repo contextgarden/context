@@ -725,21 +725,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalhbox" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalhbox" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvbox" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalvbox" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvtop" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalvtop" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
@@ -753,14 +753,63 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalhpack" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalhpack" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="naturalvpack" level="system" file="supp-box.mkiv">
+    <cd:command name="naturalvpack" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="naturaltpack" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversehbox" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversevbox" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversevtop" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversehpack" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversevpack" level="system" file="supp-dir.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="reversetpack" level="system" file="supp-dir.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
@@ -950,7 +999,21 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="rtlhbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="lefttorighthbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ltrhbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
@@ -964,7 +1027,21 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="rtlvbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="lefttorightvbox" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ltrvbox" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
@@ -978,7 +1055,21 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="rtlvtop" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="lefttorightvtop" level="system" category="alignment" file="spac-ali.mkiv">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="ltrvtop" level="system" category="alignment" file="spac-ali.mkiv">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>

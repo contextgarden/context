@@ -13,19 +13,18 @@
 
 \writestatus{loading}{ConTeXt Driver Macros / Initialization}
 
+%D Around the \CONTEXT\ 2018 meeting I had a preliminary backend written in \LUA\ as
+%D alternative for the hard coded variant (we're talking of the font embedding and
+%D page stream output, the part we still used). Therefore there is a pluggable
+%D output driver. But \unknown\ I decided not to waste time on supporting both
+%D \LUATEX\ and the new kid \LUAMETATEX, also because in practice \LUATEX\ would be
+%D used as benchmark, using the more traditional approach. So, the code in the
+%D driver modules is mostly a kind of simple placeholder now and although I could
+%D simplify it ther eis no real reason for it. It is no problem to getit all working
+%D well in normal \LUATEX, it's just that we don't need it there.
+
 \registerctxluafile{driv-ini}{}
 
 \unprotect
-
-\unexpanded\def\page_shipout_box#1%
-  {\clf_shipoutpage#1\relax
-   \global\setbox#1\emptybox
-   \global\deadcycles\zerocount}
-
-\ifdefined\page_otr_shipout_yes \else
-
-    \let\page_otr_shipout_yes\page_shipout_box
-
-\fi
 
 \protect \endinput

@@ -18,18 +18,8 @@
 \writestatus{loading}{ConTeXt Backend Macros / PDF}
 
 \registerctxluafile{lpdf-ini}{optimize}
-
-\ifcase\contextlmtxmode\relax
-  % \doifelsefile {lpdf-nod-test.lua} {
-  %     \registerctxluafile{lpdf-nod-test}{}
-  % } {
-        \registerctxluafile{lpdf-nod}{}
-  % }
-    \registerctxluafile{lpdf-eng}{optimize}
-\else
-    \registerctxluafile{lpdf-lmt}{optimize}
-\fi
-
+\registerctxluafile{lpdf-nod}{}
+\registerctxluafile{lpdf-eng}{optimize}
 \registerctxluafile{lpdf-col}{}
 \registerctxluafile{lpdf-xmp}{}
 \registerctxluafile{lpdf-ano}{}
@@ -45,17 +35,7 @@
 \registerctxluafile{lpdf-tag}{}
 \registerctxluafile{lpdf-fmt}{}
 \registerctxluafile{lpdf-pde}{}
-
-\ifcase\contextlmtxmode\else
-    \registerctxluafile{lpdf-img}{optimize}
-\fi
-
 \registerctxluafile{lpdf-epa}{}
-
-\ifcase\contextlmtxmode\else
-    \registerctxluafile{lpdf-emb}{optimize}
-\fi
-
 \registerctxluafile{lpdf-fnt}{}
 
 \registerctxluafile{back-pdp}{}

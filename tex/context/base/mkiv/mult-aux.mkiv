@@ -11,17 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% todo: setupxxx and setupxxxs (so a plural for the root setup and
-% we can consider blocking the root)
-
-% todo (e.g for columnsets and registers): \definexxx[parent][1]
-%
-
-%D A generalization of \MKIV-like inheritance. Just something to play
-%D with (interface might change). The code here evolved in an email
-%D exchange between me and Wolgang Schuster.
-
-% todo: doifelse<whatever>
+%D A generalization of \MKIV-like inheritance. Just something to play with
+%D (interface might change). The code here evolved in an email exchange between me
+%D and Wolgang Schuster.
 
 \writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
 
@@ -76,15 +68,15 @@
 
 % todo: add (relaxed) postsetup and postdefine hooks, just after the everys
 
-% Start of experimental code: especially tables can have many assignments
-% and although most time is spent in the typesetting anyway, we can squeeze
-% out a little bit. Of course having 500 rows of 50 columns each with some
-% setting does not happen that often. One should keep in mind that in the
-% average document having some 500 assignments is no exception but there we're
-% talking of neglectable runtime for them. Of course in the definitions below
-% there is no real gain, only in the generated \setup* commands. Another
-% situation with many assignments is \XML\ where we can pass attributes
-% and normally don't do testing of them making sense.
+%D Start of experimental code: especially tables can have many assignments and
+%D although most time is spent in the typesetting anyway, we can squeeze out a
+%D little bit. Of course having 500 rows of 50 columns each with some setting does
+%D not happen that often. One should keep in mind that in the average document
+%D having some 500 assignments is no exception but there we're talking of
+%D neglectable runtime for them. Of course in the definitions below there is no real
+%D gain, only in the generated \setup* commands. Another situation with many
+%D assignments is \XML\ where we can pass attributes and normally don't do testing
+%D of them making sense.
 %
 % \testfeatureonce{100000}{\getparameters[bla][a=111,b=222,c=333]}% 1.669s
 % \testfeatureonce{100000}{\mult_interfaces_get_parameters{bla} [a=111,b=222,c=333]}% 1.529s
@@ -216,9 +208,9 @@
 % \def\currenttest{oeps} \edef\hans{\detokenizedtestparameter{reggab}}\meaning\hans\par
 %
 % slower: \def#3##1{\csname\ifcsname#1#2:##1\endcsname\expandafter\csstring\lastnamedcs\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
-%
-% pre-expansion can be a bit faster but handly any effect on a normal run so let's go for
-% saving some memory
+
+%D pre-expansion can be a bit faster but handly any effect on a normal run so let's
+%D go for saving some memory
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
@@ -281,8 +273,7 @@
         \expandafter\noexpand\csname check#2parent\endcsname
         \expandafter\noexpand\csname chaintocurrent#2\endcsname}}
 
-% In \MKIV\ we can probably use the english variant for all other
-% languages too.
+%D In \MKIV\ we can probably use the english variant for all other languages too.
 
 % todo: inline the def/let
 
@@ -685,14 +676,14 @@
    \installsetuphandler         {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
 
-%D Many mechanisms have some kind of inheritance in place, and these are
-%D the speed||critical ones. Therefore there is no reason to stick to
-%D \type {\@@xxkey} for the sake of performance. For this reason we also
-%D provide a direct variant. This permits a more consistent treatment of
-%D namespaces. A \type {\whateverparameter} call is three times slower
-%D and a \type {\directwhateverparameter} call two times but for some
-%D 100K expansions we only loose some .1 second which is neglectable
-%D given the small amount of expansions in real runs.
+%D Many mechanisms have some kind of inheritance in place, and these are the
+%D speed||critical ones. Therefore there is no reason to stick to \type {\@@xxkey}
+%D for the sake of performance. For this reason we also provide a direct variant.
+%D This permits a more consistent treatment of namespaces. A \type
+%D {\whateverparameter} call is three times slower and a \type
+%D {\directwhateverparameter} call two times but for some 100K expansions we only
+%D loose some .1 second which is neglectable given the small amount of expansions in
+%D real runs.
 
 %D We don't need colons for such simple cases.
 
@@ -848,22 +839,21 @@
 % \unexpanded\def\installnamespace#1{\setvalue{????#1}{@@@@#1}}
 % \stoptyping
 %
-% The following variant is nicer and in principle faster but that gets
-% unnoticed unless lots of expansion happens. Also, we can use long tags
-% but the internal expansion will be relatively small (and unlikely more
-% than 4 characters). For instance, \??xx used to expand to @@xx but now
-% becomes for instance 123::. This is one character more but in quite some
-% cases we had : after such a tag in the old situation. In the new situation
-% we create more namespaces and don't need that : any more, so we end up
-% with on the average the same amount of tokens and definitely less when
-% we consider cases like \??xx:\c!align: which now is just \??somealign and
-% therefore has length 5 now (instead of 4+1+5+1=10).
+% The following variant is nicer and in principle faster but that gets unnoticed
+% unless lots of expansion happens. Also, we can use long tags but the internal
+% expansion will be relatively small (and unlikely more than 4 characters). For
+% instance, \??xx used to expand to @@xx but now becomes for instance 123::. This
+% is one character more but in quite some cases we had : after such a tag in the
+% old situation. In the new situation we create more namespaces and don't need that
+% : any more, so we end up with on the average the same amount of tokens and
+% definitely less when we consider cases like \??xx:\c!align: which now is just
+% \??somealign and therefore has length 5 now (instead of 4+1+5+1=10).
 %
-% Eventualy we will have a verbose \blablanamespace and the difference between
-% core and regular can go ... after all, \xxxparameter can already clash between
-% the two prefix groups .. if users use this mechanism a lot they should use
-% verbose names anyway (the old two character names were mostly an optimization
-% as they also expanded to these characters).
+% Eventualy we will have a verbose \blablanamespace and the difference between core
+% and regular can go ... after all, \xxxparameter can already clash between the two
+% prefix groups .. if users use this mechanism a lot they should use verbose names
+% anyway (the old two character names were mostly an optimization as they also
+% expanded to these characters).
 
 % todo: register namespaces at lua end for logging and reverse resolve
 % todo: move this to syst-ini so that we can use it real early
@@ -936,8 +926,8 @@
   \usedummystyleparameter
   \usedummycolorparameter
 
-% Maybe a \definecorenamespace[name][directparameter,directsetup][parent]
-% but we don't gain much. Actually we might just inline all definitions.
+% Maybe a \definecorenamespace[name][directparameter,directsetup][parent] but we
+% don't gain much. Actually we might just inline all definitions.
 
 % \enabletrackers[interfaces.namespaces,context.flush]
 %
@@ -1429,74 +1419,45 @@
 \installcorenamespace{commalistprocessornext}
 \installcorenamespace{commalistprocessoraction}
 
-\startmkivmode
+\installcorenamespace{commalistprocessorcheck}
+\installcorenamespace{commalistprocessorspace}
+\installcorenamespace{commalistprocessorpickup}
+\installcorenamespace{commalistprocessorfinish}
 
-    \installcorenamespace{commalistprocessorcheck}
-    \installcorenamespace{commalistprocessorspace}
-    \installcorenamespace{commalistprocessorpickup}
-    \installcorenamespace{commalistprocessorfinish}
-
-    \unexpanded\def\installcommalistprocessor#1#2% 8 macro names overhead
-      {\let\nexttoken\relax
-       \unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
-         {\futurelet\nexttoken\csname\??commalistprocessorcheck#1\endcsname}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessorcheck#1\endcsname
-         {\noexpand\ifx\nexttoken]%
-            \noexpand\expandafter\noexpand\gobblethreearguments
-          \noexpand\else
-            \noexpand\expandafter\csname\??commalistprocessorwrap#1\endcsname
-          \noexpand\fi
-          \relax}% this one preserved the next {}
-       \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
-         {\csname\??commalistprocessorfirst#1\endcsname##1,]\relax}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname##1% picks up \relax
-         {\csname\??commalistprocessornext#1\endcsname}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
-         {\noexpand\ifx\nexttoken\noexpand\blankspace
-            \noexpand\expandafter\csname\??commalistprocessorspace#1\endcsname
-          \noexpand\else
-            \noexpand\expandafter\csname\??commalistprocessorfinish#1\endcsname
-          \noexpand\fi}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessorfinish#1\endcsname
-         {\noexpand\ifx\nexttoken]%
-            \noexpand\expandafter\noexpand\gobbleoneargument
-          \noexpand\else
-            \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
-          \noexpand\fi}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
-         {\noexpand#2{##1}%
-          \futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
-       \let\next\:%
-       \unexpanded\edef            \:{\csname\??commalistprocessorspace#1\endcsname}%
-       \unexpanded\expandafter\edef\: {\futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
-       \let\:\next}
-
-\stopmkivmode
-
-\startlmtxmode
-
-    %installcorenamespace{commalistprocessorpickup}
-
-    \unexpanded\def\installcommalistprocessor#1#2% 5 macro names overhead
-      {\unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
-      %  {\noexpand\futureexpandis]%
-      %     \noexpand\gobbleoneargument
-      %     \csname\??commalistprocessorpickup#1\endcsname}
-      %\unexpanded\expandafter\edef\csname\??commalistprocessorpickup#1\endcsname
-         {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
-       \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
-         {\csname\??commalistprocessorfirst#1\endcsname##1,]}
-       \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname\relax
-         {\csname\??commalistprocessornext#1\endcsname}%
-       \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
-         {\noexpand\futureexpandis]%
-            \noexpand\gobbleoneargument
-            \csname\??commalistprocessoraction#1\endcsname}
-       \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
-         {\noexpand#2{##1}%
-          \csname\??commalistprocessornext#1\endcsname}}
-
-\stoplmtxmode
+\unexpanded\def\installcommalistprocessor#1#2% 8 macro names overhead
+  {\let\nexttoken\relax
+   \unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+     {\futurelet\nexttoken\csname\??commalistprocessorcheck#1\endcsname}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessorcheck#1\endcsname
+     {\noexpand\ifx\nexttoken]%
+        \noexpand\expandafter\noexpand\gobblethreearguments
+      \noexpand\else
+        \noexpand\expandafter\csname\??commalistprocessorwrap#1\endcsname
+      \noexpand\fi
+      \relax}% this one preserved the next {}
+   \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+     {\csname\??commalistprocessorfirst#1\endcsname##1,]\relax}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname##1% picks up \relax
+     {\csname\??commalistprocessornext#1\endcsname}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
+     {\noexpand\ifx\nexttoken\noexpand\blankspace
+        \noexpand\expandafter\csname\??commalistprocessorspace#1\endcsname
+      \noexpand\else
+        \noexpand\expandafter\csname\??commalistprocessorfinish#1\endcsname
+      \noexpand\fi}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessorfinish#1\endcsname
+     {\noexpand\ifx\nexttoken]%
+        \noexpand\expandafter\noexpand\gobbleoneargument
+      \noexpand\else
+        \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
+      \noexpand\fi}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+     {\noexpand#2{##1}%
+      \futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
+   \let\next\:%
+   \unexpanded\edef            \:{\csname\??commalistprocessorspace#1\endcsname}%
+   \unexpanded\expandafter\edef\: {\futurelet\nexttoken\csname\??commalistprocessornext#1\endcsname}%
+   \let\:\next}
 
 \unexpanded\def\installcommalistprocessorcommand#1#2% \processor \action
   {\edef\p_name{\csstring#2}%

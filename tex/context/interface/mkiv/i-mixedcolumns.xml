@@ -131,4 +131,12 @@
 
     -->
 
+    <cd:command name="setupcolumns" level="style" category="structure layout" file="page-smp.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupmixedcolumns"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

@@ -337,8 +337,8 @@ if resolvers.schemes then
         return cachename
     end
 
-    resolvers.schemes.install('mkvi',handler,1) -- this will cache !
-    resolvers.schemes.install('mklx',handler,1) -- bonus, best use just mkvi
+    resolvers.schemes.install('mkvi',handler,1)
+    resolvers.schemes.install('mklx',handler,1)
 
 end
 

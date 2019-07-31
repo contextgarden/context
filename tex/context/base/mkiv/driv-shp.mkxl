@@ -11,14 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifcase\contextlmtxmode \else
-    \registerctxluafile{driv-shp}{optimize}
-\fi
+\registerctxluafile{driv-shp}{optimize}
 
 \unprotect
-
-\appendtoks
-    \clf_enabledriver{pdf}%
-\to \everyjob
 
 \protect \endinput

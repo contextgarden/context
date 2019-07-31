@@ -524,11 +524,33 @@
     <!--        *    -->
     <!-- \... {...}  -->
     <!--             -->
-    <!-- * TOCHAR -->
+    <!-- * TOCHAR    -->
 
     <cd:define name="argument-tochar">
         <cd:keywords delimiters="braces">
             <cd:resolve name="value-tochar"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *    -->
+    <!-- \... {...}  -->
+    <!--             -->
+    <!-- * LEFTFENCE -->
+
+    <cd:define name="argument-leftfence">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-leftfence"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *     -->
+    <!-- \... {...}   -->
+    <!--              -->
+    <!-- * RIGHTFENCE -->
+
+    <cd:define name="argument-rightfence">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-rightfence"/>
         </cd:keywords>
     </cd:define>
 

@@ -1,0 +1,1005 @@
+%D \module
+%D   [       file=buff-ver, % was core-ver
+%D        version=2000.05.09,
+%D          title=\CONTEXT\ Buffer Macros,
+%D       subtitle=Verbatim,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% check after-first and before-last breaks
+
+\writestatus{loading}{ConTeXt Buffer Macros / Verbatim}
+
+\registerctxluafile{buff-ver}{}
+
+\unprotect
+
+\startcontextdefinitioncode
+
+\definesystemattribute[verbatimline][public]
+
+\appendtoksonce
+    \attribute\verbatimlineattribute\attributeunsetvalue
+\to \everyforgetall
+
+%D Initializations.
+
+\installcorenamespace{typinglines}
+\installcorenamespace{typingspace}
+\installcorenamespace{typingblank} % needs checking ... used?
+
+\newtoks\everyinitializeverbatim
+
+\appendtoks
+    \the\everyresettypesetting
+    \resetfontfeature
+    \resetcharacterspacing
+\to \everyinitializeverbatim
+
+\unexpanded\def\setverbatimspaceskip % to be checked: must happen after font switch
+  {\spaceskip\fontcharwd\font`x\relax
+   \xspaceskip\spaceskip}
+
+\setvalue{\??typinglines\v!no        }{\buff_verbatim_ignore_hyphens}
+\setvalue{\??typinglines\v!normal    }{\buff_verbatim_ignore_hyphens}
+\setvalue{\??typinglines\v!yes       }{\buff_verbatim_obey_breakpoints}
+\setvalue{\??typinglines\v!hyphenated}{\buff_verbatim_obey_hyphens}
+
+\setvalue{\??typingspace\v!on        }{\let\obeyedspace\specialcontrolspace}
+\setvalue{\??typingspace\v!stretch   }{\let\obeyedspace\specialstretchedspace}
+\setvalue{\??typingspace\v!normal    }{}
+\setvalue{\??typingspace\v!fixed     }{\let\obeyedspace\specialfixedspace}
+
+\setvalue{\??typingblank\v!standard  }{\s_spac_whitespace_parskip}
+\setvalue{\??typingblank\v!small     }{\smallskipamount}
+\setvalue{\??typingblank\v!medium    }{\medskipamount}
+\setvalue{\??typingblank\v!big       }{\bigskipamount}
+\setvalue{\??typingblank\v!halfline  }{.5\baselineskip}
+\setvalue{\??typingblank\v!line      }{\baselineskip}
+\setvalue{\??typingblank\v!none      }{\zeropoint}
+
+\unexpanded\def\buff_verbatim_obey_hyphens
+  {}
+
+\unexpanded\def\buff_verbatim_obey_breakpoints
+  {\language\minusone  % tricky as this affects the pagebuilder
+   \veryraggedright}
+
+\unexpanded\def\buff_verbatim_ignore_hyphens
+  {\language\minusone} % tricky as this affects the pagebuilder
+
+\def\buff_verbatim_initialize_type_one
+  {\let\obeylines\ignorelines
+   \edef\p_buff_option{\typeparameter\c!option}%
+   \ifx\p_buff_option\v!none
+     \usetypestyleandcolor\c!style\c!color
+   \orelse\ifx\p_buff_option\empty
+     \usetypestyleandcolor\c!style\c!color
+   \else
+     \usetypestyleparameter\c!style % no color
+   \fi
+   \setcatcodetable\vrbcatcodes}
+
+\def\buff_verbatim_initialize_type_two
+  {\spaceskip.5\emwidth\relax
+   \let\obeyedspace\specialobeyedspace
+   \let\controlspace\specialcontrolspace
+   \edef\p_buff_lines{\typeparameter\c!lines}%
+   \begincsname\??typinglines\p_buff_lines\endcsname
+   \edef\p_buff_space{\typeparameter\c!space}%
+   \begincsname\??typingspace\p_buff_space\endcsname
+   \relax\the\everyinitializeverbatim\relax}
+
+\unexpanded\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
+  {\buff_verbatim_initialize_type_one
+   \buff_verbatim_initialize_type_two}
+
+\let\buff_verbatim_set_line_margin\relax
+
+\def\buff_verbatim_set_line_margin_indeed
+  {\hskip\doifelseoddpage{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
+
+\def\buff_verbatim_initialize_typing_one
+  {\usebodyfontparameter\typingparameter
+   \scratchskip\typingparameter\c!oddmargin\relax
+   \ifzeropt\scratchskip \else
+     \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
+   \fi
+   \scratchskip\typingparameter\c!evenmargin\relax
+   \ifzeropt\scratchskip \else
+     \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
+   \fi
+   \ifx\buff_verbatim_set_line_margin\relax
+     \doadaptleftskip{\typingparameter\c!margin}%
+   \fi
+   \edef\p_buff_option{\typingparameter\c!option}%
+   \ifx\p_buff_option\v!none
+     \usetypingstyleandcolor\c!style\c!color
+   \orelse\ifx\p_buff_option\empty
+     \usetypingstyleandcolor\c!style\c!color
+   \else
+     \usetypingstyleparameter\c!style % no color !
+   \fi
+   \usealignparameter\typingparameter}
+
+\def\buff_verbatim_initialize_typing_two
+  {\spaceskip.5\emwidth\relax
+   \let\obeyedspace\specialobeyedspace
+   \let\controlspace\specialcontrolspace
+   \edef\p_buff_lines{\typingparameter\c!lines}%
+   \begincsname\??typinglines\p_buff_lines\endcsname
+   \edef\p_buff_space{\typingparameter\c!space}%
+   \begincsname\??typingspace\p_buff_space\endcsname
+   \relax\the\everyinitializeverbatim\relax}
+
+%D \macros
+%D   {definetype,setuptype}
+%D
+%D Specific inline verbatim commands can be defined with the following command.
+
+\installcorenamespace{type}
+
+\installcommandhandler \??type {type} \??type
+
+\appendtoks
+    \setuevalue{\currenttype}{\buff_verbatim_type{\currenttype}}%
+\to \everydefinetype
+
+\appendtoks
+   \buff_verbatim_initialize_visualizer{\typeparameter\c!option}%
+\to \everysetuptype
+
+%D \macros
+%D   {definetyping,setuptyping}
+%D
+%D For most users the standard \type {\start}||\type {\stop}||pair will suffice, but
+%D for documentation purposes the next definition command can be of use:
+%D
+%D \starttyping
+%D \definetyping[extratyping][margin=3em]
+%D
+%D \startextratyping
+%D these extra ones are indented by 1 em
+%D \stopextratyping
+%D \stoptyping
+%D
+%D The definitions default to the standard typing values.
+
+\installcorenamespace{typing}
+
+\installcommandhandler \??typing {typing} \??typing
+
+\appendtoks
+    \setuevalue{\e!start\currenttyping}{\buff_verbatim_typing_start{\currenttyping}}%
+    \setuevalue{\e!stop \currenttyping}{\buff_verbatim_typing_stop {\currenttyping}}%
+    \ifx\currenttypingparent\empty
+      \normalexpanded{\definelinenumbering[\currenttyping]}%
+    \else
+      \normalexpanded{\definelinenumbering[\currenttyping][\currenttypingparent]}%
+    \fi
+\to \everydefinetyping
+
+\appendtoks
+   \buff_verbatim_initialize_visualizer{\typingparameter\c!option}% we can check at the tex end
+\to \everysetuptyping
+
+\def\buff_verbatim_initialize_visualizer#1%
+  {\ifproductionrun\clf_loadvisualizer{#1}\fi}
+
+\unexpanded\def\doifelsevisualizer#1%
+  {\clf_doifelsevisualizer{#1}}
+
+\let\doifvisualizerelse\doifelsevisualizer
+
+%D Verbatim command are very sensitive to argument processing, which is a direct
+%D result of the \CATCODES\ being fixed at reading time.
+%D
+%D Typesetting inline verbatim can be accomplished by \type {\type}, which in this
+%D sentence was typeset by saying just \type {\type {\type}}, which in turn was
+%D typeset by \unknown. Using the normal grouping characters \type {{}} is the most
+%D natural way of using this command.
+%D
+%D A second, more or less redundant, alternative is delimiting the argument with an
+%D own character. This method was implemented in the context of a publication in the
+%D \MAPS, where this way of delimiting is recognized by \LATEX\ users.
+%D
+%D The third, more original alternative, is the one using \type {<<} and \type {>>}
+%D as delimiters. This alternative can be used in situations where slanted
+%D typeseting is needed.
+%D
+%D \macros
+%D   {type}
+%D
+%D We define \type {\type} as a protected command. This command has several
+%D invocations: grouped, wirt boundary characters, and with font switches.
+%D
+%D \starttyping
+%D normal: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
+%D normal: \par \type{xx<..xx..<xx <slanted> >..>xx} \par \type{<....>} \par \type{<..<xx>..>}
+%D \setuptype[option=slanted]
+%D slanted: \par \type{xx<<..sl..<<xx <<sl>> xx>>..sl..>>xx} \par \type<<..xx..>> \par \type<<..<<sl>>..>> \par
+%D slanted: \par \type{xx<<..sl..<xx <sl> xx>..sl..>>xx} \par \type<<..xx..>> \par \type<<..<sl>..>> \par
+%D \setuptype[option=none]
+%D none: \par \type{xx<<..xx..<<xx <<xx>> >>..>>xx} \par \type<<....>> \par \type<<..<<xx>>..>> \par
+%D \stoptyping
+%D
+%D When writing the manual to \CONTEXT\ and documenting this source we needed to
+%D typeset \type {<<} and \type {>>}. Because we wanted to do this in the natural
+%D way, we've adapted the original definition a bit. This implementation went
+%D through several live cycles. The final implementation looks a bit further and
+%D treats the lone \type {<<} and \type {>>} a bit different. The \type {\null}
+%D prevents ligatures, which unfortunately turn up in Lucida fonts.
+%D
+%D The following lines show what happens when we set \type {option=commands}.
+%D
+%D \startbuffer
+%D \starttyping
+%D test//test test/BTEX \footnote{test test test}/ETEX test
+%D test//test test/BTEX \footnote{test test test}/ETEX  test
+%D test test test/BTEX \bf(nota bene)/ETEX test
+%D test test test /BTEX \bf(nota bene)/ETEX  test
+%D \stoptyping
+%D \stopbuffer
+%D
+%D % \bgroup\setuptyping[option=commands]\getbuffer\egroup
+%D
+%D this was keyed in as:
+%D
+%D \typebuffer
+
+% Beware, the command is supposed to do something like \framed and not manipulate
+% content i.e. it gets no argument but something b/egrouped instead:
+
+\def\buff_verbatim_left_of_type
+  {\typeparameter\c!left
+   \typeparameter\c!command\bgroup}
+
+\def\buff_verbatim_right_of_type
+  {\egroup
+   \typeparameter\c!right}
+
+\unexpanded\def\type{\buff_verbatim_type\empty}
+\unexpanded\def\typ {\buff_verbatim_typ \empty}
+
+\unexpanded\def\buff_verbatim_type#1%
+  {\dontleavehmode
+   \bgroup
+   \edef\currenttype{#1}%
+   \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
+
+\def\buff_verbatim_type_yes[#1]%
+  {\setupcurrenttype[#1]%
+   \buff_verbatim_type_nop}
+
+\def\buff_verbatim_typ#1%
+  {\dontleavehmode
+   \bgroup
+   \edef\currenttype{#1}%
+   \lettypeparameter\c!lines\v!hyphenated
+   \let\specialobeyedspace\specialstretchedspace
+   \doifelsenextoptionalcs\buff_verbatim_type_yes\buff_verbatim_type_nop}
+
+\def\buff_verbatim_type_nop
+  {\buff_verbatim_left_of_type
+   \futureexpand\bgroup\buff_verbatim_type_a\buff_verbatim_type_one}
+
+\def\buff_verbatim_type_one
+  {\catcode`<=\othercatcode % old precaution
+   \catcode`>=\othercatcode % old precaution
+   \futureexpandis<\buff_verbatim_type_b\buff_verbatim_type_c}
+
+\def\buff_verbatim_type_three
+  {\if\next<%
+     \expandafter\buff_verbatim_type_b
+   \else
+     \expandafter\buff_verbatim_type_c
+   \fi}
+
+\def\buff_verbatim_type_a
+  {\buff_verbatim_initialize_type_one
+   \setcatcodetable\tpacatcodes
+   \buff_verbatim_type_normal}
+
+\def\buff_verbatim_type_b#1%
+  {\buff_verbatim_initialize_type_one
+   \setcatcodetable\tpbcatcodes
+   \buff_verbatim_type_nested}
+
+\def\buff_verbatim_type_c#1%
+  {\buff_verbatim_initialize_type_one
+   \setcatcodetable\vrbcatcodes
+   \def\next##1#1{\buff_verbatim_type_normal{##1}}%
+   \next}
+
+\def\buff_verbatim_type_normal#1%
+  {\buff_verbatim_initialize_type_two
+   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \clf_type
+     data    {\detokenize{#1}}%
+     tab     {\typeparameter\c!tab}%
+     method  {\p_buff_option}%
+     compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
+     escape  {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
+   % nature  {inline}% is default
+   \relax
+   \dostoptagged
+   \buff_verbatim_right_of_type
+   \egroup}
+
+\def\buff_verbatim_type_nested#1%
+  {\buff_verbatim_initialize_type_two
+   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \clf_type
+     data   {\detokenize{#1}}%
+     tab    {\typeparameter\c!tab}%
+     method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
+     escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
+   % nature {inline}% is default
+     method {nested}%
+   \relax
+   \dostoptagged
+   \buff_verbatim_right_of_type
+   \egroup
+   \gobbleoneargument} % grab last >
+
+%D The \type {compact} option can come in handy in the case of inline argument passing
+%D
+%D \starttyping
+%D \definetype[TeXcodeA][option=TEX]
+%D \definetype[TeXcodeB][option=TEX,compact=all]
+%D \definetype[TeXcodeC][option=TEX,compact=absolute]
+%D
+%D \def\argA#1{\TeXcodeA{{#1}}}
+%D \def\argB#1{\TeXcodeB{{#1}}}
+%D \def\argC#1{\TeXcodeC{{#1}}}
+%D \stoptyping
+
+%D \macros
+%D   {obeyhyphens,obeybreakpoints}
+%D
+%D Although it's not clear from the macros, one character trait of this macros,
+%D which are build on top of the support module, is that they don't hyphenate. We
+%D therefore offer the alternative \type{\typ}. The current implementation works all
+%D right, but a decent hyphenation support of \type{\tt} text will be implemented
+%D soon.
+
+\unexpanded\def\specialfixedspace     {\kern\interwordspace\relax}
+\unexpanded\def\specialobeyedspace    {\hskip\interwordspace\relax} % better than spaceskip
+\unexpanded\def\specialstretchedspace {\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
+\unexpanded\def\specialcontrolspace   {\normalcontrolspace\allowbreak} % uses fallback
+
+\unexpanded\def\explicitfixedspace    {\asciispacechar}
+\unexpanded\def\explicitobeyedspace   {\asciispacechar\allowbreak}
+\unexpanded\def\explicitstretchedspace{\asciispacechar\hskip\zeropoint\s!plus.125\interwordspace\relax}%
+\unexpanded\def\explicitcontrolspace  {\optionalcontrolspace\allowbreak} % uses asciispace
+
+\appendtoks
+    \unexpanded\def\obeyedspace{\hskip\zeropoint\asciispacechar\hskip\zeropoint}%
+\to \everyenableelements
+
+\unexpanded\def\obeyhyphens
+  {\let\obeyedspace \specialobeyedspace % maybe \specialstretchedspace
+   \let\controlspace\specialcontrolspace
+   \spaceskip.25\emwidth\relax} % hm a bit of stretch !
+
+\unexpanded\def\obeybreakpoints
+  {\ignorehyphens
+   \veryraggedright}
+
+\unexpanded\def\ignorehyphens
+  {\language\minusone % extra bonus, the \null should do the job too
+   \let\obeyedspace \specialobeyedspace
+   \let\controlspace\specialcontrolspace
+   \spaceskip.5\emwidth\relax}
+
+%D \macros
+%D   {tex,arg,mat,dis,astype}
+%D
+%D Sometimes, for instance when we pass verbatim text as an argument, the fixed
+%D \CATCODES\ interfere with our wishes. An experimental implementation of character
+%D by character processing of verbatim text did overcome this limitation, but we've
+%D decided not to use that slow and sometimes troublesome solution. Instead we stick
+%D to some 'old' \CONTEXT\ macros for typesetting typical \TEX\ characters.
+
+\def\lesscharacter    {<} % obsolete
+\def\morecharacter    {>} % obsolete
+
+\let\texescape        \textbackslash
+\let\leftargument     \textbraceleft
+\let\rightargument    \textbraceright
+\let\inlinemathmarker \textdollar
+\def\displaymathmarker{\textdollar\textdollar}
+
+\def\buff_verbatim_special_type#1#2#% # gobbles spaces
+  {\dontleavehmode\bgroup
+   \buff_verbatim_initialize_type_one
+   \catcode\leftbraceasciicode \begingroupcatcode
+   \catcode\rightbraceasciicode\endgroupcatcode
+   #1%
+   \bgroup % else wrong font for #2
+   \aftergroup#2%
+   \aftergroup\egroup
+   \let\nexttoken}
+
+\unexpanded\def\tex{\buff_verbatim_special_type\texescape        \relax}
+\unexpanded\def\arg{\buff_verbatim_special_type\leftargument     \rightargument}
+\unexpanded\def\mat{\buff_verbatim_special_type\inlinemathmarker \inlinemathmarker}
+\unexpanded\def\dis{\buff_verbatim_special_type\displaymathmarker\displaymathmarker}
+
+\let\normaltexttex\tex
+\let\normaltextarg\arg
+\let\normaltextmat\mat
+\let\normaltextdis\dis
+
+\unexpanded\def\astype
+  {\dontleavehmode
+   \bgroup\usetypestyleandcolor\c!style\c!color\let\nexttoken}
+
+\unexpanded\def\asciistr#1% used in some old styles
+  {\dontleavehmode\begingroup
+   \dostarttagged\t!verbatim\empty
+   \usetypestyleandcolor\c!style\c!color\detokenize{#1}%
+   \dostoptagged
+   \endgroup}
+
+%D The basic display verbatim commands are defined in an indirect way. As we
+%D will see, they are a specific case of a more general mechanism.
+
+\let\beginofverbatimlines\relax % hooks
+\let\endofverbatimlines  \relax % hooks
+
+\unexpanded\def\buff_verbatim_typing_start#1% tricky non standard lookahead
+  {\begingroup
+   \edef\currenttyping{#1}%
+   \obeylines
+   \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
+
+\unexpanded\def\buff_verbatim_setup_keep_together
+  {\edef\p_keeptogether{\typingparameter\c!keeptogether}%
+   \ifx\p_keeptogether\v!yes
+     \settrue \c_buff_optimize_linebreaks
+   \else
+     \setfalse\c_buff_optimize_linebreaks
+   \fi}
+
+\def\buff_verbatim_typing_start_nop
+  {\typingparameter\c!before
+   \startpacked[\v!blank]%
+   \buff_verbatim_setup_line_numbering
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_setup_keep_together
+   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
+
+\def\buff_verbatim_typing_start_yes[#1]%
+  {\typingparameter\c!before
+   \startpacked[\v!blank]%
+   \ifcondition\validassignment{#1}%
+     \setupcurrenttyping[#1]%
+   \else
+     \doif\v!continue{#1}{\lettypingparameter\c!continue\v!yes}%
+   \fi
+   \buff_verbatim_setup_line_numbering
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_setup_keep_together
+   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttyping}{\e!stop\currenttyping}}}
+
+\unexpanded\def\buff_verbatim_type_block#1#2%
+  {\edef\p_strip{\typingparameter\c!strip}%
+   \normalexpanded{\buff_pickup
+     {_typing_}%
+     {#1}%
+     {#2}%
+     {}%
+     {\buff_verbatim_type_block_verbatim_indeed{#1}{#2}}%
+     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
+
+\unexpanded\def\buff_verbatim_type_block_verbatim_indeed#1#2%
+  {\buff_verbatim_initialize_typing_two
+   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
+   \clf_typebuffer
+     name    {_typing_}%
+     strip   {\typingparameter\c!strip}%
+     range   {\typingparameter\c!range}%
+     tab     {\typingparameter\c!tab}%
+     method  {\p_buff_option}%
+     escape  {\typingparameter\c!escape}%
+     nature  {display}%
+   \relax
+   \dostoptagged
+   \endofverbatimlines
+   \dostoptagged
+   \begincsname#2\endcsname}
+
+\unexpanded\def\buff_verbatim_typing_stop#1% hm, currenttyping
+  {\stoppacked
+   \typingparameter\c!after
+   \useindentnextparameter\typingparameter
+   \endgroup
+   \dorechecknextindentation}
+
+%D Line numbering for files is combined with filtering, while display verbatim has
+%D the ability to continue.
+%D
+%D \starttyping
+%D \typefile[numbering=file,start=10,stop=12]{test.tex}
+%D
+%D \definetyping[code][numbering=line]
+%D
+%D \starttext
+%D \startcode
+%D ...
+%D ...
+%D \stopcode
+%D
+%D \startcode[start=continue]
+%D ...
+%D ...
+%D \stopcode
+%D
+%D \startcode[start=10]
+%D ...
+%D \stopcode
+%D \stoptyping
+
+%D Ranges:
+%D
+%D \starttyping
+%D % label:start:one
+%D
+%D \def\MyMacro
+%D   {just an example}
+%D
+%D % label:stop:one
+%D
+%D \starttext
+%D
+%D % \typefile[file][range={3,6}] {whatever.tex}
+%D % \typefile[file][range={3,+2}]{whatever.tex}
+%D
+%D \typefile[file][range={label:start:one,label:stop:one}]{whatever.tex}
+%D
+%D \stoptext
+%D \stoptyping
+
+%D \macros
+%D   {typefile}
+%D
+%D Typesetting files verbatim (for the moment) only supports colorization of \TEX\
+%D sources as valid option. The other setup values are inherited from display
+%D verbatim. The implementation of \type {\typefile} is straightforward:
+
+% [category] [settings] {name} % for historic reasons, all filenames are {}
+
+\unexpanded\def\typefile
+  {\dodoubleempty\buff_verbatim_type_file}
+
+\appendtoks
+    \setuevalue{\e!type\currenttyping\v!file}{\typefile[\currenttyping]}%
+\to \everydefinetyping
+
+\def\buff_verbatim_type_file[#1][#2]#3%
+  {\begingroup
+   \ifsecondargument
+     \setuptyping[#1][#2]%
+     \buff_verbatim_type_file_checked{#1}{#3}%
+   \orelse\iffirstargument
+     \ifcondition\validassignment{#1}%
+       \setuptyping[\v!file][#1]%
+       \buff_verbatim_type_file_checked\v!file{#3}%
+     \else
+       \buff_verbatim_type_file_checked{#1}{#3}%
+     \fi
+   \else
+     \buff_verbatim_type_file_checked\v!file{#3}%
+   \fi
+   \useindentnextparameter\typingparameter % needs checking
+   \endgroup
+   \dorechecknextindentation} % needs checking
+
+\def\buff_verbatim_type_file_checked#1#2%
+  {\doifelsetypingfile{#2}
+     {\buff_verbatim_type_file_indeed{#1}\askedtypingfile}
+     {\showmessage\m!verbatims1{#2}}}
+
+\unexpanded\def\doifelsetypingfile#1%
+  {\edef\askedtypingfile{\locfilename{#1}}%
+   \ifx\askedtypingfile\empty
+     \edef\askedtypingfile{\locfilename{#1.tex}}% downward compatible
+   \fi
+   \ifx\askedtypingfile\empty
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\let\doiftypingfileelse\doifelsetypingfile
+
+\def\buff_verbatim_type_file_indeed#1#2% category name
+  {\edef\currenttyping{#1}%
+   \typingparameter\c!before
+   \startpacked[\v!blank]
+   \buff_verbatim_setup_line_numbering
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_initialize_typing_two
+   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
+   \clf_typefile
+      name   {#2}%
+      strip  {\typingparameter\c!strip}%
+      range  {\typingparameter\c!range}%
+      regime {\currentregime}%
+      tab    {\typingparameter\c!tab}%
+      method {\p_buff_option}%
+      nature {display}%
+   \relax
+   \dostoptagged
+   \endofverbatimlines
+   \dostoptagged
+   \stoppacked
+   \typingparameter\c!after}
+
+%D Line numbering:
+
+\newconditional\verbatimnumberinglines
+
+\def\beginofverbatimlinenumbering
+  {\startlinenumbering
+     [\currenttyping]%
+     [\c!continue=\typingparameter\c!continue,
+        \c!method=\v!type,
+         \c!start=\typingparameter\c!start,
+          \c!stop=\typingparameter\c!stop, % ?
+          \c!step=\typingparameter\c!step]}
+
+\def\endofverbatimlinenumbering
+  {\stoplinenumbering}
+
+\def\buff_verbatim_setup_line_numbering
+  {\ifdefined\startlinenumbering
+     \edef\currenttypingnumbering{\typingparameter\c!numbering}%
+     \ifx\currenttypingnumbering\v!file
+       \setuplinenumbering[\currenttyping][\c!method=\v!file]%
+       \settrue\verbatimnumberinglines
+     \orelse\ifx\currenttypingnumbering\v!line
+       \settrue\verbatimnumberinglines
+     \else
+       \setfalse\verbatimnumberinglines
+     \fi
+     \ifconditional\verbatimnumberinglines
+       \let\beginofverbatimlines\beginofverbatimlinenumbering
+       \let\endofverbatimlines  \endofverbatimlinenumbering
+     \fi
+   \fi}
+
+%D \macros
+%D   {filename}
+%D
+%D Typesetting filenames in monospaced fonts is possible with
+%D
+%D \starttyping
+%D \filename{here/there/filename.suffix}
+%D \stoptyping
+%D
+%D The definition is not that spectacular.
+
+\unexpanded\def\filename#1{{\tttf\hyphenatedfilename{#1}}}
+
+%D \macros
+%D   {verbatim}
+%d
+%D And a bonus macro, an unexpanded detokenize:
+
+\unexpanded\def\verbatim#1{\detokenize{#1}}
+
+%D The setups for display verbatim and file verbatim are shared. One can adapt the
+%D extra defined typing environments, but they also default to the values below.
+%D Watch the alternative escape character.
+
+% \tttf   gives problems with {\tx \type...}
+% \tt\tf  does not adapt to e.g. \bf
+
+\setuptyping
+  [\c!before=\blank,
+   \c!after=\blank,
+  %\c!keeptogether=yes, % this will become default (when tested enough)
+  %\c!bodyfont=,
+  %\c!color=,
+   \c!space=\v!off,
+   \c!lines=\v!no,
+   \c!page=\v!no,
+   \c!tab=\v!yes, % what is this: \s!ascii ?
+   \c!option=\v!none,
+   \c!text=\v!no,
+   \c!style=\tt,
+   \c!indentnext=\v!yes,
+   \c!margin=\zeropoint,
+   \c!evenmargin=\zeropoint,
+   \c!oddmargin=\zeropoint,
+   \c!blank=\v!line,
+  %\c!escape=, % yes | no | {START,STOP} | default when yes: {BTEX,ETEX}
+   \c!numbering=\v!no,
+  %\c!range=,
+   \c!start=1,
+  %\c!stop=,
+   \c!step=1,
+  %\c!continue=,
+   \c!strip=\v!no] % auto or number
+
+\definetyping[\v!typing]
+
+% the \zeropoint forces the number to the margin but also works ok in text
+
+\setuplinenumbering[\v!typing][\c!location=\v!left,\c!width=\zeropoint]
+
+\setuptyping       [\v!file]  [\s!parent=\??typing       \v!typing] % we don't want \start..\stop overload
+\setuplinenumbering[\v!file]  [\s!parent=\??linenumbering\v!typing]
+
+\setuptyping       [\v!buffer][\s!parent=\??typing       \v!file]   % we don't want \start..\stop overload
+\setuplinenumbering[\v!buffer][\s!parent=\??linenumbering\v!file]
+
+%D The setups for inline verbatim default to:
+
+\setuptype
+  [\c!space=\v!off,
+   \c!lines=\v!no,
+  %\c!color=,
+   \c!style=\tt,
+  %\c!option=\v!normal,
+   \c!page=\v!no,
+   \c!tab=\v!yes,
+   \c!compact=\v!all]
+
+%D Buffers
+
+% [name] [settings] | [name] | [settings]
+
+% \unexpanded\def\typebuffer
+%   {\dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\typebuffer
+  {\begingroup
+   \let\currenttyping\v!buffer
+   \dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\buff_verbatim_type_defined_buffer
+  {\dotripleempty\buff_verbatim_type_defined_buffer_indeed}
+
+\unexpanded\def\typedefinedbuffer[#1]%
+  {\buff_verbatim_type_defined_buffer[\v!buffer][\thedefinedbuffer{#1}]}%
+
+\appendtoks
+    \setuevalue{\e!type\currentbuffer}{\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
+\to \everydefinebuffer
+
+\appendtoks % \e!buffer
+    \setuevalue{\e!type\currenttyping\v!buffer}{\buff_verbatim_type_buffer_class{\currenttyping}}%
+\to \everydefinetyping
+
+\unexpanded\def\buff_verbatim_type_buffer[#1][#2]%
+  {\ifsecondargument
+     \setupcurrenttyping[#2]%
+     \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\currenttyping}% [name] [settings]
+   \orelse\iffirstargument
+     \ifcondition\validassignment{#1}%
+       \setupcurrenttyping[#1]%
+       \buff_verbatim_type_buffer_indeed\currenttyping\empty% [settings]
+     \else
+       \processcommalist[#1]{\buff_verbatim_type_buffer_indeed\currenttyping}% [name]
+     \fi
+   \else
+     \buff_verbatim_type_buffer_indeed\currenttyping\empty% []
+   \fi
+   \endgroup
+   \dorechecknextindentation}
+
+\unexpanded\def\buff_verbatim_type_buffer_class#1%
+  {\begingroup
+   \edef\currenttyping{#1}%
+   \dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\buff_verbatim_type_defined_buffer_indeed[#1][#2][#3]% category name settings
+  {\begingroup
+   \ifthirdargument
+     \setuptyping[#1][#3]%
+   \fi
+   \buff_verbatim_type_buffer_indeed{#1}{#2}%
+   \endgroup}
+
+\unexpanded\def\buff_verbatim_type_buffer_indeed#1#2% category name
+  {\edef\currenttyping{#1}%
+   \typingparameter\c!before
+   \startpacked[\v!blank]
+   \buff_verbatim_setup_line_numbering
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_initialize_typing_two
+   \dostarttaggedchained\t!verbatimblock{#1}\??typing
+   \beginofverbatimlines
+   \dostarttagged\t!verbatimlines\empty
+   \clf_typebuffer
+     name   {#2}%
+     strip  {\typingparameter\c!strip}%
+     range  {\typingparameter\c!range}%
+     regime {\currentregime}%
+     tab    {\typingparameter\c!tab}%
+     method {\p_buff_option}%
+     escape {\typingparameter\c!escape}%
+     nature {display}%
+   \relax
+   \dostoptagged
+   \endofverbatimlines
+   \dostoptagged
+   \stoppacked
+   \typingparameter\c!after
+   \dorechecknextindentation}
+
+\unexpanded\def\typeinlinebuffer
+  {\dontleavehmode
+   \begingroup
+   \let\buff_verbatim_type_buffer_indeed\buff_verbatim_type_buffer_indeed_inline
+   \let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
+   \let\currenttype\empty
+   \dodoubleempty\buff_verbatim_type_buffer}
+
+\unexpanded\def\buff_verbatim_type_buffer_indeed_inline#1#2% category name
+  {\edef\currenttype{#1}%
+   \buff_verbatim_initialize_type_one
+   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \clf_typebuffer
+     name   {#2}%
+     strip  {\v!yes}%
+     regime {\currentregime}%
+     method {\p_buff_option}%
+     nature {inline}% is default anyway
+   \relax
+   \dostoptagged}
+
+% get     : before/after of buffer
+% typing  : before/after of typing
+% process : no before/after (special case anyway)
+
+% the next one is obsolete (bad name and used nowhere) so if it stays
+% the name will change
+
+\unexpanded\def\processbuffer
+  {\writestatus{nota bene}{\string\processbuffer\space is obsolete}%
+   \dodoubleempty\buff_verbatim_process}
+
+\def\buff_verbatim_process[#1][#2]%
+  {\begingroup
+   \ifsecondargument
+     \setuptyping[\v!buffer][#2]%
+     \processcommalist[#1]{\buff_verbatim_process_indeed\v!buffer}% [name] [settings]
+   \orelse\iffirstargument
+     \ifcondition\validassignment{#1}%
+       \setuptyping[\v!buffer][#1]%
+       \buff_verbatim_process_indeed\v!buffer\empty% [settings]
+     \else
+       \processcommalist[#1]{\buff_verbatim_process_indeed\v!buffer}% [name]
+     \fi
+   \else
+     \buff_verbatim_process_indeed\v!buffer\empty% []
+   \fi
+   \endgroup}
+
+\def\buff_verbatim_process_indeed#1#2%
+  {\edef\currenttyping{#1}%
+   \clf_processbuffer
+     name   {#2}%
+     strip  {\typingparameter\c!strip}%
+     tab    {\typingparameter\c!tab}%
+   % method {\p_buff_option}%
+     nature {direct}%
+   \relax}
+
+% so far for obsolete
+
+% line numbering, keep broken lines together
+
+\newcount\nofverbatimlines
+
+\unexpanded\def\buff_verbatim_begin_of_line
+  {\ifconditional\verbatimnumberinglines
+     \global\advance\nofverbatimlines\plusone
+     \attribute\verbatimlineattribute\nofverbatimlines
+   \fi
+   \noindent
+   \buff_verbatim_set_line_margin
+   \the\everyline % maybe also after starttagged
+   \strut % after starttagged, else break !
+   \dostarttagged\t!verbatimline\empty
+   }
+
+\unexpanded\def\buff_verbatim_end_of_line
+  {\dostoptagged
+   \obeyedline % still needed?
+   \par
+   \ifconditional\verbatimnumberinglines
+     \attribute\verbatimlineattribute\attributeunsetvalue
+   \fi}
+
+\unexpanded\def\buff_verbatim_empty_line
+  {\dostoptagged
+   \ifconditional\verbatimnumberinglines
+     \par\strut\par % this will be an option where we use a signal instead of a strut
+   \else
+     \blank[\typingparameter\c!blank]%
+   \fi
+   \dostarttagged\t!verbatimlines\empty}
+
+% hooks:
+
+\newcount      \c_buff_verbatim_noflines
+\newcount      \c_buff_verbatim_current
+\newconditional\c_buff_optimize_linebreaks
+
+           \def\doverbatimspace           {\obeyedspace}
+
+\unexpanded\def\doinlineverbatimstart     {}
+\unexpanded\def\doinlineverbatimstop      {}
+\unexpanded\def\doinlineverbatimbeginline {}
+\unexpanded\def\doinlineverbatimnewline   {\obeyedspace}
+\unexpanded\def\doinlineverbatimemptyline {\obeyedspace}
+
+\unexpanded\def\dodisplayverbatimstart    {\advance\c_buff_verbatim_current\plusone
+                                           \buff_verbatim_begin_of_line}
+\unexpanded\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
+\unexpanded\def\dodisplayverbatimbeginline{\advance\c_buff_verbatim_current\plusone
+                                           \buff_verbatim_begin_of_line}
+\unexpanded\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
+                                           \par
+                                           \ifconditional\c_buff_optimize_linebreaks
+                                             \buff_verbatim_inject_breaks
+                                           \fi}
+\unexpanded\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
+
+\unexpanded\def\buff_verbatim_inject_breaks
+  {\ifnum\c_buff_verbatim_current=\plusone
+     \nobreak
+   \orelse\ifnum\c_buff_verbatim_noflines=\plusthree
+     \nobreak
+   \orelse\ifnum\c_buff_verbatim_current=\numexpr\c_buff_verbatim_noflines-\plusone\relax
+     \nobreak
+   \fi}
+
+\unexpanded\def\dodisplayverbatiminitialize#1%
+  {\forgetparindent % maybe more
+   \c_buff_verbatim_noflines#1\relax
+   \c_buff_verbatim_current\zerocount}
+
+\loadmarkfile{buff-imp-default}    % preloaded as otherwise spurious spaces inline due to loading
+\loadmarkfile{buff-imp-nested}     % preloaded as otherwise spurious spaces inline due to loading
+\loadmarkfile{buff-imp-escaped}    % for completeness
+
+%D To be considered:
+
+% \installcorenamespace{visualizer}
+%
+% \installcommandhandler \??visualizer {visualizer} \??visualizer
+%
+% \appendtoks
+%     \setuevalue{\currentvisualizer}{\buff_verbatim_visualize{\currentvisualizer}}%
+% \to \everydefinevisualizer
+%
+% \unexpanded\def\buff_verbatim_visualize#1%
+%   {\bgroup
+%    \def\currentvisualizer{#1}%
+%    \usevisualizerstyleandcolor\c!style\c!color
+%    \let\next}
+
+\appendtoks
+    %def\type#1{\letterbackslash\checkedstrippedcsname#1}% or maybe detokenize
+    \def\type#1{\detokenize\expandafter{\csstring#1}}% or maybe detokenize
+    \def\tex #1{\letterbackslash#1}%
+\to \everysimplifycommands
+
+\stopcontextdefinitioncode
+
+\protect \endinput

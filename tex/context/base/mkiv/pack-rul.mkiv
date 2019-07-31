@@ -43,24 +43,6 @@
 \def\pack_framed_setup_line_width[#1]%
   {\assigndimension{#1}\linewidth{.2\points}{.4\points}{.6\points}}
 
-% %D \macros
-% %D   {setupscreens}
-% %D
-% %D Sort of obsolete:
-% %D
-% %D \showsetup{setupscreens}
-%
-% \installcorenamespace{screens}
-%
-% \installsetuponlycommandhandler \??screens {screens}
-%
-% \appendtoks
-%     \edef\defaultbackgroundscreen{\directscreensparameter\c!screen}
-% \to \everysetupscreens
-%
-% \setupscreens
-%   [\c!screen=.90] % was .95 but that's hardly visible
-
 %D The parameter handler:
 
 \installcorenamespace{framed}
@@ -356,18 +338,6 @@
 %         \quad}
 % \stopTEXpage
 
-%D The oval box is drawn using a special macro, depending on
-%D the driver in use.
-
-% \def\pack_framed_background_box_gray % avoid black rules when no gray
-%   {\edef\p_framed_backgroundscreen{\framedparameter\c!backgroundscreen}%
-%    \ifx\p_framed_backgroundscreen\empty \else
-%      \pack_framed_background_box_gray_indeed
-%    \fi}
-%
-% \def\pack_framed_background_box_gray_indeed  % can be more direct but who cares, just compatibility
-%   {\colored[s=\p_framed_backgroundscreen]{\pack_framed_filled_box}}
-
 %D It won't be a surprise that we not only provide gray boxes, but also colored
 %D ones. Here it is:
 
@@ -577,21 +547,6 @@
    \box\b_framed_extra
    \egroup}
 
-% \def\pack_framed_process_background_indeed_external#1%
-%   {\pack_framed_overlay_initialize
-%    \bgroup
-%    \setbox\b_framed_extra\hpack\bgroup
-%      \ifzeropt\framedbackgroundoffset\else
-%        \kern-\framedbackgroundoffset
-%      \fi
-%      \hbox\bgroup#1\egroup
-%    \egroup
-%    \wd\b_framed_extra\zeropoint
-%    \ht\b_framed_extra\framedbackgroundheight
-%    \dp\b_framed_extra\framedbackgrounddepth
-%    \box\b_framed_extra
-%    \egroup}
-
 \def\pack_framed_process_background_indeed_external
   {\pack_framed_overlay_initialize
    \pack_framed_process_background_indeed_internal}
@@ -618,13 +573,6 @@
   {\ifx\m_overlay_region\v!yes
      \edef\m_overlay_region{\reservedautoregiontag}%
    \fi}
-
-% \def\pack_framed_add_region % experiment
-%   {\ifx\m_overlay_region\v!yes
-%      \anch_mark_region_box\b_framed_normal
-%    \else
-%      \anch_mark_tagged_box\b_framed_normal\m_overlay_region
-%    \fi}
 
 \def\pack_framed_add_region % experiment
   {\anch_mark_tagged_box\b_framed_normal\m_overlay_region}
@@ -653,18 +601,6 @@
          \box\b_framed_normal
          \hss
       \egroup}}
-
-% \def\pack_framed_overlay_initialize_indeed
-%   {\edef\overlaywidth    {\the\d_framed_target_wd\space}%
-%    \edef\overlayheight   {\the\dimexpr\d_framed_target_ht+\d_framed_target_dp\relax\space}%
-%    \edef\overlaydepth    {\the\d_framed_target_dp\space}%
-%    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}% let ?
-%    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers
-%    \edef\overlaylinewidth{\the\d_framed_linewidth\space}%
-%   %\edef\overlaycorner   {\framedparameter\c!backgroundcorner}%
-%   %\edef\overlayradius   {\framedparameter\c!backgroundradius}%
-%    \edef\overlayoffset   {\the\framedbackgroundoffset\space}% \backgroundoffset % we steal this one
-%    \let\pack_framed_overlay_initialize\relax}
 
 \def\pack_framed_overlay_initialize_indeed
   {\d_overlay_width     \d_framed_target_wd
@@ -718,27 +654,6 @@
       \wd\b_framed_normal\zeropoint
       \box\b_framed_normal
       \box\b_framed_extra}}
-
-% \def\pack_framed_stroked_box_normal
-%   {\setbox\scratchbox\emptyhbox
-%    \wd\scratchbox\d_framed_target_wd
-%    \ht\scratchbox\d_framed_target_ht
-%    \dp\scratchbox\d_framed_target_dp
-%    \setbox\scratchbox\vpack \bgroup
-%      \csname   \??framedtop\p_framed_frame\framedparameter\c!topframe   \endcsname
-%      \nointerlineskip % new (needed for fences)
-%      \hbox \bgroup
-%        \csname \??framedleft\p_framed_frame\framedparameter\c!leftframe  \endcsname
-%        \box\scratchbox
-%        \csname \??framedright\p_framed_frame\framedparameter\c!rightframe \endcsname
-%      \egroup
-%      \nointerlineskip % new (needed for fences)
-%      \csname   \??framedbottom\p_framed_frame\framedparameter\c!bottomframe\endcsname
-%    \egroup
-%    \wd\scratchbox\d_framed_target_wd
-%    \ht\scratchbox\d_framed_target_ht
-%    \dp\scratchbox\d_framed_target_dp
-%    \box\scratchbox}
 
 \def\pack_framed_stroked_box_normal_opened
   {\setbox\scratchbox\vpack \bgroup
@@ -885,35 +800,6 @@
 
 \newcount\c_pack_framed_nesting
 
-% to be tested (slightly more efficient):
-%
-% \unexpanded\def\pack_frame_common % #1 #2
-%   {\bgroup
-%    \advance\c_pack_framed_nesting\plusone
-%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
-%    \edef\currentframed{>\the\c_pack_framed_nesting}%
-%    \pack_framed_initialize
-%    \bgroup
-%    \doifnextoptionalcselse} % #1 #2
-%
-% \unexpanded\def\framed     {\pack_frame_common\pack_framed_process_framed_pickup\pack_framed_process_indeed}
-% \unexpanded\def\startframed{\pack_frame_common\pack_framed_start_framed_pickup  \pack_framed_start_indeed  }
-%
-% \def\pack_framed_process_framed_pickup[#1]%
-%   {\setupcurrentframed[#1]%
-%    \pack_framed_process_indeed}
-%
-% \def\pack_framed_start_framed_pickup[#1]%
-%   {\setupcurrentframed[#1]% here !
-%    \secondargumenttrue % dirty trick
-%    \pack_framed_start_framed_indeed}
-%
-% \def\pack_framed_start_framed_indeed
-%   {\pack_framed_process_indeed
-%    \bgroup}
-%
-% no longer .. we also accept \startframed[tag]
-
 \unexpanded\def\pack_framed_process_framed[#1]%
   {\bgroup
    \iffirstargument % faster
@@ -928,24 +814,6 @@
    \edef\currentframed{>\the\c_pack_framed_nesting}%
    \pack_framed_initialize
    \dosingleempty\pack_framed_process_framed}
-
-% \unexpanded\def\startframed
-%   {\dosingleempty\pack_framed_start_framed}
-%
-% \def\pack_framed_start_framed[#1]%
-%   {\bgroup
-%    \advance\c_pack_framed_nesting\plusone
-%    \expandafter\let\csname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
-%    \edef\currentframed{>\the\c_pack_framed_nesting}%
-%    \pack_framed_initialize
-%    \bgroup
-%    \iffirstargument
-%      \secondargumenttrue % dirty trick
-%      \setupcurrentframed[#1]% here !
-%    \fi
-%    \pack_framed_process_indeed
-%    \bgroup
-%    \ignorespaces}
 
 \unexpanded\def\startframed
   {\dosingleempty\pack_framed_start_framed}
@@ -1928,30 +1796,6 @@
 % \framed[width=12cm,height=3cm,orientation=-180]{\input ward\relax}
 % \framed[width=12cm,height=3cm,orientation=-270]{\input ward\relax}
 
-% \def\pack_framed_start_orientation
-%   {\ifcase\p_framed_orientation
-%      \let\pack_framed_stop_orientation\relax
-%    \else
-%      \scratchcounter\p_framed_orientation % weird .. why
-%      \divide\scratchcounter\plustwo
-%      \ifodd\scratchcounter
-%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_odd
-%      \else
-%        \let\pack_framed_stop_orientation\pack_framed_stop_orientation_even
-%      \fi
-%    \fi}
-%
-% \def\pack_framed_stop_orientation_odd
-%   {\swapmacros\framedwidth\framedheight
-%    \swapmacros\localwidth\localheight
-%    \swapdimens\d_framed_height\d_framed_width
-%    \pack_framed_stop_orientation_even}
-%
-% \def\pack_framed_stop_orientation_even
-%   {\setbox\b_framed_normal\hbox{\dorotatebox\p_framed_orientation\hbox{\box\b_framed_normal}}%
-%    \d_framed_height\ht\b_framed_normal
-%    \d_framed_width \wd\b_framed_normal}
-
 \def\pack_framed_start_orientation
   {\ifcase\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
@@ -2041,15 +1885,6 @@
   {\begingroup
    \edef\currentmathframed{#1}%
    \dosingleempty\pack_framed_mathframed_indeed}
-
-% \def\pack_framed_mathframed_indeed[#1]#2% no fancy nesting supported here
-%   {\iffirstargument
-%       \setupcurrentmathframed[#1]%
-%    \fi
-%    \c_framed_mstyle\mathstyle
-%    \doifnot{\mathframedparameter\c!location}\v!low{\let\normalstrut\pack_framed_math_strut}%
-%    \inheritedmathframedframed{\Ustartmath\triggermathstyle\c_framed_mstyle#2\Ustopmath}%
-%    \endgroup}
 
 \newcount\c_pack_framed_mathframed
 \newtoks \t_pack_framed_mathframed

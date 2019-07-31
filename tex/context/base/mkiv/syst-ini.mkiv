@@ -570,9 +570,7 @@
 \newif\ifdone
 \newif\iffound
 
-%D Potential primitive in \LUATEX:
-
-\ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
+\def\htdp#1{\dimexpr\ht#1+\dp#1\relax}
 
 %D A few shortcuts:
 

@@ -52,22 +52,4 @@
 
     <cd:command name="showdirsinmargin" level="document" category="alignment" file="supp-dir.mkiv"/>
 
-    <cd:command name="istltdir" level="system" category="alignment" file="supp-dir.mkiv">
-        <cd:arguments>
-            <cd:keywords delimiters="none">
-                <cd:constant type="TLT"/>
-                <cd:constant type="TRT"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="istrtdir" level="system" category="alignment" file="supp-dir.mkiv">
-        <cd:arguments>
-            <cd:keywords delimiters="none">
-                <cd:constant type="TLT"/>
-                <cd:constant type="TRT"/>
-            </cd:keywords>
-        </cd:arguments>
-    </cd:command>
-
 </cd:interface>

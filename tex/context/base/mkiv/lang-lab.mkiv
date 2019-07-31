@@ -24,26 +24,23 @@
     \def\sixperemspace{\normalUchar"2006}
 \fi
 
-%D In this module we deal with language dependant labels and
-%D prefixes, like in {\em Figure~12} and {\em Chapter 1}. In
-%D this file we set the default values. Users can easily
-%D overrule these.
+%D In this module we deal with language dependant labels and prefixes, like in {\em
+%D Figure~12} and {\em Chapter 1}. In this file we set the default values. Users can
+%D easily overrule these.
 %D
-%D This module is dedicated to the grandfather of Tobias
-%D Burnus, who's extensive languages oriented library helped us
-%D a lot in finding the right translations. All those labels
-%D are collected in files that reflect their common ancestor.
+%D This module is dedicated to the grandfather of Tobias Burnus, who's extensive
+%D languages oriented library helped us a lot in finding the right translations. All
+%D those labels are collected in files that reflect their common ancestor.
 %D
-%D Not all languages can be satisfied with the labeling
-%D mechanism as provided here. Chinese for instance put a label
-%D in front as well as after a part number. This is why the
-%D current implementation of labels supports two labels too.
+%D Not all languages can be satisfied with the labeling mechanism as provided here.
+%D Chinese for instance put a label in front as well as after a part number. This is
+%D why the current implementation of labels supports two labels too.
 
 %D \macros
 %D   {setupheadtext, setuplabeltext}
 %D
-%D First we present some macros that deal with what we will
-%D call head and label texts. Such texts are defines by:
+%D First we present some macros that deal with what we will call head and label
+%D texts. Such texts are defines by:
 %D
 %D \showsetup{setupheadtext}
 %D \showsetup{setuplabeltext}
@@ -165,8 +162,8 @@
 %D \macros
 %D   {presetheadtext,presetlabeltext}
 %D
-%D These macros enable us to automatically define head and label
-%D texts without replacing predefined ones. They are internal macros.
+%D These macros enable us to automatically define head and label texts without
+%D replacing predefined ones. They are internal macros.
 
 \appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
 
@@ -301,9 +298,8 @@
 %D \macros
 %D   {translate}
 %D
-%D Sometimes macros contain language specific words that are to
-%D be typeset. Such macros can be made (more) language
-%D independant by using:
+%D Sometimes macros contain language specific words that are to be typeset. Such
+%D macros can be made (more) language independant by using:
 %D
 %D \showsetup{translate}
 %D
@@ -313,8 +309,7 @@
 %D \translate[en=something,nl=iets]
 %D \stoptyping
 %D
-%D which expands to {\em something} or {\em iets}, depending on
-%D de current language.
+%D which expands to {\em something} or {\em iets}, depending on de current language.
 
 \installcorenamespace{translation}
 
@@ -331,8 +326,8 @@
      [translation #1]%
    \fi\fi}
 
-%D When used without argument, the last defined values are
-%D used. This enables repetitive use like
+%D When used without argument, the last defined values are used. This enables
+%D repetitive use like
 %D
 %D \starttyping
 %D \en \translate\ means \nl \translate
@@ -341,8 +336,8 @@
 %D \macros
 %D   {assigntranslation}
 %D
-%D This macro is a system macro, and can be used to assign a
-%D translation to a macro. Its form is:
+%D This macro is a system macro, and can be used to assign a translation to a macro.
+%D Its form is:
 %D
 %D \starttyping
 %D \assigntranslation[en=something,nl=iets]\to\command

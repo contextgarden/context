@@ -6,10 +6,6 @@ if not modules then modules = { } end modules ['lpdf-nod'] = {
     license   = "see context related readme files"
 }
 
-if CONTEXTLMTXMODE > 0 then
-    return
-end
-
 local nodecodes             = nodes.nodecodes
 local whatsitcodes          = nodes.whatsitcodes
 
