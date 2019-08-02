@@ -244,6 +244,8 @@ return {
         "nextbox", "dowithnextbox", "dowithnextboxcs", "dowithnextboxcontent", "dowithnextboxcontentcs", "flushnextbox",
         "boxisempty",
         --
+        "givenwidth", "givenheight", "givendepth", "scangivendimensions",
+        --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
         "scratchhsize", "scratchvsize",
         "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",

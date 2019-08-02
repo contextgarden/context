@@ -1,0 +1,88 @@
+%D \module
+%D   [       file=pack-ori, % was experimental
+%D        version=2019.07.30,
+%D          title=\CONTEXT\ Packaging Macros,
+%D       subtitle=Anchoring,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Packaging Macros / Anchoring}
+
+\registerctxluafile{pack-ori}{}
+
+\unprotect
+
+%D Possible options are:
+%D
+%D \starttabulate[|T|T|]
+%D \NC orientation \NC up left down right top bottom
+%D \NC vertical    \NC line top bottom middle
+%D \NC horizontal  \NC middle flushleft flushright left right
+%D \stoptabulate
+
+\installcorenamespace{orientation}
+\installcorenamespace{orientations}
+
+\installcommandhandler \??orientation {orientation} \??orientation
+
+\setuporientation
+  [\c!orientation=\v!normal,
+   \c!horizontal=\v!normal,
+   \c!vertical=\v!normal]
+
+\appendtoks
+    \expandafter\chardef\csname\??orientations\currentorientation\endcsname\toorientation
+        orientation {\orientationparameter\c!orientation}
+        horizontal  {\orientationparameter\c!horizontal}
+        vertical    {\orientationparameter\c!vertical}
+    \relax\relax
+\to \everydefineorientation
+
+\defineorientation[\v!normal]
+
+\defineorientation[\v!up]    [\c!orientation=\v!up]
+\defineorientation[\v!down]  [\c!orientation=\v!down]
+\defineorientation[\v!left]  [\c!orientation=\v!left]
+\defineorientation[\v!right] [\c!orientation=\v!right]
+\defineorientation[\v!top]   [\c!orientation=\v!top]
+\defineorientation[\v!bottom][\c!orientation=\v!bottom]
+
+%D There will be some more helpers here.
+
+\def\theorientation#1%
+  {\numexpr
+     \ifcsname\??orientations#1\endcsname
+       \lastnamedcs
+     \else
+       \zerocount
+     \fi
+  \relax}
+
+\def\autoorientation#1%
+  {\numexpr
+     \ifcsname\??orientations#1\endcsname
+       \lastnamedcs
+     \else
+       \auto_orientation{#1}%
+     \fi
+   \relax}
+
+\def\auto_orientation#1%
+  {\immediateassignment\global\expandafter\chardef\csname\??orientations#1\endcsname\stringtoorientation{#1}%
+   \csname\??orientations#1\endcsname}
+
+\unexpanded\def\doifelseorientation#1%
+  {\ifcsname\??orientations#1\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+% \def\iforientationcsname#1{\ifcsname\??orientations}
+
+\protect \endinput

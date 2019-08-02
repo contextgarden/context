@@ -8321,6 +8321,16 @@ return {
   ["hidenumber"]={
    ["en"]="hidenumber",
   },
+  ["horizontal"]={
+   ["cs"]="horizontalne",
+   ["de"]="horizontal",
+   ["en"]="horizontal",
+   ["fr"]="horizontale",
+   ["it"]="orizzontale",
+   ["nl"]="horizontaal",
+   ["pe"]="افقی",
+   ["ro"]="orizontal",
+  },
   ["hoffset"]={
    ["cs"]="hoffset",
    ["de"]="hoffset",
@@ -11384,6 +11394,16 @@ return {
    ["en"]="vector",
    ["nl"]="vector",
   },
+  ["vertical"]={
+   ["cs"]="vertikalne",
+   ["de"]="vertikal",
+   ["en"]="vertical",
+   ["fr"]="verticale",
+   ["it"]="verticale",
+   ["nl"]="vertikaal",
+   ["pe"]="عمودی",
+   ["ro"]="vertical",
+  },
   ["veroffset"]={
    ["cs"]="offsethlavicky",
    ["de"]="kopfoffset",
@@ -11489,6 +11509,10 @@ return {
   ["xmlsetup"]={
    ["en"]="xmlsetup",
   },
+  ["xanchor"]={
+   ["en"]="xanchor",
+   ["nl"]="xanker",
+  },
   ["xoffset"]={
    ["cs"]="xoffset",
    ["de"]="xoffset",
@@ -11538,6 +11562,10 @@ return {
    ["nl"]="ymax",
    ["pe"]="ymax",
    ["ro"]="ymax",
+  },
+  ["yanchor"]={
+   ["en"]="yanchor",
+   ["nl"]="yanker",
   },
   ["yoffset"]={
    ["cs"]="yoffset",

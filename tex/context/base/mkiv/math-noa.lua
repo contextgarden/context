@@ -850,23 +850,33 @@ do
         return f
     end
 
--- local function show(where,pointer)
---     print("")
---     local i = 0
---     for n in nuts.traverse(pointer) do
---         i = i + 1
---         print(i,where,nuts.tonode(n))
---     end
---     print("")
--- end
+    local function show(where,pointer)
+        print("")
+        local i = 0
+        for n in nuts.traverse(pointer) do
+            i = i + 1
+            print(i,where,nuts.tonode(n))
+        end
+        print("")
+    end
 
-    local function makelist(middle, noad, f_o,o_next,c_prev,f_c)
+    local function makelist(middle,noad,f_o,o_next,c_prev,f_c)
+-- report_fences(
+--     "middle %s, noad %s, open %s, opennext %s, closeprev %s, close %s",
+--     middle or "?",
+--     noad   or "?",
+--     f_o    or "?",
+--     o_next or "?",
+--     c_prev or "?",
+--     f_c    or "?"
+-- )
         local list = new_submlist()
         setsubtype(noad,innernoad_code)
         setnucleus(noad,list)
         setlist(list,f_o)
         setlink(f_o,o_next) -- prev of list is nil
         setlink(c_prev,f_c) -- next of list is nil
+-- show("list",f_o)
         if middle and next(middle) then
             local prev    = f_o
             local current = o_next
@@ -890,17 +900,17 @@ do
         return noad
     end
 
-    -- relinking is not somewhat overdone
+    -- relinking is now somewhat overdone
 
     local function convert_both(open,close,middle)
-        local o_prev, o_next = getboth(open)
+        local o_next = getnext(open)
         if o_next == close then
             return close
         else
             local c_prev, c_next = getboth(close)
             local f_o = makefence(leftfence_code,open)
             local f_c = makefence(rightfence_code,close)
-            makelist(middle, open, f_o,o_next,c_prev,f_c)
+            makelist(middle,open,f_o,o_next,c_prev,f_c)
             setnucleus(close)
             flush_node(close)
             -- open is now a list
@@ -909,12 +919,11 @@ do
         end
     end
 
-    local function convert_open(open,last,middle)
+    local function convert_open(open,last,middle) -- last is really last (final case)
         local f_o = makefence(leftfence_code,open)
         local f_c = makefence(rightfence_code)
-        local o_prev, o_next = getboth(open)
-        local l_prev, l_next = getboth(last)
-        makelist(middle, open, f_o,o_next,l_prev,f_c)
+        local o_next = getnext(open)
+        makelist(middle,open,f_o,o_next,last,nil)
         -- open is now a list
         setlink(open,l_next)
         return open
@@ -923,8 +932,8 @@ do
     local function convert_close(first,close,middle)
         local f_o = makefence(leftfence_code)
         local f_c = makefence(rightfence_code,close)
-        local c_prev, c_next = getboth(close)
-        local f_prev, f_next = getboth(first)
+        local c_prev = getprev(close)
+        local f_next = getnext(first)
         makelist(middle, close, f_o,f_next,c_prev,f_c)
         -- close is now a list
         if c_prev ~= first then
@@ -1035,10 +1044,11 @@ do
                 for i=1,s do
                     local open = remove(stack)
                     if trace_fences then
-                        report_fences("%2i: level %i, handling %s, action %s",#stack,"flush","open")
+                        report_fences("%2i: level %i, handling %s, action %s",n,#stack,"flush","open")
                     end
                     last = convert_open(open,last,middle)
                 end
+-- show("done",pointer)
             end
         end
     end

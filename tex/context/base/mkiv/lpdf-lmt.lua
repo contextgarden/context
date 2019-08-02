@@ -38,7 +38,7 @@ local band, extract = bit32.band, bit32.extract
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
-local <const> bpfactor     = number.dimenfactors.bp
+local bpfactor             <const> = number.dimenfactors.bp
 
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
@@ -596,15 +596,15 @@ end
 
 local flushliteral  do
 
-    local <const> nodeproperties       = nodes.properties.data
-    local <const> literalvalues        = nodes.literalvalues
+    local nodeproperties      <const> = nodes.properties.data
+    local literalvalues       <const> = nodes.literalvalues
 
-    local <const> originliteral_code   = literalvalues.origin
-    local <const> pageliteral_code     = literalvalues.page
-    local <const> alwaysliteral_code   = literalvalues.always
-    local <const> rawliteral_code      = literalvalues.raw
-    local <const> textliteral_code     = literalvalues.text
-    local <const> fontliteral_code     = literalvalues.font
+    local originliteral_code  <const> = literalvalues.origin
+    local pageliteral_code    <const> = literalvalues.page
+    local alwaysliteral_code  <const> = literalvalues.always
+    local rawliteral_code     <const> = literalvalues.raw
+    local textliteral_code    <const> = literalvalues.text
+    local fontliteral_code    <const> = literalvalues.font
 
     flushliteral = function(current,pos_h,pos_v,mode,str)
         if mode then
@@ -845,16 +845,16 @@ local flushrule, flushsimplerule, flushimage  do
     local setprop   = nuts.setprop
     local getprop   = nuts.getprop
 
-    local <const> normalrule_code   = rulecodes.normal
-    local <const> boxrule_code      = rulecodes.box
-    local <const> imagerule_code    = rulecodes.image
-    local <const> emptyrule_code    = rulecodes.empty
-    local <const> userrule_code     = rulecodes.user
-    local <const> overrule_code     = rulecodes.over
-    local <const> underrule_code    = rulecodes.under
-    local <const> fractionrule_code = rulecodes.fraction
-    local <const> radicalrule_code  = rulecodes.radical
-    local <const> outlinerule_code  = rulecodes.outline
+    local normalrule_code   <const> = rulecodes.normal
+    local boxrule_code      <const> = rulecodes.box
+    local imagerule_code    <const> = rulecodes.image
+    local emptyrule_code    <const> = rulecodes.empty
+    local userrule_code     <const> = rulecodes.user
+    local overrule_code     <const> = rulecodes.over
+    local underrule_code    <const> = rulecodes.under
+    local fractionrule_code <const> = rulecodes.fraction
+    local radicalrule_code  <const> = rulecodes.radical
+    local outlinerule_code  <const> = rulecodes.outline
 
     local rule_callback = callbacks.functions.process_rule
 
@@ -1016,7 +1016,7 @@ local flushrule, flushsimplerule, flushimage  do
     local img_stream     = imagetypes.stream
     local img_memstream  = imagetypes.memstream
 
-    local <const> one_bp = 65536 * bpfactor
+    local one_bp         <const> = 65536 * bpfactor
 
     local imageresources, n = { }, 0
 
@@ -1618,13 +1618,13 @@ end
 
 local addtocache, flushcache, cache do
 
-    local data, d = { }, 0
-    local list, l = { }, 0
-    local coffset = 0
-    local indices = { }
+    local data, d  = { }, 0
+    local list, l  = { }, 0
+    local coffset  = 0
+    local indices  = { }
 
-    local <const> maxsize  = 32 * 1024 -- uncompressed
-    local <const> maxcount = 0xFF
+    local maxsize  <const> = 32 * 1024 -- uncompressed
+    local maxcount <const> = 0xFF
 
     addtocache = function(n,str)
         local size = #str
@@ -2197,8 +2197,8 @@ updaters.register("backend.update.pdf",function()
     local lastindex      = 0
     local indices        = { }
 
-    local <const> bpfactor       = number.dimenfactors.bp
-    local <const> imagerule_code = rulecodes.image
+    local bpfactor       <const> = number.dimenfactors.bp
+    local imagerule_code <const> = rulecodes.image
 
     function codeinjections.newimage(specification)
         return specification

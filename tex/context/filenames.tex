@@ -1,0 +1,119 @@
+% language=uk
+
+\usemodule[article-basic]
+\usemodule[abbreviations-logos]
+
+\setupheader[state=high]
+
+\starttext
+
+\starttitle[title=Filenames]
+
+The \CONTEXT\ distribution follows a rather strict organisation. Originally
+all files that implemented macros had names using the pattern:
+
+\starttabulate[|Tw(10em)||]
+\FL
+\NC xxxx-xxx.tex \NC \TEX\ file \NC \NR
+\NC mp-xxxx.mp   \NC \METAPOST\ file \NC \NR
+\LL
+\stoptabulate
+
+You can still find files that conform to these patterns but the organization
+evolved. The \type {tex} suffix is now normally used just for documents.
+
+Styles and modules can have names of any length, and can be recognized by their
+prefix:
+
+\starttabulate[|Tw(10em)||]
+\FL
+\NC s-aaaa.tex   \NC style (rendering related) \NC \NR
+\NC m-aaaaaa.tex \NC module (functionality related) \NC \NR
+\NC x-aaaaa.tex  \NC xml module (functionality related) \NC \NR
+\LL
+\stoptabulate
+
+\CONTEXT\ \MKII, the frozen version for \PDFTEX\ and \XETEX, uses names like:
+
+\starttabulate[|Tw(10em)||]
+\FL
+\NC context.mkii  \NC the main \TEX\ file \NC \NR
+\NC cont-xx.mkii  \NC an interface specific \TEX\ file \NC \NR
+\NC xxxx-xxx.mkii \NC \TEX\ file \NC \NR
+\ML
+\NC mp-xxxx.mpii  \NC \METAPOST\ file \NC \NR
+\NC metafun.mpii  \NC the main \METAFUN\ file \NC \NR
+\LL
+\stoptabulate
+
+\CONTEXT\ \MKIV, the current version, has files with names like:
+
+\starttabulate[|Tw(10em)||]
+\FL
+\NC context.mkiv  \NC the main \TEX\ file \NC \NR
+\NC cont-xx.mkiv  \NC an interface specific \TEX\ file \NC \NR
+\NC xxxx-xxx.mkiv \NC \TEX\ file \NC \NR
+\NC xxxx-xxx.mkvi \NC \TEX\ file with named parameters \NC \NR
+\NC xxxx-xxx.mkix \NC file with \LMX\ template \NC \NR
+\NC xxxx-xxx.mkxi \NC file with \LMX\ template with named parameters \NC \NR
+\NC xxxx-xxx.lua  \NC a file with \LUA\ code \NC \NR
+\NC xxxx-xxx.lfg  \NC so called font goodie \LUA\ files \NC \NR
+\ML
+\NC metafun.mpiv  \NC the main \METAFUN\ file \NC \NR
+\NC minifun.mpiv  \NC a subset of \METAFUN\ \NC \NR
+\NC mp-xxxx.mpiv  \NC \METAPOST\ file \NC \NR
+\LL
+\stoptabulate
+
+There are more suffixes used, like \type {tua} and \type {tuc} for multipass
+jobdata, and \type {log} for log files. In the cache tree you can run into \type
+{luv}, \type {lui}, \type {luj} and \type {lum} for startup data,
+\type {tma} for \LUA\ cache files, \type {tmb} for \LUAJITTEX\ bytecode, \type
+{tmc} for \LUATEX {bytecode} and \type {tmd} for \LUAMETATEX\ bytecode, but you
+can forget about them.
+
+There can be files with \type {-imp-} in the name: these relate to other files with
+a similar name.
+
+The follow up on \MKIV\ is called \LMTX\ (or MkXL?) and is compatible with \MKIV: it uses,
+at least now, mostly the same code. But, as it depends on \LUAMETATEX\ it also
+has some different internals. Therefore you will find some additional files:
+
+\starttabulate[|Tw(10em)||]
+\FL
+\NC context.mkxl  \NC the main \TEX\ file \NC \NR
+\NC cont-xx.mkxl  \NC an interface specific \TEX\ file \NC \NR
+\NC xxxx-xxx.mkxl \NC \TEX\ file \NC \NR
+\NC xxxx-xxx.mklx \NC \TEX\ file with named parameters \NC \NR
+\ML
+\NC metafun.mpxl  \NC the main \METAFUN\ file \NC \NR
+\NC minifun.mpxl  \NC a subset of \METAFUN\ \NC \NR
+\NC mp-xxxx.mpxl  \NC \METAPOST\ file \NC \NR
+\LL
+\stoptabulate
+
+This means that a file \type {xxxx-xxx} can be present with any of the \type
+{mk..} suffixes. In the standard distribution the \MKII\ and \MKIV\ files have
+their own path (directory), and \LMTX\ only ships what it needs.
+
+This somewhat complicated setup is needed in order to support both \LUATEX\ and
+\LUAMETATEX\ system. The more \LUAMETATEX\ diverges from \LUATEX, the more the
+codebase will be split so eventually we might end up with \MKII, \MKIV\ and \LMTX\
+as more or less independent versions. We try to share the \LUA\ code as much as
+possible, also because some components are generic.
+
+The name pattern \type {xxxx-} groups the files in categories. These are also
+referred to from the interface definitions. Examples of categories are \type
+{syst} for system modules that define various low level support macros and
+mechanisms. The user interface is handled by modules in the \type {mult}
+namespace. The \type {supp} modules layer on top of that and provide more
+helpers. The \type {font} and \type {type} modules deal with fonts, \type {lang}
+handles language support. The \type {strc} modules implement structural
+components, \type {tabl} does tables and \type {page} handles the layout.
+Specialized categories like \type {mlib}, \type {meta} and \type {grph} are for
+graphics, and \type {publ} is used for the publication (bibliography) subsystem.
+Just to give you an idea.
+
+\stoptitle
+
+\stoptext

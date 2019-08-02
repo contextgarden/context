@@ -313,6 +313,7 @@ end
 
 function converters.year  () return osdate("%Y") end
 function converters.month () return osdate("%m") end
+function converters.day   () return osdate("%d") end
 function converters.hour  () return osdate("%H") end
 function converters.minute() return osdate("%M") end
 function converters.second() return osdate("%S") end

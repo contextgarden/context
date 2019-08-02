@@ -221,3 +221,12 @@ def getparametertext     = runscript mfid_getparametertext     enddef ;
 def applyparameters      = runscript mfid_applyparameters      enddef ;
 def pushparameters       = runscript mfid_pushparameters       enddef ;
 def popparameters        = runscript mfid_popparameters        enddef ;
+
+% This might also be done in stock mkiv:
+
+newinternal mfid_year   ; mfid_year   := scriptindex "year"   ; vardef year   = runscript mfid_year   enddef ;
+newinternal mfid_month  ; mfid_month  := scriptindex "month"  ; vardef month  = runscript mfid_month  enddef ;
+newinternal mfid_day    ; mfid_day    := scriptindex "day"    ; vardef day    = runscript mfid_day    enddef ;
+newinternal mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = runscript mfid_hour   enddef ;
+newinternal mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
+newinternal mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;

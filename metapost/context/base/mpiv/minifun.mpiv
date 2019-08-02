@@ -23,6 +23,7 @@ input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;
 input "mp-mlib.mpiv" ;
 input "mp-luas.mpiv" ;
+input "mp-cont.mpiv" ;
 input "mp-page.mpiv" ;
 
 string minifunversion ; minifunversion = "minifun iv " & mfun_timestamp;

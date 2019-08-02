@@ -316,6 +316,11 @@ function pages.in_body(n)
     return texgetcount("pagebodymode") > 0
 end
 
+function pages.fraction(n)
+    local lastpage = texgetcount("lastpageno") -- can be cached
+    return lastpage > 1 and (texgetcount("realpageno")-1)/(lastpage-1) or 1
+end
+
 -- move to strc-pag.lua
 
 function counters.analyze(name,counterspecification)

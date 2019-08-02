@@ -924,12 +924,10 @@
    \doifelserightpage{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
 
 \setvalue{\??rotatepreset\v!default}%
-  {\edef\p_rotation_rotation{\realnumber{\p_rotation_rotation}}}% get rid of leading zeros and spaces
+  {}
 
 \def\grph_rotate_finish_yes
-  {\csname\??rotatepreset
-     \ifcsname\??rotatepreset\p_rotation_rotation\endcsname\p_rotation_rotation\else\v!default\fi
-   \endcsname
+  {\begincsname\??rotatepreset\p_rotation_rotation\endcsname
    \setbox\nextbox\vpack{\box\nextbox}% not really needed
    \dontcomplain
    \ifconditional\c_grph_rotate_center

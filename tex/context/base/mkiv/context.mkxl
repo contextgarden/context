@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.07.31 18:05}
+\edef\contextversion{2019.08.02 19:40}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -112,8 +112,8 @@
 \loadmarkfile{toks-scn}
 
 \loadmkxlfile{syst-aux} % LMTX
-\loadmarkfile{syst-lua}
-\loadmarkfile{syst-con}
+\loadmkxlfile{syst-lua} % LMTX
+\loadmkxlfile{syst-con} % LMTX
 
 \loadmarkfile{syst-fnt}
 \loadmarkfile{syst-rtp}
@@ -245,6 +245,7 @@
 \loadmarkfile{sort-ini}
 
 \loadmkvifile{pack-mis}
+\loadmkxlfile{pack-ori} % LMTX
 \loadmkxlfile{pack-rul} % LMTX
 \loadmarkfile{pack-mrl}
 \loadmkvifile{pack-bck}
@@ -330,7 +331,13 @@
 %loadmarkfile{page-set} % \usecolumns[old-columnsets]
 \loadmarkfile{page-cst}
 \loadmarkfile{page-pcl} % new
-\loadmarkfile{pack-lyr}
+
+\doifelsefileexists {pack-lyr.mkxl} {
+    \loadmkxlfile{pack-lyr} % LMTX
+} {
+    \loadmkivfile{pack-lyr}
+}
+
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
 
@@ -458,7 +465,7 @@
 
 \loadmkxlfile{mlib-ctx} % messy order
 
-\loadmarkfile{meta-ini}
+\loadmkxlfile{meta-ini}
 \loadmarkfile{meta-tex}
 \loadmarkfile{meta-fun}
 \loadmarkfile{meta-pag}

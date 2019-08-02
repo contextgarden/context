@@ -23,6 +23,12 @@
 
 \fixupboxesmode\plusone
 
+%D And some dimensions:
+
+\newdimen\givenwidth
+\newdimen\givenheight
+\newdimen\givendepth
+
 % handy to have
 %
 % \hbox to \hsize
@@ -539,12 +545,9 @@
   {\beginofshapebox
      \unvbox\nextbox
    \endofshapebox
-   % \global\count1\zerocount
-   % \reshapebox{\global\advance\count1\plusone}%
-   % \egroup\noflines\count1 }%
-   \scratchcounter\zerocount
-   \reshapebox{\global\advance\scratchcounter\plusone}%
-   \expandafter\egroup\expandafter\noflines\the\scratchcounter\relax}
+   \globalscratchcounter\zerocount
+   \reshapebox{\global\advance\globalscratchcounter\plusone}%
+   \expandafter\egroup\expandafter\noflines\the\globalscratchcounter\relax}
 
 \unexpanded\def\determinenoflines
   {\bgroup
@@ -851,6 +854,7 @@
 
 \newif    \ifsomeshapeleft
 \newif    \ifreshapingbox
+\newif    \ifreshapingfailed % may save redundant runs
 
 \newbox   \shapebox
 \newcount \shapepenalty
@@ -859,6 +863,7 @@
 
 \newbox   \newshapebox
 \newbox   \oldshapebox
+\newbox   \tmpshapebox
 
 \newcount \shapecounter
 
@@ -872,10 +877,6 @@
      {\penalty\shapepenalty}%
      {\kern   \shapekern   }%
      {\vskip  \shapeskip   }}
-
-\newbox\tmpshapebox
-
-\newif\ifreshapingfailed % may save redundant runs
 
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\global\reshapingfailedfalse
@@ -1025,10 +1026,10 @@
 
 \unexpanded\def\shapedhbox        % lines with non strutted dimensions have
   {\expanded{\dowithnextbox       % interlineskip so if we want the original
-     {\dp\nextbox\the\ht\shapebox % spacing, we need to preserve the original
+     {\ht\nextbox\the\ht\shapebox % spacing, we need to preserve the original
       \dp\nextbox\the\dp\shapebox % height and depth which is definitely
       \box\nextbox}}              % needed if we apply struts to the 'new'
-   \hbox}                   % box or do something that changed ist size
+   \hbox}                         % box or do something that changed ist size
 
 %D \macros
 %D   {hyphenatedword,
@@ -1100,7 +1101,7 @@
 
 \unexpanded\def\processtokens#1#2#3#4#5%
   {\begingroup
-   \def\lastcharacter{\lastcharacter}%
+   \def\lastcharacter{\lastcharacter}% hm, recursive ?
    \def\space{ }%
    \let\\=\space
    \def\before {#1}%
@@ -1471,13 +1472,13 @@
 
 \unexpanded\def\syst_boxes_sbox_finish
   {\setbox\nextbox\hpack
-     {\strut
-      \dp\nextbox\zeropoint
+     {\strut                % not needed
+      \dp\nextbox\zeropoint % not needed
       \lower\strutdp\box\nextbox}%
-    \dp\nextbox\strutdp
-    \ht\nextbox\strutht
-    \box\nextbox
-    \egroup}
+   \dp\nextbox\strutdp
+   \ht\nextbox\strutht
+   \box\nextbox
+   \egroup}
 
 %D A variant on this:
 

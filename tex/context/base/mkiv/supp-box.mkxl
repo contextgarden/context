@@ -23,6 +23,12 @@
 
 \fixupboxesmode\plusone
 
+%D And some dimensions:
+
+\newdimen\givenwidth
+\newdimen\givenheight
+\newdimen\givendepth
+
 % handy to have
 %
 % \hbox to \hsize
@@ -224,16 +230,20 @@
 %D catcode safer. It is needed by the math module (although the \type {\leavevmode}
 %D is not added here).
 
+% \unexpanded\def\smash
+%   {\begingroup
+%    \futurelet\nexttoken\syst_boxes_smash}
+%
+% \def\syst_boxes_smash
+%   {\ifx\nexttoken[%
+%      \expandafter\syst_boxes_smash_yes
+%    \else
+%      \expandafter\syst_boxes_smash_nop
+%    \fi}
+
 \unexpanded\def\smash
   {\begingroup
-   \futurelet\nexttoken\syst_boxes_smash}
-
-\def\syst_boxes_smash
-  {\ifx\nexttoken[%
-     \expandafter\syst_boxes_smash_yes
-   \else
-     \expandafter\syst_boxes_smash_nop
-   \fi}
+   \futureexpandis[\syst_boxes_smash_yes\syst_boxes_smash_nop}
 
 \def\syst_boxes_smash_nop
   {\edef\m_boxes_smash_options{hd}%
@@ -284,6 +294,9 @@
 
 \def\syst_boxes_lower_nextbox_dp
   {\setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}}
+
+% \def\syst_boxes_lower_nextbox_dp
+%   {\boxymove\nextbox-\dp\nextbox}
 
 %D \starttabulate[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
@@ -403,8 +416,12 @@
 %D The next alternative is slightly more clever, since it accepts \type {{12}} as
 %D well as \type {12} as box number.
 
+% \unexpanded\def\getboxheight#1\of#2\box#3%
+%   {\def\next{#1\dimexpr\ht\c_boxes_register+\dp\c_boxes_register\relax}%
+%    \afterassignment\next\c_boxes_register=#3}
+
 \unexpanded\def\getboxheight#1\of#2\box#3%
-  {\def\next{#1\dimexpr\ht\c_boxes_register+\dp\c_boxes_register\relax}%
+  {\def\next{#1\htdp\c_boxes_register}%
    \afterassignment\next\c_boxes_register=#3}
 
 %D For a long time the following three macros were part of the grid snapping core
@@ -539,12 +556,9 @@
   {\beginofshapebox
      \unvbox\nextbox
    \endofshapebox
-   % \global\count1\zerocount
-   % \reshapebox{\global\advance\count1\plusone}%
-   % \egroup\noflines\count1 }%
-   \scratchcounter\zerocount
-   \reshapebox{\global\advance\scratchcounter\plusone}%
-   \expandafter\egroup\expandafter\noflines\the\scratchcounter\relax}
+   \globalscratchcounter\zerocount
+   \reshapebox{\global\advance\globalscratchcounter\plusone}%
+   \expandafter\egroup\expandafter\noflines\the\globalscratchcounter\relax}
 
 \unexpanded\def\determinenoflines
   {\bgroup
@@ -575,8 +589,6 @@
      \endgroup\expandafter\firstoftwoarguments
    \fi}
 
-\let\doiftextelse\doifelsetext
-
 \unexpanded\def\doiftext#1%
   {\begingroup
    \setbox\scratchbox\hpack
@@ -587,6 +599,12 @@
    \else
      \endgroup\expandafter\firstofoneargument
    \fi}
+
+% more efficient but maybe fragile:
+%
+%       \nospacing#1}%
+
+\let\doiftextelse\doifelsetext
 
 %D \macros
 %D   {dowithnextbox,nextbox}
@@ -851,6 +869,7 @@
 
 \newif    \ifsomeshapeleft
 \newif    \ifreshapingbox
+\newif    \ifreshapingfailed % may save redundant runs
 
 \newbox   \shapebox
 \newcount \shapepenalty
@@ -859,6 +878,7 @@
 
 \newbox   \newshapebox
 \newbox   \oldshapebox
+\newbox   \tmpshapebox
 
 \newcount \shapecounter
 
@@ -872,10 +892,6 @@
      {\penalty\shapepenalty}%
      {\kern   \shapekern   }%
      {\vskip  \shapeskip   }}
-
-\newbox\tmpshapebox
-
-\newif\ifreshapingfailed % may save redundant runs
 
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\global\reshapingfailedfalse
@@ -1025,7 +1041,7 @@
 
 \unexpanded\def\shapedhbox        % lines with non strutted dimensions have
   {\expanded{\dowithnextbox       % interlineskip so if we want the original
-     {\dp\nextbox\the\ht\shapebox % spacing, we need to preserve the original
+     {\ht\nextbox\the\ht\shapebox % spacing, we need to preserve the original
       \dp\nextbox\the\dp\shapebox % height and depth which is definitely
       \box\nextbox}}              % needed if we apply struts to the 'new'
    \hbox}                         % box or do something that changed ist size
@@ -1100,7 +1116,7 @@
 
 \unexpanded\def\processtokens#1#2#3#4#5%
   {\begingroup
-   \def\lastcharacter{\lastcharacter}%
+   \def\lastcharacter{\lastcharacter}% hm, recursive ?
    \def\space{ }%
    \let\\=\space
    \def\before {#1}%
@@ -1114,17 +1130,18 @@
 \def\doprocesstokens% the space after = is essential
   {\afterassignment\dodoprocesstokens\let\nextprocessedtoken= }
 
+\def\redoprocessedtoken
+  {\dowithnextbox
+     {\before{\copy\nextbox}% \before can use nextbox several times
+      \let\before\between
+      \doprocesstokens}
+      \hbox\bgroup}
+
 \def\dodoprocesstokens
   {\ifx\nextprocessedtoken\lastcharacter
      \after
-     \let\nextprocessedtoken\relax
    \orelse\ifx\nextprocessedtoken\bgroup
-     \def\nextprocessedtoken
-       {\dowithnextbox
-          {\before{\copy\nextbox}% \before can use nextbox several times
-           \let\before\between
-           \doprocesstokens}
-           \hbox\bgroup}%
+     \expandafter\redoprocessedtoken
    \else
      \expandafter\if\space\nextprocessedtoken
        \after\white
@@ -1133,9 +1150,8 @@
        \before\nextprocessedtoken
        \let\before\between
      \fi
-     \let\nextprocessedtoken\doprocesstokens
-   \fi
-   \nextprocessedtoken}
+     \expandafter\doprocesstokens
+   \fi}
 
 %D \macros
 %D   {doboundtext}
@@ -1466,33 +1482,51 @@
 %D complicated menus, headers and footers and|/|or margin material.
 
 \unexpanded\def\sbox
-  {\vbox\bgroup
+  {\vpack\bgroup
    \dowithnextboxcs\syst_boxes_sbox_finish\vbox}
 
+% \unexpanded\def\syst_boxes_sbox_finish
+%   {\setbox\nextbox\hpack
+%      {\strut
+%       \dp\nextbox\zeropoint
+%       \lower\strutdp\box\nextbox}%
+%    \dp\nextbox\strutdp
+%    \ht\nextbox\strutht
+%    \box\nextbox
+%    \egroup}
+
 \unexpanded\def\syst_boxes_sbox_finish
-  {\setbox\nextbox\hpack
-     {\strut
-      \dp\nextbox\zeropoint
-      \lower\strutdp\box\nextbox}%
-    \dp\nextbox\strutdp
-    \ht\nextbox\strutht
-    \box\nextbox
-    \egroup}
+  {\boxyoffset\nextbox-\strutdp
+   \dp\nextbox\strutdp
+   \ht\nextbox\strutht
+   \box\nextbox
+   \egroup}
 
 %D A variant on this:
 
+% \unexpanded\def\inlinedbox
+%   {\bgroup
+%    \dowithnextbox
+%      {\setbox\nextbox\hpack
+%         {\lower
+%            \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
+%            \box\nextbox}%
+%       \ht\nextbox\strutht
+%       \dp\nextbox\strutdp
+%       \box\nextbox
+%       \egroup}%
+%      \hbox}
+
 \unexpanded\def\inlinedbox
   {\bgroup
-   \dowithnextbox
-     {\setbox\nextbox\hpack
-        {\lower
-           \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
-           \box\nextbox}%
-      \ht\nextbox\strutht
-      \dp\nextbox\strutdp
-      \box\nextbox
-      \egroup}%
-     \hbox}
+   \dowithnextboxcs\syst_boxes_inlined_finish\hbox}
+
+\unexpanded\def\syst_boxes_inlined_finish
+  {\boxyoffset\nextbox-\dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
+   \ht\nextbox\strutht
+   \dp\nextbox\strutdp
+   \box\nextbox
+   \egroup}
 
 %D \macros
 %D   {struttedbox}
@@ -1567,36 +1601,64 @@
 %D The dimensions of the surrounding box are kept intact. This commands handles
 %D positive and negative dimensions (which is why we need two boxes with rules).
 
+% \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
+%   {\bgroup
+%    \setbox\scratchboxone\vpack to \vsize
+%      \bgroup
+%        \dontcomplain
+%        \forgetall
+%        \setbox\scratchboxone\hpack{\vrule\s!width \zeropoint#1}%
+%        \setbox\scratchboxtwo\vpack{\hrule\s!height\zeropoint#1}%
+%        \advance\vsize \ht\scratchboxtwo
+%        \advance\hsize \wd\scratchboxone
+%        \vpack to \vsize
+%          \bgroup
+%            \vskip-\ht\scratchboxtwo
+%            \vss
+%            \hpack to \hsize
+%              \bgroup
+%                \dowithnextbox
+%                  {\hskip-\wd\scratchboxone
+%                   \hss
+%                   \box\nextbox
+%                   \hss
+%              \egroup
+%            \vss
+%          \egroup
+%      \egroup
+%      \wd\scratchboxone\hsize
+%      \ht\scratchboxone\vsize
+%      \box\scratchboxone
+%      \egroup}
+%    \hbox}
+
 \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
-   \setbox\scratchboxone\vpack to \vsize
-     \bgroup
-       \dontcomplain
-       \forgetall
-       \setbox\scratchboxone\hpack{\vrule\s!width \zeropoint#1}%
-       \setbox\scratchboxtwo\vpack{\hrule\s!height\zeropoint#1}%
-       \advance\vsize \ht\scratchboxtwo
-       \advance\hsize \wd\scratchboxone
-       \vpack to \vsize
-         \bgroup
-           \vskip-\ht\scratchboxtwo
-           \vss
-           \hpack to \hsize
-             \bgroup
-               \dowithnextbox
-                 {\hskip-\wd\scratchboxone
-                  \hss
-                  \box\nextbox
-                  \hss
-             \egroup
-           \vss
-         \egroup
-     \egroup
-     \wd\scratchboxone\hsize
-     \ht\scratchboxone\vsize
-     \box\scratchboxone
-     \egroup}
+   \dontcomplain
+   \forgetall
+   \scangivendimensions#1\relax
+   \advance\vsize\givenheight
+   \advance\hsize\givenwidth
+   \dowithnextboxcs\syst_boxes_centered_finish
    \hbox}
+
+\def\syst_boxes_centered_finish
+  {\boxxoffset\nextbox.5\dimexpr
+      \hsize
+     -\wd\nextbox
+     -\givenwidth
+   \relax
+   \boxyoffset\nextbox.5\dimexpr
+      \vsize
+     -\ht\nextbox
+     +\dp\nextbox
+     -\givenheight
+   \relax
+   \wd\nextbox\dimexpr\hsize-\givenwidth \relax
+   \ht\nextbox\dimexpr\vsize-\givenheight\relax
+   \dp\nextbox\zeropoint
+   \box\nextbox
+   \egroup}
 
 %D For those who don't want to deal with \type {\hsize} and \type {\vsize}, we have:
 %D
@@ -1605,7 +1667,7 @@
 %D   {\framed[width=100bp,height=100bp]{}}
 %D \stoptyping
 %D
-%D Do you see what we call this one \type {next}?
+%D Do you see why we call this one \type {next}?
 
 \unexpanded\def\centerednextbox#1#%
   {\bgroup
@@ -2112,23 +2174,41 @@
 \unexpanded\def\tbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_tbox_finish\hbox}
 \unexpanded\def\bbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_bbox_finish\hbox}
 
+% \def\syst_boxes_tbox_finish
+%   {\scratchdepth\dimexpr\ht\nextbox+\dp\nextbox-\ht\strutbox\relax
+%    \ht\nextbox\ht\strutbox
+%    \dp\nextbox\scratchdepth
+%    \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
+%    \ht\nextbox\ht\strutbox
+%    \dp\nextbox\scratchdepth
+%    \box\nextbox
+%    \egroup}
+
+% \def\syst_boxes_bbox_finish
+%   {\scratchheight\dimexpr\ht\nextbox+\dp\nextbox-\dp\strutbox\relax
+%    \dp\nextbox\dp\strutbox
+%    \ht\nextbox\scratchheight
+%    \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
+%    \dp\nextbox\dp\strutbox
+%    \ht\nextbox\scratchheight
+%    \box\nextbox
+%    \egroup}
+
 \def\syst_boxes_tbox_finish
-  {\scratchdepth\dimexpr\ht\nextbox+\dp\nextbox-\ht\strutbox\relax
-   \ht\nextbox\ht\strutbox
+  {\scratchheight\ht\strutbox
+   \scratchdepth\dimexpr\htdp\nextbox-\scratchheight\relax
+   \ht\nextbox\scratchheight
    \dp\nextbox\scratchdepth
-   \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
-   \ht\nextbox\ht\strutbox
-   \dp\nextbox\scratchdepth
+   \boxyoffset\nextbox-\scratchdepth
    \box\nextbox
    \egroup}
 
 \def\syst_boxes_bbox_finish
-  {\scratchheight\dimexpr\ht\nextbox+\dp\nextbox-\dp\strutbox\relax
-   \dp\nextbox\dp\strutbox
+  {\scratchdepth\dp\strutbox
+   \scratchheight\dimexpr\htdp\nextbox-\scratchdepth\relax
+   \dp\nextbox\scratchdepth
    \ht\nextbox\scratchheight
-   \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
-   \dp\nextbox\dp\strutbox
-   \ht\nextbox\scratchheight
+   \boxyoffset\nextbox-\scratchdepth
    \box\nextbox
    \egroup}
 
@@ -2264,63 +2344,135 @@
 \let\bottomleftbox \leftbottombox
 \let\bottomrightbox\rightbottombox
 
+% \def\syst_boxes_rightbox_finish
+%   {\global\boxhdisplacement\boxoffset
+%    \global\boxvdisplacement.5\ht\nextbox
+%    \global\advance\boxvdisplacement-.5\dp\nextbox
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_rightbox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement.5\ht\nextbox
-   \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
+% \def\syst_boxes_leftbox_finish
+%   {\global\boxhdisplacement-\wd\nextbox
+%    \global\advance\boxhdisplacement-\boxoffset
+%    \global\boxvdisplacement.5\ht\nextbox
+%    \global\advance\boxvdisplacement-.5\dp\nextbox
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_leftbox_finish
-  {\global\boxhdisplacement-\wd\nextbox
-   \global\advance\boxhdisplacement-\boxoffset
-   \global\boxvdisplacement.5\ht\nextbox
-   \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
+   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_topbox_finish
+%   {\global\boxhdisplacement-.5\wd\nextbox
+%    \global\boxvdisplacement-\dp\nextbox
+%    \global\advance\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_topbox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement-\dp\nextbox
-   \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_bottombox_finish
+%   {\global\boxhdisplacement-.5\wd\nextbox
+%    \global\boxvdisplacement\ht\nextbox
+%    \global\advance\boxvdisplacement\boxoffset
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_bottombox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement\ht\nextbox
-   \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
+% \def\syst_boxes_lefttopbox_finish
+%   {\global\boxhdisplacement-\wd\nextbox
+%    \global\advance\boxhdisplacement-\boxoffset
+%    \global\boxvdisplacement-\dp\nextbox
+%    \global\advance\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_lefttopbox_finish
-  {\global\boxhdisplacement-\wd\nextbox
-   \global\advance\boxhdisplacement-\boxoffset
-   \global\boxvdisplacement-\dp\nextbox
-   \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
+   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_righttopbox_finish
+%   {\global\boxhdisplacement\boxoffset
+%    \global\boxvdisplacement-\dp\nextbox
+%    \global\advance\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_righttopbox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement-\dp\nextbox
-   \global\advance\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
+% \def\syst_boxes_leftbottombox_finish
+%   {\global\boxhdisplacement-\wd\nextbox
+%    \global\advance\boxhdisplacement-\boxoffset
+%    \global\boxvdisplacement\ht\nextbox
+%    \global\advance\boxvdisplacement\boxoffset
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_leftbottombox_finish
-  {\global\boxhdisplacement-\wd\nextbox
-   \global\advance\boxhdisplacement-\boxoffset
-   \global\boxvdisplacement\ht\nextbox
-   \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
+   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_rightbottombox_finish
+%   {\global\boxhdisplacement\boxoffset
+%    \global\boxvdisplacement\ht\nextbox
+%    \global\advance\boxvdisplacement\boxoffset
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_rightbottombox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement\ht\nextbox
-   \global\advance\boxvdisplacement\boxoffset
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
 \unexpanded\def\middlebox        {\hpack\bgroup\dowithnextboxcs\syst_boxes_middlebox_finish        \placedbox}
@@ -2328,31 +2480,67 @@
 \unexpanded\def\baselineleftbox  {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
 \unexpanded\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
 
+% \def\syst_boxes_middlebox_finish
+%   {\global\boxhdisplacement-.5\wd\nextbox
+%    \global\boxvdisplacement.5\ht\nextbox
+%    \global\advance\boxvdisplacement-.5\dp\nextbox
+%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_middlebox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement.5\ht\nextbox
-   \global\advance\boxvdisplacement-.5\dp\nextbox
-   \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
+   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_baselinemiddlebox_finish
+%   {\global\boxhdisplacement-.5\wd\nextbox
+%    \global\advance\boxhdisplacement-\boxoffset
+%    \global\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_baselinemiddlebox_finish
-  {\global\boxhdisplacement-.5\wd\nextbox
-   \global\advance\boxhdisplacement-\boxoffset
+  {\global\boxhdisplacement\dimexpr-.5\wd\nextbox-\boxoffset\relax
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
+% \def\syst_boxes_baselineleftbox_finish
+%   {\global\boxhdisplacement-\wd\nextbox
+%    \global\advance\boxhdisplacement-\boxoffset
+%    \global\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
+
 \def\syst_boxes_baselineleftbox_finish
-  {\global\boxhdisplacement-\wd\nextbox
-   \global\advance\boxhdisplacement-\boxoffset
+  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
+
+% \def\syst_boxes_baselinerightbox_finish
+%   {\global\boxhdisplacement\boxoffset
+%    \global\boxvdisplacement-\boxoffset
+%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+%    \egroup}
 
 \def\syst_boxes_baselinerightbox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement-\boxoffset
-   \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
+   \boxcursor
+   \boxxmove\nextbox \boxhdisplacement
+   \boxymove\nextbox-\boxvdisplacement
+   \box\nextbox
    \egroup}
 
 %D \macros
@@ -2591,14 +2779,14 @@
 \def\syst_boxes_lower_indeed{\dowithnextboxcs\syst_boxes_lower_finish}
 
 \def\syst_boxes_raise_finish
-  {\setbox\nextbox\hpack{\raise\scratchdimen\box\nextbox}%
+  {\boxyoffset\nextbox\scratchdimen
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox
    \egroup}
 
 \def\syst_boxes_lower_finish
-  {\setbox\nextbox\hpack{\lower\scratchdimen\box\nextbox}%
+  {\boxyoffset\nextbox-\scratchdimen
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox

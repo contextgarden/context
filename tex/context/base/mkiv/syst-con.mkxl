@@ -68,19 +68,14 @@
 %D have behaved like \TEX's normal\type {\divide}, then the expression could have
 %D been somewhat simpler, like \type {#2-(#2/#1)*#1}. This works just as well, but a
 %D bit more complex.
-
-\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
-
-%D \macros{modulatednumber}
 %D
-%D Modulo numbers run from zero to one less than the limit, but for conversion sets,
-%D we need a value between 1 and the limit. The \type {\modulatednumber} arranges
-%D that. This macro also needs to be fully expandable, resulting in two \type
-%D {\numexpr}s.
+%D \starttyping
+%D \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+%D \stoptyping
+%D
+%D But \unknown\ now we can also do this:
 
-\def\modulatednumber#1#2%
-  {\ifnum\the\numexpr\modulonumber{#1}{#2}\relax=0 #1%
-   \else \the\numexpr\modulonumber{#1}{#2}\relax  \fi}
+\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
 
 %D \macros{setcalculatedsin,setcalculatedcos,setcalculatedtan}
 

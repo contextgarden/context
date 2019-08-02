@@ -12,13 +12,13 @@ local report_hyphenation = logs.reporter("languages","hyphenation")
 
 local tonumber, next, type = tonumber, next, type
 
-local lpegmatch       = lpeg.match
+local lpegmatch     = lpeg.match
 
-local tex             = tex
-local context         = context
-local nodes           = nodes
+local tex           = tex
+local context       = context
+local nodes         = nodes
 
-local implement       = interfaces.implement
+local implement     = interfaces.implement
 
 local nodecodes     = nodes.nodecodes
 
@@ -625,8 +625,26 @@ implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "shiftbox",
     arguments = { "integer", "dimension" },
     actions   = function(n,d) setshift(getbox(n),d) end,
+}
+
+implement {
+    name      = "scangivendimensions",
+    public    = true,
+    protected = true,
+    arguments = {
+        {
+            { "width",  "dimension" },
+            { "height", "dimension" },
+            { "depth",  "dimension" },
+        },
+    },
+    actions   = function(t)
+        texsetdimen("givenwidth", t.width  or 0)
+        texsetdimen("givenheight",t.height or 0)
+        texsetdimen("givendepth", t.depth  or 0)
+    end,
 }

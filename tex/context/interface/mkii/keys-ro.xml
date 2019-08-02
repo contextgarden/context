@@ -643,6 +643,7 @@
 		<cd:constant name='aligntitle' value='alinieretitlu'/>
 		<cd:constant name='alternative' value='alternativ'/>
 		<cd:constant name='anchor' value='anchor'/>
+		<cd:constant name='anchoring' value='anchoring'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arguments' value='arguments'/>
@@ -872,6 +873,7 @@
 		<cd:constant name='hfil' value='hfil'/>
 		<cd:constant name='hidenumber' value='hidenumber'/>
 		<cd:constant name='hoffset' value='hoffset'/>
+		<cd:constant name='horizontal' value='orizontal'/>
 		<cd:constant name='horoffset' value='offsetoriz'/>
 		<cd:constant name='hyphen' value='hyphen'/>
 		<cd:constant name='hyphens' value='hyphens'/>
@@ -1292,6 +1294,7 @@
 		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='veroffset'/>
+		<cd:constant name='vertical' value='vertical'/>
 		<cd:constant name='vfactor' value='vfactor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
@@ -1302,6 +1305,7 @@
 		<cd:constant name='white' value='alb'/>
 		<cd:constant name='width' value='latime'/>
 		<cd:constant name='words' value='words'/>
+		<cd:constant name='xanchor' value='xanchor'/>
 		<cd:constant name='xfactor' value='xfactor'/>
 		<cd:constant name='xhtml' value='xhtml'/>
 		<cd:constant name='xmax' value='xmax'/>
@@ -1309,6 +1313,7 @@
 		<cd:constant name='xoffset' value='xoffset'/>
 		<cd:constant name='xscale' value='xscala'/>
 		<cd:constant name='xstep' value='xstep'/>
+		<cd:constant name='yanchor' value='yanchor'/>
 		<cd:constant name='yfactor' value='yfactor'/>
 		<cd:constant name='ymax' value='ymax'/>
 		<cd:constant name='yoffset' value='yoffset'/>

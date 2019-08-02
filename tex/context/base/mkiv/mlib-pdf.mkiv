@@ -88,16 +88,6 @@
    \wd\MPbox\MPwidth
    \ht\MPbox\MPheight}
 
-% \unexpanded\def\MPtextext#1#2#3#4#5% beware: we use a different method now (see mlib-pps)
-%   {\begingroup
-%    \setbox\MPbox\hbox{\font\temp=#1\space at #2\onebasepoint \let\c\char \temp #3}% text
-%    \MPllx-#4\onebasepoint
-%    \MPlly-#5\onebasepoint
-%    \repositionMPbox
-%    \smashbox\MPbox
-%    \box\MPbox
-%    \endgroup}
-
 % MPLIB specific:
 
 \def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
@@ -145,30 +135,6 @@
 
 \unexpanded\def\directMPgraphic
   {\dodoublegroupempty\mlib_direct_graphic}
-
-% \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
-%   {\meta_begin_graphic_group{#1}%
-%    \let\startMPLIBtoPDF\directstartMPLIBtoPDF
-%    \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
-%    \meta_start_current_graphic
-%    \forgetall
-%    \edef\p_extensions{\MPinstanceparameter\s!extensions}%
-%    \normalexpanded{\noexpand\ctxlua{metapost.graphic {
-%        instance        = "\currentMPinstance",
-%        format          = "\currentMPformat",
-%        data            = \!!bs#2;\!!es,
-%        initializations = \!!bs\meta_flush_current_initializations\!!es,
-%     % useextensions   = "\MPinstanceparameter\s!extensions",
-% \ifx\p_extensions\v!yes
-%        extensions      = \!!bs\clf_getmpextensions{\currentMPinstance}\!!es,
-% \fi
-%        inclusions      = \!!bs\meta_flush_current_inclusions\!!es,
-%        definitions     = \!!bs\meta_flush_current_definitions\!!es,
-%        figure          = "all",
-%        method          = "\MPinstanceparameter\c!method",
-%      }}}%
-%    \meta_stop_current_graphic
-%    \meta_end_graphic_group}
 
 \def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
   {\meta_begin_graphic_group{#1}%

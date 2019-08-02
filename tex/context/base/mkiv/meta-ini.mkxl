@@ -72,7 +72,6 @@
 \def\currentMPformat  {metafun}
 \def\defaultMPinstance{metafun}
 
-%installcorenamespace{graphicvariable} % todo
 \installcorenamespace{mpinstance}
 \installcorenamespace{mpinclusions}
 \installcorenamespace{mpdefinitions}
@@ -198,11 +197,11 @@
    \ifx\currentMPgraphicname\empty
      \edef\currentMPgraphicname{#1}%
      \let\currentMPinstance\defaultMPinstance
-   \else\ifcsname\??mpdefinitions#1\endcsname
+   \orelse\ifcsname\??mpdefinitions#1\endcsname
      \edef\currentMPinstance{#1}%
    \else
      \let\currentMPinstance\defaultMPinstance
-   \fi\fi
+   \fi
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_show_properties}
 
@@ -243,7 +242,6 @@
   {\ifconditional\c_meta_include_initializations
      \the\t_meta_initializations
    \fi}
- % \theMPrandomseed;}
 
 \def\meta_flush_current_inclusions
   {\the\t_meta_inclusions}
@@ -386,7 +384,7 @@
 \def\startMPdrawing
   {\dosingleempty\meta_start_drawing}
 
-\def\meta_start_drawing[#1]#2\stopMPdrawing
+\def\meta_start_drawing[#1]#2\stopMPdrawing % to be redone, this ascii stuff
   {\relax
    \bgroup
    \meta_enable_include
@@ -443,7 +441,7 @@
      height \d_overlay_height
    \relax}
 
-%D Since we want lables to follow the document settings, we also set the font
+%D Since we want labels to follow the document settings, we also set the font
 %D related variables.
 
 \unexpanded\def\MPfontsizehskip#1%
@@ -464,12 +462,7 @@
 %D A signal that we're in combined \CONTEXT||\METAFUN mode:
 
 \startMPextensions
-    string contextversion;
-    contextversion:="\contextversion"; % expanded
-    minute:=\the\normaltime mod 60;
-    hour:=\the\normaltime div 60;
-    year:=\the\normalyear;
-    month:=\the\normalmonth;
+    string contextversion;contextversion:="\contextversion"; % expanded
 \stopMPextensions
 
 %D \macros
@@ -540,9 +533,7 @@
   {\edef\m_meta_current_variable_template
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
-     {\ifcsname\m_meta_current_variable_template\endcsname
-        \lastnamedcs
-      \fi}%
+     {\begincsname\m_meta_current_variable_template\endcsname}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -558,9 +549,9 @@
    \edef\m_meta_current_variable
      {\ifcsname\m_meta_current_variable_template\endcsname
          \lastnamedcs
-      \else\ifcsname\??graphicvariable\currentMPgraphicname:#1\endcsname
-         \lastnamedcs
-      \fi\fi}%
+      \else
+         \begincsname\??graphicvariable\currentMPgraphicname:#1\endcsname
+      \fi}%
    \ifx\m_meta_current_variable\empty
      \expandafter\meta_prepare_variable_nop
    \else
@@ -580,20 +571,15 @@
   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
 
 \def\meta_prepare_variable_yes
-  {\defconvertedcommand\ascii\m_meta_current_variable % otherwise problems
-   \doifelsecolor \ascii                              % with 2\bodyfontsize
-     {\meta_prepare_variable_color}
-     {\begingroup
-      \setbox\b_meta_variable_box\hpack{\scratchdimen\m_meta_current_variable sp}%
-      \ifzeropt\wd\b_meta_variable_box
-        \endgroup\meta_prepare_variable_number
-      \else
-        \endgroup\meta_prepare_variable_dimension
-      \fi}}
-
-% \def\meta_prepare_variable_yes
-%   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname
-%      {\clf_prepareMPvariable {\m_meta_current_variable}}}
+  {\ifchkdim\m_meta_current_variable\or
+     \meta_prepare_variable_dimension
+   \else\ifchknum\m_meta_current_variable\or
+     \meta_prepare_variable_number
+   \else
+      \doifelsecolor\m_meta_current_variable
+        \meta_prepare_variable_color
+        \meta_prepare_variable_dimension
+   \fi\fi}
 
 \let\MPvar         \MPvariable
 \let\setMPvariables\setupMPvariables
@@ -660,10 +646,10 @@
      \kern\MPllx\raise\MPlly\box\b_meta_graphic
    \egroup}
 
-\unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth  }
+\unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth}
 \unexpanded\def\ignoreMPboxdepth{\let\meta_relocate_box\meta_ignore_box_depth}
-\unexpanded\def\obeyMPboxorigin {\let\meta_relocate_box\meta_obey_box_origin }
-\unexpanded\def\normalMPboxdepth{\let\meta_relocate_box\relax              }
+\unexpanded\def\obeyMPboxorigin {\let\meta_relocate_box\meta_obey_box_origin}
+\unexpanded\def\normalMPboxdepth{\let\meta_relocate_box\relax}
 
 \let\meta_relocate_box\relax
 
@@ -709,7 +695,6 @@
 
 \def\meta_unique_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-%    \setupMPvariables[\currentMPgraphicname][#2]%
    \setupMPvariables[#1][#2]%
    \csname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
@@ -728,18 +713,6 @@
 \unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
 
-% \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
-%
-% better, expansion of #1:
-%
-% \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
-%  %{\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
-%  %{\setxvalue{\??mpgraphic#1}{\noexpand\meta_handle_use_graphic{#1}{\normalunexpanded{#2}}{\normalunexpanded{#3}}}}
-%   {\expandafter\gdef\csname\??mpgraphic#1\expandafter\endcsname\expandafter{\expandafter\meta_handle_use_graphic\expandafter{\normalexpanded{#1}}{#2}{#3}}}
-%
-% cleaner:
-
 \def\meta_start_use_graphic#1%
   {\normalexpanded{\meta_start_use_graphic_indeed{#1}}}
 
@@ -751,8 +724,6 @@
 \unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\meta_start_usable_graphic}
 
-% \def\meta_start_usable_graphic#1#2#3\stopusableMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
 \def\meta_start_usable_graphic#1%
   {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
@@ -779,9 +750,6 @@
 \unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
-% \def\meta_start_reusable_graphic#1#2#3\stopreusableMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
-
 \def\meta_start_reusable_graphic#1%
   {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
 
@@ -792,13 +760,6 @@
 
 \unexpanded\def\useMPgraphic
   {\dodoublegroupempty\meta_use_graphic}
-
-% \def\meta_use_graphic#1#2%
-%   {\meta_begin_graphic_group{#1}%
-%   %\doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-%    \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-%    \csname\??mpgraphic#1\endcsname\empty
-%    \meta_end_graphic_group}
 
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
@@ -827,9 +788,6 @@
 
 \def\m_meta_page_prefix{\doifelseoddpage oe}
 
-% \def\overlaypagestamp
-%   {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
-
 \def\overlaypagestamp
   {\m_meta_page_prefix     :%
    \the\d_overlay_width    :%
@@ -842,10 +800,6 @@
 
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
-
-% \def\meta_start_unique_page_graphic#1#2#3\stopuniqueMPpagegraphic              % inefficient, double storage
-%   {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%   % but these also keep the state
-%    \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}   % and meaning will be redefined
 
 \def\meta_start_unique_page_graphic#1%
   {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
@@ -862,7 +816,6 @@
 \def\meta_unique_page_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \let\overlaystamp\overlaypagestamp
-%    \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
    \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
    \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
    \meta_end_graphic_group}
@@ -927,11 +880,11 @@
    \edef\m_meta_option{#1}
    \ifx\m_meta_option\s!reset
      \resetMPenvironment % reset mp toks
-   \else\ifx\m_meta_option\v!global
+   \orelse\ifx\m_meta_option\v!global
      #2%                 % use in main doc too
-   \else\ifx\m_meta_option\!!plustoken
+   \orelse\ifx\m_meta_option\!!plustoken
      #2%                 % use in main doc too
-   \fi\fi\fi
+   \fi
    \clf_mptexset{\detokenize{#2}}}
 
 \let\stopMPenvironment\relax
@@ -1236,10 +1189,10 @@
 %D over a day to uncover when processing the screen version of the \METAFUN\ manual.
 
 \def\doifelseMPgraphic#1%
-  {\ifcsname\??mpgraphic   #1\endcsname \expandafter      \firstoftwoarguments  \else
-   \ifcsname\??mpgraphic o:#1\endcsname \doubleexpandafter\firstoftwoarguments  \else
-   \ifcsname\??mpgraphic e:#1\endcsname \tripleexpandafter\firstoftwoarguments  \else
-                                        \tripleexpandafter\secondoftwoarguments \fi\fi\fi}
+  {\ifcsname\??mpgraphic   #1\endcsname\expandafter\firstoftwoarguments \orelse
+   \ifcsname\??mpgraphic o:#1\endcsname\expandafter\firstoftwoarguments \orelse
+   \ifcsname\??mpgraphic e:#1\endcsname\expandafter\firstoftwoarguments \else
+                                       \expandafter\secondoftwoarguments\fi}
 
 \let\doifMPgraphicelse\doifelseMPgraphic
 

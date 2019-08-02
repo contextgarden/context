@@ -1589,10 +1589,38 @@
    \egroup}
 
 %D Anchoring is experimental and was prototyped around the ctx meeting in 2018 but
-%D never mede it into the core yet. It operates indepedent of the orientation
-%D mechanism already present.
+%D never mede it into the core yet. It operates independent of the orientation
+%D mechanism already present. It's a rather efficient feature. Best is to use
+%D predefined orientations, like:
+%D
+%D \starttyping
+%D \defineorientation[leftflushleft] [orientation=left,horizontal=flushleft]
+%D
+%D \framed [anchoring={leftflushleft}] {anchoring}
+%D \stoptyping
+%D
+%D But this also works:
+%D
+%D \starttyping
+%D \framed [anchoring={flushleft,top,up}] {anchoring}
+%D \stoptyping
+%D
+%D When an anchoring is given (use \type {normal} for the default) you can also
+%D use the \type {xanchor} and \type {yanchor} offsets.
 
-\let\pack_framed_handle_anchoring\relax
+% because we mess with the width later on, we need double wrapping:
+
+\def\pack_framed_handle_anchoring
+  {\scratchcounter\autoorientation\p_framed_anchoring\relax
+   \edef\p_xanchor{\framedparameter\c!xanchor}%
+   \edef\p_yanchor{\framedparameter\c!yanchor}%
+   \setbox\b_framed_normal\hpack{\hpack % here
+      % using the keyword approachs works ok, don't mess with orientation
+      % directly here using \boxorientation ... it doesn't work that well
+      \s!orientation\scratchcounter
+      \ifx\p_xanchor\empty\else \s!xoffset \p_xanchor\fi
+      \ifx\p_yanchor\empty\else \s!yoffset \p_yanchor\fi
+     {\box\b_framed_normal}}}
 
 \installcorenamespace{framedlocatorbefore}
 \installcorenamespace{framedlocatorafter}
@@ -1771,7 +1799,7 @@
    \setbox\b_framed_normal\hpack{\lower\d_framed_locator_dp\box\b_framed_normal}%
    \ht\b_framed_normal\d_framed_locator_ht
    \dp\b_framed_normal\d_framed_locator_dp
-   \hpack{\box\b_framed_normal}} %  why do we pack .. dange of loosing?
+   \hpack{\box\b_framed_normal}} %  why do we pack .. danger of loosing?
 
 % also used in fastlocalframed
 

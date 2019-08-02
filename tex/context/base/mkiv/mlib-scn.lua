@@ -71,21 +71,21 @@ local mpvalue             = mp.value
 
 local report              = logs.reporter("metapost")
 
-local <const> semicolon_code      = codes.semicolon
-local <const> equals_code         = codes.equals
-local <const> comma_code          = codes.comma
-local <const> colon_code          = codes.colon
-local <const> leftbrace_code      = codes.leftbrace
-local <const> rightbrace_code     = codes.rightbrace
-local <const> leftbracket_code    = codes.leftbracket
-local <const> rightbracket_code   = codes.rightbracket
-local <const> leftdelimiter_code  = codes.leftdelimiter
-local <const> rightdelimiter_code = codes.rightdelimiter
-local <const> numeric_code        = codes.numeric
-local <const> string_code         = codes.string
-local <const> capsule_code        = codes.capsule
-local <const> nullary_code        = codes.nullary
-local <const> tag_code            = codes.tag
+local semicolon_code      <const> = codes.semicolon
+local equals_code         <const> = codes.equals
+local comma_code          <const> = codes.comma
+local colon_code          <const> = codes.colon
+local leftbrace_code      <const> = codes.leftbrace
+local rightbrace_code     <const> = codes.rightbrace
+local leftbracket_code    <const> = codes.leftbracket
+local rightbracket_code   <const> = codes.rightbracket
+local leftdelimiter_code  <const> = codes.leftdelimiter
+local rightdelimiter_code <const> = codes.rightdelimiter
+local numeric_code        <const> = codes.numeric
+local string_code         <const> = codes.string
+local capsule_code        <const> = codes.capsule
+local nullary_code        <const> = codes.nullary
+local tag_code            <const> = codes.tag
 
 local typescanners   = nil
 local tokenscanners  = nil
@@ -484,9 +484,9 @@ local scandimension = scanners.dimension
 
 local definitions   = { }
 
-local <const> bpfactor = number.dimenfactors.bp
-local <const> comma    = byte(",")
-local <const> close    = byte("]")
+local bpfactor      <const> = number.dimenfactors.bp
+local comma         <const> = byte(",")
+local close         <const> = byte("]")
 
 local scanrest      = function() return scanvalue(comma,close) or "" end
 local scandimension = function() return scandimension() * bpfactor end
