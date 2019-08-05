@@ -110,10 +110,10 @@
    \fi}
 
 \def\page_layouts_synchronize_element_indeed#vertical%
-  {\ifx\currenttextstate \v!high \calculatevsizes\page_backgrounds_recalculate \else
-   \ifx\previoustextstate\v!high \calculatevsizes\page_backgrounds_recalculate \else
-   \ifx\currenttextstate \v!none \calculatevsizes\page_backgrounds_recalculate \else
-   \ifx\previoustextstate\v!none \calculatevsizes\page_backgrounds_recalculate \fi\fi\fi\fi
+  {\ifx\currenttextstate \v!high \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\previoustextstate\v!high \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\currenttextstate \v!none \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\previoustextstate\v!none \calculatevsizes\page_backgrounds_recalculate \fi
    \letgvalue{\??layouttextssynchronize#vertical}\currenttextstate}
 
 \unexpanded\def\setuptop   {\dotripleempty\page_layouts_setup_text[\v!top   ]}
@@ -125,12 +125,15 @@
 %D We inherit some settings:
 
 \setuplayoutelement
-  [ \c!leftstyle=\layoutelementparameter\c!style,
-   \c!rightstyle=\layoutelementparameter\c!style,
-    \c!leftcolor=\layoutelementparameter\c!color,
-   \c!rightcolor=\layoutelementparameter\c!color,
-    \c!leftwidth=\layoutelementparameter\c!width,
-   \c!rightwidth=\layoutelementparameter\c!width]
+  [  \c!leftstyle=\layoutelementparameter\c!style,
+   \c!middlestyle=\layoutelementparameter\c!style,
+    \c!rightstyle=\layoutelementparameter\c!style,
+     \c!leftcolor=\layoutelementparameter\c!color,
+   \c!middlecolor=\layoutelementparameter\c!color,
+    \c!rightcolor=\layoutelementparameter\c!color,
+     \c!leftwidth=\layoutelementparameter\c!width,
+   \c!middlewidth=\layoutelementparameter\c!width,
+    \c!rightwidth=\layoutelementparameter\c!width]
 
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
@@ -161,75 +164,44 @@
 %D \showsetup{setuptexttexts}
 %D \showsetup{setupfootertexts}
 %D \showsetup{setupbottomtexts}
+%D
+%D Only the following have checking for pagenumber, date and mark built in, so when
+%D someone uses the key|/|value interface these things have to be set explicitly as
+%D part of the text.
 
-\unexpanded\def\setuptoptexts   {\dosixtupleempty\page_layouts_setup_texts[\v!top    ]}
-\unexpanded\def\setupheadertexts{\dosixtupleempty\page_layouts_setup_texts[\v!header ]}
-\unexpanded\def\setuptexttexts  {\dosixtupleempty\page_layouts_setup_texts[\v!text   ]}
-\unexpanded\def\setupfootertexts{\dosixtupleempty\page_layouts_setup_texts[\v!footer ]}
-\unexpanded\def\setupbottomtexts{\dosixtupleempty\page_layouts_setup_texts[\v!bottom ]}
+\unexpanded\def\setuptoptexts   {\dosixtupleempty\page_layouts_setup_texts[\v!top   ]}
+\unexpanded\def\setupheadertexts{\dosixtupleempty\page_layouts_setup_texts[\v!header]}
+\unexpanded\def\setuptexttexts  {\dosixtupleempty\page_layouts_setup_texts[\v!text  ]}
+\unexpanded\def\setupfootertexts{\dosixtupleempty\page_layouts_setup_texts[\v!footer]}
+\unexpanded\def\setupbottomtexts{\dosixtupleempty\page_layouts_setup_texts[\v!bottom]}
 
-\unexpanded\def\page_layouts_setup_text_six#vertical#horizontal#a#b#c#d%
+\unexpanded\def\page_layouts_setup_text_six[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \setlayoutelementparameter\c!lefttext
-     {\page_layouts_process_element_double
-        \c!leftstyle \c!leftcolor \c!leftwidth {#a}%
-        \c!rightstyle\c!rightcolor\c!rightwidth{#d}}%
-   \setlayoutelementparameter\c!righttext
-     {\page_layouts_process_element_double
-        \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-        \c!leftstyle \c!leftcolor \c!leftwidth {#c}}}
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#a}{#d}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#b}{#c}}}
 
-\unexpanded\def\page_layouts_setup_text_five#vertical#horizontal#a#b#c%
+\unexpanded\def\page_layouts_setup_text_five[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:\v!text}%
-   \setlayoutelementparameter\c!lefttext
-     {\page_layouts_process_element_double
-        \c!leftstyle \c!leftcolor \c!leftwidth {#horizontal}%
-        \c!rightstyle\c!rightcolor\c!rightwidth{#c}}%
-   \setlayoutelementparameter\c!righttext
-     {\page_layouts_process_element_double
-        \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-        \c!leftstyle \c!leftcolor \c!leftwidth {#b}}}
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#horizontal}{#c}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#a}{#b}}}
 
-\unexpanded\def\page_layouts_setup_text_four#vertical#horizontal#a#b%
+\unexpanded\def\page_layouts_setup_text_four[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:#horizontal}%
-   \doifelsenothing{\detokenize{#a}}
-     {\resetlayoutelementparameter\c!lefttext}
-     {\setlayoutelementparameter\c!lefttext
-        {\page_layouts_process_element_double
-           \c!leftstyle\c!leftcolor\c!leftwidth{#a}%
-           \c!leftstyle\c!leftcolor\c!leftwidth{#a}}}%
-   \doifelsenothing{\detokenize{#b}}
-     {\resetlayoutelementparameter\c!righttext}
-     {\setlayoutelementparameter\c!righttext
-        {\page_layouts_process_element_double
-           \c!rightstyle\c!rightcolor\c!rightwidth{#b}%
-           \c!rightstyle\c!rightcolor\c!rightwidth{#b}}}}
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#a}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#b}}}
 
-\unexpanded\def\page_layouts_setup_text_three#vertical#horizontal#a%
+\unexpanded\def\page_layouts_setup_text_three[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:\v!text}%
-   \doifelsenothing{\detokenize{#horizontal}}
-     {\resetlayoutelementparameter\c!lefttext}
-     {\setlayoutelementparameter\c!lefttext
-        {\page_layouts_process_element_double
-           \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}%
-           \c!leftstyle\c!leftcolor\c!leftwidth{#horizontal}}}%
-   \doifelsenothing{\detokenize{#a}}
-     {\resetlayoutelementparameter\c!righttext}
-     {\setlayoutelementparameter\c!righttext
-        {\page_layouts_process_element_double
-           \c!rightstyle\c!rightcolor\c!rightwidth{#a}%
-           \c!rightstyle\c!rightcolor\c!rightwidth{#a}}}}
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#horizontal}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#a}}}
 
-\unexpanded\def\page_layouts_setup_text_two#vertical#horizontal%
+\unexpanded\def\page_layouts_setup_text_two[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:\v!text}%
    \resetlayoutelementparameter\c!lefttext
    \resetlayoutelementparameter\c!righttext
-   \doifelsenothing{\detokenize{#horizontal}}
-     {\resetlayoutelementparameter\c!middletext}
-     {\setlayoutelementparameter\c!middletext
-        {\page_layouts_process_element_single\c!style\c!color\c!width{#horizontal}}}}
+   \setlayoutelementparameter  \c!middletext{\page_layouts_process_element_single{#horizontal}}}
 
-\unexpanded\def\page_layouts_setup_text_one#vertical%
+\unexpanded\def\page_layouts_setup_text_one[#vertical][#horizontal][#a][#b][#c][#d]%
   {\edef\currentlayoutelement{#vertical:\v!text}%
    \resetlayoutelementparameter\c!lefttext
    \resetlayoutelementparameter\c!righttext
@@ -243,69 +215,54 @@
    \resetlayoutelementparameter\c!righttext
    \resetlayoutelementparameter\c!middletext}
 
-\unexpanded\def\page_layouts_setup_texts[#vertical][#horizontal][#a][#b][#c][#d]%
-  {\ifsixthargument \page_layouts_setup_text_six  {#vertical}{#horizontal}{#a}{#b}{#c}{#d}\else
-   \iffifthargument \page_layouts_setup_text_five {#vertical}{#horizontal}{#a}{#b}{#c}\else
-   \iffourthargument\page_layouts_setup_text_four {#vertical}{#horizontal}{#a}{#b}\else
-   \ifthirdargument \page_layouts_setup_text_three{#vertical}{#horizontal}{#a}\else
-   \ifsecondargument\page_layouts_setup_text_two  {#vertical}{#horizontal}\else
-                    \page_layouts_setup_text_one  {#vertical}\fi\fi\fi\fi\fi}
+\unexpanded\def\page_layouts_setup_texts
+  {\ifsixthargument \expandafter\page_layouts_setup_text_six  \orelse
+   \iffifthargument \expandafter\page_layouts_setup_text_five \orelse
+   \iffourthargument\expandafter\page_layouts_setup_text_four \orelse
+   \ifthirdargument \expandafter\page_layouts_setup_text_three\orelse
+   \ifsecondargument\expandafter\page_layouts_setup_text_two  \else
+                    \expandafter\page_layouts_setup_text_one  \fi}
 
 %D Left and right texts are swapped on odd and even pages, but only when double
 %D sided typesetting is enabled.
 
-\unexpanded\def\page_layouts_process_element_double
-  {\doifelseoddpage
-     \page_layouts_process_element_double_odd
-     \page_layouts_process_element_double_even}
-
-\def\page_layouts_process_element_double_odd #lstyle#lcolor#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
-  {\page_layouts_process_element_single#lstyle#lcolor#lwidth{#lcontent}}
-
-\def\page_layouts_process_element_double_even#lstyle#color#lwidth#lcontent#rstyle#rcolor#rwidth#rcontent%
-  {\page_layouts_process_element_single#rstyle#rcolor#rwidth{#rcontent}}
-
-%D The next macro will be cleaned up and made less messy and dependent.
+\setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
 
 \let\m_page_layouts_element_content\empty
 
-\unexpanded\def\page_layouts_process_element_single#style#color#width#content%
+\unexpanded\def\page_layouts_process_element_single#content%
   {\edef\m_page_layouts_element_content{\detokenize{#content}}% so no \v!xxx
-   \ifx\m_page_layouts_element_content\empty
-     % should not happen too often
-   \else
-     \page_layouts_process_element_single_indeed#style#color#width{#content}%
-   \fi}
-
-\setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
-
-\def\page_layouts_process_element_single_indeed#style#color#width#content%
-  {\begingroup
-   \uselayoutelementstyleandcolor#style#color%
-   \csname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ifcsname\??layouttextspecial\m_page_layouts_element_content\endcsname
      \lastnamedcs
    \else
-     \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
-     \ifx\currentlayoutelementwidth\empty
-       \expandafter\page_layouts_process_element_single_normal
-     \else
-       \expandafter\page_layouts_process_element_single_limited
-     \fi{#content}%
-   \fi
+     \doifelsemarking\m_page_layouts_element_content
+       {\getmarking[\m_page_layouts_element_content][\v!first]}%
+       {#content}%
+   \fi}
+
+\unexpanded\def\page_layouts_process_element_double#first#second%
+  {\doifelseoddpage
+     {\page_layouts_process_element_single{#first}}
+     {\page_layouts_process_element_single{#second}}}
+
+\unexpanded\def\page_layouts_process_element_indeed#style#color#width%
+  {\begingroup
+   \uselayoutelementstyleandcolor#style#color%
+   \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
+   \ignorecrlf
+   \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
+   \ifx\currentlayoutelementwidth\empty\else
+     \expandafter\page_layouts_process_element_limited
+   \fi\p_text
    \endgroup}
 
-% {}{}{} prevents lookahead issues ... this will go away
-
-\def\page_layouts_process_element_single_normal#content%
-  {\doifelsemarking\m_page_layouts_element_content
-     {\getmarking[\m_page_layouts_element_content][\v!first]}
-     {\ignorecrlf#content{}{}{}}}
-
-\def\page_layouts_process_element_single_limited#content%
-  {\doifelsemarking\m_page_layouts_element_content
-     {\limitatetext{\getmarking[\m_page_layouts_element_content][\v!first]}\currentlayoutelementwidth\unknown}
-     {\ignorecrlf\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}}
+\def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
+% {\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}
+  {\limitated
+      left     \currentlayoutelementwidth
+      text     {#content}
+      sentinel {\unknown}
+   \relax}
 
 \setvalue{\??layouttextspecial\v!pagenumber}{\page_layouts_place_page_number}
 \setvalue{\??layouttextspecial\v!date      }{\currentdate}
@@ -349,21 +306,21 @@
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!normal
       \expandafter\firstoftwoarguments
-   \else\ifx\currentlayoutelementstate\v!start
-      \doubleexpandafter\firstoftwoarguments
+   \orelse\ifx\currentlayoutelementstate\v!start
+      \expandafter\firstoftwoarguments
    \else
-      \doubleexpandafter\secondoftwoarguments
-   \fi\fi}
+      \expandafter\secondoftwoarguments
+   \fi}
 
 \unexpanded\def\doifelselayoutsomeline#vertical% present or not
   {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
    \ifx\currentlayoutelementstate\v!none
      \expandafter\secondoftwoarguments
-   \else\ifx\currentlayoutelementstate\v!high
-     \doubleexpandafter\secondoftwoarguments
+   \orelse\ifx\currentlayoutelementstate\v!high
+     \expandafter\secondoftwoarguments
    \else
-     \doubleexpandafter\firstoftwoarguments
-   \fi\fi}
+     \expandafter\firstoftwoarguments
+   \fi}
 
 \let\doiflayouttextlineelse\doifelselayouttextline
 \let\doiflayoutsomelineelse\doifelselayoutsomeline
@@ -442,21 +399,15 @@
 
 \def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
   {\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
-       {\page_layouts_process_element_double
-          \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
-          \c!rightstyle\c!rightcolor\c!rightwidth{#three}}%
-   \else\iffourthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\executeifdefined{\??layouttextcontent\v!text:#one}\c!middletext}%
-       {\page_layouts_process_element_double
-          \c!leftstyle \c!leftcolor \c!leftwidth {#two}%
-          \c!rightstyle\c!rightcolor\c!rightwidth{#two}}%
-   \else\ifthirdargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#three}}%
+   \orelse\iffourthargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#two}}%
+   \orelse\ifthirdargument
      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\c!middletext}%
-       {\page_layouts_process_element_double
-          \c!leftstyle \c!leftcolor \c!leftwidth {#one}%
-          \c!rightstyle\c!rightcolor\c!rightwidth{#one}}%
-   \fi\fi\fi}
+       {\page_layouts_process_element_double{#one}{#one}}%
+   \fi}
 
 \let\currentlayoutelement\relax
 
@@ -466,12 +417,12 @@
 \def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
   {\edef\currentlayoutelement{#vertical:#horizontal}%
    \ifthirdargument
-     \letvalueempty{\layoutelementhash\executeifdefined{\??layouttextcontent\v!text:#tag}\c!middletext}%
-   \else\ifsecondargument
+     \letvalueempty{\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext}%
+   \orelse\ifsecondargument
      \resetlayoutelementparameter\c!lefttext
      \resetlayoutelementparameter\c!middletext
      \resetlayoutelementparameter\c!righttext
-   \fi\fi}
+   \fi}
 
 \letvalue{\??layouttextcontent\v!text:\c!middle}\c!middletext
 \letvalue{\??layouttextcontent\v!text:\c!left  }\c!lefttext
@@ -508,94 +459,215 @@
    \box\b_page_layouts_element
    \vkern-#height\relax}
 
-\let\page_layouts_extra_at_margin_left \plusone
-\let\page_layouts_extra_at_margin_right\plustwo
-
-\let\page_layouts_place_extra_text_left \relax % historic
-\let\page_layouts_place_extra_text_right\relax % historic
+\let\page_layouts_place_extra_text_left \empty % historic
+\let\page_layouts_place_extra_text_right\empty % historic
 
 \def\page_layouts_place_text_line_right
   {\hpack
      {\ifdim\leftedgewidth>\zeropoint
-        \page_layouts_left_edge_element\c!lefttext
+        \page_layouts_left_edge_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth
       \fi
       \ifdim\leftmarginwidth>\zeropoint
-       %\page_layouts_left_margin_element\c!lefttext\page_layouts_extra_at_margin_left
-        \page_layouts_left_margin_element\c!lefttext\page_layouts_extra_at_margin_right
+        \page_layouts_left_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\zerocount
       \fi
       \ifdim\makeupwidth>\zeropoint
-        \page_layouts_text_body_element\c!lefttext\c!middletext\c!righttext\page_layouts_extra_at_margin_left
+        \page_layouts_text_body_element_l_m_r_e
       \fi
       \ifdim\rightmarginwidth>\zeropoint
-       %\page_layouts_right_margin_element\c!righttext\page_layouts_extra_at_margin_left
-        \page_layouts_right_margin_element\c!righttext\page_layouts_extra_at_margin_right
+        \page_layouts_right_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\plusone
       \fi
       \ifdim\rightedgewidth>\zeropoint
-       %\page_layouts_right_edge_element\c!lefttext
-        \page_layouts_right_edge_element\c!righttext
+        \page_layouts_right_edge_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth
       \fi}}
 
 \def\page_layouts_place_text_line_left
   {\hpack
      {\ifdim\leftedgewidth>\zeropoint
-        \page_layouts_left_edge_element\c!righttext
+        \page_layouts_left_edge_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth
       \fi
       \ifdim\leftmarginwidth>\zeropoint
-       %\page_layouts_left_margin_element\c!righttext\page_layouts_extra_at_margin_right
-        \page_layouts_left_margin_element\c!righttext\page_layouts_extra_at_margin_left
+        \page_layouts_left_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\zerocount
       \fi
       \ifdim\makeupwidth>\zeropoint
-        \page_layouts_text_body_element\c!righttext\c!middletext\c!lefttext\page_layouts_extra_at_margin_right
+        \page_layouts_text_body_element_e_r_m_l
       \fi
       \ifdim\rightmarginwidth>\zeropoint
-       %\page_layouts_right_margin_element\c!lefttext\page_layouts_extra_at_margin_right
-        \page_layouts_right_margin_element\c!lefttext\page_layouts_extra_at_margin_left
+        \page_layouts_right_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\plusone
       \fi
       \ifdim\rightedgewidth>\zeropoint
-       %\page_layouts_right_edge_element\c!righttext
-        \page_layouts_right_edge_element\c!lefttext
+        \page_layouts_right_edge_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth
       \fi}}
 
-\def\page_layouts_left_edge_element#parameter%
+\def\page_layouts_left_edge_element_indeed#text#style#color#width%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty\else
+      \hbox to \leftedgewidth\bgroup
+        \hss
+        \page_layouts_process_element_indeed#style#color#width%
+      \egroup
+   \else
+     \kern\leftedgewidth
+   \fi}
+
+\def\page_layouts_left_edge_element#text#style#color#width%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \page_layouts_place_element_indeed\leftedgewidth
-     {\hss\layoutelementparameter#parameter}%
+     {\page_layouts_left_edge_element_indeed#text#style#color#width}%
    \kern\leftedgedistance}
 
-\def\page_layouts_left_margin_element#parameter#extrastate%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
-   \page_layouts_place_element_indeed\leftmarginwidth
-     {\hbox to \leftmarginwidth{\hss\layoutelementparameter#parameter}%
-      \ifnum#extrastate=\page_layouts_extra_at_margin_left
-        \kern-\leftmarginwidth
-        \hbox to \leftmarginwidth{\hss\layoutelementparameter\c!margintext}%
-      \fi}%
-   \kern\leftmargindistance}
+\def\page_layouts_right_edge_element_indeed#text#style#color#width%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty\else
+      \hbox to \rightedgewidth\bgroup
+        \page_layouts_process_element_indeed#style#color#width%
+        \hss
+      \egroup
+   \else
+     \kern\rightedgewidth
+   \fi}
 
-\def\page_layouts_text_body_element#left#middle#right#extrastate%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
-   \page_layouts_place_element_indeed\makeupwidth
-     {\hbox to \makeupwidth{\ifnum#extrastate=\page_layouts_extra_at_margin_left\page_layouts_place_extra_text_left\fi\layoutelementparameter#left\hss}%
-      \kern-\makeupwidth
-      \hbox to \makeupwidth{\hss\layoutelementparameter#middle\hss}%
-      \kern-\makeupwidth
-      \hbox to \makeupwidth{\hss\layoutelementparameter#right\ifnum#extrastate=\page_layouts_extra_at_margin_right\page_layouts_place_extra_text_right\fi}}}
-
-\def\page_layouts_right_margin_element#parameter#extrastate%
-  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
-   \kern\rightmargindistance
-   \page_layouts_place_element_indeed\rightmarginwidth
-     {\hbox to \rightmarginwidth{\layoutelementparameter#parameter\hss}%
-      \ifnum#extrastate=\page_layouts_extra_at_margin_right
-        \kern-\rightmarginwidth
-        \hbox to \rightmarginwidth{\layoutelementparameter\c!margintext\hss}%
-      \fi}}
-
-\def\page_layouts_right_edge_element#parameter%
+\def\page_layouts_right_edge_element#text#style#color#width%
   {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
    \kern\rightedgedistance
    \page_layouts_place_element_indeed\rightedgewidth
-     {\layoutelementparameter#parameter\hss}}
+     {\page_layouts_right_edge_element_indeed#text#style#color#width}}
+
+% margin needs checking!
+
+\def\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\leftmarginwidth
+   \else
+     \hbox to \leftmarginwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed#style#color#width%
+     \egroup
+   \fi
+   \ifcase#margintoo\or
+     \letfromlayoutelementparameter\p_text\c!margintext
+     \ifx\p_text\empty\else
+       \kern-\leftmarginwidth
+       \hbox to \leftmarginwidth\bgroup
+         \hss
+         \p_text % styling ?
+       \egroup
+     \fi
+   \fi}
+
+\def\page_layouts_left_margin_element#text#style#color#width#margintoo%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+   \page_layouts_place_element_indeed\leftmarginwidth
+     {\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo}%
+   \kern\leftmargindistance}
+
+\def\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\rightmarginwidth
+   \else
+     \hbox to \rightmarginwidth\bgroup
+       \page_layouts_process_element_indeed#style#color#width%
+       \hss
+     \egroup
+   \fi
+   \ifcase#margintoo\or
+     \letfromlayoutelementparameter\p_text\c!margintext
+     \ifx\p_text\empty\else
+       \kern-\rightmarginwidth
+       \hbox to \rightmarginwidth\bgroup
+         \p_text % ? styling
+         \hss
+       \egroup
+     \fi
+   \fi}
+
+\def\page_layouts_right_margin_element#text#style#color#width#margintoo%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+   \kern\rightmargindistance
+   \page_layouts_place_element_indeed\rightmarginwidth
+     {\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo}}
+
+\def\page_layouts_text_body_element_indeed_l_m_r_e
+  {\letfromlayoutelementparameter\p_text\c!lefttext
+   \ifx\p_text\empty
+     \ifx\page_layouts_place_extra_text_left\empty\else
+       \hbox to \makeupwidth\bgroup
+         \page_layouts_place_extra_text_left
+         \hss
+       \egroup
+       \kern-\makeupwidth
+     \fi
+   \else
+     \hbox to \makeupwidth\bgroup
+       \page_layouts_place_extra_text_left
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth%
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!middletext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth%
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!righttext
+   \ifx\p_text\empty
+     \kern\makeupwidth
+   \else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth%
+     \egroup
+   \fi}
+
+\def\page_layouts_text_body_element_indeed_e_r_m_l
+  {\letfromlayoutelementparameter\p_text\c!righttext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth%
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!middletext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth%
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!lefttext
+   \ifx\p_text\empty
+     \ifx\page_layouts_place_extra_text_right\empty
+       \kern\makeupwidth
+     \else
+       \hbox to \makeupwidth\bgroup
+         \hss
+         \page_layouts_place_extra_text_right
+       \egroup
+     \fi
+   \else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth%
+       \page_layouts_place_extra_text_right
+     \egroup
+   \fi}
+
+\def\page_layouts_text_body_element_l_m_r_e
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+   \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_l_m_r_e}
+
+\def\page_layouts_text_body_element_e_r_m_l
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+   \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_e_r_m_l}
 
 \def\page_layouts_place_element_indeed#width#content%
   {\vbox % to \vsize
@@ -652,15 +724,15 @@
 \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
   {\ifseventhargument
      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  {#vertical}{#horizontal}{#a}{#b}{#c}{#d}}%
-   \else\ifsixthargument
+   \orelse\ifsixthargument
      \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five {#vertical}{#horizontal}{#a}{#b}{#c}}%
-   \else\iffifthargument
+   \orelse\iffifthargument
      \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four {#vertical}{#horizontal}{#a}{#b}}%
-   \else\iffourthargument
+   \orelse\iffourthargument
      \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three{#vertical}{#horizontal}{#a}}%
    \else
      \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  {#vertical}{#horizontal}}%
-   \fi\fi\fi\fi}
+   \fi}
 
 %D A few more page breakers:
 
@@ -715,8 +787,8 @@
      \let\page_layouts_place_extra_text_left \page_layouts_place_page_number_left
      \let\page_layouts_place_extra_text_right\page_layouts_place_page_number_right
    \else
-     \let\page_layouts_place_extra_text_left \relax
-     \let\page_layouts_place_extra_text_right\relax
+     \let\page_layouts_place_extra_text_left \empty
+     \let\page_layouts_place_extra_text_right\empty
    \fi}
 
 \def\page_layouts_identify_page_number_location
@@ -754,12 +826,12 @@
      \page_layouts_reset_page_number_location
      \ifx\p_strc_pagenumbers_location\empty
        % set otherwise
-     \else\ifx\p_strc_pagenumbers_location\v!none
+     \orelse\ifx\p_strc_pagenumbers_location\v!none
        % set otherwise
      \else
        \page_layouts_identify_page_number_location
        \page_layouts_set_page_number_location
-     \fi\fi
+     \fi
    \fi}
 
 \def\page_layouts_place_page_number_left % historic

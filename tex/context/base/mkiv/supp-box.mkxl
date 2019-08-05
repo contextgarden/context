@@ -29,37 +29,6 @@
 \newdimen\givenheight
 \newdimen\givendepth
 
-% handy to have
-%
-% \hbox to \hsize
-%   {\en
-%    \switchnaarkorps[5pt]%
-%    \emergencystretch2em
-%    \dimen0=\baselineskip
-%    \baselineskip=\dimen0 plus 1pt
-%    \hsize=.2\hsize
-%    \vsize=2\hsize
-%    \ruledvbox to \vsize{\input tufte \par}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern0pt}\hss
-%    \ruledvbox to \vsize{\input tufte \par\vfill}\hss
-%    \ruledvbox to \vsize{\input tufte \par\kern-\prevdepth\vfill}}
-%
-% \hbox to \hsize
-%   {\en
-%    \switchnaarkorps[5pt]%
-%    \emergencystretch2em
-%    \dimen0=\baselineskip
-%    \baselineskip=\dimen0 plus 1pt
-%    \hsize=.18\hsize
-%    \vsize=2.5\hsize
-%    \setbox0=\vbox{\input tufte\relax}%
-%    \ruledvbox to \vsize{\unvcopy0}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern0pt}\hss
-%    \ruledvbox to \vsize{\unvcopy0\vfill}\hss
-%    \ruledvbox to \vsize{\unvcopy0\kern-\dp0\vfill}}
-
 %D \macros
 %D   {dontcomplain}
 %D
@@ -230,17 +199,6 @@
 %D catcode safer. It is needed by the math module (although the \type {\leavevmode}
 %D is not added here).
 
-% \unexpanded\def\smash
-%   {\begingroup
-%    \futurelet\nexttoken\syst_boxes_smash}
-%
-% \def\syst_boxes_smash
-%   {\ifx\nexttoken[%
-%      \expandafter\syst_boxes_smash_yes
-%    \else
-%      \expandafter\syst_boxes_smash_nop
-%    \fi}
-
 \unexpanded\def\smash
   {\begingroup
    \futureexpandis[\syst_boxes_smash_yes\syst_boxes_smash_nop}
@@ -294,9 +252,6 @@
 
 \def\syst_boxes_lower_nextbox_dp
   {\setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}}
-
-% \def\syst_boxes_lower_nextbox_dp
-%   {\boxymove\nextbox-\dp\nextbox}
 
 %D \starttabulate[|l|l|]
 %D \NC w   \NC \ruledhbox{\smash  [w]{This is some great smashing, isn't it?}} \NC \NR
@@ -415,10 +370,6 @@
 %D
 %D The next alternative is slightly more clever, since it accepts \type {{12}} as
 %D well as \type {12} as box number.
-
-% \unexpanded\def\getboxheight#1\of#2\box#3%
-%   {\def\next{#1\dimexpr\ht\c_boxes_register+\dp\c_boxes_register\relax}%
-%    \afterassignment\next\c_boxes_register=#3}
 
 \unexpanded\def\getboxheight#1\of#2\box#3%
   {\def\next{#1\htdp\c_boxes_register}%
@@ -552,7 +503,7 @@
 %D \determinenoflines{\definedfont[Sans at 40pt]test\\test}
 %D \stoptyping
 
-\def\dodeterminenoflines % can be mkiv'd
+\def\syst_boxes_determine_noflines % can be mkiv'd
   {\beginofshapebox
      \unvbox\nextbox
    \endofshapebox
@@ -565,7 +516,7 @@
    \forgetall
    \let\crlf\endgraf
    \let\\\endgraf
-   \dowithnextboxcs\dodeterminenoflines\vbox}
+   \dowithnextboxcs\syst_boxes_determine_noflines\vbox}
 
 %D \macros
 %D   {doiftextelse, doiftext}
@@ -692,10 +643,10 @@
 %D The next couple of shortcuts saves us memory as well as \type {{}}'s in passing
 %D parameters.
 
-\def\nextboxht   {\ht\nextbox}
-\def\nextboxwd   {\wd\nextbox}
-\def\nextboxdp   {\dp\nextbox}
-\def\nextboxhtdp {\htdp\nextbox}
+\def\nextboxht  {\ht\nextbox}
+\def\nextboxwd  {\wd\nextbox}
+\def\nextboxdp  {\dp\nextbox}
+\def\nextboxhtdp{\htdp\nextbox}
 
 \unexpanded\def\flushnextbox{\box\nextbox}
 
@@ -1172,7 +1123,7 @@
 \def\dodoboundtext#1%
   {\setbox\scratchboxone\hbox{#1}%
    \advance\scratchdimen -\wd\scratchboxone
-   \ifdim\scratchdimen>\zeropoint\relax#1\fi}%
+   \ifdim\scratchdimen>\zeropoint\relax#1\fi}
 
 \def\doboundtext#1#2#3% still used?
   {\hbox
@@ -1203,109 +1154,121 @@
 \ifdefined\fakecompoundhyphen\else \let\fakecompoundhyphen\relax      \fi
 \ifdefined\veryraggedright   \else \def\veryraggedright{\raggedright} \fi
 
-\unexpanded\def\limitatetext
-  {\bgroup % evt \setstrut
-   \forgetall % otherwise indentation and so
-   \let\limitatetext\firstofthreearguments
-   \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
-   \dowithnextboxcs\syst_boxes_limitate_text\hbox}
-
-\def\syst_boxes_limitate_text#1% #2
-  {\doifelsenothing{#1}\syst_boxes_limitate_text_nop\syst_boxes_limitate_text_yes{#1}} % {#2}
-
-\def\syst_boxes_limitate_text_nop#1#2%
-  {\unhbox\nextbox
-   \egroup}
-
-\def\syst_boxes_limitate_text_yes#1#2%
-  {\nopenalties
-   \scratchdimen#1\relax
-   \ifdim\scratchdimen<\zeropoint\relax % we'll take the last line
-     \donefalse
-     \scratchdimen-\scratchdimen
-   \else
-     \donetrue
-   \fi
-   \ifdim\wd\nextbox>\scratchdimen
-     \setbox\scratchbox\hbox{\ifdone\space#2\else#2\space\fi}%
-     \advance\scratchdimen -\wd\scratchbox
-     \setbox\scratchboxone\box\nextbox
-     \setbox\nextbox\vbox
-       {\hsize\scratchdimen
-        \hfuzz\maxdimen
-        \veryraggedright
-        \strut
-        \ifdone \else
-          \parfillskip\zeropoint
-          \rightskip\zeropoint
-          \hskip\zeropoint \s!plus 1\s!fill % \hsize
-        \fi
-        \unhcopy\scratchboxone}%
-     \ifdim\ht\nextbox>\strutht
-       \setbox\nextbox\vbox % if omitted: missing brace reported
-         {\splittopskip\openstrutheight
-          \ifdone
-            \setbox\nextbox\vsplit\nextbox to \strutht
-          \else
-            \doloop
-              {\setbox\scratchboxone\vsplit\nextbox to \strutht
-               \ifdim\ht\nextbox>\strutht \else \exitloop \fi}%
-          \fi
-          \unvbox\nextbox
-          \setbox\nextbox\lastbox
-          \global\setbox1\hpack
-            {\ifdone
-               \unhbox\nextbox\unskip\kern\zeropoint\box\scratchbox
-             \else
-               \box\scratchbox\unhbox\nextbox
-             \fi
-             \unskip}}%
-       \unhbox1
-     \else
-       \unhbox0%
-     \fi
-   \else
-     \unhbox\nextbox
-   \fi
-   \egroup}
-
-%D We can also limit a text with more control:
-%D
-%D \startbuffer
-%D \limitatetext {\input tufte } {2cm,5mm} {\unknown}
-%D \limitatetext {ton en hans} {2cm,5mm} {\unknown}
-%D \limitatetext {ton en hans zijn eikels} {2cm,5mm} {\unknown}
-%D \limitatetext {ton} {2cm,5mm} {\unknown}
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D We build this feature on top of the previous macro.
-
-% we could move the text argument to the end
-
-\let\normallimitatetext\limitatetext
-
-\def\speciallimitatetext#1#2#3#4% text left right placeholder
-  {%\dontleavehmode
-   \bgroup
-   \let\speciallimitatetext\firstoffourarguments
-   \setbox\scratchboxone\hbox
-     {\nohyphens
-      \normallimitatetext{#1}{+#2}{}#4%
-      \normallimitatetext{#1}{-#3}{}}%
-   \setbox\scratchboxtwo\hbox
-     {#1}%
-   \ifdim\wd\scratchboxtwo<\wd\scratchboxone #1\else\unhbox\scratchboxone\fi
-   \egroup}
+% \unexpanded\def\limitatetext
+%   {\bgroup % evt \setstrut
+%    \forgetall % otherwise indentation and so
+%    \let\limitatetext\firstofthreearguments
+%    \fakecompoundhyphen % dangerous ! ! ! ! ! ! ! ! !
+%    \dowithnextboxcs\syst_boxes_limitate_text\hbox}
+%
+% \def\syst_boxes_limitate_text#1% #2
+%   {\doifelsenothing{#1}\syst_boxes_limitate_text_nop\syst_boxes_limitate_text_yes{#1}} % {#2}
+%
+% \def\syst_boxes_limitate_text_nop#1#2%
+%   {\unhbox\nextbox
+%    \egroup}
+%
+% \def\syst_boxes_limitate_text_yes#1#2%
+%   {\nopenalties
+%    \scratchdimen#1\relax
+%    \ifdim\scratchdimen<\zeropoint\relax % we'll take the last line
+%      \donefalse
+%      \scratchdimen-\scratchdimen
+%    \else
+%      \donetrue
+%    \fi
+%    \ifdim\wd\nextbox>\scratchdimen
+%      \setbox\scratchbox\hbox{\ifdone\space#2\else#2\space\fi}%
+%      \advance\scratchdimen -\wd\scratchbox
+%      \setbox\scratchboxone\box\nextbox
+%      \setbox\nextbox\vbox
+%        {\hsize\scratchdimen
+%         \hfuzz\maxdimen
+%         \veryraggedright
+%         \strut
+%         \ifdone \else
+%           \parfillskip\zeropoint
+%           \rightskip\zeropoint
+%           \hskip\zeropoint \s!plus 1\s!fill % \hsize
+%         \fi
+%         \unhcopy\scratchboxone}%
+%      \ifdim\ht\nextbox>\strutht
+%        \setbox\nextbox\vbox % if omitted: missing brace reported
+%          {\splittopskip\openstrutheight
+%           \ifdone
+%             \setbox\nextbox\vsplit\nextbox to \strutht
+%           \else
+%             \doloop
+%               {\setbox\scratchboxone\vsplit\nextbox to \strutht
+%                \ifdim\ht\nextbox>\strutht \else \exitloop \fi}%
+%           \fi
+%           \unvbox\nextbox
+%           \setbox\nextbox\lastbox
+%           \global\setbox1\hpack
+%             {\ifdone
+%                \unhbox\nextbox\unskip\kern\zeropoint\box\scratchbox
+%              \else
+%                \box\scratchbox\unhbox\nextbox
+%              \fi
+%              \unskip}}%
+%        \unhbox1
+%      \else
+%        \unhbox0%
+%      \fi
+%    \else
+%      \unhbox\nextbox
+%    \fi
+%    \egroup}
+%
+% %D We can also limit a text with more control:
+% %D
+% %D \startbuffer
+% %D \limitatetext {\input tufte } {2cm,5mm} {\unknown}
+% %D \limitatetext {ton en hans} {2cm,5mm} {\unknown}
+% %D \limitatetext {ton en hans zijn eikels} {2cm,5mm} {\unknown}
+% %D \limitatetext {ton} {2cm,5mm} {\unknown}
+% %D \stopbuffer
+% %D
+% %D \typebuffer \getbuffer
+% %D
+% %D We build this feature on top of the previous macro.
+%
+% % we could move the text argument to the end
+%
+% \let\normallimitatetext\limitatetext
+%
+% \def\speciallimitatetext#1#2#3#4% text left right placeholder
+%   {%\dontleavehmode
+%    \bgroup
+%    \let\speciallimitatetext\firstoffourarguments
+%    \setbox\scratchboxone\hbox
+%      {\nohyphens
+%       \normallimitatetext{#1}{+#2}{}#4%
+%       \normallimitatetext{#1}{-#3}{}}%
+%    \setbox\scratchboxtwo\hbox
+%      {#1}%
+%    \ifdim\wd\scratchboxtwo<\wd\scratchboxone #1\else\unhbox\scratchboxone\fi
+%    \egroup}
+%
+% \unexpanded\def\limitatetext#1#2#3% \expanded added 2003/01/16
+%   {\splitatcomma{#2}\leftlimit\rightlimit
+%    \ifx\rightlimit\empty
+%      \normallimitatetext {#1}\leftlimit           {#3}%
+%    \else
+%      \speciallimitatetext{#1}\leftlimit\rightlimit{#3}%
+%    \fi}
 
 \unexpanded\def\limitatetext#1#2#3% \expanded added 2003/01/16
   {\splitatcomma{#2}\leftlimit\rightlimit
-   \ifx\rightlimit\empty
-     \normallimitatetext {#1}\leftlimit           {#3}%
-   \else
-     \speciallimitatetext{#1}\leftlimit\rightlimit{#3}%
-   \fi}
+   \limitated
+      left     \leftlimit
+  \ifx\rightlimit\empty\else
+      right    \rightlimit
+  \fi
+      strip    true
+      sentinel {#3}
+      text     {#1}
+   \relax}
 
 %D Undocumented bonus (see wiki):
 %D
@@ -1485,16 +1448,6 @@
   {\vpack\bgroup
    \dowithnextboxcs\syst_boxes_sbox_finish\vbox}
 
-% \unexpanded\def\syst_boxes_sbox_finish
-%   {\setbox\nextbox\hpack
-%      {\strut
-%       \dp\nextbox\zeropoint
-%       \lower\strutdp\box\nextbox}%
-%    \dp\nextbox\strutdp
-%    \ht\nextbox\strutht
-%    \box\nextbox
-%    \egroup}
-
 \unexpanded\def\syst_boxes_sbox_finish
   {\boxyoffset\nextbox-\strutdp
    \dp\nextbox\strutdp
@@ -1503,19 +1456,10 @@
    \egroup}
 
 %D A variant on this:
-
-% \unexpanded\def\inlinedbox
-%   {\bgroup
-%    \dowithnextbox
-%      {\setbox\nextbox\hpack
-%         {\lower
-%            \dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
-%            \box\nextbox}%
-%       \ht\nextbox\strutht
-%       \dp\nextbox\strutdp
-%       \box\nextbox
-%       \egroup}%
-%      \hbox}
+%D
+%D \starttyping
+%D xx \ruledhbox{\inlinedbox{\tfd test}} xx
+%D \stoptyping
 
 \unexpanded\def\inlinedbox
   {\bgroup
@@ -1600,37 +1544,6 @@
 %D rules. The setting of the box dimensions at the end is needed for special cases.
 %D The dimensions of the surrounding box are kept intact. This commands handles
 %D positive and negative dimensions (which is why we need two boxes with rules).
-
-% \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
-%   {\bgroup
-%    \setbox\scratchboxone\vpack to \vsize
-%      \bgroup
-%        \dontcomplain
-%        \forgetall
-%        \setbox\scratchboxone\hpack{\vrule\s!width \zeropoint#1}%
-%        \setbox\scratchboxtwo\vpack{\hrule\s!height\zeropoint#1}%
-%        \advance\vsize \ht\scratchboxtwo
-%        \advance\hsize \wd\scratchboxone
-%        \vpack to \vsize
-%          \bgroup
-%            \vskip-\ht\scratchboxtwo
-%            \vss
-%            \hpack to \hsize
-%              \bgroup
-%                \dowithnextbox
-%                  {\hskip-\wd\scratchboxone
-%                   \hss
-%                   \box\nextbox
-%                   \hss
-%              \egroup
-%            \vss
-%          \egroup
-%      \egroup
-%      \wd\scratchboxone\hsize
-%      \ht\scratchboxone\vsize
-%      \box\scratchboxone
-%      \egroup}
-%    \hbox}
 
 \unexpanded\def\centeredbox#1#%   height +/-dimen width +/-dimen
   {\bgroup
@@ -1830,7 +1743,36 @@
 \newdimen\hboxestohboxslack
 
 %D Create line and fake height of paragraph by messign with heights: a nice hack by
-%D DEK himself. See older files for that code.
+%D DEK himself.
+
+%\unexpanded\def\setvboxtohbox
+%  {\bgroup
+%   \ifdim\baselineskip<16pt \relax
+%     \scratchdimen\baselineskip
+%     \multiply\scratchdimen 1024
+%   \else
+%     \message{cropping \baselineskip to 16pt}%
+%     \scratchdimen\maxdimen
+%   \fi
+%   \divide\scratchdimen \hsize
+%   \multiply\scratchdimen 64
+%   \xdef\vboxtohboxfactor{\withoutpt\the\scratchdimen}%
+%   \egroup}
+%
+% \unexpanded\def\startvboxtohbox
+%  {\bgroup
+%   \setvboxtohbox
+%   \setbox\scratchbox\hbox\bgroup}
+%
+% \unexpanded\def\stopvboxtohbox
+%   {\ifcase\vboxtohboxslack\else\hskip\zeropoint\!!minus\vboxtohboxslack\fi
+%    \egroup
+%    \dp\scratchbox\zeropoint
+%    \ht\scratchbox\vboxtohboxfactor\wd\scratchbox
+%    \box\scratchbox
+%    \egroup}
+
+% More modern:
 
 % \definesystemattribute[vboxtohboxseparator][public]
 
@@ -2174,26 +2116,6 @@
 \unexpanded\def\tbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_tbox_finish\hbox}
 \unexpanded\def\bbox{\hpack\bgroup\dowithnextboxcs\syst_boxes_bbox_finish\hbox}
 
-% \def\syst_boxes_tbox_finish
-%   {\scratchdepth\dimexpr\ht\nextbox+\dp\nextbox-\ht\strutbox\relax
-%    \ht\nextbox\ht\strutbox
-%    \dp\nextbox\scratchdepth
-%    \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
-%    \ht\nextbox\ht\strutbox
-%    \dp\nextbox\scratchdepth
-%    \box\nextbox
-%    \egroup}
-
-% \def\syst_boxes_bbox_finish
-%   {\scratchheight\dimexpr\ht\nextbox+\dp\nextbox-\dp\strutbox\relax
-%    \dp\nextbox\dp\strutbox
-%    \ht\nextbox\scratchheight
-%    \setbox\nextbox\hpack{\lower\dp\nextbox\box\nextbox}%
-%    \dp\nextbox\dp\strutbox
-%    \ht\nextbox\scratchheight
-%    \box\nextbox
-%    \egroup}
-
 \def\syst_boxes_tbox_finish
   {\scratchheight\ht\strutbox
    \scratchdepth\dimexpr\htdp\nextbox-\scratchheight\relax
@@ -2268,11 +2190,11 @@
 
 \unexpanded\def\limitatelines#1#2% size sentinel
   {\dowithnextbox
-     {\dimen0=#1\hsize
-      \ifdim\wd\nextbox>\dimen0
+     {\scratchdimen#1\hsize
+      \ifdim\wd\nextbox>\scratchdimen
         \setbox\nextbox\hbox
-          {\advance\dimen0 -.1\hsize
-           \limitatetext{\unhbox\nextbox}{\dimen0}{\nobreak#2}}%
+          {\advance\scratchdimen -.1\hsize
+           \limitatetext{\unhbox\nextbox}{\scratchdimen}{\nobreak#2}}%
       \fi
       \unhbox\nextbox}
      \hbox}
@@ -2281,14 +2203,14 @@
   {\dowithnextbox
      {\bgroup
       \par
-      \dimen0\ht\nextbox
+      \scratchdimen\ht\nextbox
       \ht\nextbox\strutht
       \dp\nextbox\strutdp
       \hpack{\box\nextbox}
       \prevdepth\strutdp
       \doloop
-        {\advance\dimen0 -\lineheight
-         \ifdim\dimen0<\zeropoint
+        {\advance\scratchdimen -\lineheight
+         \ifdim\scratchdimen<\zeropoint
            \exitloop
          \else
            \nobreak
@@ -2344,13 +2266,6 @@
 \let\bottomleftbox \leftbottombox
 \let\bottomrightbox\rightbottombox
 
-% \def\syst_boxes_rightbox_finish
-%   {\global\boxhdisplacement\boxoffset
-%    \global\boxvdisplacement.5\ht\nextbox
-%    \global\advance\boxvdisplacement-.5\dp\nextbox
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_rightbox_finish
   {\global\boxhdisplacement\boxoffset
    \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
@@ -2359,14 +2274,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_leftbox_finish
-%   {\global\boxhdisplacement-\wd\nextbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement.5\ht\nextbox
-%    \global\advance\boxvdisplacement-.5\dp\nextbox
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_leftbox_finish
   {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
@@ -2377,13 +2284,6 @@
    \box\nextbox
    \egroup}
 
-% \def\syst_boxes_topbox_finish
-%   {\global\boxhdisplacement-.5\wd\nextbox
-%    \global\boxvdisplacement-\dp\nextbox
-%    \global\advance\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_topbox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
@@ -2392,13 +2292,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_bottombox_finish
-%   {\global\boxhdisplacement-.5\wd\nextbox
-%    \global\boxvdisplacement\ht\nextbox
-%    \global\advance\boxvdisplacement\boxoffset
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_bottombox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
@@ -2409,14 +2302,6 @@
    \box\nextbox
    \egroup}
 
-% \def\syst_boxes_lefttopbox_finish
-%   {\global\boxhdisplacement-\wd\nextbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement-\dp\nextbox
-%    \global\advance\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_lefttopbox_finish
   {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
    \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
@@ -2425,13 +2310,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_righttopbox_finish
-%   {\global\boxhdisplacement\boxoffset
-%    \global\boxvdisplacement-\dp\nextbox
-%    \global\advance\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_righttopbox_finish
   {\global\boxhdisplacement\boxoffset
@@ -2442,14 +2320,6 @@
    \box\nextbox
    \egroup}
 
-% \def\syst_boxes_leftbottombox_finish
-%   {\global\boxhdisplacement-\wd\nextbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement\ht\nextbox
-%    \global\advance\boxvdisplacement\boxoffset
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_leftbottombox_finish
   {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
    \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
@@ -2458,13 +2328,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_rightbottombox_finish
-%   {\global\boxhdisplacement\boxoffset
-%    \global\boxvdisplacement\ht\nextbox
-%    \global\advance\boxvdisplacement\boxoffset
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_rightbottombox_finish
   {\global\boxhdisplacement\boxoffset
@@ -2480,13 +2343,6 @@
 \unexpanded\def\baselineleftbox  {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselineleftbox_finish  \placedbox}
 \unexpanded\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
 
-% \def\syst_boxes_middlebox_finish
-%   {\global\boxhdisplacement-.5\wd\nextbox
-%    \global\boxvdisplacement.5\ht\nextbox
-%    \global\advance\boxvdisplacement-.5\dp\nextbox
-%    \boxcursor\kern\boxhdisplacement\lower\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_middlebox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
    \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
@@ -2495,13 +2351,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_baselinemiddlebox_finish
-%   {\global\boxhdisplacement-.5\wd\nextbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_baselinemiddlebox_finish
   {\global\boxhdisplacement\dimexpr-.5\wd\nextbox-\boxoffset\relax
@@ -2512,13 +2361,6 @@
    \box\nextbox
    \egroup}
 
-% \def\syst_boxes_baselineleftbox_finish
-%   {\global\boxhdisplacement-\wd\nextbox
-%    \global\advance\boxhdisplacement-\boxoffset
-%    \global\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
-
 \def\syst_boxes_baselineleftbox_finish
   {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
    \global\boxvdisplacement-\boxoffset
@@ -2527,12 +2369,6 @@
    \boxymove\nextbox-\boxvdisplacement
    \box\nextbox
    \egroup}
-
-% \def\syst_boxes_baselinerightbox_finish
-%   {\global\boxhdisplacement\boxoffset
-%    \global\boxvdisplacement-\boxoffset
-%    \boxcursor\kern\boxhdisplacement\raise-\boxvdisplacement\box\nextbox
-%    \egroup}
 
 \def\syst_boxes_baselinerightbox_finish
   {\global\boxhdisplacement\boxoffset
@@ -2943,12 +2779,6 @@
      \hbox}
 
 %D A bit dirty:
-
-% \unexpanded\def\nodestostring#1% \cs {content}
-%   {\dowithnextbox{\edef#1{\syst_boxes_nodestostring}}\hbox}
-%
-% \def\syst_boxes_nodestostring
-%   {\clf_boxtostring\nextbox}
 
 \unexpanded\def\nodestostring#1#2% more tolerant for #2=\cs
   {\begingroup

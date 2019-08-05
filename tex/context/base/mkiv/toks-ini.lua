@@ -42,7 +42,7 @@ local scan_glue       = token.scan_glue
 local scan_keyword    = token.scan_keyword
 local scan_keyword_cs = token.scan_keyword_cs or scan_keyword
 local scan_token      = token.scan_token
-local scan_list       = token.scan_list
+local scan_box        = token.scan_box
 local scan_word       = token.scan_word
 local scan_key        = token.scan_key
 local scan_value      = token.scan_value
@@ -138,11 +138,29 @@ local function scan_verbatim()
     return scan_argument(false)
 end
 
+if not scan_box then
+
+    local scan_list = token.scan_list
+    local put_next  = token.put_next
+
+    scan_box = function(s)
+        if s == "hbox" or s == "vbox" or s == "vtop" then
+            put_next(create_token(s))
+        end
+    end
+
+    token.scan_box = scan_box
+
+end
+
 tokens.scanners = { -- these expand
     token     = scan_token,
     toks      = scan_toks,
     tokens    = scan_toks,
-    list      = scan_list,
+    box       = scan_box,
+    hbox      = function() return scan_box("hbox") end,
+    vbox      = function() return scan_box("vbox") end,
+    vtop      = function() return scan_box("vtop") end,
     dimen     = scan_dimen,
     dimension = scan_dimen,
     glue      = scan_glue,

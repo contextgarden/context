@@ -30,6 +30,9 @@ local type, next = type, next
 local byte = string.byte
 local insert, remove = table.insert, table.remove
 
+local mplib    = mplib
+local metapost = metapost
+
 local codes = mplib.codes()
 local types = mplib.types()
 

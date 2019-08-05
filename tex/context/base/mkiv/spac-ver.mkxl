@@ -64,12 +64,20 @@
 \def\skipfactor    {.75}
 \def\skipgluefactor{.25}
 
+% \def\normalskipamount
+%   {\openlineheight
+%      \ifgridsnapping \else \ifblankflexible
+%        \s!plus \skipgluefactor\openlineheight
+%        \s!minus\skipgluefactor\openlineheight
+%      \fi \fi
+%    \relax}
+
 \def\normalskipamount
   {\openlineheight
-     \ifgridsnapping \else \ifblankflexible
+     \ifgridsnapping \orelse \ifblankflexible
        \s!plus \skipgluefactor\openlineheight
        \s!minus\skipgluefactor\openlineheight
-     \fi \fi
+     \fi
    \relax}
 
 \ifdefined\bodyfontinterlinespace \else

@@ -541,7 +541,7 @@
 %D \determinenoflines{\definedfont[Sans at 40pt]test\\test}
 %D \stoptyping
 
-\def\dodeterminenoflines % can be mkiv'd
+\def\syst_boxes_determine_noflines % can be mkiv'd
   {\beginofshapebox
      \unvbox\nextbox
    \endofshapebox
@@ -554,7 +554,7 @@
    \forgetall
    \let\crlf\endgraf
    \let\\\endgraf
-   \dowithnextboxcs\dodeterminenoflines\vbox}
+   \dowithnextboxcs\syst_boxes_determine_noflines\vbox}
 
 %D \macros
 %D   {doiftextelse, doiftext}
@@ -677,10 +677,10 @@
 %D The next couple of shortcuts saves us memory as well as \type {{}}'s in passing
 %D parameters.
 
-\def\nextboxht   {\ht\nextbox}
-\def\nextboxwd   {\wd\nextbox}
-\def\nextboxdp   {\dp\nextbox}
-\def\nextboxhtdp {\dimexpr\ht\nextbox+\dp\nextbox\relax}
+\def\nextboxht  {\ht\nextbox}
+\def\nextboxwd  {\wd\nextbox}
+\def\nextboxdp  {\dp\nextbox}
+\def\nextboxhtdp{\dimexpr\ht\nextbox+\dp\nextbox\relax}
 
 \unexpanded\def\flushnextbox{\box\nextbox}
 
@@ -1277,6 +1277,7 @@
    \let\speciallimitatetext\firstoffourarguments
    \setbox\scratchboxone\hbox
      {\nohyphens
+      \dontcomplain
       \normallimitatetext{#1}{+#2}{}#4%
       \normallimitatetext{#1}{-#3}{}}%
    \setbox\scratchboxtwo\hbox
@@ -1467,7 +1468,7 @@
 %D complicated menus, headers and footers and|/|or margin material.
 
 \unexpanded\def\sbox
-  {\vbox\bgroup
+  {\vpack\bgroup
    \dowithnextboxcs\syst_boxes_sbox_finish\vbox}
 
 \unexpanded\def\syst_boxes_sbox_finish
@@ -1481,6 +1482,10 @@
    \egroup}
 
 %D A variant on this:
+%D
+%D \starttyping
+%D xx \ruledhbox{\inlinedbox{\tfd test}} xx
+%D \stoptyping
 
 \unexpanded\def\inlinedbox
   {\bgroup
@@ -2273,11 +2278,11 @@
 
 \unexpanded\def\limitatelines#1#2% size sentinel
   {\dowithnextbox
-     {\dimen0=#1\hsize
-      \ifdim\wd\nextbox>\dimen0
+     {\scratchdimen#1\hsize
+      \ifdim\wd\nextbox>\scratchdimen
         \setbox\nextbox\hbox
-          {\advance\dimen0 -.1\hsize
-           \limitatetext{\unhbox\nextbox}{\dimen0}{\nobreak#2}}%
+          {\advance\scratchdimen -.1\hsize
+           \limitatetext{\unhbox\nextbox}{\scratchdimen}{\nobreak#2}}%
       \fi
       \unhbox\nextbox}
      \hbox}
@@ -2286,14 +2291,14 @@
   {\dowithnextbox
      {\bgroup
       \par
-      \dimen0\ht\nextbox
+      \scratchdimen\ht\nextbox
       \ht\nextbox\strutht
       \dp\nextbox\strutdp
       \hpack{\box\nextbox}
       \prevdepth\strutdp
       \doloop
-        {\advance\dimen0 -\lineheight
-         \ifdim\dimen0<\zeropoint
+        {\advance\scratchdimen -\lineheight
+         \ifdim\scratchdimen<\zeropoint
            \exitloop
          \else
            \nobreak
@@ -2840,12 +2845,6 @@
      \hbox}
 
 %D A bit dirty:
-
-% \unexpanded\def\nodestostring#1% \cs {content}
-%   {\dowithnextbox{\edef#1{\syst_boxes_nodestostring}}\hbox}
-%
-% \def\syst_boxes_nodestostring
-%   {\clf_boxtostring\nextbox}
 
 \unexpanded\def\nodestostring#1#2% more tolerant for #2=\cs
   {\begingroup

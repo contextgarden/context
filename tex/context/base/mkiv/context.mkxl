@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.08.02 19:40}
+\edef\contextversion{2019.08.05 10:34}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -60,7 +60,7 @@
 %D First we load the system modules. These implement a lot of manipulation macros.
 %D We start with setting up some basic \TEX\ machinery.
 
-\loadmkxlfile{syst-ini}
+\loadmkxlfile{syst-ini} % LMTX
 
 %D We just quit if new functionality is expected.
 
@@ -172,10 +172,10 @@
 
 \loadmkxlfile{driv-ini} % LMTX
 
-\loadmkxlfile{back-ini}
+\loadmkxlfile{back-ini} % LMTX
 \loadmarkfile{back-res}
 \loadmarkfile{back-trf}
-\loadmkxlfile{back-out}
+\loadmkxlfile{back-out} % LMTX
 
 \loadmarkfile{attr-col}
 \loadmarkfile{attr-lay}
@@ -318,7 +318,7 @@
 \loadmarkfile{page-one}
 \loadmarkfile{page-lay}
 \loadmkvifile{page-box}
-\loadmkvifile{page-txt}
+\loadmklxfile{page-txt} % LMTX
 \loadmarkfile{page-sid} % when
 
 \loadmkvifile{strc-flt}
@@ -331,13 +331,7 @@
 %loadmarkfile{page-set} % \usecolumns[old-columnsets]
 \loadmarkfile{page-cst}
 \loadmarkfile{page-pcl} % new
-
-\doifelsefileexists {pack-lyr.mkxl} {
-    \loadmkxlfile{pack-lyr} % LMTX
-} {
-    \loadmkivfile{pack-lyr}
-}
-
+\loadmkxlfile{pack-lyr} % LMTX
 \loadmarkfile{pack-pos}
 \loadmkvifile{page-mak}
 
@@ -463,9 +457,9 @@
 
 \loadmarkfile{prop-ini} % only for downward compatibility
 
-\loadmkxlfile{mlib-ctx} % messy order
+\loadmkxlfile{mlib-ctx} % LMTX % messy order
 
-\loadmkxlfile{meta-ini}
+\loadmkxlfile{meta-ini} % LMTX
 \loadmarkfile{meta-tex}
 \loadmarkfile{meta-fun}
 \loadmarkfile{meta-pag}
@@ -473,7 +467,7 @@
 \loadmarkfile{meta-fnt}
 \loadmarkfile{meta-nod}
 \loadmarkfile{meta-lua}
-\loadmkxlfile{meta-mac}
+\loadmkxlfile{meta-mac} % LMTX
 
 \loadmarkfile{page-mrk} % depends on mp
 
@@ -579,14 +573,14 @@
 
 % now we hook in backend code (needs checking)
 
-\loadmkxlfile{driv-shp}
+\loadmkxlfile{driv-shp} % LMTX
 
 \loadmarkfile{back-exp}
-\loadmkxlfile{back-pdf}
-\loadmkxlfile{back-mps}
-\loadmkxlfile{back-lua}
+\loadmkxlfile{back-pdf} % LMTX
+\loadmkxlfile{back-mps} % LMTX
+\loadmkxlfile{back-lua} % LMTX
 
-\loadmarkfile{mlib-pdf}
+\loadmkxlfile{mlib-pdf} % LMTX
 \loadmarkfile{mlib-pps}
 \loadmarkfile{meta-pdf}
 \loadmarkfile{meta-blb}
@@ -600,8 +594,6 @@
 \loadmarkfile{syst-cmp} % compatibility stuff moved here
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
-
-% \loadmkxlfile{driv-shp}
 
 \appendtoks
     \setupoutput[pdf]

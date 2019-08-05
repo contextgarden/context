@@ -974,9 +974,12 @@
 		<cd:constant name='menu' value='meniu'/>
 		<cd:constant name='method' value='metoda'/>
 		<cd:constant name='middle' value='mijloc'/>
+		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlespeech' value='middlespeech'/>
+		<cd:constant name='middlestyle' value='middlestyle'/>
 		<cd:constant name='middletext' value='textmijloc'/>
+		<cd:constant name='middlewidth' value='middlewidth'/>
 		<cd:constant name='midsentence' value='midsentence'/>
 		<cd:constant name='min' value='min'/>
 		<cd:constant name='mindepth' value='mindepth'/>

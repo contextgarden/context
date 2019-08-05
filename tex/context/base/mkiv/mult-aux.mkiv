@@ -214,8 +214,8 @@
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
-\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8% inlining \csname*\endcsname is more efficient (#3 and #6 only)
-  {\ifx#2\relax\let#2\empty\fi                                           % it is hardly faster but produces less expansion tracing
+\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
+  {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
   %\def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
@@ -223,7 +223,8 @@
    \def#5##1##2{\ifx##1\relax^^^^0019\else#4##1{##2}\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
-   \def#8##1{\begincsname#1#2:##1\endcsname}}
+   \def#8##1{\begincsname#1#2:##1\endcsname}
+   \def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
 
 \unexpanded\def\installparameterhandler#1#2%
   {\normalexpanded
@@ -235,7 +236,8 @@
         \expandafter\noexpand\csname do#2parentparameter\endcsname     % or : #2_parent_parameter
         \expandafter\noexpand\csname named#2parameter\endcsname
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
-        \expandafter\noexpand\csname direct#2parameter\endcsname}} % strict#2parameter is gone
+        \expandafter\noexpand\csname direct#2parameter\endcsname
+        \expandafter\noexpand\csname letfrom#2parameter\endcsname}} % strict#2parameter is gone
 
 \unexpanded\def\mult_interfaces_install_root_parameter_handler#1#2#3%
   {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root

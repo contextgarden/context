@@ -1448,9 +1448,9 @@
         {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}}}
 
 \def\strc_itemgroups_make_destination_box
-  {\iftrialtypesetting \else \ifx\m_strc_itemgroups_destination\empty \else
+  {\iftrialtypesetting \orelse \ifx\m_strc_itemgroups_destination\empty \else
      \setbox\b_strc_itemgroups\hbox{\directgotobox{\box\b_strc_itemgroups}[\m_strc_itemgroups_destination]}%
-   \fi\fi}
+   \fi}
 
 \def\strc_itemgroups_check_indenting
   {\setfalse\c_strc_itemgroups_indented_first

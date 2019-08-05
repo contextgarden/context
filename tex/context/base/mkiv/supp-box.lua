@@ -26,6 +26,7 @@ local disc_code     = nodecodes.disc
 local hlist_code    = nodecodes.hlist
 local vlist_code    = nodecodes.vlist
 local glue_code     = nodecodes.glue
+local penalty_code  = nodecodes.penalty
 local glyph_code    = nodecodes.glyph
 
 local nuts          = nodes.nuts
@@ -49,6 +50,7 @@ local takebox       = nuts.takebox
 local setlink       = nuts.setlink
 local setboth       = nuts.setboth
 local setnext       = nuts.setnext
+local setprev       = nuts.setprev
 local setbox        = nuts.setbox
 local setlist       = nuts.setlist
 local setdisc       = nuts.setdisc
@@ -56,6 +58,8 @@ local setwidth      = nuts.setwidth
 local setheight     = nuts.setheight
 local setdepth      = nuts.setdepth
 local setshift      = nuts.setshift
+local setsplit      = nuts.setsplit
+local setattrlist   = nuts.setattrlist
 
 local flush_node    = nuts.flush_node
 local flush_list    = nuts.flush_list
@@ -64,6 +68,9 @@ local copy_list     = nuts.copy_list
 local find_tail     = nuts.tail
 local getdimensions = nuts.dimensions
 local hpack         = nuts.hpack
+local traverse_id   = nuts.traverse_id
+local free          = nuts.free
+local findtail      = nuts.tail
 
 local nextdisc      = nuts.traversers.disc
 local nextdir       = nuts.traversers.dir
@@ -646,5 +653,164 @@ implement {
         texsetdimen("givenwidth", t.width  or 0)
         texsetdimen("givenheight",t.height or 0)
         texsetdimen("givendepth", t.depth  or 0)
+    end,
+}
+
+local function stripglue(list)
+    local done  = false
+    local first = list
+    while first do
+        local id = getid(first)
+        if id == glue_code or id == penalty_code then
+            first = getnext(first)
+        else
+            break
+        end
+    end
+    if first and first ~= list then
+        -- we have discardables
+        setsplit(getprev(first),first)
+        flush_list(list)
+        list = first
+        done = true
+    end
+    if list then
+        local tail = findtail(list)
+        local last = tail
+        while last do
+            local id = getid(last)
+            if id == glue_code or id == penalty_code then
+                last = getprev(last)
+            else
+                break
+            end
+        end
+        if last ~= tail then
+            -- we have discardables
+            flush_list(getnext(last))
+            setnext(last)
+            done = true
+        end
+    end
+    return list, done
+end
+
+local function limitate(t)
+    local text = t.text
+    if text then
+        text = tonut(text)
+    else
+        return
+    end
+    local sentinel = t.sentinel
+    if sentinel then
+        sentinel = tonut(sentinel)
+        local s = getlist(sentinel)
+        setlist(sentinel)
+        free(sentinel)
+        sentinel = s
+    else
+        return tonode(text)
+    end
+    local list  = getlist(text)
+    local width = getwidth(text)
+    local done  = false
+    if t.strip then
+        list, done = stripglue(list)
+        if not list then
+            setlist(text)
+            setwidth(text,0)
+            return text
+        elseif done then
+            width = getdimensions(list)
+            setlist(text,list)
+        end
+    end
+    local left  = t.left or 0
+    local right = t.right or 0
+    if left + right >= width then
+        if done then
+            setwidth(text,width)
+        end
+        return tonode(text)
+    end
+    local last     = nil
+    local first    = nil
+    local maxleft  = left
+    local maxright = right
+    local swidth   = getwidth(sentinel)
+    if maxright > 0 then
+        maxleft  = maxleft  - swidth/2
+        maxright = maxright - swidth/2
+    else
+        maxleft  = maxleft  - swidth
+    end
+    for n in traverse_id(glue_code,list) do
+        local width = getdimensions(list,n)
+        if width > maxleft then
+            if not last then
+                last = n
+            end
+            break
+        else
+            last = n
+        end
+    end
+    if last and maxright > 0 then
+        for n in traverse_id(glue_code,last) do
+            local width = getdimensions(n)
+            if width < maxright then
+                first = n
+                break
+            else
+                first = n
+            end
+        end
+    end
+    if last then
+        local rest = getnext(last)
+        if rest then
+            local tail = findtail(sentinel)
+            if first and getid(first) == glue_code and getid(tail) == glue_code then
+                setwidth(first,0)
+            end
+            if last and getid(last) == glue_code and getid(sentinel) == glue_code then
+                setwidth(last,0)
+            end
+            if first and first ~= last then
+                local prev = getprev(first)
+                if prev then
+                    setnext(prev)
+                end
+                setlink(tail,first)
+            end
+            setlink(last,sentinel)
+            setprev(rest)
+            flush_list(rest)
+        end
+    end
+    local result = hpack(list)
+    setattrlist(result,text)
+    setlist(text)
+    free(text)
+    return tonode(result)
+end
+
+interfaces.implement {
+    name      = "limitated",
+    public    = true,
+    protected = true,
+    arguments = {
+        {
+            { "left",     "dimension" },
+            { "right",    "dimension" },
+            { "text",     "hbox" },
+            { "sentinel", "hbox" },
+            { "strip",    "boolean" },
+        }
+    },
+    actions   = function(t)
+        context.dontleavehmode()
+        context(limitate(t))
     end,
 }

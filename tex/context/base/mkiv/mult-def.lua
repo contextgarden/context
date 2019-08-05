@@ -9108,6 +9108,18 @@ return {
    ["en"]="middlecommand",
    ["nl"]="middencommando",
   },
+  ["middlecolor"]={
+   ["en"]="middlecolor",
+   ["nl"]="middenkleur",
+  },
+  ["middlestyle"]={
+   ["en"]="middlestyle",
+   ["nl"]="middenletter",
+  },
+  ["middlewidth"]={
+   ["en"]="middlewidth",
+   ["nl"]="middenbreedte",
+  },
   ["middlespeech"]={
    ["cs"]="middlespeech",
    ["de"]="middlespeech",

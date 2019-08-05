@@ -917,12 +917,12 @@
    \edef\p_framed_background{\framedparameter\c!background}%
    % not here, in calling macro: setups
    \pack_framed_remove_depth
-   \ifx\p_framed_frame\v!overlay \else \ifx\p_framed_frame\v!none \else
+   \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
      \ifx\p_framed_rulethickness\empty\else
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi\fi
+   \fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -935,10 +935,8 @@
      \pack_framed_add_background
    \fi
    \pack_framed_restore_depth
-   \iftrialtypesetting \else
-     \ifx\m_overlay_region\empty\else
-       \pack_framed_add_region
-     \fi
+   \iftrialtypesetting\orelse\ifx\m_overlay_region\empty\else
+     \pack_framed_add_region
    \fi
    \box\b_framed_normal
    \egroup}
@@ -956,12 +954,12 @@
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
    \edef\p_framed_frame{\framedparameter\c!frame}%
    \edef\p_framed_background{\framedparameter\c!background}%
-   \ifx\p_framed_frame\v!overlay \else \ifx\p_framed_frame\v!none \else
+   \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
      \ifx\p_framed_rulethickness\empty \else
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
-   \fi\fi
+   \fi
    \ifx\p_framed_background\empty \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
@@ -1131,12 +1129,12 @@
      % obey user set height, also downward compatible
    \else
      \edef\p_framed_lines{\framedparameter\c!lines}%
-     \ifx\p_framed_lines\empty\else
-       \ifcase\p_framed_lines\else
-          \d_framed_height\p_framed_lines\lineheight
-          \edef\localheight{\the\d_framed_height}%
-          \settrue\c_framed_has_height
-        \fi
+     \ifx\p_framed_lines\empty
+     \orelse\ifcase\p_framed_lines
+     \else
+       \d_framed_height\p_framed_lines\lineheight
+       \edef\localheight{\the\d_framed_height}%
+       \settrue\c_framed_has_height
      \fi
    \fi
    % this is now an option: width=local

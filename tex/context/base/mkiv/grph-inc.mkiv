@@ -506,29 +506,6 @@
    \c!height     =\externalfigureparameter\c!height,
    \c!lines      =\externalfigureparameter\c!lines]
 
-% % this will become:
-%
-% \unexpanded\def\doscalefigure % used at lua end
-%   {\global\setbox\foundexternalfigure\vbox\bgroup
-%      \bgroup
-%        \let\currentscale\currentexternalfigure
-%        \let\scaleparameter\externalfigureparameter
-%        \dowithnextboxcs\grph_scale_finish\hbox{\dowithfigure{\box\foundexternalfigure}}%
-%    \egroup}
-%
-% % or even better:
-%
-% \def\grph_scale_inherited#1%
-%   {\bgroup
-%    \expandafter\let\expandafter\currentscale  \csname current#1\endcsname
-%    \expandafter\let\expandafter\scaleparameter\csname #1parameter\endcsname
-%    \dowithnextboxcs\grph_scale_finish\hbox}
-%
-% \unexpanded\def\doscalefigure % used at lua end
-%   {\global\setbox\foundexternalfigure\vbox\bgroup
-%      \grph_scale_inherited{externalfigure}{\dowithfigure{\box\foundexternalfigure}}%
-%    \egroup}
-
 %D You can register additional suffixes with the following command:
 %D
 %D \starttyping
