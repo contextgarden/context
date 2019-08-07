@@ -498,7 +498,7 @@
      % new, \placefigure{\xmlfirst{#1}{somecaption}}{} passes earlier empty check
      % so here we misuse the scratch box; actually this means that the previous
      % test can go away (some day, when i redo this module)
-     \ifdim\wd\b_strc_floats_caption=\zeropoint
+     \ifzeropt\wd\b_strc_floats_caption
        \global\emptyfloatcaptiontrue
        \ifnofloatnumber
          \global\nofloatcaptiontrue
@@ -1150,7 +1150,7 @@
    \strc_floats_set_natural_dimensions\nextbox
    \global\setbox\floatbox\vbox{\floatparameter\c!command{\box\nextbox}}% can be anything so no pack
    \strc_floats_set_natural_dimensions\floatbox
-   \ifdim\htdp\floatbox=\zeropoint
+   \ifzeropt\htdp\floatbox
      \showmessage\m!floatblocks{11}\empty
      \global\setbox\floatbox\vpack
        {\dostarttagged\t!floatcontent\empty
@@ -1329,7 +1329,7 @@
 \def\strc_floats_set_local_dimensions
   {\global\d_page_sides_shift  \zeropoint       % duplicate
    \global\d_page_sides_maximum\zeropoint\relax % duplicate
-   \ifdim\d_page_sides_downshift=\zeropoint\else
+   \ifzeropt\d_page_sides_downshift\else
      \global\setbox\floatbox\vpack
        {\vskip\d_page_sides_downshift
         \nointerlineskip

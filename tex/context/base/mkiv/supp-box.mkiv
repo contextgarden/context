@@ -437,7 +437,7 @@
 %D
 %D \def\dogetnoflines#1#2%
 %D   {\noflinesheight#2\relax
-%D    \ifzeropt\noflinesheight % \ifdim\noflinesheight=\zeropoint
+%D    \ifzeropt\noflinesheight
 %D      \noflines\zerocount
 %D    \else
 %D      \divide\noflinesheight \openlineheight
@@ -880,7 +880,7 @@
 
 \def\doreshapebox#1#2#3#4% \shapebox, \shapepenalty, \shapekern, \shapeskip
   {\global\reshapingfailedfalse
-   \ifzeropt\ht\oldshapebox % \ifdim\ht\oldshapebox=\zeropoint
+   \ifzeropt\ht\oldshapebox
      \setbox\newshapebox\emptyvbox
    \else
      \setbox\newshapebox\vbox % can be \vpack
@@ -952,7 +952,7 @@
 
 \unexpanded\def\flushshapebox
   {\bgroup
-   \ifzeropt\ht\newshapebox % \ifdim\ht\newshapebox=\zeropoint
+   \ifzeropt\ht\newshapebox
    \else
      % make \prevdepth legal
      % \par before the next \vskip gives far worse results
@@ -1912,7 +1912,7 @@
       \fi
       \ht\hhbox\strutht
       \dp\hhbox\strutdp
-      \ifzeropt\hhboxindent\else % \ifdim\hhboxindent=\zeropoint\else
+      \ifzeropt\hhboxindent\else
         \setbox\hhbox\hpack{\kern-\hhboxindent\box\hhbox}%
         \hhboxindent\zeropoint
       \fi

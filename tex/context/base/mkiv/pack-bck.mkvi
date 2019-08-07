@@ -120,7 +120,7 @@
      \splitmaxdepth\boxmaxdepth
      \splittopskip\topskip
      \doloop
-       {\ifdim\pagetotal=\zeropoint % empty page
+       {\ifzeropt\pagetotal % empty page
           \scratchdimen\textheight
           \backgroundsplitmode\plusone % split to max height
         \else

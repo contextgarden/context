@@ -377,40 +377,9 @@
 \let\getsetupstring\clf_getsetupstring
 \let\rawsetupstring\clf_rawsetupstring
 
-%D \macros
-%D   {ifshowwarnings, ifshowmessages}
-%D
-%D Sometimes displaying message can slow down processing considerably. We therefore
-%D introduce warnings. Users can turn of warnings and messages by saying:
-%D
-%D \starttyping
-%D \showwarningstrue
-%D \showmessagestrue
-%D \stoptyping
-%D
-%D Turning off messages also turns off warnings, which is quote logical because they
-%D are less important.
+%D For old times sake:
 
-% not yet mkiv
-
-\newif\ifshowwarnings \showwarningstrue
-\newif\ifshowmessages \showmessagestrue
-
-\let\normalshowmessage\showmessage
-
-\unexpanded\def\showwarning
-  {\ifshowwarnings
-     \expandafter\showmessage
-   \else
-     \expandafter\gobblethreearguments
-   \fi}
-
-\unexpanded\def\showmessage
-  {\ifshowmessages
-     \expandafter\normalshowmessage
-   \else
-     \expandafter\gobblethreearguments
-   \fi}
+\let\showwarning\showmessage
 
 %D \macros
 %D   {dosetvalue,dosetevalue,dosetgvalue,dosetxvalue,docopyvalue,doresetvalue} % dogetvalue
@@ -458,9 +427,9 @@
 %D We can now redefine some messages that will be introduced in the multi||lingual
 %D system module.
 
-\unexpanded\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}\waitonfatalerror}
-\unexpanded\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}\waitonfatalerror}
-\unexpanded\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}\waitonfatalerror}
+\unexpanded\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}}
+\unexpanded\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}}
+\unexpanded\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}}
 
 %D \CONTEXT\ is a parameter driven package. This means that users instruct the
 %D system by means of variables, values and keywords. These instructions take the

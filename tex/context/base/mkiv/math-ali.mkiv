@@ -1469,7 +1469,7 @@
      \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \else
      \ifconditional\c_strc_math_indent
-       \ifdim\d_strc_math_indent=\zeropoint\else
+       \ifzeropt\d_strc_math_indent\else
          \hangafter\plusone
          \hangindent\d_strc_math_indent
        \fi
@@ -1876,22 +1876,22 @@
         % 4=disable 6=only when no spaces
         \mathsurroundskip\mathematicsparameter\c!textdistance\relax
         \ifzeropt\mathsurroundskip
-        \ifdim\gluestretch\mathsurroundskip=\zeropoint
-            \ifdim\glueshrink\mathsurroundskip=\zeropoint
-            \mathsurroundmode\plussix
+          \ifzeropt\gluestretch\mathsurroundskip
+            \ifzeropt\glueshrink\mathsurroundskip
+              \mathsurroundmode\plussix
             \else
-            \mathsurroundskip\zeropoint
-            \mathsurroundmode\plusfour
+              \mathsurroundskip\zeropoint
+              \mathsurroundmode\plusfour
             \fi
-        \else
+          \else
             \mathsurroundmode\plussix
-        \fi
+          \fi
         \else
-        \mathsurroundmode\plussix
+          \mathsurroundmode\plussix
         \fi
     \else
-        \mathsurroundmode\plusfour
-        \mathsurroundskip\zeropoint
+      \mathsurroundmode\plusfour
+      \mathsurroundskip\zeropoint
     \fi
 \to \everymathematics
 

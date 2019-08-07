@@ -786,7 +786,7 @@
      \d_strc_itemgroups_list_width\d_strc_itemgroups_max_width
    \else\ifnum\itemgroupparameter\c!factor>\zerocount
      \d_strc_itemgroups_list_width\itemgroupparameter\c!step\relax
-     \ifdim\d_strc_itemgroups_list_width=\zeropoint \d_strc_itemgroups_list_width=.5em\fi
+     \ifzeropt\d_strc_itemgroups_list_width \d_strc_itemgroups_list_width=.5em\fi
      \multiply\d_strc_itemgroups_list_width \itemgroupparameter\c!factor
      \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
    \else
@@ -1518,7 +1518,7 @@
    \ifdim\d_strc_itemgroups_asked_width<\zeropoint\relax
      \strc_itemgroups_handle_lapped_item_negative
    \else
-     \ifdim\d_strc_itemgroups_asked_width=\zeropoint\relax
+     \ifzeropt\d_strc_itemgroups_asked_width
        \strc_itemgroups_calculate_list_width\plusone
      \else
        \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting

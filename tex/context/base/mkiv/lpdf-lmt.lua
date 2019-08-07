@@ -380,9 +380,9 @@ local flushcharacter  do
     -- for it so
 
     local function setup_fontparameters(font,factor,f,e)
-        local slant   = (fontparameters.slantfactor   or    0) / 1000
-        local extend  = (fontparameters.extendfactor  or 1000) / 1000
-        local squeeze = (fontparameters.squeezefactor or 1000) / 1000
+        local slant   = fontparameters.slantfactor   or 0
+        local extend  = fontparameters.extendfactor  or 1
+        local squeeze = fontparameters.squeezefactor or 1
         local expand  = 1 + factor / 1000000
         local format  = fontproperties.format
         if e then
@@ -416,9 +416,9 @@ local flushcharacter  do
  --
  -- local function setup_fontparameters(font,factor,f,e)
  --     if font ~= lastfont then
- --         lastslant   = (fontparameters.slantfactor   or    0) / 1000
- --         lastextend  = (fontparameters.extendfactor  or 1000) / 1000
- --         lastsqueeze = (fontparameters.squeezefactor or 1000) / 1000
+ --         lastslant   = fontparameters.slantfactor   0
+ --         lastextend  = fontparameters.extendfactor  1
+ --         lastsqueeze = fontparameters.squeezefactor 1
  --         lastformat  = fontproperties.format
  --         lastsize    = fontparameters.size * bpfactor
  --         if format == "opentype" or format == "type1" then

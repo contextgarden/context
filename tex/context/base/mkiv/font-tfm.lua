@@ -139,6 +139,16 @@ local function read_from_tfm(specification)
         -- If reencode returns a new table, we assume that we're doing something
         -- special. An 'auto' reencode picks up its vector from the pfb file.
 
+        if lpdf and lpdf.getmapentry and not features.reencode then
+            -- This can happen multiple times but not that often so we don't
+            -- optimize this.
+            local encoding, pfbfile, encfile = lpdf.getmapentry(filename)
+            if encoding and pfbfile then
+                features.reencode = encfile
+                features.pfbfile  = pfbfile
+            end
+        end
+
         local newtfmdata = (depth[filename] == 1) and tfm.reencode(tfmdata,specification)
         if newtfmdata then
              tfmdata = newtfmdata
@@ -159,6 +169,10 @@ local function read_from_tfm(specification)
         properties.filename   = specification.filename -- todo: fallback
         properties.format     = tfmdata.format or fonts.formats.tfm -- better than nothing
         properties.usedbitmap = tfmdata.usedbitmap
+        --
+if lpdf and lpdf.getmapentry and newtfmdata then
+    properties.filename = features.pfbfile
+end
         --
         tfmdata.properties = properties
         tfmdata.resources  = resources
@@ -243,6 +257,7 @@ local function read_from_tfm(specification)
         if size < 0 then
             size = idiv(65536 * -size,100)
         end
+
         parameters.factor        = 1     -- already scaled
         parameters.units         = 1000  -- just in case
         parameters.size          = size
@@ -374,7 +389,7 @@ do
             return
         end
 
-        local pfbfile = outfiles[tfmfile]
+        local pfbfile = pfbfile or outfiles[tfmfile]
 
         if pfbfile == nil then
             if bitmap then
@@ -395,7 +410,6 @@ do
 
         local encoding = false
         local vector   = false
-
         if type(pfbfile) == "string" then
             local pfb = constructors.handlers.pfb
             if pfb and pfb.loadvector then
@@ -427,17 +441,18 @@ do
         local indices    = { }
         local parentfont = { "font", 1 }
         local private    = tfmdata.privateoffset or constructors.privateoffset
-        local reported   = encdone[tfmfile][encfile]
-
+        local reported   = encdone[tfmfile][encfile] -- bah, encdone for tfm or pfb ?
         -- create characters table
+
+        -- vector   : pfbindex -> name
+        -- encoding : tfmindex -> name
 
         local backmap = vector and table.swapped(vector)
         local done    = { } -- prevent duplicate
-
-        for index, name in sortedhash(encoding) do -- predictable order
-            local unicode  = unicoding[name]
-            local original = originals[index]
+        for tfmindex, name in sortedhash(encoding) do -- predictable order
+            local original = originals[tfmindex]
             if original then
+                local unicode = unicoding[name]
                 if unicode then
                     original.unicode = unicode
                 else
@@ -448,17 +463,17 @@ do
                     end
                 end
                 characters[unicode] = original
-                indices[index]      = unicode
+                indices[tfmindex]   = unicode
                 original.name       = name -- so one can lookup weird names
                 if backmap then
-                    original.index = backmap[name]
+                    original.index = backmap[name] -- the pfb index
                 else -- probably bitmap
-                    original.commands = { parentfont, charcommand[index] } -- or "slot"
-                    original.oindex   = index
+                    original.commands = { parentfont, charcommand[tfmindex] } -- or "slot"
+                    original.oindex   = tfmindex
                 end
                 done[name] = true
             elseif not done[name] then
-                report_tfm("bad index %a in font %a with name %a",index,tfmfile,name)
+                report_tfm("bad index %a in font %a with name %a",tfmindex,tfmfile,name)
             end
         end
 

@@ -203,7 +203,7 @@
 % oeps, hsize can be 0pt in which case we get a strange division
 % was: 6\bodyfontsize, fails on: \placefigure{x $x=x$ x}{}
 
-\def\spac_align_set_raggedness_middle{\ifdim\hsize=\zeropoint\plussix\bodyfontsize\else.5\hsize\fi}
+\def\spac_align_set_raggedness_middle{\ifzeropt\hsize\plussix\bodyfontsize\else.5\hsize\fi}
 
 \unexpanded\def\setraggedness#1% tricky .. we keep the global tolerance otherwise ... to be reconsidered
   {\ifnum\tolerance<\c_spac_tolerance_minimum

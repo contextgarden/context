@@ -1722,7 +1722,7 @@
           \tabl_ntb_set_aut\recurselevel{\the\scratchdimen}%
         \fi
       \else
-        \ifdim\scratchdimen=\zeropoint % auto set width
+        \ifzeropt\scratchdimen % auto set width
           \tabl_ntb_set_wid\recurselevel{\the\!!dimena}%
         \fi
       \fi}%
@@ -1906,7 +1906,7 @@
      \ifdim\wd\scratchbox<.75\hsize % fuzzy guess
        \ifdim\ht\scratchbox>2\openlineheight % honor width since this
          \scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax % can be a figure or so
-         \ifdim\scratchdimen=\zeropoint
+         \ifzeropt\scratchdimen
            % side effect: when width is set to 0pt,
            % we can force a span that fits the sum of spans widths
            \tabl_ntb_set_aut\c_tabl_ntb_col{\the\scratchdimen}%
@@ -1984,7 +1984,7 @@
      [\naturaltablelocalparameter\c!color] % as well as permits local colors to take precedence
      {\letnaturaltablelocalparameter\c!color\empty
       \setnaturaltablelocalparameter\c!width{\d_tabl_ntb_width}%
-      \ifdim\d_tabl_ntb_height=\zeropoint\relax % case: nc=maxcolumns
+      \ifzeropt\d_tabl_ntb_height % case: nc=maxcolumns
       \else
         \setnaturaltablelocalparameter\c!height{\d_tabl_ntb_height}%
       \fi

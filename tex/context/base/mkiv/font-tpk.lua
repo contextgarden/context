@@ -454,7 +454,17 @@ do
         local header     = 0
         local max        = 0
         local size       = streamsize(s)
-        local glyphs     = table.setmetatableindex(function(t,k) local v = { } t[k] = v return v end)
+        local glyphs     = table.setmetatableindex(function(t,k)
+            local v = {
+                -- we default because boundary chars have no dimension s
+                width  = 0,
+                height = 0,
+                depth  = 0,
+                italic = 0,
+            }
+            t[k] = v
+            return v
+        end)
         local parameters = { }
         local direction  = 0
         --

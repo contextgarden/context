@@ -723,15 +723,15 @@
 
 \def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
   {\ifseventhargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  {#vertical}{#horizontal}{#a}{#b}{#c}{#d}}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  [#vertical][#horizontal][#a][#b][#c][#d]}%
    \orelse\ifsixthargument
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five {#vertical}{#horizontal}{#a}{#b}{#c}}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five [#vertical][#horizontal][#a][#b][#c][]}%
    \orelse\iffifthargument
-     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four {#vertical}{#horizontal}{#a}{#b}}%
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four [#vertical][#horizontal][#a][#b][][]}%
    \orelse\iffourthargument
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three{#vertical}{#horizontal}{#a}}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three[#vertical][#horizontal][#a][][][]}%
    \else
-     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  {#vertical}{#horizontal}}%
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  [#vertical][#horizontal][][][][]}%
    \fi}
 
 %D A few more page breakers:

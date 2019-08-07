@@ -2782,7 +2782,7 @@
 
 \def\checkeddisplaywidth % hsize if zero
   {\dimexpr
-     \ifdim\displaywidth=\zeropoint
+     \ifzeropt\displaywidth
        \hsize
      \else
        \displaywidth
@@ -2791,7 +2791,7 @@
 
 \def\maximizeddisplaywidth % larger than zero but within hsize
   {\dimexpr
-     \ifdim\displaywidth=\zeropoint
+     \ifzeropt\displaywidth
        \hsize
      \else\ifdim\displaywidth>\hsize
         \hsize

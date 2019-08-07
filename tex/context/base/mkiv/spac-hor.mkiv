@@ -43,7 +43,7 @@
 
 \unexpanded\def\spac_indentation_setup_size
   {\assigndimension\v_spac_indentation_current\d_spac_indentation_par{1\emwidth}{1.5\emwidth}{2\emwidth}%
-   \ifdim\parindent=\zeropoint\else
+   \ifzeropt\parindent\else
      \parindent\d_spac_indentation_par\relax % new per 2019-04-12 : just in case it has been set beforehand
    \fi}
 
@@ -197,7 +197,7 @@
                                   \parindent\zeropoint
                                   \c_spac_indentation_toggle_state\zerocount}
 
-\installindentingmethod \v!toggle{\parindent\ifdim\parindent=\zeropoint
+\installindentingmethod \v!toggle{\parindent\ifzeropt\parindent
                                     \d_spac_indentation_par
                                   \else
                                     \zeropoint
@@ -216,7 +216,7 @@
 \installmacrostack\ifindentation
 
 \def\spac_indentation_remove
-  {\ifdim\parindent=\zeropoint \else
+  {\ifzeropt\parindent \else
      \begingroup
      \setbox\scratchbox\lastbox
      \endgroup
@@ -273,7 +273,7 @@
    \fi}
 
 \def\spac_indentation_variant_force
-  {\ifvmode \ifdim\parindent=\zeropoint \else
+  {\ifvmode \ifzeropt\parindent \else
      % was : \hskip\parindent
      % can be: \indent
      % but we test:
@@ -845,7 +845,7 @@
 \letvalue{\??skipadaptionright\v!no      }\zeropoint
 \letvalue{\??skipadaptionright\empty     }\zeropoint
 
-% \setvalue{\??skipadaptionleft \v!standard}{\ifdim\d_spac_indentation_par=\zeropoint\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
+% \setvalue{\??skipadaptionleft \v!standard}{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
 % \setvalue{\??skipadaptionright\v!standard}{\narrowerparameter\c!right}
 
 \letcsnamecsname\csname\??skipadaptionleft \v!standard\endcsname\csname\??skipadaptionleft \v!yes\endcsname
@@ -1259,7 +1259,7 @@
    \advance\c_spac_ignore_spaces\minusone}
 
 \def\spac_ignore_spaces_body
-  {\ifdim\lastskip=\zeropoint
+  {\ifzeropt\lastskip
      \exitloop
    \else\ifdim\lastskip=\s_spac_ignore_spaces
      \unskip

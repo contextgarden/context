@@ -281,7 +281,7 @@
    \edef\p_background{\directthinrulesparameter\c!background}%
    \edef\p_frame     {\directthinrulesparameter\c!frame}%
    \linewidth\dimexpr\directthinrulesparameter\c!rulethickness/\plustwo\relax
-   \ifdim\linewidth=\zeropoint
+   \ifzeropt\linewidth
      \c_pack_thinrules_type\zerocount
    \else\ifx\p_frame\v!on
      \c_pack_thinrules_type\expandnamespaceparameter\??thinrulealternatives\directthinrulesparameter\c!alternative\v!b\relax

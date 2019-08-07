@@ -1471,14 +1471,8 @@
 %D will redefine this macro later on, when a more advanced message mechanism is
 %D implemented.
 
-\newif\iferrorisfatal
-
-\unexpanded\def\waitonfatalerror
-  {\iferrorisfatal\wait\fi}
-
 \unexpanded\def\showassignerror#1#2%
-  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}%
-   \waitonfatalerror}
+  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}}
 
 \unexpanded\def\doassignempty[#1][#2=#3]%
   {\ifcsname#1#2\endcsname\else\dosetvalue{#1}{#2}{#3}\fi}
@@ -4831,13 +4825,13 @@
 \newcount\c_syst_helpers_swapped
 \let     \m_syst_helpers_swapped\relax
 
-\unexpanded\def\swapdimens#1#2{\d_syst_helpers_swapped    #1\relax#1#2\relax#2\d_syst_helpers_swapped}
-\unexpanded\def\swapcounts#1#2{\c_syst_helpers_swapped    #1\relax#1#2\relax#2\c_syst_helpers_swapped}
-\unexpanded\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let  #1#2\let  #2\m_syst_helpers_swapped}
+\unexpanded\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
+\unexpanded\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
+\unexpanded\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
 
-\unexpanded\def\globalswapdimens#1#2{\d_syst_helpers_swapped    #1\global#1#2\global#2\d_syst_helpers_swapped}
-\unexpanded\def\globalswapcounts#1#2{\c_syst_helpers_swapped    #1\global#1#2\global#2\c_syst_helpers_swapped}
-\unexpanded\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet  #1#2\glet  #2\m_syst_helpers_swapped}
+\unexpanded\def\globalswapdimens#1#2{\d_syst_helpers_swapped#1\global#1#2\global#2\d_syst_helpers_swapped}
+\unexpanded\def\globalswapcounts#1#2{\c_syst_helpers_swapped#1\global#1#2\global#2\c_syst_helpers_swapped}
+\unexpanded\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet#1#2\glet#2\m_syst_helpers_swapped}
 
 %D \macros
 %D   {pushmacro,popmacro}

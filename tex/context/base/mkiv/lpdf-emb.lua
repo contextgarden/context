@@ -41,8 +41,11 @@ local pdfflushstreamobject = lpdf.flushstreamobject
 local fontstreams          = fonts.hashes.streams
 
 local report_fonts         = logs.reporter("backend","fonts")
+
 local trace_fonts          = false
 local trace_details        = false
+
+local dimenfactors         = number.dimenfactors
 
 trackers.register("backend.pdf.fonts",function(v) trace_fonts = v end)
 
@@ -53,6 +56,7 @@ local setposition = utilities.files.setposition
 local readstring  = utilities.files.readstring
 local openfile    = utilities.files.open
 local closefile   = utilities.files.close
+
 
 -- needs checking: signed vs unsigned
 
@@ -292,6 +296,9 @@ local loadmapfile, loadmapline, getmapentry  do
     local mappings = { }
 
     loadmapline = function(n)
+        if trace_fonts then
+            report_fonts("mapline: %s",n)
+        end
         local name, fullname, encfile, pfbfile = match(n,"(%S+)%s+(%S+).-<(.-%.enc).-<(.-%.pfb)")
         if name then
             mappings[name] = { fullname, encfile, pfbfile }
@@ -327,6 +334,8 @@ local loadmapfile, loadmapline, getmapentry  do
             return encoding, pfbfile, encfile
         end
     end
+
+    lpdf.getmapentry = getmapentry
 
 end
 
@@ -1340,6 +1349,23 @@ do
         local metadata       = details.rawdata.metadata
         local indices        = details.indices
         local metabbox       = { fontheader.xmin, fontheader.ymin, fontheader.xmax, fontheader.ymax }
+        local correction     = 1
+
+        -- (*) We share code with type1 and when we have old school tfm with
+        -- pfb but without descriptions we're kind of toast.
+
+        if not descriptions or not next(descriptions) then
+            -- This is good enough, we only need indices and widths.
+            descriptions = details.fontdata.characters
+            -- This is a hack, we have no basepoints.
+            correction   = details.fontdata.parameters.size / 1000
+            -- And this needs checking.
+            correction   = correction * dimenfactors.bp / dimenfactors.pt
+            metadata     = { }
+        end
+
+        --
+
         local indices,
               minindex,
               maxindex       = collectindices(descriptions,indices)
@@ -1385,8 +1411,9 @@ do
         fontfile = closefontfile(fontfile)
         --
         local units       = fontheader.units or metadata.units
+
         local basefont    = pdfconstant(basefontname)
-        local widths      = widtharray(details,indices,maxindex,units)
+        local widths      = widtharray(details,indices,maxindex,units * correction)
         local object      = details.objectnumber
         local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname)
         local tocidset    = tocidsetdictionary(indices,minindex,maxindex)
@@ -1458,6 +1485,10 @@ do
     end
 
     mainwriters["type1"] = function(details)
+        -- We abuse the cff includer which is ok but for special cases like
+        -- tfm -> pfb we don't have the right descriptions and scale so this
+        -- is why we cheat elsewhere. Maybe I should just drop that kind of
+        -- support and assume afm files to be present. See (*) above.
         local s = details.streams
         local m = details.rawdata.metadata
         if m then
@@ -1714,8 +1745,8 @@ function lpdf.flushfonts()
 
     -- this is no not yet ok for tfm / type 1
     for hash, details in sortedhash(mainfonts) do
+        local filename = details.filename
         if next(details.indices) then
-            local filename = details.filename
             if trace_fonts then
                 report_fonts("embedding %a hashed as %a",filename,hash)
             end
@@ -1737,6 +1768,9 @@ function lpdf.flushfonts()
                     -- This will move to the tpk module where we will also deal
                     -- with bitmaps then.
                     local encoding, pfbfile, encfile = getmapentry(filename)
+if trace_fonts then
+    report_fonts("file %a resolved to encoding %a and file %a",filename,encoding,pfbfile)
+end
                     if encoding and pfbfile then
                         filename = pfbfile
                         format   = "type1"
@@ -1752,7 +1786,7 @@ function lpdf.flushfonts()
                         local vector   = encoding.vector
                         local indices  = details.indices
                         local remapped = { }
-                        local factor   = number.dimenfactors.bp * size / 65536
+                        local factor   = dimenfactors.bp * size / 65536
                         for k, v in next, indices do
                             local name  = vector[k]
                             local index = reverse[name] or 0
@@ -1792,7 +1826,7 @@ function lpdf.flushfonts()
                         local vector   = encoding.vector
                         local indices  = details.indices
                         local remapped = { }
-                        local factor   = number.dimenfactors.bp * size / 65536
+                        local factor   = dimenfactors.bp * size / 65536
                         for k, v in next, indices do
                             local name  = vector[k]
                             local index = reverse[name] or 0
@@ -1834,6 +1868,8 @@ function lpdf.flushfonts()
                     report_fonts("no %a writer for %a",format,filename)
                 end
             end
+        else
+            report_fonts("no indices for %a",filename)
         end
         mainfonts[details.hash] = false -- done
     end

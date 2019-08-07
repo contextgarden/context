@@ -158,7 +158,7 @@
               {\vss
                \hpack to \scratchdimenone
                  {\dummy
-                  \ifdim\interwordspace=\zeropoint
+                  \ifzeropt\interwordspace
                     \setbox##1\hpack
                       {\raise.5\dp##1\hpack
                          {\lower.5\ht##1\copy##1}}%

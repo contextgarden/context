@@ -171,7 +171,7 @@ end
 -- todo: \starttext bla \blank[foo] bla \stoptext
 
 local nop = function() end
-local resetmessages = status.resetmessages() or nop
+local resetmessages = status.resetmessages or nop
 
 local function processerror(offset)
  -- print("[[ last tex error: " .. tostring(status.lasterrorstring     or "<unset>") .. " ]]")
@@ -181,7 +181,8 @@ local function processerror(offset)
  -- print("[[ last context  : " .. tostring(status.lasterrorcontext    or "<unset>") .. " ]]")
 
     local inputstack   = resolvers.inputstack
-    local filename     = inputstack[#inputstack] or status.filename
+    local filename     = inputstack[#inputstack-1] or status.filename -- weird, why -1
+    ----- filename     = status.filename -- weird, why -1
     local linenumber   = tonumber(status.linenumber) or 0
     local lastcontext  = status.lasterrorcontext
     local lasttexerror = status.lasterrorstring or "?"

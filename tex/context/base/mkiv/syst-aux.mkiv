@@ -1763,14 +1763,8 @@
 %D will redefine this macro later on, when a more advanced message mechanism is
 %D implemented.
 
-\newif\iferrorisfatal
-
-\unexpanded\def\waitonfatalerror
-  {\iferrorisfatal\wait\fi}
-
 \unexpanded\def\showassignerror#1#2%
-  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}%
-   \waitonfatalerror}
+  {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}}
 
 \unexpanded\def\doassignempty[#1][#2=#3]%
   {\ifcsname#1#2\endcsname\else\dosetvalue{#1}{#2}{#3}\fi}

@@ -245,7 +245,7 @@
 \newdimen\d_spac_prevcontent % set by lua
 
 \unexpanded\def\removelastskip
-  {\ifvmode\ifdim\lastskip=\zeropoint\else\vskip-\lastskip\fi\fi}
+  {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
 
 \def\doifoutervmode
   {\ifvmode
@@ -263,7 +263,7 @@
      {\s_spac_lastskip\lastskip
       \removelastskip
       #1\relax
-      \ifdim\s_spac_lastskip=\zeropoint
+      \ifzeropt\s_spac_lastskip
         % avoid interference with footnotes
       \else
         \vskip\s_spac_lastskip
@@ -2233,7 +2233,7 @@
 
 \def\bodyfontwhitespace
   {\dimexpr
-     \ifdim\parskip=\zeropoint
+     \ifzeropt\parskip
        \zeropoint
      \else\ifgridsnapping
        \bodyfontlineheight

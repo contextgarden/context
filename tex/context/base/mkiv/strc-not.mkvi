@@ -1458,7 +1458,7 @@
            \c!strut=\v!no,
            \c!offset=\v!overlay]%
         \inheritednoteframed
-          {\ifdim\dp\scratchbox=\zeropoint          % this hack is needed because \vadjust
+          {\ifzeropt\dp\scratchbox                  % this hack is needed because \vadjust
              \hpack{\lower\strutdp\box\scratchbox}% % in margin number placement
            \else                                    % hides the (always) present depth
              \box\scratchbox

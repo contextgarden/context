@@ -599,24 +599,24 @@
     \vbox {
         \headsetupspacing
         \ifconditional\headshownumber
-            \ifdim\headwidth=\zeropoint \else
-                \ifdim\headnumberwidth=\zeropoint
-                    \ifdim\headtextwidth=\zeropoint \else
+            \ifzeropt\headwidth \else
+                \ifzeropt\headnumberwidth
+                    \ifzeropt\headtextwidth \else
                         \headnumberwidth\dimexpr\headwidth-\headtextwidth\relax
                     \fi
                 \else
-                    \ifdim\headtextwidth=\zeropoint
+                    \ifzeropt\headtextwidth
                         \headtextwidth\dimexpr\headwidth-\headnumberwidth\relax
                     \fi
                 \fi
                 \hsize\headwidth
             \fi
-            \ifdim\headnumberwidth=\zeropoint\else
+            \ifzeropt\headnumberwidth \else
                 \headnumberdistance\zeropoint
             \fi
-            \setbox\scratchbox\hbox \ifdim\headnumberwidth=\zeropoint\else to \headnumberwidth\fi{\headnumbercontent}
+            \setbox\scratchbox\hbox \ifzeropt\headnumberwidth\else to \headnumberwidth\fi{\headnumbercontent}
             \scratchdimen\dimexpr\wd\scratchbox+\headnumberdistance\relax
-            \ifdim\headtextwidth=\zeropoint\else
+            \ifzeropt\headtextwidth \else
                 \hsize\dimexpr\scratchdimen+\headtextwidth\relax
             \fi
             \hangindent\scratchdimen
@@ -625,8 +625,8 @@
             \box\scratchbox
             \hskip\headnumberdistance
         \else
-            \ifdim\headtextwidth=\zeropoint
-                \ifdim\headwidth=\zeropoint \else
+            \ifzeropt\headtextwidth
+                \ifzeropt\headwidth \else
                     \hsize\headwidth
                 \fi
             \else

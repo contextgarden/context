@@ -663,16 +663,14 @@
   {\dotripleargument\syst_variables_set[\globalgetrawparameters]}
 
 \def\syst_variables_set[#1][#2][#3]% tricky, test on s-pre-60
-  {\errorisfataltrue
-   \doifelse{#2}\currentvariableclass
+  {\doifelse{#2}\currentvariableclass
      {#1[\??variables#2:][#3]}%
      {\pushmacro\currentvariableclass
       \def\currentvariableclass{#2}%
       \getvariable{#2}\s!reset
       #1[\??variables#2:][#3]%
       \getvariable{#2}\s!set
-      \popmacro\currentvariableclass}%
-   \errorisfatalfalse}
+      \popmacro\currentvariableclass}}
 
 \unexpanded\def\setvariable #1#2#3{\expandafter\def \csname\??variables#1:#2\endcsname{#3}}
 \unexpanded\def\setevariable#1#2#3{\expandafter\edef\csname\??variables#1:#2\endcsname{#3}}

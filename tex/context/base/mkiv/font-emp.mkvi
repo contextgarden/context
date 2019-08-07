@@ -173,7 +173,7 @@
 
 \def\font_emphasis_correction
    {\setbox\scratchbox\hbox{\nexttoken}% tricky as next can be a macro
-    \ifdim\ht\scratchbox=\zeropoint % probably a space
+    \ifzeropt\ht\scratchbox % probably a space
       \expandafter\font_emphasis_b
     \else\ifdim\ht\scratchbox<.3\exheight
       \expandafter\expandafter\expandafter\endgroup
@@ -183,7 +183,7 @@
 
 \def\font_emphasis_b
   {\scratchskip\lastskip
-   \ifdim\scratchskip=\zeropoint\relax % == \ifzeropt\scratchskip
+   \ifzeropt\scratchskip
      \italiccorrection\relax
    \else
      \unskip\italiccorrection\hskip\scratchskip
