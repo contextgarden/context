@@ -116,10 +116,10 @@ local function processsubsup(start)
          -- start_tagged("mrow")
             process(nucleus)
          -- stop_tagged()
-            start_tagged("mrow")
+            start_tagged("mrow", { subscript = true })
             process(sub)
             stop_tagged()
-            start_tagged("mrow")
+            start_tagged("mrow", { superscript = true })
             process(sup)
             stop_tagged()
             stop_tagged()
@@ -204,7 +204,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
     local mtexttag = nil
     while start do
         local id = getid(start)
--- print("!!!!!!!!!!",nodecodes[id])
 -- showtag(start,id,true)
         if id == glyph_code or id == disc_code then
             if not mtexttag then
@@ -583,9 +582,10 @@ end
 
 function noads.handlers.tags(head,style,penalties)
     start_tagged("math", { mode = (getattr(head,a_mathmode) == 1) and "display" or "inline" })
---     start_tagged("mrow")
     setattr(head,a_tagged,start_tagged("mrow"))
+-- showtag(head,getid(head),true)
     process(head)
+-- showtag(head,getid(head),false)
     stop_tagged()
     stop_tagged()
 end

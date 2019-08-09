@@ -41,7 +41,7 @@ return {
         "bgroup", "egroup",
         "endline",
         --
-        "conditionaltrue", "conditionalfalse", "quitcondition",
+        "conditionaltrue", "conditionalfalse",
         --
         "attributeunsetvalue",
         --
@@ -293,6 +293,8 @@ return {
         "doifelseassignment", "doifassignmentelse", "docheckassignment", "doifelseassignmentcs", "doifassignmentelsecs",
         "validassignment", "novalidassignment",
         "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
+        --
+        "quitcondition", "truecondition", "falsecondition",
         --
         "tracingall", "tracingnone", "loggingall",
         --

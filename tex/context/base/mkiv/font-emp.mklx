@@ -164,7 +164,7 @@
    \futurelet\nexttoken\font_emphasis_test}
 
 \def\font_emphasis_test
-  {\ifcat\noexpand\nexttoken,% still ok?
+  {\ifcat\noexpand\nexttoken,% we can do better in luatex ... some day ...
      \expandafter\font_emphasis_a
    \else
      \expandafter\font_emphasis_b

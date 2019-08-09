@@ -1234,28 +1234,38 @@ do
             local ndata = #data
             local roottg = root.tg
             if roottg == "msubsup" then
+                -- kind of tricky: we have a diufferent order in display mode
                 local nucleus, superscript, subscript
-                for i=1,ndata do
-                    local di = data[i]
-                    if not di then
-                        -- weird
-                    elseif di.content then
-                        -- text
-                    elseif not nucleus then
-                        nucleus = i
-                    elseif not superscript then
-                        superscript = i
-                    elseif not subscript then
-                        subscript = i
-                    else
-                        -- error
+                if ndata > 3 then
+                    -- error
+                else
+                    for i=1,ndata do
+                        local di = data[i]
+                        if not di then
+                            -- weird
+                        elseif di.content then
+                            -- text
+                        else
+                            local s = specifications[di.fulltag]
+                            if s.subscript then
+                                subscript = i
+                            elseif s.superscript then
+                                superscript = i
+                            else
+                                nucleus = i
+                            end
+                        end
                     end
-                end
-                if superscript and subscript then
-                    local sup, sub = data[superscript], data[subscript]
-                    data[superscript], data[subscript] = sub, sup
-                 -- sub.__o__, sup.__o__ = subscript, superscript
-                    sub.__i__, sup.__i__ = superscript, subscript
+                    if superscript or subscript then
+                        -- we probably always have 3 anyway ... needs checking
+                        local nuc = nucleus     and data[nucleus]
+                        local sub = subscript   and data[subscript]
+                        local sup = superscript and data[superscript]
+                        local n = 0 -- play safe
+                        if nuc then n = n + 1 ; data[n] = nuc end
+                        if sub then n = n + 1 ; data[n] = sub end
+                        if sup then n = n + 1 ; data[n] = sup end
+                    end
                 end
          -- elseif roottg == "msup" or roottg == "msub" then
          --     -- m$^2$

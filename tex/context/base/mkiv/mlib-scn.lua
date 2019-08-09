@@ -27,7 +27,7 @@ if not modules then modules = { } end modules ['mlib-scn'] = {
 -- popparameters;
 
 local type, next = type, next
-local byte = string.byte
+local byte, gmatch = string.byte, string.gmatch
 local insert, remove = table.insert, table.remove
 
 local mplib    = mplib
@@ -288,7 +288,7 @@ local function collectnames()
             n = n + 1 l[n] = scanstring(1)
         elseif t == nullary_code then
             n = n + 1 l[n] = scanboolean(1)
-        elseif t == leftdelimiter_code then
+        elseif t == leftdelimiter_code or t == tag_code then
             t = scanexpression(true)
             n = n + 1 l[n] = (typescanners[t] or scanexpression)()
         else
@@ -373,25 +373,42 @@ end
 local function getparameterdefault()
     local list, n = collectnames()
     local v = namespaces
-    for i=1,n-1 do
-        local l = list[i]
+    if n == 1 then
+        local l = list[1]
         local vl = v[l]
         if vl == nil then
-            if type(l) == "number" then
-                vl = v[1]
-                if vl == nil then
-                    return get(list[n])
-                end
-            else
-                return get(list[n])
+            -- maybe backtrack
+            local top = stack[#stack]
+            if top then
+                vl = top[l]
             end
         end
-        v = vl
-    end
-    if v == nil then
-        return get(list[n])
+        if vl == nil then
+            return mpnumeric(0)
+        else
+            return get(vl)
+        end
     else
-        return get(v)
+        for i=1,n-1 do
+            local l = list[i]
+            local vl = v[l]
+            if vl == nil then
+                if type(l) == "number" then
+                    vl = v[1]
+                    if vl == nil then
+                        return get(list[n])
+                    end
+                else
+                    return get(list[n])
+                end
+            end
+            v = vl
+        end
+        if v == nil then
+            return get(list[n])
+        else
+            return get(v)
+        end
     end
 end
 
@@ -463,6 +480,32 @@ local function getparametertext()
     end
 end
 
+local function getparameteroption()
+    local list, n = collectnames()
+    local last = list[n]
+    if type(last) == "string" then
+        n = n - 1
+    else
+        return false
+    end
+    local v = namespaces
+    for i=1,n do
+        v = v[list[i]]
+        if not v then
+            break
+        end
+    end
+    if type(v) == "string" and v ~= "" then
+        for s in gmatch(v,"[^ ,]+") do
+            if s == last then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+
 metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)
 metapost.registerscript("presetparameters",    presetparameters)
@@ -471,6 +514,7 @@ metapost.registerscript("getparameterdefault", getparameterdefault)
 metapost.registerscript("getparametercount",   getparametercount)
 metapost.registerscript("getparameterpath",    getparameterpath)
 metapost.registerscript("getparametertext",    getparametertext)
+metapost.registerscript("getparameteroption",  getparameteroption)
 metapost.registerscript("pushparameters",      pushparameters)
 metapost.registerscript("popparameters",       popparameters)
 

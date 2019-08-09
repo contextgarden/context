@@ -793,6 +793,9 @@
 
 \let\then\relax % so that we can say: \ifnum1>2\then -)
 
+\def\truecondition {\iftrue}
+\def\falsecondition{\iffalse}
+
 % This one has to be unprotected otherwise we get a files-ends-to-soon but it's ok
 % as conditions expand anyway.
 

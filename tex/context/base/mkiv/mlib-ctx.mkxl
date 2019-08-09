@@ -20,6 +20,7 @@
 \registerctxluafile{mlib-mat}{}
 \registerctxluafile{mlib-lmp}{}
 \registerctxluafile{mlib-int}{}
+\registerctxluafile{mlib-lmt}{}
 
 \unprotect
 
