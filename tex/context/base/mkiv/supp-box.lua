@@ -68,6 +68,7 @@ local copy_list     = nuts.copy_list
 local find_tail     = nuts.tail
 local getdimensions = nuts.dimensions
 local hpack         = nuts.hpack
+local vpack         = nuts.vpack
 local traverse_id   = nuts.traverse_id
 local free          = nuts.free
 local findtail      = nuts.tail
@@ -635,8 +636,16 @@ implement {
 implement {
     name      = "shiftbox",
     arguments = { "integer", "dimension" },
-    actions   = function(n,d) setshift(getbox(n),d) end,
+    actions   = function(n,d)
+        setshift(getbox(n),d)
+    end,
 }
+
+implement { name = "vpackbox", arguments = "integer", actions = function(n) setbox(n,(vpack(takebox(n)))) end }
+implement { name = "hpackbox", arguments = "integer", actions = function(n) setbox(n,(hpack(takebox(n)))) end }
+
+implement { name = "vpackedbox", arguments = "integer", actions = function(n) context(vpack(takebox(n))) end }
+implement { name = "hpackedbox", arguments = "integer", actions = function(n) context(hpack(takebox(n))) end }
 
 implement {
     name      = "scangivendimensions",

@@ -537,35 +537,77 @@ def lmt_connection expr t =
     -- t
 enddef ;
 
-% also
+% also (todo)
 
-presetparameters "path" [
-    labels    = false,
-    controls  = false,
-    points    = false,
-    path      = origin
-] ;
-
-def lmt_path = applyparameters "path" "lmt_do_path" enddef ;
-
-vardef lmt_do_path =
-    image (
-        pushparameters "path" ;
-        save p ; path p ; p := getparameter "path" ;
-        drawpath p ;
-        if getparameter "points" :
-            drawpoints p ;
-            if getparameter "labels" :
-                drawpointlabels p ;
-            fi ;
-        fi ;
-        if getparameter "controls" :
-            drawcontrolpoints p ;
-            drawcontrollines p ;
-        fi ;
-        popparameters ;
-    )
-enddef ;
+% % draw lmt_path [
+% %     points   = [ color = "darkred",    size  = 6 ],
+% %     controls = [ color = "darkgreen",  size  = 4 ],
+% %     lines    = [ color = "darkgray",   size  = 1 ],
+% %     shape    = [ color = "middlegray", size  = 8 ],
+% %     labels   = [ ],
+% %     path     = ((1cm,1cm) -- (1.5cm,1.5cm) .. (2cm,0cm) .. cycle)
+% % ] ;
+%
+% presetparameters "path" [
+%     labels    = [
+%         color = "",
+%         size  = 1
+%     ],
+%     controls  = [
+%         color = "black",
+%         size  = 2.5
+%     ],
+%     lines  = [
+%         color = "middlegray",
+%         size  = 1
+%     ],
+%     points    = [
+%         color = "black",
+%         size  = 4
+%     ],
+%     path      = [
+%         color = "lightgray",
+%         size  = 5,
+%         path  = origin
+%     ]
+% ] ;
+%
+% def lmt_path = applyparameters "path" "lmt_do_path" enddef ;
+%
+% vardef lmt_do_path =
+%     image (
+%         % This one is not that efficient ... we can better inline the drawing routines here, but
+%         % it's just an interfacing test after all.
+%             if hasparameter "path" "path" :
+%             save p ; path p ; p := getparameter "path" "path" ;
+%             drawpath p
+%                 withpen pencircle scaled (drawoptionsfactor * getparameterdefault "path" "shape" "size" "*")
+%                 withcolor getparameterdefault "path" "shape" "color" "*"
+%             ;
+%             if hasparameter "path" "controls" :
+%                 drawcontrollines  p
+%                     withpen pencircle scaled (drawoptionsfactor * getparameterdefault "path" "lines" "size" "*" )
+%                     withcolor getparameterdefault "path" "lines" "color" "*"
+%                 ;
+%                 drawcontrolpoints p
+%                     withpen pencircle scaled (drawoptionsfactor * getparameterdefault "path" "controls" "size" "*")
+%                     withcolor getparameterdefault "path" "controls" "color" "*"
+%                 ;
+%             fi ;
+%             if hasparameter "path" "points" :
+%                 drawpoints p
+%                     withpen pencircle scaled (drawoptionsfactor * getparameterdefault "path" "points" "size" "*")
+%                     withcolor getparameterdefault "path" "points" "color" "*"
+%                 ;
+%                 if hasparameter "path" "labels" :
+%                     drawpointlabels p
+%                         withcolor getparameterdefault "path" "labels" "color" "*"
+%                     ;
+%                 fi ;
+%             fi ;
+%         fi ;
+%     )
+% enddef ;
 
 % more
 
@@ -789,12 +831,14 @@ vardef lmt_do_function =
             option := getparameter "xcaption" ;
             if (option <> "") :
                 draw textext.bot(option) transformed tt
+                    shifted (0,-tl)
                     shifted center bottomboundary currentpicture ;
             fi ;
 
             option := getparameter "ycaption" ;
             if (option <> "") :
                 draw textext.lft(option) transformed tt
+                    shifted (-tl,0)
                     shifted center leftboundary currentpicture ;
             fi ;
         )

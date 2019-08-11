@@ -1936,6 +1936,26 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command file="supp-box.mkiv" level="system" name="hpackbox">
+   <cd:arguments>
+    <cd:dimension/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-box.mkiv" level="system" name="vpackbox">
+   <cd:arguments>
+    <cd:dimension/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-box.mkiv" level="system" name="hpackedbox">
+   <cd:arguments>
+    <cd:dimension/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="supp-box.mkiv" level="system" name="vpackedbox">
+   <cd:arguments>
+    <cd:dimension/>
+   </cd:arguments>
+  </cd:command>
   <cd:command file="supp-box.mkiv" level="system" name="inlinedbox">
    <cd:arguments>
     <cd:content/>

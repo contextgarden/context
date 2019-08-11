@@ -850,6 +850,8 @@ local tx_reset, tx_process  do
         end
     end
 
+    local madetext = nil
+
     function mp.mf_some_text(index,str)
         mp_target = index
         mp_index  = index
@@ -864,24 +866,46 @@ local tx_reset, tx_process  do
         madetext = nil
     end
 
-    local madetext = nil
-
     function mp.mf_made_text(index)
         mp.mf_some_text(index,madetext)
     end
 
+    -- This is a bit messy. In regular metapost it's a kind of immediate replacement
+    -- so embedded btex ... etex is not really working as one would expect. We now have
+    -- a mix: it's immediate when we are at the outer level (rawmadetext) and indirect
+    -- (with the danger of stuff that doesn't work well in strings) when we are for
+    -- instance in a macro definition (rawtextext (pass back string)) ... of course one
+    -- should use textext so this is just a catch. When not in lmtx it's never immediate.
+
+    local reported  = false
+    local awayswrap = CONTEXTLMTXMODE <= 1
+
     function metapost.maketext(s,mode)
+        if not reported then
+            reported = true
+            report_metapost("use 'textext(.....)' instead of 'btex ..... etex'")
+        end
         if mode and mode == 1 then
             if trace_btexetex then
                 report_metapost("ignoring verbatimtex: [[%s]]",s)
             end
+        elseif alwayswrap then
+            if trace_btexetex then
+                report_metapost("rewrapping btex ... etex [[%s]]",s)
+            end
+            return 'rawtextext("' .. gsub(s,'"','"&ditto&"') .. '")' -- nullpicture
+        elseif metapost.currentmpxstatus() ~= 0 then
+            if trace_btexetex then
+                report_metapost("rewrapping btex ... etex at the outer level [[%s]]",s)
+            end
+            return 'rawtextext("' .. gsub(s,'"','"&ditto&"') .. '")' -- nullpicture
         else
             if trace_btexetex then
                 report_metapost("handling btex ... etex: [[%s]]",s)
             end
          -- madetext = utilities.strings.collapse(s)
             madetext = s
-            return "rawmadetext"
+            return "rawmadetext" -- is assuming immediate processing
         end
     end
 

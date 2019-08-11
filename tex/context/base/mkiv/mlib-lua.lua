@@ -120,6 +120,12 @@ do
         return currentmpx
     end
 
+    local status = mplib.status
+
+    function metapost.currentmpxstatus()
+        return status and status(currentmpx) or 0
+    end
+
 end
 
 do

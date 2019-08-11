@@ -246,7 +246,7 @@ return {
         --
         "givenwidth", "givenheight", "givendepth", "scangivendimensions",
         --
-        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance",
+        "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance", "scratchtotal",
         "scratchhsize", "scratchvsize",
         "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",
         "scratchxposition", "scratchyposition",
@@ -376,6 +376,8 @@ return {
         --
         "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
+        --
+        "shiftbox", "vpackbox", "hpackbox", "vpackedbox", "hpackedbox",
         --
         "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
         "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",

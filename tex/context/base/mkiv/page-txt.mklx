@@ -924,7 +924,7 @@
              \kern\dimexpr\leftmarginwidth+\leftmargindistance\relax
            \fi
          \endgroup
-         \page_postprocessors_page{#2}%
+         \page_apply_postprocessors_page{#2}%
          \settextpagecontent\b_page_layouts_element{#1}{#2}%
          \page_backgrounds_add_to_text\b_page_layouts_element
          \page_grids_add_to_box\b_page_layouts_element

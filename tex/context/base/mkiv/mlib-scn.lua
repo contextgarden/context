@@ -26,7 +26,7 @@ if not modules then modules = { } end modules ['mlib-scn'] = {
 -- endfor ;
 -- popparameters;
 
-local type, next = type, next
+local type, next, rawget, getmetatable = type, next, rawget, getmetatable
 local byte, gmatch = string.byte, string.gmatch
 local insert, remove = table.insert, table.remove
 
@@ -370,6 +370,31 @@ local function getparameter()
     end
 end
 
+local function hasparameter()
+    local list, n = collectnames()
+    local v = namespaces
+    for i=1,n do
+        local l = list[i]
+        local vl = rawget(v,l)
+        if vl == nil then
+            if type(l) == "number" then
+                vl = rawget(v,1)
+                if vl == nil then
+                    return mpboolean(false)
+                end
+            else
+                return mpboolean(false)
+            end
+        end
+        v = vl
+    end
+    if v == nil then
+        return mpboolean(false)
+    else
+        return mpboolean(true)
+    end
+end
+
 local function getparameterdefault()
     local list, n = collectnames()
     local v = namespaces
@@ -399,7 +424,33 @@ local function getparameterdefault()
                         return get(list[n])
                     end
                 else
-                    return get(list[n])
+                    local last = list[n]
+                    if last == "*" then
+                        -- so, only when not pushed
+                        local m = getmetatable(namespaces[list[1]])
+                        if n then
+                            m = m.__index -- can also be a _m_
+                        end
+                        if m then
+                            local v = m
+                            for i=2,n-1 do
+                                local l = list[i]
+                                local vl = v[l]
+                                if vl == nil then
+                                    return mpnumeric(0)
+                                end
+                                v = vl
+                            end
+                            if v == nil then
+                                return mpnumeric(0)
+                            else
+                                return get(v)
+                            end
+                        end
+                        return mpnumeric(0)
+                    else
+                        return get(last)
+                    end
                 end
             end
             v = vl
@@ -509,6 +560,7 @@ end
 metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)
 metapost.registerscript("presetparameters",    presetparameters)
+metapost.registerscript("hasparameter",        hasparameter)
 metapost.registerscript("getparameter",        getparameter)
 metapost.registerscript("getparameterdefault", getparameterdefault)
 metapost.registerscript("getparametercount",   getparametercount)

@@ -259,6 +259,30 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="hpackbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:dimension/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="vpackbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:dimension/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hpackedbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:dimension/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="vpackedbox" level="system" file="supp-box.mkiv">
+        <cd:arguments>
+            <cd:dimension/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="inlinedbox" level="system" file="supp-box.mkiv">
         <cd:arguments>
             <cd:content/>

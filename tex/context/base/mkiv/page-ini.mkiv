@@ -58,9 +58,27 @@
 
 \newbox\pagebox
 
-\ifdefined\page_postprocessors_column \else \let\page_postprocessors_column\gobbleoneargument \fi
-\ifdefined\page_postprocessors_page   \else \let\page_postprocessors_page  \gobbleoneargument \fi
-\ifdefined\page_postprocessors_box    \else \let\page_postprocessors_box   \gobbleoneargument \fi
+% \ifdefined\page_postprocessors_column \else \let\page_postprocessors_column\gobbleoneargument \fi
+% \ifdefined\page_postprocessors_page   \else \let\page_postprocessors_page  \gobbleoneargument \fi
+% \ifdefined\page_postprocessors_box    \else \let\page_postprocessors_box   \gobbleoneargument \fi
+
+\newtoks\t_page_postprocessors_box
+\newtoks\t_page_postprocessors_page
+\newtoks\t_page_postprocessors_column
+
+\newconstant\b_page_postprocessor
+
+\def\page_apply_postprocessors_box#1%
+  {\b_page_postprocessor#1\relax
+   \the\t_page_postprocessors_box}
+
+\def\page_apply_postprocessors_page#1%
+  {\b_page_postprocessor#1\relax
+   \the\t_page_postprocessors_page}
+
+\def\page_apply_postprocessors_column#1%
+  {\b_page_postprocessor#1\relax
+   \the\t_page_postprocessors_column}
 
 %D Floats.
 

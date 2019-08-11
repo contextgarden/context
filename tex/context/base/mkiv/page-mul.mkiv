@@ -461,7 +461,7 @@
      \setfalse\c_page_mul_preceding_present % will be set elsewhere
    \else
      \settrue\c_page_mul_preceding_present
-     \page_postprocessors_box\b_page_mul_preceding
+     \page_apply_postprocessors_box\b_page_mul_preceding
    \fi
    \forgetall
    \page_mul_initialize_variables
@@ -612,18 +612,21 @@
 %D This feature is implemented using the reshape macros presented
 %D in \type{supp-box}.
 
-\ifdefined\page_postprocessors_column\else\let\page_postprocessors_column\relax\fi % operates on passed box
+%ifdefined\page_postprocessors_column\else\let\page_postprocessors_column\relax\fi % operates on passed box
 \ifdefined\postprocesscolumnline     \else\let\postprocesscolumnline     \relax\fi % operates on passed box
 \ifdefined\postprocesscolumnbox      \else\let\postprocesscolumnbox      \relax\fi % operates on passed box
 \ifdefined\postprocesscolumnpagebox  \else\let\postprocesscolumnpagebox  \relax\fi % operates on passed box
 
-\def\page_mul_postprocess_linenumbers{\ifx\page_postprocessors_column\relax\else\page_mul_postprocess_linenumbers_indeed\fi}
+%def\page_mul_postprocess_linenumbers{\ifx\page_postprocessors_column\relax\else\page_mul_postprocess_linenumbers_indeed\fi}
 \def\page_mul_postprocess_lines      {\ifx\postprocesscolumnline     \relax\else\page_mul_postprocess_lines_indeed      \fi}
 \def\page_mul_postprocess_columns    {\ifx\postprocesscolumnbox      \relax\else\page_mul_postprocess_columns_indeed    \fi}
 \def\page_mul_postprocess_page       {\ifx\postprocesscolumnpagebox  \relax\else\page_mul_postprocess_page_indeed       \fi}
 
-\def\page_mul_postprocess_linenumbers_indeed
-  {\dohandleallcolumns{\page_postprocessors_column\currentcolumnbox}}
+% \def\page_mul_postprocess_linenumbers_indeed
+%   {\dohandleallcolumns{\page_apply_postprocessors_column\currentcolumnbox}}
+
+\def\page_mul_postprocess_linenumbers
+  {\dohandleallcolumns{\page_apply_postprocessors_column\currentcolumnbox}}
 
 \def\page_mul_postprocess_lines_indeed
   {\dohandleallcolumnscs\page_mul_postprocess_lines_step}

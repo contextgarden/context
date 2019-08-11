@@ -181,8 +181,8 @@ local function processerror(offset)
  -- print("[[ last context  : " .. tostring(status.lasterrorcontext    or "<unset>") .. " ]]")
 
     local inputstack   = resolvers.inputstack
-    local filename     = inputstack[#inputstack-1] or status.filename -- weird, why -1
-    ----- filename     = status.filename -- weird, why -1
+--     local filename     = inputstack[#inputstack-1] or status.filename -- weird, why -1, something is wrong
+    local filename     = status.filename
     local linenumber   = tonumber(status.linenumber) or 0
     local lastcontext  = status.lasterrorcontext
     local lasttexerror = status.lasterrorstring or "?"

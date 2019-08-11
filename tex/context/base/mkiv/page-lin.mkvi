@@ -255,6 +255,19 @@
    \page_lines_start_followup}
 
 \newconditional\c_page_lines_auto_narrow
+%\newconditional\c_page_lines_enabled
+
+\appendtoks
+    \ifconditional\page_postprocessors_needed_box
+        \page_postprocessors_linenumbers_page\b_page_postprocessor
+    \fi
+\to \t_page_postprocessors_page
+
+\appendtoks
+    \ifconditional\page_postprocessors_needed_box
+        \page_postprocessors_linenumbers_column\b_page_postprocessor
+    \fi
+\to \t_page_postprocessors_column
 
 \def\page_lines_start_followup
   {\numberinglinestrue
@@ -279,8 +292,7 @@
      \fi\fi\fi
    \fi
    \the\beforeeverylinenumbering
-   \glet\page_postprocessors_page  \page_postprocessors_linenumbers_page
-   \glet\page_postprocessors_column\page_postprocessors_linenumbers_column
+   %\global\settrue\c_page_lines_enabled           %
    \global\settrue\page_postprocessors_needed_box % see core-rul.mkiv
    \ifcase\c_page_lines_mode\relax
      \page_lines_start_update % continue

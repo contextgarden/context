@@ -2874,7 +2874,11 @@
 %D This one keeps dimensions and sets the shift field (and so it's more for testing
 %D than for real usage):
 
-\unexpanded\def\shiftbox{\clf_shiftbox}
+\unexpanded\def\shiftbox  {\clf_shiftbox}
+\unexpanded\def\vpackbox  {\clf_vpackbox}
+\unexpanded\def\hpackbox  {\clf_hpackbox}
+\unexpanded\def\vpackedbox{\clf_vpackedbox}
+\unexpanded\def\hpackedbox{\clf_hpackedbox}
 
 %D This one has been moved from a 2 decade old file. It makes something boxed
 %D sit on the baseline.
