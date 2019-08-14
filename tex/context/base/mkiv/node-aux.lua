@@ -21,6 +21,7 @@ local glyph_code         = nodecodes.glyph
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
+local localpar_code      = nodecodes.localpar
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -34,6 +35,7 @@ local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getboth            = nuts.getboth
+local getprev            = nuts.getprev
 local getcomponents      = nuts.getcomponents
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
@@ -49,8 +51,6 @@ local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
------ traverse_nodes     = nuts.traverse
------ traverse_id        = nuts.traverse_id
 local nextnode           = nuts.traversers.node
 local nextglyph          = nuts.traversers.glyph
 local flush_node         = nuts.flush
@@ -59,7 +59,6 @@ local hpack_nodes        = nuts.hpack
 local unset_attribute    = nuts.unset_attribute
 local first_glyph        = nuts.first_glyph
 local copy_node          = nuts.copy
------ copy_node_list     = nuts.copy_list
 local find_tail          = nuts.tail
 local getbox             = nuts.getbox
 local count              = nuts.count
@@ -73,6 +72,7 @@ local unsetvalue         = attributes.unsetvalue
 local current_font       = font.current
 
 local texsetbox          = tex.setbox
+local texnest            = tex.nest
 
 local report_error       = logs.reporter("node-aux:error")
 
@@ -472,3 +472,14 @@ end
 --         end
 --     end
 -- end
+
+function nuts.setparproperty(action,...)
+    local tail = tonut(texnest[texnest.ptr].tail)
+    while tail do
+        if getid(tail) == localpar_code then
+            return action(tail,...)
+        else
+            tail = getprev(tail)
+        end
+    end
+end

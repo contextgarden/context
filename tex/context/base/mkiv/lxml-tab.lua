@@ -984,8 +984,9 @@ end
 local function entityfile(pattern,k,v,n)
     if n then
         local okay, data
-        if resolvers then
-            okay, data = resolvers.loadbinfile(n)
+        local loadbinfile = resolvers and resolvers.loadbinfile
+        if loadbinfile then
+            okay, data = loadbinfile(n)
         else
             data = io.loaddata(n)
             okay = data and data ~= ""

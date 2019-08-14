@@ -445,7 +445,13 @@
      \fi
      % should be an option
      \endgroup
-     \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+     \scratchdimenone\dimexpr
+        \pagetotal
+       +\floatheight
+       +\d_strc_floats_top
+       +\d_strc_floats_overflow
+       -\pageshrink
+     \relax
      \scratchdimentwo\pagegoal
      \relax % needed
      \ifcase\c_page_one_float_method

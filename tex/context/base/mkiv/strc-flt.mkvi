@@ -899,6 +899,7 @@
 
 \newdimen\d_strc_floats_top
 \newdimen\d_strc_floats_bottom
+\newdimen\d_strc_floats_overflow
 
 % \def\strc_floats_calculate_skip#target#skip%
 %   {\begingroup
@@ -947,6 +948,7 @@
    \global\c_page_one_float_method  \floatparameter\c!textmethod
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
+   \global\d_strc_floats_overflow   \zeropoint
    \ifconditional\c_strc_floats_par_float
      \global\d_strc_floats_top        \zeropoint
      \global\d_strc_floats_bottom     \zeropoint
@@ -1642,7 +1644,6 @@
       \fi\fi
       \strc_floats_align_content{\copy\b_strc_floats_content}}}
 
-
 \def\strc_floats_prepare_page_caption
   {\edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%
    \edef\p_strc_floats_caption_minwidth{\floatcaptionparameter\c!minwidth}%
@@ -1819,7 +1820,7 @@
   {\strc_floats_align_content{\box\b_strc_floats_content}}
 
 \def\strc_floats_build_box_next_right#1%
-  {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi % skip, no pack
+  {\ifconditional\c_strc_floats_par_float \hpack \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \box\b_strc_floats_content
       \doifnotinset\v!hang\floatcaptionlocation
@@ -1827,7 +1828,7 @@
       \vbox to\d_strc_float_temp_height{#1}}}
 
 \def\strc_floats_build_box_next_left#1%
-  {\ifconditional\c_strc_floats_par_float \hbox \else \expandafter \strc_floats_align_content \fi % skip, no pack
+  {\ifconditional\c_strc_floats_par_float \hpack \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \vbox to\d_strc_float_temp_height{#1}%
       \doifnotinset\v!hang\floatcaptionlocation
@@ -1852,6 +1853,36 @@
       \vbox to\d_strc_float_temp_height{#1}%
       \box\b_strc_floats_content}}
 
+% \def\strc_floats_build_box_next_right_margin_indeed#1#2%
+%   {\ifconditional\c_strc_floats_par_float
+%      \hpack\bgroup
+%        \d_strc_float_temp_height\ht\b_strc_floats_content
+%        \box\b_strc_floats_content
+%        \hsmash{\hskip#1\vbox to\d_strc_float_temp_height{#2}}%
+%      \egroup
+%    \else
+%      \begingroup
+%      \d_strc_float_temp_height\ht\b_strc_floats_content
+%      \everyrightofalignedline{\hsmash{\hskip#1\vbox to\d_strc_float_temp_height{#2}}}%
+%      \strc_floats_align_content{\box\b_strc_floats_content}%
+%      \endgroup
+%     \fi}
+%
+% \def\strc_floats_build_box_next_left_margin_indeed#1#2%
+%   {\ifconditional\c_strc_floats_par_float
+%      \hpack\bgroup
+%        \d_strc_float_temp_height\ht\b_strc_floats_content
+%        \hsmash{\hskip-\dimexpr#1+\wd\b_strc_floats_caption\relax\vbox to\d_strc_float_temp_height{#2}}%
+%        \box\b_strc_floats_content
+%      \egroup
+%    \else
+%      \begingroup
+%      \d_strc_float_temp_height\ht\b_strc_floats_content
+%      \everyleftofalignedline{\hsmash{\hskip-\dimexpr#1+\wd\b_strc_floats_caption\relax\vbox to\d_strc_float_temp_height{#2}}}%
+%      \strc_floats_align_content{\box\b_strc_floats_content}%
+%      \endgroup
+%    \fi}
+
 \def\strc_floats_build_box_next_right_margin_indeed#1#2%
   {\ifconditional\c_strc_floats_par_float
      \hpack\bgroup
@@ -1862,7 +1893,12 @@
    \else
      \begingroup
      \d_strc_float_temp_height\ht\b_strc_floats_content
-     \everyrightofalignedline{\hsmash{\hskip#1\vbox to\d_strc_float_temp_height{#2}}}%
+     \setbox\scratchboxone\vbox{#2}%
+     \ifdim\htdp\scratchboxone>\htdp\b_strc_floats_content
+       \global\d_strc_floats_overflow\dimexpr\htdp\scratchboxone-\htdp\b_strc_floats_content\relax
+     \fi
+     \ht\scratchboxone\d_strc_float_temp_height
+     \everyrightofalignedline{\hsmash{\hskip#1\box\scratchboxone}}%
      \strc_floats_align_content{\box\b_strc_floats_content}%
      \endgroup
     \fi}
@@ -1877,7 +1913,12 @@
    \else
      \begingroup
      \d_strc_float_temp_height\ht\b_strc_floats_content
-     \everyleftofalignedline{\hsmash{\hskip-\dimexpr#1+\wd\b_strc_floats_caption\relax\vbox to\d_strc_float_temp_height{#2}}}%
+     \setbox\scratchboxone\vbox{#2}%
+     \ifdim\htdp\scratchboxone>\htdp\b_strc_floats_content
+       \global\d_strc_floats_overflow\dimexpr\htdp\scratchboxone-\htdp\b_strc_floats_content\relax
+     \fi
+     \ht\scratchboxone\d_strc_float_temp_height
+     \everyleftofalignedline{\hsmash{\hskip-\dimexpr#1+\wd\scratchboxone\relax\box\scratchboxone}}%
      \strc_floats_align_content{\box\b_strc_floats_content}%
      \endgroup
    \fi}

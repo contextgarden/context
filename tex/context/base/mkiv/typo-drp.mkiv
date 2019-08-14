@@ -88,25 +88,22 @@
    \begingroup
    \edef\currentinitial{#1}%
    \setupcurrentinitial[#2]%
-   \scratchcounter \initialparameter\c!n\relax
-   \scratchdistance\initialparameter\c!distance\relax
-   \scratchhoffset \initialparameter\c!hoffset \relax
-   \edef\p_voffset{\initialparameter\c!voffset}%
-   \scratchvoffset\dimexpr\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi\relax
    \resetfontfeature % might be needed in more places
    \doifelsenothing{\initialparameter\c!style}
      {\definedfont[\initialparameter\s!font]}
      {\useinitialstyleparameter\c!style}%
    \useinitialcolorparameter\c!color
-   \edef\p_text{\initialparameter\c!text}% optional
+   \edef\p_voffset{\initialparameter\c!voffset}%
+   \scratchcounter \initialparameter\c!n\relax
+   \scratchvoffset\dimexpr\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi\relax
    \clf_setinitial
         location  {\initialparameter\c!location}%
         enabled   true\space
         n         \scratchcounter
         m         \numexpr\initialparameter\c!m\relax
         method    {\initialparameter\c!method}%
-        distance  \scratchdistance
-        hoffset   \scratchhoffset
+        distance  \dimexpr\initialparameter\c!distance\relax
+        hoffset   \dimexpr\initialparameter\c!hoffset\relax
         voffset   \scratchvoffset
         ma        \attribute\colormodelattribute
         ca        \attribute\colorattribute
@@ -114,9 +111,8 @@
         font      \fontid\font
         dynamic   \font_dynamic_value % it's a bit over the top to support this here
    \relax
-   \stopluacode
-   \kern\zeropoint % we need a node
-   \p_text
+   \attribute\initialattribute\plusone
+   \initialparameter\c!text
    \endgroup
    \glet\typo_initial_handle\relax}
 

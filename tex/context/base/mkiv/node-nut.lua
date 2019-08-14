@@ -774,14 +774,22 @@ end
 nuts.getprop = function(n,k)
     local p = propertydata[n]
     if p then
-        return p[k]
+        if k then
+            return p[k]
+        else
+            return p
+        end
     end
 end
 
 nuts.rawprop = function(n,k)
     local p = rawget(propertydata,n)
     if p then
-        return p[k]
+        if k then
+            return p[k]
+        else
+            return p
+        end
     end
 end
 

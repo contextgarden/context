@@ -57,31 +57,60 @@
 \def\attr_basics_define       {\attr_basics_define_indeed\s!public}
 \def\attr_basics_define_system{\attr_basics_define_indeed\s!private}
 
+% todo: define global !
+
 % here public means 'visible' so it's not to be confused with 'public' at the lua end
+
+% \def\attr_basics_define_indeed#1[#2][#3]%
+%   {\ifcsname\??attributecount#2\endcsname\else
+%      \scratchcounter\clf_defineattribute{#2}{#1}\relax
+%     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
+%      \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+%      \expandafter\newconstant \csname\??attributeid#2\endcsname
+%      \csname\??attributeid#2\endcsname\scratchcounter
+%      % some attributes are always global
+%      \doifelseinset\s!global{#3}%
+%        {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+%        {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+%      \doifinset\s!nomath{#3}%
+%        {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+%      \doifinset\s!public{#3}%
+%        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+%      \doifinset\s!pickup{#3}%
+%        {\expandafter\newconstant\csname\??attributepickup#2\endcsname
+%         \csname\??attributepickup#2\endcsname\attributeunsetvalue
+%         \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
+%         \ifcsname#2\s!attribute\endcsname
+%           \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
+%             {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
+%           \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
+%             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
+%         \fi}%
+%    \fi}
 
 \def\attr_basics_define_indeed#1[#2][#3]%
   {\ifcsname\??attributecount#2\endcsname\else
      \scratchcounter\clf_defineattribute{#2}{#1}\relax
     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-     \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
-     \expandafter\newconstant \csname\??attributeid#2\endcsname
-     \csname\??attributeid#2\endcsname\scratchcounter
+     \global\expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+     \global\expandafter\newconstant \csname\??attributeid#2\endcsname
+     \global\csname\??attributeid#2\endcsname\scratchcounter
      % some attributes are always global
      \doifelseinset\s!global{#3}%
-       {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-       {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!nomath{#3}%
-       {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!public{#3}%
-       {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
+       {\expandafter\glet\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
      \doifinset\s!pickup{#3}%
-       {\expandafter\newconstant\csname\??attributepickup#2\endcsname
-        \csname\??attributepickup#2\endcsname\attributeunsetvalue
-        \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
+       {\global\expandafter\newconstant\csname\??attributepickup#2\endcsname
+        \global\csname\??attributepickup#2\endcsname\attributeunsetvalue
+        \xtoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
         \ifcsname#2\s!attribute\endcsname
-          \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
+          \expandafter\xdef\csname\s!pickup#2\s!attribute\endcsname
             {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
-          \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
+          \expandafter\xdef\csname\s!forget#2\s!attribute\endcsname
             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
         \fi}%
    \fi}
@@ -95,9 +124,13 @@
 % \unexpanded\def\pickupattributelater#1%
 %   {\csname\??attributepickup#1\endcsname\csname\??attributecount#1\endcsname}
 
+% \unexpanded\def\newattribute#1%
+%   {\attr_basics_define_indeed\s!public[\csstring#1][]%
+%    \expandafter\let\expandafter#1\csname\??attributeid\csstring#1\endcsname}
+
 \unexpanded\def\newattribute#1%
   {\attr_basics_define_indeed\s!public[\csstring#1][]%
-   \expandafter\let\expandafter#1\csname\??attributeid\csstring#1\endcsname}
+   \expandafter\glet\expandafter#1\csname\??attributeid\csstring#1\endcsname}
 
 % expandable so we can \edef them for speed
 
