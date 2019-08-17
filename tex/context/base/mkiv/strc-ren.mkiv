@@ -261,7 +261,7 @@
    \d_strc_rendering_hang_height\htdp\b_strc_rendering_head
    \getnoflines\d_strc_rendering_hang_height
    \normalexpanded{\endgroup\n_strc_rendering_hang_lines\the\numexpr\noflines-\plusone\relax}% brrr
-   \setbox\b_strc_rendering_head\hbox{\lower\n_strc_rendering_hang_lines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
+   \setbox\b_strc_rendering_head\hpack{\lower\n_strc_rendering_hang_lines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
    \d_strc_rendering_hang_height\dimexpr\htdp\b_strc_rendering_head-\d_strc_rendering_local_height+\strutdp\relax
    \ht\b_strc_rendering_head\strutht
    \dp\b_strc_rendering_head\strutdp
@@ -795,7 +795,7 @@
             \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
-        \hbox {
+        \hpack {
             \box\scratchboxone
             \hskip\headnumberdistance
             \box\scratchboxtwo
@@ -824,7 +824,7 @@
             \advance\hsize-\wd\scratchboxone\relax
             \headtextcontent
         }
-        \hbox {
+        \hpack {
             \box\scratchboxone
             \hskip\headnumberdistance
             \box\scratchboxtwo

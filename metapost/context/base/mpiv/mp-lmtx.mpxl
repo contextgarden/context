@@ -641,7 +641,9 @@ presetparameters "function" [
     linewidth   = .05mm,
     pointsymbol = "",
     pointsize   = 2,
-    pointcolor  = ""
+    pointcolor  = "",
+    xarrow      = "",
+    yarrow      = "",
 ] ;
 
 def lmt_function = applyparameters "function" "lmt_do_function" enddef ;
@@ -756,8 +758,25 @@ vardef lmt_do_function =
             txl := txs scaled 2 ;
             tyl := tys scaled 2 ;
 
-            draw (xmin,0) -- (xmax,0) ;
-            draw (0,ymin) -- (0,ymax) ;
+            % this arrow head scaling is for Alan to sort out ...
+
+            option := getparameter "xarrow" ;
+            if option = "yes" :
+save ahlength ; ahlength  := tl ;
+% save ahangle  ; ahangle   := 100/sy ;
+                drawarrow (xmin,0) -- (xmax,0) ;
+            else
+                draw (xmin,0) -- (xmax,0) ;
+            fi ;
+
+            option := getparameter "yarrow" ;
+            if option = "yes" :
+save ahlength ; ahlength := tl ;
+% save ahangle  ; ahangle  := 100/sx ;
+                drawarrow (0,ymin) -- (0,ymax) ;
+            else :
+                draw (0,ymin) -- (0,ymax) ;
+            fi ;
 
             option := getparameter "frame" ;
             if option = "yes" :
@@ -853,3 +872,99 @@ vardef lmt_do_function =
     )
 enddef ;
 
+% Don't use this one!
+
+presetparameters "mesh" [
+    trace = false,
+    auto  = false,
+    step  = 0.05,
+  % box   = ...
+  % paths = { ..., ..., ... }
+] ;
+
+def lmt_mesh = applyparameters "mesh" "lmt_do_mesh" enddef ;
+
+vardef lmt_do_mesh =
+    image (
+        save p, b ; path p, b ;
+        pushparameters "mesh" ;
+        if getparameter "auto" :
+            b := if hasparameter "box" : getparameter "box" else : OverlayBox fi ;
+            for i=1 upto getparametercount "paths" :
+                p := getparameter "paths" i ;
+                p := meshed(p if not cycle p : -- cycle fi,b,getparameter "step") ;
+                if getparameter "trace" :
+                    draw p ;
+                fi ;
+                runscript("mp.lmt_mesh_update()") i p ;
+            endfor ;
+        elseif getparameter "trace" :
+            for i=1 upto getparametercount "paths" :
+                p := getparameter "paths" i ;
+                draw p if not cycle p : -- cycle fi ;
+            endfor ;
+        fi ;
+        popparameters ;
+        runscript("mp.lmt_mesh_set()") ;
+    )
+enddef ;
+
+vardef mfun_meshed_clipped(expr pat, box, pct) =
+    pp := point (arctime pct of pat) of pat ;
+    if (ypart pp <= lly) or (ypart pp >= ury) or (xpart pp <= llx) or (xpart pp >= urx) :
+        (cp -- pp) intersection_point bb
+    else :
+        pp
+    fi
+enddef ;
+
+vardef mfun_meshed_clipped(expr pat, box, pct) =
+    pp := point (arctime pct of pat) of pat ;
+    if     ypart pp <= lly :
+        if xpart pp <= llx :
+            (llx, lly)
+        elseif xpart pp >= urx :
+            (urx, lly)
+        else :
+            (xpart pp, lly)
+        fi
+    elseif ypart pp >= ury :
+        if xpart pp <= llx :
+            (llx, ury)
+        elseif xpart pp >= urx :
+            (urx, ury)
+        else :
+            (xpart pp, ury)
+        fi
+    elseif xpart pp <= llx :
+        (llx, ypart pp)
+    elseif xpart pp >= urx :
+        (urx, ypart pp)
+    else :
+        pp
+    fi
+enddef ;
+
+vardef meshed(expr pth, box, stp) =
+    begingroup
+    save cb, cp, llx, lly, urx, ury, pp, lp, bb ; pair cb, cp, pp ; path bb ;
+    bb := box enlarged -1/10;
+    cb := center bb ;
+    cp := center pth ;
+    llx := xpart llcorner bb;
+    lly := ypart llcorner bb;
+    urx := xpart urcorner bb;
+    ury := ypart urcorner bb;
+    lp := arclength pth ;
+    for i=stp step stp until 1+stp/2 :
+        cp --
+        mfun_meshed_clipped(pth,bb,lp*(i-stp)) --
+        mfun_meshed_clipped(pth,bb,lp*(i    )) --
+        cp --
+    endfor cycle
+    endgroup
+enddef ;
+
+vardef OverlayMesh(expr p, s) =
+    lmt_mesh [ paths = { meshed(p,OverlayBox,s) } ]
+enddef ;

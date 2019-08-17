@@ -229,6 +229,7 @@ return {
   "automatichyphenpenalty",
   "begincsname",
   "boundary",
+  "boxattr",
   "boxdirection",
   "boxorientation",
   "boxtotal",

@@ -382,9 +382,7 @@ end)
 otf.loadoutlinedata = loadoutlinedata -- not public
 otf.loadstreamdata  = loadstreamdata  -- not public
 otf.loadshapes      = loadshapes
-otf.getstreamhash   = getstreamhash -- not public, might move to other namespace
-
--- experimental code, for me only ... unsupported (todo: use %N)
+otf.getstreamhash   = getstreamhash   -- not public, might move to other namespace
 
 local f_c = formatters["%F %F %F %F %F %F c"]
 local f_l = formatters["%F %F l"]

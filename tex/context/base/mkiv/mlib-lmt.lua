@@ -6,7 +6,12 @@ if not modules then modules = { } end modules ['mlib-lmt'] = {
     license   = "see context related readme files",
 }
 
-local mppath = mp.path
+local mppath       = mp.path
+
+local scannumeric  = mp.scan.numeric
+local scanpath     = mp.scan.path
+
+local getparameter = metapost.getparameter
 
 function mp.lmt_function_x(xmin,xmax,xstep,code,shape) -- experimental
     local code      = "return function(x) return " .. code .. " end"
@@ -45,4 +50,14 @@ function mp.lmt_function_x(xmin,xmax,xstep,code,shape) -- experimental
         end
     end
     mppath(points,shape == "curve" and ".." or "--",false)
+end
+
+function mp.lmt_mesh_set()
+    local mesh = getparameter { "mesh", "paths" }
+    structures.references.currentset.mesh = mesh
+end
+
+function mp.lmt_mesh_update()
+    local mesh = getparameter { "paths" } or getparameter { "mesh", "paths" }
+    mesh[scannumeric()] = scanpath(true)
 end

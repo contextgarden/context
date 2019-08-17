@@ -184,9 +184,11 @@ end
 
 local jobpositions = job.positions
 local getpos       = jobpositions.getpos
+local getrpos      = jobpositions.getrpos
 
 jobpositions.registerhandlers {
     getpos  = pdf.getpos,
+ -- getrpos = pdf.getrpos,
     gethpos = pdf.gethpos,
     getvpos = pdf.getvpos,
 }
@@ -235,7 +237,7 @@ do
     -- funny values for tx and ty
 
     function lpdf.rectangle(width,height,depth,offset)
-        local tx, ty = getpos()
+        local tx, ty = getpos() -- pdfgetpos, maybe some day use dir here
         if offset then
             tx     = tx     -   offset
             ty     = ty     +   offset
@@ -865,18 +867,21 @@ end
 
 local nofpages = 0
 
-function lpdf.pagereference(n)
+local texgetcount = tex.getcount
+
+function lpdf.pagereference(n,complete) -- true | false | nil | n [true,false]
     if nofpages == 0 then
         nofpages = structures.pages.nofpages
         if nofpages == 0 then
             nofpages = 1
         end
     end
-    if n > nofpages then
-        return pdfgetpagereference(nofpages) -- or 1, could be configureable
-    else
-        return pdfgetpagereference(n)
+    if n == true or not n then
+        complete = n
+        n = texgetcount("realpageno")
     end
+    local r = n > nofpages and pdfgetpagereference(nofpages) or pdfgetpagereference(n)
+    return complete and pdfreference(r) or r
 end
 
 function lpdf.nofpages()

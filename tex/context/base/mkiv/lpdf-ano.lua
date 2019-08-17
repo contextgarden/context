@@ -18,7 +18,7 @@ local rep, format, find = string.rep, string.format, string.find
 local min = math.min
 local lpegmatch = lpeg.match
 local formatters = string.formatters
-local sortedkeys = table.sortedkeys
+local sortedkeys, concat = table.sortedkeys, table.concat
 
 local backends, lpdf = backends, lpdf
 
@@ -93,7 +93,7 @@ local pdfrectangle            = lpdf.rectangle
 
 -- todo: 3dview
 
-local pdf_annot               = pdfconstant("Annot")
+----- pdf_annot               = pdfconstant("Annot")
 local pdf_uri                 = pdfconstant("URI")
 local pdf_gotor               = pdfconstant("GoToR")
 local pdf_goto                = pdfconstant("GoTo")
@@ -759,9 +759,11 @@ local nofspecial = 0
 local share      = true
 
 local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
+local f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
 
 directives.register("pdf.stripzeros",function()
     f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
+    f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
 end)
 
 directives.register("references.sharelinks", function(v)
@@ -777,10 +779,41 @@ setmetatableindex(hashed,function(t,k)
     return v
 end)
 
-local function finishreference(specification) -- %0.2f looks okay enough (no scaling anyway)
-    local annot = hashed[f_annot(specification.prerolled,pdfrectangle(specification.width,specification.height,specification.depth))]
+local function toquadpoints(paths)
+    local t, n = { }, 0
+    for i=1,#paths do
+        local path = paths[i]
+        local size = #path
+        for j=1,size do
+            local p = path[j]
+            n = n + 1 ; t[n] = p[1]
+            n = n + 1 ; t[n] = p[2]
+        end
+        local m = size % 4
+        if m > 0 then
+            local p = path[size]
+            for j=size+1,m do
+                n = n + 1 ; t[n] = p[1]
+                n = n + 1 ; t[n] = p[2]
+            end
+        end
+    end
+    return concat(t," ")
+end
+
+local function finishreference(specification)
+    local prerolled  = specification.prerolled
+    local quadpoints = specification.mesh
+    local llx, lly,
+          urx, ury   = pdfrectangle(specification.width,specification.height,specification.depth)
+    local specifier  = nil
+    if quadpoints and #quadpoints > 0 then
+        specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+    else
+        specifier = f_annot(prerolled,llx,lly,urx,ury)
+    end
     nofused = nofused + 1
-    return pdfregisterannotation(annot)
+    return pdfregisterannotation(hashed[specifier])
 end
 
 local function finishannotation(specification)
@@ -799,7 +832,7 @@ local function finishannotation(specification)
     return pdfregisterannotation(objref)
 end
 
-function nodeinjections.reference(width,height,depth,prerolled)
+function nodeinjections.reference(width,height,depth,prerolled,mesh)
     if prerolled then
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
@@ -810,6 +843,7 @@ function nodeinjections.reference(width,height,depth,prerolled)
             height    = height,
             depth     = depth,
             prerolled = prerolled,
+            mesh      = mesh,
         }
     end
 end

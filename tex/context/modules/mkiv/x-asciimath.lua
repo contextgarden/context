@@ -776,6 +776,7 @@ local isunary = { -- can be taken from reserved
     ["\\widehat"]         = true, --  widehat
     ["\\bar"]             = true, --
     ["\\overbar"]         = true, --
+    ["\\overline"]        = true, --
     ["\\underline"]       = true, --
     ["\\vec"]             = true, --  overrightarrow
     ["\\overrightarrow"]  = true, --  overrightarrow

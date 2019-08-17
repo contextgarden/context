@@ -345,6 +345,8 @@ local function popparameters()
     end
 end
 
+-- todo:
+
 local function getparameter()
     local list, n = collectnames()
     local v = namespaces
@@ -556,7 +558,6 @@ local function getparameteroption()
     return false
 end
 
-
 metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)
 metapost.registerscript("presetparameters",    presetparameters)
@@ -569,6 +570,20 @@ metapost.registerscript("getparametertext",    getparametertext)
 metapost.registerscript("getparameteroption",  getparameteroption)
 metapost.registerscript("pushparameters",      pushparameters)
 metapost.registerscript("popparameters",       popparameters)
+
+function metapost.getparameter(list)
+    local n = #list
+    local v = namespaces
+    for i=1,n do
+        local l = list[i]
+        local vl = v[l]
+        if vl == nil then
+            return
+        end
+        v = vl
+    end
+    return v
+end
 
 -- tex scanners
 

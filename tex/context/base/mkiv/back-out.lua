@@ -181,7 +181,7 @@ local function latelua()
     return context(tonode(node))
 end
 
-function backends.latelua(current,pos_h,pos_v,cur_h,cur_v)
+function backends.latelua(current,pos_h,pos_v) -- todo: pass pos_h and pos_v (more efficient in lmtx)
     local p = nodeproperties[current]
     if p then
         data = p.data

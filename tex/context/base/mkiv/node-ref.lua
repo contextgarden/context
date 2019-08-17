@@ -258,7 +258,7 @@ local function inject_range(head,first,last,reference,make,stack,parent,pardir,t
     local width, height, depth, line = dimensions(parent,first,last)
     if txtdir == righttoleft_code then
         width = - width
-    elseif textdir == lefttoright_code then
+    elseif txtdir == lefttoright_code then
         -- go on
     elseif pardir == righttoleft_code then
         width = - width
@@ -374,6 +374,9 @@ end
 -- where we can end up with a first and last spanning lines so maybe
 -- we need to do vlists differently
 
+-- todo: no need for dir here if we inject in the right spot as then we can
+-- pick up the dir elsewhere (in lmtx)
+
 local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
     local first, last, firstdir, reference
     local current = head
@@ -383,9 +386,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             local r = getattr(current,attribute)
             -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
             -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
-         -- if r and (not skip or r >) skip then -- maybe no > test
-         --     inject_list(id,current,r,make,stack,pardir,txtdir)
-         -- end
             if r then
                 if not reference then
                     reference, first, last, firstdir = r, current, current, txtdir
@@ -446,182 +446,6 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
     end
     return head, pardir, txtdir
 end
-
--- -- not faster either:
---
--- local findattr = node.direct.find_attribute
---
--- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
---     local first, last, firstdir, reference
---     local someatt = findattr(head,attribute)
---     if someatt then
---         local current = head
---         while current do
---             local id = getid(current)
---             if id == hlist_code or id == vlist_code then
---                 local r = getattr(current,attribute)
---                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
---                 -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
---              -- if r and (not skip or r >) skip then -- maybe no > test
---              --     inject_list(id,current,r,make,stack,pardir,txtdir)
---              -- end
---                 if r then
---                     if not reference then
---                         reference, first, last, firstdir = r, current, current, txtdir
---                     elseif r == reference then
---                         -- same link
---                         last = current
---                     elseif (done[reference] or 0) == 0 then
---                         if not skip or r > skip then -- maybe no > test
---                             head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---                             reference, first, last, firstdir = nil, nil, nil, nil
---                         end
---                     else
---                         reference, first, last, firstdir = r, current, current, txtdir
---                     end
---                     done[r] = (done[r] or 0) + 1
---                 end
---                 local list = getlist(current)
---                 if list then
---                     local h
---                     h, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
---                     if h ~= current then
---                         setlist(current,h)
---                     end
---                 end
---                 if r then
---                     done[r] = done[r] - 1
---                 end
---             elseif id == dir_code then
---                 local direction, pop = getdirection(current)
---                 txtdir = not pop and direction -- we might need a stack
---             elseif id == localpar_code then -- only test at begin
---                 pardir = getdirection(current)
---             elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
---                 --
---             else
---                 local r = getattr(current,attribute)
---                 if not r then
---                     -- just go on, can be kerns
---                 elseif not reference then
---                     reference, first, last, firstdir = r, current, current, txtdir
---                 elseif r == reference then
---                     last = current
---                 elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
---                     if not skip or r > skip then -- maybe no > test
---                         head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---                         reference, first, last, firstdir = nil, nil, nil, nil
---                     end
---                 else
---                     reference, first, last, firstdir = r, current, current, txtdir
---                 end
---             end
---             current = getnext(current)
---         end
---         if reference and (done[reference] or 0) == 0 then
---             head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---         end
---     else
---         local current = head
---         while current do
---             local id = getid(current)
---             if id == hlist_code or id == vlist_code then
---                 local list = getlist(current)
---                 if list then
---                     local h = inject_areas(list,attribute,make,stack,done,skip or 0,current,pardir,txtdir)
---                     if h ~= current then
---                         setlist(current,h)
---                     end
---                 end
---             elseif id == dir_code then
---                 local direction, pop = getdirection(current)
---                 txtdir = not pop and direction -- we might need a stack
---             elseif id == localpar_code then -- only test at begin
---                 pardir = getdirection(current)
---             end
---             current = getnext(current)
---         end
---     end
---     return head, pardir, txtdir
--- end
-
--- -- maybe first check for glyphs and use a goto:
---
--- local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,txtdir)  -- main
---     local first, last, firstdir, reference
---     local current = head
---     while current do
---         local id = getid(current)
---         local r -- else scope message due to goto
---         if id == glyph_code then
---             goto rest
---         elseif id == hlist_code or id == vlist_code then
---             r = getattr(current,attribute)
---             -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
---             -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
---          -- if r and (not skip or r >) skip then -- maybe no > test
---          --     inject_list(id,current,r,make,stack,pardir,txtdir)
---          -- end
---             if r then
---                 if not reference then
---                     reference, first, last, firstdir = r, current, current, txtdir
---                 elseif r == reference then
---                     -- same link
---                     last = current
---                 elseif (done[reference] or 0) == 0 then
---                     if not skip or r > skip then -- maybe no > test
---                         head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---                         reference, first, last, firstdir = nil, nil, nil, nil
---                     end
---                 else
---                     reference, first, last, firstdir = r, current, current, txtdir
---                 end
---                 done[r] = (done[r] or 0) + 1
---             end
---             local list = getlist(current)
---             if list then
---                 local h
---                 h, pardir, txtdir = inject_areas(list,attribute,make,stack,done,r or skip or 0,current,pardir,txtdir)
---                 if h ~= current then
---                     setlist(current,h)
---                 end
---             end
---             if r then
---                 done[r] = done[r] - 1
---             end
---         elseif id == glue_code and getsubtype(current) == leftskip_code then -- any glue at the left?
---             --
---         elseif id == dir_code then
---             local direction, pop = getdirection(current)
---             txtdir = not pop and direction -- we might need a stack
---         elseif id == localpar_code then -- only test at begin
---             pardir = getdirection(current)
---         end
---         goto next
---         ::rest::
---         r = getattr(current,attribute)
---         if not r then
---             -- just go on, can be kerns
---         elseif not reference then
---             reference, first, last, firstdir = r, current, current, txtdir
---         elseif r == reference then
---             last = current
---         elseif (done[reference] or 0) == 0 then -- or id == glue_code and getsubtype(current) == right_skip_code
---             if not skip or r > skip then -- maybe no > test
---                 head, current = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---                 reference, first, last, firstdir = nil, nil, nil, nil
---             end
---         else
---             reference, first, last, firstdir = r, current, current, txtdir
---         end
---         ::next::
---         current = getnext(current)
---     end
---     if reference and (done[reference] or 0) == 0 then
---         head = inject_range(head,first,last,reference,make,stack,parent,pardir,firstdir)
---     end
---     return head, pardir, txtdir
--- end
 
 -- tracing: todo: use predefined colors
 
@@ -766,7 +590,7 @@ local function makereference(width,height,depth,reference) -- height and depth a
             if depth  < dp then depth  = dp end
         end
      -- logs.report("temp","used: ht=%p dp=%p",height,depth)
-        local annot = nodeinjections.reference(width,height,depth,set)
+        local annot = nodeinjections.reference(width,height,depth,set,resolved.mesh)
         if annot then
             annot = tonut(annot) -- todo
             nofreferences = nofreferences + 1

@@ -1519,6 +1519,7 @@ end
 updaters.register("backend.update.pdf",function()
     job.positions.registerhandlers {
         getpos  = drivers.getpos,
+        getrpos = drivers.getrpos,
         gethpos = drivers.gethpos,
         getvpos = drivers.getvpos,
     }

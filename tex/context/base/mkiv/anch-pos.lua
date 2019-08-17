@@ -332,11 +332,13 @@ local getpos, gethpos, getvpos
 
 function jobpositions.registerhandlers(t)
     getpos  = t and t.getpos  or function() return 0, 0 end
-    gethpos = t and t.gethpos or function() return 0    end
-    getvpos = t and t.getvpos or function() return    0 end
+    getrpos = t and t.getrpos or function() return 0, 0, 0 end
+    gethpos = t and t.gethpos or function() return 0 end
+    getvpos = t and t.getvpos or function() return 0 end
 end
 
 function jobpositions.getpos () return getpos () end
+function jobpositions.getrpos() return getrpos() end
 function jobpositions.gethpos() return gethpos() end
 function jobpositions.getvpos() return getvpos() end
 

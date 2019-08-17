@@ -157,8 +157,9 @@ local flushspecial
 -- make local
 
 function drivers.getpos () return round(pos_h), round(pos_v) end
-function drivers.gethpos() return round(pos_h)               end
-function drivers.getvpos() return               round(pos_v) end
+function drivers.getrpos() return round(pos_h), round(pos_v), pos_r end
+function drivers.gethpos() return round(pos_h) end
+function drivers.getvpos() return round(pos_v) end
 
 -- characters
 
@@ -404,8 +405,8 @@ local function reset_dir_stack()
     dirstack = setmetatableindex(dirstackentry)
 end
 
-local function flushlatelua(current)
-    return backends.latelua(current)
+local function flushlatelua(current,h,v)
+    return backends.latelua(current,h,v)
 end
 
 local function flushwriteout(current)
@@ -799,7 +800,7 @@ local hlist_out, vlist_out  do
                 if subtype == literalwhatsit_code then
                     flushliteral(current,pos_h,pos_v)
                 elseif subtype == lateluawhatsit_code then
-                    flushlatelua(current,pos_h,pos_v,cur_h,cur_v)
+                    flushlatelua(current,pos_h,pos_v)
                 elseif subtype == setmatrixwhatsit_code then
                     flushsetmatrix(current,pos_h,pos_v)
                 elseif subtype == savewhatsit_code then
@@ -1045,7 +1046,7 @@ local hlist_out, vlist_out  do
                 if subtype == literalwhatsit_code then
                     flushliteral(current,pos_h,pos_v)
                 elseif subtype == lateluawhatsit_code then
-                    flushlatelua(current,pos_h,pos_v,cur_h,cur_v)
+                    flushlatelua(current,pos_h,pos_v)
                 elseif subtype == setmatrixwhatsit_code then
                     flushsetmatrix(current,pos_h,pos_v)
                 elseif subtype == savewhatsit_code then

@@ -170,11 +170,20 @@ do
 
     local f_integer      = formatters["%i"]
 
-    local f_numeric      = formatters["%n"] -- maybe %N
-    local f_pair         = formatters["(%n,%n)"]
-    local f_ctrl         = formatters["(%n,%n) .. controls (%n,%n) and (%n,%n)"]
-    local f_triplet      = formatters["(%n,%n,%n)"]
-    local f_quadruple    = formatters["(%n,%n,%n,%n)"]
+    -- no %n as that can produce -e notation and that is not so nice for scaled butmaybe we
+    -- should then switch between ... i.e. make a push/pop for the formatters here ... not now.
+
+ -- local f_numeric      = formatters["%n"] -- maybe %N
+ -- local f_pair         = formatters["(%n,%n)"]
+ -- local f_ctrl         = formatters["(%n,%n) .. controls (%n,%n) and (%n,%n)"]
+ -- local f_triplet      = formatters["(%n,%n,%n)"]
+ -- local f_quadruple    = formatters["(%n,%n,%n,%n)"]
+
+    local f_numeric      = formatters["%F"]
+    local f_pair         = formatters["(%F,%F)"]
+    local f_ctrl         = formatters["(%F,%F) .. controls (%F,%F) and (%F,%F)"]
+    local f_triplet      = formatters["(%F,%F,%F)"]
+    local f_quadruple    = formatters["(%F,%F,%F,%F)"]
 
     local f_points       = formatters["%p"]
     local f_pair_pt      = formatters["(%p,%p)"]
@@ -191,25 +200,6 @@ do
     local p = Cs(q * (r * a)^-1 * (a * r * (P(-1) + a) + P(1))^0 * q)
 
     mp.cleaned = function(s) return lpegmatch(p,s) or s end
-
- -- local function mpprint(...) -- we can optimize for n=1
- --     for i=1,select("#",...) do
- --         local value = (select(i,...))
- --         if value ~= nil then
- --             n = n + 1
- --             local t = type(value)
- --             if t == "number" then
- --                 buffer[n] = f_numeric(value)
- --             elseif t == "string" then
- --                 buffer[n] = value
- --             elseif t == "table" then
- --                 buffer[n] = "(" .. concat(value,",") .. ")"
- --             else -- boolean or whatever
- --                 buffer[n] = tostring(value)
- --             end
- --         end
- --     end
- -- end
 
     local function mpp(value)
         n = n + 1

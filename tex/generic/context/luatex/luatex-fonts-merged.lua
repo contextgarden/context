@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/14/19 11:26:57
+-- merge date  : 08/17/19 11:46:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -30708,7 +30708,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
      local cp=getprev(current)
      local cnsn=getnext(cns)
      setlink(cp,n)
-     setlink(cns,current)
+     setlink(cns,current) 
      setlink(c,cnsn)
      if c==stop then
       stop=cp

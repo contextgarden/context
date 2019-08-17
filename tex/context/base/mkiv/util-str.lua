@@ -908,7 +908,7 @@ local format_L = function()
     return format("(a%s and 'TRUE' or 'FALSE')",n)
 end
 
-local format_n = function() -- strips leading and trailing zeros and removes .0
+local format_n = function() -- strips leading and trailing zeros and removes .0, beware: can produce e notation
     n = n + 1
     return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
