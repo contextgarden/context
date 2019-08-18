@@ -86,6 +86,7 @@ local rest       = token("default",   any)
 local comment    = token("comment",   P("%") * (1-S("\n\r"))^0)
 local internal   = token("reserved",  exact_match(mergedshortcuts,false))
 local shortcut   = token("data",      exact_match(mergedinternals))
+
 local helper     = token("command",   exact_match(metafuncommands))
 local plain      = token("plain",     exact_match(metapostcommands))
 local quoted     = token("quote",     dquote)
@@ -128,9 +129,12 @@ lexer.embed_lexer(metafunlexer, cldlexer, startluacode, stopluacode)
 
 local luacall      = token("embedded",P("lua") * ( P(".") * R("az","AZ","__")^1 )^1)
 
+local keyword      = token("default", (R("AZ","az","__")^1) * # P(space^0 * P("=")))
+
 metafunlexer._rules = {
     { "whitespace", spacing    },
     { "comment",    comment    },
+    { "keyword",    keyword    },  -- experiment, maybe to simple
     { "internal",   internal   },
     { "shortcut",   shortcut   },
     { "luacall",    luacall    },

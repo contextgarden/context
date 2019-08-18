@@ -1,0 +1,189 @@
+% language=us
+
+\startcomponent followingup-bitmaps
+
+\environment followingup-style
+
+\startchapter[title={Bitmap images}]
+
+\startsection[title={Introduction}]
+
+In \TEX\ image inclusion is traditionally handled by specials. Think of a signal
+added someplace in the page stream that says:
+
+\starttyping
+\special{image: foo.png 2000 3000}
+\stoptyping
+
+Here the number for instance indicate a scale factor to be divided by 1000.
+Because \TEX\ has no floating point numbers, normally one uses an integer and the
+magic multiplier 1000 representing 1.000. Such a special is called a \quote
+{whatsit} and is one reason why \TEX\ is so flexible and adaptive.
+
+In \PDFTEX\ instead of a \type {\special} the command \type {\pdfximage} and its
+companions are used. In \LUATEX\ this concept has been generalized to \type
+{\useimageresource} which internally is not a so called whatsit (an extension
+node) but a special kind of rule. This makes for nicer code as now we don't need
+to check if a certain whatsit node is actually one with dimensions, while rules
+already are part of calculating box dimensions, so no extra overhead in checking
+for whatsits is added. In retrospect this was one of the more interesting
+conceptual changes in \LUATEX.
+
+In \LUAMETATEX\ we don't have such primitives but we do have these special rule
+nodes; we're talking of subtypes and the frontend doesn't look at those details.
+Depending on what the backend needs one can easily define a scanner that
+implements a primitive. We already did that in \CONTEXT. More important is that
+inclusion is not handled by the engine simply because there is no backend. This
+means that we need to do it ourselves. There are two steps involved in this that
+we will discuss below.
+
+\stopsection
+
+\startsection[title={Identifying}]
+
+There is only a handful of image formats that makes sense in a typesetting
+workflow. Because \PDF\ inclusion is supported (but not discussed here) one can
+actually take any format as long as it converts to \PDF, and tools like graphic
+magic do a decent job on that. \footnote {Although one really need to check a
+converted image. When we moved to pplib, I found out that lots of converted
+images in a project had invalid \PDF\ objects, but apart from a warning nothing
+bad resulted from this because those objects were not used.} The main bitmap
+formats that we care about are \JPEG, \JPEG2000, and \PNG. We could deal with
+\JBIG\ files but I never encountered them so let's forget about them for now.
+
+One of the problems with a built|-|in analyzer (and embedder) is that it can
+crash or just abort the engine. The main reason is that when the used libraries
+run into some issue, the engine is not always able to recover from it: a
+converter just aborts which then cleans up (potentially messed up) memory. In
+\LUATEX\ we also abort, simply because we have no clue to what extend further on
+the libraries are still working as expected. We play safe. For the average user
+this is quite ok as it signals that an image has to be fixed.
+
+In a workflow that runs unattended on a server and where users push images to a
+resource tree, there is a good change that a \TEX\ job fails because of some
+problem with images. A crash is not really an option then. This is one reason why
+converting bitmaps to \PDF\ makes much sense. Another reason is that some color
+profiling might be involved. Runtime manipulations make no sense, unless there is
+only one typesetting run.
+
+Because in \LMTX\ we do the analyzing ourselves \footnote {Actually, in \MKIV\
+this was also possible but not widely advertised, but we now exclusively keep
+this for \LMTX.} we can recover much easier. The main reason is of course that
+because we use \LUA, memory management and garbage collection happens pretty well
+controlled. And crashing \LUA\ code can easily be intercepted by a \type {pcall}.
+
+Most (extensible) file formats are based on tables that gets accessed from an
+index of names and offsets into the file. This means that filtering for instance
+metadata like dimensions and resolutions is no big deal (we always did that). I
+can extend analyzing when needed without a substantial change in the engine that
+can affect other macro packages. And \LUA\ is fast enough (and often faster) for
+such tasks.
+
+\stopsection
+
+\startsection[title={Embeding}]
+
+Once identified the frontend can use that information for scaling and (if needed)
+reuse of the same image. Embedding of the image resource happens when a page is
+shipped out. For \JPEG\ images this is actually quite simple: we only need to
+create a dictionary with the right information and push the bitmap itself into
+the associated stream.
+
+For \PNG\ images it's a bit different. Unfortunately \PDF\ only supports certain
+formats, for instance masks are separated and transparency needs to be resolved.
+This means that there are two routes: either pass the bitmap blob to the stream,
+or convert it to a suitable format supported by \PDF. In \LUATEX\ that is
+normally done by the backend code, which uses a library for this. It is a typical
+example of a dependency of something much larger than actually needed. In
+\LUATEX\ the original poppler library used for filtering objects from a \PDF\
+file as well as the \PNG\ library also have tons of code on board that relates to
+manipulating (writing) data. But we don't need those features. As a side note:
+this is something rather general. You decide to use a small library for a simple
+task only to find out after a decade that it has grown a lot offering features
+and having extra dependencies that you really don't want. Even worse: you end up
+with constant updates due to fixed security (read: bug) fixes.
+
+Passing the \PNG\ blob unchanged in itself to the \PDF\ file is trivial, but
+massaging it into an acceptable form when it doesn't suit the \PDF\ specification
+takes a bit more code. In fact, \PDF\ does not really support \PNG\ as format,
+but it supports \PNG\ compression (aka filters).
+
+Trying to support more complex \PNG\ files is a nice way to test if you can
+transform a public specification into a program as for instance happens with
+\PDF, \OPENTYPE, and font embedding in \CONTEXT. So this again was a nice
+exercise in coding. After a while I was able to process the \PNG\ test suite
+using \LUA. Optimizing the code came with understanding the specification.
+However, for large images, especially interlaced ones, runtime was definitely not
+to be ignored. It all depended on the tasks at hand:
+
+\startitemize
+
+\startitem
+    A \PNG\ blob is compressed with \ZIP\ compression, so first it needs to be
+    decompressed. This takes a bit of time (and in the process we found out that
+    the \type {zlib} library used in \LUATEX\ had a bug that surfaced when a
+    mostly zero byte image was uncompressed and we can then hit a filled up
+    buffer condition.
+\stopitem
+
+\startitem
+    The resulting uncompressed stream is itself compressed with a so called
+    filter. Each row starts with a filter byte that indicates how to convert
+    bytes into other bytes. The most commonly used methods are deltas with
+    preceding pixels and/or pixels on a previous row. When done the filter bytes
+    can go away.
+\stopitem
+
+\startitem
+    Sometimes an image uses 1, 2 or 4 bits per pixel, in which case the rows
+    needs to be expanded. This can involve a multiplication factor per pixel (it
+    can also be an index in a palette).
+\stopitem
+
+\startitem
+    An image can be interlaced which means that there are seven parts of the
+    image that stepwise build up the whole. In professional workflows with high
+    res images interlacing makes no sense as transfer over the internet is not an
+    issue and the overhead due to reassembling the image and the potentially
+    larger file size (due to independent compression of the seven parts) are not
+    what we want either.
+\stopitem
+
+\startitem
+    There can be an image mask that needs to be separated from the main blob. A
+    single byte gray scale image then has two bytes per pixel, and a double byte
+    pixel has four bytes of information. An \RGB\ image has three bytes per pixel
+    plus an alpha byte, and in the case of double byte pixels we get eight bytes
+    per pixel.
+\stopitem
+
+\startitem
+    Finally the resulting blob has to be compressed again. The current amount of
+    time involved in that suggests that there is room for improvement.
+\stopitem
+
+\stopitemize
+
+The process is controlled by number of rows and columns, the number of bytes per
+pixel (one or two) and the color space which effectively means one or three
+bytes. These numbers get fed into the filter, deinterlacer, expander and|/|or
+mask separator. In order to speed up the embedding these basic operations can be
+assisted by a helpers written in \CCODE. Because \LUA\ is quite good with
+strings, we pass strings and get back strings. So, most of the logic stays at the
+\LUA\ end.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+Going for a library|-|less solution for bitmap inclusion is quite doable and in
+most cases as efficient. Because we have a pure \LUA\ implementation for testing
+and an optimized variant for production, we can experiment as we like. A positive
+side effect is that we can more robustly intercept bad images and inject a
+placeholder instead.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

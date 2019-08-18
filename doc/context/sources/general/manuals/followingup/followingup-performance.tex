@@ -1,0 +1,107 @@
+% language=us
+
+\startcomponent followingup-performance
+
+\environment followingup-style
+
+\startchapter[title={Performance}]
+
+\startsection[title={Introduction}]
+
+Those who've read the other documents describing the development of \LUATEX, know
+that performance is always on my radar. A decent performance is a must for a
+useable workflow, especially because typesetting is a multi|-|pass process.
+\footnote {I'm often baffled by reports of (non|-|\CONTEXT) \LUATEX\ users about
+the performance of \LUATEX. It seems easier to blame an engine than ones own
+macros or setup and most of those tests make no sense anyway. Believe it or not,
+but if performance of \CONTEXT\ \MKIV\ was much worse than \MKII\ (using \PDFTEX\
+or \XETEX) it would have backfired and the project would never have taken of.
+Just think of this: would Hans really use \LUATEX\ and continue with development
+if it were that slow?} One page reference changing from two digits to three
+digits can influence whatever follows and we're not only talking of a different
+page break, even a change in line breaks can have consequences. The core engine
+cannot be made much faster. When the (single core) run has the whole cpu
+available not much can be gained. But multiple processes are run at the same
+time, the cache has to be shared and misses can become an issue. So, efficiency
+of code is still important. Occasionally a (tiny) improvement can be made, but
+only the accumulation of such improvements can make a dent. The feeling is that
+over time \LUATEX\ has not become slower but we keep an eye on possible other
+improvements. The memory footprint is also something to keep an eye on. \footnote
+{Of course this is all becoming less relevant now that having e.g. a browser open
+in the background will set you back with a constant 5\endash10\% cpu load and
+slowly accumulating gigabyte memory usage. That actually was something I had to
+keep in mind when running \LUAMETATEX\ benchmarks.}
+
+The more we delegate to \LUA, the less we can benefit from for instance \CPU\
+improvements: in that case the \LUA\ virtual machine is the bottleneck. And there
+is not much we can do about that. This also means that when we delegate more to
+\LUA\ we sacrifice performance. Sometimes things can be done more efficient in
+\LUA, but those are often tasks that are not performed frequently. That said, I'm
+convinced most of the \CONTEXT\ code is quite efficient and not much can be
+gained.
+
+The biggest change in \LUAMETATEX\ is the backend. We gain some efficiency in
+terms of speed, performance and output in some cases, while in other cases we
+loose a bit. On the average the small performance hit is bearable. Because
+\CONTEXT\ users don't complain about performance I think that I have some slack
+here.
+
+\stopsection
+
+\startsection[title={An example}]
+
+There are a few places where \LUATEX\ looks ahead to check something and goes back
+when the condition is not met. Take these:
+
+\starttyping
+\hbox   {...}
+\hbox   to 10cm {...}
+\hrule  width 10cm height 10cm \relax
+\dimen0 =10cm
+\dimen0 10cm
+\mydimen 10cm
+\toks0  {...}
+\toks0  \toks2
+\stoptyping
+
+Spaces and sometimes \type {\relax} after the trigger (\type {\hbox}, \type
+{\dimen}, etc.) are skipped and in some case there can be an optional \type {=}
+sign. So, there are quite some cases where there is first a check for an optional
+equal which itself can be preceded by optional spaces. When there is no equal
+sign the last seen token is pushed back into the scanned which effectively means
+that a temporary token is allocated, and a one token list is pushed on the input
+stack. Then scanning goes on. The same can happen with the open brace in case of
+a token list assignment: it gets pushed back and the content scanned checks it
+again. In the case of keywords something similar takes place, because here
+\LUATEX\ checks explicitly for e.g.\ type {width}, and when it is not found again
+it pushes back consumed tokens and checks for the \type {width}. In the case of
+the specifiers of the box we don't need to check at all when we have an opening
+brace. In the follow up, when the \type {orientation} keyword was added, and the
+\type {dir} and \type {bdir} were replaced by \type {direction} a little bit more
+was optimized.
+
+In \LUATEX\ this code comes from \PDFTEX\ which takes if from \TEX, but in both
+cases some code side effects occur from the transition from \PASCAL\ to \CCODE.
+But, in \LUATEX\ we stick to the \CCODE, so we can try to get rid of these
+artifacts. During the last years, especially when additional keywords were
+introduces (for instance for attributes) already some optimization took place. In
+the follow up again some optimizations were applied, for instance quite often we
+can combine the check for an equal sign with skipping the spaces.
+
+The gain is not spectacular but as all small bits add up eventually it is
+measurable in a complex run. What definitely is true, is that we avoid some
+memory access which in turn might pay back when multiple runs happen in parallel.
+
+Of course one can argue that such optimizations are to be avoided but as long as
+they don't obscure the code, it's okay. After all, just as one optimizes for
+instance a compression algorithm or search routine, there is no reason not to
+mildly optimize some of the critical code in \LUATEX. And in \CONTEXT\ we have
+plenty of opportunities to check if that works out well. At some point some might
+be retrofit into \LUATEX\ 1.2 (or later). \footnote {But it makes less sense now
+that there are variants popping up that might depend on the stable base.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,151 @@
+% language=us
+
+\startcomponent followingup-lua
+
+\environment followingup-style
+
+\startchapter[title={\LUA}]
+
+\startsection[title={Move to 5.4}]
+
+Another experiment concerned testing \LUA\ 5.4 which looks like a minor update in
+terms of new functionality but has some consequences. By now the old module model
+is even more deprecated and compatibility mode no longer makes much sense. As a
+consequence we now need to adapt the way libraries are loaded (and we use global
+ones) and a few other low level calls had to be adapted. This is no real issue
+and once that was done, I found out that the bit32 module was even more obsolete
+so I decided to get rid of it. We already have a bit32 replacement in \CONTEXT\
+so I had to enable that. As \CONTEXT\ doesn't need compatibility mode it was no
+problem to drop that too.
+
+The biggest changes in 5.4 are under the hood: some optimized byte code and a new
+generational garbage collector. I did a few runs and a 12.4 seconds run on the
+manual now dropped to around 12.1 and given that we spend (probably) more than
+half the time in \LUA\ that means some 5\% gain in performance. This is still
+more than the 9.6 seconds that \LUAJIT\ needs but it looks like every \LUA\
+release gains a bit and I'm pretty sure that there is more to gain. \footnote {In
+the meantime there are experiments in 5.4 with \type {<const>} directives which
+might have advantages.}
+
+An interesting experiment was to disable the automatic string to number
+conversion when a number is expected but a string is needed. So far I only had to
+adapt two lines of code in the in the meantime considerable amount of \LUA\ code
+that comes with \CONTEXT.
+
+\stopsection
+
+\startsection[title={No more \LUAJIT}]
+
+One thing I had to consider was the future of \LUAJIT. This project is sort of
+stalled and will not follow \LUA\ development. Now, to some extend we can deal
+with this but with the faster \LUA\ 5.4 around the corner, the limitations of
+\LUAJIT\ with respect to loading large tables, as well as the fact that we need a
+patched hash function to get an advantage over regular \LUA\ anyway, it makes
+sense to drop it in \LUAMETATEX. After discussing this with Alan, who crunched
+numbers in order to make impressive graphics with \METAPOST, we came to the
+conclusion that we should not overestimate the benefits. There is still a gain
+but removing the need to support both could also makes it possible to improve
+existing code (although one should not expect too much from that; it's more a
+matter of convenience for me). Also, for as long as have \LUAJITTEX\ that is
+still an option when one has to squeeze out every second.
+
+A valid question is if ditching \LUAJIT\ will harm users. The answer to this
+depends on the kind of documents that you process. Given decent programming, you
+can gain quite a bit of runtime, but on the average the difference is not that
+large. There is for instance always the overhead of callbacks and crossing the so
+called \CCODE\ boundary that has an impact.
+
+\stopsection
+
+\startsection[title={Performance}]
+
+At the time of writing this Thomas Schmitz was wondering if there was a
+significant difference in runtime between the table mechanisms and especially
+natural tables and extreme tables. Some test demonstrated that extreme tables
+were best for his case. That case concerned generating about 400 pages of tables
+from \XML\ files, including some juggling of data in \LUA. The bottleneck in that
+document can be roughly simulated with the following test. We assume one pass
+over the table but in practice there are upto four, but only the last one has
+frames. So, the test concerns 80.000 (400 pages with 40 rows of 5 columns) calls
+to \type {\framed}.
+
+% 400 pages : 5 cells * 40 rows = 80000 framed
+
+\starttyping
+1                              \hpack{\framed              {oeps}}
+2                              \hpack{\framed[frame=off]   {oeps}}
+3   \setupframed[frame=off]    \hpack{\framed              {oeps}}
+4                              \hpack{\framed[frame=on]    {oeps}}
+5   \setupframed[frame=on]     \hpack{\framed              {oeps}}
+6                              \hpack{\framed[frame=closed]{oeps}}
+7   \setupframed[frame=closed] \hpack{\framed              {oeps}}
+\stoptyping
+
+\starttabulate[|c|c|c|c|]
+\HL
+\BC sample \BC luatex & mkiv \BC luajittex & mkiv \BC luametatex & lmtx \BC \NR
+\HL
+\NC 1 \NC 17.3 \NC 16.8 \NC 13.5 \NC \NR
+\NC 2 \NC 17.8 \NC 17.2 \NC 14.0 \NC \NR
+\NC 3 \NC 17.3 \NC 16.8 \NC 13.3 \NC \NR
+\NC 4 \NC 17.9 \NC 17.4 \NC 13.7 \NC \NR
+\NC 5 \NC 17.4 \NC 17.1 \NC 13.3 \NC \NR
+\NC 6 \NC 17.4 \NC 16.8 \NC 12.9 \NC \NR
+\NC 7 \NC 16.4 \NC 16.0 \NC 12.6 \NC \NR
+\HL
+\stoptabulate
+
+Even if we add the usual .1 second interval around these values it will be clear
+that we gain enough not to worry about the loss of \LUAJIT, also because the gain
+is not in the \LUA\ part only. A nice consequence of this is that when we replace
+the \CPU's in a server with low power ones that perform 25\% less, we can
+compensate that by using \LMTX. \footnote {There's still room for improvement,
+because mid July 2019 we're at 12.9, 13.2, 12.9, 13.5, 13.0, 12.5 and 12.2
+seconds or less. But don't expect too many miracles.}
+
+When wrapping this up, the \LUATEX\ manual processed with \LMTX\ took slightly
+less than 11.9 seconds, compared to a normal run of 12.6 seconds, so we're
+gaining some there too. And just after I wrote this we went down to 11.7 seconds
+by (as experiment) changing the \LUA\ virtual machine dispatcher, so there is
+still some to gain. In the energy saving fitlet with small amd processor
+processing the manual with stock \LUATEX\ takes about 37 seconds, but 33.5 with
+\LMTX\ so here also we're not off worse.
+
+\stopsection
+
+\startsection[title={Modules}]
+
+Right from the start \LUATEX\ had some extra libraries linked in: \type {md5}
+(for hashing), \type {lfs} (for accessing file properties), \type {slunicode}
+(for basic \UTF\ handling), \type {gzip} and \type {zlib} (for zipping files and
+streams), \type {zip} (for accessing zip files) and \type {socket} (for
+communicating other than with files).
+
+In \LUAMETATEX\ the not so useful \type {slunicode} library was removed pretty
+early but the others stayed around. The more backend specific \type {img} and
+\type {pdf} libraries went away too, as did the (already not used) \type
+{fontloader} library. The \type {kpse} library is also gone, as we do those
+things in \LUA. The \type {epdf} library was kept. A couple of libraries were
+added, like \type {sha2}, \type {basexx}, and \type {flate}, plus a few handy
+helper libraries that are still experimental and therefore not mentioned here.
+
+The \type {flate} library is also an experiment but will replace the \type {gzip}
+and \type {zlib} libraries. Currently these use \type {libz} but \type
+{libdeflate} will be the low level replacement once it support streams and is
+already used for \type {flate}. The \type {md5} library has been redone using
+utility code \type {pplib}, as \type {sha2} does. The type {basexx} library also
+falls back on utility code form \type {pplib} (that code is actually
+independent).
+
+The \type {lfs} code has been replaced by a variant that omits features not
+common to the platforms and with a iterator that permits much faster directory
+scans and has a few more helpers. It is not compatible but we kept the name
+because of legacy usage. I might strip the socket code to what is actually used,
+but on the other hand: don't touch what works well. The original code doesn't
+change that much anyway.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

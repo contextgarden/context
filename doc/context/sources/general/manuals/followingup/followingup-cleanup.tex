@@ -1,0 +1,332 @@
+% language=us
+
+% Youtube: TheLucs play with Jacob Collier // Don't stop til you get enough
+
+\startcomponent followingup-cleanup
+
+\environment followingup-style
+
+\logo [ALGOL]   {Algol}
+\logo [FORTRAN] {FORTRAN}
+\logo [SPSS]    {SPSS}
+\logo [DEC]     {DEC}
+\logo [VAX]     {VAX}
+\logo [AMIGA]   {Amiga}
+
+\startchapter[title={Cleanup}]
+
+\startsection[title={Introduction}]
+
+Original \TEX\ is a literate program, which means that code and documentation are
+mixed. This mix, called a \WEB, is split into a source file and a \TEX\ file and
+both parts are processed independently into a program (binary) and a typeset
+document. The evolution of \TEX\ went through stages but in the end a \PASCAL\
+\WEB\ file was the result. This fact has lead to the more or less standard \WEBC\
+compilation infrastructure which is the basis for \TEXLIVE.
+
+% My programming experience started with programming a micro processor kit (using
+% an 1802 processor), but at the university I went from \ALGOL\ to \PASCAL\ (okay,
+% I also remember lots of \SPSS\ kind|-|of|-|\FORTRAN\ programming. The \PASCAL\
+% was the one provided on \DEC\ and \VAX\ machines and it was a bit beyond standard
+% \PASCAL. Later I did quite some programming in \MODULA 2 in (for a while an
+% \AMIGA) but mostly on personal computers. The reason that I mention this it that
+% it still determines the way I look at programs. For instance that code goes
+% through a couple if stepwise improvements (and that it can always be done
+% better). That you need to keep an eye on memory consumption (can be a nice
+% challenge). That a properly formatted source code is important (at least for me).
+%
+% When into \PASCAL, I ran into the \TEX\ series and as it looked familiar it ended
+% up on my bookshelf. However, I could not really get an idea what it was about,
+% simply because I had no access to the \TEX\ program. But the magic stayed with
+% me. The fact that \LUA\ resembles \PASCAL, made it a good candidate for extending
+% \TEX\ (there were other reasons as well). When decades later, after using \TEX\
+% in practice, I ended up looking at the source, it was the \LUATEX\ source.
+
+So, \TEX\ is a woven program and this is also true for the starting point of
+\LUATEX: \PDFTEX. But, because we wanted to open up the internals, and because
+\LUA\ is written in \CCODE, already in an early stage Taco decided to start from
+the \CCODE\ translated from \PASCAL. A permanent conversion was achieved using
+additional scripts and the original documentation stayed in the source. The one
+large file was split into more logical smaller parts and combined with snippets
+from \ALEPH .
+
+After we released version 1.0 I went through the documentation parts of the code
+and normalized that a bit. The at that moment still sort of simple \WEB\ files
+became regular \CCODE\ files, and the idea was (and is) that at some point it
+should be possible to process the documentation (using \CONTEXT).
+
+Over time the \CCODE\ code evolved and functions ended up in places that at that
+made most sense at that moment. After the previously described stripping process,
+I decided to go through the files and see if a bit of reshuffling made sense,
+mostly because that would make documenting easier. (I'm not literate enough to
+turn it into a proper literate program.) It was also a good moment to get rid of
+unused code (not that much) and unused macros (some more than expected). It also
+made sense to change a few names (for instance to avoid potential future clashes
+with \type {lua_} core functions). However, all this takes quite some careful
+checking and compilation runs, so I expect that after this first cleanup, for
+quite some time stepwise improvements can happen (especially in adding comments).
+\footnote {This is and will be an ongoing effort. It probably doesn't show, but
+getting the code base in the state it is in now, took quite some time. It
+probably won't take away complaints and nagging but I've decided no longer to pay
+attention to those on the sideline.} \footnote {In the end not much \PDFTEX\ and
+\ALEPH\ code is present in \LUAMETATEX , but these were useful intermediate
+steps. No matter how lean \LUAMETATEX\ becomes, I have a weak spot for \PDFTEX\
+as it always served us well and without it \TEX\ would be less present today.}
+
+One of the things that I keep in mind when doing this, is that we use \LUA. This
+component compiles on most relevant platforms and as such we can assume that
+\LUAMETATEX\ also should (and can be) made a bit less dependent on old mechanisms
+that are used in stock \LUATEX. For instance, we don't come from \PASCAL\ any
+longer but there are traces of that transition still present. We also don't use
+specific operating system features, and those that we use are also used in \LUA.
+And, as we try to share code we can also delegate some (more) to \LUA. For
+instance file related code is not dependent on other components in the \TEX\
+infrastructure, but maybe at some point the runtime loadable \KPSE\ library can
+kick in. So, basically the idea is to sort of go bare bone first and later see
+how with the help of \LUA\ we can get bring some back. For the record: this is
+not needed for \CONTEXT\ as it already has this interface to \TDS. \footnote
+{This has been removed from my agenda.}
+
+\stopsection
+
+\startsection[title={Motivation}]
+
+The \LUATEX\ project started as an experiment of adding \LUA\ to \PDFTEX, which
+was done by Hartmut and in order to avoid confusion we named it \LUATEX. When we
+figured out that there this had possibilities we decided to go further and Taco
+took the challenge to rework the code base. Part of that work was sponsored by
+Idris' Oriental \TEX\ project. I have fond memory of the intensive and rapid
+development cycles: online discussions, binaries going my directions,
+experimental \CONTEXT\ code going the other way. When we had reached a sort of
+stable state but at some point, read: usage in \CONTEXT\ had become crucial, a
+steady further development started, where Taco redid \METAPOST\ into \MPLIB,
+funded by user groups. At some point Luigi took over from Taco the task of
+integration of components (also into \TEX Live), introduced \LUAJIT\ into the
+binary, conducted the (again partially funded) swiglib project, followed by
+support for \FFI. A while later I myself started messing around in the code base
+directly and continued extending the engine and \LUA\ interfaces.
+
+I could work on this because I have quite some freedom at the place where I work.
+We use (part of) \CONTEXT\ for some projects and especially in dealing with \XML\
+we could benefit from \LUATEX. It must be said that (long running) projects like
+these never pay off (on the contrary, they cost a lot in terms of money and
+energy) so it's quite safe to conclude that \LUATEX\ development is to a large
+extend a (many man years) work of love for the subject. I guess that no sane
+company will do (permit) such a thing. It is also for that reason that I keep
+spending time on it, and as a simplification of the code base was always one of
+my dreams, this is what I spend my time on now. After all, \LUATEX\ is just
+juggling bytes and as it is written in \CCODE, and has no graphical user
+interface or complex dependencies, it should be possible to have a relative
+simple setup in terms of code files and compilation. Of course this is also made
+possible by the fact that I can use \LUA. It's also why I decided to
+\quotation {Just do it}, and then \quotation {Let's see where I end up}. No
+matter how it turns out, it makes a good vehicle for further development and
+years of fun.
+
+\stopsection
+
+\startsection[title={Files}]
+
+After a decade of adding and moving around code it's about time to reorganize the
+code a bit, but we do so without deviating too much from the original setup. For
+instance we started out with a small number of \LUA\ interface macros and these
+were collected in a few files, and defined in one \type {h} file, but it made
+sense to have header files alongside the libraries that implement helpers. This
+is a rather tedious job but with music videos or video casts on a second screen
+it is bearable.
+
+When I reached a state where we only needed the \LUATEX\ files plus the minimal
+set of libraries I tried to get rid of directories in the source tree that were
+placeholders, but with \type {automake} files, like those for \PDFTEX\ and
+\XETEX. After a couple of attempts I gave up on that because the build setup is
+rather hard coded for checking them. Also, there were some (puzzling)
+dependencies in the configuring on \OMEGA\ files as well as some \DVI\ related
+tools. So, that bit is for later to sort out. \footnote {Of course later the
+decision was made to forget about using \type {autotools} and go for an as simple
+as possible \type {cmake} solution.}
+
+\stopsection
+
+\startsection[title={Command line arguments}]
+
+As we need to set up a backend and deal with font loading in \LUA, we can as well
+delegate some of the command line handling to \LUA\ as well. Therefore, only the
+a limited set of options is dealt with: those that determine the startup and \LUA\
+behavior. In principle we can even get rid of all and always use a startup script
+but for now it makes sense to not deviate too much from a regular \TEX\ run.
+
+At the time of this writing some code is still in place that is a candidate for
+removal. For instance, using the \type {&} to define a format file has long be
+replaced by \type {--fmt}. There are sentimental reasons for keeping it but at
+the same time we need to realize that shells use these special characters too. A
+for me unknown (or forgotten) feature of prefixing a jobname with a \type {*}
+will be removed as it makes no sense. There is some \MSWINDOWS\ specific last
+resort code that probably will go too, unless I can figure out why it is needed
+in the first place. \footnote {Intercepting these symbols has been dropped in
+favor of the command line flags.}
+
+Now left with a very simple set of command line options it also makes sense to
+use a simple option analyzer, so that was a next step as it rid us of a
+dependency and produces less code.
+
+So, the option parser has now been replaced by a simple variant that is more in
+tune with what will happen when you deal with options in \LUA: no magic. One
+problem is that \TEX's first input file is moved from the command line to the
+input buffer and a an interactive session is emulated. As mentioned before, there
+is some extra \type {&}, \type {*} and \type {\\} parsing involved. One can
+wonder if this still makes sense in a situation where one has to specify a format
+and \LUA\ file (using \type {--fmt} and \type {--ini}) so that might as well be
+redone a bit some day. \footnote {In the end only these explicit command line
+options were supported.}
+
+\stopsection
+
+\startsection[title={Platforms}]
+
+When going through the code I noticed conditional sections for long obsolete
+platforms: \type {amiga}, \type {dos} and \type {djgpp}, \type {os/2}, \type
+{aix}, \type {solaris}, etc. Also, with 64 bit becoming the standard, it makes
+sense to assume that users will use a modern 64 platform (intel or arm combined
+with \MSWINDOWS\ or some popular \UNIX\ variant). We don't need large and complex
+code management for obscure platforms and architectures simply because we want to
+proof that \LUAMETATEX\ runs everywhere. With respect to \MSWINDOWS\ we use a
+cross compiler (\type {mingw}) as reference but native compilation should be no
+big deal eventually. We can cross that bridge when we have a simplified
+compilation set up. Right now it doesn't make sense to waste time on a native
+\MICROSOFT\ compilation as it would also pollute the code with conditional
+sections. We'll see what happens when I'm bored. \footnote {In the meantime no
+effort is made to let the source compile otherwise than with the cross compiler.
+Best is to keep the code as clean as possible with respect to conditional code
+sections. So don't bother me with patches.}
+
+\stopsection
+
+\startsection[title={Stubs}]
+
+A \CONTEXT\ run is managed by \MTXRUN\ in combination with a specific script
+
+\starttyping
+mtxrun --script context
+\stoptyping
+
+On windows, we use a stub because using a \type {cmd} file create an indirectness
+that is not seen as executable and therefore in other command files needs to
+be called in a special way to guarantee continuation. So, there we have a small
+binary:
+
+\starttyping
+mtxrun.exe ...
+\stoptyping
+
+that will call:
+
+\starttyping
+luatex --luaonly mtxrun.lua ...
+\stoptyping
+
+And when the stub has a different name than \type {mtxrun}, say:
+
+\starttyping
+context.exe ...
+\stoptyping
+
+it effectively becomes:
+
+\starttyping
+luatex --luaonly mtxrun.lua --script context ...
+\stoptyping
+
+Because the stripped down version assumes some kind of initializations anyway a
+small extension made it possible to use \LUAMETATEX\ as stub too. So, when we
+rename \type {luametatex.exe} to \type {mtxrun.exe} (on \UNIX\ we don't use a
+suffix) it will start up as \LUA\ interpreter when it finds a script with the
+name \type {mtxrun.lua} in the same path. When we rename it to \type
+{context.exe} it will search for \type {context.lua} and all that that script has
+to do is this:
+
+\starttyping
+arg[0] = "mtxrun"
+
+table.insert(arg,1,"mtx-context")
+table.insert(arg,1,"--script")
+
+dofile(os.selfpath .. "/" .. "mtxrun.lua")
+\stoptyping
+
+So, it basically becomes a call to \type {mtxrun}, but we stay in \LUAMETATEX.
+Because we want an isolated run this will launch \LUAMETATEX\ again with the
+right command line arguments. This sounds inefficient but because we have a small
+binary this is no real issue, and as that run is isolated, it cannot influence
+the caller. The overhead is really small: on my somewhat older laptop it's .2
+seconds, but we had that management overhead already for decades, so no one
+bothers about it. On all platforms using symbolic links works ok too.
+
+\stopsection
+
+\startsection[title={Global variables}]
+
+There are quite a bit global variables and function in the code base, but in the
+process of opening up I got rid of some. The cleanup turned some more into
+locals which saved executable bytes (keep in mind that we also use the engine as
+\LUA\ interpreter so, the smaller, the more friendly). \footnote {Later the
+global variables were collected in so called \CCODE\ structs.} This is work
+in progress.
+
+\stopsection
+
+\startsection[title={Memory usage}]
+
+By going over all the code a couple of times, I was able to decrease the amount
+of used memory a bit as well as avoid some memory allocations. This has no
+consequences for performance but is nicer when multiple runs at the same time
+(e.g.\ on virtual machines) have to compete for resources. \footnote {I will
+probably have to spend some more time on this in order to reach a state that I'm
+satisfied with.}
+
+\stopsection
+
+\startsection[title={\METAPOST}]
+
+The current code base doesn't have that many files. We can imagine that, when
+\LUA\ can be compiled on a platform, that compiling \LUAMETATEX\ is also no that
+complicated. However, the rather complex build infrastructure demonstrates the
+opposite. One of the complications is that \MPLIB\ is codes in \CWEB\ and that
+needs some juggling to get \CCODE. The process has quite some dependencies. There
+are some upstream patches needed, but for now occasionally checking with the
+upstream sources used for compiling \MPLIB\ in \LUATEX\ works okay. \footnote
+{Later I decided to cleanup the \MPLIB\ code: unused font related code was
+removed, the \POSTSCRIPT\ backend was untangled, the translation from \CWEB\ to
+\CCODE\ got done by a \LUA\ script, aspects like error reporting and \IO\ were
+redone, and in the end some new extensions were added. Some of that might trickle
+back to th original, as long as it doesn't harm compatibility; after all
+\METAPOST\ (the program) is standardized and considered functionally stable.}
+
+As \LUAMETATEX\ is also used for experiments we use a copy of the \LUA\ library
+interface. That way we don't interfere with the stable \LUATEX\ situation. When
+we play with extensions, we can always decide to backport them, once they are
+found useful and in good working order. But, as that interface was just \CCODE\
+this was trivial.
+
+\stopsection
+
+\startsection[title={Files}]
+
+In a relative late stage I decided to cleanup some of the filename handling.
+First I got rid of the \type {area}, \type {name} and \type {ext} decomposition
+and optional recomposition. In the original engine that goes through the string
+pool and although there is some recovery in the end, with many files and fonts
+being used, the pool can get exhausted. For instance when you have hundreds of
+thousands of \typ {\font \foo = bar} kind of definitions, each definition wipes
+out the previous entry in the hash, but its font name is kept in the string pool.
+I got rid of that side effect by reusing strings but in the end decided to avoid
+the pool altogether. It was then a small step to also do that for other
+filenames. In the process I also decided that it made no sense to keep the code
+around that reads a filename from the console: we now just quit. Restarting the
+program with a proper filename is no big deal today. I might do some more cleanup
+there. In the end we can best use a callback for handling input from the console.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

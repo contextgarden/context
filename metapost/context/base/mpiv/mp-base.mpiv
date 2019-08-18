@@ -818,7 +818,7 @@ enddef ;
 
 newinternal bboxmargin ;
 
-bboxmargin := 2bp ; % this can bite you
+bboxmargin := 2bp ; % this can bite you, just don't use it in \METAFUN
 
 vardef bbox primary p =
     llcorner p - ( bboxmargin, bboxmargin) --

@@ -166,10 +166,10 @@
 
 \appendtoks
     \ifcsname\??mpdefinitions\currentMPinstance\endcsname \else
-        \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
+      \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
     \fi
     \ifcsname\??mpinclusions\currentMPinstance\endcsname \else
-        \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
+      \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
     \fi
     \t_meta_definitions\emptytoks % in case we redefine
     \t_meta_inclusions \emptytoks % in case we redefine

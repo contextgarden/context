@@ -1,0 +1,369 @@
+% language=us
+
+%  2,777,600 / 11,561,471 cont-en.fmt
+
+% Hooverphonic - Live at the Ancienne Belgique (Geike Arnaert)
+
+\startcomponent followingup-stripping
+
+\environment followingup-style
+
+\startchapter[title={Stripping}]
+
+\startsection[title={Introduction}]
+
+Normally I need a couple of iterations to reach the implementation that I like
+(an average of three rewrites is rather normal). So, I sat down and started
+stripping the engine and did so a few times in order to get an idea of how to
+proceed. One drawback of going public too soon (and we ran into that with
+\LUATEX) is that as soon as there are more users, one gets stuck into the
+situation that a different approach is not really possible. This is why from now
+on experimental is really experimental, even if that means: it works ok in
+\CONTEXT\ (even for production) but we can change interfaces be better, e.g.\
+more consistent (although we're also stuck with existing \TEX\ terminology).
+Anyway, let's proceed.
+
+\stopsection
+
+\startsection[title={The binary}]
+
+In 2014 the \LUATEX\ binary was some 10.9 MB large. The version 1.09 binary of
+October 2018 was about 6.8MB, and the reduction was due to removing the bitmap
+generation from \MPLIB\ as well as replacing poppler by pplib. As an exercise I
+decided to see how easy it was to make a small version suitable for \CONTEXT\
+\LMTX, and as expected the binary shrunk to below 3MB (plus a \LUA\ and \KPSE\
+dll). This is a reasonable size given what is still present.
+
+There is hardly any file related code left because in practice the backend used
+the most different file types. That also meant that we could remove \KPSE\
+related code and keep all that in the library part. In principle one can load
+that library and hook it into the few callbacks that relate to loading files.
+Once we're stable I'll probably write some code for that. \footnote {In the
+meantime I think it makes not much sense to do that.} Launching the binary with a
+startup script can deal with all matters needed, because the command line
+arguments are available.
+
+We could actually go even smaller by removing the built|-|in \TFM\ and \VF\
+readers. For instance it made not much sense to read and store information that
+is never used anyway, like virtual font data: as long as the backend has access
+to what it needs it's fine. By removing unused code and stripping no longer used
+fields in the internal font tables (which is also good for memory consumption),
+and cleaning up a bit here and there the experimental binary ended up at a bit
+above 2.5MB (plus a \LUA\ dll). \footnote {Mid January we were just below 2.7 MB
+with a static, all inclusive, binary. In March the static ended up at 2.9 MB on
+\MSWINDOWS\ and 2.6 MB in \UNIX.}
+
+\stopsection
+
+\startsection[title={Functionality}]
+
+There is no real reason to change much in the functionality of the frontend but
+as we have no backend now, some primitives are gone. These have to be implemented
+as part of creating a backend.
+
+\starttyping
+\dviextension \dvivariable \dvifeedback
+\pdfextension \pdfvariable \pdffeedback
+\stoptyping
+
+The already obsolete related dimensions are also removed:
+
+\starttyping
+\pageleftoffset \pagerightoffset
+\pagetopoffset  \pagebottomoffset
+\stoptyping
+
+And we no longer need the page dimensions because they are just registers that
+are normally used in the backend. So, we got rid of:
+
+\starttyping
+\pageheight
+\pagewidth
+\stoptyping
+
+Some font related inheritances from \PDFTEX\ have also been dropped:
+
+\starttyping
+\letterspacefont
+\copyfont
+\expandglyphsinfont
+\ignoreligaturesinfont
+\tagcode
+\stoptyping
+
+Internally all backend whatsits are gone, but generic \type {literal}, \type
+{save}, \type {restore} and \type {setmatrix} nodes can still be created. Under
+consideration is to let them be so called user nodes but for testing it made
+sense to keep them around for a while. \footnote {Don't take this as a reference:
+later we will see that more was changed.}
+
+The resource relates primitives are backend dependent so the primitives have been
+removed. As with other backend related primitives, their arguments depend on the
+implementation. So, no more:
+
+\starttyping
+\saveboxresource
+\useboxresource
+\lastsavedboxresourceindex
+\stoptyping
+
+and:
+
+\starttyping
+\saveimageresource
+\useimageresource
+\lastsavedimageresourceindex
+\lastsavedimageresourcepages
+\stoptyping
+
+Of course the rule nodes subtypes are still there, so the typesetting machinery
+will handle them fine. It is no big deal to define a pseudo|-|primitive that
+provides the functionality at the \TEX\ level.
+
+The position related primitives are also backend dependent so again they were
+removed. \footnote {There was some sentimental element in this. Long ago, even
+before \PDFTEX\ showed up, \CONTEXT\ already had a positional mechanism. It
+worked by using specials in combination with a program that calculated the
+positions from the \DVI\ file. At some point that functionality was integrated
+into \PDFTEX. For me it always was a nice example of demonstrating that
+complaints like \quotation {\TEX\ is limited because we don't know the position
+of an element in the text.} make no sense: \TEX\ can do more than one thinks,
+given that one thinks the right way.}
+
+\starttyping
+\savepos
+\lastxpos
+\lastypos
+\stoptyping
+
+We could have kept \type {\savepos} but better is to be consistent. We no longer
+need these:
+
+\starttyping
+\outputmode
+\draftmode
+\synctex
+\stoptyping
+
+These could go because we no longer have a backend and if one needs it it's easy
+to define a meaningful variable and listen to that.
+
+The \type {\shipout} primitive does no ship out but just flushes the content of
+the box, if that hasn't happened already.
+
+Because we have \LUA\ on board, and because we can now use the token scanners to
+implement features, we no longer need the hard coded randomizer extensions. In
+fact, also the \METAPOST\ should now use the \LUA\ randomizer, so that we are
+consistent. Anyway, removed are:
+
+\starttyping
+\randomseed
+\setrandomseed
+\normaldeviate
+\uniformdeviate
+\stoptyping
+
+plus the helpers in the \type {tex} library.
+
+\stopsection
+
+\startsection[title={Fonts}]
+
+Fonts are sort of special. We need the data at the \LUA\ end in order to process
+\OPENTYPE\ fonts and the backend code needs the virtual commands. The par builder
+also needs to access font properties, as does the math renderer, but here is no
+real reason to carry virtual font information around (which involves packing and
+unpacking virtual packets). So, in the end it made much sense to also delegate
+the \TFM\ and \VF\ loading to \LUA\ as well. And, as a consequence dumping and
+undumping font information could go away too, which is okay, as we didn't preload
+fonts in \CONTEXT\ anyway. The saving in binary bytes is not impressive but
+keeping unused code around neither. In principle we can get rid of the internal
+representation if we fetch relevant data from the \LUA\ tables but that might be
+unwise from the perspective of performance. By removing the no longer needed
+fields the memory footprint became somewhat smaller and font loading (passing
+from \LUA\ to \TEX) more efficient.
+
+\stopsection
+
+\startsection[title={File IO}]
+
+What came next? A program like \LUATEX\ interacts with its environment and one of
+the nice things about \TEX\ is that it has a standard ecosystem, organized as the
+\quotation {\TEX\ Directory Structure}. There is library that interfaces with
+this structure: \KPSE, but in \CONTEXT\ \MKIV\ we implement its functionality in
+\LUA. The primary reason for this was performance. When we started with \LUATEX\
+the startup on my machine (\MSWINDOWS) and a few servers (\LINUX) of a \TEX\
+engine took seconds and most fo that was due to loading the rather large file
+databases, because a \TEX\ Live installation was a gigabyte adventure. With the
+\LUA\ variant I could bring that down to milliseconds, because I could pre|-|hash
+the database and limit it to files relevant for \CONTEXT\ (still a lot, as fonts
+made up most). Nowadays we have \SSD\ disks and plenty of memory for caching, so
+these things are less urgent, but on network shares it still matters.
+
+So, as we don't use \KPSE, we can remove that library. By doing that we simplify
+compilation a lot as then all dependencies are in the engine's source tree, and
+we're no longer dependent on updates. One can argue that we then sacrifice too
+much, but already for a decade we don't use it and the \LUA\ variant does the job
+well within the \TDS\ ecosystem. Also, in our by now stripped down engine, there
+is not that much lookup going on anyway: we're already in \LUA\ when we do fonts.
+But on the other hand, some generic usage could benefit from the library to be
+present, so we face a choice. The choice is made even more difficult by the fact
+that we can remove all kind of tweaks once we delegate for instance control over
+command execution to \LUA\ completely. But, we might provide \KPSE\ as loadable
+\LUA\ module so that when needed one can use a stub to start the program with a
+\LUA\ script that as first action loads this library that then can take care of
+further file management. As command line arguments are available in \LUA, one can
+also implement the relevant extra switches (and even more if needed).
+
+Now, the interesting thing is that because we have a \LUA\ interface to \KPSE\ we
+can actually drop some hard coded solutions. This means that we can have a binary
+without \KPSE, in which case one has to cook up callbacks that do what this
+library does. But in a version with \KPSE\ embedded one also has to define some
+file related callbacks although they can be rather simple. By keeping a handful
+of file related callbacks the code base could be simplified a lot. In the process
+the recorder option went away (not that we ever used it). It is relatively easy
+to support this in the \quote {find} related callbacks and one has to deal with
+other files (like images and fonts) also, so keeping this feature was a cheat
+anyway.
+
+At this point it is important to notice that while we're dropping some command
+line options, they can still be passed and intercepted at the \LUA\ end. So,
+providing compatible (or alternative solution) is no big deal. For instance,
+execution of (shell) programs is a \LUA\ activity and can be managed from there.
+
+\stopsection
+
+\startsection[title={Callbacks}]
+
+Callbacks can be organized in groups. First there are those related to
+\IO. We only have to deal with a few types: all kind of \TEX\ files (data
+files), format files and \LUA\ modules (but these to are on the list of
+potentially dropped files as this can be programmed in \LUA).
+
+\starttyping
+find_write_file
+find_data_file open_data_file read_data_file
+find_format_file find_lua_file find_clua_file
+\stoptyping
+
+The callbacks related to errors stay: \footnote {Some more error handling was
+added later, as was intercepting user input related to it.}
+
+\starttyping
+show_error_hook show_lua_error_hook,
+show_error_message show_warning_message
+\stoptyping
+
+% We kept the buffer handlers but dropped the output handler later anyway, so we
+% have left:
+%
+% \starttyping
+% process_input_buffer
+% \stoptyping
+
+The management hooks were kept (but the edit one might go): \footnote {And
+indeed, that one went away.}
+
+\starttyping
+process_jobname
+call_edit
+start_run stop_run wrapup_run
+pre_dump
+start_file stop_file
+\stoptyping
+
+Of course the typesetting callbacks remain too as they are the backbone of the
+opening up:
+
+\starttyping
+buildpage_filter hpack_filter vpack_filter
+hyphenate ligaturing kerning
+pre_output_filter contribute_filter build_page_insert
+pre_linebreak_filter linebreak_filter post_linebreak_filter
+insert_local_par append_to_vlist_filter new_graf
+hpack_quality vpack_quality
+mlist_to_hlist make_extensible
+\stoptyping
+
+Finally we mention one of the important callbacks:
+
+\starttyping
+define_font
+\stoptyping
+
+Without that one defined not much will happen with respect to typesetting. I
+could actually remove the \type {\font} primitive but that would be a bit weird
+as other font related commands stay. Also, it's one of the fundamental frontend
+primitives, so removal was never really considered.
+
+\stopsection
+
+\startsection[title={Bits and pieces}]
+
+In the process some helpers and status queries were removed. From the summary
+above you can deduce that this concerns images, backend, and file management.
+Also not used variables (some inherited from the past and predecessors) were
+removed. These and other changes are the reason why there is a separate manual
+for \LUAMETATEX. \footnote {Relatively late in the project I decided to be more
+selective in what got initialized in \LUA\ only mode.}
+
+One of my objectives was to see how lean and mean the code base could be. But
+even if we don't use that many files, the rather complex build system makes that
+we need to have (make and configure) files in the tree that are not really used
+but even then omitting them aborts a build. I played a bit with that but the
+problem is that it needs to be dealt with upstream in order to prevent repetitive
+work. So, this is something to sort out later. Eventually it would be nice to be
+able to compile with a minimal set of source files, also because other programs
+(all kind of \TEX\ variants) that are checked for but not compiled depend on
+libraries that we don't need (and therefore want) to have in the stripped down
+source tree. \footnote {In the end, the source tree was redesigned completely.}
+
+For now we also brought down the number of catcode tables (to 256) \footnote {As
+with math families, and if more tables are needed one should wonder about the
+\TEX\ code used.}, and the number of languages (to 8192) \footnote {This is
+already a lot and because languages are loaded run time, we can go much lower
+than this.} as that saves some initially allocated memory.
+
+\stopsection
+
+\startsection[title={What's next}]
+
+Basically the experiment ends here. A next step is to create a stable code base,
+make compilation easy and consider the way the code is packages. Then some
+cleanup can take place. Also, as it's a window to the outside world, \type {ffi}
+support will move to the code base and be integral to \LUAMETATEX. And of course
+the decision about \LUAJIT\ support has to be made some day soon. The same is
+true for \LUA\ 5.4: in \LUATEX\ for now we stick to 5.3 but experimenting with
+5.4 in \LUAMETATEX\ can't harm us. \footnote {The choice has been made:
+\LUAMETATEX\ will not have a \LUAJIT\ based companion.}
+
+To what extend the \CONTEXT\ code base will have a special files for \LMTX\ is
+yet to be decided, but we have some ideas about new features that might make that
+desirable from the perspective of maintenance. The main question is: do I want to
+have hybrid files or clean files for each variant (stock \MKIV\ and \LMTX).
+
+For the record: at the time of wrapping this up, processing the \LUATEX\ manual
+of 294 pages took 13.5 seconds using stock \LUATEX\ while using the stripped down
+binary, where \LUA\ takes over some tasks, took 13.9 seconds. \footnote {In the
+meantime we're down to around 11.6MB. These are all rough numbers and mostly
+indicate relative speeds at some point.} The \LUAJITTEX\ variant needed 10.9 and
+10.8 seconds. So, there is no real reason to not explore this route, although
+\unknown\ the \PDF\ file size shrinks from 1.48MB to 1.18MB (and optionally we
+can squeeze out more) but one can wonder if I didn't make big mistakes. It is
+good to realize that there is not much performance to gain in the engine simply
+because most code is already pretty well optimized. The same is true for the
+\CONTEXT\ code: there might be a few places where we can squeeze out a few
+milliseconds but probably it will go unnoticed.
+
+On the todo list went removal of \type {\primitive} which we never use (need) and
+the possible introduction of a way to protect primitives and macros against
+redefinition, but on the other hand, it might impact performance and be not worth
+the trouble. In the end it is a macro package issue anyway and we never really
+ran into users redefining primitives. \footnote {Indeed this primitive has been
+removed.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

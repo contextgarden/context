@@ -23,7 +23,7 @@ input "mp-mlib.mpiv" ;
 input "mp-luas.mpxl" ;
 input "mp-math.mpxl" ;
 input "mp-cont.mpxl" ;
-input "mp-page.mpiv" ;
+input "mp-page.mpxl" ;
 input "mp-butt.mpiv" ;
 input "mp-shap.mpiv" ;
 input "mp-grph.mpiv" ;

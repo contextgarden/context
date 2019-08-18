@@ -1,0 +1,104 @@
+% language=us
+
+\startcomponent followingup-introduction
+
+\environment followingup-style
+
+\startchapter[title={Introduction}]
+
+This document, the fifth in a series, describes the follow up project on
+\CONTEXT\ \MKIV\ & \LUATEX\ which carries the working title \CONTEXT\ \LMTX. This
+four letter acronym represents \LUA, \METAPOST\ and \TEX, and if you want you can
+see the last character representing \XML, as that has been an integral part of
+\CONTEXT\ for a long time. But the \quote {x} can also be found in \quote
+{experimental}, \quote {extreme}, \quote {experience} and \quote {extravagant},
+so take your choice.
+
+Of course \CONTEXT\ is and will be a typesetting system using the \TEX\ language
+and typesetting core, but a rather substantial amount of the functionality is a
+hybrid of \TEX\ macros and \LUA\ code. The built|-|in graphic support is driven
+by \METAPOST, but there we also use \LUA\ as an extension language. The \LUA\
+machinery is used for alternative input and handling data too. The same is true
+for \XML, \SQL, \CSV, \JSON, etc.
+
+The output from \CONTEXT\ is normally \PDF\ and \MKIV\ doesn't even enable \DVI\
+output. Mid 2018 I started experimenting with a backend that no longer used the
+one provided by the engine. After all, we only used page stream building, font
+embedding and bitmap inclusion and all other features were always done in \LUA.
+The experiments also concerned a \METAPOST\ and \LUA\ backend. Those familiar
+with \CONTEXT\ know that there is already an export feature which till now runs
+in parallel with the \CONTEXT\ \PDF\ backend (it started as a kind of joke but in
+the end was seen as relevant and kept and maybe so some point I will rewrite that
+code).
+
+The idea behind \CONTEXT\ \LMTX\ is that we will use a minimalist engine. Being
+minimalist also means that probably only \CONTEXT\ will use it and therefore no
+other package will be affected by further experiments, although at some point a
+sort of general low level layer might be provided. The frontend is mostly the
+same as \LUATEX\ 1.1 but the backend and related code is gone and|/|or different.
+Libraries have (and are) being cleaned up and reorganized too. At least for a
+while, \CONTEXT\ will work on \LUATEX\ 1.1 (stable) as well as its (experimental)
+follow up, where the follow up will evolve over a few years and be tested in the
+usual \CONTEXT\ (garden) beta setting. The next chapters will explain this in
+more detail.
+
+Just to be clear I repeat: \LUATEX\ 1.1 will be supported by \CONTEXT\ and
+maintained as usual, including binaries generated on the \CONTEXT\ garden. We've
+invested many years in it and it serves its purpose well, but our experiments
+will happen in its follow up, so that it doesn't affect stable workflows. Of
+course there have been (and probably are) bugs in \LUATEX\ but the engine could
+be used pretty well right from the start with \CONTEXT. The same will be true for
+the follow up.
+
+One of the ideas of the follow up is to provide a combination of a stable engine
+independent of libraries with a relative simple compilation setup and a macro
+package that has proven to exploit a mix of \TEX, \METAPOST\ and \LUA. As a side
+effect I can explore some postponed ideas. Of course there can be valid reasons
+to move to the successor sooner. In that case we might create a stable snapshot
+of \MKIV\ as was done with \MKII. As to be expected in \CONTEXT, the user
+interfaces won't change nor will the functionality, but there will be two code
+paths, one for \MKIV\ and one for \LMTX. There will also be new functionality in
+\CONTEXT\ that is only available in \LMTX. So, eventually we expect all users to
+migrate.
+
+In the beginning of december 2018 most of the work was done and users involved in
+development could start testing. By the end of the year a reasonable stable state
+was reached. In 2019 the code base was further overhauled and libraries got
+upgraded. The code base became smaller and compilation easier, smoother and much
+faster. Eventually the source code (now some 11MB uncompressed and 3MB
+compressed) will be part of the \CONTEXT\ distribution, so that we have a
+complete package (also in the archival sense).
+
+The next chapters discuss the process and choices that were made. The chapters
+were written in order so later chapters can amend earlier ones. Consider it a
+history, and one cannot cheat by patching history. In some cases footnotes were
+added to earlier chapters when writing later ones. It's not a manual! Reported
+typos (for sure there are many) will be fixed but changes in later versions of
+the follow discussed here will not end up in this document.
+
+This document is dedicated to Wolfgang Schuster, who has been instrumental in the
+transition from \MKII\ to \MKIV, and often baffles me with his knowledge of the
+(even obscure bits) of the \CONTEXT\ internals. Without him checking the code
+base, fundamental changes like those that are and might get introduced in this
+follow up are impossible.
+
+I want to thank Alan Braslau who accompanies me on this journey and patiently
+compiles the lot for some platforms. He, Thomas Schmitz and Aditya Mahajan are
+examples of power users who also are early adopters of something new like this
+and are willing to take the risks. And of course there is Mojca Miklavec without
+whose enthusiasm and optimism developments like this would never take place. In
+the meantime Luigi Scarso made sure that the (frozen) \LUATEX\ code base served
+existing users. It is hard to tell how users experience the transition: there are
+no that many issues reported which can be a good or bad sign. We will see.
+
+\blank[2*big]
+
+\startlines
+Hans Hagen
+PRAGMA ADE, Hasselt NL
+August 2018\enspace\endash\enspace May 2019
+\stoplines
+
+\stopchapter
+
+\stopcomponent

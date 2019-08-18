@@ -312,7 +312,7 @@ local function textime()
 end
 
 function converters.year  () return osdate("%Y") end
-function converters.month () return osdate("%m") end
+function converters.month () return osdate("%m") end -- always two digits
 function converters.day   () return osdate("%d") end
 function converters.hour  () return osdate("%H") end
 function converters.minute() return osdate("%M") end
@@ -1676,3 +1676,8 @@ implement {
     }
 }
 
+local function field(n) return context(osdate("*t")[n]) end
+
+implement { name = "actualday",   public = true, actions = function() field("day")   end }
+implement { name = "actualmonth", public = true, actions = function() field("month") end }
+implement { name = "actualyear",  public = true, actions = function() field("year")  end }

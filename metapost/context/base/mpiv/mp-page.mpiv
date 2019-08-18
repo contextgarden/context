@@ -177,14 +177,13 @@ boolean context_page ; context_page := true ;
 
 % the new way:
 
-def LoadPageState =
-    % now always set
-enddef ;
+def LoadPageState = enddef ; % now always set
+def SwapPageState = enddef ; % dynamic
 
-if unknown PageStateAvailable :
-    boolean PageStateAvailable ;
-    PageStateAvailable := false ;
-fi ;
+% if unknown PageStateAvailable :
+%     boolean PageStateAvailable ;
+%     PageStateAvailable := false ;
+% fi ;
 
 % Next we implement the the page area model. First some constants.
 
@@ -462,13 +461,11 @@ enddef ;
 
 def StartPage =
     begingroup ;
-    if mfun_first_run :
-        if PageStateAvailable :
-            LoadPageState ;
-            SwapPageState ;
-        fi ;
-        SetPageVariables ;
-    fi ;
+  % if PageStateAvailable :
+  %     LoadPageState ;
+  %     SwapPageState ;
+  % fi ;
+    SetPageVariables ;
     BoundPageAreas ;
 enddef ;
 
@@ -488,14 +485,11 @@ let SetCoverAreas = SetPageVariables ;  % compatiblity
 
 def StartCover =
     begingroup ;
-    if mfun_first_run :
-        if PageStateAvailable :
-            LoadPageState ;
-         %  SwapPageState ;
-        fi ;
-        SetPageVariables ; % was SetPageAreas ;
-        SetCoverAreas ;
-    fi ;
+  % if PageStateAvailable :
+  %     LoadPageState ;
+  % fi ;
+    SetPageVariables ; % was SetPageAreas ;
+    SetCoverAreas ;
     BoundCoverAreas ;
 enddef ;
 

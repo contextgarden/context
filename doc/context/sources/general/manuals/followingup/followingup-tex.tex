@@ -1,0 +1,125 @@
+% language=us
+
+\startcomponent followingup-tex
+
+\environment followingup-style
+
+\startchapter[title={\TEX}]
+
+\startsection[title={Prefixes}]
+
+The fact that we merged \ETEX, a bit of \PDFTEX\ and some of \ALEPH\ into
+\LUATEX, already makes it a non|-|standard \TEX\ engine. In \LUAMETATEX\ we go a
+bit further. Completely outsourcing the backend has the side effect that some
+(extension related) primitives have to be implemented explicitly. The fact that
+\LUA\ is integrated has consequences for, for instance, initialization.
+Defaulting to \UTF-8 input makes it different too. And delegating many font
+matters to \LUA\ also doesn't make it behave like good old \TEX.
+
+Here I discuss another difference. One can argue that this definitely makes it
+less \TEX, but in practice this is not that problematic. We're talking prefixes
+here. Traditional \TEX\ has only prefixes:
+
+\startitemize[n]
+\startitem
+    \type {\global}: when used, it will make the next definition a global one.
+    The \type {\globaldefs} parameter can be used to force global or local
+    definitions.
+\stopitem
+\startitem
+    \type {\long}: when applied, this will make a macro bark on a \type {\par}
+    (or its equivalent) when grabbing an argument. In \LUATEX\ this check can be
+    disabled. \footnote {In a similar fashion barking about a \type {\par} in
+    math mode can be disabled. Such warnings made much sense when a \TEX\ run
+    took much time and was triggered and traced on relative slow output devices.}
+\stopitem
+\startitem
+    \type {\outer}: when applied the macro can only be used at the outer level.
+\stopitem
+\stopitemize
+
+Multiple prefixes can be given and their effects accumulate. The \ETEX\ extension
+adds another one:
+
+\startitemize[continue]
+\startitem
+    \type {\protected}: this will make a macro unexpandable inside an \type
+    {\edef}, an \type {\xdef} or token list serialization.
+\stopitem
+\stopitemize
+
+In \CONTEXT\ we never use(d) \type {\outer} and I can't even think of a useful
+application in a large macro package. in \MKII\ most interface macros are defined
+as \type {\long}, and because in \MKIV\ we block the complaints, we don't need
+this prefix either. On the other hand, many macros are defined \type
+{\protected}. \footnote {Or in \CONTEXT\ speak, they are defined as \typ
+{\unexpanded}, because we already had \typ {\protected} as well as \typ
+{\unexpanded} before these were introduces as primitives.}
+
+When you look at the implementation, \type {\long} and \type {\outer} are
+properties of the so called command code: we have normal, long, outer and long
+outer macros, and each has a unique command code. For some reason \type
+{\protected} is not implemented with command codes, which would have doubled the
+number to eight, but as special token injected in front of the macro preamble.
+Using a command code would have made more sense as there is no real speed penalty
+in that, while the special token indicating is a macro (body) is protected now
+has to be intercepted in some cases.
+
+Anyhow, already for a while I wondered if I should drop \type {\long} and \type
+{\outer} (making them no|-|ops). I also had on my agenda to promote \type
+{\protected} to a normal command code. And, already for a long time I wanted to
+play with a new prefix: \footnote {This is a typical example of a feature that I
+like playing with, before deciding if it will stay (as such).}
+
+\startitemize[continue]
+\startitem
+    \type {\frozen}: this will protect a macro (for now only a macro) against
+    redefinition, which provides a bit of protection for a user.
+\stopitem
+\stopitemize
+
+Promoting \type {\protected} brings the set of call commands from four to eight,
+and a \type {\frozen} property would bump it to sixteen. This is still okay, but
+in some places it would involve mode testing. However, dropping \type {\long} and
+\type {\outer} would not only keep the set small (just four) but also rid it of
+some tests. There is no performance penalty either (even a bit of gain in case of
+many protected macros as we no longer need to skip the special signal token) and
+it even saves some memory (but not that much).
+
+As a bonus there are a few more conditionals: \type {\ifprotected}, \type
+{\iffrozen}, and, very experimental, \type {\ifusercmd}, which can be used to
+check if something is user defined (often not a primitive). These probably only
+make sense for diagnostic purposes.
+
+In the end, the implementation was not that hard. In the process I also removed
+the \type {\suppress...} parameters so \type {\par} no longer plays havoc. If this
+new prefix \type {\frozen} stays of will affect more definitions, we'll see.
+
+\stopsection
+
+\startsection[title={Conditionals}]
+
+Another domain where there have been some extensions is conditions. In a previous
+chapter I mentioned \type {\iftok} already. As this is not a manual I will not go
+into details about other new conditionals. For instance we have a few that can be
+used to check for valid dimensions and numbers. This can lead to a bit cleaner
+code, although for instance in \CONTEXT\ we always used support macros for this.
+We seldom needed more than we had but when interfacing with \METAPOST\ it helps a
+little.
+
+Another, maybe interesting one is \type {\ifcondition} which when \TEX\ is in
+jump over branches mode is seen as a valid \type {\if<cmd>} token but when it
+comes to expansion the following macro determines a true or false state. A second
+nice experiment is \type {\orelse} which is to be followed by a valid \type
+{\if<cmd>} token and makes for less nesting which sometimes looks nicer and also
+has some advantages.
+
+I might wrap up these and other extensions in articles once they are considered
+stable and useful. But first I'll test them in real situation, which in practice
+means that \CONTEXT\ users will test them, probably without noticing.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

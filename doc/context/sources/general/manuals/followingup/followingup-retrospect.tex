@@ -1,0 +1,188 @@
+% language=us
+
+\startcomponent followingup-retrospect
+
+\environment followingup-style
+
+\startchapter[title={Retrospect}]
+
+% \startsection[title={Introduction}]
+% \stopsection
+
+At some point in a new development, and \LUAMETATEX\ feels like that, there comes
+a moment when you need to make a decision. In this case the question is if we
+need to make hybrid \MKIV\ and \LMTX\ files or do the same as with the transition
+from \MKII\ to \MKIV: use two variants. For \TEX\ files a conditional section has
+only overhead in the format generation as skipped code doesn't end up in the
+format. With conditional \LUA\ code it's different: the ignored section is still
+present in byte code. But even for \TEX\ code a conditional section is not
+entirely invisible: encountered control sequences are still creating (bogus) hash
+entries. So the question is: do we go lean and mean and do we omit historic
+non|-|\LMTX\ code?
+
+A comparison with the transition from \MKII\ is actually relevant. For instance
+right from the start \CONTEXT\ had an abstract backend layer, and support for
+engines and output formats was loaded on demand. There was never any specific
+code in the core. With \MKIV\ we changed the model but there is still some
+abstraction.
+
+In \MKII\ we also had to deal with encodings and that has consequences for
+font handling, language support and input encodings. In \MKIV\ all that changed:
+internal all is \UTF, as is normally the input (but we can still use encodings),
+and fonts are always mapped to \UNICODE.
+
+Anyhow, much that made sense for \MKII\ was no longer relevant for \MKIV: code
+could be dropped. But some mechanisms were reimplemented using \LUA: code was
+added. The user interface stayed the same but in \MKIV\ uses a conceptually
+different approach deep down. Therefore the code base was split in \MKII\ and
+\MKIV\ files but this transition was made stepwise.
+
+So should the same happen with \LMTX ? There is not that much that needs to be
+added to \MKIV\ in terms of functionality. In the end, for the \TEX\ code the
+differences are not that substantial, so there we can consider loading different
+files. The files involved are rather stable so there is not much danger of
+functionality between \MKIV\ and \LMTX\ getting out of sync. The same is true for
+the \LUA\ files, although synchronization is probably more an issue there.
+
+Another option is to always assume that \LUAMETATEX\ is used. For testing regular
+\LUATEX\ (patches) we can just use a 2019 stable \CONTEXT. But in order for users
+to benefit from developments we then expect them all to move on to \LMTX. Using a
+frozen 2019 version with upcoming \LUATEX\ is no big deal as we've done the same
+with \MKII\ and that worked out okay.
+
+When we started with \CONTEXT\ development in the previous century we were doing
+pretty weird things. I remember getting comments that what we did made no sense
+because it was not what \TEX\ was meant for and some even suggested that it
+disrupted the picture. Highly structured input, a clear separation (and
+abstraction) of front and backend, inheritance and user defined styling,
+integrated support for \XML, embedded \METAPOST, advanced interactive documents,
+handling of fonts en encodings, the list is long. Occasionally some of the things
+that came with \CONTEXT\ were ridiculed, like the fact that a script was used to
+manage the (multiple) run(s), but in the end, look at how many script are around
+now. Some even wondered why we used \TEX\ at all because \TEX\ was meant for
+typesetting math. And who needs \XML\ let alone \MATHML ? Or interactive \PDF\
+features? Much in \CONTEXT\ and its management got smoother over time and the
+\LUAMETATEX\ engine fits nicely into this evolution. It's hard to keep the
+cutting edge but at least we have the instruments.
+
+During \BACHOTEX\ 2019 (end of April, beginning of May) this project was
+presented the first time outside the \CONTEXT\ community. During that meeting
+Mojca Miklavec, one of the driving forces behind \CONTEXT, upgraded the compile
+farm that already was used to compile (intermediate versions of) \LUATEX\ and
+\TEXLIVE\ to also compile \type {pplib} (handy for development) and \LUAMETATEX.
+This permits us to fine|-|tune the \type {cmake} setup which is still work in
+progress. And, also further improvements take place in the code base itself.
+
+One of the properties of open source is that one can build upon an existing code
+base, so when at \BACHOTEX\ Arthur announced that he was going to make a merge of
+\XETEX\ (which he maintains) and \LUATEX\ no one was surprised. But it could be a
+strong argument for a rather strict code freeze: spin|-|offs need stability. I've
+been told that there are now several projects where more libraries (like
+Harfbuzz) get integrated. Those cases don't influence the parent but here
+stability of the original also is expected, unless of course additional features
+go in these engines, which itself creates instability, but that's another matter.
+One could actually argue that the arrival of variants defeats the argument that
+stability is important: if a macro package uses new features, it needs to adapt,
+and naturally (temporary) issues might show up. Such are the dynamics of todays
+software development. History in general shows that not that much is persistent
+(or even accumulative) and programs are probably the least, so maybe the whole
+stability aspect has lost its relevance. \footnote {In a similar way as that the
+argument \quotation {Publishers want this or that, so we as \TEX\ community need
+to provide it.} is no longer that relevant because publishing is now more a
+business model than vocation.} Of course \LUAMETATEX\ is also a follow up, but
+one of the ideas behind it was that I could use it as platform for (independent)
+experiments that could result in code being put into \LUATEX. Also, the changes
+have a limited impact: only \CONTEXT\ will be affected. \footnote {So maybe, in
+the end, stability boils down to \quotation {The engine behaves the same and the
+\CONTEXT\ that comes with it exploits its features as good as possible}.}
+
+It is not feasible to make \CONTEXT\ work with all kind of engines that in
+practice are not used by its users. For instance, after \XETEX\ showed up it went
+through several iterations or font rendering, so we never really spent time on
+the low level features that it provided (there was no demand anyway). One cannot
+simply claim that one method is better than another that replaces it and expect
+constant adaptation (probably for the sake of a few potential users). There
+simply is no \quote {best} engine and no \quote {perfect} solution. Another
+aspect is that when we would adapt \CONTEXT\ to \LUATEX\ variants the
+dependencies on specific functionality that itself depends on the outside world
+is kind of unavoidable. Especially languages and fonts are fluid and for the
+average user there is not that much difference in that department. Should we
+really complicate matters for a few (potential) users? In \CONTEXT\ support like
+that is added on demand, driven by specific needs of users who use \TEX\ for a
+reason and are willing to test.
+
+There's enough huge and complex software around that demonstrates what happens
+when programs are extended, keep growing, their code base becoming more complex.
+Such a process doesn't really fit in my ideas about for \TEX. We positioned 1.10
+as long term stable, with the option to add a few handy things in the long run.
+For sure there are niches to fill and it is a fact that the \TEX\ community can
+deal with variants of engines: just look at the different \CJK\ engines around,
+with prefixes like \type {p}, \type {up}, \type {ep}, etc. But the question is,
+where does that put further \LUATEX\ development? And, more important, what
+consequences does it have for the \CONTEXT\ code base?
+
+The reason I mention this is that I had in mind to eventually backport features
+that work out well in \LUAMETATEX. I also mentioned that in order to support
+stock \LUATEX\ it made no sense to split the \CONTEXT\ code base. After all, a
+few conditional sections could deal with the difference between \LUATEX\ and
+\LUAMETATEX: some differences could be temporary anyway. But, given recent
+developments it actually made sense to split the code base: why spent time on
+backporting when the engine user base is spread over different spinoffs. I can
+better just assume \CONTEXT\ to exclusively use \LUAMETATEX\ and that other macro
+packages use (one or more) \LUATEX\ variants. I can then keep the generic code up
+to date and maybe occasionally add some proven stable features. It is also no big
+deal to keep the minimum subset needed for (plain) font handling compatible,
+assuming \LUATEX\ compatibility, as in the end that engine is the benchmark,
+especially when I strip it a bit from features not needed outside \CONTEXT.
+
+Thoughts like this show how fragile plans and predictions are: within a year one
+has to adapt ideas and assumptions. But it also proves that \LUAMETATEX\ was a
+good choice for \CONTEXT, especially because it is bound to \CONTEXT\
+development, which keep the users independent and isolated from developments that
+don't mind that much the (side) effects on \CONTEXT.
+
+% \footnote {I mentioned stability a few times, but this aspect is somewhat vague:
+% often I see complaints about \LUATEX, or comparisons with other engines, that
+% have nothing to do with the engine per se, but more with misunderstanding and|/|
+% assumptions, strange usage, maybe or even likely bad user code, comparing apples
+% and pears, etc. The term \type {bug} is very popular and often a preferred
+% qualifications, and it sounds even more impressive when it's qualified as a bug
+% one. I guess that a more tight coupling between specific engines and macro
+% packages at least that aspect becomes cleaner.}
+
+Around the \CONTEXT\ meeting (or maybe a bit later) we hope to have the new
+installation infrastructure stable too (currently it is also experimental). By
+that time it will also be clear how we will proceed with the \LMTX\ project. In
+the meantime I have decided so put \LUAMETATEX\ specific files alongside the
+\MKIV\ files, simply because I always need to be able run stock \LUATEX. In order
+to show the close relationship these files are flagged as \MKXL, so we bump from
+\quote {Mark Four} to \quote {Mark Fourty}. The suffixes \type {mkiv}, \type
+{mkvi} and \type {mpiv} get company from \type {mkxl}, \type {mklx} and \type
+{mpxl}. Depending on backporting features, files can come and go. I'm not yet
+sure about the \LUA\ files but the \type {lmt} suffix is already reserved for
+future use. \footnote {This is because \LUA\ 5.4 introduces some new syntax
+elements and where we can get away with the difference between 5.2 (\LUAJITTEX)
+and 5.3 (\LUATEX) such a syntax change is more drastic.} All this is also driven
+by (user) demand.
+
+Consider this (and these thoughts) a snapshot. There will be the usual reports on
+experiments and developments. And in due time there will also be a manual for
+\LUAMETATEX. \footnote {In fact it already lives on my machine but I'm not in
+ready yet for the usual complaints about manuals, so I'm not in that much of a
+hurry.} And yes, at some point I have to make up my mind with respect to
+backporting features that have proven to be useful.
+
+% \footnote {Actually, it seems to come with the Internet: folks wining on whatever
+% platform about lack of documentation (most of the \CONTEXT\ distribution actually
+% is documentation and quite some articles are, have been, and will be written) or
+% possible bug (always huge, even if no bug at all) without exposing much actual
+% research or knowledge about these matters. Write, post and shout before thinking
+% it through, increase the number hits on your profile. It's for sure a way to make
+% something end up at the bottom of my to do list, if at all. A valid response
+% could be: whatever did you contribute to the community that I myself (or
+% \CONTEXT\ users) can benefit from. Quite likely: nothing (or little)! It looks
+% like even the normally friendly \TEX\ community sometimes gets infected by this.}
+
+\stopchapter
+
+\stopcomponent

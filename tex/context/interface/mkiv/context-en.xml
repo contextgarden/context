@@ -6729,6 +6729,9 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="system" file="core-con.mkiv" level="style" name="actualyear"/>
+  <cd:command category="system" file="core-con.mkiv" level="style" name="actualmonth"/>
+  <cd:command category="system" file="core-con.mkiv" level="style" name="actualday"/>
  </cd:interface>
  <cd:interface file="i-counter.xml">
   <cd:command category="counter" file="strc-num.mkiv" level="system" name="definecounter">

@@ -163,13 +163,6 @@ else :
     % already defined before the format is loaded
 fi ;
 
-if unknown mfun_first_run :
-    boolean mfun_first_run ;
-    mfun_first_run := true ;
-else :
-    % already defined before the format is loaded
-fi ;
-
 def mfun_reset_tex_texts =
     mfun_tt_n := 0 ;
     mfun_tt_p := nullpicture ;

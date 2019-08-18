@@ -1,0 +1,306 @@
+% language=us
+
+\startcomponent followingup-feedback
+
+\environment followingup-style
+
+\logo [AMD]   {AMD}
+\logo [INTEL] {Intel}
+
+\startchapter[title={Feedback}]
+
+\startsection[title={Introduction}]
+
+As \LUATEX\ 1.10 is basically frozen in terms of functionality not much can or
+will be added. But it made sense to some of the (small) improvements that were
+made in \LUAMETATEX\ got feedback to \LUATEX\ (or will be at some point). Because
+we are also experimenting, there can be a delay. \footnote {Later chapters
+mention a few more possible extensions.}
+
+Of course the question is \quotation {Should we feedback (retrofit) at all?}. I'm
+still not sure about it. There should be a good reason to do it because it can
+harm stability of the original. At some point \CONTEXT\ can default to the follow
+up in which case testing the original becomes more difficult for specific
+features. I never ran into (useful) demands for extensions so retrofit can have a
+low priority.
+
+Another factor is that when distributions start adding stuff to stock \LUATEX\ on
+top of what is our default (after all isn't that what happens with open source
+projects), it makes not much sense to look back and retrofit new functionality,
+because there is not much change that we will use such a variant ourselves and we
+could introduce errors in the process. Providing bloatware is not our objective.
+
+Related to this is the question if we should always go into \LMTX\ mode and I'm
+no longer sure if we shouldn't do that. We can use plain \TEX\ with the regular
+\LUATEX\ backend and just forget about some generic framework. The danger of it
+backfiring is just too large. It is a waste of time and will keep us back.
+
+One reason for a dual mode is that it made possible some timings in order to
+determine bottlenecks. I did some rough tests and that is enough to get the
+picture. Take this document:
+
+\starttyping
+\starttext
+    \dorecurse
+        {1000}
+        {\samplefile{sapolsky} {\bf\samplefile{sapolsky}}\par}
+\stoptext
+\stoptyping
+
+Using regular \LUATEX\ this takes on an \INTEL\ i7-3840 mobile processor about
+9.3 seconds while \LUAMETATEX\ needs 11.2 seconds, so we loose time. This is
+because we have only text so the native backend wins on piping out the page
+stream. On my domotica fitlet with an low power \AMD\ A10 processor running
+\LINUX\ the runtime goes from 25.4 seconds to 27.8 seconds, so again a slow down.
+
+But this is not a typical document! Add a bit more spice and the numbers reverse.
+For processing the \LUATEX\ manual stock \LUATEX\ takes 12.6 seconds on the
+\INTEL\ and \LUAMETATEX\ needs 12.4 seconds. On the \AMD\ runtime goes from 35.1
+seconds down to 32.8 seconds. So here we win some.
+
+These are rough timings and a few weeks later we go these timings on the \INTEL:
+\footnote {On the more modern gaming laptop of a nephew we measured half these
+numbers.}
+
+\starttabulate[|l|c|c|c|]
+\BC engine            \BC backend \BC runtime \BC \LUAJIT\ vm \BC \NR
+\HL
+\NC \LUATEX\     1.10 \NC normal  \NC 12.4    \NC 9.9 \NC \NR
+\NC \LUATEX\     1.10 \NC lmtx    \NC 12.7    \NC 9.8 \NC \NR
+\NC \LUAMETATEX\ 2.00 \NC lmtx    \NC 12.2    \NC 9.3 \NC \NR
+\stoptabulate
+
+Because we have more \LUA\ code active, we pay a price with \LMTX\ but not on
+\LUAMETATEX\ (as of now, later we will see a performance bump). The gain when
+using the \LUAJIT\ virtual machine is more noticeable. And, there is probably
+some more to gain. In case you wonder why this matters: think of the low power
+\AMD\ processor. When we have to replace computers we can consider using low
+power ones, with weaker processors, less memory, and less cache. For the record:
+I use cross compiled \MINGW\ binaries on windows (they are quite a bit faster
+than native windows binaries). And the binaries are less than 3MB (small files
+and less resources are nice when running on remote file systems).
+
+This all indicates that we have no real reason to stick to a mixed approach: if we
+want we can just switch to always \LMTX\ and never look back.
+
+\stopsection
+
+\startsection[title={Expressions}]
+
+When writing an article that involved using a \type {\numexpr} it struck me that
+we should have a proper integer division. Just compare these:
+
+\startbuffer[1]
+\the\numexpr 13/2\relax
+\stopbuffer
+
+\startbuffer[2]
+\scratchcounter13 \divide\scratchcounter 2 \the\scratchcounter
+\stopbuffer
+
+\typebuffer[1]
+
+and
+
+\typebuffer[2]
+
+This gives {\bf \inlinebuffer[1]} and {\bf \inlinebuffer[2]}. We now also have:
+
+\startbuffer[3]
+\the\numexpr 13:2\relax
+\stopbuffer
+
+\typebuffer[3]
+
+which gives {\bf \inlinebuffer[3]}. I considered using a double slash (as in
+\LUA) but using a colon is easier. Of course those who make that an active
+character are probably toast. This is an easy patch but it's hard to predict
+possible side effects outside \CONTEXT.
+
+\stopsection
+
+\startsection[title={Looking ahead}]
+
+Sometimes you want to look ahead and act upon the presence of a specific
+character. Implementing that in pure \TEX\ primitives is no big deal, but
+especially when you want to ignore leading spaces it leads to rather verbose code
+when tracing is enabled. Out of curiosity I played with a primitive that can help
+us out. Although there is also a performance gain, in practice one will not
+notice that unless such a feature is used millions of times, but in that case the
+gain is noise compared to the rest of the run.
+
+\startbuffer
+\def\foo{\futureexpand/\fooyes\foonop}
+\def\fooyes/#1/#2{[#1:#2]}
+\def\foonop    #1{(#1)}
+
+\foo/yes/{one}\quad
+\foo     {two}
+\stopbuffer
+
+\typebuffer
+
+We either expand \type {\fooyes} or \type {\foonop}, depending on the presence
+of a \type {/} after \type {\foo}. So, the result is:
+
+{\tttf\getbuffer}
+
+The next examples demonstrates two variants. The second one doesn't inject spaces
+back into the stream.
+
+\startbuffer
+\def\f<{\futureexpand/\y\n}
+\def\y/#1/{#1}
+\def\n    {}
+
+(\f</yes/>)\quad
+(\f<     >)
+\stopbuffer
+
+\typebuffer
+
+Watch the space in the \type {\n} case.
+
+{\tttf\getbuffer}
+
+\startbuffer
+\def\f<{\futureexpandis/\y\n}
+\def\y/#1/{#1}
+\def\n    {}
+
+(\f</yes/>)\quad
+(\f<     >)
+\stopbuffer
+
+\typebuffer
+
+This time the space is not injected (\type{is} is short for ignore spaces).
+
+{\tttf\getbuffer}
+
+I will probably use this one in \CONTEXT, but as said, not for performance
+reasons but because it reduces code and therefore tracing. \footnote {In the
+\CONTEXT\ code base there are several places where less code takes precedence
+over efficiency. But in all cases extensive tests were done to see if it made a
+dent in practical performance.}
+
+\stopsection
+
+\startsection[title={Checking numbers an dimensions}]
+
+The \CONTEXT\ user interface often uses parameters that take keywords as well as
+a number or dimension. In practice it has never been an issue to check for that but
+there are a few cases where we'd like to be a bit more flexible.
+
+\startbuffer
+\doifelsenumber{123999999999999999}YN
+\doifelsenumber               {123}YN
+\doifelsenumber                 {A}YN
+\doifelsenumber          {\char123}YN
+\doifelsenumber          {\toks123}YN
+\doifelsenumber{123\scratchcounter}YN
+
+\doifelsedimension{123999999999999999pt}YN
+\doifelsedimension               {123pt}YN
+\doifelsedimension                   {A}YN
+\doifelsedimension            {\char123}YN
+\doifelsedimension            {\toks123}YN
+\doifelsedimension    {123\scratchdimen}YN
+\stopbuffer
+
+\typebuffer
+
+This typesets:
+
+\startpacked
+\getbuffer
+\stoppacked
+
+especially the \type {123\scratch...} checking is tricky. For that reason we now
+have two new built|-|in checkers. Again, performance is not one of the arguments,
+because these checks are not much faster than what we have already, they are just
+a bit more robust for weird cases. A possible use of the primitives is:
+
+\starttyping
+\ifdimen123\or
+  yes
+\else % or \or
+  no
+\fi
+\stoptyping
+
+and:
+
+\starttyping
+\ifnumber123\or
+  yes
+\else % or \or
+  no
+\fi
+\stoptyping
+
+When a valid number or dimension is gobbled, the value pushed in the branches
+is~1, and when an error is encountered the value~2 is pushed. Deep down we have
+just an \type {\ifcase} and by not using the value zero we nicely skip the
+invalid code. It might look a bit weird but we need a sentinel for the number
+(and the \type {\or} serves as such, without introducing strange new constructs.
+We'll see if we keep it (as testing must prove its usefulness).
+
+\stopsection
+
+\stopsection
+
+\startsection[title={Comparing tokens}]
+
+The following code compares (for instance) two strings:
+
+\starttyping
+\def\thisorthat#1#2%
+  {\edef\one{#1}
+   \edef\two{#2}
+   \ifx\one\two
+     this%
+   \else
+     that%
+   \fi}
+
+\thisorthat{foo}{bar}
+\stoptyping
+
+but this looks a bit cleaner (in a trace):
+
+\starttyping
+\def\thisorthat#1#2%
+  {\iftok{#1}{#2}%
+     this%
+   \else
+     that%
+   \fi}
+
+\thisorthat{foo}{bar}
+\stoptyping
+
+It's not that much faster (unless one uses it a real lot) as similar things have
+to happen to get the test to work. But the nice things of this checker is that it
+works with token registers and macros too. But in order use it in relevant places
+in \CONTEXT\ I would have to adapt quite some code. This could actually be a
+reason for a \MKIV\ freeze and \LMTX\ code base (as with \MKII). The question is:
+does it pay off?
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \newbox\mybox \setbox\mybox\ruledhbox{\blackrule[width=3cm,height=1cm]}
+
+% \dontleavehmode\copy\mybox\quad \ruledhbox{\copy\mybox} \blank[3*line]
+% \boxxmove\mybox            10pt
+% \dontleavehmode\copy\mybox\quad \ruledhbox{\copy\mybox} \blank[3*line]
+% \wd\mybox\dimexpr\wd\mybox+10pt\relax
+% \dontleavehmode\copy\mybox\quad \ruledhbox{\copy\mybox} \blank[3*line]
+% \boxymove\mybox            10pt
+% \dontleavehmode\copy\mybox\quad \ruledhbox{\copy\mybox} \blank[3*line]
+% \ht\mybox\dimexpr\ht\mybox+10pt\relax
+% \dontleavehmode\copy\mybox\quad \ruledhbox{\copy\mybox} \blank[3*line]

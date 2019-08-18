@@ -1,0 +1,78 @@
+% language=us
+
+\startcomponent followingup-whatsits
+
+\environment followingup-style
+
+\startchapter[title={Whatsits}]
+
+% \startsection[title={...}]
+
+Whatsits provide the natural extension mechanism for \TEX. In \PDFTEX\ there are
+plenty such whatsits, for instance for \PDF\ annotations. In \LUATEX\ this
+mechanism was reorganized so that the code was better isolated. In the first
+versions of \LUAMETATEX\ only a handful was left. Stepwise some were removed and
+in the end we could stick to only one general whatsit because one can implement
+the few needed to be compatible with \TEX.
+
+We started out with this set of whatsits:
+
+\starttabulate[|B|p|]
+\NC open    \NC open a file for writing (delayed) \NC \NR
+\NC write   \NC write to an open file (or terminal otherwise) \NC \NR
+\NC close   \NC close an opened file \NC \NR
+\NC special \NC write some literal \PDF\ code to the output file \NC \NR
+\NC user    \NC store and retrieve data in a node \NC \NR
+\NC latelua \NC execute code delayed (in the backend) \NC \NR
+\NC literal \NC write some literal \PDF\ code to the output file, controlled by a mode \NC \NR
+\NC save    \NC push the transformation state \NC \NR
+\NC restore \NC pop the transformation state \NC \NR
+\NC matrix  \NC apply a transformation (\type {rx sx sy ry}) \NC \NR
+\NC savepos \NC register a position to be queried afterwards (\type {x y}) \NC \NR
+\stoptabulate
+
+The \type {\openout}, \type {\write} and \type {\closeout} primitives relate to
+the first three but they can be prefixed with \type {\immediate} in which case
+they don't end up as whatsits but are applied directly. The \type {special} is
+actually meant for \DVI\ while the \type {\(pdf)literal} is for \PDF\ output. The
+first four are available in regular \TEX.
+
+The last four are dealt with exclusively in the backend and by removing the
+backend they basically became no|-|ops. I kept them for a while but in the end
+decided to kick them out. Instead a generic whatsit was introduced that could be
+used as signal with the same function. That simple whatsit only has a subtype
+(and of course optionally attributes). And, as \CONTEXT\ has its own backend, we
+can intercept them as we like. The saving in code is not spectacular but keeping
+it around (basically doing nothing) neither. The impact on \CONTEXT\ was not that
+large because for instance saving positions is done differently and
+transformations are encapsulated in a few helpers that could easily be adapted.
+
+From there it was a small step to also remove the literal whatsit, so then we had
+five whatsits left, plus the generic one. I then entered sentimental mode: should
+we keep the first four or not. Of course we want to be \TEX\ compatible but we
+can remove the code and provide a compatible replacement using macros and our own
+simple whatsit nodes. That keeps all the housekeeping at the \LUA\ end,
+simplifies the \CCODE, and we're still \TEX.
+
+Of course, once we remove these and only have the delayed \LUA\ whatsit and user
+whatsits left, we can as well replace these too. In \LUATEX\ user nodes are
+actually not dealt with in the backend. One can create them at the \LUA\ end and
+query them in callbacks. The \TEX\ machinery just ignores them, like any whatsit.
+In retrospect they could have been first class nodes, but making them whatsits
+was wise because that way they can be ignored consistently when needed.
+
+So, in the end all we need is a simple whatsit. As I removed the subtypes
+stepwise there was an intermediate mix of code to recognize simple whatsits from
+core whatsits but that distinction went away. Doing this kind of refactoring is
+best done stepwise because that way I can compile some large documents and see if
+things break. As a consequence again some code could be simplified as we
+basically no longer have extensions. Of course at the \CONTEXT\ end the removed
+primitives had to be added but that didn't take much effort. The binary shrunk
+some 30K but (a small amount of) \LUA\ code was added to provide a compatible
+functionality (not that we use it).
+
+% \stopsection
+
+\stopchapter
+
+\stopcomponent

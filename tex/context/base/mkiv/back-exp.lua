@@ -34,7 +34,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- check setting __i__
 
 local next, type, tonumber = next, type, tonumber
-local sub, gsub = string.sub, string.gsub
+local sub, gsub, match = string.sub, string.gsub, string.match
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
@@ -2734,9 +2734,9 @@ local function pop()
         currentdepth = currentdepth - 1
         if trace_export then
             if top then
-                report_export("%w</%s>",currentdepth,tree.tg)
+                report_export("%w</%s>",currentdepth,match(top,"[^>]+"))
             else
-                report_export("</%s>",tree.tg)
+                report_export("</BAD>")
             end
         end
     else

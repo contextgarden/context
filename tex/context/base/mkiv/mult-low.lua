@@ -313,7 +313,11 @@ return {
         --
         "wait", "writestatus", "define", "defineexpandable", "redefine",
         --
-        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure", "measure", "measured",
+        "setmeasure", "setemeasure", "setgmeasure", "setxmeasure", "definemeasure", "freezemeasure",
+        "measure", "measured", "directmeasure",
+        "setquantity", "setequantity", "setgquantity", "setxquantity", "definequantity", "freezequantity",
+        "quantity", "quantitied", "directquantity",
+     -- "quantified",
         --
         "installcorenamespace",
         --
