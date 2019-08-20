@@ -99,7 +99,7 @@
   [\hbox to \paperwidth{\reuseMPgraphic{cover+back}\hss}]
 
 \startreusableMPgraphic{cover+back}
-    numeric h, w; boolean mapping ; path p, q, r ; color f, d ; pair s ;
+    numeric h, w; boolean mapping ; path p, q, r ; color f, d , c ; pair s ;
     h := OverlayHeight ; w := 2*OverlayWidth ;
     r := unitsquare xyscaled (w,h) ;
     fill r withcolor resolvedcolor("lightgray") ;
@@ -115,8 +115,9 @@
     forever :
         s := center r randomized (w,h) ;
         if new_on_grid(xpart s, ypart s) :
-            d := .5[resolvedcolor("LocalColor"),resolvedcolor("lightgray")] randomized (.5,.9) ;
-            f := resolvedcolor("lightgray") randomized (.5,.9) ;
+            c := resolvedcolor("lightgray") ;
+            d := .5[resolvedcolor("LocalColor"),c] randomized (.5,.9) ;
+            f := c randomized (.5,.9) ;
             s := (dx,dy) ;
             if mapping :
                 p := (-w/4,0) -- (w/4,0) ;
@@ -139,6 +140,7 @@
         fi ;
         exitif grid_full ;
     endfor ;
+
     setbounds currentpicture to r ;
 \stopreusableMPgraphic
 
@@ -248,16 +250,25 @@
 \startmakeup[\v!standard]
     \dontcomplain
     \startcolor[TitleColor]
-    \definedfont[RegularBold at 100pt]\setstrut
-    \setupalign[\v!left]
-    \strut Con\TeX t \par
-    \definedfont[RegularBold at 50pt]\setstrut
-    \setups[text:commands]
-    \vfill
-    \definedfont[RegularBold at 24pt]\setupinterlinespace
-    \setups[text:lowercase]
-    \par \strut \currentdate \par
+        \definedfont[RegularBold at 100pt]\setstrut
+        \setupalign[\v!flushright]
+        \strut Con\TeX t \par
+        \definedfont[RegularBold at 50pt]\setstrut
+        \setups[text:commands]
     \stopcolor
+    \vfill
+    \start
+        \switchtobodyfont[big,15pt]
+        \setuptabulate[before=,after=]
+        \dontleavehmode \hfill \hbox \bgroup
+            \starttabulate[|l|l|]
+                \BC language   \EQ \setups[text:lowercase] \NC \NR
+                \BC version    \EQ \currentdate \NC \NR
+                \BC maintainer \EQ Wolfgang Schuster \NC\NR
+                \BC comments   \EQ \tt ntg-context@ntg.nl \NC \NR
+            \stoptabulate
+        \egroup
+    \stop
 \stopmakeup
 
 \protect

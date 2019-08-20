@@ -595,7 +595,11 @@
 %D \defineoverlay[example][\uniqueMPgraphic{test}]
 %D
 %D \startuniqueMPgraphic {test}
-%D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D   draw OverlayBox ;
+%D \stopuniqueMPgraphic
+%D
+%D \startuniqueMPgraphic {test}
+%D   draw OverlayBox ;
 %D \stopuniqueMPgraphic
 %D \stoptyping
 
@@ -682,13 +686,13 @@
 \unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\meta_start_unique_graphic}
 
+\let\stopuniqueMPgraphic\relax
+
 \def\meta_start_unique_graphic#1%
   {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_unique_graphic_indeed#1#2#3\stopuniqueMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
-
-\let\stopuniqueMPgraphic\relax
 
 \unexpanded\def\uniqueMPgraphic
   {\dodoublegroupempty\meta_unique_graphic}
@@ -696,7 +700,7 @@
 \def\meta_unique_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \setupMPvariables[#1][#2]%
-   \csname\??mpgraphic#1\endcsname\empty
+   \begincsname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
 
 \def\meta_handle_use_graphic#1#2#3%
@@ -713,25 +717,24 @@
 \unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
 
+\let\stopuseMPgraphic\relax
+
 \def\meta_start_use_graphic#1%
   {\normalexpanded{\meta_start_use_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_use_graphic_indeed#1#2#3\stopuseMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
-\let\stopuseMPgraphic\relax
-
 \unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\meta_start_usable_graphic}
 
+\let\stopusableMPgraphic\relax
 
 \def\meta_start_usable_graphic#1%
   {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_usable_graphic_indeed#1#2#3\stopusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
-
-\let\stopusableMPgraphic\relax
 
 \def\meta_handle_reusable_graphic#1#2#3%
   {\begingroup
@@ -750,13 +753,13 @@
 \unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
+\let\stopreusableMPgraphic\relax
+
 \def\meta_start_reusable_graphic#1%
   {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
-
-\let\stopreusableMPgraphic\relax
 
 \unexpanded\def\useMPgraphic
   {\dodoublegroupempty\meta_use_graphic}
@@ -765,11 +768,11 @@
   {\meta_begin_graphic_group{#1}%
    \ifcsname\??mpgraphic#1\endcsname
      \edef\usedMPgraphicname{#1}%
-   \else\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+   \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
      \let\usedMPgraphicname\currentMPgraphicname
    \else
      \let\usedMPgraphicname\empty
-   \fi\fi
+   \fi
    \ifx\usedMPgraphicname\empty
      % message
    \else
@@ -801,14 +804,14 @@
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
 
+\let\stopuniqueMPpagegraphic\relax
+
 \def\meta_start_unique_page_graphic#1%
   {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_unique_page_graphic_indeed#1#2#3\stopuniqueMPpagegraphic % inefficient, double storage
   {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%        % but these also keep the state
    \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}        % and meaning will be redefined
-
-\let\stopuniqueMPpagegraphic\relax
 
 \unexpanded\def\uniqueMPpagegraphic
   {\dodoublegroupempty\meta_unique_page_graphic}
@@ -912,6 +915,8 @@
 \unexpanded\def\startMPcode
   {\dosinglegroupempty\meta_start_code}
 
+\let\stopMPcode\relax
+
 \def\meta_start_code
   {\iffirstargument
      \expandafter\meta_start_code_instance
@@ -935,8 +940,6 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic{#2}%
    \endgroup}
-
-\let\stopMPcode\relax
 
 \unexpanded\def\MPcode
   {\dodoublegroupempty\meta_code}
@@ -1383,6 +1386,8 @@
    \setbox\nextbox\hpack\bgroup
    \dosinglegroupempty\meta_start_calculation}
 
+\let\stopMPcalculation\relax
+
 \def\meta_start_calculation
   {\iffirstargument
      \expandafter\meta_start_calculation_instance
@@ -1406,8 +1411,6 @@
    \meta_process_graphic{#2;draw origin}%
    \egroup
    \endgroup}
-
-\let\stopMPcalculation\relax
 
 %D \macros
 %D   {setupMPgraphics}

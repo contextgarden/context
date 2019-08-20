@@ -6479,7 +6479,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 44688, stripped down to: 22349
+-- original size: 45058, stripped down to: 22617
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6843,7 +6843,7 @@ local environment={
  stripzero=patterns.stripzero,
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
- FORMAT=string.f9,
+ FORMAT=string.f6,
 }
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
@@ -7051,12 +7051,25 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N=function(f) 
- n=n+1
- if not f or f=="" then
-  f=".9"
- end 
- return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+local format_N  if environment.FORMAT then
+ format_N=function(f)
+  n=n+1
+  if not f or f=="" then
+   return format("FORMAT(a%s,'%%.9f')",n)
+  elseif f==".6" then
+   return format("FORMAT(a%s)",n)
+  else
+   return format("FORMAT(a%s,'%%%sf')",n,f)
+  end
+ end
+else
+ format_N=function(f) 
+  n=n+1
+  if not f or f=="" then
+   f=".9"
+  end 
+  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+ end
 end
 local format_a=function(f)
  n=n+1
@@ -25688,8 +25701,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1024785
--- stripped bytes    : 405814
+-- original bytes    : 1025155
+-- stripped bytes    : 405916
 
 -- end library merge
 

@@ -2692,16 +2692,16 @@ local function push(fulltag,depth)
     end
     local treedata = tree.data
     local t = { -- maybe we can use the tag table
-        tg         = tg,
-        fulltag    = fulltag,
-        detail     = detail,
-        n          = n, -- already a number
-        element    = element,
-        nature     = nature,
-        data       = { },
-        attribute  = currentattribute,
-        parnumber  = currentparagraph,
-        record     = record, -- we can consider storing properties
+        tg        = tg,
+        fulltag   = fulltag,
+        detail    = detail,
+        n         = n, -- already a number
+        element   = element,
+        nature    = nature,
+        data      = { },
+        attribute = currentattribute,
+        parnumber = currentparagraph,
+        record    = record, -- we can consider storing properties
     }
     treedata[#treedata+1] = t
     currentdepth = currentdepth + 1

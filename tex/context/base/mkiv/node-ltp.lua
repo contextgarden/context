@@ -157,7 +157,6 @@ local texget              = tex.get
 local texset              = tex.set
 local texgetglue          = tex.getglue
 
-
 -- (t == 0 and 0) or (s <= 0 and 10000) or calculate_badness(t,s)
 
 -- local function calculate_badness(t,s)
@@ -215,6 +214,12 @@ local getwidth             = nuts.getwidth
 local getheight            = nuts.getheight
 local getdepth             = nuts.getdepth
 local getdata              = nuts.getdata
+local getreplace           = nuts.getreplace
+local setreplace           = nuts.setreplace
+local getpost              = nuts.getpost
+local setpost              = nuts.setpost
+local getpre               = nuts.getpre
+local setpre               = nuts.setpre
 
 local isglyph              = nuts.isglyph
 
@@ -1270,8 +1275,8 @@ do
                             report_parbuilders('unsupported disc at location %a',4)
                         end
                         setsubtype(nextlast,regulardisc_code)
-                        setfield(nextlast,"replace",post)
-                        setfield(lastnode,"post") -- nil
+                        setreplace(nextlast,post)
+                        setpost(lastnode)
                     end
                     if replace then
                         flush_node_list(replace)
@@ -1950,8 +1955,8 @@ par.right_skip = nil
                     local id = getid(l)
                     if id == glyph_code then
                         -- ok ?
-                    elseif id == disc_code and getfield(l,"post") then
-                        l = getfield(l,"post") -- TODO: first char could be a disc
+                    elseif id == disc_code and getpost(l) then
+                        l = getpost(l) -- TODO: first char could be a disc
                     else
                         l = find_protchar_left(l)
                     end
@@ -2306,7 +2311,7 @@ par.right_skip = nil
                                     if getid(cur_p_next) ~= disc_code or getsubtype(cur_p_next) ~= seconddisc_code then
                                         report_parbuilders("unsupported disc at location %a",1)
                                     else
-                                        local pre = getfield(cur_p_next,"pre")
+                                        local pre = getpre(cur_p_next)
                                         if pre then
                                             local size, adjust_stretch, adjust_shrink = add_to_width(line_break_dir,checked_expansion,pre)
                                             disc_width.size = disc_width.size + size
@@ -2903,7 +2908,7 @@ do
                     local subtype = getsubtype(current)
                     if subtype ~= seconddisc_code then
                         -- todo : local stretch, shrink = char_stretch_shrink(s)
-                        local replace = getfield(current,"replace")
+                        local replace = getreplace(current)
                         if replace then
                             process(replace)
                         end

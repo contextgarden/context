@@ -408,13 +408,13 @@ if not nuts.getpre then
     local d_getdisc  = direct.getdisc
     local d_setfield = direct.setfield
 
-    function nuts.getpre(d)       local h, _, _, t, _, _ = d_getdisc(d,true) return h, t end
-    function nuts.getpost(d)      local _, h, _, _, t, _ = d_getdisc(d,true) return h, t end
-    function nuts.getreplace(d)   local _, _, h, _, _, t = d_getdisc(d,true) return h, t end
+    function nuts.getpre    (n) local h, _, _, t, _, _ = d_getdisc(n,true) return h, t end
+    function nuts.getpost   (n) local _, h, _, _, t, _ = d_getdisc(n,true) return h, t end
+    function nuts.getreplace(n) local _, _, h, _, _, t = d_getdisc(n,true) return h, t end
 
-    function nuts.setpre(d,n)     d_setfield("pre",    n) end
-    function nuts.setpost(d,n)    d_setfield("post",   n) end
-    function nuts.setreplace(d,n) d_setfield("replace",n) end
+    function nuts.setpre    (n,h) d_setfield(d,"pre",    h) end
+    function nuts.setpost   (n,h) d_setfield(d,"post",   h) end
+    function nuts.setreplace(n,h) d_setfield(d,"replace",h) end
 
 end
 

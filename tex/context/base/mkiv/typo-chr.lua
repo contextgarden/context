@@ -284,6 +284,8 @@ interfaces.implement {
 --     end,
 -- }
 
+-- not needed in lmtx ...
+
 interfaces.implement {
     name    = "lastnodeid",
     actions = function()

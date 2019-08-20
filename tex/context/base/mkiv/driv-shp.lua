@@ -43,6 +43,7 @@ local getboxglue        = nuts.getboxglue
 local getexpansion      = nuts.getexpansion
 local getreplace        = nuts.getreplace
 local setreplace        = nuts.setreplace
+local getfont           = nuts.getfont
 
 local setdirection      = nuts.setdirection
 local setfield          = nuts.setfield
@@ -66,6 +67,7 @@ local parameters        = fonthashes.parameters
 local nodecodes         = nodes.nodecodes
 local whatsitcodes      = nodes.whatsitcodes
 local leadercodes       = nodes.leadercodes
+local gluecodes         = nodes.gluecodes
 local dircodes          = nodes.dircodes
 local dirvalues         = nodes.dirvalues
 local subtypes          = nodes.subtypes
@@ -93,6 +95,8 @@ local leaders_code            <const> = leadercodes.leaders
 local cleaders_code           <const> = leadercodes.cleaders
 local xleaders_code           <const> = leadercodes.xleaders
 local gleaders_code           <const> = leadercodes.gleaders
+
+local spaceskip_code          <const> = gluecodes.spaceskip
 
 local saveposwhatsit_code     <const> = whatsitcodes.savepos
 local userdefinedwhatsit_code <const> = whatsitcodes.userdefined
@@ -169,6 +173,10 @@ local stack   = setmetatableindex("table")
 local level   = 0
 local nesting = 0
 local main    = 0
+
+-- experiment (smaller page stream but might be fragile)
+
+local tospace = false  directives.register("backends.spaces", function(v) tospace = v end)
 
 -- todo: cache streams
 
@@ -532,7 +540,8 @@ local hlist_out, vlist_out  do
                     pos_v = ref_v - (cur_v - y_offset)
                     -- synced
                 end
-                local wd, ht, dp = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
+             -- local wd, ht, dp = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
+                local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
                 cur_h = cur_h + wd
             elseif id == glue_code then
                 local gluewidth = effectiveglue(current,this_box)
@@ -564,7 +573,6 @@ local hlist_out, vlist_out  do
                                 gluewidth = gluewidth + 10
                                 local edge = cur_h + gluewidth
                                 local lx = 0
-    --                             local subtype = getsubtype(current)
                                 if subtype == gleaders_code then
                                     local save_h = cur_h
                                     if pos_r == righttoleft_code then
@@ -628,6 +636,10 @@ local hlist_out, vlist_out  do
                             cur_h = cur_h + gluewidth
                         end
                     else
+                        if tospace and subtype == spaceskip_code then
+                            -- todo: flush_space
+                            flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r)
+                        end
                         cur_h = cur_h + gluewidth
                     end
                 end
@@ -757,10 +769,9 @@ local hlist_out, vlist_out  do
                   cur_h = cur_h + effectiveglue(current,this_box)
              -- end
             elseif id == dir_code then
-                -- we normally have proper begin-end pairs
-                -- a begin without end is (silently) handled
-                -- an end without a begin will be (silently) skipped
-                -- we only need to move forward so a faster calculation
+             -- We normally have proper begin-end pairs. A begin without end is (silently) handled
+             -- and an end without a begin will be (silently) skipped we only need to move forward
+             -- so we then have a faster calculation.
                 local dir, cancel = getdirection(current)
                 if cancel then
                     local ds = dirstack[current]
@@ -820,6 +831,8 @@ local hlist_out, vlist_out  do
             elseif id == marginkern_code then
                 cur_h = cur_h + getkern(current)
             end
+            -- There is no gain in skipping over this when we have zero progression
+            -- and such.
             if pos_r == righttoleft_code then
                 pos_h = ref_h - cur_h
             else

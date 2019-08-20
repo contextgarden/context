@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 08/18/19 22:16:14
+-- merge date  : 08/20/19 17:20:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -3433,7 +3433,7 @@ local environment={
  stripzero=patterns.stripzero,
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
- FORMAT=string.f9,
+ FORMAT=string.f6,
 }
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
@@ -3641,12 +3641,25 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N=function(f) 
- n=n+1
- if not f or f=="" then
-  f=".9"
- end 
- return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+local format_N  if environment.FORMAT then
+ format_N=function(f)
+  n=n+1
+  if not f or f=="" then
+   return format("FORMAT(a%s,'%%.9f')",n)
+  elseif f==".6" then
+   return format("FORMAT(a%s)",n)
+  else
+   return format("FORMAT(a%s,'%%%sf')",n,f)
+  end
+ end
+else
+ format_N=function(f) 
+  n=n+1
+  if not f or f=="" then
+   f=".9"
+  end 
+  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+ end
 end
 local format_a=function(f)
  n=n+1
@@ -4865,6 +4878,7 @@ nuts.getchar=direct.getchar
 nuts.getcomponents=direct.getcomponents
 nuts.getdirection=direct.getdirection
 nuts.getdisc=direct.getdisc
+nuts.getreplace=direct.getreplace
 nuts.getfield=direct.getfield
 nuts.getfont=direct.getfont
 nuts.getid=direct.getid
@@ -4881,6 +4895,7 @@ nuts.setchar=direct.setchar
 nuts.setcomponents=direct.setcomponents
 nuts.setdirection=direct.setdirection
 nuts.setdisc=direct.setdisc
+nuts.setreplace=direct.setreplace
 nuts.setfield=setfield
 nuts.setkern=direct.setkern
 nuts.setlink=direct.setlink
@@ -4997,6 +5012,18 @@ do
   char=nuts.traverse_char(dummy),
   node=nuts.traverse(dummy),
  }
+end
+if not nuts.setreplace then
+ local getdisc=nuts.getdisc
+ local setfield=nuts.setfield
+ function nuts.getreplace(n)
+  local _,_,h,_,_,t=getdisc(n,true)
+  return h,t
+ end
+ function nuts.setreplace(n,h)
+  setfield(n,"replace",h)
+ end
+end
 end
 
 end -- closure
@@ -26076,7 +26103,6 @@ registertracker("otf.actions","otf.substitutions","otf.positions")
 registertracker("otf.sample","otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 registertracker("otf.sample.silent","otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 local nuts=nodes.nuts
-local getfield=nuts.getfield
 local getnext=nuts.getnext
 local setnext=nuts.setnext
 local getprev=nuts.getprev
@@ -26092,6 +26118,7 @@ local getchar=nuts.getchar
 local setchar=nuts.setchar
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
+local getreplace=nuts.getreplace
 local setlink=nuts.setlink
 local getcomponents=nuts.getcomponents 
 local setcomponents=nuts.setcomponents 
@@ -27670,7 +27697,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    if keepdisc then
     keepdisc=false
     lookaheaddisc=current
-    local replace=getfield(current,"replace")
+    local replace=getreplace(current)
     if not replace then
      sweepoverflow=true
      sweepnode=current
@@ -27742,7 +27769,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
      if notmatchpre[current]~=notmatchreplace[current] then
       lookaheaddisc=current
      end
-     local replace=getfield(current,"replace")
+     local replace=getreplace(current)
      while replace and i<s do
       if getid(replace)==glyph_code then
        i=i+1
@@ -27786,7 +27813,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
      if notmatchpost[current]~=notmatchreplace[current] then
       backtrackdisc=current
      end
-     local replace=getfield(current,"replace")
+     local replace=getreplace(current)
      while replace and i>1 do
       if getid(replace)==glyph_code then
        i=i-1
@@ -28750,7 +28777,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
      end
      while getid(s)==disc_code do
       ss=getnext(s)
-      s=getfield(s,"replace")
+      s=getreplace(s)
       if not s then
        s=ss
        ss=nil
@@ -28777,7 +28804,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         end
         while getid(s)==disc_code do
          ss=getnext(s)
-         s=getfield(s,"replace")
+         s=getreplace(s)
          if not s then
           s=ss
           ss=nil
@@ -28904,7 +28931,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
       end
       while getid(s)==disc_code do
        ss=getnext(s)
-       s=getfield(s,"replace")
+       s=getreplace(s)
        if not s then
         s=ss
         ss=nil
@@ -28931,7 +28958,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
          end
          while getid(s)==disc_code do
           ss=getnext(s)
-          s=getfield(s,"replace")
+          s=getreplace(s)
           if not s then
            s=ss
            ss=nil

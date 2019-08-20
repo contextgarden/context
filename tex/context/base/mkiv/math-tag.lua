@@ -58,10 +58,15 @@ local choice_code       = nodecodes.choice         -- attr display text script s
 local fence_code        = nodecodes.fence          -- attr subtype
 
 local accentcodes       = nodes.accentcodes
+local fencecodes        = nodes.fencecodes
 
 local fixedtopaccent_code    = accentcodes.fixedtop
 local fixedbottomaccent_code = accentcodes.fixedbottom
 local fixedbothaccent_code   = accentcodes.fixedboth
+
+local leftfence_code    = fencecodes.left
+local middlefence_code  = fencecodes.middle
+local rightfence_code   = fencecodes.right
 
 local kerncodes         = nodes.kerncodes
 
@@ -450,16 +455,16 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(scriptscript)
                 end
             elseif id == fence_code then
+                local subtype = getsubtype(start)
                 local delim   = getfield(start,"delim")
-                local subtype = getfield(start,"subtype")
-                if subtype == 1 then
+                if subtype == leftfence_code then
                     -- left
                     local properties = { }
                     insert(fencesstack,properties)
                     setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
                     if delim then
                         start_tagged("ignore")
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             properties.left = chr
                         end
@@ -467,12 +472,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         stop_tagged()
                     end
                     start_tagged("mrow") -- begin of subsequence
-                elseif subtype == 2 then
+                elseif subtype == middlefence_code then
                     -- middle
                     if delim then
                         start_tagged("ignore")
                         local top = fencesstack[#fencesstack]
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             local mid = top.middle
                             if mid then
@@ -486,7 +491,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     stop_tagged()        -- end of subsequence
                     start_tagged("mrow") -- begin of subsequence
-                elseif subtype == 3 then
+                elseif subtype == rightfence_code then
                     local properties = remove(fencesstack)
                     if not properties then
                         report_tags("missing right fence")
@@ -494,7 +499,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     if delim then
                         start_tagged("ignore")
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             properties.right = chr
                         end
@@ -525,9 +530,9 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == accent_code then
+                local subtype    = getsubtype(start)
                 local accent     = getfield(start,"accent")
                 local bot_accent = getfield(start,"bot_accent")
-                local subtype    = getsubtype(start)
                 if bot_accent then
                     if accent then
                         setattr(start,a_tagged,start_tagged("munderover", {

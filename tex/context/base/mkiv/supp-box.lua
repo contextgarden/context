@@ -386,13 +386,13 @@ local function getnaturaldimensions(n)
     return w, h, d
 end
 
-interfaces.implement {
+implement {
     name      = "getnaturaldimensions",
     arguments = "integer",
     actions   = getnaturaldimensions
 }
 
-interfaces.implement {
+implement {
     name      = "naturalwd",
     arguments = "integer",
     actions   = function(n)
@@ -401,7 +401,7 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "getnaturalwd",
     arguments = "integer",
     actions   = function(n)
@@ -424,7 +424,7 @@ local function setboxtonaturalwd(n)
     setbox(n,new)
 end
 
-interfaces.implement {
+implement {
     name      = "setnaturalwd",
     arguments = "integer",
     actions   = setboxtonaturalwd
@@ -458,7 +458,7 @@ do
 
     nodes.firstdirinbox = firstdirinbox
 
-    interfaces.implement {
+    implement {
         name      = "doifelserighttoleftinbox",
         arguments = "integer",
         actions   = function(n)
@@ -805,7 +805,7 @@ local function limitate(t)
     return tonode(result)
 end
 
-interfaces.implement {
+implement {
     name      = "limitated",
     public    = true,
     protected = true,

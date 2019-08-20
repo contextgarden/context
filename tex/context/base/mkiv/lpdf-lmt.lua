@@ -38,7 +38,7 @@ local band, extract = bit32.band, bit32.extract
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 
-local bpfactor             <const> = number.dimenfactors.bp
+local bpfactor     <const> = number.dimenfactors.bp
 
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
@@ -78,6 +78,8 @@ local parameters           = fonthashes.parameters
 local properties           = fonthashes.properties
 
 local report               = logs.reporter("backend")
+
+local trace_threshold      = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
 
 -- used variables
 
@@ -150,11 +152,11 @@ local fontproperties
 local usedcharacters = setmetatableindex("table")
 local pdfcharacters
 
-local horizontalmode = true
------ widefontmode   = true
-local scalefactor    = 1
-local threshold      = 655360 * 5 / 100
-local tjfactor       = 100 / 65536
+local horizontalmode   = true
+----- widefontmode     = true
+local scalefactor      = 1
+local threshold        = 655360
+local tjfactor <const> = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
 
@@ -168,7 +170,8 @@ local function updatefontstate(font)
     horizontalmode   = fontparameters.writingmode ~= "vertical"
  -- widefontmode     = fontproperties.encodingbytes == 2
     scalefactor      = (designsize/size) * tjfactor
-    threshold        = size * (fontproperties.threshold or 5) / 100
+    local fthreshold = fontproperties.threshold
+    threshold = (fthreshold and (size * fthreshold / 100)) or 655360
 end
 
 -- helpers
@@ -234,18 +237,17 @@ local function end_chararray()
 end
 
 local function begin_charmode()
- -- b = b + 1 ; buffer[b] = widefontmode and "<" or "("
     b = b + 1 ; buffer[b] = "<"
     mode = "char"
 end
 
 local function end_charmode()
- -- b = b + 1 ; buffer[b] = widefontmode and ">" or ")"
     b = b + 1 ; buffer[b] = ">"
     mode = "chararray"
 end
 
 local function calc_pdfpos(h,v)
+    -- mostly char
     if mode == "page" then
         cmtx = h - pdf_h
         cmty = v - pdf_v
@@ -256,11 +258,11 @@ local function calc_pdfpos(h,v)
         return h ~= pdf_h or v ~= pdf_v
     elseif horizontalmode then
         tmty = v - saved_text_pos_v
-        tj_delta = cw - h -- + saved_chararray_pos_h
+        tj_delta = cw - h
         return tj_delta ~= 0 or v ~= pdf_v
     else
         tmtx = h - saved_text_pos_h
-        tj_delta = cw + v -- - saved_chararray_pos_v
+        tj_delta = cw + v
         return tj_delta ~= 0 or h ~= pdf_h
     end
 end
@@ -274,7 +276,7 @@ local function pdf_set_pos(h,v)
     end
 end
 
-local function pdf_reset_pos() -- pdf_set_pos(0,0)
+local function pdf_reset_pos()
     if mode == "page" then
         cmtx = - pdf_h
         cmty = - pdf_v
@@ -325,7 +327,6 @@ end
 
 local function pdf_goto_textmode()
     if mode == "page" then
-     -- pdf_set_pos(0,0)
         pdf_reset_pos()
         return begin_text()
     elseif mode ~= "text" then
@@ -364,7 +365,6 @@ local function pdf_goto_fontmode()
     elseif mode == "text" then
         end_text()
     end
- -- pdf_set_pos(0,0)
     pdf_reset_pos()
     mode = "page"
 end
@@ -391,8 +391,8 @@ local flushcharacter  do
         tmrx       = expand * extend
         tmsy       = slant
         tmry       = squeeze
-        need_width = fontparameters.width
-        need_mode  = fontparameters.mode
+        need_width = fontparameters.width or 0
+        need_mode  = fontparameters.mode or 0
         f_cur      = font
         f_pdf      = usedfonts[font] -- cache
         cur_factor = factor
@@ -413,12 +413,12 @@ local flushcharacter  do
     -- instances.
 
  -- local lastslant, lastextend, lastsqueeze, lastformat, lastsize, lastwidth, lastmode, lastused, lastfont
- --
+
  -- local function setup_fontparameters(font,factor,f,e)
  --     if font ~= lastfont then
- --         lastslant   = fontparameters.slantfactor   0
- --         lastextend  = fontparameters.extendfactor  1
- --         lastsqueeze = fontparameters.squeezefactor 1
+ --         lastslant   = fontparameters.slantfactor   or 0
+ --         lastextend  = fontparameters.extendfactor  or 1
+ --         lastsqueeze = fontparameters.squeezefactor or 1
  --         lastformat  = fontproperties.format
  --         lastsize    = fontparameters.size * bpfactor
  --         if format == "opentype" or format == "type1" then
@@ -453,10 +453,11 @@ local flushcharacter  do
  -- end
 
     local f_width = formatters["%.6F w"]
-    local f_mode  = formatters["%i Tr"]
-    local f_font  = formatters["/F%i %.6F Tf"]
-    local s_width = "0 w"
-    local s_mode  = "0 Tr"
+    local f_mode  = formatters["%i Tr"]        -- can be hash
+    local f_font  = formatters["/F%i %.6F Tf"] -- can be hash
+
+    local s_width <const> = "0 w"
+    local s_mode  <const> = "0 Tr"
 
     directives.register("pdf.stripzeros",function()
         f_width = formatters["%.6N w"]
@@ -464,14 +465,16 @@ local flushcharacter  do
     end)
 
     local function set_font()
-        if need_width and need_width ~= 0 then
+     -- if need_width and need_width ~= 0 then
+        if need_width ~= 0 then
             b = b + 1 ; buffer[b] = f_width(bpfactor * need_width / 1000)
             done_width = true
         elseif done_width then
             b = b + 1 ; buffer[b] = s_width
             done_width = false
         end
-        if need_mode and need_mode ~= 0 then
+     -- if need_mode and need_mode ~= 0 then
+        if need_mode ~= 0 then
             b = b + 1 ; buffer[b] = f_mode(need_mode)
             done_mode = true
         elseif done_mode then
@@ -486,7 +489,7 @@ local flushcharacter  do
     end
 
     local function set_textmatrix(h,v)
-       local move = calc_pdfpos(h,v) -- duplicate
+       local move = calc_pdfpos(h,v)
        if need_tm or move then
             b = b + 1 ; buffer[b] = f_tm(tmrx, tmsx, tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
             pdf_h = saved_text_pos_h + tmtx
@@ -496,13 +499,10 @@ local flushcharacter  do
         cur_tmrx = tmrx
     end
 
- -- local f_skip  = formatters["%.1f"]
- -- local f_octal = formatters["\\%o"]
- -- local f_char  = formatters["%c"]
-    local f_hex   = formatters["%04X"]
+    local f_hex = formatters["%04X"]
 
     local h_hex = setmetatableindex(function(t,k) -- we already have this somewhere
-        if k < 256 then
+        if k < 256 then -- maybe 512
             -- not sparse in this range
             for i=0,255 do
                 t[i] = f_hex(i)
@@ -526,10 +526,12 @@ local flushcharacter  do
         end
         local move = calc_pdfpos(pos_h,pos_v)
 
-     -- report(
-     --     "factor %i, width %p, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-     --     factor,width,naturalwidth,move,need_tm,pos_h,tj_delta,threshold,cw
-     -- )
+        if trace_threshold then
+            report(
+                "font %i, char %C, factor %i, width %p, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
+                font,char,factor,width,naturalwidth,move,need_tm,pos_h,tj_delta,threshold,cw
+            )
+        end
 
         if move or need_tm then
             if not need_tm then
@@ -555,7 +557,7 @@ local flushcharacter  do
             end
             if move then
                 local d = tj_delta * scalefactor
-                if d <= -0.5 or d >= 0.5 then -- 0.25
+                if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
                     end
@@ -568,25 +570,16 @@ local flushcharacter  do
             begin_charmode(font)
         end
 
+    --  cw = cw + naturalwidth
+        cw = cw + width
+
         local index = data.index or char
 
-        b = b + 1
-     -- if widefontmode then
-     --     buffer[b] = h_hex[data.index or 0]
-            buffer[b] = h_hex[index]
-     -- elseif char > 255 then
-     --     buffer[b] = f_octal(32)
-     -- elseif char <= 32 or char == 92 or char == 40 or char == 41 or char > 127 then -- \ ( )
-     --     buffer[b] = f_octal(char)
-     -- else
-     --     buffer[b] = f_char(char)
-     -- end
+        b = b + 1 ; buffer[b] = h_hex[index]
 
-        cw = cw + naturalwidth
-
-if not pdfcharacters[index] then
-        pdfcharacters[index] = true
-end
+        if not pdfcharacters[index] then
+            pdfcharacters[index] = true
+        end
 
     end
 
@@ -632,14 +625,13 @@ local flushliteral  do
                 mode = literalvalues[mode]
             end
         else
-         -- str, mode = getdata(current)
             local p = nodeproperties[current]
-if p then
-            str  = p.data
-            mode = p.mode
-else
-    str, mode = getdata(current)
-end
+            if p then
+                str  = p.data
+                mode = p.mode
+            else
+                str, mode = getdata(current)
+            end
         end
         if str and str ~= "" then
             if mode == originliteral_code then
@@ -815,20 +807,20 @@ local flushsave, flushrestore, flushsetmatrix  do
         b = b + 1 ; buffer[b] = "Q"
     end
 
---     pushorientation = function(orientation,pos_h,pos_v,pos_r)
---         flushsave(false,pos_h,pos_v)
---         if orientation == 1 then
---             flushsetmatrix("0 -1 1 0",pos_h,pos_v)
---         elseif orientation == 2 then
---             flushsetmatrix("-1 0 0 -1",pos_h,pos_v)
---         elseif orientation == 3 then
---             flushsetmatrix("0 1 -1 0",pos_h,pos_v)
---         end
---     end
+ -- pushorientation = function(orientation,pos_h,pos_v,pos_r)
+ --     flushsave(false,pos_h,pos_v)
+ --     if orientation == 1 then
+ --         flushsetmatrix("0 -1 1 0",pos_h,pos_v)
+ --     elseif orientation == 2 then
+ --         flushsetmatrix("-1 0 0 -1",pos_h,pos_v)
+ --     elseif orientation == 3 then
+ --         flushsetmatrix("0 1 -1 0",pos_h,pos_v)
+ --     end
+ -- end
 
---     poporientation = function(orientation,pos_h,pos_v,pos_r)
---         flushrestore(false,pos_h,pos_v)
---     end
+ -- poporientation = function(orientation,pos_h,pos_v,pos_r)
+ --     flushrestore(false,pos_h,pos_v)
+ -- end
 
 end
 
@@ -861,8 +853,8 @@ local flushrule, flushsimplerule, flushimage  do
     local f_fm = formatters["/Fm%d Do"]
     local f_im = formatters["/Im%d Do"]
 
-    local s_b  = "q"
-    local s_e  = "Q"
+    local s_b <const> = "q"
+    local s_e <const> = "Q"
 
     local f_v = formatters["[] 0 d 0 J %.6F w 0 0 m %.6F 0 l S"]
     local f_h = formatters["[] 0 d 0 J %.6F w 0 0 m 0 %.6F l S"]
@@ -1007,8 +999,7 @@ local flushrule, flushsimplerule, flushimage  do
         b = b + 1 ; buffer[b] = s_e
     end
 
-    -- place image also used in vf but we can use a different one if
-    -- we need it
+    -- place image also used in vf but we can use a different one if we need it
 
     local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream memstream
     local img_none       = imagetypes.none
@@ -1016,7 +1007,7 @@ local flushrule, flushsimplerule, flushimage  do
     local img_stream     = imagetypes.stream
     local img_memstream  = imagetypes.memstream
 
-    local one_bp         <const> = 65536 * bpfactor
+    local one_bp <const> = 65536 * bpfactor
 
     local imageresources, n = { }, 0
 
@@ -1543,7 +1534,7 @@ local streams       = { } -- maybe just parallel to objects (no holes)
 local nofobjects    = 0
 local offset        = 0
 local f             = false
------ flush         = false
+local flush         = false
 local threshold     = 40 -- also #("/Filter /FlateDecode")
 local objectstream  = true
 local compress      = true
@@ -1570,8 +1561,8 @@ local f_stream_b_d_u = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010
 local f_stream_b_d_c = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010"]
 local f_stream_b_d_r = formatters["%i 0 obj\010<< %s >>\010stream\010"]
 
-local s_object_e     = "\010endobj\010"
-local s_stream_e     = "\010endstream\010endobj\010"
+local s_object_e <const> = "\010endobj\010"
+local s_stream_e <const> = "\010endstream\010endobj\010"
 
 do
 
@@ -1678,9 +1669,9 @@ local addtocache, flushcache, cache do
             else
                 b = f_stream_b_d_u(cache,strobj(),#data)
             end
-            f:write(b)
-            f:write(data)
-            f:write(e)
+            flush(f,b)
+            flush(f,data)
+            flush(f,e)
             offset = offset + #b + #data + #e
             data, d = { }, 0
             list, l = { }, 0
@@ -1720,7 +1711,7 @@ local function flushnormalobj(data,n)
     if level == 0 then
         objects[n] = offset
         offset = offset + #data
-        f:write(data)
+        flush(f,data)
     else
         if not lastdeferred then
             lastdeferred = n
@@ -1763,9 +1754,9 @@ local function flushstreamobj(data,n,dict,comp,nolength)
         else
             b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
         end
-        f:write(b)
-        f:write(data)
-        f:write(e)
+        flush(f,b)
+        flush(f,data)
+        flush(f,e)
         objects[n] = offset
         offset = offset + #b + #data + #e
     else
@@ -1803,7 +1794,7 @@ local function flushdeferred()
             if type(o) == "string" then
                 objects[n] = offset
                 offset = offset + #o
-                f:write(o)
+                flush(f,o)
             end
         end
         lastdeferred = false
@@ -1922,13 +1913,9 @@ updaters.register("backend.update.pdf",function()
     pdf.immediateobj   = obj
 end)
 
--- Bah, in lua 5.4 we cannot longer use flush = getmetatable(f).write as efficient
--- flusher due to some change in the metatable definitions (more indirectness) ...
--- so maybe we should introduce our own helper for this as now we get a lookup for
--- each write (and writing isn't already the fastest). A little Lua charm gone as
--- now the memory variant also needs to use this 'object' model. (Ok, the <const>
--- is a new charm but for that to work in our advance I need to patch quite some
--- files.)
+-- In lua 5.4 the methods are now moved one metalevel deeper so we need to get them
+-- from mt.__index instead. (I did get that at first.) It makes for a slightly (imo)
+-- nicer interface but no real gain in speed as we don't flush that often.
 
 local openfile, closefile  do
 
@@ -1942,46 +1929,47 @@ local openfile, closefile  do
     local f_startxref  = formatters["startxref\010%i\010%%%%EOF"]
 
     local inmemory = false
- -- local inmemory = environment.arguments.inmemory
- -- local close    = nil
+    local close    = false
 
     openfile = function(filename)
         if inmemory then
-         -- local n = 0
-         -- f = { }
-         -- flush = function(f,s)
-         --     n = n + 1 f[n] = s
-         -- end
-         -- close = function(f)
-         --     f = concat(f)
-         --     io.savedata(filename,f)
-         --     f = false
-         -- end
             local n = 0
-            f = {
-                write = function(self,s)
-                    n = n + 1 f[n] = s
-                end,
-                close = function(self)
-                    f = concat(f)
-                    io.savedata(filename,f)
-                    f = false
-                end,
-            }
+            f = { }
+            flush = function(f,s)
+                n = n + 1 f[n] = s
+            end
+            close = function(f)
+                f = concat(f)
+                io.savedata(filename,f)
+                f = false
+            end
+         -- local n = 0
+         -- f = {
+         --     write = function(self,s)
+         --         n = n + 1 f[n] = s
+         --     end,
+         --     close = function(self)
+         --         f = concat(f)
+         --         io.savedata(filename,f)
+         --         f = false
+         --     end,
+         -- }
          else
             f = io.open(filename,"wb")
             if not f then
                 -- message
                 os.exit()
             end
-         -- flush = getmetatable(f).write
-         -- close = getmetatable(f).close
+         -- f:setvbuf("full",64*1024)
+            local m = getmetatable(f)
+            flush = m.write or m.__index.write
+            close = m.close or m.__index.close
         end
         local v = f_pdf(majorversion,minorversion)
      -- local b = "%\xCC\xD5\xC1\xD4\xC5\xD8\xD0\xC4\xC6\010"     -- LUATEXPDF  (+128)
         local b = "%\xC3\xCF\xCE\xD4\xC5\xD8\xD4\xD0\xC4\xC6\010" -- CONTEXTPDF (+128)
-        f:write(v)
-        f:write(b)
+        flush(f,v)
+        flush(f,b)
         offset = #v + #b
     end
 
@@ -2127,20 +2115,20 @@ local openfile, closefile  do
                     local comp = zlibcompress(data,3)
                     if comp then
                         data = comp
-                        f:write(f_stream_b_d_c(nofobjects,xref(),#data))
+                        flush(f,f_stream_b_d_c(nofobjects,xref(),#data))
                     else
-                        f:write(f_stream_b_d_u(nofobjects,xref(),#data))
+                        flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
                     end
                 else
-                    f:write(f_stream_b_d_u(nofobjects,xref(),#data))
+                    flush(f,f_stream_b_d_u(nofobjects,xref(),#data))
                 end
-                f:write(data)
-                f:write(s_stream_e)
-                f:write(f_startxref(xrefoffset))
+                flush(f,data)
+                flush(f,s_stream_e)
+                flush(f,f_startxref(xrefoffset))
             else
                 flushdeferred()
                 xrefoffset = offset
-                f:write(f_xref(nofobjects+1))
+                flush(f,f_xref(nofobjects+1))
                 local trailer = pdfdictionary {
                     Size = nofobjects+1,
                     Root = catalog,
@@ -2160,12 +2148,12 @@ local openfile, closefile  do
                     end
                 end
                 objects[0] = f_first(lastfree)
-                f:write(concat(objects,"",0,nofobjects))
+                flush(f,concat(objects,"",0,nofobjects))
                 trailer.Size = nofobjects + 1
                 if trailerid then
-                    f:write(f_trailer_id(trailer(),trailerid,trailerid,xrefoffset))
+                    flush(f,f_trailer_id(trailer(),trailerid,trailerid,xrefoffset))
                 else
-                    f:write(f_trailer_no(trailer(),xrefoffset))
+                    flush(f,f_trailer_no(trailer(),xrefoffset))
                 end
             end
         end

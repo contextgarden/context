@@ -1768,9 +1768,9 @@ function lpdf.flushfonts()
                     -- This will move to the tpk module where we will also deal
                     -- with bitmaps then.
                     local encoding, pfbfile, encfile = getmapentry(filename)
-if trace_fonts then
-    report_fonts("file %a resolved to encoding %a and file %a",filename,encoding,pfbfile)
-end
+                    if trace_fonts then
+                        report_fonts("file %a resolved to encoding %a and file %a",filename,encoding,pfbfile)
+                    end
                     if encoding and pfbfile then
                         filename = pfbfile
                         format   = "type1"

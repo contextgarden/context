@@ -55,144 +55,17 @@ presetparameters "axis" [
     textcolor    = "",
 ] ;
 
-% vardef lmt_do_axis =
-%     image (
-%         save nx; nx := getparameter "axis" "nx" ;
-%         save ny; ny := getparameter "axis" "ny" ;
-%         save dx; dx := getparameter "axis" "dx" ;
-%         save dy; dy := getparameter "axis" "dy" ;
-%         save tx; tx := getparameter "axis" "tx" ;
-%         save ty; ty := getparameter "axis" "ty" ;
-%         save c, startx, starty ; string c ;
-%         c := getparameter "axis" "axiscolor" ;
-%         startx := getparameter "axis" "startx" ;
-%         starty := getparameter "axis" "starty" ;
-%         draw (startx,starty) -- (startx,ny) withcolor c ;
-%         draw (startx,starty) -- (nx,starty) withcolor c ;
-%         for i = 0 step dx until nx :
-%             if (i > startx) or (startx = 0) :
-%                 draw ((0,0) -- (0,-2)) shifted (i,starty) withcolor c ;
-%             fi ;
-%         endfor ;
-%         for i = 0 step dy until ny :
-%             if (i > starty) or (starty = 0) :
-%                 draw ((0,0) -- (-2,0)) shifted (startx,i) withcolor c ;
-%             fi ;
-%         endfor ;
-%         if tx <> 0 :
-%             c := getparameter "axis" "textcolor" ;
-%             for i = 0 step tx until nx :
-%                 if (i > startx) or (startx = 0) :
-%                     draw
-%                         textext("\strut " & decimal i) ysized 2 shifted (i,-4+starty)
-%                         withcolor c;
-%                 fi ;
-%             endfor ;
-%         fi ;
-%         if ty <> 0 :
-%             c := getparameter "axis" "textcolor" ;
-%             for i = 0 step ty until ny :
-%                 if (i > starty) or (starty = 0) :
-%                     draw
-%                         textext.lft("\strut " & decimal i) ysized 2 shifted (-3+startx,i)
-%                         withcolor c;
-%                 fi ;
-%             endfor ;
-%         fi ;
-%
-%         if (getparametercount "axis" "samples") > 0 :
-%             if getparameter "axis" "connect" :
-%                 for s = 1 upto getparametercount "axis" "samples" :
-%                     c := getparameter "axis" "samplecolors" s ;
-%                     draw for i = 1 upto getparametercount "axis" "samples" s :
-%                         if (i > 1) : -- fi (i, getparameter "axis" "samples" s i)
-%                     endfor
-%                     withcolor c ;
-%                 endfor ;
-%             else :
-%                 for s = 1 upto getparametercount "axis" "samples" :
-%                     c := getparameter "axis" "samplecolors" s ;
-%                     for i = 1 upto getparametercount "axis" "samples" s :
-%                         draw (i, getparameter "axis" "samples" s i)
-%                         withcolor c ;
-%                     endfor ;
-%                 endfor ;
-%             fi ;
-%         fi ;
-%
-%         if (getparametercount "axis" "list") > 0 :
-%
-%             path p ; numeric ts ; pair a, d ;
-%
-%             ts := (getparameter "axis" "sy") / 20 ;
-%
-%             for s = 1 upto getparametercount "axis" "list" :
-%
-%                 c := getparameter "axis" "list" s "color" ;
-%
-%                 p := for i = 1 upto getparametercount "axis" "list" s "points" :
-%                     if (i > 1) : -- fi (getparameter "axis" "list" s "points" i)
-%                 endfor
-%                 if (getparameterdefault "axis" "list" s "close" false) : -- cycle fi ;
-%
-%                 draw p withcolor c ;
-%
-%                 if (getparametercount "axis" "list" s "labels") > 0 :
-%                     for i = 1 upto getparametercount "axis" "list" s "labels" :
-%                         draw
-%                             textext(getparameterdefault "axis" "list" s "labels" i "")
-%                             ysized ts
-%                             shifted unitvector(direction (i-eps) of p) % todo
-%                             shifted point i of p ;
-%                     endfor ;
-%                 fi ;
-%
-%               % if (getparametercount "axis" "list" s "texts") > 0 :
-%               %     for i = 1 upto getparametercount "axis" "list" s "texts" :
-%               %         n := i + 0.5 ;
-%               %         a := point n of p ;
-%               %         d := direction n of p ;
-%               %         draw textext.d(getparameterdefault "axis" "list" s "texts" i "")
-%               %             if d < left : rotated 180 shifted (0,-5) else : shifted (0,5) fi
-%               %             ysized ts
-%               %             shifted a
-%               %             rotatedaround(a,angle(d)) ;
-%               %     endfor ;
-%               % fi ;
-%
-%                 pushparameters "axis" "list" s "texts" ;
-%                 if (getparametercount) > 0 :
-%                     for i = 1 upto getparametercount :
-%                         n := i + 0.5 ;
-%                         a := point n of p ;
-%                         d := direction n of p ;
-%                         draw textext.d(getparameterdefault i "")
-%                             if d < left : rotated 180 shifted (0,-5) else : shifted (0,5) fi
-%                             ysized ts
-%                             shifted a
-%                             rotatedaround(a,angle(d)) ;
-%                     endfor ;
-%                 fi ;
-%                 popparameters ;
-%
-%             endfor ;
-%         fi ;
-%
-%     )
-%         xyscaled(getparameter "axis" "sx",getparameter "axis" "sy")
-% enddef ;
-
 vardef lmt_do_axis =
     image (
         pushparameters "axis" ;
-
-            save nx; nx := getparameter "nx" ;
-            save ny; ny := getparameter "ny" ;
-            save dx; dx := getparameter "dx" ;
-            save dy; dy := getparameter "dy" ;
-            save tx; tx := getparameter "tx" ;
-            save ty; ty := getparameter "ty" ;
+            save nx, ny, dx, dy, tx, ty ;
             save c, startx, starty ; string c ;
+            nx := getparameter "nx" ;
+            ny := getparameter "ny" ;
+            dx := getparameter "dx" ;
+            dy := getparameter "dy" ;
+            tx := getparameter "tx" ;
+            ty := getparameter "ty" ;
             c := getparameter "axiscolor" ;
             startx := getparameter "startx" ;
             starty := getparameter "starty" ;
@@ -251,7 +124,7 @@ vardef lmt_do_axis =
 
             if (getparametercount "list") > 0 :
 
-                path p ; numeric ts ; pair a, d ;
+                save p, ts, a, d ; path p ; numeric ts ; pair a, d ;
 
                 ts := (getparameter "sy") / 20 ;
 

@@ -426,7 +426,7 @@
 
 \let\m_overlay_region\empty
 
-% expandable ... in a future version the space will go (in my one can use Overlay*)
+% expandable ... in a future version the space will go (in mp one can use Overlay*)
 
 \def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
 \def\overlayheight       {\the\d_overlay_height   \space} % to some reasonable default
