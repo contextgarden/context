@@ -61,51 +61,55 @@ do
     local currentmpx = nil
     local stack      = { }
 
-    local get_numeric = mplib.get_numeric
-    local get_integer = mplib.get_integer
-    local get_string  = mplib.get_string
-    local get_boolean = mplib.get_boolean
-    local get_path    = mplib.get_path
+    if CONTEXTLMTXMODE > 0 then
 
-    get.numeric = function(s) return get_numeric(currentmpx,s) end
-    get.number  = function(s) return get_numeric(currentmpx,s) end
-    get.integer = function(s) return get_integer(currentmpx,s) end
-    get.string  = function(s) return get_string (currentmpx,s) end
-    get.boolean = function(s) return get_boolean(currentmpx,s) end
-    get.path    = function(s) return get_path   (currentmpx,s) end
+        local scan_next       = mplib.scan_next
+        local scan_expression = mplib.scan_expression
+        local scan_token      = mplib.scan_token
+        local scan_symbol     = mplib.scan_symbol
+        local scan_numeric    = mplib.scan_numeric
+        local scan_integer    = mplib.scan_integer
+        local scan_boolean    = mplib.scan_boolean
+        local scan_string     = mplib.scan_string
+        local scan_pair       = mplib.scan_pair
+        local scan_color      = mplib.scan_color
+        local scan_cmykcolor  = mplib.scan_cmykcolor
+        local scan_transform  = mplib.scan_transform
+        local scan_path       = mplib.scan_path
 
-    local set_path = mplib.set_path
+        scan.next       = function(k)   return scan_next      (currentmpx,k)   end
+        scan.expression = function(k)   return scan_expression(currentmpx,k)   end
+        scan.token      = function(k)   return scan_token     (currentmpx,k)   end
+        scan.symbol     = function(k,e) return scan_symbol    (currentmpx,k,e) end
+        scan.numeric    = function()    return scan_numeric   (currentmpx)     end
+        scan.number     = function()    return scan_numeric   (currentmpx)     end
+        scan.integer    = function()    return scan_integer   (currentmpx)     end
+        scan.boolean    = function()    return scan_boolean   (currentmpx)     end
+        scan.string     = function()    return scan_string    (currentmpx)     end
+        scan.pair       = function(t)   return scan_pair      (currentmpx,t)   end
+        scan.color      = function(t)   return scan_color     (currentmpx,t)   end
+        scan.cmykcolor  = function(t)   return scan_cmykcolor (currentmpx,t)   end
+        scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
+        scan.path       = function(t)   return scan_path      (currentmpx,t)   end
 
-    set.path = function(s,t) return set_path(currentmpx,s,t) end -- not working yet
+    else
 
-    local scan_next       = mplib.scan_next
-    local scan_expression = mplib.scan_expression
-    local scan_token      = mplib.scan_token
-    local scan_symbol     = mplib.scan_symbol
-    local scan_numeric    = mplib.scan_numeric
-    local scan_integer    = mplib.scan_integer
-    local scan_boolean    = mplib.scan_boolean
-    local scan_string     = mplib.scan_string
-    local scan_pair       = mplib.scan_pair
-    local scan_color      = mplib.scan_color
-    local scan_cmykcolor  = mplib.scan_cmykcolor
-    local scan_transform  = mplib.scan_transform
-    local scan_path       = mplib.scan_path
+        local get_numeric = mplib.get_numeric
+        local get_integer = mplib.get_integer
+        local get_string  = mplib.get_string
+        local get_boolean = mplib.get_boolean
+        local get_path    = mplib.get_path
+        local set_path    = mplib.set_path
 
-    scan.next       = function(k) return scan_next      (currentmpx,k) end
-    scan.expression = function(k) return scan_expression(currentmpx,k) end
-    scan.token      = function(k) return scan_token     (currentmpx,k) end
-    scan.symbol     = function(k) return scan_symbol    (currentmpx,k) end
-    scan.numeric    = function()  return scan_numeric   (currentmpx)   end
-    scan.number     = function()  return scan_numeric   (currentmpx)   end
-    scan.integer    = function()  return scan_integer   (currentmpx)   end
-    scan.boolean    = function()  return scan_boolean   (currentmpx)   end
-    scan.string     = function()  return scan_string    (currentmpx)   end
-    scan.pair       = function(t) return scan_pair      (currentmpx,t) end
-    scan.color      = function(t) return scan_color     (currentmpx,t) end
-    scan.cmykcolor  = function(t) return scan_cmykcolor (currentmpx,t) end
-    scan.transform  = function(t) return scan_transform (currentmpx,t) end
-    scan.path       = function(t) return scan_path      (currentmpx,t) end
+        get.numeric = function(s)   return get_numeric(currentmpx,s)   end
+        get.number  = function(s)   return get_numeric(currentmpx,s)   end
+        get.integer = function(s)   return get_integer(currentmpx,s)   end
+        get.string  = function(s)   return get_string (currentmpx,s)   end
+        get.boolean = function(s)   return get_boolean(currentmpx,s)   end
+        get.path    = function(s)   return get_path   (currentmpx,s)   end
+        set.path    = function(s,t) return set_path   (currentmpx,s,t) end -- not working yet
+
+    end
 
     function metapost.pushscriptrunner(mpx)
         insert(stack,mpx)
@@ -184,6 +188,7 @@ do
     local f_ctrl         = formatters["(%F,%F) .. controls (%F,%F) and (%F,%F)"]
     local f_triplet      = formatters["(%F,%F,%F)"]
     local f_quadruple    = formatters["(%F,%F,%F,%F)"]
+    local f_transform    = formatters["totransform(%F,%F,%F,%F,%F,%F)"]
 
     local f_points       = formatters["%p"]
     local f_pair_pt      = formatters["(%p,%p)"]
@@ -209,7 +214,11 @@ do
         elseif t == "string" then
             buffer[n] = value
         elseif t == "table" then
-            buffer[n] = "(" .. concat(value,",") .. ")"
+            if #t == 6 then
+                buffer[n] = "totransform(" .. concat(value,",") .. ")"
+            else
+                buffer[n] = "(" .. concat(value,",") .. ")"
+            end
         else -- boolean or whatever
             buffer[n] = tostring(value)
         end
@@ -351,6 +360,16 @@ do
         end
     end
 
+    local function mptransform(x,y,xx,xy,yx,yy)
+        n = n + 1
+        inspect(x)
+        if type(x) == "table" then
+            buffer[n] = f_transform(x[1],x[2],x[3],x[4],x[5],x[6])
+        else
+            buffer[n] = f_transform(x,y,xx,xy,yx,yy)
+        end
+    end
+
     -- we have three kind of connectors:
     --
     -- .. ... -- (true)
@@ -482,6 +501,7 @@ do
     aux.size            = mpsize
     aux.fprint          = mpfprint
     aux.quoted          = mpquoted
+    aux.transform       = mptransform
 
     -- we need access to the variables
 
@@ -1058,6 +1078,8 @@ end
 do
 
     -- a bit overkill: just a find(str,"mf_object=") can be enough
+    --
+    -- todo : share with mlib-pps.lua metapost,isobject
 
     local mpboolean = aux.boolean
 

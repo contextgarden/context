@@ -6,22 +6,14 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
     license   = "see context related readme files",
 }
 
-local get        = mp.get
 local aux        = mp.aux
-local scan       = mp.scan
-
 local mpnumeric  = aux.numeric
 local mppair     = aux.pair
 local mpquoted   = aux.quoted
 
-local scannumber = scan.number
-local scanpath   = scan.path
-
-local registerscript = metapost.registerscript
+-- todo: use a stack?
 
 do
-
-    -- todo: use a stack?
 
     local p = nil
     local n = 0
@@ -32,6 +24,10 @@ do
     end
 
     if CONTEXTLMTXMODE > 0 then
+
+        local scan       = mp.scan
+        local scannumber = scan.number
+        local scanpath   = scan.path
 
         local function mf_path_length()
             p = scanpath()
@@ -68,6 +64,8 @@ do
             end
         end
 
+        local registerscript = metapost.registerscript
+
         registerscript("pathreset",    mf_path_reset)
         registerscript("pathlengthof", mf_path_length)
         registerscript("pathpointof",  mf_path_point)
@@ -76,6 +74,7 @@ do
 
     else
 
+        local get       = mp.get
         local mpgetpath = get.path
 
         local function mf_path_length(name)

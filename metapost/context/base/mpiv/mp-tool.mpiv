@@ -3638,3 +3638,14 @@ vardef mfun_timestamp =
     if ((time-(time div 60)*60) < 10) :   "0" & fi
     decimal (time-(time div 60)*60)
 enddef ;
+
+vardef totransform(expr x, y, xx, xy, yx, yy) =
+    save t ; transform t ;
+    xpart  t = x ;
+    ypart  t = y ;
+    xxpart t = xx ;
+    xypart t = xy ;
+    yxpart t = yx ;
+    yypart t = yy ;
+    t
+enddef ;

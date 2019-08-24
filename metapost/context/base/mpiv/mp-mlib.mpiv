@@ -280,21 +280,21 @@ vardef fontsize expr name =
     fi
 enddef ;
 
-pair mfun_laboff        ; mfun_laboff        := (0,0)            ;
-pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)           ;
-pair mfun_laboff.rt     ; mfun_laboff.rt     := (1,0)            ;
-pair mfun_laboff.bot    ; mfun_laboff.bot    := (0,-1)           ;
-pair mfun_laboff.top    ; mfun_laboff.top    := (0,1)            ;
-pair mfun_laboff.ulft   ; mfun_laboff.ulft   := (-.7,.7)         ;
-pair mfun_laboff.urt    ; mfun_laboff.urt    := (.7,.7)          ;
-pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7)         ;
-pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7)         ;
+pair mfun_laboff        ; mfun_laboff        := origin   ;
+pair mfun_laboff.lft    ; mfun_laboff.lft    := (-1,0)   ;
+pair mfun_laboff.rt     ; mfun_laboff.rt     := (1,0)    ;
+pair mfun_laboff.bot    ; mfun_laboff.bot    := (0,-1)   ;
+pair mfun_laboff.top    ; mfun_laboff.top    := (0,1)    ;
+pair mfun_laboff.ulft   ; mfun_laboff.ulft   := (-.7,.7) ;
+pair mfun_laboff.urt    ; mfun_laboff.urt    := (.7,.7)  ;
+pair mfun_laboff.llft   ; mfun_laboff.llft   := -(.7,.7) ;
+pair mfun_laboff.lrt    ; mfun_laboff.lrt    := (.7,-.7) ;
 
-pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff      ;
-pair mfun_laboff.dlft   ; mfun_laboff.dlft   := mfun_laboff.lft  ;
-pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt   ;
-pair mfun_laboff.origin ; mfun_laboff.origin := origin           ;
-pair mfun_laboff.raw    ; mfun_laboff.raw    := origin           ;
+pair mfun_laboff.d      ; mfun_laboff.d      := mfun_laboff     ;
+pair mfun_laboff.dflt   ; mfun_laboff.dflt   := mfun_laboff.lft ;
+pair mfun_laboff.drt    ; mfun_laboff.drt    := mfun_laboff.rt  ;
+pair mfun_laboff.origin ; mfun_laboff.origin := mfun_laboff     ;
+pair mfun_laboff.raw    ; mfun_laboff.raw    := mfun_laboff     ;
 
 pair mfun_laboff.l      ; mfun_laboff.l      := mfun_laboff.lft  ;
 pair mfun_laboff.r      ; mfun_laboff.r      := mfun_laboff.rt   ;
@@ -319,11 +319,11 @@ mfun_labxf.urt      := mfun_labxf.r_t := mfun_labxf.t_r := 0   ;
 mfun_labxf.llft     := mfun_labxf.l_b := mfun_labxf.b_l := 1   ;
 mfun_labxf.lrt      := mfun_labxf.r_b := mfun_labxf.b_r := 0   ;
 
-mfun_labxf.d        := mfun_labxf      ;
-mfun_labxf.dlft     := mfun_labxf.lft  ;
-mfun_labxf.drt      := mfun_labxf.rt   ;
-mfun_labxf.origin   := 0               ;
-mfun_labxf.raw      := 0               ;
+mfun_labxf.d        := mfun_labxf     ;
+mfun_labxf.dflt     := mfun_labxf.lft ;
+mfun_labxf.drt      := mfun_labxf.rt  ;
+mfun_labxf.origin   := 0              ;
+mfun_labxf.raw      := 0              ;
 
 mfun_labyf                                              := 0.5 ;
 mfun_labyf.lft      := mfun_labyf.l                     := 0.5 ;
@@ -335,11 +335,11 @@ mfun_labyf.urt      := mfun_labyf.r_t := mfun_labyf.t_r := 0   ;
 mfun_labyf.llft     := mfun_labyf.l_b := mfun_labyf.b_l := 1   ;
 mfun_labyf.lrt      := mfun_labyf.r_b := mfun_labyf.b_r := 1   ;
 
-mfun_labyf.d        := mfun_labyf      ;
-mfun_labyf.dlft     := mfun_labyf.lft  ;
-mfun_labyf.drt      := mfun_labyf.rt   ;
-mfun_labyf.origin   := 0               ;
-mfun_labyf.raw      := 0               ;
+mfun_labyf.d        := mfun_labyf     ;
+mfun_labyf.dflt     := mfun_labyf.lft ;
+mfun_labyf.drt      := mfun_labyf.rt  ;
+mfun_labyf.origin   := 0              ;
+mfun_labyf.raw      := 0              ;
 
 mfun_labtype                                                 :=  0 ;
 mfun_labtype.lft    := mfun_labtype.l                        :=  1 ;
@@ -351,19 +351,26 @@ mfun_labtype.urt    := mfun_labtype.r_t :=  mfun_labtype.t_r :=  6 ;
 mfun_labtype.llft   := mfun_labtype.l_b :=  mfun_labtype.b_l :=  7 ;
 mfun_labtype.lrt    := mfun_labtype.r_b :=  mfun_labtype.b_r :=  8 ;
 mfun_labtype.d                                               := 10 ;
-mfun_labtype.dlft                                            := 11 ;
+mfun_labtype.dflt                                            := 11 ;
 mfun_labtype.drt                                             := 12 ;
 mfun_labtype.origin                                          :=  0 ;
 mfun_labtype.raw                                             :=  0 ;
 
-% installlabel.foo ( 0, 1, 1, (.5,-1) ) ;
-
 vardef installlabel@# (expr type, x, y, offset) =
-    numeric labtype@# ; labtype@# := type ;
-    pair    laboff @# ; laboff @# := offset ;
-    numeric labxf  @# ; labxf  @# := x ;
-    numeric labyf  @# ; labyf  @# := y ;
+    numeric mfun_labtype@# ; mfun_labtype@# := type ;
+    pair    mfun_laboff @# ; mfun_laboff @# := offset ;
+    numeric mfun_labxf  @# ; mfun_labxf  @# := x ;
+    numeric mfun_labyf  @# ; mfun_labyf  @# := y ;
 enddef ;
+
+installlabel.center (0, 0.5, 0.5, (0,0)) ;
+installlabel.c      (0, 0.5, 0.5, (0,0)) ;
+
+installlabel.hcenter(0, 0.5, 0.5, (1,0)) ;
+installlabel.h      (0, 0.5, 0.5, (1,0)) ;
+
+installlabel.vcenter(0, 0.5, 0.5, (0,1)) ;
+installlabel.v      (0, 0.5, 0.5, (0,1)) ;
 
 vardef mfun_labshift@#(expr p) =
     (mfun_labxf@#*lrcorner p +
@@ -688,6 +695,15 @@ def mfun_with_shade_method_analyze(expr p) =
     endfor ;
 enddef ;
 
+vardef mfun_max_radius(expr p) =
+    max (
+        (xpart center   p - xpart llcorner p) ++ (ypart center   p - ypart llcorner p),
+        (xpart center   p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center   p),
+        (xpart lrcorner p - xpart center   p) ++ (ypart center   p - ypart lrcorner p),
+        (xpart urcorner p - xpart center   p) ++ (ypart urcorner p - ypart center   p)
+    )
+enddef ;
+
 primarydef p withshademethod m =
     hide(mfun_with_shade_method_analyze(p))
     p
@@ -710,12 +726,7 @@ primarydef p withshademethod m =
         withprescript "sh_center_a=" & ddecimal center p
         withprescript "sh_center_b=" & ddecimal center p
         withprescript "sh_radius_a=" & decimal 0
-        withprescript "sh_radius_b=" & decimal ( max (
-            (xpart center p - xpart llcorner p) ++ (ypart center p - ypart llcorner p),
-            (xpart center p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center p),
-            (xpart lrcorner p - xpart center p) ++ (ypart center p - ypart lrcorner p),
-            (xpart urcorner p - xpart center p) ++ (ypart urcorner p - ypart center p)
-        ) )
+        withprescript "sh_radius_b=" & decimal mfun_max_radius(p)
     fi
 enddef ;
 

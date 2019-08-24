@@ -127,6 +127,8 @@ function install.identify()
     -- We have to be in "...../tex" where subdirectories are prefixed with
     -- "texmf". We strip the "tex/texm*/" from the name in the list.
 
+    local hashdata = sha2 and sha2.HASH256 or md5.hex
+
     local function collect(root,tree)
 
         local path = root .. "/" .. tree
@@ -141,12 +143,12 @@ function install.identify()
             local total   = 0
 
             for i=1,#files do
-                local name = files[i]
-                local size = filesize(name)
-                local base = gsub(name,pattern,"")
-                local stamp = md5.hex(io.loaddata(name))
-                details[i] = { base, size, stamp }
-                total = total + size
+                local name  = files[i]
+                local size  = filesize(name)
+                local base  = gsub(name,pattern,"")
+                local stamp = hashdata(io.loaddata(name))
+                details[i]  = { base, size, stamp }
+                total       = total + size
             end
             report("%-20s : %4i files, %3.0f MB",tree,#files,total/(1000*1000))
 

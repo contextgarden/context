@@ -489,13 +489,21 @@ do
 
     trackers.register("nodes.boxes",function(v) trace = v end)
 
-    function boxes.save(category,name,box)
+    function boxes.save(category,name,b)
         name = tonumber(name) or name
-        local b = takebox(box)
+        local b = takebox(b)
         if trace then
             report("category %a, name %a, %s (%s)",category,name,"save",b and "content" or "empty")
         end
         cache[category][name] = b or false
+    end
+
+    function boxes.savenode(category,name,n)
+        name = tonumber(name) or name
+        if trace then
+            report("category %a, name %a, %s (%s)",category,name,"save",n and "content" or "empty")
+        end
+        cache[category][name] = tonut(n) or false
     end
 
     function boxes.found(category,name)

@@ -18,6 +18,51 @@ if known context_lmtx : endinput ; fi ;
 
 boolean context_lmtx ; context_lmtx := true ;
 
+presetparameters "text" [
+    offset   = 0,
+    strut    = "auto",
+    style    = "",
+    color    = "",
+    text     = "",
+    anchor   = "",
+    format   = "",
+    position = origin,
+] ;
+
+def lmt_text = applyparameters "text" "lmt_do_text" enddef ;
+
+vardef lmt_do_text =
+    image (
+        pushparameters "text" ;
+        save style, anchor, txt, fmt, strt ;
+        string style, anchor, txt, fmt, strt ;
+        interim textextoffset := getparameter "offset" ;
+        style := getparameter "style" ;
+        anchor := getparameter "anchor" ;
+        strt := getparameter "strut" ;
+        fmt := getparameter "format" ;
+        txt := getparameter "text" ;
+        if fmt <> "" :
+            txt := "\formatone{" & fmt & "}{" & txt & "}"
+        fi ;
+        if strt == "yes" :
+            txt := "\strut " & txt ;
+        elseif strt == "auto" :
+            txt := "\setstrut\strut " & txt ;
+        fi ;
+        if style <> "" :
+            txt := "\style[" & style & "]{" & txt & "}" ;
+        fi ;
+        draw
+            if anchor == "" : thetextext else : scantokens("thetextext." & anchor) fi (
+                txt,
+                getparameter "position"
+            )
+            withcolor getparameter "color" ;
+        popparameters ;
+    )
+enddef ;
+
 presetparameters "grid" [
     nx = 1, dx = 1,
     ny = 1, dy = 1,
@@ -840,4 +885,480 @@ enddef ;
 
 vardef OverlayMesh(expr p, s) =
     lmt_mesh [ paths = { meshed(p,OverlayBox,s) } ]
+enddef ;
+
+% charts
+
+presetparameters "chart" [
+    originsize      = 1mm,
+    trace           = false,
+    showlabels      = true,
+    center          = false,
+
+    samples         = { },
+
+    cumulative      = false,
+    percentage      = false,
+    maximum         = 0,
+    distance        = 1mm,
+
+  % labels          = { },
+    labelstyle      = "",
+    labelformat     = "",
+  % labelstrut      = "auto",
+  % labelanchor     = "",
+  % labeloffset     = 0,
+    labelfraction   = 0.8,
+    labelcolor      = "",
+
+    backgroundcolor = "",
+    drawcolor       = "white",
+    fillcolors      = { % use color palet
+        "darkred", "darkgreen", "darkblue",
+        "darkyellow", "darkmagenta", "darkcyan",
+        "darkgray"
+    },
+    colormode       = "global",
+
+    linewidth       = .25mm,
+
+    legendcolor     = "",
+    legendstyle     = "",
+    legend          = { },
+] ;
+
+presetparameters "chart:circle" "chart" [
+    height      = 5cm,
+    width       = 5mm,
+    labelanchor = "",
+    labeloffset = 0,
+    labelstrut  = "no",
+] ;
+
+presetparameters "chart:histogram" "chart" [
+    height      = 5cm,
+    width       = 5mm,
+    labelanchor = "bot",
+    labeloffset = 1mm,
+    labelstrut  = "auto",
+] ;
+
+presetparameters "chart:bar" "chart" [
+    height      = 5mm,
+    width       = 5cm,
+    labelanchor = "lft",
+    labeloffset = 1mm,
+    labelstrut  = "no",
+] ;
+
+def lmt_chart_circle    = applyparameters "chart:circle"    "lmt_do_chart_circle"    enddef ;
+def lmt_chart_histogram = applyparameters "chart:histogram" "lmt_do_chart_histogram" enddef ;
+def lmt_chart_bar       = applyparameters "chart:bar"       "lmt_do_chart_bar"       enddef ;
+
+def lmt_do_chart_start (expr what) =
+    pushparameters what ;
+    save width, height, distance, linewidth, labelgap, labelfraction, value, nofsamples, nofsamplesets ;
+    save fillcolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
+    string fillcolor, drawcolor, labelcolor, labelstyle, labelformat, labelstrut, labelanchor, colormode ;
+    height := getparameter "height" ;
+    width := getparameter "width" ;
+    distance := getparameter "distance" ;
+    linewidth := getparameter "linewidth" ;
+    drawcolor := getparameter "drawcolor" ;
+    colormode :=  getparameter "colormode" ;
+    labelcolor := getparameter "labelcolor" ;
+    labelgap := getparameter "labeloffset" ;
+    labelstyle := getparameter "labelstyle" ;
+    labelformat := getparameter "labelformat" ;
+    labelstrut := getparameter "labelstrut" ;
+    labelanchor := getparameter "labelanchor" ;
+    labelfraction := getparameter "labelfraction" ;
+    nofsamplesets := getparametercount "samples" ;
+    nofsamples := getmaxparametercount "samples" ;
+enddef ;
+
+def lmt_do_chart_stop =
+    if getparameter "center" :
+        currentpicture := currentpicture shifted - center currentpicture ;
+    fi
+    if (getparameter "backgroundcolor") <> "" :
+        addbackground withcolor getparameter "backgroundcolor" ;
+    fi
+    if getparameter "trace" :
+        save b ; path b ; b := boundingbox currentpicture ;
+        draw image (
+            draw fullcircle scaled 1mm ;
+            draw b
+        )
+        dashed evenly scaled 1/4
+        withpen pencircle scaled .125mm
+        withcolor "darkgray" ;
+    fi
+    popparameters ;
+enddef ;
+
+vardef lmt_do_chart_text(expr s, i, value) =
+    lmt_text [
+        style  = labelstyle,
+        format = labelformat,
+        strut  = labelstrut,
+        anchor = labelanchor,
+        offset = labelgap,
+        color  = labelcolor,
+        text   = (getparameterdefault "labels" s i (decimal value))
+    ]
+enddef ;
+
+def lmt_do_chart_legend =
+    n := getparametercount "legend" ;
+    if n > 0 :
+        save dx, dy, p, l, w, o, d, ddy ; picture l ;
+        dx := xpart urcorner currentpicture + EmWidth ;
+        dy := ypart urcorner currentpicture ;
+        labelcolor := getparameter "legendcolor" ;
+        labelstyle := getparameter "legendstyle" ;
+        w := 2EmWidth ;
+        o := .25EmWidth ;
+        d := ExHeight ;
+        ddy := .8LineHeight ;
+        for i=1 upto n :
+            dy := dy - ddy ;
+            l := lmt_text [
+                text   = getparameter "legend" i,
+                anchor = "rt"
+                style  = labelstyle,
+                color  = labelcolor,
+            ] ;
+            fill leftboundary l rightenlarged w
+                shifted (dx,dy+d)
+                withcolor getparameter "fillcolors" i ;
+            draw l
+                shifted (dx+w+o,dy+d) ;
+        endfor ;
+    fi ;
+enddef ;
+
+vardef lmt_do_chart_circle =
+    image (
+        lmt_do_chart_start("chart:circle") ;
+        if (nofsamplesets > 0) and (nofsamples > 0) :
+            nofsamplesets := 1 ;
+            save p, r, s, first, last, total, factor, n, percentage ;
+            path p, r, s[] ; boolean percentage ;
+            percentage := getparameter "percentage" ;
+            total := 0 ;
+            for i = 1 upto nofsamples :
+                total := total + getparameter "samples" (1) i ; % () is needed else 1i
+            endfor ;
+            factor := 100/total ;
+            first := 0 ;
+            p := fullcircle ysized (height) ;
+            r := origin -- (2*height,0) ;
+            for i = 1 upto nofsamples :
+                fillcolor := getparameter "fillcolors" i ;
+                value := (getparameter "samples" (1) i) * factor ;
+                last := first + (360 / 100) * value ;
+                s[i] := ((p cutbefore (r rotated first)) cutafter (r rotated last)) ;
+                fill origin -- s[i] -- cycle withcolor fillcolor ;
+                first := last ;
+            endfor ;
+            if linewidth > 0 :
+                if drawcolor == "" :
+                    drawcolor := backgroundcolor ;
+                fi ;
+                for i = 1 upto nofsamples :
+                    interim linecap := butt ;
+                    draw origin -- (point 0            of s[i]) withpen pencircle scaled linewidth withcolor drawcolor ;
+                    draw origin -- (point length(s[i]) of s[i]) withpen pencircle scaled linewidth withcolor drawcolor ;
+                endfor ;
+            fi ;
+            if getparameter "showlabels" :
+                first := 0 ;
+                for i = 1 upto nofsamples :
+                    value := getparameter "samples" (1) i ;
+                    last := first + (360/100) * value * factor ;
+                    draw lmt_do_chart_text (s,i,value)
+                        shifted ((labelfraction*(height/2),0) rotated ((first+last)/2)) ;
+                    first := last ;
+                endfor ;
+            fi ;
+            lmt_do_chart_legend ;
+            n := getparameter "originsize" ;
+            if n > 0 :
+                fill fullcircle scaled n withcolor "white"  ;
+            fi ;
+        fi ;
+        lmt_do_chart_stop ;
+    )
+enddef ;
+
+vardef lmt_do_chart_histogram =
+    image (
+        lmt_do_chart_start("chart:histogram") ;
+        if (nofsamplesets > 0) and (nofsamples > 0) :
+            save value, maximum, cumulative, maxwidth ; boolean cumulative ;
+            maximum := getparameter "maximum" ;
+            cumulative := getparameter "cumulative" ;
+            if labelanchor = "center" :
+                labelanchor := "vcenter" ;
+            fi ;
+            if maximum = 0 :
+                for s = 1 upto nofsamplesets :
+                    for i = 1 upto nofsamples :
+                        value := getparameter "samples" s i ;
+                        maximum := if cumulative :
+                            maximum + value ;
+                        else :
+                            max(maximum,value) ;
+                        fi ;
+                    endfor ;
+                endfor ;
+            fi ;
+            if nofsamplesets = 1 :
+                distance := 0 ;
+            fi ;
+            maxwidth := nofsamplesets * nofsamples * width + (nofsamples - 1)* distance ;
+            value := 0 ;
+            for s = 1 upto nofsamplesets :
+                for i = 1 upto nofsamples :
+                    value := if cumulative : value + fi (getparameter "samples" s i) * height / maximum ;
+                    fill unitsquare xyscaled (width,value)
+                        if linewidth > 0 :
+                            if i > 1          : leftenlarged  (-linewidth/2) fi
+                            if i < nofsamples : rightenlarged (-linewidth/2) fi
+                        fi
+                        shifted (nofsamplesets*(i-1)*width+(s-1)*width+(i-1)*distance,0)
+                        withcolor getparameter "fillcolors" if colormode = "local" : s else : i fi ;
+                endfor ;
+            endfor ;
+            setbounds currentpicture to unitsquare xyscaled (maxwidth,height) ;
+            for s = 1 upto nofsamplesets :
+                if getparameter "showlabels" :
+                    for i = 1 upto nofsamples :
+                        draw lmt_do_chart_text (s,i,getparameter "samples" s i)
+                            shifted (nofsamplesets*((i-1)*width)+width/2+(s-1)*width+(i-1)*distance,0) ;
+                    endfor ;
+                fi ;
+            endfor ;
+            lmt_do_chart_legend ;
+        fi ;
+        lmt_do_chart_stop ;
+    )
+enddef ;
+
+vardef lmt_do_chart_bar =
+
+    image (
+        lmt_do_chart_start("chart:bar") ;
+        if (nofsamplesets > 0) and (nofsamples > 0) :
+            save value, maximum, cumulative, maxheight ; boolean cumulative ;
+            maximum := getparameter "maximum" ;
+            cumulative := getparameter "cumulative" ;
+            if labelanchor = "center" :
+                labelanchor := "hcenter" ;
+            fi ;
+            if maximum = 0 :
+                for s = 1 upto nofsamplesets :
+                    for i = 1 upto nofsamples :
+                        value := getparameter "samples" s i ;
+                        maximum := if cumulative : maximum + value else : max(maximum,value) fi ;
+                    endfor ;
+                endfor ;
+            fi ;
+            if nofsamplesets = 1 :
+                distance := 0 ;
+            fi ;
+            maxheight := nofsamplesets * nofsamples * height + (nofsamples - 1)* distance ;
+            for s = 1 upto nofsamplesets :
+                value := 0 ;
+                for i = 1 upto nofsamples :
+                    value := if cumulative : value + fi (getparameter "samples" s i) * width / maximum ;
+                    fill unitsquare xyscaled (value,height)
+                        if linewidth > 0 :
+                            if i > 1          : topenlarged    (-linewidth/2) fi
+                            if i < nofsamples : bottomenlarged (-linewidth/2) fi
+                        fi
+                        shifted (0,maxheight-nofsamplesets*i*height+(s-1)*height-(i-1)*distance)
+                        withcolor getparameter "fillcolors" if colormode = "local" : s else : i fi ;
+                endfor ;
+            endfor ;
+            setbounds currentpicture to unitsquare xyscaled (width,maxheight) ;
+            if getparameter "showlabels" :
+                for s = 1 upto nofsamplesets :
+                    for i = 1 upto nofsamples :
+                        draw lmt_do_chart_text (s,i,getparameter "samples" s i)
+                            shifted (0,maxheight-nofsamplesets*(i*height)+height/2+(s-1)*height-(i-1)*distance) ;
+                    endfor ;
+                endfor ;
+            fi ;
+            lmt_do_chart_legend ;
+        fi ;
+        lmt_do_chart_stop ;
+    )
+enddef ;
+
+% more complex than needed but i want to trace so i need the vars
+
+presetparameters "shade" [
+    alternative = "circular",
+    path        = origin -- cycle,
+    trace       = false
+
+ %  alternative = "circular" | "linear"
+ %  domain      = { a, b }
+ %  radius      = a | { a, b }
+ %  factor      = a
+ %  origin      = (a,b) | { (a,b), {c, d) }
+ %  vector      = { a, b }
+ %  colors      = { a, b }
+ %  center      = a | { a, b }
+ %  direction   = "up" | "down" | "left" | "right" | { a, b }
+
+] ;
+
+def lmt_shade = applyparameters "shade" "lmt_do_shade" enddef ;
+
+vardef lmt_do_shade =
+    image (
+        pushparameters "shade" ;
+
+        save domain_min, domain_max, radius_a, radius_b, factor ;
+        save color_a, color_b, center_a, center_b, alternative, s ;
+        string color_a, color_b, alternative, s ; pair center_a, center_b ;
+
+        alternative := getparameter "alternative" ;
+
+        mfun_with_shade_method_analyze(getparameter "path") ;
+
+        domain_min := 0 ;
+        domain_max := 1 ;
+
+        color_a := "white" ;
+        color_b := "black" ;
+
+        if alternative = "circular" :
+            center_a := center mfun_shade_path ;
+            center_b := center_a ;
+            radius_a := 0 ;
+            radius_b := mfun_max_radius(mfun_shade_path) ;
+            factor   := 1.2 ;
+        else :
+            center_a := llcorner mfun_shade_path ;
+            center_b := urcorner mfun_shade_path ;
+            radius_a := 0 ;
+            radius_b := 0 ;
+            factor   := 0;
+        fi ;
+
+        if hasparameter "domain" :
+            domain_min := getparameter "domain" 1 ;
+            domain_max := getparameter "domain" 2 ;
+        fi
+        if hasparameter "radius" :
+            if numeric getparameter "radius" :
+                radius_a := 0 ;
+                radius_b := getparameter "radius" ;
+            else :
+                radius_a := getparameter "radius" 1 ;
+                radius_b := getparameter "radius" 2 ;
+            fi ;
+            factor := 1 ;
+        fi
+        if hasparameter "factor" :
+            factor := getparameter "factor" ;
+        fi
+        if hasparameter "origin" :
+            if pair getparameter "origin" :
+                center_a := getparameter "origin" ;
+                center_b := center_b ;
+            else :
+                center_a := getparameter "origin" 1 ;
+                center_b := getparameter "origin" 2 ;
+            fi ;
+        fi
+        if hasparameter "vector" :
+            center_a := point (getparameter "vector" 1) of mfun_shade_path ;
+            center_b := point (getparameter "vector" 2) of mfun_shade_path ;
+        fi
+        if hasparameter "colors" :
+            color_a := getparameter "colors" 1 ;
+            color_b := getparameter "colors" 2 ;
+        fi
+        if hasparameter "center" :
+            if numeric getparameter "center" :
+                center_a := center mfun_shade_path shifted (
+                    (getparameter "center") * bbwidth (mfun_shade_path)/2,
+                    (getparameter "center") * bbheight(mfun_shade_path)/2
+                ) ;
+            else :
+                center_a := center mfun_shade_path shifted (
+                    (getparameter "center" 1) * bbwidth (mfun_shade_path)/2,
+                    (getparameter "center" 2) * bbheight(mfun_shade_path)/2
+                ) ;
+            fi
+        fi
+        if hasparameter "direction" :
+            save a, b, bb ; path bb ;
+            bb := boundingbox(mfun_shade_path) ;
+            a := b := -1 ;
+            if string getparameter "direction" :
+                s := getparameter "direction" ;
+                if     s = "up"    :
+                    p_a := xpart shadedup ;
+                    p_b := ypart shadedup ;
+                elseif s = "down"  :
+                    p_a := xpart shadeddown ;
+                    p_b := ypart shadeddown ;
+                elseif s = "left"  :
+                    p_a := xpart shadedleft ;
+                    p_b := ypart shadedleft ;
+                elseif s = "right" :
+                    p_a := xpart shadedright ;
+                    p_b := ypart shadedright ;
+                fi
+            else :
+                p_a := getparameter "direction" 1 ;
+                p_a := getparameter "direction" 2 ;
+            fi
+            if p_a >= 0 :
+                center_a := point p_a of bb ;
+            fi
+            if p_b >= 0 :
+                center_b := point p_b of bb ;
+            fi
+        fi ;
+        fill mfun_shade_path
+            withprescript "sh_domain=" & decimal domain_min & " " & decimal domain_max
+            withprescript "sh_transform=yes"
+            withprescript "sh_color=into"
+            withprescript "sh_color_a=" & colordecimals color_a
+            withprescript "sh_color_b=" & colordecimals color_b
+            withprescript "sh_first=" & ddecimal point 0 of mfun_shade_path % used for support scaling
+            withprescript "sh_set_x=" & ddecimal (mfun_shade_nx,mfun_shade_lx) %
+            withprescript "sh_set_y=" & ddecimal (mfun_shade_ny,mfun_shade_ly) %
+            if alternative = "linear" :
+                withprescript "sh_type=linear"
+                withprescript "sh_factor=1"
+                withprescript "sh_center_a=" & ddecimal center_a
+                withprescript "sh_center_b=" & ddecimal center_b
+            else :
+                withprescript "sh_type=circular"
+                withprescript "sh_factor=1.2"
+                withprescript "sh_center_a=" & ddecimal center_a
+                withprescript "sh_center_b=" & ddecimal center_b
+                withprescript "sh_radius_a=" & decimal radius_a
+                withprescript "sh_radius_b=" & decimal radius_b
+            fi ;
+        if getparameter "trace" :
+            draw fullcircle scaled 1mm shifted center_a ;
+            draw fullsquare scaled 2mm shifted center_b ;
+            draw textext.top("\strut\ttx center a") scaled .2 shifted center_a shifted (0, 2mm) ;
+            draw textext.bot("\strut\ttx center b") scaled .2 shifted center_b shifted (0,-2mm) ;
+            if alternative = "circular" :
+                draw fullcircle scaled (         radius_a * 2) shifted  center_a dashed evenly ;
+                draw fullcircle scaled (factor * radius_b * 2) shifted -center_b dashed evenly ;
+            fi
+        fi
+        popparameters ;
+    )
 enddef ;

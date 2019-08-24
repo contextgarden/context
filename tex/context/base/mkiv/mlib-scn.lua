@@ -70,6 +70,7 @@ local mppair              = mp.pair
 local mppath              = mp.path
 local mptriplet           = mp.triplet
 local mpquadruple         = mp.quadruple
+local mptransform         = mp.transform
 local mpvalue             = mp.value
 
 local report              = logs.reporter("metapost")
@@ -89,6 +90,7 @@ local string_code         <const> = codes.string
 local capsule_code        <const> = codes.capsule
 local nullary_code        <const> = codes.nullary
 local tag_code            <const> = codes.tag
+local definedmacro_code   <const> = codes.definedmacro
 
 local typescanners   = nil
 local tokenscanners  = nil
@@ -140,11 +142,16 @@ scanset = function() -- can be optimized, we now read twice
     end
 end
 
+local function scan_pair     () return scanpair     (true) end
+local function scan_color    () return scancolor    (true) end
+local function scan_cmykcolor() return scancmykcolor(true) end
+local function scan_transform() return scantransform(true) end
+
 tokenscanners = {
     [leftbrace_code] = scanset,
     [numeric_code]   = scannumeric,
     [string_code]    = scanstring,
-    [nullary_code]   = scanboolean, -- todo
+    [nullary_code]   = scanboolean,   -- todo
 }
 
 typescanners = {
@@ -152,17 +159,19 @@ typescanners = {
     [types.numeric]   = scannumeric,
     [types.string]    = scanstring,
     [types.boolean]   = scanboolean,
-    [types.pair]      = function() return scanpair     (true) end,
-    [types.color]     = function() return scancolor    (true) end,
-    [types.cmykcolor] = function() return scancmykcolor(true) end,
-    [types.transform] = function() return scantransform(true) end,
-    [types.path]      = function() return scanpath     ()     end,
+    [types.pair]      = scan_pair,
+    [types.color]     = scan_color,
+    [types.cmykcolor] = scan_cmykcolor,
+    [types.transform] = scan_transform,
+    [types.path]      = scanpath,
 }
 
 table.setmetatableindex(tokenscanners,function()
     local e = scanexpression(true)
     return typescanners[e] or scanexpression
 end)
+
+-- a key like 'color' has code 'declare'
 
 local function scanparameters(fenced)
     local data  = { }
@@ -175,7 +184,8 @@ local function scanparameters(fenced)
         return data
     end
     while true do
-        local s = scansymbol()
+     -- local s = scansymbol()
+        local s = scansymbol(false,false)
         if s == close then
             break;
         elseif s == "," then
@@ -186,7 +196,15 @@ local function scanparameters(fenced)
                 -- optional equal or :
                 scantoken()
             end
-            data[s] = tokenscanners[scantoken(true)]()
+            local kind = scantoken(true)
+            if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
+                kind = scanexpression(true)
+                data[s] = (typescanners[kind] or scanexpression)()
+            elseif kind == leftbracket_code then
+                data[s] = get_parameters(true)
+            else
+                data[s] = tokenscanners[kind]()
+            end
         end
     end
     return data
@@ -204,9 +222,7 @@ local function get_parameters(nested)
         return data
     end
     while true do
-        -- a key like 'color' has code 'declare'
-        -- print(scansymbol(true),scantoken(true),codes[scantoken(true)])
-        local s = scansymbol()
+        local s = scansymbol(false,false)
         if s == "]" then
             break;
         elseif s == "," then
@@ -218,7 +234,7 @@ local function get_parameters(nested)
                 scantoken()
             end
             local kind = scantoken(true)
-            if kind == leftdelimiter_code or kind == tag_code then
+            if kind == leftdelimiter_code or kind == tag_code or kind == capsule_code then
                 kind = scanexpression(true)
                 data[s] = (typescanners[kind] or scanexpression)()
             elseif kind == leftbracket_code then
@@ -232,7 +248,7 @@ local function get_parameters(nested)
 end
 
 local function getparameters()
-    local namespace  = scanstring()
+    local namespace = scanstring()
     -- same as below
     local parameters = get_parameters()
     local presets    = presets[namespace]
@@ -273,7 +289,16 @@ end
 
 local function presetparameters()
     local namespace = scanstring()
-    presets[namespace] = get_parameters()
+    local parent = nil
+    local t = scantoken(true)
+    if t == string_code then
+        parent = presets[scanstring()]
+    end
+    local p = get_parameters()
+    if parent then
+        setmetatableindex(p,parent)
+    end
+    presets[namespace] = p
 end
 
 local function collectnames()
@@ -282,13 +307,13 @@ local function collectnames()
     while true do
         local t = scantoken(true)
         -- (1) not really needed
-        if t == numeric_code or t == capsule_code then
+        if t == numeric_code then
             n = n + 1 l[n] = scaninteger(1)
         elseif t == string_code then
             n = n + 1 l[n] = scanstring(1)
         elseif t == nullary_code then
             n = n + 1 l[n] = scanboolean(1)
-        elseif t == leftdelimiter_code or t == tag_code then
+        elseif t == leftdelimiter_code or t == tag_code or t == capsule_code then
             t = scanexpression(true)
             n = n + 1 l[n] = (typescanners[t] or scanexpression)()
         else
@@ -316,6 +341,8 @@ local function get(v)
             return mptriplet(v)
         elseif n == 4 then
             return mpquadruple(v)
+        elseif n == 6 then
+            return mptransform(v)
         end
     end
     return mpnumeric(0)
@@ -477,6 +504,37 @@ local function getparametercount()
     return mpnumeric(type(v) == "table" and #v or 0)
 end
 
+local function getmaxparametercount()
+    local list, n = collectnames()
+    local v = namespaces
+    for i=1,n do
+        v = v[list[i]]
+        if not v then
+            break
+        end
+    end
+    local n = 0
+    if type(v) == "table" then
+        local v1 = v[1]
+        if type(v1) == "table" then
+            n = #v1
+            for i=2,#v do
+                local vi = v[i]
+                if type(vi) == "table" then
+                    local vn = #vi
+                    if vn > n then
+                        n = vn
+                    end
+                else
+                    break;
+                end
+            end
+        end
+
+    end
+    return mpnumeric(n)
+end
+
 local validconnectors = {
     [".."]  = true,
     ["..."] = true,
@@ -565,6 +623,7 @@ metapost.registerscript("hasparameter",        hasparameter)
 metapost.registerscript("getparameter",        getparameter)
 metapost.registerscript("getparameterdefault", getparameterdefault)
 metapost.registerscript("getparametercount",   getparametercount)
+metapost.registerscript("getmaxparametercount",getmaxparametercount)
 metapost.registerscript("getparameterpath",    getparameterpath)
 metapost.registerscript("getparametertext",    getparametertext)
 metapost.registerscript("getparameteroption",  getparameteroption)
@@ -584,6 +643,18 @@ function metapost.getparameter(list)
     end
     return v
 end
+
+function metapost.getparameterset(namespace)
+    return namespaces[namespace]
+end
+
+-- goodies
+
+metapost.registerscript("definecolor", function()
+    scantoken() -- we scan the semicolon
+    local s = get_parameters()
+    attributes.colors.defineprocesscolordirect(s)
+end)
 
 -- tex scanners
 
