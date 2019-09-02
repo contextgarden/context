@@ -48,6 +48,9 @@ local function secondaryflags()
     if arguments.ansi then
         flags[#flags+1] = "--c:ansi"
     end
+    if arguments.ansilog then
+        flags[#flags+1] = "--c:ansilog"
+    end
     if arguments.strip then
         flags[#flags+1] = "--c:strip"
     end

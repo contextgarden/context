@@ -222,6 +222,7 @@
 
 \installcorenamespace{style}
 \installcorenamespace{stylecheck}
+\installcorenamespace{stylehack}
 
 \installcommandhandler \??style {style} \??style
 
@@ -272,6 +273,8 @@
   {\csname\??styleargument
      \ifcsname\??stylecheck#name\endcsname
        2% defined as style
+     \orelse\ifcsname\??stylehack#name\endcsname
+       4% defined as command
      \orelse\ifcsname#name\endcsname
        1% defined as command
      \else
@@ -293,6 +296,12 @@
 
 \setvalue{\??styleargument3}#specification%
   {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
+
+\setvalue{\??styleargument4}#name%
+  {\expandafter\triggergroupedcommandcs\begincsname\??stylehack#name\endcsname}
+
+\setvalue{\??stylehack\s!math}% dirty trick
+  {\groupedcommand\normalstartimath\normalstopimath}
 
 % \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
 % \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}

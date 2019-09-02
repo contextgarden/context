@@ -1010,6 +1010,12 @@ local function complement(one,fraction,i)
     return otf
 end
 
+colors.helpers = {
+    inbetween  = inbetween,
+    justone    = justone,
+    complement = complement,
+}
+
 defineintermediatecolor = function(name,fraction,c_one,c_two,a_one,a_two,specs,global,freeze)
     fraction = tonumber(fraction) or 1
     local one, two = colorvalues[c_one], colorvalues[c_two] -- beware, it uses the globals

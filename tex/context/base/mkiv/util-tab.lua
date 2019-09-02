@@ -341,7 +341,21 @@ function table.fastserialize(t,prefix) -- todo, move local function out
         m = m + 1
         r[m] = "{"
         if n > 0 then
-            for i=0,n do
+            local v = t[0]
+            if v then
+                local tv = type(v)
+                if tv == "string" then
+                    m = m + 1 r[m] = f_indexed_string(0,v)
+                elseif tv == "number" then
+                    m = m + 1 r[m] = f_indexed_number(0,v)
+                elseif tv == "table" then
+                    m = m + 1 r[m] = f_indexed_table(0)
+                    fastserialize(v)
+                elseif tv == "boolean" then
+                    m = m + 1 r[m] = f_indexed_boolean(0,v)
+                end
+            end
+            for i=1,n do
                 local v  = t[i]
                 local tv = type(v)
                 if tv == "string" then
@@ -355,6 +369,8 @@ function table.fastserialize(t,prefix) -- todo, move local function out
                 end
             end
         end
+        -- hm, can't we avoid this ... lua should have a way to check if there
+        -- is a hash part
         for k, v in next, t do
             local tk = type(k)
             if tk == "number" then
@@ -411,7 +427,7 @@ function table.deserialize(str)
     return code
 end
 
--- inspect(table.fastserialize { a = 1, b = { 4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
+-- inspect(table.fastserialize { a = 1, b = { [0]=4, { 5, 6 } }, c = { d = 7, e = 'f"g\nh' } })
 
 function table.load(filename,loader)
     if filename then

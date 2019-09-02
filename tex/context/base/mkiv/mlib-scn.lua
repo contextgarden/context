@@ -424,6 +424,40 @@ local function hasparameter()
     end
 end
 
+local function hasoption()
+    local list, n = collectnames()
+    if n > 1 then
+        local v = namespaces
+        if n > 2 then
+            for i=1,n-1 do
+                local l = list[i]
+                local vl = v[l]
+                if vl == nil then
+                    return mpboolean(false)
+                end
+                v = vl
+            end
+        else
+            v = v[list[1]]
+        end
+        if type(v) == "string" then
+            -- no caching .. slow anyway
+            local o = list[n]
+            if v == o then
+                return mpboolean(true)
+            end
+            for vv in gmatch(v,"[^%s,]+") do
+                for oo in gmatch(o,"[^%s,]+") do
+                    if vv == oo then
+                        return mpboolean(true)
+                    end
+                end
+            end
+        end
+    end
+    return mpboolean(false)
+end
+
 local function getparameterdefault()
     local list, n = collectnames()
     local v = namespaces
@@ -620,6 +654,7 @@ metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)
 metapost.registerscript("presetparameters",    presetparameters)
 metapost.registerscript("hasparameter",        hasparameter)
+metapost.registerscript("hasoption",           hasoption)
 metapost.registerscript("getparameter",        getparameter)
 metapost.registerscript("getparameterdefault", getparameterdefault)
 metapost.registerscript("getparametercount",   getparametercount)
@@ -645,7 +680,7 @@ function metapost.getparameter(list)
 end
 
 function metapost.getparameterset(namespace)
-    return namespaces[namespace]
+    return namespace and namespaces[namespace] or namespaces
 end
 
 -- goodies

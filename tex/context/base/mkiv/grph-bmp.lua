@@ -16,7 +16,7 @@ graphics.bitmaps    = bitmaps
 
 local wrapimage     = images.wrap
 
-function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
+function bitmaps.new(xsize,ysize,colorspace,colordepth,mask,index)
     if not xsize or not ysize or xsize == 0 or ysize == 0 then
         report_bitmap("provide 'xsize' and 'ysize' larger than zero")
         return
@@ -35,6 +35,7 @@ function bitmaps.new(xsize,ysize,colorspace,colordepth,mask)
         xsize      = xsize,
         ysize      = ysize,
         mask       = mask and true or nil,
+        index      = index and true or nil,
     }
 end
 

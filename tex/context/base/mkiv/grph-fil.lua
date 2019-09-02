@@ -57,10 +57,32 @@ function jobfiles.run(name,action)
     local oldchecksum = collected[usedname]
     local newchecksum = checksum(usedname)
     local resultfile  = replacesuffix(usedname,resultsuffix)
-    if jobfiles.forcerun or not oldchecksum or oldchecksum ~= newchecksum or not isfile(resultfile) then
+    local tobedone    = false
+    if jobfiles.forcerun then
+        tobedone = true
         if trace_run then
-            report_run("processing file, changes in %a, processing forced",name)
+            report_run("processing file, changes in %a, %s",name,"processing forced")
         end
+    end
+    if not tobedone and not oldchecksum then
+        tobedone = true
+        if trace_run then
+            report_run("processing file, changes in %a, %s",name,"no checksum yet")
+        end
+    end
+    if not tobedone and oldchecksum ~= newchecksum then
+        tobedone = true
+        if trace_run then
+            report_run("processing file, changes in %a, %s",name,"checksum mismatch")
+        end
+    end
+    if not tobedone and not isfile(resultfile) then
+        tobedone = true
+        if trace_run then
+            report_run("processing file, changes in %a, %s",name,"no result file")
+        end
+    end
+    if tobedone then
         local ta = type(action)
         if ta == "function" then
             action(name)

@@ -19,6 +19,8 @@
 \registerctxluafile{mlib-lmp}{}
 \registerctxluafile{mlib-int}{}
 
+\doifelsefileexists{mlib-cnt.lua}{\registerctxluafile{mlib-int}{}}{}
+
 \unprotect
 
 \protect \endinput

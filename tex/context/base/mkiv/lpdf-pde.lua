@@ -1062,92 +1062,96 @@ if images then do
             local page     = pdfdoc.pages[pagenumber or 1]
             local pageinfo = querypdf(pdfdoc,pagenumber)
             local contents = page.Contents
-            local xref     = pdfdoc.__xrefs__
-            local copied   = pdfdoc.__copied__
-            if compact and lpdf_epdf.plugin then
-                plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
-            end
-            local xobject = pdfdictionary {
-                Type           = pdfconstant("XObject"),
-                Subtype        = pdfconstant("Form"),
-                FormType       = 1,
-                Group          = copyobject(xref,copied,page,"Group"),
-                LastModified   = copyobject(xref,copied,page,"LastModified"),
-                Metadata       = copyobject(xref,copied,page,"Metadata"),
-                PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
-                Resources      = copyresources(pdfdoc,xref,copied,page),
-                SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
-            } + attr
-            if attributes then
-                for k, v in expanded(attributes) do
-                    page[k] = v -- maybe nested
+            if contents then
+                local xref     = pdfdoc.__xrefs__
+                local copied   = pdfdoc.__copied__
+                if compact and lpdf_epdf.plugin then
+                    plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
                 end
-            end
-            local content  = ""
-            local nolength = nil
-            local ctype    = contents.__type__
-            -- we always recompress because image object streams can not be
-            -- influenced (yet)
-            if ctype == stream_object_code then
-                if stripmarked then
-                    content = contents() -- uncompressed
-                    local stripped = lpdf_epdf.stripcontent(content)
-                    if stripped ~= content then
-                     -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
-                        content = stripped
+                local xobject = pdfdictionary {
+                    Type           = pdfconstant("XObject"),
+                    Subtype        = pdfconstant("Form"),
+                    FormType       = 1,
+                    Group          = copyobject(xref,copied,page,"Group"),
+                    LastModified   = copyobject(xref,copied,page,"LastModified"),
+                    Metadata       = copyobject(xref,copied,page,"Metadata"),
+                    PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
+                    Resources      = copyresources(pdfdoc,xref,copied,page),
+                    SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
+                } + attr
+                if attributes then
+                    for k, v in expanded(attributes) do
+                        page[k] = v -- maybe nested
                     end
-                elseif recompress then
-                    content = contents() -- uncompressed
-                else
-                    local Filter = copyobject(xref,copied,contents,"Filter")
-                    local Length = copyobject(xref,copied,contents,"Length")
-                    if Length and Filter then
-                        nolength = true
-                        xobject.Length = Length
-                        xobject.Filter = Filter
-                        content = contents(false) -- uncompressed
-                    else
+                end
+                local content  = ""
+                local nolength = nil
+                local ctype    = contents.__type__
+                -- we always recompress because image object streams can not be
+                -- influenced (yet)
+                if ctype == stream_object_code then
+                    if stripmarked then
                         content = contents() -- uncompressed
+                        local stripped = lpdf_epdf.stripcontent(content)
+                        if stripped ~= content then
+                         -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
+                            content = stripped
+                        end
+                    elseif recompress then
+                        content = contents() -- uncompressed
+                    else
+                        local Filter = copyobject(xref,copied,contents,"Filter")
+                        local Length = copyobject(xref,copied,contents,"Length")
+                        if Length and Filter then
+                            nolength = true
+                            xobject.Length = Length
+                            xobject.Filter = Filter
+                            content = contents(false) -- uncompressed
+                        else
+                            content = contents() -- uncompressed
+                        end
                     end
+                elseif ctype == array_object_code then
+                    content = { }
+                    for i=1,#contents do
+                        content[i] = contents[i]() -- uncompressed
+                    end
+                    content = concat(content," ")
                 end
-            elseif ctype == array_object_code then
-                content = { }
-                for i=1,#contents do
-                    content[i] = contents[i]() -- uncompressed
+                -- still not nice: we double wrap now
+                plugins = nil
+                local rotation    = pageinfo.rotation
+                local boundingbox = pageinfo.boundingbox
+                local transform   = nil
+                if rotation == 90 then
+                    transform = 3
+                elseif rotation == 180 then
+                    transform = 2
+                elseif rotation == 270 then
+                    transform = 1
+                elseif rotation > 1 and rotation < 4 then
+                    transform = rotation
                 end
-                content = concat(content," ")
+                xobject.BBox = pdfarray {
+                    boundingbox[1] * bpfactor,
+                    boundingbox[2] * bpfactor,
+                    boundingbox[3] * bpfactor,
+                    boundingbox[4] * bpfactor,
+                }
+                -- maybe like bitmaps
+                return createimage { -- beware: can be a img.new or a dummy
+                    bbox      = boundingbox,
+                    transform = transform,
+                    nolength  = nolength,
+                    nobbox    = true,
+                    notype    = true,
+                    stream    = content, -- todo: no compress, pass directly also length, filter etc
+                    attr      = xobject(),
+                    kind      = images.types.stream,
+                }
+            else
+                -- maybe report an error
             end
-            -- still not nice: we double wrap now
-            plugins = nil
-            local rotation    = pageinfo.rotation
-            local boundingbox = pageinfo.boundingbox
-            local transform   = nil
-            if rotation == 90 then
-                transform = 3
-            elseif rotation == 180 then
-                transform = 2
-            elseif rotation == 270 then
-                transform = 1
-            elseif rotation > 1 and rotation < 4 then
-                transform = rotation
-            end
-            xobject.BBox = pdfarray {
-                boundingbox[1] * bpfactor,
-                boundingbox[2] * bpfactor,
-                boundingbox[3] * bpfactor,
-                boundingbox[4] * bpfactor,
-            }
-            -- maybe like bitmaps
-            return createimage { -- beware: can be a img.new or a dummy
-                bbox      = boundingbox,
-                transform = transform,
-                nolength  = nolength,
-                nobbox    = true,
-                notype    = true,
-                stream    = content, -- todo: no compress, pass directly also length, filter etc
-                attr      = xobject(),
-                kind      = images.types.stream,
-            }
         end
     end
 

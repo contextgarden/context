@@ -174,6 +174,18 @@ function install.identify()
 
 end
 
+local function disclaimer()
+    report("ConTeXt LMTX with LuaMetaTeX is still experimental and when you get a crash this")
+    report("can be due to a mismatch between Lua bytecode and the engine. In that case you can")
+    report("try the following:")
+    report("")
+    report("  - wipe the texmf-cache directory")
+    report("  - run: mtxrun --generate")
+    report("  - run: context --make")
+    report("")
+    report("When that doesn't solve the problem, ask on the mailing list (ntg-context@ntg.nl).")
+end
+
 function install.update()
 
     local function validdir(d)
@@ -523,6 +535,8 @@ function install.update()
         report("%-20s : %4i files with %9i bytes installed",unpack(status[i]))
     end
     report("")
+    disclaimer()
+    report("")
 
     report("update, done")
 end
@@ -537,4 +551,6 @@ elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else
     application.help()
+    report("")
+    disclaimer()
 end

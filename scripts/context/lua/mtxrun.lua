@@ -2099,7 +2099,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 41494, stripped down to: 21574
+-- original size: 42323, stripped down to: 21574
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -7361,7 +7361,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 28899, stripped down to: 16134
+-- original size: 29567, stripped down to: 16483
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7617,7 +7617,21 @@ function table.fastserialize(t,prefix)
   m=m+1
   r[m]="{"
   if n>0 then
-   for i=0,n do
+   local v=t[0]
+   if v then
+    local tv=type(v)
+    if tv=="string" then
+     m=m+1 r[m]=f_indexed_string(0,v)
+    elseif tv=="number" then
+     m=m+1 r[m]=f_indexed_number(0,v)
+    elseif tv=="table" then
+     m=m+1 r[m]=f_indexed_table(0)
+     fastserialize(v)
+    elseif tv=="boolean" then
+     m=m+1 r[m]=f_indexed_boolean(0,v)
+    end
+   end
+   for i=1,n do
     local v=t[i]
     local tv=type(v)
     if tv=="string" then
@@ -12830,7 +12844,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32638, stripped down to: 20935
+-- original size: 32900, stripped down to: 21131
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -12883,6 +12897,9 @@ if runningtex and texio then
   for k,v in next,arg do 
    if v=="--ansi" or v=="--c:ansi" then
     variant="ansi"
+    break
+   elseif v=="--ansilog" or v=="--c:ansilog" then
+    variant="ansilog"
     break
    end
   end
@@ -12986,6 +13003,10 @@ if runningtex and texio then
     both="term",
    },
   }
+ }
+ variants.ansilog={
+  formats=variants.ansi.formats,
+  targets=variants.default.targets,
  }
  logs.flush=io.flush
  writer=function(...)
@@ -13119,7 +13140,7 @@ if runningtex and texio then
   subdirect_nop=f.subdirect_nop
   status_yes=f.status_yes
   status_nop=f.status_nop
-  if variant=="ansi" then
+  if variant=="ansi" or variant=="ansilog" then
    useluawrites() 
   end
   settarget(whereto)
@@ -25447,7 +25468,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9920, stripped down to: 7476
+-- original size: 9998, stripped down to: 7540
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25491,6 +25512,9 @@ local function secondaryflags()
  end
  if arguments.ansi then
   flags[#flags+1]="--c:ansi"
+ end
+ if arguments.ansilog then
+  flags[#flags+1]="--c:ansilog"
  end
  if arguments.strip then
   flags[#flags+1]="--c:strip"
@@ -25701,8 +25725,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1025155
--- stripped bytes    : 405916
+-- original bytes    : 1026992
+-- stripped bytes    : 407144
 
 -- end library merge
 
@@ -26843,9 +26867,9 @@ do
 
 end
 
-if e_argument("ansi") then
+if e_argument("ansi") or e_argument("ansilog") then
 
-    logs.setformatters("ansi")
+    logs.setformatters(e_argument("ansi") and "ansi" or "ansilog")
 
     local script = e_argument("script") or e_argument("scripts")
 

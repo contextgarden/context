@@ -677,6 +677,7 @@ do
         local pixel      = false
         local data       = specification.data
         local mask       = specification.mask
+        local index = specification.index
         if colorspace == 1 or colorspace == "gray" then
             pixel      = gray
             colorspace = 1
@@ -712,6 +713,9 @@ do
                 mask[i] = setmetatableindex(gray)
             end
         end
+        if index then
+            index = setmetatableindex(pixel)
+        end
         local specification = {
             xsize      = xsize,
             ysize      = ysize,
@@ -721,6 +725,7 @@ do
             colorspace = colorspace,
             data       = data,
             mask       = mask,
+            index      = index,
         }
         return specification
     end

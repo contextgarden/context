@@ -58,16 +58,14 @@
       \global\MPury   \the\MPury
       \relax}}
 
-% \unexpanded\def\repositionMPboxindeed
-%   {\setbox\MPbox\hpack\bgroup
-%      \kern-\MPllx
-%      \raise-\MPlly
-%      \box\MPbox
-%    \egroup}
+% we need to combine these
 
 \unexpanded\def\repositionMPboxindeed
-  {\boxxmove\MPbox-\MPllx
-   \boxymove\MPbox-\MPlly}
+  {\setbox\MPbox\hpack\bgroup
+     \kern-\MPllx
+     \raise-\MPlly
+     \box\MPbox
+   \egroup}
 
 \unexpanded\def\repositionMPbox
   {\ifzeropt\MPllx
@@ -80,20 +78,22 @@
      \repositionMPboxindeed
    \fi}
 
-% \unexpanded\def\finalizeMPbox
-%   {\repositionMPbox
-%    \setbox\MPbox\vpack to \MPheight\bgroup
-%      \vfill
-%      \hsize\MPwidth
-%      \smashbox\MPbox
-%      \box\MPbox
-%    \egroup
-%    \wd\MPbox\MPwidth
-%    \ht\MPbox\MPheight}
-
 \unexpanded\def\finalizeMPbox
   {\repositionMPbox
-   \boxyoffset\MPbox\dimexpr\boxyoffset\MPbox-\MPheight\relax
+   \setbox\MPbox\vpack to \MPheight\bgroup
+     \vfill
+     \hsize\MPwidth
+     \smashbox\MPbox
+     \box\MPbox
+   \egroup
+   \wd\MPbox\MPwidth
+   \ht\MPbox\MPheight}
+
+% combined
+
+\unexpanded\def\finalizeMPbox
+  {\boxxoffset\MPbox-\MPllx\relax
+   \boxyoffset\MPbox\dimexpr\boxyoffset\MPbox-\MPheight-\MPlly\relax
    \wd\MPbox\MPwidth
    \ht\MPbox\MPheight}
 

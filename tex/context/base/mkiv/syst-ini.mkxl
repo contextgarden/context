@@ -682,7 +682,7 @@
    \tracinggroups    \plusone
    \tracingifs       \plusone
    \tracingscantokens\plusone
-   \tracingnesting   \plusone
+   \tracingnesting   \plustwo
    \tracingassigns   \plustwo}
 
 \normalprotected\def\loggingall

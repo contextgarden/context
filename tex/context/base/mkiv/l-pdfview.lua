@@ -162,7 +162,7 @@ function pdfview.close(...)
         for i=1,#t do
             local name = expander(fullname(t[i]))
             if io.exists(name) then
-                replace(closecall,{ filename = name })
+                runner(closecall,{ filename = name })
             end
         end
     end

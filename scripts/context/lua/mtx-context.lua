@@ -912,6 +912,15 @@ function scripts.context.run(ctxdata,filename)
                     --
                 end
                 --
+                if environment.arguments["ansilog"] then
+                    local logfile = file.replacesuffix(jobname,"log")
+                    local logdata = io.loaddata(logfile) or ""
+                    if logdata ~= "" then
+                        io.savedata(logfile,(gsub(logdata,"%[.-m","")))
+                    end
+                end
+                --
+                --
                 --  this will go away after we update luatex
                 --
                 local syncctx = fileaddsuffix(jobname,"syncctx")

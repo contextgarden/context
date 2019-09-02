@@ -224,6 +224,11 @@ do
         end
     end
 
+    local function mpdirect(str)
+        n = n + 1
+        buffer[n] = str
+    end
+
     local function mpprint(first,second,...)
         if second == nil then
             if first ~= nil then
@@ -483,6 +488,7 @@ do
     end
 
     aux.print           = mpprint
+    aux.direct          = mpdirect
     aux.vprint          = mpvprint
     aux.boolean         = mpboolean
     aux.string          = mpstring

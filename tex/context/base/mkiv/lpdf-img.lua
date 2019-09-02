@@ -41,6 +41,7 @@ local pdfconstant          = lpdf.constant
 local pdfstring            = lpdf.string
 local pdfflushstreamobject = lpdf.flushstreamobject
 local pdfreference         = lpdf.reference
+local pdfverbose           = lpdf.verbose
 
 local pdfmajorversion      = lpdf.majorversion
 local pdfminorversion      = lpdf.minorversion
@@ -1117,37 +1118,65 @@ do
         if what == "mask" then
             d = specification.mask
             s = 1
+        elseif what == "indexed" then
+            s = 1
+        elseif what == "index" then
+            d = specification.index
+            s = - s
         end
-        if s == 1 then
-            for i=1,y do
-                local r = d[i]
-                for j=1,x do
-                    n = n + 1 ; t[n] = chars[r[j]]
+        if s > 0 then
+            if s == 1 then
+                for i=1,y do
+                    local r = d[i]
+                    for j=1,x do
+                        n = n + 1 ; t[n] = chars[r[j]]
+                    end
+                end
+            elseif s == 2 then
+                for i=1,y do
+                    local r = d[i]
+                    for j=1,x do
+                        local c = r[j]
+                        n = n + 1 ; t[n] = chars[c[1]]
+                        n = n + 1 ; t[n] = chars[c[2]]
+                        n = n + 1 ; t[n] = chars[c[3]]
+                    end
+                end
+            elseif s == 3 then
+                for i=1,y do
+                    local r = d[i]
+                    for j=1,x do
+                        local c = r[j]
+                        n = n + 1 ; t[n] = chars[c[1]]
+                        n = n + 1 ; t[n] = chars[c[2]]
+                        n = n + 1 ; t[n] = chars[c[3]]
+                        n = n + 1 ; t[n] = chars[c[4]]
+                    end
                 end
             end
-        elseif s == 2 then
-            for i=1,y do
-                local r = d[i]
-                for j=1,x do
-                    local c = r[j]
-                    n = n + 1 ; t[n] = chars[c[1]]
-                    n = n + 1 ; t[n] = chars[c[2]]
-                    n = n + 1 ; t[n] = chars[c[3]]
+            return concat(t)
+        else
+            if s == -1 then
+                local f = string.formatters["%02X"]
+                for i=1,#d do
+                    n = n + 1 ; t[n] = f(d[i])
+                end
+            elseif s == -2 then
+                local f = string.formatters["%02X%02X%02X"]
+                for i=1,#d do
+                    local c = d[i]
+                    n = n + 1 ; t[n] = f(c[1],c[2],c[3])
+                end
+            elseif s == -3 then
+                local f = string.formatters["%02X%02X%02X%02X"]
+                for i=1,#d do
+                    local c = d[i]
+                    n = n + 1 ; t[n] = f(c[1],c[2],c[3],c[4])
                 end
             end
-        elseif s == 3 then
-            for i=1,y do
-                local r = d[i]
-                for j=1,x do
-                    local c = r[j]
-                    n = n + 1 ; t[n] = chars[c[1]]
-                    n = n + 1 ; t[n] = chars[c[2]]
-                    n = n + 1 ; t[n] = chars[c[3]]
-                    n = n + 1 ; t[n] = chars[c[4]]
-                end
-            end
+            return "<" .. concat(t," ") .. ">"
         end
-        return concat(t)
+        return ""
     end
 
     function injectors.bitmap(specification)
@@ -1169,8 +1198,18 @@ do
             colorspace  = "DeviceCMYK"
         end
         local colordepth = (specification.colordepth or 2) == 16 or 8
-        local content    = pack(specification,"data")
+        local index      = specification.index
+        local content    = pack(specification,index and "indexed" or "data")
         local mask       = specification.mask
+        local colorspace = pdfconstant(colorspace)
+if index then
+    colorspace = pdfarray {
+        pdfconstant("Indexed"),
+        colorspace,
+        #index-1,
+        pdfverbose(pack(specification,"index"))
+    }
+end
         local xobject    = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
@@ -1178,7 +1217,7 @@ do
             Width            = xsize,
             Height           = ysize,
             BitsPerComponent = colordepth,
-            ColorSpace       = pdfconstant(colorspace),
+            ColorSpace       = colorspace,
             Length           = #content, -- specification.length
         }
         if mask then

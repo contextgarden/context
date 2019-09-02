@@ -27,6 +27,7 @@ presetparameters "text" [
     anchor   = "",
     format   = "",
     position = origin,
+    trace    = false,
 ] ;
 
 def lmt_text = applyparameters "text" "lmt_do_text" enddef ;
@@ -45,16 +46,19 @@ vardef lmt_do_text =
         if fmt <> "" :
             txt := "\formatone{" & fmt & "}{" & txt & "}"
         fi ;
-        if strt == "yes" :
+        if strt = "yes" :
             txt := "\strut " & txt ;
-        elseif strt == "auto" :
+        elseif strt = "auto" :
             txt := "\setstrut\strut " & txt ;
         fi ;
         if style <> "" :
             txt := "\style[" & style & "]{" & txt & "}" ;
         fi ;
+        if getparameter "trace" :
+            txt := "\ruledhbox{\showstruts" & txt & "}" ;
+        fi ;
         draw
-            if anchor == "" : thetextext else : scantokens("thetextext." & anchor) fi (
+            if anchor = "" : thetextext else : scantokens("thetextext." & anchor) fi (
                 txt,
                 getparameter "position"
             )
@@ -102,6 +106,7 @@ presetparameters "axis" [
 
 vardef lmt_do_axis =
     image (
+
         pushparameters "axis" ;
             save nx, ny, dx, dy, tx, ty ;
             save c, startx, starty ; string c ;
@@ -116,32 +121,32 @@ vardef lmt_do_axis =
             starty := getparameter "starty" ;
             draw (startx,starty) -- (startx,ny) withcolor c ;
             draw (startx,starty) -- (nx,starty) withcolor c ;
-            for i = 0 step dx until nx :
+            for i = startx step dx until nx :
                 if (i > startx) or (startx = 0) :
                     draw ((0,0) -- (0,-2)) shifted (i,starty) withcolor c ;
                 fi ;
             endfor ;
-            for i = 0 step dy until ny :
+            for i = starty step dy until ny :
                 if (i > starty) or (starty = 0) :
                     draw ((0,0) -- (-2,0)) shifted (startx,i) withcolor c ;
                 fi ;
             endfor ;
             if tx <> 0 :
                 c := getparameter "textcolor" ;
-                for i = 0 step tx until nx :
+                for i = startx step tx until nx :
                     if (i > startx) or (startx = 0) :
                         draw
-                            textext("\strut " & decimal i) ysized 2 shifted (i,-4+starty)
+                            textext("\strut " & decimal (i)) ysized 2 shifted (i,-4+starty)
                             withcolor c;
                     fi ;
                 endfor ;
             fi ;
             if ty <> 0 :
                 c := getparameter "textcolor" ;
-                for i = 0 step ty until ny :
+                for i = starty step ty until ny :
                     if (i > starty) or (starty = 0) :
                         draw
-                            textext.lft("\strut " & decimal i) ysized 2 shifted (-3+startx,i)
+                            textext.lft("\strut " & decimal (i)) ysized 2 shifted (-3+startx,i)
                             withcolor c;
                     fi ;
                 endfor ;
@@ -680,17 +685,17 @@ vardef lmt_do_function =
 
             option := getparameter "xarrow" ;
             if option = "yes" :
-save ahlength ; ahlength  := tl ;
-% save ahangle  ; ahangle   := 100/sy ;
+                save ahlength ; ahlength  := tl ;
+                % save ahangle  ; ahangle   := 100/sy ;
                 drawarrow (xmin,0) -- (xmax,0) ;
-            else
+            else :
                 draw (xmin,0) -- (xmax,0) ;
             fi ;
 
             option := getparameter "yarrow" ;
             if option = "yes" :
-save ahlength ; ahlength := tl ;
-% save ahangle  ; ahangle  := 100/sx ;
+                save ahlength ; ahlength := tl ;
+                % save ahangle  ; ahangle  := 100/sx ;
                 drawarrow (0,ymin) -- (0,ymax) ;
             else :
                 draw (0,ymin) -- (0,ymax) ;
@@ -1063,7 +1068,7 @@ vardef lmt_do_chart_circle =
                 first := last ;
             endfor ;
             if linewidth > 0 :
-                if drawcolor == "" :
+                if drawcolor = "" :
                     drawcolor := backgroundcolor ;
                 fi ;
                 for i = 1 upto nofsamples :
@@ -1362,3 +1367,469 @@ vardef lmt_do_shade =
         popparameters ;
     )
 enddef ;
+
+% This is very experimental and will first be tested by a few users who
+% are interested in this.
+
+presetparameters "contour" [
+    xmin             = 0,
+    xmax             = 0,
+    ymin             = 0,
+    ymax             = 0,
+    xstep            = 1,
+    ystep            = 1,
+    levels           = 10,
+  % colors           = { },          % used when set
+    preamble         = "",
+    function         = "x + y",
+    color            = "lin(l)",     % l/n
+    background       = "bitmap",     % bitmap | shape
+    foreground       = "auto",       % edge | shape | auto: bitmap/edge shape/shape
+    linewidth        = .25,
+    backgroundcolor  = "black",
+    linecolor        = "gray",
+    xformat          = "@0.2N",
+    yformat          = "@0.2N",
+    zformat          = "@0.2N",
+    xstyle           = "",
+    ystyle           = "",
+    zstyle           = "",
+
+    width            = 0,            % auto when 0
+    height           = 0,            % auto when 0
+
+    trace            = false,
+    checkresult      = false,
+    defaultnan       = 0,
+    defaultinf       = 0,
+
+    legend           = "all",  % x | y | z | function | range | all (but range)
+    legendheight     = LineHeight,
+    legendwidth      = LineHeight,
+    legendgap        = 0,
+    legenddistance   = EmWidth,
+    textdistance     = 2EmWidth/3,
+    functiondistance = ExHeight,
+    functionstyle    = "",
+
+    level            = 4096,        % for selecting one (can't be too large for scaled)
+
+    axisdistance     = ExHeight,
+    axislinewidth    = .25,
+    axisoffset       = ExHeight/4,
+    axiscolor        = "black",
+    ticklength       = ExHeight,
+
+    xtick            = 5,
+    ytick            = 5,
+    xlabel           = 5,
+    ylabel           = 5,
+
+] ;
+
+% we can as well push ...
+
+def lmt_contour = applyparameters "contour" "lmt_do_contour" enddef ;
+
+boolean lmx_contour_loaded ; lmx_contour_loaded := false ;
+
+def fll = addto currentpicture contour    enddef ;
+def drw = addto currentpicture doublepath enddef ;
+
+vardef lmt_do_contour =
+    image (
+
+        if not lmx_contour_loaded :
+            lmx_contour_loaded := true ;
+            runscript("lua.registercode('mlib-cnt')");
+            extra_beginfig := extra_beginfig & % todo: use different hook
+                "runscript(" & ditto & "mp.lmt_contours_cleanup()" & ditto & ")" ;
+        fi
+
+        pushparameters "contour" ;
+
+        lua.mp.lmt_contours_start() ;
+
+        % graphic
+
+        save bg ; string bg ; bg := getparameter "background" ;
+        save fg ; string fg ; fg := getparameter "foreground" ;
+        save nx ; nx := lua.mp.lmt_contours_nx() ;
+        save ny ; ny := lua.mp.lmt_contours_ny() ;
+
+        if (bg = "bitmap") or (bg = "shape") :
+
+            save trace, level, b ; boolean trace ; path b ;
+
+            trace := getparameter "trace" ;
+            level := getparameter "level" ;
+
+            if bg = "bitmap" :
+
+                lua.mp.lmt_contours_bitmap_set() ;
+                lua.mp.lmt_contours_bitmap_get() ;
+
+              % currentpicture := currentpicture reflectedabout ( (0, ny/2), (nx,ny/2) ) ;
+                b := boundingbox currentpicture ;
+
+                if (fg = "auto") or (fg = "edge") or (fg = "cell") :
+                    if (fg = "cell") :
+                        lua.mp.lmt_contours_edge_set_by_cell() ;
+                    else :
+                        lua.mp.lmt_contours_edge_set() ;
+                    fi ;
+
+                    draw image (
+                        if level = 4096 :
+                            for v=lua.mp.lmt_contours_minvalue()+1 upto lua.mp.lmt_contours_maxvalue() :
+                              % for e=1 upto lua.mp.lmt_contours_edge_n(v) :
+                              %     draw lua.mp.lmt_contours_edge_path(v,e) ;
+                              % endfor ;
+                                lua.mp.lmt_contours_edge_paths(v);
+                            endfor ;
+                        else :
+                          % for e=1 upto lua.mp.lmt_contours_edge_n(level) :
+                          %     draw lua.mp.lmt_contours_edge_path(level,e) ;
+                          % endfor ;
+                            lua.mp.lmt_contours_edge_paths(level);
+                        fi
+                    )
+                    shifted (-1/2,-1/2)
+                        withcolor getparameter "linecolor"
+                        withpen pencircle scaled getparameter "linewidth" ;
+
+                    lua.mp.lmt_contours_edge_reset() ;
+                fi ;
+
+            else :
+
+                if not ((fg = "auto") or (fg = "shape") or (fg = "edge") or (fg = "cell")) :
+                    fg := "" ;
+                fi ;
+
+                lua.mp.lmt_contours_shade_set((fg = "auto") or (fg = "shape")) ;
+
+                % maybe use image and fll
+
+                for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
+                    for s=1 upto lua.mp.lmt_contours_shade_n(v) :
+                        fill lua.mp.lmt_contours_shade_path(v,s)
+                            withpen pencircle scaled 0
+                            withcolor lua.mp.lmt_contours_color(v) ;
+                    endfor ;
+                endfor ;
+                lua.mp.lmt_contours_shade_reset() ;
+                b := boundingbox currentpicture ;
+                if fg <> "" :
+                    if (fg = "cell") :
+                        lua.mp.lmt_contours_edge_set_by_cell() ;
+                    elseif fg = "edge" :
+                        lua.mp.lmt_contours_edge_set() ;
+                    fi
+                    draw image (
+                        if level = 4096 :
+                            % no min + 1 here ?
+                            for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
+                              % for e=1 upto lua.mp.lmt_contours_edge_n(v) :
+                              %     draw lua.mp.lmt_contours_edge_path(v,e) ;
+                              % endfor ;
+                                lua.mp.lmt_contours_edge_paths(v);
+                            endfor ;
+                        else :
+                         % for e=1 upto lua.mp.lmt_contours_edge_n(level) :
+                         %     draw lua.mp.lmt_contours_edge_path(level,e) ;
+                         % endfor ;
+                            lua.mp.lmt_contours_edge_paths(level);
+                        fi ;
+                    )
+                        if fg = "edge" :
+                            shifted (-1,-1) % don't ask
+                        fi
+                        withcolor getparameter "linecolor"
+                        withpen pencircle scaled getparameter "linewidth" ;
+                    lua.mp.lmt_contours_edge_reset() ;
+                fi ;
+                % we should do this at the lua end ...
+
+                currentpicture := currentpicture reflectedabout ( (0, ny/2), (nx,ny/2) ) ;
+            fi ;
+
+            save w, h, cx, cy ;
+
+            cx := - bbwidth (b)/(nx - 1) ;
+            cy := - bbheight(b)/(ny - 1) ;
+            clip currentpicture to b
+                leftenlarged cx rightenlarged  cx
+                topenlarged  cy bottomenlarged cy ;
+            currentpicture := currentpicture
+                shifted (cx,cy) ;
+
+            w := getparameter "width" ;
+            h := getparameter "height" ;
+
+            % axis
+
+            save xtic, ytic, auto ; boolean auto ;
+
+            xtic   := getparameter "xtick" ;
+            ytic   := getparameter "ytick" ;
+            auto   := (w = 0) and (h = 0) ;
+
+            % resize
+
+            if w <> 0 :
+                if h <> 0 :
+                    currentpicture := currentpicture xysized (w,h) ;
+                else :
+                    currentpicture := currentpicture xsized w ;
+                fi ;
+            elseif h <> 0 :
+                currentpicture := currentpicture ysized h ;
+            fi ;
+            if w = 0 :
+                w := bbwidth(currentpicture) ;
+            fi ;
+            if h = 0 :
+                h := bbheight(currentpicture) ;
+            fi ;
+
+            % legend
+
+            if hasoption "legend" "all,x,y,z,range" :
+
+                save u, s, sx, sy, ax, ay, ao, al, at, tl, ox, oy, lg, tx, ty, wx, hx, ry, fmt, pmin, pmax ; string fmt; picture pmin, pmax ;
+
+                % move some in the ifs
+
+                if hasoption "legend" "z" :
+
+                    % colorbar
+
+                    fmt  := lua.mp.lmt_contours_format() ;
+                    pmin := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_z(lua.mp.lmt_contours_minvalue()) ] ;
+                    pmax := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_z(lua.mp.lmt_contours_maxvalue()) ] ;
+                    wx   := max(bbwidth(pmin),bbwidth(pmax)) ;
+                    hx   := bbheight(pmin) ;
+
+                else :
+
+                    hx   := 0;
+
+                fi ;
+
+                if auto :
+                  % u  := 1 ;
+                    u := lua.mp.lmt_contours_ny() / 100 ;
+                    ry := 4u ;
+                    sy := 5u ;
+                    sx := 5u ;
+                    lg := 0 ;
+                    ox := 5u ;
+                    oy := - sy/2 + ry/2 ;
+                    tx := 2u ;
+                    ty := 1u ;
+                    ax := 1u ;
+                    ay := 1u ;
+                    ao := u ;
+                    al := u/8 ;
+                    at := 3u/2 ;
+                    al := u/4 ;
+                else :
+                    ry := 0 ;
+                    sy := getparameter "legendheight" ;
+                    sx := getparameter "legendwidth" ;
+                    lg := getparameter "legendgap" ;
+                    ox := getparameter "legenddistance" ;
+                    oy := - sy/2 + hx/2 ;
+                    tx := getparameter "textdistance" ;
+                    ty := getparameter "functiondistance" ;
+                    ax := getparameter "axisdistance" ;
+                    ay := ax ;
+                    ao := getparameter "axisoffset" ;
+                    at := getparameter "ticklength" ;
+                    al := getparameter "axislinewidth" ;
+                fi ;
+
+                if hasoption "legend" "z" :
+
+                    save dy ; dy := h ;
+
+                    for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
+                        dy := dy - sy ;
+                        fill unitsquare xyscaled (sx,sy)
+                            shifted (w+ox,dy)
+                            withcolor lua.mp.lmt_contours_color(v) ;
+                        draw
+                            lmt_text [
+                                trace    = trace,
+                                anchor   = "llft",
+                                format   = fmt,
+                                text     = decimal lua.mp.lmt_contours_z(v),
+                                style    = getparameter "zstyle",
+                                position = (wx,0)
+                            ]
+                            if ry <> 0 : ysized (ry) fi
+                            shifted (w+ox+tx+sx,dy+sy+oy)
+                        ;
+                        dy := dy - lg ;
+                    endfor ;
+
+                fi ;
+
+                if hasoption "legend" "x,all" :
+
+                    save n, d, s, xmin, xmax, xlab ;
+
+                    xmin := getparameter "xmin" ;
+                    xmax := getparameter "xmax" ;
+                    xlab := getparameter "xlabel" ;
+
+                    draw image (
+                        interim linecap := butt ;
+                        draw ((0,0) -- (w,0)) ;
+                        n := al/2 ; s := (w - al) / xtic ; d := (xmax - xmin) / xtic ;
+                        for i=xmin step d until xmax :
+                            draw (n,0) -- (n,-at) ;
+                            n := n + s ;
+                        endfor ;
+                    )  shifted (0,-ay)
+                        withpen pencircle scaled al
+                        withcolor getparameter "axiscolor"
+                    ;
+
+                    if hasoption "legend" "label,all" :
+
+                        draw image (
+                            n := al/2 ; s := (w - al) / xlab ; d := (xmax - xmin) / xlab ;
+                            for i=xmin step d until xmax :
+                                draw lmt_text [
+                                    trace  = trace,
+                                    anchor = "bot",
+                                    format = getparameter "xformat",
+                                    style  = getparameter "xstyle",
+                                    text   = decimal i
+                                ]
+                                    if ry <> 0 : ysized (ry) fi
+                                    shifted (n,-at-ao)
+                                ;
+                                n := n + s ;
+                            endfor ;
+                        )  shifted (0,-ay) ;
+
+                    fi ;
+
+                fi ;
+
+                if hasoption "legend" "y,all" :
+
+                    save n, d, s, ymin, ymax, ylab ;
+
+                    ymin := getparameter "ymin" ;
+                    ymax := getparameter "ymax" ;
+                    ylab := getparameter "ylabel" ;
+
+                    draw image (
+                        interim linecap := butt ;
+                        draw ((0,0) -- (0,h)) ;
+                        n := al/2 ; s := (h - al) / ytic ; d := (ymax - ymin) / ytic ;
+                        for i=ymin step d until ymax :
+                            draw (0,n) -- (-at,n) ;
+                            n := n + s ;
+                        endfor ;
+                    )  shifted (-ax,0)
+                        withpen pencircle scaled al
+                        withcolor getparameter "axiscolor" ;
+                    ;
+
+                    if hasoption "legend" "label,all" :
+
+                        draw image (
+                            n := al/2 ; s := (h - al) / ylab ; d := (ymax - ymin) / ylab ;
+                            for i=ymin step d until ymax :
+                                draw lmt_text [
+                                    trace  = trace,
+                                    anchor = "lft",
+                                    format = getparameter "yformat",
+                                    style  = getparameter "ystyle",
+                                    text   = decimal i
+                                ]
+                                    if ry <> 0 : ysized (ry) fi
+                                    shifted (-at-ao,n)
+                                ;
+                                n := n + s ;
+                            endfor ;
+                        )  shifted (-ax,0) ;
+
+                    fi ;
+
+                fi ;
+
+                if hasoption "legend" "range,all" :
+
+                    % range
+
+                    save d ; d := ypart llcorner currentpicture ;
+
+                    draw
+                        lmt_text [
+                            trace  = trace,
+                            anchor = "bot",
+                            text   = lua.mp.lmt_contours_range()
+                        ]
+                        if ry <> 0 : ysized (ry) fi
+                        shifted (w/2,d-ty)
+                    ;
+
+                    % minmax
+
+                    draw
+                        lmt_text [
+                            trace  = trace,
+                            anchor = "lrt",
+                            text   = lua.mp.lmt_contours_xrange()
+                        ]
+                        if ry <> 0 : ysized (ry) fi
+                        shifted (0,d-ty)
+                    ;
+
+                    draw
+                        lmt_text [
+                            trace  = trace,
+                            anchor = "llft",
+                            text   = lua.mp.lmt_contours_yrange()
+                        ]
+                        if ry <> 0 : ysized (ry) fi
+                        shifted (w,d-ty)
+                    ;
+
+                fi ;
+
+                if hasoption "legend" "function,all" :
+
+                    % formula
+
+                    draw
+                        lmt_text [
+                            trace  = trace,
+                            anchor = "bot",
+                            style  = getparameter "functionstyle",
+                            text   = lua.mp.lmt_contours_function()
+                        ]
+                        if ry <> 0 : ysized (ry) fi
+                        shifted (w/2,ypart llcorner currentpicture - ty)
+                    ;
+
+                fi ;
+
+            fi ;
+
+        fi ;
+
+%       currentpicture := currentpicture shifted - llcorner currentpicture ;
+
+        lua.mp.lmt_contours_stop() ;
+
+        popparameters ;
+    )
+enddef ;
+

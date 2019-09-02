@@ -126,6 +126,9 @@ if runningtex and texio then
             if v == "--ansi" or v == "--c:ansi" then
                 variant = "ansi"
                 break
+            elseif v == "--ansilog" or v == "--c:ansilog" then
+                variant = "ansilog"
+                break
             end
         end
     end
@@ -244,6 +247,11 @@ if runningtex and texio then
                 both     = "term",
             },
         }
+    }
+
+    variants.ansilog = {
+        formats = variants.ansi.formats,
+        targets = variants.default.targets,
     }
 
     logs.flush = io.flush
@@ -394,7 +402,7 @@ if runningtex and texio then
         subdirect_nop = f.subdirect_nop
         status_yes    = f.status_yes
         status_nop    = f.status_nop
-        if variant == "ansi" then
+        if variant == "ansi" or variant == "ansilog" then
             useluawrites() -- because tex escapes ^^, not needed in lmtx
         end
         settarget(whereto)
