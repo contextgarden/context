@@ -278,7 +278,7 @@ function setters.new(name) -- we could use foo:bar syntax (but not used that oft
         disable  = function(...)         disable (setter,...) end,
         reset    = function(...)         reset   (setter,...) end, -- can be dangerous
         register = function(...)         register(setter,...) end,
-        list     = function(...)         list    (setter,...) end,
+        list     = function(...)  return list    (setter,...) end,
         show     = function(...)         show    (setter,...) end,
         default  = function(...)  return default (setter,...) end,
         value    = function(...)  return value   (setter,...) end,

@@ -1376,15 +1376,15 @@ presetparameters "contour" [
     xmax             = 0,
     ymin             = 0,
     ymax             = 0,
-    xstep            = 1,
-    ystep            = 1,
+    xstep            = 0,
+    ystep            = 0,
     levels           = 10,
   % colors           = { },          % used when set
     preamble         = "",
     function         = "x + y",
     color            = "lin(l)",     % l/n
-    background       = "bitmap",     % bitmap | shape
-    foreground       = "auto",       % edge | shape | auto: bitmap/edge shape/shape
+    background       = "bitmap",     % bitmap | shape | band
+    foreground       = "auto",       % cell| edge | shape | auto: bitmap/edge shape/shape
     linewidth        = .25,
     backgroundcolor  = "black",
     linecolor        = "gray",
@@ -1433,8 +1433,142 @@ def lmt_contour = applyparameters "contour" "lmt_do_contour" enddef ;
 
 boolean lmx_contour_loaded ; lmx_contour_loaded := false ;
 
-def fll = addto currentpicture contour    enddef ;
-def drw = addto currentpicture doublepath enddef ;
+def mfun_only_draw          = addto currentpicture doublepath enddef ;
+def mfun_only_fill          = addto currentpicture contour    enddef ;
+def mfun_only_nodraw text t = addto currentpicture doublepath t withpostscript "collect" enddef ;
+def mfun_only_nofill text t = addto currentpicture contour    t withpostscript "collect" enddef ;
+
+def lmt_do_contour_shortcuts =
+    save D ; let D = mfun_only_draw   ;
+    save F ; let F = mfun_only_fill   ;
+    save d ; let d = mfun_only_nodraw ;
+    save f ; let f = mfun_only_nofill ;
+    save C ; let C = cycle ;
+enddef ;
+
+def lmt_do_contour_band =
+    lua.mp.lmt_contours_edge_set_by_band() ;
+    for v=1 upto lua.mp.lmt_contours_nofvalues() :
+        draw image (
+            lua.mp.lmt_contours_edge_get_band(v) ;
+        )
+            withcolor lua.mp.lmt_contours_color(v) ;
+    endfor ;
+enddef;
+
+def lmt_do_contour_cell(expr dx,dy) =
+    lua.mp.lmt_contours_edge_set_by_cell() ;
+    draw image (
+        if level = 4096 :
+            for v=1+1 upto lua.mp.lmt_contours_nofvalues() :
+                lua.mp.lmt_contours_edge_get_cell(v) ;
+            endfor ;
+        else :
+            lua.mp.lmt_contours_edge_get_cell(level) ;
+        fi
+    )
+        if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+        withcolor getparameter "linecolor"
+        withpen pencircle scaled getparameter "linewidth" ;
+enddef ;
+
+def lmt_do_contour_edge(expr dx, dy) =
+    lua.mp.lmt_contours_edge_set() ;
+    draw image (
+        if level = 4096 :
+            for v=1+1 upto lua.mp.lmt_contours_nofvalues() :
+                lua.mp.lmt_contours_edge_paths(v);
+            endfor ;
+        else :
+            lua.mp.lmt_contours_edge_paths(level);
+        fi
+    )
+        if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+        withcolor getparameter "linecolor"
+        withpen pencircle scaled getparameter "linewidth" ;
+enddef ;
+
+def lmt_do_contour_edges(expr dx, dy) =
+    lua.mp.lmt_contours_edge_set() ;
+    if level = 4096 :
+        for v=1+1 upto lua.mp.lmt_contours_nofvalues() :
+            draw image (
+                lua.mp.lmt_contours_edge_paths(v);
+            )
+            if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+            withpen pencircle scaled getparameter "linewidth"
+            withcolor lua.mp.lmt_contours_color(v) ;
+        endfor ;
+    else :
+        draw image (
+            lua.mp.lmt_contours_edge_paths(level);
+        )
+        if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+        withpen pencircle scaled getparameter "linewidth"
+        withcolor lua.mp.lmt_contours_color(level) ;
+    fi ;
+enddef ;
+
+def lmt_do_contour_cells(expr dx, dy) =
+    lua.mp.lmt_contours_edge_set_by_cell() ;
+    if level = 4096 :
+        for v=1+1 upto lua.mp.lmt_contours_nofvalues() :
+            draw image (
+                lua.mp.lmt_contours_edge_get_cell(v) ;
+            )
+        if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+            withpen pencircle scaled getparameter "linewidth"
+            withcolor lua.mp.lmt_contours_color(v) ;
+        endfor ;
+    else :
+        draw image (
+            lua.mp.lmt_contours_edge_get_cell(level) ;
+        )
+        if offset : shifted (-1/2,-1/2) fi
+        withpen pencircle scaled getparameter "linewidth"
+        withcolor lua.mp.lmt_contours_color(v) ;
+    fi ;
+enddef ;
+
+def lmt_do_contour_shape(expr dx, dy) =
+    draw image (
+        if level = 4096 :
+            for v=1+1 upto lua.mp.lmt_contours_nofvalues() :
+                lua.mp.lmt_contours_shape_paths(v);
+            endfor ;
+        else :
+            lua.mp.lmt_contours_shape_paths(level);
+            lua.mp.lmt_contours_shape_paths(1);
+        fi
+    )
+        if (dx <>0) or (dy <> 0) : shifted (dx,dy) fi
+        withcolor getparameter "linecolor"
+        withpen pencircle scaled getparameter "linewidth" ;
+enddef ;
+
+def lmt_do_contour_bitmap =
+    lua.mp.lmt_contours_bitmap_set() ;
+    lua.mp.lmt_contours_bitmap_get() ;
+enddef ;
+
+def lmt_do_contour_shades(expr outlines) =
+    lua.mp.lmt_contours_shade_set(outlines) ;
+    if level = 4096 :
+        for v=1 upto lua.mp.lmt_contours_nofvalues() : % no + 1 here
+            draw image (
+                lua.mp.lmt_contours_shade_paths(v) ;
+            )
+            withpen pencircle scaled 0
+            withcolor lua.mp.lmt_contours_color(v) ;
+        endfor ;
+    else :
+        draw image (
+            lua.mp.lmt_contours_shade_paths(level);
+        )
+        withpen pencircle scaled 0
+        withcolor lua.mp.lmt_contours_color(level) ;
+    fi ;
+enddef ;
 
 vardef lmt_do_contour =
     image (
@@ -1452,107 +1586,74 @@ vardef lmt_do_contour =
 
         % graphic
 
-        save bg ; string bg ; bg := getparameter "background" ;
-        save fg ; string fg ; fg := getparameter "foreground" ;
-        save nx ; nx := lua.mp.lmt_contours_nx() ;
-        save ny ; ny := lua.mp.lmt_contours_ny() ;
+        save bg, fg, nx, ny, trace, level, b, done ; string bg, fg ; boolean trace, done ; path b ;
 
-        if (bg = "bitmap") or (bg = "shape") :
+        bg    := getparameter "background" ;
+        fg    := getparameter "foreground" ;
+        nx    := lua.mp.lmt_contours_nx() ;
+        ny    := lua.mp.lmt_contours_ny() ;
+        trace := getparameter "trace" ;
+        level := getparameter "level" ;
+        done  := true ;
 
-            save trace, level, b ; boolean trace ; path b ;
+        begingroup ;
 
-            trace := getparameter "trace" ;
-            level := getparameter "level" ;
+            lmt_do_contour_shortcuts ;
 
-            if bg = "bitmap" :
+            if bg = "band" :
+                lmt_do_contour_band ;
+                b := boundingbox currentpicture ;
+                if (fg = "auto") or (fg = "cell") :
+                    lmt_do_contour_cell(0,0) ;
+                elseif (fg = "edge") :
+                    lmt_do_contour_edge(0,0) ; % true ?
+                fi ;
 
-                lua.mp.lmt_contours_bitmap_set() ;
-                lua.mp.lmt_contours_bitmap_get() ;
+            elseif bg = "bitmap" :
 
-              % currentpicture := currentpicture reflectedabout ( (0, ny/2), (nx,ny/2) ) ;
+                lmt_do_contour_bitmap ;
+                b := boundingbox currentpicture ;
+                if (fg = "auto") or (fg = "cell") :
+                    lmt_do_contour_cell(-1/2,-1/2) ;
+                elseif (fg = "edge") :
+                    lmt_do_contour_edge(-1/2,-1/2) ;
+                fi ;
+
+            elseif bg = "shape" :
+
+                lmt_do_contour_shades((fg = "auto") or (fg = "shape")) ;
+                b := boundingbox currentpicture ;
+                if (fg == "auto") or (fg = "shape") :
+                    lmt_do_contour_shape(0,0) ;
+                elseif fg == "cell" :
+                    lmt_do_contour_cell(-1,-1) ;
+                elseif fg == "edge" :
+                    lmt_do_contour_edge(-1,-1) ;
+                fi ;
+
+                % currentpicture := currentpicture reflectedabout ( (0, ny/2), (nx,ny/2) ) ;
+
+            elseif fg = "cell" :
+
+                lmt_do_contour_shortcuts ;
+                lmt_do_contour_cells(0,0) ;
                 b := boundingbox currentpicture ;
 
-                if (fg = "auto") or (fg = "edge") or (fg = "cell") :
-                    if (fg = "cell") :
-                        lua.mp.lmt_contours_edge_set_by_cell() ;
-                    else :
-                        lua.mp.lmt_contours_edge_set() ;
-                    fi ;
+            elseif fg = "edge" :
 
-                    draw image (
-                        if level = 4096 :
-                            for v=lua.mp.lmt_contours_minvalue()+1 upto lua.mp.lmt_contours_maxvalue() :
-                              % for e=1 upto lua.mp.lmt_contours_edge_n(v) :
-                              %     draw lua.mp.lmt_contours_edge_path(v,e) ;
-                              % endfor ;
-                                lua.mp.lmt_contours_edge_paths(v);
-                            endfor ;
-                        else :
-                          % for e=1 upto lua.mp.lmt_contours_edge_n(level) :
-                          %     draw lua.mp.lmt_contours_edge_path(level,e) ;
-                          % endfor ;
-                            lua.mp.lmt_contours_edge_paths(level);
-                        fi
-                    )
-                    shifted (-1/2,-1/2)
-                        withcolor getparameter "linecolor"
-                        withpen pencircle scaled getparameter "linewidth" ;
-
-                    lua.mp.lmt_contours_edge_reset() ;
-                fi ;
+                lmt_do_contour_shortcuts ;
+                lmt_do_contour_edges(0,0) ;
+                b := boundingbox currentpicture ;
 
             else :
 
-                if not ((fg = "auto") or (fg = "shape") or (fg = "edge") or (fg = "cell")) :
-                    fg := "" ;
-                fi ;
+                done := false ;
 
-                lua.mp.lmt_contours_shade_set((fg = "auto") or (fg = "shape")) ;
-
-                % maybe use image and fll
-
-                for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
-                    for s=1 upto lua.mp.lmt_contours_shade_n(v) :
-                        fill lua.mp.lmt_contours_shade_path(v,s)
-                            withpen pencircle scaled 0
-                            withcolor lua.mp.lmt_contours_color(v) ;
-                    endfor ;
-                endfor ;
-                lua.mp.lmt_contours_shade_reset() ;
-                b := boundingbox currentpicture ;
-                if fg <> "" :
-                    if (fg = "cell") :
-                        lua.mp.lmt_contours_edge_set_by_cell() ;
-                    elseif fg = "edge" :
-                        lua.mp.lmt_contours_edge_set() ;
-                    fi
-                    draw image (
-                        if level = 4096 :
-                            % no min + 1 here ?
-                            for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
-                              % for e=1 upto lua.mp.lmt_contours_edge_n(v) :
-                              %     draw lua.mp.lmt_contours_edge_path(v,e) ;
-                              % endfor ;
-                                lua.mp.lmt_contours_edge_paths(v);
-                            endfor ;
-                        else :
-                         % for e=1 upto lua.mp.lmt_contours_edge_n(level) :
-                         %     draw lua.mp.lmt_contours_edge_path(level,e) ;
-                         % endfor ;
-                            lua.mp.lmt_contours_edge_paths(level);
-                        fi ;
-                    )
-                        if fg = "edge" :
-                            shifted (-1,-1) % don't ask
-                        fi
-                        withcolor getparameter "linecolor"
-                        withpen pencircle scaled getparameter "linewidth" ;
-                    lua.mp.lmt_contours_edge_reset() ;
-                fi ;
-                % we should do this at the lua end ...
-
-                currentpicture := currentpicture reflectedabout ( (0, ny/2), (nx,ny/2) ) ;
             fi ;
+
+        endgroup ;
+
+        if done :
 
             save w, h, cx, cy ;
 
@@ -1601,13 +1702,13 @@ vardef lmt_do_contour =
 
                 % move some in the ifs
 
-                if hasoption "legend" "z" :
+                if hasoption "legend" "all,z" :
 
                     % colorbar
 
                     fmt  := lua.mp.lmt_contours_format() ;
-                    pmin := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_z(lua.mp.lmt_contours_minvalue()) ] ;
-                    pmax := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_z(lua.mp.lmt_contours_maxvalue()) ] ;
+                    pmin := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_minmean() ] ;
+                    pmax := lmt_text [ format = fmt, text = decimal lua.mp.lmt_contours_maxmean() ] ;
                     wx   := max(bbwidth(pmin),bbwidth(pmax)) ;
                     hx   := bbheight(pmin) ;
 
@@ -1650,11 +1751,11 @@ vardef lmt_do_contour =
                     al := getparameter "axislinewidth" ;
                 fi ;
 
-                if hasoption "legend" "z" :
+                if hasoption "legend" "all,z" :
 
                     save dy ; dy := h ;
 
-                    for v=lua.mp.lmt_contours_minvalue() upto lua.mp.lmt_contours_maxvalue() :
+                    for v=1 upto lua.mp.lmt_contours_nofvalues() :
                         dy := dy - sy ;
                         fill unitsquare xyscaled (sx,sy)
                             shifted (w+ox,dy)
@@ -1664,7 +1765,7 @@ vardef lmt_do_contour =
                                 trace    = trace,
                                 anchor   = "llft",
                                 format   = fmt,
-                                text     = decimal lua.mp.lmt_contours_z(v),
+                                text     = decimal lua.mp.lmt_contours_value(v),
                                 style    = getparameter "zstyle",
                                 position = (wx,0)
                             ]
@@ -1821,11 +1922,15 @@ vardef lmt_do_contour =
 
                 fi ;
 
+                if trace :
+                    draw boundingbox currentpicture
+                        dashed evenly
+                        withpen pencircle scaled al ;
+                fi ;
+
             fi ;
 
         fi ;
-
-%       currentpicture := currentpicture shifted - llcorner currentpicture ;
 
         lua.mp.lmt_contours_stop() ;
 

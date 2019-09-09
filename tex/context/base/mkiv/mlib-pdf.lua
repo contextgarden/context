@@ -400,6 +400,7 @@ function metapost.flush(specification,result)
                     local linecap    = -1
                     local linejoin   = -1
                     local dashed     = false
+local linewidth = false
                     local llx        = properties.llx
                     local lly        = properties.lly
                     local urx        = properties.urx
@@ -527,7 +528,10 @@ function metapost.flush(specification,result)
                                             if pen then
                                                if pen.type == "elliptical" then
                                                     transformed, penwidth = pen_characteristics(original) -- boolean, value
+if penwidth ~= linewidth then
                                                     result[#result+1] = f_w(penwidth) -- todo: only if changed
+    linewidth = penwidth
+end
                                                     if objecttype == "fill" then
                                                         objecttype = "both"
                                                     end
@@ -614,6 +618,7 @@ function metapost.flush(specification,result)
                                         if object.grouped then
                                             -- can be qQ'd so changes can end up in groups
                                             miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
+linewidth = false
                                         end
                                     end
                                 end

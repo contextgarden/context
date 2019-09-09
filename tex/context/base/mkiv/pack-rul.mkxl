@@ -256,7 +256,7 @@
    \fi}
 
 \def\pack_framed_filled_box_round
-  {\frule
+  {\raise\d_framed_target_dp\hpack{\frule
      type   fill
      width  \d_framed_target_wd
      height \d_framed_target_ht
@@ -264,7 +264,7 @@
      line   \d_framed_linewidth
      radius \p_framed_backgroundradius\space
      corner {\p_framed_backgroundcorner}
-   \relax}
+   \relax}}
 
 \def\pack_framed_stroked_box
   {\edef\p_framed_framecorner{\framedparameter\c!framecorner}%
@@ -285,14 +285,14 @@
 % \pack_framed_stroked_box_normal % later
 
 \def\pack_framed_stroked_box_round
-  {\frule
+  {\raise\d_framed_target_dp\hpack{\frule
      width  \d_framed_target_wd
      height \d_framed_target_ht
      depth  \d_framed_target_dp
      line   \d_framed_linewidth
      radius \p_framed_frameradius\space
-     corner {\p_framed_backgroundcorner}
-   \relax}
+     corner {\p_framed_framecorner}
+   \relax}}
 
 % a lot of weird corners
 %

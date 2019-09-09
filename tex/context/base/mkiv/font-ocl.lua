@@ -193,11 +193,11 @@ local pop   = { "pdf", "page", "Q" }
 --                         local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
 --                         local t = {
 --                             start,
---                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
+--                             not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) },
+--                             push,
 --                         }
---                         local n = 2
+--                         local n = 3
 --                         local l = nil
---                         n = n + 1 t[n] = push
 --                         for i=1,s do
 --                             local entry = colorlist[i]
 --                             local v = colorvalues[entry.class] or default
@@ -220,9 +220,6 @@ local pop   = { "pdf", "page", "Q" }
 --         end
 --     end
 -- end
---
--- -- Here we have no color change in BT .. ET and  more q Q pairs but even then acrobat
--- -- fails displaying the overlays correctly. Other renderers do it right.
 
 local function initialize(tfmdata,kind,value)
     if value then
@@ -271,40 +268,25 @@ local function initialize(tfmdata,kind,value)
                         local s = #colorlist
                         local goback = w ~= 0 and leftcommand[w] or nil -- needs checking: are widths the same
                         local t = {
-                            start, -- really needed
-                            not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) }
+                            not u and actualb or { "pdf", "page", (getactualtext(tounicode(u))) },
+                            push,
                         }
                         local n = 2
                         local l = nil
-                        local f = false
                         for i=1,s do
                             local entry = colorlist[i]
                             local v = colorvalues[entry.class] or default
                             if v and l ~= v then
-                                if f then
-                                    n = n + 1 t[n] = pop
-                                end
-                                n = n + 1 t[n] = push
-                                f = true
                                 n = n + 1 t[n] = v
                                 l = v
-                            else
-                                if f then
-                                    n = n + 1 t[n] = pop
-                                end
-                                f = false
-                                l = nil
                             end
                             n = n + 1 t[n] = charcommand[entry.slot]
                             if s > 1 and i < s and goback then
                                 n = n + 1 t[n] = goback
                             end
                         end
-                        if f then
-                            n = n + 1 t[n] = pop
-                        end
+                        n = n + 1 t[n] = pop
                         n = n + 1 t[n] = actuale
-                     -- n = n + 1 t[n] = stop -- not needed
                         character.commands = t
                     end
                 end

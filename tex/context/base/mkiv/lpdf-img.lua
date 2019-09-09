@@ -26,6 +26,7 @@ local band, rshift = bit32.band, bit32.rshift
 
 local loaddata             = io.loaddata
 local setmetatableindex    = table.setmetatableindex
+local formatters           = string.formatters
 
 local streams              = utilities.streams
 local openstring           = streams.openstring
@@ -1156,20 +1157,21 @@ do
             end
             return concat(t)
         else
+            local z = d[0] and 0 or 1
             if s == -1 then
-                local f = string.formatters["%02X"]
-                for i=1,#d do
+                local f = formatters["%02X"]
+                for i=z,#d do
                     n = n + 1 ; t[n] = f(d[i])
                 end
             elseif s == -2 then
-                local f = string.formatters["%02X%02X%02X"]
-                for i=1,#d do
+                local f = formatters["%02X%02X%02X"]
+                for i=z,#d do
                     local c = d[i]
                     n = n + 1 ; t[n] = f(c[1],c[2],c[3])
                 end
             elseif s == -3 then
-                local f = string.formatters["%02X%02X%02X%02X"]
-                for i=1,#d do
+                local f = formatters["%02X%02X%02X%02X"]
+                for i=z,#d do
                     local c = d[i]
                     n = n + 1 ; t[n] = f(c[1],c[2],c[3],c[4])
                 end
@@ -1206,7 +1208,7 @@ if index then
     colorspace = pdfarray {
         pdfconstant("Indexed"),
         colorspace,
-        #index-1,
+        #index + (index[0] and 0 or -1), -- upper index
         pdfverbose(pack(specification,"index"))
     }
 end

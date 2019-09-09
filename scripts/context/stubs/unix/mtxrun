@@ -12502,7 +12502,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13340, stripped down to: 8826
+-- original size: 13340, stripped down to: 8832
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -12741,7 +12741,7 @@ function setters.new(name)
   disable=function(...)   disable (setter,...) end,
   reset=function(...)   reset   (setter,...) end,
   register=function(...)   register(setter,...) end,
-  list=function(...)   list (setter,...) end,
+  list=function(...)  return list (setter,...) end,
   show=function(...)   show (setter,...) end,
   default=function(...)  return default (setter,...) end,
   value=function(...)  return value   (setter,...) end,
@@ -14594,7 +14594,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 7234, stripped down to: 3887
+-- original size: 7722, stripped down to: 4212
 
 if not modules then modules={} end modules ['util-tpl']={
  version=1.001,
@@ -14610,6 +14610,7 @@ local report_template=logs.reporter("template")
 local tostring,next=tostring,next
 local format,sub,byte=string.format,string.sub,string.byte
 local P,C,R,Cs,Cc,Carg,lpegmatch,lpegpatterns=lpeg.P,lpeg.C,lpeg.R,lpeg.Cs,lpeg.Cc,lpeg.Carg,lpeg.match,lpeg.patterns
+local formatters=string.formatters
 local replacer
 local function replacekey(k,t,how,recursive)
  local v=t[k]
@@ -14678,6 +14679,10 @@ local function replaceoptional(l,m,r,t,how,recurse)
  local v=t[l]
  return v and v~="" and lpegmatch(replacer,r,1,t,how or "lua",recurse or false) or ""
 end
+local function replaceformatted(l,m,r,t,how,recurse)
+ local v=t[r]
+ return v and formatters[l](v)
+end
 local single=P("%")  
 local double=P("%%") 
 local lquoted=P("%[") 
@@ -14691,16 +14696,19 @@ local nolquoted=lquoted/''
 local norquoted=rquoted/''
 local nolquotedq=lquotedq/''
 local norquotedq=rquotedq/''
+local nolformatted=P(":")/"%%"
+local norformatted=P(":")/""
 local noloptional=P("%?")/''
 local noroptional=P("?%")/''
 local nomoptional=P(":")/''
 local args=Carg(1)*Carg(2)*Carg(3)
-local key=nosingle*((C((1-nosingle   )^1)*args)/replacekey  )*nosingle
-local quoted=nolquotedq*((C((1-norquotedq )^1)*args)/replacekeyquoted  )*norquotedq
-local unquoted=nolquoted*((C((1-norquoted  )^1)*args)/replacekeyunquoted)*norquoted
+local key=nosingle*((C((1-nosingle)^1)*args)/replacekey)*nosingle
+local quoted=nolquotedq*((C((1-norquotedq)^1)*args)/replacekeyquoted)*norquotedq
+local unquoted=nolquoted*((C((1-norquoted)^1)*args)/replacekeyunquoted)*norquoted
 local optional=noloptional*((C((1-nomoptional)^1)*nomoptional*C((1-noroptional)^1)*args)/replaceoptional)*noroptional
+local formatted=nosingle*((Cs(nolformatted*(1-norformatted )^1)*norformatted*C((1-nosingle)^1)*args)/replaceformatted)*nosingle
 local any=P(1)
-   replacer=Cs((unquoted+quoted+escape+optional+key+any)^0)
+   replacer=Cs((unquoted+quoted+formatted+escape+optional+key+any)^0)
 local function replace(str,mapping,how,recurse)
  if mapping and str then
   return lpegmatch(replacer,str,1,mapping,how or "lua",recurse or false) or str
@@ -25725,8 +25733,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1026992
--- stripped bytes    : 407144
+-- original bytes    : 1027480
+-- stripped bytes    : 407301
 
 -- end library merge
 

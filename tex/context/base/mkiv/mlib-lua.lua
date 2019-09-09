@@ -25,7 +25,6 @@ local report_script  = logs.reporter("metapost","script")
 local report_message = logs.reporter("metapost")
 
 local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace_luarun = v end)
-local trace_enabled  = true
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
@@ -134,55 +133,15 @@ end
 
 do
 
-    local buffer  = { }
-    local n       = 0
-    local max     = 20 -- we reuse upto max
-    local nesting = 0
-    local runs    = 0
-
-    local function _f_()
-        if trace_enabled and trace_luarun then
-            local result = concat(buffer," ",1,n)
-            if n > max then
-                buffer = { } -- newtable(20,0)
-            end
-            n = 0
-            report_luarun("%i: data: %s",nesting,result)
-            return result
-        else
-            if n == 0 then
-                return "" -- can be nil
-            end
-            local result
-            if n == 1 then
-                result = buffer[1]
-            else
-                result = concat(buffer," ",1,n)
-            end
-            if n > max then
-                buffer = { } -- newtable(20,0)
-            end
-            n = 0
-            return result
-        end
-    end
-
-    mp._f_    = _f_ -- convenient to have it in a top module
-    aux.flush = _f_
-
-    ----- f_code         = formatters["%s return mp._f_()"]
+    -- serializers
 
     local f_integer      = formatters["%i"]
+    local f_numeric      = formatters["%F"]
 
     -- no %n as that can produce -e notation and that is not so nice for scaled butmaybe we
     -- should then switch between ... i.e. make a push/pop for the formatters here ... not now.
 
- -- local f_numeric      = formatters["%n"] -- maybe %N
- -- local f_pair         = formatters["(%n,%n)"]
- -- local f_ctrl         = formatters["(%n,%n) .. controls (%n,%n) and (%n,%n)"]
- -- local f_triplet      = formatters["(%n,%n,%n)"]
- -- local f_quadruple    = formatters["(%n,%n,%n,%n)"]
-
+    local f_integer      = formatters["%i"]
     local f_numeric      = formatters["%F"]
     local f_pair         = formatters["(%F,%F)"]
     local f_ctrl         = formatters["(%F,%F) .. controls (%F,%F) and (%F,%F)"]
@@ -206,6 +165,184 @@ do
 
     mp.cleaned = function(s) return lpegmatch(p,s) or s end
 
+    -- management
+
+    -- sometimes we gain (e.g. .5 sec on the sync test)
+
+    local cache = table.makeweak()
+
+    local runscripts = { }
+    local runnames   = { }
+    local nofscripts = 0
+
+    function metapost.registerscript(name,f)
+        nofscripts = nofscripts + 1
+        if f then
+            runscripts[nofscripts] = f
+            runnames[name] = nofscripts
+        else
+            runscripts[nofscripts] = name
+        end
+        return nofscripts
+    end
+
+    function metapost.scriptindex(name)
+        return runnames[name] or 0
+    end
+
+    -- The gbuffer sharing and such is not really needed now but make a dent when
+    -- we have a high volume of simpel calls (loops) so we keep it around for a
+    -- while.
+
+    local nesting = 0
+    local runs    = 0
+    local gbuffer = { }
+    local buffer  = gbuffer
+    local n       = 0
+
+    local function mpdirect1(a)
+        n = n + 1 buffer[n] = a
+    end
+    local function mpdirect2(a,b)
+        n = n + 1 buffer[n] = a
+        n = n + 1 buffer[n] = b
+    end
+    local function mpdirect3(a,b,c)
+        n = n + 1 buffer[n] = a
+        n = n + 1 buffer[n] = b
+        n = n + 1 buffer[n] = c
+    end
+    local function mpdirect4(a,b,c,d)
+        n = n + 1 buffer[n] = a
+        n = n + 1 buffer[n] = b
+        n = n + 1 buffer[n] = c
+        n = n + 1 buffer[n] = d
+    end
+    local function mpdirect5(a,b,c,d,e)
+        n = n + 1 buffer[n] = a
+        n = n + 1 buffer[n] = b
+        n = n + 1 buffer[n] = c
+        n = n + 1 buffer[n] = d
+        n = n + 1 buffer[n] = e
+    end
+
+    local function mpflush(separator)
+        buffer[1] = concat(buffer,separator or "",1,n)
+        n = 1
+    end
+
+    function metapost.runscript(code)
+        nesting = nesting + 1
+        runs    = runs + 1
+
+        local index = type(code) == "number"
+        local f
+        local result
+
+        if index then
+            f = runscripts[code]
+            if not f then
+                report_luarun("%i: bad index: %s",nesting,code)
+            elseif trace_luarun then
+                report_luarun("%i: index: %i",nesting,code)
+            end
+        else
+            if trace_luarun then
+                report_luarun("%i: code: %s",nesting,code)
+            end
+            f = cache[code]
+            if not f then
+                f = loadstring("return " .. code)
+                if f then
+                    cache[code] = f
+                elseif be_tolerant then
+                    f = loadstring(code)
+                    if f then
+                        cache[code] = f
+                    end
+                end
+            end
+        end
+
+        -- returning nil is more efficient and a signal not to scan in mp
+
+        if f then
+
+            local lbuffer, ln
+
+            if nesting == 1 then
+                buffer = gbuffer
+                n      = 0
+            else
+                lbuffer = buffer
+                ln      = n
+                buffer  = { }
+                n       = 0
+            end
+
+            result = f()
+
+            if result then
+                local t = type(result)
+                if t == "number" then
+                    result = f_numeric(result)
+                elseif t == "table" then
+                    result = concat(result) -- no spaces here
+                else
+                    result = tostring(result)
+                end
+                if trace_luarun then
+                    report_luarun("%i: %s result: %s",nesting,t,result)
+                end
+            elseif n == 0 then
+                result = ""
+                if trace_luarun then
+                    report_luarun("%i: no buffered result",nesting)
+                end
+            elseif n == 1 then
+                result = buffer[1]
+                if trace_luarun then
+                    report_luarun("%i: 1 buffered result: %s",nesting,result)
+                end
+            else
+                -- the space is why we sometimes have collectors
+                if nesting == 1 then
+                    result = concat(buffer," ",1,n)
+                    if n > 500 or #result > 10000 then
+                        gbuffer = { } -- newtable(20,0)
+                        lbuffer = gbuffer
+                    end
+                else
+                    result = concat(buffer," ")
+                end
+                if trace_luarun then
+                    report_luarun("%i: %i buffered results: %s",nesting,n,result)
+                end
+            end
+
+            if nesting == 1 then
+                n = 0
+            else
+                buffer = lbuffer
+                n      = ln
+            end
+
+        else
+            report_luarun("%i: no result, invalid code: %s",nesting,code)
+            result = ""
+        end
+
+        nesting = nesting - 1
+
+        return result
+    end
+
+    function metapost.nofscriptruns()
+        return runs
+    end
+
+    -- writers
+
     local function mpp(value)
         n = n + 1
         local t = type(value)
@@ -222,11 +359,6 @@ do
         else -- boolean or whatever
             buffer[n] = tostring(value)
         end
-    end
-
-    local function mpdirect(str)
-        n = n + 1
-        buffer[n] = str
     end
 
     local function mpprint(first,second,...)
@@ -487,8 +619,14 @@ do
         end
     end
 
+    aux.direct          = mpdirect1
+    aux.direct1         = mpdirect1
+    aux.direct2         = mpdirect2
+    aux.direct3         = mpdirect3
+    aux.direct4         = mpdirect4
+    aux.flush           = mpflush
+
     aux.print           = mpprint
-    aux.direct          = mpdirect
     aux.vprint          = mpvprint
     aux.boolean         = mpboolean
     aux.string          = mpstring
@@ -509,107 +647,74 @@ do
     aux.quoted          = mpquoted
     aux.transform       = mptransform
 
-    -- we need access to the variables
-
-    function metapost.nofscriptruns()
-        return runs
-    end
-
-    -- sometimes we gain (e.g. .5 sec on the sync test)
-
-    local cache = table.makeweak()
-
-    local runscripts = { }
-    local runnames   = { }
-    local nofscripts = 0
-
-    function metapost.registerscript(name,f)
-        nofscripts = nofscripts + 1
-        if f then
-            runscripts[nofscripts] = f
-            runnames[name] = nofscripts
-        else
-            runscripts[nofscripts] = name
-        end
-        return nofscripts
-    end
-
-    function metapost.scriptindex(name)
-        return runnames[name] or 0
-    end
-
-    function metapost.runscript(code)
-        nesting = nesting + 1
-        local index = type(code) == "number"
-        local trace = trace_enabled and trace_luarun
-        runs = runs + 1
-        local f
-        if index then
-            f = runscripts[code]
-            if not f then
-                report_luarun("%i: bad index: %s",nesting,code)
-            elseif trace then
-                report_luarun("%i: index: %i",nesting,code)
-            end
-        else
-            if trace then
-                report_luarun("%i: code: %s",nesting,code)
-            end
-            f = cache[code]
-            if not f then
-                f = loadstring(code .. " return mp._f_()")
-                if f then
-                    cache[code] = f
-                elseif be_tolerant then
-                    f = loadstring(code)
-                    if f then
-                        cache[code] = f
-                    end
-                end
-            end
-        end
-
-        -- returning nil is more efficient and a signel not to scan in mp
-
-        if f then
-            local _buffer_ = buffer
-            local _n_      = n
-                   buffer  = { }
-                   n       = 0
-            local result = f()
-            if index and not result then
-                result = _f_()
-            end
-            if result then
-                local t = type(result)
-                if t == "number" then
-                    result = f_numeric(result)
-                elseif t ~= "string" then
-                    result = tostring(result)
-                end
-                if trace then
-                    if #result == 0 then
-                        report_luarun("%i: no result",nesting)
-                    else
-                        report_luarun("%i: result: %s",nesting,result)
-                    end
-                end
-                buffer = _buffer_
-                n      = _n_
-                nesting = nesting - 1
-                return result
-            elseif trace then
-                report_luarun("%i: no result",nesting)
-            end
-            buffer, n = _buffer_, _n_
-        else
-            report_luarun("%i: no result, invalid code: %s",nesting,code)
-        end
-        nesting = nesting - 1
-        return ""
-    end
-
     -- for the moment
+
+    local function mpdraw(lines,list) -- n * 4
+        if list then
+            local c = #lines
+            for i=1,c do
+                local ci = lines[i]
+                local ni = #ci
+                n = n + 1 buffer[n] = i < c and "d(" or "D("
+                for j=1,ni,2 do
+                    local l = j + 1
+                    n = n + 1 buffer[n] = ci[j]
+                    n = n + 1 buffer[n] = ","
+                    n = n + 1 buffer[n] = ci[l]
+                    n = n + 1 buffer[n] = l < ni and ")--(" or ");"
+                end
+            end
+        else
+            local l = #lines
+            local m = l - 4
+            for i=1,l,4 do
+                n = n + 1 buffer[n] = i < m and "d(" or "D("
+                n = n + 1 buffer[n] = lines[i]
+                n = n + 1 buffer[n] = ","
+                n = n + 1 buffer[n] = lines[i+1]
+                n = n + 1 buffer[n] = ")--("
+                n = n + 1 buffer[n] = lines[i+2]
+                n = n + 1 buffer[n] = ","
+                n = n + 1 buffer[n] = lines[i+3]
+                n = n + 1 buffer[n] = ");"
+            end
+        end
+    end
+
+    local function mpfill(lines,list)
+        if list then
+            local c = #lines
+            for i=1,c do
+                local ci = lines[i]
+                local ni = #ci
+                n = n + 1 buffer[n] = i < c and "f(" or "F("
+                for j=1,ni,2 do
+                    local l = j + 1
+                    n = n + 1 buffer[n] = ci[j]
+                    n = n + 1 buffer[n] = ","
+                    n = n + 1 buffer[n] = ci[l]
+                    n = n + 1 buffer[n] = l < ni and ")--(" or ")--C;"
+                end
+            end
+        else
+            local l = #lines
+            local m = l - 4
+            for i=1,l,4 do
+                n = n + 1 buffer[n] = i < m and "f(" or "F("
+                n = n + 1 buffer[n] = lines[i]
+                n = n + 1 buffer[n] = ","
+                n = n + 1 buffer[n] = lines[i+1]
+                n = n + 1 buffer[n] = ")--("
+                n = n + 1 buffer[n] = lines[i+2]
+                n = n + 1 buffer[n] = ","
+                n = n + 1 buffer[n] = lines[i+3]
+                n = n + 1 buffer[n] = ")--C;"
+            end
+        end
+    end
+
+    aux.draw = mpdraw
+    aux.fill = mpfill
 
     for k, v in next, aux do mp[k] = v end
 
@@ -1098,3 +1203,72 @@ do
     end
 
 end
+
+function mp.flatten(t)
+    local tn = #t
+
+    local t1 = t[1]
+    local t2 = t[2]
+    local t3 = t[3]
+    local t4 = t[4]
+
+    for i=1,tn-5,2 do
+        local t5 = t[i+4]
+        local t6 = t[i+5]
+        if t1 == t3 and t3 == t5 and ((t2 <= t4 and t4 <= t6) or (t6 <= t4 and t4 <= t2)) then
+            t[i+3] = t2
+            t4     = t2
+            t[i]   = false
+            t[i+1] = false
+        elseif t2 == t4 and t4 == t6 and ((t1 <= t3 and t3 <= t5) or (t5 <= t3 and t3 <= t1)) then
+            t[i+2] = t1
+            t3     = t1
+            t[i]   = false
+            t[i+1] = false
+        end
+        t1 = t3
+        t2 = t4
+        t3 = t5
+        t4 = t6
+    end
+
+    -- remove duplicates
+
+    local t1 = t[1]
+    local t2 = t[2]
+    for i=1,tn-2,2 do
+        local t3 = t[i+2]
+        local t4 = t[i+3]
+        if t1 == t3 and t2 == t4 then
+            t[i]   = false
+            t[i+1] = false
+        end
+        t1 = t3
+        t2 = t4
+    end
+
+    -- move coordinates
+
+    local m = 0
+    for i=1,tn,2 do
+        if t[i] then
+            m = m + 1 t[m] = t[i]
+            m = m + 1 t[m] = t[i+1]
+        end
+    end
+
+    -- prune the table (not gc'd)
+
+    for i=tn,m+1,-1 do
+        t[i] = nil
+    end
+
+    -- safeguard so that we have at least one segment
+
+    if m == 2 then
+        t[3] = t[1]
+        t[4] = t[2]
+    end
+
+end
+

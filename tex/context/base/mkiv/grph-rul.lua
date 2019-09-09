@@ -285,7 +285,7 @@ do
                 }
             elseif method == 21 then
                 list = {
-                    "q", line, "w", xxmax, ymax, m, xmax, ymax, xmax, yymax, "y", xmin, yymax, "m",
+                    "q", line, "w", xxmax, ymax, "m", xmax, ymax, xmax, yymax, "y", xmin, yymax, "m",
                     xmin, ymax, xxmin, ymax, "y", how, "Q",
                 }
             elseif method == 22 then
