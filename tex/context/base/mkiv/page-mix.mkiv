@@ -261,7 +261,7 @@
 
 \unexpanded\def\page_mix_command_set_hsize
   {\hsize\d_page_mix_column_width
-   \textwidth\d_page_mix_column_width}
+   \columnwidth\d_page_mix_column_width}
 
 %D When setting the vsize we make sure that we collect a few more lines than needed
 %D so that we have enough to split over the columns. Collecting too much is somewhat
@@ -565,6 +565,11 @@
    \d_page_mix_threshold\zeropoint
    %
    \d_page_mix_column_width\dimexpr(\d_page_mix_max_width-\d_page_mix_distance*\numexpr(\c_page_mix_n_of_columns-\plusone)\relax)/\c_page_mix_n_of_columns\relax
+   %
+   \columnwidth   \d_page_mix_column_width
+   \columndistance\d_page_mix_distance
+   \nofcolumns    \c_page_mix_n_of_columns
+   \textwidth     \d_page_mix_column_width % kind of redundant but we had it so ...
    %
    \usemixedcolumnscolorparameter\c!color
    %

@@ -30,6 +30,9 @@
 \setnewconstant\maxnofcolumns       50
 \setnewconstant\allocatednofcolumns  0
 
+\newdimen\columnwidth
+\newdimen\columndistance
+
 %D During initialization the temporary boxes are allocated. This enables us to
 %D use as much columns as we want, without exhausting the pool of boxes too
 %D fast. We could have packed them in one box, but we've got enough boxes.

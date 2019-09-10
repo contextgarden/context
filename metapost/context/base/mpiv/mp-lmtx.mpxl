@@ -532,7 +532,8 @@ enddef ;
 %     )
 % enddef ;
 
-% more
+% Here we use nodraw and dodraw to create efficient axis ticks. Yet another demo
+% of coding.
 
 presetparameters "function" [
     sx          = 1mm,
@@ -541,16 +542,20 @@ presetparameters "function" [
     xmin        = 1,
     xmax        = 1,
     xstep       = 1,
-    xsmall      = 1,
-    xlarge      = 1,
+    xsmall      = 0,
+    xlarge      = 0,
     xlabels     = "no",
     xticks      = "bottom", % top bottom middle
     xcaption    = "",
     ymin        = 1,
     ymax        = 1,
     ystep       = 1,
-    ysmall      = 1,
-    ylarge      = 1,
+    ysmall      = 0,
+    ylarge      = 0,
+  % xfirst      = 0,
+  % xlast       = 0,
+  % yfirst      = 0,
+  % ylast       = 0,
     ylabels     = "no",
     yticks      = "left", % left right middle
     ycaption    = "",
@@ -567,6 +572,7 @@ presetparameters "function" [
     pointcolor  = "",
     xarrow      = "",
     yarrow      = "",
+    reverse     = false,
 ] ;
 
 def lmt_function = applyparameters "function" "lmt_do_function" enddef ;
@@ -605,10 +611,11 @@ vardef lmt_do_function =
         tt := identity xyscaled(ts/sx,ts/sy) ;
         pickup pencircle xyscaled(lw/sx,lw/sy) ;
         draw image (
-            save xmin, xmax, xstep, xsmall, xlarge, ymin, ymax, ystep, ysmall, ylarge ;
-            save code, option, txl, txs, tyl, tys ;
+            save xmin, xmax, xstep, xsmall, xlarge, ymin, ymax, ystep, ysmall, ylarge, p ;
+            save code, option, txl, txs, tyl, tys, swap ;
             string code, option ;
-            path txl, txs, tyl, tys ;
+            path txl, txs, tyl, tys ; boolean swap ;
+            picture p ;
 
             xmin    := getparameter "xmin" ;
             xmax    := getparameter "xmax" ;
@@ -621,6 +628,9 @@ vardef lmt_do_function =
             ysmall  := getparameter "ysmall" ;
             ylarge  := getparameter "ylarge" ;
             code    := getparameter "code" ;
+            swap    := getparameter "reverse" ;
+
+            if swap : p := image ( fi
 
             if (getparametercount "functions") > 0 :
                 for s = 1 upto getparametercount "functions" :
@@ -658,6 +668,8 @@ vardef lmt_do_function =
                 ) ;
             fi ;
 
+            if swap : ) ; fi
+
             option := getparameter "xticks" ;
             if option = "top" :
                 txs := (0,0) -- (0,tl) ;
@@ -683,6 +695,11 @@ vardef lmt_do_function =
 
             % this arrow head scaling is for Alan to sort out ...
 
+            xmin := getparameterdefault "xfirst" xmin ;
+            xmax := getparameterdefault "xlast"  xmax ;
+            ymin := getparameterdefault "yfirst" ymin ;
+            ymax := getparameterdefault "ylast"  ymax ;
+
             option := getparameter "xarrow" ;
             if option = "yes" :
                 save ahlength ; ahlength  := tl ;
@@ -696,9 +713,9 @@ vardef lmt_do_function =
             if option = "yes" :
                 save ahlength ; ahlength := tl ;
                 % save ahangle  ; ahangle  := 100/sx ;
-                drawarrow (0,ymin) -- (0,ymax) ;
+                drawarrow (xmin,ymin) -- (xmin,ymax) ;
             else :
-                draw (0,ymin) -- (0,ymax) ;
+                draw (xmin,ymin) -- (xmin,ymax) ;
             fi ;
 
             option := getparameter "frame" ;
@@ -706,81 +723,101 @@ vardef lmt_do_function =
                 draw (xmin,ymin) -- (xmax,ymin) -- (xmax,ymax) -- (xmin,ymax) -- cycle ;
             elseif (option = "ticks") or (option = "sticks") :
                 draw (xmin,ymin) -- (xmax,ymin) -- (xmax,ymax) -- (xmin,ymax) -- cycle ;
-                if xsmall > 1 :
+                if xsmall > 0 :
                     txs := ((0,0) -- (0,tl)) if option = "sticks" : rotated 180 fi ;
                     txs := txs transformed tr ;
                     for i = xmin step ((xmax-xmin)/xsmall) until xmax :
-                        draw txs shifted (i,ymin);
+                        nodraw txs shifted (i,ymin) ;
                     endfor ;
                     txs := (0,0) -- (0,-tl) if option = "sticks" : rotated 180 fi ;
                     txs := txs transformed tr ;
                     for i = xmin step ((xmax-xmin)/xsmall) until xmax :
-                        draw txs shifted (i,ymax);
+                        nodraw txs shifted (i,ymax) ;
                     endfor ;
+                    dodraw (xmin,ymin) ; % flush snippets
                 fi ;
-                if ysmall > 1 :
+                if ysmall > 0 :
                     tys := (0,0) -- (tl,0) if option = "sticks" : rotated 180 fi ;
                     tys := tys transformed tr ;
-                    for i = ymin step ((ymax-ymin)/ysmall) until ymax :
-                        draw tys shifted (xmin,i);
+                    for i = ymin step ysmall until ymax :
+                        nodraw tys shifted (xmin,i) ;
                     endfor ;
                     tys := (0,0) -- (-tl,0) if option = "sticks" : rotated 180 fi ;
                     tys := tys transformed tr ;
-                    for i = ymin step ((ymax-ymin)/ysmall) until ymax :
-                        draw tys shifted (xmax,i);
+                    for i = ymin step ysmall until ymax :
+                        nodraw tys shifted (xmax,i) ;
+                    endfor ;
+                    dodraw (xmin,ymin) ; % flush snippets
+                fi ;
+            fi ;
+
+            if xsmall > 0 :
+                for i = xmin step xsmall until xmax :
+                    nodraw txs shifted (i,0) ;
+                endfor ;
+            fi ;
+
+            if xlarge > 0 :
+                for i = xmin step xlarge until xmax :
+                    nodraw txl shifted (i,0) ;
+                endfor ;
+                dodraw (xmin,0) ; % flush snippets
+            elseif xsmall > 0 :
+                dodraw (xmin,0) ; % flush snippets
+            fi ;
+
+            if ysmall > 0 :
+                for i = ymin step ysmall until ymax :
+                    nodraw tys shifted (xmin,i) ;
+                endfor ;
+            fi ;
+
+            if ylarge > 0 :
+                for i = ymin step ylarge until ymax :
+                    nodraw tyl shifted (xmin,i) ;
+                endfor ;
+                dodraw (xmin,ymin) ; % flush snippets
+            elseif ysmall > 0 :
+                dodraw (xmin,ymin) ; % flush snippets
+            fi ;
+
+            if swap : draw p fi ;
+
+            if xlarge > 0 :
+                option := getparameter "xlabels" ;
+                if option <> "no" :
+                    for i = xmin step xlarge until xmax :
+                        if ((i <> 0) and ((option <> "nolimits") or ((i > xmin) and (i < xmax)))) :
+                            draw textext.bot(decimal i) transformed tt
+                                shifted (i,1.25*(ypart point 0 of txl)) ;
+                        fi ;
                     endfor ;
                 fi ;
             fi ;
 
-            if xsmall > 1 :
-                for i = xmin step ((xmax-xmin)/xsmall) until xmax :
-                    draw txs shifted (i,0) ;
-                endfor ;
-            fi ;
-
-            if xlarge > 1 :
-                option := getparameter "xlabels" ;
-                for i = xmin step ((xmax-xmin)/xlarge) until xmax :
-                    draw txl shifted (i,0) ;
-                    if (option <> "no") and (i <> 0) :
-                        if (option <> "nolimits") or ((i > xmin) and (i < xmax)) :
-                            draw textext.bot(decimal i) transformed tt
-                                shifted (i,1.25*(ypart point 0 of txl)) ;
-                        fi ;
-                    fi ;
-                endfor ;
-            fi ;
-
-            if ysmall > 1 :
-                for i = ymin step ((ymax-ymin)/ysmall) until ymax :
-                    draw tys shifted (0,i) ;
-                endfor ;
-            fi ;
-
-            if ylarge > 1 :
+            if ylarge > 0 :
                 option := getparameter "ylabels" ;
-                for i = ymin step ((ymax-ymin)/ylarge) until ymax :
-                    draw tyl shifted (0,i) ;
-                    if (option <> "no") and (i <> 0) :
-                        if (option <> "nolimits") or ((i > ymin) and (i < ymax)) :
+                if option <> "no" :
+                    for i = ymin step ylarge until ymax :
+                        if ((i <> 0) and ((option <> "nolimits") or ((i > ymin) and (i < ymax)))) :
                             draw textext.lft(decimal i) transformed tt
-                                shifted (1.25*(xpart point 0 of tyl),i) ;
+                                shifted (xmin+1.25*(xpart point 0 of tyl),i) ;
                         fi ;
-                    fi ;
-                endfor ;
+                    endfor ;
+                fi ;
             fi ;
 
             option := getparameter "xcaption" ;
             if (option <> "") :
                 draw textext.bot(option) transformed tt
-                    shifted (0,-tl)
+                    shifted (xmin,-tl)
                     shifted center bottomboundary currentpicture ;
             fi ;
 
             option := getparameter "ycaption" ;
             if (option <> "") :
                 draw textext.lft(option) transformed tt
-                    shifted (-tl,0)
+                    shifted (xmin-tl,0)
                     shifted center leftboundary currentpicture ;
             fi ;
         )

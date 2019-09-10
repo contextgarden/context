@@ -460,12 +460,15 @@ local linewidth = false
                                         local evenodd    = false
                                         local collect    = false
                                         local both       = false
+                                        local flush      = false
                                         local postscript = object.postscript
                                         if not object.istext then
                                             if postscript == "evenodd" then
                                                 evenodd = true
                                             elseif postscript == "collect" then
                                                 collect = true
+                                            elseif postscript == "flush" then
+                                                flush   = true
                                             elseif postscript == "both" then
                                                 both = true
                                             elseif postscript == "eoboth" then
@@ -474,7 +477,9 @@ local linewidth = false
                                             end
                                         end
                                         --
-                                        if collect then
+                                        if flush and not savedpath then
+                                            -- forget about it
+                                        elseif collect then
                                             if not savedpath then
                                                 savedpath = { object.path or false }
                                                 savedhtap = { object.htap or false }
@@ -554,7 +559,9 @@ end
                                                     end
                                                     savedpath = nil
                                                 end
-                                                if transformed then
+                                                if flush then
+                                                    -- ignore this path
+                                                elseif transformed then
                                                     flushconcatpath(path,result,open)
                                                 else
                                                     flushnormalpath(path,result,open)

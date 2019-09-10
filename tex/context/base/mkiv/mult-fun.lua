@@ -18,6 +18,24 @@ return {
         "dq", "sq",
         "crossingscale", "crossingoption",
         "contextlmtxmode",
+        --
+        -- for the moment we put these here as they need to stand out
+        --
+        "getparameters",
+        "presetparameters",
+        "hasparameter",
+        "hasoption",
+        "getparameter",
+        "getparameterdefault",
+        "getparametercount",
+        "getmaxparametercount",
+        "getparameterpath",
+        "getparametertext",
+     -- "getparameteroption",
+        "applyparameters",
+        "pushparameters",
+        "popparameters",
+        "definecolor",
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",
@@ -137,7 +155,7 @@ return {
         "passvariable", "passarrayvariable", "tostring", "topair", "format", "formatted", "quotation", "quote",
         "startpassingvariable", "stoppassingvariable",
         --
-        "eofill", "eoclip", "nofill", "fillup", "eofillup", "nodraw",
+        "eofill", "eoclip", "nofill", "dofill", "fillup", "eofillup", "nodraw", "dodraw",
         "area",
         --
         "addbackground",

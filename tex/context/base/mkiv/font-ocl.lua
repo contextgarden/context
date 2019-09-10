@@ -10,11 +10,14 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 
 local tostring, tonumber, next = tostring, tonumber, next
 local round, max = math.round, math.round
-local sortedkeys, sortedhash = table.sortedkeys, table.sortedhash
+local gsub, find = string.gsub, string.find
+local sortedkeys, sortedhash, concat = table.sortedkeys, table.sortedhash, table.concat
 local setmetatableindex = table.setmetatableindex
 
 local formatters   = string.formatters
 local tounicode    = fonts.mappings.tounicode
+
+local bpfactor     = number.dimenfactors.bp
 
 local helpers      = fonts.helpers
 
@@ -371,8 +374,8 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
             local dy   = nil
             if typ == "table" then
                 data = pdf.data
-                dx   = pdf.dx or 0
-                dy   = pdf.dy or 0
+                dx   = pdf.x or pdf.dx or 0
+                dy   = pdf.y or pdf.dy or 0
             elseif typ == "string" then
                 data = pdf
                 dx   = 0
@@ -386,11 +389,19 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
                 local wd = character.width  or 0
                 local ht = character.height or 0
                 local dp = character.depth  or 0
-                -- The down and right will change too (we can move that elsewhere).
+                -- The down and right will change too (we can move that elsewhere). We have
+                -- a different treatment in lmtx but the next kind of works. These images are
+                -- a mess anyway as in svg the bbox can be messed up absent). A png image
+                -- needs the x/y. I might normalize this once we moev to lmtx exlusively.
                 character.commands = {
                     not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
-                    downcommand[dp + dy * hfactor],
-                    rightcommand[dx * hfactor],
+                    -- lmtx (when we deal with depth in vfimage, currently disabled):
+                 -- downcommand [dy * hfactor],
+                 -- rightcommand[dx * hfactor],
+                 -- vfimage(wd,ht,dp,data,name),
+                    -- mkiv
+                    downcommand [dp + dy * hfactor],
+                    rightcommand[     dx * hfactor],
                     vfimage(wd,ht,dp,data,name),
                     actuale,
                 }
@@ -437,7 +448,7 @@ do
         name     = "otfsvg",
         program  = "inkscape",
         method   = "pipeto",
-        template = "--shell > temp-otf-svg-shape.log",
+        template = "--export-area-drawing --shell > temp-otf-svg-shape.log",
         reporter = report_svg,
     }
 
@@ -446,20 +457,25 @@ do
         -- poor mans variant for generic:
         --
         runner = function()
-            return io.open("inkscape --shell > temp-otf-svg-shape.log","w")
+            return io.open("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
         end
     end
 
-    function otfsvg.topdf(svgshapes)
+    -- There are svg out there with bad viewBox specifications where shapes lay outside that area,
+    -- but trying to correct that didin'w work out well enough so I discarded that code.
+
+    function otfsvg.topdf(svgshapes,tfmdata)
         local pdfshapes = { }
         local inkscape  = runner()
         if inkscape then
-            local nofshapes   = #svgshapes
-            local f_svgfile   = formatters["temp-otf-svg-shape-%i.svg"]
-            local f_pdffile   = formatters["temp-otf-svg-shape-%i.pdf"]
-            local f_convert   = formatters["%s --export-pdf=%s\n"]
-            local filterglyph = otfsvg.filterglyph
-            local nofdone     = 0
+            local indices      = fonts.getindices(tfmdata)
+            local descriptions = tfmdata.descriptions
+            local nofshapes    = #svgshapes
+            local f_svgfile    = formatters["temp-otf-svg-shape-%i.svg"]
+            local f_pdffile    = formatters["temp-otf-svg-shape-%i.pdf"]
+            local f_convert    = formatters["%s --export-pdf=%s\n"]
+            local filterglyph  = otfsvg.filterglyph
+            local nofdone      = 0
             report_svg("processing %i svg containers",nofshapes)
             statistics.starttiming()
             for i=1,nofshapes do
@@ -485,7 +501,13 @@ do
             for index in next, pdfshapes do
                 local svgfile = f_svgfile(index)
                 local pdffile = f_pdffile(index)
-                pdfshapes[index] = loaddata(pdffile)
+             -- local fntdata = descriptions[indices[index]]
+             -- local bounds  = fntdata and fntdata.boundingbox
+                pdfshapes[index] = {
+                    data = loaddata(pdffile),
+                 -- x    = bounds and bounds[1] or 0,
+                 -- y    = bounds and bounds[2] or 0,
+                }
                 remove(svgfile)
                 remove(pdffile)
             end
@@ -512,7 +534,7 @@ local function initializesvg(tfmdata,kind,value) -- hm, always value
         if not pdfshapes or pdffile.timestamp ~= timestamp then
             local svgfile   = containers.read(otf.svgcache,hash)
             local svgshapes = svgfile and svgfile.svgshapes
-            pdfshapes = svgshapes and otfsvg.topdf(svgshapes) or { }
+            pdfshapes = svgshapes and otfsvg.topdf(svgshapes,tfmdata) or { }
             containers.write(otf.pdfcache, hash, {
                 pdfshapes = pdfshapes,
                 timestamp = timestamp,

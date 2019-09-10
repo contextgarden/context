@@ -143,4 +143,10 @@
 
 \let\pdfactualtext\pdfbackendactualtext
 
+%D Bah, this is also needed for tikz:
+
+\let\pdfsavepos \savepos
+\let\pdflastxpos\lastxpos
+\let\pdflastypos\lastypos
+
 \protect \endinput

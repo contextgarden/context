@@ -625,30 +625,30 @@ local function getparametertext()
     end
 end
 
-local function getparameteroption()
-    local list, n = collectnames()
-    local last = list[n]
-    if type(last) == "string" then
-        n = n - 1
-    else
-        return false
-    end
-    local v = namespaces
-    for i=1,n do
-        v = v[list[i]]
-        if not v then
-            break
-        end
-    end
-    if type(v) == "string" and v ~= "" then
-        for s in gmatch(v,"[^ ,]+") do
-            if s == last then
-                return true
-            end
-        end
-    end
-    return false
-end
+-- local function getparameteroption()
+--     local list, n = collectnames()
+--     local last = list[n]
+--     if type(last) == "string" then
+--         n = n - 1
+--     else
+--         return false
+--     end
+--     local v = namespaces
+--     for i=1,n do
+--         v = v[list[i]]
+--         if not v then
+--             break
+--         end
+--     end
+--     if type(v) == "string" and v ~= "" then
+--         for s in gmatch(v,"[^ ,]+") do
+--             if s == last then
+--                 return true
+--             end
+--         end
+--     end
+--     return false
+-- end
 
 metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)
@@ -661,7 +661,7 @@ metapost.registerscript("getparametercount",   getparametercount)
 metapost.registerscript("getmaxparametercount",getmaxparametercount)
 metapost.registerscript("getparameterpath",    getparameterpath)
 metapost.registerscript("getparametertext",    getparametertext)
-metapost.registerscript("getparameteroption",  getparameteroption)
+--------.registerscript("getparameteroption",  getparameteroption)
 metapost.registerscript("pushparameters",      pushparameters)
 metapost.registerscript("popparameters",       popparameters)
 

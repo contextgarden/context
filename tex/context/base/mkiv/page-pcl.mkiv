@@ -94,7 +94,9 @@
    \else
      \numexpr\c_page_col_n_of_columns-\plusone\relax
      \dimexpr\d_page_col_column_width+\d_page_col_distance\relax
-   \fi}
+   \fi
+   % consistent with mixed:
+   \textwidth\d_page_col_column_width}
 
 %D \unknown
 
@@ -729,9 +731,6 @@
     \setuevalue{\e!stop \currentpagecolumns}{\stoppagecolumns}%
 \to \everydefinepagecolumns
 
-\ifdefined \columnwidth    \else \newdimen\columnwidth    \fi
-\ifdefined \columndistance \else \newdimen\columndistance \fi
-
 \def\page_col_pickup_preceding
   {\begingroup
    \setupoutputroutine[\s!mixedcolumn]%
@@ -800,6 +799,8 @@
    %
    \columnwidth    \d_page_col_column_width
    \columndistance \d_page_col_distance
+   \nofcolumns     \c_page_col_n_of_columns
+   \textwidth      \columnwidth % kind of redundant
    %
    \nopenalties
    %
@@ -834,8 +835,6 @@
    %
    \page_col_command_set_vsize
    \page_col_command_set_hsize
-   %
-   \nofcolumns\c_page_mix_n_of_columns
    %
    \unexpanded\def\page_col_start[##1]%
      {\page_col_start_nop}%

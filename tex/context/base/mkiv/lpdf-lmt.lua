@@ -1137,14 +1137,16 @@ local flushrule, flushsimplerule, flushimage  do
               xsize, ysize,
               rotation,
               objnum,
-              groupref  = pdfincludeimage(index)
+              groupref = pdfincludeimage(index)
 
         local rx = width / xsize
         local sx = 0
         local sy = 0
         local ry = total / ysize
         local tx = pos_h
-        local ty = pos_v - 2 * depth -- to be sorted out
+        -- to be sorted out
+     -- local ty = pos_v - depth
+        local ty = pos_v -- we assume that depth is dealt with in the caller (for now)
 
         usedximages[index] = objnum
 

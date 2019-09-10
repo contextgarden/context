@@ -29,7 +29,8 @@
   {\page_otr_eject_page_and_flush_inserts}
 
 \unexpanded\def\page_one_command_set_hsize
-  {\global\hsize\textwidth}
+  {\global\hsize\textwidth
+   \columnwidth\textwidth} % bonus so that it's not zero
 
 \unexpanded\def\page_one_command_set_float_hsize
   {\global\hsize\textwidth}

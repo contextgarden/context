@@ -2603,16 +2603,40 @@ implement {
     arguments = { "string", "boolean", "boolean" }
 }
 
-local function referencerealpage()
+-- local function referencerealpage()
+--     local actions = references.currentset
+--     return not actions and 0 or actions.realpage or setreferencerealpage(actions)
+-- end
+--
+-- implement {
+--     name      = "referencerealpage",
+--     actions   = { referencerealpage, context },
+--  -- arguments = "string" -- hm, weird
+-- }
+--
+-- implement {
+--     name      = "referencerealpage",
+--     actions   = function()
+--         local actions = references.currentset
+--         context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
+--     end
+-- }
+
+local function referencepos(key)
     local actions = references.currentset
-    return not actions and 0 or actions.realpage or setreferencerealpage(actions)
+    local i = actions[1].i -- brrr
+    local v = 0
+    if i then
+        local a = i.references
+        if a then
+            v = a[key] or 0
+        end
+    end
+    context("%p",v)
 end
 
-implement {
-    name      = "referencerealpage",
-    actions   = { referencerealpage, context },
-    arguments = "string"
-}
+implement { name = "referenceposx", actions = function() referencepos("x") end }
+implement { name = "referenceposy", actions = function() referencepos("y") end }
 
 local plist, nofrealpages
 

@@ -1680,6 +1680,8 @@ def eofillup text t = draw t withpostscript "eoboth"  enddef ; % we use draw bec
 def eofill   text t = fill t withpostscript "evenodd" enddef ;
 def nofill   text t = fill t withpostscript "collect" enddef ;
 def nodraw   text t = draw t withpostscript "collect" enddef ;
+def dodraw   text t = draw t withpostscript "flush"   enddef ;
+def dofill   text t = fill t withpostscript "flush"   enddef ;
 %%% eoclip   text t = clip t withpostscript "evenodd" enddef ; % no postscripts yet
 
 % def withrule expr r =

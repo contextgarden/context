@@ -181,6 +181,12 @@
    \setupoutputroutine[\s!pagegrid]%
    \page_grd_command_set_hsize
    \page_grd_command_set_vsize
+   %
+   \columnwidth   \d_page_grd_column_width
+   \columndistance\d_page_grd_distance
+   \nofcolumns    \c_page_grd_n_of_left    % not always ok
+   \textwidth     \d_page_grd_column_width % kind of redundant but we had it so ...
+   %
    }%\begingroup}
 
 \unexpanded\def\stoppagegrid
