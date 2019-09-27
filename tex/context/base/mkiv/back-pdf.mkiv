@@ -145,8 +145,10 @@
 
 %D Bah, this is also needed for tikz:
 
-\let\pdfsavepos \savepos
-\let\pdflastxpos\lastxpos
-\let\pdflastypos\lastypos
+\ifdefined\pdfsavepos\else
+    \let\pdfsavepos \savepos
+    \let\pdflastxpos\lastxpos
+    \let\pdflastypos\lastypos
+\fi
 
 \protect \endinput

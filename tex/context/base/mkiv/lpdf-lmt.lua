@@ -37,6 +37,7 @@ local formatters, splitupstring = string.formatters, string.splitup
 local band, extract = bit32.band, bit32.extract
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
+local loaddata = io.loaddata
 
 local bpfactor     <const> = number.dimenfactors.bp
 
@@ -49,7 +50,6 @@ local tonut                = nodes.tonut
 
 local getdata              = nuts.getdata
 local getsubtype           = nuts.getsubtype
-local getfield             = nuts.getfield
 local getwhd               = nuts.getwhd
 local flushlist            = nuts.flush_list
 
@@ -581,6 +581,15 @@ local flushcharacter  do
             pdfcharacters[index] = true
         end
 
+    end
+
+    flushfontchar = function(font,char,data)
+        local dummy = usedfonts[font]
+        local index = data.index or char
+        if not pdfcharacters[index] then
+            pdfcharacters[index] = true
+        end
+        return dummy
     end
 
 end
@@ -1410,18 +1419,26 @@ local function finalize(driver,details)
         pageresources.XObject = xforms
         pageresources.ProcSet = lpdf.procset()
 
+        local xorigin, yorigin, relocated = backends.codeinjections.getpageorigin() -- for now here
+
+        local bbox = pdfarray {
+            (boundingbox[1] + xorigin) * bpfactor,
+            (boundingbox[2] + yorigin) * bpfactor,
+            (boundingbox[3] + xorigin) * bpfactor,
+            (boundingbox[4] + yorigin) * bpfactor,
+        }
+
+        if relocated then
+            content = formatters["1 0 0 1 %.6N %.6N cm\n%s"](bbox[1],bbox[2],content)
+        end
+
         local contentsobj = pdfflushstreamobject(content,false,false)
 
         pageattributes.Type      = pdf_page
         pageattributes.Contents  = pdfreference(contentsobj)
         pageattributes.Resources = pageresources
      -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
-        pageattributes.MediaBox  = pdfarray {
-            boundingbox[1] * bpfactor,
-            boundingbox[2] * bpfactor,
-            boundingbox[3] * bpfactor,
-            boundingbox[4] * bpfactor,
-        }
+        pageattributes.MediaBox  = bbox
         pageattributes.Parent    = nil -- precalculate
         pageattributes.Group     = nil -- todo
 
@@ -1430,6 +1447,12 @@ local function finalize(driver,details)
         registerpage(pageattributes)
 
         lpdf.finalizepage(true)
+
+        if relocated then
+            if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
+            if pageattributes.CropBox  then pageattributes.CropBox  = box end
+            if pageattributes.BleedBox then pageattributes.BleedBox = box end
+        end
 
     else
 
@@ -1850,18 +1873,18 @@ local function obj(a,b,c,d)
         nolength       = a.nolength
         if kind == "stream" then
             if filename then
-                data = io.loaddata(filename) or ""
+                data = loaddata(filename) or ""
             end
         elseif kind == "raw"then
             if filename then
-                data = io.loaddata(filename) or ""
+                data = loaddata(filename) or ""
             end
         elseif kind == "file"then
             kind = "raw"
-            data = filename and io.loaddata(filename) or ""
+            data = filename and loaddata(filename) or ""
         elseif kind == "streamfile" then
             kind = "stream"
-            data = filename and io.loaddata(filename) or ""
+            data = filename and loaddata(filename) or ""
         end
     else
         if argtype == "number" then
@@ -1877,10 +1900,10 @@ local function obj(a,b,c,d)
                 data = b
             elseif a == "file" then
              -- kind = "raw"
-                data = io.loaddata(b)
+                data = loaddata(b)
             elseif a == "streamfile" then
                 kind = "stream"
-                data = io.loaddata(b)
+                data = loaddata(b)
             else
                 data = "" -- invalid object
             end
@@ -2312,10 +2335,13 @@ end)
 
 updaters.register("backend.update.lpdf",function()
 
-    -- for the moment here, todo: an md5 or sha2 hash can save space
+    -- todo: an md5 or sha2 hash can save space
+    -- todo: make a type 3 font instead
+    -- todo: move to lpdf namespace
 
     local pdfimage   = lpdf.epdf.image
     local newpdf     = pdfimage.new
+    local openpdf    = pdfimage.open
     local closepdf   = pdfimage.close
     local copypage   = pdfimage.copy
 
@@ -2325,7 +2351,7 @@ updaters.register("backend.update.lpdf",function()
     local topdf      = { }
     local toidx      = { }
 
-    local function storedata(pdf)
+    local function storedata_s(pdf)
         local idx = toidx[pdf]
         if not idx then
             nofstreams = nofstreams + 1
@@ -2336,11 +2362,7 @@ updaters.register("backend.update.lpdf",function()
         return idx
     end
 
-    -- todo: make a type 3 font instead
-
-    -- move to lpdf namespace
-
-    local function vfimage(id,wd,ht,dp,pos_h,pos_v)
+    local function vfimage_s(id,wd,ht,dp,pos_h,pos_v)
         local index = topdf[id]
         if type(index) == "string" then
             local pdfdoc  = newpdf(index,#index)
@@ -2356,11 +2378,51 @@ updaters.register("backend.update.lpdf",function()
         flushimage(index,wd,ht,dp,pos_h,pos_v)
     end
 
+    local function storedata_n(name,page)
+        local idx = toidx[pdf]
+        if not idx then
+            nofstreams = nofstreams + 1
+            idx = nofstreams
+            toidx[pdf] = nofstreams
+            topdf[idx] = pdf
+        end
+        return idx
+    end
+
+    -- We need to have a way to close such a pdf ... esp for fonts.
+
+    local pdfdocs = { }
+
+    local function vfimage_n(name,page,wd,ht,dp,pos_h,pos_v)
+        local d = pdfdocs[name]
+        if not d then
+            d = { doc = openpdf(name), pages = { } }
+            pdfdocs[name] = d
+        end
+        local index = d.pages[page]
+        if not index then
+            local image  = copypage(d.doc,page)
+            local bbox   = image.bbox
+            image.width  = bbox[3] - bbox[1]
+            image.height = bbox[4] - bbox[2]
+            embedimage(image)
+            index = image.index
+            d.pages[page] = index
+        end
+        flushimage(index,wd,ht,dp,pos_h,pos_v)
+    end
+
     local function pdfvfimage(wd,ht,dp,data,name)
-        return { "lua", function(font,char,pos_h,pos_v)
-            local id = storedata(data)
-            vfimage(id,wd,ht,dp,pos_h,pos_v)
-        end }
+        if type(data) == "number" then
+            return { "lua", function(font,char,pos_h,pos_v)
+                vfimage_n(name,data,wd,ht,dp,pos_h,pos_v)
+            end }
+        else
+            return { "lua", function(font,char,pos_h,pos_v)
+                local id = storedata_s(data)
+                vfimage_s(id,wd,ht,dp,pos_h,pos_v)
+            end }
+        end
     end
 
     lpdf.vfimage = pdfvfimage
@@ -2482,6 +2544,7 @@ do
         name     = "pdf",
         flushers = {
             character       = flushcharacter,
+            fontchar        = flushfontchar,
             rule            = flushrule,
             simplerule      = flushsimplerule,
             pushorientation = pushorientation,

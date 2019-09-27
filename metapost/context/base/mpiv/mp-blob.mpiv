@@ -51,8 +51,8 @@ vardef followtext(expr pth, txt) =
     image (
         mfun_blob_n := mfun_blob_n + 1 ;
         lua.mp.mf_inject_blob(mfun_blob_n,txt);
-        save pat, al, at, pl, pc, wid, pos, ap, ad, pic, len, n, sc ;
-        path pat ; pat := pth ;
+        save pat, al, at, pl, pc, wid, pos, ap, ad, pic, len, n, b, sc ;
+        path pat, b ; pat := pth ;
         numeric al, at, pl, pc, wid, pos, len[], n, sc ;
         pair ap, ad ;
         picture pic[] ;
@@ -98,15 +98,16 @@ vardef followtext(expr pth, txt) =
                 draw ap withpen pencircle scaled .50pt withcolor green ;
             fi ;
         endfor ;
-        if ((autoscaleupfollowtext = 2) or (autoscaledownfollowtext = 2)) and
-           (sc <> 0) and (sc <> 1):
+        if ((autoscaleupfollowtext = 2) or (autoscaledownfollowtext = 2)) and (sc <> 0) and (sc <> 1):
             currentpicture := currentpicture scaled (1/sc) ;
         fi ;
+        b := boundingbox currentpicture ;
         if tracingfollowtext = 1 :
-            draw boundingbox currentpicture withpen pencircle scaled .25pt withcolor blue ;
+            draw b withpen pencircle scaled .25pt withcolor blue ;
         fi ;
         draw fullcircle scaled 100bp
             withprescript "mf_object=followtext"
             withprescript "ft_category=" & decimal mfun_blob_n ;
+        setbounds currentpicture to b ;
     )
 enddef ;

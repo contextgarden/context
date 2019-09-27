@@ -45,7 +45,9 @@ local report_fonts         = logs.reporter("backend","fonts")
 local trace_fonts          = false
 local trace_details        = false
 
-local dimenfactors         = number.dimenfactors
+local dimenfactors  = number.dimenfactors
+local bpfactor      = dimenfactors.bp
+local ptfactor      = dimenfactors.pt
 
 trackers.register("backend.pdf.fonts",function(v) trace_fonts = v end)
 
@@ -1360,7 +1362,7 @@ do
             -- This is a hack, we have no basepoints.
             correction   = details.fontdata.parameters.size / 1000
             -- And this needs checking.
-            correction   = correction * dimenfactors.bp / dimenfactors.pt
+            correction   = correction * bpfactor / ptfactor
             metadata     = { }
         end
 
@@ -1510,114 +1512,296 @@ do
         mainwriters["opentype"](details)
     end
 
-    -- todo: map pdf glyphs onto companion type 3 font .. can be set of small
-    -- ones. maybe only private codes with proper tounicode
+    do
 
-    local methods = { }
+        -- The methods might become plugins.
 
-    function methods.pk(filename)
-        local resolution  = 600
-        local widthfactor = resolution / 72
-        local scalefactor = 72 / resolution / 10
-        local pkfullname  = resolvers.findpk(basedfontname,resolution)
-        if not pkfullname or pkfullname == "" then
-            return
-        end
-        local readers = fonts.handlers.tfm.readers
-        local result  = readers.loadpk(pkfullname)
-        if not result or result.error then
-            return
-        end
-        return result.glyphs, widthfactor / 65536, scalefactor, readers.pktopdf
-    end
+        local methods    = { }
 
-    mainwriters["type3"] = function(details)
-        local properties   = details.properties
-        local basefontname = details.basefontname or properties.name
-        local askedmethod  = "pk"
-        local method       = methods[askedmethod]
-        if not method then
-            return
+        local pdfimage   = lpdf.epdf.image
+        local openpdf    = pdfimage.open
+        local closepdf   = pdfimage.close
+        local copypage   = pdfimage.copy
+
+        local embedimage = images.embed
+
+        local f_glyph  = formatters["G%d"]
+        local f_char   = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
+        local f_width  = formatters["%.6N 0 d0"]
+        local f_index  = formatters["I%d"]
+        local f_image  = formatters["%.6N 0 d0 /%s Do"]
+        local f_stream = formatters["%.6N 0 d0 %s"]
+
+        -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
+        -- to be filled. We can share a mandate zero slot character.
+
+        local c_notdef = nil
+        local r_notdef = nil
+        local w_notdef = nil
+        local fontbbox = nil
+
+        -- pk inclusion (not really tested but not really used either)
+
+        function methods.pk(filename)
+            local resolution  = 600
+            local widthfactor = resolution / 72
+            local scalefactor = 72 / resolution / 10
+            local pkfullname  = resolvers.findpk(basedfontname,resolution)
+            if not pkfullname or pkfullname == "" then
+                return
+            end
+            local readers = fonts.handlers.tfm.readers
+            local result  = readers.loadpk(pkfullname)
+            if not result or result.error then
+                return
+            end
+            return result.glyphs, widthfactor / 65536, scalefactor, readers.pktopdf
         end
-        local glyphs, widthfactor, scalefactor, glyphtopdf = method(basedfontname)
-        if not glyphs then
-            return
-        end
-        local parameters  = details.parameters
-        local object      = details.objectnumber
-        local factor      = parameters.factor -- normally 1
-        local f_name      = formatters["I%05i"]
-        local fontmatrix  = pdfarray { scalefactor, 0, 0, scalefactor, 0, 0 }
-        local indices,
-              minindex,
-              maxindex    = collectindices(details.fontdata.characters,details.indices)
-        local widths      = pdfarray()
-        local differences = pdfarray()
-        local charprocs   = pdfdictionary()
-        local basefont    = pdfconstant(basefontname)
-        local llx, lly, urx, ury = 0, 0, 0, 0
-        for i=1,maxindex-minindex+1 do
-            widths[i] = 0
-        end
-        local d = 0
-        local lastindex = -0xFFFF
-        for index, data in sortedhash(indices) do
-            local name  = f_name(index)
-            local glyph = glyphs[index]
-            if glyph then
-                local width  = widthfactor * data.width
-                local stream, lx, ly, ux, uy = glyphtopdf(glyph,width)
-                if stream then
-                    if index - 1 ~= lastindex then
-                        d = d + 1 ; differences[d] = index
-                    end
-                    lastindex = index
-                    d = d + 1 ; differences[d] = pdfconstant(name)
-                    charprocs[name] = pdfreference(pdfflushstreamobject(stream))
-                    widths[index-minindex+1] = width
-                    if lx < llx then llx = lx end
-                    if ux > urx then urx = ux end
-                    if ly < lly then lly = ly end
-                    if uy > ury then ury = uy end
+
+        -- pdf inclusion
+
+        function methods.pdf(filename,details)
+            local properties = details.properties
+            local pdfshapes  = properties.indexdata[1]
+            local pdfdoc     = openpdf(pdfshapes.filename)
+            local xforms     = pdfdictionary()
+            local nofglyphs  = 0
+            if pdfdoc then
+                local function pdftopdf(glyph,width,data)
+                    local image  = copypage(pdfdoc,glyph)
+                    width        = 100 * width * bpfactor
+                    embedimage(image)
+                    nofglyphs    = nofglyphs + 1
+                    local name   = f_glyph(nofglyphs)
+                    xforms[name] = pdfreference(image.objnum)
+                    local pdf    = f_image(width,name)
+                    return pdf, width
                 end
+                local function closepdf()
+                 -- closepdf(pdfdoc)
+                end
+                local function getresources()
+                    return pdfdictionary { XObject = xforms }
+                end
+                return pdfshapes, 1, 0.001, pdftopdf, closepdf, getresources
             end
         end
-        local fontbbox = pdfarray { llx, lly, urx, ury }
-        local encoding = pdfdictionary {
-            Type        = pdfconstant("Encoding"),
-            Differences = differences,
-        }
-        local tounicode  = tounicodedictionary(details,indices,maxindex,basefontname)
-        local descriptor = pdfdictionary {
-            Type        = pdfconstant("FontDescriptor"),
-            FontName    = basefont,
-            Flags       = 4,
-            FontBBox    = fontbbox,
-         -- Ascent      = scale(ascender),
-         -- Descent     = scale(descender),
-         -- ItalicAngle = round(italicangle or 0),
-         -- CapHeight   = scale(capheight),
-         -- StemV       = scale(stemv),
-         -- XHeight     = scale(xheight),
-         -- Metadata    = fontmeta and pdfreference(pdfflushstreamobject(fontmeta)) or nil,
-        }
-        local parent = pdfdictionary {
-            Type            = pdfconstant("Font"),
-            Subtype         = pdfconstant("Type3"),
-            Name            = basefont,
-            FontBBox        = fontbbox,
-            FontMatrix      = fontmatrix,
-            CharProcs       = pdfreference(pdfflushobject(charprocs)),
-            Encoding        = pdfreference(pdfflushobject(encoding)),
-            FirstChar       = minindex,
-            LastChar        = maxindex,
-            Widths          = pdfreference(pdfflushobject(widths)),
-            FontDescriptor  = pdfreference(pdfflushobject(descriptor)),
-            Resources       = lpdf.procset(true),
-            ToUnicode       = pdfreference(pdfflushstreamobject(tounicode)),
-        }
-        pdfflushobject(reserved,descriptor)
-        pdfflushobject(object,parent)
+
+        -- mps inclusion
+
+        function methods.mps(filename,details)
+            local properties = details.properties
+            local mpshapes   = properties.indexdata[1]
+            local function mpstopdf(mp,width,data)
+                local pdf    = metapost.simple("metafun",mp,true) -- can be sped up, minifun
+                local width  = 100 * width * bpfactor
+                local stream = f_stream(width,pdf)
+                return stream, width
+            end
+            local function getresources()
+                return lpdf.collectedresources {
+                    serialize  = false,
+                }
+            end
+            return mpshapes, 1, 0.001, mpstopdf, nil, getresources
+        end
+
+        -- png inclusion
+
+        -- With d1 the image mask is used when given and obeys color. So it is needed for pure bw
+        -- bitmap fonts, so here we really need d0.
+        --
+        -- Acrobat X pro only seems to see the image mask but other viewers are doing it ok. Acrobat
+        -- reader crashes. We really need to add a notdef!
+
+        function methods.png(filename,details)
+            local properties = details.properties
+            local png        = properties.png
+            local hash       = png.hash
+            local pngshapes  = properties.indexdata[1]
+            local xforms     = pdfdictionary()
+            local nofglyphs  = 0
+            if pngshapes then
+                local function pngtopdf(glyph,width,data)
+                    local info   = graphics.identifiers.png(glyph.data,"string")
+                    local image  = lpdf.injectors.png(info,"string")
+                    local bbox   = image.bbox
+                    local llx    = bbox[1] * bpfactor
+                    local lly    = bbox[2] * bpfactor
+                    local urx    = bbox[3] * bpfactor
+                    local ury    = bbox[4] * bpfactor
+                    width        = width * bpfactor / 10
+                    embedimage(image)
+                    nofglyphs    = nofglyphs + 1
+                    local name   = f_glyph(nofglyphs)
+                    xforms[name] = pdfreference(image.objnum)
+                    local pdf    = f_image(width,name)
+                    return pdf, width
+                end
+                local function closepng()
+                    pngshapes = nil
+                end
+                local function getresources()
+                    return pdfdictionary { XObject = xforms }
+                end
+                return pngshapes, 1, 1, pngtopdf, closepng, getresources
+            end
+        end
+
+        function methods.color(filename,details)
+            local colrshapes = details.properties.indexdata[1]
+            local colrvalues = details.properties.indexdata[2]
+            local usedfonts  = { }
+            local dd         = details.fontdata.descriptions -- temp hack
+            local function colrtopdf(description,wd,data) -- todo: chardata instead of descriptions
+                -- descriptions by index
+                local colorlist = description.colors
+                if colorlist then
+                    local dropdata  = data.dropin
+                    local dropid    = dropdata.properties.id
+                    local dropunits = dropdata.parameters.units
+                    usedfonts[dropid] = dropid
+
+                    local w = description.width or 0
+                    local s = #colorlist
+                    local l = nil
+                    local t = { f_width(w) }
+                    local n = 1
+                    local d = colrvalues[#colrvalues]
+
+                    for i=1,s do
+                        local entry = colorlist[i]
+                        local v = colrvalues[entry.class] or d
+                        if v and l ~= v then
+                            n = n + 1 ; t[n] = v
+                            l = v
+                        end
+                        local e = dd[entry.slot]
+                        if e then
+                            n = n + 1 ; t[n] = f_char(dropid,e.index)
+                        end
+                    end
+                    return concat(t," "), w / dropunits
+                end
+            end
+            local function getresources()
+                return lpdf.collectedresources {
+                    serialize  = false,
+                    fonts      = usedfonts,
+                    fontprefix = "V",
+                }
+            end
+            return colrshapes, 1, 1, colrtopdf, false, getresources
+        end
+
+        mainwriters["type3"] = function(details)
+            local properties   = details.properties
+            local basefontname = details.basefontname or properties.name
+            local askedmethod  = properties.method or "pk"
+            local method       = methods[askedmethod] or methods.pk
+            if not method then
+                return
+            end
+            local glyphs, widthfactor, scalefactor,
+                glyphtopdf, reset, getresources = method(basedfontname,details)
+            if not glyphs then
+                return
+            end
+            local parameters  = details.parameters
+            local object      = details.objectnumber
+            local factor      = parameters.factor -- normally 1
+            local fontmatrix  = pdfarray { scalefactor, 0, 0, scalefactor, 0, 0 }
+            local indices,
+                  minindex,
+                  maxindex    = collectindices(details.fontdata.characters,details.indices)
+            local widths      = pdfarray()
+            local differences = pdfarray()
+            local charprocs   = pdfdictionary()
+            local basefont    = pdfconstant(basefontname)
+            local d           = 0
+            local forcenotdef = minindex > 0
+            local lastindex   = -0xFF
+
+            if forcenotdef then
+                widths[0] = 0
+                minindex  = 0
+                lastindex = 0
+                d         = 2
+                if not c_notdef then
+                    w_notdef = 0
+                    c_notdef = pdfconstant(".notdef")
+                    r_notdef = pdfreference(pdfflushstreamobject("0 0 d0"))
+                end
+                differences[1]       = w_notdef
+                differences[2]       = c_notdef
+                charprocs[".notdef"] = r_notdef
+            end
+
+            for i=1,maxindex-minindex+1 do
+                widths[i] = 0
+            end
+
+            for index, data in sortedhash(indices) do
+                local name  = f_index(index)
+                local glyph = glyphs[index]
+                if glyph then
+                    local width = widthfactor * data.width
+                    local stream, wd = glyphtopdf(glyph,width,data)
+                    if stream then
+                        if wd then
+                            width = wd
+                        end
+                        if index - 1 ~= lastindex then
+                            d = d + 1 differences[d] = index
+                        end
+                        lastindex = index
+                        d = d + 1 differences[d] = pdfconstant(name)
+                        charprocs[name]          = pdfreference(pdfflushstreamobject(stream))
+                        widths[index-minindex+1] = width
+                    end
+                else
+                    report_fonts("missing glyph %i in type3 font %a",index,basefontname)
+                end
+            end
+            if not fontbbox then
+                -- The specification permits zero values and these are actually also more
+                -- robust as then there are no assumptions and no accuracy is needed.
+                fontbbox = pdfarray { 0, 0, 0, 0 }
+            end
+            local encoding = pdfdictionary {
+                Type        = pdfconstant("Encoding"),
+                Differences = differences,
+            }
+            local tounicode  = tounicodedictionary(details,indices,maxindex,basefontname)
+            local resources  = getresources and getresources() or lpdf.procset(true)
+            local descriptor = pdfdictionary {
+                -- most is optional in type3
+                Type        = pdfconstant("FontDescriptor"),
+                FontName    = basefont,
+                Flags       = 4,
+                ItalicAngle = 0,
+            }
+            local parent = pdfdictionary {
+                Type           = pdfconstant("Font"),
+                Subtype        = pdfconstant("Type3"),
+                Name           = basefont,
+                FontBBox       = fontbbox,
+                FontMatrix     = fontmatrix,
+                CharProcs      = pdfreference(pdfflushobject(charprocs)),
+                Encoding       = pdfreference(pdfflushobject(encoding)),
+                FirstChar      = minindex,
+                LastChar       = maxindex,
+                Widths         = pdfreference(pdfflushobject(widths)),
+                FontDescriptor = pdfreference(pdfflushobject(descriptor)),
+                Resources      = resources,
+                ToUnicode      = pdfreference(pdfflushstreamobject(tounicode)),
+            }
+            pdfflushobject(object,parent)
+            if reset then
+                reset()
+            end
+        end
+
     end
 
 end
@@ -1650,7 +1834,8 @@ local objects = setmetatableindex(function(t,k)
             report_fonts("font id %i bound to hash %s and object %i",k,h,v)
         end
     else
-        report_fonts("fatal error, hash %s asked but not used",k,h,v)
+        -- no problem as it can be svg only
+     -- report_fonts("fatal error, hash %s asked but not used",k,h,v)
         v = pdfreserveobject()
         t[k] = v
     end
@@ -1752,7 +1937,8 @@ function lpdf.flushfonts()
             end
             local properties = details.properties
             local bitmap     = properties.usedbitmap
-            if bitmap then
+            local method     = properties.method -- will be pk | pdf | svg | ...
+            if bitmap or method then
                 local format = "type3"
                 local writer = mainwriters[format]
                 if writer then
@@ -1786,7 +1972,7 @@ function lpdf.flushfonts()
                         local vector   = encoding.vector
                         local indices  = details.indices
                         local remapped = { }
-                        local factor   = dimenfactors.bp * size / 65536
+                        local factor   = bpfactor * size / 65536
                         for k, v in next, indices do
                             local name  = vector[k]
                             local index = reverse[name] or 0
@@ -1826,7 +2012,7 @@ function lpdf.flushfonts()
                         local vector   = encoding.vector
                         local indices  = details.indices
                         local remapped = { }
-                        local factor   = dimenfactors.bp * size / 65536
+                        local factor   = bpfactor * size / 65536
                         for k, v in next, indices do
                             local name  = vector[k]
                             local index = reverse[name] or 0
@@ -1868,8 +2054,11 @@ function lpdf.flushfonts()
                     report_fonts("no %a writer for %a",format,filename)
                 end
             end
-        else
-            report_fonts("no indices for %a",filename)
+        else -- not problem for svg ...
+         -- report_fonts("no indices for %a",filename)
+        end
+        if trace_fonts then
+            report_fonts("embedded indices: % t",table.sortedkeys(details.indices))
         end
         mainfonts[details.hash] = false -- done
     end

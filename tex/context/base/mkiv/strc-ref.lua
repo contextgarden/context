@@ -2613,14 +2613,14 @@ implement {
 --     actions   = { referencerealpage, context },
 --  -- arguments = "string" -- hm, weird
 -- }
---
--- implement {
---     name      = "referencerealpage",
---     actions   = function()
---         local actions = references.currentset
---         context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
---     end
--- }
+
+implement {
+    name      = "referencerealpage",
+    actions   = function()
+        local actions = references.currentset
+        context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
+    end
+}
 
 local function referencepos(key)
     local actions = references.currentset

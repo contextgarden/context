@@ -75,6 +75,7 @@ do
         local scan_cmykcolor  = mplib.scan_cmykcolor
         local scan_transform  = mplib.scan_transform
         local scan_path       = mplib.scan_path
+        local scan_pen        = mplib.scan_pen
 
         scan.next       = function(k)   return scan_next      (currentmpx,k)   end
         scan.expression = function(k)   return scan_expression(currentmpx,k)   end
@@ -90,6 +91,7 @@ do
         scan.cmykcolor  = function(t)   return scan_cmykcolor (currentmpx,t)   end
         scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
         scan.path       = function(t)   return scan_path      (currentmpx,t)   end
+        scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
 
     else
 
@@ -148,6 +150,7 @@ do
     local f_triplet      = formatters["(%F,%F,%F)"]
     local f_quadruple    = formatters["(%F,%F,%F,%F)"]
     local f_transform    = formatters["totransform(%F,%F,%F,%F,%F,%F)"]
+    local f_pen          = formatters["(pencircle transformed totransform(%F,%F,%F,%F,%F,%F))"]
 
     local f_points       = formatters["%p"]
     local f_pair_pt      = formatters["(%p,%p)"]
@@ -516,7 +519,12 @@ do
             local tn = #t
             if tn == 1 then
                 local t1 = t[1]
-                n = n + 1 ; buffer[n] = f2(t1[1],t1[2])
+                n = n + 1
+                if t.pen then
+                    buffer[n] = f_pen(unpack(t1))
+                else
+                    buffer[n] = f2(t1[1],t1[2])
+                end
             elseif tn > 0 then
                 if connector == true or connector == nil then
                     connector = ".."
@@ -533,6 +541,8 @@ do
                 local controls = connector         -- whatever
                 local a = t[1]
                 local b = t[2]
+                n = n + 1
+                buffer[n] = "("
                 n = n + 1
                 if six and #a == 6 and #b == 6 then
                     buffer[n] = f6(a[1],a[2],a[5],a[6],b[3],b[4])
@@ -575,6 +585,8 @@ do
                 else
                     buffer[n] = f2(a[1],a[2])
                 end
+                n = n + 1
+                buffer[n] = ")"
             end
         end
     end

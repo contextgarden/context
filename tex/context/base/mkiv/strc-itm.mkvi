@@ -198,6 +198,7 @@
 \newconditional\c_strc_itemgroups_txt
 \newconditional\c_strc_itemgroups_extra
 \newconditional\c_strc_itemgroups_repeat
+\newconditional\c_strc_itemgroups_inline_head
 
 % 0 = before/after
 % 1 = between unless before
@@ -442,6 +443,7 @@
                                                \setitemgroupparameter\c!width{0em}%
                                              \fi} % signal
 \setvalue{\??itemgroupkeyword\v!intext     }{\settrue\c_strc_itemgroups_inline}
+\setvalue{\??itemgroupkeyword\v!headintext }{\settrue\c_strc_itemgroups_inline_head}
 \setvalue{\??itemgroupkeyword\v!loose      }{\setfalse\c_strc_itemgroups_optimize}
 \setvalue{\??itemgroupkeyword\v!fit        }{\settrue\c_strc_itemgroups_fitting}
 \setvalue{\??itemgroupkeyword\v!nofit      }{\setfalse\c_strc_itemgroups_fitting}
@@ -1232,19 +1234,25 @@
 \unexpanded\def\strc_itemgroups_stop_head_indeed
   {\removeunwantedspaces
    \dostoptagged
-   \ifconditional\c_strc_itemgroups_text
-     \space
-     \ignorespaces
+   \ifconditional\c_strc_itemgroups_inline_head
+       \space
+       \ignorespaces
    \else
-     \par
-   \fi
-   \strc_itemgroups_insert_breakno
-   \ifconditional\c_strc_itemgroups_pack\else\strc_itemgroups_after_head_command\fi
-   \strc_itemgroups_insert_breakno}
+     \ifconditional\c_strc_itemgroups_text
+       \space
+       \ignorespaces
+     \else
+       \par
+     \fi
+     \strc_itemgroups_insert_breakno
+     \ifconditional\c_strc_itemgroups_pack\else\strc_itemgroups_after_head_command\fi
+     \strc_itemgroups_insert_breakno
+  \fi}
 
 \unexpanded\def\strc_itemgroups_head_body_indeed
   {\dostarttagged\t!itembody\empty
-   \noindentation}
+   \noindentation
+   \ignorespaces}
 
 % Simple commands.
 

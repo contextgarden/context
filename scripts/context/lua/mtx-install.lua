@@ -90,34 +90,39 @@ local platforms = {
     --
     ["linux-armhf"]    = "linux-armhf",
     --
-    ["freebsd"]        = "freebsd",
+    ["openbsd"]        = "openbsd6.5",
+    ["openbsd-i386"]   = "openbsd6.5",
+    ["openbsd-amd64"]  = "openbsd6.5-amd64",
     --
+    ["freebsd"]        = "freebsd",
+    ["freebsd-i386"]   = "freebsd",
     ["freebsd-amd64"]  = "freebsd-amd64",
     --
-    ["kfreebsd"]       = "kfreebsd-i386",
-    ["kfreebsd-i386"]  = "kfreebsd-i386",
+ -- ["kfreebsd"]       = "kfreebsd-i386",
+ -- ["kfreebsd-i386"]  = "kfreebsd-i386",
+ -- ["kfreebsd-amd64"] = "kfreebsd-amd64",
     --
-    ["kfreebsd-amd64"] = "kfreebsd-amd64",
+ -- ["linux-ppc"]      = "linux-ppc",
+ -- ["ppc"]            = "linux-ppc",
     --
-    ["linux-ppc"]      = "linux-ppc",
-    ["ppc"]            = "linux-ppc",
+ -- ["osx"]            = "osx-intel",
+ -- ["macosx"]         = "osx-intel",
+ -- ["osx-intel"]      = "osx-intel",
+ -- ["osxintel"]       = "osx-intel",
     --
-    ["osx"]            = "osx-intel",
-    ["macosx"]         = "osx-intel",
-    ["osx-intel"]      = "osx-intel",
-    ["osxintel"]       = "osx-intel",
+ -- ["osx-ppc"]        = "osx-ppc",
+ -- ["osx-powerpc"]    = "osx-ppc",
+ -- ["osxppc"]         = "osx-ppc",
+ -- ["osxpowerpc"]     = "osx-ppc",
     --
-    ["osx-ppc"]        = "osx-ppc",
-    ["osx-powerpc"]    = "osx-ppc",
-    ["osxppc"]         = "osx-ppc",
-    ["osxpowerpc"]     = "osx-ppc",
-    --
+    ["macosx"]         = "osx-64",
+    ["osx"]            = "osx-64",
     ["osx-64"]         = "osx-64",
     --
-    ["solaris-intel"]  = "solaris-intel",
+ -- ["solaris-intel"]  = "solaris-intel",
     --
-    ["solaris-sparc"]  = "solaris-sparc",
-    ["solaris"]        = "solaris-sparc",
+ -- ["solaris-sparc"]  = "solaris-sparc",
+ -- ["solaris"]        = "solaris-sparc",
     --
     ["unknown"]        = "unknown",
 }

@@ -1,0 +1,104 @@
+% language=us
+
+% I started this series in June 2019 and I bet that it will never be complete or
+% extensive enough. But I'll do my best to make it as useful as possible ConTeXt
+% users out there who like to know about such details. Feel free to ask for more
+% explanations.
+
+\startenvironment lowlevel-style
+
+\usemodule[abbreviations-logos]
+\usemodule[scite]
+
+\setvariables
+  [document]
+  [title=No Title,
+   author=No Author,
+   color=NoColor]
+
+\setupbodyfont
+  [dejavu,11pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   backspace=2cm,
+   topspace=15mm]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   color=darkgray]
+
+\setuphead
+  [section]
+  [style=\bfb,
+  %page=right,
+   color=darkgray]
+
+\setuphead
+  [subsection]
+  [style=\bfa,
+   color=darkgray]
+
+\setupfootertexts
+  [section] % [\documentvariable{title}]
+
+\setupfooter
+  [style=bold,
+   color=darkgray]
+
+\startuseMPgraphic{titlepage}
+    fill Page
+        withcolor "\documentvariable{color}" ;
+
+    numeric d ; d := 2mm ;
+
+    picture p ; p := textext.llft("\tex{}")
+        xysized (.1PaperWidth-2d,.1PaperHeight-2d)
+        shifted (.1PaperWidth- d,.1PaperHeight -d)
+    ;
+
+    draw image (
+        for i = 0 step .1 PaperWidth until PaperWidth :
+            for j = 0 step .1 PaperHeight until PaperHeight :
+                draw p shifted (i,j) ;
+            endfor ;
+        endfor ;
+    ) withcolor .5resolvedcolor("middlegray") ;
+
+    draw textext.d("\strut low level")
+        xsized (.8PaperWidth)
+        shifted center topboundary Page
+        shifted -(0,.2PaperHeight)
+        withcolor "white" ;
+    draw textext.d("\strut \TeX")
+        xsized (.4PaperWidth)
+        shifted center topboundary Page
+        shifted -(0,.4PaperHeight)
+        withcolor "white" ;
+    draw textext.d("\strut\documentvariable{title}")
+        ysized 3cm
+        shifted center bottomboundary Page
+        shifted (0,.1PaperHeight)
+        withcolor "white" ;
+\stopuseMPgraphic
+
+\startsetups document:start
+
+    \startMPpage
+        \includeMPgraphic{titlepage} ;
+    \stopMPpage
+
+    \page
+
+    \startsubject[title=Contents]
+        \placelist[section][criterium=previous]
+    \stopsubject
+
+\stopsetups
+
+\stopenvironment

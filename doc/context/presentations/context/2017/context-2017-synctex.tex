@@ -1,0 +1,102 @@
+% \setupsynctex
+%   [state=start]
+
+% \enabletrackers
+%   [system.synctex.visualize]
+
+\usemodule[present-lines]
+
+\definecolor[maincolor][r=.6]
+
+\startdocument[title=\SYNCTEX,subtitle={\CONTEXT\ 2017 Maibach}]
+
+\startchapter[title=What is \SYNCTEX]
+
+\startitemize
+    \startitem it is a mechanism for going back from viewer to editor \stopitem
+    \startitem it uses an extra (zipped) output file \stopitem
+    \startitem it adds an overhead of 5 to 15 percent runtime \stopitem
+    \startitem it is designed with a specific macro package in mind \stopitem
+    \startitem the rather generic approach works okay for simple document layouts \stopitem
+    \startitem but it often fails for projects that use multiple files\stopitem
+    \startitem and that moves information around like \XML\ encoded files \stopitem
+\stopitemize
+
+\startchapter[title=Disclaimer]
+
+\startitemize
+    \startitem till recently it was supported in \CONTEXT\ as-it-was  \stopitem
+    \startitem there were no compliants, so it must have worked ok for most users \stopitem
+    \startitem we never used it ourselves because of mentioned reasons \stopitem
+    \startitem we only wanted to support it when it works ok in projects \stopitem
+    \startitem (think of thousands of \XML\ with deeply nested inclusions in one document) \stopitem
+    \startitem but what we support now is purely based on personal experiences \stopitem
+    \startitem we don't use it ourselves so feedback is welcome \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=What we do]
+
+\startitemize
+    \startitem the normal \SYNCTEX\ mechanism is disabled \stopitem
+    \startitem when told so, \CONTEXT\ will kick in its own code \stopitem
+    \startitem this is done by using \LUA\ code to set the right information \stopitem
+    \startitem only source files that make sense are dealt with \stopitem
+    \startitem this protects the styles from unwanted changes \stopitem
+    \startitem within reasonable bounds \XML\ is supported \stopitem
+    \startitem this also includes nested documents \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=How it works]
+
+\startitemize
+    \startitem we only mark text and don't bother about the rest \stopitem
+    \startitem we collapse information about whole stretches \stopitem
+    \startitem the extra file is therefore not that large \stopitem
+    \startitem so we can do without compression \stopitem
+    \startitem some care is needed to avoid interference with the editors parser \stopitem
+    \startitem (read: we need to get rid of the rather complex and heuristics) \stopitem
+    \startitem (read: it would be nice to have a simple robust parser option) \stopitem
+    \startitem there are flaws but I will look into them when motivated \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=What the user gets]
+
+\startitemize
+    \startitem a way to turn it on:
+        \starttyping
+            \setupsynctex[state=start]
+        \stoptyping
+    \stopitem
+    \startitem control over methods:
+        \starttyping
+            \setupsynctex[method=max]
+        \stoptyping
+    \stopitem
+    \startitem visual tracing:
+        \starttyping
+            \enabletrackers[system.synctex.visualize]
+        \stoptyping
+    \stopitem
+    \startitem some low level commands:
+        \starttyping
+            \synctexblockfilename{filename}
+            \synctexsetfilename  {filename}
+            \synctexresetfilename
+            \synctexpause
+            \synctexresume
+        \stoptyping
+    \stopitem
+\stopitemize
+
+% \enabletrackers[system.synctex.xml]
+% \enabledirectives[system.synctex.details]
+
+\stopchapter
+
+\stopdocument

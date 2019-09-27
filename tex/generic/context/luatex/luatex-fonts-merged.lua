@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/10/19 20:03:16
+-- merge date  : 09/27/19 17:59:57
 
 do -- begin closure to overcome local limits and interference
 
@@ -5024,7 +5024,6 @@ if not nuts.setreplace then
   setfield(n,"replace",h)
  end
 end
-end
 
 end -- closure
 
@@ -9016,7 +9015,8 @@ function constructors.scale(tfmdata,specification)
  local units=parameters.units or 1000
  targetproperties.language=properties.language or "dflt" 
  targetproperties.script=properties.script   or "dflt" 
- targetproperties.mode=properties.mode  or "base"
+ targetproperties.mode=properties.mode  or "base" 
+ targetproperties.method=properties.method
  local askedscaledpoints=scaledpoints
  local scaledpoints,delta=constructors.calculatescale(tfmdata,scaledpoints,nil,specification)
  local hdelta=delta
@@ -23081,6 +23081,7 @@ otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
+otf.mpscache=containers.define("fonts","mps",otf.version,true)
 otf.svgenabled=false
 otf.pngenabled=false
 local otfreaders=otf.readers
@@ -32098,6 +32099,9 @@ if not modules then modules={} end modules ['font-ocl']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ return
+end
 local tostring,tonumber,next=tostring,tonumber,next
 local round,max=math.round,math.round
 local gsub,find=string.gsub,string.find
@@ -32105,7 +32109,6 @@ local sortedkeys,sortedhash,concat=table.sortedkeys,table.sortedhash,table.conca
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
-local bpfactor=number.dimenfactors.bp
 local helpers=fonts.helpers
 local charcommand=helpers.commands.char
 local rightcommand=helpers.commands.right
@@ -32292,11 +32295,17 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
    local data=nil
    local dx=nil
    local dy=nil
+   local scale=1
    if typ=="table" then
     data=pdf.data
     dx=pdf.x or pdf.dx or 0
     dy=pdf.y or pdf.dy or 0
+    scale=pdf.scale or 1
    elseif typ=="string" then
+    data=pdf
+    dx=0
+    dy=0
+   elseif typ=="number" then
     data=pdf
     dx=0
     dy=0
@@ -32310,7 +32319,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
      not unicode and actualb or { "pdf","page",(getactualtext(unicode)) },
      downcommand [dp+dy*hfactor],
      rightcommand[  dx*hfactor],
-     vfimage(wd,ht,dp,data,name),
+     vfimage(scale*wd,ht,dp,data,pdfshapes.filename or ""),
      actuale,
     }
     character[kind]=true
@@ -32349,7 +32358,7 @@ do
  }
  if not runner then
   runner=function()
-   return io.open("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
+   return io.popen("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
   end
  end
  function otfsvg.topdf(svgshapes,tfmdata)
@@ -32364,6 +32373,7 @@ do
    local f_convert=formatters["%s --export-pdf=%s\n"]
    local filterglyph=otfsvg.filterglyph
    local nofdone=0
+   local processed={}
    report_svg("processing %i svg containers",nofshapes)
    statistics.starttiming()
    for i=1,nofshapes do
@@ -32375,25 +32385,50 @@ do
       local pdffile=f_pdffile(index)
       savedata(svgfile,data)
       inkscape:write(f_convert(svgfile,pdffile))
-      pdfshapes[index]=true
+      processed[index]=true
       nofdone=nofdone+1
-      if nofdone%100==0 then
-       report_svg("%i shapes processed",nofdone)
+      if nofdone%25==0 then
+       report_svg("%i shapes submitted",nofdone)
       end
      end
     end
    end
+   if nofdone%25~=0 then
+    report_svg("%i shapes submitted",nofdone)
+   end
+   report_svg("processing can be going on for a while")
    inkscape:write("quit\n")
    inkscape:close()
    report_svg("processing %i pdf results",nofshapes)
-   for index in next,pdfshapes do
+   for index in next,processed do
     local svgfile=f_svgfile(index)
     local pdffile=f_pdffile(index)
-    pdfshapes[index]={
-     data=loaddata(pdffile),
-    }
+    local pdfdata=loaddata(pdffile)
+    if pdfdata and pdfdata~="" then
+     pdfshapes[index]={
+      data=pdfdata,
+     }
+    end
     remove(svgfile)
     remove(pdffile)
+   end
+local characters=tfmdata.characters
+for k,v in next,characters do
+ local d=descriptions[k]
+ local i=d.index
+ if i then
+  local p=pdfshapes[i]
+  if p then
+   local w=d.width
+   local l=d.boundingbox[1]
+   local r=d.boundingbox[3]
+   p.scale=(r-l)/w
+   p.x=l
+  end
+ end
+end
+   if not next(pdfshapes) then
+    report_svg("there are no converted shapes, fix your setup")
    end
    statistics.stoptiming()
    if statistics.elapsedseconds then
@@ -32413,10 +32448,10 @@ local function initializesvg(tfmdata,kind,value)
   end
   local pdffile=containers.read(otf.pdfcache,hash)
   local pdfshapes=pdffile and pdffile.pdfshapes
-  if not pdfshapes or pdffile.timestamp~=timestamp then
+  if not pdfshapes or pdffile.timestamp~=timestamp or not next(pdfshapes) then
    local svgfile=containers.read(otf.svgcache,hash)
    local svgshapes=svgfile and svgfile.svgshapes
-   pdfshapes=svgshapes and otfsvg.topdf(svgshapes,tfmdata) or {}
+   pdfshapes=svgshapes and otfsvg.topdf(svgshapes,tfmdata,otf.pdfcache.writable,hash) or {}
    containers.write(otf.pdfcache,hash,{
     pdfshapes=pdfshapes,
     timestamp=timestamp,

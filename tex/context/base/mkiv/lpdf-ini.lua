@@ -12,7 +12,7 @@ local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setme
 local char, byte, format, gsub, concat, match, sub, gmatch = string.char, string.byte, string.format, string.gsub, table.concat, string.match, string.sub, string.gmatch
 local utfchar, utfbyte, utfvalues = utf.char, utf.byte, utf.values
 local sind, cosd, max, min = math.sind, math.cosd, math.max, math.min
-local sort = table.sort
+local sort, sortedhash = table.sort, table.sortedhash
 local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, lpeg.V
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
@@ -170,16 +170,16 @@ end
     local pdfgetpagereference
 
     updaters.register("backend.update.lpdf",function()
-        pdfreserveobject           = pdf.reserveobj
-        pdfimmediateobject         = pdf.immediateobj
-        pdfdeferredobject          = pdf.obj
-        pdfreferenceobject         = pdf.refobj
+        pdfreserveobject      = pdf.reserveobj
+        pdfimmediateobject    = pdf.immediateobj
+        pdfdeferredobject     = pdf.obj
+        pdfreferenceobject    = pdf.refobj
 
-        pdfgetpagereference        = pdf.getpageref
+        pdfgetpagereference   = pdf.getpageref
 
-        pdfsetpageresources        = pdf.setpageresources
-        pdfsetpageattributes       = pdf.setpageattributes
-        pdfsetpagesattributes      = pdf.setpagesattributes
+        pdfsetpageresources   = pdf.setpageresources
+        pdfsetpageattributes  = pdf.setpageattributes
+        pdfsetpagesattributes = pdf.setpagesattributes
     end)
 
 local jobpositions = job.positions
@@ -1253,32 +1253,47 @@ do
     -- todo: share them
     -- todo: force when not yet set
 
+    local f_font = formatters["%s%d"]
+
     function lpdf.collectedresources(options)
         local ExtGState  = d_extgstates  and next(d_extgstates ) and p_extgstates
         local ColorSpace = d_colorspaces and next(d_colorspaces) and p_colorspaces
         local Pattern    = d_patterns    and next(d_patterns   ) and p_patterns
         local Shading    = d_shades      and next(d_shades     ) and p_shades
+        local Font
         if options and options.patterns == false then
             Pattern = nil
         end
-        if ExtGState or ColorSpace or Pattern or Shading then
+        local fonts = options and options.fonts
+        if fonts and next(fonts) then
+            local pdfgetfontobjnumber = lpdf.getfontobjnumber
+            if pdfgetfontobjnumber then
+                local prefix = options.fontprefix or "F"
+                Font = pdfdictionary { }
+                for k, v in sortedhash(fonts) do
+                    Font[f_font(prefix,v)] = pdfreference(pdfgetfontobjnumber(k))
+                end
+            end
+        end
+        if ExtGState or ColorSpace or Pattern or Shading or Fonts then
             local collected = pdfdictionary {
                 ExtGState  = ExtGState,
                 ColorSpace = ColorSpace,
                 Pattern    = Pattern,
                 Shading    = Shading,
+                Font       = Font,
             }
             if options and options.serialize == false then
                 return collected
             else
                 return collected()
             end
+        elseif options and options.notempty then
+            return nil
+        elseif options and options.serialize == false then
+            return pdfdictionary { }
         else
-            if options and options.serialize == false then
-                return pdfdictionary { }
-            else
-                return ""
-            end
+            return ""
         end
     end
 
@@ -1487,41 +1502,23 @@ end
 
 do
 
-    local f_actual_text_one       = formatters["BT /Span << /ActualText <feff%04x> >> BDC %s EMC ET"]
-    local f_actual_text_two       = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC %s EMC ET"]
-    local f_actual_text_one_b     = formatters["BT /Span << /ActualText <feff%04x> >> BDC"]
-    local f_actual_text_two_b     = formatters["BT /Span << /ActualText <feff%04x%04x> >> BDC"]
+    local f_actual_text_p         = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
     local f_actual_text_b         = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
     local s_actual_text_e         = "EMC ET"
     local f_actual_text_b_not     = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local f_actual_text_one_b_not = formatters["/Span << /ActualText <feff%04x> >> BDC"]
-    local f_actual_text_two_b_not = formatters["/Span << /ActualText <feff%04x%04x> >> BDC"]
     local s_actual_text_e_not     = "EMC"
     local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
-
-    -- todo: use tounicode from the font mapper
-
-    -- floor(unicode/1024) => rshift(unicode,10) -- better for 5.3
+    local tounicode = fonts.mappings.tounicode
 
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
-        if unicode < 0x10000 then
-            return f_actual_text_one(unicode,pdfcode)
-        else
-            return f_actual_text_two(rshift(unicode,10)+0xD800,unicode%1024+0xDC00,pdfcode)
-        end
+        return f_actual_text_p(type(unicode) == "string" and unicode or tounicode(unicode),pdfcode)
     end
 
     function codeinjections.startunicodetoactualtext(unicode)
-        if type(unicode) == "string" then
-            return f_actual_text_b(unicode)
-        elseif unicode < 0x10000 then
-            return f_actual_text_one_b(unicode)
-        else
-            return f_actual_text_two_b(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
-        end
+        return f_actual_text_b(type(unicode) == "string" and unicode or tounicode(unicode))
     end
 
     function codeinjections.stopunicodetoactualtext()
@@ -1529,13 +1526,7 @@ do
     end
 
     function codeinjections.startunicodetoactualtextdirect(unicode)
-        if type(unicode) == "string" then
-            return f_actual_text_b_not(unicode)
-        elseif unicode < 0x10000 then
-            return f_actual_text_one_b_not(unicode)
-        else
-            return f_actual_text_two_b_not(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
-        end
+        return f_actual_text_b_not(type(unicode) == "string" and unicode or tounicode(unicode))
     end
 
     function codeinjections.stopunicodetoactualtextdirect()

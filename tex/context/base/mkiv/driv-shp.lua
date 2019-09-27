@@ -150,6 +150,7 @@ local updatefontstate
 local pushorientation
 local poporientation
 local flushcharacter
+local flushfontchar
 local flushrule
 local flushliteral
 local flushsetmatrix
@@ -239,6 +240,32 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 else
                     -- safeguard, we assume the font itself (often index 1)
                     pos_h = pos_h + flushchar(font,char,font,chr,f,e)
+                end
+            end
+        elseif command == "use" then
+            local index = packet[2]
+            if index then
+                local fnt
+                if index == 0 then
+                    fnt = font
+                else
+                    local okay = fonts and fonts[index]
+                    if okay then
+                        fnt = okay.id
+                    end
+                end
+                if fnt then
+                    -- not efficient but ok for now as experiment
+                    local d = characters[fnt]
+                    if d then
+                        for i=3,#packet do
+                            local chr = packet[i]
+                            local dat = d[chr]
+                            if dat then
+                                flushfontchar(fnt,chr,dat)
+                            end
+                        end
+                    end
                 end
             end
         elseif command == "right" then
@@ -1118,6 +1145,7 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     poporientation    = flushers.poporientation
 
     flushcharacter    = flushers.character
+    flushfontchar     = flushers.fontchar
     flushrule         = flushers.rule
     flushsimplerule   = flushers.simplerule
     flushspecial      = flushers.special

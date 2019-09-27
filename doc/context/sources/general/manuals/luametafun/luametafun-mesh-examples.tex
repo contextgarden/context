@@ -1,0 +1,161 @@
+\startbuffer[1]
+\startuseMPgraphic{MyPath1}
+    fill OverlayBox withcolor "darkyellow" ;
+    save p ; path p[] ;
+    p1 := unitsquare xysized( OverlayWidth/4, OverlayHeight/4) ;
+    p2 := unitsquare xysized(2OverlayWidth/4,3OverlayHeight/5) shifted ( OverlayWidth/4,0) ;
+    p3 := unitsquare xysized( OverlayWidth/4, OverlayHeight  ) shifted (3OverlayWidth/4,0) ;
+    fill p1 withcolor "darkred" ;
+    fill p2 withcolor "darkblue" ;
+    fill p3 withcolor "darkgreen" ;
+    draw lmt_mesh [ paths = { p1, p2, p3 } ] ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[2]
+\startuseMPgraphic{MyPath2}
+    save q ; path q ; q := unitcircle xysized(OverlayWidth,OverlayHeight) ;
+    save p ; path p ; p := for i=1 upto length(q) :
+        (center q) -- (point (i-1) of q) -- (point i of q) -- (center q) --
+    endfor cycle ;
+    fill q withcolor "darkgray" ;
+    draw lmt_mesh [
+        trace = true,
+        paths = { p }
+    ] withcolor "darkred" ;
+
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[3]
+\startuseMPgraphic{MyPath3}
+    save q ; path q ; q := unitcircle xysized(OverlayWidth,OverlayHeight) randomized 3mm ;
+    fill q withcolor "darkgray" ;
+    draw lmt_mesh [
+        trace = true,
+        paths = { meshed(q,OverlayBox,.05) }
+    ] withcolor "darkgreen" ;
+  % draw OverlayMesh(q,.025) withcolor "darkgreen" ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[4]
+\startuseMPgraphic{MyPath4}
+    save q ; path q ; q := unitcircle xysized(OverlayWidth,OverlayHeight) randomized 3mm ;
+    fill q withcolor "darkgray" ;
+    draw lmt_mesh [
+        trace = true,
+        auto  = true,
+        step  = 0.0125,
+        paths = { q }
+    ] withcolor "darkyellow" ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[5]
+\startuseMPgraphic{MyPath5}
+    save q ; path q ; q := unitdiamond xysized(OverlayWidth,OverlayHeight) randomized 2mm ;
+    q := q shifted - center q shifted center OverlayBox ;
+    fill q withcolor "darkgray" ;
+    draw lmt_mesh [
+        trace = true,
+        auto  = true,
+        step  = 0.0125,
+        paths = { q }
+    ] withcolor "darkmagenta" ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[6]
+\startuseMPgraphic{MyPath6}
+    save p ; path p[] ;
+    p1 := p2 := fullcircle xysized(2OverlayWidth/5,2OverlayHeight/3) ;
+    p1 := p1 shifted - center p1 shifted center OverlayBox shifted (-1OverlayWidth/4,0) ;
+    p2 := p2 shifted - center p2 shifted center OverlayBox shifted ( 1OverlayWidth/4,0) ;
+    fill p1 withcolor "middlegray" ;
+    fill p2 withcolor "middlegray" ;
+    draw lmt_mesh [
+        trace = true,
+        auto  = true,
+        step  = 0.02,
+        paths = { p1, p2 }
+    ] withcolor "darkcyan" ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startbuffer[7]
+\startuseMPgraphic{MyPath7}
+    save p ; path p[] ;
+    p1 := p2 := fullcircle xysized(2OverlayWidth/5,2OverlayHeight/3) rotated 45 ;
+    p1 := p1 shifted - center p1 shifted center OverlayBox shifted (-1OverlayWidth/4,0) ;
+    p2 := p2 shifted - center p2 shifted center OverlayBox shifted ( 1OverlayWidth/4,0) ;
+    fill p1 withcolor "middlegray" ;
+    fill p2 withcolor "middlegray" ;
+    draw lmt_mesh [
+        trace = true,
+        auto  = true,
+        step  = 0.01,
+        box   = OverlayBox enlarged -5mm,
+        paths = { p1, p2 }
+    ] withcolor "darkcyan" ;
+    draw OverlayBox enlarged -5mm withcolor "darkgray" ;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+\stopbuffer
+
+\continueifinputfile {luametafun-mesh-examples.tex}
+
+\setupbodyfont[dejavu]
+
+\setupinteraction
+  [state=start,
+   color=white,
+   contrastcolor=white]
+
+\starttext
+
+    \getbuffer[1,2,3,4,5,6,7]
+
+    \defineoverlay[MyPath1][\useMPgraphic{MyPath1}]
+    \defineoverlay[MyPath2][\useMPgraphic{MyPath2}]
+    \defineoverlay[MyPath3][\useMPgraphic{MyPath3}]
+    \defineoverlay[MyPath4][\useMPgraphic{MyPath4}]
+    \defineoverlay[MyPath5][\useMPgraphic{MyPath5}]
+    \defineoverlay[MyPath6][\useMPgraphic{MyPath6}]
+    \defineoverlay[MyPath7][\useMPgraphic{MyPath7}]
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath1,frame=off]{Example 1}[realpage(2)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath2,frame=off]{Example 2}[realpage(3)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath3,frame=off]{Example 3}[realpage(4)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath4,frame=off]{Example 4}[realpage(5)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath5,frame=off]{Example 5}[realpage(6)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath6,frame=off]{Example 6}[realpage(7)]
+    \stopTEXpage
+
+    \startTEXpage
+        \button[height=3cm,width=4cm,background=MyPath7,frame=off]{Example 7}[realpage(1)]
+    \stopTEXpage
+
+\stoptext

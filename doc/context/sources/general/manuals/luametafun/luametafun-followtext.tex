@@ -1,0 +1,124 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-followtext
+
+\startchapter[title={Followtext}]
+
+Typesetting text along a path started as a demo if communication between \TEX\ and
+\METAPOST\ in the early days of \METAFUN. In the meantime the implementation has
+been modernized a few times and the current implementation feels okay, especially
+now that we have a better user interface. Here is an example:
+
+\startbuffer[1a]
+\startMPcode{doublefun}
+    draw lmt_followtext [
+        text   = "How well does it work {\bf 1}! ",
+        path   = fullcircle scaled 4cm,
+        trace  = true,
+        spread = true,
+    ] ysized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1a][option=TEX]
+
+Here is the same example but with the text in the reverse order. The results of both examples
+are shown in \in {figure} [followtext:1].
+
+\startbuffer[1b]
+\startMPcode{doublefun}
+    draw lmt_followtext [
+        text    = "How well does it work {\bf 2}! ",
+        path    = fullcircle scaled 4cm,
+        trace   = true,
+        spread  = false,
+        reverse = true,
+    ] ysized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1b][option=TEX]
+
+\startplacefigure[reference=followtext:1]
+    \startcombination[2*2]
+       {\getbuffer[1a]} {}
+       {\getbuffer[1b]} {}
+    \stopcombination
+\stopplacefigure
+
+There are not that many options. One is \type {autoscale} which makes the shape
+and text match. \in {Figure} [followtext:2] shows what happens.
+
+\startbuffer[2a]
+\startMPcode{doublefun}
+    draw lmt_followtext [
+        text        = "How well does it work {\bf 3}! ",
+        trace       = true,
+        autoscaleup = "yes"
+    ] ysized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2a][option=TEX]
+
+\startbuffer[2b]
+\startMPcode{doublefun}
+    draw lmt_followtext [
+        text        = "How well does it work {\bf 4}! ",
+        path        = fullcircle scaled 2cm,
+        trace       = true,
+        autoscaleup = "max"
+    ] ysized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2b][option=TEX]
+
+\startplacefigure[reference=followtext:2]
+    \startcombination[2*2]
+       {\getbuffer[2a]} {}
+       {\getbuffer[2b]} {}
+    \stopcombination
+\stopplacefigure
+
+You can use quite strange paths, like the one show in \in {figure}
+[followtext:3]. Watch the parenthesis around the path. this is really needed in
+order for the scanner to pick up the path (otherwise it sees a pair).
+
+\startbuffer[3]
+\startMPcode{doublefun}
+    draw lmt_followtext [
+        text        = "\samplefile {zapf}",
+        path        = ((3,0) .. (1,0) .. (5,0) .. (2,0) .. (4,0) .. (3,0)),
+        autoscaleup = "max"
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3][option=TEX]
+
+\startplacefigure[reference=followtext:3]
+    \getbuffer[3]
+\stopplacefigure
+
+The small set of options is:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name          \BC type    \BC default      \BC comment \NC \NR
+\ML
+\NC text          \NC string  \NC              \NC \NC \NR
+\NC spread        \NC string  \NC true         \NC \NC \NR
+\NC trace         \NC numeric \NC false        \NC \NC \NR
+\NC reverse       \NC numeric \NC false        \NC \NC \NR
+\NC autoscaleup   \NC numeric \NC no           \NC \NC \NR
+\NC autoscaledown \NC string  \NC no           \NC \NC \NR
+\NC path          \NC string  \NC (fullcircle) \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

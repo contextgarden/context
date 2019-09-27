@@ -22,6 +22,9 @@
 \registerctxluafile{mlib-int}{}
 \registerctxluafile{mlib-lmt}{}
 
+\doifelsefileexists{mlib-cnt.lua}{\registerctxluafile{mlib-cnt}{}}{}
+\doifelsefileexists{mlib-svg.lua}{\registerctxluafile{mlib-svg}{}}{}
+
 \unprotect
 
 \protect \endinput

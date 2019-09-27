@@ -886,6 +886,13 @@ vardef roundedsquare (expr width, height, offset) =
     (0,height-offset)     -- (0,offset)            {down}  .. cycle
 enddef ;
 
+vardef roundedsquarexy (expr width, height, dx, dy) =
+    (dx,0)            -- (width-dx,0)      {right} ..
+    (width,dy)        -- (width,height-dy) {up}    ..
+    (width-dx,height) -- (dx,height)       {left}  ..
+    (0,height-dy)     -- (0,dy)            {down}  .. cycle
+enddef ;
+
 %D Some colors.
 
 def resolvedcolor(expr s) =
@@ -3641,11 +3648,29 @@ enddef ;
 
 vardef totransform(expr x, y, xx, xy, yx, yy) =
     save t ; transform t ;
-    xpart  t = x ;
-    ypart  t = y ;
-    xxpart t = xx ;
-    xypart t = xy ;
-    yxpart t = yx ;
-    yypart t = yy ;
+    xxpart t = xx ; yypart t = yy ;
+    xypart t = xy ; yxpart t = yx ;
+    xpart  t = x  ; ypart  t = y  ;
     t
+enddef ;
+
+vardef bymatrix(expr rx, sx, sy, ry, tx, ty) =
+    save t ; transform t ;
+    xxpart t = rx ; yypart t = ry ;
+    xypart t = sx ; yxpart t = sy ;
+    xpart  t = tx ; ypart  t = ty ;
+    t
+enddef ;
+
+let xslanted = slanted ;
+
+def yslanted primary s =
+    transformed
+        begingroup
+            save t ; transform t ;
+            xxpart t = 1 ; yypart t = 1 ;
+            xypart t = 0 ; yxpart t = s ;
+            xpart  t = 0 ; ypart  t = 0 ;
+            t
+        endgroup
 enddef ;

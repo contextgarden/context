@@ -207,7 +207,7 @@ function checkers.png(data) -- same as jpg (for now)
     local used    = data.used
     if request and used and not request.scanimage then
         local identify = graphics.identify
-        local inject   = lpdf.injectors.png
+        local inject   = lpdf.injectors.png -- currently pdf specific
         local found    = false
         request.scanimage = function(t)
             local result = wrappedidentify(identify,t.filename)

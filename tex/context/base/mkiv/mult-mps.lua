@@ -117,7 +117,7 @@ return {
         --
         "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in",
         --
-        "triplet", "quadruplet", "totransform",
+        "triplet", "quadruplet", "totransform", "bymatrix",
         --
     },
     internals = { -- we need to remove duplicates above

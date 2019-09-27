@@ -4007,7 +4007,7 @@
 \unexpanded\def\pickupgroupedcommand#1#2#3%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \def\m_syst_helpers_handle_group_a{#2}%
-   \def\m_syst_helpers_handle_group_p{#2}%
+   \def\m_syst_helpers_handle_group_p{#3}%
    \futureexpandis\bgroup\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
 
 \unexpanded\def\triggergroupedcommand#1%

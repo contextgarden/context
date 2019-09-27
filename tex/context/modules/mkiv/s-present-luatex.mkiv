@@ -1,0 +1,118 @@
+%D \module
+%D   [      file=s-present-luatex,
+%D        version=2016.04.30, % around
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Banner,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D As with older presentations we use the \LUA\ moon as page counter. The rest
+%D of the style is simple because I got bored of all this fancy stepping for
+%D simple presentations.
+
+%D Beware: this presentation is meant for my own use and not a general purpose
+%D presentation style. It is a rather dumb module but served its purpose well.
+
+\startmodule[present-luatex]
+
+\useMPlibrary[lua]
+
+\setupbodyfont
+  [dejavu,17.3pt]
+
+\startuseMPgraphic{page}
+    StartPage ;
+        luaorbitcolor := white ;
+        fill Page withcolor (.5white - luaplanetcolor) ;
+        draw anchored.urt(image(drawluapagenumbergoround) xsized 150pt,urcorner Page shifted (-15pt,-10pt)) ;
+        if RealPageNumber > 1 :
+            begingroup;
+                save p, q; picture p, q;
+                p := textext("\ssbf\setstrut\strut \documentvariable{mp:title}")    xsized 150pt ;
+                q := textext("\ssbf\setstrut\strut \documentvariable{mp:subtitle}") xsized 150pt ;
+                setbounds q to boundingbox(p);
+                draw anchored.lrt(p,lrcorner Page shifted (-15pt, 90pt)) withcolor luaplanetcolor ;
+                draw anchored.lrt(q,lrcorner Page shifted (-15pt, 55pt)) withcolor luaholecolor ;
+            endgroup;
+        fi ;
+        fill Field[Text][Text] enlarged 10pt withcolor (.5white - luaplanetcolor)/1.5 ;
+    StopPage ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\setupbackgrounds
+  [page]
+  [background=page]
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [backspace=50pt,
+   cutspace=200pt,
+   topspace=40pt,
+   bottomspace=40pt,
+   margin=0pt,
+   footer=0pt,
+   header=0pt,
+   width=middle,
+   height=middle]
+
+\setupmakeup
+  [standard]
+  [top=\vfil,
+   bottom=\vfilll,
+   setups=standardmakeup,
+   align=middle,
+   color=white]
+
+\setupcolors
+  [textcolor=white]
+
+\startsetups standardmakeup
+    \setupwhitespace
+      [big]
+\stopsetups
+
+\setupdocument
+  [title=Title,
+   subtitle=Subtitle,
+   location=\currentdate,
+   mp:title=title,
+   mp:subtitle=subtitle]
+
+\startsetups document:start
+
+    \startstandardmakeup[bottom=,top=]
+
+        \raggedcenter
+
+        \vfil\vfil
+        \dontleavehmode\scale[width=1.00\textwidth]{\ssbf\documentvariable{title}}
+        \vfil
+        \dontleavehmode\scale[width=0.75\textwidth]{\ssbf\documentvariable{subtitle}}
+        \vfil
+        \dontleavehmode\scale[width=0.65\textwidth]{\ssbf\documentvariable{location}}
+        \vfil
+        \dontleavehmode\scale[width=0.45\textwidth]{\ssbf\documentvariable{author}}
+        \vfil\vfil\vfil
+
+    \stopstandardmakeup
+
+\stopsetups
+
+\stopmodule
+
+\continueifinputfile{s-present-luatex.mkiv}
+
+\usemodule[present-common]
+
+\inputpresentationfile{context/2016/context-2016-luatex.tex}

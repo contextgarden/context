@@ -1,0 +1,771 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-contour
+
+\startchapter[title={Contour}]
+
+This feature started out as experiment triggered by a request on the mailing
+list. In the end it was a nice exploration of what is possible with a bit of
+\LUA. In a sense it is more subsystem than a simple \METAPOST\ macro because
+quite some \LUA\ code is involved and more might be used in the future. It's part
+of the fun.
+
+A contour is a line through equivalent values $z$ that result from applying a
+function to two variables $x$ and $y$. There is quite a bit of analysis needed
+to get these lines. In \METAFUN\ we currently support three methods for generating
+a colorful background and three for putting lines on top:
+
+One solution is to use the the isolines and isobands methods are described on the
+marching squares page of wikipedia:
+
+\starttyping
+https://en.wikipedia.org/wiki/Marching_squares
+\stoptyping
+
+This method is relative efficient as we don't do much optimization, simply
+because it takes time and the gain is not that much relevant. Because we support
+filling of multiple curves in one go, we get efficient paths anyway without side
+effects that normally can occur from many small paths alongside. In these days of
+multi megabyte movies and sound clips a request of making a \PDF\ file small is kind
+of strange anyway. In practice the penalty is not that large.
+
+As background we can use a bitmap. This method is also quite efficient because we
+use indexed colors which results in a very good compression. We use a simple
+mapping on a range of values.
+
+A third method is derived from the one that is distributed as \CCODE\ source
+file at:
+
+\starttyping
+https://physiology.arizona.edu/people/secomb/contours
+https://github.com/secomb/GreensV4
+\stoptyping
+
+We can create a background image, which uses a sequence of closed curves
+\footnote {I have to figure out how to improve it a bit so that multiple path
+don't get connected.}. It can also provide two variants of lines around the
+contours (we tag them shape and shade). It's all a matter of taste. In the
+meantime I managed to optimize the code a bit and I suppose that when I buy a new
+computer (the code was developed on an 8 year old machine) performance is
+probably acceptable.
+
+In order of useability you can think of isoband (band) with isolines (cell),
+bitmap (bitmap) with isolines (cell) and finally shapes (shape) with edges
+(edge). But let's start with a couple of examples.
+
+\startbuffer[1]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = .05,
+        ymin = -6, ymax = 6,    ystep = .05,
+
+        levels     = 7,
+        height     = 5cm,
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) + sin(y)",
+        background = "bitmap",
+        foreground = "edge",
+        linewidth  = 1/2,
+        cache      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure[reference=contour:1]
+    \getbuffer[1]
+\stopplacefigure
+
+\typebuffer[1][option=TEX]
+
+In \in {figure} [contour:1] we see the result. There is a in this case black and
+white image generated and on top of that we see lines. The step determines the
+resolution of the image. In practice using a bitmap is quite okay and also rather
+efficient: we use an indexed colorspace and, as already was mentioned, because
+the number of colors is limited such an image compresses well. A different
+rendering is seen in \in {figure} [contour:2] where we use the shape method for
+the background. That method creates outlines but is much slower, and when you use
+a high resolution (small step) it can take quite a while to identify the shapes.
+This is why we set the cache flag.
+
+\startbuffer[2]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = .10,
+        ymin = -6, ymax = 6,    ystep = .10,
+
+        levels     = 7,
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        background = "shape",
+        foreground = "shape",
+        linewidth  = 1/2,
+        cache      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2][option=TEX]
+
+\startplacefigure[reference=contour:2]
+    \getbuffer[2]
+\stopplacefigure
+
+We mentioned colorspace but haven't seen any color yet, so let's set some in \in
+{figure} [contour:3]. Two variants are shown: a background \type {shape} with
+foreground \type {shape} and a background \type {bitmap} with a foreground \type
+{edge}. The bitmap renders quite fast, definitely when we compare with the shape,
+while the quality is as good at this size.
+
+\startbuffer[3a]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -10, xmax = 10, xstep =  .1,
+        ymin = -10, ymax = 10, ystep =  .1,
+
+        levels     = 10,
+        height     = 7cm,
+        color      = "shade({1/2,1/2,0},{0,0,1/2})",
+        function   = "x^2 + y^2",
+        background = "shape",
+        foreground = "shape",
+        linewidth  = 1/2,
+        cache      = true,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[3b]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -10, xmax = 10, xstep =  .1,
+        ymin = -10, ymax = 10, ystep =  .1,
+
+        levels     = 10,
+        height     = 7cm,
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+        function   = "x^2 + y^2",
+        background = "bitmap",
+        foreground = "edge",
+        linewidth  = 1/2,
+        cache      = true,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3a][option=TEX]
+
+\startplacefigure[reference=contour:3]
+    \startcombination
+        {\getbuffer[3a]} {\bf shape}
+        {\getbuffer[3b]} {\bf bitmap}
+    \stopcombination
+\stopplacefigure
+
+We use the \type {doublefun} instance because we need to be sure that we don't
+run into issues with scaled numbers, the default model in \METAPOST. The
+function that gets passed is {\em not} using \METAPOST\ but \LUA, so basically
+you can do very complex things. Here we directly pass code, but you can for
+instance also do this:
+
+\starttyping[option=TEX]
+\startluacode
+    function document.MyContourA(x,y)
+        return x^2 + y^2
+    end
+\stopluacode
+\stoptyping
+
+and then \type {function = "document.MyContourA(x,y)"}. As long as the function
+returns a valid number we're okay. When you pass code directly you can use the
+\type {preamble} key to set local shortcuts. In the previous examples we took
+\type {sin} and \type {cos} from the math library but you can also roll out your
+own functions and|/|or use the more elaborate \type {xmath} library. The color
+parameter is also a function, one that returns one or three arguments. In the
+next example we use \type {lin} to calculate a fraction of the current level and
+total number of levels.
+
+\startbuffer[4a]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -3, xmax = 3, xstep =  .01,
+        ymin = -1, ymax = 1, ystep =  .01,
+
+        levels     = 10,
+        default    = .5,
+        height     = 5cm,
+        function   = "x^2 + y^2 + x + y/2",
+        color      = "lin(l), 0, 1/2",
+        background = "bitmap"
+        foreground = "none",
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4a][option=TEX]
+
+\startplacefigure[reference=contour:4a]
+    \getbuffer[4a]
+\stopplacefigure
+
+Instead of a bitmap we can use an isoband, which boils down to a set of tiny
+shapes that make up a bigger one. This is shown in \in {figure} [contour:4b].
+
+\startbuffer[4b]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -3, xmax = 3, xstep =  .01,
+        ymin = -1, ymax = 1, ystep =  .01,
+
+        levels     = 10,
+        default    = .5,
+        height     = 5cm,
+        function   = "x^2 + y^2 + x + y/2",
+        color      = "lin(l), 1/2, 0",
+        background = "band",
+        foreground = "none",
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4b][option=TEX]
+
+\startplacefigure[reference=contour:4b]
+    \getbuffer[4b]
+\stopplacefigure
+
+You can draw several functions and see where they overlap:
+
+\startbuffer[5]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -pi, xmax = 4*pi, xstep = .1,
+        ymin = -3,  ymax = 3,    ystep = .1,
+
+        range      = { -.1, .1 },
+        preamble   = "local sin, cos = math.sin, math.cos",
+        functions  = {
+            "sin(x) + sin(y)", "sin(x) + cos(y)",
+            "cos(x) + sin(y)", "cos(x) + cos(y)"
+        },
+        background = "bitmap",
+        linecolor  = "black",
+        linewidth  = 1/10,
+        color      = "shade({1,1,0},{0,0,1})"
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startplacefigure[reference=contour:5]
+    \getbuffer[5]
+\stopplacefigure
+
+The range determines the $z$ value(s) that we take into account. You can also
+pass a list of colors to be used. In \in {figure} [contour:6] this is
+demonstrated. There we also show a variant foreground \type {cell}, which uses a
+bit different method for calculating the edges. \footnote {This a bit of a
+playground: more variants might show up in due time.}
+
+\startbuffer[6]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -2*pi, xmax =  2*pi, xstep = .01,
+        ymin = -3,    ymax =  3,    ystep = .01,
+
+        range      = { -.1, .1 },
+        preamble   = "local sin, cos = math.sin, math.cos",
+        functions  = { "sin(x) + sin(y)", "sin(x) + cos(y)" },
+        background = "bitmap",
+        foreground = "cell",
+        linecolor  = "white",
+        linewidth  = 1/10,
+        colors     = { (1/2,1/2,1/2), red, green, blue }
+        level      = 3,
+        linewidth  = 6,
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[6][option=TEX]
+
+Here the number of levels depends on the number of functions as each can overlap
+with another; for instance the outcome of two functions can overlap or not which
+means 3 cases, and with a value not being seen that gives 4 different cases.
+
+\startplacefigure[reference=contour:6]
+    \getbuffer[6]
+\stopplacefigure
+
+\startbuffer[7]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -2*pi, xmax =  2*pi, xstep = .01,
+        ymin = -3,    ymax =  3,    ystep = .01,
+
+        range      = { -.1, .1 },
+        preamble   = "local sin, cos = math.sin, math.cos",
+        functions  = {
+            "sin(x) + sin(y)",
+            "sin(x) + cos(y)",
+            "cos(x) + sin(y)",
+            "cos(x) + cos(y)"
+        },
+        background = "bitmap",
+        foreground = "none",
+        level      = 3,
+        color      = "shade({2/3,0,0},{2/3,1,2/3})"
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[7][option=TEX]
+
+Of course one can wonder how useful showing many functions but it can give nice
+pictures, as shown in \in {figure} [contour:7].
+
+\startplacefigure[reference=contour:7]
+    \getbuffer[7]
+\stopplacefigure
+
+\startbuffer[8]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin = -2*pi, xmax =  2*pi, xstep = .01,
+        ymin = -3,    ymax =  3,    ystep = .01,
+
+        range      = { -.3, .3 },
+        preamble   = "local sin, cos = math.sin, math.cos",
+        functions  = {
+            "sin(x) + sin(y)",
+            "sin(x) + cos(y)",
+            "cos(x) + sin(y)",
+            "cos(x) + cos(y)"
+        },
+        background = "bitmap",
+        foreground = "none",
+        level      = 3,
+        color      = "shade({1,0,0},{0,1,0})"
+        cache      = true,
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[8][option=TEX]
+
+We can enlargen the window, which is demonstrated in \in {figure} [contour:8]. I
+suppose that such images only make sense in educational settings.
+
+\startplacefigure[reference=contour:8]
+    \getbuffer[8]
+\stopplacefigure
+
+% \startbuffer[9a]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "bitmap", foreground = "edge",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \typebuffer[9a][option=TEX]
+%
+% \startbuffer[9b]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1/2})"
+%
+%         background = "bitmap", foreground = "cell",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9c]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "bitmap", foreground = "none",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9d]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "shape", foreground = "shape",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9e]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "shape", foreground = "edge",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9f]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "shape", foreground = "none",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9g]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "band", foreground = "edge",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9h]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "band", foreground = "cell",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startbuffer[9i]
+% \startMPcode{doublefun}
+%     draw lmt_contour [
+%         xmin = -10, xmax = 10, xstep = 1,
+%         ymin = -10, ymax = 10, ystep = 1,
+%         function  = "math.random(1,3)", levels    = 3,
+%         linecolor = "white",            linewidth = 1/10,
+%         width     = .3TextWidth,        legend    = "none",
+%         color     = "shade({1/2,1/2,0},{0,0,1})"
+%
+%         background = "band", foreground = "none",
+%     ] ;
+% \stopMPcode
+% \stopbuffer
+%
+% In \in {figure} [contour:9] we see that using the shape option doesn't work out
+% too well here, which again demonstrates that using the bitmap method is not that
+% bad. In that example we use random numbers, just to show the erratic behavior. In
+% \in {figure} [contour:10] a more sane image is used. The band and bitmap examples
+% are generated quite fast so no caching is used there. We only show one definition:
+%
+% \typebuffer[9i][option=TEX]
+%
+% \startplacefigure[reference=contour:9]
+%     \startcombination[3*3]
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9a]\poprandomseed} {\bf bitmap edge}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9b]\poprandomseed} {\bf bitmap cell}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9c]\poprandomseed} {\bf bitmap none}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9d]\poprandomseed} {\bf shape  shape}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9e]\poprandomseed} {\bf shape  edge}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9f]\poprandomseed} {\bf shape  none}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9g]\poprandomseed} {\bf band   edge}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9h]\poprandomseed} {\bf band   cell}
+%         {\pushrandomseed\setrandomseed{1}\getbuffer[9i]\poprandomseed} {\bf band   none}
+%     \stopcombination
+% \stopplacefigure
+
+In \in {figure} [contour:10] we see different combinations of backgrounds (in color)
+and foregrounds (edges) in action.
+
+\startbuffer[10a]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "bitmap", foreground = "edge",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10b]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "bitmap", foreground = "cell",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10c]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "bitmap", foreground = "none",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10d]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "shape",  foreground = "shape", cache = true,
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10e]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "shape",  foreground = "edge", cache = true,
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10f]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "shape",  foreground = "none", cache = true,
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10g]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "band",   foreground = "edge",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10h]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "band",   foreground = "cell",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[10i]
+\startMPcode{doublefun}
+    draw lmt_contour [
+        xmin =  0, xmax = 4*pi, xstep = 0,
+        ymin = -6, ymax = 6,    ystep = 0,
+
+        levels = 5, legend = false, linewidth  = 1/2,
+
+        preamble   = "local sin, cos = math.sin, math.cos",
+        function   = "cos(x) - sin(y)",
+        color      = "shade({1/2,0,0},{0,0,1/2})",
+
+        background = "band",   foreground = "none",
+    ] xsized .3TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[10b][option=TEX]
+
+% \page
+
+There are quite some settings. Some deal with the background, some with the
+foreground and quite some deal with the legend.
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name             \BC type    \BC default    \BC comment \NC \NR
+\ML
+\NC xmin             \NC numeric \NC 0          \NC needs to be set \NC \NR
+\NC xmax             \NC numeric \NC 0          \NC needs to be set \NC \NR
+\NC ymin             \NC numeric \NC 0          \NC needs to be set \NC \NR
+\NC ymax             \NC numeric \NC 0          \NC needs to be set \NC \NR
+\NC xstep            \NC numeric \NC 0          \NC auto 1/200 when zero \NC \NR
+\NC ystep            \NC numeric \NC 0          \NC auto 1/200 when zero \NC \NR
+\NC checkresult      \NC boolean \NC false      \NC checks for overflow and NaN \NC \NR
+\NC defaultnan       \NC numeric \NC 0          \NC the value to be used when NaN \NC \NR
+\NC defaultinf       \NC numeric \NC 0          \NC the value to be used when overflow \NC \NR
+\ML
+\NC levels           \NC numeric \NC 10         \NC number of different levels to show \NC \NR
+\NC level            \NC numeric \NC            \NC only show this level (foreground) \NC \NR
+\ML
+\NC preamble         \NC string  \NC            \NC shortcuts \NC \NR
+\NC function         \NC string  \NC x + y      \NC the result z value \NC \NR
+\NC functions        \NC list    \NC            \NC multiple functions (overlapping levels) \NC \NR
+\NC color            \NC string  \NC lin(l)     \NC the result color value for level l (1 or 3 values) \NC \NR
+\NC colors           \NC numeric \NC            \NC used when set \NC \NR
+\ML
+\NC background       \NC string  \NC bitmap     \NC band, bitmap, shape \NC \NR
+\NC foreground       \NC string  \NC auto       \NC cell, edge, shape auto \NC \NR
+\ML
+\NC linewidth        \NC numeric \NC .25        \NC \NC \NR
+%NC backgroundcolor  \NC string  \NC black      \NC \NC \NR
+\NC linecolor        \NC string  \NC gray       \NC \NC \NR
+\ML
+\NC width            \NC numeric \NC 0          \NC automatic when zero \NC \NR
+\NC height           \NC numeric \NC 0          \NC automatic when zero \NC \NR
+\ML
+\NC trace            \NC boolean \NC false      \NC \NC \NR
+\ML
+\NC legend           \NC string  \NC all        \NC x y z function range all \NC \NR
+\NC legendheight     \NC numeric \NC LineHeight \NC \NC \NR
+\NC legendwidth      \NC numeric \NC LineHeight \NC \NC \NR
+\NC legendgap        \NC numeric \NC 0          \NC \NC \NR
+\NC legenddistance   \NC numeric \NC EmWidth    \NC \NC \NR
+\NC textdistance     \NC numeric \NC 2EmWidth/3 \NC \NC \NR
+\NC functiondistance \NC numeric \NC ExHeight   \NC \NC \NR
+\NC functionstyle    \NC string  \NC            \NC  \CONTEXT\ style name \NC \NR
+\NC xformat          \NC string  \NC @0.2N      \NC number format template \NC \NR
+\NC yformat          \NC string  \NC @0.2N      \NC number format template \NC \NR
+\NC zformat          \NC string  \NC @0.2N      \NC number format template \NC \NR
+\NC xstyle           \NC string  \NC            \NC \CONTEXT\ style name \NC \NR
+\NC ystyle           \NC string  \NC            \NC \CONTEXT\ style name \NC \NR
+\NC zstyle           \NC string  \NC            \NC \CONTEXT\ style name \NC \NR
+\ML
+\NC axisdistance     \NC numeric \NC ExHeight   \NC \NC \NR
+\NC axislinewidth    \NC numeric \NC .25        \NC \NC \NR
+\NC axisoffset       \NC numeric \NC ExHeight/4 \NC \NC \NR
+\NC axiscolor        \NC string  \NC black      \NC \NC \NR
+\NC ticklength       \NC numeric \NC ExHeight   \NC \NC \NR
+\ML
+\NC xtick            \NC numeric \NC 5          \NC \NC \NR
+\NC ytick            \NC numeric \NC 5          \NC \NC \NR
+\NC xlabel           \NC numeric \NC 5          \NC \NC \NR
+\NC ylabel           \NC numeric \NC 5          \NC \NC \NR
+\LL
+\stoptabulate
+
+\startplacefigure[reference=contour:10]
+    \startcombination[3*3]
+        {\getbuffer[10a]} {\bf bitmap edge}
+        {\getbuffer[10b]} {\bf bitmap cell}
+        {\getbuffer[10c]} {\bf bitmap none}
+        {\getbuffer[10d]} {\bf shape  shape}
+        {\getbuffer[10e]} {\bf shape  edge}
+        {\getbuffer[10f]} {\bf shape  none}
+        {\getbuffer[10g]} {\bf band   edge}
+        {\getbuffer[10h]} {\bf band   cell}
+        {\getbuffer[10i]} {\bf band   none}
+    \stopcombination
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent

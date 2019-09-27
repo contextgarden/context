@@ -279,6 +279,3 @@ if not nuts.setreplace then
     end
 
 end
-
-
-end

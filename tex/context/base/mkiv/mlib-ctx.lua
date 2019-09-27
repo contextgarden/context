@@ -332,7 +332,7 @@ implement {
 }
 
 statistics.register("metapost", function()
-    local n =  metapost.n
+    local n = metapost.nofruns
     if n and n > 0 then
         local elapsedtime = statistics.elapsedtime
         local elapsed     = statistics.elapsed

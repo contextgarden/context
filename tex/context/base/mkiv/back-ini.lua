@@ -182,6 +182,29 @@ implement {
     end
 }
 
+
+local page_x_origin = 0
+local page_y_origin = 0
+
+function codeinjections.setpageorigin(x,y)
+    page_x_origin = x
+    page_y_origin = y
+end
+
+function codeinjections.getpageorigin()
+    local x = page_x_origin
+    local y = page_y_origin
+    page_x_origin = 0
+    page_y_origin = 0
+    return x, y, (x ~= 0 or y ~= 0)
+end
+
+implement {
+    name      = "setpageorigin",
+    arguments = { "dimension", "dimension" },
+    actions   = codeinjections.setpageorigin,
+}
+
 -- could also be codeinjections
 
 function backends.noflatelua()

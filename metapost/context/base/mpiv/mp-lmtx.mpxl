@@ -247,7 +247,7 @@ vardef lmt_do_axis =
 enddef ;
 
 presetparameters "outline" [
-    content       = "",
+    text          = "",
     kind          = "draw",
     fillcolor     = "",
     drawcolor     = "",
@@ -273,22 +273,24 @@ vardef lmt_do_outline =
             kind := "b" ;
         elseif kind = "reverse" :
             kind := "r" ;
+        elseif kind = "fillup" :
+            kind := "u" ;
         fi ;
         currentoutlinetext := currentoutlinetext + 1 ;
         lua.mp.mf_outline_text(
             currentoutlinetext,
             if align = "" :
-                getparameter "outline" "content",
+                getparameter "outline" "text",
             else :
                 "\framed[align={" & align & "}"
                 if width > 0 :
                     & ",width=" & decimal width & "bp"
                 fi
                 if style <> "" :
-                    & ",foregroundstyle=" & style
+                    & ",foregroundstyle={" & style & "}"
                 fi
                 & ",offset=none,frame=off]{"
-                & (getparameter "outline" "content")
+                & (getparameter "outline" "text")
                 & "}",
             fi,
             kind
@@ -310,7 +312,7 @@ vardef lmt_do_outline =
                 withcolor getparameter "outline" "drawcolor"
             );
         elseif kind = "u" :
-            mfun_do_outline_text_set_f (
+            mfun_do_outline_text_set_u (
                 withcolor getparameter "outline" "fillcolor"
             );
         elseif kind = "r" :
@@ -331,7 +333,7 @@ vardef lmt_do_outline =
 enddef ;
 
 presetparameters "followtext" [
-    content       = "",
+    text          = "",
     spread        = true,
     trace         = false,
     reverse       = false,
@@ -344,24 +346,28 @@ def lmt_followtext = applyparameters "followtext" "lmt_do_followtext" enddef ;
 
 vardef lmt_do_followtext =
     image (
-        save s_u ; string s_u ; s_u := getparameter "followtext" "autoscaleup" ;
-        save s_d ; string s_d ; s_d := getparameter "followtext" "autoscaledown" ;
-        save followtextalternative   ; followtextalternative   := if getparameter "followtext" "spread" : 1 else : 0 fi ;
-        save tracingfollowtext       ; tracingfollowtext       := if getparameter "followtext" "trace"  : 1 else : 0 fi ;
+        pushparameters "followtext" ;
+        save s_u ; string s_u ; s_u := getparameter "autoscaleup" ;
+        save s_d ; string s_d ; s_d := getparameter "autoscaledown" ;
+        save followtextalternative   ; followtextalternative   := if getparameter "spread" : 1 else : 0 fi ;
+        save tracingfollowtext       ; tracingfollowtext       := if getparameter "trace"  : 1 else : 0 fi ;
         save autoscaleupfollowtext   ; autoscaleupfollowtext   := if s_u = "yes" : 1 elseif s_u = "max" : 2 else : 0 fi ;
         save autoscaledownfollowtext ; autoscaledownfollowtext := if s_d = "yes" : 1 elseif s_d = "max" : 2 else : 0 fi ;
         draw followtext (
-            if (getparameter "followtext" "reverse") : reverse fi getparameter "followtext" "path",
-                getparameter "followtext" "content"
+            if (getparameter "reverse") : reverse fi (getparameter "path"),
+                getparameter "text"
         ) ;
+        popparameters ;
     )
 enddef ;
 
 presetparameters "arrow" [
     path        = origin,
+  % pen         = ...,
     kind        = "fill",
     dimple      = 1/5,
     scale       = 3/4,
+    penscale    = 3,
     length      = 4,
     angle       = 45,
     location    = "end",    % middle both
@@ -374,23 +380,32 @@ def lmt_arrow = applyparameters "arrow" "lmt_do_arrow" enddef ;
 
 vardef lmt_do_arrow =
     image (
-        save a ; string a ; a := getparameter "arrow" "alternative" ;
-        save l ; string l ; l := getparameter "arrow" "location" ;
-        save k ; string k ; k := getparameter "arrow" "kind" ;
-        save p ; path   p ; p := getparameter "arrow" "path" ;
+        pushparameters "arrow" ;
+        save a ; string a ; a := getparameter "alternative" ;
+        save l ; string l ; l := getparameter "location" ;
+        save k ; string k ; k := getparameter "kind" ;
+        save p ; path   p ; p := getparameter "path" ;
         save ahvariant ; ahvariant := if a = "dimpled" : 1 elseif a = "curved" : 2 else : 0 fi ;
-        save ahdimple  ; ahdimple  := getparameter "arrow" "dimple" ;
-        save ahscale   ; ahscale   := getparameter "arrow" "scale" ;
-        save ahangle   ; ahangle   := getparameter "arrow" "angle" ;
-        save ahlength  ; ahlength  := getparameter "arrow" "length" ;
-        if not getparameter "arrow" "headonly" :
+        save ahdimple  ; ahdimple  := getparameter "dimple" ;
+        save ahscale   ; ahscale   := getparameter "scale" ;
+        save ahangle   ; ahangle   := getparameter "angle" ;
+        save ahlength  ; ahlength  := getparameter "length" ;
+        if not getparameter "headonly" :
             draw p ;
+        fi ;
+        if hasparameter "pen" :
+            % a cheat: we should have a type check in lua
+            if hasoption "pen" "auto" :
+                ahlength := (getparameter "penscale") * boundingradius(currentpen) ;
+            else :
+                ahlength := (getparameter "penscale") * boundingradius(getparameterpen "pen") ;
+            fi ;
         fi ;
         if k = "draw" : draw elseif k = "both" : filldraw else : fill fi
         if l = "middle" :
             midarrowhead p ;
         elseif l = "percentage" :
-            arrowheadonpath (p, (getparameter "arrow" "percentage")/100) ;
+            arrowheadonpath (p, (getparameter "percentage")/100) ;
         elseif l = "both" :
             arrowhead p ;
             if k = "draw" : draw elseif k = "both" : filldraw else : fill fi
@@ -398,6 +413,7 @@ vardef lmt_do_arrow =
         else :
             arrowhead p ;
         fi ;
+        popparameters ;
     )
 enddef ;
 
@@ -415,13 +431,14 @@ def lmt_placeholder = applyparameters "placeholder" "lmt_do_placeholder" enddef 
 
 def lmt_do_placeholder =
     begingroup ;
+    pushparameters "placeholder" ;
     save w, h, d, r, p, c, b, s, q, a ;
     numeric w, h, d, r ; path p ; string s, a ;
-    s := getparameter "placeholder" "color" ;
-    w := getparameter "placeholder" "width" ;
-    h := getparameter "placeholder" "height" ;
-    r := getparameter "placeholder" "reduction" ;
-    a := getparameter "placeholder" "alternative" ;
+    s := getparameter "color" ;
+    w := getparameter "width" ;
+    h := getparameter "height" ;
+    r := getparameter "reduction" ;
+    a := getparameter "alternative" ;
     d := max(w,h) ;
     if cmykcolor resolvedcolor(s) :
         cmykcolor c, b ; b := (0,0,0,0)
@@ -445,6 +462,7 @@ def lmt_do_placeholder =
             withcolor r[c randomized(.3,.9),b] ;
     endfor ;
     clip currentpicture to p ;
+    popparameters ;
     endgroup ;
 enddef ;
 
@@ -1239,7 +1257,8 @@ vardef lmt_do_chart_bar =
     )
 enddef ;
 
-% more complex than needed but i want to trace so i need the vars
+%D This one is more complex than needed but I want to trace so I need all those
+%D variables.
 
 presetparameters "shade" [
     alternative = "circular",
@@ -1257,6 +1276,8 @@ presetparameters "shade" [
  %  direction   = "up" | "down" | "left" | "right" | { a, b }
 
 ] ;
+
+% TODO: pass colors as strings
 
 def lmt_shade = applyparameters "shade" "lmt_do_shade" enddef ;
 
@@ -1318,26 +1339,9 @@ vardef lmt_do_shade =
                 center_b := getparameter "origin" 2 ;
             fi ;
         fi
-        if hasparameter "vector" :
-            center_a := point (getparameter "vector" 1) of mfun_shade_path ;
-            center_b := point (getparameter "vector" 2) of mfun_shade_path ;
-        fi
         if hasparameter "colors" :
             color_a := getparameter "colors" 1 ;
             color_b := getparameter "colors" 2 ;
-        fi
-        if hasparameter "center" :
-            if numeric getparameter "center" :
-                center_a := center mfun_shade_path shifted (
-                    (getparameter "center") * bbwidth (mfun_shade_path)/2,
-                    (getparameter "center") * bbheight(mfun_shade_path)/2
-                ) ;
-            else :
-                center_a := center mfun_shade_path shifted (
-                    (getparameter "center" 1) * bbwidth (mfun_shade_path)/2,
-                    (getparameter "center" 2) * bbheight(mfun_shade_path)/2
-                ) ;
-            fi
         fi
         if hasparameter "direction" :
             save a, b, bb ; path bb ;
@@ -1369,6 +1373,26 @@ vardef lmt_do_shade =
                 center_b := point p_b of bb ;
             fi
         fi ;
+        if hasparameter "center" :
+            save cx, cy ;
+            if numeric getparameter "center" :
+                cx := getparameter "center" ;
+                cx := cy ;
+          % elseif pair getparameter "center" :
+          %     cx := xpart getparameter "center" ;
+          %     cy := ypart getparameter "center" ;
+            else :
+                cx := getparameter "center" 1 ;
+                cy := getparameter "center" 2 ;
+            fi
+            center_a := center mfun_shade_path shifted (
+                cx * bbwidth (mfun_shade_path)/2,
+                cy * bbheight(mfun_shade_path)/2
+            ) ;
+        elseif hasparameter "vector" :
+            center_a := point (getparameter "vector" 1) of mfun_shade_path ;
+            center_b := point (getparameter "vector" 2) of mfun_shade_path ;
+        fi
         fill mfun_shade_path
             withprescript "sh_domain=" & decimal domain_min & " " & decimal domain_max
             withprescript "sh_transform=yes"
@@ -1380,12 +1404,14 @@ vardef lmt_do_shade =
             withprescript "sh_set_y=" & ddecimal (mfun_shade_ny,mfun_shade_ly) %
             if alternative = "linear" :
                 withprescript "sh_type=linear"
-                withprescript "sh_factor=1"
+             %  withprescript "sh_factor=1"
+                withprescript "sh_factor=" & decimal factor
                 withprescript "sh_center_a=" & ddecimal center_a
                 withprescript "sh_center_b=" & ddecimal center_b
             else :
                 withprescript "sh_type=circular"
-                withprescript "sh_factor=1.2"
+              % withprescript "sh_factor=1.2"
+                withprescript "sh_factor=" & decimal factor
                 withprescript "sh_center_a=" & ddecimal center_a
                 withprescript "sh_center_b=" & ddecimal center_b
                 withprescript "sh_radius_a=" & decimal radius_a
@@ -1394,11 +1420,13 @@ vardef lmt_do_shade =
         if getparameter "trace" :
             draw fullcircle scaled 1mm shifted center_a ;
             draw fullsquare scaled 2mm shifted center_b ;
-            draw textext.top("\strut\ttx center a") scaled .2 shifted center_a shifted (0, 2mm) ;
-            draw textext.bot("\strut\ttx center b") scaled .2 shifted center_b shifted (0,-2mm) ;
+            draw textext.top("\strut\ttx center a") ysized LineHeight shifted center_a shifted (0, 2mm) ;
+            draw textext.bot("\strut\ttx center b") ysized LineHeight shifted center_b shifted (0,-2mm) ;
             if alternative = "circular" :
-                draw fullcircle scaled (         radius_a * 2) shifted  center_a dashed evenly ;
-                draw fullcircle scaled (factor * radius_b * 2) shifted -center_b dashed evenly ;
+%                 draw fullcircle scaled (         radius_a * 2) shifted  center_a dashed evenly ;
+%                 draw fullcircle scaled (factor * radius_b * 2) shifted -center_b dashed evenly ;
+                draw fullcircle scaled (         radius_a) shifted  center_a dashed evenly ;
+                draw fullcircle scaled (factor * radius_b) shifted -center_b dashed evenly ;
             fi
         fi
         popparameters ;
@@ -1473,12 +1501,15 @@ boolean lmx_contour_loaded ; lmx_contour_loaded := false ;
 def mfun_only_draw          = addto currentpicture doublepath enddef ;
 def mfun_only_fill          = addto currentpicture contour    enddef ;
 def mfun_only_nodraw text t = addto currentpicture doublepath t withpostscript "collect" enddef ;
-def mfun_only_nofill text t = addto currentpicture contour    t withpostscript "collect" enddef ;
+def mfun_only_nofill text t = addto currentpicture contour    t withpostscript "evenodd" enddef ;
+def mfun_only_eofill text t = addto currentpicture contour    t withpostscript "collect" enddef ;
 
 def lmt_do_contour_shortcuts =
     save D ; let D = mfun_only_draw   ;
+    save E ; let E = mfun_only_eofill ;
     save F ; let F = mfun_only_fill   ;
     save d ; let d = mfun_only_nodraw ;
+    save e ; let f = mfun_only_eofill ;
     save f ; let f = mfun_only_nofill ;
     save C ; let C = cycle ;
 enddef ;
@@ -1973,5 +2004,27 @@ vardef lmt_do_contour =
 
         popparameters ;
     )
+enddef ;
+
+presetparameters "svg" [
+    filename = "",
+    width    = 0,
+    height   = 0,
+] ;
+
+def lmt_svg = applyparameters "svg" "lmt_do_svg" enddef ;
+
+vardef lmt_do_svg =
+    save w, h ;
+    w := getparameter "svg" "width" ;
+    h := getparameter "svg" "height" ;
+    image (
+        lua.mp.lmt_svg_include()
+    )
+    if w > 0 :
+        if h > 0 : xysized(w,h) else : xsized(w) fi
+    else :
+        if h > 0 :                     ysized(h) fi
+    fi
 enddef ;
 

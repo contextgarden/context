@@ -14336,6 +14336,10 @@ return {
    ["pe"]="درون‌متن",
    ["ro"]="intext",
   },
+  ["headintext"]={
+   ["en"]="headintext",
+   ["nl"]="kopintekst",
+  },
   ["intro"]={
    ["cs"]="uvod",
    ["de"]="intro",

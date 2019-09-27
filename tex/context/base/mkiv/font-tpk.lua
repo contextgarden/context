@@ -269,18 +269,18 @@ do
     end
 
     local template = formatters [ [[
-    %.3N 0 %i %i %i %i d1
-    q
-    %i 0 0 %i %i %i cm
-    BI
-      /W %i
-      /H %i
-      /IM true
-      /BPC 1
-      /D [1 0]
-    ID %t
-    EI
-    Q]] ]
+%.3N 0 %i %i %i %i d1
+q
+%i 0 0 %i %i %i cm
+BI
+  /W %i
+  /H %i
+  /IM true
+  /BPC 1
+  /D [1 0]
+ID %t
+EI
+Q]] ]
 
     function readers.pktopdf(glyph,width)
         local xsize   = glyph.xsize or 0
@@ -319,9 +319,7 @@ do
                 r = r + 1 ; result[r] = char(extract(b,8,8))
             end
         end
-        return
-            template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result),
-            llx, lly, urx, ury
+        return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result)
     end
 
     function readers.loadpk(filename)

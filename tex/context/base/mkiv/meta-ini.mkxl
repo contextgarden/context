@@ -277,9 +277,12 @@
   {\pushMPboundingbox
    \setbox\b_meta_graphic\hpack\bgroup}
 
+\let\meta_relocate_graphic\relax % experimental hook
+
 \def\meta_process_graphic_stop
   {\egroup
    \meta_place_graphic
+   \meta_relocate_graphic
    \popMPboundingbox}
 
 \unexpanded\def\meta_process_graphic_instance#1%

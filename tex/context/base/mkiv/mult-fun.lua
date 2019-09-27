@@ -30,6 +30,7 @@ return {
         "getparametercount",
         "getmaxparametercount",
         "getparameterpath",
+        "getparameterpen",
         "getparametertext",
      -- "getparameteroption",
         "applyparameters",

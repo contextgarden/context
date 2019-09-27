@@ -1,0 +1,442 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=expansion,
+   color=middleyellow]
+
+\startsection[title=Preamble]
+
+% \startsubsection[title=Introduction]
+% \stopsubsection
+
+This short manual demonstrates a couple of properties of the macro language. It
+is not the in|-|depth philosophical expose about macro languages, tokens,
+expansion and such that some \TEX ies like. I prefer to stick to the practical
+aspects.
+
+\stopsection
+
+\startsection[title={\TEX\ primitives}]
+
+The \TEX\ language provides quite some commands and those built in are called
+primitives. User defined commands are called macros. A macro is a shortcut to a
+list of primitives or macro calls. All can be mixed with characters that are to
+be typeset somehow.
+
+\starttyping[option=TEX]
+\def\MyMacro{b}
+
+a\MyMacro c
+\stoptyping
+
+When \TEX\ reads this input the \type {a} gets turned into a glyph node with a
+reference to the current font set and the character \type {a}. Then the parser
+sees a macro call, and it will enter another input level where it expands this
+macro. In this case it sees just an \type {b} and it will give this the same
+treatment as the \type {a}. The macro ends, the input level decrements and the
+\type {c} gets its treatment.
+
+A macro can contain references to macros so in practice the input can go several
+levels down.
+
+\starttyping[option=TEX]
+\def\MyMacroA{ and }
+\def\MyMacroB{1\MyMacroA 2}
+
+a\MyMacroA b
+\stoptyping
+
+When \type {\MyMacroB} is defined, its body gets three so called tokens: the
+character token \type {a} with property \quote {other}, a token that is a
+reference to the macro \type {\MyMacroB}, and a character token \type {2}, also
+with property \quote {other} The meaning of \type {\MyMacroA} became five tokens:
+a reference to a space token, then three character tokens with property \quote
+{letter}, and finally again a space token.
+
+\starttyping[option=TEX]
+\def \MyMacroA{ and }
+\edef\MyMacroB{1\MyMacroA 2}
+
+a\MyMacroA b
+\stoptyping
+
+In the previous example an \type {\edef} is used, where the \type {e} indicates
+expansion. This time the meaning gets expanded. So we get effectively the same
+as
+
+\starttyping[option=TEX]
+\def\MyMacroB{1 and 2}
+\stoptyping
+
+Characters are easy: they just expand, but not all primitives expand to their
+meaning or effect.
+
+\startbuffer
+\def\MyMacroA{\scratchcounter = 1 }
+\def\MyMacroB{\advance\scratchcounter by 1}
+\def\MyMacroC{\the\scratchcounter}
+
+\MyMacroA a
+\MyMacroB b
+\MyMacroB c
+\MyMacroB d
+\MyMacroC
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\scratchcounter0 \getbuffer
+
+\startlines \tt
+\meaning\MyMacroA
+\meaning\MyMacroB
+\meaning\MyMacroC
+\stoplines
+
+Let's assume that \type {\scratchcounter} is zero to start with and use \type
+{\edef's}:
+
+\startbuffer
+\edef\MyMacroA{\scratchcounter = 1 }
+\edef\MyMacroB{\advance\scratchcounter by 1}
+\edef\MyMacroC{\the\scratchcounter}
+
+\MyMacroA a
+\MyMacroB b
+\MyMacroB c
+\MyMacroB d
+\MyMacroC
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\scratchcounter0 \getbuffer
+
+\startlines \tt
+\meaning\MyMacroA
+\meaning\MyMacroB
+\meaning\MyMacroC
+\stoplines
+
+So, this time the third macro has basically its meaning frozen, but we can
+prevent this by applying a \type {\noexpand} when we do this:
+
+\startbuffer
+\edef\MyMacroA{\scratchcounter = 1 }
+\edef\MyMacroB{\advance\scratchcounter by 1}
+\edef\MyMacroC{\noexpand\the\scratchcounter}
+
+\MyMacroA a
+\MyMacroB b
+\MyMacroB c
+\MyMacroB d
+\MyMacroC
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\scratchcounter0 \getbuffer
+
+\startlines \tt
+\meaning\MyMacroA
+\meaning\MyMacroB
+\meaning\MyMacroC
+\stoplines
+
+Of course this is a rather useless example but it serves its purpose: you'd better
+be aware what gets expanded immediately in an \type {\edef}. In most cases you
+only need to worry about \type {\the} and embedded macros (and then of course
+their meanings).
+
+\def\MyShow{\quotation {\strut \inlinebuffer \expandafter \typ \expandafter
+{\the\scratchtoks}\strut}}
+
+You can also store tokens in a so called token register. Here we use a predefined
+scratch register:
+
+\startbuffer
+\def\MyMacroA{ and }
+\def\MyMacroB{1\MyMacroA 2}
+\scratchtoks {\MyMacroA}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The content of \type {\scratchtoks} is: \MyShow, so no expansion has happened
+here.
+
+\startbuffer
+\def\MyMacroA{ and }
+\def\MyMacroB{1\MyMacroA 2}
+\scratchtoks \expandafter {\MyMacroA}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Now the content of \type {\scratchtoks} is: \MyShow, so this time expansion has
+happened.
+
+\startbuffer
+\def\MyMacroA{ and }
+\def\MyMacroB{1\MyMacroA 2}
+\scratchtoks \expandafter {\MyMacroB}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Indeed the macro gets expanded but only one level: \MyShow. Compare this with:
+
+\startbuffer
+\def\MyMacroA{ and }
+\edef\MyMacroB{1\MyMacroA 2}
+\scratchtoks \expandafter {\MyMacroB}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The trick is to expand in two steps: \MyShow. Later we will see that other
+engines provide some more expansion tricks. The only way to get a grip on
+expansion is to just play with it.
+
+The \type {\expandafter} primitive expands the token (which can be a macro) after
+the next next one and injects its meaning into the stream. So:
+
+\starttyping[option=TEX]
+\expandafter \MyMacroA \MyMacroB
+\stoptyping
+
+works okay. In a normal document you will never need this kind of hackery: it
+only happens in a bit more complex macros. Here is an example:
+
+\startbuffer[a]
+\scratchcounter 1
+\bgroup
+\advance\scratchcounter 1
+\egroup
+\the\scratchcounter
+\stopbuffer
+
+\typebuffer[a][option=TEX]
+
+\startbuffer[b]
+\scratchcounter 1
+\bgroup
+\advance\scratchcounter 1
+\expandafter
+\egroup
+\the\scratchcounter
+\stopbuffer
+
+\typebuffer[b][option=TEX]
+
+The first one gives \inlinebuffer[a], while the second gives \inlinebuffer[b].
+
+% \let
+% \futurelet
+% \afterassignment
+% \aftergroup
+
+\stopsection
+
+\startsection[title={\ETEX\ primitives}]
+
+In this engine a couple of extensions were added and later on \PDFTEX\ added some
+more. We only discuss a few that relate to expansion. There is however a pitfall
+here. Before \ETEX\ showed up, \CONTEXT\ already had a few mechanism that also
+related to expansion and it used some names for macros that clash with those in
+\ETEX. This is why we will use the \type {\normal} prefix here to indicate the
+primitive.
+
+\startbuffer
+\def\MyMacroA{a}
+\def\MyMacroB{b}
+\normalprotected\def\MyMacroC{c}
+\edef\MyMacroABC{\MyMacroA\MyMacroB\MyMacroC}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+These macros have the following meanings:
+
+\startlines \tt
+\meaning\MyMacroA
+\meaning\MyMacroB
+\meaning\MyMacroC
+\meaning\MyMacroABC
+\stoplines
+
+In \CONTEXT\ you will use the \type {\unexpanded} prefix instead because that one
+did something similar in older versions of \CONTEXT. As we were early adopters of
+\ETEX, this later became a synonym to the \ETEX\ primitive.
+
+\startbuffer
+\def\MyMacroA{a}
+\def\MyMacroB{b}
+\normalprotected\def\MyMacroC{c}
+\normalexpanded{\scratchtoks{\MyMacroA\MyMacroB\MyMacroC}}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Here the wrapper around the token register assignment will expand the three
+macros, unless they are protected, so its content becomes \MyShow. This saves
+either a lot of more complex \type {\expandafter} usage or using an intermediate
+\type {\edef}. In \CONTEXT\ the \type {\expanded} macro does something simpler
+but it doesn't expand the first token as it is meant as a wrapper around a command,
+like:
+
+\starttyping[option=TEX]
+\expanded{\chapter{....}} % a ConTeXt command
+\stoptyping
+
+where we do want to expand the title but not the \type {\chapter} command, not
+that this would happen actually because \type {\chapter} is a protected command.
+
+The counterpart of \type {\normalexpanded} is \type {\normalunexpanded}, as in:
+
+\startbuffer
+\def\MyMacroA{a}
+\def\MyMacroB{b}
+\normalprotected\def\MyMacroC{c}
+\normalexpanded {\scratchtoks
+    {\MyMacroA\normalunexpanded {\MyMacroB}\MyMacroC}}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The register now holds \MyShow: three tokens, one character token and two
+macro references.
+
+Tokens can represent characters, primitives, macros or be special entities like
+starting math mode, beginning a group, assigning a dimension to a register, etc.
+Although you can never really get back to the original input, you can come pretty
+close, with:
+
+\startbuffer
+\normaldetokenize{this can $ be anything \bgroup}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This (when typeset monospaced) is: {\tt \inlinebuffer}. The detokenizer is like
+\type {\string} applied to each token in its argument. Compare this:
+
+\startbuffer
+\normalexpanded {
+    \normaldetokenize{10pt}
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get four tokens: {\tt\inlinebuffer}.
+
+\startbuffer
+\normalexpanded {
+    \string 1\string 0\string p\string t
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+So that was the same operation: {\tt\inlinebuffer}, but in both cases there is a
+subtle thing going on: characters have a catcode which distinguishes them. The
+parser needs to know what makes up a command name and normally that's only
+letters. The next snippet shows these catcodes:
+
+\startbuffer
+\normalexpanded {
+    \noexpand\the\catcode`\string 1 \noexpand\enspace
+    \noexpand\the\catcode`\string 0 \noexpand\enspace
+    \noexpand\the\catcode`\string p \noexpand\enspace
+    \noexpand\the\catcode`\string t \noexpand
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The result is \quotation {\tt\inlinebuffer}: two characters are marked as \quote
+{letter} and two fall in the \quote {other} category.
+
+\stopsection
+
+\startsection[title={\LUATEX\ primitives}]
+
+This engine adds a little in the expansion arena. First of all it offers a way to
+extend token lists registers
+
+\startbuffer
+\def\MyMacroA{a}
+\def\MyMacroB{b}
+\normalprotected\def\MyMacroC{b}
+\scratchtoks{\MyMacroA\MyMacroB}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The result is: \MyShow.
+
+\startbuffer
+\toksapp\scratchtoks{\MyMacroA\MyMacroB}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We're now at: \MyShow.
+
+\startbuffer
+\etoksapp\scratchtoks{\MyMacroA\space\MyMacroB\space\MyMacroC}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The register has this content: \MyShow, so the additional context got expanded in
+the process, except of course the protected macro \type {\MyMacroC}.
+
+There is a bunch of these combiners: \type {\toksapp} and \type {\tokspre} for
+local appending and prepending, with global companions: \type {\gtoksapp} and
+\type {\gtokspre}, as well as expanding variant: \type {\etoksapp}, \type
+{\etokspre}, \type {\xtoksapp} and \type {\xtokspre}.
+
+There are not beforehand more efficient that using intermediate expanded macros
+or token lists, simply because in the process \TEX\ has to create tokens lists
+too, but sometimes they're just more convenient to use.
+
+A second extension is \type {\immediateassignment} which instead in tokenizing
+the assignment directive applies it right now.
+
+\startbuffer
+\edef\MyMacroA
+  {\scratchcounter 123
+   \noexpand\the\scratchcounter}
+
+\edef\MyMacroB
+  {\immediateassignment\scratchcounter 123
+   \noexpand\the\scratchcounter}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+These two macros now have the meaning:
+
+\startlines \tt
+\meaning\MyMacroA
+\meaning\MyMacroB
+\stoplines
+
+\stopsection
+
+\startsection[title={\LUAMETATEX\ primitives}]
+
+{\em todo}
+
+% \aftergroups
+
+\stopsection
+
+\stopdocument
+

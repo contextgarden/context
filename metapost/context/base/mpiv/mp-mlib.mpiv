@@ -704,6 +704,15 @@ vardef mfun_max_radius(expr p) =
     )
 enddef ;
 
+vardef mfun_min_radius(expr p) =
+    min (
+        (xpart center   p - xpart llcorner p) ++ (ypart center   p - ypart llcorner p),
+        (xpart center   p - xpart ulcorner p) ++ (ypart ulcorner p - ypart center   p),
+        (xpart lrcorner p - xpart center   p) ++ (ypart center   p - ypart lrcorner p),
+        (xpart urcorner p - xpart center   p) ++ (ypart urcorner p - ypart center   p)
+    )
+enddef ;
+
 primarydef p withshademethod m =
     hide(mfun_with_shade_method_analyze(p))
     p
@@ -1147,6 +1156,10 @@ enddef ;
 vardef mfun_do_outline_text_set_f (text f) text r =
     def mfun_do_outline_options_f = f enddef ;
     def mfun_do_outline_options_r = r enddef ;
+enddef ;
+
+vardef mfun_do_outline_text_set_u (text f) text r =
+    def mfun_do_outline_options_f = f enddef ;
 enddef ;
 
 vardef mfun_do_outline_text_set_d (text d) text r =
@@ -1682,7 +1695,12 @@ def nofill   text t = fill t withpostscript "collect" enddef ;
 def nodraw   text t = draw t withpostscript "collect" enddef ;
 def dodraw   text t = draw t withpostscript "flush"   enddef ;
 def dofill   text t = fill t withpostscript "flush"   enddef ;
-%%% eoclip   text t = clip t withpostscript "evenodd" enddef ; % no postscripts yet
+
+if contextlmtxmode :
+    def eoclip text t = clip t withpostscript "evenodd" enddef ;
+else :
+    def eoclip text t = clip t enddef ; % no postscripts yet
+fi ;
 
 % def withrule expr r =
 %     if (t = "even-odd") or (t = "evenodd") : withpostscript "evenodd" fi

@@ -1,0 +1,49 @@
+\setupbodyfont[dejavu]
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "chaintest",
+        type    = "chainposition",
+        lookups = {
+            {
+                type = "pair",
+                data = {
+                    A = { B = { { -30, 0, -50, 0 } } },
+                    B = { C = { { -30, 0, -50, 0 } } },
+                },
+            },
+            {
+                type = "pair",
+                data = {
+                    D = { E = { { -30, 0, -50, 0 } } },
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    current = { { "A"}, { "B"}, { "C" }, { "D" }, { "E" }, { "F" } },
+                    lookups = { false, false, false, 2 },
+                },
+                {
+                    current = { { "A" }, { "B" }, { "C" } },
+                    lookups = { 1, 1 },
+                },
+            },
+        }
+    }
+\stopluacode
+
+\starttext
+
+\definecolor[tgray][s=.5,t=.5,a=1] \showfontkerns \showglyphs
+
+\definefontfeature[chaintest] [mode=node,chaintest=yes]
+
+\definedfont[file:dejavu-serif.ttf*chaintest @ 48pt]
+
+\startTEXpage[offset=10pt,foregroundcolor=tgray]
+    ABCDEF
+\stopTEXpage
+
+\stoptext

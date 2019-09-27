@@ -242,7 +242,10 @@ function tracers.printerror(specification)
         local offset       = specification.offset
         local report       = errorreporter(luaerrorline)
         if not filename then
-            report("error not related to input file: %s ...",lasttexerror)
+            report("error not related to input file:")
+            report("  tex: %s",lasttexerror or "-")
+            report("  lua: %s",lastluaerror or "-")
+            report("  mps: %s",lastmpserror or "-")
         elseif type(filename) == "number" then
             report("error on line %s of filehandle %s: %s ...",linenumber,lasttexerror)
         else

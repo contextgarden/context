@@ -28,7 +28,6 @@
 
 % helpers
 
-
 \registerctxluafile{font-otr}{optimize} % opentype fontloader
 \registerctxluafile{font-web}{}         % opentype fontloader
 \registerctxluafile{font-cff}{optimize} % quadratic outlines
@@ -51,7 +50,12 @@
 \registerctxluafile{font-oth}{}
 \registerctxluafile{font-osd}{}
 % \doifelsefileexists{font-osm.lua}{\registerctxluafile{font-osm}{}}{}
-\registerctxluafile{font-ocl}{}
+
+\ifcase\contextlmtxmode
+    \registerctxluafile{font-ocl}{}
+\else
+    \registerctxluafile{font-ogr}{}
+\fi
 
 % we use otf code for type one
 
@@ -61,12 +65,8 @@
 
 % tfm
 
-\doifelsefileexists {font-tpk.lua} {
-    \registerctxluafile{font-tpk}{optimize}
-    \registerctxluafile{font-tfm}{}
-} {
-    \registerctxluafile{font-tfm}{}
-}
+\registerctxluafile{font-tpk}{optimize}
+\registerctxluafile{font-tfm}{}
 
 % name database
 

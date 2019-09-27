@@ -1,0 +1,201 @@
+% macros=mkvi
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[present-luatex]
+
+\logo [LUAMETATEX] {LuaMeta\TeX}
+
+\setupbodyfont[12pt]
+
+\setupalign[verytolerant]
+
+\setupdocument
+  [title={Lean and mean},
+   subtitle={\LUAMETATEX},
+   location={\ConTeXt\ meeting, September 2019},
+   author={Hans & Alan},
+   mp:title={\LUAMETATEX}]
+
+\startdocument
+
+\setupitemize[headintext]
+\setupitemize[headstyle=bold]
+
+\page \setupdocument[mp:subtitle={How it became}]
+
+\startitemize
+    \starthead {interferences:}
+        \CONTEXT, plain \TEX\ and \LATEX\ all have different demands (we want to
+        experiment and move on and users pick up fast)
+    \stophead
+    \starthead {complexity:}
+        the source tree is way too complex as is the build (we only need \LUATEX)
+    \stophead
+    \starthead {distributions:}
+        no one can guarantee stability for \CONTEXT\ (being a minor player but
+        often a bit ahead)
+    \stophead
+    \starthead {annoyances:}
+        experimental codes leads to usage outside \CONTEXT\ and that triggers
+        complaints
+    \stophead
+    \starthead {motivation:}
+        running into folks who love to stress \quotation {huge bugs} and
+        \quotation {much instability} wastes energy
+    \stophead
+    \starthead {arguments:}
+        I got tired of \quotation {you need to support this because \unknown}
+        blabla
+    \stophead
+    \starthead {nagging:}
+        like \quotation {the manual \unknown} is becoming too tiresome, so best
+        keep experiments within the \CONTEXT\ bubble
+    \stophead
+\stopitemize
+
+\page \setupdocument[mp:subtitle={What it is}]
+
+\startitemize
+    \starthead {simplification:}
+        we don't need all what is currently in the \LUATEX\ engine as we don't
+        use it
+    \stophead
+    \starthead {source:}
+        there is much less of it and we can get rid of \WEB\ artifacts
+    \stophead
+    \starthead {compilation:}
+        there was much more going on than was needed and only a few knew those
+        details
+    \stophead
+    \starthead {consistency:}
+        to guarantee consistency with \CONTEXT\ the source code will be part of
+        the source distribution (once I'm satisfied)
+    \stophead
+    \starthead {marketing:}
+        this way the relation with \CONTEXT\ and its user base is more clear
+    \stophead
+    \starthead {playground:}
+        we can move forward and experiment without the danger of running into
+        problems with non \CONTEXT\ users: \quotation {use it at your own risk}
+    \stophead
+    \starthead {possibilities:}
+        playing a bit more with the bits and pieces that are reponsible for most
+        (interfering) issues, like the the (asynchronous) page builder
+    \stophead
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Implications}]
+
+\startitemize
+    \starthead {binary:}
+        there is only one relatively small binary needed (that does all things
+        needed)
+    \stophead
+    \starthead {code base:}
+        there comes an extra source tree, but it's small (compresses to around 2
+        MB)
+    \stophead
+    \starthead {user control:}
+        if needed users can compile the program so we're self contained
+    \stophead
+    \starthead {future safe:}
+        we can move forward and improve
+    \stophead
+    \starthead {modern:}
+        a code base with the latest \LUATEX, \MPLIB\ and \LUA
+    \stopitem
+    \starthead {side effect:}
+        we drop \LUAJIT\ as it doesn't keep up (and benefits are too small)
+    \stophead
+    \starthead {design:}
+        we have a better separation between the Knuthian front- and output format
+        driven backend
+    \stophead
+    \starthead {independent:}
+        there is no dependency on external libraries, we keep all we need in the
+        code base (we only use a few small third party libraries)
+    \stophead
+\stopitemize
+
+\page \setupdocument[mp:subtitle={A few notes}]
+
+\startitemize
+    \starthead {hobyism}
+        we don't need to carry the burden of everything (unless paid for it's
+        only fun and users that drives development)
+    \stophead
+    \starthead {convenience:}
+        the faster compilation makes reworking and experimenting reasonable
+    \stophead
+    \starthead {stepwise:}
+        I take my time an do string stepswise because things should not break
+        without fast recovery
+    \stophead
+    \starthead {feelgood:}
+        this all fits well into the good old \TEX\ extension model
+    \stophead
+    \starthead {eventually:}
+        when proven useful we can always push code upstream into \LUATEX
+    \stophead
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Bits and pieces}]
+
+\startitemize
+    \starthead {original:}
+        the starting point is \LUATEX, original \WEB\ code, already \CWEB\ code
+    \stophead
+    \starthead {stability:}
+        after a initial stage \LUATEX\ was stepwise extended till version one
+        a few years ago
+    \stophead
+    \starthead {frozen:}
+        there were only a few changes after that but no real conceptual ones
+    \stophead
+    \starthead {engine:}
+        what is now called \LUAMETATEX\ is a reworked code base
+    \stophead
+    \starthead {graphics:}
+        also \MPLIB\ has been reworked a bit and some extensions were added
+    \stophead
+    \starthead {libraries:}
+        there are a few extra (small) helper libs, but all in the source tree
+    \stophead
+    \starthead {pplib:}
+        we already use the next version of pplib
+    \stophead
+    \starthead {pruning:}
+        and best of all, quite some not used code could go
+    \stophead
+\stopitemize
+
+\page \setupdocument[mp:subtitle={Some details}]
+
+\startitemize
+    \starthead {source tree:}
+        the code base has been regrouped, globals became more local (work in
+        progress), header files were added
+    \stophead
+    \starthead {source files:}
+        there is hardly any font related code, languages were kept, and the
+        backend code is dropped: show files
+    \stophead
+    \starthead {libraries:}
+        a few libs were added and dropped: show some
+    \stophead
+    \starthead {cmake:}
+        compilation is different: work in progress
+    \stophead
+    \starthead {mkxl:}
+        there are new files in \CONTEXT: \type {driv}, \type {lpdf}, \type {.mkxl}
+        and expect more
+    \stophead
+    \starthead {binary:}
+        there is only one stub for all
+    \stophead
+\stopitemize
+
+{\infofont during presentation: show the source tree as well as the binary directory}
+
+\stopdocument
+

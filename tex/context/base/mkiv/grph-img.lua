@@ -29,6 +29,8 @@ local skipbytes          = files.skip
 local setposition        = files.setposition
 local getposition        = files.getposition
 
+local newreader          = io.newreader
+
 local setmetatableindex  = table.setmetatableindex
 local setmetatablecall   = table.setmetatablecall
 
@@ -543,8 +545,8 @@ do
         if once then
             for i=1,#t do
                 local l = t[i]
-                setposition(f,l.offset)
-                t[i] = readstring(f,l.length)
+                f:setposition(l.offset)
+                t[i] = f:readstring(l.length)
             end
             local data = concat(t)
             -- t wiped in caller
@@ -553,14 +555,14 @@ do
             local data = { }
             for i=1,#t do
                 local l = t[i]
-                setposition(f,l.offset)
-                data[i] = readstring(f,l.length)
+                f:setposition(l.offset)
+                data[i] = f:readstring(l.length)
             end
             return concat(data)
         end
     end
 
-    function identifiers.png(filename)
+    function identifiers.png(filename,method)
         local specification = {
             filename = filename,
             filetype = "png",
@@ -569,7 +571,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
-        local f = io.open(filename,"rb")
+        local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
             return specification -- error
@@ -581,44 +583,44 @@ do
         specification.pagenum     = 1
         specification.offset      = 0
         specification.length      = 0
-        local filesize = getsize(f) -- seek end
+        local filesize = f:getsize() -- seek end
         local tables   = { }
-        local banner   = readstring(f,8)
+        local banner   = f:readstring(8)
         if banner ~= "\137PNG\013\010\026\010" then
             specification.error = "no png file"
             return specification -- error
         end
         while true do
-            local position = getposition(f)
+            local position = f:getposition()
             if position >= filesize then
                 break
             end
-            local length = readcardinal4(f)
+            local length = f:readcardinal4()
             if not length then
                 break
             end
-            local kind = readstring(f,4)
+            local kind = f:readstring(4)
             if kind then
                 kind = lower(kind)
             else
                 break
             end
             if kind == "ihdr" then -- metadata
-                specification.xsize       = readcardinal4(f)
-                specification.ysize       = readcardinal4(f)
-                specification.colordepth  = readcardinal(f)
-                specification.colorspace  = readcardinal(f)
-                specification.compression = readcardinal(f)
-                specification.filter      = readcardinal(f)
-                specification.interlace   = readcardinal(f)
+                specification.xsize       = f:readcardinal4()
+                specification.ysize       = f:readcardinal4()
+                specification.colordepth  = f:readcardinal()
+                specification.colorspace  = f:readcardinal()
+                specification.compression = f:readcardinal()
+                specification.filter      = f:readcardinal()
+                specification.interlace   = f:readcardinal()
                 tables[kind] = true
             elseif kind == "iend" then
                 tables[kind] = true
                 break
             elseif kind == "phys" then
-                local x = readcardinal4(f)
-                local y = readcardinal4(f)
-                local u = readcardinal(f)
+                local x = f:readcardinal4()
+                local y = f:readcardinal4()
+                local u = f:readcardinal()
                 if u == 1 then -- meters
                  -- x = round(0.0254 * x)
                  -- y = round(0.0254 * y)
@@ -633,14 +635,16 @@ do
                     tables[kind] = t
                 end
                 t[#t+1] = {
-                    offset = getposition(f),
+--                     offset = getposition(f),
+                    offset = f:getposition(),
                     length = length,
                 }
             else
                 tables[kind] = true
             end
-            setposition(f,position+length+12) -- #size #kind #crc
+            f:setposition(position+length+12) -- #size #kind #crc
         end
+        f:close()
         specification.tables = tables
         return specification
     end

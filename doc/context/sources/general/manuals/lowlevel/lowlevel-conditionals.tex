@@ -1,0 +1,1409 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=conditionals,
+   color=middleblue]
+
+\startsection[title=Preamble]
+
+\startsubsection[title=Introduction]
+
+You seldom need the low level conditionals because there are quite some so called
+support macros available in \CONTEXT . For instance, when you want to compare two
+values (or more accurate: sequences of tokens), you can do this:
+
+\starttyping[option=TEX]
+\doifelse {foo} {bar} {
+    the same
+} {
+    different
+}
+\stoptyping
+
+But if you look in the \CONTEXT\ code, you will see that often we use primitives
+that start with \type {\if} in low level macros. There are good reasons for this.
+First of all, it looks familiar when you also code in other languages. Another
+reason is performance but that is only true in cases where the snippet of code is
+expanded very often, because \TEX\ is already pretty fast. Using low level \TEX\
+can also be more verbose, which is not always nice in a document source. But, the
+most important reason (for me) is the layout of the code. I often let the look
+and feel of code determine the kind of coding. This also relates to the syntax
+highlighting that I am using, which is consistent for \TEX, \METAPOST, \LUA,
+etc.\ and evolved over decades. If code looks bad, it probably is bad. Of course
+this doesn't mean all my code looks good; you're warned. In general we can say
+that I often use \type {\if...} when coding core macros, and \type {\doifelse...}
+macros in (document) styles and modules.
+
+In the sections below I will discuss the low level conditions in \TEX. For the
+often more convenient \CONTEXT\ wrappers you can consult the source of the system
+and support modules, the wiki and|/|or manuals.
+
+Some of the primitives shown here are only available in \LUATEX, and some only in
+\LUAMETATEX . We could do without them for decades but they were added to these
+engines because of convenience and, more important, because then made for nicer
+code. Of course there's also the fun aspect. This manual is not an invitation to
+use these very low level primitives in your document source. The ones that
+probably make most sense are \type {\ifnum}, \type {\ifdim} and \type {\ifcase}.
+The others are often wrapped into support macros that are more convenient.
+
+In due time I might add more examples and explanations. Also, maybe some more
+tests will show up as part of the \LUAMETATEX\ project.
+
+\stopsubsection
+
+\startsubsection[title={Number and dimensions}]
+
+Numbers and dimensions are basic data types in \TEX. When you enter one, a number
+is just that but a dimension gets a unit. Compare:
+
+\starttyping[option=TEX]
+1234
+1234pt
+\stoptyping
+
+If you also use \METAPOST, you need to be aware of the fact that in that language
+there are not really dimensions. The \type {post} part of the name implies that
+eventually a number becomes a \POSTSCRIPT\ unit which represents a base point (\type
+{bp}) in \TEX. When in \METAPOST\ you entry \type {1234pt} you actually multiply
+\type {1234} by the variable \type {pt}. In \TEX\ on the other hand, a unit like
+\type {pt} is one of the keywords that gets parsed. Internally dimensions are
+also numbers and the unit (keyword) tells the scanner what multiplier to use.
+When that multiplier is one, we're talking of scaled points, with the unit \type
+{sp}.
+
+\startbuffer
+\the\dimexpr 12.34pt \relax
+\the\dimexpr 12.34sp \relax
+\the\dimexpr 12.99sp \relax
+\the\dimexpr 1234sp  \relax
+\the\numexpr 1234    \relax
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+When we serialize a dimension it always shows the dimension in points, unless we
+serialize it as number.
+
+\startbuffer
+\scratchdimen1234sp
+\number\scratchdimen
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+When a number is scanned, the first thing that is taken care of is the sign. In many
+cases, when \TEX\ scans for something specific it will ignore spaces. It will
+happily accept multiple signs:
+
+\startbuffer
+\number +123
+\number +++123
+\number + + + 123
+\number +-+-+123
+\number --123
+\number ---123
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+Watch how the negation accumulates. The scanner can handle decimal, hexadecimal
+and octal numbers:
+
+\startbuffer
+\number -123
+\number -"123
+\number -'123
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+A dimension is scanned like a number but this time the scanner checks for upto
+three parts: an either or not signed number, a period and a fraction. Here no
+number means zero, so the next is valid:
+
+\startbuffer
+\the\dimexpr  . pt \relax
+\the\dimexpr 1. pt \relax
+\the\dimexpr  .1pt \relax
+\the\dimexpr 1.1pt \relax
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+Again we can use hexadecimal and octal numbers but when these are entered, there
+can be no fractional part.
+
+\startbuffer
+\the\dimexpr  16 pt \relax
+\the\dimexpr "10 pt \relax
+\the\dimexpr '20 pt \relax
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines \getbuffer \stoplines
+
+The reason for discussing numbers and dimensions here is that there are cases where
+when \TEX\ expects a number it will also accept a dimension. It is good to know that
+for instance a macro defined with \type {\chardef} or \type {\mathchardef} also is
+treated as a number. Even normal characters can be numbers, when prefixed by a \type
+{`} (backtick).
+
+The maximum number in \TEX\ is 2147483647 so we can do this:
+
+\starttyping[option=TEX]
+\scratchcounter2147483647
+\stoptyping
+
+but not this
+
+\starttyping[option=TEX]
+\scratchcounter2147483648
+\stoptyping
+
+as it will trigger an error. A dimension can be positive and negative so there we
+can do at most:
+
+\starttyping[option=TEX]
+\scratchdimen  1073741823sp
+\stoptyping
+
+\startbuffer
+\scratchdimen1073741823sp
+\number\scratchdimen
+\the\scratchdimen
+\scratchdimen16383.99998pt
+\number\scratchdimen
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+We can also do this:
+
+\startbuffer
+\scratchdimen16383.99999pt
+\number\scratchdimen
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+but the next one will fail:
+
+\starttyping[option=TEX]
+\scratchdimen16383.9999999pt
+\stoptyping
+
+Just keep in mind that \TEX\ scans both parts as number so the error comes from
+checking if those numbers combine well.
+
+\startbuffer
+\ifdim 16383.99999  pt = 16383.99998  pt the same \else different \fi
+\ifdim 16383.999979 pt = 16383.999980 pt the same \else different \fi
+\ifdim 16383.999987 pt = 16383.999991 pt the same \else different \fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch the difference in dividing, the \type {/} rounds, while the \type {:}
+truncates.
+
+\startlines
+\getbuffer
+\stoplines
+
+You need to be aware of border cases, although in practice they never really
+are a problem:
+
+\startbuffer
+\ifdim \dimexpr16383.99997 pt/2\relax = \dimexpr 16383.99998 pt/2\relax
+    the same \else different
+\fi
+\ifdim \dimexpr16383.99997 pt:2\relax = \dimexpr 16383.99998 pt:2\relax
+    the same \else different
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+\startbuffer
+\ifdim \dimexpr1.99997 pt/2\relax = \dimexpr 1.99998 pt/2\relax
+    the same \else different
+\fi
+\ifdim \dimexpr1.99997 pt:2\relax = \dimexpr 1.99998 pt:2\relax
+    the same \else different
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+\startbuffer
+\ifdim \dimexpr1.999999 pt/2\relax = \dimexpr 1.9999995 pt/2\relax
+    the same \else different
+\fi
+\ifdim \dimexpr1.999999 pt:2\relax = \dimexpr 1.9999995 pt:2\relax
+    the same \else different
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+This last case demonstrates that at some point the digits get dropped (still
+assuming that the fraction is within the maximum permitted) so these numbers then
+are the same. Anyway, this is not different in other programming languages and
+just something you need to be aware of.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\TEX\ primitives}]
+
+\startsubsection[title={\tex{if}}]
+
+I seldom use this one. Internally \TEX\ stores (and thinks) in terms of tokens.
+If you see for instance \type {\def} or \type {\dimen} or \type {\hbox} these all
+become tokens. But characters like \type {A} or {@} also become tokens. In this
+test primitive all non|-|characters are considered to be the same. In the next
+examples this is demonstrated.
+
+\startbuffer
+[\if AB yes\else nop\fi]
+[\if AA yes\else nop\fi]
+[\if CDyes\else nop\fi]
+[\if CCyes\else nop\fi]
+[\if\dimen\font yes\else nop\fi]
+[\if\dimen\font yes\else nop\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch how spaces after the two characters are kept: \inlinebuffer . This primitive looks
+at the next two tokens but when doing so it expands. Just look at the following:
+
+\startbuffer
+\def\AA{AA}%
+\def\AB{AB}%
+[\if\AA yes\else nop\fi]
+[\if\AB yes\else nop\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get: \inlinebuffer .
+
+% protected macros
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcat}}]
+
+In \TEX\ characters (in the input) get interpreted according to their so called
+catcodes. The most common are letters (alphabetic) and and other (symbols) but
+for instance the backslash has the property that it starts a command, the dollar
+signs trigger math mode, while the curly braced deal with grouping. If for
+instance either or not the ampersand is special (for instance as column separator
+in tables) depends on the macro package.
+
+\startbuffer
+[\ifcat AB yes\else nop\fi]
+[\ifcat AA yes\else nop\fi]
+[\ifcat CDyes\else nop\fi]
+[\ifcat CCyes\else nop\fi]
+[\ifcat C1yes\else nop\fi]
+[\ifcat\dimen\font yes\else nop\fi]
+[\ifcat\dimen\font yes\else nop\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This time we also compare a letter with a number: \inlinebuffer . In that case
+the category codes differ (letter vs other) but in this test comparing the
+letters result in a match. This is a test that is used only once in \CONTEXT\ and
+even that occasion is dubious and will go away.
+
+You can use \type {\noexpand} to prevent expansion:
+
+\startbuffer
+\def\A{A}%
+\let\B B%
+\def\C{D}%
+\let\D D%
+[\ifcat\noexpand\A Ayes\else nop\fi]
+[\ifcat\noexpand\B Byes\else nop\fi]
+[\ifcat\noexpand\C Cyes\else nop\fi]
+[\ifcat\noexpand\C Dyes\else nop\fi]
+[\ifcat\noexpand\D Dyes\else nop\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get: \inlinebuffer, so who still thinks that \TEX\ is easy to understand for a
+novice user?
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifnum}}]
+
+This condition compares its argument with another one, separated by an \type {<},
+\type {=} or \type {>} character.
+
+\starttyping[option=TEX]
+\ifnum\scratchcounter<0
+    less than
+\else\ifnum\scratchcounter>0
+    more than
+\else
+    equal to
+\fi zero
+\stoptyping
+
+This is one of these situations where a dimension can be used instead. In that
+case the dimension is in scaled points.
+
+\starttyping[option=TEX]
+\ifnum\scratchdimen<0
+    less than
+\else\ifnum\scratchdimen>0
+    more than
+\else
+    equal to
+\fi zero
+\stoptyping
+
+Of course this equal treatment of a dimension and number is only true when the
+dimension is a register or box property.
+
+\stopsubsection
+
+\startsection[title={\tex{ifdim}}]
+
+This condition compares one dimension with another one, separated by an \type {<},
+\type {=} or \type {>} sign.
+
+\starttyping[option=TEX]
+\ifdim\scratchdimen<0pt
+    less than
+\else\ifdim\scratchdimen>0pt
+    more than
+\else
+    equal to
+\fi zero
+\stoptyping
+
+While when comparing numbers a dimension is a valid quantity but here you cannot
+mix them: something with a unit is expected.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifodd}}]
+
+This one can come in handy, although in \CONTEXT\ it is only used in checking for
+an odd of even page number.
+
+\startbuffer
+\scratchdimen  3sp
+\scratchcounter4
+
+\ifodd\scratchdimen   very \else not so \fi odd
+\ifodd\scratchcounter very \else not so \fi odd
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+As with the previously discussed \type {\ifnum} you can use a dimension variable
+too, which is then interpreted as representing scaled points. Here we get:
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifvmode}}]
+
+This is a rather trivial check. It takes no arguments and just is true when we're
+in vertical mode. Here is an example:
+
+\startbuffer
+\hbox{\ifvmode\else\par\fi\ifvmode v\else h\fi mode}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We're always in horizontal mode and issuing a \type {\par} inside a horizontal
+box doesn't change that, so we get: \ruledhbox{\inlinebuffer}.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifhmode}}]
+
+As with \type {\ifvmode} this one has no argument and just tells if we're in
+vertical mode.
+
+\startbuffer
+\vbox {
+    \noindent \ifhmode h\else v\fi mode
+    \par
+    \ifhmode h\else \noindent v\fi mode
+}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+You can use it for instance to trigger injection of code, or prevent that some
+content (or command) is done more than once:
+
+\startlinecorrection
+\ruledhbox{\inlinebuffer}
+\stoplinecorrection
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifmmode}}]
+
+Math is something very \TEX\ so naturally you can check if you're in math mode.
+here is an example of using this test:
+
+\starttyping[option=TEX]
+\def\enforcemath#1{\ifmmode#1\else$ #1 $\fi}
+\stoptyping
+
+Of course in reality macros that do such things are more advanced than this one.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifinner}}]
+
+\startbuffer
+\def\ShowMode
+  {\ifhmode      \ifinner inner \fi hmode
+   \else\ifvmode \ifinner inner \fi vmode
+   \else\ifmmode \ifinner inner \fi mmode
+   \else         \ifinner inner \fi unset
+   \fi\fi\fi}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer
+\ShowMode \ShowMode
+
+\vbox{\ShowMode}
+
+\hbox{\ShowMode}
+
+$\ShowMode$
+
+$$\ShowMode$$
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The first line has two tests, where the first one changes the mode to horizontal
+simply because a text has been typeset. Watch how display math is not inner.
+
+\startpacked
+\startlines
+\getbuffer
+\stoplines
+\stoppacked
+
+By the way, moving the \type {\ifinner} test outside the branches (to the top of
+the macro) won't work because once the word \type {inner} is typeset we're no
+longer in vertical mode, if we were at all.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifvoid}}]
+
+A box is one of the basic concepts in \TEX. In order to understand this primitive
+we present four cases:
+
+\startbuffer
+\setbox0\hbox{}         \ifvoid0 void \else content \fi
+\setbox0\hbox{123}      \ifvoid0 void \else content \fi
+\setbox0\hbox{} \box0   \ifvoid0 void \else content \fi
+\setbox0\hbox to 10pt{} \ifvoid0 void \else content \fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In the first case, we have a box which is empty but it's not void. It helps to
+know that internally an hbox is actually an object with a pointer to a linked
+list of nodes. So, the first two can be seen as:
+
+\starttyping
+hlist -> [nothing]
+hlist -> 1 -> 2 -> 3 -> [nothing]
+\stoptyping
+
+but in any case there is a hlist. The third case puts something in a hlist but
+then flushes it. Now we have not even the hlist any more; the box register has
+become void. The last case is a variant on the first. It is an empty box with a
+given width. The outcome of the four lines (with a box flushed in between) is:
+
+\startlines
+\getbuffer
+\stoplines
+
+So, when you want to test if a box is really empty, you need to test also its
+dimensions, which can be up to three tests, depending on your needs.
+
+\startbuffer
+\setbox0\emptybox                  \ifvoid0 void\else content\fi
+\setbox0\emptybox        \wd0=10pt \ifvoid0 void\else content\fi
+\setbox0\hbox to 10pt {}           \ifvoid0 void\else content\fi
+\setbox0\hbox         {} \wd0=10pt \ifvoid0 void\else content\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Setting a dimension of a void voix (empty) box doesn't make it less void:
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifhbox}}]
+
+This test takes a box number and gives true when it is an hbox.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifvbox}}]
+
+This test takes a box number and gives true when it is an vbox. Both a \type
+{\vbox} and \type {\vtop} are vboxes, the difference is in the height and depth
+and the baseline. In a \type {\vbox} the last line determines the baseline
+
+\startlinecorrection
+\ruledvbox{vbox or vtop\par vtop or vbox}
+\stoplinecorrection
+
+And in  a \type {\vtop} the first line takes control:
+
+\startlinecorrection
+\ruledvtop{vbox or vtop\par vtop or vbox}
+\stoplinecorrection
+
+but, once wrapped, both internally are just vlists.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifx}}]
+
+This test is actually used a lot in \CONTEXT: it compares two token(list)s:
+
+\startbuffer
+                   \ifx a b  Y\else N\fi
+                   \ifx ab   Y\else N\fi
+\def\A {a}\def\B{b}\ifx \A\B Y\else N\fi
+\def\A{aa}\def\B{a}\ifx \A\B Y\else N\fi
+\def\A {a}\def\B{a}\ifx \A\B Y\else N\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here the result is: \quotation{\inlinebuffer}. It does not expand the content, if
+you want that you need to use an \type {\edef} to create two (temporary) macros
+that get compared, like in:
+
+\starttyping[option=TEX]
+\edef\TempA{...}\edef\TempB{...}\ifx\TempA\TempB ...\else ...\fi
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifeof}}]
+
+This test checks if a the pointer in a given input channel has reached its end.
+It is also true when the file is not present. The argument is a number which
+relates to the \type {\openin} primitive that is used to open files for reading.
+
+\stopsubsection
+
+\startsubsection[title={\tex{iftrue}}]
+
+It does what it says: always true.
+
+\stopsubsection
+
+\startsubsection[title={\tex{iffalse}}]
+
+It does what it says: always false.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcase}}]
+
+The general layout of an \type {\ifcase} tests is as follows:
+
+\starttyping[option=TEX]
+\ifcase<number>
+    when zero
+\or
+    when one
+\or
+    when two
+\or
+    ...
+\else
+    when something else
+\fi
+\stoptyping
+
+As in other places a number is a sequence of signs followed by one of more digits
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\ETEX\ primitives}]
+
+\startsubsection[title={\tex{ifdefined}}]
+
+This primitive was introduced for checking the existence of a macro (or primitive)
+and with good reason. Say that you want to know if \type {\MyMacro} is defined? One
+way to do that is:
+
+\startbuffer
+\ifx\MyMacro\undefined
+    {\bf undefined indeed}
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This results in: \inlinebuffer , but is this macro really undefined? When \TEX\
+scans your source and sees a the escape character (the forward slash) it will
+grab the next characters and construct a control sequence from it. Then it finds
+out that there is nothing with that name and it will create a hash entry for a
+macro with that name but with no meaning. Because \type {\undefined} is also not
+defined, these two macros have the same meaning and therefore the \type {\ifx} is
+true. Imagine that you do this many times, with different macro names, then your
+hash can fill up. Also, when a user defined \type {\undefined} you're suddenly
+get a different outcome.
+
+In order to catch the last problem there is the option to test directly:
+
+\startbuffer
+\ifdefined\MyOtherMacro \else
+    {\bf also undefined}
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This (or course) results in: \inlinebuffer, but the macro is still sort of
+defined (with no meaning). The next section shows how to get around this.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcsname}}]
+
+A macro is often defined using a ready made name, as in:
+
+\starttyping[option=TEX]
+\def\OhYes{yes}
+\stoptyping
+
+The name is made from characters with catcode letter which means that you cannot
+use for instance digits or underscores unless you also give these characters that
+catcode, which is not that handy in a document. You can however use \type
+{\csname} to define a control sequence with any character in the name, like:
+
+\starttyping[option=TEX]
+\expandafter\def\csname Oh Yes : 1\endcsname{yes}
+\stoptyping
+
+Later on you can get this one with \type {\csname}:
+
+\starttyping[option=TEX]
+\csname Oh Yes : 1\endcsname
+\stoptyping
+
+However, if you say:
+
+\starttyping[option=TEX]
+\csname Oh Yes : 2\endcsname
+\stoptyping
+
+you won't get some result, nor a message about an undefined control sequence, but
+the name triggers a define anyway, this time not with no meaning (undefined) but
+as equivalent to \type {\relax}, which is why
+
+\starttyping[option=TEX]
+\expandafter\ifx\csname Oh Yes : 2\endcsname\relax
+    {\bf relaxed indeed}
+\fi
+\stoptyping
+
+is the way to test its existence. As with the test in the previous section,
+this can deplete the hash when you do lots of such tests. The way out of this
+is:
+
+\starttyping[option=TEX]
+\ifcsname Oh Yes : 2\endcsname \else
+    {\bf unknown indeed}
+\fi
+\stoptyping
+
+This time there is no hash entry created and therefore there is not even an
+undefined control sequence.
+
+In \LUATEX\ there is an option to return false in case of a messy expansion
+during this test, and in \LUAMETATEX\ that is default. This means that tests can
+be made quite robust as it is pretty safe to assume that names that make sense
+are constructed from regular characters and not boxes, font switches, etc.
+
+\stopsubsection
+
+\startsubsection[title={\tex{iffontchar}}]
+
+This test was also part of the \ETEX\ extensions and it can be used to see if
+a font has a character.
+
+\startbuffer
+\iffontchar\font`A
+    {\em This font has an A!}
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+And, as expected, the outcome is: \quotation {\inlinebuffer}. The test takes two
+arguments, the first being a font identifier and the second a character number,
+so the next checks are all valid:
+
+\starttyping[option=TEX]
+\iffontchar\font     `A yes\else nop\fi\par
+\iffontchar\nullfont `A yes\else nop\fi\par
+\iffontchar\textfont0`A yes\else nop\fi\par
+\stoptyping
+
+In the perspective of \LUAMETATEX\ I considered also supporting \type {\fontid}
+but it got a bit messy due to the fact that this primitive expands in a different
+way so this extension was rejected.
+
+\stopsubsection
+
+\startsubsection[title={\tex{unless}}]
+
+You can negate the results of a test by using the \type {\unless} prefix, so for
+instance you can replace:
+
+\starttyping[option=TEX]
+\ifdim\scratchdimen=10pt
+    \dosomething
+\else\ifdim\scratchdimen<10pt
+    \dosomething
+\fi\fi
+\stoptyping
+
+by:
+
+\starttyping[option=TEX]
+\unless\ifdim\scratchdimen>10pt
+    \dosomething
+\fi
+\stoptyping
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUATEX\ primitives}]
+
+\startsubsection[title={\tex{ifincsname}}]
+
+As it had no real practical usage uit might get dropped in \LUAMETATEX, so it
+will not be discussed here.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifprimitive}}]
+
+As it had no real practical usage due to limitations, this one is not available
+in \LUAMETATEX\ so it will not be discussed here.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifabsnum}}]
+
+This test is inherited from \PDFTEX\ and behaves like \type {\ifnum} but first
+turns a negative number into a positive one.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifabsdim}}]
+
+This test is inherited from \PDFTEX\ and behaves like \type {\ifdim} but first
+turns a negative dimension into a positive one.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcondition}}]
+
+This is not really a test but in order to unstand that you need to know how
+\TEX\ internally deals with tests.
+
+\starttyping[option=TEX]
+\ifdimen\scratchdimen>10pt
+    \ifdim\scratchdimen<20pt
+        result a
+    \else
+        result b
+    \fi
+\else
+    result c
+\fi
+\stoptyping
+
+When we end up in the branch of \quotation {result a} we need to skip two \type
+{\else} branches after we're done. The \type {\if..} commands increment a level
+while the \type {\fi} decrements a level. The \type {\else} needs to be skipped
+here. In other cases the true branch needs to be skipped till we end up a the
+right \type {\else}. When doing this skipping, \TEX\ is not interested in what it
+encounters beyond these tokens and this skipping (therefore) goes real fast but
+it does see nested conditions and doesn't interpret grouping related tokens.
+
+A side effect of this is that the next is not working as expected:
+
+\starttyping[option=TEX]
+\def\ifmorethan{\ifdim\scratchdimen>}
+\def\iflessthan{\ifdim\scratchdimen<}
+
+\ifmorethan10pt
+    \iflessthan20pt
+        result a
+    \else
+        result b
+    \fi
+\else
+    result c
+\fi
+\stoptyping
+
+The \type{\iflessthan} macro is not seen as an \type {\if...} so the nesting gets
+messed up. The solution is to fool the scanner in thinking that it is. Say we have:
+
+\startbuffer
+\scratchdimen=25pt
+
+\def\ifmorethan{\ifdim\scratchdimen>}
+\def\iflessthan{\ifdim\scratchdimen<}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+and:
+
+\startbuffer
+\ifcondition\ifmorethan10pt
+    \ifcondition\iflessthan20pt
+        result a
+    \else
+        result b
+    \fi
+\else
+    result c
+\fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+When we expand this snippet we get: \quotation {\inlinebuffer} and no error
+concerning a failure in locating the right \type {\fi's}. So, when scanning the
+\type {\ifcondition} is seen as a valid \type {\if...} but when the condition is
+really expanded it gets ignored and the \type {\ifmorethan} has better come up
+with a match or not.
+
+In this perspective it is also worth mentioning that nesting problems can be
+avoided this way:
+
+\starttyping[option=TEX]
+\def\WhenTrue {something \iftrue  ...}
+\def\WhenFalse{something \iffalse ...}
+
+\ifnum\scratchcounter>123
+    \let\next\WhenTrue
+\else
+    \let\next\WhenFalse
+\fi
+\next
+\stoptyping
+
+This trick is mentioned in The \TeX book and can also be found in the plain \TEX\
+format. A variant is this:
+
+\starttyping[option=TEX]
+\ifnum\scratchcounter>123
+    \expandafter\WhenTrue
+\else
+    \expandafter\WhenFalse
+\fi
+\stoptyping
+
+but using \type {\expandafter} can be quite intimidating especially when there
+are multiple in a row. It can also be confusing. Take this: an \type
+{\ifcondition} expects the code that follows to produce a test. So:
+
+\starttyping[option=TEX]
+\def\ifwhatever#1%
+  {\ifdim#1>10pt
+      \expandafter\iftrue
+   \else
+      \expandafter\iffalse
+   \fi}
+
+\ifcondition\ifwhatever{10pt}
+    result a
+\else
+    result b
+\fi
+\stoptyping
+
+This will not work! The reason is in the already mentioned fact that when we end
+up in the greater than \type {10pt} case, the scanner will happily push the \type
+{\iftrue} after the \type {\fi}, which is okay, but when skipping over the \type
+{\else} it sees a nested condition without matching \type {\fi}, which makes ity
+fail. I will spare you a solution with lots of nasty tricks, so here is the clean
+solution using \type {\ifcondition}:
+
+\starttyping[option=TEX]
+\def\truecondition {\iftrue}
+\def\falsecondition{\iffalse}
+
+\def\ifwhatever#1%
+  {\ifdim#1>10pt
+      \expandafter\truecondition
+   \else
+      \expandafter\falsecondition
+   \fi}
+
+\ifcondition\ifwhatever{10pt}
+    result a
+\else
+    result b
+\fi
+\stoptyping
+
+It will be no surprise that the two macros at the top are predefined in \CONTEXT.
+It might be more of a surprise that at the time of this writing the usage in
+\CONTEXT\ of this \type {\ifcondition} primitive is rather minimal. But that
+might change.
+
+As a further teaser I'll show another simple one,
+
+\startbuffer
+\def\HowOdd#1{\unless\ifnum\numexpr ((#1):2)*2\relax=\numexpr#1\relax}
+
+\ifcondition\HowOdd{1}very \else not so \fi odd
+\ifcondition\HowOdd{2}very \else not so \fi odd
+\ifcondition\HowOdd{3}very \else not so \fi odd
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This renders:
+
+\startlines
+\getbuffer
+\stoplines
+
+The code demonstrates several tricks. First of all we use \type {\numexpr} which
+permits more complex arguments, like:
+
+\starttyping[option=TEX]
+\ifcondition\HowOdd{4+1}very \else not so \fi odd
+\ifcondition\HowOdd{2\scratchcounter+9}very \else not so \fi odd
+\stoptyping
+
+Another trick is that we use an integer division (the \type {:}) which is an
+operator supported by \LUAMETATEX .
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUAMETATEX\ primitives}]
+
+\startsubsection[title={\tex{ifcmpnum}}]
+
+This one is part of s set of three tests that all are a variant of a \type
+{\ifcase} test. A simple example of the first test is this:
+
+\starttyping[option=TEX]
+\ifcmpnum 123 345 less \or equal \else more \fi
+\stoptyping
+
+The test scans for two numbers, which of course can be registers or expressions,
+and sets the case value to 0, 1 or 2, which means that you then use the normal
+\type {\or} and \type {\else} primitives for follow up on the test.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifchknum}}]
+
+This test scans a number and when it's okay sets the case value to 1, and otherwise
+to 2. So you can do the next:
+
+\starttyping[option=TEX]
+\ifchknum 123\or good \else bad \fi
+\ifchknum bad\or good \else bad \fi
+\stoptyping
+
+An error message is suppressed and the first \type {\or} can be seen as a sort of
+recovery token, although in fact we just use the fast scanner mode that comes
+with the \type {\ifcase}: because the result is 1 or 2, we never see invalid
+tokens.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifnumval}}]
+
+A sort of combination of the previous two is \type {\ifnumval} which checks a
+number but also if it's less, equal or more than zero:
+
+\starttyping[option=TEX]
+\ifnumval 123\or less \or equal \or more \else error \fi
+\ifnumval bad\or less \or equal \or more \else error \fi
+\stoptyping
+
+You can decide to ignore the bad number or do something that makes more sense.
+Often the to be checked value will be the content of a macro or an argument like
+\type {#1}.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcmpdim}}]
+
+This test is like \type {\ifcmpnum} but for dimensions.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifchkdim}}]
+
+This test is like \type {\ifchknum} but for dimensions.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifdimval}}]
+
+This test is like \type {\ifnumval} but for dimensions.
+
+\stopsubsection
+
+\startsubsection[title={\tex{iftok}}]
+
+Although this test is still experimental it can be used. What happens is that
+two to be compared \quote {things} get scanned for. For each we first gobble
+spaces and \type {\relax} tokens. Then we can have several cases:
+
+\startitemize[n,packed]
+    \startitem
+        When we see a left brace, a list of tokens is scanned upto the
+        matching right brace.
+    \stopitem
+    \startitem
+        When a reference to a token register is seen, that register is taken as
+        value.
+    \stopitem
+    \startitem
+        When a reference to an internal token register is seen, that register is
+        taken as value.
+    \stopitem
+    \startitem
+        When a macro is seen, its definition becomes the to be compared value.
+    \stopitem
+    \startitem
+        When a number is seen, the value of the corresponding register is taken
+    \stopitem
+\stopitemize
+
+An example of the first case is:
+
+\starttyping[option=TEX]
+\iftok {abc} {def}%
+  ...
+\else
+  ...
+\fi
+\stoptyping
+
+The second case goes like this:
+
+\starttyping[option=TEX]
+\iftok\scratchtoksone\scratchtokstwo
+  ...
+\else
+  ...
+\fi
+\stoptyping
+
+Case one and four mixed:
+
+\starttyping[option=TEX]
+\iftok{123}\TempX
+  ...
+\else
+  ...
+\fi
+\stoptyping
+
+The last case is more a catch: it will issue an error when no number is given.
+Eventually that might become a bit more clever (depending on our needs.)
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifcstok}}]
+
+There is a subtle difference between this one and \type {iftok}: spaces
+and \type {\relax} tokens are skipped but nothing gets expanded. So, when
+we arrive at the to be compared \quote {things} we look at what is there,
+as|-|is.
+
+\stopsubsection
+
+\startsubsection[title={\tex{iffrozen}}]
+
+{\em This is an experimental test.} Commands can be defined with the \type
+{\frozen} prefix and this test can be used to check if that has been the case.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifprotected}}]
+
+Commands can be defined with the \type {\protected} prefix (or in \CONTEXT, for
+historic reasons, with \type {\unexpanded}) and this test can be used to check if
+that has been the case.
+
+\stopsubsection
+
+\startsubsection[title={\tex{ifusercmd}}]
+
+{\em This is an experimental test.} It can be used to see if the command is
+defined at the user level or is a build in one. This one might evolve.
+
+\stopsubsection
+
+\startsubsection[title={\tex{orelse}}]
+
+This it not really a test primitive but it does act that way. Say that we have this:
+
+\starttyping[option=TEX]
+\ifdim\scratchdimen>10pt
+    case 1
+\else\ifdim\scratchdimen<20pt
+    case 2
+\else\ifcount\scratchcounter>10
+    case 3
+\else\ifcount\scratchcounter<20
+    case 4
+\fi\fi\fi\fi
+\stoptyping
+
+A bit nicer looks this:
+
+\starttyping[option=TEX]
+\ifdim\scratchdimen>10pt
+    case 1
+\orelse\ifdim\scratchdimen<20pt
+    case 2
+\orelse\ifcount\scratchcounter>10
+    case 3
+\orelse\ifcount\scratchcounter<20
+    case 4
+\fi
+\stoptyping
+
+We stay at the same level and the only test that cannot be used this way is \type
+{\ifcondition} but that is no real problem. Sometimes a more flat test tree had
+advantages but if you think that it gives better performance then you will be
+disappointed. The fact that we stay at the same level is compensated by a bit
+more parsing, so unless you have millions such cases (or expansions) it might
+make a bit of a difference. As mentioned, I'm a bit sensitive for how code looks so
+that was the main motivation for introducing it.
+
+A rather neat trick is the definition of \type {\quitcondition}:
+
+\starttyping[option=TEX]
+\def\quitcondition{\orelse\iffalse}
+\stoptyping
+
+This permits:
+
+\starttyping[option=TEX]
+\ifdim\scratchdimen>10pt
+    case 1a
+    \quitcondition
+    case 4b
+\fi
+\stoptyping
+
+where, of course, the quitting normally is the result of some intermediate extra
+test. But let me play safe here: beware of side effects.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={For the brave}]
+
+\startsubsection[title={Full expansion}]
+
+If you don't understand the following code, don't worry. There is seldom much
+reason to go this complex but obscure \TEX\ code attracts some users so \unknown
+
+When you have a macro that has for instance assignments, and when you expand that
+macro inside an \type {\edef}, these assignments are not actually expanded but
+tokenized. In \LUATEX\ there is a way to immediately apply these assignments and
+that feature can be used to write a fully expandable user test. For instance:
+
+\startbuffer
+\def\truecondition {\iftrue}
+\def\falsecondition{\iffalse}
+
+\def\fontwithidhaschar#1#2%
+  {\immediateassignment\scratchcounter\numexpr\fontid\font\relax
+   \immediateassignment\setfontid\numexpr#1\relax
+   \iffontchar\font\numexpr#2\relax
+      \immediateassignment\setfontid\scratchcounter
+      \expandafter\truecondition
+   \else
+      \expandafter\falsecondition
+   \fi}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The \type {\iffontchar} test doesn't handle numeric font id, simply because
+at the time it was added to \ETEX, there was no access to these id's. Now we
+can do:
+
+\startbuffer
+\edef\foo{\fontwithidhaschar{1} {75}yes\else nop\fi} \meaning\foo
+\edef\foo{\fontwithidhaschar{1}{999}yes\else nop\fi} \meaning\foo
+
+[\ifcondition\fontwithidhaschar{1} {75}yes\else nop\fi]
+[\ifcondition\fontwithidhaschar{1}{999}yes\else nop\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+These result in:
+
+\startlines
+\getbuffer
+\stoplines
+
+If you remove the \type {\immediateassignment} in the definition above then the
+typeset results are still the same but the meanings of \type {\foo} look
+different: they contain the assignments and the test for the character is
+actually done when constructing the content of the \type {\edef}, but for the
+current font. So, basically that test is now useless.
+
+\stopsubsection
+
+\startsubsection[title={User defined if's}]
+
+There is a \type {\newif} macro that defines three other macros:
+
+\starttyping[option=TEX]
+\newif\ifOnMyOwnTerms
+\stoptyping
+
+After this, not only \type {\ifOnMyOwnTerms} is defined, but also:
+
+\starttyping[option=TEX]
+\OnMyOwnTermstrue
+\OnMyOwnTermsfalse
+\stoptyping
+
+These two actually are macros that redefine \type {\ifOnMyOwnTerms} to be either
+equivalent to \type {\iftrue} and \type {\iffalse}. The (often derived from plain
+\TEX) definition of \type {\newif} is a bit if a challenge as it has to deal with
+removing the \type {if} in order to create the two extra macros and also make
+sure that it doesn't get mixed up in a catcode jungle.
+
+In \CONTEXT\ we have a variant:
+
+\starttyping[option=TEX]
+\newconditional\MyConditional
+\stoptyping
+
+that can be used with:
+
+\starttyping[option=TEX]
+\settrue\MyConditional
+\setfalse\MyConditional
+\stoptyping
+
+and tested like:
+
+\starttyping[option=TEX]
+\ifconditional\MyConditional
+    ...
+\else
+    ...
+\fi
+\stoptyping
+
+This one is cheaper on the hash and doesn't need the two extra macros per test.
+The price is the use of \type {\ifconditional}, which is {\em not} to confused
+with \type {\ifcondition} (it has bitten me already a few times).
+
+\stopsubsection
+
+\stopsection
+
+\startsubject[title=Colofon]
+
+\starttabulate
+\NC Author      \NC Hans Hagen         \NC \NR
+\NC \CONTEXT    \NC \contextversion    \NC \NR
+\NC \LUAMETATEX \NC \texengineversion  \NC \NR
+\NC Support     \NC www.pragma-ade.com \NC \NR
+\NC             \NC contextgarden.net  \NC \NR
+\stoptabulate
+
+\stopsubject
+
+\stopdocument

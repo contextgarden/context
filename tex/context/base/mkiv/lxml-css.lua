@@ -146,9 +146,11 @@ if context then
 
 end
 
+local p_digit = lpeg.patterns.digit
+
 local pattern = Cf( Ct("") * (
     Cg(
-        Cc("style")   * (
+        Cc("style") * (
             C("italic")
           + C("oblique")
           + C("slanted") / "oblique"
@@ -156,12 +158,17 @@ local pattern = Cf( Ct("") * (
       + Cc("variant") * (
             (C("smallcaps") + C("caps")) / "small-caps"
         )
-      + Cc("weight")  *
+      + Cc("weight") * (
             C("bold")
-      + Cc("family")  * (
-            (C("mono") + C("type")) / "monospace"       -- just ignore the "space(d)"
+        )
+      + Cc("family") * (
+            (C("mono")      + C("type")) / "monospace"  -- just ignore the "space(d)"
           + (C("sansserif") + C("sans")) / "sans-serif" -- match before serif
-          + C("serif")
+          +  C("serif")
+        )
+      + Cc("size") * Ct (
+            (S("+-")^0 * (p_digit^0 * P(".") * p_digit^1 + p_digit^1 * P(".") + p_digit^1)) / tonumber
+          * C(P("p") * S("txc") + P("e") * S("xm") + S("mc") * P("m") + P("in") + P("%"))
         )
     )
 --+ P("\\") * (

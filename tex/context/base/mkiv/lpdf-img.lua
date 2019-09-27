@@ -33,6 +33,8 @@ local openstring           = streams.openstring
 local readstring           = streams.readstring
 local readbytetable        = streams.readbytetable
 
+local newreader            = io.newreader
+
 local tobytetable          = string.bytetable
 
 local lpdf                 = lpdf or { }
@@ -871,7 +873,7 @@ do
         end
     end)
 
-    function injectors.png(specification)
+    function injectors.png(specification,method) -- todo: method in specification
 -- inspect(specification)
         if specification.error then
             return
@@ -901,7 +903,7 @@ do
         if not idat then
             return
         end
-        local pngfile = io.open(filename,"rb") -- todo: in-mem too
+        local pngfile = newreader(filename,method)
         if not pngfile then
             return
         end
@@ -1094,8 +1096,10 @@ do
         if specification.colorref then
             xobject.ColorSpace = pdfreference(specification.colorref)
         end
+        local width  = specification.width  or xsize * 65536
+        local height = specification.height or ysize * 65536
         return createimage {
-            bbox      = { 0, 0, specification.width/xsize, specification.height/ysize }, -- mandate
+            bbox      = { 0, 0, width/xsize, height/ysize }, -- mandate
             transform = specification.transform,
             nolength  = true,
             nobbox    = true,
@@ -1204,14 +1208,14 @@ do
         local content    = pack(specification,index and "indexed" or "data")
         local mask       = specification.mask
         local colorspace = pdfconstant(colorspace)
-if index then
-    colorspace = pdfarray {
-        pdfconstant("Indexed"),
-        colorspace,
-        #index + (index[0] and 0 or -1), -- upper index
-        pdfverbose(pack(specification,"index"))
-    }
-end
+        if index then
+            colorspace = pdfarray {
+                pdfconstant("Indexed"),
+                colorspace,
+                #index + (index[0] and 0 or -1), -- upper index
+                pdfverbose(pack(specification,"index"))
+            }
+        end
         local xobject    = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),

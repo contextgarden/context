@@ -17651,6 +17651,7 @@
      <cd:constant type="inmargin"/>
      <cd:constant type="atmargin"/>
      <cd:constant type="intext"/>
+     <cd:constant type="headintext"/>
      <cd:constant type="loose"/>
      <cd:constant type="fit"/>
      <cd:constant type="nofit"/>
@@ -18310,6 +18311,7 @@
      <cd:constant type="inmargin"/>
      <cd:constant type="atmargin"/>
      <cd:constant type="intext"/>
+     <cd:constant type="headintext"/>
      <cd:constant type="loose"/>
      <cd:constant type="fit"/>
      <cd:constant type="nofit"/>

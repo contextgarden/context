@@ -497,25 +497,25 @@ Let's look at outlines.
     save h ; h = 12mm ;
 
     draw lmt_outline [
-        content   = "hello"
+        text      = "hello"
         kind      = "draw",
         drawcolor = "darkblue",
     ] ysized h ;
 
     draw lmt_outline [
-        content       = "hello",
+        text          = "hello",
         kind          = "fill",
         fillcolor     = "darkred",
     ] ysized h shifted (3.75h,0) ;
 
     draw lmt_outline [
-        content       = "hello",
+        test          = "hello",
         kind          = "both",
         fillcolor     = "darkred",
     ] ysized h shifted (7.5h,0mm) ;
 
     draw lmt_outline [
-        content       = "hello",
+        text          = "hello",
         kind          = "both",
         fillcolor     = "darkred",
         drawcolor     = "darkblue",
@@ -523,7 +523,7 @@ Let's look at outlines.
     ] ysized h shifted (0,-1.25h) ;
 
     draw lmt_outline [
-        content       = "hello",
+        text          = "hello",
         kind          = "reverse",
         fillcolor     = "darkred",
         drawcolor     = "darkblue",
@@ -531,8 +531,8 @@ Let's look at outlines.
     ] ysized h shifted (3.75h,-1.25h) ;
 
     draw lmt_outline [
-        content       = "hello",
-        kind          = "u",
+        text          = "hello",
+        kind          = "fillup",
         fillcolor     = "darkgreen",
         rulethickness = 0,
     ] ysized h shifted (7.5h,-1.25h) ;
@@ -552,7 +552,7 @@ outline and fill. Let's show some more:
 \startbuffer
 \startMPcode{doublefun}
     draw lmt_outline [
-        content   = "\obeydiscretionaries\samplefile{tufte}",
+        text      = "\obeydiscretionaries\samplefile{tufte}",
         align     = "normal",
         kind      = "draw",
         drawcolor = "darkblue",
@@ -569,7 +569,7 @@ outline and fill. Let's show some more:
 \startbuffer
 \startMPcode{doublefun}
     draw lmt_outline [
-        content   = "\obeydiscretionaries\samplefile{ward}",
+        text      = "\obeydiscretionaries\samplefile{ward}",
         align     = "normal,tolerant",
         width     = 10cm,
         kind      = "draw",
@@ -587,7 +587,7 @@ outline and fill. Let's show some more:
 \startbuffer
 \startMPcode{doublefun}
     draw lmt_outline [
-        content       = "\obeydiscretionaries\samplefile{sapolsky}",
+        text          = "\obeydiscretionaries\samplefile{sapolsky}",
         align         = "normal,tolerant",
         style         = "bold",
         width         = 10cm,
@@ -611,14 +611,14 @@ That interface has evolved over time, also due to more advanced possibilities in
 \startbuffer
 \startMPcode{doublefun}
     draw lmt_followtext [
-        content = "How well does it work {\bf 1}! ",
+        text    = "How well does it work {\bf 1}! ",
         path    = (fullcircle scaled 4cm),
         trace   = true,
         spread  = true,
     ] ysized 5cm ;
 
     draw lmt_followtext [
-        content = "How well does it work {\bf 2}! ",
+        text    = "How well does it work {\bf 2}! ",
         path    = fullcircle scaled 4cm,
         trace   = true,
         spread  = false,
@@ -626,13 +626,13 @@ That interface has evolved over time, also due to more advanced possibilities in
     ] ysized 5cm shifted (0,-6cm) ;
 
     draw lmt_followtext [
-        content     = "How well does it work {\bf 3}! ",
+        text        = "How well does it work {\bf 3}! ",
         trace       = true,
         autoscaleup = "yes"
     ] ysized 5cm shifted (6cm,0) ;
 
     draw lmt_followtext [
-        content     = "How well does it work {\bf 4}! ",
+        text        = "How well does it work {\bf 4}! ",
         path        = fullcircle scaled 2cm,
         trace       = true,
         autoscaleup = "max"

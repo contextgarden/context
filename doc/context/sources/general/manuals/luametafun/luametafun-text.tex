@@ -1,0 +1,137 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-text
+
+\startchapter[title={Text}]
+
+The \METAFUN\ \type {textext} command normally can do the job of typesetting a
+text snippet quite well.
+
+\startbuffer
+\startMPcode
+    fill fullcircle xyscaled (8cm,1cm) withcolor "darkred" ;
+    draw textext("\bf This is text A") withcolor "white" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can use regular \CONTEXT\ commands, so this is valid:
+
+\startbuffer
+\startMPcode
+    fill fullcircle xyscaled (8cm,1cm) withcolor "darkred" ;
+    draw textext("\framed{\bf This is text A}") withcolor "white" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Of course you can as well draw a frame in \METAPOST\ but the \type {\framed}
+command has more options, like alignments.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here is a variant using the \METAFUN\ interface:
+
+\startbuffer
+\startMPcode
+    fill fullcircle xyscaled (8cm,1cm) withcolor "darkred" ;
+    draw lmt_text [
+        text  = "This is text A",
+        color = "white",
+        style = "bold"
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The outcome is more or less the same:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here is another example. The \type {format} option is actually why this command
+is provided.
+
+\startbuffer
+\startMPcode
+    fill fullcircle xyscaled (8cm,1cm) withcolor "darkred" ;
+    draw lmt_text [
+        text   = decimal 123.45678,
+        color  = "white",
+        style  = "bold",
+        format = "@0.3F",
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The following parameters can be set:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name     \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC offset   \NC numeric \NC 0       \NC \NC \NR
+\NC strut    \NC string  \NC auto    \NC adapts the dimensions to the font (\type {yes} uses the the default strut) \NC \NR
+\NC style    \NC string  \NC         \NC \NC \NR
+\NC color    \NC string  \NC         \NC \NC \NR
+\NC text     \NC string  \NC         \NC \NC \NR
+\NC anchor   \NC string  \NC         \NC one of these \type {lft}, \type {urt} like anchors \NC \NR
+\NC format   \NC string  \NC         \NC a format specifier using \type {@} instead of a percent sign \NC \NR
+\NC position \NC pair    \NC origin  \NC \NC \NR
+\NC trace    \NC boolean \NC false   \NC \NC \NR
+\LL
+\stoptabulate
+
+The next example demonstrates the positioning options:
+
+\startbuffer
+\startMPcode
+    fill fullcircle xyscaled (8cm,1cm) withcolor "darkblue" ;
+    fill fullcircle scaled .5mm withcolor "white" ;
+    draw lmt_text [
+        text     = "left",
+        color    = "white",
+        style    = "bold",
+        anchor   = "lft",
+        position = (-1mm,2mm),
+    ] ;
+    draw lmt_text [
+        text   = "right",
+        color  = "white",
+        style  = "bold",
+        anchor = "rt",
+        offset = 3mm,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+
+\stopchapter
+
+\stopcomponent

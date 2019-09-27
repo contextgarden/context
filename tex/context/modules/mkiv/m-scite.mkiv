@@ -334,9 +334,12 @@ moduledata.scite = scite
 \newdimen\scitespaceskip
 
 \unexpanded\def\buff_scite_slxb#1%
-  {\hangindent\numexpr#1+2\relax\scitespaceskip
+  {% we can have a side float
+   \advance\hangindent\numexpr#1+2\relax\scitespaceskip
    \begstrut\hskip#1\scitespaceskip
-   \hangafter 1\relax}
+   \ifcase\hangafter
+     \hangafter\plusone\relax
+   \fi}
 
 \unexpanded\def\buff_scite_slxe
   {\endstrut\par}

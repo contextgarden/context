@@ -48,7 +48,7 @@ case "$system" in
 				# a) binutils, this should work almost everywhere
 				if $(which readelf >/dev/null 2>&1); then
 					readelf -A /proc/self/exe | grep -q '^ \+Tag_ABI_VFP_args'
-					if [ ! $? ]; then
+					if [ $? != 0 ]; then
 						platform="linux-armel"
 					fi
 				# b) debian-specific fallback
@@ -86,16 +86,18 @@ case "$system" in
 		esac ;;
 	# OpenBSD
 	OpenBSD)
+		version=`uname -r`
 		case "$cpu" in
-			i*86) platform="openbsd" ;;
-			amd64) platform="openbsd-amd64" ;;
+			i*86) platform="openbsd${version}" ;;
+			amd64) platform="openbsd${version}-amd64" ;;
 			*) platform="unknown" ;;
 		esac ;;
 	# cygwin
 	CYGWIN*)
 		case "$cpu" in
-			i*86) platform="cygwin" ;;
-			x86_64|ia64) platform="cygwin" ;;
+			i*86) platform="mswin" ;; # cygwin
+            # Pavneet Arora. 20190924.  For Cygwin 64-bit platform should be win64.
+			x86_64|ia64) platform="win64" ;; # cygwin-64
 			*) platform="unknown" ;;
 		esac ;;
 	# UWIN
@@ -145,15 +147,18 @@ fi
 rsync -rlptv rsync://contextgarden.net/minimals/setup/$platform/bin .
 
 # use native windows binaries on cygwin
-if test "$platform" = "cygwin" ; then
-	platform=mswin
-fi
+# Pavneet Arora. 20190924.
+# ..Commented out the following section entirely.
+#if test "$platform" = "cygwin" ; then
+#	platform=mswin
+#fi
 
 # download or update the distribution
 # you may remove the --context=beta switch if you want to use "current"
 # you can use --engine=luatex if you want just mkiv
 env PATH="$PWD/bin:$CONTEXTROOT/texmf-$platform/bin:$PATH" MTX_PLATFORM="$platform" \
-./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --platform="$platform" --texroot="$CONTEXTROOT" $@
+./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --engine=luatex --platform="$platform" --texroot="$CONTEXTROOT" $@
+echo "./bin/mtxrun --script ./bin/mtx-update.lua --force --update --make --context=beta --engine=luatex --platform=\"$platform\" --texroot=\"$CONTEXTROOT\" $@"
 
 echo
 echo "When you want to use context, you need to initialize the tree by typing:"

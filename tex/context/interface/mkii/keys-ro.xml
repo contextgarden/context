@@ -237,6 +237,7 @@
 		<cd:variable name='hanging' value='suspendat'/>
 		<cd:variable name='head' value='antet'/>
 		<cd:variable name='header' value='antet'/>
+		<cd:variable name='headintext' value='headintext'/>
 		<cd:variable name='height' value='inaltime'/>
 		<cd:variable name='helptext' value='textajutator'/>
 		<cd:variable name='hencefore' value='precedent'/>

@@ -1,0 +1,188 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-outline
+
+\startchapter[title={Outline}]
+
+In a regular text you can have outline characters by setting a (pseudo) font
+feature but sometimes you want to play a bit more with this. In \METAFUN\ we
+always had that option. In \MKII\ we call \type {pstoedit} to turn text into
+outlines, in \MKIV\ we do that by manipulating the shapes directly. And, as with
+some other extensions, in \LMTX\ a new interface has been added, but the
+underlying code is the same as in \MKIV.
+
+\startbuffer[1a]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text      = "hello"
+        kind      = "draw",
+        drawcolor = "darkblue",
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[1b]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text          = "hello",
+        kind          = "both",
+        fillcolor     = "middlegray",
+        drawcolor     = "darkgreen",
+        rulethickness = 1/5,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+In \in {figure} [outline:1] we see two examples:
+
+\typebuffer[1a][option=TEX]
+
+and
+
+\typebuffer[1b][option=TEX]
+
+\startplacefigure[reference=outline:1,title={Drawing and|/|or filling an outline.}]
+    \startcombination
+        {\getbuffer[1a]} {\type {kind=draw}}
+        {\getbuffer[1b]} {\type {kind=both}}
+    \stopcombination
+\stopplacefigure
+
+Normally the fill ends up below the draw but we can reverse the order, as in
+\in {figure} [outline:2], where we coded the leftmost example as:
+
+\startbuffer[2a]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text          = "hello",
+        kind          = "reverse",
+        fillcolor     = "darkred",
+        drawcolor     = "darkblue",
+        rulethickness = 1/2,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[2b]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text          = "hello",
+        kind          = "both",
+        fillcolor     = "darkred",
+        drawcolor     = "darkblue",
+        rulethickness = 1/2,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2a][option=TEX]
+
+\startplacefigure[reference=outline:2,title={Reversing the order of drawing and filling.}]
+    \startcombination
+        {\getbuffer[2a]} {\type {kind=reverse}}
+        {\getbuffer[2b]} {\type {kind=both}}
+    \stopcombination
+\stopplacefigure
+
+It is possible to fill and draw in one operation, in which case the same color is
+used for both, see \in {figure} [outline:3] for an example fo this. This is a low
+level optimization where the shape is only output once.
+
+\startbuffer[3a]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text          = "hello",
+        kind          = "fillup",
+        fillcolor     = "darkgreen",
+        rulethickness = 1/5,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[3b]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text          = "hello",
+        kind          = "fill",
+        fillcolor     = "darkgreen",
+        rulethickness = 1/5,
+    ] xsized .45TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure[reference=outline:3,title={Combining a fill with a draw in the same color.}]
+    \startcombination
+        {\getbuffer[3a]} {\type {kind=fillup}}
+        {\getbuffer[3b]} {\type {kind=fill}}
+    \stopcombination
+\stopplacefigure
+
+
+This interface is much nicer than the one where each variant (the parameter \type
+{kind} above) had its own macro due to the need to group properties of the
+outline and fill. Let's show some more:
+
+\startbuffer[4]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text      = "\obeydiscretionaries\samplefile{tufte}",
+        align     = "normal",
+        kind      = "draw",
+        drawcolor = "darkblue",
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4][option=TEX]
+
+In this case we feed the text into the \type {\framed} macro so that we get a
+properly aligned paragraph of text, as demonstrated in \in {figure} [outline:4]
+\in {and} [outline:5]. If you want more trickery you can of course use any
+\CONTEXT\ command (including \type {\framed} with all kind of options) in the
+text.
+
+\startplacefigure[reference=outline:4,title={Outlining a paragraph of text.}]
+    \getbuffer[4]
+\stopplacefigure
+
+\startbuffer[5]
+\startMPcode{doublefun}
+    draw lmt_outline [
+        text      = "\obeydiscretionaries\samplefile{ward}",
+        align     = "normal,tolerant",
+        style     = "bold",
+        width     = 10cm,
+        kind      = "draw",
+        drawcolor = "darkblue",
+    ] xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startplacefigure[reference=outline:4,title={Outlining a paragraph of text with a specific width.}]
+    \getbuffer[5]
+\stopplacefigure
+
+We summarize the parameters:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name          \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC text          \NC string  \NC         \NC \NC \NR
+\NC kind          \NC string  \NC draw    \NC One of \type {draw}, \type {fill}, \type {both}, \type {reverse} and \type {fillup}. \NC \NR
+\NC fillcolor     \NC string  \NC         \NC \NC \NR
+\NC drawcolor     \NC string  \NC         \NC \NC \NR
+\NC rulethickness \NC numeric \NC 1/10    \NC \NC \NR
+\NC align         \NC string  \NC         \NC \NC \NR
+\NC style         \NC string  \NC         \NC \NC \NR
+\NC width         \NC numeric \NC         \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

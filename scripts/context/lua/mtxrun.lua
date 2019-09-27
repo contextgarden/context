@@ -8407,7 +8407,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 11332, stripped down to: 8420
+-- original size: 12898, stripped down to: 9275
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
@@ -8442,6 +8442,7 @@ end
 function streams.size(f)
  return f and f[3] or 0
 end
+streams.getsize=streams.size
 function streams.setposition(f,i)
  if f[4] then
   if i<=0 then
@@ -8824,6 +8825,50 @@ else
   elseif b==3 then for i=1,n do t[i]=readinteger3(f[1],i) end
   elseif b==4 then for i=1,n do t[i]=readinteger4(f[1],i) end end
   return t
+ end
+end
+do
+ local files=utilities.files
+ if files then
+  local openfile=files.open
+  local openstream=streams.open
+  local openstring=streams.openstring
+  local setmetatable=setmetatable
+  function io.newreader(str,method)
+   local f,m
+   if method=="string" then
+    f=openstring(str)
+    m=streams
+   elseif method=="stream" then
+    f=openstream(str)
+    m=streams
+   else
+    f=openfile(str,"rb")
+    m=files
+   end
+   if f then
+    local t={}
+    setmetatable(t,{
+     __index=function(t,k)
+      local r=m[k]
+      if k=="close" then
+       if f then
+        m.close(f)
+        f=nil
+       end
+       return function() end
+      elseif r then
+       local v=function(_,a,b) return r(f,a,b) end
+       t[k]=v
+       return v
+      else
+       print("unknown key",k)
+      end
+     end
+    } )
+    return t
+   end
+  end
  end
 end
 
@@ -14119,7 +14164,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 6778, stripped down to: 4699
+-- original size: 7149, stripped down to: 4997
 
 if not modules then modules={} end modules ['util-lua']={
  version=1.001,
@@ -14144,6 +14189,11 @@ luautilities.nofstrippedchunks=0
 luautilities.nofstrippedbytes=0
 local strippedchunks={} 
 luautilities.strippedchunks=strippedchunks
+if not LUATEXENGINE then
+ LUATEXENGINE=status.luatex_engine and string.lower(status.luatex_engine)
+ JITSUPPORTED=LUATEXENGINE=="luajittex" or jit
+ CONTEXTLMTXMODE=CONTEXTLMTXMODE or (LUATEXENGINE=="luametatex" and 1) or 0
+end
 luautilities.suffixes={
  tma="tma",
  tmc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "tmd") or (jit and "tmb") or "tmc",
@@ -14153,7 +14203,7 @@ luautilities.suffixes={
  luv="luv",
  luj="luj",
  tua="tua",
- tuc="tuc",
+ tuc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "tud") or (jit and "tub") or "tuc",
 }
 local function register(name) 
  if tracestripping then
@@ -25733,8 +25783,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1027480
--- stripped bytes    : 407301
+-- original bytes    : 1029417
+-- stripped bytes    : 408085
 
 -- end library merge
 

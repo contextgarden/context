@@ -8,6 +8,10 @@ if not modules then modules = { } end modules ['font-ocl'] = {
 
 -- todo : user list of colors
 
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+    return
+end
+
 local tostring, tonumber, next = tostring, tonumber, next
 local round, max = math.round, math.round
 local gsub, find = string.gsub, string.find
@@ -16,8 +20,6 @@ local setmetatableindex = table.setmetatableindex
 
 local formatters   = string.formatters
 local tounicode    = fonts.mappings.tounicode
-
-local bpfactor     = number.dimenfactors.bp
 
 local helpers      = fonts.helpers
 
@@ -367,16 +369,22 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
     for unicode, character in sortedhash(characters) do  -- sort is nicer for svg
         local index = character.index
         if index then
-            local pdf  = pdfshapes[index]
-            local typ  = type(pdf)
-            local data = nil
-            local dx   = nil
-            local dy   = nil
+            local pdf   = pdfshapes[index]
+            local typ   = type(pdf)
+            local data  = nil
+            local dx    = nil
+            local dy    = nil
+            local scale = 1
             if typ == "table" then
-                data = pdf.data
-                dx   = pdf.x or pdf.dx or 0
-                dy   = pdf.y or pdf.dy or 0
+                data  = pdf.data
+                dx    = pdf.x or pdf.dx or 0
+                dy    = pdf.y or pdf.dy or 0
+                scale = pdf.scale or 1
             elseif typ == "string" then
+                data = pdf
+                dx   = 0
+                dy   = 0
+            elseif typ == "number" then
                 data = pdf
                 dx   = 0
                 dy   = 0
@@ -402,7 +410,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
                     -- mkiv
                     downcommand [dp + dy * hfactor],
                     rightcommand[     dx * hfactor],
-                    vfimage(wd,ht,dp,data,name),
+                    vfimage(scale*wd,ht,dp,data,pdfshapes.filename or ""),
                     actuale,
                 }
                 character[kind] = true
@@ -457,12 +465,17 @@ do
         -- poor mans variant for generic:
         --
         runner = function()
-            return io.open("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
+            return io.popen("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
         end
     end
 
     -- There are svg out there with bad viewBox specifications where shapes lay outside that area,
-    -- but trying to correct that didin'w work out well enough so I discarded that code.
+    -- but trying to correct that didn't work out well enough so I discarded that code. BTW, we
+    -- decouple the inskape run and the loading run because inkscape is working in the background
+    -- in the files so we need to have unique files.
+    --
+    -- Because a generic setup can be flawed we need to catch bad inkscape runs which add a bit of
+    -- ugly overhead. Bah.
 
     function otfsvg.topdf(svgshapes,tfmdata)
         local pdfshapes = { }
@@ -476,6 +489,7 @@ do
             local f_convert    = formatters["%s --export-pdf=%s\n"]
             local filterglyph  = otfsvg.filterglyph
             local nofdone      = 0
+            local processed    = { }
             report_svg("processing %i svg containers",nofshapes)
             statistics.starttiming()
             for i=1,nofshapes do
@@ -487,29 +501,54 @@ do
                         local pdffile = f_pdffile(index)
                         savedata(svgfile,data)
                         inkscape:write(f_convert(svgfile,pdffile))
-                        pdfshapes[index] = true
+                        processed[index] = true
                         nofdone = nofdone + 1
-                        if nofdone % 100 == 0 then
-                            report_svg("%i shapes processed",nofdone)
+                        if nofdone % 25 == 0 then
+                            report_svg("%i shapes submitted",nofdone)
                         end
                     end
                 end
             end
+            if nofdone % 25 ~= 0 then
+                report_svg("%i shapes submitted",nofdone)
+            end
+            report_svg("processing can be going on for a while")
             inkscape:write("quit\n")
             inkscape:close()
             report_svg("processing %i pdf results",nofshapes)
-            for index in next, pdfshapes do
+            for index in next, processed do
                 local svgfile = f_svgfile(index)
                 local pdffile = f_pdffile(index)
              -- local fntdata = descriptions[indices[index]]
              -- local bounds  = fntdata and fntdata.boundingbox
-                pdfshapes[index] = {
-                    data = loaddata(pdffile),
-                 -- x    = bounds and bounds[1] or 0,
-                 -- y    = bounds and bounds[2] or 0,
-                }
+                local pdfdata = loaddata(pdffile)
+                if pdfdata and pdfdata ~= "" then
+                    pdfshapes[index] = {
+                        data = pdfdata,
+                     -- x    = bounds and bounds[1] or 0,
+                     -- y    = bounds and bounds[2] or 0,
+                    }
+                end
                 remove(svgfile)
                 remove(pdffile)
+            end
+local characters = tfmdata.characters
+for k, v in next, characters do
+    local d = descriptions[k]
+    local i = d.index
+    if i then
+        local p = pdfshapes[i]
+        if p then
+            local w = d.width
+            local l = d.boundingbox[1]
+            local r = d.boundingbox[3]
+            p.scale = (r - l) / w
+            p.x     = l
+        end
+    end
+end
+            if not next(pdfshapes) then
+                report_svg("there are no converted shapes, fix your setup")
             end
             statistics.stoptiming()
             if statistics.elapsedseconds then
@@ -531,10 +570,12 @@ local function initializesvg(tfmdata,kind,value) -- hm, always value
         end
         local pdffile   = containers.read(otf.pdfcache,hash)
         local pdfshapes = pdffile and pdffile.pdfshapes
-        if not pdfshapes or pdffile.timestamp ~= timestamp then
+        if not pdfshapes or pdffile.timestamp ~= timestamp or not next(pdfshapes) then
+            -- the next test tries to catch errors in generic usage but of course can result
+            -- in running again and again
             local svgfile   = containers.read(otf.svgcache,hash)
             local svgshapes = svgfile and svgfile.svgshapes
-            pdfshapes = svgshapes and otfsvg.topdf(svgshapes,tfmdata) or { }
+            pdfshapes = svgshapes and otfsvg.topdf(svgshapes,tfmdata,otf.pdfcache.writable,hash) or { }
             containers.write(otf.pdfcache, hash, {
                 pdfshapes = pdfshapes,
                 timestamp = timestamp,

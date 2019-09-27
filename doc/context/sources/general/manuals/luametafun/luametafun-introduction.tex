@@ -1,0 +1,88 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-introduction
+
+\startchapter[title={Introduction}]
+
+For quite a while, around since 1996, the integration of \METAPOST\ into
+\CONTEXT\ became sort of mature but, it took decades of stepwise refinement to
+reach the state that we're in now. In this manual I will discuss some of the
+features that became possible by combining \LUA\ and \METAPOST. We already had
+quite a bit of that for a decade but in 2018, when \LUAMETATEX\ showed up a next
+stage was started.
+
+Before we go into details it is good to summarize the steps that were involved in
+integrating \METAPOST\ and \TEX\ in \CONTEXT. It indicates a bit what we had and
+have to deal with which in turn lead to the interfaces we now have.
+
+Originally, \TEX\ had no graphic capabilities: it just needed to know dimensions
+of the graphics and pass some basic information about what to include to the
+\DVI\ post processor. So, a \METAPOST\ graphic was normally processed outside the
+current run, resulting in \POSTSCRIPT\ graphic, that then had to be included. In
+\PDFTEX\ there were some more built in options, and therefore the \METAPOST\ code
+could be processed runtime using some (generic) \TEX\ macros that I wrote.
+However, that engine still had to launch \METAPOST\ for each graphic, although we
+could accumulate them and do that between runs. Immediate processing means that
+we immediately know the dimensions, while a collective run is faster. In \LUATEX\
+this all changed to very fast runtime processing, made possible because the
+\METAPOST\ library is embedded in the engine, a decision that we made early in
+the project and never regret.
+
+With \PDFTEX\ the process was managed by the \type {texexec} \CONTEXT\ runner but
+with \LUATEX\ it stayed under the control of the current run. In the case of
+\PDFTEX\ the actual embedding was done by \TEX\ macros that interpreted the
+(relatively simple) \POSTSCRIPT\ code and turned it into \PDF\ literals. In
+\LUATEX\ that job was delegated to \LUA.
+
+When using \PDFTEX\ with independent \METAPOST\ runs support for special color
+spaces, transparency, embedded graphics, outline text, shading and more was
+implemented using specials and special colors where the color served as reference
+to some special extension. This works quite well. In \LUATEX\ the pre- and
+postscript features, which are properties of picture objects, are used.
+
+In all cases, some information about the current run, for instance layout related
+information, or color information, has to be passed to the rather isolated
+\METAPOST\ run. In the case if \LUATEX\ (and \MKIV) the advantage is that
+processing optional text happens in the same process so there we don't need to
+pass information about for instance the current font setup.
+
+In \LUATEX\ the \METAPOST\ library has a \type {runscript} feature, which will
+call \LUA\ with the given code. This permitted a better integration: we could now
+ask for specific information (to the \TEX\ end) instead of passing it from the
+\TEX\ end with each run. In \LUAMETATEX\ another feature was added: access to the
+scanners from the \LUA\ end. Although we could already fetch some variables when
+in \LUA\ this made it possible to extend the \METAPOST\ language in ways not
+possible before.
+
+Already for a while Alan Braslau and I were working on some new \METAFUN\ code
+that exploits all these new features. When the scanners came available I sat down
+and started working on new interfaces and in this manual I will discuss some of
+these. Some of them are illustrative, others are probably rather useful. The core
+of what we could call \LUAMETAFUN\ (or \METAFUN\ XL when we use the file
+extension as indicator) is a key|-|value interface as we have at the \TEX\ end.
+This interface relates to \CONTEXT\ \LMTX\ development and therefore related
+files have a different suffix: \type {mpxl}. However, keep in mind that some are
+just wrappers around regular \METAPOST\ code so you have the full power of
+traditional \METAPOST\ at hand.
+
+We can never satisfy all needs, so to some extent this manual also demonstrates
+how to roll out your own code, but for that you also need to peek into the
+\METAFUN\ source code too. It will take a while for this manual to complete. I
+also expect other users to come up with solutions, so maybe in the end we will
+have a collection of modules for specific tasks.
+
+\startlines
+Hans Hagen
+Hasselt NL
+August 2019 (and beyond)
+\stoplines
+
+\stopchapter
+
+\stopcomponent
+
+% I started writing this in 2019, a few days after seeing Wende live in Zeist (
+% (YT: WENDE - # MENS), one of the best shows of that year, a clear reminder of
+% timeless versatility.

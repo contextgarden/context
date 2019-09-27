@@ -691,7 +691,7 @@ metapost.splitprescript = splitprescript
 -- end
 
 function metapost.pluginactions(what,t,flushfigure) -- before/after object, depending on what
-    if top.plugmode then -- hm, what about other features
+    if top and top.plugmode then -- hm, what about other features
         for i=1,#what do
             local wi = what[i]
             if type(wi) == "function" then
@@ -708,14 +708,14 @@ function metapost.pluginactions(what,t,flushfigure) -- before/after object, depe
 end
 
 function metapost.resetplugins(t) -- intialize plugins, before figure
-    if top.plugmode then
+    if top and top.plugmode then
         outercolormodel = colors.currentmodel() -- currently overloads the one set at the tex end
         resetteractions.runner(t)
     end
 end
 
 function metapost.processplugins(object) -- each object (second pass)
-    if top.plugmode then
+    if top and top.plugmode then
         local prescript = object.prescript   -- specifications
         if prescript and #prescript > 0 then
             local before = { }

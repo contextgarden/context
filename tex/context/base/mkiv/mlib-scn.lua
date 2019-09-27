@@ -60,6 +60,7 @@ local scancolor           = scanners.color
 local scancmykcolor       = scanners.cmykcolor
 local scantransform       = scanners.transform
 local scanpath            = scanners.path
+local scanpen             = scanners.pen
 
 local mpprint             = mp.print
 local mpnumeric           = mp.numeric
@@ -164,6 +165,7 @@ typescanners = {
     [types.cmykcolor] = scan_cmykcolor,
     [types.transform] = scan_transform,
     [types.path]      = scanpath,
+    [types.pen]       = scanpen,
 }
 
 table.setmetatableindex(tokenscanners,function()
@@ -603,6 +605,22 @@ local function getparameterpath()
     end
 end
 
+local function getparameterpen()
+    local list, n = collectnames()
+    local v = namespaces
+    for i=1,n do
+        v = v[list[i]]
+        if not v then
+            break
+        end
+    end
+    if type(v) == "table" then
+        return mppath(v,"..",true)
+    else
+        return mppair(0,0)
+    end
+end
+
 local function getparametertext()
     local list, n = collectnames()
     local strut = list[n]
@@ -660,6 +678,7 @@ metapost.registerscript("getparameterdefault", getparameterdefault)
 metapost.registerscript("getparametercount",   getparametercount)
 metapost.registerscript("getmaxparametercount",getmaxparametercount)
 metapost.registerscript("getparameterpath",    getparameterpath)
+metapost.registerscript("getparameterpen",     getparameterpen)
 metapost.registerscript("getparametertext",    getparametertext)
 --------.registerscript("getparameteroption",  getparameteroption)
 metapost.registerscript("pushparameters",      pushparameters)

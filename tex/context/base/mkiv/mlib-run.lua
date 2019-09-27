@@ -57,6 +57,7 @@ metapost.showlog      = false
 metapost.lastlog      = ""
 metapost.texerrors    = false
 metapost.exectime     = metapost.exectime or { } -- hack
+metapost.nofruns      = 0
 
 local mpxformats      = { }
 local mpxterminals    = { }
@@ -100,6 +101,7 @@ local function executempx(mpx,data)
     elseif type(data) == "table" then
         data = prepareddata(data,collapse)
     end
+    metapost.nofruns = metapost.nofruns + 1
     return mpx:execute(data)
 end
 
@@ -822,45 +824,57 @@ function metapost.directrun(formatname,filename,outputformat,astable,mpdata)
     report_metapost("producing postscript and svg is no longer supported")
 end
 
--- goodie
+do
 
-function metapost.quickanddirty(mpxformat,data,incontext)
-    if not data then
-        mpxformat = "metafun"
-        data      = mpxformat
-    end
-    local code, bbox
+    local result = { }
+    local width  = 0
+    local height = 0
+    local depth  = 0
+    local bbox   = { 0, 0, 0, 0 }
+
     local flusher = {
         startfigure = function(n,llx,lly,urx,ury)
-            code = { }
-            bbox = { llx, lly, urx, ury }
+            result = { }
+            width  = urx - llx
+            height = ury
+            depth  = -lly
+            bbox   = { llx, lly, urx, ury }
         end,
         flushfigure = function(t)
+            local r = #result
             for i=1,#t do
-                code[#code+1] = t[i]
+                r = r + 1
+                result[r] = t[i]
             end
         end,
         stopfigure = function()
-        end
+        end,
     }
-    local data = formatters["; beginfig(1) ;\n %s\n ; endfig ;"](data)
-    metapost.process {
-        mpx        = mpxformat,
-        flusher    = flusher,
-        askedfig   = "all",
-        useplugins = incontext,
-        incontext  = incontext,
-        data       = { data },
-    }
-    if code then
-        return {
-            bbox = bbox or { 0, 0, 0, 0 },
-            code = code,
-            data = data,
+
+    function metapost.simple(format,code,useextensions)
+        local mpx = metapost.pushformat {
+            instance = "simplefun",
+            format   = "metafun",
+            method   = "double",
         }
-    else
-        report_metapost("invalid quick and dirty run")
+        metapost.process {
+            mpx        = mpx,
+            flusher    = flusher,
+            askedfig   = 1,
+            useplugins = useextensions,
+            data       = { "beginfig(1);", code, "endfig;" },
+            incontext  = false,
+        }
+        metapost.popformat()
+        if result then
+            local stream = concat(result," ")
+            result = { } -- nil -- cleanup .. weird, we can have a dangling q
+            return stream, width, height, depth, bbox
+        else
+            return "", 0, 0, 0, { 0, 0, 0, 0 }
+        end
     end
+
 end
 
 function metapost.getstatistics(memonly)
@@ -880,48 +894,3 @@ function metapost.getstatistics(memonly)
     end
 end
 
-do
-
-    local result = { }
-    local width  = 0
-    local height = 0
-    local depth  = 0
-
-    local flusher = {
-        startfigure = function(n,llx,lly,urx,ury)
-            result = { }
-            width  = urx - llx
-            height = ury
-            depth  = -lly
-        end,
-        flushfigure = function(t)
-            for i=1,#t do
-                result[#result+1] = t[i]
-            end
-        end,
-        stopfigure = function()
-        end
-    }
-
-    function metapost.simple(format,code)   -- even less than metapost.quickcanddirty
-        local mpx = metapost.pushformat { } -- takes defaults
-     -- metapost.setoutercolor(2)
-        metapost.process {
-            mpx        = mpx,
-            flusher    = flusher,
-            askedfig   = 1,
-            useplugins = false,
-            incontext  = false,
-            data       = { "beginfig(1);", code, "endfig;" },
-        }
-        metapost.popformat()
-        if result then
-            local stream = concat(result," ")
-            result = nil -- cleanup
-            return stream, width, height, depth
-        else
-            return "", 0, 0, 0
-        end
-    end
-
-end

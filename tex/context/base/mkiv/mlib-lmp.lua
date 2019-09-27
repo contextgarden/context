@@ -134,3 +134,11 @@ do
     end
 
 end
+
+function mp.lmt_svg_include()
+    local name = metapost.getparameter { "svg", "filename" }
+    local mps  = metapost.svgtomp {
+        data = name and name ~= "" and io.loaddata(name) or "",
+    }
+    mp.direct(mps)
+end
