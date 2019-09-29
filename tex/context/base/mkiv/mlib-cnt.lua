@@ -48,6 +48,8 @@ local next, type, tostring = next, type, tostring
 local round, abs, min, max, floor = math.round, math.abs, math.min, math.max, math.floor
 local concat, move = table.concat, table.move
 
+local bor = bit32.bor -- it's really time to ditch support for luajit
+
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 local elapsedtime       = statistics.elapsedtime
@@ -115,13 +117,13 @@ local f_function_y = formatters [ [[
                 if n == nan then
                     er = er + 1
                     if er < 10 then
-                        report("nan at (%s,%s) -> ",x,y,mx,my)
+                        report("nan at (%s,%s)",x,y)
                     end
                     n = dnan
                 elseif n == inf then
                     er = er + 1
                     if er < 10 then
-                        report("inf at (%s,%s) -> ",x,y,mx,my)
+                        report("inf at (%s,%s)",x,y)
                     end
                     n = dinf
                 end
@@ -336,8 +338,8 @@ function mp.lmt_contours_start()
     local functionlist  = functionrange and p.functions
     local preamble      = p.preamble
 
-    if xstep == 0 then xstep = (xmax - xmin)/200 end
-    if ystep == 0 then ystep = (ymax - ymin)/200 end
+    if xstep == 0 then xstep = (xmax - xmin)/100 end
+    if ystep == 0 then ystep = (ymax - ymin)/100 end
 
     local nxmin = round(xmin/xstep)
     local nxmax = round(xmax/xstep)
@@ -368,7 +370,6 @@ function mp.lmt_contours_start()
             return false -- fatal error
         end
     end
-
 
  -- for i=1,nx do
  --     data[i] = lua.newtable(ny,0)
@@ -411,7 +412,7 @@ function mp.lmt_contours_start()
                     for j=1,ny do
                         local f = fi[j]
                         if f >= minr and f <= maxr then
-                            di[j] = di[j] | bit
+                            di[j] = bor(di[j],bit)
                         end
                     end
                 end
@@ -1767,4 +1768,212 @@ end
 function mp.lmt_contours_edge_get_band(value)
     mpfill(getparameterset().result.bands[value],true)
     mpflush()
+end
+
+-- Because we share some code surface plots also end up here. When working on the
+-- contour macros by concidence I ran into a 3D plot in
+--
+-- https://staff.science.uva.nl/a.j.p.heck/Courses/mptut.pdf
+--
+-- The code is pure MetaPost and works quite well. With a bit of optimization
+-- performance is also ok, but in the end a Lua solution is twice as fast and also
+-- permits some more tweaking at no cost. So, below is an adaptation of an example
+-- in the mentioned link. It's one of these cases where access to pseudo arrays
+-- is slowing down MP.
+
+local sqrt, sin, cos = math.sqrt, math.sin, math.cos
+
+local f_fill = string.formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
+local f_draw = string.formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
+local f_mesh = string.formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
+
+local f_function_n = formatters [ [[
+    local math  = math
+    local round = math.round
+    %s
+    return function(x,y)
+        return %s
+    end
+]] ]
+
+local f_function_y = formatters [ [[
+    local math  = math
+    local round = math.round
+    local nan   = NaN
+    local inf   = math.huge
+    local er    = 0
+    %s
+    return function(x,y,dnan,dinf,report)
+        local n = %s
+        if n == nan then
+            er = er + 1
+            if er < 10 then
+                report("nan at (%s,%s)",x,y)
+            end
+            n = dnan
+        elseif n == inf then
+            er = er + 1
+            if er < 10 then
+                report("inf at (%s,%s)",x,y)
+            end
+            n = dinf
+        end
+        dx[my] = n
+        sy = sy + 1
+    end
+    return n, er
+end
+]] ]
+
+local f_color = formatters [ [[
+    local math = math
+    return function(f)
+        return %s
+    end
+]] ]
+
+function mp.lmt_surface_do(specification)
+    --
+    -- The projection and color brightness calculation have been inlined. We also store
+    -- differently.
+    --
+    -- todo: ignore weird paths
+    --
+    -- The prototype is now converted to use lmt parameter sets.
+    --
+    local p = getparameterset("surface")
+    --
+    local preamble  = p.preamble   or ""
+    local code      = p.code       or "return x + y"
+    local colorcode = p.color      or "return f, f, f"
+    local linecolor = p.linecolor  or 1
+    local xmin      = p.xmin       or -1
+    local xmax      = p.xmax       or  1
+    local ymin      = p.ymin       or -1
+    local ymax      = p.ymax       or  1
+    local xstep     = p.xstep      or .1
+    local ystep     = p.ystep      or .1
+    local bf        = p.brightness or 100
+    local clip      = p.clip       or false
+    local lines     = p.lines
+    local ha        = p.snap       or 0.01
+    local hb        = 2 * ha
+    --
+    if lines == nil then lines = true end
+    --
+    if xstep == 0 then xstep = (xmax - xmin)/100 end
+    if ystep == 0 then ystep = (ymax - ymin)/100 end
+
+    local nxmin = round(xmin/xstep)
+    local nxmax = round(xmax/xstep)
+    local nymin = round(ymin/ystep)
+    local nymax = round(ymax/ystep)
+    local nx    = nxmax - nxmin + 1
+    local ny    = nymax - nymin + 1
+    --
+    local xvector = p.xvector    or { -0.7, -0.7 }
+    local yvector = p.yvector    or { 1, 0 }
+    local zvector = p.zvector    or { 0, 1 }
+    local light   = p.light      or { 3, 3, 10 }
+    --
+    local xrx, xry   = xvector[1], xvector[2]
+    local yrx, yry   = yvector[1], yvector[2]
+    local zrx, zry   = zvector[1], zvector[2]
+    local xp, yp, zp = light[1], light[2], light[3]
+    --
+    local data = setmetatableindex("table")
+    local dx   = (xmax - xmin) / nx
+    local dy   = (ymax - ymin) / ny
+    local xt   = xmin
+    --
+    local minf, maxf
+    --
+    -- similar as contours but no data loop here
+    --
+    local fcode = load((p.check and f_function_y or f_function_n)(preamble,code))
+    local func  = type(fcode) == "function" and fcode()
+    if type(func) ~= "function" then
+        return false -- fatal error
+    end
+    --
+    local ccode = load(f_color(colorcode))
+    local color = type(ccode) == "function" and ccode()
+    if type(color) ~= "function" then
+        return false -- fatal error
+    end
+    --
+    for i=0,nx do
+        local yt = ymin
+        for j=0,ny do
+            local zt = func(xt,yt)
+            -- projection from 3D to 2D coordinates
+            local x = xt * xrx + yt * yrx + zt * zrx
+            local y = xt * xry + yt * yry + zt * zry
+            local z = zt
+            -- numerical derivatives by central differences
+            local dfx = (func(xt+ha,yt) - func(xt-ha,yt)) / hb
+            local dfy = (func(xt,yt+ha) - func(xt,yt-ha)) / hb
+            -- compute brightness factor at a point
+            local ztp = zt - zp
+            local ytp = yt - yp
+            local xtp = xt - xp
+            local ztp = zt - zp
+            local ytp = yt - yp
+            local xtp = xt - xp
+            local ca  = -ztp + dfy*ytp + dfx*xtp
+            local cb  = sqrt(1+dfx*dfx+dfy*dfy)
+            local cc  = sqrt(ztp*ztp + ytp*ytp + xtp*xtp)
+            local fac = bf*ca/(cb*cc*cc*cc)
+            -- addition: check range
+            if not minf then
+                minf = fac
+                maxf = fac
+            elseif fac < minf then
+                minf = fac
+            elseif fac > maxf then
+                maxf = fac
+            end
+            --
+            data[i][j] = { x, y, fac }
+            --
+            yt = yt + dy
+        end
+        xt = xt + dx
+    end
+    local result = { }
+    local r      = 0
+    local range  = maxf - minf
+    local cl     = linecolor
+    for i=0,nx-1 do
+        for j=0,ny-1 do
+            -- points
+            local z1 = data[i]  [j]
+            local z2 = data[i]  [j+1]
+            local z3 = data[i+1][j+1]
+            local z4 = data[i+1][j]
+            -- color
+            local cf = z1[3]
+            if clip then
+                -- best clip here if needed
+                if cf < 0 then
+                    cf = 0
+                elseif cf > 1 then
+                    cf = 1
+                end
+            else
+                -- or remap when we want to
+                cf = (z1[3] - minf) / range
+            end
+            local cr, cg, cb = color(cf)
+            if lines then
+                -- fill first and draw then, previous shapes can be covered
+                r = r + 1 ; result[r] = f_fill(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cr or 0,cg or 0,cb or 0)
+                r = r + 1 ; result[r] = f_draw(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cl or 1)
+            else
+                -- fill and draw in one go to prevent artifacts
+                r = r + 1 ; result[r] = f_mesh(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cr or 0,cg or 0,cb or 0)
+            end
+        end
+    end
+    mp.direct(concat(result))
 end

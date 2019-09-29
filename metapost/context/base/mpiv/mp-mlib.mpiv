@@ -1696,6 +1696,11 @@ def nodraw   text t = draw t withpostscript "collect" enddef ;
 def dodraw   text t = draw t withpostscript "flush"   enddef ;
 def dofill   text t = fill t withpostscript "flush"   enddef ;
 
+% maybe (saves a bogus path but the problem is that it can influence the dimensions):
+
+% def dodraw text t = draw center currentpicture         withpostscript "flush" enddef ;
+% def dofill text t = fill center currentpicture --cycle withpostscript "flush" enddef ;
+
 if contextlmtxmode :
     def eoclip text t = clip t withpostscript "evenodd" enddef ;
 else :

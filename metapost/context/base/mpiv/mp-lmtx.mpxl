@@ -1496,10 +1496,9 @@ presetparameters "contour" [
 
 def lmt_contour = applyparameters "contour" "lmt_do_contour" enddef ;
 
-boolean lmx_contour_loaded ; lmx_contour_loaded := false ;
-
 def mfun_only_draw          = addto currentpicture doublepath enddef ;
 def mfun_only_fill          = addto currentpicture contour    enddef ;
+def mfun_only_fillup text t = addto currentpicture doublepath t withpostscript "both"    enddef ;
 def mfun_only_nodraw text t = addto currentpicture doublepath t withpostscript "collect" enddef ;
 def mfun_only_nofill text t = addto currentpicture contour    t withpostscript "evenodd" enddef ;
 def mfun_only_eofill text t = addto currentpicture contour    t withpostscript "collect" enddef ;
@@ -1508,10 +1507,13 @@ def lmt_do_contour_shortcuts =
     save D ; let D = mfun_only_draw   ;
     save E ; let E = mfun_only_eofill ;
     save F ; let F = mfun_only_fill   ;
+    save U ; let U = mfun_only_fillup ;
     save d ; let d = mfun_only_nodraw ;
     save e ; let f = mfun_only_eofill ;
     save f ; let f = mfun_only_nofill ;
     save C ; let C = cycle ;
+    save B ; let B = controls ;
+    save A ; let A = and ;
 enddef ;
 
 def lmt_do_contour_band =
@@ -1638,15 +1640,17 @@ def lmt_do_contour_shades(expr outlines) =
     fi ;
 enddef ;
 
+def lmt_load_mlib_cnt =
+    runscript("lua.registercode('mlib-cnt')");
+    extra_beginfig := extra_beginfig & % todo: use different hook
+        "runscript(" & ditto & "mp.lmt_contours_cleanup()" & ditto & ")" ;
+    let lmt_load_mlib_cnt = relax ;
+enddef ;
+
 vardef lmt_do_contour =
     image (
 
-        if not lmx_contour_loaded :
-            lmx_contour_loaded := true ;
-            runscript("lua.registercode('mlib-cnt')");
-            extra_beginfig := extra_beginfig & % todo: use different hook
-                "runscript(" & ditto & "mp.lmt_contours_cleanup()" & ditto & ")" ;
-        fi
+        lmt_load_mlib_cnt ;
 
         pushparameters "contour" ;
 
@@ -2028,3 +2032,79 @@ vardef lmt_do_svg =
     fi
 enddef ;
 
+% Another experiment. Parameters might change pending a discussion between Alan
+% and me.
+
+presetparameters "surface" [
+    code          = "x + y",
+    color         = "f, 0, 0",
+    linecolor     = 1,
+    xmin          = -1,
+    xmax          =  1,
+    ymin          = -1,
+    ymax          =  1,
+    xstep         = .1,
+    ystep         = .1,
+    snap          = .01,
+    xvector       = { -0.7, -0.7 },
+    yvector       = { 1, 0 },
+    zvector       = { 0, 1 },
+    light         = { 3, 3, 10 },
+    bright        = 100,
+    clip          = false,
+    lines         = true,
+    linecolor     = 1,
+  % axis          = { }
+  % clipaxis      = false
+    axiscolor     = "gray"
+    axislinewidth = 1/2,
+] ;
+
+def lmt_surface = applyparameters "surface" "lmt_do_surface" enddef ;
+
+vardef lmt_do_surface =
+    image (
+
+        lmt_load_mlib_cnt ;
+
+        pushparameters "surface" ;
+
+        save currentpen; pen currentpen ;
+        currentpen := pencircle scaled .25 ;
+
+        interim linejoin := butt ;
+
+        lmt_do_contour_shortcuts ;
+
+        lua.mp.lmt_surface_do() ;
+
+        currentpicture := currentpicture ysized getparameter "height" ;
+
+        if hasparameter "axis" :
+
+            save p ; picture p ; p := image (
+                if hasparameter "axis" 1 :
+                    draw ((origin) -- unitvector(getparameter "xvector")) scaled (getparameter "axis" 1) ;
+                fi ;
+                if hasparameter "axis" 2 :
+                    draw ((origin) -- unitvector(getparameter "yvector")) scaled (getparameter "axis" 2) ;
+                fi ;
+                if hasparameter "axis" 3 :
+                    draw ((origin) -- unitvector(getparameter "zvector")) scaled (getparameter "axis" 3) ;
+                fi ;
+            ) ;
+
+            if getparameterdefault "clipaxis" false :
+                clip p to boundingbox currentpicture ;
+            fi ;
+
+            draw p
+                withpen pencircle scaled getparameter "axislinewidth"
+                withcolor getparameter "axiscolor"
+            ;
+
+        fi ;
+
+        popparameters ;
+    )
+enddef ;

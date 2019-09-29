@@ -237,6 +237,7 @@
 		<cd:variable name='hanging' value='visici'/>
 		<cd:variable name='head' value='hlavicka'/>
 		<cd:variable name='header' value='zahlavi'/>
+		<cd:variable name='headintext' value='headintext'/>
 		<cd:variable name='height' value='vyska'/>
 		<cd:variable name='helptext' value='textnapovedy'/>
 		<cd:variable name='hencefore' value='vyse'/>
