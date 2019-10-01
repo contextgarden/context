@@ -48,13 +48,42 @@ local function initialize(tfmdata,key,value)
         elseif value == "mono" then
             newwidth  = emwidth
         else
+            -- there are fonts out there with no x_height ...
             local spec = settings_to_array(value)
-            newwidth  = tonumber(spec[1])
-            newheight = tonumber(spec[2])
-            newdepth  = tonumber(spec[3])
-            if newwidth  then newwidth  = newwidth  * emwidth  end
-            if newheight then newheight = newheight * exheight end
-            if newdepth  then newdepth  = newdepth  * exheight end
+            newwidth  = spec[1]
+            newheight = spec[2]
+            newdepth  = spec[3]
+            local quad      = parameters.quad      or 0
+            local ascender  = parameters.ascender  or 0
+            local descender = parameters.descender or 0
+            if newwidth  == "max" then
+                newwidth = quad
+            else
+                newwidth = tonumber(newwidth)
+                if newwidth then
+                    newwidth = newwidth * emwidth
+                end
+            end
+            if newheight == "max" then
+                newheight = ascender
+            else
+                newheight = tonumber(newheight)
+                if newheight then
+                    newheight = newheight * exheight
+                end
+            end
+            if newdepth == "max" then
+                newdepth = descender
+            else
+                newdepth = tonumber(newdepth)
+                if newdepth then
+                    newdepth  = newdepth  * exheight
+                end
+            end
+            if parameters.x_heigth == 0 then
+                -- maybe a fourth parameter
+                parameters.x_heigth = (ascender + descender) / 2
+            end
         end
         if newwidth or newheight or newdepth then
             for unicode, character in next, characters do

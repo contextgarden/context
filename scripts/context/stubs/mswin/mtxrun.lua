@@ -1171,7 +1171,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38434, stripped down to: 19310
+-- original size: 38440, stripped down to: 19316
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -1340,7 +1340,7 @@ patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+unders
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(endofstring+Cc(" ")))^0))
-function anywhere(pattern) 
+local function anywhere(pattern) 
  return (1-P(pattern))^0*P(pattern)
 end
 lpeg.anywhere=anywhere
@@ -4628,7 +4628,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
 
--- original size: 1211, stripped down to: 951
+-- original size: 2980, stripped down to: 2054
 
 if not modules then modules={} end modules ['l-gzip']={
  version=1.001,
@@ -4636,43 +4636,98 @@ if not modules then modules={} end modules ['l-gzip']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-if not gzip then
- return
-end
-local suffix,suffixes=file.suffix,file.suffixes
-function gzip.load(filename)
- local f=io.open(filename,"rb")
- if not f then
- elseif suffix(filename)=="gz" then
-  f:close()
-  local g=gzip.open(filename,"rb")
-  if g then
-   local str=g:read("*all")
-   g:close()
+if gzip then
+ local suffix,suffixes=file.suffix,file.suffixes
+ function gzip.load(filename)
+  local f=io.open(filename,"rb")
+  if not f then
+  elseif suffix(filename)=="gz" then
+   f:close()
+   local g=gzip.open(filename,"rb")
+   if g then
+    local str=g:read("*all")
+    g:close()
+    return str
+   end
+  else
+   local str=f:read("*all")
+   f:close()
    return str
   end
- else
-  local str=f:read("*all")
-  f:close()
-  return str
  end
+ function gzip.save(filename,data)
+  if suffix(filename)~="gz" then
+   filename=filename..".gz"
+  end
+  local f=io.open(filename,"wb")
+  if f then
+   local s=zlib.compress(data or "",9,nil,15+16)
+   f:write(s)
+   f:close()
+   return #s
+  end
+ end
+ function gzip.suffix(filename)
+  local suffix,extra=suffixes(filename)
+  local gzipped=extra=="gz"
+  return suffix,gzipped
+ end
+else
 end
-function gzip.save(filename,data)
- if suffix(filename)~="gz" then
-  filename=filename..".gz"
+if flate then
+ local type=type
+ local find=string.find
+ local compress=flate.gz_compress
+ local decompress=flate.gz_decompress
+ local absmax=128*1024*1024
+ local initial=64*1024
+ local identifier="^\x1F\x8B\x08"
+ function gzip.compressed(s)
+  return s and find(s,identifier)
  end
- local f=io.open(filename,"wb")
- if f then
-  local s=zlib.compress(data or "",9,nil,15+16)
-  f:write(s)
-  f:close()
-  return #s
+ function gzip.compress(s,level)
+  if s and not find(s,identifier) then 
+   if not level then
+    level=3
+   elseif level<=0 then
+    return s
+   elseif level>9 then
+    level=9
+   end
+   return compress(s,level) or s
+  end
  end
-end
-function gzip.suffix(filename)
- local suffix,extra=suffixes(filename)
- local gzipped=extra=="gz"
- return suffix,gzipped
+ function gzip.decompress(s,size,iterate)
+  if s and find(s,identifier) then
+   if type(size)~="number" then
+    size=initial
+   end
+   if size>absmax then
+    size=absmax
+   end
+   if type(iterate)=="number" then
+    max=size*iterate
+   elseif iterate==nil or iterate==true then
+    iterate=true
+    max=absmax
+   end
+   if max>absmax then
+    max=absmax
+   end
+   while true do
+    local d=decompress(s,size)
+    if d then
+     return d
+    end
+    size=2*size
+    if not iterate or size>max then
+     return false
+    end
+   end
+  else
+   return s
+  end
+ end
 end
 
 
@@ -12547,7 +12602,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 13340, stripped down to: 8832
+-- original size: 13348, stripped down to: 8838
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -12568,10 +12623,10 @@ local setters=utilities.setters or {}
 utilities.setters=setters
 local data={}
 local trace_initialize=false 
+local frozen=true  
 function setters.initialize(filename,name,values) 
  local setter=data[name]
  if setter then
-  frozen=true
   local data=setter.data
   if data then
    for key,newvalue in sortedhash(values) do
@@ -16326,7 +16381,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 61155, stripped down to: 35846
+-- original size: 61191, stripped down to: 35864
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -17200,12 +17255,14 @@ publicentityfile+publicdoctype+systemdoctype+definitiondoctype+simpledoctype)*op
  }
  return grammar_parsed_text_one,grammar_parsed_text_two,grammar_unparsed_text
 end
-grammar_parsed_text_one_nop,
-grammar_parsed_text_two_nop,
-grammar_unparsed_text_nop=install(space,spacing,anything)
-grammar_parsed_text_one_yes,
-grammar_parsed_text_two_yes,
-grammar_unparsed_text_yes=install(space_nl,spacing_nl,anything_nl)
+local
+ grammar_parsed_text_one_nop,
+ grammar_parsed_text_two_nop,
+ grammar_unparsed_text_nop=install(space,spacing,anything)
+local
+ grammar_parsed_text_one_yes,
+ grammar_parsed_text_two_yes,
+ grammar_unparsed_text_yes=install(space_nl,spacing_nl,anything_nl)
 local function _xmlconvert_(data,settings,detail)
  settings=settings or {} 
  preparexmlstate(settings)
@@ -25783,8 +25840,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1029417
--- stripped bytes    : 408085
+-- original bytes    : 1031236
+-- stripped bytes    : 408771
 
 -- end library merge
 

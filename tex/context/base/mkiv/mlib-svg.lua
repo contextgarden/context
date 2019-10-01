@@ -16,22 +16,25 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
 
 -- Written with Anne Clark on speakers as distraction.
 
--- TODO:
-
--- optimize
--- test for gzip header 0x1F 0x8B 0x08
--- var()
--- color hash
--- currentColor
--- instances
+-- Todo when I run into an example:
+--
+-- var(color,color)
 -- --color<decimal>
--- glyph<id>
+-- currentColor : when i run into an example
+-- some more fonts
+--
+-- Todo: some day
+--
+-- optimize
+-- instances
+-- withpen -> pickup
+--
+-- Todo: when i am motivated
+--
 -- shading
 -- "none" -> false
 -- clip = [ auto | rect(llx,lly,urx,ury) ] (in svg)
 -- xlink url ... whatever
--- mp svg module + shortcuts
--- withpen -> pickup
 
 -- The fact that in the more recent versions of SVG the older text related elements
 -- are depricated and not even supposed to be supported, combined with the fact that
@@ -54,6 +57,7 @@ local pi, sin, cos, asin, sind, cosd, tan, abs, sqrt = math.pi, math.sin, math.c
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 local gmatch, gsub, find, match, rep = string.gmatch, string.gsub, string.find, string.match, string.rep
 local formatters = string.formatters
+local extract = bit32.extract
 
 local xmlconvert, xmlcollected, xmlcount, xmlfirst, xmlroot, xmltext = xml.convert, xml.collected, xml.count, xml.first, xml.root, xml.text
 
@@ -138,6 +142,13 @@ local f_transform_stop  = formatters[") %s ;"]
 local s_offset_start    = "draw image ( "
 local f_offset_stop     = formatters[") shifted (%.3N,%.3N) ;"]
 
+local s_scaled_start    = "draw image ( "
+local f_scaled_stop     = formatters[") scaled %.3N ;"]
+
+local s_hacked_start    = "draw image ("
+local f_hacked_stop     = formatters[") shifted (0,%.3N) scaled %.3N ;"]
+-- local f_hacked_stop     = formatters[") scaled %.3N ;"]
+
 local f_viewport_start  = "draw image ("
 local f_viewport_stop   = ") ;"
 local f_viewport_shift  = formatters["currentpicture := currentpicture shifted (%03N,%03N);"]
@@ -160,6 +171,171 @@ local f_shade_two       = formatters['withprescript "sh_center_b=%.3N %.3N"']
 
 local f_text_scaled     = formatters['(textext.drt("%s") scaled %.3N shifted (%.3N,%.3N))']
 local f_text_normal     = formatters['(textext.drt("%s") shifted (%.3N,%.3N))']
+
+-- We can actually use the svg color definitions from the tex end but maybe a user doesn't
+-- want those replace the normal definitions.
+
+local svgcolors = {
+    black                = 0x000000,
+    navy                 = 0x000080,
+    darkblue             = 0x00008B,
+    mediumblue           = 0x0000CD,
+    blue                 = 0x0000FF,
+    darkgreen            = 0x006400,
+    green                = 0x008000,
+    teal                 = 0x008080,
+    darkcyan             = 0x008B8B,
+    deepskyblue          = 0x00BFFF,
+    darkturquoise        = 0x00CED1,
+    mediumspringgreen    = 0x00FA9A,
+    lime                 = 0x00FF00,
+    springgreen          = 0x00FF7F,
+    cyan                 = 0x00FFFF,
+    aqua                 = 0x00FFFF,
+    midnightblue         = 0x191970,
+    dodgerblue           = 0x1E90FF,
+    lightseagreen        = 0x20B2AA,
+    forestgreen          = 0x228B22,
+    seagreen             = 0x2E8B57,
+    darkslategray        = 0x2F4F4F,
+    darkslategrey        = 0x2F4F4F,
+    limegreen            = 0x32CD32,
+    mediumseagreen       = 0x3CB371,
+    turquoise            = 0x40E0D0,
+    royalblue            = 0x4169E1,
+    steelblue            = 0x4682B4,
+    darkslateblue        = 0x483D8B,
+    mediumturquoise      = 0x48D1CC,
+    indigo               = 0x4B0082,
+    darkolivegreen       = 0x556B2F,
+    cadetblue            = 0x5F9EA0,
+    cornflowerblue       = 0x6495ED,
+    mediumaquamarine     = 0x66CDAA,
+    dimgrey              = 0x696969,
+    dimgray              = 0x696969,
+    slateblue            = 0x6A5ACD,
+    olivedrab            = 0x6B8E23,
+    slategrey            = 0x708090,
+    slategray            = 0x708090,
+    lightslategray       = 0x778899,
+    lightslategrey       = 0x778899,
+    mediumslateblue      = 0x7B68EE,
+    lawngreen            = 0x7CFC00,
+    chartreuse           = 0x7FFF00,
+    aquamarine           = 0x7FFFD4,
+    maroon               = 0x800000,
+    purple               = 0x800080,
+    olive                = 0x808000,
+    gray                 = 0x808080,
+    grey                 = 0x808080,
+    skyblue              = 0x87CEEB,
+    lightskyblue         = 0x87CEFA,
+    blueviolet           = 0x8A2BE2,
+    darkred              = 0x8B0000,
+    darkmagenta          = 0x8B008B,
+    saddlebrown          = 0x8B4513,
+    darkseagreen         = 0x8FBC8F,
+    lightgreen           = 0x90EE90,
+    mediumpurple         = 0x9370DB,
+    darkviolet           = 0x9400D3,
+    palegreen            = 0x98FB98,
+    darkorchid           = 0x9932CC,
+    yellowgreen          = 0x9ACD32,
+    sienna               = 0xA0522D,
+    brown                = 0xA52A2A,
+    darkgray             = 0xA9A9A9,
+    darkgrey             = 0xA9A9A9,
+    lightblue            = 0xADD8E6,
+    greenyellow          = 0xADFF2F,
+    paleturquoise        = 0xAFEEEE,
+    lightsteelblue       = 0xB0C4DE,
+    powderblue           = 0xB0E0E6,
+    firebrick            = 0xB22222,
+    darkgoldenrod        = 0xB8860B,
+    mediumorchid         = 0xBA55D3,
+    rosybrown            = 0xBC8F8F,
+    darkkhaki            = 0xBDB76B,
+    silver               = 0xC0C0C0,
+    mediumvioletred      = 0xC71585,
+    indianred            = 0xCD5C5C,
+    peru                 = 0xCD853F,
+    chocolate            = 0xD2691E,
+    tan                  = 0xD2B48C,
+    lightgray            = 0xD3D3D3,
+    lightgrey            = 0xD3D3D3,
+    thistle              = 0xD8BFD8,
+    orchid               = 0xDA70D6,
+    goldenrod            = 0xDAA520,
+    palevioletred        = 0xDB7093,
+    crimson              = 0xDC143C,
+    gainsboro            = 0xDCDCDC,
+    plum                 = 0xDDA0DD,
+    burlywood            = 0xDEB887,
+    lightcyan            = 0xE0FFFF,
+    lavender             = 0xE6E6FA,
+    darksalmon           = 0xE9967A,
+    violet               = 0xEE82EE,
+    palegoldenrod        = 0xEEE8AA,
+    lightcoral           = 0xF08080,
+    khaki                = 0xF0E68C,
+    aliceblue            = 0xF0F8FF,
+    honeydew             = 0xF0FFF0,
+    azure                = 0xF0FFFF,
+    sandybrown           = 0xF4A460,
+    wheat                = 0xF5DEB3,
+    beige                = 0xF5F5DC,
+    whitesmoke           = 0xF5F5F5,
+    mintcream            = 0xF5FFFA,
+    ghostwhite           = 0xF8F8FF,
+    salmon               = 0xFA8072,
+    antiquewhite         = 0xFAEBD7,
+    linen                = 0xFAF0E6,
+    lightgoldenrodyellow = 0xFAFAD2,
+    oldlace              = 0xFDF5E6,
+    red                  = 0xFF0000,
+    fuchsia              = 0xFF00FF,
+    magenta              = 0xFF00FF,
+    deeppink             = 0xFF1493,
+    orangered            = 0xFF4500,
+    tomato               = 0xFF6347,
+    hotpink              = 0xFF69B4,
+    coral                = 0xFF7F50,
+    darkorange           = 0xFF8C00,
+    lightsalmon          = 0xFFA07A,
+    orange               = 0xFFA500,
+    lightpink            = 0xFFB6C1,
+    pink                 = 0xFFC0CB,
+    gold                 = 0xFFD700,
+    peachpuff            = 0xFFDAB9,
+    navajowhite          = 0xFFDEAD,
+    moccasin             = 0xFFE4B5,
+    bisque               = 0xFFE4C4,
+    mistyrose            = 0xFFE4E1,
+    blanchedalmond       = 0xFFEBCD,
+    papayawhip           = 0xFFEFD5,
+    lavenderblush        = 0xFFF0F5,
+    seashell             = 0xFFF5EE,
+    cornsilk             = 0xFFF8DC,
+    lemonchiffon         = 0xFFFACD,
+    floralwhite          = 0xFFFAF0,
+    snow                 = 0xFFFAFA,
+    yellow               = 0xFFFF00,
+    lightyellow          = 0xFFFFE0,
+    ivory                = 0xFFFFF0,
+    white                = 0xFFFFFF,
+}
+
+local svgcolor = setmetatableindex(function(t,k)
+    -- we delay building all these strings
+    local v = svgcolors[k]
+    if v then
+        v = f_rgb(extract(v,16,8),extract(v,8,8),extract(v,0,8))
+    else
+        v = false
+    end
+    t[k] = v
+    return v
+end)
 
 local p_digit    = lpegpatterns.digit
 local p_hexdigit = lpegpatterns.hexdigit
@@ -627,7 +803,8 @@ local function grabpath(str)
             prev = "C"
             goto continue
         ::close::
-            n = n + 1 ; t[n] = prev == "C" and "..cycle" or "--cycle"
+        --  n = n + 1 ; t[n] = prev == "C" and "..cycle" or "--cycle"
+            n = n + 1 ; t[n] = "--cycle"
             if n > 0 then
                 a = a + 1 ; all[a] = concat(t,"",1,n) ; n = 0
             end
@@ -915,7 +1092,7 @@ do
                 local colorb  = a["stop-color"]
                 local opacity = a["stop-opacity"]
 
-                colorb = colorb and hexcolor3(colorb) or colorb
+                colorb = colorb and (hexcolor3(colorb) or svgcolor[colorb] or colorb)
                 colora = colora or colorb
 
                 -- what if no percentage
@@ -959,7 +1136,7 @@ do
         if not c then
             c = rgbacolor(stroke)
             if not c then
-                c = f_color(stroke)
+                c = f_color(svgcolor[stroke] or stroke)
             end
         end
         local o = a["stroke-opacity"] or a.opacity
@@ -981,7 +1158,7 @@ do
         if not c then
             c = hexcolor(fill)
             if not c then
-                c = f_color(fill)
+                c = f_color(svgcolor[fill] or fill)
             end
         end
         local o = a["fill-opacity"] or a.opacity
@@ -1018,7 +1195,9 @@ do
     local function viewport(x,y,w,h,noclip)
         r = r + 1 ; result[r] = f_viewport_start
         return function()
-            r = r + 1 ; result[r] = f_viewport_shift(-x,y)
+            if x ~= 0 or y ~= 0 then
+                r = r + 1 ; result[r] = f_viewport_shift(-x,y)
+            end
             if not noclip then
                 r = r + 1 ; result[r] = f_viewport_clip(w,-h)
             end
@@ -1372,14 +1551,22 @@ do
         r = r + 1 ; result[r] = text
     end
 
-    function handlers.svg(c,top,x,y,w,h,noclip)
+    function handlers.svg(c,top,x,y,w,h,noclip,notransform,normalize)
         local a = setmetatableindex(c.at,top)
         local v = a.viewBox
         local t = a.transform
         local wrapupoffset
         local wrapupviewport
+        local btransform
+        local etransform
+        local bhacked
+        local ehacked
+        local wd = w
      -- local ex, em
         local xpct, ypct, rpct
+        if notransform then
+--             t = nil
+        end
         if trace then
             report("view: %s, xpct %.3N, ypct %.3N","before",percentage_x,percentage_y)
         end
@@ -1411,13 +1598,24 @@ do
         if t then
             btransform, etransform = transform(t,true)
         end
+        -- some fonts need this (bad transforms + viewbox)
+        if v and normalize and w and wd and w ~= wd and w > 0 and wd > 0 then
+            bhacked = s_hacked_start
+            ehacked = f_hacked_stop(y or 0,wd/w)
+        end
         if btransform then
             r = r + 1 ; result[r] = btransform
+        end
+        if bhacked then
+            r = r + 1 ; result[r] = bhacked
         end
         wrapupoffset = offset(a)
         process(c,"/*",top or defaults)
         if wrapupoffset then
             wrapupoffset()
+        end
+        if ehacked then
+            r = r + 1 ; result[r] = ehacked
         end
         if etransform then
             r = r + 1 ; result[r] = etransform
@@ -1448,7 +1646,7 @@ do
         end
     end
 
-    function metapost.svgtomp(specification,pattern)
+    function metapost.svgtomp(specification,pattern,notransform,normalize)
         local mps = ""
         local svg = specification.data
         if type(svg) == "string" then
@@ -1464,9 +1662,11 @@ do
                     nil,
                     specification.x,
                     specification.y,
-                    specification.w,
-                    specification.h,
-                    specification.noclip
+                    specification.width,
+                    specification.height,
+                    specification.noclip,
+                    notransform,
+                    normalize
                 )
                 mps = concat(result," ")
                 root, result, r, definitions, styles, bodyfont = false, false, false, false, false, false
@@ -1480,6 +1680,8 @@ do
     end
 
 end
+
+-- These helpers might move to their own module .. some day ...
 
 function metapost.showsvgpage(data)
     local dd = data.data
@@ -1533,6 +1735,9 @@ do
     -- cache. This is the old method updated. Maybe a future version will just do this runtime
     -- but for now this is the most efficient method.
 
+    local decompress = gzip.decompress
+    local compress   = gzip.compress
+
     function metapost.svgshapestopdf(svgshapes,pdftarget,report_svg)
         local texname   = "temp-otf-svg-to-pdf.tex"
         local pdfname   = "temp-otf-svg-to-pdf.pdf"
@@ -1566,6 +1771,9 @@ do
         for i=1,nofshapes do
             local entry = svgshapes[i]
             local data  = entry.data
+            if decompress then
+                data = decompress(data,128*1024) or data
+            end
             local specification = {
                 data   = xmlconvert(data),
                 x      = 0,
@@ -1580,7 +1788,7 @@ do
                     pdfpages[index] = pdfpage
                     local pattern = "/svg[@id='glyph" .. index .. "']"
                     n = n + 1 ; t[n] = "\\startMPpage"
-                    n = n + 1 ; t[n] = metapost.svgtomp(specification,pattern) or ""
+                    n = n + 1 ; t[n] = metapost.svgtomp(specification,pattern,true,true) or ""
                     n = n + 1 ; t[n] = "\\stopMPpage"
                 end
             end
@@ -1610,6 +1818,9 @@ do
         for i=1,nofshapes do
             local entry = svgshapes[i]
             local data  = entry.data
+            if decompress then
+                data = decompress(data,128*1024) or data
+            end
             local specification = {
                 data   = xmlconvert(data),
                 x      = 0,
@@ -1621,7 +1832,11 @@ do
             for index=entry.first,entry.last do
                 if not mpshapes[index] then
                     local pattern = "/svg[@id='glyph" .. index .. "']"
-                    mpshapes[index] = metapost.svgtomp(specification,pattern) or ""
+                    local mpcode  = metapost.svgtomp(specification,pattern,true,true) or ""
+                    if mpcode ~= "" and compress then
+                        mpcode = compress(mpcode) or mpcode
+                    end
+                    mpshapes[index] = mpcode
                 end
             end
         end
@@ -1630,6 +1845,56 @@ do
             report_svg("svg conversion time %s",statistics.elapsedseconds(mpshapes))
         end
         return mpshapes
+    end
+
+    function metapost.svgglyphtomp(fontname,unicode)
+        if fontname and unicode then
+            local id = fonts.definers.internal { name = fontname }
+            if id then
+                local tfmdata = fonts.hashes.identifiers[id]
+                if tfmdata then
+                    local properties = tfmdata.properties
+                    local svg        = properties.svg
+                    local hash       = svg and svg.hash
+                    local timestamp  = svg and svg.timestamp
+                    if hash then
+                        local svgfile   = containers.read(fonts.handlers.otf.svgcache,hash)
+                        local svgshapes = svgfile and svgfile.svgshapes
+                        if svgshapes then
+                            if type(unicode) == "string" then
+                                unicode = utf.byte(unicode)
+                            end
+                            local chardata = tfmdata.characters[unicode]
+                            local index    = chardata and chardata.index
+                            if index then
+                                for i=1,#svgshapes do
+                                    local entry = svgshapes[i]
+                                    if index >= entry.first and index <= entry.last then
+                                        local data  = entry.data
+                                        if data then
+                                            local root = xml.convert(gzip.decompress(data,128*1024) or data)
+                                            return metapost.svgtomp (
+                                                {
+                                                    data   = root,
+                                                    x      = 0,
+                                                    y      = 1000,
+                                                    width  = 1000,
+                                                    height = 1000,
+                                                    noclip = true,
+                                                },
+                                                "/svg[@id='glyph" .. index .. "']",
+                                                true,
+                                                true
+                                            )
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 
 end

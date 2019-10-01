@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 09/29/19 14:34:09
+-- merge date  : 10/01/19 10:36:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -296,7 +296,7 @@ patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+unders
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(endofstring+Cc(" ")))^0))
-function anywhere(pattern) 
+local function anywhere(pattern) 
  return (1-P(pattern))^0*P(pattern)
 end
 lpeg.anywhere=anywhere
@@ -19800,6 +19800,8 @@ function readers.cpal(f,fontdata,specification)
   fontdata.colorpalettes=palettes
  end
 end
+local compress=gzip and gzip.compress
+local compressed=compress and gzip.compressed
 function readers.svg(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"svg",specification.glyphs)
  if tableoffset then
@@ -19821,10 +19823,14 @@ function readers.svg(f,fontdata,specification)
   for i=1,nofentries do
    local entry=entries[i]
    setposition(f,entry.offset)
+   local data=readstring(f,entry.length)
+   if compressed and not compressed(data) then
+    data=compress(data)
+   end
    entries[i]={
     first=entry.first,
     last=entry.last,
-    data=readstring(f,entry.length)
+    data=data
    }
   end
   fontdata.svgshapes=entries

@@ -30,11 +30,11 @@ local data        = { }
 -- The sorting is needed to get a predictable setters in case of *.
 
 local trace_initialize = false -- only for testing during development
+local frozen           = true  -- this needs checking
 
 function setters.initialize(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
-        frozen = true -- don't permitoverload
      -- trace_initialize = true
         local data = setter.data
         if data then

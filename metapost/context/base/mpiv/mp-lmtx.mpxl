@@ -2012,6 +2012,8 @@ enddef ;
 
 presetparameters "svg" [
     filename = "",
+    fontname = "",
+  % unicode  = 0,
     width    = 0,
     height   = 0,
 ] ;
@@ -2020,10 +2022,12 @@ def lmt_svg = applyparameters "svg" "lmt_do_svg" enddef ;
 
 vardef lmt_do_svg =
     save w, h ;
-    w := getparameter "svg" "width" ;
-    h := getparameter "svg" "height" ;
     image (
-        lua.mp.lmt_svg_include()
+        pushparameters "svg" ;
+        w := getparameter "width" ;
+        h := getparameter "height" ;
+        lua.mp.lmt_svg_include() ;
+        popparameters ;
     )
     if w > 0 :
         if h > 0 : xysized(w,h) else : xsized(w) fi

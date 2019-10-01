@@ -6,10 +6,11 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
     license   = "see context related readme files",
 }
 
-local aux        = mp.aux
-local mpnumeric  = aux.numeric
-local mppair     = aux.pair
-local mpquoted   = aux.quoted
+local aux       = mp.aux
+local mpnumeric = aux.numeric
+local mppair    = aux.pair
+local mpquoted  = aux.quoted
+local mpdirect  = aux.direct
 
 -- todo: use a stack?
 
@@ -136,9 +137,20 @@ do
 end
 
 function mp.lmt_svg_include()
-    local name = metapost.getparameter { "svg", "filename" }
-    local mps  = metapost.svgtomp {
-        data = name and name ~= "" and io.loaddata(name) or "",
-    }
-    mp.direct(mps)
+    local filename = metapost.getparameter { "filename" }
+    local fontname = metapost.getparameter { "fontname" }
+    local metacode = nil
+    if fontname and fontname ~= "" then
+        local unicode = metapost.getparameter { "unicode" }
+        if unicode then
+            metacode = metapost.svgglyphtomp(fontname,math.round(unicode))
+        end
+    elseif filename and filename ~= "" then
+        metacode = metapost.svgtomp {
+            data = io.loaddata(filename)
+        }
+    end
+    if metacode then
+        mpdirect(metacode)
+    end
 end

@@ -1525,12 +1525,14 @@ do
 
         local embedimage = images.embed
 
-        local f_glyph  = formatters["G%d"]
-        local f_char   = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
-        local f_width  = formatters["%.6N 0 d0"]
-        local f_index  = formatters["I%d"]
-        local f_image  = formatters["%.6N 0 d0 /%s Do"]
-        local f_stream = formatters["%.6N 0 d0 %s"]
+        local f_glyph    = formatters["G%d"]
+        local f_char     = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
+        local f_width    = formatters["%.6N 0 d0"]
+        local f_index    = formatters["I%d"]
+        local f_image    = formatters["%.6N 0 d0 /%s Do"]
+        local f_image_d  = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
+        local f_stream   = formatters["%.6N 0 d0 %s"]
+        local f_stream_d = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character.
@@ -1558,6 +1560,9 @@ do
             return result.glyphs, widthfactor / 65536, scalefactor, readers.pktopdf
         end
 
+        -- not scaling in svg but here using a cm might be more efficient in terms of bytes
+        -- as we get smaller numbers
+
         -- pdf inclusion
 
         function methods.pdf(filename,details)
@@ -1567,15 +1572,25 @@ do
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
             if pdfdoc then
+                local scale    = 10 * details.parameters.size/details.parameters.designsize
+                local units    = details.parameters.units
+                local factor   = units * bpfactor / scale
+                local fixdepth = pdfshapes.fixdepth
                 local function pdftopdf(glyph,width,data)
                     local image  = copypage(pdfdoc,glyph)
-                    width        = 100 * width * bpfactor
                     embedimage(image)
+                    width        = width * factor
                     nofglyphs    = nofglyphs + 1
                     local name   = f_glyph(nofglyphs)
                     xforms[name] = pdfreference(image.objnum)
-                    local pdf    = f_image(width,name)
-                    return pdf, width
+                    if fixdepth then
+                        local depth  = data.depth  or 0
+                        local height = data.height or 0
+                        if depth ~= 0 or height ~= 0 then
+                            return f_stream_d(width,(-height-depth)*factor,pdf), width
+                        end
+                    end
+                    return f_image(width,name), width
                 end
                 local function closepdf()
                  -- closepdf(pdfdoc)
@@ -1583,27 +1598,44 @@ do
                 local function getresources()
                     return pdfdictionary { XObject = xforms }
                 end
-                return pdfshapes, 1, 0.001, pdftopdf, closepdf, getresources
+                return pdfshapes, 1, 1/units, pdftopdf, closepdf, getresources
             end
         end
 
         -- mps inclusion
 
+        local decompress = gzip.decompress
+
         function methods.mps(filename,details)
             local properties = details.properties
             local mpshapes   = properties.indexdata[1]
-            local function mpstopdf(mp,width,data)
-                local pdf    = metapost.simple("metafun",mp,true) -- can be sped up, minifun
-                local width  = 100 * width * bpfactor
-                local stream = f_stream(width,pdf)
-                return stream, width
+            if mpshapes then
+                local scale    = 10 * details.parameters.size/details.parameters.designsize
+                local units    = details.parameters.units
+                local factor   = units * bpfactor / scale
+                local fixdepth = mpshapes.fixdepth
+                local function mpstopdf(mp,width,data)
+                    if decompress then
+                        mp = decompress(mp)
+                    end
+                    local pdf   = metapost.simple("metafun",mp,true) -- can be sped up, minifun
+                    local width = width * factor
+                    if fixdepth then
+                        local depth  = data.depth  or 0
+                        local height = data.height or 0
+                        if depth ~= 0 or height ~= 0 then
+                            return f_stream_d(width,(-height-depth)*factor,pdf), width
+                        end
+                    end
+                    return f_stream(width,pdf), width
+                end
+                local function getresources()
+                    return lpdf.collectedresources {
+                        serialize  = false,
+                    }
+                end
+                return mpshapes, 1, 1/units, mpstopdf, nil, getresources
             end
-            local function getresources()
-                return lpdf.collectedresources {
-                    serialize  = false,
-                }
-            end
-            return mpshapes, 1, 0.001, mpstopdf, nil, getresources
         end
 
         -- png inclusion
@@ -1625,13 +1657,8 @@ do
                 local function pngtopdf(glyph,width,data)
                     local info   = graphics.identifiers.png(glyph.data,"string")
                     local image  = lpdf.injectors.png(info,"string")
-                    local bbox   = image.bbox
-                    local llx    = bbox[1] * bpfactor
-                    local lly    = bbox[2] * bpfactor
-                    local urx    = bbox[3] * bpfactor
-                    local ury    = bbox[4] * bpfactor
-                    width        = width * bpfactor / 10
                     embedimage(image)
+                    width        = width * bpfactor / 10
                     nofglyphs    = nofglyphs + 1
                     local name   = f_glyph(nofglyphs)
                     xforms[name] = pdfreference(image.objnum)
@@ -1659,7 +1686,7 @@ do
                 if colorlist then
                     local dropdata  = data.dropin
                     local dropid    = dropdata.properties.id
-                    local dropunits = dropdata.parameters.units
+                    local dropunits = dropdata.parameters.units -- shared
                     usedfonts[dropid] = dropid
 
                     local w = description.width or 0
@@ -1668,7 +1695,6 @@ do
                     local t = { f_width(w) }
                     local n = 1
                     local d = colrvalues[#colrvalues]
-
                     for i=1,s do
                         local entry = colorlist[i]
                         local v = colrvalues[entry.class] or d
@@ -1740,7 +1766,6 @@ do
             for i=1,maxindex-minindex+1 do
                 widths[i] = 0
             end
-
             for index, data in sortedhash(indices) do
                 local name  = f_index(index)
                 local glyph = glyphs[index]
@@ -1773,7 +1798,11 @@ do
                 Differences = differences,
             }
             local tounicode  = tounicodedictionary(details,indices,maxindex,basefontname)
-            local resources  = getresources and getresources() or lpdf.procset(true)
+            local resources  = getresources and getresources()
+            if not resources or not next(resources) then
+             -- resources = lpdf.procset(true)
+                resources = nil
+            end
             local descriptor = pdfdictionary {
                 -- most is optional in type3
                 Type        = pdfconstant("FontDescriptor"),
@@ -1794,7 +1823,7 @@ do
                 Widths         = pdfreference(pdfflushobject(widths)),
                 FontDescriptor = pdfreference(pdfflushobject(descriptor)),
                 Resources      = resources,
-                ToUnicode      = pdfreference(pdfflushstreamobject(tounicode)),
+                ToUnicode      = tounicode and pdfreference(pdfflushstreamobject(tounicode)),
             }
             pdfflushobject(object,parent)
             if reset then

@@ -398,7 +398,7 @@ function install.update()
 
     local server     = environment.arguments.server   or ""
     local instance   = environment.arguments.instance or ""
-    local osplatform = os.platform
+    local osplatform = environment.arguments.platform or os.platform
     local platform   = platforms[osplatform]
 
     if server == "" then

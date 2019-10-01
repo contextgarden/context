@@ -1160,13 +1160,15 @@ publicentityfile +
 
 end
 
-grammar_parsed_text_one_nop ,
-grammar_parsed_text_two_nop ,
-grammar_unparsed_text_nop   = install(space, spacing, anything)
+local
+    grammar_parsed_text_one_nop ,
+    grammar_parsed_text_two_nop ,
+    grammar_unparsed_text_nop   = install(space, spacing, anything)
 
-grammar_parsed_text_one_yes ,
-grammar_parsed_text_two_yes ,
-grammar_unparsed_text_yes   = install(space_nl, spacing_nl, anything_nl)
+local
+    grammar_parsed_text_one_yes ,
+    grammar_parsed_text_two_yes ,
+    grammar_unparsed_text_yes   = install(space_nl, spacing_nl, anything_nl)
 
 -- maybe we will add settings to result as well
 
