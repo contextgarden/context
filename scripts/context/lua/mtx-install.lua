@@ -26,6 +26,7 @@ local helpinfo = [[
     <flag name="goodies" value="string"><short>extra binaries (like scite and texworks)</short></flag>
     <flag name="install"><short>install context</short></flag>
     <flag name="update"><short>update context</short></flag>
+    <flag name="erase"><short>wipe the cache</short></flag>
     <flag name="identify"><short>create list of files</short></flag>
    </subcategory>
   </category>
@@ -398,8 +399,15 @@ function install.update()
 
     local server     = environment.arguments.server   or ""
     local instance   = environment.arguments.instance or ""
-    local osplatform = environment.arguments.platform or os.platform
-    local platform   = platforms[osplatform]
+    local osplatform = environment.arguments.platform or nil
+    local platform   = platforms[osplatform or os.platform or ""]
+
+    if platform == "unknown" and osplatform then
+        -- catches openbsdN.M kind of specifications
+        platform = osplatform
+    elseif not osplatform then
+        osplatform = platform
+    end
 
     if server == "" then
         server = "lmtx.contextgarden.net,lmtx.pragma-ade.com,lmtx.pragma-ade.nl,dmz.pragma-ade.nl"
@@ -531,7 +539,12 @@ function install.update()
     end
 
     run("%s --generate",mtxrunbin)
+    if environment.argument("erase") then
+        run("%s --script cache --erase",mtxrunbin)
+        run("%s --generate",mtxrunbin)
+    end
     run("%s --make en", contextbin)
+
 
     -- in calling script: update mtxrun.exe and mtxrun.lua
 

@@ -282,7 +282,8 @@ ID %t
 EI
 Q]] ]
 
-    function readers.pktopdf(glyph,width)
+    function readers.pktopdf(glyph,data,factor)
+        local width   = data.width * factor
         local xsize   = glyph.xsize or 0
         local ysize   = glyph.ysize or 0
         local xoffset = glyph.xoffset or 0
@@ -319,7 +320,7 @@ Q]] ]
                 r = r + 1 ; result[r] = char(extract(b,8,8))
             end
         end
-        return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result)
+        return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
     end
 
     function readers.loadpk(filename)

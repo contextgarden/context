@@ -1545,19 +1545,24 @@ do
         -- pk inclusion (not really tested but not really used either)
 
         function methods.pk(filename)
-            local resolution  = 600
-            local widthfactor = resolution / 72
-            local scalefactor = 72 / resolution / 10
             local pkfullname  = resolvers.findpk(basedfontname,resolution)
             if not pkfullname or pkfullname == "" then
                 return
             end
             local readers = fonts.handlers.tfm.readers
             local result  = readers.loadpk(pkfullname)
+            local convert = readers.pktopdf
             if not result or result.error then
                 return
             end
-            return result.glyphs, widthfactor / 65536, scalefactor, readers.pktopdf
+            local resolution  = 600
+            local widthfactor = resolution / 72
+            local scalefactor = 72 / resolution / 10
+            local factor      = widthfactor / 65536
+            local function pktopdf(glyph,data)
+                return convert(glyph,data,factor) -- return pdfcode, width
+            end
+            return result.glyphs, scalefactor, pktopdf, false, false
         end
 
         -- not scaling in svg but here using a cm might be more efficient in terms of bytes
@@ -1576,7 +1581,8 @@ do
                 local units    = details.parameters.units
                 local factor   = units * bpfactor / scale
                 local fixdepth = pdfshapes.fixdepth
-                local function pdftopdf(glyph,width,data)
+                local function pdftopdf(glyph,data)
+                    local width  = data.width or 0
                     local image  = copypage(pdfdoc,glyph)
                     embedimage(image)
                     width        = width * factor
@@ -1587,7 +1593,7 @@ do
                         local depth  = data.depth  or 0
                         local height = data.height or 0
                         if depth ~= 0 or height ~= 0 then
-                            return f_stream_d(width,(-height-depth)*factor,pdf), width
+                            return f_image_d(width,(-height-depth)*factor,name), width
                         end
                     end
                     return f_image(width,name), width
@@ -1598,7 +1604,7 @@ do
                 local function getresources()
                     return pdfdictionary { XObject = xforms }
                 end
-                return pdfshapes, 1, 1/units, pdftopdf, closepdf, getresources
+                return pdfshapes, 1/units, pdftopdf, closepdf, getresources
             end
         end
 
@@ -1614,7 +1620,8 @@ do
                 local units    = details.parameters.units
                 local factor   = units * bpfactor / scale
                 local fixdepth = mpshapes.fixdepth
-                local function mpstopdf(mp,width,data)
+                local function mpstopdf(mp,data)
+                    local width = data.width
                     if decompress then
                         mp = decompress(mp)
                     end
@@ -1634,7 +1641,7 @@ do
                         serialize  = false,
                     }
                 end
-                return mpshapes, 1, 1/units, mpstopdf, nil, getresources
+                return mpshapes, 1/units, mpstopdf, false, getresources
             end
         end
 
@@ -1654,7 +1661,8 @@ do
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
             if pngshapes then
-                local function pngtopdf(glyph,width,data)
+                local function pngtopdf(glyph,data)
+                    local width  = data.width
                     local info   = graphics.identifiers.png(glyph.data,"string")
                     local image  = lpdf.injectors.png(info,"string")
                     embedimage(image)
@@ -1671,7 +1679,7 @@ do
                 local function getresources()
                     return pdfdictionary { XObject = xforms }
                 end
-                return pngshapes, 1, 1, pngtopdf, closepng, getresources
+                return pngshapes, 1, pngtopdf, closepng, getresources
             end
         end
 
@@ -1680,7 +1688,7 @@ do
             local colrvalues = details.properties.indexdata[2]
             local usedfonts  = { }
             local dd         = details.fontdata.descriptions -- temp hack
-            local function colrtopdf(description,wd,data) -- todo: chardata instead of descriptions
+            local function colrtopdf(description,data)
                 -- descriptions by index
                 local colorlist = description.colors
                 if colorlist then
@@ -1717,7 +1725,7 @@ do
                     fontprefix = "V",
                 }
             end
-            return colrshapes, 1, 1, colrtopdf, false, getresources
+            return colrshapes, 1, colrtopdf, false, getresources
         end
 
         mainwriters["type3"] = function(details)
@@ -1728,8 +1736,7 @@ do
             if not method then
                 return
             end
-            local glyphs, widthfactor, scalefactor,
-                glyphtopdf, reset, getresources = method(basedfontname,details)
+            local glyphs, scalefactor, glyphtopdf, reset, getresources = method(basedfontname,details)
             if not glyphs then
                 return
             end
@@ -1770,12 +1777,8 @@ do
                 local name  = f_index(index)
                 local glyph = glyphs[index]
                 if glyph then
-                    local width = widthfactor * data.width
-                    local stream, wd = glyphtopdf(glyph,width,data)
+                    local stream, width = glyphtopdf(glyph,data)
                     if stream then
-                        if wd then
-                            width = wd
-                        end
                         if index - 1 ~= lastindex then
                             d = d + 1 differences[d] = index
                         end

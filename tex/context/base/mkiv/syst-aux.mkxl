@@ -5957,6 +5957,41 @@
 % \setmeasure {xxx}{1cm}
 
 %D \macros
+%D   {definequantity}
+%D
+%D These do the same but for numbers.
+
+\installsystemnamespace{quantity}
+
+\unexpanded\def\definequantity
+  {\dodoubleargument\syst_helpers_define_quantity}
+
+\def\syst_helpers_define_quantity[#1][#2]%
+  {\expandafter\def\csname\??quantity#1\endcsname{#2}}
+
+\unexpanded\def\freezequantity
+  {\dodoubleargument\syst_helpers_freeze_quantity}
+
+\def\syst_helpers_freeze_quantity[#1][#2]%
+  {\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}}
+
+\unexpanded\def\setquantity #1#2{\expandafter\def \csname\??quantity#1\endcsname{#2}}             % quick way
+\unexpanded\def\setgquantity#1#2{\expandafter\gdef\csname\??quantity#1\endcsname{#2}}             % quick way
+\unexpanded\def\setequantity#1#2{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
+\unexpanded\def\setxquantity#1#2{\expandafter\xdef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
+
+\def\quantity
+  {\the\quantitied}
+
+\def\quantitied#1%
+  {\numexpr\ifcsname\??quantity#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
+
+\def\directquantity#1%
+  {\the\numexpr#1\relax}
+
+% let\quantified\quantitied
+
+%D \macros
 %D   {dividedsize}
 %D
 %D This one can be used inside a measure (used in m4all):
