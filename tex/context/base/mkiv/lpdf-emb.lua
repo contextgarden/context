@@ -1532,6 +1532,7 @@ do
         local f_image    = formatters["%.6N 0 d0 /%s Do"]
         local f_image_d  = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
         local f_stream   = formatters["%.6N 0 d0 %s"]
+        local f_stream_c = formatters["%.6N 0 0 0 0 0 d1 %s"]
         local f_stream_d = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
@@ -1617,17 +1618,21 @@ do
             local mpshapes   = properties.indexdata[1]
             if mpshapes then
                 local scale    = 10 * details.parameters.size/details.parameters.designsize
-                local units    = details.parameters.units
+                local units    = mpshapes.units or details.parameters.units
                 local factor   = units * bpfactor / scale
                 local fixdepth = mpshapes.fixdepth
+                local usecolor = mpshapes.usecolor
+                -- todo: each mp a table with properties (like using d0 / d1)
                 local function mpstopdf(mp,data)
                     local width = data.width
                     if decompress then
                         mp = decompress(mp)
                     end
-                    local pdf   = metapost.simple("metafun",mp,true) -- can be sped up, minifun
+                    local pdf   = metapost.simple(mpshapes.instance,mp,true) -- can be sped up, minifun
                     local width = width * factor
-                    if fixdepth then
+                    if usecolor then
+                        return f_stream_c(width,pdf), width
+                    elseif fixdepth then
                         local depth  = data.depth  or 0
                         local height = data.height or 0
                         if depth ~= 0 or height ~= 0 then

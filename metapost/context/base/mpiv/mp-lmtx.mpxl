@@ -2112,3 +2112,22 @@ vardef lmt_do_surface =
         popparameters ;
     )
 enddef ;
+
+% I can make a variant that avoids the lmt_do ... and does an immediate function
+% call instead.
+
+presetparameters "mpsglyphs" [
+    name  = "dummy",
+    units = 1000,
+] ;
+
+presetparameters "mpsglyph" [
+    category = "dummy",
+    unicode  = 0,
+] ;
+
+def lmt_registerglyphs = applyparameters "mpsglyphs" "lmt_do_registerglyphs" enddef ;
+def lmt_registerglyph  = applyparameters "mpsglyph"  "lmt_do_registerglyph"  enddef ;
+
+vardef lmt_do_registerglyphs = lua.mp.lmt_register_glyphs() ; enddef ;
+vardef lmt_do_registerglyph  = lua.mp.lmt_register_glyph () ; enddef ;

@@ -15,10 +15,12 @@ elseif CONTEXTLMTXMODE == 0 then
     return
 end
 
-local tostring, tonumber, next = tostring, tonumber, next
-local round, max, mod, div = math.round, math.round, math.mod, math.div
-local concat, setmetatableindex = table.concat, table.setmetatableindex
+local tostring, tonumber, next, type = tostring, tonumber, next, type
+local round, max, mod, div = math.round, math.max, math.mod, math.div
+local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
+local utfbyte = utf.byte
 local formatters = string.formatters
+local settings_to_hash_strict, settings_to_array = utilities.parsers.settings_to_hash_strict, utilities.parsers.settings_to_array
 
 local otf         = fonts.handlers.otf
 local otfregister = otf.features.register
@@ -51,8 +53,10 @@ do
         return droppedin
     end
 
+    -- todo: pass specification table instead
+
     function dropins.provide(method,t_tfmdata,indexdata,...)
-        droppedin                = dropins.nextid()
+        local droppedin          = dropins.nextid()
         local t_characters       = t_tfmdata.characters
         local t_descriptions     = t_tfmdata.descriptions
         local t_properties       = t_tfmdata.properties
@@ -76,14 +80,13 @@ do
         return slot, droppedin, d_tfmdata, d_properties
     end
 
-    function dropins.clone(method,tfmdata,shapes,...)
+    function dropins.clone(method,tfmdata,shapes,...) -- by index
         if method and shapes then
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
             local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
             local idx  = 255
             local slot = 0
-            --
             for k, v in next, characters do
                 local index = v.index
                 if index then
@@ -93,7 +96,13 @@ do
                         if shape then
                             if idx >= 255 then
                                 idx = 1
-                                colrshapes = { filename = shapes.filename, fixdepth = shapes.fixdepth } -- not needed
+                                colrshapes = { -- or use metatable
+                                    filename = shapes.filename,
+                                    fixdepth = shapes.fixdepth,
+                                    units    = shapes.units,
+                                    usecolor = shapes.usecolor,
+                                 -- instance = shapes.instance,
+                                }
                                 slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
                                 dropchars = tfmdrop.characters
                                 dropdescs = tfmdrop.descriptions
@@ -101,10 +110,7 @@ do
                                 idx = idx + 1
                             end
                             colrshapes[idx] = shape -- so not: description
-                            --
--- local helpers            = fonts.helpers
--- local prependcommands    = helpers.prependcommands
--- print(v.commands)
+                            -- todo: prepend
                             v.commands = { { "slot", slot, idx } }
                             -- hack to prevent that type 3 also gets 'use' flags .. todo
                             local c = { commands = false, index = idx, dropin = tfmdata }
@@ -121,6 +127,170 @@ do
             -- error
         end
     end
+
+    function dropins.swap(method,tfmdata,shapes,...) -- by unicode
+        if method and shapes then
+            local characters   = tfmdata.characters
+            local descriptions = tfmdata.descriptions
+            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
+            local idx  = 255
+            local slot = 0
+            -- we can have a variant where shaped are by unicode and not by index
+            for k, v in next, characters do
+                local description = descriptions[k]
+                if description then
+                    local shape = shapes[k]
+                    if shape then
+                        if idx >= 255 then
+                            idx = 1
+                            colrshapes = { -- or use metatable
+                                filename = shapes.filename,
+                                fixdepth = shapes.fixdepth,
+                                units    = shapes.units,
+                                usecolor = shapes.usecolor,
+                             -- instance = shapes.instance,
+                            }
+                            slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
+                            dropchars = tfmdrop.characters
+                            dropdescs = tfmdrop.descriptions
+                        else
+                            idx = idx + 1
+                        end
+                        colrshapes[idx] = shape -- so not: description
+                        -- todo: prepend
+                        v.commands = { { "slot", slot, idx } }
+                        -- hack to prevent that type 3 also gets 'use' flags .. todo
+                        local c = { commands = false, index = idx, dropin = tfmdata }
+                        local d = { index = idx, dropin = tfmdata }
+                        setmetatableindex(c,v)
+                        setmetatableindex(d,description)
+                        dropchars[idx] = c
+                        dropdescs[idx] = d
+                    end
+                end
+            end
+        else
+            -- error
+        end
+    end
+
+end
+
+do
+
+    local dropins = fonts.dropins
+
+    local shapes = setmetatableindex(function(t,k)
+        local v = {
+            glyphs     = { },
+            parameters = {
+                units = 1000
+            },
+        }
+        t[k] = v
+        return v
+    end)
+
+    function dropins.registerglyphs(parameters)
+        local category = parameters.name
+        local target   = shapes[category].parameters
+        for k, v in next, parameters do
+            if k ~= "glyphs" then
+                target[k] = v
+            end
+        end
+    end
+
+    function dropins.registerglyph(parameters)
+        local category   = parameters.category
+        local unicode    = parameters.unicode
+        local unitype    = type(unicode)
+        if unitype == "string" then
+            local uninumber = tonumber(unicode)
+            if uninumber then
+                unicode = round(uninumber)
+            else
+                unicode = utfbyte(unicode)
+            end
+        elseif unitype == "number" then
+            unicode = round(unicode)
+        end
+        parameters.unicode = unicode
+     -- print(category,unicode)
+        shapes[category].glyphs[unicode] = parameters
+    end
+
+    local function initializemps(tfmdata,kind,value)
+        if value then
+            local spec = settings_to_hash_strict(value)
+            if not spec or not next(spec) then
+                spec = { category = value }
+            end
+            -- todo: multiple categories but then mayb also different
+            -- clones because of the units .. fot now we assume the same
+            -- units
+            local category = spec.category
+            if category and category ~= "" then
+                local categories = settings_to_array(category)
+                local usedshapes = nil
+                local index      = 0
+                for i=1,#categories do
+                    local category  = categories[i]
+                    local mpsshapes = shapes[category]
+                    if mpsshapes then
+                        local properties    = tfmdata.properties
+                        local parameters    = tfmdata.parameters
+                        local characters    = tfmdata.characters
+                        local descriptions  = tfmdata.descriptions
+                        local mpsparameters = mpsshapes.parameters
+                        local units         = mpsparameters.units  or 1000
+                        local defaultwidth  = mpsparameters.width  or 0
+                        local defaultheight = mpsparameters.height or 0
+                        local defaultdepth  = mpsparameters.depth  or 0
+                        local defaultcode   = mpsparameters.code   or ""
+                        local scale         = parameters.size / units
+                        usedshapes = usedshapes or {
+                            instance = "simplefun",
+                            units    = units,
+                            usecolor = mpsparameters.usecolor,
+                        }
+                        -- todo: deal with extensibles and more properties
+                        for unicode, shape in sortedhash(mpsshapes.glyphs) do
+                         -- local oldc = characters[unicode]
+                         -- if oldc then
+                                index = index + 1
+                                local newc = {
+                                    index  = index, -- into usedshapes
+                                    width  = scale * (shape.width or defaultwidth),
+                                    height = scale * (shape.height or defaultheight),
+                                    depth  = scale * (shape.depth or defaultdepth),
+                                }
+                                --
+                                characters  [unicode] = newc
+                                descriptions[unicode] = newc
+                                --
+                                usedshapes[unicode] = shape.code or defaultcode
+                         -- end
+                        end
+                    end
+                end
+                if usedshapes then
+                    -- todo: different font when units and usecolor changes, maybe move into loop
+                    -- above
+                    dropins.swap("mps",tfmdata,usedshapes)
+                end
+            end
+        end
+    end
+
+    otfregister {
+        name         = "metapost",
+        description  = "metapost glyphs",
+        manipulators = {
+            base = initializemps,
+            node = initializemps,
+        }
+    }
 
 end
 

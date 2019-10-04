@@ -337,7 +337,7 @@ do
             noferrors = noferrors + 1
             errors[filename] = errors[filename] + 1
         end
-        errorhandler(filename)
+        errorhandler(message) -- (filename)
     end
 
     logs.registerfinalactions(function()

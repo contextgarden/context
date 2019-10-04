@@ -179,7 +179,7 @@ do
     local hashes = { }
 
     local nofinstances = 0
-    local instances    = table.setmetatableindex(function(t,k)
+    local instances    = setmetatableindex(function(t,k)
         nofinstances = nofinstances + 1
         t[k] = nofinstances
         return nofinstances
@@ -570,6 +570,21 @@ end
 -- \definefontfeature[demo][a={b,c}]
 -- \definefontfeature[demo][a={b=12,c={34,35}}]
 
+local h = setmetatableindex(function(t,k)
+    local v = "," .. k .. ","
+    t[k] = v
+    return v
+end)
+
+-- local function removefromhash(hash,key)
+--     local pattern = h[key]
+--     for k in next, hash do
+--         if k ~= key and find(h[k],pattern) then -- if find(k,",") and ...
+--             hash[k] = nil
+--         end
+--     end
+-- end
+
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=",1,true) then
         features = parent
@@ -635,14 +650,23 @@ local function presetcontext(name,parent,features) -- will go to con and shared
      -- if v then t[k] = v end
         t[k] = v
     end
-    -- needed for dynamic features
-    -- maybe number should always be renewed as we can redefine features
-    local number = setups[name] and setups[name].number or 0 -- hm, numbers[name]
+    -- the number is needed for dynamic features; maybe number should always be
+    -- renewed as we can redefine features ... i need a test
+    local number = setups[name] and setups[name].number or 0
     if number == 0 then
         number = #numbers + 1
         numbers[number] = name
     end
+    --
     t.number = number
+    -- there is the special case of combined features as we have in math but maybe
+    -- this has to change some day ... otherwise we mess up dynamics (ok, we could
+    -- impose a limit there: no combined features)
+    --
+    -- done elsewhere (!)
+    --
+ -- removefromhash(setups,name) -- can have changed (like foo,extramath)
+    --
     setups[name] = t
     return number, t
 end
@@ -913,14 +937,37 @@ end
 --     return fastcopy(setups[features] or (presetcontext(features,"","") and setups[features]))
 -- end
 
+-- local function splitcontext(features) -- presetcontext creates dummy here
+--     local sf = setups[features]
+--     if not sf then
+--         local n -- number
+--         if find(features,",") then
+--             -- let's assume a combination which is not yet defined but just specified (as in math)
+--             n, sf = presetcontext(features,features,"")
+--         else
+--             -- we've run into an unknown feature and or a direct spec so we create a dummy
+--             n, sf = presetcontext(features,"","")
+--         end
+--     end
+--     return fastcopy(sf)
+-- end
+
 local function splitcontext(features) -- presetcontext creates dummy here
-    local sf = setups[features]
-    if not sf then
-        local n -- number
-        if find(features,",",a,true) then
-            -- let's assume a combination which is not yet defined but just specified (as in math)
-            n, sf = presetcontext(features,features,"")
-        else
+    local n, sf
+    if find(features,",") then
+        --
+        -- from elsewhere (!)
+        --
+        -- this will become:
+        --
+     -- if find(features,"^reset," then
+            setups[features] = nil
+     -- end
+        -- let's assume a combination which is not yet defined but just specified (as in math)
+        n, sf = presetcontext(features,features,"")
+    else
+        sf = setups[features]
+        if not sf then
             -- we've run into an unknown feature and or a direct spec so we create a dummy
             n, sf = presetcontext(features,"","")
         end

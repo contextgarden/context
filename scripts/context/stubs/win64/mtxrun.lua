@@ -17843,7 +17843,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 55145, stripped down to: 30992
+-- original size: 54626, stripped down to: 31255
 
 if not modules then modules={} end modules ['lxml-lpt']={
  version=1.001,
@@ -18325,6 +18325,8 @@ local builtin={
  lastindex="(#ll.__p__.dt or 1)",
  lastelement="(ll.__p__.en or 1)",
  last="#list",
+ list="list",
+ self="ll",
  rootposition="order",
  order="order",
  element="(ll.ei or 1)",
@@ -18433,7 +18435,8 @@ local function register_selector(specification)
 end
 local function register_expression(expression)
  local converted=lpegmatch(converter,expression)
- local runner=load(format(template_e,converted))
+ local wrapped=format(template_e,converted)
+ local runner=load(wrapped)
  runner=(runner and runner()) or function() errorrunner_e(expression,converted) end
  return { kind="expression",expression=expression,converted=converted,evaluator=runner }
 end
@@ -18805,6 +18808,20 @@ expressions.count=function(e,pattern)
  local collected=applylpath(e,pattern) 
  return pattern and (collected and #collected) or 0
 end
+expressions.attribute=function(e,name,value)
+ if type(e)=="table" and name then
+  local a=e.at
+  if a then
+   local v=a[name]
+   if value then
+    return v==value
+   else
+    return v
+   end
+  end
+ end
+ return nil
+end
 expressions.oneof=function(s,...)
  for i=1,select("#",...) do
   if s==select(i,...) then
@@ -18851,7 +18868,7 @@ function expressions.contains(str,pattern)
  end
  return false
 end
-function xml.expressions.idstring(str)
+function expressions.idstring(str)
  return type(str)=="string" and gsub(str,"^#","") or ""
 end
 local function traverse(root,pattern,handle)
@@ -25840,8 +25857,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1031236
--- stripped bytes    : 408771
+-- original bytes    : 1030717
+-- stripped bytes    : 407989
 
 -- end library merge
 

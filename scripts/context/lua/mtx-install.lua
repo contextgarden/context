@@ -402,7 +402,7 @@ function install.update()
     local osplatform = environment.arguments.platform or nil
     local platform   = platforms[osplatform or os.platform or ""]
 
-    if platform == "unknown" and osplatform then
+    if (platform == "unknown" or platform == "" or not platform) and osplatform then
         -- catches openbsdN.M kind of specifications
         platform = osplatform
     elseif not osplatform then

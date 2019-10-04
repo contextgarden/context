@@ -237,6 +237,7 @@
 		<cd:variable name='hanging' value='آویزان'/>
 		<cd:variable name='head' value='سر'/>
 		<cd:variable name='header' value='سربرگ'/>
+		<cd:variable name='headintext' value='headintext'/>
 		<cd:variable name='height' value='ارتفاع'/>
 		<cd:variable name='helptext' value='متن‌کمکی'/>
 		<cd:variable name='hencefore' value='hencefore'/>
@@ -643,6 +644,7 @@
 		<cd:constant name='aligntitle' value='عنوان‌تنظیم'/>
 		<cd:constant name='alternative' value='جایگزین'/>
 		<cd:constant name='anchor' value='anchor'/>
+		<cd:constant name='anchoring' value='anchoring'/>
 		<cd:constant name='andtext' value='andtext'/>
 		<cd:constant name='apa' value='apa'/>
 		<cd:constant name='arguments' value='arguments'/>
@@ -872,6 +874,7 @@
 		<cd:constant name='hfil' value='پرکردن‌ارتفاع'/>
 		<cd:constant name='hidenumber' value='hidenumber'/>
 		<cd:constant name='hoffset' value='آفست‌ا'/>
+		<cd:constant name='horizontal' value='افقی'/>
 		<cd:constant name='horoffset' value='آفست‌افق'/>
 		<cd:constant name='hyphen' value='شکستن'/>
 		<cd:constant name='hyphens' value='hyphens'/>
@@ -972,9 +975,12 @@
 		<cd:constant name='menu' value='منو'/>
 		<cd:constant name='method' value='روش'/>
 		<cd:constant name='middle' value='میان'/>
+		<cd:constant name='middlecolor' value='middlecolor'/>
 		<cd:constant name='middlecommand' value='middlecommand'/>
 		<cd:constant name='middlespeech' value='سخنرانی‌میانی'/>
+		<cd:constant name='middlestyle' value='middlestyle'/>
 		<cd:constant name='middletext' value='متن‌میانی'/>
+		<cd:constant name='middlewidth' value='middlewidth'/>
 		<cd:constant name='midsentence' value='جمله‌میانی'/>
 		<cd:constant name='min' value='کمترین'/>
 		<cd:constant name='mindepth' value='کمترین‌عمق'/>
@@ -1292,6 +1298,7 @@
 		<cd:constant name='vcompact' value='vcompact'/>
 		<cd:constant name='vector' value='vector'/>
 		<cd:constant name='veroffset' value='آفست‌عم'/>
+		<cd:constant name='vertical' value='عمودی'/>
 		<cd:constant name='vfactor' value='vfactor'/>
 		<cd:constant name='vfil' value='vfil'/>
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
@@ -1302,6 +1309,7 @@
 		<cd:constant name='white' value='سفید'/>
 		<cd:constant name='width' value='عرض'/>
 		<cd:constant name='words' value='words'/>
+		<cd:constant name='xanchor' value='xanchor'/>
 		<cd:constant name='xfactor' value='فاکتورایکس'/>
 		<cd:constant name='xhtml' value='xhtml'/>
 		<cd:constant name='xmax' value='xmax'/>
@@ -1309,6 +1317,7 @@
 		<cd:constant name='xoffset' value='آفست‌ایکس'/>
 		<cd:constant name='xscale' value='مقیاس‌ایکس'/>
 		<cd:constant name='xstep' value='گام‌ایکس'/>
+		<cd:constant name='yanchor' value='yanchor'/>
 		<cd:constant name='yfactor' value='فاکتوروای'/>
 		<cd:constant name='ymax' value='ymax'/>
 		<cd:constant name='yoffset' value='آفست‌وای'/>

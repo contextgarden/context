@@ -225,6 +225,8 @@
 \defineMPinstance[binarypost] [\s!format=mpost,\c!method=\s!binary]
 \defineMPinstance[decimalpost][\s!format=mpost,\c!method=\s!decimal]
 
+\defineMPinstance[simplefun]  [\s!format=metafun,\c!method=\s!double] % maybe use minifun
+
 %defineMPinstance[megapost]   [\s!format=mpost,\c!method=\s!decimal]
 
 \newconditional\c_meta_include_initializations

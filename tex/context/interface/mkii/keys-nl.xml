@@ -237,6 +237,7 @@
 		<cd:variable name='hanging' value='hangend'/>
 		<cd:variable name='head' value='kop'/>
 		<cd:variable name='header' value='hoofd'/>
+		<cd:variable name='headintext' value='kopintekst'/>
 		<cd:variable name='height' value='hoogte'/>
 		<cd:variable name='helptext' value='helptekst'/>
 		<cd:variable name='hencefore' value='hierboven'/>

@@ -154,3 +154,19 @@ function mp.lmt_svg_include()
         mpdirect(metacode)
     end
 end
+
+if CONTEXTLMTXMODE > 0 then
+
+    local dropins        = fonts.dropins
+    local registerglyphs = dropins.registerglyphs
+    local registerglyph  = dropins.registerglyph
+
+    function mp.lmt_register_glyph()
+        registerglyph(metapost.getparameterset("mpsglyph"))
+    end
+
+    function mp.lmt_register_glyphs()
+        registerglyphs(metapost.getparameterset("mpsglyphs"))
+    end
+
+end

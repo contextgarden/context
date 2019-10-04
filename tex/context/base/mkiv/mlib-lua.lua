@@ -771,6 +771,7 @@ do
 
     metapost.registerscript("namedcolor",function()
         mpprint(mpnamedcolor(scanstring()))
+-- test: return mpnamedcolor(scanstring())
     end)
 
 end

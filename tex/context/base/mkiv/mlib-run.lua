@@ -518,6 +518,7 @@ function metapost.pushformat(specification,f,m) -- was: instance, name, method
     local usedinstance = instance .. ":" .. nofformats
     local mpx = mpxformats  [usedinstance]
     local mpp = mpxpreambles[instance] or ""
+ -- report_metapost("push instance %a (%S)",usedinstance,mpx)
     if preamble then
         preamble = prepareddata(preamble)
         mpp = mpp .. "\n" .. preamble
@@ -851,10 +852,11 @@ do
         end,
     }
 
-    function metapost.simple(format,code,useextensions)
+    function metapost.simple(instance,code,useextensions)
+        -- can we pickup the instance ?
         local mpx = metapost.pushformat {
-            instance = "simplefun",
-            format   = "metafun",
+            instance = instance or "simplefun",
+            format   = "metafun", -- or: minifun
             method   = "double",
         }
         metapost.process {

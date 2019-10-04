@@ -859,7 +859,7 @@
 % \let\colo_basics_synchronize\gobbleoneargument  % used in mp interface
 % \let\colo_basics_inherit    \gobbletwoarguments % used in mp interface
 
-\def\colo_basics_allocate#1%
+\def\colo_basics_allocate#1% todo: use a chardef instead
   {\expandafter\newcount\csname\??colornumber#1\endcsname
    \clf_synccolorcount{#1}\c_syst_last_allocated_count}
 

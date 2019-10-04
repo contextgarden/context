@@ -571,7 +571,6 @@ colors.isblack = isblack
 -- if c and c > 1 then -- 1 is black
 -- local v = attributes.colors.values[c]
 
-
 local function definespotcolor(name,parent,str,global)
     if parent == "" or find(parent,"=",1,true) then
         colors.registerspotcolor(name, parent) -- does that work? no attr
@@ -829,7 +828,6 @@ colors.mpoptions    = mpoptions
 -- mp.NamedColor = function(str)
 --     mpprint(mpnamedcolor(str))
 -- end
-
 
 -- local function formatcolor(ca,separator)
 --     local cv = colorvalues[ca]
