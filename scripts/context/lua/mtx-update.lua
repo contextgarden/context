@@ -224,7 +224,7 @@ update.goodies = {
 --     ["unknown"]        = "unknown",
 -- }
 
-local platforms = {
+update.platforms = {
     ["mswin"]          = "mswin",
     ["windows"]        = "mswin",
     ["win32"]          = "mswin",

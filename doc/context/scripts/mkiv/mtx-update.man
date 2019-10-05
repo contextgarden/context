@@ -1,0 +1,81 @@
+.TH "mtx-update" "1" "01-01-2019" "version 1.03" "ConTeXt Minimals Updater"
+.SH NAME
+ mtx-update - ConTeXt Minimals Updater
+.SH SYNOPSIS
+.B mtxrun --script update [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B ConTeXt Minimals Updater
+.SH OPTIONS
+.TP
+.B --platform=string
+platform (windows, linux, linux-64, osx-intel, osx-ppc, linux-ppc)
+.TP
+.B --server=string
+repository url (rsync://contextgarden.net)
+.TP
+.B --module=string
+repository url (minimals)
+.TP
+.B --repository=string
+specify version (current, experimental)
+.TP
+.B --context=string
+specify version (current, latest, beta, yyyy.mm.dd)
+.TP
+.B --rsync=string
+rsync binary (rsync)
+.TP
+.B --texroot=string
+installation directory (not guessed for the moment)
+.TP
+.B --engine=string
+tex engine (luatex, pdftex, xetex)
+.TP
+.B --modules=string
+extra modules (can be list or 'all')
+.TP
+.B --fonts=string
+additional fonts (can be list or 'all')
+.TP
+.B --goodies=string
+extra binaries (like scite and texworks)
+.TP
+.B --force
+instead of a dryrun, do the real thing
+.TP
+.B --update
+update minimal tree
+.TP
+.B --make
+also make formats and generate file databases
+.TP
+.B --keep
+don't delete unused or obsolete files
+.TP
+.B --state
+update tree using saved state
+.TP
+.B --cygwin
+adapt drive specs to cygwin
+.TP
+.B --mingw
+assume mingw binaries being used
+.TP
+.B --silent
+less (or no) logging
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

@@ -202,18 +202,23 @@ do
     end
 
     function dropins.registerglyph(parameters)
-        local category   = parameters.category
-        local unicode    = parameters.unicode
-        local unitype    = type(unicode)
-        if unitype == "string" then
-            local uninumber = tonumber(unicode)
-            if uninumber then
-                unicode = round(uninumber)
-            else
-                unicode = utfbyte(unicode)
+        local category = parameters.category
+        local unicode  = parameters.unicode
+        local unichar  = parameters.unichar
+        if type(unichar) == "string" then
+            unicode = utfbyte(unichar)
+        else
+            local unitype = type(unicode)
+            if unitype == "string" then
+                local uninumber = tonumber(unicode)
+                if uninumber then
+                    unicode = round(uninumber)
+                else
+                    unicode = utfbyte(unicode)
+                end
+            elseif unitype == "number" then
+                unicode = round(unicode)
             end
-        elseif unitype == "number" then
-            unicode = round(unicode)
         end
         parameters.unicode = unicode
      -- print(category,unicode)

@@ -2124,6 +2124,7 @@ presetparameters "mpsglyphs" [
 presetparameters "mpsglyph" [
     category = "dummy",
     unicode  = 0,
+  % unichar  = ""
 ] ;
 
 def lmt_registerglyphs = applyparameters "mpsglyphs" "lmt_do_registerglyphs" enddef ;
