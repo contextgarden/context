@@ -852,7 +852,7 @@ do
         end,
     }
 
-    function metapost.simple(instance,code,useextensions)
+    function metapost.simple(instance,code,useextensions,dontwrap)
         -- can we pickup the instance ?
         local mpx = metapost.pushformat {
             instance = instance or "simplefun",
@@ -864,7 +864,7 @@ do
             flusher    = flusher,
             askedfig   = 1,
             useplugins = useextensions,
-            data       = { "beginfig(1);", code, "endfig;" },
+            data       = dontwrap and { code } or { "beginfig(1);", code, "endfig;" },
             incontext  = false,
         }
         metapost.popformat()

@@ -118,7 +118,7 @@
    \orelse\ifx#3\empty
      \expandafter\mult_interfaces_get_parameters_error
    \else
-     \expandafter\mult_interfaces_def
+     \expandafter\mult_interfaces_adef % assignment def
    \fi
    \m_mult_interfaces_namespace{#1}{#2}%
    \doubleexpandafter\mult_interfaces_get_parameters_item}
@@ -160,22 +160,34 @@
 
 % End of experimental code.
 
-\unexpanded\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
-\unexpanded\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+%D This can give wrong results when we pass e.g. \type{\c!format}, so either we need
+%D to use the \type {\k!} ones, but these are not defined in the english interface
+%D so from now on we assume that the low level ones are used with the symbolic names
+%D and that only the high level setup commands are used with language specific
+%D interfaces.
 
-\startinterface english
+% \unexpanded\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+% \unexpanded\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
 
+% \startinterface english
     \unexpanded\def\mult_interfaces_let #1#2{\expandafter \let\csname#1#2\endcsname}
     \unexpanded\def\mult_interfaces_lete#1#2{\expandafter \let\csname#1#2\endcsname\empty}
     \unexpanded\def\mult_interfaces_def #1#2{\expandafter \def\csname#1#2\endcsname}
     \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1#2\endcsname}
     \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1#2\endcsname}
     \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1#2\endcsname}
+% \stopinterface
 
+%D Do, we only interface the assignment definition:
+
+\unexpanded\def\mult_interfaces_adef#1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+
+\startinterface english
+    \unexpanded\def\mult_interfaces_adef#1#2{\expandafter \def\csname#1#2\endcsname}
 \stopinterface
 
 % the commented detokenized variant that backtracks ... needs testing usage first
@@ -238,7 +250,6 @@
    \def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
    \def#6{#1#2:}%
    \def#7##1{#1##1:}%
-%   \def#8{\ifx#2\empty\else\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi\fi}%
    \def#8{\ifx#2\empty\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
    \unexpanded\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
 
@@ -260,23 +271,21 @@
 
 % todo: inline the def/let
 
-\unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
-  {\ifx#2\relax\let#2\empty\fi
-   \unexpanded\def#3{\mult_interfaces_def {#1#2:}}%              ##1 {##2} (braces are mandate)
-   \unexpanded\def#4{\mult_interfaces_edef{#1#2:}}%              ##1 {##2} (braces are mandate)
-   \unexpanded\def#5{\mult_interfaces_let {#1#2:}}%              ##1 ##2
-   \unexpanded\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
-
-\startinterface english
-
+% \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
+%   {\ifx#2\relax\let#2\empty\fi
+%    \unexpanded\def#3{\mult_interfaces_def {#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \unexpanded\def#4{\mult_interfaces_edef{#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \unexpanded\def#5{\mult_interfaces_let {#1#2:}}%  ##1 ##2
+%    \unexpanded\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
+%
+% \startinterface english
     \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
       {\ifx#2\relax\let#2\empty\fi
        \unexpanded\def#3##1{\expandafter \def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
        \unexpanded\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
        \unexpanded\def#5##1{\expandafter \let\csname#1#2:##1\endcsname}%        ##1 ##2
        \unexpanded\def#6##1{\expandafter \let\csname#1#2:##1\endcsname\empty}}% ##1
-
-\stopinterface
+% \stopinterface
 
 \unexpanded\def\installparametersethandler#1#2%
   {\normalexpanded
@@ -620,21 +629,19 @@
         \expandafter\noexpand\csname setupcurrent#2\endcsname % no \every (we use 'current' for consistency)
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
-  {\unexpanded\def#2{\mult_interfaces_def #1}%
-   \unexpanded\def#3{\mult_interfaces_edef#1}%
-   \unexpanded\def#4{\mult_interfaces_let #1}%
-   \unexpanded\def#5{\mult_interfaces_let #1\empty}}%
+% \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
+%   {\unexpanded\def#2{\mult_interfaces_def #1}%
+%    \unexpanded\def#3{\mult_interfaces_edef#1}%
+%    \unexpanded\def#4{\mult_interfaces_let #1}%
+%    \unexpanded\def#5{\mult_interfaces_let #1\empty}}%
 
-\startinterface english
-
+% \startinterface english
     \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
       {\unexpanded\def#2##1{\expandafter \def\csname#1##1\endcsname}%
        \unexpanded\def#3##1{\expandafter\edef\csname#1##1\endcsname}%
        \unexpanded\def#4##1{\expandafter \let\csname#1##1\endcsname}%
        \unexpanded\def#5##1{\expandafter \let\csname#1##1\endcsname\empty}}%
-
-\stopinterface
+% \stopinterface
 
 \unexpanded\def\installdirectparametersethandler#1#2%
   {\normalexpanded

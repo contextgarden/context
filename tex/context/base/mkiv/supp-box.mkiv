@@ -569,7 +569,7 @@
 
 \unexpanded\def\doifelsetext#1%
   {\begingroup
-   \setbox\scratchbox\hpack
+   \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
      {\settrialtypesetting
       \ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox
@@ -582,7 +582,7 @@
 
 \unexpanded\def\doiftext#1%
   {\begingroup
-   \setbox\scratchbox\hpack
+   \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
      {\settrialtypesetting
       \ignorespaces#1\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox

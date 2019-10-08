@@ -499,20 +499,26 @@ local flushcharacter  do
         cur_tmrx = tmrx
     end
 
-    local f_hex = formatters["%04X"]
+    local f_hex_4 = formatters["%04X"]
+    local f_hex_2 = formatters["%02X"]
 
-    local h_hex = setmetatableindex(function(t,k) -- we already have this somewhere
+    local h_hex_4 = setmetatableindex(function(t,k) -- we already have this somewhere
         if k < 256 then -- maybe 512
             -- not sparse in this range
             for i=0,255 do
-                t[i] = f_hex(i)
+                t[i] = f_hex_4(i)
             end
             return t[k]
         else
-            local v = f_hex(k)
+            local v = f_hex_4(k)
             t[k] = v
             return v
         end
+    end)
+    local h_hex_2 = setmetatableindex(function(t,k) -- we already have this somewhere
+        local v = k < 256 and f_hex_2(k) or "00"
+        t[k] = v
+        return v
     end)
 
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
@@ -566,8 +572,9 @@ local flushcharacter  do
                 cw = cw - tj_delta
             end
         end
+
         if mode == "chararray" then
-            begin_charmode(font)
+            begin_charmode()
         end
 
     --  cw = cw + naturalwidth
@@ -575,7 +582,7 @@ local flushcharacter  do
 
         local index = data.index or char
 
-        b = b + 1 ; buffer[b] = h_hex[index]
+        b = b + 1 ; buffer[b] = font > 0 and h_hex_4[index] or h_hex_2[index]
 
         if not pdfcharacters[index] then
             pdfcharacters[index] = true

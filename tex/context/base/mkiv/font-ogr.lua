@@ -17,6 +17,7 @@ end
 
 local tostring, tonumber, next, type = tostring, tonumber, next, type
 local round, max, mod, div = math.round, math.max, math.mod, math.div
+local find = string.find
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
 local utfbyte = utf.byte
 local formatters = string.formatters
@@ -96,13 +97,7 @@ do
                         if shape then
                             if idx >= 255 then
                                 idx = 1
-                                colrshapes = { -- or use metatable
-                                    filename = shapes.filename,
-                                    fixdepth = shapes.fixdepth,
-                                    units    = shapes.units,
-                                    usecolor = shapes.usecolor,
-                                 -- instance = shapes.instance,
-                                }
+                                colrshapes = setmetatableindex({ },shapes)
                                 slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
                                 dropchars = tfmdrop.characters
                                 dropdescs = tfmdrop.descriptions
@@ -143,13 +138,7 @@ do
                     if shape then
                         if idx >= 255 then
                             idx = 1
-                            colrshapes = { -- or use metatable
-                                filename = shapes.filename,
-                                fixdepth = shapes.fixdepth,
-                                units    = shapes.units,
-                                usecolor = shapes.usecolor,
-                             -- instance = shapes.instance,
-                            }
+                            colrshapes = setmetatableindex({ },shapes)
                             slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
                             dropchars = tfmdrop.characters
                             dropdescs = tfmdrop.descriptions
@@ -225,20 +214,46 @@ do
         shapes[category].glyphs[unicode] = parameters
     end
 
+ -- local function hascolorspec(t)
+ --     if (t.color or "") ~= "" then
+ --         return true
+ --     elseif (t.fillcolor or "") ~= "" then
+ --         return true
+ --     elseif (t.drawcolor or "") ~= "" then
+ --         return true
+ --     elseif (t.linecolor or "") ~= "" then
+ --         return true
+ --     else
+ --         return false
+ --     end
+ -- end
+
+    local function hascolorspec(t)
+        for k, v in next, t do
+            if find(k,"color") then
+                return true
+            end
+        end
+        return false
+    end
+
     local function initializemps(tfmdata,kind,value)
         if value then
-            local spec = settings_to_hash_strict(value)
-            if not spec or not next(spec) then
-                spec = { category = value }
+            local specification = settings_to_hash_strict(value)
+            if not specification or not next(specification) then
+                specification = { category = value }
             end
             -- todo: multiple categories but then mayb also different
-            -- clones because of the units .. fot now we assume the same
+            -- clones because of the units .. for now we assume the same
             -- units
-            local category = spec.category
+            local category = specification.category
             if category and category ~= "" then
                 local categories = settings_to_array(category)
                 local usedshapes = nil
                 local index      = 0
+                local spread     = tonumber(specification.spread or 0)
+                local hascolor   = hascolorspec(specification)
+                specification.spread = spread -- now a number
                 for i=1,#categories do
                     local category  = categories[i]
                     local mpsshapes = shapes[category]
@@ -252,23 +267,37 @@ do
                         local defaultwidth  = mpsparameters.width  or 0
                         local defaultheight = mpsparameters.height or 0
                         local defaultdepth  = mpsparameters.depth  or 0
-                        local defaultcode   = mpsparameters.code   or ""
+                        local usecolor      = mpsparameters.usecolor
+                        local spread        = spread * units
+                        local defaultcode   = mpsparameters.code or ""
                         local scale         = parameters.size / units
+                        if hascolor then
+                            -- the graphic has color
+                            usecolor = false
+                        else
+                            -- do whatever is specified
+                        end
                         usedshapes = usedshapes or {
-                            instance = "simplefun",
-                            units    = units,
-                            usecolor = mpsparameters.usecolor,
+                            instance      = "simplefun",
+                            units         = units,
+                            usecolor      = usecolor,
+                            specification = specification,
+                            shapes        = mpsshapes,
                         }
                         -- todo: deal with extensibles and more properties
                         for unicode, shape in sortedhash(mpsshapes.glyphs) do
                          -- local oldc = characters[unicode]
                          -- if oldc then
-                                index = index + 1
+                                index = index + 1 -- todo: somehow we end up with 2 as first entry after 0
+                                local wd = shape.width  or defaultwidth
+                                local ht = shape.height or defaultheight
+                                local dp = shape.depth  or defaultdepth
                                 local newc = {
-                                    index  = index, -- into usedshapes
-                                    width  = scale * (shape.width or defaultwidth),
-                                    height = scale * (shape.height or defaultheight),
-                                    depth  = scale * (shape.depth or defaultdepth),
+                                    index   = index, -- into usedshapes
+                                    width   = scale * (wd + spread),
+                                    height  = scale * ht,
+                                    depth   = scale * dp,
+                                    unicode = unicode,
                                 }
                                 --
                                 characters  [unicode] = newc

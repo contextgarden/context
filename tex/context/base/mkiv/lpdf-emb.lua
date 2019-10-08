@@ -105,7 +105,8 @@ do
     -- backend). In fact, we can now no longer pass the tounicodes to the frontend but
     -- pick them up from the descriptions.
 
-    local f_mapping = formatters["<%04X> <%s>"]
+    local f_mapping_2 = formatters["<%02X> <%s>"]
+    local f_mapping_4 = formatters["<%04X> <%s>"]
 
     local tounicode = fonts.mappings.tounicode
 
@@ -130,7 +131,7 @@ local tounicode_template = [[
         2
       def
       1 begincodespacerange
-        <0000> <FFFF>
+        <%s> <%s>
       endcodespacerange
       %i beginbfchar
 %s
@@ -142,10 +143,11 @@ end
 %%%%EndResource
 %%%%EOF]]
 
-    tounicodedictionary = function(details,indices,maxindex,name)
+    tounicodedictionary = function(details,indices,maxindex,name,wide)
         local mapping = { }
         local length  = 0
         if maxindex > 0 then
+            local f_mapping = wide and f_mapping_4 or f_mapping_2
             for index=1,maxindex do
                 local data = indices[index]
                 if data then
@@ -160,8 +162,10 @@ end
                 end
             end
         end
-        local name = gsub(name,"%+","-") -- like luatex does
-        local blob = format(tounicode_template,name,name,name,name,name,length,concat(mapping,"\n"))
+        local name  = gsub(name,"%+","-") -- like luatex does
+        local first = wide and "0000" or "00"
+        local last  = wide and "FFFF" or "FF"
+        local blob  = format(tounicode_template,name,name,name,name,name,first,last,length,concat(mapping,"\n"))
         return blob
     end
 
@@ -834,7 +838,7 @@ do
         local basefont    = pdfconstant(basefontname)
         local widths      = widtharray(details,indices,maxindex,units)
         local object      = details.objectnumber
-        local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname)
+        local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname,true)
         local tocidset    = tocidsetdictionary(indices,minindex,maxindex)
         local metabbox    = metadata.boundingbox or { 0, 0, 0, 0 }
         local fontbbox    = pdfarray { unpack(metabbox) }
@@ -1417,7 +1421,7 @@ do
         local basefont    = pdfconstant(basefontname)
         local widths      = widtharray(details,indices,maxindex,units * correction)
         local object      = details.objectnumber
-        local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname)
+        local tounicode   = tounicodedictionary(details,indices,maxindex,basefontname,true)
         local tocidset    = tocidsetdictionary(indices,minindex,maxindex)
         local fontbbox    = pdfarray { unpack(metabbox) }
         local ascender    = metadata.ascender or 0
@@ -1536,7 +1540,9 @@ do
         local f_stream_d = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
-        -- to be filled. We can share a mandate zero slot character.
+        -- to be filled. We can share a mandate zero slot character. We also need to
+        -- make sure that we use bytes as index in the page stream as well as in the
+        -- tounicode vector.
 
         local c_notdef = nil
         local r_notdef = nil
@@ -1611,24 +1617,39 @@ do
 
         -- mps inclusion
 
-        local decompress = gzip.decompress
+        local decompress      = gzip.decompress
+        local metapost        = metapost
+        local simplemprun     = metapost.simple
+        local setparameterset = metapost.setparameterset
 
         function methods.mps(filename,details)
             local properties = details.properties
-            local mpshapes   = properties.indexdata[1]
+            local mpshapes   = properties.indexdata[1] -- indexdata will change
             if mpshapes then
-                local scale    = 10 * details.parameters.size/details.parameters.designsize
-                local units    = mpshapes.units or details.parameters.units
-                local factor   = units * bpfactor / scale
-                local fixdepth = mpshapes.fixdepth
-                local usecolor = mpshapes.usecolor
-                -- todo: each mp a table with properties (like using d0 / d1)
+                local scale            = 10 * details.parameters.size/details.parameters.designsize
+                local units            = mpshapes.units or details.parameters.units
+                local factor           = units * bpfactor / scale
+                local fixdepth         = mpshapes.fixdepth
+                local usecolor         = mpshapes.usecolor
+                local specification    = mpshapes.specification
+                local shapedefinitions = mpshapes.shapes
+                local instance         = mpshapes.instance
+                --
+                simplemprun(instance,"begingroup;",true,true)
+                setparameterset("mpsfont",specification)
+                if shapedefinitions then
+                    local preamble = shapedefinitions.parameters.preamble
+                    if preamble then
+                        simplemprun(instance,preamble,true,true)
+                    end
+                end
+                --
                 local function mpstopdf(mp,data)
                     local width = data.width
                     if decompress then
                         mp = decompress(mp)
                     end
-                    local pdf   = metapost.simple(mpshapes.instance,mp,true) -- can be sped up, minifun
+                    local pdf   = simplemprun(instance,mp,true) -- can be sped up, minifun
                     local width = width * factor
                     if usecolor then
                         return f_stream_c(width,pdf), width
@@ -1641,12 +1662,19 @@ do
                     end
                     return f_stream(width,pdf), width
                 end
+                --
+                local function resetmps()
+                    setparameterset("mpsfont")
+                    simplemprun(instance,"endgroup;",true,true)
+                end
+                --
                 local function getresources()
                     return lpdf.collectedresources {
                         serialize  = false,
                     }
                 end
-                return mpshapes, 1/units, mpstopdf, false, getresources
+                --
+                return mpshapes, 1/units, mpstopdf, resetmps, getresources
             end
         end
 
@@ -1805,7 +1833,7 @@ do
                 Type        = pdfconstant("Encoding"),
                 Differences = differences,
             }
-            local tounicode  = tounicodedictionary(details,indices,maxindex,basefontname)
+            local tounicode  = tounicodedictionary(details,indices,maxindex,basefontname,false)
             local resources  = getresources and getresources()
             if not resources or not next(resources) then
              -- resources = lpdf.procset(true)

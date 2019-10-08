@@ -702,6 +702,10 @@ function metapost.getparameterset(namespace)
     return namespace and namespaces[namespace] or namespaces
 end
 
+function metapost.setparameterset(namespace,t)
+    namespaces[namespace] = t
+end
+
 -- goodies
 
 metapost.registerscript("definecolor", function()
