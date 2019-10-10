@@ -2010,6 +2010,16 @@ vardef lmt_do_contour =
     )
 enddef ;
 
+newinternal svgforcecmyk ; svgforcecmyk := 0 ;
+
+vardef svgcolor(expr r,g,b) =
+    if svgforcecmyk > 0 :
+        (1-r,1-g,1-b,0) % simple: no black component, kind of ok for emoji
+    else :
+        (r,g,b)
+    fi
+enddef ;
+
 presetparameters "svg" [
     filename = "",
     fontname = "",

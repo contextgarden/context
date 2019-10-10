@@ -385,33 +385,37 @@ local sharedpalettes do
 
 end
 
-do
+local initializeoverlay  do
 
-    local f_color = formatters["%.3f %.3f %.3f rg"]
-    local f_gray  = formatters["%.3f g"]
+    -- we should use the proper interface instead but for now:
 
-    local hash = setmetatableindex(function(t,k)
-        local v = k
-        t[k] = v
-        return v
-    end)
+    local colors    = attributes.colors
+    local rgbtocmyk = colors.rgbtocmyk
+
+    local f_cmyk = formatters["%.3N %.3f %.3N %.3N k"]
+    local f_rgb  = formatters["%.3N %.3f %.3N rg"]
+    local f_gray = formatters["%.3N g"]
 
     local function convert(t,k)
         local v = { }
+        local m = colors.model
         for i=1,#k do
             local p = k[i]
-            local r, g, b = p[1], p[2], p[3]
+            local r, g, b = p[1]/255, p[2]/255, p[3]/255
             if r == g and g == b then
-                v[i] = hash[f_gray(r/255)]
+                p = f_gray(r)
+            elseif m == "cmyk" then
+                p = f_cmyk(rgbtocmyk(r,g,b))
             else
-                v[i] = hash[f_color(r/255,g/255,b/255)]
+                p = f_rgb(r,g,b)
             end
+            v[i] = p
         end
         t[k] = v
         return v
     end
 
-    local function initialize(tfmdata,kind,value) -- we really need the id ... todo
+    initializeoverlay = function(tfmdata,kind,value) -- we really need the id ... todo
         if value then
             local resources = tfmdata.resources
             local palettes  = resources.colorpalettes
@@ -475,6 +479,7 @@ do
                         end
                     end
                 end
+                return true
             end
         end
     end
@@ -483,20 +488,22 @@ do
         name         = "colr",
         description  = "color glyphs",
         manipulators = {
-            base = initialize,
-            node = initialize,
+            base = initializeoverlay,
+            node = initializeoverlay,
         }
     }
 
 end
 
-do
+local initializesvg  do
 
     local report_svg = logs.reporter("fonts","svg")
 
-    local cached = true  directives.register("fonts.svg.cached", function(v) cached = v end)
+    local cached = true -- maybe always false (after i've optimized the lot)
 
-    local function initializesvg(tfmdata,kind,value) -- hm, always value
+    directives.register("fonts.svg.cached", function(v) cached = v end)
+
+    initializesvg = function(tfmdata,kind,value) -- hm, always value
         if value then
             local properties = tfmdata.properties
             local svg        = properties.svg
@@ -505,10 +512,11 @@ do
             if not hash then
                 return
             end
-            local shapes   = nil
-            local method   = nil
-            if cached then
-            -- we need a different hash than for mkiv, so we append:
+            local shapes  = nil
+            local method  = nil
+            local enforce = attributes.colors.model == "cmyk"
+            if cached and not enforce then
+             -- we need a different hash than for mkiv, so we append:
                 local pdfhash   = hash .. "-svg"
                 local pdffile   = containers.read(otf.pdfcache,pdfhash)
                 local pdfshapes = pdffile and pdffile.pdfshapes
@@ -532,6 +540,10 @@ do
                     local svgshapes = svgfile and svgfile.svgshapes
                     -- still suboptimal
                     mpsshapes = svgshapes and metapost.svgshapestomp(svgshapes,report_svg,tfmdata.parameters.units) or { }
+                    if enforce then
+                        -- cheap conversion, no black component generation
+                        mpsshapes.preamble = "interim svgforcecmyk := 1;"
+                    end
                     containers.write(otf.mpscache, hash, {
                         mpsshapes = mpsshapes,
                         timestamp = timestamp,
@@ -544,6 +556,7 @@ do
                 shapes.fixdepth = value == "fixdepth"
                 fonts.dropins.clone(method,tfmdata,shapes)
             end
+            return true
         end
     end
 
@@ -558,14 +571,16 @@ do
 
 end
 
-do
+local initializepng  do
 
     -- If this is really critical we can also use a pdf file as cache but I don't expect
     -- png fonts to remain used.
 
+    local colors = attributes.colors
+
     local report_png = logs.reporter("fonts","png conversion")
 
-    local function initializepng(tfmdata,kind,value) -- hm, always value
+    initializepng = function(tfmdata,kind,value) -- hm, always value
         if value then
             local properties = tfmdata.properties
             local png        = properties.png
@@ -577,8 +592,12 @@ do
             local pngfile    = containers.read(otf.pngcache,hash)
             local pngshapes  = pngfile and pngfile.pngshapes
             if pngshapes then
+                if colors.model == "cmyk" then
+                    pngshapes.enforcecmyk = true
+                end
                 fonts.dropins.clone("png",tfmdata,pngshapes)
             end
+            return true
         end
     end
 
@@ -597,6 +616,39 @@ do
         manipulators = {
             base = initializepng,
             node = initializepng,
+        }
+    }
+
+end
+
+do
+
+    -- I need to check jpeg and such but will do that when I run into
+    -- it.
+
+    local function initializecolor(tfmdata,kind,value)
+        if value == "auto" then
+            return
+                initializeoverlay(tfmdata,kind,value) or
+                initializesvg(tfmdata,kind,value) or
+                initializepng(tfmdata,kind,value)
+        elseif value == "overlay" then
+            return initializeoverlay(tfmdata,kind,value)
+        elseif value == "svg" then
+            return initializesvg(tfmdata,kind,value)
+        elseif value == "png" or value == "bitmap" then
+            return initializepng(tfmdata,kind,value)
+        else
+            -- forget about it
+        end
+    end
+
+    otfregister {
+        name         = "color",
+        description  = "color glyphs",
+        manipulators = {
+            base = initializecolor,
+            node = initializecolor,
         }
     }
 

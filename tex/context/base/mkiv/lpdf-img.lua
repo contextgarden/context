@@ -19,8 +19,8 @@ if not modules then modules = { } end modules ['lpdf-img'] = {
 
 local type = type
 local concat, move = table.concat, table.move
-local ceil = math.ceil
-local char, find = string.char, string.find
+local ceil, min = math.ceil, math.min
+local char, byte, find, gmatch = string.char, string.byte, string.find, string.gmatch
 local idiv = number.idiv
 local band, rshift = bit32.band, bit32.rshift
 
@@ -177,8 +177,9 @@ do
     local pngsplitmask   = pngdecode.splitmask
     local pnginterlace   = pngdecode.interlace
     local pngexpand      = pngdecode.expand
+    local pngtocmyk      = pngdecode.tocmyk
 
-    local filtermask, decodemask, decodestrip, transpose, expand
+    local filtermask, decodemask, decodestrip, transpose, expand, tocmyk
 
     local newindex = lua.newindex
     local newtable = lua.newtable
@@ -834,6 +835,37 @@ do
         end
     end
 
+    local function tocmyk_l(content,colordepth)
+        local l = #content
+        local t = { }
+        local n = 0
+        if colordepth == 8 then
+            for i=1,l,3 do
+                local r, g, b = byte(content,i,i+2)
+                n = n + 1 ; t[n] = char(255-r,255-g,255-b,0) -- a tad faster than chars[...]
+            end
+        else
+            for i=1,l,6 do
+                local r1, r2, g1, g2, b1, b2 = byte(content,i,i+5)
+                n = n + 1 ; t[n] = char(255-r1,255-r2,255-g1,255-g2,255-b1,255-b2,0,0)
+            end
+        end
+        return concat(t)
+    end
+
+    local tocmyk_c = pngtocmyk or tocmyk_l
+
+    local function converttocmyk(content,colorspace,colordepth)
+        if colorspace == "DeviceRGB" and colordepth == 8 or colordepth == 16 then
+            local done = tocmyk(content,colordepth)
+            if done then
+                content    = done
+                colorspace = "DeviceCMYK"
+            end
+        end
+        return content, colorspace
+    end
+
     local function switch(v)
         if v then
             filtermask  = filtermask_l
@@ -842,6 +874,7 @@ do
             transpose   = transpose_l
             expand      = expand_l
             createmask  = createmask_l
+            tocmyk      = tocmyk_l
         else
             filtermask  = filtermask_c
             decodemask  = decodemask_c
@@ -849,6 +882,7 @@ do
             transpose   = transpose_c
             expand      = expand_c
             createmask  = createmask_c
+            tocmyk      = tocmyk_c
         end
     end
 
@@ -859,7 +893,7 @@ do
         switch(true)
     end
 
-    local alwaysdecode  = false
+    local alwaysdecode  = false -- trucky with palettes
     local compresslevel = 3
 
     directives.register("graphics.png.recompress", function(v)
@@ -874,7 +908,6 @@ do
     end)
 
     function injectors.png(specification,method) -- todo: method in specification
--- inspect(specification)
         if specification.error then
             return
         end
@@ -920,6 +953,7 @@ do
         local mask        = false
         local transparent = false
         local palette     = false
+        local enforcecmyk = specification.enforcecmyk
         local colors      = 1
         if     colorspace == 0 then    -- gray | image b
             colorspace  = "DeviceGray"
@@ -957,7 +991,7 @@ do
             end
         end
         --
-        local decode = alwaysdecode
+        local decode = alwaysdecode -- tricky, might go away
         local filter = pdfconstant("FlateDecode")
         local major  = pdfmajorversion()
         local minor  = pdfminorversion()
@@ -1007,6 +1041,9 @@ do
             else
                 content = convert(r) -- can be in deinterlace if needed
             end
+            if enforcecmyk then
+                content, colorspace = converttocmyk(content,colorspace,colordepth)
+            end
             if compresslevel > 0 then
                 content = zlibcompress(content,compresslevel)
             else
@@ -1020,6 +1057,9 @@ do
             end
             content = zlibdecompress(content)
             content, mask = decodemask(content,xsize,ysize,colordepth,colorspace)
+            if enforcecmyk and not palette then
+                content, colorspace = converttocmyk(content,colorspace,colordepth)
+            end
             if compresslevel > 0 then
                 content = zlibcompress(content,compresslevel)
             else
@@ -1040,6 +1080,9 @@ do
             if bytes then
                 content = zlibdecompress(content)
                 content = decodestrip(openstring(content),xsize,ysize,bytes)
+                if enforcecmyk and not palette then
+                    content, colorspace = converttocmyk(content,colorspace,colordepth)
+                end
                 if compresslevel > 0 then
                     content = zlibcompress(content,compresslevel)
                 else
@@ -1052,10 +1095,17 @@ do
          -- print("PASS ON")
         end
         if palette then
+            local colorspace = "DeviceRGB"
+            local nofbytes   = 3
+            if enforcecmyk then
+                palette    = converttocmyk(palette,colorspace,8)
+                colorspace = "DeviceCMYK"
+                nofbytes   = 4
+            end
             palette = pdfarray {
                 pdfconstant("Indexed"),
-                pdfconstant("DeviceRGB"),
-                idiv(#palette,3),
+                pdfconstant(colorspace),
+                idiv(#palette,nofbytes),
                 pdfreference(pdfflushstreamobject(palette)),
             }
         end
@@ -1145,6 +1195,7 @@ do
                         n = n + 1 ; t[n] = chars[c[1]]
                         n = n + 1 ; t[n] = chars[c[2]]
                         n = n + 1 ; t[n] = chars[c[3]]
+                     -- n = n + 1 ; t[n] = char(c[1],c[2],c[3]) -- test this
                     end
                 end
             elseif s == 3 then
@@ -1156,6 +1207,7 @@ do
                         n = n + 1 ; t[n] = chars[c[2]]
                         n = n + 1 ; t[n] = chars[c[3]]
                         n = n + 1 ; t[n] = chars[c[4]]
+                     -- n = n + 1 ; t[n] = char(c[1],c[2],c[3],c[4]) -- test this
                     end
                 end
             end

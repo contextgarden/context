@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
     license   = "see context related readme files"
 }
 
--- vkgoeswild: Pink Floyd - Shine on You Crazy Diamond - piano cover
+-- vkgoeswild: Pink Floyd - Shine on You Crazy Diamond - piano cover (around that
+-- time I redid the code, a reminder so to say)
 
 -- At some point I wanted to have access to the shapes so that we could use them in
 -- metapost. So, after looking at the cff and ttf specifications, I decided to write
@@ -16,6 +17,15 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 -- was only then that I found out that some of the juggling also happens in the the
 -- backend, but spread over places, so I could have saved myself some time
 -- deciphering the specifications. Anyway, here we go.
+--
+-- Color fonts are a bit messy. Catching issues with older fonts will break new ones
+-- so I don't think that it's wise to build in too many catches (like for fonts with
+-- zero boundingboxes, weird dimensions, transformations that in a next version are
+-- fixed, etc.). Better is then to wait till something gets fixed. If a spec doesn't
+-- tell me how to deal with it ... I'll happily wait till it does. After all we're
+-- not in a hurry as these fonts are mostly meant for the web or special purposes
+-- with manual tweaking in desk top publishing applications. Keep in mind that Emoji
+-- can have funny dimensions (e.g. to be consistent within a font, so no tight ones).
 
 local next, type, unpack = next, type, unpack
 local char, byte, gsub, sub, match, rep, gmatch = string.char, string.byte, string.gsub, string.sub, string.match, string.rep, string.gmatch
@@ -762,7 +772,7 @@ do
                 streamoffset = streamoffset + #blob
                 lastoffset = tocardinal4(streamoffset)
             else
-                print("missing .notdef")
+                report_fonts("missing .notdef in font %a",basefontname)
             end
             -- todo: use a rep for h/v
             for index=1,minindex-1 do
@@ -793,7 +803,7 @@ do
                     if vertical then
                         v = v + 1 ; verticals[v] = zero4
                     end
-                    print("missing blob for index",index)
+                    report_fonts("missing blob for index %i in font %a",index,basefontname)
                 end
             else
                 h = h + 1 ; horizontals[h] = zero4
@@ -1534,6 +1544,7 @@ do
         local f_width    = formatters["%.6N 0 d0"]
         local f_index    = formatters["I%d"]
         local f_image    = formatters["%.6N 0 d0 /%s Do"]
+        local f_image_xy = formatters["%.6N 0 d0 1 0 0 1 %.3N %.3N cm /%s Do"]
         local f_image_d  = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
         local f_stream   = formatters["%.6N 0 d0 %s"]
         local f_stream_c = formatters["%.6N 0 0 0 0 0 d1 %s"]
@@ -1624,10 +1635,11 @@ do
 
         function methods.mps(filename,details)
             local properties = details.properties
+            local parameters = details.parameters
             local mpshapes   = properties.indexdata[1] -- indexdata will change
             if mpshapes then
-                local scale            = 10 * details.parameters.size/details.parameters.designsize
-                local units            = mpshapes.units or details.parameters.units
+                local scale            = 10 * parameters.size/parameters.designsize
+                local units            = mpshapes.units or parameters.units
                 local factor           = units * bpfactor / scale
                 local fixdepth         = mpshapes.fixdepth
                 local usecolor         = mpshapes.usecolor
@@ -1688,22 +1700,28 @@ do
 
         function methods.png(filename,details)
             local properties = details.properties
+            local parameters = details.parameters
             local png        = properties.png
             local hash       = png.hash
             local pngshapes  = properties.indexdata[1]
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
+            local scale      = 10 * parameters.size/parameters.designsize
+            local factor     = bpfactor / scale
             if pngshapes then
                 local function pngtopdf(glyph,data)
-                    local width  = data.width
-                    local info   = graphics.identifiers.png(glyph.data,"string")
-                    local image  = lpdf.injectors.png(info,"string")
+                 -- local width   = data.width
+                    local info    = graphics.identifiers.png(glyph.data,"string")
+                    info.enforcecmyk = pngshapes.enforcecmyk
+                    local image   = lpdf.injectors.png(info,"string")
                     embedimage(image)
-                    width        = width * bpfactor / 10
-                    nofglyphs    = nofglyphs + 1
-                    local name   = f_glyph(nofglyphs)
-                    xforms[name] = pdfreference(image.objnum)
-                    local pdf    = f_image(width,name)
+                    nofglyphs     = nofglyphs + 1
+                    local width   = (data.width or 0) * factor
+                    local xoffset = (glyph.x or 0) / 1000 -- or units ?
+                    local yoffset = (glyph.y or 0) / 1000 -- or units ?
+                    local name    = f_glyph(nofglyphs)
+                    xforms[name]  = pdfreference(image.objnum)
+                    local pdf     = f_image_xy(width,xoffset,yoffset,name)
                     return pdf, width
                 end
                 local function closepng()

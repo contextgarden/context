@@ -29,6 +29,7 @@ local leftcommand  = helpers.commands.left
 local downcommand  = helpers.commands.down
 
 local otf          = fonts.handlers.otf
+local otfregister  = otf.features.register
 
 local f_color      = formatters["%.3f %.3f %.3f rg"]
 local f_gray       = formatters["%.3f g"]
@@ -155,7 +156,7 @@ local pop   = { "pdf", "page", "Q" }
 -- -- only shows the first glyph in acrobat and nothing more. No problem with other
 -- -- renderers.
 --
--- local function initialize(tfmdata,kind,value) -- hm, always value
+-- local function initializeoverlay(tfmdata,kind,value) -- hm, always value
 --     if value then
 --         local resources = tfmdata.resources
 --         local palettes  = resources.colorpalettes
@@ -226,7 +227,7 @@ local pop   = { "pdf", "page", "Q" }
 --     end
 -- end
 
-local function initialize(tfmdata,kind,value)
+local function initializeoverlay(tfmdata,kind,value)
     if value then
         local resources = tfmdata.resources
         local palettes  = resources.colorpalettes
@@ -296,16 +297,17 @@ local function initialize(tfmdata,kind,value)
                     end
                 end
             end
+            return true
         end
     end
 end
 
-fonts.handlers.otf.features.register {
+otfregister {
     name         = "colr",
     description  = "color glyphs",
     manipulators = {
-        base = initialize,
-        node = initialize,
+        base = initializeoverlay,
+        node = initializeoverlay,
     }
 }
 
@@ -532,21 +534,21 @@ do
                 remove(svgfile)
                 remove(pdffile)
             end
-local characters = tfmdata.characters
-for k, v in next, characters do
-    local d = descriptions[k]
-    local i = d.index
-    if i then
-        local p = pdfshapes[i]
-        if p then
-            local w = d.width
-            local l = d.boundingbox[1]
-            local r = d.boundingbox[3]
-            p.scale = (r - l) / w
-            p.x     = l
-        end
-    end
-end
+            local characters = tfmdata.characters
+            for k, v in next, characters do
+                local d = descriptions[k]
+                local i = d.index
+                if i then
+                    local p = pdfshapes[i]
+                    if p then
+                        local w = d.width
+                        local l = d.boundingbox[1]
+                        local r = d.boundingbox[3]
+                        p.scale = (r - l) / w
+                        p.x     = l
+                    end
+                end
+            end
             if not next(pdfshapes) then
                 report_svg("there are no converted shapes, fix your setup")
             end
@@ -582,10 +584,11 @@ local function initializesvg(tfmdata,kind,value) -- hm, always value
             })
         end
         pdftovirtual(tfmdata,pdfshapes,"svg")
+        return true
     end
 end
 
-fonts.handlers.otf.features.register {
+otfregister {
     name         = "svg",
     description  = "svg glyphs",
     manipulators = {
@@ -693,10 +696,11 @@ local function initializepng(tfmdata,kind,value) -- hm, always value
         end
         --
         pdftovirtual(tfmdata,pdfshapes,"png")
+        return true
     end
 end
 
-fonts.handlers.otf.features.register {
+otfregister {
     name         = "sbix",
     description  = "sbix glyphs",
     manipulators = {
@@ -705,7 +709,7 @@ fonts.handlers.otf.features.register {
     }
 }
 
-fonts.handlers.otf.features.register {
+otfregister {
     name         = "cblc",
     description  = "cblc glyphs",
     manipulators = {
@@ -713,3 +717,36 @@ fonts.handlers.otf.features.register {
         node = initializepng,
     }
 }
+
+if context then
+
+    -- untested in generic and might clash with other color trickery
+    -- anyway so let's stick to context only
+
+    local function initializecolor(tfmdata,kind,value)
+        if value == "auto" then
+            return
+                initializeoverlay(tfmdata,kind,value) or
+                initializesvg(tfmdata,kind,value) or
+                initializepng(tfmdata,kind,value)
+        elseif value == "overlay" then
+            return initializeoverlay(tfmdata,kind,value)
+        elseif value == "svg" then
+            return initializesvg(tfmdata,kind,value)
+        elseif value == "png" or value == "bitmap" then
+            return initializepng(tfmdata,kind,value)
+        else
+            -- forget about it
+        end
+    end
+
+    otfregister {
+        name         = "color",
+        description  = "color glyphs",
+        manipulators = {
+            base = initializecolor,
+            node = initializecolor,
+        }
+    }
+
+end

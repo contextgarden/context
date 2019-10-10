@@ -1509,6 +1509,11 @@ function checkers.generic(data)
                 -- tricky as img doesn't allow it
                 f.attr = figure.attr
             end
+            if dr.cmyk == v_yes then
+                f.enforcecmyk = true
+            elseif dr.cmyk == v_auto and attributes.colors.model == "cmyk" then
+                f.enforcecmyk = true
+            end
             figure = f
         end
         local f, d = codeinjections.setfigurealternative(data,figure)
@@ -2059,6 +2064,7 @@ implement {
             { "conversion" },
             { "resolution" },
             { "color" },
+            { "cmyk" },
             { "arguments" },
             { "repeat" },
             { "transform" },

@@ -103,10 +103,15 @@ local f_nodraw          = formatters['nodraw %s(%s)%s ;']
 -- local f_nodraw          = formatters['d %s(%s)%s ;']
 
 local f_color           = formatters[' withcolor "%s"']
-local f_rgb             = formatters[' withcolor (%.3N,%.3N,%.3N)']
-local f_rgba            = formatters[' withcolor (%.3N,%.3N,%.3N) withtransparency (1,%3N)']
-local f_triplet         = formatters['(%.3N,%.3N,%.3N)']
+----- f_color_rgb       = formatters[' withcolor "0x%02X%02X%02X"']
+----- f_color_rgba      = formatters[' withcolor "0x%02X%02X%02X" withtransparency (1,%3N)']
+----- f_color_triplet   = formatters['"0x%02X%02X%02X"']
+
+local f_rgb             = formatters[' withcolor svgcolor(%.3N,%.3N,%.3N)']
+local f_rgba            = formatters[' withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (1,%3N)']
+local f_triplet         = formatters['svgvolor(%.3N,%.3N,%.3N)']
 local f_gray            = formatters[' withcolor %.3N']
+
 local f_opacity         = formatters[' withtransparency (1,%.3N)']
 local f_pen             = formatters[' withpen pencircle scaled %.3N']
 

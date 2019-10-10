@@ -749,6 +749,12 @@ local s_cldl_argument_e = "}"
 local t_cldl_luafunction             = newtoken("luafunctioncall",0)
 local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
 
+local sortedhashindeed = false
+
+directives.register("context.sorthash",function(v)
+    sortedhashindeed = v and table.sortedhash or nil
+end)
+
 local function writer(parent,command,...) -- already optimized before call
 
     if type(command) == "string" then -- for now
@@ -799,20 +805,39 @@ local function writer(parent,command,...) -- already optimized before call
                 local tn = #ti
                 if tn == 0 then
                     local done = false
-                    for k, v in next, ti do
-                        if done then
-                            if v == "" then
-                                flush(currentcatcodes,",",k,'=')
+                    if sortedhashindeed then
+                        for k, v in sortedhashindeed(ti) do
+                            if done then
+                                if v == "" then
+                                    flush(currentcatcodes,",",k,'=')
+                                else
+                                    flush(currentcatcodes,",",k,"={",v,"}")
+                                end
                             else
-                                flush(currentcatcodes,",",k,"={",v,"}")
+                                if v == "" then
+                                    flush(currentcatcodes,"[",k,"=")
+                                else
+                                    flush(currentcatcodes,"[",k,"={",v,"}")
+                                end
+                                done = true
                             end
-                        else
-                            if v == "" then
-                                flush(currentcatcodes,"[",k,"=")
+                        end
+                    else
+                        for k, v in next, ti do
+                            if done then
+                                if v == "" then
+                                    flush(currentcatcodes,",",k,'=')
+                                else
+                                    flush(currentcatcodes,",",k,"={",v,"}")
+                                end
                             else
-                                flush(currentcatcodes,"[",k,"={",v,"}")
+                                if v == "" then
+                                    flush(currentcatcodes,"[",k,"=")
+                                else
+                                    flush(currentcatcodes,"[",k,"={",v,"}")
+                                end
+                                done = true
                             end
-                            done = true
                         end
                     end
                     if done then

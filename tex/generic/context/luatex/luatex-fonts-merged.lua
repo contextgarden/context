@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/08/19 19:15:39
+-- merge date  : 10/10/19 14:20:37
 
 do -- begin closure to overcome local limits and interference
 
@@ -32121,6 +32121,7 @@ local rightcommand=helpers.commands.right
 local leftcommand=helpers.commands.left
 local downcommand=helpers.commands.down
 local otf=fonts.handlers.otf
+local otfregister=otf.features.register
 local f_color=formatters["%.3f %.3f %.3f rg"]
 local f_gray=formatters["%.3f g"]
 if context then
@@ -32177,7 +32178,7 @@ end
 local start={ "pdf","mode","font" }
 local push={ "pdf","page","q" }
 local pop={ "pdf","page","Q" }
-local function initialize(tfmdata,kind,value)
+local function initializeoverlay(tfmdata,kind,value)
  if value then
   local resources=tfmdata.resources
   local palettes=resources.colorpalettes
@@ -32242,15 +32243,16 @@ local function initialize(tfmdata,kind,value)
      end
     end
    end
+   return true
   end
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="colr",
  description="color glyphs",
  manipulators={
-  base=initialize,
-  node=initialize,
+  base=initializeoverlay,
+  node=initializeoverlay,
  }
 }
 do
@@ -32418,21 +32420,21 @@ do
     remove(svgfile)
     remove(pdffile)
    end
-local characters=tfmdata.characters
-for k,v in next,characters do
- local d=descriptions[k]
- local i=d.index
- if i then
-  local p=pdfshapes[i]
-  if p then
-   local w=d.width
-   local l=d.boundingbox[1]
-   local r=d.boundingbox[3]
-   p.scale=(r-l)/w
-   p.x=l
-  end
- end
-end
+   local characters=tfmdata.characters
+   for k,v in next,characters do
+    local d=descriptions[k]
+    local i=d.index
+    if i then
+     local p=pdfshapes[i]
+     if p then
+      local w=d.width
+      local l=d.boundingbox[1]
+      local r=d.boundingbox[3]
+      p.scale=(r-l)/w
+      p.x=l
+     end
+    end
+   end
    if not next(pdfshapes) then
     report_svg("there are no converted shapes, fix your setup")
    end
@@ -32464,9 +32466,10 @@ local function initializesvg(tfmdata,kind,value)
    })
   end
   pdftovirtual(tfmdata,pdfshapes,"svg")
+  return true
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="svg",
  description="svg glyphs",
  manipulators={
@@ -32549,9 +32552,10 @@ local function initializepng(tfmdata,kind,value)
    })
   end
   pdftovirtual(tfmdata,pdfshapes,"png")
+  return true
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="sbix",
  description="sbix glyphs",
  manipulators={
@@ -32559,7 +32563,7 @@ fonts.handlers.otf.features.register {
   node=initializepng,
  }
 }
-fonts.handlers.otf.features.register {
+otfregister {
  name="cblc",
  description="cblc glyphs",
  manipulators={
@@ -32567,6 +32571,11 @@ fonts.handlers.otf.features.register {
   node=initializepng,
  }
 }
+if context then
+
+--removed
+
+end
 
 end -- closure
 
