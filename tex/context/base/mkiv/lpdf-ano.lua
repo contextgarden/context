@@ -634,9 +634,9 @@ local function pdffilelink(filename,destination,page,actions)
         destination = pdfarray { (page or 1) - 1, pdf_fit }
     end
     return pdfdictionary {
-        S = pdf_gotor, -- can also be pdf_launch
-        F = filename,
-        D = destination or defaultdestination,
+        S         = pdf_gotor, -- can also be pdf_launch
+        F         = filename,
+        D         = destination or defaultdestination,
         NewWindow = actions.newwindow and true or nil,
     }
 end

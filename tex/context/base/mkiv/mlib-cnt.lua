@@ -65,7 +65,7 @@ local mp                = mp or { }
 local getparameterset   = metapost.getparameterset
 
 local mpflush           = mp.flush
-local mptriplet         = mp.triplet
+local mpcolor           = mp.color
 local mpstring          = mp.string
 local mpdraw            = mp.draw
 local mpfill            = mp.fill
@@ -307,12 +307,18 @@ function mp.lmt_contours_start()
             if not fcolor then
                 local color_step  = mp.lmt_color_functions.step
                 fcolor = function(l)
-                    return color_step(l,levels,0.25, 0.50, 0.75)
+                    return color_step(l,levels,0.25,0.50,0.75)
                 end
             end
             for i=1,nofvalues do
                 colors[i] = { fcolor(i) }
             end
+if attributes.colors.model == "cmyk" then
+    for i=1,#colors do
+        local c = colors[i]
+        colors[i] = { 1 - c[1], 1 - c[2], 1 - c[3], 0 }
+    end
+end
             return colors, fcolor
         end
     end
@@ -563,22 +569,28 @@ function mp.lmt_contours_bitmap_set()
 
     -- i need to figure out this offset of + 1
 
-    local bitmap    = graphics.bitmaps.new(nx,ny,depth == 3 and "rgb" or "gray",1,false,true)
+    local bitmap    = graphics.bitmaps.new(
+        nx, ny,
+        (depth == 3 and "rgb") or (depth == 4 and "cmyk") or "gray",
+        1, false, true
+    )
 
     local palette   = bitmap.index or { } -- has to start at 0
     local data      = bitmap.data
     local p         = 0
 
-    if depth == 3 then
+    if depth == 3 or depth == 4 then
         for i=1,nofvalues do
             local c = colors[i]
             local r = round((c[1] or 0) * 255)
             local g = round((c[2] or 0) * 255)
             local b = round((c[3] or 0) * 255)
+            local k = depth == 4 and round((c[4] or 0) * 255) or nil
             palette[p] = {
                 (r > 255 and 255) or (r < 0 and 0) or r,
                 (g > 255 and 255) or (g < 0 and 0) or g,
                 (b > 255 and 255) or (b < 0 and 0) or b,
+                k
             }
             p = p + 1
         end
@@ -1406,10 +1418,8 @@ end
 function mp.lmt_contours_color(value)
     local p     = getparameterset()
     local color = p.result.colors[value]
-    if #color == 3 then
-        mptriplet(color)
-    else
-        return color[1]
+    if color then
+        mpcolor(color)
     end
 end
 
@@ -1783,9 +1793,13 @@ end
 
 local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 
-local f_fill = string.formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
-local f_draw = string.formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
-local f_mesh = string.formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
+local f_fill_rgb = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
+local f_draw_rgb = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
+local f_mesh_rgb = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
+
+local f_fill_cmy = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]
+local f_draw_cmy = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
+local f_mesh_cmy = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]
 
 local f_function_n = formatters [ [[
     local math  = math
@@ -1940,10 +1954,11 @@ function mp.lmt_surface_do(specification)
         end
         xt = xt + dx
     end
-    local result = { }
-    local r      = 0
-    local range  = maxf - minf
-    local cl     = linecolor
+    local result  = { }
+    local r       = 0
+    local range   = maxf - minf
+    local cl      = linecolor or 1
+    local enforce = attributes.colors.model == "cmyk"
     for i=0,nx-1 do
         for j=0,ny-1 do
             -- points
@@ -1964,14 +1979,42 @@ function mp.lmt_surface_do(specification)
                 -- or remap when we want to
                 cf = (z1[3] - minf) / range
             end
+            local z11 = z1[1]
+            local z12 = z1[2]
+            local z21 = z2[1]
+            local z22 = z2[2]
+            local z31 = z3[1]
+            local z32 = z3[2]
+            local z41 = z4[1]
+            local z42 = z4[2]
+         -- if lines then
+         --     -- fill first and draw then, previous shapes can be covered
+         -- else
+         --     -- fill and draw in one go to prevent artifacts
+         -- end
             local cr, cg, cb = color(cf)
-            if lines then
-                -- fill first and draw then, previous shapes can be covered
-                r = r + 1 ; result[r] = f_fill(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cr or 0,cg or 0,cb or 0)
-                r = r + 1 ; result[r] = f_draw(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cl or 1)
+            if not cr then cr = 0 end
+            if not cg then cg = 0 end
+            if not cb then cb = 0 end
+            if enforce then
+                cr, cg, cb = 1 - cr, 1 - cg, 1 - cb
+                r = r + 1
+                if lines then
+                    result[r] = f_fill_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    r = r + 1
+                    result[r] = f_draw_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cl)
+                else
+                    result[r] = f_mesh_cmy(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                end
             else
-                -- fill and draw in one go to prevent artifacts
-                r = r + 1 ; result[r] = f_mesh(z1[1],z1[2],z2[1],z2[2],z3[1],z3[2],z4[1],z4[2],cr or 0,cg or 0,cb or 0)
+                r = r + 1
+                if lines then
+                    result[r] = f_fill_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                    r = r + 1
+                    result[r] = f_draw_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cl)
+                else
+                    result[r] = f_mesh_rgb(z11,z12,z21,z22,z31,z32,z41,z42,cr,cg,cb)
+                end
             end
         end
     end

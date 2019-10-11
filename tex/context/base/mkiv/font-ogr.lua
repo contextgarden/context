@@ -165,7 +165,7 @@ do
 
 end
 
-do
+do -- this will move to its own module
 
     local dropins = fonts.dropins
 
@@ -193,8 +193,11 @@ do
     function dropins.registerglyph(parameters)
         local category = parameters.category
         local unicode  = parameters.unicode
+        local private  = parameters.private
         local unichar  = parameters.unichar
-        if type(unichar) == "string" then
+        if private then
+            unicode = fonts.helpers.newprivateslot(private)
+        elseif type(unichar) == "string" then
             unicode = utfbyte(unichar)
         else
             local unitype = type(unicode)
@@ -209,9 +212,13 @@ do
                 unicode = round(unicode)
             end
         end
-        parameters.unicode = unicode
-     -- print(category,unicode)
-        shapes[category].glyphs[unicode] = parameters
+        if unicode then
+            parameters.unicode = unicode
+         -- print(category,unicode)
+            shapes[category].glyphs[unicode] = parameters
+        else
+            -- error
+        end
     end
 
  -- local function hascolorspec(t)
@@ -243,7 +250,7 @@ do
             if not specification or not next(specification) then
                 specification = { category = value }
             end
-            -- todo: multiple categories but then mayb also different
+            -- todo: multiple categories but then maybe also different
             -- clones because of the units .. for now we assume the same
             -- units
             local category = specification.category
@@ -316,6 +323,9 @@ do
             end
         end
     end
+
+    -- This kicks in quite late, after features have been checked. So if needed
+    -- substitutions need to be defined with force.
 
     otfregister {
         name         = "metapost",

@@ -502,11 +502,32 @@ do
 
     local function mptransform(x,y,xx,xy,yx,yy)
         n = n + 1
-        inspect(x)
         if type(x) == "table" then
             buffer[n] = f_transform(x[1],x[2],x[3],x[4],x[5],x[6])
         else
             buffer[n] = f_transform(x,y,xx,xy,yx,yy)
+        end
+    end
+
+    local function mpcolor(c,m,y,k)
+        n = n + 1
+        if type(c) == "table" then
+            local l = #c
+            if l == 4 then
+                buffer[n] = f_quadruple(c[1],c[2],c[3],c[4])
+            elseif l == 3 then
+                buffer[n] = f_triplet(c[1],c[2],c[3])
+            else
+                buffer[n] = f_numeric(c[1])
+            end
+        else
+            if k then
+                buffer[n] = f_quadruple(c,m,y,k)
+            elseif y then
+                buffer[n] = f_triplet(c,m,y)
+            else
+                buffer[n] = f_numeric(c)
+            end
         end
     end
 
@@ -658,6 +679,7 @@ do
     aux.fprint          = mpfprint
     aux.quoted          = mpquoted
     aux.transform       = mptransform
+    aux.color           = mpcolor
 
     -- for the moment
 

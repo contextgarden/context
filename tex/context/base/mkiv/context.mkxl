@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.10.10 14:20}
+\edef\contextversion{2019.10.11 15:47}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -53,9 +53,6 @@
 \def\loadmkvifile#1{\normalinput{#1.mkvi}}
 \def\loadmkxlfile#1{\normalinput{#1.mkxl}}
 \def\loadmklxfile#1{\normalinput{#1.mklx}}
-
-% \def\loadmkxlfile#1{\normalinput{#1.mkiv}}
-% \def\loadmklxfile#1{\normalinput{#1.mkvi}}
 
 %D First we load the system modules. These implement a lot of manipulation macros.
 %D We start with setting up some basic \TEX\ machinery.
