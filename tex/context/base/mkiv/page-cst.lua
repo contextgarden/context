@@ -36,7 +36,6 @@ local nuts              = nodes.nuts
 local tonode            = nuts.tonode
 local tonut             = nuts.tonut
 
-local hpack             = nuts.hpack
 local vpack             = nuts.vpack
 local flushlist         = nuts.flush_list
 ----- removenode        = nuts.remove

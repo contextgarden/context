@@ -23,7 +23,7 @@ return {
         "transform", "transformed", "ulcorner", "uniformdeviate", "unknown",
         "urcorner", "xpart", "xscaled", "xxpart", "xypart", "ypart", "yscaled", "yxpart",
         "yypart", "zscaled",
-        "addto", "clip", "input", "interim", "let", "newinternal", "save", "setbounds",
+        "addto", "clip", "input", "interim", "let", "newinternal", "save", "setbounds", "setgroup",
         "shipout", "show", "showdependencies", "showtoken", "showvariable",
         "special",
         "begingroup", "endgroup", "of", "curl", "tension", "and", "controls",

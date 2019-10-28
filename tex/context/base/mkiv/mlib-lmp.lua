@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
     license   = "see context related readme files",
 }
 
+local type = type
+
 local aux       = mp.aux
 local mpnumeric = aux.numeric
 local mppair    = aux.pair
@@ -136,23 +138,64 @@ do
 
 end
 
-function mp.lmt_svg_include()
-    local filename = metapost.getparameter { "filename" }
-    local fontname = metapost.getparameter { "fontname" }
-    local metacode = nil
-    if fontname and fontname ~= "" then
-        local unicode = metapost.getparameter { "unicode" }
-        if unicode then
-            metacode = metapost.svgglyphtomp(fontname,math.round(unicode))
+if CONTEXTLMTXMODE > 0 then
+
+    function mp.lmt_svg_include()
+        local labelfile = metapost.getparameter { "labelfile" }
+        if labelfile then
+            local labels = table.load(labelfile) -- todo: same path as svg file
+            if type(labels) == "table" then
+                for i=1,#labels do
+                    metapost.remaptext(labels[i])
+                end
+            end
         end
-    elseif filename and filename ~= "" then
-        metacode = metapost.svgtomp {
-            data = io.loaddata(filename)
-        }
+        local fontname = metapost.getparameter { "fontname" }
+        if fontname and fontname ~= "" then
+            local unicode = metapost.getparameter { "unicode" }
+            if unicode then
+                mpdirect (
+                    metapost.svgglyphtomp(fontname,math.round(unicode))
+                )
+            end
+            return
+        end
+        local filename = metapost.getparameter { "filename" }
+        if filename and filename ~= "" then
+            mpdirect ( metapost.svgtomp {
+                data  = io.loaddata(filename),
+                remap = true,
+            } )
+            return
+        end
+        local buffer = metapost.getparameter { "buffer" }
+        if buffer then
+            mpdirect ( metapost.svgtomp {
+                data  = buffers.getcontent(buffer),
+             -- remap = true,
+            } )
+            return
+        end
+        local code = metapost.getparameter { "code" }
+        if code then
+            mpdirect ( metapost.svgtomp {
+                data = code,
+            } )
+            return
+        end
     end
-    if metacode then
-        mpdirect(metacode)
+
+end
+
+if CONTEXTLMTXMODE > 0 then
+
+    function mp.lmt_do_remaptext()
+        local parameters = metapost.scanparameters()
+        if parameters and parameters.label then
+            metapost.remaptext(parameters)
+        end
     end
+
 end
 
 if CONTEXTLMTXMODE > 0 then

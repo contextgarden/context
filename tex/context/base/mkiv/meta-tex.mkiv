@@ -153,4 +153,87 @@
    \clf_MPLIBconvertoutlinetext\numexpr#1\relax{#2}\scratchbox
    \endgroup}
 
+%D For now here. We don't do the whole thing, because then one can as
+%D well just export to pdf. We assume consistent integration.
+
+\definefontsynonym[serif-normal-normal] [\s!Serif]
+\definefontsynonym[serif-normal-italic] [\s!SerifItalic]
+\definefontsynonym[serif-normal-oblique][\s!SerifSlanted]
+\definefontsynonym[serif-bold-normal]   [\s!SerifBold]
+\definefontsynonym[serif-bold-italic]   [\s!SerifBoldItalic]
+\definefontsynonym[serif-bold-oblique]  [\s!SerifBoldSlanted]
+
+\definefontsynonym[sans-normal-normal]  [\s!Sans]
+\definefontsynonym[sans-normal-italic]  [\s!SansItalic]
+\definefontsynonym[sans-normal-oblique] [\s!SansSlanted]
+\definefontsynonym[sans-bold-normal]    [\s!SansBold]
+\definefontsynonym[sans-bold-italic]    [\s!SansBoldItalic]
+\definefontsynonym[sans-bold-oblique]   [\s!SansBoldSlanted]
+
+\definefontsynonym[mono-normal-normal]  [\s!Mono]
+\definefontsynonym[mono-normal-italic]  [\s!MonoItalic]
+\definefontsynonym[mono-normal-oblique] [\s!MonoSlanted]
+\definefontsynonym[mono-bold-normal]    [\s!MonoBold]
+\definefontsynonym[mono-bold-italic]    [\s!MonoBoldItalic]
+\definefontsynonym[mono-bold-oblique]   [\s!MonoBoldSlanted]
+
+\installcorenamespace {svgfamily}
+
+\setvalue{\??svgfamily      }{serif}
+\setvalue{\??svgfamily serif}{serif}
+\setvalue{\??svgfamily  sans}{sans}
+\setvalue{\??svgfamily  mono}{mono}
+
+%D This can't change because otherwise \type {\scale[width=4cm]{graphic}} fails.
+
+\unexpanded\def\svgscaled#1%
+  {\fastsxsy{#1}{#1}\svgnormal}
+
+\unexpanded\def\svgnormal#1#2#3#4% family weight style text
+  {\bgroup
+   \edef\p_family{#1}%
+   \ifx\p_family\empty\else
+      \edef\p_font{\ifcsname\??svgfamily#1\endcsname\lastnamedcs\else#1\fi-#2-#3}%
+      \predefinedfont[\s!spec:\p_font*\s!default\space @ 10bp]%
+   \fi
+   #4%
+   \egroup}
+
+\unexpanded\def\svgcolored#1#2#3#4% r g b text
+  {\colored[r=#1,g=#2,b=#3]{#4}}
+
+\unexpanded\def\svgplaced#1#2#3#4% dx dy width text
+  {\doifelsenothing{#3}%
+     {\hpack}%
+     {\hpack to #3}%
+     {\raise#2\onebasepoint\hbox{\kern#1\onebasepoint\relax#4}}}
+
+\newdimen\grph_svg_scratchwidth % maybe \startsvgpos etc
+
+\unexpanded\def\svgposchar#1#2#3% dx dy char
+  {\setbox\scratchbox\hpack\bgroup
+     \raise#2\onebasepoint\hbox\bgroup
+        \kern\dimexpr#1\onebasepoint-\grph_svg_scratchwidth\relax
+        \char#3\relax
+     \egroup
+   \egroup
+   \advance\grph_svg_scratchwidth\wd\scratchbox
+   \box\scratchbox}
+
+\unexpanded\def\svgchar#1% char
+  {\char#1\relax}
+
+\definelayer[svgmps][\c!method=\v!fit]
+
+\unexpanded\def\svgstartlayer
+  {\resetlayer[svgmps]%
+   \setlayer[svgmps]\bgroup}
+
+\unexpanded\def\svgstoplayer
+  {\egroup
+   \flushlayer[svgmps]}
+
+\unexpanded\def\svgsetlayer#1#2%
+  {\setlayer[svgmps][\c!x=#1\onebasepoint,\c!y=#2\onebasepoint]} % {#3}
+
 \protect \endinput

@@ -180,6 +180,12 @@
      \setbox\scratchbox\vbox{\directvspacing\p_spaceinbetween}%
      \scratchdimen\htdp\scratchbox
    \fi
+   \ifvoid\b_strc_floats_facing_l\else
+     \page_postprocessors_linenumbers_box\b_strc_floats_facing_l
+   \fi
+   \ifvoid\b_strc_floats_facing_r\else
+     \page_postprocessors_linenumbers_box\b_strc_floats_facing_r
+   \fi
    \doloop{%
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_l\v!left
      \strc_floats_facing_flush_wrap\b_strc_floats_facing_r\v!right

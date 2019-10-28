@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/11/19 15:47:37
+-- merge date  : 10/28/19 18:12:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -21092,6 +21092,9 @@ local function checklookups(fontdata,missing,nofmissing)
   end
  end
 end
+local firstprivate=fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
+local puafirst=0xE000
+local pualast=0xF8FF
 local function unifymissing(fontdata)
  if not fonts.mappings then
   require("font-map")
@@ -21102,18 +21105,19 @@ local function unifymissing(fontdata)
  resources.unicodes=unicodes
  for unicode,d in next,fontdata.descriptions do
   if unicode<privateoffset then
-   local name=d.name
-   if name then
-    unicodes[name]=unicode
+   if unicode>=puafirst and unicode<=pualast then
+   else
+    local name=d.name
+    if name then
+     unicodes[name]=unicode
+    end
    end
+  else
   end
  end
  fonts.mappings.addtounicode(fontdata,fontdata.filename,checklookups)
  resources.unicodes=nil
 end
-local firstprivate=fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
-local puafirst=0xE000
-local pualast=0xF8FF
 local function unifyglyphs(fontdata,usenames)
  local private=fontdata.private or privateoffset
  local glyphs=fontdata.glyphs
@@ -23082,7 +23086,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.109 
+otf.version=3.110 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

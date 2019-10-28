@@ -943,11 +943,22 @@
 \letvalue{\??notepenalty\v!verystrict}\notepenaltyverystrict
 \letvalue{\??notepenalty             }\notepenaltytolerant
 
+% \def\strc_notes_set_width
+%   {\edef\p_width{\noteparameter\c!width}%
+%    \ifx\p_width\empty
+%      \setnoteparameter\c!width{\hsize}%
+%    \fi}
+
+\setupnotes
+  [\c!width=\v!auto]
+
 \def\strc_notes_set_width
   {\edef\p_width{\noteparameter\c!width}%
-   \ifx\p_width\empty
+   \ifx\p_width\v!auto
+     \setnoteparameter\c!width{\ifdim\hsize<\makeupwidth\hsize\else\makeupwidth\fi}%
+   \else\ifx\p_width\empty
      \setnoteparameter\c!width{\hsize}%
-   \fi}
+   \fi\fi}
 
 \appendtoks
     \strc_notes_set_width
@@ -1390,9 +1401,8 @@
 
 %D Nasty, the might be more:
 
-\appendtoks
-    \c_strc_itemgroups_nesting\zerocount
-\to \everyinsidenoteinsert
+\appendtoks \strc_itemgroups_push \to \everybeforenoteinsert
+\appendtoks \strc_itemgroups_pop  \to \everyafternoteinsert
 
 % maybe but better use [scope=local] here
 %

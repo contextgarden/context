@@ -129,6 +129,11 @@
 
 \mathflattenmode 31
 
+\ifdefined\mathlimitsmode
+    % ignore \limits and \nolimts when no scripts (better spacing)
+    \mathlimitsmode\plusone
+\fi
+
 \appendtoks
     \attribute\mathmodeattribute\plusone
 \to \everydisplay

@@ -16,27 +16,9 @@ local round = math.round
 local concat = table.concat
 local suffixonly = file.suffix
 
-local files              = utilities.files
-local getsize            = files.getsize
-local readbyte           = files.readbyte
-local readstring         = files.readstring
-local readcardinal       = files.readcardinal
-local readcardinal2      = files.readcardinal2
-local readcardinal4      = files.readcardinal4
-local readcardinal2le    = files.readcardinal2le
-local readcardinal4le    = files.readcardinal4le
-local skipbytes          = files.skip
-local setposition        = files.setposition
-local getposition        = files.getposition
-
-local newreader          = io.newreader
-
-local setmetatableindex  = table.setmetatableindex
-local setmetatablecall   = table.setmetatablecall
-
------ lpdf               = lpdf or { }
------ pdfmajorversion    = lpdf.majorversion
------ pdfminorversion    = lpdf.minorversion
+local newreader         = io.newreader
+local setmetatableindex = table.setmetatableindex
+local setmetatablecall  = table.setmetatablecall
 
 local graphics       = graphics or { }
 local identifiers    = { }
@@ -119,22 +101,20 @@ do
     -- good old tiff tags here.
 
     local function read_APP1_Exif(f, xres, yres, orientation) -- untested
-        local position      = false
-        local readcardinal2 = readcardinal2
-        local readcardinal4 = readcardinal4
+        local position     = false
+        local littleendian = false
         -- endian II|MM
         while true do
-            position = getposition(f)
-            local b  = readbyte(f)
+            position = f:getposition()
+            local b  = f:readbyte()
             if b == 0 then
                 -- next one
-            elseif b == 0x4D and readbyte(f) == 0x4D then -- M
+            elseif b == 0x4D and f:readbyte() == 0x4D then -- M
                 -- big endian
                 break
-            elseif b == 0x49 and readbyte(f) == 0x49 then -- I
+            elseif b == 0x49 and f:readbyte() == 0x49 then -- I
                 -- little endian
-                readcardinal2 = readcardinal2le
-                readcardinal4 = readcardinal4le
+                littleendian = true
                 break
             else
                 -- warning "bad exif data"
@@ -142,46 +122,46 @@ do
             end
         end
         -- version
-        local version = readcardinal2(f)
+        local version = littleendian and f:readcardinal2le() or f:readcardinal2()
         if version ~= 42 then
             return xres, yres, orientation
         end
         -- offset to records
-        local offset = readcardinal4(f)
+        local offset = littleendian and f:readcardinal4le() or f:readcardinal4()
         if not offset then
             return xres, yres, orientation
         end
-        setposition(f,position + offset)
-        local entries = readcardinal2(f)
+        f:setposition(position + offset)
+        local entries = littleendian and f:readcardinal2le() or f:readcardinal2()
         if not entries or entries == 0 then
             return xres, yres, orientation
         end
         local x_res, y_res, x_res_ms, y_res_ms, x_temp, y_temp
         local res_unit, res_unit_ms
         for i=1,entries do
-            local tag    = readcardinal2(f)
-            local kind   = readcardinal2(f)
-            local size   = readcardinal4(f)
+            local tag    = littleendian and f:readcardinal2le() or f:readcardinal2()
+            local kind   = littleendian and f:readcardinal2le() or f:readcardinal2()
+            local size   = littleendian and f:readcardinal4le() or f:readcardinal4()
             local value  = 0
             local num    = 0
             local den    = 0
             if kind == 1 or kind == 7 then -- byte | undefined
-                value = readbyte(f)
-                skipbytes(f,3)
+                value = f:readbyte()
+                f:skip(3)
             elseif kind == 3 or kind == 8 then -- (un)signed short
-                value = readcardinal2(f)
-                skipbytes(f,2)
+                value = littleendian and f:readcardinal2le() or f:readcardinal2()
+                f:skip(2)
             elseif kind == 4 or kind == 9 then -- (un)signed long
-                value = readcardinal4(f)
+                value = littleendian and f:readcardinal4le() or f:readcardinal4()
             elseif kind == 5 or kind == 10 then -- (s)rational
-                local offset = readcardinal4(f)
-                local saved  = getposition(f)
-                setposition(f,position+offset)
-                num = readcardinal4(f)
-                den = readcardinal4(f)
-                setposition(f,saved)
+                local offset = littleendian and f:readcardinal4le() or f:readcardinal4()
+                local saved  = f:getposition()
+                f:setposition(position+offset)
+                num = littleendian and f:readcardinal4le() or f:readcardinal4()
+                den = littleendian and f:readcardinal4le() or f:readcardinal4()
+                f:setposition(saved)
             else -- 2 -- ascii
-                skipbytes(f,4)
+                f:skip(4)
             end
             if tag == 274 then         -- orientation
                 orientation = value
@@ -226,7 +206,7 @@ do
         return round(xres), round(yres), orientation
     end
 
-    function identifiers.jpg(filename)
+    function identifiers.jpg(filename,method)
         local specification = {
             filename = filename,
             filetype = "jpg",
@@ -235,7 +215,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
-        local f = io.open(filename,"rb")
+        local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
             return specification -- error
@@ -246,7 +226,7 @@ do
         specification.totalpages  = 1
         specification.pagenum     = 1
         specification.length      = 0
-        local banner = readcardinal2(f)
+        local banner = f:readcardinal2()
         if banner ~= 0xFFD8 then
             specification.error = "no jpeg file"
             return specification -- error
@@ -255,11 +235,11 @@ do
         local yres         = 0
         local orientation  = 1
         local okay         = false
-        local filesize     = getsize(f) -- seek end
+        local filesize     = f:getsize() -- seek end
      -- local majorversion = pdfmajorversion and pdfmajorversion() or 1
      -- local minorversion = pdfminorversion and pdfminorversion() or 7
-        while getposition(f) < filesize do
-            local b = readbyte(f)
+        while f:getposition() < filesize do
+            local b = f:readbyte()
             if not b then
                 break
             elseif b ~= 0xFF then
@@ -269,8 +249,8 @@ do
                 end
                 break
             end
-            local category  = readbyte(f)
-            local position  = getposition(f)
+            local category  = f:readbyte()
+            local position  = f:getposition()
             local length    = 0
             local tagdata   = tags[category]
             if not tagdata then
@@ -290,25 +270,25 @@ do
              --     specification.error = "no progressive DCT in PDF <= 1.2"
              --     break
              -- end
-                length = readcardinal2(f)
-                specification.colordepth = readcardinal(f)
-                specification.ysize      = readcardinal2(f)
-                specification.xsize      = readcardinal2(f)
-                specification.colorspace = colorspaces[readcardinal(f)]
+                length = f:readcardinal2()
+                specification.colordepth = f:readcardinal()
+                specification.ysize      = f:readcardinal2()
+                specification.xsize      = f:readcardinal2()
+                specification.colorspace = colorspaces[f:readcardinal()]
                 if not specification.colorspace then
                     specification.error = "unsupported color space"
                     break
                 end
                 okay = true
             elseif name == "APP0" then
-                length = readcardinal2(f)
+                length = f:readcardinal2()
                 if length > 6 then
-                    local format = readstring(f,5)
+                    local format = f:readstring(5)
                     if format  == "JFIF\000" then
-                        skipbytes(f,2)
-                        units = readcardinal(f)
-                        xres  = readcardinal2(f)
-                        yres  = readcardinal2(f)
+                        f:skip(2)
+                        units = f:readcardinal()
+                        xres  = f:readcardinal2()
+                        yres  = f:readcardinal2()
                         if units == 1 then
                             -- pixels per inch
                             if xres == 1 or yres == 1 then
@@ -325,18 +305,18 @@ do
                     end
                 end
             elseif name == "APP1" then
-                length = readcardinal2(f)
+                length = f:readcardinal2()
                 if length > 7 then
-                    local format = readstring(f,5)
+                    local format = f:readstring(5)
                     if format == "Exif\000" then
                         xres, yres, orientation = read_APP1_Exif(f,xres,yres,orientation)
                     end
                 end
             elseif not tagdata.zerolength then
-                length = readcardinal2(f)
+                length = f:readcardinal2()
             end
             if length > 0 then
-                setposition(f,position+length)
+                f:setposition(position+length)
             end
         end
         f:close()
@@ -362,15 +342,15 @@ end
 do
 
     local function read_boxhdr(specification,f)
-        local size = readcardinal4(f)
-        local kind = readstring(f,4)
+        local size = f:readcardinal4()
+        local kind = f:readstring(4)
         if kind then
             kind = strip(lower(kind))
         else
             kind = ""
         end
         if size == 1 then
-            size = readcardinal4(f) * 0xFFFF0000 + readcardinal4(f)
+            size = f:readcardinal4() * 0xFFFF0000 + f:readcardinal4()
         end
         if size == 0 and kind ~= "jp2c" then  -- move this
             specification.error = "invalid size"
@@ -379,40 +359,40 @@ do
     end
 
     local function scan_ihdr(specification,f)
-        specification.ysize = readcardinal4(f)
-        specification.xsize = readcardinal4(f)
-        skipbytes(f,2) -- nc
-        specification.colordepth = readcardinal(f) + 1
-        skipbytes(f,3) -- c unkc ipr
+        specification.ysize = f:readcardinal4()
+        specification.xsize = f:readcardinal4()
+        f:skip(2) -- nc
+        specification.colordepth = f:readcardinal() + 1
+        f:skip(3) -- c unkc ipr
     end
 
     local function scan_resc_resd(specification,f)
-        local vr_n = readcardinal2(f)
-        local vr_d = readcardinal2(f)
-        local hr_n = readcardinal2(f)
-        local hr_d = readcardinal2(f)
-        local vr_e = readcardinal(f)
-        local hr_e = readcardinal(f)
+        local vr_n = f:readcardinal2()
+        local vr_d = f:readcardinal2()
+        local hr_n = f:readcardinal2()
+        local hr_d = f:readcardinal2()
+        local vr_e = f:readcardinal()
+        local hr_e = f:readcardinal()
         specification.xres = math.round((hr_n / hr_d) * math.exp(hr_e * math.log(10.0)) * 0.0254)
         specification.yres = math.round((vr_n / vr_d) * math.exp(vr_e * math.log(10.0)) * 0.0254)
     end
 
     local function scan_res(specification,f,last)
-        local pos = getposition(f)
+        local pos = f:getposition()
         while true do
             local kind, size = read_boxhdr(specification,f)
             pos = pos + size
             if kind == "resc" then
                 if specification.xres == 0 and specification.yres == 0 then
                     scan_resc_resd(specification,f)
-                    if getposition(f) ~= pos then
+                    if f:getposition() ~= pos then
                         specification.error = "invalid resc"
                         return
                     end
                 end
             elseif tpos == "resd" then
                 scan_resc_resd(specification,f)
-                if getposition(f) ~= pos then
+                if f:getposition() ~= pos then
                     specification.error = "invalid resd"
                     return
                 end
@@ -425,19 +405,19 @@ do
             if specification.error then
                 break
             end
-            setposition(f,pos)
+            f:setposition(pos)
         end
     end
 
     local function scan_jp2h(specification,f,last)
         local okay = false
-        local pos = getposition(f)
+        local pos  = f:getposition()
         while true do
             local kind, size = read_boxhdr(specification,f)
             pos = pos + size
             if kind == "ihdr" then
                 scan_ihdr(specification,f)
-                if getposition(f) ~= pos then
+                if f:getposition() ~= pos then
                     specification.error = "invalid ihdr"
                     return false
                 end
@@ -453,12 +433,12 @@ do
             if specification.error then
                 break
             end
-            setposition(f,pos)
+            f:setposition(pos)
         end
         return okay
     end
 
-    function identifiers.jp2(filename)
+    function identifiers.jp2(filename,method)
         local specification = {
             filename = filename,
             filetype = "jp2",
@@ -467,7 +447,7 @@ do
             specification.error = "invalid filename"
             return specification -- error
         end
-        local f = io.open(filename,"rb")
+        local f = newreader(filename,method)
         if not f then
             specification.error = "unable to open file"
             return specification -- error
@@ -482,13 +462,13 @@ do
         local yres         = 0
         local orientation  = 1
         local okay         = false
-        local filesize     = getsize(f) -- seek end
+        local filesize     = f:getsize() -- seek end
         --
         local pos = 0
         --  signature
         local kind, size = read_boxhdr(specification,f)
         pos = pos + size
-        setposition(f,pos)
+        f:setposition(pos)
         -- filetype
         local kind, size = read_boxhdr(specification,f)
         if kind ~= "ftyp" then
@@ -496,7 +476,7 @@ do
             return specification
         end
         pos = pos + size
-        setposition(f,pos)
+        f:setposition(pos)
         while not okay do
             local kind, size = read_boxhdr(specification,f)
             pos = pos + size
@@ -506,7 +486,7 @@ do
                 specification.error = "no ihdr box found"
                 return specification
             end
-            setposition(f,pos)
+            f:setposition(pos)
         end
         --
         f:close()
@@ -538,7 +518,7 @@ do
     -- 6 = rgb + alpha        "image c"
 
     -- for i=1,length/3 do
-    --     palette[i] = readstring(f,3)
+    --     palette[i] = f:readstring3)
     -- end
 
     local function grab(t,f,once)
@@ -635,7 +615,6 @@ do
                     tables[kind] = t
                 end
                 t[#t+1] = {
---                     offset = getposition(f),
                     offset = f:getposition(),
                     length = length,
                 }

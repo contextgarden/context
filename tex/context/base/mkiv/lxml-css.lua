@@ -146,52 +146,116 @@ if context then
 
 end
 
-local p_digit = lpeg.patterns.digit
 
-local pattern = Cf( Ct("") * (
-    Cg(
-        Cc("style") * (
-            C("italic")
-          + C("oblique")
-          + C("slanted") / "oblique"
-        )
-      + Cc("variant") * (
-            (C("smallcaps") + C("caps")) / "small-caps"
-        )
-      + Cc("weight") * (
-            C("bold")
-        )
-      + Cc("family") * (
-            (C("mono")      + C("type")) / "monospace"  -- just ignore the "space(d)"
-          + (C("sansserif") + C("sans")) / "sans-serif" -- match before serif
-          +  C("serif")
-        )
-      + Cc("size") * Ct (
-            (S("+-")^0 * (p_digit^0 * P(".") * p_digit^1 + p_digit^1 * P(".") + p_digit^1)) / tonumber
-          * C(P("p") * S("txc") + P("e") * S("xm") + S("mc") * P("m") + P("in") + P("%"))
-        )
-    )
---+ P("\\") * (
---     P("bf") * ( Cg ( Cc("weight")  * Cc("bold") ) )
---   + P("bi") * ( Cg ( Cc("weight")  * Cc("bold") )
---               * Cg ( Cc("style")   * Cc("italic") ) )
---   + P("bs") * ( Cg ( Cc("weight")  * Cc("bold") )
---               * Cg ( Cc("style")   * Cc("oblique") ) )
---   + P("it") * ( Cg ( Cc("style")   * Cc("italic") ) )
---   + P("sl") * ( Cg ( Cc("style")   * Cc("oblique") ) )
---   + P("sc") * ( Cg ( Cc("variant") * Cc("small-caps") ) )
---   + P("tt") * ( Cg ( Cc("family")  * Cc("monospace") ) )
---)
-  + P(1)
-)^0 , rawset)
+do
 
-function css.fontspecification(str)
-    return str and lpegmatch(pattern,lower(str))
-end
+    local p_digit    = lpegpatterns.digit
+    local p_unquoted = Cs(lpegpatterns.unquoted)
+    local p_size     = (S("+-")^0 * (p_digit^0 * P(".") * p_digit^1 + p_digit^1 * P(".") + p_digit^1)) / tonumber
+                     * C(P("p") * S("txc") + P("e") * S("xm") + S("mc") * P("m") + P("in") + P("%"))
 
-function css.colorspecification(str)
-    local c = str and attributes.colors.values[tonumber(str)]
-    return c and format("rgb(%s%%,%s%%,%s%%)",c[3]*100,c[4]*100,c[5]*100)
+    local pattern = Cf( Ct("") * (
+        Cg(
+            Cc("style") * (
+                C("italic")
+              + C("oblique")
+              + C("slanted") / "oblique"
+            )
+          + Cc("variant") * (
+                (C("smallcaps") + C("caps")) / "small-caps"
+            )
+          + Cc("weight") * (
+                C("bold")
+            )
+          + Cc("family") * (
+                (C("mono")      + C("type")) / "monospace"  -- just ignore the "space(d)"
+              + (C("sansserif") + C("sans")) / "sans-serif" -- match before serif
+              +  C("serif")
+            )
+          + Cc("size") * Ct(p_size)
+        )
+      + P(1)
+    )^0 , rawset)
+
+    function css.fontspecification(str)
+        return str and lpegmatch(pattern,lower(str))
+    end
+
+    -- These map onto context!
+
+    function css.style(str)
+        if str and str ~= "" then
+            str = lower(str)
+            if str == "italic" then
+                return "italic"
+            elseif str == "slanted" or str == "oblique" then
+                return "slanted"
+            end
+        end
+        return "normal"
+    end
+
+    function css.variant(str) -- will change to a feature
+        if str and str ~= "" then
+            str = lower(str)
+            if str == "small-caps" or str == "caps" or str == "smallcaps" then
+                return "caps"
+            end
+        end
+        return "normal"
+    end
+
+    function css.weight(str)
+        if str and str ~= "" then
+            str = lower(str)
+            if str == "bold" then
+                return "bold"
+            end
+        end
+        return "normal"
+    end
+
+    function css.family(str)
+        if str and str ~= "" then
+            str = lower(str)
+            if str == "mono" or str == "type" or str == "monospace" then
+                return "mono"
+            elseif str == "sansserif" or str == "sans" then
+                return "sans"
+            elseif str == "serif" then
+                return "serif"
+            else
+                -- what if multiple ...
+                return lpegmatch(p_unquoted,str) or str
+            end
+        end
+    end
+
+    function css.size(str,factors)
+        local size, unit
+        if type(str) == "table" then
+            size, unit = str[1], str[2]
+        elseif str and str ~= "" then
+            size, unit = lpegmatch(p_size,lower(str))
+        end
+        if size and unit then
+            if factors then
+                return (factors[unit] or 1) * size
+            else
+                return size, unit
+            end
+        end
+    end
+
+    function css.colorspecification(str)
+        if str and str ~= "" then
+            local c = attributes.colors.values[tonumber(str)]
+            if c then
+                return format("rgb(%s%%,%s%%,%s%%)",c[3]*100,c[4]*100,c[5]*100)
+            end
+        end
+    end
+
 end
 
 -- The following might be handy. It hooks into the normal parser as <selector>

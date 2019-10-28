@@ -72,10 +72,22 @@
 
 \newconditional\page_postprocessors_needed_box
 
-\unexpanded\def\page_postprocessors_linenumbers_page   #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
-\unexpanded\def\page_postprocessors_linenumbers_box    #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
-\unexpanded\def\page_postprocessors_linenumbers_deepbox#tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \plusone  }
-\unexpanded\def\page_postprocessors_linenumbers_column #tag{\page_lines_add_numbers_to_box{#tag}\currentcolumn\nofcolumns\zerocount}
+\unexpanded\def\page_postprocessors_linenumbers_page_indeed   #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
+\unexpanded\def\page_postprocessors_linenumbers_box_indeed    #tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \zerocount}
+\unexpanded\def\page_postprocessors_linenumbers_deepbox_indeed#tag{\page_lines_add_numbers_to_box{#tag}\plusone      \plusone   \plusone  }
+\unexpanded\def\page_postprocessors_linenumbers_column_indeed #tag{\page_lines_add_numbers_to_box{#tag}\currentcolumn\nofcolumns\zerocount}
+
+\let\page_postprocessors_linenumbers_page   \gobbleoneargument
+\let\page_postprocessors_linenumbers_box    \gobbleoneargument
+\let\page_postprocessors_linenumbers_deepbox\gobbleoneargument
+\let\page_postprocessors_linenumbers_column \gobbleoneargument
+
+\unexpanded\def\page_postprocessors_linenumbers_check
+  {\glet\page_postprocessors_linenumbers_check  \relax
+   \glet\page_postprocessors_linenumbers_page   \page_postprocessors_linenumbers_page_indeed
+   \glet\page_postprocessors_linenumbers_box    \page_postprocessors_linenumbers_box_indeed
+   \glet\page_postprocessors_linenumbers_deepbox\page_postprocessors_linenumbers_deepbox_indeed
+   \glet\page_postprocessors_linenumbers_column \page_postprocessors_linenumbers_column_indeed}
 
 \def\page_lines_start_define
   {\setxvalue{\??linenumberinginstance\currentlinenumbering}%
@@ -179,6 +191,7 @@
 
 \unexpanded\def\startlinenumbering
   {\begingroup
+   \page_postprocessors_linenumbers_check
    \dodoubleempty\page_lines_start}
 
 \newcount\c_pages_lines_nesting

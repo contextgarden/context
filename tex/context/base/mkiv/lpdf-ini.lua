@@ -1502,12 +1502,12 @@ end
 
 do
 
-    local f_actual_text_p         = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
-    local f_actual_text_b         = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e         = "EMC ET"
-    local f_actual_text_b_not     = formatters["/Span << /ActualText <feff%s> >> BDC"]
-    local s_actual_text_e_not     = "EMC"
-    local f_actual_text           = formatters["/Span <</ActualText %s >> BDC"]
+    local f_actual_text_p     = formatters["BT /Span << /ActualText <feff%s> >> BDC %s EMC ET"]
+    local f_actual_text_b     = formatters["BT /Span << /ActualText <feff%s> >> BDC"]
+    local s_actual_text_e     = "EMC ET"
+    local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
+    local s_actual_text_e_not = "EMC"
+    local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
 
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
@@ -1689,5 +1689,3 @@ end
 if environment.arguments.nocompression then
     lpdf.setcompression(0,0,true)
 end
-
-

@@ -65,6 +65,18 @@ trackers.register("graphics.backend", function(v) trace = v end)
 local injectors = { }
 lpdf.injectors  = injectors
 
+-- todo: load from a virtual file
+
+local function loadcontent(filename,method)
+    return method == "string" and filename or loaddata(filename)
+end
+
+local function newcontent(filename,method)
+    return newreader(filename,method)
+end
+
+--
+
 local chars = setmetatableindex(function(t,k) -- share this one
     local v = (k <= 0 and "\000") or (k >= 255 and "\255") or char(k)
     t[k] = v
@@ -73,7 +85,7 @@ end)
 
 do
 
-    function injectors.jpg(specification)
+    function injectors.jpg(specification,method)
         if specification.error then
             return
         end
@@ -96,7 +108,7 @@ do
         local xsize      = specification.xsize
         local ysize      = specification.ysize
         local colordepth = specification.colordepth
-        local content    = loaddata(filename)
+        local content    = loadcontent(filename,method)
         local xobject    = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
@@ -127,7 +139,7 @@ end
 
 do
 
-    function injectors.jp2(specification)
+    function injectors.jp2(specification,method)
         if specification.error then
             return
         end
@@ -138,7 +150,7 @@ do
         -- todo: set filename
         local xsize   = specification.xsize
         local ysize   = specification.ysize
-        local content = loaddata(filename)
+        local content = loadcontent(filename,method)
         local xobject = pdfdictionary {
             Type    = pdfconstant("XObject"),
             Subtype = pdfconstant("Image"),
@@ -936,7 +948,7 @@ do
         if not idat then
             return
         end
-        local pngfile = newreader(filename,method)
+        local pngfile = newcontent(filename,method)
         if not pngfile then
             return
         end
@@ -1074,7 +1086,7 @@ do
             else
                 pallette = false
             end
-        elseif decode then
+        elseif decode or (enforcecmyk and not palette) then
             -- this one needs checking
             local bytes = analyze(colordepth,colorspace)
             if bytes then
@@ -1091,6 +1103,7 @@ do
             else
                 return
             end
+            decode = true -- due to enforcecmyk
         else
          -- print("PASS ON")
         end

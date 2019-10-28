@@ -1992,6 +1992,10 @@ do
         end
     end
 
+    function structurestags.gettablecell(fulltag)
+        return tabledata[fulltag]
+    end
+
     function extras.tablecell(di,element,n,fulltag)
         local hash = tabledata[fulltag]
         if hash then
@@ -2025,6 +2029,10 @@ do
                 kind  = kind, -- 1 = bold head
             }
         end
+    end
+
+    function structurestags.gettabulatecell(fulltag)
+        return tabulatedata[fulltag]
     end
 
     function extras.tabulate(di,element,n,fulltag)

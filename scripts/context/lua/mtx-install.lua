@@ -91,9 +91,9 @@ local platforms = {
     --
     ["linux-armhf"]    = "linux-armhf",
     --
-    ["openbsd"]        = "openbsd6.5",
-    ["openbsd-i386"]   = "openbsd6.5",
-    ["openbsd-amd64"]  = "openbsd6.5-amd64",
+    ["openbsd"]        = "openbsd6.6",
+    ["openbsd-i386"]   = "openbsd6.6",
+    ["openbsd-amd64"]  = "openbsd6.6-amd64",
     --
     ["freebsd"]        = "freebsd",
     ["freebsd-i386"]   = "freebsd",

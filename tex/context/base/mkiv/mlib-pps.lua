@@ -30,6 +30,8 @@ local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
 local sortedhash           = table.sortedhash
 
+local new_hlist            = nodes.pool.hlist
+
 local starttiming          = statistics.starttiming
 local stoptiming           = statistics.stoptiming
 
@@ -258,6 +260,9 @@ local function startjob(plugmode,kind,mpx)
     top = {
         textexts   = { },                          -- all boxes, optionally with a different color
         texstrings = { },
+        mapstrings = { },
+        mapindices = { },
+        mapmoves   = { },
         texlast    = 0,
         texdata    = setmetatableindex({},preset), -- references to textexts in order or usage
         plugmode   = plugmode,                     -- some day we can then skip all pre/postscripts
@@ -720,7 +725,7 @@ function metapost.processplugins(object) -- each object (second pass)
         if prescript and #prescript > 0 then
             local before = { }
             local after = { }
-            processoractions.runner(object,splitprescript(prescript) or {},before,after)
+            processoractions.runner(object,splitprescript(prescript) or { },before,after)
             return #before > 0 and before, #after > 0 and after
         else
             local c = object.color
@@ -868,6 +873,92 @@ local tx_reset, tx_process  do
 
     function mp.mf_made_text(index)
         mp.mf_some_text(index,madetext)
+    end
+
+    -- a label can be anything, also something mp doesn't like in strings
+    -- so we return an index instead
+
+    function metapost.processing()
+        return top and true or false
+    end
+
+    function metapost.remaptext(replacement)
+        if top then
+            local mapstrings = top.mapstrings
+            local mapindices = top.mapindices
+            local label      = replacement.label
+            local index      = 0
+            if label then
+                local found = mapstrings[label]
+                if found then
+                    setmetatableindex(found,replacement)
+                    index = found.index
+                else
+                    index = #mapindices + 1
+                    replacement.index = index
+                    mapindices[index] = replacement
+                    mapstrings[label] = replacement
+                end
+            end
+            return index
+        else
+            return 0
+        end
+    end
+
+    function metapost.remappedtext(what)
+        return top and (top.mapstrings[what] or top.mapindices[tonumber(what)])
+    end
+
+    function mp.mf_map_move(index)
+        mp.triplet(top.mapmoves[index])
+    end
+
+    function mp.mf_map_text(index,str)
+        local map = top.mapindices[tonumber(str)]
+        if type(map) == "table" then
+            local text     = map.text
+            local overload = map.overload
+            local offset   = 0
+            local width    = 0
+            local where    = nil
+            --
+            mp_index = index
+            -- the image text
+            if overload then
+                top.texstrings[mp_index] = map.template or map.label or "error"
+                tex.runtoks("mptexttoks")
+                local box = textakebox("mptextbox") or new_hlist()
+                width = bp * box.width
+                where = overload.where
+            end
+            -- the real text
+            top.texstrings[mp_index] = overload and overload.text or text or "error"
+            tex.runtoks("mptexttoks")
+            local box = textakebox("mptextbox") or new_hlist()
+            local twd = bp * box.width
+            local tht = bp * box.height
+            local tdp = bp * box.depth
+            -- the check
+            if where then
+                local scale = 1 --  / (map.scale or 1)
+                if where == "l" or where == "left" then
+                    offset = scale * (twd - width)
+                elseif where == "m" or where == "middle" then
+                    offset = scale * (twd - width) / 2
+                end
+            end
+            -- the result
+            top.textexts[mp_index] = box
+            top.mapmoves[mp_index] = { offset, map.dx or 0, map.dy or 0 }
+            --
+            mp.triplet(twd,tht,tdp)
+            madetext = nil
+            return
+        else
+            map = type(map) == "string" and map or str
+            return mp.mf_some_text(index,context.escape(map) or map)
+        end
     end
 
     -- This is a bit messy. In regular metapost it's a kind of immediate replacement

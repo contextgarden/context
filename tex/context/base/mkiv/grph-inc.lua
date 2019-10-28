@@ -298,6 +298,7 @@ local figures_resources = allocate()   figures.resources   = figures_resources
 local existers          = allocate()   figures.existers    = existers
 local checkers          = allocate()   figures.checkers    = checkers
 local includers         = allocate()   figures.includers   = includers
+local remappers         = allocate()   figures.remappers   = remappers
 local converters        = allocate()   figures.converters  = converters
 local identifiers       = allocate()   figures.identifiers = identifiers
 local programs          = allocate()   figures.programs    = programs
@@ -324,7 +325,7 @@ local figures_order =  allocate {
 
 local figures_formats = allocate { -- magic and order will move here
     ["pdf"]    = { list = { "pdf" } },
-    ["mps"]    = { patterns = { "mps", "%d+" } },
+    ["mps"]    = { patterns = { "^mps$", "^%d+$" } }, -- we need to anchor
     ["jpg"]    = { list = { "jpg", "jpeg" } },
     ["png"]    = { list = { "png" } },
     ["jp2"]    = { list = { "jp2" } },
@@ -779,24 +780,32 @@ local function register(askedname,specification)
                     arguments  or ""
                 )
             end
-            -- quick hack
-            local converter = (newformat ~= format or resolution or arguments) and converters[format]
+            -- begin of quick hack
+            local remapper = remappers[format]
+            if remapper then
+                remapper = remapper[conversion]
+                if remapper then
+                    specification = remapper(specification) or specification
+                    format        = specification.format
+                    newformat     = format
+                    conversion    = nil
+                end
+            end
+            -- end of quick hack
+            local converter = (not remapper) and (newformat ~= format or resolution or arguments) and converters[format]
             if converter then
-                if converter[newformat] then
-                    converter = converter[newformat]
+                local okay = converter[newformat]
+                if okay then
+                    converter = okay
                 else
                     newformat = defaultformat
-                    if converter[newformat] then
-                        converter = converter[newformat]
-                    else
-                        converter = nil
-                        newformat = defaultformat
-                    end
+                    converter = converter[newformat]
                 end
             elseif trace_conversion then
                 report_inclusion("no converter for %a to %a",format,newformat)
             end
             if converter then
+                -- todo: make this a function
                 --
                 -- todo: outline as helper function
                 --
@@ -891,7 +900,7 @@ local function register(askedname,specification)
                             format = suffix
                         end
                     end
-specification.format = format
+                    specification.format = format
                 elseif io.exists(oldname) then
                     report_inclusion("file %a is bugged",oldname)
                     if format and imagetypes[format] then
@@ -1425,6 +1434,7 @@ local transforms = setmetatableindex (
 
 local function checktransform(figure,forced)
     if auto_transform then
+
         local orientation = (forced ~= "" and forced ~= v_auto and forced) or figure.orientation or 0
         local transform   = transforms["orientation-"..orientation]
         figure.transform = transform

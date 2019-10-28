@@ -2020,24 +2020,37 @@ vardef svgcolor(expr r,g,b) =
     fi
 enddef ;
 
+vardef svggray(expr s) =
+    s
+enddef ;
+
 presetparameters "svg" [
     filename = "",
     fontname = "",
   % unicode  = 0,
     width    = 0,
     height   = 0,
+    origin   = false,
+    offset   = 0,
 ] ;
 
 def lmt_svg = applyparameters "svg" "lmt_do_svg" enddef ;
 
 vardef lmt_do_svg =
-    save w, h ;
+    save w, h, o;
     image (
         pushparameters "svg" ;
         w := getparameter "width" ;
         h := getparameter "height" ;
+        o := getparameter "offset" ;
         lua.mp.lmt_svg_include() ;
+        if getparameter "origin" :
+            currentpicture := currentpicture shifted -llcorner currentpicture ;
+        fi ;
         popparameters ;
+        if o <> 0 :
+            setbounds currentpicture to boundingbox currentpicture enlarged o ;
+        fi ;
     )
     if w > 0 :
         if h > 0 : xysized(w,h) else : xsized(w) fi
@@ -2142,3 +2155,45 @@ def lmt_registerglyph  = applyparameters "mpsglyph"  "lmt_do_registerglyph"  end
 
 vardef lmt_do_registerglyphs = lua.mp.lmt_register_glyphs() ; enddef ;
 vardef lmt_do_registerglyph  = lua.mp.lmt_register_glyph () ; enddef ;
+
+% Again an experiment (todo: the faster method):
+
+def lmt_remaptext = runscript("mp.lmt_do_remaptext()") enddef ;
+
+triplet mfun_tt_s ;
+
+vardef rawmaptext(expr s) =
+    mfun_tt_n := mfun_tt_n + 1 ;
+    mfun_tt_c := nullpicture ;
+    mfun_tt_o := nullpicture ;
+    addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
+    mfun_tt_r := lua.mp.mf_map_text(mfun_tt_n,s) ;
+    mfun_tt_s := lua.mp.mf_map_move(mfun_tt_n) ;
+    addto mfun_tt_c doublepath unitsquare
+        xscaled wdpart mfun_tt_r
+        yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
+        shifted (0,-dppart mfun_tt_r)
+        withprescript "mf_object=text"
+        withprescript "tx_index=" & decimal mfun_tt_n
+        withprescript "tx_color=" & colordecimals colorpart mfun_tt_o
+    ;
+    mfun_tt_c
+enddef ;
+
+vardef svgtext(expr t) =
+    save p ; picture p ;
+  % mfun_tt_s := (0,0,0) ;
+  % mfun_tt_r := (0,0,0) ;
+    p := rawmaptext(t) ;
+    p
+    if (mfun_labtype.drt >= 10) : % drt etc
+        shifted (0,ypart center p)
+    fi
+    shifted (
+        - mfun_labshift.drt(p)
+        - (redpart mfun_tt_s,0)
+        + (greenpart mfun_tt_s,bluepart mfun_tt_s)
+    )
+enddef ;
+
+vardef svg expr c = lmt_svg [ code = c ] enddef ;

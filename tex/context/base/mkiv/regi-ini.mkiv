@@ -30,4 +30,8 @@
 \unexpanded\def\startregime [#1]{\clf_startregime{#1}}
 \unexpanded\def\stopregime      {\clf_stopregime}
 
+% only for diagnostics:
+
+\def\codepagename#1{\cldcontext{os.tocodepage("#1")}}
+
 \protect \endinput

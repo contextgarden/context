@@ -198,6 +198,13 @@
 
 \newbox\b_tabl_ntb_final
 
+%D For tagging and export:
+
+\newconstant    \c_tabl_ntb_head
+\newconstant    \c_tabl_ntb_body
+\newconstant    \c_tabl_ntb_foot
+\newconditional \c_tabl_ntb_okay
+
 %D We have already prepared the previous macros for nesting, so we only have to pop
 %D in the right ones:
 
@@ -1005,19 +1012,30 @@
 
 \unexpanded\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
+   \setfalse\c_tabl_ntb_okay
+   % head
    \doifelsesometoks\t_tabl_ntb_head % slow, better a flag
-     {\the\t_tabl_ntb_head
+     {\c_tabl_ntb_head\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
+      \the\t_tabl_ntb_head
       \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
       \doifelsesometoks\t_tabl_ntb_next
         {\the\t_tabl_ntb_next
          \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax}%
         {\c_tabl_ntb_n_of_next_lines\zerocount}% was 1
       \c_tabl_ntb_n_of_hdnx_lines\c_tabl_ntb_maximum_row}
-     {\c_tabl_ntb_n_of_head_lines\zerocount % was 1
+     {\c_tabl_ntb_head\zerocount
+      \c_tabl_ntb_n_of_head_lines\zerocount % was 1
       \c_tabl_ntb_n_of_next_lines\zerocount
       \c_tabl_ntb_n_of_hdnx_lines\zerocount}%
+   % body
+   \c_tabl_ntb_body\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
    \the\t_tabl_ntb_body
-   \the\t_tabl_ntb_foot
+   % foot
+   \doifelsesometoks\t_tabl_ntb_foot
+     {\c_tabl_ntb_foot\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
+      \the\t_tabl_ntb_foot}%
+     {\c_tabl_ntb_foot\zerocount}%
+   % done
    \removeunwantedspaces % only if hmode
    % finish cells
    \tabl_ntb_loop_one
@@ -1233,19 +1251,65 @@
 \let\m_tabl_ntb_saved_row\!!zerocount
 \let\m_tabl_ntb_saved_col\!!zerocount
 
+\def\tabl_ntb_start_tagged
+  {\scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
+   \ifnum\scratchcounter=\c_tabl_ntb_head
+     \ifconditional\c_tabl_ntb_okay
+       \dostoptagged
+     \else
+       \settrue\c_tabl_ntb_okay
+     \fi
+     \dostarttagged\t!tablehead\empty
+   \orelse\ifnum\scratchcounter=\c_tabl_ntb_body
+     \ifconditional\c_tabl_ntb_okay
+       \dostoptagged
+     \else
+       \settrue\c_tabl_ntb_okay
+     \fi
+     \dostarttagged\t!tablebody\empty
+   \orelse\ifnum\scratchcounter=\c_tabl_ntb_foot
+     \ifconditional\c_tabl_ntb_okay
+       \dostoptagged
+     \else
+       \settrue\c_tabl_ntb_okay
+     \fi
+     \dostarttagged\t!tablefoot\empty
+   \fi
+   \dostarttagged\t!tablerow\empty}
+
+\def\tabl_ntb_stop_tagged
+  {\dostoptagged
+   \ifconditional\c_tabl_ntb_okay
+     \scratchcounter\numexpr\c_tabl_ntb_row+\plustwo\relax
+     \ifnum\scratchcounter=\c_tabl_ntb_body
+       \dostoptagged
+       \setfalse\c_tabl_ntb_okay
+     \orelse\ifnum\scratchcounter=\c_tabl_ntb_foot
+       \dostoptagged
+       \setfalse\c_tabl_ntb_okay
+     \orelse\ifnum\scratchcounter>\c_tabl_ntb_maximum_row
+       \dostoptagged
+       \setfalse\c_tabl_ntb_okay
+     \fi
+   \fi}
+
 \unexpanded\def\tabl_ntb_row_align_start
   {\global\advance\c_tabl_ntb_row\plusone
    \global\c_tabl_ntb_col\plusone
    \global\c_tabl_ntb_spn\zerocount
    \tabl_ntb_row_align_start_inject
-   \dostarttagged\t!tablerow\empty
+   \ifconditional\c_strc_tags_enabled
+     \tabl_ntb_start_tagged
+   \fi
    \hbox\bgroup
    \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
 
 \unexpanded\def\tabl_ntb_row_align_stop
   {\kern\dimexpr\d_tabl_ntb_rightmargindistance-\d_tabl_ntb_columndistance\relax
    \egroup
-   \dostoptagged
+   \ifconditional\c_strc_tags_enabled
+     \tabl_ntb_stop_tagged
+   \fi
    \tabl_ntb_row_align_stop_inject}
 
 \unexpanded\def\tabl_ntb_before_page

@@ -274,6 +274,34 @@ local function flushconcatpath(path, t, open)
     return t
 end
 
+local function toboundingbox(path)
+    local size = #path
+    if size == 4 then
+        local pth = path[1]
+        local x = pth.x_coord
+        local y = pth.y_coord
+        local llx, lly, urx, ury = x, y, x, y
+        for i=2,size do
+            pth = path[i]
+            x   = pth.x_coord
+            y   = pth.y_coord
+            if x < llx then
+                llx = x
+            elseif x > urx then
+                urx = x
+            end
+            if y < lly then
+                lly = y
+            elseif y > ury then
+                ury = y
+            end
+        end
+        return { llx, lly, urx, ury }
+    else
+        return { 0, 0, 0, 0 }
+    end
+end
+
 metapost.flushnormalpath = flushnormalpath
 
 -- The flusher is pdf based, if another backend is used, we need to overload the
@@ -283,8 +311,10 @@ metapost.flushnormalpath = flushnormalpath
 -- We can avoid the before table but I like symmetry. There is of course a small
 -- performance penalty, but so is passing extra arguments (result, flusher, after)
 -- and returning stuff.
+--
+-- This variable stuff will change in lmtx.
 
-local ignore   = function () end
+local ignore   = function() end
 
 local space    = P(" ")
 local equal    = P("=")
@@ -380,10 +410,10 @@ function metapost.flush(specification,result)
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
-            local resetplugins       = metapost.resetplugins or ignore -- before figure
-            local processplugins     = metapost.processplugins or ignore -- each object
+            local resetplugins       = metapost.resetplugins       or ignore -- before figure
+            local processplugins     = metapost.processplugins     or ignore -- each object
             local synchronizeplugins = metapost.synchronizeplugins or ignore
-            local pluginactions      = metapost.pluginactions or ignore -- before / after
+            local pluginactions      = metapost.pluginactions      or ignore -- before / after
             local startfigure        = flusher.startfigure
             local stopfigure         = flusher.stopfigure
             local flushfigure        = flusher.flushfigure
@@ -412,6 +442,8 @@ function metapost.flush(specification,result)
                     else
 
                         -- we need to be indirect if we want the one-pass solution
+
+                        local groupstack = { }
 
                         local function processfigure()
                             result[#result+1] = "q"
@@ -444,6 +476,35 @@ function metapost.flush(specification,result)
                                         miterlimit, linecap, linejoin, dashed = -1, -1, -1, "" -- was false
                                     elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                         -- skip
+                                    elseif objecttype == "start_group" then
+                                        if lpdf.flushgroup then
+                                            local before, after = processplugins(object)
+                                            if before then
+                                                result[#result+1] = "q"
+                                                result = pluginactions(before,result,flushfigure)
+                                                insert(groupstack, {
+                                                    after  = after,
+                                                    result = result,
+                                                    bbox   = toboundingbox(object.path),
+                                                })
+                                                result = { }
+miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                            else
+                                                insert(groupstack,false)
+                                            end
+                                        else
+                                            insert(groupstack,false)
+                                        end
+                                    elseif objecttype == "stop_group" then
+                                        local data = remove(groupstack)
+                                        if data then
+                                            local id = lpdf.flushgroup(concat(result,"\r"),data.bbox)
+                                            result = data.result
+                                            result[#result+1] = formatters["/%s Do"](id)
+                                            result = pluginactions(data.after,result,flushfigure)
+                                            result[#result+1] = "Q"
+miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                        end
                                     else
                                         -- we use an indirect table as we want to overload
                                         -- entries but this is not possible in userdata
@@ -451,7 +512,7 @@ function metapost.flush(specification,result)
                                         -- can be optimized if no path
                                         --
                                         local original = object
-                                        local object = { }
+                                        local object   = { }
                                         setmetatable(object, {
                                             __index = original
                                         })

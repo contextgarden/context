@@ -250,7 +250,7 @@ local function get_parameters(nested)
 end
 
 local function getparameters()
-    local namespace = scanstring()
+    local namespace  = scanstring()
     -- same as below
     local parameters = get_parameters()
     local presets    = presets[namespace]
@@ -667,6 +667,11 @@ end
 --     end
 --     return false
 -- end
+
+function metapost.scanparameters()
+--     scantoken() -- we scan the semicolon
+    return get_parameters()
+end
 
 metapost.registerscript("getparameters",       getparameters)
 metapost.registerscript("applyparameters",     applyparameters)

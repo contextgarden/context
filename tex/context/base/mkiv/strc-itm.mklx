@@ -961,23 +961,23 @@
 % symbols + states
 
 \def\strc_itemgroups_store_global_symbol#symbol%
-  {\letgvalue{\??itemgroupglobal\currentitemlevel}#symbol}
+  {\letgvalue{\??itemgroupglobal\currentitemgroup:\currentitemlevel}#symbol}
 
 \def\strc_itemgroups_store_local_symbol#symbol%
-  {\letgvalue{\??itemgrouplocal\currentitemlevel}#symbol}
+  {\letgvalue{\??itemgrouplocal\currentitemgroup:\currentitemlevel}#symbol}
 
 \def\strc_itemgroups_fetch_global_symbol
-  {\csname\??itemgroupglobal\currentitemlevel\endcsname}
+  {\csname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname}
 
 \def\strc_itemgroups_fetch_local_symbol
-  {\csname\??itemgrouplocal\currentitemlevel\endcsname}
+  {\csname\??itemgrouplocal\currentitemgroup:\currentitemlevel\endcsname}
 
 \def\strc_itemgroups_setup_symbol_default
   {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}%
    \strc_itemgroups_store_global_symbol\empty}
 
 \def\strc_itemgroups_setup_symbol_continue
-  {\ifcsname\??itemgroupglobal\currentitemlevel\endcsname
+  {\ifcsname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname
      \let\strc_itemgroups_asked_symbol\strc_itemgroups_fetch_global_symbol
    \else
      \let\strc_itemgroups_asked_symbol\currentitemlevel
@@ -1858,5 +1858,27 @@
 
 \defineitemgroup
   [\v!itemize]
+
+%D This is really ugly I should get rid of the global mess, whuch is a side
+%D effect of the simple \type {\item} interface that we're stuck with for
+%D compatibility reasons. See footnotes for usage. It's probablynot robust
+%D for mixed itemgroups so in the end I need to get rid of the globals. One
+%D problem is that counters are set.
+
+\defineitemgroup
+  [\v!itemize:\v!note]
+
+\def\strc_itemgroups_push
+  {\edef\strc_itemgroups_pop
+     {\xdef\noexpand\currentitemlevel{\currentitemlevel}%
+      \global\c_strc_itemgroups_nesting     \the\c_strc_itemgroups_nesting     \relax
+      \global\c_strc_itemgroups_column_depth\the\c_strc_itemgroups_column_depth\relax}%
+   \global\c_strc_itemgroups_column_depth\zerocount
+   \global\c_strc_itemgroups_nesting     \zerocount
+   \glet\currentitemlevel\!!zerocount
+   \unexpanded\def\startitemize{\startitemgroup[\v!itemize:\v!note]}%
+   \unexpanded\def\stopitemize {\stopitemgroup}}
+
+\let\strc_itemgroups_pop\relax
 
 \protect \endinput

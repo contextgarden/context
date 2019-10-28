@@ -852,6 +852,8 @@ do
         end,
     }
 
+    -- make table variant:
+
     function metapost.simple(instance,code,useextensions,dontwrap)
         -- can we pickup the instance ?
         local mpx = metapost.pushformat {

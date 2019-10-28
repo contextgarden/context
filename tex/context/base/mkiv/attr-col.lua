@@ -549,7 +549,7 @@ local function extender(transparencies,key)
 end
 
 local function reviver(data,n)
-    if transparencies.supported then
+    if n and transparencies.supported then
         local v = values[n]
         local d
         if not v then

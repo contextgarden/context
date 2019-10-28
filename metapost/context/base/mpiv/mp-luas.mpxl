@@ -160,9 +160,9 @@ vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
 vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
 vardef positionanchor            = lua.mp.positionanchor()     enddef ;
 
-let wdpart = redpart ;
-let htpart = greenpart ;
-let dppart = bluepart ;
+let wdpart     = redpart ;
+let htpart     = greenpart ;
+let dppart     = bluepart ;
 
 vardef positioninregion =
     currentpicture := currentpicture shifted - positionxy(positionanchor) ;

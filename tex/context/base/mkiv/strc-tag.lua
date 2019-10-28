@@ -124,10 +124,18 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     table                 = { pdf = "Table",      nature = "display" },
     tablerow              = { pdf = "TR",         nature = "display" },
     tablecell             = { pdf = "TD",         nature = "mixed"   },
+    tableheadcell         = { pdf = "TH",         nature = "mixed"   },
+    tablehead             = { pdf = "THEAD",      nature = "display" },
+    tablebody             = { pdf = "TBODY",      nature = "display" },
+    tablefoot             = { pdf = "TFOOT",      nature = "display" },
 
     tabulate              = { pdf = "Table",      nature = "display" },
     tabulaterow           = { pdf = "TR",         nature = "display" },
     tabulatecell          = { pdf = "TD",         nature = "mixed"   },
+    tabulateheadcell      = { pdf = "TH",         nature = "mixed"   },
+    tabulatehead          = { pdf = "THEAD",      nature = "display" },
+    tabulatebody          = { pdf = "TBODY",      nature = "display" },
+    tabulatefoot          = { pdf = "TFOOT",      nature = "display" },
 
     list                  = { pdf = "TOC",        nature = "display" },
     listitem              = { pdf = "TOCI",       nature = "display" },

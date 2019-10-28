@@ -41,7 +41,6 @@ local nuts                = nodes.nuts
 local tonode              = nuts.tonode
 local listtoutf           = nodes.listtoutf
 
-local hpack               = nuts.hpack
 local vpack               = nuts.vpack
 local flushnode           = nuts.flush
 local concatnodes         = nuts.concat
@@ -800,7 +799,7 @@ local function finalize(result)
                     local t = { }
                     for i=1,#list do
                         local l = list[i]
-                        local h = new_hlist()
+                        local h = new_vlist() -- was hlist but that's wrong
                         local g = getlist(l)
                         t[i] = h
                         setlist(h,g)
@@ -881,12 +880,12 @@ end
 
 local function getsplit(result,n)
     if not result then
-        report_state("flush, column %s, no result",n)
+        report_state("flush, column %s, %s",n,"no result")
         return
     end
     local r = result.results[n]
     if not r then
-        report_state("flush, column %s, empty",n)
+        report_state("flush, column %s, %s",n,"empty")
     end
     local h = r.head
     if not h then
@@ -982,9 +981,8 @@ local function getsplit(result,n)
         for i=1,#list-1 do
             setdepth(list[i],0)
         end
-        local b = vpack(l) -- multiple arguments, todo: fastvpack
-setbox("global",c,b)  -- when we wrap in a box
-     --   setbox(c,b)
+        local b = vpack(l)    -- multiple arguments, todo: fastvpack
+        setbox("global",c,b)  -- when we wrap in a box
         r.inserts[c] = nil
     end
 

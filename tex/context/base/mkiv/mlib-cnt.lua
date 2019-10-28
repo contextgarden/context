@@ -313,12 +313,12 @@ function mp.lmt_contours_start()
             for i=1,nofvalues do
                 colors[i] = { fcolor(i) }
             end
-if attributes.colors.model == "cmyk" then
-    for i=1,#colors do
-        local c = colors[i]
-        colors[i] = { 1 - c[1], 1 - c[2], 1 - c[3], 0 }
-    end
-end
+            if attributes.colors.model == "cmyk" then
+                for i=1,#colors do
+                    local c = colors[i]
+                    colors[i] = { 1 - c[1], 1 - c[2], 1 - c[3], 0 }
+                end
+            end
             return colors, fcolor
         end
     end

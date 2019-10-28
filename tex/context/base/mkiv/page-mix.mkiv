@@ -242,7 +242,8 @@
      \page_one_command_routine
    \fi
    \global\setbox\b_page_mix_preceding\vbox % pack ?
-     {\page_otr_command_flush_top_insertions
+     {\forgetall
+      \page_otr_command_flush_top_insertions
       \ifdim\htdp\b_page_mix_preceding=\zeropoint \else
         \writestatus\m!columns{preceding error}%
         \unvbox\b_page_mix_preceding

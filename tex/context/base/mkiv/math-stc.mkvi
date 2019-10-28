@@ -86,11 +86,19 @@
 
 \def\math_stackers_regular
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
-                  \Umathaccent\fam\zerocount\scratchunicode{\hskip\scratchwidth}}}
+     \hskip\d_math_stackers_offset_l
+     \Umathaccent\fam\zerocount\scratchunicode
+       {\hskip\dimexpr\scratchwidth-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
+     \hskip\d_math_stackers_offset_r
+   }}
 
 \def\math_stackers_stretch % we don't have that one yet
   {\mathstylehbox{\usemathstackerscolorparameter\c!color
-                  \Umathaccent\fam\zerocount\scratchunicode{\hskip\hsize}}}
+     \hskip\d_math_stackers_offset_l
+     \Umathaccent\fam\zerocount\scratchunicode
+       {\hskip\dimexpr\hsize-\d_math_stackers_offset_l-\d_math_stackers_offset_r}%
+     \hskip\d_math_stackers_offset_r
+   }}
 
 % these delimiters are a unuseable as they don't center for small arguments:
 %
@@ -499,7 +507,7 @@
   \dostoptagged
   \mathstackersparameter\c!right\relax
   \endgroup}
- %\math_stackers_start_group}
+ %\math_stackers_stop_group}
 
 \unexpanded\def\definemathextensible
   {\dotripleempty\math_stackers_define_normal}
@@ -572,8 +580,27 @@
      \let\math_stackers_stop_group\endgroup
    \fi}
 
-\unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#text%
+\newconstant\c_math_stackers_top
+\newconstant\c_math_stackers_bottom
+\newconstant\c_math_stackers_codepoint
+\newconstant\c_math_stackers_extracode
+\newdimen   \d_math_stackers_offset_l
+\newdimen   \d_math_stackers_offset_r
+
+\setupmathstackers[lt=\zeropoint,rt=\zeropoint,lb=\zeropoint,rb=\zeropoint]
+
+\unexpanded\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra%
   {\math_stackers_start_group{#category}%
+   \c_math_stackers_top      #top\relax
+   \c_math_stackers_bottom   #bottom\relax
+   \c_math_stackers_codepoint#codepoint\relax
+   \c_math_stackers_extracode#codeextra\relax
+   \dosingleempty\math_stackers_make_double_indeed}
+
+\unexpanded\def\math_stackers_make_double_indeed[#settings]#text%
+  {\iffirstargument
+     \setupcurrentmathstackers[#settings]%
+   \fi
    \mathstackersparameter\c!left\relax
    \dostarttagged\t!mathstacker\currentmathstackers
    \ifmmode\math_class_by_parameter\mathstackersparameter\else\dontleavehmode\fi
@@ -587,7 +614,7 @@
       \scratchleftoffset \zeropoint
       \scratchrightoffset\zeropoint
       %
-      \math_stackers_check_unicode{#codepoint}%
+      \math_stackers_check_unicode\c_math_stackers_codepoint
       %
       \ifx\math_stackers_middle\empty
         \setbox\scratchboxthree\emptyhbox
@@ -602,24 +629,37 @@
       \fi
       \advance\scratchwidth2\scratchhoffset
       %
+     %\scratchunicode\c_math_stackers_codepoint
+      \ifcase\c_math_stackers_bottom
+        \d_math_stackers_offset_l\mathstackersparameter{lt}%
+        \d_math_stackers_offset_r\mathstackersparameter{rt}%
+      \else\ifcase\c_math_stackers_top
+        \d_math_stackers_offset_l\mathstackersparameter{lb}%
+        \d_math_stackers_offset_r\mathstackersparameter{rb}%
+      \else
+        \d_math_stackers_offset_l\mathstackersparameter{lt}%
+        \d_math_stackers_offset_r\mathstackersparameter{rt}%
+      \fi\fi
       \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
       \setbox\scratchboxthree\hpack to \scratchwidth{\hss\box\scratchboxthree\hss}%
       %
-      \scratchunicode#codeextra\relax
-      \ifcase\scratchunicode\else
+      \ifcase\c_math_stackers_extracode\else
+        \scratchunicode\c_math_stackers_extracode
+        \d_math_stackers_offset_l\mathstackersparameter{lb}%
+        \d_math_stackers_offset_r\mathstackersparameter{rb}%
         \setbox\scratchboxone\csname\??mathstackersalternative\p_alternative\endcsname
       \fi
       %
       \math_stackers_normalize_three
       % analysis
-      \ifcase#bottom\relax
-        \ifcase#top\relax
+      \ifcase\c_math_stackers_bottom
+        \ifcase\c_math_stackers_top
             \dosettagproperty\s!subtype\t!munderover
         \else
             \dosettagproperty\s!subtype\t!mover
         \fi
       \else
-        \ifcase#top\relax
+        \ifcase\c_math_stackers_top
             \dosettagproperty\s!subtype\t!munder
         \else
             % brrr
@@ -633,7 +673,7 @@
       \math_stackers_stop_tagged
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
-        \ifcase#bottom\else
+        \ifcase\c_math_stackers_bottom\else
           \kern-\scratchwidth
           % under
           \math_stackers_start_tagged_bot
@@ -643,7 +683,7 @@
                 +\ht\scratchboxtwo
                 +\mathstackersparameter\c!distance % was \c!voffset
               \relax
-              \ifcase#top\relax
+              \ifcase\c_math_stackers_top
                 \box\scratchboxtwo
               \else
                 \box\scratchboxone
@@ -651,7 +691,7 @@
             \egroup
           \math_stackers_stop_tagged
         \fi
-        \ifcase#top\else
+        \ifcase\c_math_stackers_top\else
           \kern-\scratchwidth
           % over
           \math_stackers_start_tagged_top
@@ -665,7 +705,6 @@
             \egroup
           \math_stackers_stop_tagged
         \fi
-        %
       \fi}%
   \dostoptagged
   \mathstackersparameter\c!right\relax
@@ -696,10 +735,6 @@
      \setuevalue{#1}{\math_stackers_make_double\plusone  \plusone\noexpand\currentmathstackers{\number#2}{\number#3}}%
    \fi}
 
-\unexpanded\def\mathover  {\begingroup\dosingleempty\math_stackers_handle_over  }
-\unexpanded\def\mathunder {\begingroup\dosingleempty\math_stackers_handle_under }
-\unexpanded\def\mathdouble{\begingroup\dodoubleempty\math_stackers_handle_double}
-
 \unexpanded\def\definemathover  {\dotripleargument   \math_stackers_define_over  }
 \unexpanded\def\definemathunder {\dotripleargument   \math_stackers_define_under }
 \unexpanded\def\definemathdouble{\doquadrupleargument\math_stackers_define_double}
@@ -713,29 +748,41 @@
 \def\math_stackers_define_double[#category][#command][#topcode][#bottomcode]%
   {\setuvalue{#command}{\math_stackers_handle_direct\plusone\plusone{#category}{#topcode}{#bottomcode}}}
 
-\unexpanded\def\mathover  {\begingroup\dosingleempty\math_stackers_handle_over  }
-\unexpanded\def\mathunder {\begingroup\dosingleempty\math_stackers_handle_under }
-\unexpanded\def\mathdouble{\begingroup\dosingleempty\math_stackers_handle_double}
+\unexpanded\def\mathover  {\begingroup\dodoubleempty\math_stackers_handle_over  }
+\unexpanded\def\mathunder {\begingroup\dodoubleempty\math_stackers_handle_under }
+\unexpanded\def\mathdouble{\begingroup\dodoubleempty\math_stackers_handle_double}
 
-\def\math_stackers_handle_over[#category]#topcode#text%
-  {\math_stackers_make_double\plusone\zerocount
-     {\iffirstargument#category\else\v!top\fi}%
+\def\math_stackers_handle_over[#category][#settings]#topcode#text%
+  {\edef\currentmathstackers{\iffirstargument#category\else\v!top\fi}%
+   \ifsecondargument
+      \setupcurrentmathstackers[#settings]%
+   \fi
+   \math_stackers_make_double\plusone\zerocount
+     {\currentmathstackers}%
      {#topcode}%
      {0}%
      {#text}%
    \endgroup}
 
-\def\math_stackers_handle_under[#category]#bottomcode#text%
-  {\math_stackers_make_double\zerocount\plusone
-     {\iffirstargument#category\else\v!bottom\fi}%
+\def\math_stackers_handle_under[#category][#settings]#bottomcode#text%
+  {\edef\currentmathstackers{\iffirstargument#category\else\v!bottom\fi}%
+   \ifsecondargument
+      \setupcurrentmathstackers[#settings]%
+   \fi
+   \math_stackers_make_double\zerocount\plusone
+     {\currentmathstackers}%
      {#bottomcode}%
      {0}%
      {#text}%
    \endgroup}
 
-\def\math_stackers_handle_double[#category]#topcode#bottomcode#text%
-  {\math_stackers_make_double\plusone\plusone
-     {\iffirstargument#category\else\v!both\fi}%
+\def\math_stackers_handle_double[#category][#settings]#topcode#bottomcode#text%
+  {\edef\currentmathstackers{\iffirstargument#category\else\v!both\fi}%
+   \ifsecondargument
+      \setupcurrentmathstackers[#settings]%
+   \fi
+   \math_stackers_make_double\plusone\plusone
+     {\currentmathstackers}%
      {#topcode}%
      {#bottomcode}%
      {#text}%

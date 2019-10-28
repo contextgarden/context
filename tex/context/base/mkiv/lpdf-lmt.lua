@@ -79,8 +79,6 @@ local properties           = fonthashes.properties
 
 local report               = logs.reporter("backend")
 
-local trace_threshold      = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
-
 -- used variables
 
 local pdf_h, pdf_v
@@ -89,7 +87,7 @@ local need_width, need_mode, done_width, done_mode
 local mode
 local f_pdf_cur, f_pdf, fs_cur, fs, f_cur
 local tj_delta, cw
-local usedfonts, usedxforms, usedximages
+local usedfonts, usedxforms, usedximages, usedxgroups
 local getxformname, getximagename
 local boundingbox, shippingmode, objectnumber
 local tmrx, tmry, tmsx, tmsy, tmtx, tmty
@@ -132,6 +130,7 @@ local function reset_variables(specification)
     usedfonts     = setmetatableindex(usefont)
     usedxforms    = { }
     usedximages   = { }
+ -- usedxgroups   = { }
     boundingbox   = specification.boundingbox
 end
 
@@ -521,6 +520,8 @@ local flushcharacter  do
         return v
     end)
 
+    local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
+
     flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
         if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
@@ -842,6 +843,11 @@ end
 
 -- rules
 
+local f_font  = formatters["F%d"]
+local f_form  = formatters["Fm%d"]
+local f_group = formatters["Gp%d"]
+local f_image = formatters["Im%d"]
+
 local flushedxforms   = { } -- actually box resources but can also be direct
 local localconverter  = nil -- will be set
 
@@ -1040,6 +1046,37 @@ local flushrule, flushsimplerule, flushimage  do
         pdf.getximagename = getximagename
     end)
 
+    -- Groups are flushed immediately but we can decide to make them into a
+    -- specific whatsit ... but not now. We could hash them if needed when
+    -- we use lot sof them in mp ... but not now.
+
+          usedxgroups = { }
+    local groups      = 0
+    local group       = nil
+
+    function lpdf.flushgroup(content,bbox)
+        if not group then
+            group = pdfdictionary {
+                Type = pdfconstant("Group"),
+                S    = pdfconstant("Transparency"),
+            }
+        end
+        local wrapper = pdfdictionary {
+            Type      = pdf_xobject,
+            Subtype   = pdf_form,
+            FormType  = 1,
+            Group     = group,
+            BBox      = pdfarray(bbox),
+            Resources = lpdf.collectedresources { serialize = false },
+        }
+        local objnum = pdfflushstreamobject(content,wrapper,false)
+        groups = groups + 1
+        usedxgroups[groups] = objnum
+        return f_group(groups)
+    end
+
+    -- end of experiment
+
     local function flushpdfximage(current,pos_h,pos_v,pos_r,size_h,size_v)
 
         local width,
@@ -1053,7 +1090,7 @@ local flushrule, flushsimplerule, flushimage  do
               yorigin,
               xsize,
               ysize,
-              rotation,
+              rotation, -- transform / orientation / rotation : it's a mess (i need to redo this)
               objnum,
               groupref  = pdfincludeimage(index)  -- needs to be sorted out, bad name (no longer mixed anyway)
 
@@ -1063,6 +1100,8 @@ local flushrule, flushsimplerule, flushimage  do
         end
 
         local rx, sx, sy, ry, tx, ty = 1, 0, 0, 1, 0, 0
+
+        -- tricky: xsize and ysize swapped
 
         if kind == img_pdf or kind == img_stream or kind == img_memstream then
             rx, ry, tx, ty = 1/xsize, 1/ysize, xorigin/xsize, yorigin/ysize
@@ -1364,14 +1403,69 @@ local function initialize(driver,details)
     reset_buffer()
 end
 
-local f_font  = formatters["F%d"]
-local f_form  = formatters["Fm%d"]
-local f_image = formatters["Im%d"]
-
 -- This will all move and be merged and become less messy.
 
 -- todo: more clever resource management: a bit tricky as we can inject
 -- stuff in the page stream
+
+local compact = false
+
+do
+
+    -- This is more a convenience feature and it might even be not entirely robust.
+    -- It removes redundant color directives which makes the page stream look a bit
+    -- nicer (also when figuring out issues). I might add more here but there is
+    -- some additional overhead involved so runtime can be impacted.
+
+    local P, R, S, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cs, lpeg.match
+
+    local p_ds    = (R("09") + S(" ."))^1
+    ----- p_nl    = S("\n\r")^1
+    local p_nl    = S("\n")^1
+    local p_eg    = P("Q")
+
+    local p_cl    = p_ds * (P("rg") + P("g") + P("k")) * p_ds * (P("RG") + P("G") + P("K"))
+    ----- p_cl    = (p_ds * (P("rg") + P("g") + P("k") + P("RG") + P("G") + P("K")))^1
+    local p_tr    = P("/Tr") * p_ds * P("gs")
+
+    local p_no_cl = (p_cl * p_nl) / ""
+    local p_no_tr = (p_tr * p_nl) / ""
+    local p_no_nl = 1 - p_nl
+
+    local p_do_cl = p_cl * p_nl
+    local p_do_tr = p_tr * p_nl
+
+    local p_do_eg = p_eg * p_nl
+
+    local pattern = Cs( (
+        (p_no_cl + p_no_tr)^0 * p_do_eg           -- transparencies and colors before Q
+      +  p_no_tr * p_no_cl    * p_do_tr * p_do_cl -- transparencies and colors before others
+      +  p_no_cl              * p_do_cl           -- successive colors
+      +  p_no_tr              * p_do_tr           -- successive transparencies
+      +  p_no_nl^1
+      +  1
+    )^1 )
+
+    local oldsize = 0
+    local newsize = 0
+
+    directives.register("pdf.compact", function(v)
+        compact = v and function(s)
+            oldsize = oldsize + #s
+            s = lpegmatch(pattern,s) or s
+            newsize = newsize + #s
+            return s
+        end
+    end)
+
+    statistics.register("pdf pagestream",function()
+        if oldsize ~= newsize then
+            return string.format("old size: %i, new size %i",oldsize,newsize)
+        end
+    end)
+
+
+end
 
 local pushmode, popmode
 
@@ -1386,6 +1480,10 @@ local function finalize(driver,details)
 
     local content = concat(buffer,"\n",1,b)
 
+    if compact then
+        content = compact(content)
+    end
+
     local fonts   = nil
     local xforms  = nil
 
@@ -1399,7 +1497,7 @@ local function finalize(driver,details)
     -- messy: use real indexes for both ... so we need to change some in the
     -- full luatex part
 
-    if next(usedxforms) or next(usedximages) then
+    if next(usedxforms) or next(usedximages) or next(usedxgroups) then
         xforms = pdfdictionary { }
         for k in sortedhash(usedxforms) do
          -- xforms[f_form(k)] = pdfreference(k)
@@ -1407,6 +1505,9 @@ local function finalize(driver,details)
         end
         for k, v in sortedhash(usedximages) do
             xforms[f_image(k)] = pdfreference(v)
+        end
+        for k, v in sortedhash(usedxgroups) do
+            xforms[f_group(k)] = pdfreference(v)
         end
     end
 
@@ -1951,9 +2052,15 @@ end)
 
 local openfile, closefile  do
 
-    local f_used       = formatters["%010i 00000 n \010"]
-    local f_link       = formatters["%010i 00000 f \010"]
-    local f_first      = formatters["%010i 65535 f \010"]
+    -- I used to do <space><lf> but then figured out that when I open and save a file in a mode
+    -- that removes trailing spaces, the xref becomes invalid. The problem was then that a
+    -- reconstruction of the file by a viewer gives weird effects probably because percent symbols
+    -- gets interpreted then. Thanks to Ross Moore for noticing this side effect!
+
+    local f_used       = formatters["%010i 00000 n\013\010"]
+    local f_link       = formatters["%010i 00000 f\013\010"]
+    local f_first      = formatters["%010i 65535 f\013\010"]
+
     local f_pdf        = formatters["%%PDF-%i.%i\010"]
     local f_xref       = formatters["xref\0100 %i\010"]
     local f_trailer_id = formatters["trailer\010<< %s /ID [ <%s> <%s> ] >>\010startxref\010%i\010%%%%EOF"]
@@ -2006,7 +2113,23 @@ local openfile, closefile  do
     end
 
     closefile = function(abort)
-        if not abort then
+        if abort then
+            f:close()
+            f = io.open(abort,"wb")
+            if f then
+                local name = resolvers.findfile("context-lmtx-error.pdf")
+                if name then
+                    local data = io.loaddata(name)
+                    if data then
+                        f:write(data)
+                        f:close()
+                        return
+                    end
+                end
+                f:close()
+                removefile(abort)
+            end
+        else
             local xrefoffset = offset
             local lastfree   = 0
             local noffree    = 0
@@ -2188,9 +2311,10 @@ local openfile, closefile  do
                     flush(f,f_trailer_no(trailer(),xrefoffset))
                 end
             end
+            f:close()
         end
-        f:close()
         io.flush()
+        closefile = function() end
     end
 
 end
@@ -2239,8 +2363,8 @@ updaters.register("backend.update.pdf",function()
         specification.index = index
         local xobject = pdfdictionary { }
         if not specification.notype then
-            xobject.Type     = pdfconstant("XObject")
-            xobject.Subtype  = pdfconstant("Form")
+            xobject.Type     = pdf_xobject
+            xobject.Subtype  = pdf_form
             xobject.FormType = 1
         end
         local bbox = specification.bbox
@@ -2322,8 +2446,8 @@ updaters.register("backend.update.pdf",function()
             local bbox      = specification.bbox
             local xorigin   = bbox[1]
             local yorigin   = bbox[2]
-            local xsize     = specification.width  -- should equal to: bbox[3] - xorigin
-            local ysize     = specification.height -- should equal to: bbox[4] - yorigin
+            local xsize     = bbox[3] - xorigin -- we need the original ones, not the 'rotated' ones
+            local ysize     = bbox[4] - yorigin -- we need the original ones, not the 'rotated' ones
             local transform = specification.transform or 0
             local objnum    = specification.objnum or pdfreserveobj()
             local groupref  = nil
@@ -2448,7 +2572,6 @@ do
     local texgetbox  = tex.getbox
 
     local pdfname    = nil
-    local tmpname    = nil
     local converter  = nil
     local useddriver = nil -- a bit of a hack
 
@@ -2474,13 +2597,7 @@ do
          -- end
             --
             pdfname = file.addsuffix(tex.jobname,"pdf")
-            tmpname = "l_m_t_x_" .. pdfname
-            removefile(tmpname)
-            if isfile(tmpname) then
-                report("file %a can't be opened, aborting",tmpname)
-                os.exit()
-            end
-            openfile(tmpname)
+            openfile(pdfname)
             --
             luatex.registerstopactions(1,function()
                 if pdfname then
@@ -2507,35 +2624,15 @@ do
 
     local function wrapup(driver)
         if pdfname then
-            local ok = true
-            if isfile(pdfname) then
-                removefile(pdfname)
-            end
-            if isfile(pdfname) then
-                ok = false
-                file.copy(tmpname,pdfname)
-            else
-                renamefile(tmpname,pdfname)
-                if isfile(tmpname) then
-                    ok = false
-                end
-            end
-            if not ok then
-                print(formatters["\nerror in renaming %a to %a\n"](tmpname,pdfname))
-            end
+            closefile()
             pdfname = nil
-            tmpname = nil
         end
     end
 
     local function cleanup(driver)
-        if tmpname then
-            closefile(true)
-            if isfile(tmpname) then
-                removefile(tmpname)
-            end
+        if pdfname then
+            closefile(pdfname)
             pdfname = nil
-            tmpname = nil
         end
     end
 

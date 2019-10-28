@@ -206,16 +206,16 @@
 \gdef\page_grids_add_to_one_indeed#1%
   {\begingroup
    \resetvisualizers
-   \global\setbox#1\vpack{\backgroundline[layout:one]{\box#1}}%
+   \global\setbox#1\vpack{\noindent\backgroundline[layout:one]{\box#1}}%
    \endgroup}
 
 \gdef\page_grids_add_to_mix_indeed#1%
   {\begingroup
    \resetvisualizers
-   \global\setbox#1\vpack{\backgroundline[layout:mix]{\box#1}}%
+   \global\setbox#1\vpack{\noindent\backgroundline[layout:mix]{\box#1}}%
    \endgroup}
 
-%D Ths next command shows some statistics (we might add more in due time):
+%D The next command shows some statistics (we might add more in due time):
 
 \unexpanded\gdef\showusage
   {\gtoksapp\everyaftershipout{\ctxcommand{showusage()}}%

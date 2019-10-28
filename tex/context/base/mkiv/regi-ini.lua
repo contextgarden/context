@@ -16,9 +16,11 @@ runtime.</p>
 
 local commands, context = commands, context
 
+
+local tostring = tostring
 local utfchar = utf.char
 local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match
-local char, gsub, format, gmatch, byte, match = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match
+local char, gsub, format, gmatch, byte, match, lower = string.char, string.gsub, string.format, string.gmatch, string.byte, string.match, string.lower
 local next = next
 local insert, remove, fastcopy = table.insert, table.remove, table.fastcopy
 local concat = table.concat
@@ -103,11 +105,14 @@ local synonyms = { -- backward compatibility list
 
     ["pdf"]          = "pdfdoc",
 
+    ["437"]          = "ibm",
 }
 
 local currentregime = "utf"
 
 local function loadregime(mapping,regime)
+    regime = lower(tostring(regime))
+    regime = synonyms[regime] or synonyms["windows-"..regime] or regime
     local name = resolvers.findfile(format("regi-%s.lua",regime)) or ""
     local data = name ~= "" and dofile(name)
     if data then
@@ -126,8 +131,11 @@ end
 
 local function loadreverse(t,k)
     local t = { }
-    for k, v in next, mapping[k] do
-        t[v] = k
+    local m = mapping[k]
+    if m then
+        for k, v in next, m do
+            t[v] = k
+        end
     end
     backmapping[k] = t
     return t
@@ -141,7 +149,8 @@ regimes.backmapping = backmapping
 
 local function fromregime(regime,line)
     if line and #line > 0 then
-        local map = mapping[regime and synonyms[regime] or regime or currentregime]
+--         local map = mapping[regime and synonyms[regime] or regime or currentregime]
+        local map = mapping[regime or currentregime]
         if map then
             line = gsub(line,".",map)
         end
@@ -458,4 +467,22 @@ if interfaces then
         end
     }
 
+end
+
+-- Actually we can have a function returned from the lookup but we don't
+-- really use this code so I'm in no hurry.
+
+if lua.getcodepage then
+    local cod, acp, map
+    function os.tocodepage(name)
+        if map == nil then
+            cod, acp = lua.getcodepage()
+            map = cod and cod ~= 65001 and regimes.toregime
+        end
+        return map and map(cod,name) or name
+    end
+else
+    function os.tocodepage(name)
+        return name
+    end
 end

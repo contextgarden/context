@@ -603,8 +603,18 @@
    \edef\p_sy{#2}%
    \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
 
+% \def\grph_scale_fast_sx_xy_finish
+%   {\grph_scale_check_sx_sy
+%    \grph_scale_calculations_nop
+%    \grph_scale_apply
+%    \box\nextbox
+%    \egroup}
+
 \def\grph_scale_fast_sx_xy_finish
   {\grph_scale_check_sx_sy
+   \d_grph_scale_wd\wd\nextbox
+   \d_grph_scale_ht\ht\nextbox
+   \d_grph_scale_dp\dp\nextbox
    \grph_scale_calculations_nop
    \grph_scale_apply
    \box\nextbox

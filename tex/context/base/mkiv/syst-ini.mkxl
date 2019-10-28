@@ -370,6 +370,7 @@
 \newdimen\scratchwidth
 \newdimen\scratchheight
 \newdimen\scratchdepth
+\newdimen\scratchtotal
 
 \newdimen\scratchoffset
 \newdimen\scratchleftoffset

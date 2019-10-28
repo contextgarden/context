@@ -319,7 +319,7 @@ function mathematics.define(family)
             if mathclass then
                 local name = character.mathname
                 if name then
-                    report_math("fatal error, conlicting mathclass and mathspec for %C",unicode)
+                    report_math("fatal error, conflicting mathclass and mathspec for %C",unicode)
                     os.exit()
                 else
                     local class = classes[mathclass] or mathclass -- no real checks needed

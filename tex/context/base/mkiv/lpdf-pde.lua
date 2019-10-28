@@ -1035,7 +1035,7 @@ if images then do
             local root = pdfdoc.Catalog
             local page = pdfdoc.pages[pagenumber]
             if page then
-                local sizetag  = sizes[size or "crop"] or sizes.cro
+                local sizetag  = sizes[size or "crop"] or sizes.crop
                 local mediabox = page.MediaBox or { 0, 0, 0, 0 }
                 local cropbox  = page[sizetag] or mediabox
                 return {
