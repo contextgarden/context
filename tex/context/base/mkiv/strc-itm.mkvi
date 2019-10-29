@@ -204,9 +204,9 @@
 % 1 = between unless before
 % 2 = between
 
-\newconstant   \c_strc_itemgroups_spacing_mode      \c_strc_itemgroups_spacing_mode\plustwo
-\newconditional\c_strc_itemgroups_optimize          \settrue\c_strc_itemgroups_optimize
-\newconditional\c_strc_itemgroups_auto_concat       \settrue\c_strc_itemgroups_auto_concat
+\newconstant   \c_strc_itemgroups_spacing_mode   \c_strc_itemgroups_spacing_mode\plustwo
+\newconditional\c_strc_itemgroups_optimize       \settrue\c_strc_itemgroups_optimize
+\newconditional\c_strc_itemgroups_auto_concat    \settrue\c_strc_itemgroups_auto_concat
 
 \newsignal     \d_strc_itemgroups_signal
 
@@ -215,30 +215,28 @@
 \newdimen      \d_strc_itemgroups_list_width
 \newdimen      \d_strc_itemgroups_asked_width
 
-\newdimen      \d_strc_itemgroups_max_width         % multipass
-\newcount      \c_strc_itemgroups_max_items         % multipass
+\newdimen      \d_strc_itemgroups_max_width      % multipass
+\newcount      \c_strc_itemgroups_max_items      % multipass
 
 \newcount      \c_strc_itemgroups_n_of_items
 \newcount      \c_strc_itemgroups_nesting
 \newcount      \c_strc_itemgroups_column_depth
 
-\def           \v_strc_itemgroups_counter           {itemgroup:\currentparentitemgroup}
+\def           \v_strc_itemgroups_counter        {itemgroup:\currentparentitemgroup}
+\let           \m_strc_itemgroups_repeat_start   \empty
+\def           \v_strc_itemgroups_unknown_symbol {?}
+\let           \m_strc_itemgroups_indenting      \empty
+\let           \m_strc_itemgroups_destination    \empty
 
-\let           \m_strc_itemgroups_repeat_start      \empty
-\def           \v_strc_itemgroups_unknown_symbol    {?}
+\let           \currentitemlevel                 \!!zerocount % public
+\def           \currentnofitems                  {\the\c_strc_itemgroups_max_items}
+\def           \currentitemnumber                {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
 
-\let           \m_strc_itemgroups_indenting         \empty
-\let           \m_strc_itemgroups_destination       \empty
+\newtoks       \itemgroupcommands                % maybe public
 
-\let           \currentitemlevel               \!!zerocount % public
-\def           \currentnofitems                {\the\c_strc_itemgroups_max_items}
-\def           \currentitemnumber              {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
-
-\newtoks       \itemgroupcommands              % maybe public
-
-\def           \currentitemgroupsymbol         {n}    % here we cannot use a _ in the name
-\let           \currentitemgroupconversionset  \empty % here we cannot use a _ in the name
-\let           \currentitemgroupsegments       \empty
+\def           \currentitemgroupsymbol           {n}    % here we cannot use a _ in the name
+\let           \currentitemgroupconversionset    \empty % here we cannot use a _ in the name
+\let           \currentitemgroupsegments         \empty
 
 \def\strc_itemgroups_register_status
   {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}
@@ -513,9 +511,9 @@
    \setfalse\c_strc_itemgroups_columns
    % to be checked
    \let\m_strc_itemgroups_destination\empty
-   \let\strc_itemgroups_used_symbol\empty % ** start value
+   \let\strc_itemgroups_used_symbol  \empty % ** start value
    \let\strc_itemgroups_margin_symbol\empty
-   \let\strc_itemgroups_extra_symbol\empty
+   \let\strc_itemgroups_extra_symbol \empty
    %
    \global\letitemgroupparameter\c!maxwidth\!!zeropoint
    }
@@ -799,25 +797,6 @@
 
 \unexpanded\def\startitemgroup
   {\dotripleempty\strc_itemgroups_start}
-
-% \def\strc_itemgroups_start[#category][#options][#settings]%
-%   {\begingroup % (1)
-%    \def\currentitemgroup{#category}% no nested mixing of itemgroups
-%    \let\currentparentitemgroup\currentitemgroup
-%    \global\advance\c_strc_itemgroups_nesting\plusone
-%    \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%
-%    \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
-%    \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
-%    %
-%    \ifthirdargument
-%      \strc_itemgroups_start_indeed[#options][#settings]%
-%    \else\ifsecondargument
-%      \doifelseassignment{#options}
-%        {\strc_itemgroups_start_indeed[][#options]}
-%        {\strc_itemgroups_start_indeed[#options][]}%
-%    \else
-%      \strc_itemgroups_start_indeed[][]%
-%    \fi\fi}
 
 \def\strc_itemgroups_start[#category][#options][#settings]%
   {\begingroup % (1)
@@ -1878,5 +1857,27 @@
 
 \defineitemgroup
   [\v!itemize]
+
+%D This is really ugly I should get rid of the global mess, whuch is a side
+%D effect of the simple \type {\item} interface that we're stuck with for
+%D compatibility reasons. See footnotes for usage. It's probablynot robust
+%D for mixed itemgroups so in the end I need to get rid of the globals. One
+%D problem is that counters are set.
+
+\defineitemgroup
+  [\v!itemize:\v!note]
+
+\def\strc_itemgroups_push
+  {\edef\strc_itemgroups_pop
+     {\xdef\noexpand\currentitemlevel{\currentitemlevel}%
+      \global\c_strc_itemgroups_nesting     \the\c_strc_itemgroups_nesting     \relax
+      \global\c_strc_itemgroups_column_depth\the\c_strc_itemgroups_column_depth\relax}%
+   \global\c_strc_itemgroups_column_depth\zerocount
+   \global\c_strc_itemgroups_nesting     \zerocount
+   \glet\currentitemlevel\!!zerocount
+   \unexpanded\def\startitemize{\startitemgroup[\v!itemize:\v!note]}%
+   \unexpanded\def\stopitemize {\stopitemgroup}}
+
+\let\strc_itemgroups_pop\relax
 
 \protect \endinput

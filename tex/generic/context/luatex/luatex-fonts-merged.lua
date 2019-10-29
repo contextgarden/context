@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 10/28/19 18:12:38
+-- merge date  : 10/29/19 15:00:00
 
 do -- begin closure to overcome local limits and interference
 
@@ -19,6 +19,9 @@ LUAVERSION=LUAMAJORVERSION+LUAMINORVERSION/10
 if LUAVERSION<5.2 and jit then
  MINORVERSION=2
  LUAVERSION=5.2
+end
+if lua and lua.openfile then
+ io.open=lua.openfile
 end
 if not lpeg then
  lpeg=require("lpeg")
