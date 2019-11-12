@@ -472,17 +472,17 @@ end
 -- Actually we can have a function returned from the lookup but we don't
 -- really use this code so I'm in no hurry.
 
-if lua.getcodepage then
-    local cod, acp, map
-    function os.tocodepage(name)
-        if map == nil then
-            cod, acp = lua.getcodepage()
-            map = cod and cod ~= 65001 and regimes.toregime
-        end
-        return map and map(cod,name) or name
-    end
-else
-    function os.tocodepage(name)
-        return name
-    end
-end
+-- if os.getcodepage then
+--     local cod, acp, map
+--     function os.tocodepage(name)
+--         if map == nil then
+--             cod, acp = os.getcodepage()
+--             map = cod and cod ~= 65001 and regimes.toregime
+--         end
+--         return map and map(cod,name) or name
+--     end
+-- else
+--     function os.tocodepage(name)
+--         return name
+--     end
+-- end

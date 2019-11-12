@@ -130,8 +130,9 @@ local splitter    = lpeg.splitat(":",true)
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
-    local pagedata = { }
-    local freedata = setmetatableindex("table")
+    local pagedata   = { }
+    local columndata = setmetatableindex("table")
+    local freedata   = setmetatableindex("table")
     for tag, data in next, collected do
         local prefix, rest = lpegmatch(splitter,tag)
         if prefix == "p" then
@@ -143,6 +144,8 @@ local function initializer()
             nofspecial = nofspecial + 1
             local t = freedata[data.p or 0]
             t[#t+1] = data
+        elseif prefix == "columnarea" then
+            columndata[data.p or 0][data.c or 0] = data
         end
         setmetatable(data,default)
     end
@@ -171,9 +174,10 @@ local function initializer()
             end
         end
     end
-    jobpositions.page = pagedata
-    jobpositions.free = freedata
-    jobpositions.used = next(collected)
+    jobpositions.page   = pagedata
+    jobpositions.column = columndata
+    jobpositions.free   = freedata
+    jobpositions.used   = next(collected)
 end
 
 -- -- we can gain a little when we group positions but then we still have to
@@ -341,6 +345,8 @@ function jobpositions.getpos () return getpos () end
 function jobpositions.getrpos() return getrpos() end
 function jobpositions.gethpos() return gethpos() end
 function jobpositions.getvpos() return getvpos() end
+
+-------- jobpositions.getcolumn() return column end
 
 jobpositions.registerhandlers()
 
@@ -554,7 +560,7 @@ jobpositions.e_region = e_region
 
 local lastregion
 
-local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
+local function setregionbox(n,tag,k,lo,ro,to,bo,column) -- kind
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag = f_region(nofregions)
@@ -573,6 +579,7 @@ local function setregionbox(n,tag,k,lo,ro,to,bo) -- kind
         ro = ro ~= 0 and ro or nil,
         to = to ~= 0 and to or nil,
         bo = bo ~= 0 and bo or nil,
+        c  = column         or nil,
     }
     lastregion = tag
     return tag, box
@@ -1038,8 +1045,24 @@ local function onsamepage(list,page)
     return page
 end
 
+local function columnofpos(realpage,xposition)
+    local p = job.positions.column[realpage]
+    if p then
+        for i=1,#p do
+            local c = p[i]
+            local x = c.x or 0
+            local w = c.w or 0
+            if xposition >= x and xposition <= (x + w) then
+                return i
+            end
+        end
+    end
+    return 1
+end
+
 jobpositions.overlapping = overlapping
 jobpositions.onsamepage  = onsamepage
+jobpositions.columnofpos = columnofpos
 
 -- interface
 
@@ -1395,6 +1418,10 @@ scanners.doifelsepositionsonthispage = function() -- list
     doifelse(onsamepage(scanstring(),tostring(texgetcount("realpageno"))))
 end
 
+-- scanners.columnofpos = function()
+--     context(columnofpos(scaninteger(),scandimen())
+-- end
+
 scanners.doifelsepositionsused = function()
     doifelse(next(collected))
 end
@@ -1409,6 +1436,11 @@ end
 
 scanners.markregionboxtagged = function() -- box tag
     markregionbox(scaninteger(),scanstring())
+end
+
+scanners.markregionboxtaggedn = function() -- box tag n
+    markregionbox(scaninteger(),scanstring(),nil,
+        nil,nil,nil,nil,nil,scaninteger())
 end
 
 scanners.setregionboxtagged = function() -- box tag

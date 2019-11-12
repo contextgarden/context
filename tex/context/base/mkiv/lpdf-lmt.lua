@@ -843,15 +843,10 @@ end
 
 -- rules
 
-local f_font  = formatters["F%d"]
-local f_form  = formatters["Fm%d"]
-local f_group = formatters["Gp%d"]
-local f_image = formatters["Im%d"]
+local flushedxforms  = { } -- actually box resources but can also be direct
+local localconverter = nil -- will be set
 
-local flushedxforms   = { } -- actually box resources but can also be direct
-local localconverter  = nil -- will be set
-
-local flushrule, flushsimplerule, flushimage  do
+local flushrule, flushsimplerule, flushimage, flushgroup  do
 
     local rulecodes = nodes.rulecodes
     local newrule   = nodes.pool.rule
@@ -874,6 +869,7 @@ local flushrule, flushsimplerule, flushimage  do
 
     local f_fm = formatters["/Fm%d Do"]
     local f_im = formatters["/Im%d Do"]
+    local f_gr = formatters["/Gp%d Do"]
 
     local s_b <const> = "q"
     local s_e <const> = "Q"
@@ -1054,7 +1050,7 @@ local flushrule, flushsimplerule, flushimage  do
     local groups      = 0
     local group       = nil
 
-    function lpdf.flushgroup(content,bbox)
+    flushgroup = function(content,bbox)
         if not group then
             group = pdfdictionary {
                 Type = pdfconstant("Group"),
@@ -1072,8 +1068,10 @@ local flushrule, flushsimplerule, flushimage  do
         local objnum = pdfflushstreamobject(content,wrapper,false)
         groups = groups + 1
         usedxgroups[groups] = objnum
-        return f_group(groups)
+        return f_gr(groups)
     end
+
+    lpdf.flushgroup = flushgroup -- todo: access via driver in mlib-pps
 
     -- end of experiment
 
@@ -1310,14 +1308,59 @@ local wrapup, registerpage  do
     local pages    = { }
     local maxkids  = 10
     local nofpages = 0
+    local pagetag  = "unset"
 
     registerpage = function(object)
         nofpages = nofpages + 1
         local objnum = pdfpagereference(nofpages)
         pages[nofpages] = {
+            page   = nofpages, -- original number, only for diagnostics
             objnum = objnum,
             object = object,
+            tag    = pagetag,
         }
+    end
+
+    function lpdf.setpagetag(tag)
+        pagetag = tag or "unset"
+    end
+
+    function lpdf.getnofpages()
+        return nofpages
+    end
+
+    function lpdf.getpagetags()
+        local list = { }
+        for i=1,nofpages do
+            list[i] = pages[i].tag
+        end
+        return list
+    end
+
+    function lpdf.setpageorder(mapping)
+        -- mapping can be a hash so:
+        local list = table.sortedkeys(mapping)
+        local n    = #list
+        if n == nofpages then
+            local done = { }
+            local hash = { }
+            for i=1,n do
+                local order = mapping[list[i]]
+                if hash[order] then
+                    report("invalid page order, duplicate entry %i",order)
+                    return
+                elseif order < 1 or order > nofpages then
+                    report("invalid page order, no page %i",order)
+                    return
+                else
+                    done[i]     = pages[order]
+                    hash[order] = true
+                end
+            end
+            pages = done
+        else
+            report("invalid page order, %i entries expected",nofpages)
+        end
     end
 
     wrapup = function(driver)
@@ -1467,176 +1510,191 @@ do
 
 end
 
-local pushmode, popmode
+local flushdeferred -- defined later
 
-local function finalize(driver,details)
+local level = 0
 
-    pushmode()
+local finalize  do
 
-    pdf_goto_pagemode() -- for now
+    local f_font  = formatters["F%d"]
 
-    local objnum        = details.objnum
-    local specification = details.specification
+    local f_form  = formatters["Fm%d"]
+    local f_group = formatters["Gp%d"]
+    local f_image = formatters["Im%d"]
 
-    local content = concat(buffer,"\n",1,b)
+    finalize = function(driver,details)
 
-    if compact then
-        content = compact(content)
-    end
+        level = level + 1
 
-    local fonts   = nil
-    local xforms  = nil
+        pdf_goto_pagemode() -- for now
 
-    if next(usedfonts) then
-        fonts = pdfdictionary { }
-        for k, v in next, usedfonts do
-            fonts[f_font(v)] = pdfreference(pdfgetfontobjnumber(k)) -- we can overload for testing
-        end
-    end
+        local objnum        = details.objnum
+        local specification = details.specification
 
-    -- messy: use real indexes for both ... so we need to change some in the
-    -- full luatex part
+        local content = concat(buffer,"\n",1,b)
 
-    if next(usedxforms) or next(usedximages) or next(usedxgroups) then
-        xforms = pdfdictionary { }
-        for k in sortedhash(usedxforms) do
-         -- xforms[f_form(k)] = pdfreference(k)
-            xforms[f_form(getxformname(k))] = pdfreference(k)
-        end
-        for k, v in sortedhash(usedximages) do
-            xforms[f_image(k)] = pdfreference(v)
-        end
-        for k, v in sortedhash(usedxgroups) do
-            xforms[f_group(k)] = pdfreference(v)
-        end
-    end
-
-    reset_buffer()
-
- -- finish_pdfpage_callback(shippingmode == "page")
-
-    if shippingmode == "page" then
-
-        local pageproperties  = lpdf.getpageproperties()
-
-        local pageresources   = pageproperties.pageresources
-        local pageattributes  = pageproperties.pageattributes
-        local pagesattributes = pageproperties.pagesattributes
-
-        pageresources.Font    = fonts
-        pageresources.XObject = xforms
-        pageresources.ProcSet = lpdf.procset()
-
-        local xorigin, yorigin, relocated = backends.codeinjections.getpageorigin() -- for now here
-
-        local bbox = pdfarray {
-            (boundingbox[1] + xorigin) * bpfactor,
-            (boundingbox[2] + yorigin) * bpfactor,
-            (boundingbox[3] + xorigin) * bpfactor,
-            (boundingbox[4] + yorigin) * bpfactor,
-        }
-
-        if relocated then
-            content = formatters["1 0 0 1 %.6N %.6N cm\n%s"](bbox[1],bbox[2],content)
+        if compact then
+            content = compact(content)
         end
 
-        local contentsobj = pdfflushstreamobject(content,false,false)
+        local fonts   = nil
+        local xforms  = nil
 
-        pageattributes.Type      = pdf_page
-        pageattributes.Contents  = pdfreference(contentsobj)
-        pageattributes.Resources = pageresources
-     -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
-        pageattributes.MediaBox  = bbox
-        pageattributes.Parent    = nil -- precalculate
-        pageattributes.Group     = nil -- todo
-
-        -- resources can be indirect
-
-        registerpage(pageattributes)
-
-        lpdf.finalizepage(true)
-
-        if relocated then
-            if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
-            if pageattributes.CropBox  then pageattributes.CropBox  = box end
-            if pageattributes.BleedBox then pageattributes.BleedBox = box end
+        if next(usedfonts) then
+            fonts = pdfdictionary { }
+            for k, v in next, usedfonts do
+                fonts[f_font(v)] = pdfreference(pdfgetfontobjnumber(k)) -- we can overload for testing
+            end
         end
 
-    else
+        -- messy: use real indexes for both ... so we need to change some in the
+        -- full luatex part
 
-        local xformtype  = specification.type or 0
-        local margin     = specification.margin or 0
-        local attributes = specification.attributes or ""
-        local resources  = specification.resources or ""
+        if next(usedxforms) or next(usedximages) or next(usedxgroups) then
+            xforms = pdfdictionary { }
+            for k in sortedhash(usedxforms) do
+             -- xforms[f_form(k)] = pdfreference(k)
+                xforms[f_form(getxformname(k))] = pdfreference(k)
+            end
+            for k, v in sortedhash(usedximages) do
+                xforms[f_image(k)] = pdfreference(v)
+            end
+            for k, v in sortedhash(usedxgroups) do
+                xforms[f_group(k)] = pdfreference(v)
+            end
+        end
 
-        local wrapper    = nil
+        reset_buffer()
 
-        if xformtype == 0 then
-            wrapper = pdfdictionary {
-                Type      = pdf_xobject,
-                Subtype   = pdf_form,
-                FormType  = 1,
-                BBox      = nil,
-                Matrix    = nil,
-                Resources = nil,
+     -- finish_pdfpage_callback(shippingmode == "page")
+
+        if shippingmode == "page" then
+
+            local pageproperties  = lpdf.getpageproperties()
+
+            local pageresources   = pageproperties.pageresources
+            local pageattributes  = pageproperties.pageattributes
+            local pagesattributes = pageproperties.pagesattributes
+
+            pageresources.Font    = fonts
+            pageresources.XObject = xforms
+            pageresources.ProcSet = lpdf.procset()
+
+            local xorigin, yorigin, relocated = backends.codeinjections.getpageorigin() -- for now here
+
+            local bbox = pdfarray {
+                (boundingbox[1] + xorigin) * bpfactor,
+                (boundingbox[2] + yorigin) * bpfactor,
+                (boundingbox[3] + xorigin) * bpfactor,
+                (boundingbox[4] + yorigin) * bpfactor,
             }
+
+            if relocated then
+                content = formatters["1 0 0 1 %.6N %.6N cm\n%s"](bbox[1],bbox[2],content)
+            end
+
+            local contentsobj = pdfflushstreamobject(content,false,false)
+
+            pageattributes.Type      = pdf_page
+            pageattributes.Contents  = pdfreference(contentsobj)
+            pageattributes.Resources = pageresources
+         -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
+            pageattributes.MediaBox  = bbox
+            pageattributes.Parent    = nil -- precalculate
+            pageattributes.Group     = nil -- todo
+
+            -- resources can be indirect
+
+            registerpage(pageattributes)
+
+            lpdf.finalizepage(true)
+
+            if relocated then
+                if pageattributes.TrimBox  then pageattributes.TrimBox  = box end
+                if pageattributes.CropBox  then pageattributes.CropBox  = box end
+                if pageattributes.BleedBox then pageattributes.BleedBox = box end
+            end
+
         else
-            wrapper = pdfdictionary {
-                BBox      = nil,
-                Matrix    = nil,
-                Resources = nil,
-            }
+
+            local xformtype  = specification.type or 0
+            local margin     = specification.margin or 0
+            local attributes = specification.attributes or ""
+            local resources  = specification.resources or ""
+
+            local wrapper    = nil
+
+            if xformtype == 0 then
+                wrapper = pdfdictionary {
+                    Type      = pdf_xobject,
+                    Subtype   = pdf_form,
+                    FormType  = 1,
+                    BBox      = nil,
+                    Matrix    = nil,
+                    Resources = nil,
+                }
+            else
+                wrapper = pdfdictionary {
+                    BBox      = nil,
+                    Matrix    = nil,
+                    Resources = nil,
+                }
+            end
+            if xformtype == 0 or xformtype == 1 or xformtype == 3 then
+                wrapper.BBox = pdfarray {
+                    -margin * bpfactor,
+                    -margin * bpfactor,
+                    (boundingbox[3] + margin) * bpfactor,
+                    (boundingbox[4] + margin) * bpfactor,
+                }
+            end
+            if xformtype == 0 or xformtype == 2 or xformtype == 3 then
+                wrapper.Matrix = pdfarray { 1, 0, 0, 1, 0, 0 }
+            end
+
+            -- todo: additional = resources
+
+            local boxresources   = lpdf.collectedresources { serialize = false }
+            boxresources.Font    = fonts
+            boxresources.XObject = xforms
+
+         -- todo: maybe share them
+         -- wrapper.Resources = pdfreference(pdfflushobject(boxresources))
+
+            if resources ~= "" then
+                 boxresources = boxresources + resources
+            end
+            if attributes ~= "" then
+                wrapper = wrapper + attributes
+            end
+
+            wrapper.Resources = next(boxresources) and boxresources or nil
+            wrapper.ProcSet   = lpdf.procset()
+
+         -- pdfflushstreamobject(content,wrapper,false,objectnumber)
+            pdfflushstreamobject(content,wrapper,false,specification.objnum)
+
         end
-        if xformtype == 0 or xformtype == 1 or xformtype == 3 then
-            wrapper.BBox = pdfarray {
-                -margin * bpfactor,
-                -margin * bpfactor,
-                (boundingbox[3] + margin) * bpfactor,
-                (boundingbox[4] + margin) * bpfactor,
-            }
-        end
-        if xformtype == 0 or xformtype == 2 or xformtype == 3 then
-            wrapper.Matrix = pdfarray { 1, 0, 0, 1, 0, 0 }
-        end
 
-        -- todo: additional = resources
-
-        local boxresources   = lpdf.collectedresources { serialize = false }
-        boxresources.Font    = fonts
-        boxresources.XObject = xforms
-
-     -- todo: maybe share them
-     -- wrapper.Resources = pdfreference(pdfflushobject(boxresources))
-
-        if resources ~= "" then
-             boxresources = boxresources + resources
-        end
-        if attributes ~= "" then
-            wrapper = wrapper + attributes
+        for objnum in sortedhash(usedxforms) do
+            local f = flushedxforms[objnum]
+            if f[1] == false then
+                f[1] = true
+                local objnum        = f[2] -- specification.objnum
+                local specification = boxresources[objnum]
+                local list          = specification.list
+                localconverter(list,"xform",f[2],specification)
+            end
         end
 
-        wrapper.Resources = next(boxresources) and boxresources or nil
-        wrapper.ProcSet   = lpdf.procset()
+        pdf_h, pdf_v  = 0, 0
 
-     -- pdfflushstreamobject(content,wrapper,false,objectnumber)
-        pdfflushstreamobject(content,wrapper,false,specification.objnum)
+        if level == 1 then
+            flushdeferred()
+        end
+        level = level - 1
 
     end
-
-    for objnum in sortedhash(usedxforms) do
-        local f = flushedxforms[objnum]
-        if f[1] == false then
-            f[1] = true
-            local objnum        = f[2] -- specification.objnum
-            local specification = boxresources[objnum]
-            local list          = specification.list
-            localconverter(list,"xform",f[2],specification)
-        end
-    end
-
-    pdf_h, pdf_v  = 0, 0
-
-    popmode()
 
 end
 
@@ -1674,7 +1732,6 @@ local compress      = true
 local cache         = false
 local info          = ""
 local catalog       = ""
-local level         = 0
 local lastdeferred  = false
 local majorversion  = 1
 local minorversion  = 7
@@ -1687,14 +1744,14 @@ local f_stream_d_u   = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010
 local f_stream_d_c   = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
 local f_stream_d_r   = formatters["%i 0 obj\010<< %s >>\010stream\010%s\010endstream\010endobj\010"]
 
-local f_object_b     = formatters["%i 0 obj\010"]
+----- f_object_b     = formatters["%i 0 obj\010"]
 local f_stream_b_n_u = formatters["%i 0 obj\010<< /Length %i >>\010stream\010"]
 local f_stream_b_n_c = formatters["%i 0 obj\010<< /Filter /FlateDecode /Length %i >>\010stream\010"]
 local f_stream_b_d_u = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010"]
 local f_stream_b_d_c = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010"]
 local f_stream_b_d_r = formatters["%i 0 obj\010<< %s >>\010stream\010"]
 
-local s_object_e <const> = "\010endobj\010"
+----- s_object_e <const> = "\010endobj\010"
 local s_stream_e <const> = "\010endstream\010endobj\010"
 
 do
@@ -1920,7 +1977,7 @@ local function flushstreamobj(data,n,dict,comp,nolength)
     return n
 end
 
-local function flushdeferred()
+flushdeferred = function() -- was forward defined
     if lastdeferred then
         for n=lastdeferred,nofobjects do
             local o = objects[n]
@@ -1932,19 +1989,6 @@ local function flushdeferred()
         end
         lastdeferred = false
     end
-end
-
--- These are already used above, so we define them now:
-
-pushmode = function()
-    level = level + 1
-end
-
-popmode = function()
-    if level == 1 then
-        flushdeferred()
-    end
-    level = level - 1
 end
 
 -- n = pdf.obj([n,]               objtext)
@@ -2659,6 +2703,7 @@ do
             save            = flushsave,
             restore         = flushrestore,
             image           = flushimage,
+            group           = flushgroup,
             --
             updatefontstate = updatefontstate,
         },

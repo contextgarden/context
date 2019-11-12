@@ -279,9 +279,9 @@
 
 % beware we need to pass \somethingexpanded or { }
 
-\unexpanded\def\anch_mark_column_box#1%
+\unexpanded\def\anch_mark_column_box#1#2% box n
   {\global\advance\c_anch_column\plusone
-   \clf_markregionboxtagged#1{columnarea:\the\c_anch_column}} % extra height
+   \clf_markregionboxtaggedn#1{columnarea:\the\c_anch_column}#2\relax} % extra height
 
 \unexpanded\def\anch_mark_region_box
   {\iftrialtypesetting

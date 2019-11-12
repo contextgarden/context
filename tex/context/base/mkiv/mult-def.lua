@@ -9685,6 +9685,10 @@ return {
   ["pageleft"]={
    ["en"]="pageleft",
   },
+  ["pagemethod"]={
+   ["en"]="pagemethod",
+   ["nl"]="paginamethode",
+  },
   ["pagenumber"]={
    ["cs"]="cislostranky",
    ["de"]="seitennummer",

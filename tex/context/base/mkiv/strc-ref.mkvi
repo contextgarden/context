@@ -1062,20 +1062,8 @@
 \def\referencerealpage
   {\clf_referencerealpage}
 
-% \unexpanded\def\columnreference#1%
-%   {\dontleavehmode
-%    \hpack to \zeropoint{\hpos{\v!column:#1}{\kern\dimexpr\textwidth/\nofcolumns\relax}\hss}}
-%
-% \def\columnnumber#1%
-%   {\numexpr\dimexpr\MPx{\v!column:#1}\relax/\dimexpr\MPw{\v!column:#1}\relax\relax}
-%
-% but nicer is:
-
 \def\referencecolumnnumber
-  {\numexpr
-     \dimexpr\clf_referenceposx-\cutspace\relax/\dimexpr\makeupwidth/\nofcolumns\relax
-    +\plusone
-   \relax}
+  {\clf_referencecolumn}
 
 \unexpanded\def\tracedpagestate
   {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}

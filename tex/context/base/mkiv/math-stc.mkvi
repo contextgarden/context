@@ -574,7 +574,7 @@
    \edef\currentmathstackers{#category}%
    \edef\p_limits{\mathstackersparameter\c!mathlimits}%
    \ifx\p_limits\v!yes
-     \def\math_stackers_stop_group{\egroup\endgroup\limits}%
+     \def\math_stackers_stop_group{\egroup\endgroup\ordlimits}%
      \mathop\bgroup
    \else
      \let\math_stackers_stop_group\endgroup
@@ -1236,39 +1236,39 @@
 
 % alternatively we can move the original to FE*
 
-\definemathoverextensible   [vfenced] [overbar]       ["FE33E]          % ["203E]
-\definemathunderextensible  [vfenced] [underbar]               ["FE33F] % ["203E]
-\definemathdoubleextensible [vfenced] [doublebar]     ["FE33E] ["FE33F]
+\definemathoverextensible   [\v!vfenced] [overbar]       ["FE33E]          % ["203E]
+\definemathunderextensible  [\v!vfenced] [underbar]               ["FE33F] % ["203E]
+\definemathdoubleextensible [\v!vfenced] [doublebar]     ["FE33E] ["FE33F]
 
-\definemathoverextensible   [vfenced] [overbrace]     ["FE3DE]          % ["023DE]
-\definemathunderextensible  [vfenced] [underbrace]             ["FE3DF] % ["023DF]
-\definemathdoubleextensible [vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
+\definemathoverextensible   [\v!vfenced] [overbrace]     ["FE3DE]          % ["023DE]
+\definemathunderextensible  [\v!vfenced] [underbrace]             ["FE3DF] % ["023DF]
+\definemathdoubleextensible [\v!vfenced] [doublebrace]   ["FE3DE] ["FE3DF]
 
-\definemathoverextensible   [vfenced] [overparent]    ["FE3DC]          % ["023DC]
-\definemathunderextensible  [vfenced] [underparent]            ["FE3DD] % ["023DD]
-\definemathdoubleextensible [vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
+\definemathoverextensible   [\v!vfenced] [overparent]    ["FE3DC]          % ["023DC]
+\definemathunderextensible  [\v!vfenced] [underparent]            ["FE3DD] % ["023DD]
+\definemathdoubleextensible [\v!vfenced] [doubleparent]  ["FE3DC] ["FE3DD]
 
-\definemathoverextensible   [vfenced] [overbracket]   ["FE3B4]          % ["023B4]
-\definemathunderextensible  [vfenced] [underbracket]           ["FE3B5] % ["023B5]
-\definemathdoubleextensible [vfenced] [doublebracket] ["FE3B4] ["FE3B5]
+\definemathoverextensible   [\v!vfenced] [overbracket]   ["FE3B4]          % ["023B4]
+\definemathunderextensible  [\v!vfenced] [underbracket]           ["FE3B5] % ["023B5]
+\definemathdoubleextensible [\v!vfenced] [doublebracket] ["FE3B4] ["FE3B5]
 
 % \unexpanded\def\mathopwithlimits#1#2{\mathop{#1{#2}}\limits}
 
 %D For mathml:
 
-\definemathdoubleextensible     [both]     [overbarunderbar]         ["FE33E] ["FE33F]
-\definemathdoubleextensible     [both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
-\definemathdoubleextensible     [both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
-\definemathdoubleextensible     [both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
+\definemathdoubleextensible     [\v!both]     [overbarunderbar]         ["FE33E] ["FE33F]
+\definemathdoubleextensible     [\v!both]     [overbraceunderbrace]     ["FE3DE] ["FE3DF]
+\definemathdoubleextensible     [\v!both]     [overparentunderparent]   ["FE3DC] ["FE3DD]
+\definemathdoubleextensible     [\v!both]     [overbracketunderbracket] ["FE3B4] ["FE3B5]
 
-\definemathovertextextensible   [bothtext] [overbartext]             ["FE33E]
-\definemathundertextextensible  [bothtext] [underbartext]                     ["FE33F]
-\definemathovertextextensible   [bothtext] [overbracetext]           ["FE3DE]
-\definemathundertextextensible  [bothtext] [underbracetext]                   ["FE3DF]
-\definemathovertextextensible   [bothtext] [overparenttext]          ["FE3DC]
-\definemathundertextextensible  [bothtext] [underparenttext]                  ["FE3DD]
-\definemathovertextextensible   [bothtext] [overbrackettext]         ["FE3B4]
-\definemathundertextextensible  [bothtext] [underbrackettext]                 ["FE3B5]
+\definemathovertextextensible   [\v!bothtext] [overbartext]             ["FE33E]
+\definemathundertextextensible  [\v!bothtext] [underbartext]                     ["FE33F]
+\definemathovertextextensible   [\v!bothtext] [overbracetext]           ["FE3DE]
+\definemathundertextextensible  [\v!bothtext] [underbracetext]                   ["FE3DF]
+\definemathovertextextensible   [\v!bothtext] [overparenttext]          ["FE3DC]
+\definemathundertextextensible  [\v!bothtext] [underparenttext]                  ["FE3DD]
+\definemathovertextextensible   [\v!bothtext] [overbrackettext]         ["FE3B4]
+\definemathundertextextensible  [\v!bothtext] [underbrackettext]                 ["FE3B5]
 
 %D Some bonus ones (for the moment here):
 

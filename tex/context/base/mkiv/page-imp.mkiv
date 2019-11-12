@@ -210,6 +210,10 @@
      \page_shipouts_ignore{#1}%
    \fi}
 
+\newconditional\c_page_shipouts_use_objects \settrue\c_page_shipouts_use_objects
+
+\installcorenamespace {arrangedpage}
+
 \def\page_shipouts_arrange#1%
   {\begingroup
    \setbox\shipoutscratchbox\hpack
@@ -218,6 +222,12 @@
      {\page_otr_flush_every_stuff
       \page_otr_flush_special_content
       \box\shipoutscratchbox}%
+   %
+   \ifconditional\c_page_shipouts_use_objects
+     \setobject\??arrangedpage{\the\realpageno}\hpack{\box\shipoutscratchbox}%
+     \setbox\shipoutscratchbox\hpack{\getobject\??arrangedpage{\the\realpageno}}%
+   \fi
+   %
    \pusharrangedpage\shipoutscratchbox
    \deadcycles\zerocount
    \endgroup}
@@ -317,8 +327,10 @@
      \fi
      \setuppapersize
      \ifarrangingpages
-       \clf_disablejobsave
-       %\disabledirective[job.save]%
+        \ifconditional\c_page_shipouts_use_objects\else
+          \clf_disablejobsave
+         %\disabledirective[job.save]%
+        \fi
      \fi
    \fi}
 
@@ -421,6 +433,7 @@
 \def\outputarrangedbox#1%
   {\begingroup
    \forgetall % somehow we're back and need to redo this
+   \dontcomplain
    \gotonextarrangepage
    \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
      \setbox#1\vpack

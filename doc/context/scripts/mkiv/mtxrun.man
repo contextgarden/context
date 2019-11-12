@@ -59,6 +59,9 @@ create windows (mswin) stubs
 .B --unix
 create unix (linux) stubs
 .TP
+.B --addbinarypath
+prepend the (found) binarypath to runners
+.TP
 .B --verbose
 give a bit more info
 .TP

@@ -466,6 +466,7 @@ function constructors.scale(tfmdata,specification)
     target.size          = scaledpoints
     --
     target.encodingbytes = properties.encodingbytes or 1
+    target.subfont       = properties.subfont
     target.embedding     = properties.embedding or "subset"
     target.tounicode     = 1
     target.cidinfo       = properties.cidinfo
@@ -1034,6 +1035,7 @@ function constructors.finalize(tfmdata)
     properties.psname        = properties.psname   or tfmdata.psname
     --
     properties.encodingbytes = tfmdata.encodingbytes or 1
+    properties.subfont       = tfmdata.subfont       or nil
     properties.embedding     = tfmdata.embedding     or "subset"
     properties.tounicode     = tfmdata.tounicode     or 1
     properties.cidinfo       = tfmdata.cidinfo       or nil
@@ -1067,6 +1069,7 @@ function constructors.finalize(tfmdata)
     tfmdata.psname           = nil
     --
     tfmdata.encodingbytes    = nil
+    tfmdata.subfont          = nil
     tfmdata.embedding        = nil
     tfmdata.tounicode        = nil
     tfmdata.cidinfo          = nil

@@ -133,6 +133,7 @@ scripts.patterns.list = {
  -- { "lo",  "hyph-lo",            "lao" },
     { "lt",  "hyph-lt",            "lithuanian" },
     { "lv",  "hyph-lv",            "latvian" },
+    { "mk",  "hyph-mk",            "macedonian" },
     { "ml",  "hyph-ml",            "malayalam" },
     { "mn",  "hyph-mn-cyrl",       "mongolian, cyrillic script" },
  -- { "mr",  "hyph-mr",            "..." },

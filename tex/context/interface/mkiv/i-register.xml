@@ -173,6 +173,10 @@
             <cd:parameter name="numberorder">
                 <cd:constant type="numbers" default="yes"/>
             </cd:parameter>
+            <cd:parameter name="pagemethod">
+                <cd:constant type="page" default="yes"/>
+                <cd:constant type="section"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 

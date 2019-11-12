@@ -194,7 +194,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6520, stripped down to: 2988
+-- original size: 6529, stripped down to: 2933
 
 if not modules then modules={} end modules ['l-lua']={
  version=1.001,
@@ -211,9 +211,6 @@ LUAVERSION=LUAMAJORVERSION+LUAMINORVERSION/10
 if LUAVERSION<5.2 and jit then
  MINORVERSION=2
  LUAVERSION=5.2
-end
-if lua and lua.openfile then
- io.open=lua.openfile
 end
 if not lpeg then
  lpeg=require("lpeg")
@@ -12953,7 +12950,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32900, stripped down to: 21131
+-- original size: 33803, stripped down to: 21818
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -12998,17 +12995,30 @@ local function ignore() end
 setmetatableindex(logs,function(t,k) t[k]=ignore;return ignore end)
 local report,subreport,status,settarget,setformats,settranslations
 local direct,subdirect,writer,pushtarget,poptarget,setlogfile,settimedlog,setprocessor,setformatters,newline
+local function ansisupported(specification)
+ if specification~="ansi" and specification~="ansilog" then
+  return false
+ elseif os and os.enableansi then
+  return os.enableansi()
+ else
+  return false
+ end
+end
 if runningtex and texio then
  if texio.setescape then
   texio.setescape(0) 
  end
- if arg then
+ if arg and ansisupported then
   for k,v in next,arg do 
    if v=="--ansi" or v=="--c:ansi" then
-    variant="ansi"
+    if ansisupported("ansi") then
+     variant="ansi"
+    end
     break
    elseif v=="--ansilog" or v=="--c:ansilog" then
-    variant="ansilog"
+    if ansisupported("ansilog") then
+     variant="ansilog"
+    end
     break
    end
   end
@@ -13223,6 +13233,9 @@ if runningtex and texio then
    t=specification.targets
    f=specification.formats or specification
   else
+   if not ansisupported(specification) then
+    specification="default"
+   end
    local v=variants[specification]
    if v then
     t=v.targets
@@ -13342,6 +13355,9 @@ else
    if type(specification)=="table" then
     f=specification.formats or specification
    else
+    if not ansisupported(specification) then
+     specification="default"
+    end
     local v=variants[specification]
     if v then
      f=v.formats
@@ -13669,6 +13685,13 @@ local exporters={
 logs.reporters=reporters
 logs.exporters=exporters
 function logs.application(t)
+ local arguments=environment and environment.arguments
+ if arguments then
+  local ansi=arguments.ansi or arguments.ansilog
+  if ansi then
+   logs.setformatters(arguments.ansi and "ansi" or "ansilog")
+  end
+ end
  t.name=t.name   or "unknown"
  t.banner=t.banner
  t.moreinfo=moreinfo
@@ -14861,7 +14884,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 20184, stripped down to: 12874
+-- original size: 21058, stripped down to: 13199
 
 if not modules then modules={} end modules ['util-sbx']={
  version=1.001,
@@ -15109,35 +15132,47 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
  if validbinaries~=false and (validbinaries==true or validbinaries[program]) then
   if variables then
    for variable,value in next,variables do
-    local checker=validators[checkers[variable]]
-    if checker then
-     value=checker(unquoted(value),strict)
-     if value then
-      variables[variable]=optionalquoted(value)
+    local chktype=checkers[variable]
+    if chktype=="verbose" then
+    else
+     local checker=validators[chktype]
+     if checker then
+      value=checker(unquoted(value),strict)
+      if value then
+       variables[variable]=optionalquoted(value)
+      else
+       report("variable %a with value %a fails the check",variable,value)
+       return
+      end
      else
-      report("variable %a with value %a fails the check",variable,value)
+      report("variable %a has no checker",variable)
       return
      end
-    else
-     report("variable %a has no checker",variable)
-     return
     end
    end
    for variable,default in next,defaults do
     local value=variables[variable]
     if not value or value=="" then
-     local checker=validators[checkers[variable]]
-     if checker then
-      default=checker(unquoted(default),strict)
-      if default then
-       variables[variable]=optionalquoted(default)
-      else
-       report("variable %a with default %a fails the check",variable,default)
-       return
+     local chktype=checkers[variable]
+     if chktype=="verbose" then
+     else
+      local checker=validators[chktype]
+      if checker then
+       default=checker(unquoted(default),strict)
+       if default then
+        variables[variable]=optionalquoted(default)
+       else
+        report("variable %a with default %a fails the check",variable,default)
+        return
+       end
       end
      end
     end
    end
+  end
+  local binpath=variables.binarypath
+  if type(binpath)=="string" and binpath~="" then
+   program=binpath.."/"..program
   end
   local command=program.." "..replace(template,variables)
   if reporter then
@@ -15172,7 +15207,8 @@ local runners={
    if trace then
     report("execute: %s",command)
    end
-   return osexecute(command)
+   local okay=osexecute(command)
+   return okay
   end
  end,
  pipeto=function(...)
@@ -15206,7 +15242,7 @@ function sandbox.registerrunner(specification)
   return
  end
  if validrunners[name] then
-  report("invalid name, runner %a already defined")
+  report("invalid name, runner %a already defined",name)
   return
  end
  local program=specification.program
@@ -22087,7 +22123,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 68194, stripped down to: 43699
+-- original size: 68209, stripped down to: 43711
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -23601,7 +23637,7 @@ function resolvers.dowithvariable(name,func)
 end
 function resolvers.locateformat(name)
  local engine=environment.ownmain or "luatex"
- local barename=removesuffix(name)
+ local barename=removesuffix(file.basename(name))
  local fullname=addsuffix(barename,"fmt")
  local fmtname=caches.getfirstreadablefile(fullname,"formats",engine) or ""
  if fmtname=="" then
@@ -23614,11 +23650,11 @@ function resolvers.locateformat(name)
   local lucname=addsuffix(barename,luasuffixes.luc)
   local luiname=addsuffix(barename,luasuffixes.lui)
   if isfile(luiname) then
-   return barename,luiname
+   return fmtname,luiname
   elseif isfile(lucname) then
-   return barename,lucname
+   return fmtname,lucname
   elseif isfile(luaname) then
-   return barename,luaname
+   return fmtname,luaname
   end
  end
  return nil,nil
@@ -24702,7 +24738,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-sch"] = package.loaded["data-sch"] or true
 
--- original size: 6753, stripped down to: 5268
+-- original size: 6757, stripped down to: 5272
 
 if not modules then modules={} end modules ['data-sch']={
  version=1.001,
@@ -24758,7 +24794,7 @@ local runner=sandbox.registerrunner {
  name="curl resolver",
  method="execute",
  program="curl",
- template="--silent --insecure --create-dirs --output %cachename% %original%",
+ template='--silent --insecure --create-dirs --output "%cachename%" "%original%"',
  checkers={
   cachename="cache",
   original="url",
@@ -25609,7 +25645,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 9998, stripped down to: 7540
+-- original size: 13894, stripped down to: 10006
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25623,16 +25659,14 @@ local concat=table.concat
 local quoted=string.quoted
 local luasuffixes=utilities.lua.suffixes
 local report_format=logs.reporter("resolvers","formats")
-local function primaryflags()
- local arguments=environment.arguments
+local function primaryflags(arguments)
  local flags={}
  if arguments.silent then
   flags[#flags+1]="--interaction=batchmode"
  end
  return concat(flags," ")
 end
-local function secondaryflags()
- local arguments=environment.arguments
+local function secondaryflags(arguments)
  local trackers=arguments.trackers
  local directives=arguments.directives
  local flags={}
@@ -25667,12 +25701,13 @@ local function secondaryflags()
 end
 local template=[[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
 local checkers={
- primaryflags="string",
- secondaryflags="string",
+ primaryflags="verbose",
+ secondaryflags="verbose",
  luafile="readable",
  texfile="readable",
  redirect="string",
  dump="string",
+ binarypath="string",
 }
 local runners={
  luatex=sandbox.registerrunner {
@@ -25697,54 +25732,88 @@ local runners={
   reporter=report_format,
  },
 }
-function environment.make_format(name,arguments)
- local engine=environment.ownmain or "luatex"
- local silent=environment.arguments.silent
- local errors=environment.arguments.errors
- local olddir=dir.current()
- local path=caches.getwritablepath("formats",engine) or "" 
- if path~="" then
-  lfs.chdir(path)
+local function validbinarypath()
+ if environment.arguments.addbinarypath then
+  local binarypath=environment.ownpath or ""
+  if binarypath~="" then
+   binarypath=dir.expandname(binarypath)
+   if lfs.isdir(binarypath) then
+    return binarypath
+   end
+  end
  end
- report_format("using format path %a",dir.current())
+end
+function environment.make_format(formatname)
+ local arguments=environment.arguments
+ local engine=environment.ownmain or "luatex"
+ local silent=arguments.silent
+ local errors=arguments.errors
  local texsourcename=""
+ local texsourcepath=""
  local fulltexsourcename=""
  if engine=="luametatex" then
-  texsourcename=file.addsuffix(name,"mkxl")
+  texsourcename=file.addsuffix(formatname,"mkxl")
   fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
  end
  if fulltexsourcename=="" then
-  texsourcename=file.addsuffix(name,"mkiv")
+  texsourcename=file.addsuffix(formatname,"mkiv")
   fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
  end
  if fulltexsourcename=="" then
-  texsourcename=file.addsuffix(name,"tex")
+  texsourcename=file.addsuffix(formatname,"tex")
   fulltexsourcename=resolvers.findfile(texsourcename,"tex") or ""
  end
  if fulltexsourcename=="" then
-  report_format("no tex source file with name %a (mkiv or tex)",name)
-  lfs.chdir(olddir)
-  return
- else
-  report_format("using tex source file %a",fulltexsourcename)
- end
- local texsourcepath=dir.expandname(file.dirname(fulltexsourcename))
- local specificationname=file.replacesuffix(fulltexsourcename,"lus")
- local fullspecificationname=resolvers.findfile(specificationname,"tex") or ""
- if fullspecificationname=="" then
-  specificationname=file.join(texsourcepath,"context.lus")
-  fullspecificationname=resolvers.findfile(specificationname,"tex") or ""
- end
- if fullspecificationname=="" then
-  report_format("unknown stub specification %a",specificationname)
-  lfs.chdir(olddir)
+  report_format("no tex source file with name %a (mkiv or tex)",formatname)
   return
  end
- local specificationpath=file.dirname(fullspecificationname)
+ report_format("using tex source file %a",fulltexsourcename)
+ fulltexsourcename=dir.expandname(fulltexsourcename)
+ texsourcepath=file.dirname(fulltexsourcename)
+ if not lfs.isfile(fulltexsourcename) then
+  report_format("no accessible tex source file with name %a",fulltexsourcename)
+  return
+ end
+ local specificationname="context.lus"
+ local specificationpath=""
+ local fullspecificationname=resolvers.findfile(specificationname) or ""
+ if fullspecificationname=="" then
+  report_format("unable to locate specification file %a",specificationname)
+  return
+ end
+ report_format("using specification file %a",fullspecificationname)
+ fullspecificationname=dir.expandname(fullspecificationname)
+ specificationpath=file.dirname(fullspecificationname)
+ if texsourcepath~=specificationpath then
+  report_format("tex source file and specification file are on different paths")
+  return
+ end
+ if not lfs.isfile(fulltexsourcename) then
+  report_format("no accessible tex source file with name %a",fulltexsourcename)
+  return
+ end
+ if not lfs.isfile(fullspecificationname) then
+  report_format("no accessible specification file with name %a",fulltexsourcename)
+  return
+ end
+ report_format("using tex source path %a",texsourcepath)
+ local validformatpath=caches.getwritablepath("formats",engine) or ""
+ local startupdir=dir.current()
+ if validformatpath=="" then
+  report_format("invalid format path, insufficient write access")
+  return
+ end
+ local binarypath=validbinarypath()
+ report_format("changing to format path %a",validformatpath)
+ lfs.chdir(validformatpath)
+ if dir.current()~=validformatpath then
+  report_format("unable to change to format path %a",validformatpath)
+  return
+ end
  local usedluastub=nil
  local usedlualibs=dofile(fullspecificationname)
  if type(usedlualibs)=="string" then
-  usedluastub=file.join(file.dirname(fullspecificationname),usedlualibs)
+  usedluastub=file.join(specificationpath,usedlualibs)
  elseif type(usedlualibs)=="table" then
   report_format("using stub specification %a",fullspecificationname)
   local texbasename=file.basename(name)
@@ -25761,48 +25830,57 @@ function environment.make_format(name,arguments)
   end
  else
   report_format("invalid stub specification %a",fullspecificationname)
-  lfs.chdir(olddir)
+  lfs.chdir(startupdir)
   return
  end
+ local runner=runners[engine]
+ if not runner then
+  report_format("the format %a cannot be generated, no runner available for engine %a",name,engine)
+  lfs.chdir(startupdir)
+  return
+ end
+ local primaryflags=primaryflags(arguments)
+ local secondaryflags=secondaryflags(arguments)
  local specification={
-  primaryflags=primaryflags(),
-  secondaryflags=secondaryflags(),
+  binarypath=binarypath,
+  primaryflags=primaryflags,
+  secondaryflags=secondaryflags,
   luafile=quoted(usedluastub),
   texfile=quoted(fulltexsourcename),
   dump=os.platform=="unix" and "\\\\dump" or "\\dump",
  }
- local runner=runners[engine]
- if not runner then
-  report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
- elseif silent then
-  statistics.starttiming()
+ if silent then
   specification.redirect="> temp.log"
-  local result=runner(specification)
-  local runtime=statistics.stoptiming()
-  if result~=0 then
-   print(format("%s silent make > fatal error when making format %q",engine,name)) 
-  else
-   print(format("%s silent make > format %q made in %.3f seconds",engine,name,runtime)) 
-  end
+ end
+ statistics.starttiming()
+ local result=runner(specification)
+ local runtime=statistics.stoptiming()
+ if silent then
   os.remove("temp.log")
- else
-  runner(specification)
  end
- local pattern=file.removesuffix(file.basename(usedluastub)).."-*.mem"
- local mp=dir.glob(pattern)
- if mp then
-  for i=1,#mp do
-   local name=mp[i]
-   report_format("removing related mplib format %a",file.basename(name))
-   os.remove(name)
+ report_format()
+  if binarypath and binarypath~="" then
+ report_format("binary path      : %s",binarypath or "?")
   end
- end
- lfs.chdir(olddir)
+ report_format("format path      : %s",validformatpath)
+ report_format("luatex engine    : %s",engine)
+ report_format("lua startup file : %s",usedluastub)
+  if primaryflags~="" then
+ report_format("primary flags    : %s",primaryflags)
+  end
+  if secondaryflags~="" then
+ report_format("secondary flags  : %s",secondaryflags)
+  end
+ report_format("context file     : %s",fulltexsourcename)
+ report_format("run time         : %.3f seconds",runtime)
+ report_format("return value     : %s",result==0 and "okay" or "error")
+ report_format()
+ lfs.chdir(startupdir)
 end
-local template=[[%flags% --fmt=%fmtfile% --lua=%luafile% %texfile% %more%]]
+local template=[[%primaryflags% --fmt=%fmtfile% --lua=%luafile% %texfile% %secondaryflags%]]
 local checkers={
- flags="string",
- more="string",
+ primaryflags="verbose",
+ secondaryflags="verbose",
  fmtfile="readable",
  luafile="readable",
  texfile="readable",
@@ -25815,6 +25893,13 @@ local runners={
   checkers=checkers,
   reporter=report_format,
  },
+ luametatex=sandbox.registerrunner {
+  name="run luametatex format",
+  program="luametatex",
+  template=template,
+  checkers=checkers,
+  reporter=report_format,
+ },
  luajittex=sandbox.registerrunner {
   name="run luajittex format",
   program="luajittex",
@@ -25823,42 +25908,69 @@ local runners={
   reporter=report_format,
  },
 }
-function environment.run_format(name,data,more)
- if name and name~="" then
-  local engine=environment.ownmain or "luatex"
-  local barename=file.removesuffix(name)
-  local fmtname=caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats",engine)
-  if fmtname=="" then
-   fmtname=resolvers.findfile(file.addsuffix(barename,"fmt")) or ""
-  end
-  fmtname=resolvers.cleanpath(fmtname)
-  if fmtname=="" then
-   report_format("no format with name %a",name)
-  else
-   local barename=file.removesuffix(name) 
-   local luaname=file.addsuffix(barename,"luc")
-   if not lfs.isfile(luaname) then
-    luaname=file.addsuffix(barename,"lua")
-   end
-   if not lfs.isfile(luaname) then
-    report_format("using format name %a",fmtname)
-    report_format("no luc/lua file with name %a",barename)
-   else
-    local runner=runners[engine]
-    if not runner then
-     report_format("format %a cannot be run, no runner available for engine %a",name,engine)
-    else
-     runner {
-      flags=primaryflags(),
-      fmtfile=quoted(barename),
-      luafile=quoted(luaname),
-      texfile=quoted(data),
-      more=more,
-     }
-    end
-   end
-  end
+function environment.run_format(formatname,scriptname,filename,primaryflags,secondaryflags,verbose)
+ local engine=environment.ownmain or "luatex"
+ if not formatname or formatname=="" then
+  report_format("missing format name")
+  return
  end
+ if not scriptname or scriptname=="" then
+  report_format("missing script name")
+  return
+ end
+ if not lfs.isfile(formatname) or not lfs.isfile(scriptname) then
+  formatname,scriptname=resolvers.locateformat(formatname)
+ end
+ if not formatname or formatname=="" then
+  report_format("invalid format name")
+  return
+ end
+ if not scriptname or scriptname=="" then
+  report_format("invalid script name")
+  return
+ end
+ local runner=runners[engine]
+ if not runner then
+  report_format("format %a cannot be run, no runner available for engine %a",file.nameonly(name),engine)
+  return
+ end
+ if not filename then
+  filename ""
+ end
+ local binarypath=validbinarypath()
+ local specification={
+  binarypath=binarypath,
+  primaryflags=primaryflags or "",
+  secondaryflags=secondaryflags or "",
+  fmtfile=quoted(formatname),
+  luafile=quoted(scriptname),
+  texfile=filename~="" and quoted(filename) or "",
+ }
+ statistics.starttiming()
+ local result=runner(specification)
+ local runtime=statistics.stoptiming()
+ if verbose then
+  report_format()
+   if binarypath and binarypath~="" then
+  report_format("binary path      : %s",binarypath)
+   end
+  report_format("luatex engine    : %s",engine)
+  report_format("lua startup file : %s",scriptname)
+  report_format("tex format file  : %s",formatname)
+   if filename~="" then
+  report_format("tex input file   : %s",filename)
+   end
+   if primaryflags~="" then
+  report_format("primary flags    : %s",primaryflags)
+   end
+   if secondaryflags~="" then
+  report_format("secondary flags  : %s",secondaryflags)
+   end
+  report_format("run time         : %.3f seconds",runtime)
+  report_format("return value     : %s",result==0 and "okay" or "error")
+  report_format()
+ end
+ return result
 end
 
 
@@ -25866,8 +25978,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1030892
--- stripped bytes    : 407938
+-- original bytes    : 1036593
+-- stripped bytes    : 410200
 
 -- end library merge
 
@@ -26149,6 +26261,7 @@ local helpinfo = [[
     <flag name="stubpath" value="binpath"><short>paths where stubs wil be written</short></flag>
     <flag name="windows"><short>create windows (mswin) stubs</short></flag>
     <flag name="unix"><short>create unix (linux) stubs</short></flag>
+    <flag name="addbinarypath"><short>prepend the (found) binarypath to runners</short></flag>
    </subcategory>
    <subcategory>
     <flag name="verbose"><short>give a bit more info</short></flag>
@@ -27008,17 +27121,17 @@ do
 
 end
 
-if e_argument("ansi") or e_argument("ansilog") then
+-- if e_argument("ansi") or e_argument("ansilog") then
 
-    logs.setformatters(e_argument("ansi") and "ansi" or "ansilog")
+--     logs.setformatters(e_argument("ansi") and "ansi" or "ansilog")
 
-    local script = e_argument("script") or e_argument("scripts")
+--  -- local script = e_argument("script") or e_argument("scripts")
+--  --
+--  -- if type(script) == "string" then
+--  --     logs.writer("]0;"..script.."") -- for Alan to test
+--  -- end
 
-    if type(script) == "string" then
-        logs.writer("]0;"..script.."") -- for Alan to test
-    end
-
-end
+-- end
 
 if e_argument("script") or e_argument("scripts") then
 

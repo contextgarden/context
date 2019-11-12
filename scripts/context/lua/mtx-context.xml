@@ -225,6 +225,11 @@
                     <short>process file in a limited environment</short>
                 </flag>
             </subcategory>
+            <subcategory>
+                <flag name="addbinarypath">
+                    <short>prepend the (found) binarypath to runners</short>
+                </flag>
+            </subcategory>
         </category>
     </flags>
 </application>

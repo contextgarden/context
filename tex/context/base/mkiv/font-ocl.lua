@@ -483,7 +483,7 @@ do
         local pdfshapes = { }
         local inkscape  = runner()
         if inkscape then
-            local indices      = fonts.getindices(tfmdata)
+         -- local indices      = fonts.getindices(tfmdata)
             local descriptions = tfmdata.descriptions
             local nofshapes    = #svgshapes
             local f_svgfile    = formatters["temp-otf-svg-shape-%i.svg"]

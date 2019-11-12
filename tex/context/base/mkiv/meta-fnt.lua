@@ -167,8 +167,8 @@ local function build(g,v)
     local t = { }
     for d=1,#data do
         t = fonts.constructors.scale(data[d],-1000)
-        local id = font.nextid()
-        t.fonts = { { id = id } }
+     -- local id = font.nextid()
+     -- t.fonts = { { id = id } }
         fontdata[id] = t
         if v[5] then
             vffonts.helpers.composecharacters(t)

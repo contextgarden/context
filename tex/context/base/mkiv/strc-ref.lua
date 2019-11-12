@@ -2615,8 +2615,8 @@ implement {
 -- }
 
 implement {
-    name      = "referencerealpage",
-    actions   = function()
+    name    = "referencerealpage",
+    actions = function()
         local actions = references.currentset
         context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
     end
@@ -2632,11 +2632,24 @@ local function referencepos(key)
             v = a[key] or 0
         end
     end
-    context("%p",v)
+    return v
 end
 
-implement { name = "referenceposx", actions = function() referencepos("x") end }
-implement { name = "referenceposy", actions = function() referencepos("y") end }
+implement { name = "referenceposx", actions = function() context("%p",referencepos("x")) end }
+implement { name = "referenceposy", actions = function() context("%p",referencepos("y")) end }
+
+
+implement {
+    name    = "referencecolumn",
+    actions = function()
+        local actions = references.currentset
+        local column  = 1
+        if actions then
+            column = jobpositions.columnofpos(actions.realpage or setreferencerealpage(actions),referencepos("x"))
+        end
+        context(column or 1)
+    end
+}
 
 local plist, nofrealpages
 

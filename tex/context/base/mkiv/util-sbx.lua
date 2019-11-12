@@ -241,6 +241,10 @@ table.setmetatableindex(validators,function(t,k)
     return readable
 end)
 
+-- function validators.verbose(s)
+--     return s
+-- end
+
 function validators.string(s,finalized)
     -- can be used to prevent filename checking (todo: only when registered)
     if finalized and suspicious(s) then
@@ -320,37 +324,53 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
     if validbinaries ~= false and (validbinaries == true or validbinaries[program]) then
         if variables then
             for variable, value in next, variables do
-                local checker = validators[checkers[variable]]
-                if checker then
-                    value = checker(unquoted(value),strict)
-                    if value then
-                        variables[variable] = optionalquoted(value)
+                local chktype = checkers[variable]
+                if chktype == "verbose" then
+                    -- for now, we will have a "flags" checker
+                else
+                    local checker = validators[chktype]
+                    if checker then
+                        value = checker(unquoted(value),strict)
+                        if value then
+                            variables[variable] = optionalquoted(value)
+                        else
+                            report("variable %a with value %a fails the check",variable,value)
+                            return
+                        end
                     else
-                        report("variable %a with value %a fails the check",variable,value)
+                        report("variable %a has no checker",variable)
                         return
                     end
-                else
-                    report("variable %a has no checker",variable)
-                    return
                 end
             end
             for variable, default in next, defaults do
                 local value = variables[variable]
                 if not value or value == "" then
-                    local checker = validators[checkers[variable]]
-                    if checker then
-                        default = checker(unquoted(default),strict)
-                        if default then
-                            variables[variable] = optionalquoted(default)
-                        else
-                            report("variable %a with default %a fails the check",variable,default)
-                            return
+                    local chktype = checkers[variable]
+                    if chktype == "verbose" then
+                        -- for now, we will have a "flags" checker
+                    else
+                        local checker = validators[chktype]
+                        if checker then
+                            default = checker(unquoted(default),strict)
+                            if default then
+                                variables[variable] = optionalquoted(default)
+                            else
+                                report("variable %a with default %a fails the check",variable,default)
+                                return
+                            end
                         end
                     end
                 end
             end
         end
-        local command  = program .. " " .. replace(template,variables)
+        local binpath = variables.binarypath
+        if type(binpath) == "string" and binpath ~= "" then
+            -- this works on the console but not from e.g. scite
+         -- program = '"' .. binpath .. "/" .. program .. '"'
+            program = binpath .. "/" .. program
+        end
+        local command = program .. " " .. replace(template,variables)
         if reporter then
             reporter("executing runner %a: %s",name,command)
         elseif trace then
@@ -387,7 +407,8 @@ local runners = {
             if trace then
                 report("execute: %s",command)
             end
-            return osexecute(command)
+            local okay = osexecute(command)
+            return okay
         end
     end,
     pipeto = function(...)
@@ -422,7 +443,7 @@ function sandbox.registerrunner(specification)
         return
     end
     if validrunners[name] then
-        report("invalid name, runner %a already defined")
+        report("invalid name, runner %a already defined",name)
         return
     end
     local program = specification.program

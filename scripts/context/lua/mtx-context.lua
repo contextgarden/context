@@ -518,36 +518,6 @@ local function result_save_keep(oldbase,newbase)
     end
 end
 
--- executing luatex
-
-local function flags_to_string(flags,prefix) -- context flags get prepended by c:
-    local t = { }
-    for k, v in table.sortedhash(flags) do
-        if prefix then
-            k = format("c:%s",k)
-        end
-        if not v or v == "" or v == '""' then
-            -- no need to flag false
-        elseif v == true then
-            t[#t+1] = format('--%s',k)
-        elseif type(v) == "string" then
-            t[#t+1] = format('--%s=%s',k,quote(v))
-        else
-            t[#t+1] = format('--%s=%s',k,tostring(v))
-        end
-    end
-    return concat(t," ")
-end
-
-local function luatex_command(l_flags,c_flags,filename,engine)
-    return format('%s %s %s "%s"',
-        engine or (status and status.luatex_engine) or "luatex",
-        flags_to_string(l_flags),
-        flags_to_string(c_flags,true),
-        filename
-    )
-end
-
 -- use mtx-plain instead
 
 local plain_formats = {
@@ -569,10 +539,10 @@ local function run_plain(plainformat,filename)
         local pdfview = getargument("autopdf") or getargument("closepdf")
         if pdfview then
             pdf_close(resultname,pdfview)
-            os.execute(command)
+            os.execute(command) -- maybe also a proper runner
             pdf_open(resultname,pdfview)
         else
-            os.execute(command)
+            os.execute(command) -- maybe also a proper runner
         end
     end
 end
@@ -605,7 +575,31 @@ local function run_texexec(filename,a_purge,a_purgeall)
     end
 end
 
+-- executing luatex
+
+local function flags_to_string(flags,prefix)
+    -- context flags get prepended by c: ... this will move to the sbx module
+    local t = { }
+    for k, v in table.sortedhash(flags) do
+        if prefix then
+            k = format("c:%s",k)
+        end
+        if not v or v == "" or v == '""' then
+            -- no need to flag false
+        elseif v == true then
+            t[#t+1] = format('--%s',k)
+        elseif type(v) == "string" then
+            t[#t+1] = format('--%s=%s',k,quote(v))
+        else
+            t[#t+1] = format('--%s=%s',k,tostring(v))
+        end
+    end
+    return concat(t," ")
+end
+
 function scripts.context.run(ctxdata,filename)
+    --
+    local verbose  = false
     --
     local a_nofile = getargument("nofile")
     local a_engine = getargument("engine")
@@ -633,9 +627,10 @@ function scripts.context.run(ctxdata,filename)
         return
     end
     --
-    local interface = validstring(getargument("interface")) or "en"
+    local interface  = validstring(getargument("interface")) or "en"
     local formatname = formatofinterface[interface] or "cont-en"
-    local formatfile, scriptfile = resolvers.locateformat(formatname) -- regular engine !
+    local formatfile,
+          scriptfile = resolvers.locateformat(formatname) -- regular engine !
     if not formatfile or not scriptfile then
         report("warning: no format found, forcing remake (commandline driven)")
         scripts.context.make(formatname)
@@ -673,17 +668,6 @@ function scripts.context.run(ctxdata,filename)
     local a_nodates       = getargument("nodates")
     local a_trailerid     = getargument("trailerid")
     local a_nocompression = getargument("nocompression")
-
-    -- the following flag is not officially supported because i cannot forsee
-    -- side effects (so no bug reports please) .. we provide --sandbox that
-    -- does similar things but tries to ensure that context works as expected
-
- -- local a_safer       = getargument("safer")
- --
- -- if a_safer then
- --     report("warning: using the luatex safer options, processing is not guaranteed")
- -- end
-
     --
     a_batchmode = (a_batchmode and "batchmode") or (a_nonstopmode and "nonstopmode") or (a_scrollmode and "scrollmode") or nil
     --
@@ -826,8 +810,8 @@ function scripts.context.run(ctxdata,filename)
                  -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
                  -- ["file-line-error-style"] = true,
-                    ["fmt"]                   = formatfile,
-                    ["lua"]                   = scriptfile,
+--                     ["fmt"]                   = formatfile,
+--                     ["lua"]                   = scriptfile,
                     ["jobname"]               = jobname,
                     ["jithash"]               = a_jithash,
                 }
@@ -874,11 +858,15 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
                     c_flags.profile    = a_profile and (tonumber(a_profile) or 0) or nil
                     --
-                    local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
-                    --
-                    report("run %s: %s",currentrun,command)
                     print("") -- cleaner, else continuation on same line
-                    local returncode = os.execute(command)
+                    local returncode = environment.run_format(
+                        formatfile,
+                        scriptfile,
+                        mainfile,
+                        flags_to_string(l_flags),
+                        flags_to_string(c_flags,true),
+                        verbose
+                    )
                     -- todo: remake format when no proper format is found
                     if not returncode then
                         report("fatal error: no return code")
@@ -935,10 +923,17 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.currentrun = c_flags.currentrun + 1
                     c_flags.noarrange  = nil
                     --
-                    local command = luatex_command(l_flags,c_flags,mainfile,a_engine)
-                    --
                     report("arrange run: %s",command)
-                    local returncode, errorstring = os.execute(command)
+                    --
+                    local returncode = environment.run_format(
+                        formatfile,
+                        scriptfile,
+                        mainfile,
+                        flags_to_string(l_flags),
+                        flags_to_string(c_flags,true),
+                        verbose
+                    )
+                    --
                     if not returncode then
                         report("fatal error: no return code, message: %s",errorstring or "?")
                         os.exit(1)
@@ -998,7 +993,7 @@ function scripts.context.run(ctxdata,filename)
                     report()
                     report("making epub file: ",command)
                     report()
-                    os.execute(command)
+                    os.execute(command) -- todo: also a runner
                 end
                 --
                 if a_timing then
@@ -1060,20 +1055,24 @@ function scripts.context.pipe() -- still used?
             io.savedata(filename,"\\relax")
             report("entering scrollmode using '%s' with optionfile, end job with \\end",filename)
         end
-        local command = luatex_command(l_flags,c_flags,filename)
-        os.execute(command)
+        local returncode = environment.run_format(
+            formatfile,
+            scriptfile,
+            filename,
+            flags_to_string(l_flags),
+            flags_to_string(c_flags,true),
+            verbose
+        )
         if getargument("purge") then
             scripts.context.purge_job(filename)
         elseif getargument("purgeall") then
             scripts.context.purge_job(filename,true)
             removefile(filename)
         end
+    elseif formatname then
+        report("error, no format found with name: %s, aborting",formatname)
     else
-        if formatname then
-            report("error, no format found with name: %s, aborting",formatname)
-        else
-            report("error, no format found (provide formatname or interface)")
-        end
+        report("error, no format found (provide formatname or interface)")
     end
 end
 

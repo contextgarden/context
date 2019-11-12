@@ -712,7 +712,7 @@ local function stripglue(list)
     return list, done
 end
 
-local function limitate(t)
+local function limitate(t) -- don't pack the result !
     local text = t.text
     if text then
         text = tonut(text)
@@ -729,8 +729,8 @@ local function limitate(t)
     else
         return tonode(text)
     end
-    local list  = getlist(text)
     local width = getwidth(text)
+    local list  = getlist(text)
     local done  = false
     if t.strip then
         list, done = stripglue(list)
@@ -745,72 +745,66 @@ local function limitate(t)
     end
     local left  = t.left or 0
     local right = t.right or 0
-    if left + right >= width then
-        if done then
-            setwidth(text,width)
-        end
-        return tonode(text)
-    end
-    local last     = nil
-    local first    = nil
-    local maxleft  = left
-    local maxright = right
-    local swidth   = getwidth(sentinel)
-    if maxright > 0 then
-        maxleft  = maxleft  - swidth/2
-        maxright = maxright - swidth/2
-    else
-        maxleft  = maxleft  - swidth
-    end
-    for n in traverse_id(glue_code,list) do
-        local width = getdimensions(list,n)
-        if width > maxleft then
-            if not last then
-                last = n
-            end
-            break
+    if left + right < width then
+        local last     = nil
+        local first    = nil
+        local maxleft  = left
+        local maxright = right
+        local swidth   = getwidth(sentinel)
+        if maxright > 0 then
+            maxleft  = maxleft  - swidth/2
+            maxright = maxright - swidth/2
         else
-            last = n
+            maxleft  = maxleft  - swidth
         end
-    end
-    if last and maxright > 0 then
-        for n in traverse_id(glue_code,last) do
-            local width = getdimensions(n)
-            if width < maxright then
-                first = n
+        for n in traverse_id(glue_code,list) do
+            local width = getdimensions(list,n)
+            if width > maxleft then
+                if not last then
+                    last = n
+                end
                 break
             else
-                first = n
+                last = n
             end
         end
-    end
-    if last then
-        local rest = getnext(last)
-        if rest then
-            local tail = findtail(sentinel)
-            if first and getid(first) == glue_code and getid(tail) == glue_code then
-                setwidth(first,0)
-            end
-            if last and getid(last) == glue_code and getid(sentinel) == glue_code then
-                setwidth(last,0)
-            end
-            if first and first ~= last then
-                local prev = getprev(first)
-                if prev then
-                    setnext(prev)
+        if last and maxright > 0 then
+            for n in traverse_id(glue_code,last) do
+                local width = getdimensions(n)
+                if width < maxright then
+                    first = n
+                    break
+                else
+                    first = n
                 end
-                setlink(tail,first)
             end
-            setlink(last,sentinel)
-            setprev(rest)
-            flush_list(rest)
+        end
+        if last then
+            local rest = getnext(last)
+            if rest then
+                local tail = findtail(sentinel)
+                if first and getid(first) == glue_code and getid(tail) == glue_code then
+                    setwidth(first,0)
+                end
+                if last and getid(last) == glue_code and getid(sentinel) == glue_code then
+                    setwidth(last,0)
+                end
+                if first and first ~= last then
+                    local prev = getprev(first)
+                    if prev then
+                        setnext(prev)
+                    end
+                    setlink(tail,first)
+                end
+                setlink(last,sentinel)
+                setprev(rest)
+                flush_list(rest)
+            end
         end
     end
-    local result = hpack(list)
-    setattrlist(result,text)
     setlist(text)
     free(text)
-    return tonode(result)
+    return tonode(list)
 end
 
 implement {

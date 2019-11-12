@@ -633,13 +633,14 @@
    \clf_processregister
      {#1}%
      {%
-        language    {\registerparameter\s!language}%
-        method      {\registerparameter\c!method}%
-        numberorder {\registerparameter\c!numberorder}%
-        check       {\registerparameter\c!check}%
-        compress    {\registerparameter\c!compress}%
-        criterium   {\registerparameter\c!criterium}%
-        pagenumber  \ifx\registerpageseparatorsymbol\empty false\else true\fi
+        language      {\registerparameter\s!language}%
+        method        {\registerparameter\c!method}%
+        numberorder   {\registerparameter\c!numberorder}%
+        check         {\registerparameter\c!check}%
+        compress      {\registerparameter\c!compress}%
+        criterium     {\registerparameter\c!criterium}%
+        pagemethod    {\registerparameter\c!pagemethod}%
+        pagenumber    \ifx\registerpageseparatorsymbol\empty false\else true\fi
      }{%
         separatorset  {\registerparameter\c!pageprefixseparatorset}%
         conversionset {\registerparameter\c!pageprefixconversionset}%
@@ -1040,9 +1041,65 @@
    \dostoptagged
    \popcurrentregister}
 
+\unexpanded\def\doapplyregistersectioncommand#1#2%
+  {\ifx\currentregistersectionindex\empty
+     \applyprocessor{#1}{#2}%
+   \else\iflocation
+     \strc_references_goto_internal{\applyprocessor{#1}{#2}}[sectionindex:\currentregistersectionindex]%
+   \else
+     \applyprocessor{#1}{#2}%
+   \fi\fi}
+
+\unexpanded\def\defaultregistersection#1#2#3#4#5#6#7% class i n #4:processor #5:internal #6:sectionindex #7:word
+  {\pushcurrentregister{#1}%
+   \ifnum#2=\plusone
+     \registerpageseparator
+   \fi
+   \global\setconstant\c_strc_registers_page_state\plustwo
+   \def\currentregisterpageindex{#5}%
+   \dostarttagged\t!registersection\empty
+   \settrue\c_strc_registers_page_done
+   \iflocation
+     \def\currentregistersectionindex{#6}%
+   \else
+     \let\currentregistersectionindex\empty
+   \fi
+   \ifnum#2=\plusone\else
+      ,\space
+   \fi
+   \doapplyregistersectioncommand{#4}{#7}%
+   \dostoptagged
+   \popcurrentregister}
+
+\let\registersection  \defaultregistersection
 \let\registerseeword  \defaultregisterseeword
 \let\registerentry    \defaultregisterentry
 \let\registercharacter\defaultregistercharacter
+
+%D Experimental:
+%D
+%D \starttyping
+%D \setupregister
+%D   [index]
+%D   [pagesegments=1:4,
+%D    pagemethod=section]
+%D
+%D \starttext
+%D
+%D     \chapter {one} \section {alpha}
+%D
+%D     x\index {whatever 1}x\index {whatever 2}x\index {whatever 2}x \page
+%D     x\index {whatever 1}x\index {whatever 2}x\index {whatever 2}x \page
+%D
+%D     \chapter {one} \section {alpha}
+%D
+%D     x\index {whatever 1}x\index {whatever 2}x\index {whatever 2}x \page
+%D     x\index {whatever 1}x\index {whatever 2}x\index {whatever 2}x \page
+%D
+%D     \placeindex[n=1]
+%D
+%D \stoptext
+%D \stoptyping
 
 %D A few specific rendering variants:
 

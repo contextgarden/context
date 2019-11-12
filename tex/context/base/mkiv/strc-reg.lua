@@ -46,6 +46,7 @@ local v_previous           = variables.previous
 local v_first              = variables.first
 local v_last               = variables.last
 local v_text               = variables.text
+local v_section            = variables.section
 
 local context              = context
 local ctx_latelua          = context.latelua
@@ -69,6 +70,7 @@ local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
 local h_prefixpage              = helpers.prefixpage
 local h_prefixlastpage          = helpers.prefixlastpage
 local h_title                   = helpers.title
+local h_prefix                  = helpers.prefix
 
 local ctx_startregisteroutput   = context.startregisteroutput
 local ctx_stopregisteroutput    = context.stopregisteroutput
@@ -87,7 +89,7 @@ local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
-
+local ctx_registersection       = context.registersection
 local ctx_registerpacked        = context.registerpacked
 
 -- possible export, but ugly code (overloads)
@@ -932,12 +934,16 @@ function registers.unique(data,options)
     local nofresult  = 0
     local prev       = nil
     local dataresult = data.result
+    local bysection  = options.pagemethod == v_section -- normally page
     for k=1,#dataresult do
         local v = dataresult[k]
         if prev then
             local vr = v.references
             local pr = prev.references
             if not equal(prev.list,v.list) then
+                -- ok
+            elseif bysection and vr.section == pr.section then
+                v = nil
                 -- ok
             elseif pr.realpage ~= vr.realpage then
                 -- ok
@@ -1202,6 +1208,7 @@ function registers.flush(data,options,prefixspec,pagespec)
     local collapse_ranges  = compress == v_all
     local collapse_packed  = compress == v_packed
     local show_page_number = options.pagenumber ~= false -- true or false
+    local bysection        = options.pagemethod == v_section
     local result = data.result
     local maxlevel = 0
     --
@@ -1452,14 +1459,61 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                    ctx_registerseeword(metadata.name or "",i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
+                    ctx_registerseeword(
+                        metadata.name or "",
+                        i,
+                        nt,
+                        processor,
+                        0,
+                        seeindex,
+                        function() h_title(seetext,metadata) end
+                    )
+                end
+            end
+
+            local function case_5()
+                local first = d
+                while true do
+                    if d == #data then
+                        break
+                    else
+                        d = d + 1
+                        local next = data[d]
+                        if next.metadata.kind == "see" or not equal(entry.list,next.list) then
+                            d = d - 1
+                            break
+                        else
+                            entry = next
+                        end
+                    end
+                end
+                local last      = d
+                local n         = last - first + 1
+                local i         = 0
+                local name      = metadata.name or ""
+                local processor = entry.processors and entry.processors[1] or ""
+                for e=first,last do
+                    local d = data[e]
+                    local sectionindex = d.references.internal or 0
+                    i = i + 1
+                    ctx_registersection(
+                        name,
+                        i,
+                        n,
+                        processor,
+                        0,
+                        sectionindex,
+                        function() h_prefix(d,prefixspec,true) end
+                    )
                 end
             end
 
             if kind == "entry" then
                 if show_page_number then
                     ctx_startregisterpages()
-                    if collapse_singles or collapse_ranges then
+                    if bysection then
+                        case_5()
+                    elseif collapse_singles or collapse_ranges then
                         case_1()
                     elseif collapse_packed then
                         case_2()
@@ -1517,6 +1571,7 @@ implement {
             { "compress" },
             { "criterium" },
             { "check" },
+            { "pagemethod" },
             { "pagenumber", "boolean" },
         },
         {

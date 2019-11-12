@@ -177,15 +177,19 @@ local noadcodes          = nodes.noadcodes
 local fencecodes         = nodes.fencecodes
 
 local ordnoad_code             = noadcodes.ord
-local relnode_code             = noadcodes.rel
-local binnoad_code             = noadcodes.bin
-local opennoad_code            = noadcodes.open
-local closenoad_code           = noadcodes.close
-local punctnoad_code           = noadcodes.punct
 local opdisplaylimitsnoad_code = noadcodes.opdisplaylimits
 local oplimitsnoad_code        = noadcodes.oplimits
 local opnolimitsnoad_code      = noadcodes.opnolimits
+local binnoad_code             = noadcodes.bin
+local relnode_code             = noadcodes.rel
+local opennoad_code            = noadcodes.open
+local closenoad_code           = noadcodes.close
+local punctnoad_code           = noadcodes.punct
 local innernoad_code           = noadcodes.inner
+local undernoad_code           = noadcodes.under
+local overnoad_code            = noadcodes.over
+local vcenternoad_code         = noadcodes.vcenter
+local ordlimitsnoad_code       = noadcodes.ordlimits or oplimitsnoad_code
 
 local noad_code          = nodecodes.noad           -- attr nucleus sub sup
 local accent_code        = nodecodes.accent         -- attr nucleus sub sup accent
@@ -1747,14 +1751,19 @@ do
     local mathlists        = characters.mathlists
     local validpair        = {
         [ordnoad_code]             = true,
-        [relnode_code]             = true,
-        [binnoad_code]             = true, -- new
-        [opennoad_code]            = true, -- new
-        [closenoad_code]           = true, -- new
-        [punctnoad_code]           = true, -- new
         [opdisplaylimitsnoad_code] = true,
         [oplimitsnoad_code]        = true,
         [opnolimitsnoad_code]      = true,
+        [binnoad_code]             = true, -- new
+        [relnode_code]             = true,
+        [opennoad_code]            = true, -- new
+        [closenoad_code]           = true, -- new
+        [punctnoad_code]           = true, -- new
+        [innernoad_code]           = false,
+        [undernoad_code]           = false,
+        [overnoad_code]            = false,
+        [vcenternoad_code]         = false,
+        [ordlimitsnoad_code]       = true,
     }
 
     local reported = setmetatableindex("table")
@@ -2076,6 +2085,7 @@ do
      -- [opdisplaylimitsnoad_code] = "",
      -- [oplimitsnoad_code]        = "",
      -- [opnolimitsnoad_code]      = "",
+     -- [ordlimitsnoad_code]       = "",
      -- [innernoad_code            = "",
      -- [undernoad_code]           = "",
      -- [overnoad_code]            = "",

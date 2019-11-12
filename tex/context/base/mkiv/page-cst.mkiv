@@ -302,9 +302,9 @@
 % todo line numbers and marks
 
 \unexpanded\def\page_grd_command_flush_page_column#1%
-  {\privatescratchcounter#1\relax
+  {\privatescratchcounter#1\relax % or just currentcolumn as in page-col.mkiv
    \clf_flushcolumnsetcolumn{\currentpagegrid}\privatescratchcounter
-   \anch_mark_column_box\b_page_grd_column
+   \anch_mark_column_box\b_page_grd_column\privatescratchcounter
    \page_marks_synchronize_column\c_page_grd_first_column\c_page_grd_last_column\privatescratchcounter\b_page_grd_column
    \ifnum\privatescratchcounter>\c_page_grd_n_of_left
      \advance\privatescratchcounter-\c_page_grd_n_of_left

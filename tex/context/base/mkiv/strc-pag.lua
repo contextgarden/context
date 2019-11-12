@@ -183,18 +183,18 @@ function pages.analyze(entry,pagespecification)
     if not sectiondata then
         return pagedata, false, "no sectiondata"
     end
-    local no = variables.no
+    local v_no = variables.no
     -- local preferences
-    if pagespecification and pagespecification.prefix == no then
+    if pagespecification and pagespecification.prefix == v_no then
         return pagedata, false, "current spec blocks prefix"
     end
     -- stored preferences
- -- if entry.prefix == no then
+ -- if entry.prefix == v_no then
  --     return pagedata, false, "entry blocks prefix"
  -- end
     -- stored page state
     pagespecification = pagedata.prefixdata
-    if pagespecification and pagespecification.prefix == no then
+    if pagespecification and pagespecification.prefix == v_no then
         return pagedata, false, "pagedata blocks prefix"
     end
     -- final verdict
@@ -269,11 +269,20 @@ function helpers.analyze(entry,specification)
     return entry, sectiondata, "okay"
 end
 
-function helpers.prefix(data,prefixspec)
+function helpers.prefix(data,prefixspec,nosuffix)
     if data then
         local _, prefixdata, status = helpers.analyze(data,prefixspec)
-        if prefixdata then
-            sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
+        if not prefixdata then
+            -- nothing to do
+        elseif not prefixspec then
+            sections.typesetnumber(prefixdata,"prefix",false,prefixdata,false)
+        elseif nosuffix then
+            local connector = prefixspec.connector
+            prefixspec.connector = nil
+            sections.typesetnumber(prefixdata,"prefix",prefixspec,prefixdata,prefixdata)
+            prefixspec.connector = connector
+        else
+            sections.typesetnumber(prefixdata,"prefix",prefixspec,prefixdata,prefixdata)
         end
     end
 end

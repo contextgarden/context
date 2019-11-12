@@ -498,9 +498,9 @@ miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
                                     elseif objecttype == "stop_group" then
                                         local data = remove(groupstack)
                                         if data then
-                                            local id = lpdf.flushgroup(concat(result,"\r"),data.bbox)
+                                            local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
                                             result = data.result
-                                            result[#result+1] = formatters["/%s Do"](id)
+                                            result[#result+1] = reference
                                             result = pluginactions(data.after,result,flushfigure)
                                             result[#result+1] = "Q"
 miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false

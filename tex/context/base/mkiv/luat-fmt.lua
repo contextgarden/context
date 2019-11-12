@@ -13,8 +13,10 @@ local luasuffixes = utilities.lua.suffixes
 
 local report_format = logs.reporter("resolvers","formats")
 
-local function primaryflags()
-    local arguments  = environment.arguments
+-- this is a bit messy: we also handle flags in mtx-context so best we
+-- can combine this some day (all here)
+
+local function primaryflags(arguments)
     local flags      = { }
     if arguments.silent then
         flags[#flags+1] = "--interaction=batchmode"
@@ -25,8 +27,7 @@ local function primaryflags()
     return concat(flags," ")
 end
 
-local function secondaryflags()
-    local arguments  = environment.arguments
+local function secondaryflags(arguments)
     local trackers   = arguments.trackers
     local directives = arguments.directives
     local flags      = { }
@@ -66,12 +67,13 @@ end
 local template = [[--ini %primaryflags% --lua=%luafile% %texfile% %secondaryflags% %dump% %redirect%]]
 
 local checkers = {
-    primaryflags   = "string",
-    secondaryflags = "string",
+    primaryflags   = "verbose",  -- "flags"
+    secondaryflags = "verbose",  -- "flags"
     luafile        = "readable", -- "cache"
     texfile        = "readable", -- "cache"
     redirect       = "string",
     dump           = "string",
+    binarypath     = "string",
 }
 
 local runners = {
@@ -98,58 +100,109 @@ local runners = {
     },
 }
 
-function environment.make_format(name,arguments)
-    local engine = environment.ownmain or "luatex"
-    local silent = environment.arguments.silent
-    local errors = environment.arguments.errors
-    -- change to format path (early as we need expanded paths)
-    local olddir = dir.current()
-    local path = caches.getwritablepath("formats",engine) or "" -- maybe platform
-    if path ~= "" then
-        lfs.chdir(path)
+local function validbinarypath()
+    if environment.arguments.addbinarypath then
+        local binarypath = environment.ownpath or ""
+        if binarypath ~= "" then
+            binarypath = dir.expandname(binarypath)
+            if lfs.isdir(binarypath) then
+                return binarypath
+            end
+        end
     end
-    report_format("using format path %a",dir.current())
-    -- check source file
+end
+
+function environment.make_format(formatname)
+    -- first we set up the engine and  normally that information is provided
+    -- by the engine ... when we move to luametatex we could decide to simplfy
+    -- all the following
+    local arguments = environment.arguments
+    local engine    = environment.ownmain or "luatex"
+    local silent    = arguments.silent
+    local errors    = arguments.errors
+    -- now we locate the to be used source files ... there are some variants that we
+    -- need to take care
     local texsourcename     = ""
+    local texsourcepath     = ""
     local fulltexsourcename = ""
     if engine == "luametatex" then
-        texsourcename     = file.addsuffix(name,"mkxl")
+        texsourcename     = file.addsuffix(formatname,"mkxl")
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        texsourcename     = file.addsuffix(name,"mkiv")
+        texsourcename     = file.addsuffix(formatname,"mkiv")
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        texsourcename = file.addsuffix(name,"tex")
+        texsourcename     = file.addsuffix(formatname,"tex")
         fulltexsourcename = resolvers.findfile(texsourcename,"tex") or ""
     end
     if fulltexsourcename == "" then
-        report_format("no tex source file with name %a (mkiv or tex)",name)
-        lfs.chdir(olddir)
-        return
-    else
-        report_format("using tex source file %a",fulltexsourcename)
-    end
-    local texsourcepath = dir.expandname(file.dirname(fulltexsourcename)) -- really needed
-    -- check specification
-    local specificationname = file.replacesuffix(fulltexsourcename,"lus")
-    local fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
-    if fullspecificationname == "" then
-        specificationname = file.join(texsourcepath,"context.lus")
-        fullspecificationname = resolvers.findfile(specificationname,"tex") or ""
-    end
-    if fullspecificationname == "" then
-        report_format("unknown stub specification %a",specificationname)
-        lfs.chdir(olddir)
+        report_format("no tex source file with name %a (mkiv or tex)",formatname)
         return
     end
-    local specificationpath = file.dirname(fullspecificationname)
-    -- load specification
+    report_format("using tex source file %a",fulltexsourcename)
+    -- this is tricky: we normally have an expanded path but when we don't have one,
+    -- the current path gets appended
+    fulltexsourcename = dir.expandname(fulltexsourcename)
+    texsourcepath     = file.dirname(fulltexsourcename)
+    if not lfs.isfile(fulltexsourcename) then
+        report_format("no accessible tex source file with name %a",fulltexsourcename)
+        return
+    end
+    -- we're getting there, that is: we have a file that specifies the context format;
+    -- in addition to that file we need a stub for setting up lua as we start rather
+    -- minimalistic
+    local specificationname     = "context.lus"
+    local specificationpath     = ""
+    local fullspecificationname = resolvers.findfile(specificationname) or ""
+    if fullspecificationname == "" then
+        report_format("unable to locate specification file %a",specificationname)
+        return
+    end
+    report_format("using specification file %a",fullspecificationname)
+    -- let's expand the found name and so an extra check
+    fullspecificationname = dir.expandname(fullspecificationname)
+    specificationpath     = file.dirname(fullspecificationname)
+    if texsourcepath ~= specificationpath then
+        report_format("tex source file and specification file are on different paths")
+        return
+    end
+    -- let's do an additional check here, if only because we then have a bit better
+    -- feedback on what goes wrong
+    if not lfs.isfile(fulltexsourcename) then
+        report_format("no accessible tex source file with name %a",fulltexsourcename)
+        return
+    end
+    if not lfs.isfile(fullspecificationname) then
+        report_format("no accessible specification file with name %a",fulltexsourcename)
+        return
+    end
+    -- we're still going strong
+    report_format("using tex source path %a",texsourcepath)
+    -- we will change tot the format path because some local files will be created
+    -- in the process and we don't want clutter
+    local validformatpath = caches.getwritablepath("formats",engine) or ""
+    local startupdir      = dir.current()
+    if validformatpath == "" then
+        report_format("invalid format path, insufficient write access")
+        return
+    end
+    -- in case we have a qualified path, we need to do this before we change
+    -- because we can have half qualified paths (in lxc)
+    local binarypath = validbinarypath()
+    report_format("changing to format path %a",validformatpath)
+    lfs.chdir(validformatpath)
+    if dir.current() ~= validformatpath then
+        report_format("unable to change to format path %a",validformatpath)
+        return
+    end
+    -- we're now ready for making the format which we do on the first found
+    -- writable path
     local usedluastub = nil
     local usedlualibs = dofile(fullspecificationname)
     if type(usedlualibs) == "string" then
-        usedluastub = file.join(file.dirname(fullspecificationname),usedlualibs)
+        usedluastub = file.join(specificationpath,usedlualibs)
     elseif type(usedlualibs) == "table" then
         report_format("using stub specification %a",fullspecificationname)
         local texbasename = file.basename(name)
@@ -168,62 +221,81 @@ function environment.make_format(name,arguments)
         end
     else
         report_format("invalid stub specification %a",fullspecificationname)
-        lfs.chdir(olddir)
+        lfs.chdir(startupdir)
         return
     end
-    -- generate format
+    -- we're ready to go now but first we check if we actually do have a runner
+    -- for this engine ... we'd better have one
+    local runner = runners[engine]
+    if not runner then
+        report_format("the format %a cannot be generated, no runner available for engine %a",name,engine)
+        lfs.chdir(startupdir)
+        return
+    end
+    -- now we can generate the format, where we use a couple of flags,
+    -- split into two categories
+    local primaryflags   = primaryflags(arguments)
+    local secondaryflags = secondaryflags(arguments)
     local specification = {
-        primaryflags   = primaryflags(),
-        secondaryflags = secondaryflags(),
+        binarypath     = binarypath,
+        primaryflags   = primaryflags,
+        secondaryflags = secondaryflags,
         luafile        = quoted(usedluastub),
         texfile        = quoted(fulltexsourcename),
         dump           = os.platform == "unix" and "\\\\dump" or "\\dump",
     }
-    local runner = runners[engine]
-    if not runner then
-        report_format("format %a cannot be generated, no runner available for engine %a",name,engine)
-    elseif silent then
-        statistics.starttiming()
+    if silent then
         specification.redirect = "> temp.log"
-        local result  = runner(specification)
-        local runtime = statistics.stoptiming()
-        if result ~= 0 then
-            print(format("%s silent make > fatal error when making format %q",engine,name)) -- we use a basic print
-        else
-            print(format("%s silent make > format %q made in %.3f seconds",engine,name,runtime)) -- we use a basic print
-        end
+    end
+    statistics.starttiming()
+    local result  = runner(specification)
+    local runtime = statistics.stoptiming()
+    if silent then
         os.remove("temp.log")
-    else
-        runner(specification)
     end
-    -- remove related mem files
-    local pattern = file.removesuffix(file.basename(usedluastub)).."-*.mem"
- -- report_format("removing related mplib format with pattern %a", pattern)
-    local mp = dir.glob(pattern)
-    if mp then
-        for i=1,#mp do
-            local name = mp[i]
-            report_format("removing related mplib format %a", file.basename(name))
-            os.remove(name)
-        end
-    end
-    lfs.chdir(olddir)
+    -- some final report
+    report_format()
+  if binarypath and binarypath ~= "" then
+    report_format("binary path      : %s",binarypath or "?")
+  end
+    report_format("format path      : %s",validformatpath)
+    report_format("luatex engine    : %s",engine)
+    report_format("lua startup file : %s",usedluastub)
+  if primaryflags ~= "" then
+    report_format("primary flags    : %s",primaryflags)
+  end
+  if secondaryflags ~= "" then
+    report_format("secondary flags  : %s",secondaryflags)
+  end
+    report_format("context file     : %s",fulltexsourcename)
+    report_format("run time         : %.3f seconds",runtime)
+    report_format("return value     : %s",result == 0 and "okay" or "error")
+    report_format()
+    -- last we go back to the home base
+    lfs.chdir(startupdir)
 end
 
-local template = [[%flags% --fmt=%fmtfile% --lua=%luafile% %texfile% %more%]]
+local template = [[%primaryflags% --fmt=%fmtfile% --lua=%luafile% %texfile% %secondaryflags%]]
 
 local checkers = {
-    flags    = "string",
-    more     = "string",
-    fmtfile  = "readable", -- "cache"
-    luafile  = "readable", -- "cache"
-    texfile  = "readable", -- "cache"
+    primaryflags   = "verbose",
+    secondaryflags = "verbose",
+    fmtfile        = "readable", -- "cache"
+    luafile        = "readable", -- "cache"
+    texfile        = "readable", -- "cache"
 }
 
 local runners = {
     luatex = sandbox.registerrunner {
         name     = "run luatex format",
         program  = "luatex",
+        template = template,
+        checkers = checkers,
+        reporter = report_format,
+    },
+    luametatex = sandbox.registerrunner {
+        name     = "run luametatex format",
+        program  = "luametatex",
         template = template,
         checkers = checkers,
         reporter = report_format,
@@ -237,40 +309,67 @@ local runners = {
     },
 }
 
-function environment.run_format(name,data,more)
-    if name and name ~= "" then
-        local engine = environment.ownmain or "luatex"
-        local barename = file.removesuffix(name)
-        local fmtname = caches.getfirstreadablefile(file.addsuffix(barename,"fmt"),"formats",engine)
-        if fmtname == "" then
-            fmtname = resolvers.findfile(file.addsuffix(barename,"fmt")) or ""
-        end
-        fmtname = resolvers.cleanpath(fmtname)
-        if fmtname == "" then
-            report_format("no format with name %a",name)
-        else
-            local barename = file.removesuffix(name) -- expanded name
-            local luaname = file.addsuffix(barename,"luc")
-            if not lfs.isfile(luaname) then
-                luaname = file.addsuffix(barename,"lua")
-            end
-            if not lfs.isfile(luaname) then
-                report_format("using format name %a",fmtname)
-                report_format("no luc/lua file with name %a",barename)
-            else
-                local runner = runners[engine]
-                if not runner then
-                    report_format("format %a cannot be run, no runner available for engine %a",name,engine)
-                else
-                    runner {
-                        flags   = primaryflags(),
-                        fmtfile = quoted(barename),
-                        luafile = quoted(luaname),
-                        texfile = quoted(data),
-                        more    = more,
-                    }
-                end
-            end
-        end
+function environment.run_format(formatname,scriptname,filename,primaryflags,secondaryflags,verbose)
+    local engine = environment.ownmain or "luatex"
+    if not formatname or formatname == "" then
+        report_format("missing format name")
+        return
     end
+    if not scriptname or scriptname == "" then
+        report_format("missing script name")
+        return
+    end
+    if not lfs.isfile(formatname) or not lfs.isfile(scriptname) then
+        formatname, scriptname = resolvers.locateformat(formatname)
+    end
+    if not formatname or formatname == "" then
+        report_format("invalid format name")
+        return
+    end
+    if not scriptname or scriptname == "" then
+        report_format("invalid script name")
+        return
+    end
+    local runner = runners[engine]
+    if not runner then
+        report_format("format %a cannot be run, no runner available for engine %a",file.nameonly(name),engine)
+        return
+    end
+    if not filename then
+        filename ""
+    end
+    local binarypath = validbinarypath()
+    local specification = {
+        binarypath     = binarypath,
+        primaryflags   = primaryflags or "",
+        secondaryflags = secondaryflags or "",
+        fmtfile        = quoted(formatname),
+        luafile        = quoted(scriptname),
+        texfile        = filename ~= "" and quoted(filename) or "",
+    }
+    statistics.starttiming()
+    local result  = runner(specification)
+    local runtime = statistics.stoptiming()
+    if verbose then
+        report_format()
+      if binarypath and binarypath ~= "" then
+        report_format("binary path      : %s",binarypath)
+      end
+        report_format("luatex engine    : %s",engine)
+        report_format("lua startup file : %s",scriptname)
+        report_format("tex format file  : %s",formatname)
+      if filename ~= "" then
+        report_format("tex input file   : %s",filename)
+      end
+      if primaryflags ~= "" then
+        report_format("primary flags    : %s",primaryflags)
+      end
+      if secondaryflags ~= "" then
+        report_format("secondary flags  : %s",secondaryflags)
+      end
+        report_format("run time         : %.3f seconds",runtime)
+        report_format("return value     : %s",result == 0 and "okay" or "error")
+        report_format()
+    end
+    return result
 end

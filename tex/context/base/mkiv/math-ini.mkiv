@@ -129,9 +129,8 @@
 
 \mathflattenmode 31
 
-\ifdefined\mathlimitsmode
-    % ignore \limits and \nolimts when no scripts (better spacing)
-    \mathlimitsmode\plusone
+\ifdefined\ordlimits\else
+    \ordlimits\limits
 \fi
 
 \appendtoks

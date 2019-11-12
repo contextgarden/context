@@ -30,7 +30,7 @@ function savers.virtual(specification,content,suffix)
     if type(path) ~= "string" or path == "" then
         path = "virtualfile"
     end
-    local filename = suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,suffix)
+    local filename = suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
     if trace_virtual then
         report_virtual("saver: file %a saved",filename)
     end

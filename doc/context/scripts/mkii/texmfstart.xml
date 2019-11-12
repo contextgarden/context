@@ -27,6 +27,7 @@
     <flag name="stubpath" value="binpath"><short>paths where stubs wil be written</short></flag>
     <flag name="windows"><short>create windows (mswin) stubs</short></flag>
     <flag name="unix"><short>create unix (linux) stubs</short></flag>
+    <flag name="addbinarypath"><short>prepend the (found) binarypath to runners</short></flag>
    </subcategory>
    <subcategory>
     <flag name="verbose"><short>give a bit more info</short></flag>

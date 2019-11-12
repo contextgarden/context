@@ -818,7 +818,9 @@ local function typestring(settings)
         local compact   = settings.compact
         local compactor = compact and compactors[compact]
         if compactor then
+print("!!!!!!!!!!1",content)
             content = lpegmatch(compactor,content) or content
+print("!!!!!!!!!!2",content)
         end
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)

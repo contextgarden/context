@@ -1839,10 +1839,10 @@ function resolvers.dowithvariable(name,func)
 end
 
 function resolvers.locateformat(name)
-    local engine = environment.ownmain or "luatex"
-    local barename = removesuffix(name)
+    local engine   = environment.ownmain or "luatex"
+    local barename = removesuffix(file.basename(name))
     local fullname = addsuffix(barename,"fmt")
-    local fmtname = caches.getfirstreadablefile(fullname,"formats",engine) or ""
+    local fmtname  = caches.getfirstreadablefile(fullname,"formats",engine) or ""
     if fmtname == "" then
         fmtname = resolvers.findfile(fullname)
         fmtname = cleanpath(fmtname)
@@ -1853,11 +1853,11 @@ function resolvers.locateformat(name)
         local lucname = addsuffix(barename,luasuffixes.luc)
         local luiname = addsuffix(barename,luasuffixes.lui)
         if isfile(luiname) then
-            return barename, luiname
+            return fmtname, luiname
         elseif isfile(lucname) then
-            return barename, lucname
+            return fmtname, lucname
         elseif isfile(luaname) then
-            return barename, luaname
+            return fmtname, luaname
         end
     end
     return nil, nil
