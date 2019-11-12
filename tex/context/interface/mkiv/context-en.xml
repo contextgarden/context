@@ -34652,6 +34652,10 @@
      <cd:parameter name="numberorder">
       <cd:constant default="yes" type="numbers"/>
      </cd:parameter>
+     <cd:parameter name="pagemethod">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="section"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -34867,6 +34871,10 @@
      </cd:parameter>
      <cd:parameter name="numberorder">
       <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
+     <cd:parameter name="pagemethod">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="section"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -35086,6 +35094,10 @@
      <cd:parameter name="numberorder">
       <cd:constant default="yes" type="numbers"/>
      </cd:parameter>
+     <cd:parameter name="pagemethod">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="section"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -35301,6 +35313,10 @@
      </cd:parameter>
      <cd:parameter name="numberorder">
       <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
+     <cd:parameter name="pagemethod">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="section"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -35601,6 +35617,10 @@
      </cd:parameter>
      <cd:parameter name="numberorder">
       <cd:constant default="yes" type="numbers"/>
+     </cd:parameter>
+     <cd:parameter name="pagemethod">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="section"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>

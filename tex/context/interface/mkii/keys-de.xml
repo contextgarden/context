@@ -1059,6 +1059,7 @@
 		<cd:constant name='pageconversion' value='pageconversion'/>
 		<cd:constant name='pageconversionset' value='pageconversionset'/>
 		<cd:constant name='pageleft' value='pageleft'/>
+		<cd:constant name='pagemethod' value='pagemethod'/>
 		<cd:constant name='pagenumber' value='seitennummer'/>
 		<cd:constant name='pageprefix' value='pageprefix'/>
 		<cd:constant name='pageprefixconnector' value='pageprefixconnector'/>
