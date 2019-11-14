@@ -63,8 +63,9 @@
 \def\font_expansion_enable_n{\normaladjustspacing\plusone}
 \def\font_expansion_disable {\normaladjustspacing\zerocount}
 
-\def\font_protruding_enable {\normalprotrudechars\plustwo  }
-\def\font_protruding_disable{\normalprotrudechars\zerocount}
+\def\font_protruding_enable_b{\normalprotrudechars\plusthree} % also deal with r2l (experimental lmtx)
+\def\font_protruding_enable  {\normalprotrudechars\plustwo  }
+\def\font_protruding_disable {\normalprotrudechars\zerocount}
 
 \appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
 \appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?

@@ -54,7 +54,7 @@ local findtail          = nuts.tail
 local nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
-local rangedimensions   = node.direct.naturalwidth or nuts.rangedimensions
+local rangedimensions   = node.direct.rangedimensions
 local effectiveglue     = nuts.effective_glue
 
 local texget            = tex.get

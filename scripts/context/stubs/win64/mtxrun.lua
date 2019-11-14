@@ -3227,7 +3227,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-io"] = package.loaded["l-io"] or true
 
--- original size: 11823, stripped down to: 6325
+-- original size: 11829, stripped down to: 6331
 
 if not modules then modules={} end modules ['l-io']={
  version=1.001,
@@ -3241,7 +3241,7 @@ local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local type=type
-if string.find(os.getenv("PATH"),";",1,true) then
+if string.find(os.getenv("PATH") or "",";",1,true) then
  io.fileseparator,io.pathseparator="\\",";"
 else
  io.fileseparator,io.pathseparator="/",":"
@@ -25645,7 +25645,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-fmt"] = package.loaded["luat-fmt"] or true
 
--- original size: 13894, stripped down to: 10006
+-- original size: 13964, stripped down to: 10026
 
 if not modules then modules={} end modules ['luat-fmt']={
  version=1.001,
@@ -25733,12 +25733,12 @@ local runners={
  },
 }
 local function validbinarypath()
- if environment.arguments.addbinarypath then
-  local binarypath=environment.ownpath or ""
-  if binarypath~="" then
-   binarypath=dir.expandname(binarypath)
-   if lfs.isdir(binarypath) then
-    return binarypath
+ if not environment.arguments.nobinarypath then
+  local path=environment.ownpath or file.dirname(environment.ownname)
+  if path and path~="" then
+   path=dir.expandname(path)
+   if path~="" and lfs.isdir(path) then
+    return path
    end
   end
  end
@@ -25978,8 +25978,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1036593
--- stripped bytes    : 410200
+-- original bytes    : 1036669
+-- stripped bytes    : 410250
 
 -- end library merge
 

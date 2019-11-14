@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/12/19 23:58:31
+-- merge date  : 11/14/19 17:07:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -2174,7 +2174,7 @@ local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local type=type
-if string.find(os.getenv("PATH"),";",1,true) then
+if string.find(os.getenv("PATH") or "",";",1,true) then
  io.fileseparator,io.pathseparator="\\",";"
 else
  io.fileseparator,io.pathseparator="/",":"

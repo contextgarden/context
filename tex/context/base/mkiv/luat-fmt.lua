@@ -101,12 +101,13 @@ local runners = {
 }
 
 local function validbinarypath()
-    if environment.arguments.addbinarypath then
-        local binarypath = environment.ownpath or ""
-        if binarypath ~= "" then
-            binarypath = dir.expandname(binarypath)
-            if lfs.isdir(binarypath) then
-                return binarypath
+ -- if environment.arguments.addbinarypath then
+    if not environment.arguments.nobinarypath then
+        local path = environment.ownpath or file.dirname(environment.ownname)
+        if path and path ~= "" then
+            path = dir.expandname(path)
+            if path ~= "" and lfs.isdir(path) then
+                return path
             end
         end
     end

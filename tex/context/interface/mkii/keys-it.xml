@@ -235,6 +235,7 @@
 		<cd:variable name='handwritten' value='grafiamanuale'/>
 		<cd:variable name='hang' value='sospendi'/>
 		<cd:variable name='hanging' value='sospeso'/>
+		<cd:variable name='hangingboth' value='hangingboth'/>
 		<cd:variable name='head' value='testa'/>
 		<cd:variable name='header' value='intestazione'/>
 		<cd:variable name='headintext' value='headintext'/>

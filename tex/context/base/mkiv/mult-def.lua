@@ -13966,6 +13966,10 @@ return {
    ["pe"]="آویزان",
    ["ro"]="suspendat",
   },
+  ["hangingboth"]={
+   ["en"]="hangingboth",
+   ["nl"]="beidehangend",
+  },
   ["head"]={
    ["cs"]="hlavicka",
    ["de"]="kopf",

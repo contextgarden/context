@@ -272,17 +272,15 @@ end
 function helpers.prefix(data,prefixspec,nosuffix)
     if data then
         local _, prefixdata, status = helpers.analyze(data,prefixspec)
-        if not prefixdata then
-            -- nothing to do
-        elseif not prefixspec then
-            sections.typesetnumber(prefixdata,"prefix",false,prefixdata,false)
-        elseif nosuffix then
-            local connector = prefixspec.connector
-            prefixspec.connector = nil
-            sections.typesetnumber(prefixdata,"prefix",prefixspec,prefixdata,prefixdata)
-            prefixspec.connector = connector
-        else
-            sections.typesetnumber(prefixdata,"prefix",prefixspec,prefixdata,prefixdata)
+        if prefixdata then
+            if nosuffix and prefixspec then
+                local connector = prefixspec.connector
+                prefixspec.connector = nil
+                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
+                prefixspec.connector = connector
+            else
+                sections.typesetnumber(prefixdata,"prefix",prefixspec or false,data.prefixdata or false,prefixdata or false)
+            end
         end
     end
 end

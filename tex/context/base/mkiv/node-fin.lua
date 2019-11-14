@@ -562,7 +562,7 @@ local function stacker(attribute,head,default) -- no triggering, no inheritance,
                         end
                         head, current = insert_node_after(head,current,copy_node(nsnone))
                     else
-                        list = stacker(attribute,content,a)
+                        list = stacker(attribute,content,attrib)
                         if list ~= content then
                             setlist(current,list)
                         end
