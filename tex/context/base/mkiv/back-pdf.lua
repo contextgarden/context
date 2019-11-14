@@ -10,17 +10,38 @@ if not modules then modules = { } end modules ['back-pdf'] = {
 -- the way we manage resources, info, etc. Users should use the \type {lpdf}
 -- interface instead. If needed I will provide replacement functionality.
 
+local setmetatableindex = table.setmetatableindex
+
 interfaces.implement {
     name      = "setpdfcompression",
     arguments = { "integer", "integer" },
     actions   = lpdf.setcompression,
 }
 
-if CONTEXTLMTXMODE == 0 then
-    updaters.apply("backend.update.pdf")
-    updaters.apply("backend.update.lpdf")
-    updaters.apply("backend.update.tex")
-    updaters.apply("backend.update")
+do
+
+    local dummy  = function() end
+    local report = logs.reporter("backend")
+
+    local function unavailable(t,k)
+        report("calling unavailable pdf.%s function",k)
+        t[k] = dummy
+        return dummy
+    end
+
+    updaters.register("backend.update",function()
+        --
+        -- For now we keep this for tikz. If really needed some more can be made
+        -- accessible but it has to happen in a controlled way then, for instance
+        -- by first loading or enabling some compatibility layer so that we can
+        -- trace possible interferences.
+        --
+        pdf = {
+            immediateobj = pdf.immediateobj
+        }
+        setmetatableindex(pdf,unavailable)
+    end)
+
 end
 
 backends.install("pdf")

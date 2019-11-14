@@ -46,6 +46,7 @@ local v_previous           = variables.previous
 local v_first              = variables.first
 local v_last               = variables.last
 local v_text               = variables.text
+local v_section            = variables.section
 
 local context              = context
 local ctx_latelua          = context.latelua
@@ -69,6 +70,7 @@ local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
 local h_prefixpage              = helpers.prefixpage
 local h_prefixlastpage          = helpers.prefixlastpage
 local h_title                   = helpers.title
+local h_prefix                  = helpers.prefix
 
 local ctx_startregisteroutput   = context.startregisteroutput
 local ctx_stopregisteroutput    = context.stopregisteroutput
@@ -87,7 +89,7 @@ local ctx_registerentry         = context.registerentry
 local ctx_registerseeword       = context.registerseeword
 local ctx_registerpagerange     = context.registerpagerange
 local ctx_registeronepage       = context.registeronepage
-
+local ctx_registersection       = context.registersection
 local ctx_registerpacked        = context.registerpacked
 
 -- possible export, but ugly code (overloads)
@@ -719,14 +721,30 @@ function registers.compare(a,b)
         local ka = a.metadata.kind
         local kb = b.metadata.kind
         if ka == kb then
-            local page_a = a.references.realpage
-            local page_b = b.references.realpage
-            if not page_a or not page_b then
+            local ra = a.references
+            local rb = b.references
+            local pa = ra.realpage
+            local pb = rb.realpage
+            if not pa or not pb then
                 return 0
-            elseif page_a < page_b then
+            elseif pa < pb then
                 return -1
-            elseif page_a > page_b then
+            elseif pa > pb then
                 return  1
+            else
+                -- new, we need to pick the right one of multiple and
+                -- we want to prevent oscillation in the tuc file so:
+                local ia = ra.internal
+                local ib = rb.internal
+                if not ia or not ib then
+                    return 0
+                elseif ia < ib then
+                    return -1
+                elseif ia > ib then
+                    return  1
+                else
+                    return 0
+                end
             end
         elseif ka == "see" then
             return 1
@@ -745,6 +763,8 @@ local seeindex = 0
 
 -- meerdere loops, seewords, dan words, anders seewords
 
+-- todo: split seeword
+
 local function crosslinkseewords(result,check) -- all words
     -- collect all seewords
     local seewords = { }
@@ -762,23 +782,68 @@ local function crosslinkseewords(result,check) -- all words
             end
         end
     end
+
     -- mark seeparents
+
+ -- local seeparents = { }
+ -- for i=1,#result do
+ --     local data = result[i]
+ --     local word = data.list[1]
+ --     local okay = word and word[1]
+ --     if okay then
+ --         local seeindex = seewords[okay]
+ --         if seeindex then
+ --             seeparents[okay] = data
+ --             data.references.seeparent = seeindex
+ --             if trace_registers then
+ --                 report_registers("see parent %03i: %s",seeindex,okay)
+ --             end
+ --         end
+ --     end
+ -- end
+
+    local entries    = { }
+    local keywords   = { }
     local seeparents = { }
     for i=1,#result do
         local data = result[i]
-        local word = data.list[1]
-        word = word and word[1]
-        if word then
-            local seeindex = seewords[word]
+        local word = data.list
+        local size = #word
+        if data.seeword then
+            -- beware: a seeword has an extra entry for sorting purposes
+            size = size - 1
+        end
+        for i=1,size do
+            local w = word[i]
+            local e = w[1]
+            local k = w[2] or e
+            entries [i] = e
+            keywords[i] = k
+        end
+        -- first try the keys
+        local okay, seeindex
+        for n=size,1,-1 do
+            okay = concat(keywords,"+",1,n)
+            seeindex = seewords[okay]
+            -- first try the entries
             if seeindex then
-                seeparents[word] = data
-                data.references.seeparent = seeindex
-                if trace_registers then
-                    report_registers("see parent %03i: %s",seeindex,word)
-                end
+                break
+            end
+            okay = concat(entries,"+",1,n)
+            seeindex = seewords[okay]
+            if seeindex then
+                break
+            end
+        end
+        if seeindex then
+            seeparents[okay] = data
+            data.references.seeparent = seeindex
+            if trace_registers then
+                report_registers("see parent %03i: %s",seeindex,okay)
             end
         end
     end
+
     -- mark seewords and extend sort list
     for i=1,#result do
         local data = result[i]
@@ -869,12 +934,16 @@ function registers.unique(data,options)
     local nofresult  = 0
     local prev       = nil
     local dataresult = data.result
+    local bysection  = options.pagemethod == v_section -- normally page
     for k=1,#dataresult do
         local v = dataresult[k]
         if prev then
             local vr = v.references
             local pr = prev.references
             if not equal(prev.list,v.list) then
+                -- ok
+            elseif bysection and vr.section == pr.section then
+                v = nil
                 -- ok
             elseif pr.realpage ~= vr.realpage then
                 -- ok
@@ -1139,6 +1208,7 @@ function registers.flush(data,options,prefixspec,pagespec)
     local collapse_ranges  = compress == v_all
     local collapse_packed  = compress == v_packed
     local show_page_number = options.pagenumber ~= false -- true or false
+    local bysection        = options.pagemethod == v_section
     local result = data.result
     local maxlevel = 0
     --
@@ -1389,14 +1459,61 @@ function registers.flush(data,options,prefixspec,pagespec)
                     local seetext   = seeword.text or ""
                     local processor = seeword.processor or (entry.processors and entry.processors[1]) or ""
                     local seeindex  = entry.references.seeindex or ""
-                    ctx_registerseeword(metadata.name or "",i,nt,processor,0,seeindex,function() h_title(seetext,metadata) end)
+                    ctx_registerseeword(
+                        metadata.name or "",
+                        i,
+                        nt,
+                        processor,
+                        0,
+                        seeindex,
+                        function() h_title(seetext,metadata) end
+                    )
+                end
+            end
+
+            local function case_5()
+                local first = d
+                while true do
+                    if d == #data then
+                        break
+                    else
+                        d = d + 1
+                        local next = data[d]
+                        if next.metadata.kind == "see" or not equal(entry.list,next.list) then
+                            d = d - 1
+                            break
+                        else
+                            entry = next
+                        end
+                    end
+                end
+                local last      = d
+                local n         = last - first + 1
+                local i         = 0
+                local name      = metadata.name or ""
+                local processor = entry.processors and entry.processors[1] or ""
+                for e=first,last do
+                    local d = data[e]
+                    local sectionindex = d.references.internal or 0
+                    i = i + 1
+                    ctx_registersection(
+                        name,
+                        i,
+                        n,
+                        processor,
+                        0,
+                        sectionindex,
+                        function() h_prefix(d,prefixspec,true) end
+                    )
                 end
             end
 
             if kind == "entry" then
                 if show_page_number then
                     ctx_startregisterpages()
-                    if collapse_singles or collapse_ranges then
+                    if bysection then
+                        case_5()
+                    elseif collapse_singles or collapse_ranges then
                         case_1()
                     elseif collapse_packed then
                         case_2()
@@ -1454,6 +1571,7 @@ implement {
             { "compress" },
             { "criterium" },
             { "check" },
+            { "pagemethod" },
             { "pagenumber", "boolean" },
         },
         {

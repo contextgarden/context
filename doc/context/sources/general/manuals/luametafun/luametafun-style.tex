@@ -1,0 +1,64 @@
+\startenvironment luametafun-style
+
+\usemodule[abbreviations-smallcaps]
+
+\usemodule[scite]
+
+\setupbodyfont
+  [ibmplex,rm,10pt]
+
+\setupwhitespace
+  [big]
+
+\setuplayout
+  [topspace=10mm,
+   bottomspace=1cm,
+   backspace=2cm,
+   footerdistance=10mm,
+   footer=1cm,
+ % headerdistance=10mm,
+ % header=1cm,
+   topspace=20mm,
+   headerdistance=0mm,
+   header=0cm,
+   height=middle,
+   width=middle]
+
+\setupalign
+  [verytolerant]
+
+\setupheadertexts
+  []
+
+\setupfootertexts
+  [chapter][pagenumber]
+
+\setuphead
+  [chapter]
+  [color=darkgray,
+   style=\bfd]
+
+\setuphead
+  [section]
+  [color=darkgray,
+   style=\bfc]
+
+\setupfooter
+  [color=darkgray,
+   style=\bf]
+
+\setuplist
+  [chapter]
+  [before=,
+   after=]
+
+% sectionblocks keep things local and we need these colors very late,
+% when we flush fonts
+
+\definecolor[KindergartenEqual]  [darkgreen]
+\definecolor[KindergartenPlus]   [darkred]
+\definecolor[KindergartenMinus]  [darkred]
+\definecolor[KindergartenTimes]  [darkblue]
+\definecolor[KindergartenDivided][darkblue]
+
+\stopenvironment

@@ -11,10 +11,10 @@ if not modules then modules = { } end modules ['scrp-ini'] = {
 
 local tonumber, next = tonumber, next
 
-local trace_analyzing    = false  trackers.register("scripts.analyzing",        function(v) trace_analyzing   = v end)
-local trace_injections   = false  trackers.register("scripts.injections",       function(v) trace_injections  = v end)
-local trace_splitting    = false  trackers.register("scripts.splitting",        function(v) trace_splitting   = v end)
-local trace_splitdetail  = false  trackers.register("scripts.splitting.detail", function(v) trace_splitdetail = v end)
+local trace_analyzing    = false  trackers.register("scripts.analyzing",         function(v) trace_analyzing   = v end)
+local trace_injections   = false  trackers.register("scripts.injections",        function(v) trace_injections  = v end)
+local trace_splitting    = false  trackers.register("scripts.splitting",         function(v) trace_splitting   = v end)
+local trace_splitdetails = false  trackers.register("scripts.splitting.details", function(v) trace_splitdetails = v end)
 
 local report_preprocessing = logs.reporter("scripts","preprocessing")
 local report_splitting     = logs.reporter("scripts","splitting")
@@ -57,8 +57,11 @@ local getnext            = nuts.getnext
 local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getid              = nuts.getid
+local getglyphdata       = nuts.getglyphdata
+
 local getattr            = nuts.getattr
 local setattr            = nuts.setattr
+
 local isglyph            = nuts.isglyph
 
 local insert_node_after  = nuts.insert_after
@@ -767,7 +770,7 @@ function splitters.handler(head) -- todo: also first_glyph test
                                 if not nextchar then
                                     -- we're done
                                 elseif tree[nextchar] then
-                                    if trace_splitdetail then
+                                    if trace_splitdetails then
                                         if type(final) == "string" then
                                             report_splitting("advance %s processing between <%s> and <%c>","with",final,nextchar)
                                         else
@@ -776,7 +779,7 @@ function splitters.handler(head) -- todo: also first_glyph test
                                     end
                                     head, current = proc(handler,head,current,last,1)
                                 else
-                                    if trace_splitdetail then
+                                    if trace_splitdetails then
                                         -- could be punctuation
                                         if type(final) == "string" then
                                             report_splitting("advance %s processing between <%s> and <%c>","without",final,nextchar)
@@ -894,7 +897,7 @@ function autofontfeature.handler(head)
      -- else
             local script = otfscripts[char]
             if script then
-                local dynamic = getattr(n,0) or 0
+                local dynamic = getglyphdata(n) or 0
                 if dynamic > 0 then
                     local slot = cache_yes[font]
                     local attr = slot[script]

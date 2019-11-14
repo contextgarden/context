@@ -455,10 +455,10 @@
    \dp\b_scrn_menu\zeropoint}
 
 \def\scrn_menu_apply_used
-  {\ifdim\d_scrn_menu_offset_left=\zeropoint \else
+  {\ifzeropt\d_scrn_menu_offset_left \else
      \setbox\b_scrn_menu\hbox{\hskip-\d_scrn_menu_offset_left   \box\b_scrn_menu}%
    \fi
-   \ifdim\d_scrn_menu_offset_bottom=\zeropoint \else
+   \ifzeropt\d_scrn_menu_offset_bottom \else
      \setbox\b_scrn_menu\hbox{\lower \d_scrn_menu_offset_bottom \box\b_scrn_menu}%
    \fi
    \wd\b_scrn_menu\d_scrn_menu_asked_width

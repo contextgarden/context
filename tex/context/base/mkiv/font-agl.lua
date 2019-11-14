@@ -395,7 +395,7 @@ local synonyms = allocate {
     zeroarabic                     = 0x0660,
 }
 
-local extras   = allocate { -- private extensions
+local extras = allocate { -- private extensions
     Dcroat          = 0x0110,
     Delta           = 0x2206,
     Euro            = 0x20AC,
@@ -635,6 +635,17 @@ local extras   = allocate { -- private extensions
     theta1          = 0x03D1,
     twodotenleader  = 0x2025,
 
+    zerooldstyle    = 0x0030,
+    oneoldstyle     = 0x0031,
+    twooldstyle     = 0x0032,
+    threeoldstyle   = 0x0033,
+    fouroldstyle    = 0x0034,
+    fiveoldstyle    = 0x0035,
+    sixoldstyle     = 0x0036,
+    sevenoldstyle   = 0x0037,
+    eightoldstyle   = 0x0038,
+    nineoldstyle    = 0x0039,
+
     dotlessj        = 0x0237,
 }
 
@@ -653,7 +664,7 @@ if names then
     mark(unicodes)
     mark(ctxcodes)
 
-else
+elseif characters then
 
     names    = allocate { } -- filled from char-def.lua
     unicodes = allocate { }

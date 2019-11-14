@@ -96,9 +96,10 @@ local setsubtype   = nuts.setsubtype
 local setleader    = nuts.setleader
 
 local setdata      = nuts.setdata
+local setruledata  = nuts.setruledata
 local setvalue     = nuts.setvalue
 
-local copy_nut     = nuts.copy
+local copy_nut     = nuts.copy_only or nuts.copy
 local new_nut      = nuts.new
 local flush_nut    = nuts.flush
 
@@ -161,8 +162,7 @@ local kern              = register_nut(new_nut(kern_code,kerncodes.userkern))
 local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
 local italickern        = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
 local penalty           = register_nut(new_nut(nodecodes.penalty))
-local glue              = register_nut(new_nut(glue_code)) -- glue.spec = nil
-local glue_spec         = register_nut(new_nut(nodecodes.gluespec))
+local glue              = register_nut(new_nut(glue_code))
 local glyph             = register_nut(new_nut(glyph_code,0))
 
 local textdir           = register_nut(new_nut(nodecodes.dir))
@@ -172,7 +172,7 @@ local savepos           = register_nut(new_nut(whatsit_code,whatsitcodes.savepos
 
 local user_node         = new_nut(whatsit_code,whatsitcodes.userdefined)
 
-if CONTEXTLMTXMODE < 2 then
+if CONTEXTLMTXMODE == 0 then
     setfield(user_node,"type",usercodes.number)
 end
 
@@ -270,15 +270,6 @@ function nutpool.italickern(k)
         setkern(n,k)
     end
     return n
-end
-
-function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
-    -- maybe setglue
-    local s = copy_nut(glue_spec)
-    if width or stretch or shrink or stretch_order or shrink_order then
-        setglue(s,width,stretch,shrink,stretch_order,shrink_order)
-    end
-    return s
 end
 
 local function someskip(skip,width,stretch,shrink,stretch_order,shrink_order)
@@ -394,7 +385,7 @@ function nutpool.outlinerule(width,height,depth,line) -- w/h/d == nil will let t
         setwhd(n,width,height,depth)
     end
     if line then
-        if CONTEXTLMTXMODE > 1 then setdata(n,line) else setfield(n,"transform",line) end
+        setruledata(n,line)
     end
     return n
 end
@@ -414,15 +405,7 @@ function nutpool.savepos()
     return copy_nut(savepos)
 end
 
-if CONTEXTLMTXMODE > 1 then
-
-    function nutpool.latelua(code)
-        local n = copy_nut(latelua)
-        nodeproperties[n] = { data = code }
-        return n
-    end
-
-else
+if CONTEXTLMTXMODE == 0 then
 
     function nutpool.latelua(code)
         local n = copy_nut(latelua)
@@ -432,6 +415,14 @@ else
             code = function() action(specification) end
         end
         setdata(n,code)
+        return n
+    end
+
+else
+
+    function nutpool.latelua(code)
+        local n = copy_nut(latelua)
+        nodeproperties[n] = { data = code }
         return n
     end
 

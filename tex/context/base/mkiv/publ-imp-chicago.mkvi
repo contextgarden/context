@@ -1,0 +1,1686 @@
+%D \module
+%D   [       file=publ-imp-chicago,
+%D        version=2019.05.20,
+%D          title=Chicago bibliography style,
+%D       subtitle=Publications,
+%D         author=Alan Braslau and Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
+%D by \PRAGMA. See mreadme.pdf for details.
+
+\startbtxrenderingdefinitions[chicago]
+
+\ifdefined\c!translate \else \def\c!translate{translate} \fi
+
+%D Reference:
+%D \startTEX
+%D @Book{Chicago2010,
+%D     title    ={The Chicago Manual of Style},
+%D     subtitle ={The Essential Guide for Writers, Editors, and Publishers},
+%D     year     ={2010},
+%D     edition  ={Sixteenth},
+%D     address  ={Chicago and London},
+%D     publisher={The University of Chicago Press},
+%D     Xpages   ={1026},
+%D     url      ={https://www.chicagomanualofstyle.org/},
+%D }
+%D \stopTEX
+
+% set ALL specific Chicago compliant values
+
+\definebtx
+  [chicago]
+  [\c!default=default,
+   \c!specification=chicago,
+   \c!otherstext={\btxspace\btxlabeltext{others}},
+  %\c!journalconversion=\v!normal,
+   \c!monthconversion=\v!month,
+   \c!stopper:initials={. }, % with a (breakable) space
+   \c!separator:names:2={\btxcomma},                         % aka namesep - in this namespace
+   \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % comma separated list
+   \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % last of two, no comma!
+
+% First, define list and rendering parameters
+
+% The Chicago style sorts the unnumbered rendered list by authoryear
+
+\definebtxrendering
+  [chicago]
+  [\c!specification=chicago,
+   \c!sorttype=authoryear,
+   \c!numbering=\v!no]
+
+\setupbtxlist
+  [chicago]
+  [\c!alternative=\v!paragraph,
+   \c!align={normal,verytolerant,stretch},
+  %\c!width=\v!fit,
+  %\c!distance=.5\emwidth,
+   \c!margin=3.5\emwidth]
+
+\definebtx
+  [chicago:\s!list]
+  [chicago]
+ %[\c!otherstext={\btxcomma\btxnobreakspace\textellipsis\space},
+ % \c!etallimit=7,
+ % \c!etaldisplay=6,
+ % \c!etaloption=last,
+  [\c!authorconversion=inverted]
+
+% First, we define a namespace for a few special fields
+
+\definebtx
+  [chicago:\s!list:author]
+  [chicago:\s!list]
+
+\definebtx
+  [chicago:\s!list:withauthor]
+  [chicago:\s!list:author]
+
+\definebtx
+  [chicago:\s!list:editor]
+  [chicago:\s!list:author]
+
+\definebtx
+  [chicago:\s!list:ineditor]
+  [chicago:\s!list:editor]
+  [\c!authorconversion=normalshort]
+
+\definebtx
+  [chicago:\s!list:translator]
+  [chicago:\s!list:author]
+  [\c!authorconversion=normalshort]
+
+\definebtx
+  [chicago:\s!list:director]
+  [chicago:\s!list:author]
+
+\definebtx
+  [chicago:\s!list:producer]
+  [chicago:\s!list:author]
+
+\definebtx
+  [chicago:\s!list:suffix]
+  [chicago:\s!list]
+
+\definebtx
+  [chicago:\s!list:url]
+  [chicago:\s!list]
+
+\definebtx
+  [chicago:\s!list:doi]
+  [chicago:\s!list]
+
+\definebtx
+  [chicago:\s!list:\s!page]
+  [chicago:\s!list]
+ %[\c!separator:2={\btxcomma},
+ % \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+ % \c!separator:4={\btxspace\btxlabeltext{and}\space},
+  [\c!left={\btxleftparenthesis},
+   \c!right={\btxrightparenthesis},
+   \c!command={\wordright}]
+
+\definebtx
+  [chicago:\s!list:numbering]
+  [chicago:\s!list]
+  [\c!right={\btxspace}]
+
+\definebtx
+  [chicago:\s!list:numbering:default]
+  [chicago:\s!list:numbering]
+
+\definebtx
+  [chicago:\s!list:numbering:num]
+  [chicago:\s!list:numbering]
+  [\c!stopper={.}]
+
+\definebtx
+  [chicago:\s!list:numbering:short]
+  [chicago:\s!list:numbering]
+
+\definebtx
+  [chicago:\s!list:numbering:tag]
+  [chicago:\s!list:numbering]
+
+\definebtx
+  [chicago:\s!list:numbering:index]
+  [chicago:\s!list:numbering]
+
+% Next, we define a namespace for each category
+
+%D In order to be able to get journals expanded (or normalized or abbreviated) you need
+%D to load a list:
+%D
+%D \starttyping
+%D \btxloadjournallist[journals.txt] % the jabref list
+%D \stoptyping
+
+\definebtx
+  [chicago:\s!list:journal]
+  [chicago:\s!list]
+  [\c!style=\v!italic]
+  %command=\btxexpandedjournal] % btxabbreviatedjournal
+
+\definebtx
+  [chicago:\s!list:volume]
+  [chicago:\s!list]
+  [\c!style=\v!italic]
+
+\definebtx
+  [chicago:\s!list:title]
+  [chicago:\s!list]
+  [\c!style=\v!italic,
+   \c!command=\Word,
+   \c!translate=\v!yes]
+
+\definebtx
+  [chicago:\s!list:title:article]
+  [chicago:\s!list:title]
+  [\c!style=] % journal is set in italics
+
+\definebtx
+  [chicago:\s!list:title:magazine]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:newspaper]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:periodical]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:standard]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:book]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:booktitle:inbook]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:inbook]
+  [chicago:\s!list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [chicago:\s!list:booktitle:incollection]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:incollection]
+  [chicago:\s!list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [chicago:\s!list:title:proceedings]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:booktitle:inproceedings]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:inproceedings]
+  [chicago:\s!list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [chicago:\s!list:booktitle:conference]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:conference]
+  [chicago:\s!list:title]
+  [\c!style=] % booktitle is set in italics
+
+\definebtx
+  [chicago:\s!list:title:thesis]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:phdthesis]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:mastersthesis]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:booklet]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:manual]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:techreport]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:unpublished]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:patent]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:electronic]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:music]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:film]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:other]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:misc]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:title:literal]
+  [chicago:\s!list:title]
+
+\definebtx
+  [chicago:\s!list:type]
+  [\c!command=\Word]
+
+% Then define and set cite parameters.
+
+\definebtx
+  [chicago:\s!cite]
+  [chicago]
+  [\c!alternative=authoryear,
+   \c!otherstext={\btxcomma\btxlabeltext{others}},
+   \c!etallimit=1,
+   \c!etaldisplay=1,
+   \c!authorconversion=\v!name,
+   \c!sorttype=normal, % \v!normal ?
+   \c!style=,
+   \c!compress=\v!yes] % note that cite sorts only work with compress=yes.
+
+\definebtx
+  [chicago:\s!cite:name]
+  [chicago:\s!cite]
+  [\c!authorconversion=\v!name]
+
+\definebtx
+  [chicago:\s!cite:inverted]
+  [chicago:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [chicago:\s!cite:invertedshort]
+  [chicago:\s!cite]
+  [\c!authorconversion=\v!invertedshort]
+
+\definebtx
+  [chicago:\s!cite:normalshort]
+  [chicago:\s!cite]
+  [\c!authorconversion=\v!normalshort]
+
+\definebtx
+  [chicago:\s!cite:normal]
+  [chicago:\s!cite]
+  [\c!authorconversion=\v!normal]
+
+\definebtx
+  [chicago:\s!cite:author]
+  [chicago:\s!cite]
+
+\definebtx
+  [chicago:\s!cite:editor]
+  [chicago:\s!cite:author]
+
+\definebtx
+  [chicago:\s!cite:translator]
+  [chicago:\s!cite:author]
+
+\definebtx
+  [chicago:\s!cite:organization]
+  [chicago:\s!cite]
+
+\definebtx
+  [chicago:\s!cite:authoryear]
+  [chicago:\s!cite:author]
+  [\c!left={(},
+   \c!right={)},
+   \c!inbetween={\btxspace}]
+
+\definebtx
+  [chicago:\s!cite:default]
+  [chicago:\s!cite:authoryear]
+
+\definebtx
+  [chicago:\s!cite:authoryears]
+  [chicago:\s!cite:author]
+  [\c!left=, % these two settings are perhaps redundant?
+   \c!right=,
+   \c!inbetween={\btxspace}]
+
+\definebtx
+  [chicago:\s!cite:authornum]
+  [chicago:\s!cite:author]
+  [\c!left={(},
+   \c!right={)}]
+
+\definebtx
+  [chicago:\s!cite:author:num] % todo
+  [chicago:\s!cite:authornum]
+  [\c!left={\btxspace[},
+   \c!right={]}]
+
+\definebtx
+  [chicago:\s!cite:author:year] % todo
+  [chicago:\s!cite]
+
+\definebtx
+  [chicago:\s!cite:author:years] % todo
+  [chicago:\s!cite:authoryears]
+  [\c!inbetween=,
+   \c!left={\btxspace(},
+   \c!right={)}]
+
+\definebtx
+  [chicago:\s!cite:lefttext]
+  [chicago:\s!cite]
+  [\c!left=,
+   \c!right={\btxspace}]
+
+\definebtx
+  [chicago:\s!cite:righttext]
+  [chicago:\s!cite]
+  [\c!left={\btxcomma},
+   \c!right=]
+
+\definebtx
+  [chicago:\s!cite:year]
+  [chicago:\s!cite]
+  [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
+
+\definebtx
+  [chicago:\s!cite:title]
+  [chicago:\s!cite]
+  [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space},
+   \c!command={\language[\currentbtxlanguage]}, % BAH
+   \c!sorttype=none,
+   \c!style=\v!italic]
+
+\definebtx
+  [chicago:\s!cite:subtitle]
+  [chicago:\s!cite:title]
+
+\definebtx
+  [chicago:\s!cite:booktitle]
+  [chicago:\s!cite:title]
+
+\definebtx
+  [chicago:\s!cite:subbooktitle]
+  [chicago:\s!cite:booktitle]
+
+% Will these get used?
+
+\definebtx
+  [chicago:\s!cite:title:inbook]
+  [chicago:\s!cite:title]
+  [\c!style=] % not italic
+
+\definebtx
+  [chicago:\s!cite:title:incollection]
+  [chicago:\s!cite:title:inbook]
+
+\definebtx
+  [chicago:\s!cite:title:inproceedings]
+  [chicago:\s!cite:title:inbook]
+
+\definebtx
+  [chicago:\s!cite:subtitle:inbook]
+  [chicago:\s!cite:title:inbook]
+
+\definebtx
+  [chicago:\s!cite:subtitle:incollection]
+  [chicago:\s!cite:title:incollection]
+
+\definebtx
+  [chicago:\s!cite:subtitle:inproceedings]
+  [chicago:\s!cite:title:inproceedings]
+
+
+\definebtx
+  [chicago:\s!cite:tag]
+  [chicago:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [chicago:\s!cite:index]
+  [chicago:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [chicago:\s!cite:page]
+  [chicago:\s!cite]
+  [\c!left=,
+   \c!right=,
+   \c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
+   \c!separator:3={\btxcomma\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
+
+\definebtx
+  [chicago:\s!cite:pages]
+  [chicago:\s!cite:page]
+
+\definebtx
+  [chicago:\s!cite:keywords]
+  [chicago:\s!cite]
+
+\definebtx
+  [chicago:\s!cite:short]
+  [chicago:\s!cite]
+  [\c!left={[},
+   \c!right={]}]
+
+\definebtx
+  [chicago:\s!cite:category]
+  [chicago:\s!cite]
+
+\definebtx
+  [chicago:\s!cite:url]
+  [chicago:\s!cite]
+  [\c!left={(},
+   \c!right={)}]
+
+\definebtx
+  [chicago:\s!cite:doi]
+  [chicago:\s!cite:url]
+
+\definebtx
+  [chicago:\s!cite:num]
+  [chicago:\s!cite]
+  [\c!left={[},
+   \c!right={]},
+   \c!separator:2={,}, % no space
+   \c!separator:3=\btxparameter{\c!separator:2},
+   \c!separator:4=\btxparameter{\c!separator:2}]
+
+\definebtx
+  [chicago:\s!cite:textnum]
+  [chicago:\s!cite:num]
+  [\c!left={Ref.\nbsp},
+   \c!right=,
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxspace\btxlabeltext{and}\space},
+   \c!separator:4={\btxspace\btxlabeltext{and}\space}]
+
+\definebtx
+  [chicago:\s!cite:entry]
+  [chicago:\s!cite]
+  [\c!left=,
+   \c!right=,
+   \c!inbetween={\btxspace},
+   \c!separator:2={\btxsemicolon},
+   \c!separator:3=\btxparameter{\c!separator:2},
+   \c!separator:4=\btxparameter{\c!separator:2}]
+
+\definebtx
+  [chicago:\s!cite:footnote]
+  [chicago:\s!cite:entry]
+
+% Now we setup for the details of the renderings
+
+%D Sometimes we have verbose injections in an entry and these can be language
+%D dependent, so we use labels.
+%D
+%D Because we want to mix rendering (in the manual) we need a namespace in label
+%D texts:
+
+\setupbtxlabeltext
+  [en]
+  [chicago:number={No.},
+   chicago:edition={ed.},
+   chicago:Editor={Ed.},
+   chicago:Editors={Eds.},
+   chicago:Volume={Vol.},
+   chicago:Volumes={Vols.},
+   chicago:nd={n.d.},     % no date
+   chicago:supplement={Suppl.},           % Supplement (not used?)
+   chicago:MotionPicture={Motion picture},
+   chicago:Writer=Writer,
+   chicago:Writers=Writers,
+   chicago:Producer=Producer,
+   chicago:Producers=Producers,
+   chicago:Director=Director,
+   chicago:Directors=Directors,
+   chicago:Recordedby={Recorded by},
+   chicago:Author=Author,
+   chicago:Translator={Trans.},           % Translator(s)
+   chicago:Advanced={Advanced online publication},
+   chicago:Retrieved={Retrieved from}] % {Available from}]
+
+\setupbtxlabeltext
+  [nl]
+  [chicago:number={Nr.},
+   chicago:edition={ed.}, % editie
+   chicago:Editor=Editor, % Ed./Eds.
+   chicago:Editors=Editors,
+   chicago:Volume={Vol.},
+   chicago:Volumes={Vols.},
+   chicago:nd={g.d.}      % geen datum
+   chicago:supplement=Supplement,
+   chicago:MotionPicture=Film, % ?
+   chicago:Writer=Scenarioschrijver, % ?
+   chicago:Writers=Schrijvers, % ?
+   chicago:Producer=Producent,   % ?
+   chicago:Producers=Producents, % ?
+   chicago:Director=Directeur,
+   chicago:Directors=Directeurs,
+   chicago:Recordedby={Opgenomen door}, % ?
+   chicago:Author=Auteur,
+   chicago:Translator=Vertaler,
+   chicago:Advanced={Geavanceerde online publicatie},
+   chicago:Retrieved={Ontvangen van}] % {Beschikbaar vanaf}]
+
+\setupbtxlabeltext
+  [fr]
+  [chicago:number={N\high{o}},
+   chicago:edition={édition},
+   chicago:Editor=Éditeur,
+   chicago:Editors=Éditeurs,
+   chicago:Volume=Volume,
+   chicago:Volumes=Volumes,
+   chicago:nd={s.d.},     % sans date
+   chicago:supplement=Supplément,
+   chicago:MotionPicture={Film cinématographique},
+   chicago:Writer=Scénariste,
+   chicago:Writers=Scénaristes,
+   chicago:Producer=Producteur,
+   chicago:Producers=Producteurs,
+   chicago:Director=Réalisateur,
+   chicago:Directors=Réalisateurs,
+   chicago:Recordedby={Enregistré par},
+   chicago:Author=Auteur,
+   chicago:Translator=Traducteur,
+   chicago:Advanced={Publication en ligne anticipée},
+   chicago:Retrieved={Téléchargé de}] % {Disponible à}]
+
+\setupbtxlabeltext
+  [de]
+  [chicago:number={Nr.},
+   chicago:edition=Auf\/lage,
+   chicago:Editor=Herausgeber, % Hrsg./Hg.
+   chicago:Editors=Herausgeber,
+   chicago:Volume=Band,        % Bd.
+   chicago:Volumes={Bände},
+   chicago:nd={o.D.},          % ohne Datum (mostly: o.J. / ohne Jahr)
+   chicago:supplement={Beilage},          % Supplement
+   chicago:MotionPicture=Kinofilm, % ?
+   chicago:Writer=Drehbuchautor,   % ?
+   chicago:Writers=Schriftsteller, % ?
+   chicago:Producer=Producer,      % ?
+   chicago:Producers=Produzenten,  % ?
+   chicago:Director=Director,      % ?
+   chicago:Directors=Directors,    % ?
+   chicago:Recordedby={per Einschreiben}, % ?
+   chicago:Author=Autor,
+   chicago:Translator={Übersetzer},       % Übers.
+   chicago:Advanced={Erweiterte Online-Publikation},
+   chicago:Retrieved={heruntergeladen von}]
+
+% thanks: Andrea Valle
+
+\setupbtxlabeltext
+  [it]
+  [chicago:number={Nº},
+   chicago:edition={ed.}, % edizione
+   chicago:Editor={A cura di},
+   chicago:Editors={A cura di},
+   chicago:Volume={Vol.},  % Volume
+   chicago:Volumes={Vol.}, % Volumi
+   chicago:nd={s.d.},     % senza data
+   chicago:supplement={Supplemento},
+   chicago:MotionPicture=Film, % ?
+   chicago:Writer=Sceneggiatore, % ?
+   chicago:Writers=Scrittori, % ?
+   chicago:Producer=Produttore,
+   chicago:Producers=Produttori,
+   chicago:Director=Direttore,
+   chicago:Directors=Direttori,
+   chicago:Recordedby={Registrato da},
+   chicago:Author=Autore,
+   chicago:Translator={Trad.},                        % Translator(s)
+   chicago:Advanced={Pre-pubblicazione on line},
+   chicago:Retrieved={Accessible online}]
+
+\setupbtxlabeltext
+  [es]
+  [chicago:number={Nº},
+   chicago:edition={ed.}, % edición
+   chicago:Editor=Editor, % Ed./Eds.
+   chicago:Editors=Editores,
+   chicago:Volume={Vol.},   % Volumen
+   chicago:Volumes={Vols.}, % Volúmenes
+   chicago:nd={s.f.},     % sin fecha
+   chicago:supplement=Suplemento,
+   chicago:MotionPicture=Cinematográfica,
+   chicago:Writer=Guionista, % ?
+   chicago:Writers=Escritores, % ?
+   chicago:Producer=Productor,
+   chicago:Producers=Productores,
+   chicago:Director=Director,
+   chicago:Directors=Directores,
+   chicago:Recordedby={Grabada por},
+   chicago:Author=Autor,
+   chicago:Translator=Traductor,
+   chicago:Advanced={Publicación en línea avanzada},
+   chicago:Retrieved={Obtenido de}] % {Disponible desde}]
+
+
+\setupbtxlabeltext
+  [sv]
+  [chicago:number={nr.},
+   chicago:edition={Utgåva},
+   chicago:Editor=Redaktör,
+   chicago:Editors=Redaktörer,
+   chicago:Volume=Band,        
+   chicago:Volumes=Band,
+   chicago:nd={u.å.},                  % utan årtal
+   chicago:supplement=Bilaga,          % Supplement
+   chicago:MotionPicture=Spelfilm,     % ?
+   chicago:Writer={Manusförfattare},   % Assuming for a movie
+   chicago:Writers={Manusförfattare},  % 
+   chicago:Producer=Producent,         % Assuming for a movie
+   chicago:Producers=Producenter,      % 
+   chicago:Director={Regissör},        % Assuming for a movie
+   chicago:Directors={Regissörer},     % 
+   chicago:Recordedby={Inspelad av},   % Assuming for a movie
+   chicago:Author={Författare},
+   chicago:Translator={Översättare},       
+   chicago:Advanced={Avancerad onlinepublikation}, % ?
+   chicago:Retrieved={Hämtad från}]
+
+% cite setups
+
+% The following differs from the default returning n.d. if year is empty
+
+\startsetups btx:chicago:cite:author:year
+    \ifx\currentbtxfirst\empty
+        \def\currentbtxfirst{\fastsetup{\s!btx:chicago:nd}}
+    \fi
+    \fastsetup{\s!btx:\s!cite:author:year}
+\stopsetups
+
+\startsetups btx:chicago:cite:author:years
+    \ifx\currentbtxfirst\empty
+        \def\currentbtxfirst{\fastsetup{\s!btx:chicago:nd}}
+    \fi
+    \fastsetup{\s!btx:\s!cite:author:years}
+\stopsetups
+
+% these setups need to be explicitly defined in order to get cite rendering
+
+\startsetups \s!btx:chicago:\s!cite:organization
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:subtitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:booktitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:subbooktitle
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+% are these needed?
+
+\startsetups \s!btx:chicago:\s!cite:title:inbook
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:title:incollection
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:title:inproceedings
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:subtitle:inbook
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:subtitle:incollection
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+\startsetups \s!btx:chicago:\s!cite:subtitle:inproceedings
+    \fastsetup{\s!btx:\s!cite:normal}
+\stopsetups
+
+% used in publ-imp-page.mkvi
+
+\startsetups btx:chicago:list:page-or-pages
+    \ifx\currentbtxlastpage\empty
+        \btxlabeltext{p}
+    \else
+        \btxlabeltext{pp}
+    \fi
+    \btxnbsp
+\stopsetups
+
+% The sameauthor feature may not be Chicago compliant
+% (there is nothing in the manual cited above).
+% It can be removed using the command:
+% \resetsetups [chicago:list:sameauthor]
+
+% :rule, :empty or :ditto ...
+
+\startsetups chicago:list:sameauthor
+    \fastsetup{chicago:list:sameauthor:rule}
+\stopsetups
+
+\startsetups chicago:list:sameauthor:rule
+    \blackrule
+      [\c!width=3em,
+       \c!height=1.5\linewidth]% \linewidth is just too thin with respect to font strokes...
+\stopsetups
+
+\startsetups [chicago:list:sameauthor:\v!empty]
+    \kern\dimexpr\listparameter\c!margin-\interwordspace\relax
+\stopsetups
+
+% horrible !
+
+\startsetups chicago:list:sameauthor:ditto
+    \inframed
+      [\c!width=\dimexpr\listparameter\c!margin-\interwordspace\relax,
+       \c!frame=\v!off,
+       \c!align=\v!middle]
+      {\doubleprime}
+\stopsetups
+
+%D Instead of texdefinitions without arguments, we could have used setups but in my
+%D editor (hh, scite) the commands stand out better. It also saves an additional
+%D component in the name (e.g. common:) because commands and setups have a different
+%D namespace, so similar calls don't clash. Performance of definitions is somewhat
+%D better.
+
+%D We use "texdefinitions" (with eventual arguments) for helpers that are used
+%D in the rendering "setups" defined for each category below.
+
+%D Note that \btxdoif... and \btxflush rely on the definitions in
+%D publ-imp-chicago.lua: fields that are not listed as required nor optional are
+%D IGNORED. We also make heavy use of the notion of sets - comma-separated lists
+%D of alternative fields to be used in hierarchal order. For example:
+%D author = { "author", "editor", "publisher", "title" }, will return the
+%D author field if it exists; if not, the editor field will be returned, if it
+%D exists; if not, the publisher field will be returned, if it exists; if not,
+%D the title field will be returned, it it exists; if not, nothing will be
+%D returned. In lua syntax, it can be understood as
+%D author or editor or publisher or title or ""
+
+% #title can be title or booktitle
+
+\starttexdefinition unexpanded btx:chicago:translated-title #title
+    \ifx\currentbtxlanguage\empty
+        % no need for an extra
+    \else\ifx\mainbtxlanguage\currentbtxlanguage
+        % no need for an extra
+    \else
+        \btxdoif {#title:\mainbtxlanguage} {
+            \begingroup
+                \language[\mainbtxlanguage]
+                \btxleftbracket
+                \btxusecommand [chicago:\s!list:#title:\currentbtxcategory] {
+                    \btxflush{#title:\mainbtxlanguage}
+                }
+                \btxrightbracket
+            \endgroup
+        }
+    \fi\fi
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:composed-title #title
+    \btxstartstyleandcolor[chicago:\s!list:#title:\currentbtxcategory]
+        \begingroup
+            \language[\currentbtxlanguage]
+            \btxusecommand [chicago:\s!list:#title:\currentbtxcategory] {
+                \btxflush{#title}
+                \btxdoif {sub#title} {
+                    \btxcolon
+                    \btxflush{sub#title}
+                }
+            }
+        \endgroup
+        % which namespace?
+        %\doif{\btxparameter{translate}}\v!yes {
+            \texdefinition{btx:chicago:translated-title}{#title}
+        %}
+    \btxstopstyleandcolor
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:title
+    \setmode{btx:chicago:title-placed}
+    % we make the title active, opening "file"
+    \btxdoifelse {file} {
+        \texdefinition{btx:format:inject}
+            {url(file:\btxflush{file})}
+            {
+                \texdefinition{btx:chicago:composed-title}{title}
+            }
+    } {
+        \texdefinition{btx:chicago:composed-title}{title}
+    }
+    \btxdoif {title} {
+        % A book might have an editor AND an author
+        \doif {\currentbtxcategory} {book} {
+            \doifnot {\btxfoundname{author}} {editor} {
+                \btxdoif {ineditor} { % ineditor specific authorconversion
+                    \btxleftparenthesis
+                    \btxflush{ineditor}
+                    \btxcomma
+                    \btxsingularorplural {ineditor} {
+                        \btxlabeltext{chicago:Editor}
+                    } {
+                        \btxlabeltext{chicago:Editors}
+                    }
+                    \btxrightparenthesis
+                }
+            }
+        }
+        \btxdoif {translator} {
+            \btxleftparenthesis
+                \btxflush{translator}
+                \btxcomma
+                \btxlabeltext{chicago:Translator}
+            \btxrightparenthesis
+        }
+        \btxperiod
+        % TODO: this period may NOT be wanted, as in: Title (2nd ed.).
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:title-if-not-placed
+    \doifelsemode {btx:chicago:title-placed} {
+        \resetmode{btx:chicago:title-placed}
+    } {
+        \btxdoif {title} {
+            \btxspace
+            \texdefinition {btx:chicago:title}
+        }
+    }
+\stoptexdefinition
+
+\startsetups btx:chicago:nd
+    \btxlabeltext{chicago:nd}
+\stopsetups
+
+\starttexdefinition unexpanded btx:chicago:suffixedyear
+    \btxdoifelse {year} {
+        \btxflush{year}
+        \btxflushsuffix
+        \btxdoif {month} { % month and day optional in publ-imp-chicago.lua
+            \btxcomma
+            \btxflush{month}
+            \btxdoif {day} {
+                \btxspace
+                \btxflush{day}
+            }
+        }
+    } {
+        \fastsetup{btx:chicago:nd}
+        % Hans: the following won't work but should.
+        \btxdoif {suffix} {
+            \btxspace
+            \btxflushsuffix
+            % Hans: similarly, why can't \btxflush{suffix} be made to work?
+        }
+    }
+\stoptexdefinition
+
+% #author may be author(set) or editor
+
+\starttexdefinition unexpanded btx:chicago:author-or-editor #author
+    \btxdoifelse {#author} {
+        \btxstartstyleandcolor[chicago:\s!list:#author]
+            \btxusecommand[chicago:\s!list:#author]{
+                \btxflush{#author}
+            }
+        \btxstopstyleandcolor
+        % use \processaction [] [] here?
+        \doifelse {\btxfoundname{#author}} {editor} {
+            \btxleftparenthesis
+            \btxsingularorplural {editor} {
+                \btxlabeltext{chicago:Editor}
+            } {
+                \btxlabeltext{chicago:Editors}
+            }
+            \btxrightparenthesis
+        } {\doif {\btxfoundname{#author}} {ineditor} {
+            \btxleftparenthesis
+            \btxsingularorplural {ineditor} {
+                \btxlabeltext{chicago:Editor}
+            } {
+                \btxlabeltext{chicago:Editors}
+            }
+            \btxrightparenthesis
+        } }
+        \doif {\currentbtxcategory} {film} {
+            \btxleftparenthesis
+            \doifelse {\btxfoundname{#author}} {director} {
+                \btxsingularorplural {director} {
+                    \btxlabeltext{chicago:Director}
+                } {
+                    \btxlabeltext{chicago:Directors}
+                }
+            } {
+                \doif {\btxfoundname{#author}} {author} {
+                    \btxsingularorplural {author} {
+                        \btxlabeltext{chicago:Writer}
+                    } {
+                        \btxlabeltext{chicago:Writers}
+                    }
+                }
+                \doif {\btxfoundname{#author}} {producer} {
+                    \btxsingularorplural {producer} {
+                        \btxlabeltext{chicago:Producer}
+                    } {
+                        \btxlabeltext{chicago:Producers}
+                    }
+                }
+                \btxdoif {director} {
+                    \btxrightparenthesis
+                    \removeunwantedspaces
+                    \btxparameter{\c!separator:names:3}
+                    \btxstartstyleandcolor[chicago:\s!list:director]
+                        \btxusecommand[chicago:\s!list:director]{
+                            \btxflush{director}
+                        }
+                    \btxstopstyleandcolor
+                    \btxleftparenthesis
+                    \btxsingularorplural {director} {
+                        \btxlabeltext{chicago:Director}
+                    } {
+                        \btxlabeltext{chicago:Directors}
+                    }
+                }
+            }
+            \btxrightparenthesis
+        }
+        \btxdoif {withauthor} {
+            \btxleftparenthesis
+            \btxlabeltext{with}
+            \btxspace
+            \btxstartstyleandcolor[chicago:\s!list:withauthor]
+                \btxusecommand[chicago:\s!list:withauthor]{
+                    \btxflush{withauthor}
+                }
+            \btxstopstyleandcolor
+            \btxrightparenthesis
+        }
+    } {
+        \texdefinition{btx:chicago:title}
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:authoryear
+    % we make the authoryear active, pointing to the citation
+    \texdefinition{btx:format:inject}
+        {internal(\currentbtxinternal)}
+        {
+            \doifelsesetups{chicago:list:sameauthor} {
+                \btxdoifelsesameasprevious {author} {
+                    \fastsetup{chicago:list:sameauthor}
+                } {
+                    \texdefinition{btx:chicago:author-or-editor} {author}
+                }
+            } {
+                \texdefinition{btx:chicago:author-or-editor} {author}
+            }
+            \texdefinition{btx:chicago:suffixedyear}
+        }
+    % outside of interaction
+    \btxperiod
+    \doif {\btxfoundname{author}} {title} {
+        \setmode{btx:chicago:title-placed}
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:editor-in
+    \btxdoif {booktitle} {
+        \btxlabeltext{In}
+        \btxspace
+        \doifnot {\btxfoundname{author}} {editor} {
+            \texdefinition{btx:chicago:author-or-editor} {ineditor}
+            \btxcomma
+        }
+        \texdefinition{btx:chicago:composed-title}{booktitle}
+        \btxperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:organization-if-not-author
+    \btxdoif {organization} {
+        \doifnot {\btxfoundname{author}} {organization} {
+            \btxspace
+            \btxflush{organization}
+            \btxcomma
+        }
+    }
+\stoptexdefinition
+
+% TODO: The title is terminated with period. However,
+% we probably don't want this before the parenthesis.
+
+\starttexdefinition unexpanded btx:chicago:leftparenthesis-or-comma
+    \doifelsemode {btx:chicago:editionset-is-empty} {
+        \btxleftparenthesis
+        \resetmode{btx:chicago:editionset-is-empty}
+    } {
+        \btxcomma
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:editionset
+    \setmode{btx:chicago:editionset-is-empty}
+    \doif {\currentbtxcategory} {techreport} {
+        \texdefinition{btx:chicago:leftparenthesis-or-comma}
+        \btxdoifelse {type} {
+            \btxusecommand [chicago:\s!list:type] {
+                \btxflush{type}
+            }
+        } {
+            \btxlabeltext{technicalreport}
+        }
+    }
+    \btxdoif {volume} {
+        \texdefinition{btx:chicago:leftparenthesis-or-comma}
+        \btxoneorrange {volume} {
+            \btxlabeltext{chicago:Volume}
+        } {
+            \btxlabeltext{chicago:Volumes}
+        }
+        \btxspace
+        \btxflush{volume}
+    }
+    \btxdoif {number} {
+        \texdefinition{btx:chicago:leftparenthesis-or-comma}
+        \btxlabeltext{chicago:number}
+        \btxspace
+        \btxflush{number}
+    }
+    \btxdoif {edition} {
+        \texdefinition{btx:chicago:leftparenthesis-or-comma}
+        \btxflush{edition}
+        \btxspace
+        \btxlabeltext{chicago:edition}
+    }
+    \btxdoif {pages} {
+        \texdefinition{btx:chicago:leftparenthesis-or-comma}
+        \btxoneorrange {pages} {
+            \btxlabeltext{p}
+        } {
+            \btxlabeltext{pp}
+        }
+        \btxnbsp
+        \btxflush{pages}
+    }
+    \doifnotmode {btx:chicago:editionset-is-empty} {
+        \btxrightparenthesisperiod
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:journal
+    \btxstartstyleandcolor[chicago:\s!list:journal]
+        \btxusecommand [chicago:\s!list:journal] {
+            \btxflush{journal}
+        }
+    \btxstopstyleandcolor
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:volume
+    \btxstartstyleandcolor[chicago:\s!list:volume]
+        \btxflush{volume}
+    \btxstopstyleandcolor
+\stoptexdefinition
+
+ % this could be simplified!
+
+\starttexdefinition unexpanded btx:chicago:journal-volume-number-pages
+    \btxdoif {journal} {
+        \btxspace
+        \texdefinition{btx:chicago:journal}
+        \btxdoifelse {volume} {
+            \btxcomma
+            \texdefinition{btx:chicago:volume}
+            \btxdoif {number} {
+                %\btxleftparenthesis
+                (\btxflush{number}
+                \btxrightparenthesis
+            }
+        } {
+            \btxdoif {number} {
+                \btxcomma
+                \btxleftparenthesis
+                \btxflush{number}
+                \btxrightparenthesis
+            }
+        }
+        \btxdoif {pages} {
+            \btxcomma
+            \doif {\currentbtxcategory} {newspaper} {
+                \btxoneorrange {pages} {
+                    \btxlabeltext{p}
+                } {
+                    \btxlabeltext{pp}
+                }
+                \btxnbsp
+            }
+            \btxflush{pages}
+        }
+        \btxperiod
+        \doifnot {\currentbtxcategory} {newspaper} {
+            \btxdoifnot {volume} {
+                \btxdoifnot {number} {
+                    \btxdoifnot {pages} {
+                        \btxdoif {doi} {%set: doi or url
+                            \btxspace
+                            \btxlabeltext{chicago:Advanced}
+                            \btxperiod
+                        }
+                    }
+                }
+            }
+        }
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:wherefrom-publisher
+    \btxdoifelse {address} {
+        \btxflush{address}
+        \btxdoif {country} {
+            \btxcomma
+            \btxflush{country}
+        }
+        \btxcolon
+    } {
+        \btxdoif {country} {
+            \btxflush{country}
+            \btxcolon
+        }
+    }
+    \doifelse {\btxfoundname{author}} {\btxfoundname{publisher}} {
+        \btxlabeltext{chicago:Author}
+    } {
+        \btxdoifelse {publisher} {
+            \btxflush{publisher}
+        } {
+            \btxlabeltext{chicago:Author}
+        }
+    }
+    \btxperiod
+\stoptexdefinition
+
+\definebreakpoints[doi]
+\definebreakpoint [doi][:][nleft=3,type=1]
+\definebreakpoint [doi][/][nleft=3,type=1]
+\definebreakpoint [doi][-][nleft=3,type=1]
+\definebreakpoint [doi][.][nleft=3,type=1]
+
+% use \btxentry here?
+
+\starttexdefinition unexpanded btx:chicago:url
+    \begingroup
+        \setbreakpoints[doi]
+        \ifconditional\btxinteractive
+            \goto {
+                \hyphenatedurl{\btxflush{url}}
+            } [
+                url(\btxflush{url})
+            ]
+        \else
+            \hyphenatedurl{\btxflush{url}}
+        \fi
+    \endgroup
+\stoptexdefinition
+
+% use \btxentry here?
+
+\starttexdefinition unexpanded btx:chicago:doi
+    \begingroup
+        \setbreakpoints[doi]
+        \ifconditional\btxinteractive
+            \goto {
+                \hyphenatedurl{doi:\btxflush{doi}}
+            } [
+                url(http://dx.doi.org/\btxflush{doi})
+            ]
+        \else
+            \hyphenatedurl{doi:\btxflush{doi}}
+        \fi
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:note
+    \btxdoif {note} {
+        \btxleftparenthesis
+        \btxflush{note}
+        \btxrightparenthesis
+    }
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:url-doi-note
+    \doif {\btxfoundname{doi}} {url} {
+        \btxspace
+        \btxlabeltext{chicago:Retrieved}
+        \btxspace
+        \texdefinition{btx:chicago:url}
+    }
+    \doif {\btxfoundname{doi}} {doi} {
+        \btxspace
+        \texdefinition{btx:chicago:doi}
+    }
+    \texdefinition{btx:chicago:note}
+    \removeunwantedspaces
+\stoptexdefinition
+
+\starttexdefinition unexpanded btx:chicago:type
+    \btxdoif {type} {
+        \btxleftbracket
+        \btxflush{type}
+        \btxrightbracketperiod
+    }
+\stoptexdefinition
+
+% Then setups, by category
+
+% An article from a journal
+% Required fields: author or organization or editor or title, journal, (year).
+% Optional fields: volume, number, pages, type, doi, url, note.
+% Note that bibtex (and tools) do not include editor (e.g. special issue or section)
+
+\startsetups btx:chicago:list:article
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:type}
+    \texdefinition{btx:chicago:journal-volume-number-pages}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% An article from a magazine.
+% Required fields: author or title, journal, (year).
+% Optional fields: number, pages, type, month, day, doi, url, note.
+
+\startsetups btx:chicago:list:magazine
+    \fastsetup{btx:chicago:list:article}
+\stopsetups
+
+% An article from a newspaper.
+% Required fields: author or title, journal, (year).
+% Optional fields: volume, number, pages, type, month, day, doi, url, note.
+
+\startsetups btx:chicago:list:newspaper
+    \fastsetup{btx:chicago:list:article}
+\stopsetups
+
+% A complete issue of a periodical, such as a special issue of a journal.
+% Required fields: title, year
+% Optional fields: editor, publisher, subtitle, series, volume, number, month, organization, doi, url, issn, note
+
+% needs to be tuned...
+
+\startsetups btx:chicago:list:periodical
+    \fastsetup{btx:chicago:list:article}
+\stopsetups
+
+% National and international standards issued by a standards body
+% Required fields: author, institution, or organization, year, title
+% Optional fields: subtitle, doi, url, note
+
+\startsetups btx:chicago:list:standard
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% A book with an explicit publisher.
+% Required fields: author or editor or publisher, title, (year).
+% Optional fields: volume or number, series, address, edition, month, day, note.
+% Chicago ignores: month, day
+
+% todo: series?
+
+\startsetups btx:chicago:list:book
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:type}
+    \texdefinition{btx:chicago:editionset}
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% There is some debate about how inbook should differ from incollection
+
+% A part of a book, which may be a chapter (or section or whatever) and/or a range of pages.
+% (note that inbook is handled differently by bibtex and biblatex)
+% Required fields: author or editor, title, chapter and/or pages, publisher, year.
+% Optional fields: volume or number, series, type, address, edition, month, note.
+% We add optional: booktitle.
+% Chicago ignores: chapter, month
+
+\startsetups btx:chicago:list:inbook
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:type}
+    \texdefinition{btx:chicago:editor-in}
+    \texdefinition{btx:chicago:editionset}
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% A part of a book having its own title.
+% Required fields: author, title, booktitle, publisher, year.
+% Optional fields: editor, volume or number, series, type, chapter, pages, address, edition, month, note.
+% Chicago ignores: chapter, month
+
+\startsetups btx:chicago:list:incollection
+    \fastsetup{btx:chicago:list:inbook}
+\stopsetups
+
+% The proceedings of a conference.
+% Required fields: title, year.
+% Optional fields: editor, volume or number, series, address, month, organization, publisher, note.
+% todo: series?
+
+\startsetups btx:chicago:list:proceedings
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% An article in a conference proceedings.
+% Required fields: author, title, booktitle, year.
+% Optional fields: editor, volume or number, series, pages, address, month, organization, publisher, note.
+
+\startsetups btx:chicago:list:inproceedings
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:editor-in}
+    \texdefinition{btx:chicago:editionset}
+    \texdefinition{btx:chicago:organization-if-not-author}
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+\startsetups btx:chicago:list:conference
+    \fastsetup{btx:chicago:list:inproceedings}
+\stopsetups
+
+% A thesis.
+% Required fields: author, title, school, year.
+% Optional fields: type, address, month, note.
+
+\startsetups btx:chicago:list:thesis
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \btxleftparenthesis
+    \btxdoifelse {type} {
+        \btxusecommand [chicago:\s!list:type] {
+            \btxflush{type}
+        }
+    } {
+        \btxlabeltext{\currentbtxcategory}
+    }
+    \btxrightparenthesis
+    \btxdoif {school} {
+        \btxperiod
+        \btxflush{school}
+    }
+    \btxdoif {address} {
+        \btxdoifelse {school} {
+            \btxcomma
+        } {
+            \btxperiod
+        }
+        \btxflush{address}
+        \btxdoif {country} {
+            \btxcomma
+            \btxflush{country}
+        }
+    }
+    \btxperiod
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+\startsetups btx:chicago:list:phdthesis
+    \fastsetup{btx:chicago:list:thesis}
+\stopsetups
+
+\startsetups btx:chicago:list:mastersthesis
+    \fastsetup{btx:chicago:list:thesis}
+\stopsetups
+
+% A work that is printed and bound, but without a named publisher or sponsoring institution.
+% Required field: title.
+% Optional fields: author, howpublished, address, month, year, note.
+
+\startsetups btx:chicago:list:booklet
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% Technical documentation.
+% Required field: title.
+% Optional fields: author, organization, address, edition, month, year, note.
+
+\startsetups btx:chicago:list:manual
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% A report published by a school or other institution, usually numbered within a series.
+% Required fields: author, title, institution, year.
+% Optional fields: type, number, address, month, note.
+
+\startsetups btx:chicago:list:techreport
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% A document having an author and title, but not formally published.
+% Required fields: author, title, note.
+% Optional fields: month, year.
+
+\startsetups btx:chicago:list:unpublished
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% A patent. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: nationality, number, year, yearfiled
+% Optional fields: author, title, assignee, address, type, number, day, dayfiled, month, monthfiled, note, url
+% Also optional: publisher
+
+% todo: yearfiled, monthfiled, dayfiled
+
+\startsetups btx:chicago:list:patent
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \begingroup
+        \it
+        \btxdoif {nationality} {
+            \btxspace
+            \btxflush{nationality}
+        }
+        \btxspace
+        \btxdoifelse{type}{
+            \btxflush{type}
+        }{
+            \btxlabeltext{patent}
+        }
+        \btxdoif {number} {
+            \btxspace
+            \btxlabeltext{chicago:number}
+            \btxspace
+            \btxflush{number}
+        }
+        \btxperiod
+        \italiccorrection
+    \endgroup
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url}
+    \texdefinition{btx:chicago:note}
+\stopsetups
+
+% Electronic. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: title
+% Optional fields: address, author, howpublished, month, note, organization, url, year, doi
+% Also optional: type
+
+% Like Misc below but includes organization.
+
+\startsetups btx:chicago:list:electronic
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \texdefinition{btx:chicago:type}
+    \texdefinition{btx:chicago:organization-if-not-author}
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% Film. Note that this category was not defined with BIBTEX.
+% Required fields: producer, director, title, year, address, publisher
+% Optional fields: subtitle, type, note, url, doi
+
+\startsetups btx:chicago:list:film
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition {btx:chicago:title}
+    \btxleftbracket
+        \btxdoifelse {type} {
+            \btxflush{type}
+        } {
+            \btxlabeltext{chicago:MotionPicture}
+        }
+    \btxrightbracketperiod
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% Music. Note that this category was not defined with BIBTEX.
+% Required fields: composer, artist, title, album, year, address, publisher
+% Optional fields: subtitle, type, note, url, doi
+
+\startsetups btx:chicago:list:music
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \doifnot {\btxfoundname{author}} {artist} {
+        \btxdoif {artist} {
+            \btxleftbracket
+            \btxlabeltext{chicago:Recordedby}
+            \btxspace
+            \btxflush{artist}
+            \btxrightbracketperiod
+        }
+    }
+    \doifnot {\btxfoundname{title}} {album} {
+        \btxdoif {album} {
+            \btxlabeltext{In}
+            \btxspace
+            \btxflush{album}
+            \btxperiod
+        }
+    }
+    \texdefinition{btx:chicago:type}
+    \texdefinition{btx:chicago:wherefrom-publisher}
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% Other. Note that this category was not defined with BIBTEX. Below from JabRef:
+% Required fields: author or title, year
+% Optional fields: note, doi, url
+
+\startsetups btx:chicago:list:other
+    \fastsetup{btx:chicago:list:book}
+\stopsetups
+
+% Use this category when nothing else fits.
+% Required fields: none.
+% Optional fields: author, title, howpublished, month, year, note.
+
+\startsetups btx:chicago:list:misc
+    \texdefinition{btx:chicago:authoryear}
+    \texdefinition{btx:chicago:title-if-not-placed}
+    \btxdoif {howpublished} {
+        \btxspace
+        \btxflush{howpublished}
+        \btxperiod
+    }
+    \texdefinition{btx:chicago:url-doi-note}
+\stopsetups
+
+% If all else fails to match:
+
+\startsetups btx:chicago:list:literal
+    %\btxleftparenthesis
+    \removeunwantedspaces(
+    \btxflush{tag}
+    \btxrightparenthesis
+    \btxdoif {text} {
+        \btxflush{text}
+    }
+\stopsetups
+
+% HH: an example of setting up translations using a sub rendering. Keep it here
+% till we find another spot as otherwise I forget about it and I don't want to
+% waste hours reinventing a wheel when something like this is needed.
+%
+% \definebtx
+%   [chicago:cite:title:translated]
+%   [chicago:cite:title]
+%   [left=\btxleftbracket,
+%    right=\btxrightbracket,
+%    style=\v!bolditalic]
+%
+% \startsetups btx:chicago:cite:title
+%     % need to add concat, etc.
+%     \btxcitereference
+%     \currentbtxfirst
+%     \doifmode {btx:chicago:translatedtitles} {
+%         \ifx\currentbtxlanguage\empty
+%             % no need for an extra
+%         \else\ifx\mainbtxlanguage\currentbtxlanguage
+%             % no need for an extra
+%         \else
+%             \btxdoif {title:\mainbtxlanguage} {
+%                 \btxstartciterendering[title:translated]
+%                     \language[\mainbtxlanguage]
+%                     \btxflush{title:\mainbtxlanguage}
+%                 \btxstopciterendering
+%             }
+%         \fi\fi
+%     }
+% \stopsetups
+
+\stopbtxrenderingdefinitions

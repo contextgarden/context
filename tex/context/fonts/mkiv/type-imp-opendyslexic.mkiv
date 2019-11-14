@@ -11,7 +11,35 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D It's kind of funny that the term \quote {dyslexic} itself is hard to read and I
+%D (not being dyslexic) need to double check it.
+%D
+%D As often a sans is adviced: I personally think that Optima Nova is a quite good
+%D choice but it doesn't come for free.
+
+% \enabledirectives[fonts.features.combine]
+%
+% \usetypescriptfile[opendyslexic]
+%
+% \starttypescript[opendyslexic-new]
+%     \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=opendyslexic-new]
+%     \definetypeface [\typescriptone] [ss] [serif] [\typescriptone] [default] [features=opendyslexic-new]
+%     \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone] [default]
+%     \definetypeface [\typescriptone] [mm] [math]  [xits]           [default]
+% \stoptypescript
+%
+% \setupbodyfont
+%   [opendyslexic-new,10pt]
+%
+% \starttext
+%     \input tufte
+% \stoptext
+
 \starttypescriptcollection[opendyslexic]
+
+    \definefontfeature
+      [opendyslexic-new]
+      [spacing={0.4+0.2-0.1}]
 
     \starttypescript [\s!serif] [opendyslexic] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
@@ -21,7 +49,13 @@
         \definefontsynonym [\s!SerifBoldItalic] [\s!file:opendyslexic-bolditalic.otf] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!sans] [opendyslexic] [\s!name]
+    \starttypescript [\s!serif] [opendyslexic-new] [\s!name]
+        \setups[\s!font:\s!fallback:\s!serif]
+        \definefontsynonym [\s!Serif]     [\s!file:opendyslexic3-regular.ttf] [\s!features={opendyslexic-new,\s!default}]
+        \definefontsynonym [\s!SerifBold] [\s!file:opendyslexic3-bold.ttf]    [\s!features={opendyslexic-new,\s!default}]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [opendyslexic,opendyslexic-new] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [\s!file:opendyslexicalta-regular.otf]    [\s!features=\s!default]
         \definefontsynonym [\s!SansBold]       [\s!file:opendyslexicalta-bold.otf]       [\s!features=\s!default]
@@ -29,16 +63,19 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:opendyslexicalta-bolditalic.otf] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!mono] [opendyslexic] [\s!name]
+    \starttypescript [\s!mono] [opendyslexic,opendyslexic-new] [\s!name]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono]           [\s!file:opendyslexicmono-regular.otf]    [\s!features=\s!none]
+        \definefontsynonym [\s!Mono] [\s!file:opendyslexicmono-regular.otf] [\s!features=\s!none]
     \stoptypescript
 
-    \starttypescript[opendyslexic]
-        \definetypeface [opendyslexic] [\s!rm] [\s!serif] [opendyslexic] [\s!default]
-        \definetypeface [opendyslexic] [\s!ss] [\s!sans]  [opendyslexic] [\s!default]
-        \definetypeface [opendyslexic] [\s!tt] [\s!mono]  [opendyslexic] [\s!default]% [rscale=1.065]
-        \definetypeface [opendyslexic] [\s!mm] [\s!math]  [xits]         [\s!default]% [rscale=1.020]
+    % We now have more gyre fonts so maybe we should test with a less times look
+    % alike instead.
+
+    \starttypescript[opendyslexic,opendyslexic-new]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]% [rscale=1.065]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [xits]           [\s!default]% [rscale=1.020]
     \stoptypescript
 
 \stoptypescriptcollection

@@ -315,6 +315,9 @@ register(variables.camel,  camel)             --  10
 register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
+-- this can be more clever: when we unset we can actually
+-- use the same attr ref if needed
+
 function cases.handler(head) -- not real fast but also not used on much data
     local start    = head
     local lastfont = { }
@@ -341,9 +344,10 @@ function cases.handler(head) -- not real fast but also not used on much data
                 end
                 local action = actions[n] -- map back to low number
                 if action then
-                    start = action(start,attr,lastfont,n,count)
+                    local quit
+                    start, quit = action(start,attr,lastfont,n,count)
                     if trace_casing then
-                        report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,ok)
+                        report_casing("case trigger %a, instance %a, fontid %a, result %a",n,m,id,quit and "-" or "+")
                     end
                 elseif trace_casing then
                     report_casing("unknown case trigger %a",n)

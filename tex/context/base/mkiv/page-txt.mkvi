@@ -25,12 +25,11 @@
 \newtoks\texttextcontent
 
 %D \macros
-%D  {setuptop, setupheader, setuptext,
-%D   setupfooter, setupbottom}
+%D  {setuptop, setupheader, setuptext,setupfooter, setupbottom}
 %D
-%D The macros in this module sometimes look a bit more complicated than
-%D needed, which is a direct result of the fact that their ancestors are
-%D quite old and upward compatibility is a must.
+%D The macros in this module sometimes look a bit more complicated than needed,
+%D which is a direct result of the fact that their ancestors are quite old and
+%D upward compatibility is a must.
 %D
 %D \showsetup{setuptop}
 %D \showsetup{setupheader}
@@ -136,8 +135,7 @@
 %D \macros
 %D  {noheaderandfooterlines,notopandbottomlines}
 %D
-%D Although not really needed, the following shortcuts
-%D sometimes come in handy.
+%D Although not really needed, the following shortcuts sometimes come in handy.
 %D
 %D \showsetup{noheaderandfooterlines}
 %D \showsetup{notopandbottomlines}
@@ -151,8 +149,7 @@
    \setuplayoutelement[\v!bottom][\c!state=\v!empty]}
 
 %D \macros
-%D  {setuptoptexts, setupheadertexts, setuptexttexts,
-%D   setupfootertexts, setupbottomtexts}
+%D  {setuptoptexts,setupheadertexts,setuptexttexts,setupfootertexts,setupbottomtexts}
 %D
 %D The next macros take one or more arguments. The exact setup depends on the number
 %D of arguments. Although not that intuitive, the current scheme evolved out of the
@@ -170,11 +167,6 @@
 \unexpanded\def\setuptexttexts  {\dosixtupleempty\page_layouts_setup_texts[\v!text   ]}
 \unexpanded\def\setupfootertexts{\dosixtupleempty\page_layouts_setup_texts[\v!footer ]}
 \unexpanded\def\setupbottomtexts{\dosixtupleempty\page_layouts_setup_texts[\v!bottom ]}
-
-% todo: \setuplayoutelementtext
-
-%D An alternative approach is to have more variables but that does not make the code
-%D less complex (probably more).
 
 \unexpanded\def\page_layouts_setup_text_six#vertical#horizontal#a#b#c#d%
   {\edef\currentlayoutelement{#vertical:#horizontal}%
@@ -320,22 +312,6 @@
 
 %D When specified, the texts are automatically limited in length.
 
-% % where used ?
-%
-% \def\page_layouts_limitate_element_text#width%
-%   {\edef\currentlayoutelementwidth{\layoutelementparameter#width}%
-%    \ifx\currentlayoutelementwidth\empty
-%      \expandafter\firstofoneargument
-%    \else
-%      \expandafter\page_layouts_limitate_element_text_indeed
-%    \fi}
-%
-% \def\page_layouts_limitate_element_text_indeed#content%
-%   {\limitatetext{#content}\currentlayoutelementwidth\unknown}
-
-%D The placement of text is hooked into the token lists
-%D associated to the area at hand.
-
 \appendtoks \page_layouts_place_text_line\v!top   \topheight    \to \toptextcontent
 \appendtoks \page_layouts_place_text_line\v!header\headerheight \to \headertextcontent
 \appendtoks \page_layouts_place_text_line\v!text  \textheight   \to \texttextcontent
@@ -445,11 +421,11 @@
 %D The following macro has to be called after a page is flushed.
 
 \unexpanded\def\resetlayouttextlines % public
-  {\csname\??layouttextsreset\v!top   \endcsname
-   \csname\??layouttextsreset\v!header\endcsname
-   \csname\??layouttextsreset\v!text  \endcsname
-   \csname\??layouttextsreset\v!footer\endcsname
-   \csname\??layouttextsreset\v!bottom\endcsname
+  {\begincsname\??layouttextsreset\v!top   \endcsname
+   \begincsname\??layouttextsreset\v!header\endcsname
+   \begincsname\??layouttextsreset\v!text  \endcsname
+   \begincsname\??layouttextsreset\v!footer\endcsname
+   \begincsname\??layouttextsreset\v!bottom\endcsname
    \ifconditional\resyncaftertextline
      \calculateglobalvsizes
      \page_backgrounds_recalculate
@@ -814,10 +790,6 @@
 
 \strc_pagenumbers_set_location % initializes
 
-% will go to page-box.mkiv
-
-% the next macros will be redone (less boxing)
-
 \newbox\b_page_layouts_element
 
 \def\page_layouts_insert_elements
@@ -880,7 +852,7 @@
              \kern\dimexpr\leftmarginwidth+\leftmargindistance\relax
            \fi
          \endgroup
-         \page_postprocessors_page{#2}%
+         \page_apply_postprocessors_page{#2}%
          \settextpagecontent\b_page_layouts_element{#1}{#2}%
          \page_backgrounds_add_to_text\b_page_layouts_element
          \page_grids_add_to_box\b_page_layouts_element

@@ -58,10 +58,15 @@ local choice_code       = nodecodes.choice         -- attr display text script s
 local fence_code        = nodecodes.fence          -- attr subtype
 
 local accentcodes       = nodes.accentcodes
+local fencecodes        = nodes.fencecodes
 
 local fixedtopaccent_code    = accentcodes.fixedtop
 local fixedbottomaccent_code = accentcodes.fixedbottom
 local fixedbothaccent_code   = accentcodes.fixedboth
+
+local leftfence_code    = fencecodes.left
+local middlefence_code  = fencecodes.middle
+local rightfence_code   = fencecodes.right
 
 local kerncodes         = nodes.kerncodes
 
@@ -116,10 +121,10 @@ local function processsubsup(start)
          -- start_tagged("mrow")
             process(nucleus)
          -- stop_tagged()
-            start_tagged("mrow")
+            start_tagged("mrow", { subscript = true })
             process(sub)
             stop_tagged()
-            start_tagged("mrow")
+            start_tagged("mrow", { superscript = true })
             process(sup)
             stop_tagged()
             stop_tagged()
@@ -204,7 +209,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
     local mtexttag = nil
     while start do
         local id = getid(start)
-     -- showtag(start,id,true)
+-- showtag(start,id,true)
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -265,7 +270,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
             elseif id == noad_code then
              -- setattr(start,a_tagged,tags.current())
                 processsubsup(start)
-            elseif id == dubbox_code or id == hlist_code or id == vlist_code then
+            elseif id == subbox_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on subbox_code and see what ends up in there
                 local attr = getattr(start,a_tagged)
                 if not attr then
@@ -372,7 +377,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         end
                     end
                 end
-            elseif id == submlistcode then -- normally a hbox
+            elseif id == submlist_code then -- normally a hbox
                 local list = getlist(start)
                 if list then
                     local attr = getattr(start,a_tagged)
@@ -450,16 +455,16 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     process(scriptscript)
                 end
             elseif id == fence_code then
+                local subtype = getsubtype(start)
                 local delim   = getfield(start,"delim")
-                local subtype = getfield(start,"subtype")
-                if subtype == 1 then
+                if subtype == leftfence_code then
                     -- left
                     local properties = { }
                     insert(fencesstack,properties)
                     setattr(start,a_tagged,start_tagged("mfenced",properties)) -- needs checking
                     if delim then
                         start_tagged("ignore")
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             properties.left = chr
                         end
@@ -467,12 +472,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                         stop_tagged()
                     end
                     start_tagged("mrow") -- begin of subsequence
-                elseif subtype == 2 then
+                elseif subtype == middlefence_code then
                     -- middle
                     if delim then
                         start_tagged("ignore")
                         local top = fencesstack[#fencesstack]
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             local mid = top.middle
                             if mid then
@@ -486,7 +491,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     stop_tagged()        -- end of subsequence
                     start_tagged("mrow") -- begin of subsequence
-                elseif subtype == 3 then
+                elseif subtype == rightfence_code then
                     local properties = remove(fencesstack)
                     if not properties then
                         report_tags("missing right fence")
@@ -494,7 +499,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     if delim then
                         start_tagged("ignore")
-                        local chr = getfield(delim,"small_char")
+                        local chr = getchar(delim)
                         if chr ~= 0 then
                             properties.right = chr
                         end
@@ -525,9 +530,9 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == accent_code then
+                local subtype    = getsubtype(start)
                 local accent     = getfield(start,"accent")
                 local bot_accent = getfield(start,"bot_accent")
-                local subtype    = getsubtype(start)
                 if bot_accent then
                     if accent then
                         setattr(start,a_tagged,start_tagged("munderover", {
@@ -582,9 +587,10 @@ end
 
 function noads.handlers.tags(head,style,penalties)
     start_tagged("math", { mode = (getattr(head,a_mathmode) == 1) and "display" or "inline" })
---     start_tagged("mrow")
     setattr(head,a_tagged,start_tagged("mrow"))
+-- showtag(head,getid(head),true)
     process(head)
+-- showtag(head,getid(head),false)
     stop_tagged()
     stop_tagged()
 end

@@ -1,0 +1,96 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-surface
+
+\startchapter[title={Surface}]
+
+This is work in progress so only some examples are shown here. Yet to be decided
+is how we deal with axis and such.
+
+In \in {figure} [surface:1] we see an example of a plot with axis as well as
+lines drawn.
+
+\startbuffer[1]
+\startMPcode{doublefun}
+    draw lmt_surface [
+        preamble  = "local sin, cos = math.sin, math.cos",
+        code      = "sin(x*x) - cos(y*y)"
+        xmin      = -3,
+        xmax      =  3,
+        ymin      = -3,
+        ymax      =  3,
+        xvector   = { -0.3, -0.3 },
+        height    = 5cm,
+        axis      = { 40mm, 40mm, 30mm },
+        clipaxis  = true,
+        axiscolor = "gray",
+    ] xsized .8TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1]
+
+\startplacefigure[reference=surface:1]
+    \getbuffer[1]
+\stopplacefigure
+
+In \in {figure} [surface:2] we don't draw the axis and lines. We also use a high
+resolution.
+
+\startbuffer[2]
+\startMPcode{doublefun}
+    draw lmt_surface [
+        preamble  = "local sin, cos = math.sin, math.cos",
+        code      = "sin(x*x) - cos(y*y)"
+        color     = "f, f/2, 1-f"
+        color     = "f, f, 0"
+        xstep     = .02,
+        ystep     = .02,
+        xvector   = { -0.4, -0.4 },
+        height    = 5cm,
+        lines     = false,
+    ] xsized .8TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2]
+
+\startplacefigure[reference=surface:2]
+    \getbuffer[2]
+\stopplacefigure
+
+The preliminary set of parameters is:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name          \BC type    \BC default                \BC comment \NC \NR
+\ML
+\NC code          \NC string  \NC
+\NC color         \NC string  \NC \type {"f, 0, 0"}      \NC \NC \NR
+\NC linecolor     \NC numeric \NC \type {1}              \NC gray scale \NC \NR
+\NC xmin          \NC numeric \NC \type {-1}             \NC \NC \NR
+\NC xmax          \NC numeric \NC \type { 1}             \NC \NC \NR
+\NC ymin          \NC numeric \NC \type {-1}             \NC \NC \NR
+\NC ymax          \NC numeric \NC \type { 1}             \NC \NC \NR
+\NC xstep         \NC numeric \NC \type {.1}             \NC \NC \NR
+\NC ystep         \NC numeric \NC \type {.1}             \NC \NC \NR
+\NC snap          \NC numeric \NC \type {.01}            \NC \NC \NR
+\NC xvector       \NC list    \NC \type {{ -0.7, -0.7 }} \NC \NC \NR
+\NC yvector       \NC list    \NC \type {{ 1, 0 }}       \NC \NC \NR
+\NC zvector       \NC list    \NC \type {{ 0, 1 }}       \NC \NC \NR
+\NC light         \NC list    \NC \type {{ 3, 3, 10 }}   \NC \NC \NR
+\NC bright        \NC numeric \NC \type {100}            \NC \NC \NR
+\NC clip          \NC boolean \NC \type {false}          \NC \NC \NR
+\NC lines         \NC boolean \NC \type {true}           \NC \NC \NR
+\NC axis          \NC list    \NC \type {{ }}            \NC \NC \NR
+\NC clipaxis      \NC boolean \NC \type {false}          \NC \NC \NR
+\NC axiscolor     \NC string  \NC \type {"gray"}         \NC \NC \NR
+\NC axislinewidth \NC numeric \NC \type {1/2}            \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

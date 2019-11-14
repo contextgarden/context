@@ -1,0 +1,120 @@
+%D \module
+%D   [       file=strc-tnt,
+%D        version=2019.05.30, % based on older code
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Text Notes,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D \macros
+%D   {definetextnote,setuptextnote}
+%D
+%D \startbuffer
+%D \definetextnote
+%D   [textnote]
+%D
+%D \startbuffer
+%D Test test test \textnote [n=5] {alpha}. test test test test tets test test
+%D \textnote [n=10] {beta}. Test test test test tets test test \textnote [n=12]
+%D {gamma}. Test test test test tets test test \textnote [n=24] {delta}. Test test
+%D test test test test \textnote {epsilon} test test \textnote [n=*] {zeta}.
+%D \stopbuffer
+%D
+%D \blank {\setuptextnote[empty=yes]    \getbuffer\par} \blank
+%D \blank {\setuptextnote[empty=number] \getbuffer\par} \blank
+%D \blank {\setuptextnote[empty=none]   \getbuffer\par} \blank
+%D \blank {                             \getbuffer\par} \blank
+%D
+%D \blank[2*big]
+%D
+%D \placenotes[textnote:note][criterium=text]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\installcorenamespace{textnote}
+
+\installcommandhandler \??textnote {textnote} \??textnote
+
+\definebar
+  [\v!textnote:\v!underbar]
+  [\v!underbar]
+
+\definenote
+  [\v!textnote:\v!note]
+
+\setuptextnote
+  [\c!rule=\v!textnote:\v!underbar,
+   \c!note=\v!textnote:\v!note,
+   \c!n=10] % * will use the real space
+
+\appendtoks
+    \setuevalue{\currenttextnote}{\educ_textnote{\currenttextnote}}%
+\to \everydefinetextnote
+
+\unexpanded\def\educ_textnote#1%
+  {\dontleavehmode
+   \begingroup
+   \def\currenttextnote{#1}%
+   \dosingleempty\educ_textnote_indeed}
+
+\def\educ_textnote_indeed[#1]#2% we could use setups but it's overkill
+  {\iffirstargument\setupcurrenttextnote[#1]\fi
+   \edef\p_n{\textnoteparameter\c!n}%
+   \edef\p_empty{\textnoteparameter\c!empty}%
+   \edef\currentbar{\textnoteparameter\c!rule}%
+   \edef\currentnote{\textnoteparameter\c!note}%
+   \ifx\p_n\wildcardsymbol
+     \donefalse
+     \ifx\p_empty\v!yes
+       \donetrue
+     \else\ifx\p_empty\v!number
+       \donetrue
+     \else\ifx\p_empty\v!none
+       \donetrue
+     \fi\fi\fi
+     \ifdone
+       \setupbar[\currentbar][\c!empty=\v!yes]%
+     \fi
+     \inlinebar[\currentbar]\bgroup
+       \wordboundary#2%
+       \ifx\p_empty\v!yes
+         \setnotetext[\currentnote]{#2}%
+       \else\ifx\p_empty\v!number
+         \runninghbox{\resetbar\setnote[\currentnote]{#2}}%
+       \else\ifx\p_empty\v!none
+         \setupnote[\currentnote][\c!location=\v!none]%
+         \runninghbox{\resetbar\setnote[\currentnote]{#2}}%
+       \fi\fi\fi
+     \egroup
+   \else
+     \inlinebar[\currentbar]\bgroup
+       \scratchcounter\numexpr\p_n/\plustwo\relax
+       \ifx\p_empty\v!yes
+         \interwordspacesbefore\scratchcounter
+         \setnotetext[\currentnote]{#2}%
+         \interwordspacesafter\scratchcounter
+       \else\ifx\p_empty\v!number
+         \interwordspacesbefore\scratchcounter
+         \zwnj\runninghbox{\resetbar\setnote[\currentnote]{#2}}\zwnj
+         \interwordspacesafter\scratchcounter
+       \else\ifx\p_empty\v!none
+         \setupnote[\currentnote][\c!location=\v!none]%
+         \interwordspacesbefore\scratchcounter
+         \zwnj\runninghbox{\resetbar\setnote[\currentnote]{#2}}\zwnj
+         \interwordspacesafter\scratchcounter
+       \else
+          #2%
+       \fi\fi\fi
+     \egroup
+   \fi
+   \endgroup}
+
+\protect \endinput

@@ -1,6 +1,6 @@
 .TH "mtx-rsync" "1" "01-01-2019" "version 0.10" "Rsync Helpers"
 .SH NAME
-.B mtx-rsync
+ mtx-rsync - Rsync Helpers
 .SH SYNOPSIS
 .B mtxrun --script rsync [
 .I OPTIONS ...

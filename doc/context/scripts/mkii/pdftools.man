@@ -1,6 +1,6 @@
 .TH "pdftools" "1" "01-01-2019" "version 1.2.1" "PDFTools"
 .SH NAME
-.B pdftools
+ pdftools - PDFTools
 .SH SYNOPSIS
 .B pdftools [
 .I OPTIONS ...

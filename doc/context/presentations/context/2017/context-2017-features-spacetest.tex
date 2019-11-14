@@ -1,0 +1,43 @@
+\setupbodyfont[dejavu]
+
+\startluacode
+
+    -- we could populate this one mostly automatic if needed
+    -- but also expect a font to have such kerns
+
+    local kern = -50
+    local pair = { [32] = kern }
+
+    fonts.handlers.otf.addfeature {
+        name    = "kern", -- spacekerns assume kern (for now)
+        type    = "kern",
+        data    = {
+            D = pair,
+            E = pair,
+            F = pair,
+            [32] = {
+                D = kern,
+                E = kern,
+                F = kern,
+            },
+        }
+    }
+
+\stopluacode
+
+\starttext
+
+\enabledirectives[fonts.injections.useitalics] % use italic kerns for tracing
+
+\definecolor[tgray][s=.5,t=.5,a=1] \showfontkerns \showfontitalics \showglyphs
+
+\definefontfeature[kern] [mode=node,kern=yes,spacekerns=yes]
+
+\definedfont[file:dejavu-serif.ttf*kern @ 48pt]
+\definedfont[file:dejavu-serif.ttf*default @ 48pt]
+
+\startTEXpage[offset=10pt,foregroundcolor=tgray]
+    A B C D E F G H
+\stopTEXpage
+
+\stoptext

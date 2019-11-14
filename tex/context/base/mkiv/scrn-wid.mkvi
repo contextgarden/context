@@ -25,6 +25,8 @@
 %D As usual in \CONTEXT\ we separate the general definition (frontend)
 %D and the rendering (backend).
 
+% hack: x\footnote{x\inleftmargin[scope=local]{\attachment[location=high,file=i-context.pdf]}}x
+
 % old but stil valid method:
 %
 % \useattachment[test.tex]
@@ -109,6 +111,7 @@
         file       {\attachmentparameter\c!file}%
         name       {\attachmentparameter\c!name}%
         buffer     {\attachmentparameter\c!buffer}%
+        mimetype   {\attachmentparameter\c!type}%
      \relax
      \endgroup
    \else
@@ -211,6 +214,7 @@
      file              {\attachmentparameter\c!file}%
      name              {\attachmentparameter\c!name}%
      buffer            {\attachmentparameter\c!buffer}%
+     mimetype          {\attachmentparameter\c!type}%
    \relax
    \wd\b_scrn_attachment_link\currentattachmentwidth
    \ht\b_scrn_attachment_link\currentattachmentheight
@@ -228,6 +232,7 @@
      file       {\attachmentparameter\c!file}%
      name       {\attachmentparameter\c!name}%
      buffer     {\attachmentparameter\c!buffer}%
+     mimetype   {\attachmentparameter\c!type}%
    \relax}
 
 \unexpanded\def\scrn_attachment_flush_traced

@@ -1,0 +1,458 @@
+%D \module
+%D   [       file=font-sty,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Styles,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Styles}
+
+\unprotect
+
+%D \macros
+%D   {definealternativestyle}
+%D
+%D In the main modules we are going to implement lots of parameterized commands and
+%D one of these parameters will concern the font to use. To suit consistent use of
+%D fonts we here implement a mechanism for defining the keywords that present a
+%D particular style or alternative.
+%D
+%D \starttyping
+%D \definealternativestyle [keywords] [\style] [\nostyle]
+%D \stoptyping
+%D
+%D The first command is used in the normal textflow, while the second command takes
+%D care of headings and alike. Consider the next two definitions:
+%D
+%D \starttyping
+%D \definealternativestyle [bold] [\bf]  []
+%D \definealternativestyle [cap]  [\cap] [\cap]
+%D \stoptyping
+%D
+%D A change \type {\bf} in a heading which is to be set in \type {\tfd} does not look
+%D that well, so therefore we leave the second argument of \type
+%D {\definealternativestyle} empty. When we capatalize characters using the pseudo
+%D small cap command \type {\cap}, we want this to take effect in both text and
+%D headings, which is accomplished by assigning both arguments.
+
+\installcorenamespace{alternativestyles}  % settings
+\installcorenamespace{alternativestyle}   % instances
+
+\installsetuponlycommandhandler \??alternativestyles {alternativestyles}
+
+\setnewconstant \c_font_current_alternative_style_index \plusone
+
+\unexpanded\def\definealternativestyle
+  {\dotripleempty\font_basics_define_alternative_style}
+
+\def\font_basics_define_alternative_style[#commands][#variantone][#varianttwo]%
+  {\processcommalist[#commands]{\font_basics_define_alternative_style_indeed{#variantone}{#varianttwo}}}
+
+\let\definestyle\definealternativestyle % later redefined
+
+\newconstant\c_fonts_basics_alternative_style_method
+
+\def\font_basics_define_alternative_style_indeed#variantone#varianttwo#command%
+  {\setuvalue{\??alternativestyle#command}{\font_helpers_apply_alternative_style{#variantone}{#varianttwo}}%
+   \ifcsname#command\endcsname
+     % no redefinition
+   \orelse\ifnum\c_fonts_basics_alternative_style_method=\plusone
+      \ifthirdargument
+        \setuevalue{#command}{\triggergroupedcommandcs\begincsname\??alternativestyle#command\endcsname}%
+      \else
+        \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+      \fi
+   \else
+     \setuvalue{#command}{\triggergroupedcommand{#variantone}}%
+   \fi}
+
+\def\font_helpers_apply_alternative_style
+  {\ifcase\c_font_current_alternative_style_index
+     \expandafter\gobbletwoarguments
+   \or
+     \expandafter\firstoftwoarguments
+   \or
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\def\applyalternativestyle#name% public
+  {\begincsname\??alternativestyle#name\endcsname}
+
+\appendtoks
+    \doifelse{\alternativestylesparameter\c!method}\v!auto
+      {\c_fonts_basics_alternative_style_method\plusone}%
+      {\c_fonts_basics_alternative_style_method\zerocount}%
+\to \everysetupalternativestyles
+
+%D Maybe too generic, but probably ok is the following. (Maybe one day we will use a
+%D dedicated grouped command for styles.)
+
+% \appendtoks
+%     \let\groupedcommand\thirdofthreearguments
+% \to \everysimplifycommands
+
+%D This command also defines the keyword as command. This means that the example
+%D definition of \type {bold} we gave before, results in a command \type {\bold}
+%D which can be used as:
+%D
+%D \startbuffer
+%D He's a \bold{bold} man with a {\bold head}.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D or
+%D
+%D \startexample
+%D \definealternativestyle[bold][\bf][]\getbuffer
+%D \stopexample
+%D
+%D Such definitions are of course unwanted for \type {\cap} because this would
+%D result in an endless recursive call. Therefore we check on the existance of both
+%D the command and the substitution. The latter is needed because for instance \type
+%D {\type} is an entirely diferent command. That command handles verbatim, while the
+%D style command would just switch to teletype font. This is just an example of a
+%D tricky naming coincidence.
+%D
+%D \macros
+%D   {doconvertfont,noconvertfont,
+%D    dontconvertfont,redoconvertfont}
+%D
+%D After having defined such keywords, we can call for them by using
+%D
+%D \starttyping
+%D \doconvertfont{keyword}{text}
+%D \stoptyping
+%D
+%D We deliberately pass an argument. This enables us to assign converters that
+%D handle one argument, like \type {\cap}.
+%D
+%D By default the first specification is used to set the style, exept when we say
+%D \type {\dontconvertfont}, after which the second specification is used. We can
+%D also directly call for \type {\noconvertfont}. In nested calls, we can restore
+%D the conversion by saying \type {\redoconvertfont}.
+%D
+%D These commands are not grouped! Grouping is most probably done by the calling
+%D macro's and would lead to unnecessary overhead.
+
+\let\m_current_convert_font   \empty
+\let\m_current_convert_font_dt\empty
+
+\unexpanded\def\doconvertfont#specification% takes second argument / this command is obsolete
+  {\edef\m_current_convert_font{#specification}%
+   \ifx\m_current_convert_font\empty
+    %\expandafter\firstofoneargument
+   \else
+     \expandafter\font_helpers_do_convert_font
+   \fi}
+
+\def\font_helpers_do_convert_font
+  {\edef\m_current_convert_font_dt{\detokenize\expandafter{\m_current_convert_font}}%
+   \ifcsname\??alternativestyle\m_current_convert_font_dt\endcsname
+     \expandafter\lastnamedcs
+   \orelse\ifcsname\m_current_convert_font_dt\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\m_current_convert_font
+   \fi}
+
+%D Low level switches (downward compatible, but we keep them as one can use them in
+%D styles):
+%D
+%D \starttyping
+%D \usemodule[abr-02]
+%D \setuphead[chapter][style=\bfb]
+%D \setupfooter[style=\dontconvertfont\bf]
+%D \chapter{This is \TEX}
+%D \stoptyping
+
+\unexpanded\def\dontconvertfont{\c_font_current_alternative_style_index\plustwo} % needs checking in usage
+\unexpanded\def\redoconvertfont{\c_font_current_alternative_style_index\plusone} % needs checking in usage
+
+%D The new one:
+
+\setfalse\fontattributeisset
+
+\unexpanded\def\dousestyleparameter#value%
+  {\edef\currentstyleparameter{#value}%
+   \ifx\currentstyleparameter\empty\else
+     \expandafter\dousecurrentstyleparameter
+   \fi}
+
+\unexpanded\def\dousestylehashparameter#hash#parameter%
+  {\ifcsname#hash#parameter\endcsname
+     \expandafter\dousestyleparameter\lastnamedcs
+   \fi}
+
+\unexpanded\def\dousecurrentstyleparameter % empty check outside here
+  {\edef\detokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
+   \settrue\fontattributeisset % reset is done elsewhere
+   \ifcsname\??alternativestyle\detokenizedstyleparameter\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\detokenizedstyleparameter\endcsname
+     \lastnamedcs
+   \else
+     \currentstyleparameter
+   \fi}
+
+\let\dosetfontattribute\dousestylehashparameter % for a while
+
+%D New commands (not yet interfaced):
+%D
+%D \startbuffer
+%D \definestyle[one][style=bold,color=darkblue]
+%D
+%D test \one{test} test
+%D test \style[one]{test} test
+%D test \style[color=red]{test} test
+%D test \style[Serif at 20pt]{test} test
+%D \stopbuffer
+%D
+%D \typebuffer \startlines \getbuffer \stoplines
+
+% definitions .. no tagging here
+
+\installcorenamespace{style}
+\installcorenamespace{stylecheck}
+\installcorenamespace{stylehack}
+
+\installcommandhandler \??style {style} \??style
+
+\setupstyle
+  [%\c!style=,
+   %\c!color=,
+   \c!method=\v!command]
+
+\appendtoks
+    \letvalue{\??stylecheck\currentstyle}\relax
+    \edef\p_method{\styleparameter\c!method}%
+    \ifx\p_method\v!command
+        \setuevalue{\e!start\currentstyle}{\font_styles_apply_start{\currentstyle}}%
+        \setuevalue{\e!stop \currentstyle}{\font_styles_apply_stop}%
+        \setuevalue        {\currentstyle}{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
+    \fi
+\to \everydefinestyle
+
+\unexpanded\def\font_styles_apply_start#name%
+  {\begingroup
+   \font_styles_use_defined{#name}}
+
+\unexpanded\def\font_styles_apply_stop
+  {\endgroup}
+
+\unexpanded\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
+  {\bgroup
+   \def\g_style{\font_styles_use_defined{#name}}%
+   \afterassignment\g_style
+   \let\nexttoken}
+
+\unexpanded\def\font_styles_use_defined#name%
+  {\edef\currentstyle{#name}%
+   \usestylestyleandcolor\c!style\c!color}
+
+\unexpanded\def\font_styles_use_generic#specification%
+  {\let\currentstyle\s!unknown % reasonable generic tag
+   \letstyleparameter\c!style\empty
+   \letstyleparameter\c!color\empty
+   \setupcurrentstyle[#specification]%
+   \usestylestyleandcolor\c!style\c!color}
+
+% commands
+
+\installcorenamespace{styleargument}
+
+\unexpanded\def\style[#name]% as this is can be a switch we use groupedcommand
+  {\csname\??styleargument
+     \ifcsname\??stylecheck#name\endcsname
+       2% defined as style
+     \orelse\ifcsname\??stylehack#name\endcsname
+       4% defined as command
+     \orelse\ifcsname#name\endcsname
+       1% defined as command
+     \else
+       3% specification
+     \fi
+   \endcsname{#name}}
+
+% \setvalue{\??styleargument1}#name%
+%   {\groupedcommand{\begincsname#name\endcsname}{}}
+
+\setvalue{\??styleargument1}#name%
+  {\expandafter\triggergroupedcommandcs\begincsname#name\endcsname}
+
+% \setvalue{\??styleargument2}#name%
+%   {\groupedcommand{\font_styles_use_defined{#name}}{}} % or {\font_styles_apply_grouped{#name}}
+
+\setvalue{\??styleargument2}#name%
+  {\triggergroupedcommand{\font_styles_use_defined{#name}}} % or {\font_styles_apply_grouped{#name}}
+
+\setvalue{\??styleargument3}#specification%
+  {\doifelseassignment{#specification}\font_styles_assignment\font_styles_direct{#specification}}
+
+\setvalue{\??styleargument4}#name%
+  {\expandafter\triggergroupedcommandcs\begincsname\??stylehack#name\endcsname}
+
+\setvalue{\??stylehack\s!math}% dirty trick
+  {\groupedcommand\normalstartimath\normalstopimath}
+
+% \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
+% \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
+
+\def\font_styles_assignment#specification{\triggergroupedcommand{\font_styles_use_generic{#specification}}}
+\def\font_styles_direct    #specification{\triggergroupedcommand{\definedfont[#specification]}}
+
+% environments
+
+\installcorenamespace{styleenvironment}
+
+\unexpanded\def\startstyle[#name]%
+  {\begingroup
+   \csname\??styleenvironment
+     \ifcsname\??stylecheck#name\endcsname
+       2% defined as style
+     \orelse\ifcsname#name\endcsname
+       1% defined as command
+     \else
+       3% specification
+     \fi
+   \endcsname{#name}}
+
+\unexpanded\def\stopstyle
+  {\endgroup
+   \autoinsertnextspace} % will be configurable, maybe also in \definestartstop
+
+\setvalue{\??styleenvironment1}#name%
+  {\csname#name\endcsname}
+
+\setvalue{\??styleenvironment2}#name%
+  {\font_styles_use_defined{#name}}
+
+\setvalue{\??styleenvironment3}#specification%
+  {\doifelseassignment{#specification}\font_styles_start_assignment\font_styles_start_direct{#specification}}
+
+\def\font_styles_start_assignment#specification{\font_styles_use_generic{#specification}}
+\def\font_styles_start_direct    #specification{\definedfont[#specification]\relax}
+
+%D Still experimental (might even go away).
+
+% \definestylecollection[mine]
+
+% \definestyleinstance[mine][default][sorry]
+% \definestyleinstance[mine][tt][bs][ttbs:\rm\sl]
+% \definestyleinstance[mine][tt][bf][ttbf:\rm\sl]
+% \definestyleinstance[mine][bf][\sl]
+% \definestyleinstance[mine][sl][\tt]
+
+% {\bf test \mine test \sl test \mine test \bs oeps \mine oeps {\tt test \mine \bf test}}
+
+\installcorenamespace{stylecollection}
+
+\unexpanded\def\definestylecollection
+  {\dosingleargument\font_styles_define_style_collection}
+
+\def\font_styles_define_style_collection[#name]%
+  {\iffirstargument
+     \setuvalue{#name}{\styleinstance[#name]}%
+     \def\font_styles_define_style_collection_a#style%
+       {\def\font_styles_define_style_collection_b#alternative{\undefinevalue{\??stylecollection#name:#style:#alternative}}%
+        \font_helpers_process_alternative_list\font_styles_define_style_collection_b
+        \font_styles_define_style_collection_b\s!default}%
+     \font_helpers_process_style_list\font_styles_define_style_collection_a
+     \font_styles_define_style_collection_a\s!default
+  \fi}
+
+\let\font_styles_define_style_collection_a\relax
+\let\font_styles_define_style_collection_b\relax
+
+\unexpanded\def\definestyleinstance
+  {\doquadrupleargument\font_styles_define_style_instance}
+
+\def\font_styles_define_style_instance[#instance][#2][#3][#4]% [name] [rm|ss|tt|..] [sl|bf|...] [whatever]
+  {\iffirstargument
+     \ifcsname#instance\endcsname\else\font_styles_define_style_collection[#instance]\fi
+   \fi
+   \iffourthargument
+     \setvalue{\??stylecollection#instance:#2:#3}{#4}%
+   \orelse\ifthirdargument
+     \setvalue{\??stylecollection#instance::#2}{#3}%
+   \orelse\ifsecondargument
+     \letvalueempty{\??stylecollection#instance::#2}%
+   \fi}
+
+% \unexpanded\def\styleinstance[#instance]% will be made faster
+%   {%\begingroup\normalexpanded{\noexpand\infofont[#1:\fontstyle:\fontalternative]}\endgroup
+%    \executeifdefined{\??stylecollection#instance:\fontstyle:\fontalternative}%
+%   {\executeifdefined{\??stylecollection#instance:\fontstyle:\s!default}%
+%   {\executeifdefined{\??stylecollection#instance::\fontalternative}
+%   {\getvalue        {\??stylecollection#instance::\s!default}}}}}
+
+\unexpanded\def\styleinstance[#instance]% maybe \lastnamedcs here too
+  {\csname\??stylecollection#instance:%
+     \ifcsname\??stylecollection#instance:\fontstyle:\fontalternative\endcsname
+       \fontstyle:\fontalternative
+     \orelse\ifcsname\??stylecollection#instance:\fontstyle:\s!default\endcsname
+       \fontstyle:\s!default
+     \orelse\ifcsname\??stylecollection#instance::\fontalternative\endcsname
+       :\fontalternative
+     \else
+       :\s!default
+     \fi
+   \endcsname}
+
+%D Variant selectors
+%D
+%D \starttyping
+%D \mathematics {\vsone{\utfchar{0x2229}}}
+%D \mathematics {\utfchar{0x2229}\vsone{}}
+%D \stoptyping
+
+\unexpanded\edef\vsone#character{#character\normalUchar"FE00 } % used
+\unexpanded\edef\vstwo#character{#character\normalUchar"FE01 } % not used but handy for testing
+
+%D For historic reasons we keep the following around but they are no longer that
+%D relevant for \MKIV.
+
+\unexpanded\def\doattributes#1#2#3#4%
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \dousestylehashparameter{#1}{#2}%
+   \dousecolorhashparameter{#1}{#3}%
+   #4%
+   \endgroup}
+
+\unexpanded\def\dostartattributes#1#2#3%
+  {\begingroup  % geen \bgroup, anders in mathmode lege \hbox
+   \dousestylehashparameter{#1}{#2}%
+   \dousecolorhashparameter{#1}{#3}}
+
+\let\dostopattributes\endgroup
+
+%D New but it needs to be supported explicitly (as in natural tables).
+
+\newconditional\c_font_styles_math
+
+\unexpanded\def\font_styles_math_reset
+  {\setfalse\c_font_styles_math}
+
+\unexpanded\def\font_styles_math_start
+  {\ifconditional\c_font_styles_math
+     \startimath
+   \fi
+   \relax}
+
+\unexpanded\def\font_styles_math_stop
+  {\relax
+   \ifconditional\c_font_styles_math
+     \stopimath
+   \fi}
+
+\definealternativestyle[\v!math][\settrue\c_font_styles_math]
+
+\protect \endinput

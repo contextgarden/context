@@ -1,0 +1,136 @@
+%D \module
+%D   [       file=m-catchword,
+%D        version=2019.08.09,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Catchwords,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+
+-- If someone realy need it there probably is no need for speed, so we do
+-- it quick and dirty.
+
+local nodecodes     = nodes.nodecodes
+local kerncodes     = nodes.kerncodes
+
+local glyph_code    = nodecodes.glyph
+local disc_code     = nodecodes.disc
+local kern_code     = nodecodes.kern
+local hlist_code    = nodecodes.hlist
+
+local fontkern_code = kerncodes.fontkern
+
+local function set_catchword(t)
+    local nextpage = tex.lists.contrib_head
+    if not nextpage then
+        return
+    end
+    local firstline = nil
+    for n in nodes.traverse_id(hlist_code,nextpage) do
+        firstline = n
+        break
+    end
+    if not firstline then
+        return
+    end
+    local list = firstline.list
+    if not list then
+        return
+    end
+    local first = nil
+    local last  = nil
+    for n, id, subtype in nodes.traverse(list) do
+        if id == glyph_code or id == disc_code or (id == kern_code and subtype == fontkern_code) then
+            if not first then
+                first = n
+            end
+            last = n
+        elseif first then
+            break
+        end
+    end
+    if not first then
+        return
+    end
+    local page = tex.getbox(t.box)
+    local head = nodes.copy_list(first,last.next)
+          head = nodes.insert_before(head,head,nodes.pool.glue(1,1,1))
+    local line = nodes.hpack(head,page.width,"exactly")
+    if CONTEXTLMTXMODE > 0 then
+        line.yoffset = -t.voffset
+        line.xoffset = t.hoffset
+    else
+        line.shift = t.hoffset
+        line = nodes.insert_before(line,line,nodes.pool.kern(t.voffset-line.height))
+        line = nodes.vpack(line)
+    end
+    line.height  = 0
+    line.depth   = 0
+    node.insert_after(page.list,nodes.tail(page.list),line)
+    logs.report("catchword","appending %a on page %i",nodes.toutf(head),tex.getcount("realpageno"))
+end
+
+interfaces.implement {
+    name      = "set_catchword",
+    actions   = set_catchword,
+    arguments = {
+        {
+            { "box",     "integer" },
+            { "hoffset", "dimension" },
+            { "voffset", "dimension" },
+        },
+    },
+}
+
+\stopluacode
+
+\unprotect
+
+\installcorenamespace {catchword}
+
+\installsimplecommandhandler \??catchword {catchword}
+
+\setupcatchword
+  [\c!state=\v!stop,
+   \c!hoffset=\zeropoint,
+   \c!voffset=\lineheight]
+
+\def\page_check_catchword_yes#1%
+  {\clf_set_catchword
+     box     #1
+     hoffset \catchwordparameter\c!hoffset
+     voffset \catchwordparameter\c!voffset
+   \relax}
+
+\let\page_check_catchword_nop\gobbleoneargument
+
+\appendtoks
+    \doifelse{\catchwordparameter\c!state}\v!start
+      {\let\page_check_catchword\page_check_catchword_yes}%
+      {\let\page_check_catchword\page_check_catchword_nop}%
+\to \everysetupcatchword
+
+\appendtoks
+    \page_check_catchword\b_page_postprocessor
+\to \t_page_postprocessors_page
+
+\protect
+
+\continueifinputfile{m-catchword.mkiv}
+
+\setupcatchword
+  [state=start,
+   hoffset=.75em,
+   voffset=1cm]
+
+\starttext
+
+    \dorecurse{100}{\input ward }
+
+\stoptext

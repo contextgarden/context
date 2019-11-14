@@ -1,6 +1,6 @@
 .TH "mtx-unzip" "1" "01-01-2019" "version 0.10" "Simple Unzipper"
 .SH NAME
-.B mtx-unzip
+ mtx-unzip - Simple Unzipper
 .SH SYNOPSIS
 .B mtxrun --script unzip [
 .I OPTIONS ...

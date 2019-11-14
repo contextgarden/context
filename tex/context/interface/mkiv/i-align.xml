@@ -42,6 +42,7 @@
                 <cd:constant type="lesshyphenation"/>
                 <cd:constant type="morehyphenation"/>
                 <cd:constant type="hanging"/>
+                <cd:constant type="hangingboth"/>
                 <cd:constant type="nothanging"/>
                 <cd:constant type="hz"/>
                 <cd:constant type="fullhz"/>

@@ -187,7 +187,11 @@
       \bgroup
       \forcelocalfloats
       \setuplocalfloats[\c!before=,\c!after=,\c!inbetween=]%
+      % This controls samepage resetting too but it also messes up the numbering
+      % so I need another fix.
+%       \settrialtypesetting
       \splitfloatcommand{\hbox to #1{\strut}}% dummy line
+%       \resettrialtypesetting
       \setbox\scratchbox\vbox{\flushlocalfloats}% \vpack ?
       \getnoflines{\ht\scratchbox}%
       \resetlocalfloats

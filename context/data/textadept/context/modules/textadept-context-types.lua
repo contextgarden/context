@@ -21,7 +21,7 @@ local quitter = function(output)
 end
 
 local listing = {
-    command = [[mtxrun --autogenerate --script context --extra=listing --scite --compact "%basename%"]], -- --autopdf
+    command = [[mtxrun --autogenerate --script context --autopdf --extra=listing --scite --compact "%basename%"]],
     quitter = quitter,
 }
 
@@ -30,14 +30,16 @@ install {
     suffixes = {
         "tex",
         "mkii",
-        "mkiv", "mkvi", "mkix", "mkxi"
+        "mkiv", "mkvi", "mkix", "mkxi",
+        "mkic", "mkci", 
+
     },
     check    = {
         command = [[mtxrun --autogenerate --script check "%basename%"]],
         quitter = quitter,
     },
     process  = {
-        command = [[mtxrun --autogenerate --script context "%basename%"]], --  --autopdf,
+        command = [[mtxrun --autogenerate --script context --autopdf "%basename%"]], 
         quitter = quitter,
     },
     listing  = listing,
@@ -67,7 +69,7 @@ install {
     },
     check    = [[tidy -quiet -utf8 -xml -errors "%basename%"]],
     process  = {
-        command = [[mtxrun --autogenerate --script context "%basename%"]], --  --autopdf]],
+        command = [[mtxrun --autogenerate --script context --autopdf "%basename%"]], --  --autopdf]],
         quitter = quitter,
     },
     listing  = listing,

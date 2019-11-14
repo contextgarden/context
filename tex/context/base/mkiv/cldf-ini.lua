@@ -124,8 +124,8 @@ local scannerdefmode    = true
 local maxflushnodeindex = 0x10FFFF - 1
 
 -- tokenflushmode    = false
--- scannerdefmode    = false
 -- nodeflushmode     = false
+-- scannerdefmode    = false
 
 -- In earlier experiments a function tables was referred to as lua.calls and the
 -- primitive \luafunctions was \luacall and we used our own implementation of
@@ -137,7 +137,7 @@ function context.trialtypesetting()
     return texgetcount(trialtypesettingstate) ~= 0
 end
 
-local knownfunctions = lua.get_functions_table(true)
+local knownfunctions = (lua.getfunctionstable or lua.get_functions_table)(true)
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)
@@ -325,6 +325,39 @@ local callfunctiononce = function(slot)
 end
 
 setmetatablecall(knownfunctions,function(t,n) return knownfunctions[n](n) end)
+
+-- some protection
+
+do
+
+    local stub    = { }
+    local done    = false
+    local message = function()
+        -- one time message
+        if not done then
+            report_cld("")
+            report_cld("use : slot = context.functions.register(f)")
+            report_cld("and : context.functions.unregister(slot)")
+            report_cld("")
+            done = true
+        end
+    end
+
+    setmetatable(stub, {
+        __index    = message,
+        __newindex = message,
+    })
+
+    function lua.getfunctionstable()
+        message()
+        return stub
+    end
+
+    lua.get_functions_table = lua.getfunctionstable
+
+end
+
+-- so far
 
 -- The next hack is a convenient way to define scanners at the Lua end and
 -- get them available at the TeX end. There is some dirty magic needed to
@@ -713,8 +746,14 @@ local s_cldl_argument_e = "}"
 -- local s_cldl_argument_b = "{"
 -- local s_cldl_argument_f = "{ "
 
-local t_cldl_luafunction             = createtoken("luafunctioncall")
+local t_cldl_luafunction             = newtoken("luafunctioncall",0)
 local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
+
+local sortedhashindeed = false
+
+directives.register("context.sorthash",function(v)
+    sortedhashindeed = v and table.sortedhash or nil
+end)
 
 local function writer(parent,command,...) -- already optimized before call
 
@@ -766,20 +805,39 @@ local function writer(parent,command,...) -- already optimized before call
                 local tn = #ti
                 if tn == 0 then
                     local done = false
-                    for k, v in next, ti do
-                        if done then
-                            if v == "" then
-                                flush(currentcatcodes,",",k,'=')
+                    if sortedhashindeed then
+                        for k, v in sortedhashindeed(ti) do
+                            if done then
+                                if v == "" then
+                                    flush(currentcatcodes,",",k,'=')
+                                else
+                                    flush(currentcatcodes,",",k,"={",v,"}")
+                                end
                             else
-                                flush(currentcatcodes,",",k,"={",v,"}")
+                                if v == "" then
+                                    flush(currentcatcodes,"[",k,"=")
+                                else
+                                    flush(currentcatcodes,"[",k,"={",v,"}")
+                                end
+                                done = true
                             end
-                        else
-                            if v == "" then
-                                flush(currentcatcodes,"[",k,"=")
+                        end
+                    else
+                        for k, v in next, ti do
+                            if done then
+                                if v == "" then
+                                    flush(currentcatcodes,",",k,'=')
+                                else
+                                    flush(currentcatcodes,",",k,"={",v,"}")
+                                end
                             else
-                                flush(currentcatcodes,"[",k,"={",v,"}")
+                                if v == "" then
+                                    flush(currentcatcodes,"[",k,"=")
+                                else
+                                    flush(currentcatcodes,"[",k,"={",v,"}")
+                                end
+                                done = true
                             end
-                            done = true
                         end
                     end
                     if done then
@@ -792,11 +850,11 @@ local function writer(parent,command,...) -- already optimized before call
                     if type(tj) == "function" then
                         tj = storefunction(tj)
                         if tokenflushmode then
-                            if newtoken then
+                         -- if newtoken then
                                 flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),"]")
-                            else
-                                flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
-                            end
+                         -- else
+                         --     flush(currentcatcodes,"[",t_cldl_luafunction,tj,"]")
+                         -- end
                         else
                             flush(currentcatcodes,s_cldl_option_b,tj,s_cldl_option_e)
                         end
@@ -810,11 +868,11 @@ local function writer(parent,command,...) -- already optimized before call
                         if type(tj) == "function" then
                             tj = storefunction(tj)
                             if tokenflushmode then
-                                if newtoken then
+                             -- if newtoken then
                                     flush(currentcatcodes,"[",newtoken(tj,lua_expandable_call_token_code),j == tn and "]" or ",")
-                                else
-                                    flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
-                                end
+                             -- else
+                             --     flush(currentcatcodes,"[",t_cldl_luafunction,tj,j == tn and "]" or ",")
+                             -- end
                             else
                                 flush(currentcatcodes,s_cldl_option_s,tj,j == tn and "]" or ",")
                             end
@@ -831,11 +889,11 @@ local function writer(parent,command,...) -- already optimized before call
                 -- todo: ctx|prt|texcatcodes
                 ti = storefunction(ti)
                 if tokenflushmode then
-                    if newtoken then
+                 -- if newtoken then
                         flush(currentcatcodes,"{",newtoken(ti,lua_expandable_call_token_code),"}")
-                    else
-                        flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
-                    end
+                 -- else
+                 --     flush(currentcatcodes,"{",t_cldl_luafunction,ti,"}")
+                 -- end
                 else
                     flush(currentcatcodes,s_cldl_argument_f,ti,s_cldl_argument_e)
                 end
@@ -1060,11 +1118,11 @@ local caller = function(parent,f,a,...)
             -- ignored: a ...
             f = storefunction(f)
             if tokenflushmode then
-                if newtoken then
+             -- if newtoken then
                     flush(currentcatcodes,"{",newtoken(f,lua_expandable_call_token_code),"}")
-                else
-                    flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
-                end
+             -- else
+             --     flush(currentcatcodes,"{",t_cldl_luafunction,f,"}")
+             -- end
             else
                 flush(currentcatcodes,s_cldl_argument_b,f,s_cldl_argument_e) -- todo: ctx|prt|texcatcodes
             end

@@ -76,6 +76,7 @@ local v_layer              = variables.layer
 local v_lefttoright        = variables.lefttoright
 local v_righttoleft        = variables.righttoleft
 local v_title              = variables.title
+local v_nomenubar          = variables.nomenubar
 
 local positive             = register(pageliteral("/GSpositive gs"))
 local negative             = register(pageliteral("/GSnegative gs"))
@@ -193,6 +194,10 @@ function codeinjections.setupidentity(specification)
             identity[k] = v
         end
     end
+end
+
+function codeinjections.getidentityvariable(name)
+    return identity[name]
 end
 
 local done = false  -- using "setupidentity = function() end" fails as the meaning is frozen in register
@@ -329,6 +334,9 @@ local plusspecs = {
     [v_righttoleft] ={
         direction = "R2R",
     },
+    [v_nomenubar] ={
+        nomenubar = true,
+    },
 }
 
 local pagespecs = {
@@ -392,6 +400,11 @@ local pagespecs = {
         fixed  = true,
         duplex = "Simplex",
         paper  = true,
+    },
+    [v_nomenubar] = {
+        mode      = "UseNone",
+        layout    = "auto",
+        nomenubar = true,
     },
 }
 
@@ -472,6 +485,7 @@ local function documentspecification()
     local paper     = spec.paper
     local title     = spec.title
     local direction = spec.direction
+    local nomenubar = spec.nomenubar
     if layout then
         addtocatalog("PageLayout",pdfconstant(layout))
     end
@@ -490,7 +504,7 @@ local function documentspecification()
             prints = pdfarray(flattened(pages.toranges(marked)))
         end
     end
-    if fit or fixed or duplex or copies or paper or prints or title or direction then
+    if fit or fixed or duplex or copies or paper or prints or title or direction or nomenubar then
         addtocatalog("ViewerPreferences",pdfdictionary {
             FitWindow         = fit       and true                   or nil,
             PrintScaling      = fixed     and pdfconstant("None")    or nil,
@@ -500,6 +514,7 @@ local function documentspecification()
             PrintPageRange    = prints                               or nil,
             DisplayDocTitle   = title     and true                   or nil,
             Direction         = direction and pdfconstant(direction) or nil,
+            HideMenubar       = nomenubar and true                   or nil,
         })
     end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP

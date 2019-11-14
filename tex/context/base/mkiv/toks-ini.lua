@@ -36,18 +36,27 @@ local scan_argument   = token.scan_argument
 local scan_tokenlist  = token.scan_tokenlist
 local scan_int        = token.scan_int
 local scan_code       = token.scan_code
+local scan_token_code = token.scan_token_code
 local scan_dimen      = token.scan_dimen
 local scan_glue       = token.scan_glue
 local scan_keyword    = token.scan_keyword
 local scan_keyword_cs = token.scan_keyword_cs or scan_keyword
 local scan_token      = token.scan_token
+local scan_box        = token.scan_box
 local scan_word       = token.scan_word
+local scan_key        = token.scan_key
+local scan_value      = token.scan_value
+local scan_char       = token.scan_char
 local scan_number     = token.scan_number
 local scan_csname     = token.scan_csname
 local scan_real       = token.scan_real
 local scan_float      = token.scan_float
 
 local get_next        = token.get_next
+local get_next_token  = token.get_next_token
+local skip_next       = token.skip_next
+local peek_next_char  = token.peek_next_char
+local is_next_char    = token.is_next_char
 
 local set_macro       = token.set_macro
 local get_macro       = token.get_macro
@@ -60,14 +69,6 @@ local create_token    = token.create
 local new_token       = token.new
 local is_defined      = token.is_defined
 local is_token        = token.is_token
-
-if not is_defined then
-
-    is_defined = function(name)
-        return get_cmdname(create_token(name)) ~= "undefined_cs"
-    end
-
-end
 
 tokens.new            = new_token
 tokens.create         = create_token
@@ -104,14 +105,10 @@ local bits = {
 
 tokens.bits = bits
 
-local space_bits = bits.space
-
 -- words are space or \relax terminated and the trailing space is gobbled; a word
--- can contain any non-space letter/other
+-- can contain any non-space letter/other (see archive for implementation in lua)
 
-local t = { } -- small optimization, a shared variable that is not reset
-
-if scan_word then
+if not scan_number then
 
     scan_number = function(base)
         local s = scan_word()
@@ -124,69 +121,7 @@ if scan_word then
         end
     end
 
-else
-
-    scan_word = function()
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = utfchar(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
-                    break
-                end
-            elseif n > 0 then
-                break
-            else
-                return
-            end
-        end
-        return concat(t,"",1,n)
-    end
-
-    -- so we gobble the space (like scan_int) (number has to be space or non-char terminated
-    -- as we accept 0xabcd and such so there is no clear separator for a keyword
-
-    scan_number = function(base)
-        local n = 0
-        while true do
-            local c = scan_code()
-            if c then
-                n = n + 1
-                t[n] = char(c)
-            elseif scan_code(space_bits) then
-                if n > 0 then
-                    break
-                end
-            elseif n > 0 then
-                break
-            else
-                return
-            end
-        end
-        local s = concat(t,"",1,n)
-        if base then
-            return tonumber(s,base)
-        else
-            return tonumber(s)
-        end
-    end
-
 end
-
--- -- the next one cannot handle \iftrue true\else false\fi
---
--- local function scan_boolean()
---     if scan_keyword("true") then
---         return true
---     elseif scan_keyword("false") then
---         return false
---     else
---         return nil
---     end
--- end
 
 local function scan_boolean()
     local kw = scan_word()
@@ -199,24 +134,33 @@ local function scan_boolean()
     end
 end
 
-if not scan_csname then
-
-    scan_csname = function()
-        local t = get_next()
-        local n = t.csname
-        return n ~= "" and n or nil
-    end
-
-end
-
 local function scan_verbatim()
     return scan_argument(false)
+end
+
+if not scan_box then
+
+    local scan_list = token.scan_list
+    local put_next  = token.put_next
+
+    scan_box = function(s)
+        if s == "hbox" or s == "vbox" or s == "vtop" then
+            put_next(create_token(s))
+        end
+    end
+
+    token.scan_box = scan_box
+
 end
 
 tokens.scanners = { -- these expand
     token     = scan_token,
     toks      = scan_toks,
     tokens    = scan_toks,
+    box       = scan_box,
+    hbox      = function() return scan_box("hbox") end,
+    vbox      = function() return scan_box("vbox") end,
+    vtop      = function() return scan_box("vtop") end,
     dimen     = scan_dimen,
     dimension = scan_dimen,
     glue      = scan_glue,
@@ -230,12 +174,19 @@ tokens.scanners = { -- these expand
     tokenlist = scan_tokenlist,
     verbatim  = scan_verbatim,
     code      = scan_code,
+    tokencode = scan_token_code,
     word      = scan_word,
+    key       = scan_key,
+    value     = scan_value,
+    char      = scan_char,
     number    = scan_number,
     boolean   = scan_boolean,
     keyword   = scan_keyword,
     keywordcs = scan_keyword_cs,
     csname    = scan_csname,
+    peek      = peek_next_char,
+    skip      = skip_next,
+    ischar    = is_next_char,
 }
 
 tokens.getters = { -- these don't expand
@@ -307,6 +258,7 @@ if setinspector then
                     active     = t.active,
                     expandable = t.expandable,
                     protected  = t.protected,
+                    frozen     = t.frozen,
                     mode       = t.mode,
                     index      = t.index,
                     cmdname    = cmdname,

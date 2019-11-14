@@ -136,7 +136,7 @@
   {\begingroup
    \writestatus\m!system
      {\ifarrangingpages arranged \fi page
-       \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
+      \ifarrangingpages\the\arrangeno\else\the\realpageno\fi\normalspace
        not flushed}%
  % \setbox\scratchbox\hpack
  %   {#1}% no finalize
@@ -162,11 +162,15 @@
    \box\scratchbox
    \endgroup}
 
-\ifdefined \page_shipout_box \else
+%D Also in normal \MKIV\ we nos use the indirect way so that we benefit from timing and
+%D tracing.
 
-    \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
+% \def\page_shipout_box#1{\normalshipout\box#1\relax} % takes a number
 
-\fi
+\unexpanded\def\page_shipout_box#1%
+  {\clf_shipoutpage#1\relax
+   \global\setbox#1\emptybox
+   \global\deadcycles\zerocount}
 
 \def\page_shipouts_normal#1%
   {\global\advance\shippedoutpages\plusone
@@ -206,6 +210,10 @@
      \page_shipouts_ignore{#1}%
    \fi}
 
+\newconditional\c_page_shipouts_use_objects \settrue\c_page_shipouts_use_objects
+
+\installcorenamespace {arrangedpage}
+
 \def\page_shipouts_arrange#1%
   {\begingroup
    \setbox\shipoutscratchbox\hpack
@@ -214,6 +222,12 @@
      {\page_otr_flush_every_stuff
       \page_otr_flush_special_content
       \box\shipoutscratchbox}%
+   %
+   \ifconditional\c_page_shipouts_use_objects
+     \setobject\??arrangedpage{\the\realpageno}\hpack{\box\shipoutscratchbox}%
+     \setbox\shipoutscratchbox\hpack{\getobject\??arrangedpage{\the\realpageno}}%
+   \fi
+   %
    \pusharrangedpage\shipoutscratchbox
    \deadcycles\zerocount
    \endgroup}
@@ -313,8 +327,10 @@
      \fi
      \setuppapersize
      \ifarrangingpages
-       \clf_disablejobsave
-       %\disabledirective[job.save]%
+        \ifconditional\c_page_shipouts_use_objects\else
+          \clf_disablejobsave
+         %\disabledirective[job.save]%
+        \fi
      \fi
    \fi}
 
@@ -417,6 +433,7 @@
 \def\outputarrangedbox#1%
   {\begingroup
    \forgetall % somehow we're back and need to redo this
+   \dontcomplain
    \gotonextarrangepage
    \ifnum\arrangedrotationO\arrangedrotationE>\zerocount
      \setbox#1\vpack

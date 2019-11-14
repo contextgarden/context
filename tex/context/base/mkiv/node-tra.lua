@@ -355,7 +355,9 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
                     n = n + 1 ; w[n] = " "
                 end
             elseif id == hlist_code or id == vlist_code then
-                n = n + 1 ; w[n] = "[]"
+                n = n + 1 ; w[n] = "["
+                n = n + 1 ; w[n] = listtoutf(getlist(h),joiner,textonly,last,nodisc)
+                n = n + 1 ; w[n] = "]"
             end
         else
             n = n + 1 ; w[n] = "[-]"

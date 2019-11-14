@@ -30,11 +30,11 @@ local data        = { }
 -- The sorting is needed to get a predictable setters in case of *.
 
 local trace_initialize = false -- only for testing during development
+local frozen           = true  -- this needs checking
 
 function setters.initialize(filename,name,values) -- filename only for diagnostics
     local setter = data[name]
     if setter then
-        frozen = true -- don't permitoverload
      -- trace_initialize = true
         local data = setter.data
         if data then
@@ -278,7 +278,7 @@ function setters.new(name) -- we could use foo:bar syntax (but not used that oft
         disable  = function(...)         disable (setter,...) end,
         reset    = function(...)         reset   (setter,...) end, -- can be dangerous
         register = function(...)         register(setter,...) end,
-        list     = function(...)         list    (setter,...) end,
+        list     = function(...)  return list    (setter,...) end,
         show     = function(...)         show    (setter,...) end,
         default  = function(...)  return default (setter,...) end,
         value    = function(...)  return value   (setter,...) end,

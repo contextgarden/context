@@ -45,7 +45,7 @@ local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local tonode            = nuts.tonode
 
-local getfield          = nuts.getfield
+local getreplace        = nuts.getreplace
 local getattr           = nuts.getattr
 local getid             = nuts.getid
 local getnext           = nuts.getnext
@@ -185,7 +185,7 @@ local function getprofile(line,step)
                 dp = 0
                 progress()
             elseif id == disc_code then
-                local replace = getfield(current,"replace")
+                local replace = getreplace(current)
                 if replace then
                     process(replace)
                 end

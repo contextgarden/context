@@ -56,7 +56,6 @@ local kern_code        = nodecodes.kern
 local dir_code         = nodecodes.dir
 local localpar_code    = nodecodes.localpar
 
-local getfield         = nuts.getfield
 local getnext          = nuts.getnext
 local getprev          = nuts.getprev
 local getid            = nuts.getid
@@ -64,6 +63,7 @@ local getfont          = nuts.getfont
 local getsubtype       = nuts.getsubtype
 local getlist          = nuts.getlist
 local getdisc          = nuts.getdisc
+local getreplace       = nuts.getreplace
 local isglyph          = nuts.isglyph
 local getkern          = nuts.getkern
 local getdirection     = nuts.getdirection
@@ -519,7 +519,8 @@ local function toutf(list,result,nofresult,stopcriterium,nostrip)
                     result[nofresult] = f_badcode(c)
                 end
             elseif id == disc_code then
-                result, nofresult = toutf(getfield(n,"replace"),result,nofresult,false,true) -- needed?
+                local replace = getreplace(n)
+                result, nofresult = toutf(replace,result,nofresult,false,true) -- needed?
             elseif id == hlist_code or id == vlist_code then
              -- if nofresult > 0 and result[nofresult] ~= " " then
              --     nofresult = nofresult + 1

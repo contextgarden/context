@@ -240,3 +240,7 @@ function fonts.getmultiple(tfmdata,k,kind)
         return 0
     end
 end
+
+function fonts.getindices(tfmdata)
+    return getindices(tfmdata)
+end

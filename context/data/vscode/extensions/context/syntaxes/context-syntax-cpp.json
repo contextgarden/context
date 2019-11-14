@@ -1,0 +1,143 @@
+{
+ "name" : "context.cpp",
+ "patterns" : [
+  {
+   "include" : "#keyword"
+  },
+  {
+   "include" : "#datatype"
+  },
+  {
+   "include" : "#luatex"
+  },
+  {
+   "include" : "#identifier"
+  },
+  {
+   "include" : "#macro"
+  },
+  {
+   "include" : "#string_double"
+  },
+  {
+   "include" : "#string_single"
+  },
+  {
+   "include" : "#texcomment"
+  },
+  {
+   "include" : "#longcomment"
+  },
+  {
+   "include" : "#shortcomment"
+  },
+  {
+   "include" : "#hexnumber"
+  },
+  {
+   "include" : "#decnumber"
+  },
+  {
+   "include" : "#operator"
+  }
+ ],
+ "repository" : {
+  "datatype" : {
+   "match" : "\u005Cb(void|unsigned|union|struct|signed|short|long|int|float|enum|double|char|bool)\u005Cb",
+   "name" : "context.keyword.datatype.c"
+  },
+  "decnumber" : {
+   "match" : "[\u005C-]?[0-9]+(\u005C.[0-9]+)?([eEpP]\u005C-?[0-9]+)?",
+   "name" : "context.number.dec.c"
+  },
+  "hexnumber" : {
+   "match" : "[\u005C-]?0[xX][A-Fa-f0-9]+(\u005C.[A-Fa-f0-9]+)?([eEpP]\u005C-?[A-Fa-f0-9]+)?",
+   "name" : "context.number.hex.c"
+  },
+  "identifier" : {
+   "match" : "[A-Za-z_][A-Za-z_0-9]*",
+   "name" : "context.default.identifier.c"
+  },
+  "keyword" : {
+   "match" : "\u005Cb(while|volatile|virtual|using|typename|typeid|typedef|try|true|throw|this|template|switch|static_cast|static_assert|static|slots|sizeof|signals|return|restrict|reinterpret_cast|register|public|protected|private|operator|new|namespace|mutable|inline|if|goto|friend|for|false|extern|export|explicit|else|dynamic_cast|do|delete|default|continue|const_cast|const|class|catch|case|break|auto|asm|_Pragma|_Imaginary|_Complex|_Bool)\u005Cb",
+   "name" : "context.keyword.c.c"
+  },
+  "longcomment" : {
+   "begin" : "/\u005C*",
+   "end" : "\u005C*/",
+   "name" : "context.comment.long.c"
+  },
+  "luatex" : {
+   "match" : "\u005Cb(word|scaled|quarterword|pointer|halfword|glueratio)\u005Cb",
+   "name" : "context.command.luatex.c"
+  },
+  "macro" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.data.macro.tag.c"
+    },
+    "2" : {
+     "name" : "context.data.macro.name.c"
+    }
+   },
+   "match" : "\u005Cs*(#)\u005Cs*\u005Cb(warning|using|undef|pragma|line|include|import|ifndef|ifdef|if|error|endif|else|elif|define)\u005Cb"
+  },
+  "operator" : {
+   "match" : "\u005C~|}|\u005C||{|\u005C^|\u005C]|\u005C[|\u005C?|>|=|<|;|:|/|\u005C.|\u005C-|\u005C+|\u005C*|\u005C)|\u005C(|\u005C&|\u005C%|\u005C!",
+   "name" : "context.operator.any.c"
+  },
+  "shortcomment" : {
+   "match" : "//.*$\u005Cn?",
+   "name" : "context.comment.short.c"
+  },
+  "string_double" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.special.doublequoted.open.c"
+    },
+    "2" : {
+     "name" : "context.string.doublequoted.text.c"
+    },
+    "3" : {
+     "name" : "context.special.doublequoted.close.c"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)"
+  },
+  "string_single" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.special.singlequoted.open.c"
+    },
+    "2" : {
+     "name" : "context.string.singlequoted.text.c"
+    },
+    "3" : {
+     "name" : "context.special.singlequoted.close.c"
+    }
+   },
+   "match" : "(')((?:\u005C\u005C'|[^'])*)(')"
+  },
+  "texcomment" : {
+   "begin" : "/\u005C*tex",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.comment.tex.open.c"
+    }
+   },
+   "end" : "\u005C*/",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.comment.tex.close.c"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "source.context.tex"
+    }
+   ]
+  }
+ },
+ "scopeName" : "source.context.cpp",
+ "version" : "1.0.0"
+}

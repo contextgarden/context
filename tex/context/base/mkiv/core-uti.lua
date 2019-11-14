@@ -269,6 +269,16 @@ end
 
 local function load(filename)
     if lfs.isfile(filename) then
+
+        local function dofile(filename)
+            local result = loadstring(io.loaddata(filename))
+            if result then
+                return result()
+            else
+                return nil
+            end
+        end
+
         local okay, data = pcall(dofile,filename)
         if okay and type(data) == "table" then
             local jobversion  = job.version

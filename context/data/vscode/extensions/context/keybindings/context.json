@@ -1,0 +1,20 @@
+[
+ {
+  "args" : "process tex file",
+  "command" : "workbench.action.tasks.runTask",
+  "key" : "ctrl-F12",
+  "when" : "editorTextFocus && editorLangId == context.tex"
+ },
+ {
+  "args" : "check tex file",
+  "command" : "workbench.action.tasks.runTask",
+  "key" : "F12",
+  "when" : "editorTextFocus && editorLangId == context.tex"
+ },
+ {
+  "args" : "process lua file",
+  "command" : "workbench.action.tasks.runTask",
+  "key" : "ctrl-F12",
+  "when" : "editorTextFocus && editorLangId == context.cld"
+ }
+]

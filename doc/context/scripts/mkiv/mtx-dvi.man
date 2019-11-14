@@ -1,6 +1,6 @@
 .TH "mtx-dvi" "1" "01-01-2019" "version 0.01" "ConTeXt DVI Helpers"
 .SH NAME
-.B mtx-dvi
+ mtx-dvi - ConTeXt DVI Helpers
 .SH SYNOPSIS
 .B mtxrun --script dvi [
 .I OPTIONS ...

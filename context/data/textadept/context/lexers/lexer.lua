@@ -2240,6 +2240,10 @@ do
     local utf8three        = R("\224\239") * utf8next * utf8next
     local utf8four         = R("\240\244") * utf8next * utf8next * utf8next
 
+    local utfidentifier    = utf8two + utf8three + utf8four
+    helpers.utfidentifier  = (R("AZ","az","__")      + utfidentifier)
+                           * (R("AZ","az","__","09") + utfidentifier)^0
+
     helpers.utfcharpattern = P(1) * utf8next^0 -- unchecked but fast
     helpers.utfbytepattern = utf8one   / byte
                            + utf8two   / function(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end

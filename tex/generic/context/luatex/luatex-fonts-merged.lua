@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 03/21/19 21:39:34
+-- merge date  : 11/14/19 17:07:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -120,6 +120,9 @@ elseif not ffi.number then
  ffi.number=tonumber
 end
 if LUAVERSION>5.3 then
+end
+if status and os.setenv then
+ os.setenv("engine",string.lower(status.luatex_engine or "unknown"))
 end
 
 end -- closure
@@ -293,7 +296,7 @@ patterns.propername=(uppercase+lowercase+underscore)*(uppercase+lowercase+unders
 patterns.somecontent=(anything-newline-space)^1 
 patterns.beginline=#(1-newline)
 patterns.longtostring=Cs(whitespace^0/""*((patterns.quoted+nonwhitespace^1+whitespace^1/""*(endofstring+Cc(" ")))^0))
-function anywhere(pattern) 
+local function anywhere(pattern) 
  return (1-P(pattern))^0*P(pattern)
 end
 lpeg.anywhere=anywhere
@@ -977,9 +980,11 @@ function string.is_empty(str)
  end
 end
 local anything=patterns.anything
-local allescapes=Cc("%")*S(".-+%?()[]*") 
-local someescapes=Cc("%")*S(".-+%()[]")   
-local matchescapes=Cc(".")*S("*?")   
+local moreescapes=Cc("%")*S(".-+%?()[]*$^{}")
+local allescapes=Cc("%")*S(".-+%?()[]*")   
+local someescapes=Cc("%")*S(".-+%()[]")  
+local matchescapes=Cc(".")*S("*?")     
+local pattern_m=Cs ((moreescapes+anything )^0 )
 local pattern_a=Cs ((allescapes+anything )^0 )
 local pattern_b=Cs ((someescapes+matchescapes+anything )^0 )
 local pattern_c=Cs (Cc("^")*(someescapes+matchescapes+anything )^0*Cc("$") )
@@ -989,6 +994,8 @@ end
 function string.topattern(str,lowercase,strict)
  if str=="" or type(str)~="string" then
   return ".*"
+ elseif strict=="all" then
+  str=lpegmatch(pattern_m,str)
  elseif strict then
   str=lpegmatch(pattern_c,str)
  else
@@ -1984,7 +1991,7 @@ end
 local function sequenced(t,sep,simple)
  if not t then
   return ""
- elseif type(t)=="string" then
+ elseif type(t)~="table" then
   return t 
  end
  local n=#t
@@ -2023,7 +2030,11 @@ local function sequenced(t,sep,simple)
    end
   end
  end
- return concat(s,sep or " | ")
+ if sep==true then
+  return "{ "..concat(s,", ").." }"
+ else
+  return concat(s,sep or " | ")
+ end
 end
 table.sequenced=sequenced
 function table.print(t,...)
@@ -2163,7 +2174,7 @@ local open,flush,write,read=io.open,io.flush,io.write,io.read
 local byte,find,gsub,format=string.byte,string.find,string.gsub,string.format
 local concat=table.concat
 local type=type
-if string.find(os.getenv("PATH"),";",1,true) then
+if string.find(os.getenv("PATH") or "",";",1,true) then
  io.fileseparator,io.pathseparator="\\",";"
 else
  io.fileseparator,io.pathseparator="/",":"
@@ -3388,6 +3399,13 @@ local template=[[
 %s
 return function(%s) return %s end
 ]]
+local pattern=Cs(Cc('"')*(
+ (1-S('"\\\n\r'))^1+P('"')/'\\"'+P('\\')/'\\\\'+P('\n')/'\\n'+P('\r')/'\\r'
+)^0*Cc('"'))
+patterns.escapedquotes=pattern
+function string.escapedquotes(s)
+ return lpegmatch(pattern,s)
+end
 local preamble=""
 local environment={
  global=global or _G,
@@ -3412,9 +3430,10 @@ local environment={
  formattednumber=number.formatted,
  sparseexponent=number.sparseexponent,
  formattedfloat=number.formattedfloat,
- stripzero=lpeg.patterns.stripzero,
- stripzeros=lpeg.patterns.stripzeros,
- FORMAT=string.f9,
+ stripzero=patterns.stripzero,
+ stripzeros=patterns.stripzeros,
+ escapedquotes=string.escapedquotes,
+ FORMAT=string.f6,
 }
 local arguments={ "a1" } 
 setmetatable(arguments,{ __index=function(t,k)
@@ -3471,7 +3490,7 @@ local format_q=function()
 end
 local format_Q=function() 
  n=n+1
- return format("format('%%q',tostring(a%s))",n)
+ return format("escapedquotes(tostring(a%s))",n)
 end
 local format_i=function(f)
  n=n+1
@@ -3622,12 +3641,25 @@ local format_n=function()
  n=n+1
  return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
-local format_N=function(f) 
- n=n+1
- if not f or f=="" then
-  f=".9"
- end 
- return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+local format_N  if environment.FORMAT then
+ format_N=function(f)
+  n=n+1
+  if not f or f=="" then
+   return format("FORMAT(a%s,'%%.9f')",n)
+  elseif f==".6" then
+   return format("FORMAT(a%s)",n)
+  else
+   return format("FORMAT(a%s,'%%%sf')",n,f)
+  end
+ end
+else
+ format_N=function(f) 
+  n=n+1
+  if not f or f=="" then
+   f=".9"
+  end 
+  return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+ end
 end
 local format_a=function(f)
  n=n+1
@@ -3856,9 +3888,9 @@ patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=lpeg.patterns.xmlescape })
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=lpeg.patterns.texescape })
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=lpeg.patterns.luaescape })
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=patterns.xmlescape })
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=patterns.texescape })
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=patterns.luaescape })
 local dquote=patterns.dquote 
 local equote=patterns.escaped+dquote/'\\"'+1
 local cquote=Cc('"')
@@ -3889,6 +3921,27 @@ end
 local f_16_16=formatters["%0.5N"]
 function number.to16dot16(n)
  return f_16_16(n/65536.0)
+end
+if not string.explode then
+ local tsplitat=lpeg.tsplitat
+ local p_utf=patterns.utf8character
+ local p_check=C(p_utf)*(P("+")*Cc(true))^0
+ local p_split=Ct(C(p_utf)^0)
+ local p_space=Ct((C(1-P(" ")^1)+P(" ")^1)^0)
+ function string.explode(str,symbol)
+  if symbol=="" then
+   return lpegmatch(p_split,str)
+  elseif symbol then
+   local a,b=lpegmatch(p_check,symbol)
+   if b then
+    return lpegmatch(tsplitat(P(a)^1),str)
+   else
+    return lpegmatch(tsplitat(a),str)
+   end
+  else
+   return lpegmatch(p_space,str)
+  end
+ end
 end
 
 end -- closure
@@ -4825,6 +4878,7 @@ nuts.getchar=direct.getchar
 nuts.getcomponents=direct.getcomponents
 nuts.getdirection=direct.getdirection
 nuts.getdisc=direct.getdisc
+nuts.getreplace=direct.getreplace
 nuts.getfield=direct.getfield
 nuts.getfont=direct.getfont
 nuts.getid=direct.getid
@@ -4839,9 +4893,9 @@ nuts.setattr=direct.setfield
 nuts.setboth=direct.setboth
 nuts.setchar=direct.setchar
 nuts.setcomponents=direct.setcomponents
-nuts.setdir=direct.setdir
 nuts.setdirection=direct.setdirection
 nuts.setdisc=direct.setdisc
+nuts.setreplace=direct.setreplace
 nuts.setfield=setfield
 nuts.setkern=direct.setkern
 nuts.setlink=direct.setlink
@@ -4852,8 +4906,8 @@ nuts.setprev=direct.setprev
 nuts.setsplit=direct.setsplit
 nuts.setsubtype=direct.setsubtype
 nuts.setwidth=direct.setwidth
-nuts.is_char=direct.is_char
-nuts.is_glyph=direct.is_glyph
+nuts.getglyphdata=nuts.getattr
+nuts.setglyphdata=nuts.setattr
 nuts.ischar=direct.is_char
 nuts.isglyph=direct.is_glyph
 nuts.copy=direct.copy
@@ -4877,20 +4931,6 @@ nuts.traverse=direct.traverse
 nuts.traverse_char=direct.traverse_char
 nuts.traverse_glyph=direct.traverse_glyph
 nuts.traverse_id=direct.traverse_id
-if not nuts.getdirection then
- local getdir=direct.getdir
- function nuts.getdirection(n)
-  local d=getdir(n)
-  if  d=="TLT" then return 0
-  elseif d=="TRT" then return 1
-  elseif d=="+TLT" then return 0,false
-  elseif d=="+TRT" then return 1,false
-  elseif d=="-TLT" then return 0,true
-  elseif d=="-TRT" then return 1,true
-  else     return 0
-  end
- end
-end
 local propertydata=direct.get_properties_table()
 nodes.properties={ data=propertydata }
 if direct.set_properties_mode then
@@ -4972,6 +5012,17 @@ do
   char=nuts.traverse_char(dummy),
   node=nuts.traverse(dummy),
  }
+end
+if not nuts.setreplace then
+ local getdisc=nuts.getdisc
+ local setfield=nuts.setfield
+ function nuts.getreplace(n)
+  local _,_,h,_,_,t=getdisc(n,true)
+  return h,t
+ end
+ function nuts.setreplace(n,h)
+  setfield(n,"replace",h)
+ end
 end
 
 end -- closure
@@ -5419,7 +5470,6 @@ characters.classifiers={
  [1803]=6,
  [1804]=6,
  [1805]=6,
- [1807]=6,
  [1808]=3,
  [1809]=5,
  [1810]=2,
@@ -5600,6 +5650,9 @@ characters.classifiers={
  [2040]=6,
  [2041]=6,
  [2042]=2,
+ [2045]=5,
+ [2046]=6,
+ [2047]=6,
  [2070]=5,
  [2071]=5,
  [2072]=5,
@@ -5689,6 +5742,7 @@ characters.classifiers={
  [2235]=2,
  [2236]=2,
  [2237]=2,
+ [2259]=5,
  [2260]=5,
  [2261]=5,
  [2262]=5,
@@ -5765,6 +5819,7 @@ characters.classifiers={
  [2509]=5,
  [2530]=5,
  [2531]=5,
+ [2558]=5,
  [2561]=5,
  [2562]=5,
  [2620]=5,
@@ -5813,6 +5868,7 @@ characters.classifiers={
  [3008]=5,
  [3021]=5,
  [3072]=5,
+ [3076]=5,
  [3134]=5,
  [3135]=5,
  [3136]=5,
@@ -5874,6 +5930,7 @@ characters.classifiers={
  [3767]=5,
  [3768]=5,
  [3769]=5,
+ [3770]=5,
  [3771]=5,
  [3772]=5,
  [3784]=5,
@@ -6112,6 +6169,7 @@ characters.classifiers={
  [6261]=2,
  [6262]=2,
  [6263]=2,
+ [6264]=2,
  [6272]=4,
  [6273]=4,
  [6274]=4,
@@ -6512,6 +6570,7 @@ characters.classifiers={
  [43247]=5,
  [43248]=5,
  [43249]=5,
+ [43263]=5,
  [43302]=5,
  [43303]=5,
  [43304]=5,
@@ -6675,6 +6734,83 @@ characters.classifiers={
  [68525]=2,
  [68526]=2,
  [68527]=4,
+ [68864]=1,
+ [68865]=2,
+ [68866]=2,
+ [68867]=2,
+ [68868]=2,
+ [68869]=2,
+ [68870]=2,
+ [68871]=2,
+ [68872]=2,
+ [68873]=2,
+ [68874]=2,
+ [68875]=2,
+ [68876]=2,
+ [68877]=2,
+ [68878]=2,
+ [68879]=2,
+ [68880]=2,
+ [68881]=2,
+ [68882]=2,
+ [68883]=2,
+ [68884]=2,
+ [68885]=2,
+ [68886]=2,
+ [68887]=2,
+ [68888]=2,
+ [68889]=2,
+ [68890]=2,
+ [68891]=2,
+ [68892]=2,
+ [68893]=2,
+ [68894]=2,
+ [68895]=2,
+ [68896]=2,
+ [68897]=2,
+ [68898]=3,
+ [68899]=2,
+ [68900]=5,
+ [68901]=5,
+ [68902]=5,
+ [68903]=5,
+ [69424]=2,
+ [69425]=2,
+ [69426]=2,
+ [69427]=3,
+ [69428]=2,
+ [69429]=2,
+ [69430]=2,
+ [69431]=2,
+ [69432]=2,
+ [69433]=2,
+ [69434]=2,
+ [69435]=2,
+ [69436]=2,
+ [69437]=2,
+ [69438]=2,
+ [69439]=2,
+ [69440]=2,
+ [69441]=2,
+ [69442]=2,
+ [69443]=2,
+ [69444]=2,
+ [69445]=4,
+ [69446]=5,
+ [69447]=5,
+ [69448]=5,
+ [69449]=5,
+ [69450]=5,
+ [69451]=5,
+ [69452]=5,
+ [69453]=5,
+ [69454]=5,
+ [69455]=5,
+ [69456]=5,
+ [69457]=2,
+ [69458]=2,
+ [69459]=2,
+ [69460]=3,
  [69633]=5,
  [69688]=5,
  [69689]=5,
@@ -6700,6 +6836,8 @@ characters.classifiers={
  [69814]=5,
  [69817]=5,
  [69818]=5,
+ [69821]=4,
+ [69837]=4,
  [69888]=5,
  [69889]=5,
  [69890]=5,
@@ -6749,6 +6887,7 @@ characters.classifiers={
  [70378]=5,
  [70400]=5,
  [70401]=5,
+ [70459]=5,
  [70460]=5,
  [70464]=5,
  [70502]=5,
@@ -6775,6 +6914,7 @@ characters.classifiers={
  [70723]=5,
  [70724]=5,
  [70726]=5,
+ [70750]=5,
  [70835]=5,
  [70836]=5,
  [70837]=5,
@@ -6828,6 +6968,24 @@ characters.classifiers={
  [71465]=5,
  [71466]=5,
  [71467]=5,
+ [71727]=5,
+ [71728]=5,
+ [71729]=5,
+ [71730]=5,
+ [71731]=5,
+ [71732]=5,
+ [71733]=5,
+ [71734]=5,
+ [71735]=5,
+ [71737]=5,
+ [71738]=5,
+ [72148]=5,
+ [72149]=5,
+ [72150]=5,
+ [72151]=5,
+ [72154]=5,
+ [72155]=5,
+ [72160]=5,
  [72193]=5,
  [72194]=5,
  [72195]=5,
@@ -6935,6 +7093,12 @@ characters.classifiers={
  [73028]=5,
  [73029]=5,
  [73031]=5,
+ [73104]=5,
+ [73105]=5,
+ [73109]=5,
+ [73111]=5,
+ [73459]=5,
+ [73460]=5,
  [92912]=5,
  [92913]=5,
  [92914]=5,
@@ -6947,6 +7111,7 @@ characters.classifiers={
  [92980]=5,
  [92981]=5,
  [92982]=5,
+ [94031]=5,
  [94095]=5,
  [94096]=5,
  [94097]=5,
@@ -7143,6 +7308,17 @@ characters.classifiers={
  [122920]=5,
  [122921]=5,
  [122922]=5,
+ [123184]=5,
+ [123185]=5,
+ [123186]=5,
+ [123187]=5,
+ [123188]=5,
+ [123189]=5,
+ [123190]=5,
+ [123628]=5,
+ [123629]=5,
+ [123630]=5,
+ [123631]=5,
  [125136]=5,
  [125137]=5,
  [125138]=5,
@@ -7245,6 +7421,7 @@ characters.indicgroups={
   [2632]=true,
   [2635]=true,
   [2636]=true,
+  [2690]=true,
   [2757]=true,
   [2759]=true,
   [2760]=true,
@@ -7256,7 +7433,6 @@ characters.indicgroups={
   [3136]=true,
   [3142]=true,
   [3143]=true,
-  [3144]=true,
   [3146]=true,
   [3147]=true,
   [3148]=true,
@@ -7264,6 +7440,21 @@ characters.indicgroups={
   [3263]=true,
   [3270]=true,
   [3406]=true,
+  [4141]=true,
+  [4142]=true,
+  [4146]=true,
+  [4147]=true,
+  [4148]=true,
+  [4149]=true,
+  [4150]=true,
+  [4154]=true,
+  [4209]=true,
+  [4210]=true,
+  [4211]=true,
+  [4212]=true,
+  [4229]=true,
+  [4230]=true,
+  [4253]=true,
   [43232]=true,
   [43233]=true,
   [43234]=true,
@@ -7282,6 +7473,8 @@ characters.indicgroups={
   [43247]=true,
   [43248]=true,
   [43249]=true,
+  [43493]=true,
+  [43644]=true,
  },
  ["after_half"]={},
  ["after_main"]={
@@ -7303,6 +7496,7 @@ characters.indicgroups={
   [2626]=true,
   [2672]=true,
   [2673]=true,
+  [2735]=true,
   [2750]=true,
   [2752]=true,
   [2753]=true,
@@ -7466,10 +7660,24 @@ characters.indicgroups={
   [3170]=true,
   [3171]=true,
   [3260]=true,
+  [3286]=true,
   [3298]=true,
   [3299]=true,
   [3426]=true,
   [3427]=true,
+  [4143]=true,
+  [4144]=true,
+  [4151]=true,
+  [4153]=true,
+  [4157]=true,
+  [4158]=true,
+  [4184]=true,
+  [4185]=true,
+  [4190]=true,
+  [4191]=true,
+  [4192]=true,
+  [4226]=true,
+  [4237]=true,
  },
  ["consonant"]={
   [2325]=true,
@@ -7799,6 +8007,117 @@ characters.indicgroups={
   [3384]=true,
   [3385]=true,
   [3386]=true,
+  [4096]=true,
+  [4097]=true,
+  [4098]=true,
+  [4099]=true,
+  [4100]=true,
+  [4101]=true,
+  [4102]=true,
+  [4103]=true,
+  [4104]=true,
+  [4105]=true,
+  [4106]=true,
+  [4107]=true,
+  [4108]=true,
+  [4109]=true,
+  [4110]=true,
+  [4111]=true,
+  [4112]=true,
+  [4113]=true,
+  [4114]=true,
+  [4115]=true,
+  [4116]=true,
+  [4117]=true,
+  [4118]=true,
+  [4119]=true,
+  [4120]=true,
+  [4121]=true,
+  [4122]=true,
+  [4123]=true,
+  [4124]=true,
+  [4125]=true,
+  [4126]=true,
+  [4127]=true,
+  [4128]=true,
+  [4155]=true,
+  [4156]=true,
+  [4157]=true,
+  [4158]=true,
+  [4159]=true,
+  [4176]=true,
+  [4177]=true,
+  [4186]=true,
+  [4187]=true,
+  [4188]=true,
+  [4189]=true,
+  [4190]=true,
+  [4191]=true,
+  [4192]=true,
+  [4193]=true,
+  [4197]=true,
+  [4198]=true,
+  [4206]=true,
+  [4207]=true,
+  [4208]=true,
+  [4213]=true,
+  [4214]=true,
+  [4215]=true,
+  [4216]=true,
+  [4217]=true,
+  [4218]=true,
+  [4219]=true,
+  [4220]=true,
+  [4221]=true,
+  [4222]=true,
+  [4223]=true,
+  [4224]=true,
+  [4225]=true,
+  [4226]=true,
+  [4238]=true,
+  [43488]=true,
+  [43489]=true,
+  [43490]=true,
+  [43491]=true,
+  [43492]=true,
+  [43495]=true,
+  [43496]=true,
+  [43497]=true,
+  [43498]=true,
+  [43499]=true,
+  [43500]=true,
+  [43501]=true,
+  [43502]=true,
+  [43503]=true,
+  [43514]=true,
+  [43515]=true,
+  [43516]=true,
+  [43517]=true,
+  [43518]=true,
+  [43616]=true,
+  [43617]=true,
+  [43618]=true,
+  [43619]=true,
+  [43620]=true,
+  [43621]=true,
+  [43622]=true,
+  [43623]=true,
+  [43624]=true,
+  [43625]=true,
+  [43626]=true,
+  [43628]=true,
+  [43629]=true,
+  [43630]=true,
+  [43631]=true,
+  [43633]=true,
+  [43634]=true,
+  [43635]=true,
+  [43636]=true,
+  [43637]=true,
+  [43638]=true,
+  [43642]=true,
+  [43646]=true,
+  [43647]=true,
  },
  ["dependent_vowel"]={
   [2362]=true,
@@ -7827,13 +8146,14 @@ characters.indicgroups={
   [2403]=true,
   [2494]=true,
   [2495]=true,
-  [2496]=true,
   [2497]=true,
   [2498]=true,
   [2499]=true,
   [2500]=true,
   [2503]=true,
   [2504]=true,
+  [2507]=true,
+  [2508]=true,
   [2622]=true,
   [2623]=true,
   [2624]=true,
@@ -7908,6 +8228,8 @@ characters.indicgroups={
   [3274]=true,
   [3275]=true,
   [3276]=true,
+  [3285]=true,
+  [3286]=true,
   [3298]=true,
   [3299]=true,
   [3390]=true,
@@ -7926,6 +8248,35 @@ characters.indicgroups={
   [3415]=true,
   [3426]=true,
   [3427]=true,
+  [4139]=true,
+  [4140]=true,
+  [4141]=true,
+  [4142]=true,
+  [4143]=true,
+  [4144]=true,
+  [4145]=true,
+  [4146]=true,
+  [4147]=true,
+  [4148]=true,
+  [4149]=true,
+  [4182]=true,
+  [4183]=true,
+  [4184]=true,
+  [4185]=true,
+  [4194]=true,
+  [4199]=true,
+  [4200]=true,
+  [4209]=true,
+  [4210]=true,
+  [4211]=true,
+  [4212]=true,
+  [4227]=true,
+  [4228]=true,
+  [4229]=true,
+  [4230]=true,
+  [4252]=true,
+  [4253]=true,
+  [43493]=true,
  },
  ["halant"]={
   [2381]=true,
@@ -8083,6 +8434,20 @@ characters.indicgroups={
   [3423]=true,
   [3424]=true,
   [3425]=true,
+  [4129]=true,
+  [4130]=true,
+  [4131]=true,
+  [4132]=true,
+  [4133]=true,
+  [4134]=true,
+  [4135]=true,
+  [4136]=true,
+  [4137]=true,
+  [4138]=true,
+  [4178]=true,
+  [4179]=true,
+  [4180]=true,
+  [4181]=true,
  },
  ["nukta"]={
   [2364]=true,
@@ -8104,8 +8469,6 @@ characters.indicgroups={
   [2383]=true,
   [2494]=true,
   [2496]=true,
-  [2503]=true,
-  [2504]=true,
   [2622]=true,
   [2624]=true,
   [2750]=true,
@@ -8122,16 +8485,12 @@ characters.indicgroups={
   [3139]=true,
   [3140]=true,
   [3262]=true,
-  [3264]=true,
   [3265]=true,
   [3266]=true,
   [3267]=true,
   [3268]=true,
-  [3271]=true,
-  [3272]=true,
-  [3274]=true,
-  [3275]=true,
   [3276]=true,
+  [3285]=true,
   [3390]=true,
   [3391]=true,
   [3392]=true,
@@ -8140,25 +8499,58 @@ characters.indicgroups={
   [3395]=true,
   [3396]=true,
   [3415]=true,
+  [4139]=true,
+  [4140]=true,
+  [4152]=true,
+  [4155]=true,
+  [4182]=true,
+  [4183]=true,
+  [4194]=true,
+  [4195]=true,
+  [4196]=true,
+  [4199]=true,
+  [4200]=true,
+  [4201]=true,
+  [4202]=true,
+  [4203]=true,
+  [4204]=true,
+  [4205]=true,
+  [4227]=true,
+  [4231]=true,
+  [4232]=true,
+  [4233]=true,
+  [4234]=true,
+  [4235]=true,
+  [4236]=true,
+  [4239]=true,
+  [4250]=true,
+  [4251]=true,
+  [4252]=true,
+  [43643]=true,
+  [43645]=true,
  },
  ["pre_mark"]={
   [2367]=true,
   [2382]=true,
   [2495]=true,
+  [2503]=true,
+  [2504]=true,
   [2623]=true,
   [2751]=true,
   [2887]=true,
-  [2888]=true,
   [3014]=true,
   [3015]=true,
   [3016]=true,
   [3398]=true,
   [3399]=true,
   [3400]=true,
+  [4145]=true,
+  [4228]=true,
  },
  ["ra"]={
   [2352]=true,
   [2480]=true,
+  [2544]=true,
   [2608]=true,
   [2736]=true,
   [2864]=true,
@@ -8172,17 +8564,43 @@ characters.indicgroups={
   [2386]=true,
   [2387]=true,
   [2388]=true,
-  [2507]=true,
-  [2508]=true,
-  [3277]=true,
-  [3405]=true,
+  [4151]=true,
+  [4195]=true,
+  [4196]=true,
+  [4201]=true,
+  [4202]=true,
+  [4203]=true,
+  [4204]=true,
+  [4205]=true,
+  [4231]=true,
+  [4232]=true,
+  [4233]=true,
+  [4234]=true,
+  [4235]=true,
+  [4236]=true,
+  [4237]=true,
+  [4239]=true,
+  [4250]=true,
+  [4251]=true,
+  [43643]=true,
+  [43644]=true,
+  [43645]=true,
  },
  ["twopart_mark"]={
+  [2507]={ 2503,2494 },
+  [2508]={ 2503,2519 },
+  [2888]={ 2887,2902 },
   [2891]={ 2887,2878 },
   [2892]={ 2887,2903 },
   [3018]={ 3014,3006 },
   [3019]={ 3015,3006 },
   [3020]={ 3014,3031 },
+  [3144]={ 3142,3158 },
+  [3264]={ 3263,3285 },
+  [3271]={ 3270,3285 },
+  [3272]={ 3270,3286 },
+  [3274]={ 3270,3266 },
+  [3275]={ 3274,3285 },
   [3402]={ 3398,3390 },
   [3403]={ 3399,3390 },
   [3404]={ 3398,3415 },
@@ -8192,8 +8610,13 @@ characters.indicgroups={
   [2305]=true,
   [2306]=true,
   [2307]=true,
+  [2433]=true,
   [3330]=true,
   [3331]=true,
+  [4150]=true,
+  [4152]=true,
+  [4153]=true,
+  [4154]=true,
   [43232]=true,
   [43233]=true,
   [43234]=true,
@@ -8210,7 +8633,6 @@ characters.indicgroups={
   [43245]=true,
   [43246]=true,
   [43247]=true,
-  [43248]=true,
   [43249]=true,
  },
 }
@@ -8593,7 +9015,8 @@ function constructors.scale(tfmdata,specification)
  local units=parameters.units or 1000
  targetproperties.language=properties.language or "dflt" 
  targetproperties.script=properties.script   or "dflt" 
- targetproperties.mode=properties.mode  or "base"
+ targetproperties.mode=properties.mode  or "base" 
+ targetproperties.method=properties.method
  local askedscaledpoints=scaledpoints
  local scaledpoints,delta=constructors.calculatescale(tfmdata,scaledpoints,nil,specification)
  local hdelta=delta
@@ -8606,6 +9029,7 @@ function constructors.scale(tfmdata,specification)
  properties.direction=direction
  target.size=scaledpoints
  target.encodingbytes=properties.encodingbytes or 1
+ target.subfont=properties.subfont
  target.embedding=properties.embedding or "subset"
  target.tounicode=1
  target.cidinfo=properties.cidinfo
@@ -9056,13 +9480,13 @@ function constructors.finalize(tfmdata)
   parameters.width=0
  end
  if not parameters.slantfactor then
-  parameters.slantfactor=tfmdata.slant or 0
+  parameters.slantfactor=(tfmdata.slant or 0)/1000
  end
  if not parameters.extendfactor then
-  parameters.extendfactor=tfmdata.extend or 0
+  parameters.extendfactor=(tfmdata.extend or 1000)/1000
  end
  if not parameters.squeezefactor then
-  parameters.squeezefactor=tfmdata.squeeze or 0
+  parameters.squeezefactor=(tfmdata.squeeze or 1000)/1000
  end
  local designsize=parameters.designsize
  if designsize then
@@ -9092,12 +9516,13 @@ function constructors.finalize(tfmdata)
  if not properties.virtualized then
   properties.virtualized=tfmdata.type=="virtual"
  end
- properties.fontname=tfmdata.fontname
- properties.filename=tfmdata.filename
- properties.fullname=tfmdata.fullname
- properties.name=tfmdata.name
- properties.psname=tfmdata.psname
+ properties.fontname=properties.fontname or tfmdata.fontname
+ properties.filename=properties.filename or tfmdata.filename
+ properties.fullname=properties.fullname or tfmdata.fullname
+ properties.name=properties.name  or tfmdata.name
+ properties.psname=properties.psname   or tfmdata.psname
  properties.encodingbytes=tfmdata.encodingbytes or 1
+ properties.subfont=tfmdata.subfont    or nil
  properties.embedding=tfmdata.embedding  or "subset"
  properties.tounicode=tfmdata.tounicode  or 1
  properties.cidinfo=tfmdata.cidinfo    or nil
@@ -9123,6 +9548,7 @@ function constructors.finalize(tfmdata)
  tfmdata.name=nil 
  tfmdata.psname=nil
  tfmdata.encodingbytes=nil
+ tfmdata.subfont=nil
  tfmdata.embedding=nil
  tfmdata.tounicode=nil
  tfmdata.cidinfo=nil
@@ -10449,8 +10875,9 @@ local sortedhash=table.sortedhash
 local stripstring=string.nospaces
 local utf16_to_utf8_be=utf.utf16_to_utf8_be
 local report=logs.reporter("otf reader")
-local trace_cmap=false 
-local trace_cmap_detail=false
+local report_cmap=logs.reporter("otf reader","cmap")
+local trace_cmap=false  trackers.register("otf.cmap",function(v) trace_cmap=v end)
+local trace_cmap_details=false  trackers.register("otf.cmap.details",function(v) trace_cmap_details=v end)
 fonts=fonts or {}
 local handlers=fonts.handlers or {}
 fonts.handlers=handlers
@@ -11112,14 +11539,17 @@ readers.vmtx=function(f,fontdata,specification)
   local glyphs=fontdata.glyphs
   local nofglyphs=fontdata.nofglyphs
   local vheight=0
-  local vdefault=verticalheader.ascender+verticalheader.descender
+  local vdefault=verticalheader.ascender-verticalheader.descender
   local topsidebearing=0
   for i=0,nofmetrics-1 do
    local glyph=glyphs[i]
-   vheight=readshort(f)
+   vheight=readushort(f)
    topsidebearing=readshort(f)
    if vheight~=0 and vheight~=vdefault then
     glyph.vheight=vheight
+   end
+   if topsidebearing~=0 then
+    glyph.tsb=topsidebearing
    end
   end
   for i=nofmetrics,nofglyphs-1 do
@@ -11198,11 +11628,14 @@ local sequence={
  { 3,1,4 },
  { 3,10,12 },
  { 0,3,4 },
+ { 0,3,12 },
  { 0,1,4 },
+ { 0,1,12 },
  { 0,0,6 },
  { 3,0,6 },
+ { 3,0,4 },
  { 0,5,14 },
-{ 0,4,12 },
+ { 0,4,12 },
  { 3,10,13 },
 }
 local supported={}
@@ -11247,7 +11680,7 @@ formatreaders[4]=function(f,fontdata,offset)
   elseif startchar==0xFFFF and offset==0 then
   elseif offset==0xFFFF then
   elseif offset==0 then
-   if trace_cmap_detail then
+   if trace_cmap_details then
     report("format 4.%i segment %2i from %C upto %C at index %H",1,segment,startchar,endchar,(startchar+delta)%65536)
    end
    for unicode=startchar,endchar do
@@ -11279,8 +11712,8 @@ formatreaders[4]=function(f,fontdata,offset)
    end
   else
    local shift=(segment-nofsegments+offset/2)-startchar
-   if trace_cmap_detail then
-    report("format 4.%i segment %2i from %C upto %C at index %H",0,segment,startchar,endchar,(startchar+delta)%65536)
+   if trace_cmap_details then
+    report_cmap("format 4.%i segment %2i from %C upto %C at index %H",0,segment,startchar,endchar,(startchar+delta)%65536)
    end
    for unicode=startchar,endchar do
     local slot=shift+unicode
@@ -11327,8 +11760,8 @@ formatreaders[6]=function(f,fontdata,offset)
  local count=readushort(f)
  local stop=start+count-1
  local nofdone=0
- if trace_cmap_detail then
-  report("format 6 from %C to %C",2,start,stop)
+ if trace_cmap_details then
+  report_cmap("format 6 from %C to %C",2,start,stop)
  end
  for unicode=start,stop do
   local index=readushort(f)
@@ -11360,8 +11793,8 @@ formatreaders[12]=function(f,fontdata,offset)
   local first=readulong(f)
   local last=readulong(f)
   local index=readulong(f)
-  if trace_cmap_detail then
-   report("format 12 from %C to %C starts at index %i",first,last,index)
+  if trace_cmap_details then
+   report_cmap("format 12 from %C to %C starts at index %i",first,last,index)
   end
   for unicode=first,last do
    local glyph=glyphs[index]
@@ -11399,8 +11832,8 @@ formatreaders[13]=function(f,fontdata,offset)
   local last=readulong(f)
   local index=readulong(f)
   if first<privateoffset then
-   if trace_cmap_detail then
-    report("format 13 from %C to %C get index %i",first,last,index)
+   if trace_cmap_details then
+    report_cmap("format 13 from %C to %C get index %i",first,last,index)
    end
    local glyph=glyphs[index]
    local unicode=glyph.unicode
@@ -11470,27 +11903,46 @@ formatreaders[14]=function(f,fontdata,offset)
  end
 end
 local function checkcmap(f,fontdata,records,platform,encoding,format)
- local data=records[platform]
- if not data then
+ local pdata=records[platform]
+ if not pdata then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","no platform",platform,encoding,format)
+  end
   return 0
  end
- data=data[encoding]
- if not data then
+ local edata=pdata[encoding]
+ if not edata then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","no encoding",platform,encoding,format)
+  end
   return 0
  end
- data=data[format]
- if not data then
+ local fdata=edata[format]
+ if not fdata then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","no format",platform,encoding,format)
+  end
+  return 0
+ elseif type(fdata)~="number" then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","already done",platform,encoding,format)
+  end
   return 0
  end
+ edata[format]=true 
  local reader=formatreaders[format]
  if not reader then
+  if trace_cmap_details then
+   report_cmap("skipped, %s, p=%i e=%i f=%i","unsupported format",platform,encoding,format)
+  end
   return 0
  end
- local p=platforms[platform]
- local e=encodings[p]
- local n=reader(f,fontdata,data) or 0
- if trace_cmap then
-  report("cmap checked: platform %i (%s), encoding %i (%s), format %i, new unicodes %i",platform,p,encoding,e and e[encoding] or "?",format,n)
+ local n=reader(f,fontdata,fdata) or 0
+ if trace_cmap_details or trace_cmap then
+  local p=platforms[platform]
+  local e=encodings[p]
+  report_cmap("checked, platform %i (%s), encoding %i (%s), format %i, new unicodes %i",
+   platform,p,encoding,e and e[encoding] or "?",format,n)
  end
  return n
 end
@@ -11685,6 +12137,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
   local postscript=fontdata.postscript  or {}
   local fontheader=fontdata.fontheader  or {}
   local cffinfo=fontdata.cffinfo  or {}
+  local verticalheader=fontdata.verticalheader or {}
   local filename=fontdata.filename
   local weight=getname(fontdata,"weight") or (cffinfo and cffinfo.weight) or (metrics and metrics.weight)
   local width=getname(fontdata,"width")  or (cffinfo and cffinfo.width ) or (metrics and metrics.width )
@@ -11750,6 +12203,7 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
    platformnames=platformnames or nil,
    instancenames=instancenames or nil,
    tableoffsets=fontdata.tableoffsets,
+   defaultvheight=(verticalheader.ascender or 0)-(verticalheader.descender or 0)
   }
   if metricstoo then
    local keys={
@@ -12420,14 +12874,19 @@ otf.tables=tables
 local statistics=otf.statistics or {}
 otf.statistics=statistics
 local scripts=allocate {
+ ["adlm"]="adlam",
+ ["aghb"]="caucasian albanian",
+ ["ahom"]="ahom",
  ["arab"]="arabic",
  ["armi"]="imperial aramaic",
  ["armn"]="armenian",
  ["avst"]="avestan",
  ["bali"]="balinese",
  ["bamu"]="bamum",
+ ["bass"]="bassa vah",
  ["batk"]="batak",
  ["beng"]="bengali",
+ ["bhks"]="bhaiksuki",
  ["bng2"]="bengali variant 2",
  ["bopo"]="bopomofo",
  ["brah"]="brahmi",
@@ -12443,23 +12902,33 @@ local scripts=allocate {
  ["copt"]="coptic",
  ["cprt"]="cypriot syllabary",
  ["cyrl"]="cyrillic",
- ["deva"]="devanagari",
  ["dev2"]="devanagari variant 2",
+ ["deva"]="devanagari",
+ ["dogr"]="dogra",
  ["dsrt"]="deseret",
+ ["dupl"]="duployan",
  ["egyp"]="egyptian heiroglyphs",
+ ["elba"]="elbasan",
  ["ethi"]="ethiopic",
  ["geor"]="georgian",
+ ["gjr2"]="gujarati variant 2",
  ["glag"]="glagolitic",
+ ["gong"]="gunjala gondi",
+ ["gonm"]="masaram gondi",
  ["goth"]="gothic",
+ ["gran"]="grantha",
  ["grek"]="greek",
  ["gujr"]="gujarati",
- ["gjr2"]="gujarati variant 2",
- ["guru"]="gurmukhi",
  ["gur2"]="gurmukhi variant 2",
+ ["guru"]="gurmukhi",
  ["hang"]="hangul",
  ["hani"]="cjk ideographic",
  ["hano"]="hanunoo",
+ ["hatr"]="hatran",
  ["hebr"]="hebrew",
+ ["hluw"]="anatolian hieroglyphs",
+ ["hmng"]="pahawh hmong",
+ ["hung"]="old hungarian",
  ["ital"]="old italic",
  ["jamo"]="hangul jamo",
  ["java"]="javanese",
@@ -12467,49 +12936,77 @@ local scripts=allocate {
  ["kana"]="hiragana and katakana",
  ["khar"]="kharosthi",
  ["khmr"]="khmer",
- ["knda"]="kannada",
+ ["khoj"]="khojki",
  ["knd2"]="kannada variant 2",
+ ["knda"]="kannada",
  ["kthi"]="kaithi",
  ["lana"]="tai tham",
  ["lao" ]="lao",
  ["latn"]="latin",
  ["lepc"]="lepcha",
  ["limb"]="limbu",
+ ["lina"]="linear a",
  ["linb"]="linear b",
  ["lisu"]="lisu",
  ["lyci"]="lycian",
  ["lydi"]="lydian",
+ ["mahj"]="mahajani",
+ ["maka"]="makasar",
  ["mand"]="mandaic and mandaean",
+ ["mani"]="manichaean",
+ ["marc"]="marchen",
  ["math"]="mathematical alphanumeric symbols",
+ ["medf"]="medefaidrin",
+ ["mend"]="mende kikakui",
  ["merc"]="meroitic cursive",
  ["mero"]="meroitic hieroglyphs",
- ["mlym"]="malayalam",
  ["mlm2"]="malayalam variant 2",
+ ["mlym"]="malayalam",
+ ["modi"]="modi",
  ["mong"]="mongolian",
+ ["mroo"]="mro",
  ["mtei"]="meitei Mayek",
+ ["mult"]="multani",
  ["musc"]="musical symbols",
  ["mym2"]="myanmar variant 2",
  ["mymr"]="myanmar",
+ ["narb"]="old north arabian",
+ ["nbat"]="nabataean",
+ ["newa"]="newa",
  ["nko" ]='n"ko',
+ ["nshu"]="nüshu",
  ["ogam"]="ogham",
  ["olck"]="ol chiki",
  ["orkh"]="old turkic and orkhon runic",
- ["orya"]="oriya",
  ["ory2"]="odia variant 2",
+ ["orya"]="oriya",
+ ["osge"]="osage",
  ["osma"]="osmanya",
+ ["palm"]="palmyrene",
+ ["pauc"]="pau cin hau",
+ ["perm"]="old permic",
  ["phag"]="phags-pa",
  ["phli"]="inscriptional pahlavi",
+ ["phlp"]="psalter pahlavi",
  ["phnx"]="phoenician",
+ ["plrd"]="miao",
  ["prti"]="inscriptional parthian",
  ["rjng"]="rejang",
+ ["rohg"]="hanifi rohingya",
  ["runr"]="runic",
  ["samr"]="samaritan",
  ["sarb"]="old south arabian",
  ["saur"]="saurashtra",
+ ["sgnw"]="sign writing",
  ["shaw"]="shavian",
  ["shrd"]="sharada",
+ ["sidd"]="siddham",
+ ["sind"]="khudawadi",
  ["sinh"]="sinhala",
+ ["sogd"]="sogdian",
+ ["sogo"]="old sogdian",
  ["sora"]="sora sompeng",
+ ["soyo"]="soyombo",
  ["sund"]="sundanese",
  ["sylo"]="syloti nagri",
  ["syrc"]="syriac",
@@ -12518,20 +13015,24 @@ local scripts=allocate {
  ["tale"]="tai le",
  ["talu"]="tai lu",
  ["taml"]="tamil",
+ ["tang"]="tangut",
  ["tavt"]="tai viet",
- ["telu"]="telugu",
  ["tel2"]="telugu variant 2",
+ ["telu"]="telugu",
  ["tfng"]="tifinagh",
  ["tglg"]="tagalog",
  ["thaa"]="thaana",
  ["thai"]="thai",
  ["tibt"]="tibetan",
+ ["tirh"]="tirhuta",
  ["tml2"]="tamil variant 2",
  ["ugar"]="ugaritic cuneiform",
  ["vai" ]="vai",
+ ["wara"]="warang citi",
  ["xpeo"]="old persian cuneiform",
  ["xsux"]="sumero-akkadian cuneiform",
  ["yi"  ]="yi",
+ ["zanb"]="zanabazar square",
 }
 local languages=allocate {
  ["aba" ]="abaza",
@@ -12600,12 +13101,15 @@ local languages=allocate {
  ["brm" ]="burmese",
  ["brx" ]="bodo",
  ["bsh" ]="bashkir",
+ ["bsk" ]="burushaski",
  ["bti" ]="beti",
  ["bts" ]="batak simalungun",
  ["bug" ]="bugis",
+ ["byv" ]="medumba",
  ["cak" ]="kaqchikel",
  ["cat" ]="catalan",
  ["cbk" ]="zamboanga chavacano",
+ ["cchn"]="chinantec",
  ["ceb" ]="cebuano",
  ["cgg" ]="chiga",
  ["cha" ]="chamorro",
@@ -12620,6 +13124,8 @@ local languages=allocate {
  ["chr" ]="cherokee",
  ["chu" ]="chuvash",
  ["chy" ]="cheyenne",
+ ["cja" ]="western cham",
+ ["cjm" ]="eastern cham",
  ["cmr" ]="comorian",
  ["cop" ]="coptic",
  ["cor" ]="cornish",
@@ -12675,6 +13181,7 @@ local languages=allocate {
  ["fin" ]="finnish",
  ["fji" ]="fijian",
  ["fle" ]="dutch (flemish)",
+ ["fmp" ]="fe’fe’",
  ["fne" ]="forest nenets",
  ["fon" ]="fon",
  ["fos" ]="faroese",
@@ -12753,6 +13260,7 @@ local languages=allocate {
  ["jan" ]="japanese",
  ["jav" ]="javanese",
  ["jbo" ]="lojban",
+ ["jct" ]="krymchak",
  ["jii" ]="yiddish",
  ["jud" ]="ladino",
  ["jul" ]="jula",
@@ -12789,6 +13297,7 @@ local languages=allocate {
  ["kmn" ]="kumaoni",
  ["kmo" ]="komo",
  ["kms" ]="komso",
+ ["kmz" ]="khorasani turkic",
  ["knr" ]="kanuri",
  ["kod" ]="kodagu",
  ["koh" ]="korean old hangul",
@@ -12865,6 +13374,7 @@ local languages=allocate {
  ["mar" ]="marathi",
  ["maw" ]="marwari",
  ["mbn" ]="mbundu",
+ ["mbo" ]="mbo",
  ["mch" ]="manchu",
  ["mcr" ]="moose cree",
  ["mde" ]="mende",
@@ -12881,6 +13391,7 @@ local languages=allocate {
  ["mle" ]="male",
  ["mlg" ]="malagasy",
  ["mln" ]="malinke",
+ ["mlr" ]="malayalam reformed",
  ["mly" ]="malay",
  ["mnd" ]="mandinka",
  ["mng" ]="mongolian",
@@ -12934,6 +13445,7 @@ local languages=allocate {
  ["nto" ]="esperanto",
  ["nym" ]="nyamwezi",
  ["nyn" ]="norwegian nynorsk",
+ ["nza" ]="mbembe tigon",
  ["oci" ]="occitan",
  ["ocr" ]="oji-cree",
  ["ojb" ]="ojibway",
@@ -12997,6 +13509,7 @@ local languages=allocate {
  ["say" ]="sayisi",
  ["scn" ]="sicilian",
  ["sco" ]="scots",
+ ["scs" ]="north slavey",
  ["sek" ]="sekota",
  ["sel" ]="selkup",
  ["sga" ]="old irish",
@@ -13041,6 +13554,9 @@ local languages=allocate {
  ["sxu" ]="upper saxon",
  ["syl" ]="sylheti",
  ["syr" ]="syriac",
+ ["syre"]="estrangela syriac",
+ ["syrj"]="western syriac",
+ ["syrn"]="eastern syriac",
  ["szl" ]="silesian",
  ["tab" ]="tabasaran",
  ["taj" ]="tajiki",
@@ -13072,6 +13588,7 @@ local languages=allocate {
  ["tsj" ]="tshangla",
  ["tua" ]="turoyo aramaic",
  ["tul" ]="tulu",
+ ["tum" ]="tulu",
  ["tuv" ]="tuvin",
  ["tvl" ]="tuvalu",
  ["twi" ]="twi",
@@ -13097,6 +13614,7 @@ local languages=allocate {
  ["wel" ]="welsh",
  ["wlf" ]="wolof",
  ["wln" ]="walloon",
+ ["wtm" ]="mewati",
  ["xbd" ]="lü",
  ["xhs" ]="xhosa",
  ["xjb" ]="minjangbal",
@@ -13240,6 +13758,7 @@ local features=allocate {
  ["vkna"]="vertical kana alternates",
  ["vkrn"]="vertical kerning",
  ["vpal"]="proportional alternate vertical metrics",
+ ["vrtr"]="vertical alternates for rotation",
  ["vrt2"]="vertical rotation",
  ["zero"]="slashed zero",
  ["trep"]="traditional tex replacements",
@@ -13462,7 +13981,7 @@ if not modules then modules={} end modules ['font-cff']={
  license="see context related readme files"
 }
 local next,type,tonumber,rawget=next,type,tonumber,rawget
-local byte,char,gmatch=string.byte,string.char,string.gmatch
+local byte,char,gmatch,sub=string.byte,string.char,string.gmatch,string.sub
 local concat,remove,unpack=table.concat,table.remove,table.unpack
 local floor,abs,round,ceil,min,max=math.floor,math.abs,math.round,math.ceil,math.min,math.max
 local P,C,R,S,C,Cs,Ct=lpeg.P,lpeg.C,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Ct
@@ -13568,6 +14087,37 @@ local defaultstrings={ [0]=
  "Uacutesmall","Ucircumflexsmall","Udieresissmall","Yacutesmall",
  "Thornsmall","Ydieresissmall","001.000","001.001","001.002","001.003",
  "Black","Bold","Book","Light","Medium","Regular","Roman","Semibold",
+}
+local standardnames={ [0]=
+ false,false,false,false,false,false,false,false,false,false,false,
+ false,false,false,false,false,false,false,false,false,false,false,
+ false,false,false,false,false,false,false,false,false,false,
+ "space","exclam","quotedbl","numbersign","dollar","percent",
+ "ampersand","quoteright","parenleft","parenright","asterisk","plus",
+ "comma","hyphen","period","slash","zero","one","two","three","four",
+ "five","six","seven","eight","nine","colon","semicolon","less",
+ "equal","greater","question","at","A","B","C","D","E","F","G","H",
+ "I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W",
+ "X","Y","Z","bracketleft","backslash","bracketright","asciicircum",
+ "underscore","quoteleft","a","b","c","d","e","f","g","h","i","j",
+ "k","l","m","n","o","p","q","r","s","t","u","v","w","x","y",
+ "z","braceleft","bar","braceright","asciitilde",false,false,false,
+ false,false,false,false,false,false,false,false,false,false,false,
+ false,false,false,false,false,false,false,false,false,false,false,
+ false,false,false,false,false,false,false,false,false,"exclamdown",
+ "cent","sterling","fraction","yen","florin","section","currency",
+ "quotesingle","quotedblleft","guillemotleft","guilsinglleft",
+ "guilsinglright","fi","fl",false,"endash","dagger","daggerdbl",
+ "periodcentered",false,"paragraph","bullet","quotesinglbase",
+ "quotedblbase","quotedblright","guillemotright","ellipsis","perthousand",
+ false,"questiondown",false,"grave","acute","circumflex","tilde",
+ "macron","breve","dotaccent","dieresis",false,"ring","cedilla",false,
+ "hungarumlaut","ogonek","caron","emdash",false,false,false,false,
+ false,false,false,false,false,false,false,false,false,false,false,
+ false,"AE",false,"ordfeminine",false,false,false,false,"Lslash",
+ "Oslash","OE","ordmasculine",false,false,false,false,false,"ae",
+ false,false,false,"dotlessi",false,false,"lslash","oslash","oe",
+ "germandbls",false,false,false,false
 }
 local cffreaders={
  readbyte,
@@ -13930,6 +14480,7 @@ do
  local x=0
  local y=0
  local width=false
+ local lsb=0
  local r=0
  local stems=0
  local globalbias=0
@@ -13953,6 +14504,9 @@ do
  local factors=false
  local axis=false
  local vsindex=0
+ local justpass=false
+ local seacs={}
+ local procidx=nil
  local function showstate(where)
   report("%w%-10s : [%s] n=%i",depth*2,where,concat(stack," ",1,top),top)
  end
@@ -14492,14 +15046,14 @@ do
   top=0
  end
  local function divide()
-  if version==1 then
+  if version=="cff" then
    local d=stack[top]
    top=top-1
    stack[top]=stack[top]/d
   end
  end
  local function closepath()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
     showstate("closepath")
    end
@@ -14507,54 +15061,65 @@ do
   top=0
  end
  local function hsbw()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
     showstate("hsbw")
    end
+   lsb=stack[top-1] or 0
    width=stack[top]
   end
   top=0
  end
+ local function sbw()
+  if version=="cff" then
+   if trace_charstrings then
+    showstate("sbw")
+   end
+   lsb=stack[top-3]
+   width=stack[top-1]
+  end
+  top=0
+ end
  local function seac()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
     showstate("seac")
    end
   end
   top=0
  end
- local function sbw()
-  if version==1 then
-   if trace_charstrings then
-    showstate("sbw")
-   end
-   width=stack[top-1]
-  end
-  top=0
- end
+ local popped=3
+ local hints=3
  local function callothersubr()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
-    showstate("callothersubr (unsupported)")
+    showstate("callothersubr")
    end
+   if stack[top]==hints then
+    popped=stack[top-2]
+   else
+    popped=3
+   end
+   top=top-(stack[top-1]+2)
+  else
+   top=0
   end
-  top=0
  end
  local function pop()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
-    showstate("pop (unsupported)")
+    showstate("pop")
    end
    top=top+1
-   stack[top]=0 
+   stack[top]=popped
   else
    top=0
   end
  end
  local function setcurrentpoint()
-  if version==1 then
+  if version=="cff" then
    if trace_charstrings then
-    showstate("pop (unsupported)")
+    showstate("setcurrentpoint (unsupported)")
    end
    x=x+stack[top-1]
    y=y+stack[top]
@@ -14680,6 +15245,39 @@ do
   vhcurveto,
   hvcurveto,
  }
+ local reverse={ [0]="unsupported",
+  "getstem",
+  "unsupported",
+  "getstem",
+  "vmoveto",
+  "rlineto",
+  "hlineto",
+  "vlineto",
+  "rrcurveto",
+  "unsupported",
+  "unsupported",
+  "unsupported",
+  "unsupported",
+  "hsbw",
+  "unsupported",
+  "setvsindex",
+  "blend",
+  "unsupported",
+  "getstem",
+  "getmask",
+  "getmask",
+  "rmoveto",
+  "hmoveto",
+  "getstem",
+  "rcurveline",
+  "rlinecurve",
+  "vvcurveto",
+  "hhcurveto",
+  "unsupported",
+  "unsupported",
+  "vhcurveto",
+  "hvcurveto",
+ }
  local subactions={
   [000]=dotsection,
   [001]=getstem3,
@@ -14793,7 +15391,7 @@ do
  local function call(scope,list,bias) 
   depth=depth+1
   if top==0 then
-   showstate(formatters["unknown %s call"](scope))
+   showstate(formatters["unknown %s call %s, case %s"](scope,"?",1))
    top=0
   else
    local index=stack[top]+bias
@@ -14805,13 +15403,12 @@ do
    if tab then
     process(tab)
    else
-    showstate(formatters["unknown %s call %i"](scope,index))
+    showstate(formatters["unknown %s call %s, case %s"](scope,index,2))
     top=0
    end
   end
   depth=depth-1
  end
- local justpass=false
  process=function(tab)
   local i=1
   local n=#tab
@@ -14875,12 +15472,23 @@ do
     i=i+1
     local t=tab[i]
     if justpass then
-     if t>=34 or t<=37 then 
+     if t>=34 and t<=37 then 
       for i=1,top do
        r=r+1;result[r]=encode[stack[i]]
       end
       r=r+1;result[r]=chars[12]
       r=r+1;result[r]=chars[t]
+      top=0
+     elseif t==6 then
+      seacs[procidx]={
+       asb=stack[1],
+       adx=stack[2],
+       ady=stack[3],
+       base=stack[4],
+       accent=stack[5],
+       width=width,
+       lsb=lsb,
+      }
       top=0
      else
       local a=subactions[t]
@@ -14911,44 +15519,52 @@ do
      i=i+s+1
     elseif t==1 or t==3 or t==18 or operation==23 then
      p_getstem() 
-if true then
-     if top>0 then
-      for i=1,top do
-       r=r+1;result[r]=encode[stack[i]]
+     if true then
+      if top>0 then
+       for i=1,top do
+        r=r+1;result[r]=encode[stack[i]]
+       end
+       top=0
       end
+      r=r+1;result[r]=chars[t]
+     else
       top=0
      end
-     r=r+1;result[r]=chars[t]
-else
- top=0
-end
      i=i+1
     elseif t==19 or t==20 then
      local s=p_getmask() or 0 
-if true then
-     if top>0 then
-      for i=1,top do
-       r=r+1;result[r]=encode[stack[i]]
+     if true then
+      if top>0 then
+       for i=1,top do
+        r=r+1;result[r]=encode[stack[i]]
+       end
+       top=0
       end
+      r=r+1;result[r]=chars[t]
+      for j=1,s do
+       i=i+1
+       r=r+1;result[r]=chars[tab[i]]
+      end
+     else
+      i=i+s
       top=0
      end
-     r=r+1;result[r]=chars[t]
-     for j=1,s do
-      i=i+1
-      r=r+1;result[r]=chars[tab[i]]
-     end
-else
- i=i+s
- top=0
-end
      i=i+1
     elseif t==9 then
      top=0
      i=i+1
     elseif t==13 then
-     local s=hsbw() or 0
-     i=i+s+1
+     hsbw()
+     if version=="cff" then
+      r=r+1;result[r]=encode[lsb]
+      r=r+1;result[r]=chars[22]
+     else
+     end
+     i=i+1
     else
+     if trace_charstrings then
+      showstate(reverse[t] or "<action>")
+     end
      if top>0 then
       for i=1,top do
        r=r+1;result[r]=encode[stack[i]]
@@ -14969,7 +15585,7 @@ end
      end
     else
      if trace_charstrings then
-      showvalue("<action>",t)
+      showstate(reverse[t] or "<action>")
      end
      top=0
      i=i+1
@@ -14977,14 +15593,18 @@ end
    end
   end
  end
- local function setbias(globals,locals)
+ local function setbias(globals,locals,nobias)
+  if nobias then
+   return 0,0
+  else
    local g=#globals
    local l=#locals
    return
     ((g<1240 and 107) or (g<33900 and 1131) or 32768)+1,
     ((l<1240 and 107) or (l<33900 and 1131) or 32768)+1
+  end
  end
- local function processshape(tab,index)
+ local function processshape(tab,index,hack)
   if not tab then
    glyphs[index]={
     boundingbox={ 0,0,0,0 },
@@ -14997,10 +15617,13 @@ end
   x=0
   y=0
   width=false
+  lsb=0
   r=0
   top=0
   stems=0
   result={} 
+  popped=3
+  procidx=index
   xmin=0
   xmax=0
   ymin=0
@@ -15014,6 +15637,9 @@ end
    updateregions(vsindex)
   end
   process(tab)
+  if hack then
+   return x,y
+  end
   local boundingbox={
    round(xmin),
    round(ymin),
@@ -15068,6 +15694,8 @@ end
   axis=false
   regions=data.regions
   justpass=streams==true
+  popped=3
+  seacs={}
   if regions then
    regions={ regions } 
    axis=data.factors or false
@@ -15081,6 +15709,8 @@ end
   locals=false
   globals=false
   strings=false
+  popped=3
+  seacs={}
  end
  local function setwidths(private)
   if not private then
@@ -15092,7 +15722,7 @@ end
   end
   return privatedata.nominalwidthx or 0,privatedata.defaultwidthx or 0
  end
- parsecharstrings=function(fontdata,data,glphs,doshapes,tversion,streams)
+ parsecharstrings=function(fontdata,data,glphs,doshapes,tversion,streams,nobias)
   local dictionary=data.dictionaries[1]
   local charstrings=dictionary.charstrings
   keepcurve=doshapes
@@ -15103,12 +15733,35 @@ end
   charset=dictionary.charset
   vsindex=dictionary.vsindex or 0
   glyphs=glphs or {}
-  globalbias,localbias=setbias(globals,locals)
+  globalbias,localbias=setbias(globals,locals,nobias)
   nominalwidth,defaultwidth=setwidths(dictionary.private)
   if charstrings then
    startparsing(fontdata,data,streams)
    for index=1,#charstrings do
     processshape(charstrings[index],index-1)
+   end
+   if justpass and next(seacs) then
+    local charset=data.dictionaries[1].charset
+    if charset then
+     local lookup=table.swapped(charset)
+     for index,v in next,seacs do
+      local bindex=lookup[standardnames[v.base]]
+      local aindex=lookup[standardnames[v.accent]]
+      local bglyph=bindex and glyphs[bindex]
+      local aglyph=aindex and glyphs[aindex]
+      if bglyph and aglyph then
+       local jp=justpass
+       justpass=false
+       local x,y=processshape(charstrings[bindex+1],bindex,true)
+       justpass=jp
+       local base=bglyph.stream
+       local accent=aglyph.stream
+       local moveto=encode[-x-v.asb+v.adx]..chars[22]..encode[-y+v.ady]..chars[ 4]
+       base=sub(base,1,#base-1)
+       glyphs[index].stream=base..moveto..accent
+      end
+     end
+    end
    end
    stopparsing(fontdata,data)
   else
@@ -15125,8 +15778,9 @@ end
   charset=false
   vsindex=dictionary.vsindex or 0
   glyphs=glphs or {}
- justpass=streams==true
-  globalbias,localbias=setbias(globals,locals)
+  justpass=streams==true
+  seacs={}
+  globalbias,localbias=setbias(globals,locals,nobias)
   nominalwidth,defaultwidth=setwidths(dictionary.private)
   processshape(tab,index-1)
  end
@@ -15385,8 +16039,8 @@ function readers.cff(f,fontdata,specification)
   if private then
    local data=private.data
    if type(data)=="table" then
-    cffinfo.defaultwidth=data.defaultwidth or cffinfo.defaultwidth
-    cffinfo.nominalwidth=data.nominalwidth or cffinfo.nominalwidth
+    cffinfo.defaultwidth=data.defaultwidthx or cffinfo.defaultwidth
+    cffinfo.nominalwidth=data.nominalwidthx or cffinfo.nominalwidth
     cffinfo.bluevalues=data.bluevalues
     cffinfo.otherblues=data.otherblues
     cffinfo.familyblues=data.familyblues
@@ -16097,7 +16751,14 @@ local function repackpoints(glyphs,shapes)
      currentx=px
      currenty=py
      if lastflag==fl then
-      nofflags=nofflags+1
+      if nofflags==255 then
+       lastflag=lastflag+0x08
+       r=r+1 result[r]=char(lastflag,nofflags-1)
+       nofflags=1
+       lastflag=fl
+      else
+       nofflags=nofflags+1
+      end
      else 
       if nofflags==1 then
        r=r+1 result[r]=chars[lastflag]
@@ -17875,6 +18536,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
   local sets=readarray(f)
      sets=readpairsets(f,tableoffset,sets,format1,format2,mainoffset,getdelta)
      coverage=readcoverage(f,tableoffset+coverage)
+  local shared={} 
   for index,newindex in next,coverage do
    local set=sets[newindex+1]
    local hash={}
@@ -17882,18 +18544,24 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
     local value=set[i]
     if value then
      local other=value[1]
-     local first=value[2]
-     local second=value[3]
-     if first or second then
-      hash[other]={ first,second or nil } 
-     else
-      hash[other]=nil 
+     local share=shared[value]
+     if share==nil then
+      local first=value[2]
+      local second=value[3]
+      if first or second then
+       share={ first,second or nil } 
+      else
+       share=false
+      end
+      shared[value]=share
      end
+     hash[other]=share or nil 
     end
    end
    coverage[index]=hash
   end
   return {
+   shared=shared and true or nil,
    format="pair",
    coverage=coverage,
   }
@@ -17910,6 +18578,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
      classdef1=readclassdef(f,tableoffset+classdef1,coverage)
      classdef2=readclassdef(f,tableoffset+classdef2,nofglyphs)
   local usedcoverage={}
+  local shared={} 
   for g1,c1 in next,classdef1 do
    if coverage[g1] then
     local l1=classlist[c1]
@@ -17921,8 +18590,17 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
        local first=offsets[1]
        local second=offsets[2]
        if first or second then
-        hash[paired]={ first,second or nil }
-       else
+        local s1=shared[first]
+        if s1==nil then
+         s1={}
+         shared[first]=s1
+        end
+        local s2=s1[second]
+        if s2==nil then
+         s2={ first,second or nil }
+         s1[second]=s2
+        end
+        hash[paired]=s2
        end
       end
      end
@@ -17931,6 +18609,7 @@ function gposhandlers.pair(f,fontdata,lookupid,lookupoffset,offset,glyphs,nofgly
    end
   end
   return {
+   shared=shared and true or nil,
    format="pair",
    coverage=usedcoverage,
   }
@@ -19255,6 +19934,8 @@ function readers.cpal(f,fontdata,specification)
   fontdata.colorpalettes=palettes
  end
 end
+local compress=gzip and gzip.compress
+local compressed=compress and gzip.compressed
 function readers.svg(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"svg",specification.glyphs)
  if tableoffset then
@@ -19276,10 +19957,14 @@ function readers.svg(f,fontdata,specification)
   for i=1,nofentries do
    local entry=entries[i]
    setposition(f,entry.offset)
+   local data=readstring(f,entry.length)
+   if compressed and not compressed(data) then
+    data=compress(data)
+   end
    entries[i]={
     first=entry.first,
     last=entry.last,
-    data=readstring(f,entry.length)
+    data=data
    }
   end
   fontdata.svgshapes=entries
@@ -20541,6 +21226,9 @@ local function checklookups(fontdata,missing,nofmissing)
   end
  end
 end
+local firstprivate=fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
+local puafirst=0xE000
+local pualast=0xF8FF
 local function unifymissing(fontdata)
  if not fonts.mappings then
   require("font-map")
@@ -20551,18 +21239,19 @@ local function unifymissing(fontdata)
  resources.unicodes=unicodes
  for unicode,d in next,fontdata.descriptions do
   if unicode<privateoffset then
-   local name=d.name
-   if name then
-    unicodes[name]=unicode
+   if unicode>=puafirst and unicode<=pualast then
+   else
+    local name=d.name
+    if name then
+     unicodes[name]=unicode
+    end
    end
+  else
   end
  end
  fonts.mappings.addtounicode(fontdata,fontdata.filename,checklookups)
  resources.unicodes=nil
 end
-local firstprivate=fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
-local puafirst=0xE000
-local pualast=0xF8FF
 local function unifyglyphs(fontdata,usenames)
  local private=fontdata.private or privateoffset
  local glyphs=fontdata.glyphs
@@ -21222,16 +21911,30 @@ function readers.pack(data)
        if kind=="gpos_pair" then
         local c=step.coverage
         if c then
-         if step.format=="pair" then
+         if step.format~="pair" then
+          for g1,d1 in next,c do
+           c[g1]=pack_normal(d1)
+          end
+         elseif step.shared then
+          local shared={}
+          for g1,d1 in next,c do
+           for g2,d2 in next,d1 do
+            if not shared[d2] then
+             local f=d2[1] if f and f~=true then d2[1]=pack_indexed(f) end
+             local s=d2[2] if s and s~=true then d2[2]=pack_indexed(s) end
+             shared[d2]=true
+            end
+           end
+          end
+          if pass==2 then
+           step.shared=nil 
+          end
+         else
           for g1,d1 in next,c do
            for g2,d2 in next,d1 do
             local f=d2[1] if f and f~=true then d2[1]=pack_indexed(f) end
             local s=d2[2] if s and s~=true then d2[2]=pack_indexed(s) end
            end
-          end
-         else
-          for g1,d1 in next,c do
-           c[g1]=pack_normal(d1)
           end
          end
         end
@@ -22517,11 +23220,12 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.107 
+otf.version=3.110 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
 otf.pdfcache=containers.define("fonts","pdf",otf.version,true)
+otf.mpscache=containers.define("fonts","mps",otf.version,true)
 otf.svgenabled=false
 otf.pngenabled=false
 local otfreaders=otf.readers
@@ -22879,6 +23583,7 @@ local function copytotfm(data,cache_id)
   parameters.ascender=abs(metadata.ascender  or 0)
   parameters.descender=abs(metadata.descender or 0)
   parameters.units=units
+  parameters.vheight=metadata.defaultvheight
   properties.space=spacer
   properties.encodingbytes=2
   properties.format=data.format or formats.otf
@@ -23703,7 +24408,7 @@ local getboth=nuts.getboth
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local setoffsets=nuts.setoffsets
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local getkern=nuts.getkern
 local setkern=nuts.setkern
 local setlink=nuts.setlink
@@ -25134,7 +25839,7 @@ local getprop=nuts.getprop
 local setprop=nuts.setprop
 local getsubtype=nuts.getsubtype
 local getchar=nuts.getchar
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local end_of_math=nuts.end_of_math
 local nodecodes=nodes.nodecodes
 local disc_code=nodecodes.disc
@@ -25543,7 +26248,6 @@ registertracker("otf.actions","otf.substitutions","otf.positions")
 registertracker("otf.sample","otf.steps","otf.substitutions","otf.positions","otf.analyzing")
 registertracker("otf.sample.silent","otf.steps=silent","otf.substitutions","otf.positions","otf.analyzing")
 local nuts=nodes.nuts
-local getfield=nuts.getfield
 local getnext=nuts.getnext
 local setnext=nuts.setnext
 local getprev=nuts.getprev
@@ -25551,8 +26255,6 @@ local setprev=nuts.setprev
 local getboth=nuts.getboth
 local setboth=nuts.setboth
 local getid=nuts.getid
-local getattr=nuts.getattr
-local setattr=nuts.setattr
 local getprop=nuts.getprop
 local setprop=nuts.setprop
 local getsubtype=nuts.getsubtype
@@ -25561,11 +26263,14 @@ local getchar=nuts.getchar
 local setchar=nuts.setchar
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
+local getreplace=nuts.getreplace
 local setlink=nuts.setlink
 local getcomponents=nuts.getcomponents 
 local setcomponents=nuts.setcomponents 
 local getwidth=nuts.getwidth
-local ischar=nuts.is_char
+local getattr=nuts.getattr
+local getglyphdata=nuts.getglyphdata
+local ischar=nuts.ischar
 local isglyph=nuts.isglyph
 local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
@@ -27137,7 +27842,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    if keepdisc then
     keepdisc=false
     lookaheaddisc=current
-    local replace=getfield(current,"replace")
+    local replace=getreplace(current)
     if not replace then
      sweepoverflow=true
      sweepnode=current
@@ -27209,7 +27914,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
      if notmatchpre[current]~=notmatchreplace[current] then
       lookaheaddisc=current
      end
-     local replace=getfield(current,"replace")
+     local replace=getreplace(current)
      while replace and i<s do
       if getid(replace)==glyph_code then
        i=i+1
@@ -27253,7 +27958,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
      if notmatchpost[current]~=notmatchreplace[current] then
       backtrackdisc=current
      end
-     local replace=getfield(current,"replace")
+     local replace=getreplace(current)
      while replace and i>1 do
       if getid(replace)==glyph_code then
        i=i-1
@@ -28057,7 +28762,7 @@ local function testrun(disc,t_run,c_run,...)
  end
  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
  local renewed=false
- if (post or replace) and prev then
+ if (post or replace) then 
   if post then
    setlink(posttail,next)
   else
@@ -28168,7 +28873,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
   if char then
    local a 
    if attr then
-    a=getattr(start,0)
+    a=getglyphdata(start)
    end
    if not a or (a==attr) then
     local lookupmatch=lookupcache[char]
@@ -28202,7 +28907,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
   if char then
    local a 
    if attr then
-    a=getattr(start,0)
+    a=getglyphdata(start)
    end
    local startnext=getnext(start)
    if not a or (a==attr) then
@@ -28217,7 +28922,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
      end
      while getid(s)==disc_code do
       ss=getnext(s)
-      s=getfield(s,"replace")
+      s=getreplace(s)
       if not s then
        s=ss
        ss=nil
@@ -28244,12 +28949,13 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         end
         while getid(s)==disc_code do
          ss=getnext(s)
-         s=getfield(s,"replace")
+         s=getreplace(s)
          if not s then
           s=ss
           ss=nil
          end
         end
+lookupmatch=lg
        else
         break
        end
@@ -28277,7 +28983,7 @@ end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
  local a 
  if attr then
-  a=getattr(sub,0)
+  a=getglyphdata(sub)
  end
  if not a or (a==attr) then
   for n in nextnode,sub do 
@@ -28311,7 +29017,7 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
   if char then
    local a 
    if attr then
-    a=getattr(start,0)
+    a=getglyphdata(start)
    end
    if not a or (a==attr) then
     for i=1,nofsteps do
@@ -28352,7 +29058,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
   if char then
    local a 
    if attr then
-    a=getattr(start,0)
+    a=getglyphdata(start)
    end
    local startnext=getnext(start)
    if not a or (a==attr) then
@@ -28370,7 +29076,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
       end
       while getid(s)==disc_code do
        ss=getnext(s)
-       s=getfield(s,"replace")
+       s=getreplace(s)
        if not s then
         s=ss
         ss=nil
@@ -28397,12 +29103,13 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
          end
          while getid(s)==disc_code do
           ss=getnext(s)
-          s=getfield(s,"replace")
+          s=getreplace(s)
           if not s then
            s=ss
            ss=nil
           end
          end
+lookupmatch=lg
         else
          break
         end
@@ -28430,7 +29137,7 @@ end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
  local a 
  if attr then
-  a=getattr(sub,0)
+  a=getglyphdata(sub)
  end
  if not a or (a==attr) then
   for n in nextnode,sub do 
@@ -28581,7 +29288,7 @@ do
       if m then
        local a 
        if attr then
-        a=getattr(start,0)
+        a=getglyphdata(start)
        end
        if not a or (a==attr) then
         for i=m[1],m[2] do
@@ -28625,7 +29332,7 @@ do
         if lookupmatch then
          local a 
          if attr then
-          if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+          if getglyphdata(start)==attr and (not attribute or getprop(start,a_state)==attribute) then
            a=true
           end
          elseif not attribute or getprop(start,a_state)==attribute then
@@ -28681,7 +29388,7 @@ do
         if m then
          local a 
          if attr then
-          if getattr(start,0)==attr and (not attribute or getprop(start,a_state)==attribute) then
+          if getglyphdata(start)==attr and (not attribute or getprop(start,a_state)==attribute) then
            a=true
           end
          elseif not attribute or getprop(start,a_state)==attribute then
@@ -29107,7 +29814,7 @@ if not modules then modules={} end modules ['font-osd']={
  copyright="TAT Zetwerk / PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local insert,imerge,copy=table.insert,table.imerge,table.copy
+local insert,imerge,copy,tohash=table.insert,table.imerge,table.copy,table.tohash
 local next,type=next,type
 local report=logs.reporter("otf","devanagari")
 fonts=fonts       or {}
@@ -29132,7 +29839,7 @@ local setprev=nuts.setprev
 local setchar=nuts.setchar
 local getprop=nuts.getprop
 local setprop=nuts.setprop
-local ischar=nuts.is_char
+local ischar=nuts.ischar
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
 local remove_node=nuts.remove
@@ -29153,6 +29860,7 @@ local s_half=states.half
 local s_pref=states.pref
 local s_blwf=states.blwf
 local s_pstf=states.pstf
+local s_init=states.init
 local replace_all_nbsp=nil
 replace_all_nbsp=function(head) 
  replace_all_nbsp=typesetters and typesetters.characters and typesetters.characters.replacenbspaces or function(head)
@@ -29298,15 +30006,10 @@ local zw_char={
  [c_zwj ]=true,
 }
 local dflt_true={
- dflt=true
+ dflt=true,
 }
-local two_defaults={
- dev2=dflt_true,
-}
-local one_defaults={
- dev2=dflt_true,
- deva=dflt_true,
-}
+local two_defaults={}
+local one_defaults={}
 local false_flags={ false,false,false,false }
 local sequence_reorder_matras={
  features={ dv01=two_defaults },
@@ -29335,7 +30038,7 @@ local sequence_reorder_reph={
  }
 }
 local sequence_reorder_pre_base_reordering_consonants={
- features={ dv03=two_defaults },
+ features={ dv03=one_defaults },
  flags=false_flags,
  name="dv03_reorder_pre_base_reordering_consonants",
  order={ "dv03" },
@@ -29371,6 +30074,7 @@ local basic_shaping_forms={
  rkrf=true,
  rphf=true,
  vatu=true,
+ locl=true,
 }
 local valid={
  abvs=true,
@@ -29394,6 +30098,7 @@ local valid={
  psts=true,
  haln=true,
  calt=true,
+ locl=true,
 }
 local scripts={}
 local scripts_one={ "deva","mlym","beng","gujr","guru","knda","orya","taml","telu" }
@@ -29404,7 +30109,7 @@ for i=1,nofscripts do
  local two=scripts_two[i]
  scripts[one]=true
  scripts[two]=true
- two_defaults[one]=dflt_true
+ two_defaults[two]=dflt_true
  one_defaults[one]=dflt_true
  one_defaults[two]=dflt_true
 end
@@ -29420,31 +30125,79 @@ local function initializedevanagi(tfmdata)
    local gsubfeatures=resources.features.gsub
    local sequences=resources.sequences
    local sharedfeatures=tfmdata.shared.features
-   local lastmatch=0
-   for s=1,#sequences do 
-    local features=sequences[s].features
-    if features then
-     for k,v in next,features do
-      if basic_shaping_forms[k] then
-       lastmatch=s
-      end
-     end
-    end
-   end
-   local insertindex=lastmatch+1
    gsubfeatures["dv01"]=two_defaults 
    gsubfeatures["dv02"]=two_defaults 
-   gsubfeatures["dv03"]=two_defaults 
+   gsubfeatures["dv03"]=one_defaults 
    gsubfeatures["dv04"]=one_defaults
    local reorder_pre_base_reordering_consonants=copy(sequence_reorder_pre_base_reordering_consonants)
    local reorder_reph=copy(sequence_reorder_reph)
    local reorder_matras=copy(sequence_reorder_matras)
    local remove_joiners=copy(sequence_remove_joiners)
+   local lastmatch=0
+   for s=1,#sequences do 
+    local features=sequences[s].features
+    if features then
+     for k,v in next,features do
+      if k=="locl" then
+       local steps=sequences[s].steps
+       local nofsteps=sequences[s].nofsteps
+       for i=1,nofsteps do
+        local step=steps[i]
+        local coverage=step.coverage
+        if coverage then
+         for k,v in next,pre_mark do
+          local locl=coverage[k]
+          if locl then
+           if #locl>0 then	
+            for j=1,#locl do
+             local ck=locl[j]
+             local f=ck[4]
+             local chainlookups=ck[6]
+             if chainlookups then
+              local chainlookup=chainlookups[f]
+              for j=1,#chainlookup do
+               local chainstep=chainlookup[j]
+               local steps=chainstep.steps
+               local nofsteps=chainstep.nofsteps
+               for i=1,nofsteps do
+                local step=steps[i]
+                local coverage=step.coverage
+                if coverage then
+                 locl=coverage[k]
+                end
+               end
+              end
+             end
+            end
+           end
+           if locl then
+            reorder_matras.steps[1].coverage[locl]=true
+           end
+          end
+         end
+        end
+       end
+      end
+      if basic_shaping_forms[k] then
+       lastmatch=lastmatch+1
+       if s~=lastmatch then
+        table.insert(sequences,lastmatch,table.remove(sequences,s))
+       end
+      end
+     end
+    end
+   end
+   local insertindex=lastmatch+1
+   if tfmdata.properties.language then
+    dflt_true[tfmdata.properties.language]=true
+   end
    insert(sequences,insertindex,reorder_pre_base_reordering_consonants)
    insert(sequences,insertindex,reorder_reph)
    insert(sequences,insertindex,reorder_matras)
    insert(sequences,insertindex,remove_joiners)
    local blwfcache={}
+   local vatucache={}
+   local pstfcache={}
    local seqsubset={}
    local rephstep={
     coverage={} 
@@ -29453,6 +30206,8 @@ local function initializedevanagi(tfmdata)
     reph=false,
     vattu=false,
     blwfcache=blwfcache,
+    vatucache=vatucache,
+    pstfcache=pstfcache,
     seqsubset=seqsubset,
     reorderreph=rephstep,
    }
@@ -29467,17 +30222,89 @@ local function initializedevanagi(tfmdata)
     local features=sequence.features
     local has_rphf=features.rphf
     local has_blwf=features.blwf
-    if has_rphf and has_rphf.deva then
+    local has_vatu=features.vatu
+    local has_pstf=features.pstf
+    if has_rphf and has_rphf[script] then
      devanagari.reph=true
-    elseif has_blwf and has_blwf.deva then
+    elseif (has_blwf and has_blwf[script] ) or (has_vatu and has_vatu[script] ) then
      devanagari.vattu=true
      for i=1,nofsteps do
       local step=steps[i]
       local coverage=step.coverage
       if coverage then
        for k,v in next,coverage do
-        if not blwfcache[k] then
-         blwfcache[k]=v
+        for h,w in next,halant do
+         if v[h] then
+          if not blwfcache[k] then
+           blwfcache[k]=v
+          end
+         end
+         if has_vatu and has_vatu[script] and not vatucache[k] then
+          vatucache[k]=v
+         end
+        end
+       end
+      end
+     end
+    elseif has_pstf and has_pstf[script] then
+     for i=1,nofsteps do
+      local step=steps[i]
+      local coverage=step.coverage
+      if coverage then
+       for k,v in next,coverage do
+        if not pstfcache[k] then
+         pstfcache[k]=v
+        end
+       end
+       for k,v in next,ra do
+        local r=coverage[k]
+        if r then
+         local found=false
+         if #r>0 then  
+          for j=1,#r do
+           local ck=r[j]
+           local f=ck[4]
+           local chainlookups=ck[6]
+           if chainlookups and chainlookups[f] then	
+            local chainlookup=chainlookups[f]
+            for j=1,#chainlookup do
+             local chainstep=chainlookup[j]
+             local steps=chainstep.steps
+             local nofsteps=chainstep.nofsteps
+             for i=1,nofsteps do
+              local step=steps[i]
+              local coverage=step.coverage
+              if coverage then
+               local h=coverage[k]
+               if h then
+                for k,v in next,h do
+                 found=v and v.ligature
+                 if found then
+                  pre_base_reordering_consonants[found]=true
+                  break
+                 end
+                end
+                if found then
+                 break
+                end
+               end
+              end
+             end
+            end
+           end
+          end
+         else
+          for k,v in next,r do
+           found=v and v.ligature
+           if found then
+            pre_base_reordering_consonants[found]=true
+            break
+           end
+          end
+         end
+         if found then
+          break
+         end
         end
        end
       end
@@ -29489,17 +30316,53 @@ local function initializedevanagi(tfmdata)
        local step=steps[i]
        local coverage=step.coverage
        if coverage then
-        local reph=false
+        local reph,rephbase=false,false
         if kind=="rphf" then
          for k,v in next,ra do
           local r=coverage[k]
           if r then
+           rephbase=k
            local h=false
-           for k,v in next,halant do
-            local h=r[k]
-            if h then
-             reph=h.ligature or false
-             break
+           if #r>0 then	
+            for j=1,#r do
+             local ck=r[j]
+             local f=ck[4]
+             local chainlookups=ck[6]
+             if chainlookups then
+              local chainlookup=chainlookups[f]
+              for j=1,#chainlookup do
+               local chainstep=chainlookup[j]
+               local steps=chainstep.steps
+               local nofsteps=chainstep.nofsteps
+               for i=1,nofsteps do
+                local step=steps[i]
+                local coverage=step.coverage
+                if coverage then
+                 local r=coverage[k]
+                 if r then
+                  for k,v in next,halant do
+                   local h=r[k]
+                   if h then
+                    reph=h.ligature or false
+                    break
+                   end
+                  end
+                  if h then
+                   break
+                  end
+                 end
+                end
+               end
+              end
+             end
+            end
+           else
+            for k,v in next,halant do
+             local h=r[k]
+             if h then
+              reph=h.ligature or false
+              break
+             end
             end
            end
            if reph then
@@ -29508,7 +30371,7 @@ local function initializedevanagi(tfmdata)
           end
          end
         end
-        seqsubset[#seqsubset+1]={ kind,coverage,reph }
+        seqsubset[#seqsubset+1]={ kind,coverage,reph,rephbase }
        end
       end
      end
@@ -29523,11 +30386,46 @@ local function initializedevanagi(tfmdata)
          local h=coverage[k]
          if h then
           local found=false
-          for k,v in next,h do
-           found=v and v.ligature
-           if found then
-            pre_base_reordering_consonants[k]=found
-            break
+          if #h>0 then 
+           for j=1,#h do
+            local ck=h[j]
+            local f=ck[4]
+            local chainlookups=ck[6]
+            if chainlookups then
+             local chainlookup=chainlookups[f]
+             for j=1,#chainlookup do
+              local chainstep=chainlookup[j]
+              local steps=chainstep.steps
+              local nofsteps=chainstep.nofsteps
+              for i=1,nofsteps do
+               local step=steps[i]
+               local coverage=step.coverage
+               if coverage then
+                local h=coverage[k]
+                if h then
+                 for k,v in next,h do
+                  found=v and v.ligature
+                  if found then
+                   pre_base_reordering_consonants[found]=true
+                   break
+                  end
+                 end
+                 if found then
+                  break
+                 end
+                end
+               end
+              end
+             end
+            end
+           end
+          else
+           for k,v in next,h do
+            found=v and v.ligature
+            if found then
+             pre_base_reordering_consonants[found]=true
+             break
+            end
            end
           end
           if found then
@@ -29540,27 +30438,17 @@ local function initializedevanagi(tfmdata)
      end
     end
    end
-   if script=="deva" then
-    sharedfeatures["dv04"]=true 
-   elseif script=="dev2" then
+   if two_defaults[script] then
     sharedfeatures["dv01"]=true 
     sharedfeatures["dv02"]=true 
     sharedfeatures["dv03"]=true 
     sharedfeatures["dv04"]=true 
-   elseif script=="mlym" then
-    sharedfeatures["pstf"]=true
-   elseif script=="mlm2" then
-    sharedfeatures["pstf"]=true
-    sharedfeatures["pref"]=true
+   elseif one_defaults[script] then
     sharedfeatures["dv03"]=true 
-    gsubfeatures  ["dv03"]=two_defaults 
-    insert(sequences,insertindex,sequence_reorder_pre_base_reordering_consonants)
-   elseif script=="taml" then
     sharedfeatures["dv04"]=true 
-sharedfeatures["pstf"]=true
-   elseif script=="tml2" then
-   else
-    report("todo: enable the right features for script %a",script)
+   end
+   if script=="mlym" or script=="taml" then
+    devanagari.left_matra_before_base=true
    end
   end
  end
@@ -29593,6 +30481,8 @@ local function initialize_one(font,attr)
    reph=false,
    vattu=false,
    blwfcache={},
+   vatucache={},
+   pstfcache={},
   }
   datasets.devanagari=devanagaridata
   local resources=tfmdata.resources
@@ -29603,17 +30493,80 @@ local function initialize_one(font,attr)
     local kind=dataset[4]
     if kind=="rphf" then
      devanagaridata.reph=true
-    elseif kind=="blwf" then
+    elseif kind=="blwf" or kind=="vatu" then
      devanagaridata.vattu=true
      devanagaridata.blwfcache=devanagari.blwfcache
+     devanagaridata.vatucache=devanagari.vatucache
+     devanagaridata.pstfcache=devanagari.pstfcache
     end
    end
   end
  end
- return devanagaridata.reph,devanagaridata.vattu,devanagaridata.blwfcache
+ return devanagaridata.reph,devanagaridata.vattu,devanagaridata.blwfcache,devanagaridata.vatucache,devanagaridata.pstfcache
+end
+local function contextchain(contexts,n)
+ local char=getchar(n)
+ for k=1,#contexts do
+  local ck=contexts[k]
+  local seq=ck[3]
+  local f=ck[4]
+  local l=ck[5]
+  if (l-f)==1 and seq[f+1][char] then
+   local ok=true
+   local c=n
+   for i=l+1,#seq do
+    c=getnext(c)
+    if not c or not seq[i][ischar(c)] then
+     ok=false
+     break
+    end
+   end
+   if ok then
+    c=getprev(n)
+    for i=1,f-1 do
+     c=getprev(c)
+     if not c or not seq[f-i][ischar(c)] then
+      ok=false
+     end
+    end
+   end
+   if ok then
+    return true
+   end
+  end
+ end
+ return false
+end
+local function order_matras(c)
+ local cn=getnext(c)
+ local char=getchar(cn)
+ while dependent_vowel[char] do
+  local next=getnext(cn)
+  local cc=c
+  local cchar=getchar(cc)
+  while cc~=cn do
+   if (above_mark[char] and (below_mark[cchar] or post_mark[cchar])) or (below_mark[char] and (post_mark[cchar])) then
+    local prev,next=getboth(cn)
+    if next then
+     setprev(next,prev)
+    end
+    setnext(prev,next)
+    setnext(getprev(cc),cn)
+    setprev(cn,getprev(cc))
+    setnext(cn,cc)
+    setprev(cc,cn)
+    break
+   end
+   cc=getnext(cc)
+   cchar=getchar(cc)
+  end
+  cn=next
+  char=getchar(cn)
+ end
 end
 local function reorder_one(head,start,stop,font,attr,nbspaces)
- local reph,vattu,blwfcache=initialize_one(font,attr) 
+ local reph,vattu,blwfcache,vatucache,pstfcache=initialize_one(font,attr) 
+ local devanagari=fontdata[font].resources.devanagari
  local current=start
  local n=getnext(start)
  local base=nil
@@ -29696,6 +30649,8 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
     base=current
    elseif blwfcache[char] then
     setprop(current,a_state,s_blwf)
+   elseif pstfcache[char] then
+    setprop(current,a_state,s_pstf)
    else
     base=current
    end
@@ -29764,7 +30719,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
   end
   current=next
  end
- if base~=stop and getprop(base,a_state) then
+ if base~=stop and getprop(base,a_state) then 
   local next=getnext(base)
   if halant[getchar(next)] and not (next~=stop and getchar(getnext(next))==c_zwj) then
    setprop(base,a_state,unsetvalue)
@@ -29792,6 +30747,16 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
      n=getnext(n)
      ch=getchar(n)
     end
+    local tpm=twopart_mark[ch]
+    while tpm do
+     local extra=copy_node(n)
+     copyinjection(extra,n)
+     ch=tpm[1]
+     setchar(n,ch)
+     setchar(extra,tpm[2])
+     head=insert_node_after(head,current,extra)
+     tpm=twopart_mark[ch]
+    end
     while c~=stop and dependent_vowel[ch] do
      c=n
      n=getnext(n)
@@ -29815,9 +30780,44 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
   local last=getnext(c)
   while cn~=last do
    if pre_mark[getchar(cn)] then
-    if bp then
-     setnext(bp,cn)
+    if devanagari.left_matra_before_base then
+     local prev,next=getboth(cn)
+     setlink(prev,next)
+     if cn==stop then
+      stop=getprev(cn)
+     end
+     if base==start then
+        if head==start then
+         head=cn
+        end
+        start=cn
+     end
+     setlink(getprev(base),cn)
+     setlink(cn,base)
+     cn=next
+    else
+     if bp then
+      setnext(bp,cn)
+     end
+     local prev,next=getboth(cn)
+     if next then
+      setprev(next,prev)
+     end
+     setnext(prev,next)
+     if cn==stop then
+      stop=prev
+     end
+     setprev(cn,bp)
+     setlink(cn,firstcons)
+     if firstcons==start then
+      if head==start then
+       head=cn
+      end
+      start=cn
+     end
+     cn=next
     end
+   elseif current~=base and dependent_vowel[getchar(cn)] then
     local prev,next=getboth(cn)
     if next then
      setprev(next,prev)
@@ -29826,17 +30826,19 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
     if cn==stop then
      stop=prev
     end
-    setprev(cn,bp)
-    setlink(cn,firstcons)
-    if firstcons==start then
-     if head==start then
-      head=cn
-     end
-     start=cn
+    setlink(b,cn,getnext(b))
+    order_matras(cn)
+    cn=next
+   elseif current==base and dependent_vowel[getchar(cn)] then
+    local cnn=getnext(cn)
+    order_matras(cn)
+    cn=cnn
+    while cn~=last and dependent_vowel[getchar(cn)] do
+     cn=getnext(cn)
     end
-    break
+   else
+    cn=getnext(cn)
    end
-   cn=getnext(cn)
   end
   allreordered=c==stop
   current=getnext(c)
@@ -29878,7 +30880,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
      local cp=getprev(current)
      local cnsn=getnext(cns)
      setlink(cp,n)
-     setlink(cns,current)
+     setlink(cns,current) 
      setlink(c,cnsn)
      if c==stop then
       stop=cp
@@ -29894,12 +30896,26 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
      if halant[getchar(next)] then
       cns=next
      end
+     if not vatucache[char] then
+      next=getnext(cns)
+      while dependent_vowel[getchar(next)] do
+       cns=next
+       next=getnext(cns)
+      end
+     end
     elseif char==c_nbsp then
      nbspaces=nbspaces+1
      cns=current
      local next=getnext(cns)
      if halant[getchar(next)] then
       cns=next
+     end
+     if not vatucache[char] then
+      next=getnext(cns)
+      while dependent_vowel[getchar(next)] do
+       cns=next
+       next=getnext(cns)
+      end
      end
     end
    end
@@ -29908,6 +30924,9 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
  end
  if getchar(base)==c_nbsp then
   nbspaces=nbspaces-1
+  if base==stop then
+  	stop=getprev(stop)
+  end
   head=remove_node(head,base)
   flush_node(base)
  end
@@ -29921,7 +30940,7 @@ function handlers.devanagari_reorder_matras(head,start)
   local char=ischar(current,startfont)
   local next=getnext(current)
   if char and getprop(current,a_syllabe)==startattr then
-   if halant[char] and not getprop(current,a_state) then
+   if halant[char] then 
     if next then
      local char=ischar(next,startfont)
      if char and zw_char[char] and getprop(next,a_syllabe)==startattr then
@@ -29943,6 +30962,7 @@ function handlers.devanagari_reorder_matras(head,start)
  end
  return head,start,true
 end
+local rephbase={}
 function handlers.devanagari_reorder_reph(head,start)
  local current=getnext(start)
  local startnext=nil
@@ -29950,44 +30970,29 @@ function handlers.devanagari_reorder_reph(head,start)
  local startfont=getfont(start)
  local startattr=getprop(start,a_syllabe)
  ::step_1::
- ::step_2::
- while current do
-  local char=ischar(current,startfont)
-  if char and getprop(current,a_syllabe)==startattr then
-   if halant[char] and not getprop(current,a_state) then
-    local next=getnext(current)
-    if next then
-     local nextchar=ischar(next,startfont)
-     if nextchar and zw_char[nextchar] and getprop(next,a_syllabe)==startattr then
-      current=next
-      next=getnext(current)
-     end
-    end
-    startnext=getnext(start)
-    head=remove_node(head,start)
-    setlink(start,next)
-    setlink(current,start)
-    start=startnext
-    startattr=getprop(start,a_syllabe)
-    break
-   end
-   current=getnext(current)
-  else
-   break
-  end
+ local char=ischar(start,startfont)
+ local rephbase=rephbase[startfont][char]
+ if char and after_subscript[rephbase] then
+  goto step_5
  end
- ::step_3::
- ::step_4::
- if not startnext then
-  current=getnext(start)
+ ::step_2::
+ if char and not after_postscript[rephbase] then
   while current do
    local char=ischar(current,startfont)
    if char and getprop(current,a_syllabe)==startattr then
-    if getprop(current,a_state)==s_pstf then 
+    if halant[char] then
+     local next=getnext(current)
+     if next then
+      local nextchar=ischar(next,startfont)
+      if nextchar and zw_char[nextchar] and getprop(next,a_syllabe)==startattr then
+       current=next
+       next=getnext(current)
+      end
+     end
      startnext=getnext(start)
      head=remove_node(head,start)
-     setlink(getprev(current),start)
-     setlink(start,current)
+     setlink(start,next)
+     setlink(current,start)
      start=startnext
      startattr=getprop(start,a_syllabe)
      break
@@ -29998,6 +31003,63 @@ function handlers.devanagari_reorder_reph(head,start)
    end
   end
  end
+ ::step_3::
+ if not startnext then
+  if char and after_main[rephbase] then
+   current=getnext(start)
+   while current do
+    local char=ischar(current,startfont)
+    if char and getprop(current,a_syllabe)==startattr then
+     if consonant[char] and not getprop(current,a_state)==s_pref then
+      startnext=getnext(start)
+      head=remove_node(head,start)
+      setlink(current,start)
+      setlink(start,getnext(current))
+      start=startnext
+      startattr=getprop(start,a_syllabe)
+      break
+     end
+     current=getnext(current)
+    else
+     break
+    end
+   end
+  end
+ end
+ ::step_4::
+ if not startnext then
+  if char and before_postscript[rephbase] then
+   current=getnext(start)
+   local c=nil
+   while current do
+    local char=ischar(current,startfont)
+    if char and getprop(current,a_syllabe)==startattr then
+     if getprop(current,a_state)==s_pstf then 
+      startnext=getnext(start)
+      head=remove_node(head,start)
+      setlink(getprev(current),start)
+      setlink(start,current)
+      start=startnext
+      startattr=getprop(start,a_syllabe)
+      break
+     elseif not c and (vowel_modifier[char] or stress_tone_mark[char] ) then
+      c=current
+     end
+     current=getnext(current)
+    else
+     if c then
+      startnext=getnext(start)
+      head=remove_node(head,start)
+      setlink(getprev(c),start)
+      setlink(start,c)
+      start=startnext
+      startattr=getprop(start,a_syllabe)
+     end
+     break
+    end
+   end
+  end
+ end
  ::step_5::
  if not startnext then
   current=getnext(start)
@@ -30005,7 +31067,10 @@ function handlers.devanagari_reorder_reph(head,start)
   while current do
    local char=ischar(current,startfont)
    if char and getprop(current,a_syllabe)==startattr then
-    if not c and mark_above_below_post[char] and not after_subscript[char] then
+    local state=getprop(current,a_state)
+    if before_subscript[rephbase] and (state==s_blwf or state==s_pstf) then
+     c=current
+    elseif after_subscript[rephbase] and (state==s_pstf) then
      c=current
     end
     current=getnext(current)
@@ -30045,63 +31110,64 @@ function handlers.devanagari_reorder_reph(head,start)
  end
  return head,start,true
 end
+local reordered_pre_base_reordering_consonants={} 
 function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
- local current=start
- local startnext=nil
- local startprev=nil
+ if reordered_pre_base_reordering_consonants[start] then
+  return head,start,true
+ end
+ local current=start 
  local startfont=getfont(start)
  local startattr=getprop(start,a_syllabe)
  while current do
   local char=ischar(current,startfont)
+  local next=getnext(current)
   if char and getprop(current,a_syllabe)==startattr then
-   local next=getnext(current)
-   if halant[char] and not getprop(current,a_state) then
+   if halant[char] then 
     if next then
-     local nextchar=ischar(next,startfont)
-     if nextchar and getprop(next,a_syllabe)==startattr then
-      if nextchar==c_zwnj or nextchar==c_zwj then
-       current=next
-       next=getnext(current)
-      end
+     local char=ischar(next,startfont)
+     if char and zw_char[char] and getprop(next,a_syllabe)==startattr then
+      current=next
+      next=getnext(current)
      end
     end
-    startnext=getnext(start)
-    removenode(start,start)
+    local startnext=getnext(start)
+    head=remove_node(head,start)
     setlink(start,next)
     setlink(current,start)
+    reordered_pre_base_reordering_consonants[start]=true
     start=startnext
-    break
+    return head,start,true
    end
-   current=next
   else
    break
   end
+  current=next
  end
- if not startnext then
-  current=getnext(start)
-  startattr=getprop(start,a_syllabe)
-  while current do
-   local char=ischar(current,startfont)
-   if char and getprop(current,a_syllabe)==startattr then
-    if not consonant[char] and getprop(current,a_state) then 
-     startnext=getnext(start)
-     removenode(start,start)
-     setlink(getprev(current),start)
-     setlink(start,current)
-     start=startnext
-     break
-    end
-    current=getnext(current)
+ local startattr=getprop(start,a_syllabe)
+ local current=getprev(start)
+ while current and getprop(current,a_syllabe)==startattr do
+  local char=ischar(current)
+  if (not dependent_vowel[char] and not getprop(current,a_state) or getprop(current,a_state)==s_init) then
+   startnext=getnext(start)
+   head=remove_node(head,start)
+   if current==head then
+    setlink(start,current)
+    head=start
    else
-    break
+    setlink(getprev(current),start)
+    setlink(start,current)
    end
+   reordered_pre_base_reordering_consonants[start]=true
+   start=startnext
+   break
   end
+  current=getprev(current)
  end
  return head,start,true
 end
 function handlers.devanagari_remove_joiners(head,start,kind,lookupname,replacement)
  local stop=getnext(start)
- local font=getfont(start) 
+ local font=getfont(start)
  local last=start
  while stop do
   local char=ischar(stop,font)
@@ -30135,28 +31201,28 @@ local function initialize_two(font,attr)
 end
 local function reorder_two(head,start,stop,font,attr,nbspaces) 
  local seqsubset,reorderreph=initialize_two(font,attr)
- local reph=false 
  local halfpos=nil
  local basepos=nil
  local subpos=nil
  local postpos=nil
- local locl={}
+ reorderreph.coverage={}
+ rephbase[font]={}
  for i=1,#seqsubset do
   local subset=seqsubset[i]
   local kind=subset[1]
   local lookupcache=subset[2]
   if kind=="rphf" then
-   reph=subset[3]
+   reorderreph.coverage[subset[3]]=true 
+   rephbase[font][subset[3]]=subset[4]
    local current=start
    local last=getnext(stop)
    while current~=last do
     if current~=stop then
-     local c=locl[current] or getchar(current)
+     local c=getchar(current)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      local n=locl[next] or getchar(next)
-      if found[n] then 
+      if found[getchar(next)] or contextchain(found,next) then 
        local afternext=next~=stop and getnext(next)
        if afternext and zw_char[getchar(afternext)] then 
         current=afternext 
@@ -30176,15 +31242,16 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    local last=getnext(stop)
    while current~=last do
     if current~=stop then
-     local c=locl[current] or getchar(current)
+     local c=getchar(current)
      local found=lookupcache[c]
      if found then 
       local next=getnext(current)
-      local n=locl[next] or getchar(next)
-      if found[n] then
-       setprop(current,a_state,s_pref)
-       setprop(next,a_state,s_pref)
-       current=next
+      if found[getchar(next)] or contextchain(found,next) then
+       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
+        setprop(current,a_state,s_pref)
+        setprop(next,a_state,s_pref)
+        current=next
+       end
       end
      end
     end
@@ -30195,15 +31262,14 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    local last=getnext(stop)
    while current~=last do
     if current~=stop then
-     local c=locl[current] or getchar(current)
+     local c=getchar(current)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      local n=locl[next] or getchar(next)
-      if found[n] then
+      if found[getchar(next)] or contextchain(found,next) then
        if next~=stop and getchar(getnext(next))==c_zwnj then 
         current=next
-       else
+       elseif (not getprop(current,a_state)) then	
         setprop(current,a_state,s_half)
         if not halfpos then
          halfpos=current
@@ -30215,21 +31281,22 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     end
     current=getnext(current)
    end
-  elseif kind=="blwf" then 
+  elseif kind=="blwf" or kind=="vatu" then 
    local current=start
    local last=getnext(stop)
    while current~=last do
     if current~=stop then
-     local c=locl[current] or getchar(current)
+     local c=getchar(current)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      local n=locl[next] or getchar(next)
-      if found[n] then
-       setprop(current,a_state,s_blwf)
-       setprop(next,a_state,s_blwf)
-       current=next
-       subpos=current
+      if found[getchar(next)] or contextchain(found,next) then
+       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
+        setprop(current,a_state,s_blwf)
+        setprop(next,a_state,s_blwf)
+        current=next
+        subpos=current
+       end
       end
      end
     end
@@ -30240,16 +31307,17 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    local last=getnext(stop)
    while current~=last do
     if current~=stop then
-     local c=locl[current] or getchar(current)
+     local c=getchar(current)
      local found=lookupcache[c]
      if found then
       local next=getnext(current)
-      local n=locl[next] or getchar(next)
-      if found[n] then
-       setprop(current,a_state,s_pstf)
-       setprop(next,a_state,s_pstf)
-       current=next
-       postpos=current
+      if found[getchar(next)] or contextchain(found,next) then
+       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
+        setprop(current,a_state,s_pstf)
+        setprop(next,a_state,s_pstf)
+        current=next
+        postpos=current
+       end
       end
      end
     end
@@ -30257,7 +31325,6 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    end
   end
  end
- reorderreph.coverage={ [reph]=true }
  local current,base,firstcons=start,nil,nil
  if getprop(start,a_state)==s_rphf then
   current=getnext(getnext(start))
@@ -30318,7 +31385,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
       firstcons=current
      end
      local a=getprop(current,a_state)
-     if not (a==s_pref or a==s_blwf or a==s_pstf) then
+     if not (a==s_blwf or a==s_pstf or (a~=s_rphf and a~=s_blwf and ra[getchar(current)])) then
       base=current
      end
     end
@@ -30335,7 +31402,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   end
   return head,stop,nbspaces
  else
-  if getprop(base,a_state) then
+  if getprop(base,a_state) then 
    setprop(base,a_state,unsetvalue)
   end
   basepos=base
@@ -30353,34 +31420,59 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
  local current=start
  local last=getnext(stop)
  while current~=last do
-  local char,target,cn=locl[current] or getchar(current),nil,getnext(current)
+  local char=getchar(current)
+  local target=nil
+  local cn=getnext(current)
   local tpm=twopart_mark[char]
-  if tpm then
+  while tpm do
    local extra=copy_node(current)
    copyinjection(extra,current)
    char=tpm[1]
    setchar(current,char)
    setchar(extra,tpm[2])
    head=insert_node_after(head,current,extra)
+   tpm=twopart_mark[char]
   end
   if not moved[current] and dependent_vowel[char] then
-   if pre_mark[char] then   
+   if pre_mark[char] then 
     moved[current]=true
     local prev,next=getboth(current)
     setlink(prev,next)
     if current==stop then
      stop=getprev(current)
     end
-    if halfpos==start then
+    local pos
+    if before_main[char] then
+     pos=basepos
+    else
+     pos=halfpos
+    end
+    local ppos=getprev(pos) 
+    while ppos and getprop(ppos,a_syllabe)==getprop(pos,a_syllabe) do
+     if getprop(ppos,a_state)==s_pref then
+      pos=ppos
+     end
+     ppos=getprev(ppos)
+    end
+    local ppos=getprev(pos) 
+    while ppos and getprop(ppos,a_syllabe)==getprop(pos,a_syllabe) and halant[ischar(ppos)] do
+     ppos=getprev(ppos)
+     if ppos and getprop(ppos,a_syllabe)==getprop(pos,a_syllabe) and consonant[ischar(ppos)] then
+      pos=ppos
+      ppos=getprev(ppos)
+     else
+      break
+     end
+    end
+    if pos==start then
      if head==start then
       head=current
      end
      start=current
     end
-    setlink(getprev(halfpos),current)
-    setlink(current,halfpos)
-    halfpos=current
-   elseif above_mark[char] then 
+    setlink(getprev(pos),current)
+    setlink(current,pos)
+   elseif above_mark[char] then
     target=basepos
     if subpos==basepos then
      subpos=current
@@ -30389,13 +31481,23 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      postpos=current
     end
     basepos=current
-   elseif below_mark[char] then 
+   elseif below_mark[char] then
     target=subpos
     if postpos==subpos then
      postpos=current
     end
     subpos=current
-   elseif post_mark[char] then 
+   elseif post_mark[char] then
+    local n=getnext(postpos) 
+    while n do
+     local v=ischar(n,font)
+     if nukta[v] or stress_tone_mark[v] or vowel_modifier[v] then
+      postpos=n
+     else
+      break
+     end
+     n=getnext(n)
+    end
     target=postpos
     postpos=current
    end
@@ -30414,7 +31516,35 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   end
   current=cn
  end
- local current,c=start,nil
+ local current=getnext(start)
+ local last=getnext(stop)
+ while current~=last do
+  local char=getchar(current)
+  local cn=getnext(current)
+  if halant[char] and ra[ischar(cn)] and getprop(cn,a_state)~=s_rphf and getprop(cn,a_state)~=s_blwf then
+   if after_main[ischar(cn)] then
+    local prev=getprev(current)
+    local next=getnext(cn)
+    local bpn=getnext(basepos)
+    while bpn and dependent_vowel[ischar(bpn)] do
+     basepos=bpn
+     bpn=getnext(bpn)
+    end
+    if basepos~=prev then
+     setlink(prev,next)
+     setlink(cn,getnext(basepos))
+     setlink(basepos,current)
+     if cn==stop then
+      stop=prev
+     end
+     cn=next
+    end
+   end
+  end
+  current=cn
+ end
+ local current=start
+ local c=nil
  while current~=stop do
   local char=getchar(current)
   if halant[char] or stress_tone_mark[char] then
@@ -30533,7 +31663,25 @@ local function analyze_next_chars_one(c,font,variant)
  if not v then
   return c
  end
- if dependent_vowel[v] then
+ local already_pre_mark   
+ local already_above_mark 
+ local already_below_mark 
+ local already_post_mark  
+ while dependent_vowel[v] do
+	 local vowels=twopart_mark[v] or { v }
+	 for k,v in next,vowels do
+			if pre_mark[v] and not already_pre_mark then
+				already_pre_mark=true
+			elseif above_mark[v] and not already_above_mark then
+				already_above_mark=true
+			elseif below_mark[v] and not already_below_mark then
+				already_below_mark=true
+			elseif post_mark[v] and not already_post_mark then
+				already_post_mark=true
+			else
+				return c
+			end
+	 end
   c=getnext(c)
   n=getnext(c)
   if not n then
@@ -30699,7 +31847,25 @@ local function analyze_next_chars_two(c,font)
    end
   end
  else
-  if dependent_vowel[v] then
+  local already_pre_mark   
+  local already_above_mark 
+  local already_below_mark 
+  local already_post_mark  
+		while dependent_vowel[v] do
+			local vowels=twopart_mark[v] or { v }
+			for k,v in next,vowels do
+				if pre_mark[v] and not already_pre_mark then
+					already_pre_mark=true
+				elseif above_mark[v] and not already_above_mark then
+					already_above_mark=true
+				elseif below_mark[v] and not already_below_mark then
+					already_below_mark=true
+				elseif post_mark[v] and not already_post_mark then
+					already_post_mark=true
+				else
+					return c
+				end
+			end
    c=n
    n=getnext(c)
    if not n then
@@ -30766,6 +31932,7 @@ local function method_one(head,font,attr)
  local start=true
  local done=false
  local nbspaces=0
+ local syllabe=0
  while current do
   local char=ischar(current,font)
   if char then
@@ -30902,6 +32069,15 @@ local function method_one(head,font,attr)
       end
      end
      if syllablestart~=syllableend then
+      if syllableend then
+       syllabe=syllabe+1
+       local c=syllablestart
+       local n=getnext(syllableend)
+       while c~=n do
+        setprop(c,a_syllabe,syllabe)
+        c=getnext(c)
+       end
+      end
       head,current,nbspaces=reorder_one(head,syllablestart,syllableend,font,attr,nbspaces)
       current=getnext(current)
      end
@@ -30940,6 +32116,20 @@ local function method_one(head,font,attr)
  if nbspaces>0 then
   head=replace_all_nbsp(head)
  end
+ current=head
+ local n=0
+ while current do
+  local char=ischar(current,font)
+  if char then
+			if n==0 and not getprop(current,a_state) then
+				setprop(current,a_state,s_init)
+			end
+			n=n+1
+		else
+			n=0
+		end
+		current=getnext(current)
+	end
  return head,done
 end
 local function method_two(head,font,attr)
@@ -31008,7 +32198,7 @@ local function method_two(head,font,attr)
   end
   if not syllableend and show_syntax_errors then
    local char=ischar(current,font)
-   if char and not getprop(current,a_state) then
+   if char and not getprop(current,a_state) then 
     local mark=mark_four[char]
     if mark then
      head,current=inject_syntax_error(head,current,char)
@@ -31021,6 +32211,20 @@ local function method_two(head,font,attr)
  if nbspaces>0 then
   head=replace_all_nbsp(head)
  end
+ current=head
+ local n=0
+ while current do
+  local char=ischar(current,font)
+  if char then
+			if n==0 and not getprop(current,a_state) then	
+				setprop(current,a_state,s_init)
+			end
+			n=n+1
+		else
+			n=0
+		end
+		current=getnext(current)
+	end
  return head,done
 end
 for i=1,nofscripts do
@@ -31039,9 +32243,13 @@ if not modules then modules={} end modules ['font-ocl']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ return
+end
 local tostring,tonumber,next=tostring,tonumber,next
 local round,max=math.round,math.round
-local sortedkeys,sortedhash=table.sortedkeys,table.sortedhash
+local gsub,find=string.gsub,string.find
+local sortedkeys,sortedhash,concat=table.sortedkeys,table.sortedhash,table.concat
 local setmetatableindex=table.setmetatableindex
 local formatters=string.formatters
 local tounicode=fonts.mappings.tounicode
@@ -31051,6 +32259,7 @@ local rightcommand=helpers.commands.right
 local leftcommand=helpers.commands.left
 local downcommand=helpers.commands.down
 local otf=fonts.handlers.otf
+local otfregister=otf.features.register
 local f_color=formatters["%.3f %.3f %.3f rg"]
 local f_gray=formatters["%.3f g"]
 if context then
@@ -31107,7 +32316,7 @@ end
 local start={ "pdf","mode","font" }
 local push={ "pdf","page","q" }
 local pop={ "pdf","page","Q" }
-local function initialize(tfmdata,kind,value)
+local function initializeoverlay(tfmdata,kind,value)
  if value then
   local resources=tfmdata.resources
   local palettes=resources.colorpalettes
@@ -31149,52 +32358,39 @@ local function initialize(tfmdata,kind,value)
       local s=#colorlist
       local goback=w~=0 and leftcommand[w] or nil 
       local t={
-       start,
-       not u and actualb or { "pdf","page",(getactualtext(tounicode(u))) }
+       not u and actualb or { "pdf","page",(getactualtext(tounicode(u))) },
+       push,
       }
       local n=2
       local l=nil
-      local f=false
       for i=1,s do
        local entry=colorlist[i]
        local v=colorvalues[entry.class] or default
        if v and l~=v then
-        if f then
-         n=n+1 t[n]=pop
-        end
-        n=n+1 t[n]=push
-        f=true
         n=n+1 t[n]=v
         l=v
-       else
-        if f then
-         n=n+1 t[n]=pop
-        end
-        f=false
-        l=nil
        end
        n=n+1 t[n]=charcommand[entry.slot]
        if s>1 and i<s and goback then
         n=n+1 t[n]=goback
        end
       end
-      if f then
-       n=n+1 t[n]=pop
-      end
+      n=n+1 t[n]=pop
       n=n+1 t[n]=actuale
       character.commands=t
      end
     end
    end
+   return true
   end
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="colr",
  description="color glyphs",
  manipulators={
-  base=initialize,
-  node=initialize,
+  base=initializeoverlay,
+  node=initializeoverlay,
  }
 }
 do
@@ -31203,32 +32399,17 @@ do
  local f_used=context and formatters[ [[original:///%s]] ] or formatters[ [[%s]] ]
  local hashed={}
  local cache={}
- if epdf then
-  local openpdf=epdf.openMemStream
-  function otf.storepdfdata(pdf)
-   local done=hashed[pdf]
-   if not done then
-    nofstreams=nofstreams+1
-    local o,n=openpdf(pdf,#pdf,f_name(nofstreams))
-    cache[n]=o 
-    done=f_used(n)
-    hashed[pdf]=done
-   end
-   return done
+ local openpdf=pdfe.new
+ function otf.storepdfdata(pdf)
+  local done=hashed[pdf]
+  if not done then
+   nofstreams=nofstreams+1
+   local f=f_name(nofstreams)
+   local n=openpdf(pdf,#pdf,f)
+   done=f_used(n)
+   hashed[pdf]=done
   end
- else
-  local openpdf=pdfe.new
-  function otf.storepdfdata(pdf)
-   local done=hashed[pdf]
-   if not done then
-    nofstreams=nofstreams+1
-    local f=f_name(nofstreams)
-    local n=openpdf(pdf,#pdf,f)
-    done=f_used(n)
-    hashed[pdf]=done
-   end
-   return done
-  end
+  return done
  end
 end
 local function pdftovirtual(tfmdata,pdfshapes,kind) 
@@ -31260,11 +32441,17 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
    local data=nil
    local dx=nil
    local dy=nil
+   local scale=1
    if typ=="table" then
     data=pdf.data
-    dx=pdf.dx or 0
-    dy=pdf.dy or 0
+    dx=pdf.x or pdf.dx or 0
+    dy=pdf.y or pdf.dy or 0
+    scale=pdf.scale or 1
    elseif typ=="string" then
+    data=pdf
+    dx=0
+    dy=0
+   elseif typ=="number" then
     data=pdf
     dx=0
     dy=0
@@ -31276,9 +32463,9 @@ local function pdftovirtual(tfmdata,pdfshapes,kind)
     local dp=character.depth  or 0
     character.commands={
      not unicode and actualb or { "pdf","page",(getactualtext(unicode)) },
-     downcommand[dp+dy*hfactor],
-     rightcommand[dx*hfactor],
-     vfimage(wd,ht,dp,data,name),
+     downcommand [dp+dy*hfactor],
+     rightcommand[  dx*hfactor],
+     vfimage(scale*wd,ht,dp,data,pdfshapes.filename or ""),
      actuale,
     }
     character[kind]=true
@@ -31312,24 +32499,26 @@ do
   name="otfsvg",
   program="inkscape",
   method="pipeto",
-  template="--shell > temp-otf-svg-shape.log",
+  template="--export-area-drawing --shell > temp-otf-svg-shape.log",
   reporter=report_svg,
  }
  if not runner then
   runner=function()
-   return io.open("inkscape --shell > temp-otf-svg-shape.log","w")
+   return io.popen("inkscape --export-area-drawing --shell > temp-otf-svg-shape.log","w")
   end
  end
- function otfsvg.topdf(svgshapes)
+ function otfsvg.topdf(svgshapes,tfmdata)
   local pdfshapes={}
   local inkscape=runner()
   if inkscape then
+   local descriptions=tfmdata.descriptions
    local nofshapes=#svgshapes
    local f_svgfile=formatters["temp-otf-svg-shape-%i.svg"]
    local f_pdffile=formatters["temp-otf-svg-shape-%i.pdf"]
    local f_convert=formatters["%s --export-pdf=%s\n"]
    local filterglyph=otfsvg.filterglyph
    local nofdone=0
+   local processed={}
    report_svg("processing %i svg containers",nofshapes)
    statistics.starttiming()
    for i=1,nofshapes do
@@ -31341,23 +32530,50 @@ do
       local pdffile=f_pdffile(index)
       savedata(svgfile,data)
       inkscape:write(f_convert(svgfile,pdffile))
-      pdfshapes[index]=true
+      processed[index]=true
       nofdone=nofdone+1
-      if nofdone%100==0 then
-       report_svg("%i shapes processed",nofdone)
+      if nofdone%25==0 then
+       report_svg("%i shapes submitted",nofdone)
       end
      end
     end
    end
+   if nofdone%25~=0 then
+    report_svg("%i shapes submitted",nofdone)
+   end
+   report_svg("processing can be going on for a while")
    inkscape:write("quit\n")
    inkscape:close()
    report_svg("processing %i pdf results",nofshapes)
-   for index in next,pdfshapes do
+   for index in next,processed do
     local svgfile=f_svgfile(index)
     local pdffile=f_pdffile(index)
-    pdfshapes[index]=loaddata(pdffile)
+    local pdfdata=loaddata(pdffile)
+    if pdfdata and pdfdata~="" then
+     pdfshapes[index]={
+      data=pdfdata,
+     }
+    end
     remove(svgfile)
     remove(pdffile)
+   end
+   local characters=tfmdata.characters
+   for k,v in next,characters do
+    local d=descriptions[k]
+    local i=d.index
+    if i then
+     local p=pdfshapes[i]
+     if p then
+      local w=d.width
+      local l=d.boundingbox[1]
+      local r=d.boundingbox[3]
+      p.scale=(r-l)/w
+      p.x=l
+     end
+    end
+   end
+   if not next(pdfshapes) then
+    report_svg("there are no converted shapes, fix your setup")
    end
    statistics.stoptiming()
    if statistics.elapsedseconds then
@@ -31377,19 +32593,20 @@ local function initializesvg(tfmdata,kind,value)
   end
   local pdffile=containers.read(otf.pdfcache,hash)
   local pdfshapes=pdffile and pdffile.pdfshapes
-  if not pdfshapes or pdffile.timestamp~=timestamp then
+  if not pdfshapes or pdffile.timestamp~=timestamp or not next(pdfshapes) then
    local svgfile=containers.read(otf.svgcache,hash)
    local svgshapes=svgfile and svgfile.svgshapes
-   pdfshapes=svgshapes and otfsvg.topdf(svgshapes) or {}
+   pdfshapes=svgshapes and otfsvg.topdf(svgshapes,tfmdata,otf.pdfcache.writable,hash) or {}
    containers.write(otf.pdfcache,hash,{
     pdfshapes=pdfshapes,
     timestamp=timestamp,
    })
   end
   pdftovirtual(tfmdata,pdfshapes,"svg")
+  return true
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="svg",
  description="svg glyphs",
  manipulators={
@@ -31472,9 +32689,10 @@ local function initializepng(tfmdata,kind,value)
    })
   end
   pdftovirtual(tfmdata,pdfshapes,"png")
+  return true
  end
 end
-fonts.handlers.otf.features.register {
+otfregister {
  name="sbix",
  description="sbix glyphs",
  manipulators={
@@ -31482,7 +32700,7 @@ fonts.handlers.otf.features.register {
   node=initializepng,
  }
 }
-fonts.handlers.otf.features.register {
+otfregister {
  name="cblc",
  description="cblc glyphs",
  manipulators={
@@ -31490,6 +32708,11 @@ fonts.handlers.otf.features.register {
   node=initializepng,
  }
 }
+if context then
+
+--removed
+
+end
 
 end -- closure
 
@@ -31513,9 +32736,10 @@ local fonts=fonts
 local otf=fonts.handlers.otf
 local registerotffeature=otf.features.register
 local setmetatableindex=table.setmetatableindex
-local checkmerge=fonts.helpers.checkmerge
-local checkflags=fonts.helpers.checkflags
-local checksteps=fonts.helpers.checksteps
+local fonthelpers=fonts.helpers
+local checkmerge=fonthelpers.checkmerge
+local checkflags=fonthelpers.checkflags
+local checksteps=fonthelpers.checksteps
 local normalized={
  substitution="substitution",
  single="substitution",
@@ -31637,6 +32861,7 @@ local function addfeature(data,feature,specifications)
  local done=0
  local skip=0
  local aglunicodes=false
+ local privateslot=fonthelpers.privateslot
  local specifications=validspecification(specifications,feature)
  if not specifications then
   return
@@ -31655,6 +32880,12 @@ local function addfeature(data,feature,specifications)
   end
   if utflen(code)==1 then
    u=utfbyte(code)
+   if u then
+    return u
+   end
+  end
+  if privateslot then
+   u=privateslot(code) 
    if u then
     return u
    end
@@ -31688,7 +32919,7 @@ local function addfeature(data,feature,specifications)
      replacement=replacement[1]
     end
     replacement=tounicode(replacement)
-    if replacement and descriptions[replacement] then
+    if replacement and (nocheck or descriptions[replacement]) then
      cover(coverage,unicode,replacement)
      done=done+1
     else
@@ -32058,7 +33289,6 @@ local function addfeature(data,feature,specifications)
    local featuretype=normalized[specification.type or "substitution"] or "substitution"
    local featureflags=specification.flags or noflags
    local nocheck=specification.nocheck
-   local futuresteps=specification.futuresteps
    local featureorder=specification.order or { feature }
    local featurechain=(featuretype=="chainsubstitution" or featuretype=="chainposition") and 1 or 0
    local nofsteps=0
@@ -32410,7 +33640,7 @@ do
      }
     },
    }
-   fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams)
+   fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true)
   else
    lpegmatch(p_filternames,binary,1,filename)
   end
@@ -33017,8 +34247,9 @@ local function copytotfm(data)
   local filename=constructors.checkedfilename(resources)
   local fontname=metadata.fontname or metadata.fullname
   local fullname=metadata.fullname or metadata.fontname
-  local endash=0x0020 
+  local endash=0x2013
   local emdash=0x2014
+  local space=0x0020 
   local spacer="space"
   local spaceunits=500
   local monospaced=metadata.monospaced
@@ -33029,26 +34260,32 @@ local function copytotfm(data)
   parameters.italicangle=italicangle
   parameters.charwidth=charwidth
   parameters.charxheight=charxheight
+  local d_endash=descriptions[endash]
+  local d_emdash=descriptions[emdash]
+  local d_space=descriptions[space]
+  if not d_space or d_space==0 then
+   d_space=d_endash
+  end
+  if d_space then
+   spaceunits,spacer=d_space.width or 0,"space"
+  end
   if properties.monospaced then
-   if descriptions[endash] then
-    spaceunits,spacer=descriptions[endash].width,"space"
-   end
-   if not spaceunits and descriptions[emdash] then
-    spaceunits,spacer=descriptions[emdash].width,"emdash"
-   end
-   if not spaceunits and charwidth then
-    spaceunits,spacer=charwidth,"charwidth"
+   if spaceunits==0 and d_emdash then
+    spaceunits,spacer=d_emdash.width or 0,"emdash"
    end
   else
-   if descriptions[endash] then
-    spaceunits,spacer=descriptions[endash].width,"space"
-   end
-   if not spaceunits and charwidth then
-    spaceunits,spacer=charwidth,"charwidth"
+   if spaceunits==0 and d_endash then
+    spaceunits,spacer=d_emdash.width or 0,"endash"
    end
   end
-  spaceunits=tonumber(spaceunits)
-  if spaceunits<200 then
+  if spaceunits==0 and charwidth then
+   spaceunits,spacer=charwidth or 0,"charwidth"
+  end
+  if spaceunits==0 then
+   spaceunits=tonumber(spaceunits) or 500
+  end
+  if spaceunits==0 then
+   spaceunits=500
   end
   parameters.slant=0
   parameters.space=spaceunits
@@ -33496,7 +34733,7 @@ end -- closure
 
 do -- begin closure to overcome local limits and interference
 
-if not modules then modules={} end modules ['font-tfm']={
+if not modules then modules={} end modules ['luatex-fonts-tfm']={
  version=1.001,
  comment="companion to font-ini.mkiv",
  author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -33532,7 +34769,7 @@ local registertfmenhancer=tfmenhancers.register
 local charcommand=helpers.commands.char
 constructors.resolvevirtualtoo=false 
 fonts.formats.tfm="type1" 
-fonts.formats.ofm="type1"
+fonts.formats.ofm="type1" 
 function tfm.setfeatures(tfmdata,features)
  local okay=constructors.initializefeatures("tfm",tfmdata,features,trace_features,report_tfm)
  if okay then
@@ -33541,191 +34778,156 @@ function tfm.setfeatures(tfmdata,features)
   return {} 
  end
 end
-local depth={}
-local read_from_tfm,check_tfm  do
- local tfmreaders=context and tfm.readers
- local loadtfmvf=tfmreaders and tfmreaders.loadtfmvf
- local loadtfm=font.read_tfm
- local loadvf=font.read_vf
- directives.register("fonts.tfm.builtin",function(v)
-  loadtfmvf=tfmreaders and tfmreaders.loadtfmvf
-  if v and loadtfm then
-   loadtfmvf=false
-  end
- end)
- read_from_tfm=function(specification)
-  local filename=specification.filename
-  local size=specification.size
-  depth[filename]=(depth[filename] or 0)+1
-  if trace_defining then
-   report_defining("loading tfm file %a at size %s",filename,size)
-  end
-  local tfmdata 
-  if loadtfmvf then
-   tfmdata=loadtfmvf(filename,size)
-  else
-   tfmdata=loadtfm(filename,size)
-  end
-  if tfmdata then
-   local features=specification.features and specification.features.normal or {}
-   local features=constructors.checkedfeatures("tfm",features)
-   specification.features.normal=features
-   local newtfmdata=(depth[filename]==1) and tfm.reencode(tfmdata,specification)
-   if newtfmdata then
-     tfmdata=newtfmdata
-   end
-   local resources=tfmdata.resources  or {}
-   local properties=tfmdata.properties or {}
-   local parameters=tfmdata.parameters or {}
-   local shared=tfmdata.shared  or {}
-   shared.features=features
-   shared.resources=resources
-   properties.name=tfmdata.name     
-   properties.fontname=tfmdata.fontname    
-   properties.psname=tfmdata.psname   
-   properties.fullname=tfmdata.fullname    
-   properties.filename=specification.filename 
-   properties.format=tfmdata.format or fonts.formats.tfm 
-   properties.usedbitmap=tfmdata.usedbitmap
-   tfmdata.properties=properties
-   tfmdata.resources=resources
-   tfmdata.parameters=parameters
-   tfmdata.shared=shared
-   shared.rawdata={ resources=resources }
-   shared.features=features
-   if newtfmdata then
-    if not resources.marks then
-     resources.marks={}
-    end
-    if not resources.sequences then
-     resources.sequences={}
-    end
-    if not resources.features then
-     resources.features={
-      gsub={},
-      gpos={},
-     }
-    end
-    if not tfmdata.changed then
-     tfmdata.changed={}
-    end
-    if not tfmdata.descriptions then
-     tfmdata.descriptions=tfmdata.characters
-    end
-    otf.readers.addunicodetable(tfmdata)
-    tfmenhancers.apply(tfmdata,filename)
-    constructors.applymanipulators("tfm",tfmdata,features,trace_features,report_tfm)
-    otf.readers.unifymissing(tfmdata)
-    fonts.mappings.addtounicode(tfmdata,filename)
-    tfmdata.tounicode=1
-    local tounicode=fonts.mappings.tounicode
-    for unicode,v in next,tfmdata.characters do
-     local u=v.unicode
-     if u then
-      v.tounicode=tounicode(u)
-     end
-    end
-    if tfmdata.usedbitmap then
-     tfm.addtounicode(tfmdata)
-    end
-   end
-   shared.processes=next(features) and tfm.setfeatures(tfmdata,features) or nil
-   if size<0 then
-    size=idiv(65536*-size,100)
-   end
-   parameters.factor=1  
-   parameters.units=1000  
-   parameters.size=size
-   parameters.slant=parameters.slant    or parameters[1] or 0
-   parameters.space=parameters.space    or parameters[2] or 0
-   parameters.space_stretch=parameters.space_stretch  or parameters[3] or 0
-   parameters.space_shrink=parameters.space_shrink   or parameters[4] or 0
-   parameters.x_height=parameters.x_height    or parameters[5] or 0
-   parameters.quad=parameters.quad     or parameters[6] or 0
-   parameters.extra_space=parameters.extra_space or parameters[7] or 0
-   constructors.enhanceparameters(parameters)
-   properties.private=properties.private or tfmdata.private or privateoffset
-   if newtfmdata then
-   elseif loadtfmvf then
-    local fonts=tfmdata.fonts
-    if fonts then
-     for i=1,#fonts do
-      local font=fonts[i]
-      local id=font.id
-      if not id then
-       local name=font.name
-       local size=font.size
-       if name and size then
-        local data,id=constructors.readanddefine(name,size)
-        if id then
-         font.id=id
-         font.name=nil
-         font.size=nil
-        end
-       end
-      end
-     end
-    end
-   elseif constructors.resolvevirtualtoo then
-    fonts.loggers.register(tfmdata,file.suffix(filename),specification) 
-    local vfname=findbinfile(specification.name,'ovf')
-    if vfname and vfname~="" then
-     local vfdata=loadvf(vfname,size)
-     if vfdata then
-      local chars=tfmdata.characters
-      for k,v in next,vfdata.characters do
-       chars[k].commands=v.commands
-      end
-      properties.virtualized=true
-      tfmdata.fonts=vfdata.fonts
-      tfmdata.type="virtual" 
-      local fontlist=vfdata.fonts
-      local name=file.nameonly(filename)
-      for i=1,#fontlist do
-       local n=fontlist[i].name
-       local s=fontlist[i].size
-       local d=depth[filename]
-       s=constructors.scaled(s,vfdata.designsize)
-       if d>tfm.maxnestingdepth then
-        report_defining("too deeply nested virtual font %a with size %a, max nesting depth %s",n,s,tfm.maxnestingdepth)
-        fontlist[i]={ id=0 }
-       elseif (d>1) and (s>tfm.maxnestingsize) then
-        report_defining("virtual font %a exceeds size %s",n,s)
-        fontlist[i]={ id=0 }
-       else
-        local t,id=constructors.readanddefine(n,s)
-        fontlist[i]={ id=id }
-       end
-      end
-     end
-    end
-   end
-   properties.haskerns=true
-   properties.hasligatures=true
-   properties.hasitalics=true
-   resources.unicodes={}
-   resources.lookuptags={}
-   depth[filename]=depth[filename]-1
-   return tfmdata
-  else
-   depth[filename]=depth[filename]-1
-  end
+local depth={} 
+local loadtfm=font.read_tfm
+local loadvf=font.read_vf
+local function read_from_tfm(specification)
+ local filename=specification.filename
+ local size=specification.size
+ depth[filename]=(depth[filename] or 0)+1
+ if trace_defining then
+  report_defining("loading tfm file %a at size %s",filename,size)
  end
- check_tfm=function(specification,fullname) 
-  local foundname=findbinfile(fullname,'tfm') or ""
-  if foundname=="" then
-   foundname=findbinfile(fullname,'ofm') or "" 
+ local tfmdata=loadtfm(filename,size)
+ if tfmdata then
+  local features=specification.features and specification.features.normal or {}
+  local features=constructors.checkedfeatures("tfm",features)
+  specification.features.normal=features
+  local newtfmdata=(depth[filename]==1) and tfm.reencode(tfmdata,specification)
+  if newtfmdata then
+    tfmdata=newtfmdata
   end
-  if foundname=="" then
-   foundname=fonts.names.getfilename(fullname,"tfm") or ""
+  local resources=tfmdata.resources  or {}
+  local properties=tfmdata.properties or {}
+  local parameters=tfmdata.parameters or {}
+  local shared=tfmdata.shared  or {}
+  shared.features=features
+  shared.resources=resources
+  properties.name=tfmdata.name     
+  properties.fontname=tfmdata.fontname    
+  properties.psname=tfmdata.psname   
+  properties.fullname=tfmdata.fullname    
+  properties.filename=specification.filename 
+  properties.format=tfmdata.format or fonts.formats.tfm 
+  properties.usedbitmap=tfmdata.usedbitmap
+  tfmdata.properties=properties
+  tfmdata.resources=resources
+  tfmdata.parameters=parameters
+  tfmdata.shared=shared
+  shared.rawdata={ resources=resources }
+  shared.features=features
+  if newtfmdata then
+   if not resources.marks then
+    resources.marks={}
+   end
+   if not resources.sequences then
+    resources.sequences={}
+   end
+   if not resources.features then
+    resources.features={
+     gsub={},
+     gpos={},
+    }
+   end
+   if not tfmdata.changed then
+    tfmdata.changed={}
+   end
+   if not tfmdata.descriptions then
+    tfmdata.descriptions=tfmdata.characters
+   end
+   otf.readers.addunicodetable(tfmdata)
+   tfmenhancers.apply(tfmdata,filename)
+   constructors.applymanipulators("tfm",tfmdata,features,trace_features,report_tfm)
+   otf.readers.unifymissing(tfmdata)
+   fonts.mappings.addtounicode(tfmdata,filename)
+   tfmdata.tounicode=1
+   local tounicode=fonts.mappings.tounicode
+   for unicode,v in next,tfmdata.characters do
+    local u=v.unicode
+    if u then
+     v.tounicode=tounicode(u)
+    end
+   end
+   if tfmdata.usedbitmap then
+    tfm.addtounicode(tfmdata)
+   end
   end
-  if foundname~="" then
-   specification.filename=foundname
-   specification.format="ofm"
-   return read_from_tfm(specification)
-  elseif trace_defining then
-   report_defining("loading tfm with name %a fails",specification.name)
+  shared.processes=next(features) and tfm.setfeatures(tfmdata,features) or nil
+  if size<0 then
+   size=idiv(65536*-size,100)
   end
+  parameters.factor=1  
+  parameters.units=1000  
+  parameters.size=size
+  parameters.slant=parameters.slant    or parameters[1] or 0
+  parameters.space=parameters.space    or parameters[2] or 0
+  parameters.space_stretch=parameters.space_stretch  or parameters[3] or 0
+  parameters.space_shrink=parameters.space_shrink   or parameters[4] or 0
+  parameters.x_height=parameters.x_height    or parameters[5] or 0
+  parameters.quad=parameters.quad     or parameters[6] or 0
+  parameters.extra_space=parameters.extra_space or parameters[7] or 0
+  constructors.enhanceparameters(parameters)
+  properties.private=properties.private or tfmdata.private or privateoffset
+  if newtfmdata then
+  elseif constructors.resolvevirtualtoo then
+   fonts.loggers.register(tfmdata,file.suffix(filename),specification) 
+   local vfname=findbinfile(specification.name,'ovf')
+   if vfname and vfname~="" then
+    local vfdata=loadvf(vfname,size)
+    if vfdata then
+     local chars=tfmdata.characters
+     for k,v in next,vfdata.characters do
+      chars[k].commands=v.commands
+     end
+     properties.virtualized=true
+     tfmdata.fonts=vfdata.fonts
+     tfmdata.type="virtual" 
+     local fontlist=vfdata.fonts
+     local name=file.nameonly(filename)
+     for i=1,#fontlist do
+      local n=fontlist[i].name
+      local s=fontlist[i].size
+      local d=depth[filename]
+      s=constructors.scaled(s,vfdata.designsize)
+      if d>tfm.maxnestingdepth then
+       report_defining("too deeply nested virtual font %a with size %a, max nesting depth %s",n,s,tfm.maxnestingdepth)
+       fontlist[i]={ id=0 }
+      elseif (d>1) and (s>tfm.maxnestingsize) then
+       report_defining("virtual font %a exceeds size %s",n,s)
+       fontlist[i]={ id=0 }
+      else
+       local t,id=constructors.readanddefine(n,s)
+       fontlist[i]={ id=id }
+      end
+     end
+    end
+   end
+  end
+  properties.haskerns=true
+  properties.hasligatures=true
+  properties.hasitalics=true
+  resources.unicodes={}
+  resources.lookuptags={}
+  depth[filename]=depth[filename]-1
+  return tfmdata
+ else
+  depth[filename]=depth[filename]-1
+ end
+end
+local function check_tfm(specification,fullname) 
+ local foundname=findbinfile(fullname,'tfm') or ""
+ if foundname=="" then
+  foundname=findbinfile(fullname,'ofm') or "" 
+ end
+ if foundname=="" then
+  foundname=fonts.names.getfilename(fullname,"tfm") or ""
+ end
+ if foundname~="" then
+  specification.filename=foundname
+  specification.format="ofm"
+  return read_from_tfm(specification)
+ elseif trace_defining then
+  report_defining("loading tfm with name %a fails",specification.name)
  end
 end
 readers.check_tfm=check_tfm

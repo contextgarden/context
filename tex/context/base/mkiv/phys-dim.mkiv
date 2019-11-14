@@ -441,6 +441,7 @@
 
 \appendtoks
     \disablemathpunctuation
+    \nocharacteralign
 \to \everyunits
 
 \appendtoks
@@ -449,6 +450,7 @@
 
 \unexpanded\def\phys_units_direct#1%
   {\begingroup
+   \the\everyunits
    \ifdim\lastskip>\zeropoint
      \settrue\c_phys_units_dospace
      \removelastskip
@@ -459,7 +461,7 @@
    \edef\unitlanguage{\unitparameter\s!language}%
    \let\prefixlanguage\unitlanguage
    \let\operatorlanguage\unitlanguage
-   \the\everyunits
+%    \the\everyunits
   %\removeunwantedspaces % not ok yet
    \useunitstyleandcolor\c!style\c!color
    \edef\currentunitsalternative{\unitparameter\c!alternative}%

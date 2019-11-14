@@ -510,7 +510,7 @@ local glyphexpansion do
 
     glyphexpansion = function(head,current)
         local extra = getexpansion(current)
-        if extra ~= 0 then
+        if extra and extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then
@@ -779,12 +779,7 @@ local ruledbox do
                 setlink(info,next)
             end
             if prev and prev > 0 then
-             -- if getid(prev) == gluespec_code then
-             --     report_visualize("ignoring invalid prev")
-             --     -- weird, how can this happen, an inline glue-spec, probably math
-             -- else
-                    setlink(prev,info)
-             -- end
+                setlink(prev,info)
             end
             if head == current then
                 return info, info
@@ -996,12 +991,12 @@ local ruledkern do
     local k_cache_v = caches["vkern"]
     local k_cache_h = caches["hkern"]
 
-    ruledkern = function(head,current,vertical)
+    ruledkern = function(head,current,vertical,mk)
         local kern  = getkern(current)
         local cache = vertical and k_cache_v or k_cache_h
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*pt_factor)
+            local amount = formatters["%s:%0.3f"](vertical and "VK" or (mk and "MK") or "HK",kern*pt_factor)
             if kern > 0 then
                 info = sometext(amount,l_kern,c_positive)
             elseif kern < 0 then
@@ -1113,6 +1108,7 @@ do
     local math_code       = nodecodes.math
     local hlist_code      = nodecodes.hlist
     local vlist_code      = nodecodes.vlist
+    local marginkern_code = nodecodes.marginkern
 
     local kerncodes       = nodes.kerncodes
     local fontkern_code   = kerncodes.fontkern
@@ -1329,6 +1325,10 @@ do
             elseif id == math_code then
                 if trace_math then
                     head, current = math(head,current)
+                end
+            elseif id == marginkern_code then
+                if trace_kern then
+                    head, current = ruledkern(head,current,vertical,true)
                 end
             end
             goto next

@@ -1,0 +1,175 @@
+\usemodule[present-lines]
+
+\definecolor[maincolor][r=.4,b=.4]
+
+\startdocument[title=Tables,subtitle={\CONTEXT\ 2017 Maibach}]
+
+\startchapter[title=Variants]
+
+\startitemize
+    \startitem
+        Good old \TABLE, a wrapper about \TEX's alignment.
+    \stopitem
+    \startitem
+        Running text, break across pages tabulates.
+    \stopitem
+    \startitem
+        Tables that behave like \HTML\ tables therefore called
+        natural tables.
+    \stopitem
+    \startitem
+        A variant on this that is more easy to extend, tagged
+        extreme tables.
+    \stopitem
+    \startitem
+        A low profile linetable mechanism that can span pages
+        and breaks well.
+    \stopitem
+    \startitem
+        A way to make huge tables without overflowing \TEX\ too
+        soon.
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=\TABLE]
+
+\startitemize
+    \startitem
+        Based on the \TABLE\ macro package.
+    \stopitem
+    \startitem
+        Detailed control over spacing.
+    \stopitem
+    \startitem
+        Somewhat inconsistent spacing out of the box.
+    \stopitem
+    \startitem
+        Extended with extra features.
+    \stopitem
+    \startitem
+        Mostly rewritten but within the original concept.
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Tabulate]
+
+\startitemize
+    \startitem
+        Mostly meant for tables that are part of the text flow.
+    \stopitem
+    \startitem
+        Breaks paragraphs across pages.
+    \stopitem
+    \startitem
+        Sort of compatible in control with \TABLE.
+    \stopitem
+    \startitem
+        The system that I used most often.
+    \stopitem
+    \startitem
+        It uses multiple passes if needed.
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Natural tables]
+
+\startitemize
+    \startitem
+        Modelled after \HTML\ tables.
+    \stopitem
+    \startitem
+        Often used in \XML\ workflows, possibly as cals tables.
+    \stopitem
+    \startitem
+        To some extend automatic spans horizontally and vertically.
+    \stopitem
+    \startitem
+        There are a couple of (undocumented and obscure) flags that can control
+        behaviour.
+    \stopitem
+    \startitem
+        They can break cross pages if needed.
+    \stopitem
+    \startitem
+        Tables, rows and cells have framed like properties.
+    \stopitem
+    \startitem
+        Not the fastest mechanism as it used several passes (for which it
+        stores all cells).
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Extreme tables]
+
+\startitemize
+    \startitem
+        Again modelled after \HTML\ tables.
+    \stopitem
+    \startitem
+        A few less options but also some more than natural tables.
+    \stopitem
+    \startitem
+        Most work is delegated to \LUA.
+    \stopitem
+    \startitem
+        Uses buffers and therefore nesting is (as with natural tables)
+        possible but with care.
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Line tables]
+
+\startitemize
+    \startitem
+        Written for and used in a project long ago.
+    \stopitem
+    \startitem
+        Meant for huge tables that span multiple pages horizontally
+        and vertically.
+    \stopitem
+    \startitem
+        It only can have simple colored backgrounds.
+    \stopitem
+    \startitem
+        Hardly used.
+    \stopitem
+    \startitem
+        I need to redo (or check) the implementation some day.
+    \stopitem
+\stopitemize
+
+\startchapter[title=Frame tables]
+
+\startitemize
+    \startitem
+        Written for and used for Thomas who needs real huge tables
+        generated from \XML.
+    \stopitem
+    \startitem
+        It's a single pass mechanism.
+    \stopitem
+    \startitem
+        Each cell is a framed.
+    \stopitem
+    \startitem
+        Dimensions need to be adapted when you want predictable output.
+    \stopitem
+    \startitem
+        I might extend it but within reasonable bounds.
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+
+\stopdocument

@@ -1,0 +1,166 @@
+% language=us
+
+\registerctxluafile{mlib-scn}{}
+
+\startcomponent followingup-mp
+
+\environment followingup-style
+
+\startchapter[title={\METAPOST}]
+
+\startsection[title={Introduction}]
+
+Relatively late in the followup I started wondering about what to do with \MPLIB.
+Alan Braslau is working on the \type {luapost} module and we discuss handy
+extensions written in \LUA\ and \METAPOST\ code but who knows what more is
+needed. Some ideas were put on delay but it looked like a good moment to pick up
+on them. One problem is that when we play with the \MPLIB\ code itself in
+\LUAMETATEX, the question is how to keep in sync with the official library. In
+this chapter I'll discuss both: keeping up with the official code, and keeping
+ahead with ideas.
+
+\stopsection
+
+\startsection[title={The code base}]
+
+The \MPLIB\ code is written in \CWEB\ and lives in files with the suffix \type
+{w}. These files need to be converted to \type {c} and \type {h} files, something
+that is done with the \type {ctangle} program. To avoid that dependency I just
+took the \CCODE\ files from \LUATEX, but I had to apply a few patches (to get rid
+of dependencies). Now, it is a fact that \METAPOST\ doesn't really develop fast and
+in principle a diff could identify the changes easily. So, why shouldn't I also
+start experimenting with \MPLIB\ itself in the follow up? It's easy to merge
+future changes (in both directions).
+
+The first thing I wrote was a \type {w-to-c} script. This was not that hard given
+that I already had written lexers. After a first prototype worked out well, I
+redid the code a bit (so that in the future I can also implement support for
+change files for instance). A complication was that I found out that the regular
+\CWEB\ converter messes around a bit with the code. So, I had to write another
+script to mimmick that to the level that I could compare the results. For
+example, spaces are removed before and after operators and all leading space gets
+removed too. When I got the same output I could get rid of that code and output
+what I want. For instance I'd like to keep the spacing the same because compilers
+can warn about some issues, like missing \type {;} and misleading indentation in
+simple \type {if} and \type {while} constructs where braces are omitted.
+\footnote {This is no problem in for instance \PASCAL\ where we always have a
+\type {begin} and \type {end}.} One can argue that this is not important, but if
+not, then why enable warnings at all. I had to fix half a dozen places in the
+\type {w} file to make the compiler happy, so the price was small.
+
+Once I had a more or less instantaneous conversion \footnote {Conversion of the
+\type {w} files involved took just over half a second at that time, currently it
+takes just over a quarter of a second, on a relatively old machine that is.} I
+got the same feeling as with the rest of the code: experimenting became
+convenient due to the fast edit|-|compile cycle. So, with al this covered I could
+do what I always had wanted to do: remove traces of the backends (including the
+full \POSTSCRIPT\ one), because they are actually to be plug|-|ins, and also get
+rid of internal font handling, which is bound to \TYPEONE\ (rendering) and small
+size \TFM\ (generating). With respect to that export: I wonder if anyone used
+that these days because even the Gust font project always had their own tool
+chain alongside \METAPOST. I could also void the hacks needed to trick the
+library in not being dependent of \type {png.h} and \type {zlib.h} headers, for
+which I had to use dummies. \footnote {The converter can load a file with patches
+to be applied but by now there are no patches.}
+
+It took a few days scripting the converter (most time went into getting identical
+output in order to check the converter which was later dropped), a few days
+stripping unused code, another day cleaning up the remaining code and then I
+could start playing with some new extensions. The binary has shrunk with 200KB
+and the whole \LUAMETATEX\ code base in compressed \type {tar.xz} format is now
+below 1.8MB while before it was above 2MB. Not that it matters much, but it was
+an nice side effect. \footnote {Size matters as we want to code to end up in the
+\CONTEXT\ distribution. It might grow a bit as side effect of adding some more
+features to \MPLIB.}
+
+What new extensions would show up was still open. Because Alan and I play with
+scanners it made sense to look into that. Error handling and logging has also
+been on my radar for a while. In the process some more code might be dropped, but
+actually the current version is still useable as library for a stand alone
+program, given that one reconstructs the \POSTSCRIPT\ driver from the dropped
+code (not that much work). Some configuration options are missing then but that
+could be provided as extensions (after all we can have change files.) On the
+other hand, wrapping code in \CONTEXT, like:
+
+\starttyping
+\starttext
+\startMPpage
+    ........
+\stopMPpage
+\startMPpage
+    ........
+\stopMPpage
+\stoptext
+\stoptyping
+
+will give a \PDF\ file that can be converted to all kinds of formats, and the
+advantage is that one has full font support. There is already a script in the
+distribution that does this anyway.
+
+\stopsection
+
+\startsection[title={Communication}]
+
+The first experiment concerns a change in the interfacing between the \METAPOST\
+and \LUA\ end. In the original library all file \IO\ is handled by the library
+itself. The filenames can be resolved via a callback. Once an instance is
+initialized, snippets of code are passed to the instance via the \type {execute}
+call. Log, terminal and error information is collected and returned as part of
+the return value (a table). This means that reporting back to the user has a
+delay: it can be shown {\em after} all code in the buffer has been processed. The
+code given as argument to \type {execute} is passed to the engine as (fake)
+terminal input, which nicely fits in the concept of interactive input, which
+already is part of the \METAPOST\ concept.
+
+In our follow up variant all file \IO\ goes via \LUA. This means that we have a
+bit more control over matters. In \CONTEXT\ we now can use the usual file
+handling code. One defines an \type {open_file} callback that returns a table
+with possible methods \type {close}, \type {reader} and \type {writer}, as in
+similar \LUATEX\ callbacks. A special file, with the name \type {terminal} is
+used for terminal communication. Now, when the \type {execute} command is
+handled, the string that gets passed ends up in the terminal, so the file handler
+has to deal with it: the string gets written to the handle, and the handle has to
+return it as lines on request. In \CONTEXT\ we directly feed the to be executed
+code into the terminal cache.
+
+It's all experimental and subject to changes but as we keep \CONTEXT\ \LMTX\ and
+\LUAMETATEX\ in sync, this is no problem. Users will not use these low level
+interfaces directly. It might take a few years to settle on this.
+
+The reports that come from the \METAPOST\ engine are now passed on to the \type
+{run_logger} callback. That one gets a target and a string passed. Where the
+original library can output stuff twice, once for the log and once for the
+console, in the new situation it gets output once, with the target being
+terminal, log file or both. The nice thing about this callback is that there is no
+delay: the messages come as the code is processed.
+
+We combine this logging with the new \type {halt_on_error} flag, which makes the
+engine abort after one error. This mechanism will be improved as we go. The
+interaction option \type {silent} hides some of the less useful messages.
+
+The overall efficiency of the library doesn't suffer from these changes, and in
+some cases it can perform even better. Anyhow, the user experience is much better
+with synchronous reports.
+
+Although not strictly related to \IO, we already has extended the library with
+the option to support \UTF-8, which is handy for special symbols, as for instance
+used in the \type {luapost} library.
+
+\stopsection
+
+\startsection[title={Scanning}]
+
+Another extension is more fundamental in the sense that it can affect the way
+users see \METAFUN: extending the user interface. It is again an example of why
+is having an independent code base has benefits: we can do such experiments for a
+long time, before we decide that (and how) it can end up in the parent (of course
+the same is true for the mentioned \IO\ features). I will not discuss these
+features here. For now it is enough to know that it gets applied in \CONTEXT\ and
+will provide a convenient additional interface. Once it is stable I'll wrap it up
+in writing.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

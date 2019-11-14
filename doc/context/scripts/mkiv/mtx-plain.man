@@ -1,6 +1,6 @@
 .TH "mtx-plain" "1" "01-01-2019" "version 1.00" "Plain TeX Runner"
 .SH NAME
-.B mtx-plain
+ mtx-plain - Plain TeX Runner
 .SH SYNOPSIS
 .B mtxrun --script plain [
 .I OPTIONS ...

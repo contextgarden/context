@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['typo-ovl'] = {
 -- we have hardly any private code. For convenience I hooked it into the existing
 -- replacement module (as it used the same code anyway). I did some cleanup.
 
-local next = next
+local next, type = next, type
 
 local context      = context
 
@@ -33,6 +33,8 @@ local getattrlist  = nuts.getattrlist
 local setattrlist  = nuts.setattrlist
 local getfield     = nuts.getfield
 local setfont      = nuts.setfont
+
+local nextnode     = nuts.traversers.node
 
 local unsetvalue   = attributes.unsetvalue
 local prvattribute = attributes.private
@@ -90,9 +92,9 @@ end
 attributes.tooverloads = tooverloads
 
 function attributes.applyoverloads(specification,start,stop)
-    local current   = tonut(start)
+    local start     = tonut(start)
     local processor = specification.processor
-    local overloads = specification.processor or getattr(current,a_overloads)
+    local overloads = specification.processor or getattr(start,a_overloads)
     if overloads and overloads ~= unsetvalue then
         overloads = t_overloads[overloads]
         if not overloads then
@@ -107,14 +109,18 @@ function attributes.applyoverloads(specification,start,stop)
     local newlist = nil
     local newfont = overloads.font
 
-    local function apply()
+    local function apply(current)
         local a = getattrlist(current)
         if a == oldlist then
             setattrlist(current,newlist)
         else
             oldlist = getattrlist(current)
             for k, v in next, overloads do
-                setattr(current,k,v)
+                if type(v) == "number" then
+                    setattr(current,k,v)
+                else
+                    -- can be: ["font"] = number
+                end
             end
             newlist = current -- getattrlist(current)
         end
@@ -123,12 +129,11 @@ function attributes.applyoverloads(specification,start,stop)
         end
     end
 
-    while current do
-        local id = getid(current)
+    for current, id in nextnode, start do
         if id == glyph_code then
-            apply()
+            apply(current)
         elseif id == disc_code then
-            apply()
+            apply(current)
             if pre then
                 while pre do
                     if getid(pre) == glyph_code then
@@ -157,7 +162,6 @@ function attributes.applyoverloads(specification,start,stop)
         if current == last then
             break
         end
-        current = getnext(current)
     end
 end
 

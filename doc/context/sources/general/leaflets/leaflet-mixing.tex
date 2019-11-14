@@ -1,0 +1,450 @@
+%D Please don't abuse this style for your own purpose as the look and feel
+%D is reserved for our own purpose. Be creative instead.
+
+\setupbodyfont
+  [plex,7pt]
+
+\setuppapersize
+  [A3,landscape]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0pt,
+   footer=0pt,
+   backspace=5mm,
+   topspace=5mm]
+
+\definelayer
+  [page]
+  [width=\textwidth,
+   height=\textheight]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=middlegray]
+
+\setuptyping
+  [before=,after=]
+
+\usemodule
+  [abbreviations-logos]
+
+\startbuffer[style]
+  \setupbodyfont
+    [plex]
+  \setuplayout
+    [width=middle,
+     height=middle,
+     margin=1cm]
+  \setupcolors
+    [textcolor=white]
+  \usemodule
+    [abbreviations-logos]
+  \setupwhitespace
+    [big]
+  \setuphead
+    [chapter]
+    [style=\bfc]
+\stopbuffer
+
+\startbuffer[intro]
+
+    \starttitle[title={Using \CONTEXT}]
+
+    The \CONTEXT\ macro package is more than just a \TEX\ processor,
+    various input is possible, some we show here. An example of a
+    method not shown here is fetching data from a database. The
+    various input methods can be combined, so depending on what you
+    need you can mix \TEX\ (for typesetting text), \METAPOST\ (for
+    producing graphics) or \LUA\ (as language for manipulating
+    data.
+
+    All these methods are quite efficient and always have access to
+    the full power of the typesetting engine.
+
+    When you use \CONTEXT\ with \LUAMETATEX, you get a reasonable
+    small self contained component that can be used in workflows
+    that need quality rendering. The ecosystem is rather future
+    proof too.
+
+    The \CONTEXT\ macro package has been around for decades and
+    evolved from \MKII, to \MKIV\ and now \LMTX. The development
+    team has always been involved in the development of engines
+    like \PDFTEX, \LUATEX\ and \LUAMETATEX. There is an active
+    mailing list and there are \CONTEXT\ meetings.
+
+    \stoptitle
+
+\stopbuffer
+
+\startbuffer[tex]
+\starttext
+
+    \starttitle[title={Some \TEX}]
+
+        Just an example.
+
+        \starttabulate[|c|c|]
+            \NC first 1 \NC last 1 \NC \NR
+            \NC first 2 \NC last 2 \NC \NR
+        \stoptabulate
+
+    \stoptitle
+
+\stoptext
+\stopbuffer
+
+\startbuffer[xml]
+\startbuffer[demo]
+<?xml version="1.0"?>
+<document>
+    <title>Some XML</title>
+    <p>Just an example.</p>
+    <table>
+        <r> <c>first 1</c> <c>last 1</c> </r>
+        <r> <c>first 2</c> <c>last 2</c> </r>
+    </table>
+</document>
+\stopbuffer
+
+\startxmlsetups xml:basics
+    \xmlsetsetup{#1}{title|p|table}{xml:*}
+\stopxmlsetups
+\startxmlsetups xml:title
+    \title{\xmltext{#1}{.}}
+\stopxmlsetups
+\startxmlsetups xml:p
+    \xmlflush{#1}\par
+\stopxmlsetups
+\startxmlsetups xml:table
+    \starttabulate[|c|c|]
+        \xmlfilter{#1}{/r/command(xml:r)}
+    \stoptabulate
+\stopxmlsetups
+\startxmlsetups xml:r
+    \NC \xmlfilter{#1}{/c/command(xml:c)} \NR
+\stopxmlsetups
+\startxmlsetups xml:c
+    \xmlflush{#1} \NC
+\stopxmlsetups
+
+\xmlregistersetup{xml:basics}
+
+\starttext
+    \xmlprocessbuffer{demo}{demo}{}
+\stoptext
+\stopbuffer
+
+\startbuffer[lua]
+\startluacode
+    local tmp = {
+        { a = "first 1", b = "last 1" },
+        { b = "last 2", a = "first 2" },
+    }
+
+    -- local tmp = table.load("somefile.lua")
+
+    context.starttext()
+
+        context.starttitle { title = "Some Lua" }
+
+            context("Just an example.") context.par()
+
+            context.starttabulate { "|c|c|" }
+                for i=1,#tmp do
+                    local t = tmp[i]
+                    context.NC()
+                        context(t.a) context.NC()
+                        context(t.b) context.NC()
+                    context.NR()
+                end
+            context.stoptabulate()
+
+        context.stoptitle()
+
+    context.stoptext()
+\stopluacode
+\stopbuffer
+
+\startbuffer[mp]
+\startMPpage
+    draw textext("\bf Some \MetaPost")
+        xsized 4cm
+        rotated(45)
+        withcolor "white" ;
+
+    draw textext("\bs\strut in \ConTeXt")
+        xsized 5cm
+        shifted (0,-40mm)
+        withcolor "white" ;
+
+    draw fullcircle
+        scaled 6cm
+        dashed evenly
+        withcolor "gray" ;
+\stopMPpage
+\stopbuffer
+
+\startbuffer[csv]
+\startluacode
+    local tmp = [[
+        first,second
+        first 1,last 1
+        first 2,last 2
+    ]]
+
+    -- local tmp = io.loaddata("somefile.csv")
+
+    local mycsvsplitter = utilities.parsers.rfc4180splitter()
+    local list, names = mycsvsplitter(tmp,true)
+
+    context.starttext()
+
+        context.starttitle { title = "Some CSV" }
+
+            context("Just an example.") context.par()
+
+            context.starttabulate { "|c|c|" }
+                for i=1,#list do
+                    local l = list[i]
+                    context.NC()
+                        context(l[1]) context.NC()
+                        context(l[2]) context.NC()
+                    context.NR()
+                end
+            context.stoptabulate()
+
+        context.stoptitle()
+
+    context.stoptext()
+\stopluacode
+\stopbuffer
+
+\startbuffer[json]
+\startluacode
+    require("util-jsn")
+
+    -- local str = io.loaddata("somefile.json")
+
+    local str = [[ {
+        "title": "Some JSON",
+        "text" : "Just an example.",
+        "data" : [
+            { "a" : "first 1", "b" : "last 1" },
+            { "b" : "last 2", "a" : "first 2" }
+        ]
+    } ]]
+
+    local tmp = utilities.json.tolua(str)
+
+    context.starttext()
+
+        context.starttitle { title = tmp.title }
+
+            context(tmp.text) context.par()
+
+            context.starttabulate { "|c|c|" }
+                for i=1,#tmp.data do
+                    local d = tmp.data[i]
+                    context.NC()
+                        context(d.a) context.NC()
+                        context(d.b) context.NC()
+                    context.NR()
+                end
+            context.stoptabulate()
+
+        context.stoptitle()
+
+    context.stoptext()
+\stopluacode
+\stopbuffer
+
+\startbuffer[mkxi]
+% normally there is already a file:
+
+\startbuffer[demo]
+\starttext
+  \starttitle[title={Some template}]
+
+  Just an example. \blank
+
+  \startlinecorrection
+    \bTABLE
+      <?lua for i=1,20 do ?>
+        \bTR
+          <?lua for j=1,5 do ?>
+            \bTD
+              cell (<?lua inject(i) ?>,<?lua inject(j) ?>)
+              is <?lua inject(variables.text or "unset") ?>
+            \eTD
+          <?lua end ?>
+        \eTR
+      <?lua end ?>
+    \eTABLE
+  \stoplinecorrection
+
+  \stoptitle
+\stoptext
+
+\stopbuffer
+
+\savebuffer[file=demo.mkxi,prefix=no,list=demo]
+
+% the action:
+
+\startluacode
+    document.variables.text = "set"
+\stopluacode
+
+\input{demo.mkxi}
+\stopbuffer
+
+\definemeasure[blobwidth] [\textwidth/4-3mm]
+\definemeasure[blobscale] [\textwidth/4-3mm-4mm]
+\definemeasure[blobheight][\textheight/2-2mm]
+
+\startbuffer[everything]
+
+\setlayerframed
+  [page]
+  [preset=lefttop]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkgray,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[intro]}{\typesetbuffer[style,intro][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=lefttop,
+   hoffset=4mm,
+   x=\measure{blobwidth}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkred,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[tex]}{\typesetbuffer[style,tex][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=righttop,
+   hoffset=4mm,
+   x=\measure{blobwidth}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkblue,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[xml]}{\typesetbuffer[style,xml][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=righttop]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkgreen,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[lua]}{\typesetbuffer[style,lua][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=lefttop,
+   voffset=4mm,
+   y=\measure{blobheight}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkcyan,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[mp]}{\typesetbuffer[style,mp][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=lefttop,
+   hoffset=4mm,
+   x=\measure{blobwidth},
+   voffset=4mm,
+   y=\measure{blobheight}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkmagenta,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[csv]}{\typesetbuffer[style,csv][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=righttop,
+   hoffset=4mm,
+   x=\measure{blobwidth},
+   voffset=4mm,
+   y=\measure{blobheight}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkyellow,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[json]}{\typesetbuffer[style,json][frame=on,width=\measure{blobscale}]}}
+
+\setlayerframed
+  [page]
+  [preset=righttop,
+   voffset=4mm,
+   y=\measure{blobheight}]
+  [align=normal,
+   offset=2mm,
+   strut=no,
+   frame=off,
+   height=\measure{blobheight},
+   width=\measure{blobwidth},
+   background=color,
+   backgroundcolor=darkorange,
+   foregroundcolor=white]
+  {\doifelsemode{verbose}{\typebuffer[mkxi]}{\typesetbuffer[style,mkxi][frame=on,width=\measure{blobscale}]}}
+
+\startstandardmakeup
+    \tightlayer[page]
+\stopstandardmakeup
+
+\stopbuffer
+
+\starttext
+
+{\enablemode[verbose] \getbuffer[everything]}
+                      \getbuffer[everything]
+
+\stoptext
+

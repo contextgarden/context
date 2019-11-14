@@ -1,0 +1,170 @@
+{
+ "categories" : [ "Lexers", "Syntaxes" ],
+ "contributes" : {
+  "grammars" : [
+   {
+    "language" : "context.tex",
+    "path" : "./syntaxes/context-syntax-tex.json",
+    "scopeName" : "source.context.tex"
+   },
+   {
+    "language" : "context.mps",
+    "path" : "./syntaxes/context-syntax-mps.json",
+    "scopeName" : "source.context.mps"
+   },
+   {
+    "language" : "context.lua",
+    "path" : "./syntaxes/context-syntax-lua.json",
+    "scopeName" : "source.context.lua"
+   },
+   {
+    "language" : "context.cld",
+    "path" : "./syntaxes/context-syntax-cld.json",
+    "scopeName" : "source.context.cld"
+   },
+   {
+    "language" : "context.xml",
+    "path" : "./syntaxes/context-syntax-xml.json",
+    "scopeName" : "source.context.xml"
+   },
+   {
+    "language" : "context.bibtex",
+    "path" : "./syntaxes/context-syntax-bibtex.json",
+    "scopeName" : "source.context.bibtex"
+   },
+   {
+    "language" : "context.sql",
+    "path" : "./syntaxes/context-syntax-sql.json",
+    "scopeName" : "source.context.sql"
+   },
+   {
+    "language" : "context.bnf",
+    "path" : "./syntaxes/context-syntax-bnf.json",
+    "scopeName" : "source.context.bnf"
+   },
+   {
+    "language" : "context.cpp",
+    "path" : "./syntaxes/context-syntax-cpp.json",
+    "scopeName" : "source.context.cpp"
+   },
+   {
+    "language" : "context.pdf",
+    "path" : "./syntaxes/context-syntax-pdf.json",
+    "scopeName" : "source.context.pdf"
+   },
+   {
+    "language" : "context.json",
+    "path" : "./syntaxes/context-syntax-json.json",
+    "scopeName" : "source.context.json"
+   }
+  ],
+  "keybindings" : [
+   {
+    "args" : "process tex file",
+    "command" : "workbench.action.tasks.runTask",
+    "key" : "ctrl-F12",
+    "when" : "editorTextFocus && editorLangId == context.tex"
+   },
+   {
+    "args" : "check tex file",
+    "command" : "workbench.action.tasks.runTask",
+    "key" : "F12",
+    "when" : "editorTextFocus && editorLangId == context.tex"
+   },
+   {
+    "args" : "process lua file",
+    "command" : "workbench.action.tasks.runTask",
+    "key" : "ctrl-F12",
+    "when" : "editorTextFocus && editorLangId == context.cld"
+   }
+  ],
+  "languages" : [
+   {
+    "aliases" : [ "ConTeXt TEX" ],
+    "configuration" : "./settings/context-settings-tex.json",
+    "extensions" : [ ".mkil", ".mkiv", ".mkix", ".mklx", ".mkvi", ".mkxi", ".mkxl", ".tex" ],
+    "id" : "context.tex"
+   },
+   {
+    "aliases" : [ "ConTeXt MetaFun" ],
+    "configuration" : "./settings/context-settings-mps.json",
+    "extensions" : [ ".mp", ".mpii", ".mpiv", ".mpxl" ],
+    "id" : "context.mps"
+   },
+   {
+    "aliases" : [ "ConTeXt Lua" ],
+    "configuration" : "./settings/context-settings-lua.json",
+    "id" : "context.lua"
+   },
+   {
+    "aliases" : [ "ConTeXt CLD" ],
+    "configuration" : "./settings/context-settings-cld.json",
+    "extensions" : [ ".cld", ".lfg", ".lua", ".luc", ".lui", ".luj", ".lum", ".luv", ".tma", ".tuc" ],
+    "id" : "context.cld"
+   },
+   {
+    "aliases" : [ "ConTeXt XML" ],
+    "configuration" : "./settings/context-settings-xml.json",
+    "extensions" : [ ".ctx", ".dtd", ".exa", ".export", ".fo", ".htm", ".html", ".lmx", ".rlb", ".rlg", ".rlv", ".rng", ".svg", ".xfdf", ".xhtml", ".xml", ".xsd", ".xsl", ".xslt", ".xul" ],
+    "id" : "context.xml"
+   },
+   {
+    "aliases" : [ "ConTeXt bibTeX" ],
+    "configuration" : "./settings/context-settings-bibtex.json",
+    "extensions" : [ ".bib", ".btx" ],
+    "id" : "context.bibtex"
+   },
+   {
+    "aliases" : [ "ConTeXt SQL" ],
+    "configuration" : "./settings/context-settings-sql.json",
+    "extensions" : [ ".sql" ],
+    "id" : "context.sql"
+   },
+   {
+    "aliases" : [ "ConTeXt BNF" ],
+    "configuration" : "./settings/context-settings-bnf.json",
+    "extensions" : [ ".bnf" ],
+    "id" : "context.bnf"
+   },
+   {
+    "aliases" : [ "ConTeXt C" ],
+    "configuration" : "./settings/context-settings-cpp.json",
+    "extensions" : [ ".c", ".cpp", ".h", ".hpp" ],
+    "id" : "context.cpp"
+   },
+   {
+    "aliases" : [ "ConTeXt PDF" ],
+    "configuration" : "./settings/context-settings-pdf.json",
+    "extensions" : [ ".pdf" ],
+    "id" : "context.pdf"
+   },
+   {
+    "aliases" : [ "ConTeXt JSON" ],
+    "configuration" : "./settings/context-settings-json.json",
+    "extensions" : [ ".json" ],
+    "id" : "context.json"
+   }
+  ],
+  "tasks" : [
+   {
+    "label" : "ConTeXt Tasks",
+    "path" : "./tasks/context.json"
+   }
+  ],
+  "themes" : [
+   {
+    "label" : "ConTeXt",
+    "path" : "./themes/context.json",
+    "uiTheme" : "vs"
+   }
+  ]
+ },
+ "description" : "ConTeXt Syntax Highlighting",
+ "displayName" : "ConTeXt",
+ "engines" : {
+  "vscode" : "*"
+ },
+ "name" : "context",
+ "publisher" : "ConTeXt Development Team",
+ "version" : "1.0.0"
+}

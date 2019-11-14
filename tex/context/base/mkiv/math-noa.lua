@@ -28,7 +28,7 @@ local utfchar, utfbyte = utf.char, utf.byte
 local formatters, gmatch = string.formatters, string.gmatch
 local sortedhash = table.sortedhash
 local insert, remove = table.insert, table.remove
-local div = math.div
+local div, round = math.div, math.round
 local bor, band = bit32.bor, bit32.band
 
 local fonts              = fonts
@@ -177,15 +177,19 @@ local noadcodes          = nodes.noadcodes
 local fencecodes         = nodes.fencecodes
 
 local ordnoad_code             = noadcodes.ord
-local relnode_code             = noadcodes.rel
-local binnoad_code             = noadcodes.bin
-local opennoad_code            = noadcodes.open
-local closenoad_code           = noadcodes.close
-local punctnoad_code           = noadcodes.punct
 local opdisplaylimitsnoad_code = noadcodes.opdisplaylimits
 local oplimitsnoad_code        = noadcodes.oplimits
 local opnolimitsnoad_code      = noadcodes.opnolimits
+local binnoad_code             = noadcodes.bin
+local relnode_code             = noadcodes.rel
+local opennoad_code            = noadcodes.open
+local closenoad_code           = noadcodes.close
+local punctnoad_code           = noadcodes.punct
 local innernoad_code           = noadcodes.inner
+local undernoad_code           = noadcodes.under
+local overnoad_code            = noadcodes.over
+local vcenternoad_code         = noadcodes.vcenter
+local ordlimitsnoad_code       = noadcodes.ordlimits or oplimitsnoad_code
 
 local noad_code          = nodecodes.noad           -- attr nucleus sub sup
 local accent_code        = nodecodes.accent         -- attr nucleus sub sup accent
@@ -197,6 +201,7 @@ local mathchar_code      = nodecodes.mathchar       -- attr fam char
 local mathtextchar_code  = nodecodes.mathtextchar   -- attr fam char
 local delim_code         = nodecodes.delim          -- attr small_fam small_char large_fam large_char
 ----- style_code         = nodecodes.style          -- attr style
+----- parameter_code     = nodecodes.parameter      -- attr style
 local math_choice        = nodecodes.choice         -- attr display text script scriptscript
 local fence_code         = nodecodes.fence          -- attr subtype
 
@@ -298,6 +303,8 @@ local function process(start,what,n,parent)
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
      -- elseif id == style_code then
+     --     -- has a next
+     -- elseif id == parameter_code then
      --     -- has a next
      -- else
      --     -- glue, penalty, etc
@@ -835,8 +842,8 @@ do
             if chr == dummyfencechar then
                 chr = 0
             end
-            setfield(d,"small_char",chr)
-            setfield(d,"small_fam",fam)
+            setchar(d,chr)
+            setfam(d,fam)
             flush_node(sym)
         end
         setattrlist(d,char)
@@ -847,99 +854,101 @@ do
         return f
     end
 
-    -- will become
+    local function show(where,pointer)
+        print("")
+        local i = 0
+        for n in nuts.traverse(pointer) do
+            i = i + 1
+            print(i,where,nuts.tonode(n))
+        end
+        print("")
+    end
 
-    -- local function makefence(what,char)
-    --     local d = new_delimiter() -- todo: attr
-    --     local f = new_fence()     -- todo: attr
-    --     if char then
-    --         local sym = getnucleus(char)
-    --         local chr = getchar(sym)
-    --         local fam = getfam(sym)
-    --         if chr == dummyfencechar then
-    --             chr = 0
-    --         end
-    --         setchar(d,chr)
-    --         setfam(d,fam)
-    --         flush_node(sym)
-    --     end
-    --     setsubtype(f,what)
-    --     setfield(f,"delim",d)
-    --     setfield(f,"class",-1) -- tex itself does this, so not fenceclasses[what]
-    --     return f
-    -- end
-
-    local function makelist(noad,f_o,o_next,c_prev,f_c,middle)
+    local function makelist(middle,noad,f_o,o_next,c_prev,f_c)
+-- report_fences(
+--     "middle %s, noad %s, open %s, opennext %s, closeprev %s, close %s",
+--     middle or "?",
+--     noad   or "?",
+--     f_o    or "?",
+--     o_next or "?",
+--     c_prev or "?",
+--     f_c    or "?"
+-- )
         local list = new_submlist()
-        setlist(list,f_o)
         setsubtype(noad,innernoad_code)
         setnucleus(noad,list)
-        setlink(f_o,o_next)
-        setlink(c_prev,f_c)
+        setlist(list,f_o)
+        setlink(f_o,o_next) -- prev of list is nil
+        setlink(c_prev,f_c) -- next of list is nil
+-- show("list",f_o)
         if middle and next(middle) then
             local prev    = f_o
             local current = o_next
             while current ~= f_c do
-                local m = middle[current]
-                if m then
-                    local next  = getnext(current)
+                local midl = middle[current]
+                local next = getnext(current)
+                if midl then
                     local fence = makefence(middlefence_code,current)
                     setnucleus(current)
                     flush_node(current)
                     middle[current] = nil
                     -- replace_node
                     setlink(prev,fence,next)
-                    prev    = fence
-                    current = next
+                    prev = fence
                 else
                     prev = current
-                    current = getnext(current)
                 end
+                current = next
             end
         end
+        return noad
     end
 
+    -- relinking is now somewhat overdone
+
     local function convert_both(open,close,middle)
-        local o_prev, o_next = getboth(open)
-        local c_prev, c_next = getboth(close)
+        local o_next = getnext(open)
         if o_next == close then
             return close
         else
+            local c_prev, c_next = getboth(close)
             local f_o = makefence(leftfence_code,open)
             local f_c = makefence(rightfence_code,close)
-            makelist(open,f_o,o_next,c_prev,f_c,middle)
+            makelist(middle,open,f_o,o_next,c_prev,f_c)
             setnucleus(close)
             flush_node(close)
-            if c_next then
-                setprev(c_next,open)
-            end
-            setnext(open,c_next)
+            -- open is now a list
+            setlink(open,c_next)
             return open
         end
     end
 
-    local function convert_open(open,last,middle)
+    local function convert_open(open,last,middle) -- last is really last (final case)
         local f_o = makefence(leftfence_code,open)
         local f_c = makefence(rightfence_code)
-        local o_prev, o_next = getboth(open)
-        local l_prev, l_next = getboth(last)
-        makelist(open,f_o,o_next,last,f_c,middle)
-        if l_next then
-            setprev(l_next,open)
-        end
-        setnext(open,l_next)
+        local o_next = getnext(open)
+        makelist(middle,open,f_o,o_next,last,nil)
+        -- open is now a list
+        setlink(open,l_next)
         return open
     end
 
-    local function convert_close(close,first,middle)
+    local function convert_close(first,close,middle)
         local f_o = makefence(leftfence_code)
         local f_c = makefence(rightfence_code,close)
         local c_prev = getprev(close)
-        makelist(close,f_o,first,c_prev,f_c,middle)
+        local f_next = getnext(first)
+        makelist(middle, close, f_o,f_next,c_prev,f_c)
+        -- close is now a list
+        if c_prev ~= first then
+            setlink(first,close)
+        end
         return close
     end
 
     local stacks = setmetatableindex("table")
+
+    -- 1=open 2=close 3=middle 4=both
 
     local function processfences(pointer,n,parent)
         local current = pointer
@@ -950,46 +959,74 @@ do
         local stack   = nil
         local middle  = nil -- todo: use properties
         while current do
+-- show("before",pointer)
             local id = getid(current)
             if id == noad_code then
                 local a = getattr(current,a_autofence)
                 if a and a > 0 then
                     local stack = stacks[n]
-                    setattr(current,a_autofence,0)
-                    if a == 1 or (a == 4 and (not stack or #stack == 0)) then
+                    setattr(current,a_autofence,0) -- hm, better use a property
+                    local level = #stack
+                    if a == 1 then
                         if trace_fences then
-                            report_fences("%2i: pushing open on stack",n)
+                            report_fences("%2i: level %i, handling %s, action %s",n,level,"open","open")
                         end
                         insert(stack,current)
-                    elseif a == 2 or a == 4 then
+                    elseif a == 2 then
                         local open = remove(stack)
                         if open then
                             if trace_fences then
-                                report_fences("%2i: handling %s, stack depth %i",n,"both",#stack+1)
+                                report_fences("%2i: level %i, handling %s, action %s",n,level,"close","both")
                             end
                             current = convert_both(open,current,middle)
                         elseif current == start then
-                            -- skip
+                            if trace_fences then
+                                report_fences("%2i: level %i, handling %s, action %s",n,level,"close","skip")
+                            end
                         else
                             if trace_fences then
-                                report_fences("%2i: handling %s, stack depth %i",n,"close",#stack+1)
+                                report_fences("%2i: level %i, handling %s, action %s",n,level,"close","close")
                             end
-                            current = convert_close(current,initial,middle)
+                            current = convert_close(initial,current,middle)
                             if not parent then
                                 initial = current
                             end
                         end
-                        if trace_fences then
-                            report_fences("%2i: popping close from stack",n)
-                        end
                     elseif a == 3 then
                         if trace_fences then
-                            report_fences("%2i: registering middle",n)
+                            report_fences("%2i: level %i, handling %s, action %s",n,level,"middle","middle")
                         end
                         if middle then
                             middle[current] = last
                         else
                             middle = { [current] = last }
+                        end
+                    elseif a == 4 then
+                        if not stack or #stack == 0 then
+                            if trace_fences then
+                                report_fences("%2i: level %i, handling %s, action %s",n,level,"both","open")
+                            end
+                            insert(stack,current)
+                        else
+                            local open = remove(stack)
+                            if open then
+                                if trace_fences then
+                                    report_fences("%2i: level %i, handling %s, action %s",n,level,"both","both")
+                                end
+                                current = convert_both(open,current,middle)
+                            elseif current == start then
+                                if trace_fences then
+                                    report_fences("%2i: level %i, handling %s, action %s",n,level,"both","skip")
+                                end
+                            else
+                                if trace_fences then
+                                    report_fences("%2i: level %i, handling %s, action %s",n,level,"both","close")
+                                end
+                                current = convert_close(initial,current,middle)
+                                if not parent then
+                                    initial = current
+                                end
+                            end
                         end
                     end
                     done = true
@@ -1000,6 +1037,7 @@ do
                 -- next at current level
                 processstep(current,processfences,n,id)
             end
+-- show("after",pointer)
             last    = current
             current = getnext(current)
         end
@@ -1007,16 +1045,14 @@ do
             local stack = stacks[n]
             local s = #stack
             if s > 0 then
-                if trace_fences then
-                    report_fences("%2i: handling %s stack levels",n,s)
-                end
                 for i=1,s do
                     local open = remove(stack)
                     if trace_fences then
-                        report_fences("%2i: handling %s, stack depth %i",n,"open",#stack)
+                        report_fences("%2i: level %i, handling %s, action %s",n,#stack,"flush","open")
                     end
                     last = convert_open(open,last,middle)
                 end
+-- show("done",pointer)
             end
         end
     end
@@ -1557,6 +1593,7 @@ do
                         else
                             correction = correction - 100
                         end
+                        correction = round(correction)
                         setattr(pointer,a_mathitalics,correction)
                         setattr(parent,a_mathitalics,correction)
                         return -- so no reset later on
@@ -1714,14 +1751,19 @@ do
     local mathlists        = characters.mathlists
     local validpair        = {
         [ordnoad_code]             = true,
-        [relnode_code]             = true,
-        [binnoad_code]             = true, -- new
-        [opennoad_code]            = true, -- new
-        [closenoad_code]           = true, -- new
-        [punctnoad_code]           = true, -- new
         [opdisplaylimitsnoad_code] = true,
         [oplimitsnoad_code]        = true,
         [opnolimitsnoad_code]      = true,
+        [binnoad_code]             = true, -- new
+        [relnode_code]             = true,
+        [opennoad_code]            = true, -- new
+        [closenoad_code]           = true, -- new
+        [punctnoad_code]           = true, -- new
+        [innernoad_code]           = false,
+        [undernoad_code]           = false,
+        [overnoad_code]            = false,
+        [vcenternoad_code]         = false,
+        [ordlimitsnoad_code]       = true,
     }
 
     local reported = setmetatableindex("table")
@@ -2043,6 +2085,7 @@ do
      -- [opdisplaylimitsnoad_code] = "",
      -- [oplimitsnoad_code]        = "",
      -- [opnolimitsnoad_code]      = "",
+     -- [ordlimitsnoad_code]       = "",
      -- [innernoad_code            = "",
      -- [undernoad_code]           = "",
      -- [overnoad_code]            = "",

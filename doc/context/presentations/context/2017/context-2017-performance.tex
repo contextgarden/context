@@ -1,0 +1,65 @@
+\usemodule[present-lines]
+
+\definecolor[maincolor][g=.4,b=.4]
+
+\startdocument[title=Performance,subtitle={\CONTEXT\ 2017 Maibach}]
+
+\startchapter[title=Why bother]
+
+\startitemize
+    \startitem because we don't want to waste time waiting \stopitem
+    \startitem because I get tired of ignorance related complaints \stopitem
+    \startitem because it (sometimes) can be a nice puzzle to improve performance \stopitem
+    \startitem because it occasionally reviewing makes code better \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Possible bottlenecks]
+
+\startitemize
+    \startitem starting up \stopitem
+    \startitem loading fonts \stopitem
+    \startitem processing features \stopitem
+    \startitem applying trickery \stopitem
+    \startitem enabling tracing \stopitem
+    \blank[2*big]
+    \startitem fonts \stopitem
+    \startitem \LUA \stopitem
+    \startitem images \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Measurements]
+
+\startitemize
+    \startitem how long does a run take \stopitem
+    \startitem how does the number of pages matter \stopitem
+    \startitem how many runs are needed \stopitem
+    \blank[2*big]
+    \startitem start-up time \stopitem
+    \startitem processing pages \stopitem
+    \startitem finishing the document \stopitem
+    \startitem the console used \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Examples]
+
+\startitemize
+\startitem
+    see \goto{onandon-performance.pdf}[file(onandon-performance.pdf)] for timings
+\stopitem
+\startitem
+    you can try \type {--timing} to see where \LUA\ spends it time
+\stopitem
+\startitem
+    analyzing with \type {--profile} can give some indication (but is slow)
+\stopitem
+\stopitemize
+
+\stopchapter
+
+\stopdocument

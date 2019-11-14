@@ -61,11 +61,13 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) -
     if formatbanner and enginebanner and sourcefile then
         local luvname = file.replacesuffix(texname,"luv") -- utilities.lua.suffixes.luv
         local luvdata = {
-            enginebanner = enginebanner,
-            formatbanner = formatbanner,
-            sourcehash   = md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
-            sourcefile   = sourcefile,
-            luaversion   = LUAVERSION,
+            enginebanner  = enginebanner,
+            formatbanner  = formatbanner,
+            sourcehash    = md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
+            sourcefile    = sourcefile,
+            luaversion    = LUAVERSION,
+            formatid      = LUATEXFORMATID,
+            functionality = LUATEXFUNCTIONALITY,
         }
         io.savedata(luvname,table.serialize(luvdata,true))
         lua.registerfinalizer(function()
@@ -100,8 +102,19 @@ function statistics.checkfmtstatus(texname)
                     return format("source mismatch (luv: %s <> bin: %s)",luvhash,sourcehash)
                 end
                 local luvluaversion = luv.luaversion or 0
-                if luvluaversion ~= LUAVERSION then
-                    return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,LUAVERSION)
+                local engluaversion = LUAVERSION or 0
+                if luvluaversion ~= engluaversion then
+                    return format("lua mismatch (luv: %s <> bin: %s)",luvluaversion,engluaversion)
+                end
+                local luvfunctionality = luv.functionality or 0
+                local engfunctionality = status.development_id or 0
+                if luvfunctionality ~= engfunctionality then
+                    return format("functionality mismatch (luv: %s <> bin: %s)",luvfunctionality,engfunctionality)
+                end
+                local luvformatid = luv.formatid or 0
+                local engformatid = status.format_id or 0
+                if luvformatid ~= engformatid then
+                    return format("formatid mismatch (luv: %s <> bin: %s)",luvformatid,engformatid)
                 end
             else
                 return "invalid status file"

@@ -1,0 +1,251 @@
+% language=us
+
+\environment lowlevel-style
+
+\startdocument
+  [title=registers,
+   color=darkmagenta]
+
+\startsection[title=Preamble]
+
+Registers are sets of variables that are accessed by index and a such resemble
+registers in a processing unit. You can store a quantity in a register, retrieve
+it, and also manipulate it.
+
+There is hardly any need to use them in \CONTEXT\ so we keep it simple.
+
+\stopsection
+
+\startsection[title={\TEX\ primitives}]
+
+There are several categories:
+
+\startitemize
+\startitem
+    Integers (int): in order to be portable (at the time it surfaced) there are only
+    integers and no floats. The only place where \TEX\ uses floats internally is
+    when glue gets effective which happens in the backend.
+\stopitem
+\startitem
+    Dimensions (dimen): internally these are just integers but when they are entered they
+    are sliced into two parts so that we have a fractional part. The internal
+    representation is called a scaled point.
+\stopitem
+\startitem
+    Glue (skip): these are dimensions with a few additional properties: stretch and
+    shrink. Being a compound entity they are stored differently and thereby a bit
+    less efficient than numbers and dimensions.
+\stopitem
+\startitem
+    Math glue (muskip): this is the same as glue but with a unit that adapts to
+    the current math style properties. It's best to think about them as being
+    relative measures.
+\stopitem
+\startitem
+    Token lists (toks): these contain a list of tokens coming from the input
+    or coming from a place where they already have been converted.
+\stopitem
+\stopitemize
+
+The original \TEX\ engine had 256 entries per set. The first ten of each set are
+normally reserved for scratch purposes: the even ones for local use, and the odd
+ones for global usage. On top of that macro packages can reserve some for its own
+use. It was quite easy to reach the maximum but there were tricks around that.
+This limitation is no longer present in the variants in use today.
+
+Let's set a few dimension registers:
+
+\startbuffer[1]
+\dimen 0 = 10 pt
+\dimen2=10pt
+\dimen4 10pt
+\scratchdimen 10pt
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+We can serialize them with:
+
+\startbuffer[2]
+\the    \dimen0
+\number \dimen2
+\meaning\dimen4
+\meaning\scratchdimen
+\stopbuffer
+
+\typebuffer[2][option=TEX]
+
+The results of these operations are:
+
+\startlines\tt
+\getbuffer[1,2]
+\stoplines
+
+The last two is not really useful but it is what you see when tracing options are
+set. Here \type {\scratchdimen} is a shortcut for a register. This is {\em not} a
+macro but a defined register. The low level \type {\dimendef} is used for this
+but in a macro package you should not use that one but the higher level \type
+{\newdimen} macro that uses it.
+
+\startbuffer[1]
+\newdimen\MyDimenA
+\def     \MyDimenB{\dimen999}
+\dimendef\MyDimenC998
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+\startbuffer[2]
+\meaning\MyDimenA
+\meaning\MyDimenB
+\meaning\MyDimenC
+\stopbuffer
+
+\typebuffer[2][option=TEX]
+
+Watch the difference:
+
+\startlines\tt
+\getbuffer[1,2]
+\stoplines
+
+The first definition uses a yet free register so you won't get a clash. The
+second one is just a shortcut using a macro and the third one too but again
+direct shortcut. Try to imagine how the second line gets interpreted:
+
+\starttyping[option=TEX]
+\MyDimenA10pt \MyDimenA10.5pt
+\MyDimenB10pt \MyDimenB10.5pt
+\MyDimenC10pt \MyDimenC10.5pt
+\stoptyping
+
+Also try to imagine what messing around with \type {\MyDimenC} will do when we
+also have defined a few hundred extra dimensions with \type {\newdimen}.
+
+In the case of dimensions the \type {\number} primitive will make the register
+serialize as scaled points without unit \type {sp}.
+
+Next we see some of the other registers being assigned:
+
+\starttyping[option=TEX]
+\count  0 = 100
+\skip   0 = 10pt plus 3pt minus 2pt
+\skip   0 = 10pt plus 1fill
+\muskip 0 = 10mu plus 3mu minus 2mu
+\muskip 0 = 10mu minus 1 fil
+\toks   0 = {hundred}
+\stoptyping
+
+When a number is expected, you can use for instance this:
+
+\starttyping[option=TEX]
+\scratchcounter\scratchcounterone
+\stoptyping
+
+Here we use a few predefined scratch registers. You can also do this:
+
+\starttyping[option=TEX]
+\scratchcounter\numexpr\scratchcounterone+\scratchcountertwo\relax
+\stoptyping
+
+There are some quantities that also qualify as number:
+
+\starttyping[option=TEX]
+\chardef\MyChar=123 % refers to character 123 (if present)
+\scratchcounter\MyChar
+\stoptyping
+
+In the past using \type {\chardef} was a way to get around the limited number of
+registers, but it still had (in traditional \TEX) a limitation: you could not go
+beyond 255. The \type {\mathchardef} could fo higher as it also encodes a family
+number and class. This limitation has been lifted in \LUATEX.
+
+A character itself can also be interpreted as number, in which case it has to be
+prefixed with a reverse quote: \type {`}, so:
+
+\startbuffer
+\scratchcounter\numexpr`0+5\relax
+\char\scratchcounter
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+produces \quotation {\inlinebuffer} because the \type {`0} expands into the
+(\ASCII\ and \UTF8) slot {\tt \number`0} which represents the character zero. In
+this case the next makes more sense:
+
+\starttyping[option=TEX]
+\char\numexpr`0+5\relax
+\stoptyping
+
+If you want to know more about all these quantities, \quotation {\TEX\ By Topic}
+provides a good summary of what \TEX\ has to offer, and there is no need to repeat
+it here.
+
+\stopsection
+
+\startsection[title={\ETEX\ primitives}]
+
+Apart from the ability to use expressions, the contribution to registers that
+\ETEX\ brought was that suddenly we could use upto 65K of them, which is more
+than enough. The extra registers were not as efficient as the first 256 because
+they were stored in the hash table, but that was not really a problem. In \OMEGA\
+and later \LUATEX\ regular arrays were used, at the cost of more memory which in
+the meantime has become cheap. As \CONTEXT\ moved to \ETEX\ rather early its
+users never had to worry about it.
+
+\stopsection
+
+\startsection[title={\LUATEX\ primitives}]
+
+The \LUATEX\ engine introduced attributes. These are numeric properties that are
+bound to the nodes that are the result of typesetting operations. They are
+basically like integer registers but when set their values get bound and when
+unset they are kind of invisible.
+
+\startitemize
+\startitem
+    Attribute (attribute): a numeric property that when set becomes part of the
+    current attribute list that gets assigned to nodes.
+\stopitem
+\stopitemize
+
+Attributes can be used to communicate properties to \LUA\ callbacks. There are
+several functions available for setting them and querying them.
+
+\starttyping[option=TEX]
+\attribute999 = 123
+\stoptyping
+
+Using attributes this way is dangerous (of course I can only speak for \CONTEXT)
+because an attribute value might trigger some action in a callback that gives
+unwanted side effects. For convenience \CONTEXT\ provides:
+
+\startbuffer
+\newattribute\MyAttribute
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Which currently defines \type {\MyAttribute} as {\tt \meaning\MyAttribute} and is
+meant to be used as: \footnote {The low level \type {\attributedef} command is
+rather useless in the perspective of \CONTEXT.}
+
+\starttyping[option=TEX]
+\attribute\MyAttribute = 123
+\stoptyping
+
+Just be aware that defining attributes can have an impact on performance. As you
+cannot access them at the \TEX\ end you seldom need them. If you do you can
+better use the proper more high level definers (not discussed here).
+
+\stopsection
+
+\startsection[title={\LUAMETATEX\ primitives}]
+
+{\em todo}
+
+\stopsection
+
+\stopdocument
+

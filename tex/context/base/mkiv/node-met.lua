@@ -322,19 +322,6 @@ function nodes.concat(list) -- consider tail instead of slide
     return head, tail
 end
 
---[[
-<p>At some point we ran into a problem that the glue specification
-of the zeropoint dimension was overwritten when adapting a glue spec
-node. This is a side effect of glue specs being shared. After a
-couple of hours tracing and debugging Taco and I came to the
-conclusion that it made no sense to complicate the spec allocator
-and settled on a writable flag. This all is a side effect of the
-fact that some glues use reserved memory slots (with the zeropoint
-glue being a noticeable one). So, next we wrap this into a function
-and hide it for the user. And yes, LuaTeX now gives a warning as
-well.</p>
-]]--
-
 function nodes.reference(n)
     return n and tonut(n) or "<none>"
 end
@@ -601,8 +588,7 @@ local keys         = { whatsit = whatsitkeys }
 local messyhack    = table.tohash { -- temporary solution
     nodecodes.attributelist,
     nodecodes.attribute,
-    nodecodes.gluespec,
-    nodecodes.action,
+    nodecodes.action, -- hm
 }
 
 setmetatableindex(keys,function(t,k)

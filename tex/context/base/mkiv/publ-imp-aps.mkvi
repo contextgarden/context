@@ -665,8 +665,10 @@
 \stoptexdefinition
 
 \starttexdefinition unexpanded btx:aps:author
-    \btxflush{author}
-    \btxcomma
+    \btxdoif {author} {
+        \btxflush{author}
+        \btxcomma
+    }
 \stoptexdefinition
 
 \starttexdefinition unexpanded btx:aps:organization-if-not-author

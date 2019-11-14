@@ -1,0 +1,25 @@
+\setupbodyfont[dejavu]
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "singletest",
+        type = "single",
+        data = {
+            B = { -30, 0, -50, 0 },
+        }
+    }
+\stopluacode
+
+\starttext
+
+\definecolor[tgray][s=.5,t=.5,a=1] \showfontkerns \showglyphs
+
+\definefontfeature[singletest] [mode=node,singletest=yes]
+
+\definedfont[file:dejavu-serif.ttf*singletest @ 48pt]
+
+\startTEXpage[offset=10pt,foregroundcolor=tgray]
+    ABCDEF
+\stopTEXpage
+
+\stoptext

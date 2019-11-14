@@ -71,6 +71,17 @@ function environment.texfile(filename)
 end
 
 function environment.luafile(filename) -- needs checking
+
+    if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and file.suffix(filename) == "lua" then
+        -- no "tex", as that's pretty slow when not found (suffixes get appended, shouldn't happen)
+     -- trackers.enable("resolvers.*")
+        local resolved = resolvers.findfile(file.replacesuffix(filename,"lmt")) or ""
+     -- trackers.disable("resolvers.*")
+        if resolved ~= "" then
+            return resolved
+        end
+    end
+
     local resolved = resolvers.findfile(filename,'tex') or ""
     if resolved ~= "" then
         return resolved

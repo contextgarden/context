@@ -32,7 +32,7 @@ local getprev                = nuts.getprev
 local getid                  = nuts.getid
 local getsubtype             = nuts.getsubtype
 local getpenalty             = nuts.getpenalty
-local remove                 = nuts.remove
+local remove_node            = nuts.remove
 
 local enableaction           = nodes.tasks.enableaction
 
@@ -66,7 +66,7 @@ local function remove_dangling_crlf(head,tail)
                         if trace_wrappers then
                             report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)
                         end
-                        remove(head,tail,true)
+                        remove_node(head,tail,true)
                         return head, tail
                     end
                 end

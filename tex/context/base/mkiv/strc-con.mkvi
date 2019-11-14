@@ -737,7 +737,7 @@
 \stopsetups
 
 \startsetups[\??constructionrenderings:\v!top]
-    \strc_sectioning_prevent_page_break\plusone
+  % \strc_sectioning_prevent_page_break % commented per 31/5/2019
     \let\\=\space
     \noindent
     \copy\constructionheadbox % why copy ?
@@ -746,6 +746,7 @@
     \edef\p_strc_constructions_inbetween{\constructionparameter\c!inbetween}%
     \ifx\p_strc_constructions_inbetween\empty \else
       \p_strc_constructions_inbetween
+      % shouldn't this move to after the fi?
       \directcheckedvspacing\v!samepage
     \fi
     \useconstructionstyleandcolor\c!style\c!color

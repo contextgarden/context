@@ -1053,7 +1053,7 @@
    \relax}
 
 \def\referencepagedetail
-   {\numexpr\clf_referencepagestate
+   {\numexpr\clf_referencepagedetail
       {rst::\number\nofreferencestates}%
       true %
       \ifconditional\pagestatespread false\ifdoublesided true\else false\fi\fi
@@ -1061,6 +1061,9 @@
 
 \def\referencerealpage
   {\clf_referencerealpage}
+
+\def\referencecolumnnumber
+  {\clf_referencecolumn}
 
 \unexpanded\def\tracedpagestate
   {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}

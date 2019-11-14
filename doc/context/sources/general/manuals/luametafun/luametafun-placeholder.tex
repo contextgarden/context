@@ -1,0 +1,163 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-placeholder
+
+\startchapter[title={Placeholder}]
+
+Placeholders are an old \CONTEXT\ features and have been around since we started using
+\METAPOST. They are used as dummy figure, just in case one is not (yet) present. They
+are normally activated by loading a \METAFUN\ library:
+
+\starttyping[option=TEX]
+\useMPLibrary[dum]
+\stoptyping
+
+Just because it could be done conveniently, placeholders are now defined at the
+\METAPOST\ end instead of as useable \METAPOST\ graphic at the \TEX\ end. The
+variants and options are demonstrated using side floats.
+
+\startbuffer[1]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "red",
+        alternative = "circle".
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure[location=left]
+    \getbuffer[1]
+\stopplacefigure
+
+\typebuffer[1][option=TEX]
+
+In addition to the traditional random circle we now also provide rectangles
+and triangles. Maybe some day more variants will show up.
+
+\startbuffer[2]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "green",
+        alternative = "square".
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure[location=left]
+    \getbuffer[2]
+\stopplacefigure
+
+\typebuffer[2][option=TEX]
+
+Here we set the colors but in the image placeholder mechanism we cycle through
+colors automatically. Here we use primary, rather dark, colors.
+
+\startbuffer[3]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "blue",
+        alternative = "triangle".
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure[location=left]
+    \getbuffer[3]
+\stopplacefigure
+
+\typebuffer[3][option=TEX]
+
+\startbuffer[4a]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "yellow",
+        alternative = "circle".
+        reduction   = 0,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4b]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "yellow",
+        alternative = "circle".
+        reduction   = 0.25,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4c]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "yellow",
+        alternative = "circle".
+        reduction   = 0.50,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4d]
+\startMPcode
+    lmt_placeholder [
+        width       = 4cm,
+        height      = 3cm,
+        color       = "yellow",
+        alternative = "circle".
+        reduction   = 0.75,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+If you want less dark colors, the \type {reduction} parameter can be used to
+interpolate between the given color and white; its value is therefore a value
+between zero (default) and 1 (rather pointless as it produces white).
+
+\startplacefigure[location=left]
+    \startcombination[2*2]
+        {\getbuffer[4a]} {0}
+        {\getbuffer[4b]} {0.25}
+        {\getbuffer[4c]} {0.50}
+        {\getbuffer[4d]} {0.75}
+    \stopcombination
+\stopplacefigure
+
+We demonstrate this with four variants, all circles. Of course you can also use
+lighter colors, but this option was needed for the image placeholders anyway.
+
+\typebuffer[4b][option=TEX]
+
+\flushsidefloats
+
+There are only a few possible parameters. As you can see, proper dimensions need
+to be given because the defaults are pretty small.
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name        \BC type    \BC default    \BC comment \NC \NR
+\ML
+\NC color       \NC string  \NC red    \NC \NC \NR
+\NC width       \NC numeric \NC 1      \NC \NC \NR
+\NC height      \NC numeric \NC 1      \NC \NC \NR
+\NC reduction   \NC numeric \NC 0      \NC \NC \NR
+\NC alternative \NC string  \NC circle \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

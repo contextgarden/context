@@ -123,7 +123,7 @@ function moduledata.fonts.system.showinstalledglyphnames(specification)
     local names   = table.setmetatableindex("table")
     local f_u     = formatters["%04X"]
     for i=1,#paths do
-        local list = dir.glob(paths[i].."/fonts/o*/**.tmc")
+        local list = dir.glob(paths[i].."/fonts/o*/**." .. utilities.lua.suffixes.tmc)
         for i=1,#list do
             files[list[i]] = true
         end

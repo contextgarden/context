@@ -132,14 +132,15 @@
 
     % Here's Taco's variant as used in the ConTeXt Group Journal.
 
-    \definefontfeature[plexwidened][extend=\luaexpr{1/0.85}] % An odd floating point number to correct monospace.
+    \definefontfeature[plexwidened]                [extend=\luaexpr{1/0.85}] % An odd floating point number to correct monospace.
+    \definefontfeature[plexwideneddefault][default][extend=\luaexpr{1/0.85}] % An odd floating point number to correct monospace.
 
-    \definetypescriptprefix [f:scplexserif]       [\s!default,plexwidened]
-    \definetypescriptprefix [f:scplexsans]        [\s!default,plexwidened]
+    \definetypescriptprefix [f:scplexserif]       [plexwideneddefault]
+    \definetypescriptprefix [f:scplexsans]        [plexwideneddefault]
     \definetypescriptprefix [f:scplexmono]        [plexwidened]
 
-    \definetypescriptprefix [f:scnarrowplexserif] [\s!default,plexwidened]
-    \definetypescriptprefix [f:scnarrowplexsans]  [\s!default,plexwidened]
+    \definetypescriptprefix [f:scnarrowplexserif] [plexwideneddefault]
+    \definetypescriptprefix [f:scnarrowplexsans]  [plexwideneddefault]
     \definetypescriptprefix [f:scnarrowplexmono]  [plexwidened]
 
     \starttypescript [\s!sans,\s!serif,\s!mono] [ibmplex-thin] [\s!name]
@@ -149,7 +150,7 @@
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-text]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-textitalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:scplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]       [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-thin]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -160,7 +161,7 @@
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-medium]           [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-mediumitalic]     [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:scplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]       [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-extralight]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -171,7 +172,7 @@
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-light]          [\s!features=\typescriptprefix{f:scplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]       [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]       [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]       [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-light]          [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -182,7 +183,7 @@
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:plex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:scplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]      [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]       [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]   [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]    [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -195,7 +196,7 @@
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-text]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-textitalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]       [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]           [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-thin]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -206,7 +207,7 @@
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-medium]           [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-mediumitalic]     [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]       [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]               [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]           [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]               [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-extralight]       [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -217,7 +218,7 @@
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-semibold]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-semibolditalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]          [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]             [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]           [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]             [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-light]          [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 
@@ -228,7 +229,7 @@
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!Bold]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-bold]       [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:narrowplex\typescriptone}]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Widened]       [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!features=\typescriptprefix{f:scnarrowplex\typescriptone}]
-        \edefinefontfallback[Fake\typescriptprefix{\typescriptone}Caps]          [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
+        \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]           [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
 

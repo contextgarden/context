@@ -177,7 +177,6 @@ registertracker("otf.sample.silent", "otf.steps=silent","otf.substitutions","otf
 
 local nuts               = nodes.nuts
 
-local getfield           = nuts.getfield
 local getnext            = nuts.getnext
 local setnext            = nuts.setnext
 local getprev            = nuts.getprev
@@ -185,8 +184,6 @@ local setprev            = nuts.setprev
 local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
-local getattr            = nuts.getattr
-local setattr            = nuts.setattr
 local getprop            = nuts.getprop
 local setprop            = nuts.setprop
 local getsubtype         = nuts.getsubtype
@@ -195,12 +192,16 @@ local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
+local getreplace         = nuts.getreplace
 local setlink            = nuts.setlink
 local getcomponents      = nuts.getcomponents -- the original one, not yet node-aux
 local setcomponents      = nuts.setcomponents -- the original one, not yet node-aux
 local getwidth           = nuts.getwidth
+local getattr            = nuts.getattr
 
-local ischar             = nuts.is_char
+local getglyphdata       = nuts.getglyphdata
+
+local ischar             = nuts.ischar
 local isglyph            = nuts.isglyph
 local usesfont           = nuts.uses_font
 
@@ -2089,7 +2090,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             if keepdisc then
                 keepdisc      = false
                 lookaheaddisc = current
-                local replace = getfield(current,"replace")
+                local replace = getreplace(current)
                 if not replace then
                     sweepoverflow = true
                     sweepnode     = current
@@ -2166,7 +2167,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                         lookaheaddisc = current
                     end
                     -- we assume a simple text only replace (we could use nuts.count)
-                    local replace = getfield(current,"replace")
+                    local replace = getreplace(current)
                     while replace and i < s do
                         if getid(replace) == glyph_code then
                             i = i + 1
@@ -2212,7 +2213,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                         backtrackdisc = current
                     end
                     -- we assume a simple text only replace (we could use nuts.count)
-                    local replace = getfield(current,"replace")
+                    local replace = getreplace(current)
                     while replace and i > 1 do
                         if getid(replace) == glyph_code then
                             i = i - 1
@@ -3177,7 +3178,7 @@ local function testrun(disc,t_run,c_run,...)
     end
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local renewed = false
-    if (post or replace) and prev then
+    if (post or replace) then -- and prev then -- hm, we can start with a disc
         if post then
             setlink(posttail,next)
         else
@@ -3291,7 +3292,7 @@ end
 -- discretionaries (maybe we need to tag those some day). So, at least for now, we don't
 -- have the following test in the sub runs:
 --
--- -- local a = getattr(start,0)
+-- -- local a = getglyhpdata(start)
 -- -- if a then
 -- --     a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
 -- -- else
@@ -3301,7 +3302,7 @@ end
 --
 -- but use this instead:
 --
--- -- local a = getattr(start,0)
+-- -- local a = getglyphdata(start)
 -- -- if not a or (a == attr) then
 --
 -- and even that one is probably not needed. However, we can handle interesting
@@ -3327,7 +3328,7 @@ local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlm
         if char then
             local a -- happens often so no assignment is faster
             if attr then
-                a = getattr(start,0)
+                a = getglyphdata(start)
             end
             if not a or (a == attr) then
                 local lookupmatch = lookupcache[char]
@@ -3367,7 +3368,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
         if char then
             local a -- happens often so no assignment is faster
             if attr then
-                a = getattr(start,0)
+                a = getglyphdata(start)
             end
             local startnext = getnext(start)
             if not a or (a == attr) then
@@ -3385,7 +3386,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
                     -- how about post ... we can probably merge this into the while
                     while getid(s) == disc_code do
                         ss = getnext(s)
-                        s  = getfield(s,"replace")
+                        s  = getreplace(s)
                         if not s then
                             s = ss
                             ss = nil
@@ -3412,12 +3413,13 @@ local function t_run_single(start,stop,font,attr,lookupcache)
                                 end
                                 while getid(s) == disc_code do
                                     ss = getnext(s)
-                                    s  = getfield(s,"replace")
+                                    s  = getreplace(s)
                                     if not s then
                                         s  = ss
                                         ss = nil
                                     end
                                 end
+lookupmatch = lg
                             else
                                 break
                             end
@@ -3451,7 +3453,7 @@ end
 local function k_run_single(sub,injection,last,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
     local a -- happens often so no assignment is faster
     if attr then
-        a = getattr(sub,0)
+        a = getglyphdata(sub)
     end
     if not a or (a == attr) then
         for n in nextnode, sub do -- only gpos
@@ -3487,7 +3489,7 @@ local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlm
         if char then
             local a -- happens often so no assignment is faster
             if attr then
-                a = getattr(start,0)
+                a = getglyphdata(start)
             end
             if not a or (a == attr) then
                 for i=1,nofsteps do
@@ -3535,7 +3537,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
         if char then
             local a -- happens often so no assignment is faster
             if attr then
-                a = getattr(start,0)
+                a = getglyphdata(start)
             end
             local startnext = getnext(start)
             if not a or (a == attr) then
@@ -3554,7 +3556,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                         end
                         while getid(s) == disc_code do
                             ss = getnext(s)
-                            s  = getfield(s,"replace")
+                            s  = getreplace(s)
                             if not s then
                                 s  = ss
                                 ss = nil
@@ -3581,12 +3583,13 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
                                     end
                                     while getid(s) == disc_code do
                                         ss = getnext(s)
-                                        s  = getfield(s,"replace")
+                                        s  = getreplace(s)
                                         if not s then
                                             s  = ss
                                             ss = nil
                                         end
                                     end
+lookupmatch = lg
                                 else
                                     break
                                 end
@@ -3616,7 +3619,7 @@ end
 local function k_run_multiple(sub,injection,last,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
     local a -- happens often so no assignment is faster
     if attr then
-        a = getattr(sub,0)
+        a = getglyphdata(sub)
     end
     if not a or (a == attr) then
         for n in nextnode, sub do -- only gpos
@@ -3709,7 +3712,7 @@ do
 
     -- reference:
     --
-    --  local a = attr and getattr(start,0)
+    --  local a = attr and getglyphdata(start)
     --  if a then
     --      a = (a == attr) and (not attribute or getprop(start,a_state) == attribute)
     --  else
@@ -3720,7 +3723,7 @@ do
     --
     --  local a -- happens often so no assignment is faster
     --  if attr then
-    --      if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
+    --      if getglyphdata(start) == attr and (not attribute or getprop(start,a_state) == attribute) then
     --          a = true
     --      end
     --  elseif not attribute or getprop(start,a_state) == attribute then
@@ -3860,7 +3863,7 @@ do
                         if m then
                             local a -- happens often so no assignment is faster
                             if attr then
-                                a = getattr(start,0)
+                                a = getglyphdata(start)
                             end
                             if not a or (a == attr) then
                                 for i=m[1],m[2] do
@@ -3907,7 +3910,7 @@ do
                                 if lookupmatch then
                                     local a -- happens often so no assignment is faster
                                     if attr then
-                                        if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
+                                        if getglyphdata(start) == attr and (not attribute or getprop(start,a_state) == attribute) then
                                             a = true
                                         end
                                     elseif not attribute or getprop(start,a_state) == attribute then
@@ -3974,7 +3977,7 @@ do
                                 if m then
                                     local a -- happens often so no assignment is faster
                                     if attr then
-                                        if getattr(start,0) == attr and (not attribute or getprop(start,a_state) == attribute) then
+                                        if getglyphdata(start) == attr and (not attribute or getprop(start,a_state) == attribute) then
                                             a = true
                                         end
                                     elseif not attribute or getprop(start,a_state) == attribute then

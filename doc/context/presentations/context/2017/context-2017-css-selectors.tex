@@ -1,0 +1,238 @@
+\usemodule[present-lines]
+
+\definecolor[maincolor][b=.4]
+
+\setuppapersize[A4][A4]
+
+\startdocument[title=CSS selectors,subtitle={\CONTEXT\ 2017 Maibach}]
+
+\startbuffer[selector-001]
+<?xml version="1.0" ?>
+
+<a>
+    <b class="one">b.one</b>
+    <b class="two">b.two</b>
+    <b class="one two">b.one.two</b>
+    <b class="three">b.three</b>
+    <b id="first">b#first</b>
+    <c>c</c>
+    <d>d e</d>
+    <e>d e</e>
+    <e>d e e</e>
+    <d>d f</d>
+    <f foo="bar">@foo = bar</f>
+    <f bar="foo">@bar = foo</f>
+    <f bar="foo1">@bar = foo1</f>
+    <f bar="foo2">@bar = foo2</f>
+    <f bar="foo3">@bar = foo3</f>
+    <f bar="foo+4">@bar = foo+4</f>
+    <g>g</g>
+    <g><gg><d>g gg d</d></gg></g>
+    <g><gg><f>g gg f</f></gg></g>
+    <g><gg><f class="one">g gg f.one</f></gg></g>
+    <g>g</g>
+    <g><gg><f class="two">g gg f.two</f></gg></g>
+    <g><gg><f class="three">g gg f.three</f></gg></g>
+    <g><f class="one">g f.one</f></g>
+    <g><f class="three">g f.three</f></g>
+    <h whatever="four five six">@whatever = four five six</h>
+</a>
+\stopbuffer
+
+\startbuffer[selector-002]
+<?xml version="1.0" ?>
+
+<document>
+    <title class="one"  >title 1</title>
+    <title class="two"  >title 2</title>
+    <title class="one"  >title 3</title>
+    <title class="three">title 4</title>
+</document>
+\stopbuffer
+
+\startbuffer[selector-003]
+<?xml version="1.0" ?>
+
+<document>
+    <title    class="one">title 1</title>
+    <subtitle class="sub">title 1.1</subtitle>
+    <title    class="two">title 2</title>
+    <subtitle class="sub">title 2.1</subtitle>
+    <title    class="one">title 3</title>
+    <subtitle class="sub">title 3.1</subtitle>
+    <title    class="two">title 4</title>
+    <subtitle class="sub">title 4.1</subtitle>
+</document>
+\stopbuffer
+
+\xmlloadbuffer{selector-001}{selector-001}
+\xmlloadbuffer{selector-002}{selector-002}
+\xmlloadbuffer{selector-003}{selector-003}
+
+\startxmlsetups xml:selector:demo
+    \ignorespaces\xmlverbatim{#1}\par
+\stopxmlsetups
+
+\unexpanded\def\showCSSdemo#1#2%
+  {\blank
+   \textrule{\tttf#2}
+   \startlines
+   \dontcomplain
+   \tttf \obeyspaces
+   \xmlcommand{#1}{#2}{xml:selector:demo}
+   \stoplines
+   \blank}
+
+\startchapter[title=Needed or not?]
+
+\startitemize
+\startitem
+    used in \HTML\ styling
+\stopitem
+\startitem
+    a bit different from the path based method
+\stopitem
+\startitem
+    shortcuts for filtering by attribute
+\stopitem
+\startitem
+    class filtering is special because it checks for list
+\stopitem
+\startitem
+    one can select more at the same time
+\stopitem
+\startitem
+    performance is okay compared to path lookup
+\stopitem
+\startitem
+    selectors go between curly braces:
+    \starttyping
+        \xmlall {#1} {{foo bar .whatever, bar foo .whatever}}
+    \stoptyping
+\stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Supported methods]
+
+The following methods are supported:
+
+\starttabulate[|T||]
+\NC \type {element}                   \NC all tags element \NC \NR
+\NC \type {element-1 > element-2}     \NC all tags element-2 with parent tag element-1 \NC \NR
+\NC \type {element-1 + element-2}     \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC \type {element-1 ~ element-2}     \NC all tags element-2 preceded by tag element-1 \NC \NR
+\NC \type {element-1 element-2}       \NC all tags element-2 inside tag element-1 \NC \NR
+\NC \type {[attribute]}               \NC has attribute \NC \NR
+\NC \type {[attribute=value]}         \NC attribute equals value\NC \NR
+\NC \type {[attribute~=value]}        \NC attribute contains value (space is separator) \NC \NR
+\NC \type {[attribute^="value"]}      \NC attribute starts with value \NC \NR
+\NC \type {[attribute$="value"]}      \NC attribute ends with value \NC \NR
+\NC \type {[attribute*="value"]}      \NC attribute contains value \NC \NR
+\NC \type {.class}                    \NC has class \NC \NR
+\NC \expanded{\type {\letterhash id}} \NC has id \NC \NR
+\NC \type {:nth-child(n)}             \NC the child at index n \NC \NR
+\NC \type {:nth-last-child(n)}        \NC the child at index n from the end \NC \NR
+\NC \type {:first-child}              \NC the first child \NC \NR
+\NC \type {:last-child}               \NC the last child \NC \NR
+\NC \type {:nth-of-type(n)}           \NC the match at index n \NC \NR
+\NC \type {:nth-last-of-type(n)}      \NC the match at index n from the end \NC \NR
+\NC \type {:first-of-type}            \NC the first match \NC \NR
+\NC \type {:last-of-type}             \NC the last match \NC \NR
+\NC \type {:only-of-type}             \NC the only match or nothing \NC \NR
+\NC \type {:only-child}               \NC the only child or nothing \NC \NR
+\NC \type {:empty}                    \NC only when empty \NC \NR
+\NC \type {:root}                     \NC the whole tree \NC \NR
+\stoptabulate
+
+\stopchapter
+
+\startchapter[title=Filtering classes]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{.one}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{.one, .two}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{.one, .two, \letterhash first}} \page
+
+\stopchapter
+
+\startchapter[title=Filtering attributes]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{[foo], [bar=foo]}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{[bar\lettertilde=foo]}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{[bar\letterhat="foo"]}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{[whatever\lettertilde="five"]}} \page
+
+\stopchapter
+
+\startchapter[title=Combining methods]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g f .one, g f .three}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g > f .one, g > f .three}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{d + e}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{d ~ e}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{d ~ e, g f .one, g f .three}} \page
+
+\stopchapter
+
+% \startchapter[title=Negation]
+
+% \typebuffer[selector-001] \showCSSdemo{selector-001}{{:not([whatever\lettertilde="five"])}} \page
+% \typebuffer[selector-001] \showCSSdemo{selector-001}{{:not(d)}} \page
+
+\stopchapter
+
+\startchapter[title=Child selectors]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-child(3)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-last-child(3)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g:nth-of-type(3)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g:nth-last-of-type(3)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:first-child}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:last-child}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{e:first-of-type}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{gg d:only-of-type}} \page
+
+\stopchapter
+
+\startchapter[title=Simple formulas]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-child(even)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-child(odd)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-child(3n+1)}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{a:nth-child(2n+3)}} \page
+
+\stopchapter
+
+\startchapter[title=Special cases]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g:empty}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g:root}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{*}} \page
+
+\stopchapter
+
+\startchapter[title=Combinations]
+
+\typebuffer[selector-001] \showCSSdemo{selector-001}{{g gg f .one}} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{g/gg/f[@class='one']} \page
+\typebuffer[selector-001] \showCSSdemo{selector-001}{g/{gg f .one}} \page
+
+\stopchapter
+
+\startchapter[title=Comparison (1)]
+
+\typebuffer[selector-002] \showCSSdemo{selector-002}{{document title .one, document title .three}} \page
+\typebuffer[selector-002] \showCSSdemo{selector-002}{/document/title[(@class='one') or (@class='three')]} \page
+
+\stopchapter
+
+\startchapter[title=Comparison (2)]
+
+\typebuffer[selector-003] \showCSSdemo{selector-003}{{document title .one + subtitle, document title .two + subtitle}}
+
+{\em A combined filter triggers a sorting pass!}
+
+\stopchapter
+
+\stopdocument

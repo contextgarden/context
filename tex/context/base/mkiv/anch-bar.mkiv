@@ -102,7 +102,7 @@
    \edef\m_level{\sidebarparameter\c!level}%
    \ifx\m_level\empty
      \ifnum\c_anch_sidebars_level=\plusone
-       \ifdim\scratchdimen=\zeropoint
+       \ifzeropt\scratchdimen
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else
          \d_anch_sidebars_distance\scratchdimen
@@ -112,7 +112,7 @@
      \fi
    \else
      \ifnum\m_level=\plusone
-       \ifdim\scratchdimen=\zeropoint
+       \ifzeropt\scratchdimen
          \advance\d_anch_sidebars_distance\scratchdistance\relax
        \else
          \d_anch_sidebars_distance\scratchdimen

@@ -68,9 +68,9 @@ do -- eps | ps
             -dPDFSETTINGS=/%presets%
             -dEPSCrop
             -dCompatibilityLevel=%level%
-            -sOutputFile="%newname%"
+            -sOutputFile=%newname%
             %colorspace%
-            "%oldname%"
+            %oldname%
             -c quit
         ]],
         checkers = {
@@ -197,9 +197,9 @@ do -- svg
         name     = "svg to something",
         program  = "inkscape",
         template = longtostring [[
-            "%oldname%"
+            %oldname%
             --export-dpi=%resolution%
-            --export-%format%="%newname%"
+            --export-%format%=%newname%
         ]],
         checkers = {
             oldname    = "readable",
@@ -324,7 +324,7 @@ do -- png | jpg | profiles
     local pngtocmykpdf = sandbox.registerrunner {
         name     = "png to cmyk pdf",
         program  = "gm",
-        template = [[convert -compress Zip  -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -compress Zip  -strip +profile "*" -profile %rgbprofile% -profile %cmykprofile% -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -332,7 +332,7 @@ do -- png | jpg | profiles
     local jpgtocmykpdf = sandbox.registerrunner {
         name     = "jpg to cmyk pdf",
         program  = "gm",
-        template = [[convert -compress JPEG -strip +profile "*" -profile "%rgbprofile%" -profile "%cmykprofile%" -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -compress JPEG -strip +profile "*" -profile %rgbprofile% -profile %cmykprofile% -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -340,7 +340,7 @@ do -- png | jpg | profiles
     local pngtograypdf = sandbox.registerrunner {
         name     = "png to gray pdf",
         program  = "gm",
-        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -348,7 +348,7 @@ do -- png | jpg | profiles
     local jpgtograypdf = sandbox.registerrunner {
         name     = "jpg to gray pdf",
         program  = "gm",
-        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 "%oldname%" "%newname%"]],
+        template = [[convert -colorspace gray -compress Zip -sampling-factor 1x1 %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -401,7 +401,7 @@ do -- png | jpg | profiles
     local recolorpng = sandbox.registerrunner {
         name     = "recolor png",
         program  = "gm",
-        template = [[convert -recolor "%color%" "%oldname%" "%newname%"]],
+        template = [[convert -recolor %color% %oldname% %newname%]],
         checkers = checkers,
         defaults = defaults,
     }
@@ -418,5 +418,27 @@ do -- png | jpg | profiles
             color      = arguments or ".5 0 0 .7 0 0 .9 0 0",
         }
     end
+
+end
+
+if CONTEXTLMTXMODE > 0 then
+
+    -- This might also work ok in mkiv but is yet untested. Anyway, it's experimental as we
+    -- go through TeX which is is inefficient. I'll improve the buffer trick.
+
+    local function remap(specification)
+        local fullname = specification.fullname
+        if fullname then
+            local only = file.nameonly(fullname)
+            local name = formatters["svg-%s-inclusion"](only)
+            local code = formatters["\\includesvgfile[%s]\\resetbuffer[%s]"](fullname,name)
+            buffers.assign(name,code)
+            specification.format   = "buffer"
+            specification.fullname = name
+        end
+        return specification
+    end
+
+    figures.remappers.svg = { mp = remap }
 
 end

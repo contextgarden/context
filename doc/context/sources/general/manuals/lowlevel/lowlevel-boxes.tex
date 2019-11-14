@@ -1,0 +1,698 @@
+% language=us
+
+% \hfil \hss
+% spread
+
+\environment lowlevel-style
+
+\startdocument
+  [title=boxes,
+   color=middlered]
+
+\startsection[title=Preamble]
+
+\startsubsection[title=Introduction]
+
+An average \CONTEXT\ user will not use the low level box primitives but a basic
+understanding of how \TEX\ works doesn't hurt. In fact, occasionally using a box
+command might bring a solution not easily achieved otherwise, simply because a
+more high level interface can also be in the way.
+
+The best reference is of course The \TeX book so if you're really interested in
+the details you should get a copy of that book. Below I will not go into details
+about all kind of glues, kerns and penalties, just boxes it is.
+
+This explanation will be extended when I feel the need (or users have questions
+that can be answered here).
+
+\stopsubsection
+
+\startsubsection[title=Boxes]
+
+This paragraph of text is made from lines that contain words that themselves
+contain symbolic representations of characters. Each line is wrapped in a so
+called horizontal box and eventually those lines themselves get wrapped in what
+we call a vertical box.
+
+\startbuffer
+\vbox \bgroup
+    \hsize 5cm
+    \raggedright
+    This is a rather narrow paragraph blown up a bit. Here we use a flush left,
+    aka ragged right, approach.
+\egroup
+\stopbuffer
+
+When we expose some details of a paragraph it looks like this:
+
+\startlinecorrection
+\startcombination[2*1]
+    {\scale[width=8cm]{\showmakeup[boxes]\getbuffer}} {}
+    {\scale[width=8cm]{\showmakeup\getbuffer}}        {}
+\stopcombination
+\stoplinecorrection
+
+The left only shows the boxes, the variant at the right shows (font) kerns and
+glue too. Because we flush left, there is rather strong right skip glue at the
+right boundary of the box. If font kerns show up depends on the font, not all
+fonts have them (or have only a few). The glyphs themselves are also kind of
+boxed, as their dimensions determine the area that they occupy:
+
+\startlinecorrection
+    \scale[width=\textwidth]{\showglyphs\hbox{This is a rather ...}}
+\stoplinecorrection
+
+But, internally they are not really boxed, as they already are a single quantity.
+The same is true for rules: they are just blobs with dimensions. A box on the
+other hand wraps a linked list of so called nodes: glyphs, kerns, glue,
+penalties, rules, boxes, etc. It is a container with properties like width,
+height, depth and shift.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\TEX\ primitives}]
+
+The box model is reflected in \TEX's user interface but not by that many
+commands, most noticeably \type {\hbox}, \type {\vbox} and \type {\vtop}. Here is
+an example of the first one:
+
+\starttyping[option=TEX]
+\hbox width 10cm{text}
+\hbox width 10cm height 1cm depth 5mm{text}
+text \raise5mm\hbox{text} text
+\stoptyping
+
+The \type {\raise} and \type {\lower} commands behave the same but in opposite
+directions. One could as well have been defined in terms of the other.
+
+\startbuffer
+text \raise  5mm \hbox to 2cm {text}
+text \lower -5mm \hbox to 2cm {text}
+text \raise -5mm \hbox to 2cm {text}
+text \lower  5mm \hbox to 2cm {text}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+{\dontcomplain\showboxes\getbuffer}
+\stoplinecorrection
+
+A box can be moved to the left or right but, believe it or not, in \CONTEXT\ we
+never use that feature, probably because the consequences for the width are such
+that we can as well use kerns. Here are some examples:
+
+\startbuffer
+text \vbox{\moveleft  5mm \hbox {left}}text !
+text \vbox{\moveright 5mm \hbox{right}}text !
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+{\dontcomplain\getbuffer}
+\stoplinecorrection
+
+\startbuffer
+text \vbox{\moveleft  25mm \hbox {left}}text !
+text \vbox{\moveright 25mm \hbox{right}}text !
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+{\dontcomplain\getbuffer}
+\stoplinecorrection
+
+Code like this will produce a complaint about an underfull box but we can easily
+get around that:
+
+\startbuffer
+text \raise  5mm \hbox to 2cm {\hss text}
+text \lower -5mm \hbox to 2cm {text\hss}
+text \raise -5mm \hbox to 2cm {\hss text}
+text \lower  5mm \hbox to 2cm {text\hss}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \type {\hss} primitive injects a glue that when needed will fill up the
+available space. So, here we force the text to the right or left.
+
+\startlinecorrection
+{\dontcomplain\showboxes\getbuffer}
+\stoplinecorrection
+
+We have three kind of boxes: \type {\hbox}, \type {\vbox} and \type {\vtop}:
+
+\startbuffer
+\hbox{\strut height and depth\strut}
+\vbox{\hsize 4cm \strut height and depth\par and width\strut}
+\vtop{\hsize 4cm \strut height and depth\par and width\strut}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+A \type {\vbox} aligns at the bottom and a \type {\vtop} at the top. I have added
+some so called struts to enforce a consistent height and depth. A strut is an
+invisible quantity (consider it a black box) that enforces consistent line
+dimensions: height and depth.
+
+
+\startlinecorrection
+{\dontcomplain\hbox{\showstruts\showboxes\getbuffer}}
+\stoplinecorrection
+
+You can store a box in a register but you need to be careful not to use a
+predefined one. If you need a lot of boxes you can reserve some for your own:
+
+\starttyping
+\newbox\MySpecialBox
+\stoptyping
+
+but normally you can do with one of the scratch registers, like 0, 2, 4, 6 or 8,
+for local boxes, and 1, 3, 5, 7 and 9 for global ones. Registers are used like:
+
+\starttyping
+       \setbox0\hbox{here}
+\global\setbox1\hbox{there}
+\stoptyping
+
+In \CONTEXT\ you can also use
+
+\starttyping
+\setbox\scratchbox   \hbox{here}
+\setbox\scratchboxone\hbox{here}
+\setbox\scratchboxtwo\hbox{here}
+\stoptyping
+
+and some more. In fact, there are quite some predefined scratch registers (boxes,
+dimensions, counters, etc). Feel free to investigate further.
+
+When a box is stored, you can consult its dimensions with \type {\wd}, \type
+{\ht} and \type {\dp}. You can of course store them for later use.
+
+\starttyping
+\scratchwidth \wd\scratchbox
+\scratchheight\ht\scratchbox
+\scratchdepth \dp\scratchbox
+\scratchtotal \dimexpr\ht\scratchbox+\dp\scratchbox\relax
+\scratchtotal \htdp\scratchbox
+\stoptyping
+
+The last line is \CONTEXT\ specific. You can also set the dimensions
+
+\starttyping
+\wd\scratchbox 10cm
+\ht\scratchbox 10mm
+\dp\scratchbox  5mm
+\stoptyping
+
+So you can cheat! A box is placed with \type {\copy}, which keeps the original
+intact or \type {\box} which just inserts the box and then wipes the register. In
+practice you seldom need a copy, which is more expensive in runtime anyway. Here
+we use copy because it serves the examples.
+
+\starttyping
+\copy\scratchbox
+\box \scratchbox
+\stoptyping
+
+\stopsection
+
+\startsection[title={\ETEX\ primitives}]
+
+The \ETEX\ extensions don't add something relevant for boxes, apart from that you
+can use the expressions mechanism to mess around with their dimensions. There is
+a mechanism for typesetting r2l within a paragraph but that has limited
+capabilities and doesn't change much as it's mostly a way to trick the backend
+into outputting a stretch of text in the other direction. This feature is not
+available in \LUATEX\ because it has an alternative direction mechanism.
+
+\stopsection
+
+\startsection[title={\LUATEX\ primitives}]
+
+The concept of boxes is the same in \LUATEX\ as in its predecessors but there are
+some aspects to keep in mind. When a box is typeset this happens in \LUATEX:
+
+\startitemize[n]
+    \startitem
+        A list of nodes is constructed. In \LUATEX\ this is a double linked
+        list (so that it can easily be manipulated in \LUA) but \TEX\ itself
+        only uses the forward links.
+    \stopitem
+    \startitem
+        That list is hyphenated, that is: so called discretionary nodes are
+        injected. This depends on the language properties of the glyph
+        (character) nodes.
+    \stopitem
+    \startitem
+        Then ligatures are constructed, if the font has such combinations. When
+        this built|-|in mechanism is used, in \CONTEXT\ we speak of base mode.
+    \stopitem
+    \startitem
+        After that inter|-|character kerns are applied, if the font provides
+        them. Again this is a base mode action.
+    \stopitem
+    \startitem
+        Finally the box gets packaged:
+        \startitemize
+            \startitem
+                In the case of a horizontal box, the list is packaged in a
+                hlist node, basically one liner, and its dimensions are calculated
+                and set.
+            \stopitem
+            \startitem
+                In the case of a vertical box, the paragraph is broken into one
+                or more lines, without hyphenation, with optimal hyphenation or
+                in the worst case with so called emergency stretch applied, and
+                the result becomes a vlist node with its dimensions set.
+            \stopitem
+        \stopitemize
+    \stopitem
+\stopitemize
+
+In traditional \TEX\ the first four steps are interwoven but in \LUATEX\ we need
+them split because the step~5 can be overloaded by a callback. In that case steps
+3 and 4 (and maybe 2) are probably also overloaded, especially when you bring
+handling of fonts under \LUA\ control.
+
+New in \LUATEX\ are three packers: \type {\hpack}, \type {\vpack} and \type
+{\tpack}, which are companions to \type {\hbox}, \type {\vbox} and \type {\vtop}
+but without the callbacks applied. Using them is a bit tricky as you never know
+if a callback should be applied, which, because users can often add their own
+\LUA\ code, is not something predictable.
+
+Another box related extension is direction. There are four possible directions
+but because in \LUAMETATEX\ there are only two. Because this model has been upgraded,
+it will be discusses in the next section. A \CONTEXT\ user is supposed to use the
+official \CONTEXT\ interfaces in order to be downward compatible.
+
+\stopsection
+
+\startsection[title={\LUAMETATEX\ primitives}]
+
+There are two possible directions: left to right (the default) and right to left
+for Hebrew and Arabic. Here is an example that shows how it'd done with low level
+directives:
+
+\startbuffer
+\hbox direction 0 {from left to right}
+\hbox direction 1 {from right to left}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+A low level direction switch is done with:
+
+\startbuffer
+\hbox direction 0
+    {from left to right \textdirection 1 from right to left}
+\hbox direction 1
+    {from right to left \textdirection 1 from left to right}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+but actually this is kind of {\em not done} in \CONTEXT, because there you are
+supposed to use the proper direction switches:
+
+\startbuffer
+\naturalhbox {from left to right}
+\reversehbox {from right to left}
+\naturalhbox {from left to right \righttoleft from right to left}
+\reversehbox {from right to left \lefttoright from left to right}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Often more is needed to properly support right to left typesetting so using the
+\CONTEXT\ commands is more robust.
+
+In \LUAMETATEX\ the box model has been extended a bit, this as a consequence of
+dropping the vertical directional typesetting, which never worked well. In
+previous sections we discussed the properties width, height and depth and the
+shift resulting from a \type {\raise}, \type {\lower}, \type {\moveleft} and
+\type {\moveright}. Actually, the shift is also used in for instance positioning
+math elements.
+
+The way shifting influences dimensions can be somewhat puzzling. Internally, when
+\TEX\ packages content in a box there are two cases:
+
+\startitemize
+    \startitem
+        When a horizontal box is made, and \typ {height - shift} is larger than the
+        maximum height so far, that delta is taken. When \typ {depth + shift} is
+        larger than the current depth, then that depth is adapted. So, a shift up
+        influences the height and a shift down influences the depth.
+    \stopitem
+    \startitem
+        In the case of vertical packaging, when \typ {width + shift} is larger
+        than the maximum box (line) width so far, that maximum gets bumped. So, a
+        shift to the right can contribute, but a shift to the left cannot result
+        in a negative width. This is also why vertical typesetting, where height
+        and depth are swapped with width, goes wrong: we somehow need to map two
+        properties onto one and conceptually \TEX\ is really set up for
+        horizontal typesetting. (And it's why I decided to just remove it from the
+        engine.)
+    \stopitem
+\stopitemize
+
+This is one of these cases where \TEX\ behaves as expected but it also means that
+there is some limitation to what can be manipulated. Setting the shift using one
+of the four commands has a direct consequence when a box gets packaged which
+happens immediately because the box is an argument to the foursome.
+
+There is in traditional \TEX, probably for good reason, no way to set the shift
+of a box, if only because the effect would normally be none. But in \LUATEX\ we
+can cheat, and therefore, for educational purposed \CONTEXT\ has implements
+some cheats.
+
+We use this sample box:
+
+\startbuffer[demo]
+\setbox\scratchbox\hbox\bgroup
+    \middlegray\vrule width 20mm depth  -.5mm height 10mm
+    \hskip-20mm
+    \darkgray  \vrule width 20mm height -.5mm depth   5mm
+\egroup
+\stopbuffer
+
+\typebuffer[demo][option=TEX]
+
+When we mess with the shift using the \CONTEXT\ \type {\shiftbox} helper, we see
+no immediate effect. We only get the shift applied when we use another helper,
+\type {\hpackbox}.
+
+\startbuffer
+\hbox\bgroup
+    \showstruts \strut
+    \quad                            \copy\scratchbox
+    \quad \shiftbox\scratchbox -20mm \copy\scratchbox
+    \quad \hpackbox\scratchbox       \box \scratchbox
+    \quad \strut
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer[demo]\getbuffer
+\stoplinecorrection
+
+When instead we use \type {\vpackbox} we get a different result. This time we
+move left.
+
+\startbuffer
+\hbox\bgroup
+    \showstruts \strut
+    \quad                            \copy\scratchbox
+    \quad \shiftbox\scratchbox -10mm \copy\scratchbox
+    \quad \vpackbox\scratchbox       \copy\scratchbox
+    \quad \strut
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer[demo]\getbuffer
+\stoplinecorrection
+
+The shift is set via \LUA\ and the repackaging is also done in \LUA, using the
+low level \type {hpack} and \type {vpack} helpers and these just happen to look
+at the shift when doing their job. At the \TEX\ end this never happens.
+
+This long exploration of shifting serves a purpose: it demonstrates that there is
+not that much direct control over boxes apart from their three dimensions.
+However this was never a real problem as one can just wrap a box in another one
+and use kerns to move the embedded box around. But nevertheless I decided to see
+if the engine can be a bit more helpful, if only because all that extra wrapping
+gives some overhead and complications when we want to manipulate boxes. And of
+course it is also a nice playground.
+
+We start with changing the direction. Changing this property doesn't require
+repackaging because directions are not really dealt with in the frontend. When
+a box is converted to (for instance \PDF) the reversion happens.
+
+\startbuffer
+\setbox\scratchbox\hbox{whatever}
+\the\boxdirection\scratchbox: \copy\scratchbox \crlf
+\boxdirection\scratchbox 1
+\the\boxdirection\scratchbox: \copy\scratchbox
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Another property that can be queried and set is an attribute. In order to get
+a private attribute we define one.
+
+\startbuffer
+\newattribute\MyAt
+\setbox\scratchbox\hbox attr \MyAt 123 {whatever}
+[\the\boxattr\scratchbox\MyAt]
+\boxattr\scratchbox\MyAt 456
+[\the\boxattr\scratchbox\MyAt]
+[\ifnum\boxattr\scratchbox\MyAt>400 okay\fi]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The sum of the height and depth is available too. Because for practical reasons
+setting that property is also needed then, the choice was made to distribute the
+value equally over height and depth.
+
+\startbuffer
+\setbox\scratchbox\hbox {height and depth}
+[\the\ht\scratchbox]
+[\the\dp\scratchbox]
+[\the\boxtotal\scratchbox]
+\boxtotal\scratchbox=20pt
+[\the\ht\scratchbox]
+[\the\dp\scratchbox]
+[\the\boxtotal\scratchbox]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+We've now arrived to a set of properties that relate to each other. They are
+a bit complex and given the number of possibilities one might need to revert
+to some trial and error: orientations and offsets. As with the dimensions,
+directions and attributes, they are passed as box specification. We start
+with the orientation.
+
+\startbuffer
+\hbox \bgroup \showboxes
+          \hbox orientation 0 {right}
+    \quad \hbox orientation 1 {up}
+    \quad \hbox orientation 2 {left}
+    \quad \hbox orientation 3 {down}
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+When the orientation is set, you can also set an offset. Where shifting around a box
+can have consequences for the dimensions, an offset is virtual. It gets effective
+in the backend, when the contents is converted to some output format.
+
+\startbuffer
+\hbox \bgroup \showboxes
+          \hbox orientation 0 yoffset  10pt {right}
+    \quad \hbox orientation 1 xoffset  10pt {up}
+    \quad \hbox orientation 2 yoffset -10pt {left}
+    \quad \hbox orientation 3 xoffset -10pt {down}
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The reason that offsets are related to orientation is that we need to know in
+what direction the offsets have to be applied and this binding forces the user to
+think about it. You can also set the offsets using commands.
+
+\startbuffer
+\setbox\scratchbox\hbox{whatever}%
+1                                  \copy\scratchbox
+2 \boxorientation\scratchbox 2     \copy\scratchbox
+3 \boxxoffset    \scratchbox -15pt \copy\scratchbox
+4 \boxyoffset    \scratchbox -15pt \copy\scratchbox
+5
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+\startbuffer
+\setbox\scratchboxone\hbox{whatever}%
+\setbox\scratchboxtwo\hbox{whatever}%
+1 \boxxoffset \scratchboxone -15pt \copy\scratchboxone
+2 \boxyoffset \scratchboxone -15pt \copy\scratchboxone
+3 \boxxoffset \scratchboxone -15pt \copy\scratchboxone
+4 \boxyoffset \scratchboxone -15pt \copy\scratchboxone
+5 \boxxmove   \scratchboxtwo -15pt \copy\scratchboxtwo
+6 \boxymove   \scratchboxtwo -15pt \copy\scratchboxtwo
+7 \boxxmove   \scratchboxtwo -15pt \copy\scratchboxtwo
+8 \boxymove   \scratchboxtwo -15pt \copy\scratchboxtwo
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+The move commands are provides as convenience and contrary to the offsets they do
+adapt the dimensions. Internally, with the box, we register the orientation and
+the offsets and when you apply these commands multiple times the current values
+get overwritten. But \unknown\ because an orientation can be more complex you
+might not get the effects you expect when the options we discuss next are used.
+The reason is that we store the original dimensions too and these come into play
+when these other options are used: anchoring. So, normally you will apply an
+orientation and offsets once only.
+
+% the next bit is derived from the followingup document
+
+The orientation specifier is actually a three byte number that best can be seen
+hexadecimal (although we stay within the decimal domain). There are three
+components: x|-|anchoring, y|-|anchoring and orientation:
+
+\starttyping
+0x<X><Y><O>
+\stoptyping
+
+or in \TEX\ speak:
+
+\starttyping
+"<X><Y><O>
+\stoptyping
+
+The landscape and seascape variants both sit on top of the baseline while the
+flipped variant has its depth swapped with the height. Although this would be
+enough a bit more control is possible.
+
+The vertical options of the horizontal variants anchor on the baseline, lower
+corner, upper corner or center.
+
+\startbuffer
+\ruledhbox orientation "002 {\TEX} and
+\ruledhbox orientation "012 {\TEX} and
+\ruledhbox orientation "022 {\TEX} and
+\ruledhbox orientation "032 {\TEX}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+The horizontal options of the horizontal variants anchor in the center, left,
+right, halfway left and halfway right.
+
+\startbuffer
+\ruledhbox orientation "002 {\TEX} and
+\ruledhbox orientation "102 {\TEX} and
+\ruledhbox orientation "202 {\TEX} and
+\ruledhbox orientation "302 {\TEX} and
+\ruledhbox orientation "402 {\TEX}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+The orientation has consequences for the dimensions so they are dealt with in the
+expected way in constructing lines, paragraphs and pages, but the anchoring is
+virtual, like the offsets. There are two extra variants for orientation zero: on
+top of baseline or below, with dimensions taken into account.
+
+\startbuffer
+\ruledhbox orientation "000 {\TEX} and
+\ruledhbox orientation "004 {\TEX} and
+\ruledhbox orientation "005 {\TEX}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+The anchoring can look somewhat confusing but you need to keep in mind that it is
+normally only used in very controlled circumstances and not in running text.
+Wrapped in macros users don't see the details. We're talking boxes here, so for
+instance:
+
+\startbuffer
+test\quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "002 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "002 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "012 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "022 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "032 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "042 \bgroup\strut test\egroup test%
+\egroup
+\quad test
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+\stopsection
+
+\stopdocument

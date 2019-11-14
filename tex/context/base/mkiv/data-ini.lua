@@ -14,7 +14,6 @@ local ostype, osname, osuname, ossetenv, osgetenv = os.type, os.name, os.uname, 
 local P, S, R, C, Cs, Cc, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.Cc, lpeg.match
 
 local trace_locating   = false  trackers.register("resolvers.locating",   function(v) trace_locating   = v end)
-local trace_detail     = false  trackers.register("resolvers.details",    function(v) trace_detail     = v end)
 local trace_expansions = false  trackers.register("resolvers.expansions", function(v) trace_expansions = v end)
 
 local report_initialization = logs.reporter("resolvers","initialization")

@@ -1,0 +1,25 @@
+\setupbodyfont[dejavu]
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "kerntest",
+        type = "kern",
+        data = {
+            A = { B = -500 },
+        }
+    }
+\stopluacode
+
+\starttext
+
+\definecolor[tgray][s=.5,t=.5,a=1] \showfontkerns \showglyphs
+
+\definefontfeature[kerntest] [mode=node,kerntest=yes]
+
+\definedfont[file:dejavu-serif.ttf*kerntest @ 48pt]
+
+\startTEXpage[offset=10pt,foregroundcolor=tgray]
+    ABCDEF
+\stopTEXpage
+
+\stoptext

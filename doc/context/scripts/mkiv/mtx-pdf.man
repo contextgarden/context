@@ -1,6 +1,6 @@
 .TH "mtx-pdf" "1" "01-01-2019" "version 0.10" "ConTeXt PDF Helpers"
 .SH NAME
-.B mtx-pdf
+ mtx-pdf - ConTeXt PDF Helpers
 .SH SYNOPSIS
 .B mtxrun --script pdf [
 .I OPTIONS ...

@@ -1,0 +1,30 @@
+.TH "mtx-vscode" "1" "01-01-2019" "version 1.00" "vscode extension generator"
+.SH NAME
+ mtx-vscode - vscode extension generator
+.SH SYNOPSIS
+.B mtxrun --script vscode [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B vscode extension generator
+.SH OPTIONS
+.TP
+.B --generate
+generate extension in sync with current version
+.TP
+.B --start
+start vscode with extension context
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

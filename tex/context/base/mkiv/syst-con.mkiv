@@ -15,36 +15,10 @@
 
 \unprotect
 
-%D When the number of conversions grew, it did no longer make
-%D sense to spread them over multiple files. So, instead of
-%D defining these in \type {font-ini}, we now have a dedicated
-%D module.
-
-%D \macros
-%D   {lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
+%D \macros{lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
 %D
-%D In addition to the uppercase hex conversion, as needed in
-%D math families, we occasionally need a lowercase one, for
-%D instance when we want to compose gbsong fontnames.
-%D
-%D The ugly indirectness is needed to get rid of \TEX\
-%D induced spaces and \type {\relax}'s.
-%D
-%D \starttyping
-%D [\uchexnumber{0}]
-%D [\uchexnumber\scratchcounter]
-%D [\uchexnumber\zerocount]
-%D [\uchexnumber{\number0}]
-%D [\uchexnumber{\number\scratchcounter}]
-%D [\uchexnumber{\number\zerocount}]
-%D [\uchexnumber{\the\scratchcounter}]
-%D [\uchexnumber{\the\zerocount}]
-%D [\expandafter\uchexnumber\expandafter{\number0}]
-%D [\expandafter\uchexnumber\expandafter{\number\scratchcounter}]
-%D [\expandafter\uchexnumber\expandafter{\number\zerocount}]
-%D [\expandafter\uchexnumber\expandafter{\the\scratchcounter}]
-%D [\expandafter\uchexnumber\expandafter{\the\zerocount}]
-%D \stoptyping
+%D In addition to the uppercase hex conversion, as needed in math families, we
+%D occasionally need a lowercase one.
 
 \def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
 \def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
@@ -53,33 +27,28 @@
 
 \let\hexnumber\uchexnumber
 
-%D \macros
-%D   {octnumber}
+%D \macros{octnumber}
 %D
-%D For unicode remapping purposes, we need octal numbers.
+%D For \UNICODE\ remapping purposes, we need octal numbers.
 
 \def\octnumber#1{\clf_octnumber\numexpr#1\relax}
 
-%D \macros
-%D   {hexstringtonumber,octstringtonumber}
+%D \macros{hexstringtonumber,octstringtonumber}
 %D
-%D This macro converts a two character hexadecimal number into
-%D a decimal number, thereby taking care of lowercase characters
-%D as well.
+%D This macro converts a two character hexadecimal number into a decimal number,
+%D thereby taking care of lowercase characters as well.
 
 \def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
 \def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
 
-%D \macros
-%D   {rawcharacter}
+%D \macros{rawcharacter}
 %D
-%D This macro can be used to produce proper 8 bit characters
-%D that we sometimes need in backends and round||trips.
+%D This macro can be used to produce proper 8 bit characters that we sometimes need
+%D in backends and round||trips.
 
 \def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
 
-%D \macros
-%D   {twodigits, threedigits}
+%D \macros{twodigits, threedigits}
 %D
 %D These macros provides two or three digits always:
 
@@ -88,50 +57,42 @@
 
 %D \macros{modulonumber}
 %D
-%D In the conversion macros described in \type {core-con} we
-%D need a wrap||around method. The following solution is
-%D provided by Taco.
+%D In the conversion macros described in \type {core-con} we need a wrap||around
+%D method. The following solution is provided by Taco.
 %D
-%D The \type {modulonumber} macro expands to the mathematical
-%D modulo of a positive integer. It is crucial for it's
-%D application that this macro is fully exandable.
+%D The \type {modulonumber} macro expands to the mathematical modulo of a positive
+%D integer. It is crucial for it's application that this macro is fully exandable.
 %D
-%D The expression inside the \type {\numexpr} itself is
-%D somewhat bizarre because \ETEX\ uses a rounding
-%D division instead of truncation. If \ETEX's division
-%D would have behaved like \TEX's normal\type{\divide}, then
-%D the expression could have been somewhat simpler, like
-%D \type {#2-(#2/#1)*#1}. This works just as well, but a bit
-%D more complex.
+%D The expression inside the \type {\numexpr} itself is somewhat bizarre because
+%D \ETEX\ uses a rounding division instead of truncation. If \ETEX's division would
+%D have behaved like \TEX's normal\type {\divide}, then the expression could have
+%D been somewhat simpler, like \type {#2-(#2/#1)*#1}. This works just as well, but a
+%D bit more complex.
 
-\def\modulonumber#1#2%
-  {\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 
 %D \macros{modulatednumber}
 %D
-%D Modulo numbers run from zero to one less than the limit,
-%D but for conversion sets, we need a value between 1 and the
-%D limit. The \type{\modulatednumber} arranges that. This
-%D macro also needs to be fully expandable, resulting in
-%D two \type{\numexpr}s.
+%D Modulo numbers run from zero to one less than the limit, but for conversion sets,
+%D we need a value between 1 and the limit. The \type {\modulatednumber} arranges
+%D that. This macro also needs to be fully expandable, resulting in two \type
+%D {\numexpr}s.
 
 \def\modulatednumber#1#2%
   {\ifnum\the\numexpr\modulonumber{#1}{#2}\relax=0 #1%
    \else \the\numexpr\modulonumber{#1}{#2}\relax  \fi}
 
-%D \macros
-%D    {realnumber} % used?
+%D \macros{setcalculatedsin,setcalculatedcos,setcalculatedtan}
 
-\def\realnumber#1{\withoutpt\the\dimexpr#1\s!pt\relax} % brrr
+\unexpanded\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
+\unexpanded\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
+\unexpanded\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
 
-%D \macros
-%D    {setcalculatedsin,setcalculatedcos,setcalculatedtan}
-
-\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
-\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
-\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
+%D \macros{formatted,format}
 
            \def\formatted#1{\ctxcommand{format(#1)}} % not clf
 \unexpanded\def\format   #1{\ctxcommand{format(#1)}} % not clf
+
+%D The \type {\modulatednumber} and \type {\realnumber} macros have been removed.
 
 \protect \endinput

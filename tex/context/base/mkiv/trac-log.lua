@@ -114,17 +114,34 @@ local direct, subdirect, writer, pushtarget, poptarget, setlogfile, settimedlog,
 -- we don't want this overhead for single messages (not that there are that
 -- many; we could have a special weak table)
 
+local function ansisupported(specification)
+    if specification ~= "ansi" and specification ~= "ansilog" then
+        return false
+    elseif os and os.enableansi then
+        return os.enableansi()
+    else
+        return false
+    end
+end
+
 if runningtex and texio then
 
     if texio.setescape then
         texio.setescape(0) -- or (false)
     end
 
-    if arg then
+    if arg and ansisupported then
         -- we're don't have environment.arguments yet
         for k, v in next, arg do -- k can be negative !
             if v == "--ansi" or v == "--c:ansi" then
-                variant = "ansi"
+                if ansisupported("ansi") then
+                    variant = "ansi"
+                end
+                break
+            elseif v == "--ansilog" or v == "--c:ansilog" then
+                if ansisupported("ansilog") then
+                    variant = "ansilog"
+                end
                 break
             end
         end
@@ -244,6 +261,11 @@ if runningtex and texio then
                 both     = "term",
             },
         }
+    }
+
+    variants.ansilog = {
+        formats = variants.ansi.formats,
+        targets = variants.default.targets,
     }
 
     logs.flush = io.flush
@@ -368,6 +390,9 @@ if runningtex and texio then
             t = specification.targets
             f = specification.formats or specification
         else
+            if not ansisupported(specification) then
+                specification = "default"
+            end
             local v = variants[specification]
             if v then
                 t = v.targets
@@ -394,8 +419,8 @@ if runningtex and texio then
         subdirect_nop = f.subdirect_nop
         status_yes    = f.status_yes
         status_nop    = f.status_nop
-        if variant == "ansi" then
-            useluawrites() -- because tex escapes ^^
+        if variant == "ansi" or variant == "ansilog" then
+            useluawrites() -- because tex escapes ^^, not needed in lmtx
         end
         settarget(whereto)
     end
@@ -511,6 +536,9 @@ else
             if type(specification) == "table" then
                 f = specification.formats or specification
             else
+                if not ansisupported(specification) then
+                    specification = "default"
+                end
                 local v = variants[specification]
                 if v then
                     f = v.formats
@@ -946,6 +974,15 @@ logs.reporters = reporters
 logs.exporters = exporters
 
 function logs.application(t)
+    --
+    local arguments = environment and environment.arguments
+    if arguments then
+        local ansi = arguments.ansi or arguments.ansilog
+        if ansi then
+            logs.setformatters(arguments.ansi and "ansi" or "ansilog")
+        end
+    end
+    --
     t.name     = t.name   or "unknown"
     t.banner   = t.banner
     t.moreinfo = moreinfo

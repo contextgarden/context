@@ -1,0 +1,262 @@
+% language=us
+
+\startcomponent followingup-stubs
+
+\environment followingup-style
+
+\startchapter[title={Stubs}]
+
+\startsection[title={Bare bone}]
+
+The most barebone way to process a \CONTEXT\ file is something like:
+
+\starttyping
+luametatex
+    --fmt="<cache path to>/luametatex/cont-en"
+    --lua="<cache path to>/luametatex/cont-en.lui"
+    --jobname="article"
+    "cont-yes.mkiv"
+\stoptyping
+
+We pas extra options, like:
+
+\starttyping
+    --c:autopdf
+    --c:currentrun=1
+    --c:fulljobname="./article.tex"
+    --c:input="./article.tex"
+    --c:kindofrun=1
+    --c:maxnofruns=9
+    --c:texmfbinpath="c:/data/develop/tex-context/tex/texmf-win64/bin"
+\stoptyping
+
+but for what we are going to discuss here it doesn't really matter. The main point is
+that we use a \LUA\ startup file. That one has a minimal amount of code so that the
+format can be loaded as we like it. For instance we need to start up with initial
+memory settings.
+
+The file \type {cont-yes} sets up the way processing content happens. This can be the
+\type {jobname} file but also something different. It is enough to know that this
+startup is quite controlled.
+
+I will explore a different approach to format loading but for now this is how it
+goes. After al, we need to be compatible with \LUATEX\ and normal \MKIV\ runs, at
+least for now.
+
+\stopsection
+
+\startsection[title={Management (some history)}]
+
+In \CONTEXT\ we always had a script: \type {texexec}, originally a \MODULA2
+program, later a \PERL\ script, then a \RUBY\ script but now we have \type
+{mtxrun}, a \LUA\ script. All take care of making sure that the file is
+processed enough times to get the cross references, tables of contents, indexes,
+multi|-|pass data stable. It also makes it possible to avoid using these special
+binaries (or links) that trick the engine into thinking it is bound to a format:
+we never had \type {pdfcontext} or \type {luacontext}, just one \type {context}.
+Actually, because we have multiple user interfaces, we would have needed many
+stubs instead. Getting this approach accepted was not easy but in the meantime
+I've seen management scripts for other packages being mentioned occasionally.
+
+The same is true for scripts: for a long time \CONTEXT\ came with quite some
+scripts but when an average \TEX\ distribution started growing, including many
+other scripts, we abandoned this approach and stuck to one management script that
+also launched auxiliary scripts. That way we could be sure that there were no
+clashes in names. If you look at a full \TEX\ installation you see many stubs to
+scripts and more keep coming. How that can work out well without unexpected side
+effects (name clashes) is not entirely clear to me, as a modern computer can have
+large bin paths. Just imagine that all large programs (or ecosystems) would
+introduce hundreds of new \quote {binaries}.
+
+Anyway, in the end a \CONTEXT\ installation using \MKIV\ only needs \type {mtxrun}
+and as bonus \type {context}. The above call is triggered by:
+
+\starttyping
+mtxrun --autogenerate --script context --autopdf article.tex
+\stoptyping
+
+from the editor. Here we create formats when none is found, and start or activate
+the \PDF\ viewer afterwards, so more minimal is:
+
+\starttyping
+mtxrun --script context article.tex
+\stoptyping
+
+Normally there is also a \type {context} stub so this also works:
+
+\starttyping
+context article.tex
+\stoptyping
+
+\stopsection
+
+\startsection[title={The launch process (more history)}]
+
+In \MKII, when we use \PDFTEX, the actual launch of these script is somewhat
+complex and a bit different per platform. But, on all platforms \KPSE\ does the
+lookup of the script. Already long ago I found out that this startup overhead
+could amount to seconds on a complete \TEX Live installation (imagine running
+over a network) which is why eventually we came up with the minimals. The reason
+is that the file databases have to be loaded: first for looking up, then for the
+stub that also needs that information and finally by the actual program. There
+were no \SSD's then.
+
+The first hurdle we took was to combine the lookup and the runner. Of course this
+is sort of out of our control because an installer can decide to still use a
+lookup approach but at least on \MSWINDOWS\ this was achieved quite easy. Sort
+of:
+
+\starttyping
+texexex -> [lookup] -->
+    texexec.pl -> [lookup] ->
+        pdftex + formats ->
+            [lookup] -> processing
+\stoptyping
+
+The first lookup can be avoided by some fast relative lookup, but for more
+complex management the second one is always there. Over time this mechanism
+became more sophisticated, for instance we use caching, could work over sockets
+using a \KPSE\ server, etc.
+
+When \LUATEX\ came around, it was already decided early that it also would serve
+as script engine for the \CONTEXT\ runner, this time \type {mtxrun}. The way this
+works differs per platform. On \WINDOWS\ there is a small binary, say \type
+{runner.exe}. It gets two copies: \type {mtxrun.exe} and \type {context.exe}. If
+you find more copies on your system, something might be wrong with your
+installation.
+
+\starttyping
+mtxrun.exe  -> loads mtxrun.lua in same path
+context.exe -> idem but runs with --script=context
+\stoptyping
+
+The \type {mtxrun.lua} script will load its file database which is very efficient
+and fast. It will then load the given script and execute it. In the case of \type
+{context.exe} the \type {mtx-context.lua} script is loaded, which lives in the
+normal place in the \TEX\ tree (alongside other scripts).
+
+So, a minimal amount of programs and scripts is then:
+
+\starttyping
+texmf-win64/bin/luatex.exe
+texmf-win64/bin/mtxrun.exe
+texmf-win64/bin/mtxrun.lua
+texmf-win64/bin/context.exe
+\stoptyping
+
+with (we also need to font manager):
+
+\starttyping
+texmf-context/scripts/context/lua/mtx-context.lua
+texmf-context/scripts/context/lua/mtx-fonts.lua
+\stoptyping
+
+But \unknown\ there is a catch here: \LUATEX\ has to be started in script mode in
+order to process \type {mtxrun}. So, in fact we see this in distributions.
+
+\starttyping
+texmf-win64/bin/luatex.exe
+texmf-win64/bin/texlua.exe
+texmf-win64/bin/mtxrun.exe
+texmf-win64/bin/mtxrun.lua
+texmf-win64/bin/context.exe
+\stoptyping
+
+The \type {texlua} program is just a copy of \type {luatex} that by its name
+knows that is is supposed to run scripts and not process \TEX\ files. The setup
+can be different using dynamic libraries (more files but a shared engine part)
+but the principles are the same. Nowadays the stub doesn't need the \type
+{texlua.exe} binary any more, so this is the real setup:
+
+\starttyping
+texmf-win64/bin/luatex.exe       large program
+texmf-win64/bin/mtxrun.exe       small program
+texmf-win64/bin/mtxrun.lua       large lua file
+texmf-win64/bin/context.exe      small program
+\stoptyping
+
+Just for the record: we cannot really use batch files here because we need to
+know the original command, and when run from a script that is normally not known.
+It works to some extend but for instance when started indirectly from an editor
+it can fail, depending on how that editor is calling programs. Therefore the stub
+is the most robust method.
+
+On a \UNIX\ system the situation differs:
+
+\starttyping
+texmf-linux-64/bin/luatex        large program
+texmf-linux-64/bin/texlua        symlink to luatex
+texmf-linux-64/bin/mtxrun        large lua file
+texmf-linux-64/bin/context       shell script that starts mtxrun
+\stoptyping
+
+Here \type {mtxrun.lua} is renamed to \type {mtxrun} with a shebang line that
+triggers loading by \type {texlua} which is a symlink to \type {luatex} because
+shebang lines don't support the \type {--texlua} argument. As on windows, this
+is not really pretty.
+
+\stopsection
+
+\startsection[title={The \LMTX\ way (the present)}]
+
+Now when we move to \LMTX\ we need to make sure that the method that we choose is
+acceptable for distributions but also nicely consistent over platforms. We only
+have one binary \type {luametatex} with all messy logic removed and no second
+face like \type {metaluatex}. When it is copied to another instance (or linked)
+it will load the script with its own name when it finds one. So on \WINDOWS\ we
+now have:
+
+\starttyping
+texmf-win64/bin/luametatex.exe   medium program
+texmf-win64/bin/mtxrun.exe       copy (or link) of luametatex
+texmf-win64/bin/mtxrun.lua       large lua file
+texmf-win64/bin/context.exe      copy (or link) of luametatex
+texmf-win64/bin/context.lua      small lua file
+\stoptyping
+
+and in \UNIX:
+
+\starttyping
+texmf-linux-64/bin/luametatex    mediumprogram
+texmf-linux-64/bin/mtxrun        copy (or link) of luametatex
+texmf-linux-64/bin/mtxrun.lua    large lua file
+texmf-linux-64/bin/context       copy (or link) of luametatex
+texmf-linux-64/bin/context.lua   small lua file
+\stoptyping
+
+So, \type {luametatex[.exe]}, \type {mtxrun[.exe]} and \type {context[.exe]} are
+all the same. On both platforms there is \type {mtxrun.lua} (with suffix) and on
+both we also use the same runner approach. The \type {context.lua} script is
+really small and just sets the script command line argument before loading \type
+{mtxrun.lua} from the same path. In the case of copied binaries: keep in mind
+that the three copies together are not (much) larger than the \type {luatex} and
+\type {texlua} pair (especially when you take additional libraries into account).
+
+The disadvantage of using copies is that one can forget to copy with an update,
+but the fact that one can use them might be easier for installers. It's up to
+those who create the installers.
+
+One complication is that the \type {mtxrun.lua} script has to deal with the old
+and the new setup. But, when we release we will assume that one used either
+\LUATEX\ or \LUAMETATEX, not some mix. As \type {mtxrun} and \type {context} know
+what got it started they will then trigger the right engine, unless one passes
+\typ {--engine=luatex}. In that case the \LUAMETATEX\ launcher will trigger a
+\LUATEX\ run. But a mixed installation is unlikely to happen.
+
+\stopsection
+
+\startsection[title={Why not \unknown}]
+
+Technically we could use one call for both the runner and \TEX\ processor but
+when multiple runs are needed this would demand an internal engine reset as well
+as macro package reset while keeping some (multi|-|pass) data around. A way
+in|-|between could be to spawn the next run. In the end the gain would be minimal
+(we have now .2 seconds overhead per total run, which can trigger multiple
+passes, due to the management script, to basically we can neglect it. (Triggering
+the viewer takes more time.)
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

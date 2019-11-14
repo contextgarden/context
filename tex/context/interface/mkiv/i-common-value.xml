@@ -301,6 +301,17 @@
         <cd:constant type="effective"/>
         <cd:constant type="header"/>
         <cd:constant type="footer"/>
+        <cd:constant type="tblr"/>
+        <cd:constant type="lrtb"/>
+        <cd:constant type="tbrl"/>
+        <cd:constant type="rltb"/>
+        <cd:constant type="fxtb"/>
+        <cd:constant type="btlr"/>
+        <cd:constant type="lrbt"/>
+        <cd:constant type="btrl"/>
+        <cd:constant type="rlbt"/>
+        <cd:constant type="fxbt"/>
+        <cd:constant type="fixd"/>
     </cd:define>
 
     <!-- sortorder = ... -->
@@ -768,6 +779,122 @@
         <cd:constant type="cd:number" prefix="penalty" method="range"/>
         <cd:constant type="cd:dimension"/>
         <cd:constant type="cd:name"/>
+    </cd:define>
+
+    <cd:define name="value-leftfence">
+        <!--
+            <cd:constant type="||"/>
+            <cd:constant type="|||"/>
+        -->
+        <cd:constant type="\bgroup"/>
+        <cd:constant type="\egroup"/>
+        <cd:constant type="\letteropenbrace"/>
+        <cd:constant type="["/>
+        <cd:constant type="]"/>
+        <cd:constant type="("/>
+        <cd:constant type=")"/>
+        <cd:constant type="<"/>
+        <cd:constant type=">"/>
+        <cd:constant type="/"/>
+        <cd:constant type="|"/>
+        <cd:constant type="⌊"/>
+        <cd:constant type="⌋"/>
+        <cd:constant type="⌈"/>
+        <cd:constant type="⌉"/>
+        <cd:constant type="⟨"/>
+        <cd:constant type="⟩"/>
+        <cd:constant type="⟪"/>
+        <cd:constant type="⟫"/>
+        <cd:constant type="‖"/>
+        <cd:constant type="⦀"/>
+        <cd:constant type="⦗"/>
+        <cd:constant type="\lbrace"/>
+        <cd:constant type="\lbracket"/>
+        <cd:constant type="\lbrack"/>
+        <cd:constant type="\lparenthesis"/>
+        <cd:constant type="\lparent"/>
+        <cd:constant type="\lparen"/>
+        <cd:constant type="\langle"/>
+        <cd:constant type="\llangle"/>
+        <cd:constant type="\lVert"/>
+        <cd:constant type="\vert"/>
+        <cd:constant type="\solidus"/>
+        <cd:constant type="\lfloor"/>
+        <cd:constant type="\lceiling"/>
+        <cd:constant type="\lceil"/>
+        <cd:constant type="\ulcorner"/>
+        <cd:constant type="\llcorner"/>
+        <cd:constant type="\lmoustache"/>
+        <cd:constant type="\llbracket"/>
+        <cd:constant type="\lgroup"/>
+        <cd:constant type="\linterval"/>
+        <cd:constant type="\lointerval"/>
+        <cd:constant type="\llointerval"/>
+        <cd:constant type="\lrointerval"/>
+        <cd:constant type="\{"/>
+        <cd:constant type="\["/>
+        <cd:constant type="\("/>
+        <cd:constant type="\<"/>
+        <cd:constant type="\|"/>
+        <cd:constant type="cd:character"/>
+    </cd:define>
+
+    <cd:define name="value-rightfence">
+        <!--
+            <cd:constant type="||"/>
+            <cd:constant type="|||"/>
+        -->
+        <cd:constant type="\egroup"/>
+        <cd:constant type="\bgroup"/>
+        <cd:constant type="\letterclosebrace"/>
+        <cd:constant type="]"/>
+        <cd:constant type="["/>
+        <cd:constant type=")"/>
+        <cd:constant type="("/>
+        <cd:constant type=">"/>
+        <cd:constant type="<"/>
+        <cd:constant type="/"/>
+        <cd:constant type="|"/>
+        <cd:constant type="⌋"/>
+        <cd:constant type="⌊"/>
+        <cd:constant type="⌉"/>
+        <cd:constant type="⌈"/>
+        <cd:constant type="⟩"/>
+        <cd:constant type="⟨"/>
+        <cd:constant type="⟫"/>
+        <cd:constant type="⟪"/>
+        <cd:constant type="‖"/>
+        <cd:constant type="⦀"/>
+        <cd:constant type="⦘"/>
+        <cd:constant type="\rbrace"/>
+        <cd:constant type="\rbracket"/>
+        <cd:constant type="\rbracket"/>
+        <cd:constant type="\rparenthesis"/>
+        <cd:constant type="\rparent"/>
+        <cd:constant type="\rparen"/>
+        <cd:constant type="\rangle"/>
+        <cd:constant type="\rrangle"/>
+        <cd:constant type="\rVert"/>
+        <cd:constant type="\vert"/>
+        <cd:constant type="\solidus"/>
+        <cd:constant type="\rfloor"/>
+        <cd:constant type="\rceiling"/>
+        <cd:constant type="\rceil"/>
+        <cd:constant type="\urcorner"/>
+        <cd:constant type="\lrcorner"/>
+        <cd:constant type="\rmoustache"/>
+        <cd:constant type="\rrbracket"/>
+        <cd:constant type="\rgroup"/>
+        <cd:constant type="\rinterval"/>
+        <cd:constant type="\rointerval"/>
+        <cd:constant type="\rlointerval"/>
+        <cd:constant type="\rrointerval"/>
+        <cd:constant type="\}"/>
+        <cd:constant type="\]"/>
+        <cd:constant type="\)"/>
+        <cd:constant type="\>"/>
+        <cd:constant type="\|"/>
+        <cd:constant type="cd:character"/>
     </cd:define>
 
 </cd:interface>

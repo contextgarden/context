@@ -311,11 +311,15 @@ local function textime()
     return tonumber(osdate("%H")) * 60 + tonumber(osdate("%M"))
 end
 
-function converters.year  () return osdate("%Y") end
-function converters.month () return osdate("%m") end
-function converters.hour  () return osdate("%H") end
-function converters.minute() return osdate("%M") end
-function converters.second() return osdate("%S") end
+-- For consistenty we need to add day here but that conflicts with the current
+-- serializer so then best is to have none from now on:
+
+-- function converters.year  () return osdate("%Y") end
+-- function converters.month () return osdate("%m") end -- always two digits
+-- function converters.day   () return osdate("%d") end -- conflicts
+-- function converters.hour  () return osdate("%H") end
+-- function converters.minute() return osdate("%M") end
+-- function converters.second() return osdate("%S") end
 
 converters.weekday    = weekday
 converters.isleapyear = isleapyear
@@ -329,6 +333,7 @@ implement { name = "nofdays",  actions = { nofdays,  context }, arguments = { "i
 
 implement { name = "year",     actions = { osdate,   context }, arguments = "'%Y'" }
 implement { name = "month",    actions = { osdate,   context }, arguments = "'%m'" }
+implement { name = "day",      actions = { osdate,   context }, arguments = "'%d'" }
 implement { name = "hour",     actions = { osdate,   context }, arguments = "'%H'" }
 implement { name = "minute",   actions = { osdate,   context }, arguments = "'%M'" }
 implement { name = "second",   actions = { osdate,   context }, arguments = "'%S'" }
@@ -1675,3 +1680,8 @@ implement {
     }
 }
 
+local function field(n) return context(osdate("*t")[n]) end
+
+implement { name = "actualday",   public = true, actions = function() field("day")   end }
+implement { name = "actualmonth", public = true, actions = function() field("month") end }
+implement { name = "actualyear",  public = true, actions = function() field("year")  end }

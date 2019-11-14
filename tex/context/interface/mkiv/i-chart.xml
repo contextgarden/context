@@ -119,6 +119,9 @@
                 <cd:parameter name="offset">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="clipoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
                 <cd:parameter name="dx">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>

@@ -117,6 +117,8 @@ if not resolvers.initialized() then
      -- register('read_cidmap_file'    , function(file) return loadbinfile(file,"cidmap") end, true)
 
         register('find_write_file'     , function(id,name) return name end, true)
+
+        register('find_log_file'       , function(name)    return name end, true)
         register('find_format_file'    , function(name)    return name end, true)
 
     end

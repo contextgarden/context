@@ -1,0 +1,155 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-interface
+
+\startchapter[title={Interface}]
+
+Because graphic solutions are always kind of personal or domain driven it makes not
+much sense to cook up very generic solutions. If you have a project where \METAPOST\
+can be of help, it also makes sense to spend some time on implementing the basics that
+you need. In that case you can just copy and tweak what is there. The easiest way to
+do that is to make a test file and use:
+
+\starttyping[option=TEX]
+\startMPpage
+    % your code
+\stopMPpage
+\stoptyping
+
+Often you don't need to write macros, and standard drawing commands will do the
+job, but when you find yourself repeating code, a wapper might make sense. And
+this is why we have this key|/|value interface: it's easier to abstract your
+settings than to pass them as (expression or text) arguments to a macro,
+especially when there are many.
+
+You can find many examples of the key|/|value driven user interface in the source
+files and these are actually not that hard to understand when you know a bit of
+\METAPOST\ and the additional macros that come with \METAFUN. In case you wonder
+about overhead: the performance of this mechanism is pretty good.
+
+Although the parameter handler runs on top of the \LUA\ interface, you don't need
+to use \LUA\ unless you find that \METAPOST\ can't do the job. I won't give
+examples of coding because I think that the source of \METAFUN\ provides enough
+clues, especially the file \type {mp-lmtx.mpxl}. As the name suggests this is
+part of the \CONTEXT\ version \LMTX, which runs on top of \LUAMETATEX. I leave it
+open if I will backport this functionality to \LUATEX\ and therefore \MKIV.
+
+An excellent explanation of this interface can be found at:
+
+\starttyping
+https://adityam.github.io/context-blog/post/new-metafun-interface/
+\stoptyping
+
+So (at least for now) here I can stick to just mentioning the currently stable
+interface macros:
+
+\starttabulate[|T|l|pl|]
+\FL
+\NC presetparameters \NC \type {name [...]} \NC
+    Assign default values to a category of parameters. Sometimes it makes sense
+    not to set a default, because then you can check if a parameter has been set
+    at all.
+    \NC \NR
+\NC applyparameters \NC \type {name macro} \NC
+    This prepares the parameter handler for the given category and calls the
+    given macro when that is done.
+    \NC \NR
+\NC getparameters \NC \type {name [...]} \NC
+    The parameters given after the category name are set.
+    \NC \NR
+\ML
+\NC hasparameter \NC \type {names} \NC
+    Returns \type {true} when a parameter is set, and \type {false} otherwise.
+    \NC \NR
+\NC hasoption \NC \type {names options} \NC
+    Returns \type {true} when there is overlap in given options, and \type
+    {false} otherwise.
+    \NC \NR
+\ML
+\NC getparameter \NC \type {names} \NC
+    Resolves the parameter with the given name. because a parameter itself can
+    have a parameter list you can pass additional names to reach the final
+    destination.
+    \NC \NR
+\NC getparameterdefault \NC \type {names} \NC
+    Resolves the parameter with the given name. because a parameter itself can
+    have a parameter list you can pass additional names to reach the final
+    destination. The last value is used when no parameter is found.
+    \NC \NR
+\ML
+\NC getparametercount \NC \type {names} \NC
+    Returns the size if a list (array).
+    \NC \NR
+\NC getmaxparametercount \NC \type {names} \NC
+    Returns the size if a list (array) but descends into lists to find the largest size
+    of a sublist.
+    \NC \NR
+\ML
+\NC getparameterpath \NC \type {names string boolean} \NC
+    Returns the parameter as path. The optional string is one of \type {--},
+    \type {..} or \type {...} and the also optional boolean will force a closed
+    path.
+    \NC \NR
+\NC getparameterpen \NC \type {names} \NC
+    Returns the parameter as pen (path).
+    \NC \NR
+\NC getparametertext \NC \type {names boolean} \NC
+    Returns the parameter as string. The boolean can be used to force prepending
+    a so called \type {\strut}.
+    \NC \NR
+\ML
+\NC pushparameters \NC \type {category} \NC
+    Pushed the given (sub) category onto the stack so that we don't need to give
+    the category each time.
+    \NC \NR
+\NC popparameters \NC \NC
+    Pops the current (sub) category from the stack.
+    \NC \NR
+\LL
+\stoptabulate
+
+Most commands accept a list of strings separated by one or more spaces, The
+resolved will then stepwise descend into the parameter tree. This means that a
+parameter itself can refer to a list. When a value is an array and the last name
+is a number, the value at the given index will be returned.
+
+\starttyping
+"category" "name" ... "name"
+"category" "name" ... number
+\stoptyping
+
+The \type {category} is not used when we have pushed a (sub) category which can
+save you some typing and also is more efficient. Of course than can mean that you
+need to store values at a higher level when you need them at a deeper level.
+
+There are quite some extra helpers that relate to this mechanism, at the
+\METAPOST\ end as well as at the \LUA\ end. They aim for instance at efficiently
+dealing with paths and can be seen at work in the mentioned module.
+
+There is one thing you should notice. While \METAPOST\ has numeric, string,
+boolean and path variables that can be conveniently be passed to and from \LUA,
+communicating colors is a bit of a hassle. This is because \RGB\ and \CMYK\
+colors and gray scales use different types. For this reason it is strongly
+recommended to use strings that refer to predefined colors instead. This also
+enforces consistency with the \TEX\ end. As convenience you can define colors at
+the \METAFUN\ end.
+
+\startbuffer
+\startMPcode
+    definecolor [ name = "MyColor", r = .5, g = .25, b = .25 ]
+
+    fill fullsquare xyscaled (TextWidth,5mm) withcolor "MyColor" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopchapter
+
+\stopcomponent

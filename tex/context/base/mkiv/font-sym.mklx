@@ -1,0 +1,245 @@
+%D \module
+%D   [       file=font-mat,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Symbolic Access,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Symbolic Access}
+
+\unprotect
+
+%D \macros
+%D   {getglyph, symbolicfont}
+%D
+%D Individual glyphs can be accessed by using
+%D
+%D \starttyping
+%D \getglyph{fontname}{character}
+%D \stoptyping
+%D
+%D This macro is used in for instance the symbol modules and as one can see, it does
+%D obey the small and even smaller sizes. The \type {\symbolicfont} macro can be
+%D used to switch to a font named \type {fontname} (see \type {cont-log} and \type
+%D {symb-eur} for examples of symbolic definitions.
+
+\def\v_font_string_a
+  {\ifx\fontstyle\s!rm \s!Serif \orelse
+   \ifx\fontstyle\s!ss \s!Sans  \orelse
+   \ifx\fontstyle\s!tt \s!Mono  \else
+                       \s!Serif \fi}
+
+\def\v_font_string_b
+  {\ifx\fontstyle\s!rm \s!Regular \orelse
+   \ifx\fontstyle\s!ss \s!Support \orelse
+   \ifx\fontstyle\s!tt \s!Type    \else
+                       \s!Serif   \fi}
+
+\def\v_font_string_c
+  {\ifx\fontalternative\s!bf \s!Bold        \orelse
+   \ifx\fontalternative\s!sl \s!Slanted     \orelse
+   \ifx\fontalternative\s!it \s!Italic      \orelse
+   \ifx\fontalternative\s!bs \s!BoldSlanted \orelse
+   \ifx\fontalternative\s!bi \s!BoldItalic  \fi}
+
+\let\v_font_string_d\s!Serif % default fontstyle (will be redefined in type-ini)
+
+\definefontsynonym
+  [CurrentFont]
+  [\noexpand\v_font_string_a\noexpand\v_font_string_c]
+
+% potential generalization:
+%
+% \letvalue{\??fontfile:t:\s!rm}\s!Serif
+% \letvalue{\??fontfile:t:\s!ss}\s!Sans
+% \letvalue{\??fontfile:t:\s!tt}\s!Mono
+%
+% \letvalue{\??fontfile:a:\s!rm}\s!Regular
+% \letvalue{\??fontfile:a:\s!ss}\s!Support
+% \letvalue{\??fontfile:a:\s!tt}\s!Type
+%
+% \letvalue{\??fontfile:s:\s!bf}\s!Bold
+% \letvalue{\??fontfile:s:\s!sl}\s!Slanted
+% \letvalue{\??fontfile:s:\s!it}\s!Italic
+% \letvalue{\??fontfile:s:\s!bs}\s!BoldSlanted
+% \letvalue{\??fontfile:s:\s!bi}\s!BoldItalic
+%
+% \def\v_font_string_a{\executeifdefined{\??fontfile:t:\fontstyle}\s!Serif}
+% \def\v_font_string_a{\executeifdefined{\??fontfile:t:\fontstyle}\s!Serif}
+% \def\v_font_string_b{\executeifdefined{\??fontfile:a:\fontstyle}\s!Serif}
+% \def\v_font_string_c{\executeifdefined{\??fontfile:s:\fontstyle}\empty}
+% \def\v_font_string_d{\executeifdefined{\??fontfile:t:\csname\??typescriptdefaultstyles\fontclass\endcsname}\s!Serif}
+
+%D \macros
+%D   {fontstylesuffix}
+%D
+%D The next macro is used to map non latin fontnames on fonts. See \type
+%D {font-uni} for an example of its use.
+
+\def\fontstylesuffix% why the \s!Regular ? see \getglyph
+  {\ifx\fontalternative\s!tf     \s!Regular \orelse
+   \ifx\fontalternative\s!bf        \s!Bold \orelse
+   \ifx\fontalternative\s!sl     \s!Slanted \orelse
+   \ifx\fontalternative\s!it      \s!Italic \orelse
+   \ifx\fontalternative\s!bs \s!BoldSlanted \orelse
+   \ifx\fontalternative\s!bi  \s!BoldItalic \orelse
+   \ifx\fontalternative\s!sc        \s!Caps \else
+                                 \s!Regular \fi}
+
+\def\glyphfontfile#base% appends
+  {#base%
+   \ifcsname\??fontfile#base\v_font_string_a\v_font_string_c\endcsname
+     \v_font_string_a\v_font_string_c
+   \orelse\ifcsname\??fontfile#base\v_font_string_b\v_font_string_c\endcsname
+     \v_font_string_b\v_font_string_c
+   \orelse\ifcsname\??fontfile#base\v_font_string_a\endcsname
+     \v_font_string_a
+   \orelse\ifcsname\??fontfile#base\v_font_string_b\endcsname
+     \v_font_string_b
+   \orelse\ifcsname\??fontfile#base\v_font_string_c\endcsname
+     \v_font_string_c
+   \fi}
+
+%D The next macro can be used to make decisions based on the shape:
+
+\def\doifelseitalic#yes#nop%
+  {\ifx\fontalternative\s!sl#yes\orelse
+   \ifx\fontalternative\s!it#yes\orelse
+   \ifx\fontalternative\s!bs#yes\orelse
+   \ifx\fontalternative\s!bi#yes\else#nop\fi}
+
+\let\doifitalicelse\doifelseitalic
+
+%D For an example of usage of the following command, see \type {cont-log.tex}.
+%D
+%D \starttyping
+%D \def\symbolicfont#specification{\definedfont[\glyphfontfile{#specification} sa *]}
+%D \stoptyping
+%D
+%D Since we know what scaling it to be applied, we can implement a much faster
+%D alternative:
+
+\installcorenamespace{symbolfont}
+
+\let\thedefinedfont\relax
+
+\def\setscaledstyledsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
+  {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#3}} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_define_symbolic_font
+   \fi}
+
+\def\setscaleddirectsymbolicfont#1#2#3% quite a slowdown, glyphfontfile
+  {\edef\askedsymbolfont{\truefontname{#3} at \the\dimexpr#2\dimexpr\currentfontbodyscale\dimexpr#1}%
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_define_symbolic_font
+   \fi}
+
+\def\setstyledsymbolicfont#fontname% quite a slowdown, glyphfontfile
+  {\edef\askedsymbolfont{\truefontname{\glyphfontfile{#fontname}} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_define_symbolic_font
+   \fi}
+
+\def\setdirectsymbolicfont#fontname%
+  {\edef\askedsymbolfont{\truefontname{#fontname} at \the\dimexpr\currentfontbodyscale\dimexpr\fontbody}%
+   \ifcsname\??symbolfont\askedsymbolfont\endcsname
+     \lastnamedcs
+   \else
+     \font_basics_define_symbolic_font
+   \fi}
+
+\def\font_basics_define_symbolic_font
+  {\definefont[currentsymbolfont][\askedsymbolfont]%
+   \currentsymbolfont
+   \expandafter\glet\csname\??symbolfont\askedsymbolfont\endcsname\lastrawfontcall}
+
+\unexpanded\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
+\unexpanded\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
+\unexpanded\def\getglyphstyled     #fontname#character{{\setstyledsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\unexpanded\def\getglyphdirect     #fontname#character{{\setdirectsymbolicfont{#fontname}\doifelsenumber{#character}\char\donothing#character}}
+\unexpanded\def\resolvedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_tochar{#character}}}
+\unexpanded\def\resolvedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_tochar{#character}}}
+
+% this one is wrong:
+
+\unexpanded\def\getscaledglyph#scale#name#content%
+  {{\setscaledstyledsymbolicfont\fontbody{#scale}{#name}\doifelsenumber{#content}\char\donothing#content}}
+
+\let\getglyph         \getglyphstyled               % old
+\let\getrawglyph      \getglyphdirect               % old
+\let\symbolicsizedfont\setscaledstyledsymbolicfont  % old
+\let\symbolicfont     \setstyledsymbolicfont        % old
+
+\unexpanded\def\symbolicscaledfont{\setsscaledstyledsymbolicfont\fontbody}
+\unexpanded\def\symbolicscaledfont{\setscaledstyledsymbolicfont\fontbody}
+
+%D The last implementation of \type {\getglyph} permits definitions like:
+%D
+%D \starttyping
+%D \definefontsynonym [EuroSans]            [eurose]
+%D \definefontsynonym [EuroSansBold]        [euroseb]
+%D \definefontsynonym [EuroSansItalic]      [eurosei]
+%D \definefontsynonym [EuroSansSlanted]     [eurosei]
+%D \definefontsynonym [EuroSansBoldItalic]  [eurosebi]
+%D \definefontsynonym [EuroSansBoldSlanted] [eurosebi]
+%D
+%D \definesymbol [euro] [\getglyph{Euro}{\char160}]
+%D
+%D \def\euro{\symbol[euro]}
+%D \stoptyping
+%D
+%D These definitions guarantee that the next calls work okay:
+%D
+%D \starttyping
+%D \ss \tf\euro \bf\euro \sla\euro \itd\euro \bs\euro \bic\euro
+%D \stoptyping
+%D
+%D The shape as well as the size is adapted to the current environment.
+
+%D \macros
+%D   {setfont}
+%D
+%D Every now and then we want to define a font directly, for instance when we
+%D typeset title pages. The next macro saves some typing:
+
+\unexpanded\def\setfont% geen \font_helpers_set_font mogelijk
+  {\afterassignment\font_basics_set_font\font\nextfont=}
+
+\def\font_basics_set_font
+  {\nextfont\setupinterlinespace}% hm, we need to use \setuplocalinterlinespace
+
+%D One can call this macro as:
+%D
+%D \starttyping
+%D \setfont cmr10 at 60pt
+%D \stoptyping
+%D
+%D After which the font is active and the baselines and struts are set.
+
+%D \macros{doiffontcharelse}
+
+\unexpanded\def\doifelsefontchar#specification#unicode% this could be a direct lua call
+  {\begingroup
+   \font_basics_define_font_without_parameters{thedefinedfont}{#specification}%
+   \iffontchar\font#unicode\relax
+     \endgroup\expandafter\firstoftwoarguments
+   \else
+     \endgroup\expandafter\secondoftwoarguments
+   \fi}
+
+\let\doiffontcharelse\doifelsefontchar
+
+\protect \endinput

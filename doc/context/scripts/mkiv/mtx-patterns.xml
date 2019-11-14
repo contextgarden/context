@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-patterns</entry>
+  <entry name="detail">ConTeXt Pattern File Management</entry>
+  <entry name="version">0.20</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="convert"><short>generate context language files (mnemonic driven, if not given then all)</short></flag>
+    <flag name="check"><short>check pattern file (or those used by context when no file given)</short></flag>
+    <flag name="path"><short>source path where hyph-foo.tex files are stored</short></flag>
+    <flag name="destination"><short>destination path</short></flag>
+    <flag name="specification"><short>additional patterns: e.g.: =cy,hyph-cy,welsh</short></flag>
+    <flag name="compress"><short>compress data</short></flag>
+    <flag name="words"><short>update words in given file</short></flag>
+    <flag name="hyphenate"><short>show hypephenated words</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script pattern --check hyph-*.tex</command></example>
+    <example><command>mtxrun --script pattern --check   --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns</command></example>
+    <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/tex --destination=e:/tmp/patterns</command></example>
+    <example><command>mtxrun --script pattern --convert --path=c:/data/develop/svn-hyphen/trunk/hyph-utf8/tex/generic/hyph-utf8/patterns/txt --destination=e:/tmp/patterns</command></example>
+    <example><command>mtxrun --script pattern --hyphenate --language=nl --left=3 nogalwiedes inderdaad</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

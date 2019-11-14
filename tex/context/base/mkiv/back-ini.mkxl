@@ -1,0 +1,81 @@
+%D \module
+%D   [       file=back-ini,
+%D        version=2009.04.15,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Backend Macros / Initialization}
+
+\registerctxluafile{back-ini}{}
+
+\unprotect
+
+%D Right from the start \CONTEXT\ had a backend system based on runtime pluggable
+%D code. As most backend issues involved specials and since postprocessors had not
+%D that much in common, we ended up with a system where we could switch backend as
+%D well as output code for multiple backends at the same time.
+%D
+%D Because \LUATEX\ has the backend built in, and since some backend issues have
+%D been moved to the frontend I decided to provide new backend code for \MKIV,
+%D starting with what was actually used.
+%D
+%D At this moment \DVI\ is no longer used for advanced document output and we
+%D therefore dropped support for this format. Future versions might support more
+%D backends again, but this has a low priority.
+
+%D The exact page model depends on the backend so we just define some variables that
+%D are used. A helper at the \LUA\ end will synchronize with the internal variables.
+%D We store these in the format.
+
+\ifdefined\everybackendshipout       \else \newtoks\everybackendshipout       \fi
+\ifdefined\everylastbackendshipout   \else \newtoks\everylastbackendshipout   \fi
+\ifdefined\everybackendlastinshipout \else \newtoks\everybackendlastinshipout \fi
+
+\installcorenamespace{backend}
+
+\installsetuponlycommandhandler \??backend {backend}
+
+%D \starttyping
+%D \setupbackend[space=yes]
+%D \stoptyping
+
+\appendtoks
+    \clf_setrealspaces{\backendparameter\c!space}%
+\to \everysetupbackend
+
+\appendtoks
+    \ifdefined\clf_resetmapfile
+        \clf_resetmapfile
+    \fi
+\to \everysetupbackend
+
+%D For the moment this is an experiment (defauls is pdf, but we also
+%D have lua, json and mps).
+%D
+%D \starttyping
+%D % \setupoutput[lua]
+%D % \setupoutput[json]
+%D % \setupoutput[mps]
+%D % \setupoutput[none]  % for testing only
+%D % \setupoutput[empty] % for testing only
+%D
+%D \starttext
+%D     \dorecurse{1000}{
+%D         {\tf \red   \samplefile{tufte}} \par
+%D         {\bf \green \samplefile {ward}} \par
+%D         {\sl \blue  \samplefile{davis}} \par
+%D     }
+%D \stoptext
+%D \stoptyping
+
+\unexpanded\def\setupoutput[#1]%
+  {\clf_enabledriver{#1}}
+
+\protect \endinput

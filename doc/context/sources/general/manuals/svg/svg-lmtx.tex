@@ -1,0 +1,547 @@
+% language=us
+
+% \enabletrackers[metapost.svg.result]
+% \enabletrackers[metapost.svg.path]
+
+\enabledirectives[pdf.compact]
+
+% \nopdfcompression
+
+\def\showSVGcode#1#2%
+  {\ctxlua{metapost.showsvgpage{
+        filename = "#1",
+        index    = tonumber(#2),
+        method   = "code"
+    }}}
+
+\def\showSVGcodeG#1#2%
+  {\ctxlua{metapost.showsvgpage{
+        filename = "#1",
+        index    = tonumber(#2),
+        method   = "code",
+        x        = 0,
+        y        = 1000,
+        width    = 1000,
+        height   = 1000,
+        noclip   = true
+    }}}
+
+\def\typeSVGcode#1#2%
+  {\ctxlua{metapost.typesvgpage{
+        filename = "#1",
+        index    = tonumber(#2)
+    }}}
+
+\usemodule[abbreviations-logos]
+\usemodule[scite]
+
+\setuppapersize
+  [A4,landscape]
+
+\setuplayout
+  [backspace=1cm,
+   cutspace=2cm,
+   topspace=1cm,
+   width=middle,
+   height=middle,
+   header=0pt,
+   footer=0pt]
+
+\setupbodyfont
+  [dejavu,12pt]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+  color=darkblue]
+
+\setuphead
+  [section]
+  [style=\bfb,
+   color=darkblue]
+
+\starttext
+
+\startMPpage
+    drawlineoptions   (withpen pencircle scaled 0.4 withcolor darkgray) ;
+    drawpointoptions  (withpen pencircle scaled 0.8 withcolor darkred) ;
+    drawcontroloptions(withpen pencircle scaled 0.6 withcolor darkgreen) ;
+    drawpathoptions   (withpen pencircle scaled 1.0 withcolor darkblue) ;
+
+    drawoptionsfactor := .5 ;
+    detailpaths ;
+
+    StartPage ;
+
+        fill Page withcolor darkblue ;
+
+        draw lmt_svg [
+            filename = "svglogo.svg",
+            origin   = true,
+        ]
+            ysized (PaperHeight -64mm)
+            shifted (12mm,52mm) ;
+
+        draw textext.llft ("\strut in context")
+            ysized 34mm
+            shifted lrcorner Page
+            shifted (-8mm,84mm)
+            withcolor white ;
+
+        draw textext.llft ("\strut and metafun xl")
+            ysized 34mm
+            shifted lrcorner Page
+            shifted (-8mm,44mm)
+            withcolor white ;
+
+
+    StopPage ;
+\stopMPpage
+
+\starttitle[title=Introduction]
+
+This document is about using \SVG, an \XML\ based format for describing graphics
+and colorful font shapes in \CONTEXT. It's one of the external figure formats.
+Where we can use \METAPOST\ for all kind of systematic graphics, bitmap images
+and artistic outlines come from outside. Inclusion of \SVG\ using the methods
+discussed here is quite efficient and will work for many graphics, but when it
+doesn't you can always fall back on a conversion by \INKSCAPE. It's work in
+progress anyway.
+
+The document is made for viewing on the screen and has a bunch of examples taken
+from websites. We might add more in due time. The cover page has the \SVG\ logo
+taken from \WIKIPEDIA\ but with some details added. It's not a nice cover image
+but it will do for our purpose. Feel free to suggest additional examples.
+
+\startlines
+Hans Hagen
+Hasselt NL
+October 2019\high{+}
+\stoplines
+
+\stoptitle
+
+\starttitle[title=The \SVG\ format]
+
+\startsection[title=What it is]
+
+The Scalable Vector Graphics format (\SVG) showed up around the turn of this
+century. I remember looking into it and wondering to what extent it was a fresh
+development and not some kind of application format turned \XML. Most elements
+are empty elements and data lives in attributes. What I found most puzzling is
+that a path definition was an attribute and not just content, especially because
+it can be a pretty large blob of numbers and commands. Anyway, at that time I
+played a bit with conversion but in the end decided to just consider it an
+external format for which conversion to (say) \PDF\ by an external program was a
+reasonable. At some point that external program became \INKSCAPE\ and \CONTEXT\
+uses that to convert \SVG\ images to \PDF\ runtime (with caching).
+
+In the meantime edition one turned edition two and the advance of \HTML\ and
+\CSS\ has crept features into the format, thereby not making it look better. But,
+because viewers support rendering \SVG, we now also see graphics showing up. The
+ones that I have to deal with are educational graphics, and when you look into
+the files, they can be curiously inconsistent in the way parts of graphics are
+made. For instance, the numbers along an axis of a mathematical graphic can be a
+mix of references to a font (\type {<text/>}), references to symbols \type
+{<symbol/>} that have paths (\type {<path/>}) or just paths \type {<path/>}.
+Using a tool that can spit out something structured doesn't mean that all its
+users will structure.
+
+The \SVG\ format provides lines, rectangles, circles, ellipses, polylines,
+polygons and paths. Paths are defines as a sequence of moves, lines, cubic and
+quadratic curves, arcs, collected in the \type {d} attribute (a funny short name
+compared to the length of its content and the verbosity of other attribute
+names). They can be open or closed, and use different winding rules. Positions
+are absolute or relative. This all leaves a lot of room for error and confusion.
+When a path looks bad, it can be produced bad, or the interpretation can be bad.
+Interpretation can even be such that errors are catched which makes it hard to
+figure out what is really wrong. And as usual, bugs (and supposed catches) can
+become features in the end. So it might take a while before this kind of support
+in \CONTEXT\ becomes stable but once it is, normally we're okay for a while. And,
+one nice side effect of \XML\ is that it can't really crash processing as it's
+just data.
+
+\stopsection
+
+\startsection[title=Color fonts]
+
+Then color fonts showed up in \OPENTYPE\ and \SVG\ is one of the used
+sub|-|formats in that. Again it was convenient enough to rely on \INKSCAPE\ to do
+the conversion to \PDF\ blobs, but after a while I decided that a more native
+(built|-|in) support start making sense. A lot had happened since 2000, most
+noticeably the arrival of \LUATEX\ and \CONTEXT\ \MKIV\ followed by \LUAMETATEX\
+and \CONTEXT\ \LMTX, so a more direct support because more feasible. A more
+direct support has the advantage that we don't need to call an external program
+and cache the results (think of Emoji fonts with thousands of glyphs in \SVG\
+format). Also, direct conversion makes it possible to tweak colors and such,
+simply because the data goes through the \CONTEXT\ internals as part of the
+typesetting process. So, as a prelude to the \CONTEXT\ 2019 meeting a preliminary
+converter was made, color font support was partially redone, and afterward the
+converter got completed to the level needed for embedding more fancy graphics,
+including relabeling.
+
+\stopsection
+
+\startsection[title=In practice]
+
+In the end all is about paths or glyphs, plus some optional clipping and
+transformations. The rendering is controlled by attributes: color, transparency,
+line thickness, the way lines join and end, etc. Now, in the original
+specification that was done only with attributes, which is a clean and robust way
+of doing it, but later styles and classes were introduced and we now have a whole
+chain to consider when resolving a to be used attribute.
+
+\startitemize[packed]
+    \startitem attributes explicitly set by keys to an element \stopitem
+    \startitem attributes set in the \type {style} attribute \stopitem
+    \startitem attributes set via one or more \type {class} assignments \stopitem
+    \startitem attributes set for the specific element \stopitem
+    \startitem attributes inherited from an ancestor (somewhat vague) \stopitem
+    \startitem redundant (nested) attributes (text styling) \stopitem
+\stopitemize
+
+Where examples are often hand codes and therefore look ok, graphics that get
+generated can look quite horrible: the same parameters being set with different
+methods, even inconsistently, to mention one. But also, graphics can be read in,
+tweaked and saved again which in itself generates artifacts, etc. One can of
+course argue that \XML\ is not for human consumption but personally I tend to
+conclude that when a source file looks bad, the likelyhood is great that what it
+encodes looks bad too. And for instance \INKSCAPE\ provides ways to inspect and
+tweak the \XML\ in the editor.
+
+\stopsection
+
+\startsection[title=The conversion]
+
+This brings us to the conversion. As we need \PDF\ operators one method is to
+directly go from \SVG\ to \PDF. There is the issue of fonts, but as we delegate
+that to \TEX\ anyway, because that is kind of an abstraction. Such a conversion
+is comparable with going from \METAPOST\ to \PDF. However, for practical reasons
+an intermediate step has been chosen: we go from \SVG\ to \METAPOST\ first. This
+has the benefit that we need little code for color and transparency because
+\METAPOST\ (read: \METAFUN) already deals with that. We also don't need that much
+for text, as we deal with that in \METAPOST\ too, and that way we can even
+overload and reposition for instance labels in graphics relatively easy.
+
+Another advantage of the intermediate step is that we can combine \SVG\ graphics
+with \METAPOST\ code. Of course we can already combine external graphics with
+\METAPOST, but there is a big advantage here: the output is quite efficient. When
+we transform paths and pens in \METAPOST, the end result is often just a path,
+but where we to do a direct conversion to \PDF, we would either have to do
+calculations on our own, or we would have to use lots of transformation
+directives. In the end, especially because \METAPOST\ is so fast, the indirect
+route pays of well (and I haven't even optimized it yet).
+
+\stopsection
+
+\startsection[title=Remark]
+
+In the perspective if using \TEX\ and \METAPOST\ it makes sense to keep an eye on
+consistency. You can make quite structured \SVG\ images if you want to. When you
+use a graphical editor you can even consider using a normal text editor to clean
+up the code occasionally. The cleaner the code, the more predictable the outcome
+will become. Looking at the code might also give an impression of what features
+not to use of use differently. Of course this makes most sense in situations
+where there are many graphics and long|-|term (re)use is needed.
+
+\stopsection
+
+\stoptitle
+
+\starttitle[title=Embedding graphics]
+
+\startsection[title=External figures]
+
+At least for now, the default \SVG\ inclusions is done via an external converter
+but you can use the internal one by specifying a conversion. The next example
+demonstrates that it works like any external figure:
+
+\startbuffer
+\startcombination[4*1]
+    {\externalfigure[mozilla-tiger.svg][conversion=mp]}                      {1}
+    {\externalfigure[mozilla-tiger.svg][conversion=mp,height=1cm]}           {2}
+    {\externalfigure[mozilla-tiger.svg][conversion=mp,height=3cm,width=1cm]} {3}
+    {\externalfigure[mozilla-tiger.svg][conversion=mp,height=1cm,width=8cm]} {4}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Internal figures]
+
+You can put some \SVG\ code in a buffer:
+
+\startbuffer
+\startbuffer[svgtest]
+    <svg>
+        <rect
+            x="0" y="0" width="80" height="20"
+            fill="blue" stroke="red" stroke-width="3"
+            stroke-linejoin="miter"
+            transform="rotate(10)"
+        />
+    </svg>
+\stopbuffer
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+In the future more options might be added but for now there's only an offset
+possible:
+
+\startbuffer
+\startcombination[2*1]
+    {\framed[offset=overlay]{\includesvgbuffer[svgtest]}}             {default}
+    {\framed[offset=overlay]{\includesvgbuffer[svgtest][offset=2bp]}} {some offset}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+There is a companion command \type {\includesvgfile} which accepts a filename
+and also supports offsets. Sometimes the offset is needed to prevent unwanted
+clipping.
+
+\stopsection
+
+\startsection[title=Mixing in \METAFUN]
+
+An \SVG\ image can be directly included in an \METAFUN\ image. This makes it
+possible to enhance (or manipulate) such an image, as in:
+
+\startbuffer
+\startMPcode
+    draw lmt_svg [
+        filename = "mozilla-tiger.svg",
+        origin   = true,
+    ] rotated 45 slanted .75 ysized 2cm ;
+
+    setbounds currentpicture to
+        boundingbox currentpicture
+        enlarged 1mm ;
+
+    addbackground
+        withcolor "darkgray" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+An \SVG\ image included this way becomes a regular \METAPOST\ picture, so a
+collection of paths. Because \METAPOST\ on the average produces rather compact
+output the \SVG\ image normally also is efficiently embedded. You don't need to
+worry about loosing quality, because \METAPOST\ is quite accurate and we use so
+called \quote {double} number mode anyway.
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+Another trick is to inline the code:
+
+\startbuffer
+\startMPcode
+    draw svg "<svg>
+        <circle
+            cx='50' cy='50' r='40'
+            stroke='green' stroke-width='10' stroke-opacity='0.3'
+            fill='red' fill-opacity='0.3'
+        />
+        <circle
+            cx='150' cy='50' r='40'
+            stroke='green' stroke-width='10'
+            fill='red'
+            opacity='0.3'
+        />
+    </svg>" ;
+\stopMPcode
+\stopbuffer
+
+It doesn't really make sense as \METAPOST\ code is just as simple but
+it looks cool:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+And actually it's less code (which internally of course expands to
+more):
+
+\startbuffer
+\startMPcode
+    pickup pencircle scaled 10;
+    path p ; p := fullcircle scaled 80 ;
+    fill p shifted (50,50) withcolor blue
+        withtransparency(1,0.3) ;
+    draw p shifted (50,50) withcolor yellow
+        withtransparency(1,0.3) ;
+    draw image (
+        fill p shifted (150,50) withcolor blue ;
+        draw p shifted (150,50) withcolor yellow ;
+        setgroup currentpicture to boundingbox currentpicture
+            withtransparency(1,0.3) ;
+    ) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+It's all a matter of taste. Watch the grouping trick!
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Fonts]
+
+{\em This is still experimental.}
+
+\stopsection
+
+\startsection[title=Labels]
+
+{\em This is still experimental.}
+
+\stopsection
+
+\startsection[title=Tracing]
+
+{\em This is still experimental.}
+
+\stopsection
+
+\stoptitle
+
+\starttitle[title=Mozilla test snippets]
+
+The Mozilla documentation pages for \SVG\ are pretty good and contain snippets
+that can be used for testing. More examples might be added in due time.
+
+\dorecurse{38}{
+    \page
+    \startsection[title=Snippet #1]
+        \framed
+          [offset=overlay]
+          {\scale[height=4cm]{\showSVGcode{svg-lmtx-mozilla.lua}{#1}}}
+        \blank
+        \start
+            \switchtobodyfont[10pt]
+            \setupalign[flushleft,verytolerant,broad]
+            \typeSVGcode{svg-lmtx-mozilla.lua}{#1}
+            \par
+        \stop
+    \stopsection
+    \page
+}
+
+\stoptitle
+
+\starttitle[title=Microsoft test snippets]
+
+These snippets come from the \MICROSOFT\ typography pages that discuss \OPENTYPE\
+and \SVG. Because these are actually examples of glyphs, we need to set some
+defaults:
+
+\starttabulate[|cT|rT|]
+\NC x      \NC    0 \NC \NR
+\NC y      \NC 1000 \NC \NR
+\NC width  \NC 1000 \NC \NR
+\NC height \NC 1000 \NC \NR
+\stoptabulate
+
+in order to get the right placement. This has to do with the fact that the
+vertical \SVG\ coordinates go in the other direction compared to \METAPOST\ and
+\PDF.
+
+\dorecurse{8}{
+    \page
+    \startsection[title=Snippet #1]
+        \framed
+          [offset=overlay]
+          {\scale[height=4cm]{\showSVGcodeG{svg-lmtx-microsoft.lua}{#1}}}
+        \blank
+        \start
+            \switchtobodyfont[10pt]
+            \setupalign[flushleft,verytolerant,broad]
+            \typeSVGcode{svg-lmtx-microsoft.lua}{#1}
+            \par
+        \stop
+        \page
+    \stopsection
+    \page
+}
+
+\stoptitle
+
+\starttitle[title=Xah Lee test snippets]
+
+These snippets come from the \type {http://xahlee.info/js/svg_path_spec.html},
+which gives a nice overview of \SVG. Not all examples are here. There are some
+nice interactive examples there plus info about using fonts.
+
+\dorecurse{38}{
+    \page
+    \startsection[title=Snippet #1]
+        \framed
+          [offset=overlay]
+          {\scale[height=4cm]{\showSVGcodeG{svg-lmtx-xahlee.lua}{#1}}}
+        \blank
+        \start
+            \switchtobodyfont[10pt]
+            \setupalign[flushleft,verytolerant,broad]
+            \typeSVGcode{svg-lmtx-xahlee.lua}{#1}
+            \par
+        \stop
+        \page
+    \stopsection
+    \page
+}
+
+\stoptitle
+
+\starttitle[title=Our own snippets]
+
+These snippets were made as part if testing. I had some 1500 \SVG\ graphics that
+internally were quite messy (it's surprising what some applications export) so I
+sometimes had to extract bits and pieces and make my own tests to figure out how
+to deal with it.
+
+\dorecurse{2}{
+    \page
+    \startsection[title=Snippet #1]
+        \framed
+          [offset=overlay]
+          {\scale[height=4cm]{\showSVGcode{svg-lmtx-context.lua}{#1}}}
+        \blank
+        \start
+            \switchtobodyfont[10pt]
+            \setupalign[flushleft,verytolerant,broad]
+            \typeSVGcode{svg-lmtx-context.lua}{#1}
+            \par
+        \stop
+        \page
+    \stopsection
+    \page
+}
+
+\stoptitle
+
+\stoptext
+
+% After some contemplating, while listening to Benmont Tench's solo album (2014),
+% after first listening to a nice long interview, which I hit after following some
+% Hammond links, I finally decided that it made sense to write this manual. Life is
+% too short for delays.

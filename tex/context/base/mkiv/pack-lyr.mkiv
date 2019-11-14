@@ -19,18 +19,16 @@
 
 \unprotect
 
-% When being backgrounds layers get the background offset
-% displacement. Should be an option, on by default
-% (compatibility).
+% When being backgrounds layers get the background offset displacement. Should be
+% an option, on by default (compatibility).
 
-%D The layering mechanism implemented here is independent of
-%D the output routine, but future extensions may depend on a
-%D more close cooperation.
-
-%D First we overload a macro from \type {pack-rul}. From now on
-%D we accept a (optional) argument: the specific layer it
-%D will go in. This means that we can move an overlay from one
-%D background to the other using the dimensions of the parent.
+%D The layering mechanism implemented here is independent of the output routine, but
+%D future extensions may depend on a more close cooperation.
+%D
+%D First we overload a macro from \type {pack-rul}. From now on we accept a
+%D (optional) argument: the specific layer it will go in. This means that we can
+%D move an overlay from one background to the other using the dimensions of the
+%D parent.
 
 \ifdefined\defineoverlay \else \message{loaded to early} \wait \fi
 
@@ -46,13 +44,12 @@
    \fi
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
 
-%D We use the command handler code. The previous, more direct parameter
-%D handling was 25\% faster when no parameters were passed when adding
-%D content to a layer. However, when we pass for instance a preset, the
-%D new methos is some 10\% faster and it happens that in most cases we
-%D do pass some parameters. It would be interesting to see if we can push
-%D the preset in between the regular chain but it could also lead to
-%D unwanted side effects when nesting layer placement.
+%D We use the command handler code. The previous, more direct parameter handling was
+%D 25\% faster when no parameters were passed when adding content to a layer.
+%D However, when we pass for instance a preset, the new methos is some 10\% faster
+%D and it happens that in most cases we do pass some parameters. It would be
+%D interesting to see if we can push the preset in between the regular chain but it
+%D could also lead to unwanted side effects when nesting layer placement.
 
 \installcorenamespace{layer}
 \installcorenamespace{layerbox}
@@ -62,13 +59,11 @@
 %D \macros
 %D   {definelayer,setuplayer}
 %D
-%D Each layer gets its own (global) box. This also means that
-%D the data that goes into a layer, is typeset immediately.
-%D Each layer automatically gets an associated overlay,
-%D which can be used in any background assignment.
+%D Each layer gets its own (global) box. This also means that the data that goes
+%D into a layer, is typeset immediately. Each layer automatically gets an associated
+%D overlay, which can be used in any background assignment.
 %D
-%D After a layer is defined, you can change its
-%D characteristics.
+%D After a layer is defined, you can change its characteristics.
 
 \installcommandhandler \??layer {layer} \??layer
 
@@ -175,8 +170,7 @@
 %D \macros
 %D  {resetlayer}
 %D
-%D This macro hardly needs an explanation (but is seldom
-%D needed anyway).
+%D This macro hardly needs an explanation (but is seldom needed anyway).
 
 \def\pack_layers_reset_box#1%
   {\ifcsname\??layerbox#1\endcsname
@@ -193,10 +187,9 @@
 %D \macros
 %D   {setlayer}
 %D
-%D Data is moved into a layer with the following macro. When
-%D \type {position} is set, relative positioning is used, with
-%D the current point as reference point. Otherwise the topleft
-%D corner is used as reference point.
+%D Data is moved into a layer with the following macro. When \type {position} is
+%D set, relative positioning is used, with the current point as reference point.
+%D Otherwise the topleft corner is used as reference point.
 %D
 %D \starttyping
 %D \setlayer [identifier] [optional parameters] {data}
@@ -474,11 +467,10 @@
   {\ifdim\d_pack_layers_x_size>\zeropoint \advance\d_pack_layers_x_position.5\d_pack_layers_x_size \fi
    \ifdim\d_pack_layers_y_size>\zeropoint \advance\d_pack_layers_y_position.5\d_pack_layers_y_size \fi}
 
-%D Given the task to be accomplished, the previous macro is
-%D not even that complicated. It mainly comes down to skipping
-%D to the right place and placing a box on top of or below the
-%D existing content. In the case of position tracking, another
-%D reference point is chosen.
+%D Given the task to be accomplished, the previous macro is not even that
+%D complicated. It mainly comes down to skipping to the right place and placing a
+%D box on top of or below the existing content. In the case of position tracking,
+%D another reference point is chosen.
 
 %D \macros
 %D  {doifelselayerdata}
@@ -500,10 +492,9 @@
 %D \macros
 %D  {flushlayer}
 %D
-%D When we flush a layer, we flush both the main one and the
-%D page dependent one (when defined). This feature is more
-%D efficient in \ETEX\ since there testing for an undefined
-%D macro does not takes hash space.
+%D When we flush a layer, we flush both the main one and the page dependent one
+%D (when defined). This feature is more efficient in \ETEX\ since there testing for
+%D an undefined macro does not takes hash space.
 
 % todo: setups before flush, handy hook
 
@@ -709,9 +700,8 @@
 %D \macros
 %D  {composedlayer,placelayer,tightlayer}
 %D
-%D This is a handy shortcut, which saves a couple of braces
-%D when we use it as parameter. This name also suits better
-%D to other layering commands.
+%D This is a handy shortcut, which saves a couple of braces when we use it as
+%D parameter. This name also suits better to other layering commands.
 
 \unexpanded\def\composedlayer#1{\flushlayer[#1]}
 
@@ -736,8 +726,7 @@
 %D \macros
 %D  {setMPlayer}
 %D
-%D The following layer macro uses the positions that are
-%D registered by \METAPOST.
+%D The following layer macro uses the positions that are registered by \METAPOST.
 %D
 %D \starttyping
 %D \definelayer[test]

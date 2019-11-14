@@ -1,0 +1,26 @@
+\setupbodyfont[dejavu]
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "pairtest",
+        type = "pair",
+        data = {
+            A = { B = { { -30, 50, -50, 0 } } },
+            B = { C = { { -30, 0, -50, 0 } } },
+        }
+    }
+\stopluacode
+
+\starttext
+
+\definecolor[tgray][s=.5,t=.5,a=1] \showfontkerns \showglyphs
+
+\definefontfeature[pairtest] [mode=node,pairtest=yes]
+
+\definedfont[file:dejavu-serif.ttf*pairtest @ 48pt]
+
+\startTEXpage[offset=10pt,foregroundcolor=tgray]
+    ABCDEF
+\stopTEXpage
+
+\stoptext

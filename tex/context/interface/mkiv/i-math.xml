@@ -139,6 +139,15 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="mathematics" variant="assignment" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathematics"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="math" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
@@ -146,9 +155,27 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="math" variant="assignment" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathematics"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="m" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="m" variant="assignment" level="document" category="mathematics" file="math-ini.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathematics"/>
+            </cd:assignments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -309,6 +336,31 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
+
+    <!--
+
+        <cd:command name="text" level="document" category="mathematics" file="math-ini.mkiv">
+            <cd:arguments>
+                <cd:resolve name="string-boxoptions"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="t" level="document" category="mathematics" file="math-ini.mkiv">
+            <cd:arguments>
+                <cd:resolve name="string-boxoptions"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="w" level="document" category="mathematics" file="math-ini.mkiv">
+            <cd:arguments>
+                <cd:resolve name="string-boxoptions"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="mathtexttf" level="document" category="mathematics" file="math-ini.mkiv">
         <cd:arguments>
@@ -510,5 +562,9 @@
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="stackscripts" level="document" category="mathematics" file="math-ini.mkiv"/>
+
+    <cd:command name="unstackscripts" level="document" category="mathematics" file="math-ini.mkiv"/>
 
 </cd:interface>

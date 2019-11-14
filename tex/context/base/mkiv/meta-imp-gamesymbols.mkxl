@@ -1,0 +1,349 @@
+%D \module
+%D   [       file=meta-imp-gamesymbols,
+%D        version=2019.10.10,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Game Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The \METAFUN\ code here is not optimal and efficient but as it serves as an
+%D example I decided to keep it simple. Also, performance is not really an issue
+%D here anyway. Inspired by the classic \quote {Concrete Mathematics} by Don Knuth
+%D we define dice and dominos, which happen to be \UNICODE\ characters now. We
+%D use this opportunity to demonstrate slightly different approached.
+
+%D Each dice gets it's own macro at the \METAPOST\ end. Watch how we use the \type
+%D {simplefun} instance in combination with a calculation wrapper. This will just
+%D execute the code and leave no traces in the text flow. The code itself is not
+%D that spectacular:
+
+\startMPcalculation{simplefun}
+
+    def DiceFrame =
+        pickup pencircle scaled 1/2 ;
+        draw unitsquare scaled 8 ;
+        pickup pencircle scaled 3/2 ;
+    enddef ;
+
+    vardef DiceOne =
+        DiceFrame ;
+        draw (4,4) ;
+    enddef ;
+    vardef DiceTwoA =
+        DiceFrame ;
+        draw (2,6) ; draw (6,2) ;
+    enddef ;
+    vardef DiceTwoB =
+        DiceFrame ;
+        draw (6,6) ; draw (2,2) ;
+    enddef ;
+    vardef DiceTwo =
+        if hasoption "mpsfont" "option" "reverse" :
+            DiceTwoB
+        else :
+            DiceTwoA
+        fi ;
+    enddef ;
+    vardef DiceThreeA =
+        DiceFrame ;
+        draw (2,6) ; draw (4,4) ; draw (6,2) ;
+    enddef ;
+    vardef DiceThreeB =
+        DiceFrame ;
+        draw (6,6) ; draw (4,4) ; draw (2,2) ;
+    enddef ;
+    vardef DiceThree =
+        if hasoption "mpsfont" "option" "reverse" :
+            DiceThreeB
+        else :
+            DiceThreeA
+        fi ;
+    enddef ;
+    vardef DiceFour =
+        DiceFrame ;
+        draw (2,6) ; draw (6,6) ; draw (2,2) ; draw (6,2) ;
+    enddef ;
+    vardef DiceFive =
+        DiceFrame ;
+        draw (2,6) ; draw (6,6) ; draw (4,4) ; draw (2,2) ; draw (6,2) ;
+    enddef ;
+    vardef DiceSix =
+        DiceFrame ;
+        draw (2,6) ; draw (6,6) ; draw (2,4) ; draw (6,4) ; draw (2,2) ; draw (6,2) ;
+    enddef ;
+
+    vardef DiceBad =
+        pickup pencircle scaled 1/2 ;
+        draw unitsquare scaled 8 ;
+        draw (1,7) -- (7,1) ; draw (1,1) -- (7,7) ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "dice",
+        units    = 12,
+        width    = 8,
+        height   = 8,
+        depth    = 0,
+        usecolor = true,
+    ] ;
+
+    lmt_registerglyph [ category = "dice", unicode = "0x2680", code = "DiceOne;" ] ;
+    lmt_registerglyph [ category = "dice", unicode = "0x2681", code = "DiceTwo;" ] ;
+    lmt_registerglyph [ category = "dice", unicode = "0x2682", code = "DiceThree;" ] ;
+    lmt_registerglyph [ category = "dice", unicode = "0x2683", code = "DiceFour;" ] ;
+    lmt_registerglyph [ category = "dice", unicode = "0x2684", code = "DiceFive;" ] ;
+    lmt_registerglyph [ category = "dice", unicode = "0x2685", code = "DiceSix;" ] ;
+
+    lmt_registerglyph [ category = "dice", private = "invaliddice", code = "DiceBad;" ] ;
+
+\stopMPcalculation
+
+%D At the \TEX\ end we define three features. The reverse is just there for fun. The
+%D digits features will map digits onto dice.
+
+\definefontfeature
+  [dice:normal]
+  [default]
+  [metapost={category=dice}]
+
+\definefontfeature
+  [dice:reverse]
+  [default]
+  [metapost={category=dice,option=reverse}]
+
+\definefontfeature
+  [dice:digits]
+  [dice:digits=yes]
+
+%D The mapping to dice happens here:
+
+\startluacode
+
+    -- local invalid = fonts.helpers.privateslot("invaliddice")
+
+    fonts.handlers.otf.addfeature("dice:digits", {
+        type      = "substitution",
+        order     = { "dice:digits" },
+        nocheck   = true,
+        data      = {
+            [0x30] = "invaliddice",
+            [0x31] = 0x2680,
+            [0x32] = 0x2681,
+            [0x33] = 0x2682,
+            [0x34] = 0x2683,
+            [0x35] = 0x2684,
+            [0x36] = 0x2685,
+            [0x37] = "invaliddice",
+            [0x38] = "invaliddice",
+            [0x39] = "invaliddice",
+        },
+    } )
+
+\stopluacode
+
+%D An example is given at the the end of this file so we now move forward with
+%D the dominos.
+
+\startMPcalculation{simplefun}
+
+    %D Because there are so many dominos we predefine the shapes and then register
+    %D the lot in a loop.
+
+    picture Dominos[] ;
+
+    Dominos[0] := image() ;
+    Dominos[1] := image(draw(4,4);) ;
+    Dominos[2] := image(draw(2,6);draw(6,2););
+    Dominos[3] := image(draw(2,6);draw(4,4);draw(6,2););
+    Dominos[4] := image(draw(2,6);draw(6,6);draw(2,2);draw(6,2););
+    Dominos[5] := image(draw(2,6);draw(6,6);draw(4,4);draw(2,2);draw(6,2););
+    Dominos[6] := image(draw(2,6);draw(4,6);draw(6,6);draw(2,2);draw(4,2);draw(6,2););
+  % Dominos[7] := Dominos[0] ;
+  % Dominos[8] := Dominos[0] ;
+  % Dominos[9] := Dominos[0] ;
+
+    %D Defining the font properties is straightforward:
+
+    lmt_registerglyphs [
+        name     = "dominos",
+        units    = 12,
+        width    = 16,
+        height   = 8,
+        depth    = 0,
+        usecolor = true,
+    ] ;
+
+    %D We have horizontal dominos:
+
+    def DrawDominoH(expr a, b) =
+        draw image (
+            pickup pencircle scaled 1/2 ;
+            if (getparameterdefault "mpsfont" "color" "") = "black" :
+                fillup unitsquare xyscaled (16,8) ;
+                draw (8,.5) -- (8,7.5) withcolor white ;
+                pickup pencircle scaled 3/2 ;
+                draw Dominos[a]
+                    withpen currentpen
+                    withcolor white ;
+                draw Dominos[b] shifted (8,0)
+                    withpen currentpen
+                    withcolor white ;
+            else :
+                draw unitsquare xyscaled (16,8) ;
+                draw (8,0) -- (8,8) ;
+                pickup pencircle scaled 3/2 ;
+                draw Dominos[a]
+                    withpen currentpen ;
+                draw Dominos[b] shifted (8,0)
+                    withpen currentpen ;
+            fi ;
+        ) ;
+    enddef ;
+
+    %D and vertical ones. We could use the above macro and rotate and shift and reflect
+    %D but why bother with it:
+
+    def DrawDominoV(expr a, b) = % is H rotated and shifted
+        draw image (
+            pickup pencircle scaled 1/2 ;
+            if (getparameterdefault "mpsfont" "color" "") = "black" :
+                fillup unitsquare xyscaled (8,16) ;
+                draw (.5,8) -- (7.5,8) withcolor white ;
+                pickup pencircle scaled 3/2 ;
+                draw Dominos[a] rotatedaround(center Dominos[a],90)
+                    withpen currentpen
+                    withcolor white  ;
+                draw Dominos[b] rotatedaround(center Dominos[b],90) shifted (0,8)
+                    withpen currentpen
+                    withcolor white  ;
+            else :
+                draw unitsquare xyscaled (8,16) ;
+                draw (0,8) -- (8,8) ;
+                pickup pencircle scaled 3/2 ;
+                draw Dominos[a] rotatedaround(center Dominos[a],90)
+                    withpen currentpen ;
+                draw Dominos[b] rotatedaround(center Dominos[b],90) shifted (0,8)
+                    withpen currentpen ;
+            fi ;
+        ) ;
+    enddef ;
+
+    %D We have two simple loops that define the horizontal range:
+
+    save unicode ; numeric unicode ; unicode := 127025 ; % 1F031
+
+    for i=0 upto 6 :
+        for j=0 upto 6 :
+            lmt_registerglyph [
+                category = "dominos",
+                unicode  = unicode,
+                code     = "DrawDominoH(" & decimal i & "," & decimal j & ");",
+                width    = 16,
+                height   = 8,
+            ] ;
+            unicode := unicode + 1 ;
+        endfor ;
+    endfor ;
+
+    %D and the vertical range:
+
+    save unicode ; numeric unicode ; unicode := 127075 ;
+
+    for i=0 upto 6 :
+        for j=0 upto 6 :
+            lmt_registerglyph [
+                category = "dominos",
+                unicode  = unicode,
+                code     = "DrawDominoV(" & decimal i & "," & decimal j & ");",
+                width    = 8,
+                height   = 16,
+            ] ;
+            unicode := unicode + 1 ;
+        endfor ;
+    endfor ;
+
+    %D Now we're done at the \METAFUN\ end.
+
+\stopMPcalculation
+
+%D We predefine two features:
+
+\definefontfeature
+  [dominos:white]
+  [default]
+  [metapost={category=dominos}]
+
+\definefontfeature
+  [dominos:black]
+  [default]
+  [metapost={category=dominos,color=black}]
+
+\definefontfeature
+  [dominos:digits]
+  [dominos:digits=yes]
+
+%D This last feature is yet to be defined. We could deal with the invalid
+%D dominos with some substitution trickery but let's keep it simple.
+
+\startluacode
+
+    local ligatures = { }
+    local unicode   = 127025
+
+    for i=0x30,0x36 do
+        for j=0x30,0x36 do
+            ligatures[unicode] = { i, j }
+            unicode = unicode + 1 ;
+        end
+    end
+
+    fonts.handlers.otf.addfeature("dominos:digits", {
+        type      = "ligature",
+        order     = { "dominos:digits" },
+        nocheck   = true,
+        data      = ligatures,
+    } )
+
+\stopluacode
+
+\continueifinputfile{meta-imp-gamesymbols.mkxl}
+
+\starttext
+
+    \definefont[DominoW][Serif*dominos:white]
+    \definefont[DominoB][Serif*dominos:black]
+    \definefont[DominoD][Serif*dominos:white,dominos:digits]
+
+    \startTEXpage[offset=3pt]
+        \DominoW
+            \char"1F043\quad 🀱\quad
+            \char"1F052\quad 🀲\quad
+            \char"1F038\quad 🀳\quad
+            \darkgreen\char"1F049\quad \char"1F07B\quad
+        \DominoB
+            \char"1F087\quad
+            \char"1F088\quad
+            \char"1F089\quad
+        \DominoD
+            \darkred 12\quad56\quad64%
+    \stopTEXpage
+
+    \definefont[DiceN][Serif*dice:normal]
+    \definefont[DiceR][Serif*dice:reverse]
+    \definefont[DiceD][Serif*dice:normal,dice:digits]
+
+    \startTEXpage[offset=3pt]
+        \DiceN
+            \dostepwiserecurse{"2680}{"2685}{1}{\char#1\quad}%
+        \DiceN
+            \dostepwiserecurse{"2680}{"2685}{1}{\char#1\quad}%
+        \DiceD
+            \darkblue 2\quad5\quad3\quad0
+    \stopTEXpage
+
+\stoptext

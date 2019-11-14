@@ -1,0 +1,1170 @@
+%D \module
+%D   [       file=mult-aux,
+%D        version=2010.08.2,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Helpers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D A generalization of \MKIV-like inheritance. Just something to play with
+%D (interface might change). The code here evolved in an email exchange between me
+%D and Wolgang Schuster.
+
+\writestatus{loading}{ConTeXt Multilingual Macros / Helpers}
+
+\registerctxluafile{mult-aux}{}
+
+\unprotect
+
+\edef\??empty{\Uchar25}  \letvalue{\Uchar25}\empty % hex 19
+
+% \edef\s!parent{\Uchar29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
+
+%D \starttyping
+%D \unprotect
+%D     \def\????aa{@@@@aa}
+%D
+%D     \installparameterhandler   \????aa {whatever}
+%D     \installsetuphandler       \????aa {whatever}
+%D     \installdefinehandler      \????aa {whatever} \????aa % #3 == defaultroot
+%D     \installfontandcolorhandler\????aa {whatever}
+%D
+%D   % \installcommandhandler     \????aa {whatever} \????aa
+%D \protect
+%D
+%D % \whateverparameter \c!test
+%D % \whateverparameterhash \c!test
+%D % \namedwhateverparameter \mycurrentwhatever \c!test
+%D % \usewhateverstyleandcolor \c!style \c!color
+%D % \everydefinewhatever (sets \currentwhatever)
+%D % \everypresetwhatever (can be used to reset parameters as we can redefine)
+%D % \everysetupwhatever (sets \currentwhatever)
+%D
+%D \starttext
+%D     \definewhatever[first] \definewhatever[second][first]
+%D                                           test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D     \setupwhatever        [method=unset]  test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D     \setupwhatever[first] [method=first]  test: \def\currentwhatever{first}  \whateverparameter{method} \par
+%D                                           test: \def\currentwhatever{second} \whateverparameter{method} \par
+%D     \setupwhatever[second][method=second] test: \def\currentwhatever{second} \whateverparameter{method} \par
+%D \stoptext
+%D \stoptyping
+
+% problem: every* could clash
+%
+% There can be less {} in the following definitions if we assume \??aa and \c!somecs
+%
+% todo: \def\detokenized...parameter#1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2\endcsname}} % always root
+%
+% it might be more efficient to do this at the lua and
+%
+% watch the push/pop and predefinition of current .. this is needed for nested
+% definitions and overloaded defines using the predefined one
+
+% todo: add (relaxed) postsetup and postdefine hooks, just after the everys
+
+%D Start of experimental code: especially tables can have many assignments and
+%D although most time is spent in the typesetting anyway, we can squeeze out a
+%D little bit. Of course having 500 rows of 50 columns each with some setting does
+%D not happen that often. One should keep in mind that in the average document
+%D having some 500 assignments is no exception but there we're talking of
+%D neglectable runtime for them. Of course in the definitions below there is no real
+%D gain, only in the generated \setup* commands. Another situation with many
+%D assignments is \XML\ where we can pass attributes and normally don't do testing
+%D of them making sense.
+%
+% \testfeatureonce{100000}{\getparameters[bla][a=111,b=222,c=333]}% 1.669s
+% \testfeatureonce{100000}{\mult_interfaces_get_parameters{bla} [a=111,b=222,c=333]}% 1.529s
+% \testfeatureonce{100000}{\def\m_mult_interfaces_namespace{bla}\mult_interfaces_get_parameters_indeed[a=111,b=222,c=333]}% 1.466s
+
+\let\m_mult_interfaces_namespace\empty
+
+\def\mult_interfaces_get_parameters#1[#2%
+  {\if\noexpand#2]%
+     \expandafter\gobbleoneargument
+   \else
+     \def\m_mult_interfaces_namespace{#1}%
+     \expandafter\mult_interfaces_get_parameters_indeed
+   \fi#2}
+
+\def\mult_interfaces_get_parameters_indeed#1]% namespace already set
+  {\mult_interfaces_get_parameters_item#1,],^^^^0004}
+
+\def\mult_interfaces_get_parameters_item#1,#2% #2 takes space before ,
+  {\if,#1,% dirty trick for testing #1=empty
+     \expandafter\mult_interfaces_get_parameters_item
+   \orelse\if]#1%
+     \expandafter\gobbleoneargument
+   \else
+     \mult_interfaces_get_parameters_assign#1==\empty^^^^0004%
+   % \expandafter\mult_interfaces_get_parameters_item % saves skipping when at end
+   \fi#2}
+
+\def\mult_interfaces_get_parameters_error#1#2% #3%
+  {\mult_interfaces_get_parameters_error_indeed{#1}{#2}%
+   \gobbleoneargument}
+
+\def\mult_interfaces_get_parameters_error_indeed#1#2%
+  {\showassignerror{#2}{\the\inputlineno\space(#1)}}
+
+\def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+  {\ifx\empty#1\empty
+     \expandafter\mult_interfaces_get_parameters_error
+   \orelse\ifx#3\empty
+     \expandafter\mult_interfaces_get_parameters_error
+   \else
+     \expandafter\mult_interfaces_adef % assignment def
+   \fi
+   \m_mult_interfaces_namespace{#1}{#2}%
+   \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+\startinterface english
+
+    % some 10% faster
+
+    \let\mult_interfaces_get_parameters_error\undefined
+
+    \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#4%
+      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
+
+    \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
+      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
+
+    \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+      {\ifx\empty#1\empty
+         \mult_interfaces_get_parameters_error_one
+       \orelse\ifx#3\empty
+         \mult_interfaces_get_parameters_error_two
+       \else
+         \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
+       \fi
+       \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+\stopinterface
+
+\newif\ifassignment
+
+\def\mult_check_for_assignment_indeed#1=#2#3^^^^0004%
+  {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+
+\def\mult_check_for_assignment_indeed_begin_#1=#2#3^^^^0004%
+  {\if#2^^^^0003}
+
+\def\mult_check_for_assignment#1%
+  {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
+
+% End of experimental code.
+
+%D This can give wrong results when we pass e.g. \type{\c!format}, so either we need
+%D to use the \type {\k!} ones, but these are not defined in the english interface
+%D so from now on we assume that the low level ones are used with the symbolic names
+%D and that only the high level setup commands are used with language specific
+%D interfaces.
+
+% \unexpanded\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+% \unexpanded\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+
+% \startinterface english
+    \unexpanded\def\mult_interfaces_let #1#2{\expandafter \let\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_lete#1#2{\expandafter \let\csname#1#2\endcsname\empty}
+    \unexpanded\def\mult_interfaces_def #1#2{\expandafter \def\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1#2\endcsname}
+    \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1#2\endcsname}
+% \stopinterface
+
+%D Do, we only interface the assignment definition:
+
+\unexpanded\def\mult_interfaces_adef#1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+
+\startinterface english
+    \unexpanded\def\mult_interfaces_adef#1#2{\expandafter \def\csname#1#2\endcsname}
+\stopinterface
+
+% the commented detokenized variant that backtracks ... needs testing usage first
+%
+% \let\whatever\relax
+%
+% \definetest[oeps][bagger=\whatever]
+%
+% \def\currenttest{oeps} \edef\hans{\detokenizedtestparameter{bagger}}\meaning\hans\par
+% \def\currenttest{oeps} \edef\hans{\detokenizedtestparameter{reggab}}\meaning\hans\par
+%
+% slower: \def#3##1{\csname\ifcsname#1#2:##1\endcsname\expandafter\csstring\lastnamedcs\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+
+%D pre-expansion can be a bit faster but handly any effect on a normal run so let's
+%D go for saving some memory
+
+\def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
+
+\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
+  {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
+   \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+   \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
+  %\def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
+  %\def#5##1##2{\ifx##1\relax\??empty\else#4##1{##2}\fi}% is {} needed around ##1 ?
+   \def#5##1##2{\ifx##1\relax^^^^0019\else#4##1{##2}\fi}% is {} needed around ##1 ?
+   \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
+   \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
+   \def#8##1{\begincsname#1#2:##1\endcsname}
+   \def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
+
+\unexpanded\def\installparameterhandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_parameter_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameter\endcsname
+        \expandafter\noexpand\csname do#2parameter\endcsname           % or : #2_parameter
+        \expandafter\noexpand\csname do#2parentparameter\endcsname     % or : #2_parent_parameter
+        \expandafter\noexpand\csname named#2parameter\endcsname
+        \expandafter\noexpand\csname detokenized#2parameter\endcsname
+        \expandafter\noexpand\csname direct#2parameter\endcsname
+        \expandafter\noexpand\csname letfrom#2parameter\endcsname}} % strict#2parameter is gone
+
+\unexpanded\def\mult_interfaces_install_root_parameter_handler#1#2#3%
+  {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
+   \def#3##1{\begincsname#1:##1\endcsname}}
+
+\unexpanded\def\installrootparameterhandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_root_parameter_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
+        \expandafter\noexpand\csname root#2parameter\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_parameter_hash_handler#1#2#3#4#5#6#7#8#9%
+  {\ifx#2\relax\let#2\empty\fi
+   \def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
+   \def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
+  %\def#5##1##2{\ifx##1\relax\else#4{##1}{##2}\fi}%
+   \def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
+   \def#6{#1#2:}%
+   \def#7##1{#1##1:}%
+   \def#8{\ifx#2\empty\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
+   \unexpanded\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
+
+\unexpanded\def\installparameterhashhandler#1#2%
+  {\expandafter\let\csname#2namespace\endcsname#1%
+   \normalexpanded
+     {\mult_interfaces_install_parameter_hash_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameterhash\endcsname
+        \expandafter\noexpand\csname do#2parameterhash\endcsname         % or : #2_parameter_hash
+        \expandafter\noexpand\csname do#2parentparameterhash\endcsname   % or : #2_parent_parameter_hash
+        \expandafter\noexpand\csname current#2hash\endcsname
+        \expandafter\noexpand\csname named#2hash\endcsname
+        \expandafter\noexpand\csname check#2parent\endcsname
+        \expandafter\noexpand\csname chaintocurrent#2\endcsname}}
+
+%D In \MKIV\ we can probably use the english variant for all other languages too.
+
+% todo: inline the def/let
+
+% \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
+%   {\ifx#2\relax\let#2\empty\fi
+%    \unexpanded\def#3{\mult_interfaces_def {#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \unexpanded\def#4{\mult_interfaces_edef{#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \unexpanded\def#5{\mult_interfaces_let {#1#2:}}%  ##1 ##2
+%    \unexpanded\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
+%
+% \startinterface english
+    \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
+      {\ifx#2\relax\let#2\empty\fi
+       \unexpanded\def#3##1{\expandafter \def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \unexpanded\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \unexpanded\def#5##1{\expandafter \let\csname#1#2:##1\endcsname}%        ##1 ##2
+       \unexpanded\def#6##1{\expandafter \let\csname#1#2:##1\endcsname\empty}}% ##1
+% \stopinterface
+
+\unexpanded\def\installparametersethandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_parameter_set_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname set#2parameter\endcsname
+        \expandafter\noexpand\csname setexpanded#2parameter\endcsname
+        \expandafter\noexpand\csname let#2parameter\endcsname
+        \expandafter\noexpand\csname reset#2parameter\endcsname}}
+
+\let\dousecurrentstyleparameter\relax
+\let\dousecurrentcolorparameter\relax
+
+\let\currentstyleparameter\empty
+\let\currentcolorparameter\empty
+
+\unexpanded\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
+  {\unexpanded\def#2##1##2% style color
+     {\edef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)
+      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
+      \edef\currentcolorparameter{#1{##2}}% this name is public (so we do this after the style switch)
+      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
+   \unexpanded\def#3##1% style
+     {\edef\currentstyleparameter{#1{##1}}% this name is public
+      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi}%
+   \unexpanded\def#4##1% color
+     {\edef\currentcolorparameter{#1{##1}}% this name is public
+      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
+
+\unexpanded\def\installstyleandcolorhandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_style_and_color_handler
+        \expandafter\noexpand\csname #2parameter\endcsname
+        \expandafter\noexpand\csname use#2styleandcolor\endcsname % maybe an alias use#2styleandcolorparameters
+        \expandafter\noexpand\csname use#2styleparameter\endcsname
+        \expandafter\noexpand\csname use#2colorparameter\endcsname}}
+
+\let\definehandlerparent\empty
+
+% \def\mult_check_for_parent#1#2#3#4%
+%   {\ifcsname#1#4:\s!parent\endcsname \else \ifx#4\empty \else
+%      \writestatus\m!system{error: invalid parent #4 for #3, #4 defined too (best check it)}%
+%      \expandafter\edef\csname#1#4:\s!parent\endcsname{#2}%
+%    \fi \fi}
+
+\def\mult_check_for_parent#1#2#3#4%
+  {\ifcsname#1#4:\s!parent\endcsname\orelse\ifx#4\empty\else
+     \writestatus\m!system{error: invalid parent #4 for #3, #4 defined too (best check it)}%
+     \expandafter\edef\csname#1#4:\s!parent\endcsname{#2}%
+   \fi}
+
+%def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\space\fi}
+%def\getparentchain       #1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+%def\getcurrentparentchain#1#2{\ifcsname#1#2:\s!chain\endcsname\csname#1#2:\s!chain\endcsname\fi}
+
+\def\mult_interfaces_chain#1#2{\ifcsname#1#2:\s!chain\endcsname\lastnamedcs\space\fi}
+\def\getparentchain       #1#2{\begincsname#1#2:\s!chain\endcsname}
+\def\getcurrentparentchain#1#2{\begincsname#1#2:\s!chain\endcsname}
+
+\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
+  {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
+   \unexpanded\def#2{\dotripleempty#5}%
+   \newtoks#6%
+   \newtoks#7%
+   \unexpanded\def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
+     {\let#9#4%
+      \edef#4{##1}%
+      \ifthirdargument
+        \the#6% predefine
+        \edef#8{##2}%
+        \mult_check_for_parent{#1}{#3}#4#8%
+        \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+        \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+        \mult_interfaces_get_parameters{#1#4:}[##3]%
+      \orelse\ifsecondargument
+        \the#6% predefine
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=^^^^0003^^^^0003^^^^0004%
+          \edef#8{##2}%
+          \mult_check_for_parent{#1}{#3}#4#8%
+          \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+          \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+        \else
+          \let#8\empty
+          \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+          \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+          \mult_interfaces_get_parameters{#1#4:}[##2]%
+        \fi
+      \else
+        \the#6% predefine
+        \let#8\empty
+        \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+        \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+      \fi
+      \the#7%
+      \let#4#9}}
+
+\unexpanded\def\installdefinehandler#1#2#3%
+  {\normalexpanded
+     {\mult_interfaces_install_define_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname define#2\endcsname
+        {\noexpand#3}% root
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname define_#2\endcsname % semi-public
+        \expandafter\noexpand\csname everypreset#2\endcsname
+        \expandafter\noexpand\csname everydefine#2\endcsname
+        \expandafter\noexpand\csname current#2parent\endcsname
+        \expandafter\noexpand\csname saved_defined_#2\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8#9%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#2{\dodoubleempty#4}%
+   \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
+   \newtoks#5%
+   \newtoks#8%
+   \unexpanded\def#4[##1][##2]% maybe helper
+     {\let#7#3%
+      \ifsecondargument
+        \def#9####1% we will have a simple one as well
+          {\edef#3{####1}%
+           \mult_interfaces_get_parameters{#1#3:}[##2]%
+           \the#5}%
+        \processcommalist[##1]#9%
+      \else
+        \let#3\empty
+        \mult_interfaces_get_parameters{#1:}[##1]%
+        \the#5%
+      \fi
+      \let#3#7%
+      \the#8}}
+
+\unexpanded\def\installsetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_setup_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname everysetup#2root\endcsname
+        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+
+\let\doingrootsetupnamed\plusone    % \setuplayout[name][key=value]
+\let\doingrootsetuproot \plustwo    % \setuplayout      [key=value]
+\let\doingrootsetnamed  \plusthree  % \setuplayout[name]
+\let\doingrootsetroot   \plusfour   % \setuplayout
+
+\unexpanded\def\mult_interfaces_install_switch_setup_handler_a#1#2#3#4#5%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#2{\dodoubleempty#4}%
+   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}}
+
+\unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
+  {\newtoks#5%
+   \newconstant#2%
+   \newtoks#8%
+   \newtoks#9%
+   \ifx#6\relax\let#6\empty\fi
+   \unexpanded\def#4[##1][##2]% maybe helper
+     {\ifsecondargument % no commalist here
+        % \setuplayout[whatever][key=value]
+        \let#7#3%
+        \let#6#3%
+        \edef#3{##1}%
+        #2\doingrootsetupnamed
+        \mult_interfaces_get_parameters{#1#3:}[##2]%
+        \the#5%
+        \ifx#3#6\the#8\fi % only switchsetups if previous == current
+        \let#3#7%
+      \orelse\iffirstargument
+        % \mult_check_for_assignment{##1}%
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
+          % \setuplayout[whatever]
+          \let#6#3%   % previous becomes current
+          \edef#3{##1}% this will catch reset so one needs to test for it
+          #2\doingrootsetnamed
+          \the#5%     % we can check for previous vs current
+          \the#8% switchsetups
+        \else
+          % \setuplayout[key=value]
+          \let#7#3%
+          \let#6#3%
+          \let#3\empty
+          #2\doingrootsetuproot
+          \mult_interfaces_get_parameters{#1:}[##1]%
+          \the#5%
+          \the#8% switchsetups
+          \let#3#7%
+        \fi
+      \else
+        % \setuplayout
+        \let#6#3%      % previous becomes current
+        \let#3\empty   % current becomes empty
+        #2\doingrootsetroot
+        \the#5%
+        \the#8% switchsetups
+      \fi
+      #2\zerocount % mode is always zero at the end
+      \the#9}}
+
+\unexpanded\def\installswitchsetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_switch_setup_handler_a
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+      \mult_interfaces_install_switch_setup_handler_b
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname #2setupmode\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname previous#2\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname everyswitch#2\endcsname
+        \expandafter\noexpand\csname everysetup#2root\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8#9%
+  {\ifx#3\relax\let#3\empty\fi
+   \unexpanded\def#2{\dotripleempty#4}%
+   \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}%
+   \newtoks#5%
+   \def#4[##1][##2][##3]%
+     {\let#8#3%
+      \ifthirdargument
+        \def#9####1%
+          {\edef#3{####1}%
+           \expandafter\def\csname#1#3:\s!parent\endcsname{#1##2}%
+           \mult_interfaces_get_parameters{#1#3:}[##3]% always sets parent
+           \the#5}%
+        \processcommalist[##1]#9%
+      \orelse\ifsecondargument
+        \def#9####1%
+          {\edef#3{####1}%
+           #7% checks parent and sets if needed
+           \mult_interfaces_get_parameters{#1#3:}[##2]%
+           \the#5}%
+        \processcommalist[##1]#9%
+      \else
+        \let#3\empty
+        \mult_interfaces_get_parameters{#1:}[##1]%
+        \the#5%
+      \fi
+      \let#3#8}}
+
+\unexpanded\def\installautosetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_auto_setup_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname everysetup#2\endcsname
+        \expandafter\noexpand\csname setupcurrent#2\endcsname
+        \expandafter\noexpand\csname check#2parent\endcsname
+        \expandafter\noexpand\csname saved_setup_current#2\endcsname
+        \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
+
+\unexpanded\def\installbasicparameterhandler#1#2%
+  {\installparameterhandler    {#1}{#2}%
+   \installparameterhashhandler{#1}{#2}%
+   \installparametersethandler {#1}{#2}%
+   \installrootparameterhandler{#1}{#2}}
+
+\unexpanded\def\installbasicautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installautosetuphandler     {#1}{#2}}
+
+\unexpanded\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installautosetuphandler     {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
+\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installsetuphandler         {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
+\unexpanded\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installswitchsetuphandler   {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
+\unexpanded\def\installautocommandhandler#1#2#3% automatically defined cloned setups
+  {\installbasicparameterhandler{#1}{#2}%
+   \installdefinehandler        {#1}{#2}{#3}%
+   \installautosetuphandler     {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
+\unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment) - use \check*parent when defining
+  {\installbasicparameterhandler{#1}{#2}%
+   \installsetuphandler         {#1}{#2}%
+   \installstyleandcolorhandler {#1}{#2}}
+
+%D Many mechanisms have some kind of inheritance in place, and these are the
+%D speed||critical ones. Therefore there is no reason to stick to \type {\@@xxkey}
+%D for the sake of performance. For this reason we also provide a direct variant.
+%D This permits a more consistent treatment of namespaces. A \type
+%D {\whateverparameter} call is three times slower and a \type
+%D {\directwhateverparameter} call two times but for some 100K expansions we only
+%D loose some .1 second which is neglectable given the small amount of expansions in
+%D real runs.
+
+%D We don't need colons for such simple cases.
+
+\unexpanded\def\mult_interfaces_install_direct_parameter_handler#1#2#3#4#5%
+%%{\def#3##1{\csname\ifcsname#1##1\endcsname#1##1\else\s!empty\fi\endcsname}%
+  {\def#3##1{\begincsname#1##1\endcsname}%
+   \def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
+ % \def#4##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
+   \def#5##1{\begincsname#1##1\endcsname}}
+
+\unexpanded\def\installdirectparameterhandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_direct_parameter_handler
+        {\noexpand#1}%
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname #2parameter\endcsname
+        \expandafter\noexpand\csname detokenized#2parameter\endcsname
+        \expandafter\noexpand\csname direct#2parameter\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_direct_setup_handler#1#2#3#4#5%
+  {\unexpanded\def#2{\dosingleempty#3}%
+   \newtoks#5%
+   \def#3[##1]{\mult_interfaces_get_parameters#1[##1]\the#5}%
+   \def#4{\mult_interfaces_get_parameters#1}}
+
+\unexpanded\def\installdirectsetuphandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_direct_setup_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname setup#2\endcsname
+        \expandafter\noexpand\csname setup_#2\endcsname % semi-public
+        \expandafter\noexpand\csname setupcurrent#2\endcsname % no \every (we use 'current' for consistency)
+        \expandafter\noexpand\csname everysetup#2\endcsname}}
+
+% \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
+%   {\unexpanded\def#2{\mult_interfaces_def #1}%
+%    \unexpanded\def#3{\mult_interfaces_edef#1}%
+%    \unexpanded\def#4{\mult_interfaces_let #1}%
+%    \unexpanded\def#5{\mult_interfaces_let #1\empty}}%
+
+% \startinterface english
+    \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
+      {\unexpanded\def#2##1{\expandafter \def\csname#1##1\endcsname}%
+       \unexpanded\def#3##1{\expandafter\edef\csname#1##1\endcsname}%
+       \unexpanded\def#4##1{\expandafter \let\csname#1##1\endcsname}%
+       \unexpanded\def#5##1{\expandafter \let\csname#1##1\endcsname\empty}}%
+% \stopinterface
+
+\unexpanded\def\installdirectparametersethandler#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_direct_parameter_set_handler
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname set#2parameter\endcsname
+        \expandafter\noexpand\csname setexpanded#2parameter\endcsname
+        \expandafter\noexpand\csname let#2parameter\endcsname
+        \expandafter\noexpand\csname reset#2parameter\endcsname}}
+
+\let\installdirectstyleandcolorhandler\installstyleandcolorhandler
+
+\unexpanded\def\installdirectcommandhandler#1#2%
+  {\installdirectparameterhandler    {#1}{#2}%
+   \installdirectsetuphandler        {#1}{#2}%
+   \installdirectparametersethandler {#1}{#2}%
+   \installdirectstyleandcolorhandler{#1}{#2}}
+
+\unexpanded\def\installsetuponlycommandhandler#1#2%
+  {\installdirectparameterhandler{#1}{#2}%
+   \installdirectsetuphandler    {#1}{#2}%
+  }% maybe \installdirectparametersethandler {#1}{#2}%
+
+% Experiment:
+
+% \installcorenamespace {one}
+% \installcorenamespace {two}
+%
+% \installcommandhandler \??one {one} \??one
+% \installcommandhandler \??two {two} \??two
+%
+% \defineone[test] \setupone[test][alpha=first]
+% \definetwo[test] \setuptwo[test][beta=second]
+%
+% \protect
+%
+% \def\currentone{test}
+% \def\currenttwo{test}
+%
+% \relateparameterhandlers {two} {test} {one} {test}
+%
+% yes:\oneparameter{alpha}\par
+% nop:\oneparameter{beta}\par
+% yes:\twoparameter{alpha}\par
+% yes:\twoparameter{beta}\par
+
+\unexpanded\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
+  {\expandafter\edef\csname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
+
+\unexpanded\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
+  {\expandafter\edef\csname#1#2:\s!parent\endcsname{#3#4}}
+
+%D Here is another experiment:
+
+\unexpanded\def\installactionhandler#1%
+  {\normalexpanded
+     {\mult_interfaces_install_action_handler
+        {#1}%
+        \expandafter\noexpand\csname current#1\endcsname
+        \expandafter\noexpand\csname setupcurrent#1\endcsname
+        \expandafter\noexpand\csname #1_action\endcsname}}
+
+% \unexpanded\def\mult_interfaces_install_action_handler#1#2#3#4%
+%   {\unexpanded\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
+%    \unexpanded\def#4[##1][##2]%
+%      {\begingroup
+%       \ifsecondargument
+%         \edef#2{##1}%
+%         #3[##2]%
+%       \else\iffirstargument
+%         \doifelseassignment{##1}
+%           {\let#2\empty
+%            #3[##1]}%
+%           {\edef#2{##1}}%
+%       \else
+%         \let#2\empty
+%       \fi\fi
+%       \directsetup{handler:action:#1}%
+%       \endgroup}}
+
+\unexpanded\def\mult_interfaces_install_action_handler#1#2#3#4%
+  {\unexpanded\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
+   \unexpanded\def#4[##1][##2]%
+     {\begingroup
+      \ifsecondargument
+        \edef#2{##1}%
+        #3[##2]%
+      \orelse\iffirstargument
+        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
+          \edef#2{##1}%
+        \else
+          \let#2\empty
+          #3[##1]%
+        \fi
+      \else
+        \let#2\empty
+      \fi
+      \directsetup{handler:action:#1}%
+      \endgroup}}
+
+% First we had, in tune with the regular system variables:
+%
+% \starttyping
+% \unexpanded\def\installnamespace#1{\setvalue{????#1}{@@@@#1}}
+% \stoptyping
+%
+% The following variant is nicer and in principle faster but that gets unnoticed
+% unless lots of expansion happens. Also, we can use long tags but the internal
+% expansion will be relatively small (and unlikely more than 4 characters). For
+% instance, \??xx used to expand to @@xx but now becomes for instance 123::. This
+% is one character more but in quite some cases we had : after such a tag in the
+% old situation. In the new situation we create more namespaces and don't need that
+% : any more, so we end up with on the average the same amount of tokens and
+% definitely less when we consider cases like \??xx:\c!align: which now is just
+% \??somealign and therefore has length 5 now (instead of 4+1+5+1=10).
+%
+% Eventualy we will have a verbose \blablanamespace and the difference between core
+% and regular can go ... after all, \xxxparameter can already clash between the two
+% prefix groups .. if users use this mechanism a lot they should use verbose names
+% anyway (the old two character names were mostly an optimization as they also
+% expanded to these characters).
+
+% todo: register namespaces at lua end for logging and reverse resolve
+% todo: move this to syst-ini so that we can use it real early
+
+\newcount\c_mult_interfaces_n_of_namespaces
+
+%def\v_interfaces_prefix_template{\number    \c_mult_interfaces_n_of_namespaces>}
+%def\v_interfaces_prefix_template{\characters\c_mult_interfaces_n_of_namespaces>}
+
+%def\v_interfaces_prefix_template % consistently %03i>
+% {\ifnum\c_mult_interfaces_n_of_namespaces<\plusten00\else\ifnum\c_mult_interfaces_n_of_namespaces<\plushundred0\fi\fi
+%  \number\c_mult_interfaces_n_of_namespaces>}
+
+\def\v_interfaces_prefix_template
+  {\number\c_mult_interfaces_n_of_namespaces>}
+
+\unexpanded\def\installnamespace#1% for modules and users
+  {\ifcsname ????#1\endcsname
+     \writestatus\m!system{duplicate user namespace '#1'}\wait
+   \else
+     \global\advance\c_mult_interfaces_n_of_namespaces\plusone
+     \expandafter\edef\csname ????#1\endcsname{\v_interfaces_prefix_template}%
+   \fi}
+
+\unexpanded\def\installcorenamespace#1%
+  {\ifcsname ??#1\endcsname
+     \writestatus\m!system{duplicate core namespace '#1'}\wait
+   \else
+     \global\advance\c_mult_interfaces_n_of_namespaces\plusone
+     \expandafter\edef\csname ??#1\endcsname{\v_interfaces_prefix_template}%
+     \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
+   \fi}
+
+\def\mult_interfaces_get_parameters_error_indeed#1#2%
+  {\clf_showassignerror{#1}{#2}\inputlineno}
+
+% We install two core namespaces here, as we want nice error messages. Maybe
+% we will reserve the first 9.
+
+\installcorenamespace{fontinstanceready}
+\installcorenamespace{fontinstancebasic}
+\installcorenamespace{fontinstanceclass}
+
+%D The next one is handy for local assignments.
+
+\installcorenamespace{dummy}
+
+\letvalue\??dummy\empty
+
+           \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
+           \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}
+\unexpanded\def\setdummyparameter        #1{\expandafter\def\csname\??dummy#1\endcsname}
+\unexpanded\def\setexpandeddummyparameter#1{\expandafter\edef\csname\??dummy#1\endcsname}
+\unexpanded\def\letdummyparameter        #1{\expandafter\let\csname\??dummy#1\endcsname}
+
+% \unexpanded\def\getdummyparameters
+%   {\mult_interfaces_get_parameters\??dummy}
+
+\unexpanded\def\getdummyparameters[#1%
+  {\if\noexpand#1]%
+     \expandafter\gobbleoneargument
+   \else
+     \let\m_mult_interfaces_namespace\??dummy
+     \expandafter\mult_interfaces_get_parameters_indeed
+   \fi#1}
+
+\mult_interfaces_install_style_and_color_handler
+  \directdummyparameter
+  \usedummystyleandcolor
+  \usedummystyleparameter
+  \usedummycolorparameter
+
+% Maybe a \definecorenamespace[name][directparameter,directsetup][parent] but we
+% don't gain much. Actually we might just inline all definitions.
+
+% \enabletrackers[interfaces.namespaces,context.flush]
+%
+% \definenamespace
+%   [xy]
+%   [type=module,
+%    comment=test module,
+%    version=1,
+%    name=test,
+%    style=yes,
+%    command=yes,
+%    setup=list,
+%    set=yes,
+%    parent=xy]
+%
+% \unprotect
+% \getparameters
+%   [\????xy]
+%   [text=]
+% \protect
+%
+% \definetest[one]
+%
+% \starttext
+%
+%   “\testparameter{text}”
+%
+%   \setuptest[text=foo]
+%
+%   “\testparameter{text}”
+%
+%   \setuptest[one][text=bar]
+%
+%   “\testparameter{text}”
+%
+% \stoptext
+%
+% This is a user (module) command:
+
+\unexpanded\def\definenamespace
+  {\dodoubleargument\mult_interfaces_define_name_space}
+
+\def\mult_interfaces_define_name_space[#1][#2]% namespace settings
+  {\clf_definenamespace{#1}{#2}}
+
+\def\listnamespaces
+  {\clf_listnamespaces}
+
+%D Helper:
+%D
+%D \starttyping
+%D \showparentchain{@@am}{left}
+%D \stoptyping
+
+\unexpanded\def\showparentchain#1#2%
+  {\writestatus\m!system{chain: [ \mult_interfaces_show_parent_chain{#1#2}]}}
+
+% \def\mult_interfaces_show_parent_chain#1%
+%   {#1 => %
+%    \ifcsname#1:\s!parent\endcsname
+%       \expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
+%    \fi}
+
+\def\mult_interfaces_show_parent_chain#1%
+  {#1 => %
+   \ifcsname#1:\s!parent\endcsname
+     %\expandafter\mult_interfaces_show_parent_chain\csname#1:\s!parent\endcsname
+      \expandafter\mult_interfaces_show_parent_chain\lastnamedcs
+   \fi}
+
+%D Another helper (needs to be applied):
+
+\unexpanded\def\doifelsecommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doifcommandhandlerelse\doifelsecommandhandler
+
+\unexpanded\def\doifcommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\gobbleoneargument
+   \fi}
+
+\unexpanded\def\doifnotcommandhandler#1#2% namespace name
+  {\ifcsname#1#2:\s!parent\endcsname
+     \expandafter\gobbleoneargument
+   \else
+     \expandafter\firstofoneargument
+   \fi}
+
+\let\doifcommandhandlerelse\doifelsecommandhandler
+
+% another set of (fast) helpers (grep for usage):
+
+\def\expandnamespaceparameter#1#2#3% \??xx \getp \c!xx \v!yy
+  {\csname#1\ifcsname#1\expandafter\expandafter\expandafter\mult_aux_expand_namespace_parameter#2#3}
+
+\def\mult_aux_expand_namespace_parameter#1#2% \cs \v!yy
+  {#1\endcsname#1\else#2\fi\endcsname}
+
+\def\expandnamespacemacro#1#2#3% \??xx \some_edefed_cs \c!yy
+  {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
+
+\def\expandnamespacevalue#1#2% \??xx {...} \c!yy == optimized \expandcheckedcsname
+  {\csname#1\ifcsname#1\normalexpanded{\noexpand\syst_helpers_expand_checked_value{#2}}}
+
+\def\syst_helpers_expand_checked_value#1#2%
+  {#1\endcsname#1\else#2\fi\endcsname}
+
+%D Conventions:
+%D
+%D \starttyping
+%D \newcount       \c_class_whatever
+%D \newconditional \c_class_whatever
+%D \newconstant    \c_class_whatever
+%D \newdimen       \d_class_whatever
+%D \newskip        \s_class_whatever
+%D \newmuskip      \s_class_whatever
+%D \newbox         \b_class_whatever
+%D \newtoks        \t_class_whatever
+%D
+%D \edef\p_class_whatever{\classparameter\c!whatever}
+%D \edef\m_class_whatever{whatever}
+%D \stoptyping
+
+% experiment: in principle this is faster but not that noticeable as we don't do that
+% many assignments and mechanism that do are also slow; the advantage is mostly nicer
+% in tracing
+
+\def\s!simple{simple}
+\def\s!single{single}
+\def\s!double{double}
+\def\s!triple{triple}
+
+\let\c_mult_set\relax
+
+\unexpanded\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
+  {\newcount#3%
+   \let#6\empty
+   \unexpanded\def#2%
+     {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
+      \ifx\c_mult_set\relax
+        \expandafter\newtoks\c_mult_set
+        \expandafter\let\csname #1_t_#6\endcsname\c_mult_set
+      \fi}
+   \unexpanded\def#4##1%
+     {\pushmacro#6%
+      \advance#3\plusone
+      \edef#6{##1}%
+      \unprotect}%
+   \unexpanded\def#5%
+     {\protect
+      \advance#3\minusone
+      \popmacro#6}%
+   \unexpanded\def#7##1%
+     {\edef#6{##1}%
+      #2%
+      \the\c_mult_set\relax}}
+
+\unexpanded\def\installdefinitionset#1#2%
+  {\normalexpanded
+     {\mult_interfaces_install_definition_set
+        {\noexpand#1}% \??aa
+        \expandafter\noexpand\csname set_#2_toks\endcsname
+        \expandafter\noexpand\csname #2_nesting_depth\endcsname
+        \expandafter\noexpand\csname push#2\endcsname
+        \expandafter\noexpand\csname pop#2\endcsname
+        \expandafter\noexpand\csname current#2\endcsname
+        \expandafter\noexpand\csname use#2\endcsname}}
+
+\unexpanded\def\mult_interfaces_install_definition_set_member#1#2#3#4#5#6#7#8#9% no everysetups etc
+  {\let#5#2%
+   \unexpanded\def#2%
+     {\ifcase#4\relax\expandafter#5\else\expandafter#6\fi}%
+   \unexpanded\def#6%
+     {\dodoubleempty#7}%
+   \unexpanded\def#7[##1][##2]%
+     {\ifsecondargument
+       %#3\c_mult_set\expandafter{\the\c_mult_set#9[##1][##2]}%
+        #3\toksapp\c_mult_set{#9[##1][##2]}%
+      \orelse\iffirstargument
+       %#3\c_mult_set\expandafter{\the\c_mult_set#8[##1]}%
+        #3\toksapp\c_mult_set{#8[##1]}%
+      \fi}}
+
+\unexpanded\def\installdefinitionsetmember#1#2#3#4%
+  {\normalexpanded
+     {\mult_interfaces_install_definition_set_member
+        {\noexpand#3}% \??aa
+        \expandafter\noexpand\csname setup#4\endcsname
+        \expandafter\noexpand\csname set_#2_toks\endcsname
+        \expandafter\noexpand\csname #2_nesting_depth\endcsname
+        \expandafter\noexpand\csname normal_setup_#4\endcsname
+        \expandafter\noexpand\csname delayed_setup_#4\endcsname
+        \expandafter\noexpand\csname do_delayed_setup_#4\endcsname
+        \expandafter\noexpand\csname setup#4_\s!single\endcsname
+        \expandafter\noexpand\csname setup#4_\s!double\endcsname}}
+
+%D Another experiment:
+
+\unexpanded\def\mult_interfaces_install_parent_injector#1#2#3#4%
+  {\unexpanded\def#4##1%
+     {\ifx#3\empty
+        \expandafter\def\csname#1#2:\s!parent\endcsname{#1##1}%
+      \fi}}
+
+\unexpanded\def\installparentinjector#1#2%
+  {\normalexpanded{\mult_interfaces_install_parent_injector
+     {\noexpand#1}%
+     \expandafter\noexpand\csname current#2\endcsname
+     \expandafter\noexpand\csname current#2parent\endcsname
+     \expandafter\noexpand\csname inject#2parent\endcsname}}
+
+% Faster but not used that much to make a dent in performance. But, because it's
+% cleaner anyway and also gives less tracing, we apply it a few times.
+
+\unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
+  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+   \ifcsname#3\m_syst_helpers_push_macro\endcsname\else
+     \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
+     \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
+       {\noexpand\expandafter\glet
+           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
+           \noexpand#1%
+         \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
+     \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
+       {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
+        \noexpand\expandafter#2%
+           \noexpand\expandafter\noexpand#1%
+           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}%
+   \fi}
+
+\unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
+\unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
+
+%  \unprotect
+%
+%  \installcorenamespace {test} \installcommandhandler \??test {test} \??test
+%  \unexpanded\def\TestMeA[#1]%
+%    {\edef\currenttest{#1}
+%     \edef\p_before{\testparameter\c!before}%
+%     \ifx\p_before\empty \relax \else \relax \fi}
+%  \unexpanded\def\TestMeB[#1]%
+%    {\edef\currenttest{#1}
+%     \doifelsenothing{\testparameter\c!before}\relax\relax}
+%  \unexpanded\def\TestMeC[#1]%
+%    {\edef\currenttest{#1}
+%     \expandafter\expandafter\expandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+%  \unexpanded\def\TestMeD[#1]%
+%    {\edef\currenttest{#1}
+%     \doubleexpandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
+%
+%  \protect
+%
+%  \starttext
+%    \definetest[foo] \definetest[bar][foo] \setuptest[bar][before=indeed]
+%    \testfeatureonce{100000}{\TestMeA[bar]} A:\elapsedtime \par % 0.502
+%    \testfeatureonce{100000}{\TestMeB[bar]} B:\elapsedtime \par % 0.530
+%    \testfeatureonce{100000}{\TestMeC[bar]} C:\elapsedtime \par % 0.487
+%    \testfeatureonce{100000}{\TestMeD[bar]} D:\elapsedtime \par % 0.493
+%  \stoptext
+
+% There is no real demand for this ... even if this is two to three times as fast we
+% only gain a few milliseconds:
+%
+% \starttyping
+% \unexpanded\def\foo#1{[foo:#1]}
+%
+% \installcommalistprocessor                        {foo} \foo
+% \installcommalistprocessorcommand \processfoolist \foo
+%
+% \infofont
+%
+% \commalistprocessor{foo}[a,b,c,{x,y,z},d]\par
+% \processfoolist[a, b, c, {x,y,z}, d]\par
+% \processcommalist[{x,y,z}]\foo\blank
+%
+% \commalistprocessor{foo}[{x,y,z},a]\par
+% \commalistprocessor{foo}[{x,y,z}]\par
+% \processfoolist[{x,y,z},a]\par
+% \processfoolist[{x,y,z}]\par
+% \processcommalist[{x,y,z}]\foo\blank
+%
+% \unexpanded\def\foo#1{}
+%
+% \testfeatureonce{400000}{\processfoolist         [fixed,middle,bar]}     \elapsedtime\quad
+%%\testfeatureonce{400000}{\commalistprocessor{foo}[fixed,middle,bar]}     \elapsedtime\quad
+% \testfeatureonce{400000}{\processcommalist       [fixed,middle,bar]\foo} \elapsedtime\quad
+% \stoptyping
+%
+% For instance the luatex manual only has some 3000 calls. But I keep this around as one
+% never knows when we might need it.
+
+\installcorenamespace{commalistprocessor}
+\installcorenamespace{commalistprocessorwrap}
+\installcorenamespace{commalistprocessorfirst}
+\installcorenamespace{commalistprocessornext}
+\installcorenamespace{commalistprocessoraction}
+
+\unexpanded\def\installcommalistprocessor#1#2% 5 macro names overhead
+  {\unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+  %  {\noexpand\futureexpandis]%
+  %     \noexpand\gobbleoneargument
+  %     \csname\??commalistprocessorpickup#1\endcsname}
+  %\unexpanded\expandafter\edef\csname\??commalistprocessorpickup#1\endcsname
+     {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
+   \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+     {\csname\??commalistprocessorfirst#1\endcsname##1,]}
+   \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname\relax
+     {\csname\??commalistprocessornext#1\endcsname}%
+   \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
+     {\noexpand\futureexpandis]%
+        \noexpand\gobbleoneargument
+        \csname\??commalistprocessoraction#1\endcsname}
+   \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+     {\noexpand#2{##1}%
+      \csname\??commalistprocessornext#1\endcsname}}
+
+\unexpanded\def\installcommalistprocessorcommand#1#2% \processor \action
+  {\edef\p_name{\csstring#2}%
+   \installcommalistprocessor\p_name{#2}%
+   \expandafter\let\expandafter#1\csname\??commalistprocessor\p_name\endcsname}
+
+\unexpanded\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
+
+\protect \endinput

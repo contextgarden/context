@@ -20,11 +20,10 @@
 
 \writestatus{loading}{ConTeXt Graphic Macros / Figure Inclusion}
 
-\ifcase\contextlmtxmode
-    \registerctxluafile{grph-inc}{}
-\else
-    \registerctxluafile{grph-img}{}
-    \registerctxluafile{grph-inc}{}
+\registerctxluafile{grph-img}{}
+\registerctxluafile{grph-inc}{}
+
+\ifcase\contextlmtxmode \else
     \registerctxluafile{grph-bmp}{}
     \registerctxluafile{grph-chk}{}
 \fi
@@ -116,6 +115,7 @@
    \c!userpassword   =,
    \c!ownerpassword  =,
    \c!compact        =,
+   \c!cmyk           =,
   ]
 
 %D Defining figures.
@@ -197,19 +197,39 @@
 % label file settings
 % label file parent
 
+% \def\grph_include_use[#1][#2][#3][#4]%
+%   {\doifelsenothing{#1}
+%      {\doifsomething{#2}
+%         {\doifelseassignment{#3}
+%            {\grph_include_use_indeed{#2}{#2}{#3}{#4}}
+%            {\grph_include_use_indeed{#2}{#2}\empty{#4}}}}
+%      {\doifelsenothing{#2}
+%         {\doifelseassignment{#3}
+%            {\grph_include_use_indeed{#1}{#1}\empty{#3}}
+%            {\grph_include_use_indeed{#1}{#1}{#3}{#4}}}
+%         {\doifelseassignment{#3}
+%            {\grph_include_use_indeed{#1}{#2}\empty{#3}}
+%            {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
+
 \def\grph_include_use[#1][#2][#3][#4]%
   {\doifelsenothing{#1}
      {\doifsomething{#2}
-        {\doifelseassignment{#3}
-           {\grph_include_use_indeed{#2}{#2}{#3}{#4}}
-           {\grph_include_use_indeed{#2}{#2}\empty{#4}}}}
+        {\ifcondition\validassignment{#3}%
+           \grph_include_use_indeed{#2}{#2}{#3}{#4}%
+         \else
+           \grph_include_use_indeed{#2}{#2}\empty{#4}%
+         \fi}}%
      {\doifelsenothing{#2}
-        {\doifelseassignment{#3}
-           {\grph_include_use_indeed{#1}{#1}\empty{#3}}
-           {\grph_include_use_indeed{#1}{#1}{#3}{#4}}}
-        {\doifelseassignment{#3}
-           {\grph_include_use_indeed{#1}{#2}\empty{#3}}
-           {\grph_include_use_indeed{#1}{#2}{#3}{#4}}}}}
+        {\ifcondition\validassignment{#3}%
+           \grph_include_use_indeed{#1}{#1}\empty{#3}%
+         \else
+           \grph_include_use_indeed{#1}{#1}{#3}{#4}%
+         \fi}
+        {\ifcondition\validassignment{#3}%
+           \grph_include_use_indeed{#1}{#2}\empty{#3}
+         \else
+           \grph_include_use_indeed{#1}{#2}{#3}{#4}%
+         \fi}}}
 
 \def\grph_include_use_indeed#1#2#3#4%
   {\dodoglobal\setvalue{\??externalfigureinstance#1}{\grph_include_setup{#2}{#3}{#4}}%
@@ -221,8 +241,9 @@
   {\dotripleempty\grph_include_figure}
 
 \def\grph_include_figure[#1][#2][#3]%
-  {\docheckassignment{#2}%
-   \ifassignment
+% {\docheckassignment{#2}%
+%  \ifassignment
+  {\ifcondition\validassignment{#2}%
      \grph_include_place[#1][][#2]%
    \else
      \grph_include_place[#1][#2][#3]%
@@ -301,8 +322,9 @@
    %
    \edef\p_grph_include_label{#1}%
    \let\p_grph_include_name\p_grph_include_label
-   \docheckassignment{#2}%
-   \ifassignment
+ % \docheckassignment{#2}%
+ % \ifassignment
+   \ifcondition\validassignment{#2}%
      % [label] [settings]
      \let\p_grph_include_parent\p_grph_include_label
      \grph_include_place_inherit
@@ -346,6 +368,7 @@
         conversion   {\externalfigureparameter\c!conversion}%
         resolution   {\externalfigureparameter\c!resolution}%
         color        {\externalfigureparameter\c!color}% unprocessed raw key
+        cmyk         {\externalfigureparameter\c!cmyk}% kind of special
         arguments    {\externalfigureparameter\c!arguments}% used for converters
         repeat       {\externalfigureparameter\c!repeat}%
         transform    {\externalfigureparameter\c!transform}%
@@ -353,10 +376,10 @@
         userpassword {\externalfigureparameter\c!userpassword}%
         ownerpassword{\externalfigureparameter\c!ownerpassword}%
     \ifx\p_width\empty \else
-        width      \dimexpr\p_width\relax
+        width  \dimexpr\p_width\relax
     \fi
     \ifx\p_height\empty \else
-        height     \dimexpr\p_height\relax
+        height \dimexpr\p_height\relax
     \fi
    }%\relax
    \clf_figure_identify
@@ -484,29 +507,6 @@
    \c!width      =\externalfigureparameter\c!width,
    \c!height     =\externalfigureparameter\c!height,
    \c!lines      =\externalfigureparameter\c!lines]
-
-% % this will become:
-%
-% \unexpanded\def\doscalefigure % used at lua end
-%   {\global\setbox\foundexternalfigure\vbox\bgroup
-%      \bgroup
-%        \let\currentscale\currentexternalfigure
-%        \let\scaleparameter\externalfigureparameter
-%        \dowithnextboxcs\grph_scale_finish\hbox{\dowithfigure{\box\foundexternalfigure}}%
-%    \egroup}
-%
-% % or even better:
-%
-% \def\grph_scale_inherited#1%
-%   {\bgroup
-%    \expandafter\let\expandafter\currentscale  \csname current#1\endcsname
-%    \expandafter\let\expandafter\scaleparameter\csname #1parameter\endcsname
-%    \dowithnextboxcs\grph_scale_finish\hbox}
-%
-% \unexpanded\def\doscalefigure % used at lua end
-%   {\global\setbox\foundexternalfigure\vbox\bgroup
-%      \grph_scale_inherited{externalfigure}{\dowithfigure{\box\foundexternalfigure}}%
-%    \egroup}
 
 %D You can register additional suffixes with the following command:
 %D
@@ -904,6 +904,25 @@
 \unexpanded\def\overlayfigure#1%
   {\externalfigure[#1][\c!width=\d_overlay_width,\c!height=\d_overlay_height]}
 
+% Experimental (will become cleaner):
+
+\ifcase\contextlmtxmode \else
+
+    \unexpanded\def\includesvgfile  {\dontleavehmode\begingroup\dodoubleempty\grph_include_svg_file}
+    \unexpanded\def\includesvgbuffer{\dontleavehmode\begingroup\dodoubleempty\grph_include_svg_buffer}
+
+    \def\grph_include_svg_file[#1][#2]%
+      {\getdummyparameters[\c!offset=\zeropoint,#2]%
+       \clf_includesvgfile{#1}\dimexpr\dummyparameter\c!offset\relax
+       \endgroup}
+
+    \def\grph_include_svg_buffer[#1][#2]%
+      {\getdummyparameters[\c!offset=\zeropoint,#2]%
+       \clf_includesvgbuffer{#1}\dimexpr\dummyparameter\c!offset\relax
+       \endgroup}
+
+\fi
+
 % Bonus:
 
 \useexternalfigure
@@ -960,6 +979,10 @@
 % \stopcombination
 
 \unexpanded\def\inlinefigure[#1]{\dontleavehmode\sbox{\externalfigure[#1][\v!inline]}}
+
+%D Needs to be done global:
+
+\definelayer[epdfcontent]
 
 \protect \endinput
 

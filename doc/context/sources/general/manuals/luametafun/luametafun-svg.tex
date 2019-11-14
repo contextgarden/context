@@ -1,0 +1,75 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-svg
+
+\startchapter[title={SVG}]
+
+There is not that much to tell about this command. It translates an \SVG\ image
+to \METAPOST\ operators. We took a few images from a mozilla emoji font:
+
+\startbuffer[2]
+\startMPcode
+    draw lmt_svg [
+        filename = "mozilla-svg-002.svg",
+        height   = 2cm,
+        width    = 8cm,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2][option=TEX]
+
+\startlinecorrection
+    \getbuffer[2]
+\stoplinecorrection
+
+Because we get pictures, you can mess around with them:
+
+\startbuffer[1]
+\startMPcode
+    picture p ; p := lmt_svg [ filename = "mozilla-svg-001.svg" ] ;
+    numeric w ; w := bbwidth(p) ;
+    draw p ;
+    draw p xscaled -1 shifted (2.5*w,0);
+    draw p rotatedaround(center p,45) shifted (3.0*w,0) ;
+    draw image (
+        for i within p : if filled i :
+            draw pathpart i withcolor green ;
+        fi endfor ;
+    ) shifted (4.5*w,0);
+    draw image (
+        for i within p : if filled i :
+            fill pathpart i withcolor red withtransparency (1,.25) ;
+        fi endfor ;
+    ) shifted (6*w,0);
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+\startlinecorrection
+    \getbuffer[1]
+\stoplinecorrection
+
+Of course. often you won't know in advance what is inside the image and how (well)
+it has been defined so the previous example is more about showing some \METAPOST\
+muscle.
+
+The supported parameters are:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name     \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC filename \NC path    \NC \NC \NC \NR
+\NC width    \NC numeric \NC \NC \NC \NR
+\NC height   \NC numeric \NC \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent
+

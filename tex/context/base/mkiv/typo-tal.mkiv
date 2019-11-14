@@ -269,4 +269,38 @@
      \typo_charalign_adapt_font_indeed
    \fi}
 
+%D Another example:
+%D
+%D \starttyping
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={flushleft}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125     cm                       \eTD \eTR
+%D \bTR \bTD 2 \eTD \bTD 1 125,80  cm                       \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80  $\pi^2$                  \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3   \unit{square centimeter} \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={flushleft}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125     cm                       \eTD \eTR
+%D \bTR \bTD 2 \eTD \bTD 1 125,80  cm                       \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80  $\pi^2$                  \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3   \unit{square centimeter} \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={number->,},aligncharacter=yes,align={middle}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125    \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80 \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3  \eTD \eTR
+%D \eTABLE
+%D
+%D \setupTABLE[c][2][alignmentcharacter={text->,},aligncharacter=yes,align={middle}]
+%D \bTABLE
+%D \bTR \bTD 1 \eTD \bTD   125    \eTD \eTR
+%D \bTR \bTD 6 \eTD \bTD 1 125,80 \eTD \eTR
+%D \bTR \bTD 7 \eTD \bTD   129,3  \eTD \eTR
+%D \eTABLE
+%D \stoptyping
+
 \protect \endinput

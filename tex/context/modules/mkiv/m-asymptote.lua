@@ -17,7 +17,7 @@ sandbox.registerrunner {
     name     = "asymptote prc",
     program  = "asy",
     method   = "execute",
-    template = '-noV -config="" -tex=context -outformat="prc" "%filename%"',
+    template = [[-noV -config="" -tex=context -outformat="prc" %filename%]],
     checkers = { filename = "readable" },
 }
 
@@ -25,7 +25,7 @@ sandbox.registerrunner {
     name     = "asymptote pdf",
     program  = "asy",
     method   = "execute",
-    template = '-noV -config="" -tex=context -outformat="pdf" "%filename%"',
+    template = [[-noV -config="" -tex=context -outformat="pdf" %filename%]],
     checkers = { filename = "readable" },
 }
 

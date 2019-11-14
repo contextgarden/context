@@ -1,0 +1,166 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-arrow
+
+\startchapter[title={Arrow}]
+
+Arrows are somewhat complicated because they follow the path, are constructed
+using a pen, have a fill and draw, and need to scale. One problem is that the
+size depends on the pen but the pen normally is only known afterwards.
+
+\startbuffer[1a]
+\startMPcode
+draw lmt_arrow [
+    path = (fullcircle scaled 3cm),
+]
+    withpen pencircle scaled 2mm
+    withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[1b]
+\startMPcode
+draw lmt_arrow [
+    path   = (fullcircle scaled 3cm),
+    length = 8,
+]
+    withpen pencircle scaled 2mm
+    withcolor "darkgreen" ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[1c]
+\startMPcode
+draw lmt_arrow [
+    path = (fullcircle scaled 3cm rotated 45),
+    pen  = (pencircle xscaled 2mm yscaled 1mm rotated 45),
+]
+    withpen pencircle xscaled 2mm yscaled 1mm rotated 45
+    withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[1d]
+\startMPcode
+pickup pencircle xscaled 2mm yscaled 1mm rotated 45 ;
+draw lmt_arrow [
+    path = (fullcircle scaled 3cm rotated 45),
+    pen  = "auto",
+]
+    withcolor "darkyellow" ;
+\stopMPcode
+\stopbuffer
+
+To some extent \METAFUN\ can help you with this issue. In \in {figure} [arrows:1]
+we see some variants. The definitions are given below:
+
+\typebuffer[1a][option=TEX]
+\typebuffer[1b][option=TEX]
+\typebuffer[1c][option=TEX]
+\typebuffer[1d][option=TEX]
+
+\startplacefigure[reference=arrows:1]
+    \startcombination[4*1]
+        {\getbuffer[1a]} {default}
+        {\getbuffer[1b]} {length}
+        {\getbuffer[1c]} {pen}
+        {\getbuffer[1d]} {auto}
+    \stopcombination
+\stopplacefigure
+
+There are some options that influence the shape of the arrowhead and its
+location on the path. You can for instance ask for two arrowheads:
+
+\startbuffer[3]
+\startMPcode
+    pickup pencircle scaled 1mm ;
+    draw lmt_arrow [
+        pen      = "auto",
+        location = "both"
+        path     = fullcircle scaled 3cm rotated 90,
+    ] withcolor "darkgreen" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3][option=TEX]
+
+\startlinecorrection
+\getbuffer[3]
+\stoplinecorrection
+
+The shape can also be influenced although often this is not that visible:
+
+\startbuffer[4]
+\startMPcode
+    pickup pencircle scaled 1mm ;
+    draw lmt_arrow [
+        kind        = "draw",
+        pen         = "auto",
+        penscale    = 4,
+        location    = "middle",
+        alternative = "curved",
+        path        = fullcircle scaled 3cm,
+    ] withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4][option=TEX]
+
+\startlinecorrection
+\getbuffer[4]
+\stoplinecorrection
+
+The location can also be given as percentage, as this example demonstrates. Watch
+how we draw only arrow heads:
+
+\startbuffer[5]
+\startMPcode
+    pickup pencircle scaled 1mm ;
+    for i = 0 step 5 until 100 :
+        draw lmt_arrow [
+            alternative = "dimpled",
+            pen         = "auto",
+            location    = "percentage",
+            percentage  = i,
+            dimple      = (1/5 + i/200),
+            headonly    = (i = 0),
+            path        = fullcircle scaled 3cm,
+        ] withcolor "darkyellow" ;
+    endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startlinecorrection
+\getbuffer[5]
+\stoplinecorrection
+
+The supported parameters are:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name        \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC path        \NC path    \NC        \NC \NC \NR
+\NC pen         \NC path    \NC        \NC \NC \NR
+\NC             \NC string  \NC auto   \NC \NC \NR
+\NC kind        \NC string  \NC fill   \NC \type {fill} or \type {draw} \NC \NR
+\NC dimple      \NC numeric \NC 1/5    \NC \NC \NR
+\NC scale       \NC numeric \NC 3/4    \NC \NC \NR
+\NC penscale    \NC numeric \NC 3      \NC \NC \NR
+\NC length      \NC numeric \NC 4      \NC \NC \NR
+\NC angle       \NC numeric \NC 45     \NC \NC \NR
+\NC location    \NC string  \NC end    \NC \type {end}, \type {middle} or \type {both} \NC \NR  % middle both
+\NC alternative \NC string  \NC normal \NC \type {normal}, \type {dimpled} or \type {curved} \NC \NR
+\NC percentage  \NC numeric \NC 50     \NC \NC \NR
+\NC headonly    \NC boolean \NC false  \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent
+

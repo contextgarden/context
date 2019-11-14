@@ -14,6 +14,8 @@
 %D This is a minimal \METAFUN\ instance which can be handy for isolated
 %D subruns.
 
+boolean contextlmtxmode ; contextlmtxmode := if known fontmaking : false else: true fi;
+
 prologues := 0 ;
 mpprocset := 1 ;
 
@@ -21,17 +23,10 @@ input "mp-base.mpiv" ;
 input "mp-tool.mpiv" ;
 input "mp-mlib.mpiv" ;
 input "mp-luas.mpiv" ;
+input "mp-cont.mpiv" ;
 input "mp-page.mpiv" ;
 
-string minifunversion ; minifunversion =
-    "minifun iv"                        & " " &
-    decimal year                        & "-" &
-    decimal month                       & "-" &
-    decimal day                         & " " &
-    if ((time div 60) < 10)           :   "0" & fi
-    decimal (time div 60)               & ":" &
-    if ((time-(time div 60)*60) < 10) :   "0" & fi
-    decimal (time-(time div 60)*60)   ;
+string minifunversion ; minifunversion = "minifun iv " & mfun_timestamp;
 
 let normalend = end ;
 
@@ -41,5 +36,3 @@ if known mplib :
 else :
     def end = ; message "" ; message minifunversion ; message "" ; normalend ; enddef ;
 fi ;
-
-% dump ; % obsolete in mplib

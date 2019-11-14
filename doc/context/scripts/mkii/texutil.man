@@ -1,6 +1,6 @@
 .TH "texutil" "1" "01-01-2019" "version 9.1.0" "TeXUtil"
 .SH NAME
-.B texutil
+ texutil - TeXUtil
 .SH SYNOPSIS
 .B texutil [
 .I OPTIONS ...

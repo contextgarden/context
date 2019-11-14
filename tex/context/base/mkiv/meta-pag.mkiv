@@ -11,21 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D These definitions used to be part of the old \type
-%D {core-mps} file, later changed into \type {meta-ini}, but
-%D keeping them separate is cleaner.
+%D These definitions used to be part of the old \type {core-mps} file, later changed
+%D into \type {meta-ini}, but keeping them separate is cleaner.
 
 \writestatus{loading}{MetaPost Graphics / Page Data Management}
 
 \unprotect
 
-%D The next few macros tell \METAPOST\ how the \CONTEXT\
-%D pagebody looks.
+%D The next few macros tell \METAPOST\ how the \CONTEXT\ pagebody looks.
 
-\startMPextensions
-    boolean PageStateAvailable;
-    PageStateAvailable:=true;
-\stopMPextensions
+% \startMPextensions
+%     boolean PageStateAvailable;
+%     PageStateAvailable:=true;
+% \stopMPextensions
 
 % maybe always set as frozen anyway
 
@@ -87,24 +85,22 @@
 %     NOfColumns:=\number\nofcolumns;
 % \stopMPinitializations
 
-\def\MPonrightpage{true}
-\def\MPonoddpage  {true}
+% \def\MPonrightpage{true} % just in case they're used
+% \def\MPonoddpage  {true} % just in case they're used
 
-\def\freezeMPpagelayout
-  {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
-   \edef\MPonoddpage  {\doifelseoddpage     {tru}{fals}e}}
+% \def\freezeMPpagelayout
+%   {\edef\MPonrightpage{\doifbothsides  {tru}{tru}{fals}e}%
+%    \edef\MPonoddpage  {\doifelseoddpage     {tru}{fals}e}}
 
-%D We need to freeze the pagelayout before the backgrounds
-%D are build, because the overlay will temporarily become
-%D zero (overlay).
+%D We need to freeze the pagelayout before the backgrounds are build, because the
+%D overlay will temporarily become zero (overlay).
 
-\appendtoks
-    \freezeMPpagelayout
-\to \everybeforepagebody
+% \appendtoks
+%     \freezeMPpagelayout
+% \to \everybeforepagebody
 
-%D By freezing these value every graphic, we can use layout
-%D variables that change halfways a page, whatever use that
-%D has.
+%D By freezing these value every graphic, we can use layout variables that change
+%D halfways a page, whatever use that has.
 
 % obsolete (but keep the code)
 %

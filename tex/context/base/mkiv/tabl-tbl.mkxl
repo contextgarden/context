@@ -1,0 +1,3022 @@
+%D \module
+%D   [       file=core-tbl,
+%D        version=1998.11.03,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Text Flow Tabulation,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Tabulation}
+
+\unprotect
+
+\registerctxluafile{tabl-tbl}{} % experiment
+
+%D I can probably reimplement this using a \LUATEX\ combination but it does not pay
+%D of in development time. If I need something else I will write it from scratch
+%D anyway. This module looks a bit complex which is a consequence of it dealing with
+%D paragraphs being split over pages and that there are several passes over the data
+%D set. We can probably do some cleanup (combine/split).
+%D
+%D Caching the preamble does not save much (compared to other bits and pieces of
+%D \CONTEXT). There are not that many ways to deal with preambles and this is just
+%D one of them. The keys are somewhat similar to those of the \TABLE\ package.
+
+% |p2|p3| 2:3 -> spanning (maybe)
+%
+% In-text tabbing environment
+%
+% \starttabulate[| separated template] % eg [|l|p|] or [|l|p|p|]
+%   \NC ... \NC ... \NC\NR
+% \stoptabulate
+%
+% with: two pass auto width calculation when no p-width
+% specified, even with multiple p's, see examples.
+%
+%  TaBlE compatible specifications:
+%
+%  l  align column/paragraph left
+%  r  align column/paragraph right
+%  c  align column/paragraph center
+%  p  p(dimen) of automatisch als alleen p
+%  w  column width
+%  f  font#1
+%  A  {alignmentoptions}
+%  B  bold
+%  I  italic
+%  S  slanted
+%  T  type
+%  R  roman
+%  m  math
+%  M  display math
+%  h  hook (inner level or par lines)
+%  b  before (may be command#1)
+%  a  after
+%  i  i<n> skip left of column
+%  j  i<n> skip right of column
+%  k  i<n> skip around column
+%  d  digits (~)
+%
+%  C  [LMRT] {color} % T is text color
+%
+%  |  {color,n}
+%
+%  s  setups
+%
+%  g  g{char} align at char
+%  .  align at .
+%  ,  align at ,
+%
+%  Still to be done
+%
+%  N      math numbers (best hook into existing digits mechanism)
+%  n      numbers (best hook into existing digits mechanism)
+%  Q      math numbers (best hook into existing digits mechanism)
+%  q      numbers (best hook into existing digits mechanism)
+%  ~      \hskip.5em
+%  |      check
+%
+%  nesting
+%
+%  10     evt auto stack; dan wel andere signal dan void nodig
+%
+%  present but not yet 100% ok
+%
+%  \TL [width,color]   bottom hrule
+%  \FL [width,color]   first hrule
+%  \ML [width,color]   mid hrule (with auto split)
+%  \LL [width,color]   bottom hrule
+%  \BL [width,color]   last hrule
+%
+%  \HL [width,color]   top rule
+%  \VL [width,color]
+%
+%  \CC \CL \CM \CR color
+%
+%  \EQ \RQ \HQ     equal  (raw, hook)
+%  \NC \RC \HC     normal (raw, hook)
+%
+%  \NR  checked break
+%  \NB  no break
+%
+%  \HR : rule with lineheight
+%
+%  \autotabulaterule : with lineheight, not first/last
+%  \autotabulateline : spaced, not first/last
+%  \tabulaterule     : with lineheight
+%  \tabulateline     : spaced
+%
+% tricky: align scans ahead, over # and expands ones before
+% while doing
+%
+% new:
+%
+% \starttabulate[|cg{.}|cg{,}|cg{,}|]
+% \NC period     \NC comma      \NC comma   \NC\NR
+% \NG 100.000,00 \NG 100.000,00 \NG 100,00  \NC\NR
+% \NG 10.000,00  \NG 10.000,00  \NG 1000,00 \NC\NR
+% \NG 100,00     \NG 100,00     \NG 10,00   \NC\NR
+% \NG 10         \NG 10         \NG 0,00    \NC\NR
+% \stoptabulate
+%
+% \starttabulate[|c.|c,|c,|]
+% \NC period     \NC comma      \NC comma   \NC\NR
+% \NG 100.000,00 \NG 100.000,00 \NG 100,00  \NC\NR
+% \NG 10.000,00  \NG 10.000,00  \NG 1000,00 \NC\NR
+% \NG 100,00     \NG 100,00     \NG 10,00   \NC\NR
+% \NG 10         \NG 10         \NG 0,00    \NC\NR
+% \stoptabulate
+
+% nice demo (for BG)
+%
+% \starttabulate[|r|b{$\star$}|ra{\percent}|b{=}|r|]
+% \NC 500 \NC \NC 60 \NC \NC 300 \NC \NR
+% \NC 500 \NC \NC 55 \NC \NC 275 \NC \NR
+% \NC 500 \NC \NC 50 \NC \NC 250 \NC \NR
+% \NC 500 \NC \NC 45 \NC \NC 225 \NC \NR
+% \NC 500 \NC \NC 40 \NC \NC 200 \NC \NR
+% \NC 500 \NC \NC 35 \NC \NC 175 \NC \NR
+% \NC 500 \NC \NC 30 \NC \NC 150 \NC \NR
+% \NC 500 \NC \NC 25 \NC \NC 125 \NC \NR
+% \NC 500 \NC \NC 20 \NC \NC 100 \NC \NR
+% \stoptabulate
+
+\newtoks         \t_tabl_tabulate_preamble
+\newtoks         \t_tabl_tabulate_before
+\newtoks         \t_tabl_tabulate_after
+\newtoks         \t_tabl_tabulate_bmath
+\newtoks         \t_tabl_tabulate_emath
+\newtoks         \t_tabl_tabulate_font
+\newtoks         \t_tabl_tabulate_settings
+\newtoks         \t_tabl_tabulate_dummy
+\newtoks         \t_tabl_tabulate_every_row
+\newtoks         \t_tabl_tabulate_every_after_row
+\newtoks         \t_tabl_tabulate_every_real_row
+
+\newtoks         \t_tabl_tabulate_initializers_first
+\newtoks         \t_tabl_tabulate_initializers_second
+
+\newcount        \c_tabl_tabulate_nofauto
+\newcount        \c_tabl_tabulate_columns
+\newcount        \c_tabl_tabulate_column
+\newcount        \c_tabl_tabulate_plines_min
+\newcount        \c_tabl_tabulate_plines_max
+\newcount        \c_tabl_tabulate_max_colorcolumn
+\newcount        \c_tabl_tabulate_max_vrulecolumn
+\newcount        \c_tabl_tabulate_repeathead
+\newcount        \c_tabl_tabulate_noflines
+\newcount        \c_tabl_tabulate_totalnoflines
+\newcount        \c_tabl_tabulate_minusnoflines
+\newcount        \c_tabl_tabulate_align
+\newcount        \c_tabl_tabulate_nofrealrows
+\newcount        \c_tabl_tabulate_autocolor
+
+\newcount        \c_tabl_tabulate_nofcolumns            % set at the lua end by parser
+\newcount        \c_tabl_tabulate_has_rule_spec_first   % set at the lua end by parser (for the moment a count)
+\newcount        \c_tabl_tabulate_has_rule_spec_last    % set at the lua end by parser (for the moment a count)
+
+\newconditional  \c_tabl_tabulate_nopbreak
+\newconditional  \c_tabl_tabulate_firstflushed
+\newconditional  \c_tabl_tabulate_equal
+\newconditional  \c_tabl_tabulate_split             \settrue\c_tabl_tabulate_split
+\newconditional  \c_tabl_tabulate_automode
+\newconditional  \c_tabl_tabulate_handlepbreak      \settrue\c_tabl_tabulate_handlepbreak
+\newconditional  \c_tabl_tabulate_autorulespacing   \settrue\c_tabl_tabulate_autorulespacing
+\newconditional  \c_tabl_tabulate_someamble
+\newconditional  \c_tabl_tabulate_tolerant_break
+\newconditional  \c_tabl_tabulate_splitoff_whitespace
+\newconditional  \c_tabl_tabulate_pwidth_set
+\newconditional  \c_tabl_tabulate_reshape
+
+\newdimen        \d_tabl_tabulate_width_p
+\newdimen        \d_tabl_tabulate_width_w
+\newdimen        \d_tabl_tabulate_width
+\newdimen        \d_tabl_tabulate_unit
+\newdimen        \d_tabl_tabulate_height_p_max
+\newdimen        \d_tabl_tabulate_vrulethickness_default
+\newdimen        \d_tabl_tabulate_hrulethickness_default
+\newdimen        \d_tabl_tabulate_vrulethickness
+\newdimen        \d_tabl_tabulate_hrulethickness          % not used
+\newdimen        \d_tabl_tabulate_vrulethickness_local
+\newdimen        \d_tabl_tabulate_hrulethickness_local
+\newdimen        \d_tabl_tabulate_indent
+\newdimen        \d_tabl_tabulate_splitoff_betweenskip
+\newdimen        \d_tabl_tabulate_margin
+
+\newskip         \s_tabl_tabulate_pre
+\newskip         \s_tabl_tabulate_post
+\newskip         \s_tabl_tabulate_first
+\newskip         \s_tabl_tabulate_last
+\newskip         \s_tabl_tabulate_separator
+
+\newbox          \b_tabl_tabulate
+
+\newconstant     \c_tabl_tabulate_pass
+\newconstant     \c_tabl_tabulate_type
+\newconstant     \c_tabl_tabulate_kind % 1=strong  2=equals
+\newconstant     \c_tabl_tabulate_splitlinemode  \c_tabl_tabulate_splitlinemode\plusone
+\newconstant     \c_tabl_tabulate_colorspan
+\newconstant     \c_tabl_tabulate_localcolorspan
+\newconstant     \c_tabl_tabulate_modus
+
+\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
+
+\let             \m_tabl_tabulate_separator_factor \empty % fraction
+
+\newtoks         \everytabulatepar           % where used ?
+\newtoks         \everytabulate              % public ?
+
+\unexpanded\def\tolerantTABLEbreaktrue   {\settrue \c_tabl_tabulate_tolerant_break} % used in styles !
+\unexpanded\def\handletabulatepbreakfalse{\setfalse\c_tabl_tabulate_handlepbreak  } % depricated
+
+\def\noftabulaterows{\number\c_tabl_tabulate_noflines} % handy for testing if a table is empty
+
+\installcorenamespace{tabulatebox}
+\installcorenamespace{tabulatesetup}
+\installcorenamespace{tabulatehook}
+\installcorenamespace{tabulatesplit}
+\installcorenamespace{tabulateseparator}
+\installcorenamespace{tabulatecolor}
+\installcorenamespace{tabulateheader}
+\installcorenamespace{tabulatealigning}
+\installcorenamespace{tabulatepreamble}
+\installcorenamespace{tabulatevrule}
+
+\installcorenamespace{tabulatehead}
+\installcorenamespace{tabulatefoot}
+\installcorenamespace{tabulatenext}
+
+\prependtoks
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+\to \t_tabl_tabulate_initializers_first
+
+\prependtoks
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+\to \t_tabl_tabulate_initializers_second
+
+\prependtoks
+   \global\advance\c_tabl_tabulate_nofrealrows\plusone
+\to \t_tabl_tabulate_every_real_row
+
+\def\b_tabl_tabulate_current#1%
+  {\csname\??tabulatebox\number#1\endcsname} % beware, a synonym
+
+\def\tabl_tabulate_initialize_boxes#1%
+  {\scratchcounter#1\relax
+   \tabl_tabulate_initialize_boxes_step}
+
+\def\tabl_tabulate_initialize_boxes_step
+  {\ifnum\scratchcounter>\zerocount
+     \tabl_tabulate_initialize_box\scratchcounter
+     \advance\scratchcounter\minusone
+     \expandafter\tabl_tabulate_initialize_boxes_step
+   \fi}
+
+\def\tabl_tabulate_initialize_box#1% also used elsewhere
+  {\ifcsname\??tabulatebox\number#1\endcsname
+     \tabl_tabulate_initialize_box_yes
+   \else
+     \tabl_tabulate_initialize_box_nop#1%
+   \fi}
+
+\def\tabl_tabulate_initialize_box_yes  {\global     \setbox\lastnamedcs\emptybox}
+\def\tabl_tabulate_initialize_box_nop#1{\expandafter\newbox\csname\??tabulatebox\number#1\endcsname}
+
+\tabl_tabulate_initialize_boxes{16} % not really needed
+
+\let\initializetablebox  \tabl_tabulate_initialize_box   % used elsewhere, will change
+\let\initializetableboxes\tabl_tabulate_initialize_boxes % used elsewhere, will change
+\let\tablebox            \b_tabl_tabulate_current
+
+% 0 = NC column next   EQ equal column
+% 1 = RC column raw    RQ equal column raw
+% 2 = HC column hook   HQ equal column hook
+
+% handy helper
+
+\def\tabulatenoalign % public ?
+  {\noalign
+   \bgroup
+   \let\noalign\relax
+   \let\tabulatenoalign\relax
+   \let\next=}
+
+\def\starttabulatenoalign % public ?
+  {\tabulatenoalign\bgroup}
+
+\let\stoptabulatenoalign\egroup
+
+% [|lg{.}|] => \NG 12.34 \NC
+
+\def\tabl_tabulate_nobreak_inject_tracer
+  {\red % maybe use the fast color switcher here
+   \hrule\s!height.5\linewidth\s!depth.5\linewidth
+   \par
+   \kern-\linewidth
+   \tabl_tabulate_break_no}
+
+\installtextracker
+  {tables.tabulate.breaks}
+  {\let\tabl_tabulate_break_no_tracer\tabl_tabulate_nobreak_inject_tracer}
+  {\let\tabl_tabulate_break_no_tracer\donothing}
+
+\let\tabl_tabulate_break_no_tracer\donothing
+
+\def\tabl_tabulate_nobreak_inject_indeed
+  {\tabl_tabulate_break_no
+   \tabl_tabulate_break_no_tracer}
+
+\def\tabl_tabulate_nobreak_inject
+  {\tabulatenoalign{\tabl_tabulate_nobreak_inject_indeed}}
+
+\unexpanded\def\tabl_tabulate_hook_check
+  {\ifnum\c_tabl_tabulate_type<\plustwo
+     \glet\tabl_tabulate_hook\tabl_tabulate_hook_nop
+   \else
+     \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
+   \fi}
+
+\unexpanded\def\tabl_tabulate_setups_check
+  {\begincsname\??tabulatesetup\the\c_tabl_tabulate_column\endcsname}
+
+\unexpanded\def\tabl_tabulate_entry_before{\ignorespaces\tabl_tabulate_hook}
+\unexpanded\def\tabl_tabulate_entry_after {\unskip\unskip\ifmmode\else\endgraf\fi}
+
+\unexpanded\def\tabl_tabulate_shaped_par_begin
+  {\dowithnextboxcs\tabl_tabulate_shaped_par_finish\vbox\bgroup}
+
+\def\tabl_tabulate_shaped_par_finish
+  {\clf_doreshapeframedbox\nextbox\relax
+   \ifvmode\unvbox\else\box\fi\nextbox}
+
+\let\tabl_tabulate_shaped_par_end\egroup
+
+\ifdefined\dotagtabulatecell   \else \let\dotagtabulatecell  \relax \fi
+\ifdefined\dotagtabulatesignal \else \let\dotagtabulatesignal\relax \fi
+
+\unexpanded\def\tabl_tabulate_check_local_color_first#1#2%
+  {\relax}
+
+\unexpanded\def\tabl_tabulate_check_local_color_second#1#2%
+  {\relax
+   \ifx\m_tabl_tabulate_color_local\empty
+     \xdef\m_tabl_tabulate_color{#1}%
+   \else
+     \glet\m_tabl_tabulate_color\m_tabl_tabulate_color_local
+     \glet\m_tabl_tabulate_color_local\empty
+   \fi
+   \ifcase\c_tabl_tabulate_localcolorspan
+     \global\c_tabl_tabulate_colorspan#2\relax
+   \else
+     \global\c_tabl_tabulate_colorspan\c_tabl_tabulate_localcolorspan
+     \global\c_tabl_tabulate_localcolorspan\zerocount
+   \fi}
+
+\unexpanded\def\tabl_tabulate_check_local_vrule_thickness#1%
+  {\relax
+   \ifcase\d_tabl_tabulate_vrulethickness_local
+     \global\d_tabl_tabulate_vrulethickness#1\relax
+   \else
+     \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_local
+     \global\d_tabl_tabulate_vrulethickness_local\zeropoint
+   \fi}
+
+\unexpanded\def\tabl_tabulate_check_local_vrule_color_first#1%
+  {\relax}
+
+\unexpanded\def\tabl_tabulate_check_local_vrule_color_second#1%
+  {\relax
+   \ifx\m_tabl_tabulate_vrule_color_local\empty
+     \xdef\m_tabl_tabulate_vrule_color{#1}%
+   \else
+     \glet\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
+     \glet\m_tabl_tabulate_vrule_color_local\empty
+   \fi}
+
+\let\tabl_tabulate_check_local_color      \gobbletwoarguments
+\let\tabl_tabulate_check_local_vrule_color\gobbleoneargument
+
+\appendtoks
+    \let\tabl_tabulate_check_local_color      \tabl_tabulate_check_local_color_first
+    \let\tabl_tabulate_check_local_vrule_color\tabl_tabulate_check_local_vrule_color_first
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\tabl_tabulate_check_local_color      \tabl_tabulate_check_local_color_second
+    \let\tabl_tabulate_check_local_vrule_color\tabl_tabulate_check_local_vrule_color_second
+\to \t_tabl_tabulate_initializers_second
+
+% \unexpanded % we can expand this one
+\def\tabl_tabulate_inject_pre_skip#1%
+  {\ifdim#1>\zeropoint
+     \kern#1\relax % was \hskip
+   \orelse\ifnum\c_tabl_tabulate_column=\zerocount
+     \ifconditional\c_tabl_tabulate_autorulespacing
+       \ifcase\c_tabl_tabulate_has_rule_spec_first\else
+         \kern\s_tabl_tabulate_first\relax % was \hskip
+       \fi
+     \fi
+   \fi}
+
+% \unexpanded % we can expand this one
+\def\tabl_tabulate_inject_post_skip#1%
+  {\ifdim#1>\zeropoint
+     \kern#1\relax % was \hskip
+   \orelse\ifnum\c_tabl_tabulate_columns=\c_tabl_tabulate_nofcolumns
+     \ifconditional\c_tabl_tabulate_autorulespacing
+       \ifcase\c_tabl_tabulate_has_rule_spec_last\else
+         \kern\s_tabl_tabulate_last\relax % was \hskip
+       \fi
+     \fi
+   \fi}
+
+\let\tabl_tabulate_hook_b\donothing
+\let\tabl_tabulate_hook_e\donothing
+
+\let\tabl_tabulate_hook_g\donothing
+
+\def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
+  {\etoksapp\t_tabl_tabulate_preamble{%
+        \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
+        \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
+        \tabl_tabulate_check_local_color\constantemptyargument\m_tabl_tabulate_color\constantnumberargument\c_tabl_tabulate_colorspan
+        \tabl_tabulate_color_side_right
+        \aligntab
+        \tabl_tabulate_column_vrule_inject
+        \tabl_tabulate_color_side_left
+        \tabl_tabulate_inject_pre_skip{\the\dimexpr\s_tabl_tabulate_pre}% get rid of plus
+        \alignmark\alignmark
+        \aligntab
+        \tabl_tabulate_color_side_both
+        \global\c_tabl_tabulate_colorspan\zerocount
+        \global\c_tabl_tabulate_column\constantnumber\c_tabl_tabulate_columns
+        \tabl_tabulate_hook_g
+        \tabl_tabulate_setups_check % unexpandable
+        \tabl_tabulate_hook_check   % unexpandable
+        \ifzeropt\d_tabl_tabulate_width
+            \ifcase\c_tabl_tabulate_modus\else
+               \settrue\c_tabl_tabulate_automode
+            \fi
+        \else
+            \ifcase\c_tabl_tabulate_modus
+                \hbox to
+            \else
+                \hsize
+            \fi
+            \the\d_tabl_tabulate_width
+        \fi
+        \bgroup
+            \tabl_tabulate_bbskip
+            \bgroup % we cannot combine the if because a cell may have only one ##
+                \tabl_tabulate_hook_b
+                \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
+                \ifx\m_tabl_tabulate_alignment\empty \else
+                    \spac_align_use_now{\m_tabl_tabulate_alignment}%
+                \fi
+                \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
+                \noexpand\dotagtabulatecell
+                \noexpand#1%
+                \ifconditional\c_tabl_tabulate_reshape
+                    \tabl_tabulate_shaped_par_begin
+                \fi
+                \dotagtabulatesignal  % empty cells .. todo (can be removed as soon as build)
+                \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
+                    \the\t_tabl_tabulate_bmath % maybe later? can interfere with char 0
+                    \the\t_tabl_tabulate_font
+                    \the\t_tabl_tabulate_settings
+                    \the\t_tabl_tabulate_before
+                    \ifx\m_tabl_tabulate_text_color\empty
+                        \expandafter\gobbleoneargument
+                    \else
+                        \expandafter\dofastcoloractivation
+                    \fi\m_tabl_tabulate_text_color
+                \noexpand\fi
+                % grouping needs to be outside macros (or expandable), nice test
+                % example \NC \string \aligntab \NC which will fail otherwise (mk)
+                \bgroup
+                \tabl_tabulate_entry_before
+                \alignmark\alignmark
+                \tabl_tabulate_entry_after
+                \egroup
+                \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
+                    \the\t_tabl_tabulate_after
+                    \the\t_tabl_tabulate_emath
+                \noexpand\fi
+                \ifconditional\c_tabl_tabulate_reshape
+                    \tabl_tabulate_shaped_par_end
+                \fi
+                \noexpand#2%
+                \tabl_tabulate_hook_e
+            \egroup
+        \egroup
+        \aligntab
+        \noexpand\dostoptagged
+        \tabl_tabulate_inject_post_skip{\the\dimexpr\s_tabl_tabulate_post}% get rid of plus
+        \alignmark\alignmark
+   }%
+   \toksapp\t_tabl_tabulate_dummy{\NC}%
+   \s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\relax
+   \ifnum\c_tabl_tabulate_columns<\numexpr\c_tabl_tabulate_nofcolumns-\plusone\relax
+     \s_tabl_tabulate_post\s_tabl_tabulate_pre
+   \else
+     \s_tabl_tabulate_post\zeropoint
+   \fi
+  %\let\gettabulateexit\dogettabulateexit % still needed ?
+   \d_tabl_tabulate_width\zeropoint}
+
+\unexpanded\def\installtabulatepreambleoption#1#2%
+  {\setvalue{\??tabulatepreamble\string#1}{#2}}%
+
+\installtabulatepreambleoption{x}{\c_tabl_tabulate_align\zerocount
+                                  \tabl_tabulate_set_preamble} % internal
+\installtabulatepreambleoption{l}{\c_tabl_tabulate_align\plusone
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{r}{\c_tabl_tabulate_align\plustwo
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{c}{\c_tabl_tabulate_align\plusthree
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{p}{\tabl_tabulate_set_paragraph}
+\installtabulatepreambleoption{s}{\tabl_tabulate_set_setups}
+\installtabulatepreambleoption{w}{\tabl_tabulate_set_width}
+\installtabulatepreambleoption{f}{\tabl_tabulate_set_font}
+\installtabulatepreambleoption{B}{\t_tabl_tabulate_font{\bf}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{I}{\t_tabl_tabulate_font{\it}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{S}{\t_tabl_tabulate_font{\sl}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{T}{\t_tabl_tabulate_font{\tt}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{R}{\t_tabl_tabulate_font{\rm}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{m}{\t_tabl_tabulate_bmath{\normalstartimath}%
+                                  \t_tabl_tabulate_emath{\normalstopimath}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{M}{\t_tabl_tabulate_bmath{\normalstartimath\displaystyle}%
+                                  \t_tabl_tabulate_emath{\normalstopimath}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{h}{\tabl_tabulate_set_hook}
+\installtabulatepreambleoption{b}{\tabl_tabulate_set_before}
+\installtabulatepreambleoption{a}{\tabl_tabulate_set_after}
+\installtabulatepreambleoption{i}{\tabl_tabulate_set_preskip}
+\installtabulatepreambleoption{j}{\tabl_tabulate_set_posskip}
+\installtabulatepreambleoption{k}{\tabl_tabulate_set_preposskip}
+\installtabulatepreambleoption{e}{\toksapp\t_tabl_tabulate_settings{\global\settrue\c_tabl_tabulate_equal}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{g}{\tabl_tabulate_set_align}
+\installtabulatepreambleoption{.}{\tabl_tabulate_set_align.}
+\installtabulatepreambleoption{,}{\tabl_tabulate_set_align,}
+\installtabulatepreambleoption{C}{\tabl_tabulate_set_color_span}
+\installtabulatepreambleoption{d}{\toksapp\t_tabl_tabulate_settings{\fixedspaces}%
+                                  \tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{ }{\tabl_tabulate_set_preamble}
+\installtabulatepreambleoption{A}{\tabl_tabulate_set_alignment}
+
+%D We no longer deal with \type {~} here but map it onto \type {d} instead. Of
+%D course we could prefix a key with \type {\meaning} instead, which works ok (and
+%D is needed in order to pseudo expand \type {\next}, but is ugly at the same time.
+%D The type {d} stands for digitspace.
+
+%D \starttyping
+%D \installtabulatepreambleoption{~}{...} % see 'd'
+%D \stoptyping
+%D
+%D Also, as there is always a key, we no longer do some after assigment or future
+%D let but just pick up the key.
+
+% \installtabulatepreambleoption \s!unknown %
+%   {\writestatus{tabulate}{unknown preamble key [\normalmeaning\next]}%
+%    \tabl_tabulate_set_preamble}
+%
+% \def\tabl_tabulate_set_preamble
+%   {\afterassignment\dosettabulatepreamble\let\next=}
+%
+% \def\dosettabulatepreamble
+%   {\ifx\next\relax \else
+%      \csname\??tabulatepreamble
+%        \ifcsname\??tabulatepreamble\next\endcsname\next\else\s!unknown\fi
+%      \expandafter\endcsname
+%    \fi}
+
+\installtabulatepreambleoption\relax
+  {} % finished
+
+\def\tabl_tabulate_set_preamble#1%
+  {\ifcsname\??tabulatepreamble\string#1\endcsname
+    %\expandafter\tabl_tabulate_set_preamble_yes
+     \expandafter\expandafter\expandafter\lastnamedcs\expandafter\gobbleoneargument
+   \else
+     \expandafter\tabl_tabulate_set_preamble_nop
+   \fi{#1}}
+
+\def\tabl_tabulate_set_preamble_yes#1%
+  {\csname\??tabulatepreamble\string#1\expandafter\endcsname}
+
+\def\tabl_tabulate_set_preamble_nop#1%
+  {\writestatus{tabulate}{unknown preamble key: #1}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_preskip#1%
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
+     {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
+
+\def\tabl_tabulate_set_posskip#1%
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
+     {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
+
+\def\tabl_tabulate_set_preposskip#1%
+  {\doifelsenumber{#1}%
+     {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }%
+     {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
+
+\def\tabl_tabulate_set_setups#1%
+  {\setvalue{\??tabulatesetup\the\c_tabl_tabulate_columns}{\setups[#1]}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_hook#1%
+  {\setvalue{\??tabulatehook\the\c_tabl_tabulate_columns}{#1}%
+   \tabl_tabulate_set_preamble}
+
+% begin of character align plugin
+
+\newconditional\c_tabl_auto_align_mode % reset later
+
+\def\tabl_tabulate_hook_g % partly expanded
+  {\ifconditional\c_tabl_auto_align_mode
+     \signalcharacteralign\c_tabl_tabulate_column{\c_tabl_tabulate_noflines+\plusone}%
+     \typo_charalign_adapt_font
+   \fi}
+
+\def\tabl_tabulate_set_align#1%
+  {\global\settrue\c_tabl_auto_align_mode
+   \setcharacteralign\c_tabl_tabulate_columns{#1}%
+   \tabl_tabulate_set_preamble}
+
+% end of character align plugin
+
+\def\tabl_tabulate_set_before#1%
+  {\t_tabl_tabulate_before{#1}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_after#1%
+  {\t_tabl_tabulate_after{#1}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_font#1%
+  {\t_tabl_tabulate_font{#1}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_pickup_width
+  {\doifelsenextparenthesis\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_width
+  {\setfalse\c_tabl_tabulate_pwidth_set
+   \c_tabl_tabulate_modus\zerocount
+   \tabl_tabulate_pickup_width}
+
+\def\tabl_tabulate_set_alignment#1%
+  {\edef\m_tabl_tabulate_alignment{#1}%
+   \spac_align_use_later\m_tabl_tabulate_alignment
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_paragraph
+  {\doifelsenextparenthesis
+     {\c_tabl_tabulate_modus\plusone
+      \settrue\c_tabl_tabulate_pwidth_set
+      \tabl_tabulate_pickup_width}
+     {\c_tabl_tabulate_modus\plustwo
+      \setfalse\c_tabl_tabulate_pwidth_set
+      \tabl_tabulate_set_preamble}}
+
+% \startbuffer
+%   \toplinebox{\framed[width=3cm,height=2cm]{tufte}}
+% \stopbuffer
+% \starttabulate[|p(fixed)|p|]
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR}
+% \stoptabulate
+% \starttabulate[|p(fit)|p|]
+%   \dorecurse{100}{\NC \getbuffer \NC test \par test \par \NC \NR}
+% \stoptabulate
+
+\def\tabl_tabulate_set_width_indeed(#1)%
+  {\processallactionsinset % can be made faster
+     [#1]%
+     [   \v!fit=>\c_tabl_tabulate_modus\plusthree,
+       \v!fixed=>\c_tabl_tabulate_modus\plusthree
+                 \settrue\c_tabl_tabulate_nopbreak,
+        \v!auto=>\c_tabl_tabulate_modus\plusthree
+                 \settrue\c_tabl_tabulate_reshape,
+     \s!unknown=>\d_tabl_tabulate_width#1\relax]%
+   \ifconditional\c_tabl_tabulate_pwidth_set
+     \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
+   \fi
+   \tabl_tabulate_set_preamble}
+
+% faster but seldom used
+%
+% \installcorenamespace{tabulatewidth}
+%
+% \setvalue{\??tabulatewidth\v!fit  }{\c_tabl_tabulate_modus\plusthree}
+% \setvalue{\??tabulatewidth\v!fixed}{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_nopbreak}
+% \setvalue{\??tabulatewidth\v!auto }{\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
+%
+% \def\tabl_tabulate_set_width_step#1%
+%   {\ifcsname\??tabulatewidth#1\endcsname
+%      \lastnamedcs
+%    \else
+%      \d_tabl_tabulate_width#1\relax
+%    \fi}
+%
+% \def\tabl_tabulate_set_width_indeed(#1)%
+%   {\rawprocesscommacommand[#1]\tabl_tabulate_set_width_step
+%    \ifconditional\c_tabl_tabulate_pwidth_set
+%      \global\advance\d_tabl_tabulate_width_p\d_tabl_tabulate_width % accumulated parwidth
+%    \fi
+%    \tabl_tabulate_set_preamble}
+%
+\def\tabl_tabulate_set_raggedright {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedright \fi}
+\def\tabl_tabulate_set_raggedcenter{\ifnum\c_tabl_tabulate_type=\plusone \else\raggedcenter\fi}
+\def\tabl_tabulate_set_raggedleft  {\ifnum\c_tabl_tabulate_type=\plusone \else\raggedleft  \fi}
+\def\tabl_tabulate_set_notragged   {\ifnum\c_tabl_tabulate_type=\plusone \else\notragged   \fi}
+\def\tabl_tabulate_set_hss         {\ifnum\c_tabl_tabulate_type=\plusone \else\hss         \fi} % never change this to a fill
+
+\def\tabl_tabulate_bskip_raggedright {\tabl_tabulate_bskip\tabl_tabulate_set_raggedright }
+\def\tabl_tabulate_bskip_raggedleft  {\tabl_tabulate_bskip\tabl_tabulate_set_raggedleft  }
+\def\tabl_tabulate_bskip_raggedcenter{\tabl_tabulate_bskip\tabl_tabulate_set_raggedcenter}
+
+\def\tabl_tabulate_set_width_normal
+  {\ifcase\c_tabl_tabulate_align\relax
+     \tabl_tabulate_set_preamble_step\empty                \tabl_tabulate_set_hss \or
+     \tabl_tabulate_set_preamble_step\empty                \tabl_tabulate_set_hss \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_set_hss\empty                 \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_set_hss\tabl_tabulate_set_hss \fi}
+
+\def\tabl_tabulate_set_width_fixed
+  {\ifcase\c_tabl_tabulate_align\relax
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip             \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedright \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedleft  \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedcenter\tabl_tabulate_eskip \fi}
+
+\def\tabl_tabulate_set_width_auto
+  {\global\advance\c_tabl_tabulate_nofauto\plusone
+   \ifcase\c_tabl_tabulate_align\relax
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip             \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedright \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedleft  \tabl_tabulate_eskip \or
+     \tabl_tabulate_set_preamble_step\tabl_tabulate_bskip_raggedcenter\tabl_tabulate_eskip \fi}
+
+\def\tabl_tabulate_set_width_simple
+  {\tabl_tabulate_set_preamble_step\tabl_tabulate_xbskip\tabl_tabulate_xeskip}
+
+% \def\tabl_tabulate_set_color_span#1#2%
+%   {\xdef\m_tabl_tabulate_color{#2}%
+%    \global\c_tabl_tabulate_colorspan\if#1L\plusone\else\if#1M\plustwo\else\if#1R\plusthree\else\zerocount\fi\fi\fi\relax
+%    \tabl_tabulate_set_preamble}
+
+\installcorenamespace{tabulatecolorspec}
+
+\setvalue{\??tabulatecolorspec C}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\zerocount}
+\setvalue{\??tabulatecolorspec L}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusone  }
+\setvalue{\??tabulatecolorspec M}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plustwo  }
+\setvalue{\??tabulatecolorspec R}#1{\xdef\m_tabl_tabulate_color     {#1}\global\c_tabl_tabulate_colorspan\plusthree}
+\setvalue{\??tabulatecolorspec T}#1{\xdef\m_tabl_tabulate_text_color{#1}}
+
+\def\tabl_tabulate_set_color_span#1#2%
+  {\csname\??tabulatecolorspec#1\endcsname{#2}%
+   \tabl_tabulate_set_preamble}
+
+\def\tabl_tabulate_set_vrule_command#1%
+  {\doifelsenumber{#1}
+     {\global\d_tabl_tabulate_vrulethickness#1\d_tabl_tabulate_vrulethickness_default}
+     {\xdef\m_tabl_tabulate_vrule_color{#1}}}
+
+\def\tabl_tabulate_set_entry#1#2% rulespec template
+  {\c_tabl_tabulate_align\v_tabl_tabulate_align
+   \c_tabl_tabulate_modus\zerocount
+   \setfalse\c_tabl_tabulate_pwidth_set
+   \setfalse\c_tabl_tabulate_reshape
+   \t_tabl_tabulate_before\emptytoks
+   \t_tabl_tabulate_after\emptytoks
+   \t_tabl_tabulate_bmath\emptytoks
+   \t_tabl_tabulate_emath\emptytoks
+   \t_tabl_tabulate_font\emptytoks
+   \t_tabl_tabulate_settings\emptytoks
+   \glet\m_tabl_tabulate_alignment\empty
+   \glet\m_tabl_tabulate_color\empty
+   \glet\m_tabl_tabulate_text_color\empty
+   \glet\m_tabl_tabulate_vrule_color\empty
+   \global\c_tabl_tabulate_colorspan\zerocount
+   \global\setfalse\c_tabl_auto_align_mode
+   \global\advance\c_tabl_tabulate_columns\plusone
+   \expandafter\let\csname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
+   \edef\currenttabulationtrulespec{#1}%
+   \ifx\currenttabulationtrulespec\empty
+     \global\d_tabl_tabulate_vrulethickness\zeropoint
+   \else
+     \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
+     \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
+   \fi
+     \tabl_tabulate_set_preamble#2\relax\relax % permits i without n
+   \ifcase\c_tabl_tabulate_modus\relax
+     \tabl_tabulate_set_width_normal
+   \or % fixed width
+     \tabl_tabulate_set_width_fixed
+   \or % auto width
+     \tabl_tabulate_set_width_auto
+   \or % simple
+     \tabl_tabulate_set_width_simple
+   \fi}
+
+\def\tabl_tabulate_set_last_entry#1% rulespec
+  {\glet\m_tabl_tabulate_color\empty
+   \glet\m_tabl_tabulate_vrule_color\empty
+   \edef\currenttabulationtrulespec{#1}%
+   \ifx\currenttabulationtrulespec\empty
+     \global\d_tabl_tabulate_vrulethickness\zeropoint
+   \else
+     \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
+     \rawprocesscommalist[#1]\tabl_tabulate_set_vrule_command
+   \fi
+   \etoksapp\t_tabl_tabulate_preamble{%
+     \tabl_tabulate_check_local_vrule_thickness\constantdimenargument\d_tabl_tabulate_vrulethickness
+     \tabl_tabulate_check_local_vrule_color\constantemptyargument\m_tabl_tabulate_vrule_color
+     \tabl_tabulate_column_vrule_inject}}
+
+\let\settabulateentry    \tabl_tabulate_set_entry      % used at the lua end
+\let\settabulatelastentry\tabl_tabulate_set_last_entry % used at the lua end
+
+\def\tabl_tabulate_normalize_splitline
+  {\ifcase\c_tabl_tabulate_splitlinemode
+     % nothing
+   \or
+     \ht\b_tabl_tabulate\strutht
+     \dp\b_tabl_tabulate\strutdp
+   \or
+     \ifdim\ht\b_tabl_tabulate<\strutht
+       \ht\b_tabl_tabulate\strutht
+     \fi
+     \ifdim\dp\b_tabl_tabulate<\strutdp
+       \dp\b_tabl_tabulate\strutdp
+     \fi
+   \fi}
+
+\def\tabl_tabulate_whitespace
+  {\ifdim\d_tabl_tabulate_splitoff_betweenskip>\zeropoint
+     \vskip\d_tabl_tabulate_splitoff_betweenskip
+     \global\d_tabl_tabulate_splitoff_betweenskip\zeropoint
+   \fi}
+
+\def\tabl_tabulate_check_whitespace
+  {\setbox\scratchbox\vpack
+     {\splitdiscards
+      \unskip
+      \ifdim\lastskip>\d_tabl_tabulate_splitoff_betweenskip
+        \global\d_tabl_tabulate_splitoff_betweenskip\lastskip
+      \fi}}
+
+\installtexdirective
+  {tabulate.linenumbers}
+  {\def\tabl_tabulate_check_linenumbers{\page_postprocessors_linenumbers_deepbox\b_tabl_tabulate}}
+  {\let\tabl_tabulate_check_linenumbers\relax}
+
+\let\tabl_tabulate_check_linenumbers\relax
+
+\def\tabl_tabulate_splitoff_box
+  {\dontcomplain
+   \global\setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column to \lineheight % % % global ? % % %
+   \setbox\b_tabl_tabulate\vbox
+     {\unvbox\b_tabl_tabulate}%
+   \ifconditional\c_tabl_tabulate_splitoff_whitespace
+     \tabl_tabulate_check_whitespace
+   \fi
+   \tabl_tabulate_color_repeat % needs to end up in a cell
+   \setbox\b_tabl_tabulate\hpack to \wd\b_tabl_tabulate
+     {\hss\tabl_tabulate_hook_yes{\box\b_tabl_tabulate}\hss}%
+   \tabl_tabulate_normalize_splitline
+   \tabl_tabulate_check_linenumbers
+   \box\b_tabl_tabulate}
+
+\unexpanded\def\tabl_tabulate_hook_nop
+  {}
+
+\let\tabl_tabulate_hook\tabl_tabulate_hook_nop
+
+\def\tabl_tabulate_hook_yes{\begincsname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
+
+\def\tabl_tabulate_pheight_reset
+  {\global\c_tabl_tabulate_plines_min\plusone
+   \ifdim\d_tabl_tabulate_height_p_max>\zeropoint
+     \getnoflines\d_tabl_tabulate_height_p_max
+     \global\c_tabl_tabulate_plines_max\noflines
+   \else
+     \global\c_tabl_tabulate_plines_max\zerocount
+   \fi
+   \global\d_tabl_tabulate_height_p_max\zeropoint}
+
+\def\tabl_tabulate_pheight_set
+  {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
+   \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
+     \global\d_tabl_tabulate_height_p_max\scratchdimen
+   \fi}
+
+\def\tabl_tabulate_pbreak_inject
+  {\ifconditional\c_tabl_tabulate_handlepbreak
+     \ifconditional\c_tabl_tabulate_nopbreak
+       \tabl_tabulate_nobreak_inject
+     \orelse\ifnum\c_tabl_tabulate_plines_max>\plusone
+       \ifnum\c_tabl_tabulate_plines_min=\plusone
+         \tabl_tabulate_nobreak_inject
+       \fi
+       \global\advance\c_tabl_tabulate_plines_min\plusone
+       \ifnum\c_tabl_tabulate_plines_min=\c_tabl_tabulate_plines_max\relax
+         \tabl_tabulate_nobreak_inject
+       \fi
+     \fi
+   \fi}
+
+\def\tabl_tabulate_pbreak_check
+  {\starttabulatenoalign
+     \tabl_tabulate_pbreak_inject
+     \ifconditional\c_tabl_tabulate_splitoff_whitespace
+       \tabl_tabulate_whitespace
+     \fi
+   \stoptabulatenoalign}
+
+%D \startbuffer
+%D \starttabulate[|c|p|p|]
+%D \NC \bf Alpha \NC \bf Beta        \NC \bf Gamma          \NC\NR
+%D \NC 1         \NC right indeed    \NC definitely wrong   \NC\NR
+%D \NC 2         \NC \thinrules[n=3] \NC \thinrules[n=3]    \NC\NR
+%D \NC 3         \NC oh yes          \NC simply no          \NC\NR
+%D \NC 4         \NC very true       \NC as false as can be \NC\NR
+%D \NC 5         \NC \thinrules[n=5] \NC \thinrules[n=5]    \NC\NR
+%D \NC 6         \NC \thinrules[n=3] \NC \thinrules[n=4]    \NC\NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer {\tracetabulatetrue\getbuffer}
+%D
+%D \startbuffer
+%D \starttabulate[|c|p|p|]
+%D \NC \bf Alpha \NC \bf Beta        \NC \bf Gamma          \NC\NR
+%D \NC 1         \NC right indeed    \NC definitely wrong   \NC\NR
+%D \NC 2         \NC oh yes          \NC simply no          \NC\NR
+%D \NC 3         \NC very true       \NC as false as can be \NC\NR
+%D \NC 4         \NC the whole truth \NC but the truth      \NC\NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer {\tracetabulatetrue\getbuffer}
+
+%D Because we want to be compatible we use an indirect way to implement the
+%D definers. The next examples demonstrate the difference:
+%D
+%D \starttyping
+%D \definetabulate[test][|l|c|r|]
+%D \definetabulate[test][two][|r|c|l|]
+%D
+%D \definetabulation[more][format={|l|c|r|}]
+%D \definetabulation[more:two][format={|r|c|l|}]
+%D
+%D \starttest
+%D \NC t \NC t \NC t \NC \NR
+%D \NC te \NC te \NC te \NC \NR
+%D \NC tes \NC tes \NC tes \NC \NR
+%D \NC test \NC test \NC test \NC \NR
+%D \stoptest
+%D
+%D \starttest[two]
+%D \NC t \NC t \NC t \NC \NR
+%D \NC te \NC te \NC te \NC \NR
+%D \NC tes \NC tes \NC tes \NC \NR
+%D \NC test \NC test \NC test \NC \NR
+%D \stoptest
+%D \startmore
+%D \NC t \NC t \NC t \NC \NR
+%D \NC te \NC te \NC te \NC \NR
+%D \NC tes \NC tes \NC tes \NC \NR
+%D \NC test \NC test \NC test \NC \NR
+%D \stopmore
+%D
+%D \startmore[two]
+%D \NC t \NC t \NC t \NC \NR
+%D \NC te \NC te \NC te \NC \NR
+%D \NC tes \NC tes \NC tes \NC \NR
+%D \NC test \NC test \NC test \NC \NR
+%D \stopmore
+%D \stoptyping
+
+\installcorenamespace {tabulation}
+
+\installcommandhandler \??tabulation {tabulation} \??tabulation
+
+\setuptabulation
+  [\c!unit=1em,
+   EQ={:},
+   \c!format={|l|p|},
+   \c!frame=\v!off,
+  %\c!bodyfont=,
+   \c!rule=\v!normal,
+  %\c!rulecolor=,
+   \c!rulethickness=\linewidth,
+  %\c!inner=,
+   \c!before=\blank,
+   \c!after=\blank,
+   \c!distance={\v!depth,\v!medium},
+   \c!align=\v!normal,
+   \c!margin=\!!zeropoint,
+   \c!split=\v!auto,
+   \c!header=\v!yes,
+  %\c!title=,
+   \c!indenting=\v!no]
+
+\unexpanded\def\definetabulate
+  {\dotripleempty\tabl_tabulate_define}
+
+\def\tabl_tabulate_define[#1][#2][#3]%
+  {\ifthirdargument
+     % [tag] [sub] [template]
+     \ifcsname\namedtabulationhash{#1}\s!check\endcsname \else
+       \definetabulation[#1][\c!format={#3},\s!check=]%
+     \fi
+     \definetabulation[#1:#2][#1][\c!format={#3},\s!check=]%
+   \orelse\ifsecondargument
+     % [tag] [template]
+     \definetabulation[#1][\c!format={#2},\s!check=]%
+   \else
+     % [tag]
+     \definetabulation[#1][\c!format={|l|p|},\s!check=]%
+   \fi}
+
+\unexpanded\def\setuptabulate
+  {\dotripleempty\tabl_tabulate_setup}
+
+\def\tabl_tabulate_setup[#1][#2][#3]%
+  {\ifthirdargument
+     % [tag] [sub] [settings]
+     \setuptabulation[#1:#2][#3]%
+   \orelse\ifsecondargument
+     % [tag] [settings]
+     \setuptabulation[#1][#2]%
+   \else
+     % [tag]
+     \setuptabulation[#1]%
+   \fi}
+
+\appendtoks
+     \setuevalue{\e!start\currenttabulation}{\tabl_start_defined[\currenttabulation]}%
+     \letvalue{\e!stop\currenttabulation}\relax
+     \letvalue{\??tabulatehead\currenttabulation}\empty
+     \letvalue{\??tabulatefoot\currenttabulation}\empty
+\to \everydefinetabulation
+
+\let\tabulateparameter\tabulationparameter % will stay for a while
+\def\currenttabulate  {\currenttabulation} % will stay for a while
+
+% Here begins the implementation.
+
+\let\tabl_tabulate_insert_head\empty
+\let\tabl_tabulate_insert_body\empty
+\let\tabl_tabulate_insert_foot\empty
+
+\def\tabl_tabulate_insert_head_content
+  {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
+   \begincsname\??tabulatehead\currenttabulation\endcsname
+   \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
+
+\def\tabl_tabulate_insert_foot_content
+  {\tabulatenoalign{\global\settrue\c_tabl_tabulate_someamble}%
+   \begincsname\??tabulatefoot\currenttabulation\endcsname
+   \tabulatenoalign{\global\setfalse\c_tabl_tabulate_someamble}}%
+
+\def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
+  {\ifcsname\??tabulatehead\currenttabulation\endcsname
+    %\expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
+     \expandafter\ifx\lastnamedcs\empty
+       \let\tabl_tabulate_insert_head\empty
+     \else
+       \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
+     \fi
+   \else
+     \let\tabl_tabulate_insert_head\empty
+   \fi
+   \ifcsname\??tabulatefoot\currenttabulation\endcsname
+     \expandafter\ifx\csname\??tabulatefoot\currenttabulation\endcsname\empty
+    %\expandafter\ifx\lastnamedcs\empty
+       \let\tabl_tabulate_insert_foot\empty
+     \else
+       \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
+     \fi
+   \else
+     \let\tabl_tabulate_insert_foot\empty
+   \fi}
+
+\def\tabl_tabulate_insert_content
+  {\tabl_tabulate_insert_head
+   \ifcase\c_tabl_tabulate_repeathead \else
+     \tabulatenoalign{\penalty\zerocount}% added 7/5/2014 WS mail
+   \fi
+   \tabl_tabulate_insert_body
+   \tabl_tabulate_insert_foot
+   \tabl_tabulate_remove_funny_line}
+
+\def\tabl_tabulate_remove_funny_line
+  {\ifhmode
+     \strut\crcr
+     \tabulatenoalign{\kern-\lineheight}%
+   \fi}
+
+% todo: make footer synonym to tail
+
+\setuvalue{\e!start\v!tabulatehead}{\doifelsenextoptionalcs\tabl_tabulate_start_head_yes\tabl_tabulate_start_head_nop}
+\setuvalue{\e!start\v!tabulatetail}{\doifelsenextoptionalcs\tabl_tabulate_start_foot_yes\tabl_tabulate_start_foot_nop}
+
+\let\m_tabl_tabulate_data\empty
+
+\def\tabl_tabulate_start_head_yes[#1]%
+  {\processcontent{\e!stop\v!tabulatehead}\m_tabl_tabulate_data{\letvalue{\??tabulatehead#1}\m_tabl_tabulate_data}}
+
+\def\tabl_tabulate_start_foot_yes[#1]%
+  {\processcontent{\e!stop\v!tabulatetail}\m_tabl_tabulate_data{\letvalue{\??tabulatefoot#1}\m_tabl_tabulate_data}}
+
+\def\tabl_tabulate_start_head_nop{\tabl_tabulate_start_head_yes[\v!tabulate]}
+\def\tabl_tabulate_start_foot_nop{\tabl_tabulate_start_foot_yes[\v!tabulate]}
+
+\unexpanded\def\tabl_start_defined[#1]%
+  {\bgroup
+   \edef\currenttabulationparent{#1}%
+   \let\currenttabulation\currenttabulationparent
+   \edef\p_format{\tabulationparameter\c!format}%
+   \ifx\p_format\v!none
+     % this is special case: we need to define the generic english
+     % \starttabulate in other interfaces as well
+     \expandafter\dodoubleempty   \expandafter\tabl_start_regular
+   \else
+     \expandafter\dodoubleargument\expandafter\tabl_start_defined_indeed
+   \fi}
+
+\def\tabl_start_defined_indeed
+  {\iffirstargument
+     \ifsecondargument
+       \doubleexpandafter\tabl_start_defined_two
+     \else
+       \doubleexpandafter\tabl_start_defined_one
+     \fi
+   \else
+      \singleexpandafter\tabl_start_defined_zero
+   \fi}
+
+\def\tabl_start_defined_one[#1][#2]%
+  {\ifcondition\validassignment{#1}%
+     \setuptabulation[\currenttabulation][#1]%
+   \else
+     \edef\currenttabulation{\currenttabulation:#1}%
+   \fi
+   \tabl_tabulate_start_building}
+
+\def\tabl_start_defined_two[#1][#2]%
+  {\edef\currenttabulation{\currenttabulation:#1}%
+   \setuptabulation[\currenttabulation][#2]%
+   \tabl_tabulate_start_building}
+
+\def\tabl_start_defined_zero[#1][#2]%
+  {\tabl_tabulate_start_building}
+
+% \definetabulate[\v!tabulate][|l|p|] % we need to get rid of this one
+
+\unexpanded\setuvalue{\e!start\v!tabulate}%
+  {\bgroup % whole thing
+   \let\currenttabulationparent\empty
+   \dodoubleempty\tabl_start_regular}
+
+\def\tabl_start_regular
+  {\let\currenttabulation\currenttabulationparent
+   \ifsecondargument
+     \expandafter\tabl_start_regular_two
+   \else
+     \expandafter\tabl_start_regular_one
+   \fi}
+
+\def\tabl_default_format{|l|p|}
+
+\def\tabl_start_regular_one[#1][#2]%
+  {\ifcondition\validassignment{#1}%
+     \lettabulationparameter\c!format\tabl_default_format
+     \setupcurrenttabulation[#1]%
+   \else
+     \def\p_format{#1}%
+     \ifx\p_format\empty
+       \def\p_format{|l|p|}%
+     \fi
+     \lettabulationparameter\c!format\p_format
+   \fi
+   \tabl_tabulate_start_building}
+
+\def\tabl_start_regular_two[#1][#2]%
+  {\def\p_format{#1}%
+   \ifx\p_format\empty
+     \let\p_format\tabl_default_format
+   \fi
+   \lettabulationparameter\c!format\p_format
+   \setupcurrenttabulation[#2]%
+   \tabl_tabulate_start_building}
+
+\letvalue{\e!stop\v!tabulate    }\relax
+\letvalue{\e!stop\v!tabulatehead}\relax
+\letvalue{\e!stop\v!tabulatetail}\relax
+
+\unexpanded\def\tabl_tabulate_start_ignore
+  {\em Nested tabulate is not (yet) supported.\relax
+   \expandafter\gobbleuntil\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
+
+\appendtoks
+    \letvalue{\e!start\v!tabulate}\tabl_tabulate_start_ignore % only the main one
+\to \everytabulate
+
+\setvalue{\??tabulatesplit\v!yes   }{\settrue\c_tabl_tabulate_split}
+\setvalue{\??tabulatesplit\v!repeat}{\settrue\c_tabl_tabulate_split}
+\setvalue{\??tabulatesplit\v!no    }{\setfalse\c_tabl_tabulate_split}
+\setvalue{\??tabulatesplit\v!auto  }{\ifinsidefloat\ifinsidesplitfloat\else\setfalse\c_tabl_tabulate_split\fi\fi}
+
+% todo: spacing around tabulate when bodyfont is set
+
+% \let\tabl_tabulate_inside_before   \relax
+% \let\tabl_tabulate_inside_after    \relax
+% \let\tabl_tabulate_inside_inbetween\relax
+%
+% \def\tabl_tabulate_outside_before
+%   {\whitespace
+%    \tabulationparameter\c!before}
+%
+% \def\tabl_tabulate_outside_after
+%   {\tabulationparameter\c!after}
+
+% \showboxes
+%
+% \startcombination
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\insidefloattrue \starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+%
+% \startcombination
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+%     {\vbox{\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate}} {}
+% \stopcombination
+%
+% \startcombination
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+%     {\starttabulate[|||] \NC test \NC test \NC \NR \stoptabulate} {}
+% \stopcombination
+
+\let\tabl_tabulate_inside_after     \relax
+\let\tabl_tabulate_outside_after    \relax
+\let\tabl_tabulate_inside_inbetween \relax
+\let\tabl_tabulate_outside_inbetween\relax
+
+\unexpanded\def\tabl_tabulate_inside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \ifinsidesplitfloat
+       \let\tabl_tabulate_inside_after\relax
+     \else
+       \vbox\bgroup
+       \let\tabl_tabulate_inside_after\egroup
+     \fi
+   \else
+     \let\tabl_tabulate_inside_after\relax
+   \fi}
+
+\unexpanded\def\tabl_tabulate_outside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \vbox\bgroup
+     \let\tabl_tabulate_outside_after    \egroup
+     \let\tabl_tabulate_outside_inbetween\relax
+   \orelse\ifinner
+     \let\tabl_tabulate_outside_after    \relax
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else
+     \whitespace
+     \tabulationparameter\c!before
+     \relax
+     \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
+     \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
+   \fi}
+
+\def\tabl_tabulate_outside_after_indeed
+  {\tabulationparameter\c!after}
+
+\def\tabl_tabulate_outside_inbetween_indeed
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
+
+\def\tabl_tabulate_inside_inbetween % needs checking
+  {\doifempty{\tabulationparameter\c!after}
+     {\vskip\strutdp
+      \verticalstrut
+      \vskip-\struttotal}}
+
+\unexpanded\def\tabl_tabulate_start_building
+  {\ifinsidefloat
+     \tabl_tabulate_inside_before
+   \else
+     \tabl_tabulate_outside_before
+   \fi
+   \bgroup % settings
+   %
+   \t_tabl_tabulate_preamble\emptytoks
+   \t_tabl_tabulate_dummy   \emptytoks
+   %
+   \resetcharacteralign
+   %
+   \edef\p_distance     {\tabulationparameter\c!distance}%
+   \edef\p_align        {\tabulationparameter\c!align}%
+   \edef\p_line         {\tabulationparameter\c!rule}%
+   \edef\p_rulecolor    {\tabulationparameter\c!rulecolor}%
+   \edef\p_rulethickness{\tabulationparameter\c!rulethickness}%
+   \edef\p_bodyfont     {\tabulationparameter\c!bodyfont}
+   \edef\p_indenting    {\tabulationparameter\c!indenting}%
+   \edef\p_keeptogether {\tabulationparameter\c!keeptogether}%
+   \edef\p_blank        {\tabulationparameter\c!blank}%
+   %
+   \ifx\p_keeptogether\v!no
+     \settrue \c_tabl_tabulate_tolerant_break
+    %\setfalse\c_tabl_tabulate_handlepbreak
+   \else
+     \setfalse\c_tabl_tabulate_tolerant_break
+    %\settrue \c_tabl_tabulate_handlepbreak
+   \fi
+   %
+   \settrue\c_tabl_tabulate_split
+   \begincsname\??tabulatesplit\tabulationparameter\c!split\endcsname
+   %
+   \let\m_tabl_tabulate_blank_default\p_blank
+   %
+   \d_tabl_tabulate_unit\tabulationparameter\c!unit
+   \d_tabl_tabulate_margin\tabulationparameter\c!margin
+   \let\m_tabl_tabulate_vrule_color_default\p_rulecolor
+   \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
+   \d_tabl_tabulate_vrulethickness_default\p_rulethickness
+   \d_tabl_tabulate_hrulethickness_default\p_rulethickness
+   \ifx\p_bodyfont\empty\else
+     \switchtobodyfont[\p_bodyfont]%
+   \fi
+   \postponenotes % new, to be tested / will be configurable
+   \widowpenalty\zerocount % otherwise lines are not broken
+   \clubpenalty \zerocount % but overlap in funny ways
+   \the\everytabulate
+   \tabulationparameter\c!inner
+   \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
+   \global\c_tabl_tabulate_column\zerocount
+   \processcontent
+     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi\fi}
+     \tabl_tabulate_insert_body
+     \tabl_tabulate_process}
+
+\def\tabulateEQ
+  {\ifconditional\c_tabl_tabulate_firstflushed\else
+     \dostarttaggedchained\t!ignore\empty\empty
+     \dostarttagged\t!ignore\empty
+     \tabulationparameter{EQ}%
+     \dostoptagged
+     \dostoptagged
+   \fi
+   \global\setfalse\c_tabl_tabulate_equal}
+
+% The next ones will be token registers
+
+\let\tabulatenormalpos\relax % hooks, todo
+\let\tabulateequalpos \relax % hooks, todo
+
+% color columns
+
+\let\m_tabl_tabulate_color_previous     \empty
+\let\m_tabl_tabulate_color              \empty
+\let\m_tabl_tabulate_text_color         \empty
+\let\m_tabl_tabulate_color_local        \empty
+\let\m_tabl_tabulate_vrule_color        \empty
+\let\m_tabl_tabulate_vrule_color_local  \empty
+\let\m_tabl_tabulate_vrule_color_default\empty % used local
+\let\m_tabl_tabulate_hrule_color_default\empty % used local
+\let\m_tabl_tabulate_blank_default      \empty
+
+\appendtoks
+    \glet\m_tabl_tabulate_color_previous      \empty
+    \glet\m_tabl_tabulate_color               \empty
+    \glet\m_tabl_tabulate_text_color          \empty
+    \glet\m_tabl_tabulate_color_local         \empty
+    \glet\m_tabl_tabulate_vrule_color         \empty
+    \glet\m_tabl_tabulate_vrule_color_local   \empty
+    \global    \d_tabl_tabulate_vrulethickness_local\zeropoint
+\to \t_tabl_tabulate_every_row
+
+\unexpanded\def\tabl_tabulate_color_side_right_second
+  {\ifx\m_tabl_tabulate_color_previous\empty \else
+     \tabl_tabulate_color_set\m_tabl_tabulate_color_previous
+     \glet\m_tabl_tabulate_color_previous\empty
+   \fi}
+
+\unexpanded\def\tabl_tabulate_color_side_left_second
+  {\ifx\m_tabl_tabulate_color\empty \else
+     \ifcase\c_tabl_tabulate_colorspan
+     \or
+       \tabl_tabulate_color_set\m_tabl_tabulate_color
+     \or
+       \tabl_tabulate_color_set\m_tabl_tabulate_color
+     \fi
+   \fi}
+
+\unexpanded\def\tabl_tabulate_color_side_both_second
+  {\ifx\m_tabl_tabulate_color\empty \else
+     \tabl_tabulate_color_set\m_tabl_tabulate_color
+     \ifcase\c_tabl_tabulate_colorspan
+       %\glet\m_tabl_tabulate_color_previous\empty
+     \or
+       \glet\m_tabl_tabulate_color_previous\empty
+     \or
+       \glet\m_tabl_tabulate_color_previous\m_tabl_tabulate_color
+     \or
+       \glet\m_tabl_tabulate_color_previous\m_tabl_tabulate_color
+     \fi
+   \fi}
+
+\let\tabl_tabulate_color_side_right \relax
+\let\tabl_tabulate_color_side_left  \relax
+\let\tabl_tabulate_color_side_both  \relax
+
+\appendtoks
+    \let\tabl_tabulate_color_side_right\tabl_tabulate_color_side_right_second
+    \let\tabl_tabulate_color_side_left \tabl_tabulate_color_side_left_second
+    \let\tabl_tabulate_color_side_both \tabl_tabulate_color_side_both_second
+\to \t_tabl_tabulate_initializers_second
+
+\def\tabl_tabulate_set_color_column#1% overloaded
+  {\unskip
+   \doifelsefastoptionalcheck{\tabl_tabulate_set_color_column_yes#1}{\tabl_tabulate_set_color_column_nop#1}}
+
+\def\tabl_tabulate_set_color_column_nop
+  {\tabl_tabulate_column_normal\zerocount}
+
+\def\tabl_tabulate_set_color_column_yes#1[#2]%
+  {\xdef\m_tabl_tabulate_color_local{#2}%
+   \tabl_tabulate_column_normal\zerocount#1}
+
+% normal columns:
+
+\def\tabl_tabulate_column_normal#1#2%
+  {\unskip
+   \aligntab
+   \ifconditional\c_tabl_tabulate_equal\tabulateequalpos\else\tabulatenormalpos\fi
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_column_vrule_setup
+   \fi
+   \aligntab
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
+   \aligntab}
+
+% equal columns
+
+\def\tabl_tabulate_column_equal#1#2%
+  {\unskip
+   \aligntab
+   \tabulateequalpos
+   \aligntab
+   \global\c_tabl_tabulate_kind#1%
+   \global\c_tabl_tabulate_type#2%
+   \aligntab}
+
+% ruled columns
+
+\def\tabl_tabulate_column_vruled_preset
+  {\glet\m_tabl_tabulate_vrule_color_local\m_tabl_tabulate_vrule_color_default
+   \global\d_tabl_tabulate_vrulethickness_local\d_tabl_tabulate_vrulethickness_default}
+
+\def\tabl_tabulate_column_vruled#1#2%
+  {\unskip % 0-n
+  %\ifnum\c_tabl_tabulate_column=\plusone
+  %  \global\c_tabl_tabulate_has_rule_spec_first\plusone
+  %\orelse\ifnum\c_tabl_tabulate_column=\c_tabl_tabulate_nofcolumns
+  %  \global\c_tabl_tabulate_has_rule_spec_last\plusone
+  %\fi
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_vrulecolumn
+     \global\c_tabl_tabulate_max_vrulecolumn\c_tabl_tabulate_column
+   \fi
+   \doifelsefastoptionalcheck{\tabl_tabulate_column_vruled_yes#1#2}{\tabl_tabulate_column_vruled_nop#1#2}}
+
+\def\tabl_tabulate_column_vrule_setup
+  {\begincsname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname}
+
+\def\tabl_tabulate_column_vruled_nop
+  {\expandafter\glet\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname\tabl_tabulate_column_vruled_preset
+   \tabl_tabulate_column_normal}
+
+\def\tabl_tabulate_column_vruled_step#1%
+  {\doifelsenumber{#1}
+     {\global\d_tabl_tabulate_vrulethickness_local#1\d_tabl_tabulate_vrulethickness_default}
+     {\xdef\m_tabl_tabulate_vrule_color_local{#1}}}
+
+\def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+  {\expandafter\gdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+     {\tabl_tabulate_column_vruled_preset
+      \rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step}%
+   \tabl_tabulate_column_normal#1#2}
+
+\def\tabl_tabulate_vrule_reset
+  {\ifcase\c_tabl_tabulate_max_vrulecolumn\else
+     \tabl_tabulate_vrule_reset_indeed
+   \fi}
+
+\def\tabl_tabulate_vrule_reset_indeed
+  {\dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
+   \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
+
+\def\tabl_tabulate_vrule_reset_step % undefined or relax
+  {\expandafter\glet\csname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
+
+\appendtoks
+    \tabl_tabulate_vrule_reset
+\to \t_tabl_tabulate_every_after_row
+
+% sometimes more efficient:
+%
+% \def\tabl_tabulate_column_vruled_yes#1#2[#3]%
+%   {\rawprocesscommalist[#3]\tabl_tabulate_column_vruled_step
+%    \expandafter\xdef\csname\??tabulatevrule\the\c_tabl_tabulate_column\endcsname
+%      {\global\d_tabl_tabulate_vrulethickness_local\the\d_tabl_tabulate_vrulethickness_default
+%       \noexpand\xdef\noexpand\m_tabl_tabulate_vrule_color_local{\m_tabl_tabulate_vrule_color_local}}%
+%    \tabl_tabulate_column_normal#1#2}
+
+\def\tabl_tabulate_column_vruled_normal
+  {\vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
+
+\def\tabl_tabulate_column_vruled_colored
+  {\dousecolorparameter\m_tabl_tabulate_vrule_color
+   \vrule\s!width\d_tabl_tabulate_vrulethickness\relax}
+
+\unexpanded\def\tabl_tabulate_column_vrule_inject_first
+  {\ifcase\d_tabl_tabulate_vrulethickness\else
+     \tabl_tabulate_column_vruled_normal % could be a skip instead
+   \fi
+   \global\d_tabl_tabulate_vrulethickness\zeropoint} % nils second one
+
+\unexpanded\def\tabl_tabulate_column_vrule_inject_second
+  {\ifcase\d_tabl_tabulate_vrulethickness\else
+     \ifx\m_tabl_tabulate_vrule_color\empty
+       \tabl_tabulate_column_vruled_normal
+     \else
+       \tabl_tabulate_column_vruled_colored
+     \fi
+   \fi
+   \global\d_tabl_tabulate_vrulethickness\zeropoint} % nils second one
+
+\let\tabl_tabulate_column_vrule_inject\relax
+
+\appendtoks
+    \let\tabl_tabulate_column_vrule_inject\tabl_tabulate_column_vrule_inject_first
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\tabl_tabulate_column_vrule_inject\tabl_tabulate_column_vrule_inject_second
+\to \t_tabl_tabulate_initializers_second
+
+% auto columns
+
+\def\tabl_tabulate_column_inject_auto
+  {\tabl_tabulate_column_normal\zerocount\zerocount
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_columns\relax
+     \expandafter\NR
+   \else
+     \expandafter\ignorespaces % interferes with the more tricky hooks
+   \fi}
+
+\unexpanded\def\setquicktabulate#1% see \startlegend \startgiven (for the moment still public)
+  {\let#1\tabl_tabulate_column_inject_auto
+   \let\\\tabl_tabulate_column_inject_auto} % brrr, will go
+
+\setvalue{\??tabulateseparator\v!blank }{\s_tabl_tabulate_separator\bigskipamount}
+\setvalue{\??tabulateseparator\v!depth }{\s_tabl_tabulate_separator\strutdp}
+\setvalue{\??tabulateseparator\v!small }{\def\m_tabl_tabulate_separator_factor{.25}}
+\setvalue{\??tabulateseparator\v!medium}{\def\m_tabl_tabulate_separator_factor{.5}}
+\setvalue{\??tabulateseparator\v!big   }{}
+\setvalue{\??tabulateseparator\v!none  }{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
+\setvalue{\??tabulateseparator\v!grid  }{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
+
+\def\tabl_tabulate_column_rule_separator_step#1%
+  {\ifcsname\??tabulateseparator#1\endcsname
+     \lastnamedcs
+   \else
+     \s_tabl_tabulate_separator#1\relax
+   \fi}
+
+\def\tabl_tabulate_column_rule_separator_inject % can be sped up (will do when used frequently)
+  {\bgroup
+   \s_tabl_tabulate_separator\strutdp
+   \ifx\p_distance\empty\else
+     \let\m_tabl_tabulate_separator_factor\plusone
+     \processcommacommand[\p_distance]\tabl_tabulate_column_rule_separator_step
+     \s_tabl_tabulate_separator\m_tabl_tabulate_separator_factor\s_tabl_tabulate_separator
+   \fi
+   % someamble: footer or header: unfortunately a skip can trigger a page break (weird
+   % as we have lots of nobreaks)
+ % \ifconditional\c_tabl_tabulate_someamble\kern\else\vskip\fi\s_tabl_tabulate_separator % new
+ % \directvspacing{\the\s_tabl_tabulate_separator}% new
+   \directvskip\s_tabl_tabulate_separator
+   \egroup}
+
+\def\tabl_tabulate_hrule_spec_ignore#1%
+  {%\glet\currenttabulationlocalhrulecolor\empty
+   %\global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
+   \doifelsefastoptionalcheck#1#1}
+
+\def\tabl_tabulate_hrule_spec_pickup#1%
+  {\glet\currenttabulationlocalhrulecolor\m_tabl_tabulate_hrule_color_default
+   \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
+   \doifelsefastoptionalcheck{\tabl_tabulate_hrule_preset#1}#1}
+
+\def\tabl_tabulate_hrule_preset_step#1%
+  {\doifelsenumber{#1}
+     {\global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default}
+     {\xdef\currenttabulationlocalhrulecolor{#1}}}
+
+\def\tabl_tabulate_hrule_preset#1[#2]%
+  {\rawprocesscommalist[#2]\tabl_tabulate_hrule_preset_step
+   #1}
+
+\def\tabl_tabulate_hrule_inject_normal
+  {\autorule
+     \s!height.5\d_tabl_tabulate_hrulethickness_local
+     \s!depth .5\d_tabl_tabulate_hrulethickness_local
+     \s!left    \d_tabl_tabulate_indent
+   \relax}
+
+\def\tabl_tabulate_hrule_inject_colored
+  {\dousecolorparameter\currenttabulationlocalhrulecolor
+   \tabl_tabulate_hrule_inject_normal}
+
+\unexpanded\def\tabl_tabulate_hrule_inject_first
+  {\ifcase\d_tabl_tabulate_hrulethickness_local\else
+     \tabl_tabulate_hrule_inject_normal
+   \fi}
+
+\unexpanded\def\tabl_tabulate_hrule_inject_second
+  {\ifcase\d_tabl_tabulate_hrulethickness_local\else
+     \ifx\currenttabulationlocalhrulecolor\empty
+       \tabl_tabulate_hrule_inject_normal
+     \else
+       \tabl_tabulate_hrule_inject_colored
+     \fi
+   \fi}
+
+\let\tabl_tabulate_hrule_inject\relax
+
+\appendtoks
+    \let\tabl_tabulate_hrule_inject\tabl_tabulate_hrule_inject_first
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\tabl_tabulate_hrule_inject\tabl_tabulate_hrule_inject_second
+\to \t_tabl_tabulate_initializers_second
+
+%D Color:
+
+% \starttabulate[||p||]
+% \NC test \NC test \NC test \NC \NR
+% \NC test \CC[green] \input tufte  \CC[yellow] test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \CC[blue] test \CC[red] test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \CC[gray] test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \CC[blue] test \NC test \NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \NC test \CC[magenta] test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \CC[cyan] \dorecurse{10}{\input ward }\NC test \NC \NR
+% \NC test \NC test \NC test \NC \NR
+% \NC test \CC[yellow] test \NC test \NC \NR
+% \stoptabulate
+
+\unexpanded\def\tabl_tabulate_color_set#1% we could store the attributes at the cost of a lua call
+  {\begingroup
+   \clf_enablebackgroundalign % was \node_backgrounds_align_initialize
+   \glet\tabl_tabulate_color_repeat\tabl_tabulate_color_repeat_second
+   \global\settrue\c_tabl_tabulate_has_colors
+   \ifnum\c_tabl_tabulate_column>\c_tabl_tabulate_max_colorcolumn
+     \global\c_tabl_tabulate_max_colorcolumn\c_tabl_tabulate_column
+   \fi
+   \expandafter\xdef\csname\??tabulatecolor\the\c_tabl_tabulate_column\endcsname{#1}%
+   \hpack \thealignbackgroundcolorattr{#1}{}% pack ?
+   \endgroup}
+
+\def\tabl_tabulate_color_repeat_second % for split off lines
+  {\begingroup
+   \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
+   \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
+   % \hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
+     \hpack \expandafter\thealignbackgroundcolorattr\expandafter{\lastnamedcs}{}% pack ?
+   \fi
+   \endgroup}
+
+\let\tabl_tabulate_color_repeat\relax
+
+\appendtoks
+    \let\tabl_tabulate_color_repeat\relax
+\to \everytabulate
+
+\def\tabl_tabulate_color_reset
+  {\ifcase\c_tabl_tabulate_max_colorcolumn\else
+     \tabl_tabulate_color_reset_indeed
+   \fi}
+
+% \def\tabl_tabulate_color_reset_indeed
+%   {\dorecurse\c_tabl_tabulate_max_colorcolumn{\letgvalue{\??tabulatecolor\recurselevel}\undefined}} % slow
+
+\def\tabl_tabulate_color_reset_indeed
+  {\dofastloopcs\c_tabl_tabulate_max_colorcolumn\tabl_tabulate_color_reset_step}
+
+\def\tabl_tabulate_color_reset_step % undefined or empty?
+  {\expandafter\glet\csname\??tabulatecolor\number\fastloopindex\endcsname\undefined}
+
+\appendtoks
+    \tabl_tabulate_color_reset
+\to \t_tabl_tabulate_every_after_row
+
+% \def\tabl_tabulate_register_par_options_indeed
+%   {\iftrialtypesetting \else
+%      \registerparoptions
+%      \ifinsidefloat
+%        % that is, an unbreakable one
+%        \glet\tabl_tabulate_register_par_options\empty
+%      \else
+%        % unsafe in crossing pages, at each b...
+%        % \glet\tabl_tabulate_register_par_options\empty
+%      \fi
+%    \fi}
+%
+% \appendtoks
+%     \glet\tabl_tabulate_register_par_options\tabl_tabulate_register_par_options_indeed
+% \to \everytabulate
+
+\def\tabl_tabulate_register_par_options_first % maybe track here if needed
+  {}
+
+\def\tabl_tabulate_register_par_options_second
+  {\registerparoptions
+   \ifinsidefloat
+     % that is, an unbreakable one
+     \glet\tabl_tabulate_register_par_options\empty
+   \else
+     % unsafe in crossing pages, at each b...
+     % \glet\tabl_tabulate_register_par_options\empty
+   \fi}
+
+\let\tabl_tabulate_register_par_options\relax
+
+\appendtoks
+    \let\tabl_tabulate_register_par_options\tabl_tabulate_register_par_options_first
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\tabl_tabulate_register_par_options\tabl_tabulate_register_par_options_second
+\to \t_tabl_tabulate_initializers_second
+
+\appendtoks
+    \tabl_tabulate_register_par_options
+\to \t_tabl_tabulate_every_row
+
+\def\tabl_tabulate_flush_indent_indeed
+  {\hbox to \d_tabl_tabulate_indent % pack ?
+     {% we now have a local hsize, and since we want to
+      % register positional info (i.e. real hsizes) we
+      % need to reconstitute the original hsize
+      \advance\hsize\d_tabl_tabulate_indent
+      % this is indeed rather messy and took a few hours
+      % to dis/uncover
+      \the\t_tabl_tabulate_every_row
+      \hss}}
+
+\def\tabl_tabulate_flush_indent
+  {\ifnum\c_tabl_tabulate_column=\zerocount
+     \tabl_tabulate_flush_indent_indeed
+   \fi}
+
+\def\tabl_tabulate_digits{\digits}
+
+%D Beware, we cannot use \type {\unexpanded} on \type {\HL} cum suis, since \TEX's
+%D hard coded noalign lookahead fails on it! I mistakenly added this for a while.
+
+\setvalue{\??tabulatealigning\v!normal}{0}
+\setvalue{\??tabulatealigning\v!right }{1}
+\setvalue{\??tabulatealigning\v!left  }{2}
+\setvalue{\??tabulatealigning\v!middle}{3}
+
+\setvalue{\??tabulateheader\v!repeat}{\plusone}
+\setvalue{\??tabulateheader\v!text  }{\plustwo}
+
+\unexpanded\def\tabl_tabulate_bskip_first {\setbox\b_tabl_tabulate\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
+\unexpanded\def\tabl_tabulate_eskip_first {\par\egroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_yes}
+\unexpanded\def\tabl_tabulate_xbskip_first{\hpack\bgroup\vbox\bgroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_nop}
+\unexpanded\def\tabl_tabulate_xeskip_first{\par\egroup\egroup\glet\tabl_tabulate_hook\tabl_tabulate_hook_yes}
+
+\let\tabl_tabulate_bbskip\relax
+\let\tabl_tabulate_eeskip\relax
+\let\tabl_tabulate_bskip \relax
+\let\tabl_tabulate_eskip \relax
+\let\tabl_tabulate_xbskip\relax
+\let\tabl_tabulate_xeskip\relax
+
+\appendtoks
+   \let\tabl_tabulate_bbskip\relax
+  %\let\tabl_tabulate_eeskip\relax % adapted by bskip
+   \let\tabl_tabulate_bskip \tabl_tabulate_bskip_first
+   \let\tabl_tabulate_eskip \tabl_tabulate_eskip_first
+   \let\tabl_tabulate_xbskip\tabl_tabulate_xbskip_first
+   \let\tabl_tabulate_xeskip\tabl_tabulate_xeskip_first
+\to \t_tabl_tabulate_initializers_first
+
+\def\tabl_tabulate_baselinecorrection % keep an eye on this one
+  {\def\dobaselinecorrection{\vskip\dimexpr-\prevdepth+\strutdp+\strutdp\relax}% todo: mkiv
+   \baselinecorrection}
+
+% some hack to prevent an allowbreak ... actually we could set up a system then
+% that is dealt with atthe lua end in the skip handler: turn penalties with attributes
+% values into other penalties that get removed
+
+\installcorenamespace{tabulatenobreak}
+
+\def\tabl_tabulate_break_allow{\directvpenalty\zerocount}
+\def\tabl_tabulate_break_maybe{\directvpenalty\zerocount}
+\def\tabl_tabulate_break_no   {\directvpenalty\plustenthousand} % ,order:2}}
+
+\let\tabl_tabulate_break_state_set       \relax
+\let\tabl_tabulate_break_state_reset     \relax
+\let\tabl_tabulate_break_state_allowbreak\tabl_tabulate_break_maybe
+
+% so far
+
+\unexpanded\def\tabl_tabulate_VL_first{\tabl_tabulate_column_vruled\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NC_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_RC_first{\tabl_tabulate_column_normal\zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HC_first{\tabl_tabulate_column_normal\zerocount\plustwo}
+\unexpanded\def\tabl_tabulate_EQ_first{\tabl_tabulate_column_equal \plustwo  \zerocount}
+\unexpanded\def\tabl_tabulate_RQ_first{\tabl_tabulate_column_equal \zerocount\plusone}
+\unexpanded\def\tabl_tabulate_HQ_first{\tabl_tabulate_column_equal \zerocount\plustwo}
+
+\unexpanded\def\tabl_tabulate_NG_first{\tabl_tabulate_column_normal\zerocount\zerocount}
+\unexpanded\def\tabl_tabulate_NN_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % new, undocumented, test first
+\unexpanded\def\tabl_tabulate_ND_first{\tabl_tabulate_column_normal\zerocount\zerocount\tabl_tabulate_digits} % same, for old times sake
+
+\unexpanded\def\tabl_tabulate_NR_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_check_penalties} % next row
+\unexpanded\def\tabl_tabulate_NB_first {\tabl_tabulate_NR_common\conditionaltrue \tabl_tabulate_nobreak_inject } % next row no break
+
+\unexpanded\def\tabl_tabulate_NR_second{\tabl_tabulate_NR_common\conditionalfalse\tabl_tabulate_check_penalties} % next row
+\unexpanded\def\tabl_tabulate_NB_second{\tabl_tabulate_NR_common\conditionalfalse\tabl_tabulate_nobreak_inject } % next row no break
+
+\unexpanded\def\tabl_tabulate_CC_first{\global\c_tabl_tabulate_localcolorspan\zerocount\tabl_tabulate_set_color_column\zerocount}
+\unexpanded\def\tabl_tabulate_CL_first{\global\c_tabl_tabulate_localcolorspan\plusone  \tabl_tabulate_set_color_column\zerocount}
+\unexpanded\def\tabl_tabulate_CM_first{\global\c_tabl_tabulate_localcolorspan\plustwo  \tabl_tabulate_set_color_column\zerocount}
+\unexpanded\def\tabl_tabulate_CR_first{\global\c_tabl_tabulate_localcolorspan\plusthree\tabl_tabulate_set_color_column\zerocount}
+
+%D Sort of special:
+%D
+%D \startbuffer
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \NC p \NC \itemtag \NC q \NC r \NC \NR
+%D \stoptabulate
+%D \stopitemize
+%D
+%D \startitemize[n]
+%D \starttabulate[|||||]
+%D \NI b \NC c \NC d \NC \NR
+%D \NC a \NI c \NC d \NC \NR
+%D \NC a \NC b \NI d \NC \NR
+%D \NC a \NC b \NC c \NI \NR
+%D \stoptabulate
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\tabl_tabulate_NI_first{\doifelsefastoptionalcheck\tabl_tbl_NI_yes\tabl_tbl_NI_nop}
+
+\def\tabl_tbl_NI_yes[#1]{\NC \itemtag[#1]\NC}
+\def\tabl_tbl_NI_nop    {\NC \itemtag    \NC}
+
+%D The following shortcut is handy for tables where one needs bold headers:
+
+\unexpanded\def\tabl_tabulate_BC_first
+  {\tabl_tabulate_column_normal\plusone\zerocount
+   \let\fontstyle\globalfontstyle
+   \bf}
+
+\appendtoks
+    \let\VL\tabl_tabulate_VL_first
+    \let\NC\tabl_tabulate_NC_first
+    \let\BC\tabl_tabulate_BC_first
+    \let\RC\tabl_tabulate_RC_first
+    \let\HC\tabl_tabulate_HC_first
+    \let\EQ\tabl_tabulate_EQ_first
+    \let\RQ\tabl_tabulate_RQ_first
+    \let\HQ\tabl_tabulate_HQ_first
+    \let\NG\tabl_tabulate_NG_first
+    \let\NN\tabl_tabulate_NN_first
+    \let\ND\tabl_tabulate_ND_first
+    \let\NR\tabl_tabulate_NR_first
+    \let\NB\tabl_tabulate_NB_first
+    \let\CC\tabl_tabulate_CC_first
+    \let\CL\tabl_tabulate_CL_first
+    \let\CM\tabl_tabulate_CM_first
+    \let\CR\tabl_tabulate_CR_first
+    \let\NI\tabl_tabulate_NI_first
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\NR\tabl_tabulate_NR_second
+    \let\NB\tabl_tabulate_NB_second
+\to \t_tabl_tabulate_initializers_second
+
+\appendtoks
+    \let\SR\NR
+    \let\FR\NR
+    \let\MR\NR
+    \let\LR\NR
+    \let\AR\NR
+\to \t_tabl_tabulate_initializers_first
+
+\unexpanded\def\tabl_tabulate_NR_common#1#2%
+  {\global\advance\c_tabl_tabulate_noflines\plusone
+   \global\setfalse\c_tabl_tabulate_firstflushed
+   \global\setfalse\c_tabl_tabulate_equal
+   \global\c_tabl_tabulate_column\zerocount
+   \ifconditional#1\relax
+     \tabl_tabulate_break_state_reset
+   \fi
+   \tabl_tabulate_pheight_reset
+   \unskip\unskip\crcr\tabl_tabulate_flush_collected
+   % can we omit the next one in the first run? probably
+   \starttabulatenoalign
+     \the\t_tabl_tabulate_every_after_row
+     #2%
+   \stoptabulatenoalign}
+
+\def\tabl_tabulate_check_penalties
+  {\ifconditional\c_tabl_tabulate_tolerant_break\else
+     \ifnum\c_tabl_tabulate_totalnoflines=\plusone
+     %  \tabl_tabulate_break_allow
+     \else
+       \ifconditional\c_tabl_tabulate_someamble \ifcase\c_tabl_tabulate_repeathead \else
+         \tabl_tabulate_break_allow
+       \fi \fi
+       \ifnum\c_tabl_tabulate_noflines=\plusone
+         \tabl_tabulate_nobreak_inject
+       \orelse\ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_minusnoflines
+         \ifnum\c_tabl_tabulate_plines_max<\plustwo
+           \tabl_tabulate_nobreak_inject
+         \else
+           \tabl_tabulate_break_allow % needed with pbreak prevention
+         \fi
+       \else
+         \tabl_tabulate_break_state_allowbreak
+       \fi
+     \fi
+   \fi
+   \global\setfalse\c_tabl_tabulate_firstflushed}
+
+\unexpanded\def\tabl_tabulate_bbskip_second_split_yes
+  {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
+     \ifx\tabl_tabulate_flush_collected_indeed\empty\else
+       \setbox0\hbox
+     \fi
+  \fi}
+
+\unexpanded\def\tabl_tabulate_eskip_second
+  {\par\egroup
+   \tabl_tabulate_pheight_set
+   \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
+   \tabl_tabulate_splitoff_box}
+
+\unexpanded\def\tabl_tabulate_bskip_second_split_yes
+  {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
+     % first line
+     \global\setbox\b_tabl_tabulate_current\c_tabl_tabulate_column\vbox
+     \bgroup
+     \glet\tabl_tabulate_hook\tabl_tabulate_hook_nop
+     \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
+     % \begstrut % interferes with pre-\pars
+     % evt: \appendtoks\begstrut\to\everypar
+     \ignorespaces
+     \let\tabl_tabulate_eskip\tabl_tabulate_eskip_second
+   \else
+     % successive lines
+     \let\tabl_tabulate_eskip\empty
+     \dontcomplain
+     \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
+     \expandafter\tabl_tabulate_splitoff_box
+   \fi}
+
+\unexpanded\def\tabl_tabulate_xbskip_second{\tabl_tabulate_bskip}
+\unexpanded\def\tabl_tabulate_xeskip_second{\tabl_tabulate_eskip}
+
+\unexpanded\def\tabl_tabulate_flush_second_indeed
+  {\glet\tabl_tabulate_flush_collected_indeed\empty
+   \global\c_tabl_tabulate_column\zerocount
+   \tabl_tabulate_pbreak_check
+   \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
+   \global\settrue\c_tabl_tabulate_firstflushed}
+
+\unexpanded\def\tabl_tabulate_flush_second_step
+  {\ifvoid\b_tabl_tabulate_current\fastloopindex\else
+     \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+   \fi}
+
+\def\tabl_tabulate_flush_second
+  {\tabulatenoalign{\tabl_tabulate_flush_second_indeed}%
+   \tabl_tabulate_flush_collected_indeed}
+
+\unexpanded\def\tabl_tabulate_bskip_second_split_nop
+  {\vtop\bgroup
+     \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
+     % \begstrut % interferes with pre-\pars
+     % evt: \appendtoks\begstrut\to\everypar
+     \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_eskip_second_split_nop % vertical strut added august 2003
+  {\par\verticalstrut
+   \vskip-\struttotal
+   \egroup}
+
+% \let\tabl_tabulate_eskip \relax % adapted by bskip
+% \let\tabl_tabulate_eeskip\relax % adapted by bskip
+
+\appendtoks
+   \let\tabl_tabulate_xbskip\tabl_tabulate_xbskip_second
+   \let\tabl_tabulate_xeskip\tabl_tabulate_xeskip_second
+   \ifconditional\c_tabl_tabulate_split
+     \let\tabl_tabulate_bskip \tabl_tabulate_bskip_second_split_yes
+     \let\tabl_tabulate_bbskip\tabl_tabulate_bbskip_second_split_yes
+   \else
+     \let\tabl_tabulate_bskip \tabl_tabulate_bskip_second_split_nop
+     \let\tabl_tabulate_eskip \tabl_tabulate_eskip_second_split_nop
+   \fi
+\to \t_tabl_tabulate_initializers_second
+
+% see ***
+%
+% \enabletrackers[nodes.page_vspacing]
+% \starttext
+%     \starttabulate[||] \dorecurse{100}{\NC Eins \NC \NR \HL} \stoptabulate
+% \stoptext
+
+\def\tabl_tabulate_XX_none
+  {\starttabulatenoalign
+     \tabl_tabulate_break_state_set
+     \tabl_tabulate_hrule_spec_ignore
+   \stoptabulatenoalign}
+
+\def\tabl_tabulate_FL_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_FL_second_indeed}
+\def\tabl_tabulate_ML_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_ML_second_indeed}
+\def\tabl_tabulate_LL_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_LL_second_indeed}
+\def\tabl_tabulate_TL_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_TL_second_indeed}
+\def\tabl_tabulate_BL_second{\starttabulatenoalign\tabl_tabulate_hrule_spec_pickup\tabl_tabulate_BL_second_indeed}
+
+\unexpanded\def\tabl_tabulate_FL_second_indeed
+  {\ifinsidefloat\else
+     \doifempty{\tabulationparameter\c!before}\tabl_tabulate_baselinecorrection % no expansion
+   \fi
+   \tabl_tabulate_hrule_inject
+   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_column_rule_separator_inject
+   \prevdepth\strutdp
+   \tabl_tabulate_nobreak_inject
+   \stoptabulatenoalign}
+
+\def\spac_vspacing_no_topskip % use grouped
+  {\attribute\skipcategoryattribute\plusten}
+
+\unexpanded\def\tabl_tabulate_ML_second_indeed
+  {\tabl_tabulate_break_no
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_break_no
+   \tabl_tabulate_hrule_inject
+   \vskip-\p_rulethickness\relax
+   \begingroup
+   \spac_vspacing_no_topskip
+   \tabl_tabulate_hrule_inject
+   \endgroup
+   \tabl_tabulate_break_no
+   \tabl_tabulate_column_rule_separator_inject
+   \stoptabulatenoalign}
+
+\unexpanded\def\tabl_tabulate_LL_second_indeed
+  {\tabl_tabulate_nobreak_inject
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_hrule_inject
+   \ifinsidefloat
+     \tabl_tabulate_inside_inbetween
+   \else
+     \tabl_tabulate_outside_inbetween
+   \fi
+   \stoptabulatenoalign}
+
+\unexpanded\def\tabl_tabulate_TL_second_indeed
+  {\tabl_tabulate_nobreak_inject
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_hrule_inject
+   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_column_rule_separator_inject
+  %\prevdepth\strutdp % todo, might differ between TL and BL
+   \tabl_tabulate_nobreak_inject
+   \stoptabulatenoalign}
+
+\let\tabl_tabulate_BL_second_indeed\tabl_tabulate_TL_second_indeed
+
+\def\tabl_tabulate_HL_second
+  {\csname
+     \ifnum\c_tabl_tabulate_noflines=\zerocount                     F\orelse
+     \ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_totalnoflines L\else
+                                                                    M\fi
+   L\endcsname}
+
+\appendtoks
+    \let\FL\tabl_tabulate_XX_none
+    \let\ML\tabl_tabulate_XX_none
+    \let\LL\tabl_tabulate_XX_none
+    \let\TL\tabl_tabulate_XX_none
+    \let\BL\tabl_tabulate_XX_none
+    \let\HL\tabl_tabulate_XX_none
+    \let\HR\tabl_tabulate_XX_none
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \let\FL\tabl_tabulate_FL_second
+    \let\ML\tabl_tabulate_ML_second
+    \let\LL\tabl_tabulate_LL_second
+    \let\TL\tabl_tabulate_TL_second
+    \let\BL\tabl_tabulate_BL_second
+    \let\HL\tabl_tabulate_HL_second
+    \let\HR\tabl_tabulate_HL_second
+\to \t_tabl_tabulate_initializers_second
+
+% \def\tabulatedoHRfive % horizontal rule line (break untested)
+%   {\starttabulatenoalign
+%      \glet\dotabulateautoline\dotabulatelinerule
+%     %\ifcase#1\or % todo: check what this does
+%        \ifnum\noftabulatelines=\zerocount
+%          \glet\dotabulateautoline\donothing
+%        \else\ifnum\noftabulatelines=\totalnoftabulatelines
+%          \glet\dotabulateautoline\donothing
+%        \fi\fi
+%     %\fi
+%      \dotabulatenobreak
+%    \stoptabulatenoalign
+%    \dotabulateautoline
+%    \starttabulatenoalign
+%      \tabl_tabulate_break_no
+%      \ifx\dotabulateautoline\dotabulatelinerule\kern-\lineheight\fi
+%      \ifnum\noftabulatelines=\totalnoftabulatelines
+%        \expandafter\dotabulatenobreak
+%      \else
+%        \expandafter\tabl_tabulate_break_allow
+%      \fi
+%    \stoptabulatenoalign
+%    \dotabulateautoline
+%    \starttabulatenoalign
+%      \dotabulatenobreak
+%    \stoptabulatenoalign}
+
+% \dorecurse{10}{
+%     \starttabulate[|l|]
+%     \FL
+%     \NC first line, bound to next rule    \NC \NR
+%     \TL
+%     \NC bound to previous rule            \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC some line                         \NC \NR
+%     \NC bound to next rule                \NC \NR
+%     \ML
+%     \NC bound to previous rule            \NC \NR
+%     \NC bound to next rule                \NC \NR
+%     \BL
+%     \NC last line, bound to previous rule \NC \NR
+%     \LL
+%     \stoptabulate
+% }
+
+% This needs checking:
+
+\def\tabulaterule    {\HR} % a rule with lineheight
+\def\tabulateline    {\HL} % just a spaced rule
+\def\tabulateautorule{\HR}%
+\def\tabulateautoline{\HL} % no longer different (to be looked into)
+
+%D When support for vertical rules we needed a way to pick up the specification for
+%D the final rule and a \type {|{}} interface was chosen. As a result parsing had to
+%D become more complex and I was not in the mood for messing up the code too much.
+%D Therefore from now on the preamble is split by \LUA. There are definitely more
+%D places where we can use \LUA\ code (for instance in alignment of numbers. The
+%D repeat parser is replace at the \LUA\ end as well.
+
+\let\tabl_tabulate_flush_collected       \empty
+\let\tabl_tabulate_flush_collected_indeed\empty
+
+\let\v_tabl_tabulate_align\!!zerocount
+
+\def\tabl_tabulate_check_side_float % new per 29-07-2016
+  {\ifdefined\page_sides_check_floats_indeed
+     \page_sides_check_floats_indeed
+     \ifdim\hangindent>\zeropoint
+       \advance\d_tabl_tabulate_indent\hangindent
+     \fi
+   \fi}
+
+\def\tabl_tabulate_set_local_hsize
+  {\setlocalhsize
+   \hsize\localhsize}
+
+\def\tabl_tabulate_process
+  {\c_tabl_tabulate_pass\plusone
+   \tabl_tabulate_check_full_content
+   \edef\v_tabl_tabulate_align{\ifcsname\??tabulatealigning\p_align\endcsname\lastnamedcs\else0\fi}%
+   \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
+   \s_tabl_tabulate_last\s_tabl_tabulate_first
+   \s_tabl_tabulate_pre\zeropoint
+   \s_tabl_tabulate_post\s_tabl_tabulate_first % was: \zeropoint
+   \global\c_tabl_tabulate_columns\zerocount
+   \global\c_tabl_tabulate_nofauto\zerocount
+   \global\c_tabl_tabulate_noflines\zerocount
+   \c_tabl_tabulate_totalnoflines\zerocount
+   \c_tabl_tabulate_minusnoflines\zerocount
+   \global\d_tabl_tabulate_width_p\zeropoint
+   \global\d_tabl_tabulate_width_w\zeropoint
+   \global\setfalse\c_tabl_tabulate_equal
+   \tabl_tabulate_pheight_reset
+   \tabskip\zeropoint
+   \ifinsidesplitfloat
+     \donetrue
+   \orelse\ifinsidefloat
+     \donefalse
+   \else
+     \donetrue
+   \fi
+   \global\c_tabl_tabulate_repeathead
+     \ifdone
+       \ifcsname\??tabulateheader\tabulationparameter\c!header\endcsname
+         \lastnamedcs
+       \else
+         \zerocount
+       \fi
+     \else
+       \zerocount
+     \fi
+   %
+   \the\t_tabl_tabulate_initializers_first % collect more here
+   %
+   \glet\tabl_tabulate_flush_collected\empty
+   \ifdim\d_tabl_tabulate_margin>\zeropoint
+     \t_tabl_tabulate_preamble
+       {\aligntab
+        \tabl_tabulate_flush_indent
+% \global\advance\c_tabl_tabulate_noflines\plusone
+        \strut
+        \alignmark\alignmark
+        \tabskip\d_tabl_tabulate_margin
+        \strut
+        \aligntab
+        \alignmark\alignmark
+        \tabskip\zeropoint}%
+   \else
+     \t_tabl_tabulate_preamble
+       {\aligntab
+        \tabl_tabulate_flush_indent
+% \global\advance\c_tabl_tabulate_noflines\plusone
+        \strut
+        \alignmark\alignmark
+        \aligntab
+        \alignmark\alignmark
+        \tabskip\zeropoint}%
+   \fi
+   \d_tabl_tabulate_width\zeropoint
+   % these counters are set at the lua end
+   \c_tabl_tabulate_nofcolumns         \zerocount
+   \c_tabl_tabulate_has_rule_spec_first\zerocount
+   \c_tabl_tabulate_has_rule_spec_last \zerocount
+   \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
+   %
+ % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
+   \d_tabl_tabulate_width\zeropoint
+   \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
+   \toksapp\t_tabl_tabulate_preamble{%
+     \aligntab\alignmark\alignmark
+     \global\advance\c_tabl_tabulate_column\plusone % maybe just set it already
+   }%
+   \toksapp\t_tabl_tabulate_dummy{%
+     \NC\unskip\unskip\crcr\tabl_tabulate_flush_collected % no count
+   }%
+   \global\c_tabl_tabulate_column\zerocount
+   \tabl_tabulate_pheight_reset
+   \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
+   \ifx\p_indenting\v!no
+     \forgetparindent
+   \fi
+   \ifinsidefloat
+     \d_tabl_tabulate_indent\zeropoint
+   \else
+     \tabl_tabulate_check_side_float
+     \tabl_tabulate_set_local_hsize
+   \fi
+   \dontcomplain
+   \forgetall % hm, interference with preceding \forgetparindent probably bug, to be solved
+   \everypar\everytabulatepar
+   \setbox\scratchbox\vbox % outside \if because of line counting
+     {\notesenabledfalse
+      \d_tabl_tabulate_indent\zeropoint
+      \settrialtypesetting % very important
+      \anch_backgrounds_text_level_start
+      \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
+      \anch_backgrounds_text_level_stop
+      \ifcase\c_anch_backgrounds_text_state\else
+        \global\settrue\tablehaspositions
+      \fi
+   \ifnum\c_tabl_tabulate_nofauto>\zerocount
+     % so, even if the natural size is larger, in the final run, we force the calculated width
+     \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
+     \ifnum\c_tabl_tabulate_nofauto>\zerocount
+       \divide\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
+     \fi
+   \fi
+   \setbox\scratchbox\emptybox % free memory
+   \ifconditional\c_tabl_tabulate_split
+     \splittopskip\strutht
+     \glet\tabl_tabulate_flush_collected_indeed\empty
+     \glet\tabl_tabulate_flush_collected\tabl_tabulate_flush_second
+   \fi
+   \c_tabl_tabulate_totalnoflines\c_tabl_tabulate_noflines
+   \c_tabl_tabulate_minusnoflines\numexpr\c_tabl_tabulate_noflines+\minusone\relax
+   \global\c_tabl_tabulate_noflines\zerocount
+   %
+   \c_tabl_tabulate_pass\plustwo % final pass
+   \the\t_tabl_tabulate_initializers_second % collect more here
+   %
+   \ifx\p_line\v!line
+     \let\HL\HR
+     \let\tabulateautoline\tabulateautorule
+     \let\tabulateline\tabulaterule
+   \fi
+   %
+   \ifcase\c_tabl_tabulate_repeathead
+     \ifinsidesplitfloat
+        \global\setbox\b_tabl_tabulate\vbox \bgroup
+      \else
+        \startframedcontent[\tabulationparameter\c!frame]%
+      \fi
+   \else
+     \global\setbox\b_tabl_tabulate\vbox \bgroup
+   \fi
+   %
+   \dostarttaggedchained\t!tabulate\empty\??tabulation
+   \dostarttagged\t!tabulaterow\empty
+   \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
+ % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
+   \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
+   \dostoptagged
+   \dostoptagged
+   \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
+   \ifx\p_distance\v!grid
+     \vskip-\strutdp % experimental tm-prikkels
+   \fi
+   %
+   \ifcase\c_tabl_tabulate_repeathead
+     \ifinsidesplitfloat
+       \egroup % box
+       \egroup % settings
+       \tabl_split_box\b_tabl_tabulate
+     \else
+       \stopframedcontent
+       \egroup
+     \fi
+   \else
+     \egroup % box
+     \egroup % settings
+     \tabl_split_box\b_tabl_tabulate
+   \fi
+   %
+   \ifinsidefloat
+     \tabl_tabulate_inside_after
+   \else
+     \tabl_tabulate_outside_after
+   \fi
+   \egroup} % whole thing
+
+% \egroup
+
+% \setuptabulate[split=yes,header=text,title=Vervolg van Tabel]
+%
+% % \starttabulatehead
+% % \NC test \NC hans\NC \NR
+% % \stoptabulatehead
+%
+% \starttabulate
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input knuth \relax \NC \NR
+% \NC test \NC \input knuth \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \NC test \NC \input tufte \relax \NC \NR
+% \stoptabulate
+
+\def\tabl_split_box#1% #1 <> 0/2 / derived from the one in core-ntb.tex
+  {\ifinsidesplitfloat
+     \tabl_split_box_indeed#1%
+   \orelse\ifinsidefloat
+     \unvbox#1%
+   \else
+     \tabl_split_box_indeed#1%
+   \fi}
+
+\def\tabl_split_box_indeed#1%
+  {\resettsplit
+   \def\tsplitminimumfreelines{2}%
+   \def\tsplitminimumfreespace{0pt}%
+   \setbox\tsplitcontent\box#1%
+   \ifcase\c_tabl_tabulate_repeathead\or
+     \setbox\tsplithead\vsplit\tsplitcontent to \lineheight
+     \setbox\tsplithead\vbox{\unvbox\tsplithead}%
+   \or
+     \setbox\tsplithead\vbox{\hbox{\strut\tabulationparameter\c!title}}%
+   \fi
+   \handletsplit}
+
+%D \starttyping
+%D \setuptabulate[split=no,rule=line]
+%D
+%D \starttabulate
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \NC tufte \NC \input tufte \NC \NR \tabulateautorule
+%D \stoptabulate
+%D \stoptyping
+
+%D Spacing:
+%
+% \starttabulate
+% \NC text \NC text \NC \NR
+% \TB[small]
+% \NC text \NC text \NC \NR
+% \TB[4*big]
+% \NC text \NC text \NC \NR
+% \stoptabulate
+
+\def\tabl_tabulate_TB
+  {\starttabulatenoalign
+   \dosingleempty\tabl_tabulate_TB_indeed}
+
+\def\tabl_tabulate_TB_indeed[#1]%
+  {\iffirstargument
+     \blank[#1]
+   \orelse\ifx\m_tabl_tabulate_blank_default\empty
+     \blank
+   \else
+     \blank[\m_tabl_tabulate_blank_default]%
+   \fi
+   \stoptabulatenoalign}
+
+% to be tested:
+%
+% \def\tabl_tabulate_TB
+%   {\starttabulatenoalign
+%    \doiffastoptionalcheckelse\tabl_tabulate_TB_yes\tabl_tabulate_TB_nop}
+%
+% \def\tabl_tabulate_TB_yes[#1]%
+%   {\blank[#1]
+%    \stoptabulatenoalign}
+%
+% \def\tabl_tabulate_TB_nop[#1]%
+%   {\blank
+%    \stoptabulatenoalign}
+
+\appendtoks
+    \let\TB\tabl_tabulate_TB
+\to \everytabulate
+
+% %D Between alignment lines certain rules apply, and even a simple test can mess
+% %D up a table, which is why we have a special test facilityL
+% %D
+% %D \startbuffer
+% %D \starttabulate[|l|p|]
+% %D \NC 1test \NC test \NC \NR
+% %D \tableifelse{\doifelse{a}{a}}{\NC Xtest \NC test \NC \NR}{}%
+% %D \stoptabulate
+% %D \stopbuffer
+% %D
+% %D \typebuffer \getbuffer
+%
+% \def\tableifelse#1% should be tabulatenoalign then
+%   {\tablenoalign
+%      {#1%
+%        {\aftergroup \firstoftwoarguments}%
+%        {\aftergroup\secondoftwoarguments}}}
+%
+% \def\tableiftextelse#1{\tableifelse{\doiftextelse{#1}}}
+
+%D Some new trickery:
+%D
+%D \startbuffer
+%D \settrue\c_tabl_tabulate_splitoff_whitespace
+%D
+%D \starttabulate[|p(2cm)|p(2cm)|p(2cm)|]
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \par
+%D                                 test 3b          \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[line]
+%D                                 test 3b          \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[halfline]
+%D                                 test 3b
+%D                                 \blank[halfline]
+%D                                 test 3c          \NC \NR
+%D     \NC \blank  \NC \blank  \NC \blank           \NC \NR
+%D     \NC test 1a \NC test 2a \NC test 3a
+%D                                 \blank[halfline]
+%D                                 test 3b
+%D                                 \blank[halfline]
+%D                                 test 3c          \NC \NR
+%D     \NC \blank  \NC \blank  \NC                  \NC \NR
+%D     \NC test 1a
+%D         \par
+%D         test 1b
+%D         \par
+%D         test 1b \NC test 2a
+%D                     \par
+%D                     test 2b
+%D                     \par
+%D                     test 2b \NC test 3a          \NC \NR
+%D     \NC test 1a
+%D         \blank
+%D         test 1b
+%D         \par
+%D         test 1b \NC test 2a
+%D                     \par
+%D                     test 2b
+%D                     \blank
+%D                     test 2b \NC test 3a          \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \start \getbuffer \stop
+
+% \starttabulatie[|mc|]
+% \NC \digits{100.000,00} \NC\NR
+% \NC \digits{@10.000,00} \NC\NR
+% \NC \digits{@@@.100,00} \NC\NR
+% \NC \digits{@@@.@10,@@} \NC\NR
+% \NC \digits{@@@.@@1,@@} \NC\NR
+% \stoptabulatie
+%
+% \starttabulatie[|mc|]
+% \ND 100.000,00 \NC\NR
+% \ND @10.000,00 \NC\NR
+% \ND @@@.100,00 \NC\NR
+% \ND @@@.@10,@@ \NC\NR
+% \ND @@@.@@1,@@ \NC\NR
+% \stoptabulatie
+%
+% \starttabulatie[|c|]
+% \ND $100.000,00$ \NC\NR
+% \ND $@10.000,00$ \NC\NR
+% \ND $@@@.100,00$ \NC\NR
+% \ND $@@@.@10,@@$ \NC\NR
+% \ND $@@@.@@1,@@$ \NC\NR
+% \stoptabulatie
+%
+% \starttabulatie[|c|]
+% \NC $\digits 100.000,00 $ \NC\NR
+% \NC $\digits @10.000,00 $ \NC\NR
+% \NC $\digits @@@.100,00 $ \NC\NR
+% \NC $\digits @@@.@10,@@ $ \NC\NR
+% \NC $\digits @@@.@@1,@@ $ \NC\NR
+% \stoptabulatie
+%
+% \starttabulatie[|c|]
+% \NC \digits $100.000,00$ \NC\NR
+% \NC \digits $@10.000,00$ \NC\NR
+% \NC \digits $@@@.100,00$ \NC\NR
+% \NC \digits $@@@.@10,@@$ \NC\NR
+% \NC \digits $@@@.@@1,@@$ \NC\NR
+% \stoptabulatie
+
+%D Predefined categories (moved from core-mis):
+
+\definetabulate
+  [\v!legend]
+  [|emj1|i1|mR|]
+
+\setuptabulate
+  [\v!legend]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\leg,EQ={=}]
+
+\definetabulate
+  [\v!legend][\v!two]
+  [|emj1|emk1|i1|mR|]
+
+\definetabulate
+  [\v!fact]
+  [|R|ecmj1|i1mR|]
+
+\setuptabulate
+  [\v!fact]
+  [\c!unit=.75em,\c!inner=\setquicktabulate\fact,EQ={=}]
+
+%D Another example:
+%D
+%D \starttyping
+%D \definetabulate
+%D   [whatever]
+%D   [|l|r|]
+%D
+%D \definetabulate
+%D   [whatever][else]
+%D   [|l|c|r|]
+%D
+%D \startwhatever
+%D \NC l    \NC r     \NC \NR
+%D \NC left \NC right \NC \NR
+%D \stopwhatever
+%D
+%D \startwhatever[else]
+%D \NC l    \NC m      \NC r     \NC \NR
+%D \NC left \NC middle \NC right \NC \NR
+%D \stopwhatever
+%D
+%D \startwhatever[else][format={|c|c|c|c|}]
+%D \NC l    \NC m      \NC m      \NC r     \NC \NR
+%D \NC left \NC middle \NC middle \NC right \NC \NR
+%D \stopwhatever
+%D \stoptyping
+
+%D This is needed because we sometimes use the english command in tracing macros. In
+%D fact, most detailed tracing macros that are done with \LUA\ only work in the
+%D english interface anyway.
+
+% \definetabulate[tabulate] \setuptabulate[tabulate][\c!format=\v!none] % so no \v! here
+
+\newconditional\c_tabl_generic
+
+\unexpanded\setuvalue{starttabulate}%
+  {\bgroup % whole thing
+   \settrue\c_tabl_generic
+   \let\currenttabulationparent\empty
+   \dodoubleempty\tabl_start_regular}
+
+\letvalue{stoptabulate}\relax
+
+%D The following helpers are just there because we also have them at the \LUA\ end:
+%D
+%D \startbuffer
+%D \starttabulate[|l|c|r|]
+%D     \tabulaterow    {a,b,c}
+%D     \tabulaterowbold{aa,bb,cc}
+%D     \tabulaterowtype{aaa,bbb,ccc}
+%D     \tabulaterowtyp {aaaa,bbbb,cccc}
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\def\tabl_tabulate_compact_row#1#2%
+  {\NC\tabl_tabulate_compact_step#1#2,\end,}
+
+\def\tabl_tabulate_compact_step#1#2#3,%
+  {\ifx#2\end
+     \NR
+     \expandafter\gobbleoneargument
+   \else
+     #1{#2#3}\NC
+     \expandafter\tabl_tabulate_compact_step
+   \fi#1}
+
+\unexpanded\def\tabulaterow    {\tabl_tabulate_compact_row\relax}
+\unexpanded\def\tabulaterowbold{\tabl_tabulate_compact_row\bold}
+\unexpanded\def\tabulaterowtype{\tabl_tabulate_compact_row\type}
+\unexpanded\def\tabulaterowtyp {\tabl_tabulate_compact_row\typ}
+
+%D Here we plug in a row background feature. As we only have support for
+%D \type {frame=name} we can use these variables.
+%D
+%D \starttyping
+%D \startuseMPgraphic{foo}
+%D     fill unitsquare
+%D         xyscaled (RuleWidth,RuleHeight+RuleDepth) enlarged (ExHeight/4,ExHeight/8)
+%D         randomized ExHeight
+%D         shifted  (-ExHeight/8,ExHeight/16)
+%D         withcolor RuleColor ;
+%D \stopuseMPgraphic
+%D
+%D \setuptabulate % wel only have frame=name so we can use these:
+%D   [background=foo,
+%D    backgroundcolor=darkred,
+%D    foregroundcolor=white]
+%D
+%D \definelinefiller[foo][mp=foo,color=darkgreen]
+%D \definelinefiller[bar][mp=foo,color=darkred]
+%D
+%D \starttabulate[|||]
+%D     \DB foo \BC bar \BC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate[|||]
+%D     \PB foo \BC bar \BC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D     \NC foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate[|||]
+%D     \FB[bar] foo \BC bar \BC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D     \NC      foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \startnarrower
+%D     \starttabulate[|||]
+%D         \DB foo \DB bar \BC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D         \NC foo \NC bar \NC \NR
+%D     \stoptabulate
+%D \stopnarrower
+%D
+%D \starttabulate[|||]
+%D     \BC          foo \BC bar \BC \NR
+%D     \NL[magenta] foo \NC bar \NC \NR
+%D     \NL[yellow]  foo \NC bar \NC \NR
+%D     \NL[cyan]    foo \NC bar \NC \NR
+%D     \NL[gray]    foo \NC bar \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate
+%D     \NL[red]     foo \NC bar \NC \NR
+%D     \NL[green]   foo \NL[red] bar \NC \NR
+%D     \NC          foo \NC bar \NC \NR
+%D     \NL[blue]    foo \NC \input tufte  \NC \NR
+%D     \NL[gray]    foo \NC bar \NC \NR
+%D     \NL[yellow]  foo \NC bar \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+% \setuptabulate
+%   [\c!background=,
+%    \c!backgroundcolor=,
+%    \c!foregroundcolor=,
+%    \c!foregroundstyle=]
+
+\let\m_table_current_row_background              \empty
+\let\m_table_current_row_background_default      \empty
+\let\m_table_current_row_background_filler       \empty
+\let\m_table_current_row_background_defaultfiller\empty
+\let\m_table_current_row_background_auto         \empty
+
+\unexpanded\def\tabl_register_row_background#1%
+  {\xdef\m_table_current_row_background{#1}}
+
+\unexpanded\def\tabl_register_row_background_filler#1%
+  {\xdef\m_table_current_row_background_filler{#1}}
+
+\unexpanded\def\tabl_synchronize_row_background
+  {\iftrialtypesetting\else
+     \ifx\m_table_current_row_background_filler\empty
+       \ifx\m_table_current_row_background\empty
+         % nothing
+         \tabl_synchronize_row_background_dummy
+       \else
+         \tabl_synchronize_row_background_indeed\m_table_current_row_background
+       \fi
+     \else
+       \tabl_synchronize_row_background_filler_indeed\m_table_current_row_background_filler
+     \fi
+   \fi}
+
+\unexpanded\def\tabl_synchronize_row_background_dummy
+  {\iftrialtypesetting\else
+     \begingroup
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\zerocount\zeropoint
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\zerocount\zeropoint
+     \endgroup
+   \fi}
+
+\unexpanded\def\tabl_synchronize_row_background_indeed#1%
+  {\iftrialtypesetting\else
+     \begingroup
+     \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+     \dousecolorparameter{#1}%
+     \setbox\scratchbox\hpack{}%
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
+     \endgroup
+   \fi}
+
+\unexpanded\def\tabl_synchronize_row_background_filler_indeed#1%
+  {\iftrialtypesetting\else
+     \begingroup
+     \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
+     \node_linefiller_set{#1}%
+     \setbox\scratchbox\hpack{}%
+    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
+     \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
+     \endgroup
+   \fi}
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+    \global\c_tabl_tabulate_autocolor\zerocount
+    \clf_resetbackgroundrowdata
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+    \global\c_tabl_tabulate_nofrealrows\zerocount
+    \global\c_tabl_tabulate_autocolor\zerocount
+    \clf_resetbackgroundrowdata
+\to \t_tabl_tabulate_initializers_second
+
+\appendtoks
+    \tabl_synchronize_row_background
+\to \t_tabl_tabulate_every_real_row
+
+\appendtoks
+    \glet\m_table_current_row_background\empty
+    \glet\m_table_current_row_background_filler\empty
+\to \t_tabl_tabulate_every_after_row
+
+\unexpanded\def\tabl_tabulate_NL_first[#1]%
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background{#1}%
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_ND_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background\m_table_current_row_background_default
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_LB_first[#1]%
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background{#1}%
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_DB_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background\m_table_current_row_background_default
+   \fi
+   \let\fontstyle\globalfontstyle
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_NF_first[#1]%
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler{#1}%
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_NP_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler\m_table_current_row_background_default_filler
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_FB_first[#1]%
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler{#1}%
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_PB_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \ifcase\c_tabl_tabulate_column\or
+     \tabl_register_row_background_filler\m_table_current_row_background_default_filler
+   \fi
+   \let\fontstyle\globalfontstyle
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_BC_first % overloaded
+  {\tabl_tabulate_column_normal\plusone\zerocount
+   \let\fontstyle\globalfontstyle
+   \ifx\m_table_current_row_background\empty
+     \ifx\m_table_current_row_background_filler\empty
+       \usetabulationstyleandcolor\c!headstyle\c!headcolor
+     \else
+       \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+     \fi
+   \else
+     \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \fi}
+
+\unexpanded\def\tabl_tabulate_A_first
+  {\global\advance\c_tabl_tabulate_autocolor\plusone
+   \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+   \ifx\m_table_current_row_background_auto\empty
+     \global\c_tabl_tabulate_autocolor\plusone
+     \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+   \fi
+   \ifx\m_table_current_row_background_auto\empty
+     \let\m_table_current_row_background_auto\empty % \m_table_current_row_background_default
+   \fi
+   \tabl_register_row_background{\m_table_current_row_background_auto}}
+
+\unexpanded\def\tabl_tabulate_NA_first
+  {\tabl_tabulate_column_normal\zerocount\zerocount\relax
+   \iftrialtypesetting\else
+     \ifcase\c_tabl_tabulate_column\or
+       \tabl_tabulate_A_first
+     \fi
+   \fi
+   \ignorespaces}
+
+\unexpanded\def\tabl_tabulate_BA_first
+  {\tabl_tabulate_column_normal\plusone\zerocount\relax
+   \iftrialtypesetting\else
+     \ifcase\c_tabl_tabulate_column\or
+       \tabl_tabulate_A_first
+     \fi
+   \fi
+   \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
+   \ignorespaces}
+
+\appendtoks
+    \let\NL\tabl_tabulate_NL_first % NC with Line
+    \let\ND\tabl_tabulate_ND_first % NC with Default Line
+    \let\LB\tabl_tabulate_LB_first % BC with Line
+    \let\DB\tabl_tabulate_DB_first % BC with Default Line
+    \let\NF\tabl_tabulate_NF_first % NC with Filler
+    \let\NP\tabl_tabulate_NP_first % NC with Predefined Filler
+    \let\FB\tabl_tabulate_FB_first % BC with Filler
+    \let\PB\tabl_tabulate_PB_first % BC with Predefined Filler
+    \let\NA\tabl_tabulate_NA_first % NC with Auto Line
+    \let\BA\tabl_tabulate_BA_first % NC with Auto Line
+\to \t_tabl_tabulate_initializers_first
+
+\appendtoks
+   \edef\m_table_current_row_background_default       {\tabulateparameter\c!backgroundcolor}%
+   \edef\m_table_current_row_background_default_filler{\tabulateparameter\c!background}%
+   \let \m_table_current_row_background_auto           \empty
+\to \everytabulate
+
+\setuptabulate
+  [\c!headcolor=,
+   \c!headstyle=\bf,
+   \c!backgroundcolor=\tabulationparameter\c!rulecolor,
+   \c!foregroundcolor=,
+   \c!foregroundstyle=\tabulationparameter\c!headstyle]
+
+\protect \endinput

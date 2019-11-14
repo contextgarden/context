@@ -1,6 +1,6 @@
 .TH "mtx-fonts" "1" "01-01-2019" "version 1.00" "ConTeXt Font Database Management"
 .SH NAME
-.B mtx-fonts
+ mtx-fonts - ConTeXt Font Database Management
 .SH SYNOPSIS
 .B mtxrun --script fonts [
 .I OPTIONS ...

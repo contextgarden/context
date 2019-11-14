@@ -31,7 +31,8 @@ texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
-texconfig.properties_size =  65536
+texconfig.properties_size = 262144 -- after that, we're a hash
+texconfig.fix_mem_init    = 750000
 
 local stub = [[
 
@@ -69,9 +70,10 @@ function texconfig.init()
             "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "fio", "unicode", "utf",
         },
         extratex = {
-            "epdf", "kpse", "mplib", -- "fontloader",
+            "pdfe", "kpse", "mplib",
         },
         obsolete = {
+            "epdf",
             "fontloader", -- can be filled by luat-log
             "kpse",
         },
@@ -102,7 +104,7 @@ function texconfig.init()
                 local tv = type(gv)
                 if tv == "table" then
                     for k, v in next, gv do
-                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloades functions (security)
+                        keys[k] = tostring(v) -- true -- by tostring we cannot call overloads functions (security)
                     end
                 end
                 lib[v] = keys
@@ -218,7 +220,9 @@ local function makestub()
             t[#t+1] = format("texconfig.%s=%s",v,tv)
         end
     end
-    io.savedata(name,format("%s\n\n%s",concat(t,"\n"),format(stub,firsttable,tostring(CONTEXTLMTXMODE) or 0)))
+    t[#t+1] = ""
+    t[#t+1] = format(stub,firsttable,tostring(CONTEXTLMTXMODE or 0))
+    io.savedata(name,concat(t,"\n"))
     logs.newline()
 end
 

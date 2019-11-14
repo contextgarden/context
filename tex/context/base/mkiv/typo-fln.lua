@@ -47,12 +47,16 @@ local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local setlink            = nuts.setlink
 local setfont            = nuts.setfont
+local setglyphdata       = nuts.setglyphdata
+local getprop            = nuts.getprop
+local setprop            = nuts.setprop
 
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
 local kern_code          = nodecodes.kern
 local glue_code          = nodecodes.glue
+local localpar_code      = nodecodes.localpar
 
 local spaceskip_code     = nodes.gluecodes.spaceskip
 
@@ -81,26 +85,23 @@ local a_color            = attributes.private('color')
 local a_transparency     = attributes.private('transparency')
 local a_colormodel       = attributes.private('colormodel')
 
-local texsetattribute    = tex.setattribute
-local unsetvalue         = attributes.unsetvalue
+local texget             = tex.get
 
 local variables          = interfaces.variables
 local v_default          = variables.default
 local v_line             = variables.line
 local v_word             = variables.word
 
------ is_letter          = characters.is_letter
------ categories         = characters.categories
-
-local settings           = nil
-
-function firstlines.set(specification)
-    settings = specification or { }
+local function set(par,specification)
     enableaction("processors","typesetters.firstlines.handler")
     if trace_firstlines then
         report_firstlines("enabling firstlines")
     end
-    texsetattribute(a_firstline,1)
+    setprop(par,a_firstline,specification)
+end
+
+function firstlines.set(specification)
+    nuts.setparproperty(set,specification)
 end
 
 implement {
@@ -120,25 +121,24 @@ implement {
 }
 
 actions[v_line] = function(head,setting)
- -- local attribute  = fonts.specifiers.contextnumber(setting.feature) -- was experimental
     local dynamic    = setting.dynamic
     local font       = setting.font
     local noflines   = setting.n or 1
     local ma         = setting.ma or 0
     local ca         = setting.ca
     local ta         = setting.ta
-    local hangafter  = tex.hangafter
-    local hangindent = tex.hangindent
-    local parindent  = tex.parindent
+    local hangafter  = texget("hangafter")
+    local hangindent = texget("hangindent")
+    local parindent  = texget("parindent")
     local nofchars   = 0
     local n          = 0
     local temp       = copy_node_list(head)
     local linebreaks = { }
 
-    local function set(head)
+    set = function(head)
         for g in nextglyph, head do
             if dynamic > 0 then
-                setattr(g,0,dynamic)
+                setglyphdata(g,dynamic)
             end
             setfont(g,font)
         end
@@ -163,7 +163,7 @@ actions[v_line] = function(head,setting)
     local list  = temp
     local prev  = temp
     for i=1,noflines do
-        local hsize = tex.hsize - tex.leftskip.width - tex.rightskip.width
+        local hsize = texget("hsize") - texget("leftskip",false) - texget("rightskip",false)
         if i == 1 then
             hsize = hsize - parindent
         end
@@ -234,7 +234,7 @@ actions[v_line] = function(head,setting)
 
     local function update(start)
         if dynamic > 0 then
-            setattr(start,0,dynamic)
+            setglyphdata(start,dynamic)
         end
         setfont(start,font)
         if ca and ca > 0 then
@@ -348,7 +348,7 @@ actions[v_word] = function(head,setting)
                 setattr(start,a_transparency,ta)
             end
             if dynamic > 0 then
-                setattr(start,0,dynamic)
+                setglyphdata(start,dynamic)
             end
             setfont(start,font)
         elseif id == disc_code then
@@ -369,29 +369,18 @@ end
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
-    local start = head
-    local attr  = nil
-    while start do
-        attr = getattr(start,a_firstline)
-        if attr then
-            break
-        elseif getid(start) == glyph_code then
-            break
-        else
-            start = getnext(start)
-        end
-    end
-    if attr then
-        -- here as we can process nested boxes first so we need to keep state
-        disableaction("processors","typesetters.firstlines.handler")
-     -- texsetattribute(attribute,unsetvalue)
-        local alternative = settings.alternative or v_default
-        local action = actions[alternative] or actions[v_default]
-        if action then
-            if trace_firstlines then
-                report_firstlines("processing firstlines, alternative %a",alternative)
+    if getid(head) == localpar_code then
+        local settings = getprop(head,a_firstline)
+        if settings then
+            disableaction("processors","typesetters.firstlines.handler")
+            local alternative = settings.alternative or v_default
+            local action = actions[alternative] or actions[v_default]
+            if action then
+                if trace_firstlines then
+                    report_firstlines("processing firstlines, alternative %a",alternative)
+                end
+                return action(head,settings)
             end
-            return action(head,settings)
         end
     end
     return head

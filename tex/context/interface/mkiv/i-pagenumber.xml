@@ -4,6 +4,22 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <cd:define name="assignment-setupuserpagenumber">
+        <cd:assignments list="yes">
+            <cd:parameter name="viewerprefix">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="state">
+                <cd:constant type="start"/>
+                <cd:constant type="stop"/>
+                <cd:constant type="none"/>
+                <cd:constant type="keep"/>
+                <cd:constant type="empty"/>
+            </cd:parameter>
+            <cd:inherit name="setupcounter"/>
+        </cd:assignments>
+    </cd:define>
+
     <cd:command name="setuprealpagenumber" level="system" category="counter" file="strc-pag.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
@@ -14,19 +30,7 @@
 
     <cd:command name="setupuserpagenumber" level="style" category="counter" file="strc-pag.mkiv">
         <cd:arguments>
-            <cd:assignments list="yes">
-                <cd:parameter name="viewerprefix">
-                    <cd:constant type="cd:text"/>
-                </cd:parameter>
-                <cd:parameter name="state">
-                    <cd:constant type="start"/>
-                    <cd:constant type="stop"/>
-                    <cd:constant type="none"/>
-                    <cd:constant type="keep"/>
-                    <cd:constant type="empty"/>
-                </cd:parameter>
-                <cd:inherit name="setupcounter"/>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupuserpagenumber"/>
         </cd:arguments>
     </cd:command>
 
@@ -40,9 +44,7 @@
 
     <cd:command name="setuppagenumber" level="style" category="counter" file="strc-pag.mkiv">
         <cd:arguments>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupuserpagenumber"/>
-            </cd:assignments>
+            <cd:resolve name="assignment-setupuserpagenumber"/>
         </cd:arguments>
     </cd:command>
 

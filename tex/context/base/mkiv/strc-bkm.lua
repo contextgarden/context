@@ -42,6 +42,19 @@ local opened         = { }
 local forced         = { }
 local numbered       = { }
 
+function bookmarks.setopened(key,value)
+    if value == nil then
+        value = true
+    end
+    if type(key) == "table" then
+        for i=1,#key do
+            opened[key[i]] = value
+        end
+    else
+        opened[key] = value
+    end
+end
+
 function bookmarks.register(settings)
     local force = settings.force == variables.yes
     local number = settings.number == variables.yes

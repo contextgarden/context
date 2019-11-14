@@ -1,0 +1,553 @@
+% language=uk
+
+% \showfontkerns
+
+\startcomponent musings-manuals
+
+\environment musings-style
+
+\definetyping[narrowtyping][style=\ttx]
+
+\startchapter[title={About what \CONTEXT\ isn't}]
+
+\startsection[title={Introduction}]
+
+It really puzzles me why, when someone someplace asks if \CONTEXT\ is suitable
+for her or is his needs, there are answers like: \quotation {You need to think of
+\CONTEXT\ as being kind of plain \TEX: you have to define everything yourself.}
+That answer probably stems from the fact that for \LATEX\ you load some style
+that defines a lot, which you then might need to undefine or redefine, but that's
+not part of the answer.
+
+In the following sections I will go into a bit more detail of what plain \TEX\ is
+and how it influences macro packages, especially \CONTEXT . I'm sure I have
+discussed this before so consider this another go at it.
+
+The \type {plain.tex} file start with the line:
+
+\starttyping
+% This is the plain TeX format that's described in The TeXbook.
+\stoptyping
+
+A few lines later we read:
+
+\starttyping
+% And don't modify the file under any circumstances.
+\stoptyping
+
+So, this format related to the \TEX\ reference. It serves as a template for what
+is called a macro package. Here I will not go into the details of macro programming
+but an occasional snippet of code can be illustrative.
+
+\stopsection
+
+\startsection[title={Getting started}]
+
+The first code we see in the plain file is:
+
+\startnarrowtyping
+\catcode`\{=1 % left brace is begin-group character
+\catcode`\}=2 % right brace is end-group character
+\catcode`\$=3 % dollar sign is math shift
+\catcode`\&=4 % ampersand is alignment tab
+\catcode`\#=6 % hash mark is macro parameter character
+\catcode`\^=7 \catcode`\^^K=7 % circumflex and uparrow are for superscripts
+\catcode`\_=8 \catcode`\^^A=8 % underline and downarrow are for subscripts
+\catcode`\^^I=10                          % ascii tab is a blank space
+\chardef\active=13    \catcode`\~=\active % tilde is active
+\catcode`\^^L=\active \outer\def^^L{\par} % ascii form-feed is "\outer\par"
+\stopnarrowtyping
+
+Assigning catcodes to the braces and hash are needed in order to make it possible
+to define macros. The dollar is set to enter math mode and the ampersand becomes
+a separator in tables. The superscript and subscript also relate to math. Nothing
+demands these bindings but they are widely accepted. In this respect \CONTEXT\ is
+indeed like plain.
+
+The tab is made equivalent to a space and a tilde is made active which means that
+later on we need to give it some meaning. It is quite normal to make that an
+unbreakable space, and one with the width of a digit when we're doing tables.
+Now, nothing demands that we have to assume \ASCII\ input but for practical
+reasons the formfeed character is made equivalent to a \type {\par}.
+
+Now what do these \type {^^K} and similar triplets represent? The \type {^^A}
+represents character zero and normally all these control characters below decimal
+32 (space) are special. The \type {^^I} is the \ASCII\ tab character, and \type
+{^^L} the formfeed. But, the ones referred to as uparrow and downarrow in the
+comments have only meaning on certain keyboards. So these are typical definitions
+that only made sense for Don Knuth at that time and are not relevant in other
+macro packages that aim at standardized input media.
+
+\startnarrowtyping
+% We had to define the \catcodes right away, before the message line, since
+% \message uses the { and } characters. When INITEX (the TeX initializer) starts
+% up, it has defined the following \catcode values:
+%
+% \catcode`\^^@=9  % ascii null is ignored
+% \catcode`\^^M=5  % ascii return is end-line
+% \catcode`\\=0    % backslash is TeX escape character
+% \catcode`\%=14   % percent sign is comment character
+% \catcode`\ =10   % ascii space is blank space
+% \catcode`\^^?=15 % ascii delete is invalid
+% \catcode`\A=11 ... \catcode`\Z=11 % uppercase letters
+% \catcode`\a=11 ... \catcode`\z=11 % lowercase letters
+% all others are type 12 (other)
+\stopnarrowtyping
+
+The comments above speak for themselves. Changing catcodes is one way to adapt
+interpretation. For instance, in verbatim mode most catcodes can best be made
+letter or other. In \CONTEXT\ we always had so called catcode regimes: for
+defining macros, for normal text, for \XML, for verbatim, etc. In \MKIV\ this
+mechanism was adapted to the new catcode table mechanism available in that
+engine. It was one of the first things we added to \LUATEX. So, again, although
+we follow some standards (expectations) \CONTEXT\ differs from plain.
+
+\startnarrowtyping
+% We make @ signs act like letters, temporarily, to avoid conflict between user
+% names and internal control sequences of plain format.
+
+\catcode`@=11
+\stopnarrowtyping
+
+In \CONTEXT\ we went a step further and when defining macros also adapted
+the catcode of \type {!} and \type {?} and later in \MKIV\ \type {_}. When
+we're in unprotected mode this applies. In addition to regular text
+input math is dealt with:
+
+\startnarrowtyping
+% INITEX sets up \mathcode x=x, for x=0..255, except that
+%
+% \mathcode x=x+"7100, for x = `A to `Z and `a to `z;
+% \mathcode x=x+"7000, for x = `0 to `9.
+
+% The following changes define internal codes as recommended in Appendix C of
+% The TeXbook:
+
+\mathcode`\^^@="2201 % \cdot
+\mathcode`\^^A="3223 % \downarrow
+\mathcode`\^^B="010B % \alpha
+\mathcode`\^^C="010C % \beta
+....................
+\mathcode`\|="026A
+\mathcode`\}="5267
+\mathcode`\^^?="1273 % \smallint
+\stopnarrowtyping
+
+Here we see another set of definitions but the alphabetic ones are not defined in
+\CONTEXT, they are again bindings to the authors special keyboard.
+
+\startnarrowtyping
+% INITEX sets \sfcode x=1000 for all x, except that \sfcode`X=999 for uppercase
+% letters. The following changes are needed:
+
+\sfcode`\)=0 \sfcode`\'=0 \sfcode`\]=0
+
+% The \nonfrenchspacing macro will make further changes to \sfcode values.
+\stopnarrowtyping
+
+Definitions like this depend on the language. Because original \TEX\ was mostly
+meant for typesetting English, these things are hard coded. In \CONTEXT\ such
+definitions relate to languages.
+
+I show these definitions because they also illustrate what \TEX\ is about:
+typesetting math:
+
+\startnarrowtyping
+% Finally, INITEX sets all \delcode values to -1, except \delcode`.=0
+
+\delcode`\(="028300
+\delcode`\)="029301
+\delcode`\[="05B302
+\delcode`\]="05D303
+\delcode`\<="26830A
+\delcode`\>="26930B
+\delcode`\/="02F30E
+\delcode`\|="26A30C
+\delcode`\\="26E30F
+
+% N.B. { and } should NOT get delcodes; otherwise parameter grouping fails!
+\stopnarrowtyping
+
+Watch the last comment. One of the complications of \TEX\ is that because some
+characters have special meanings, we also need to deal with exceptions. It also
+means that arbitrary input is not possible. For instance, unless the percent
+character is made a letter, everything following it till the end of a line will
+be discarded. This is an areas where macro packages can differ but in \MKII\ we
+followed these rules. In \MKIV\ we made what we called \type {\nonknuthmode}
+default which means that ampersands are just that and scripts are only special in
+math (there was also \type {\donknuthmode}). So, \CONTEXT\ is not like plain
+there.
+
+\stopsection
+
+\startsection[title=Housekeeping]
+
+The next section defines some numeric shortcuts. Here the fact is used that a
+defined symbolic character can act as counter value. When the number is larger
+than 255 a math character is to be used. In \LUATEX, which is a \UNICODE\ engine
+character codes can be much larger.
+
+\startnarrowtyping
+% To make the plain macros more efficient in time and space, several constant
+% values are declared here as control sequences. If they were changed, anything
+% could happen; so they are private symbols.
+
+\chardef\@ne=1
+\chardef\tw@=2
+\chardef\thr@@=3
+\chardef\sixt@@n=16
+\chardef\@cclv=255
+\mathchardef\@cclvi=256
+\mathchardef\@m=1000
+\mathchardef\@M=10000
+\mathchardef\@MM=20000
+\stopnarrowtyping
+
+In \CONTEXT\ we still support these shortcuts but never use them ourselves. We
+have plenty more variables and constants and nowadays always use verbose names.
+(There was indeed a time when each extra characters depleted string memory more
+and more so then using short command names made sense.) The comment is right that
+using such variables is more efficient, for instance once loaded a macro is a
+sequence of tokens, so \type {\@one} takes one memory slot. In the case of the
+first three the saving is zero and even interpreting a single character token
+\type {3} is not less efficient than \type {\thr@@}, but in the case of \type
+{\@cclv} the three tokens \type {255} take more memory and also trigger the number
+scanner which is much slower than simply taking the meaning of the \type
+{\chardef}'d token. However, the \CONTEXT\ variable \type {\plusone} is as
+efficient as the \type {\@ne} and it looks prettier in code too (and I'm very
+sensitive for that). So, here \CONTEXT\ is definitely different!
+
+It makes no sense to show the next section here: it deals with managing
+registers, like counters and dimensions and token lists. Traditional \TEX\ has
+255 registers per category. Associating a control sequence (name) with a specific
+counter is done with \type {\countdef} but I don't think that you will find a
+macro package that expects a user to use that primitive. Instead it will provide
+a \type {\newcount} macro. So yes, here \CONTEXT\ is like plain.
+
+Understanding these macros is a test case for understanding \TEX. Take the
+following snippet:
+
+\startnarrowtyping
+\let\newtoks=\relax % we do this to allow plain.tex to be read in twice
+\outer\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\outer\def\newtoks{\alloc@5\toks\toksdef\@cclvi}
+\stopnarrowtyping
+
+The \type {\outer} prefix flags macros as to be used at the outermost level and
+because the \type {\newtoks} is in the macro body of \type {\newtoks} it has to
+be relaxed first. Don't worry if you don't get it. In \CONTEXT\ we have no outer
+macros so the definitions differ there.
+
+The plain format assumes that the first 10 registers are used for scratch
+purposes, so best also assume this to be the case in other macro packages. There
+is no need for \CONTEXT\ to differ from plain here. The definitions of box
+registers and inserts are special: there is no \type {\boxdef} and inserts use
+multiple registers. Especially the allocation of inserts is macro package
+specific. Anyway, \CONTEXT\ users never see such details because inserts are used
+as building blocks deep down.
+
+Right after defining the allocators some more constants are defined:
+
+\startnarrowtyping
+% Here are some examples of allocation.
+
+\newdimen\maxdimen \maxdimen=16383.99999pt % the largest legal <dimen>
+\stopnarrowtyping
+
+We do have that one, as it's again a standard but we do have more such constants.
+This definition is kind of interesting as it assumes knowledge about what is
+acceptable for \TEX\ as dimension:
+
+\startbuffer
+{\maxdimen=16383.99999pt \the\maxdimen \quad \number\maxdimen}
+{\maxdimen=16383.99998pt \the\maxdimen \quad \number\maxdimen}
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+Indeed it is the largest legal dimension but the real largest one is slighly
+less. We could also have said the following, which also indicates what the
+maximum cardinal is:
+
+\startnarrowtyping
+\newdimen\maxdimen \maxdimen=1073741823sp
+\stopnarrowtyping
+
+We dropped some of the others defined in plain. So, \CONTEXT\ is a bit like plain
+but differs substantially. In fact, \MKII\ already used a different allocator
+implementation and \MKIV\ is even more different. We also have more \type {\new}
+things.
+
+The \type {\newif} definition also differs. Now that definition is quite special
+in plain \TEX, so if you want a challenge, look it up. It defines three macros as
+the comment says:
+
+\startnarrowtyping
+% For example, \newif\iffoo creates \footrue, \foofalse to go with \iffoo.
+\stopnarrowtyping
+
+The \type {\iffoo} is either equivalent to \type {\iftrue} or \type {\iffalse}
+because that is what \TEX\ needs to see in order to be able to skip nested
+conditional branches. In \CONTEXT\ we have so called conditionals, which are more
+efficient. So, yes, you will find such defined ifs in the \CONTEXT\ source but
+way less than you'd expect in such a large macro package: \CONTEXT\ code doesn't
+look much like plain code I fear.
+
+\stopsection
+
+\startsection[title=Parameters]
+
+A next stage sets the internal parameters:
+
+\startnarrowtyping
+% All of TeX's numeric parameters are listed here, but the code is commented out
+% if no special value needs to be set. INITEX makes all parameters zero except
+% where noted.
+\stopnarrowtyping
+
+We use different values for many of them. The reason is that the plain \TEX\ format
+is set up for a 10 point Computer Modern font system, and for a particular kind
+of layout, so we use different values for:
+
+\startnarrowtyping
+\hsize=6.5in
+\vsize=8.9in
+\maxdepth=4pt
+\stopnarrowtyping
+
+and
+
+\startnarrowtyping
+\abovedisplayskip=12pt plus 3pt minus 9pt
+\abovedisplayshortskip=0pt plus 3pt
+\belowdisplayskip=12pt plus 3pt minus 9pt
+\belowdisplayshortskip=7pt plus 3pt minus 4pt
+\stopnarrowtyping
+
+No, here \CONTEXT\ is not like plain. But, there is one aspect that we do inherit and
+that is the ratio. Here a 10 point relates to 12 point and this 1.2 factor is carried
+over in some defaults in \CONTEXT. So, in the end we're a bit like plain.
+
+After setting up the internal quantities plain does this:
+
+% We also define special registers that function like parameters:
+
+\startnarrowtyping
+\newskip\smallskipamount \smallskipamount=3pt plus 1pt minus 1pt
+\newskip\medskipamount \medskipamount=6pt plus 2pt minus 2pt
+\newskip\bigskipamount \bigskipamount=12pt plus 4pt minus 4pt
+\newskip\normalbaselineskip \normalbaselineskip=12pt
+\newskip\normallineskip \normallineskip=1pt
+\newdimen\normallineskiplimit \normallineskiplimit=0pt
+\newdimen\jot \jot=3pt
+\newcount\interdisplaylinepenalty \interdisplaylinepenalty=100
+\newcount\interfootnotelinepenalty \interfootnotelinepenalty=100
+\stopnarrowtyping
+
+The first three as well as the following three related variables are not internal
+quantities but preallocated registers. These are not used in the engine but in
+macros. In \CONTEXT\ we do provide them but the first three are never used that
+way. The last three are not defined at all. So, \CONTEXT\ provides a bit what
+plain provides, just in case.
+
+\stopsection
+
+\startsection[title=Fonts]
+
+The font section is quite interesting. I assume that one reason why some want to
+warn users against using \CONTEXT\ is because it supports some of the font
+switching commands found in plain. We had no reasons to come up with different ones
+but they do different things anyway, for instance adapting to situations. So, in
+\CONTEXT\ you will not find the plain definitions:
+
+\startnarrowtyping
+\font\tenrm=cmr10 % roman text
+\font\preloaded=cmr9
+\font\preloaded=cmr8
+\font\sevenrm=cmr7
+\font\preloaded=cmr6
+\font\fiverm=cmr5
+\stopnarrowtyping
+
+There is another thing going on here. Some fonts are defined \type {\preloaded}. So,
+\type {cmr9} is defined, and then \type {cmr8} and \type {cmr6}. But they all use the
+same name. Later on we see:
+
+\startnarrowtyping
+\let\preloaded=\undefined % preloaded fonts must be declared anew later.
+\stopnarrowtyping
+
+If you never ran into the relevant part of the \TEX\ book or read the program
+source of \TEX, you won't realize that preloading means that it stays in memory
+which in turn means that when it gets (re)defined later, the font data doesn't
+come from disk. In fact, as the plain format is normally dumped for faster reload
+later on, the font data is also retained. So, preloading is a speed up hack. In
+\CONTEXT\ font loading has always been delayed till the moment a font is really
+used. This permits plenty of definitions and gives less memory usage. Of course
+we do reuse fonts once loaded. All this, plus the fact that we have a a system of
+related sizes, collections of families, support multiple font encodings
+alongside, collect definitions in so called typescript, etc. makes that the
+\CONTEXT\ font subsystem is far from what plain provides. Only some of the
+command stick, like \type {\rm} and \type {\bf}.
+
+The same is true for math fonts, where we can have different math font setups in
+one document. Definitely in \MKII\ times, we also had to work around limitations
+in the number of available math families, which again complicated the code. In
+\MKIV\ things are even more different, one can even consider the implementation
+somewhat alien for a standard macro package, but that's for another article (if
+at all).
+
+\stopsection
+
+\startsection[title=Macros]
+
+Of course \CONTEXT\ comes with macros, but these are organized in setups,
+environments, instances, etc. The whole process and setup is keyword driven. Out
+of the box all things work: nothing needs to be loaded. If you want it different,
+you change some settings, but you don't need to load something. Maybe that last
+aspect is what is meant with \CONTEXT\ being like plain: you don't (normally)
+load extra stuff. You just adapt the system to your needs. So there we proudly
+follow up on plain \TEX.
+
+In the plain macro section we find definitions like:
+
+\startnarrowtyping
+\def\frenchspacing{\sfcode`\.\@m \sfcode`\?\@m \sfcode`\!\@m
+  \sfcode`\:\@m \sfcode`\;\@m \sfcode`\,\@m}
+\def\nonfrenchspacing{\sfcode`\.3000\sfcode`\?3000\sfcode`\!3000%
+  \sfcode`\:2000\sfcode`\;1500\sfcode`\,1250 }
+\stopnarrowtyping
+
+and:
+
+\startnarrowtyping
+\def\space{ }
+\def\empty{}
+\def\null{\hbox{}}
+
+\let\bgroup={
+\let\egroup=}
+\stopnarrowtyping
+
+and:
+
+\startnarrowtyping
+\def\nointerlineskip{\prevdepth-1000\p@}
+\def\offinterlineskip{\baselineskip-1000\p@
+  \lineskip\z@ \lineskiplimit\maxdimen}
+\stopnarrowtyping
+
+Indeed we also provide these, but apart from the two grouping related aliases
+their implementation is different in \CONTEXT. There is no need to reinvent
+names.
+
+For a while we kept (and did in \MKII) some of the plain helper macros, for
+instance those that deal with tabs, but we have several more extensive table
+models that are normally used. We always had our own code for float placement,
+and we also have more options there. Footnotes are supported but again we have
+multiple classes, placements, options, etc. Idem for itemized lists, one of the
+oldest mechanisms in \CONTEXT. We don't have \type {\beginsection} but of course
+we do have sectioning commands, and have no \type {\proclaim} but provide lots of
+descriptive alternatives, so many that I forgot about most of them by now (so
+plain is a winner in terms of knowing a macro package inside out).
+
+The fact that we use tables, floats and footnotes indeed makes \CONTEXT\ to act
+like plain, but that's then also true for other macro packages. A fact is that
+plain sets the standard for how to think about these matters! The same is true
+for naming characters:
+
+\startnarrowtyping
+\chardef\%=`\%
+\chardef\&=`\&
+\chardef\#=`\#
+\chardef\$=`\$
+\chardef\ss="19
+\chardef\ae="1A
+\chardef\oe="1B
+\chardef\o="1C
+\chardef\AE="1D
+\chardef\OE="1E
+\chardef\O="1F
+\chardef\i="10 \chardef\j="11 % dotless letters
+\stopnarrowtyping
+
+But we have many more and understandable the numbers are different in \CONTEXT\
+because we use different font (encodings). Their implementation is more adaptive.
+The same is true for accented characters:
+
+\startnarrowtyping
+\def\`#1{{\accent18 #1}}
+\def\'#1{{\accent19 #1}}
+\stopnarrowtyping
+
+The definitions in \MKII\ are different (in most cases we use native glyphs) and
+in \MKIV\ we use \UNICODE\ anyway. I think that the \type {\accent} command is
+only used in a few exceptional cases (like very limited fonts) in \MKII\ and never
+in \MKIV. The implementation of for instance accents (and other pasted together
+symbols) in math is also quite different.
+
+There are also definitions that seem to be commonly used in macro packages but
+that we never use in \CONTEXT\ because they interfere badly with all kind of
+other mechanisms, so you will find no usage of
+
+\startnarrowtyping
+\def\leavevmode{\unhbox\voidb@x} % begins a paragraph, if necessary
+\stopnarrowtyping
+
+in \CONTEXT. In order to stress that we provide \type {\dontleavehmode}, a wink
+to not using the one above.
+
+The macro section ends with lots of math definitions. Most of the names used are
+kind of standard so again here \CONTEXT\ is like plain, but the implementation
+can differ as does the level of control.
+
+\stopsection
+
+\startsection[title=Output]
+
+Once a page is ready it gets wrapped up and shipped out. Here \CONTEXT\ is very
+different from plain. The amount of code in plain is not that large but the
+possibilities aren't either, which is exactly what the objectives demand: a
+simple (example) format that can be described in the \TEX book. But, as with
+other aspects of plain, it steered the way macro packages started out as it
+showed the way. As did many examples in the \TEX\ book.
+
+\stopsection
+
+\startsection[title=Hyphenation]
+
+As an afterthought, the plain format ends with loading hyphenation patterns, that
+is the English ones. That said it will be clear that \CONTEXT\ is not like plain:
+we support many languages, and the subsystem deals with labels, specific
+typesetting properties, etc.\ too.
+
+\startnarrowtyping
+\lefthyphenmin=2 \righthyphenmin=3 % disallow x- or -xx breaks
+\input hyphen
+\stopnarrowtyping
+
+We don't even use these patterns as we switched to \UTF\ long ago (also in \MKII)
+if only because we had to deal with a mix of font encodings. But we did preload the
+lot there. In \MKIV\ again things are much different.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+The plain format does (and provides) what it is supposed to do. It is a showcase
+of possibilities and part of the specification. In that respect it's nice that
+\CONTEXT\ is considered to be like plain. But if it wasn't more, there was no
+reason for its existence. Like more assumptions about \CONTEXT\ it demonstrates
+that those coming up with answers and remarks like that probably missed something
+in assessing \CONTEXT. Just let users find out themselves what suits best (and
+for some that actually might be plain \TEX).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

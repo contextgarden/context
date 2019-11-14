@@ -134,54 +134,6 @@
   {\framedparameter\c!after
    \endgroup}
 
-% \unexpanded\def\startframedrow
-%   {\advance\c_tabl_framed_r\plusone
-%    \c_tabl_framed_c\zerocount
-%    \d_tabl_framed_h\zeropoint
-%    \bgroup
-%    \edef\currentframed{\number\c_tabl_framed_r}%
-%    \edef\currentframed
-%      {\??framedtablerow\currentframedtable
-%       \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
-%         :\currentframed
-%       \else\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
-%         :\v!each
-%       \fi\fi}%
-%    \dosingleempty\pack_framed_start_framed_nop_indeed}
-%
-% \unexpanded\def\stopframedrow
-%   {\dofastloopcs\c_tabl_framed_c\tabl_framed_flush_row
-%    \stopframed
-%    \nointerlineskip
-%    \vskip\zeropoint\relax
-%    \framedparameter\c!inbetween}
-%
-% \unexpanded\def\tabl_framed_flush_row
-%   {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
-%    \ifdim\d_tabl_framed_d=\zeropoint\else\kern\d_tabl_framed_d\fi}
-%
-% \unexpanded\def\startframedcell
-%   {\advance\c_tabl_framed_c\plusone
-%    \setbox\b_tabl_framed\hpack\bgroup
-%   %\bgroup
-%    \edef\currentframed{\number\c_tabl_framed_c}%
-%    \edef\currentframed
-%      {\??framedtablecolumn\currentframedtable
-%       \ifcsname\??framedtablecolumn\currentframedtable:\currentframed\endcsname
-%         :\currentframed
-%       \else\ifcsname\??framedtablecolumn\currentframedtable:\v!each\endcsname
-%         :\v!each
-%       \fi\fi}%
-%    \dosingleempty\pack_framed_start_framed_nop_indeed}
-%
-% \unexpanded\def\stopframedcell
-%   {\stopframed
-%   %\egroup
-%    \ifdim\ht\b_tabl_framed>\d_tabl_framed_h
-%      \d_tabl_framed_h\ht\b_tabl_framed
-%    \fi
-%    \savebox\??framedtable{\number\c_tabl_framed_c}{\box\b_tabl_framed}}
-
 % a two pass variant that deals with the height .. so no catcode changes here
 
 \unexpanded\def\startframedrow
@@ -208,7 +160,7 @@
 
 \unexpanded\def\tabl_framed_flush_row
   {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
-   \ifdim\d_tabl_framed_d=\zeropoint\else\kern\d_tabl_framed_d\fi}
+   \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
 
 \newcount\c_tabl_framed_pass
 
@@ -253,7 +205,7 @@
 
 \unexpanded\def\tabl_framed_flush_row_two
   {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
-   \ifdim\d_tabl_framed_d=\zeropoint\else\kern\d_tabl_framed_d\fi}
+   \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
 
 
 \unexpanded\def\startframedcell

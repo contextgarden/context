@@ -1,0 +1,58 @@
+% language=us
+
+\startcomponent followingup-logging
+
+\environment followingup-style
+
+\startchapter[title={Logging}]
+
+\startsection[title={Introduction}]
+
+In \CONTEXT\ we have quite some logging enabled by default and even more when
+you enable trackers. Most logging is done with \LUA, which is quite efficient.
+Information from the \TEX\ machinery follows a different path and one reason
+for that is that it often happens on a character (or small strings) basis.
+
+The runtime of a job is, in spite of what one may expect, also dependent on the
+speed of the console: what fonts are used (there can be font features being
+applied), is the output buffered, and with what delays, how large is the history,
+etc. When more complex fonts arrived I found out that on \OSX\ generating a
+format was impacted by seconds. When on \MSWINDOWS\ the normal console was used
+its character|-|by|-|character flushing made it sluggish, and on \LINUX\ it
+depended on the font, kind of console, delays, etc. Lucky me, the \SCITE\ editors
+log pane beats them all. \footnote {I use the \LINUX\ subsystem on \MSWINDOWS\
+for cross compiling \LUATEX, and with the advent of that subsystem the regular
+console was also rewritten so most of the delays are gone now.}
+
+At the \TEX\ end a few decades of coding has made the system also complex.
+\footnote {Interfaces like that are only partly defined by \TEX\ and left to the
+implementation.} Each string goes through a mechanism that checks with line
+ending to apply and where to cut off lines exceeding a preset maximum length,
+where \LUATEX\ also needs to take \UTF\ into account. Some characters can
+(optionally) be escaped with \type {^^} and occasionally the line length gets
+reset by explicit newline commands.
+
+In \CONTEXT\ already for a long time we always used an (at least) 10K line length
+and disabled output escaping. We have consoles that can handle long lines and
+live in an \UTF\ world so escaping makes no sense. And, when \OPENTYPE\ features
+get applied random line breaks can interfere badly. Just in case one wonders what
+happens with so called \type{null} characters: as all goes through \CCODE\
+anyway, such a character just terminates a string. Therefore the line length
+limitations have been removed and the line|-|ending substitution be optimized. In
+principle this gives simpler codes and less overhead.
+
+The log is not always compatible with \LUATEX. For instance we output more details
+about node lists. This is natural because we have more subtypes and these can
+provide additional information (clues) when debugging \TEX\ code.
+
+In \LUATEX\ the error handling is already such that some can be delegated to
+\LUA, and later I will look into more isolation. But, error handling is quite
+interwoven in the code and I don't want to mess up the original concept too much.
+\footnote {Indeed the error handling was redone in such a way that we now have an
+even better isolation.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

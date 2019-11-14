@@ -1,6 +1,6 @@
 .TH "mtx-epub" "1" "01-01-2019" "version 1.10" "ConTeXt EPUB Helpers"
 .SH NAME
-.B mtx-epub
+ mtx-epub - ConTeXt EPUB Helpers
 .SH SYNOPSIS
 .B mtxrun --script epub [
 .I OPTIONS ...

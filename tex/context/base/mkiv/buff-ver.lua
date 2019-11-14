@@ -127,7 +127,8 @@ local signal = "\000"
 visualizers.signal        = signal
 visualizers.signalpattern = P(signal)
 
-local functions = { __index = {
+local functions = {
+    __index = {
         emptyline = f_emptyline,
         newline   = f_newline,
         default   = f_default,

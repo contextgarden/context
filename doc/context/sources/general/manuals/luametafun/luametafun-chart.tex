@@ -1,0 +1,441 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-chart
+
+\startchapter[title={Chart}]
+
+This is another example implementation but it might be handy for simple cases of
+presenting results. Of course one can debate the usefulness of certain ways of
+presenting but here we avoid that discussion. Let's start with a simple pie
+chart (\in {figure} [chart:1]).
+
+\startbuffer[1]
+\startMPcode
+    draw lmt_chart_circle [
+        samples    = { { 1, 4, 3, 2, 5, 7, 6 } },
+        percentage = true,
+        trace      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+\startplacefigure[reference=chart:1]
+    \getbuffer[1]
+\stopplacefigure
+
+As with all these \LMTX\ extensions, you're invited to play with the parameters.
+in \in {figure} [chart:2] we see a variant that adds labels as well as one that
+has a legend.
+
+\startbuffer[2a]
+\startMPcode
+draw lmt_chart_circle [
+    height      = 4cm,
+    samples     = { { 1, 4, 3, 2, 5, 7, 6 } },
+    percentage  = true,
+    trace       = true,
+    labelcolor  = "white",
+    labelformat = "@0.1f",
+    labelstyle  = "ttxx"
+] ;
+\stopMPcode
+\stopbuffer
+
+The styling of labels and legends can be influenced independently.
+
+\typebuffer[2a][option=TEX]
+
+\startbuffer[2b]
+\startMPcode
+draw lmt_chart_circle [
+    height      = 4cm,
+    samples     =  { { 1, 4, 3, 2, 5, 7, 6 } },
+    percentage  = false,
+    trace       = true,
+    linewidth   = .125mm,
+    originsize  = 0,
+    labeloffset = 3cm,
+    labelstyle  = "bfxx",
+    legendstyle = "tfxx",
+    legend      = {
+        "first", "second", "third", "fourth",
+        "fifth", "sixths", "sevenths"
+    }
+] ;
+
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2b][option=TEX]
+
+\startplacefigure[reference=chart:2]
+    \startcombination
+        {\getbuffer[2a]} {}
+        {\getbuffer[2b]} {}
+    \stopcombination
+\stopplacefigure
+
+A second way of rendering are histograms, and the interface is mostly the same.
+In \in {figure} [chart:3] we see two variants
+
+\startbuffer[3a]
+\startMPcode
+    draw lmt_chart_histogram [
+        samples    = { { 1, 4, 3, 2, 5, 7, 6 } },
+        percentage = true,
+        cumulative = true,
+        trace      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[3b]
+\startMPcode
+    draw lmt_chart_histogram [
+        samples    = {
+            { 1, 4, 3, 2, 5, 7, 6 },
+            { 1, 2, 3, 4, 5, 6, 7 }
+        },
+        background = "lightgray",
+        trace      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3a][option=TEX]
+
+and one with two datasets:
+
+\typebuffer[3b][option=TEX]
+
+\startplacefigure[reference=chart:3]
+    \startcombination
+        {\getbuffer[3a]} {}
+        {\getbuffer[3b]} {}
+    \stopcombination
+\stopplacefigure
+
+\startbuffer[4]
+\startMPpage[offset=5mm]
+    draw lmt_chart_histogram [
+        samples         = {
+            { 1, 4, 3, 2, 5, 7, 6 },
+            { 1, 2, 3, 4, 5, 6, 7 }
+        },
+        percentage      = true,
+        cumulative      = true,
+        showlabels      = false,
+        backgroundcolor = "lightgray",
+    ] ;
+\stopMPpage
+\stopbuffer
+
+A cumulative variant is shown in \in {figure} [chart:4] where we also add a
+background (color).
+
+\typebuffer[4][option=TEX]
+
+\startplacefigure[reference=chart:4]
+    \getbuffer[4]
+\stopplacefigure
+
+A different way of using colors is shown in \in {figure} [chart:5] where each
+sample gets its own (same) color.
+
+\startbuffer[5]
+\startMPcode
+    draw lmt_chart_histogram [
+        samples    = {
+            { 1, 4, 3, 2, 5, 7, 6 },
+            { 1, 2, 3, 4, 5, 6, 7 }
+        },
+        percentage = true,
+        cumulative = true,
+        showlabels = false,
+        background = "lightgray",
+        colormode  = "local",
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startplacefigure[reference=chart:5]
+    \getbuffer[5]
+\stopplacefigure
+
+As with pie charts you can add labels and a legend:
+
+\startbuffer[6a]
+\startMPcode
+    draw lmt_chart_histogram [
+        height          = 6cm,
+        samples         = { { 1, 4, 3, 2, 5, 7, 6 } },
+        percentage      = true,
+        cumulative      = true,
+        trace           = true,
+        labelstyle      = "ttxx",
+        labelanchor     = "top",
+        labelcolor      = "white",
+        backgroundcolor = "middlegray",
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[6a][option=TEX]
+
+The previous and next examples are shown in \in {figure} [chart:6]. The height
+specified here concerns the graphic and excludes the labels,
+
+\startbuffer[6b]
+\startMPcode
+    draw lmt_chart_histogram [
+        height      = 6cm,
+        width       = 10mm,
+        samples     = { { 1, 4, 3, 2, 5, 7, 6 } },
+        trace       = true,
+        maximum     = 7.5,
+        linewidth   = 1mm,
+        originsize  = 0,
+        labelanchor = "bot",
+        labelcolor  = "black"
+        labelstyle  = "bfxx"
+        legendstyle = "tfxx",
+        labelstrut  = "yes",
+        legend      = {
+            "first", "second", "third", "fourth",
+            "fifth", "sixths", "sevenths"
+        }
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[6b][option=TEX]
+
+\startplacefigure[reference=chart:6]
+    \startcombination
+        {\getbuffer[6a]} {}
+        {\getbuffer[6b]} {}
+    \stopcombination
+\stopplacefigure
+
+The third category concerns bar charts that run horizontal. Again we see similar
+options driving the rendering (\in {figure} [chart:7]).
+
+\startbuffer[7a]
+\startMPcode
+    draw lmt_chart_bar [
+        samples    = { { 1, 4, 3, 2, 5, 7, 6 } },
+        percentage = true,
+        cumulative = true,
+        trace      = true,
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[7a][option=TEX]
+
+\startbuffer[7b]
+\startMPcode
+    draw lmt_chart_bar [
+        samples         = { { 1, 4, 3, 2, 5, 7, 6 } },
+        percentage      = true,
+        cumulative      = true,
+        showlabels      = false,
+        backgroundcolor = "lightgray",
+    ] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[7b][option=TEX]
+
+Determining the offset of labels is manual work:
+
+\startbuffer[7c]
+\startMPcode
+draw lmt_chart_bar [
+    width           = 4cm,
+    height          = 5mm,
+    samples         = { { 1, 4, 3, 2, 5, 7, 6 } },
+    percentage      = true,
+    cumulative      = true,
+    trace           = true,
+    labelcolor      = "white",
+    labelstyle      = "ttxx",
+    labelanchor     = "rt",
+    labeloffset     = .25EmWidth,
+    backgroundcolor = "middlegray",
+] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[7c][option=TEX]
+
+\startplacefigure[reference=chart:7]
+    \startcombination[3*1]
+        {\getbuffer[7a]} {}
+        {\getbuffer[7b]} {}
+        {\getbuffer[7c]} {}
+    \stopcombination
+\stopplacefigure
+
+Here is one with a legend (rendered in \in {figure} [chart:8]):
+
+\startbuffer[8]
+\startMPcode
+draw lmt_chart_bar [
+    width       = 8cm,
+    height      = 10mm,
+    samples     = { { 1, 4, 3, 2, 5, 7, 6 } },
+    trace       = true,
+    maximum     = 7.5,
+    linewidth   = 1mm,
+    originsize  = 0,
+    labelanchor = "lft",
+    labelcolor  = "black"
+    labelstyle  = "bfxx"
+    legendstyle = "tfxx",
+    labelstrut  = "yes",
+    legend      = {
+        "first", "second", "third", "fourth",
+        "fifth", "sixths", "sevenths"
+    }
+] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[8][option=TEX]
+
+\startplacefigure[reference=chart:8]
+    \getbuffer[8]
+\stopplacefigure
+
+You can have labels per dataset as well as draw multiple datasets in
+one image, see \in {figure} [chart:9]:
+
+\startbuffer[9]
+\startMPcode
+    draw lmt_chart_bar [
+        samples = {
+            { 1, 4, 3, 2, 5, 7, 6 },
+            { 3, 2, 5, 7, 5, 6, 1 }
+        },
+        labels      = {
+            { "a1", "b1", "c1", "d1", "e1", "f1", "g1" },
+            { "a2", "b2", "c2", "d2", "e2", "f2", "g2" }
+        },
+        labeloffset = -EmWidth,
+        labelanchor = "center",
+        labelstyle  = "ttxx",
+        trace       = true,
+        center      = true,
+    ] ;
+
+    draw lmt_chart_bar [
+        samples     = {
+            { 1, 4, 3, 2, 5, 7, 6 }
+        },
+        labels      = {
+            { "a", "b", "c", "d", "e", "f", "g" }
+        },
+        labeloffset = -EmWidth,
+        labelanchor = "center",
+        trace       = true,
+        center      = true,
+    ] shifted (10cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[9][option=TEX]
+
+\startplacefigure[reference=chart:9]
+    \getbuffer[9]
+\stopplacefigure
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name            \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC originsize      \NC numeric \NC 1mm     \NC \NC \NR
+\NC trace           \NC boolean \NC false   \NC \NC \NR
+\NC showlabels      \NC boolean \NC true    \NC \NC \NR
+\NC center          \NC boolean \NC false   \NC \NC \NR
+\ML
+\NC samples         \NC list    \NC         \NC \NC \NR
+\NC
+\NC cumulative      \NC boolean \NC false   \NC \NC \NR
+\NC percentage      \NC boolean \NC false   \NC \NC \NR
+\NC maximum         \NC numeric \NC 0       \NC \NC \NR
+\NC distance        \NC numeric \NC 1mm     \NC \NC \NR
+\ML
+\NC labels          \NC list    \NC         \NC \NC \NR
+\NC labelstyle      \NC string  \NC         \NC \NC \NR
+\NC labelformat     \NC string  \NC         \NC \NC \NR
+\NC labelstrut      \NC string  \NC auto    \NC \NC \NR
+\NC labelanchor     \NC string  \NC         \NC \NC \NR
+\NC labeloffset     \NC numeric \NC 0       \NC \NC \NR
+\NC labelfraction   \NC numeric \NC 0.8     \NC \NC \NR
+\NC labelcolor      \NC string  \NC         \NC \NC \NR
+\ML
+\NC backgroundcolor \NC string  \NC         \NC \NC \NR
+\NC drawcolor       \NC string  \NC white   \NC \NC \NR
+\NC fillcolors      \NC list    \NC         \NC primary (dark) colors \NC \NR
+\NC colormode       \NC string  \NC global  \NC \NC or \type {local} \NC \NR
+\ML
+\NC linewidth       \NC numeric \NC .25mm   \NC \NC \NR
+\ML
+\NC legendcolor     \NC string  \NC         \NC \NC \NR
+\NC legendstyle     \NC string  \NC         \NC \NC \NR
+\NC legend          \NC list    \NC         \NC \NC \NR
+\LL
+\stoptabulate
+
+Pie charts have:
+
+\starttabulate[|T|T|]
+\FL
+\BC name        \BC default \NC \NR
+\ML
+\NC height      \NC 5cm     \NC \NR
+\NC width       \NC 5mm     \NC \NR
+\NC labelanchor \NC         \NC \NR
+\NC labeloffset \NC 0       \NC \NR
+\NC labelstrut  \NC no      \NC \NR
+\LL
+\stoptabulate
+
+Histograms come with:
+
+\starttabulate[|T|T|]
+\FL
+\BC name        \BC default \NC \NR
+\ML
+\NC height      \NC 5cm     \NC \NR
+\NC width       \NC 5mm     \NC \NR
+\NC labelanchor \NC bot     \NC \NR
+\NC labeloffset \NC 1mm     \NC \NR
+\NC labelstrut  \NC auto    \NC \NR
+\LL
+\stoptabulate
+
+Bar charts use:
+
+\starttabulate[|T|T|]
+\FL
+\BC name        \BC default \NC \NR
+\ML
+\NC height      \NC 5cm     \NC \NR
+\NC width       \NC 5mm     \NC \NR
+\NC labelanchor \NC lft     \NC \NR
+\NC labeloffset \NC 1mm     \NC \NR
+\NC labelstrut  \NC no      \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

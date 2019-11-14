@@ -1,0 +1,328 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-fonts
+
+\startchapter[title={Fonts}]
+
+Fonts are interesting phenomena but can also be quite hairy. Shapes can be
+missing or not to your liking. There can be bugs too. Control over fonts has
+always been on the agenda of \TEX\ macro packages, and \CONTEXT\ provides a lot
+of control, especially in \MKIV. In \LMTX\ we add some more to that: we bring
+back \METAFONT's but now in the \METAPOST\ way. A simple example shows how this
+is (maybe I should say: will be) done.
+
+We define three simple shapes and do that (for now) in the \type {simplefun}
+instance because that's what is used when generating the glyphs.
+
+\startbuffer
+\startMPcalculation{simplefun}
+    vardef TestGlyphLB =
+        image (
+            fill (unitsquare xscaled 10 yscaled 16 shifted (0,-3))
+                withcolor "darkred" withtransparency (1,.5)
+            ;
+        )
+    enddef ;
+
+    vardef TestGlyphRB =
+        image (
+            fill (unitcircle xscaled 15 yscaled 12 shifted (0,-2))
+                withcolor "darkblue" withtransparency (1,.5)
+            ;
+        )
+    enddef ;
+
+    vardef TestGlyphFS =
+        image (
+            fill (unittriangle xscaled 15 yscaled 12 shifted (0,-2))
+                withcolor "darkgreen" withtransparency (1,.5)
+            ;
+        )
+    enddef ;
+\stopMPcalculation
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This is not that spectacular, not is the following:
+
+\startbuffer
+\startMPcalculation{simplefun}
+    lmt_registerglyphs [
+        name  = "test",
+        units = 10, % 1000
+    ] ;
+
+    lmt_registerglyph [
+        category = "test",
+        unicode  = 123,
+        code     = "draw TestGlyphLB ;",
+        width    = 10, % 1000
+        height   = 13, % 1300
+        depth    = 3   %  300
+    ] ;
+
+    lmt_registerglyph [
+        category = "test",
+        unicode  = 125,
+        code     = "draw TestGlyphRB ;",
+        width    = 15,
+        height   = 10,
+        depth    = 2
+    ] ;
+
+    lmt_registerglyph [
+        category = "test",
+        unicode  = "/",
+        code     = "draw TestGlyphFS ;",
+        width    = 15,
+        height   = 10,
+        depth    = 2
+    ] ;
+
+\stopMPcalculation
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We now define a font. We always use a font as starting point which has the
+advantage that we always get something reasonable when we test. Of course you can
+use this \type {mps} font feature with other fonts too.
+
+\startbuffer
+\definefontfeature[metapost][metapost=test] % or: mps={category=test}
+
+\definefont[MyFontA][Serif*metapost @ 10bp]
+\definefont[MyFontB][Serif*metapost @ 12bp]
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+These fonts can now be used:
+
+\startbuffer
+\MyFontA \dorecurse{20}{\{ /#1/ \} }\par
+\MyFontB \dorecurse{20}{\{ /#1/ \} }\par
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get some useless text but it demonstrates the idea:
+
+{\getbuffer}
+
+If you know a bit more about \CONTEXT\ you could think: so what, wasn't this
+already possible? Sure, there are various ways to achieve similar effects, but
+the method described here has a few advantages: it's relatively easy and we're
+talking about real fonts here. This means that using the shapes for characters is
+pretty efficient.
+
+A more realistic example is given next. It is a subset of what is available in
+the \CONTEXT\ core.
+
+\startbuffer
+\startMPcalculation{simplefun}
+
+    pen SymbolPen ; SymbolPen := pencircle scaled 1/4 ;
+
+    vardef SymbolBullet =
+        fill unitcircle scaled  3 shifted (1.5,1.5) withpen SymbolPen
+    enddef ;
+    vardef SymbolSquare =
+        draw unitsquare scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen
+    enddef ;
+    vardef SymbolBlackDiamond =
+        fillup unitdiamond scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen
+    enddef ;
+    vardef SymbolNotDef =
+        draw center unitcircle
+            scaled 3
+            shifted (1.5,1.5)
+            withpen SymbolPen scaled 4
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "symbols",
+        units    = 10,
+        usecolor = true,
+        width    = 6,
+        height   = 6,
+        depth    = 0,
+        code     = "SymbolNotDef ;",
+    ] ;
+
+    lmt_registerglyph [ category = "symbols", unicode = "0x2022",
+        code  = "SymbolBullet ;"
+    ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25A1",
+        code  = "SymbolSquare ;"
+    ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25C6",
+        code  = "SymbolBlackDiamond ;"
+    ] ;
+\stopMPcalculation
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We could use these symbols in for instance itemize symbols. You might notice the
+potential difference in bullets:
+
+\startbuffer
+\definefontfeature[metapost][metapost=symbols]
+
+\definefont[MyFont] [Serif*metapost sa 1]
+
+\startitemize[packed]
+    \startitem {\MyFont                 • □ ◆}\quad Regular rendering. \stopitem
+    \startitem {\MyFont\red             • □ ◆}\quad Rendering with color. \stopitem
+    \startitem {\MyFont\blue\showglyphs • □ ◆}\quad Idem but with boundingboxes shown. \stopitem
+\stopitemize
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+When blown up, these symbols look as follows:
+
+\startlinecorrection
+\scale[width=\textwidth]{%
+    {\MyFont                 •□◆}%
+    {\MyFont\red             •□◆}%
+    {\MyFont\blue\showglyphs •□◆}%
+}
+\stoplinecorrection
+
+You can use these tricks with basically any font, so also with math fonts.
+However, at least for now, you need to define these before the font gets loaded.
+
+\startbuffer
+\startMPcalculation{simplefun}
+
+    pen KindergartenPen ; KindergartenPen := pencircle scaled 1 ;
+
+    % 10 x 10 grid
+
+    vardef KindergartenEqual =
+        draw image
+            (
+                draw (2,6) -- (9,5) ;
+                draw (2,4) -- (8,3) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenEqual"
+    enddef ;
+    vardef KindergartenPlus =
+        draw image
+            (
+                draw (1,4) -- (9,5) ;
+                draw (4,1) -- (5,8) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenPlus"
+    enddef ;
+    vardef KindergartenMinus =
+        draw image
+            (
+                draw (1,5) -- (9,4) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenMinus"
+    enddef ;
+    vardef KindergartenTimes =
+        draw image
+            (
+                draw (2,1) -- (9,8) ;
+                draw (8,1) -- (2,8) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenTimes"
+    enddef ;
+    vardef KindergartenDivided =
+        draw image
+            (
+                draw (2,1) -- (8,9) ;
+            )
+            shifted (0,-2)
+            withpen KindergartenPen
+            withcolor "KindergartenDivided"
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "kindergarten",
+        units    = 10,
+      % usecolor = true,
+        width    = 10,
+        height   = 8,
+        depth    = 2,
+    ] ;
+
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x003D",
+        code = "KindergartenEqual"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x002B",
+        code = "KindergartenPlus"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x2212",
+        code = "KindergartenMinus"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x00D7",
+        code = "KindergartenTimes"
+    ] ;
+    lmt_registerglyph [ category = "kindergarten", unicode = "0x002F",
+        code = "KindergartenDivided"
+    ] ;
+
+\stopMPcalculation
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We also define the colors. If we leave \type {usecolor} to true, the text colors
+will be taken.
+
+\startbuffer[definitions]
+\definecolor[KindergartenEqual]  [darkgreen]
+\definecolor[KindergartenPlus]   [darkred]
+\definecolor[KindergartenMinus]  [darkred]
+\definecolor[KindergartenTimes]  [darkblue]
+\definecolor[KindergartenDivided][darkblue]
+
+\definefontfeature[mathextra][metapost=kindergarten]
+\stopbuffer
+
+\typebuffer[definitions][option=TEX] \getbuffer[definitions]
+
+Here is an example:
+
+\starttyping
+\switchtobodyfont[cambria]
+
+$ y = 2 \times x + a - b / 3 $
+\stoptyping
+
+Scaled up:
+
+\startlinecorrection
+    \switchtobodyfont[cambria]
+    \scale[width=\textwidth]{$ y = 2 \times x + a - b / 3 $}
+\stoplinecorrection
+
+Of course this won't work out well (yet) with extensible yet, due to related
+definitions for which we don't have an interface yet. There is one thing that you
+need to keep in mind: the fonts are flushed when the document gets finalized so
+you have to make sure that colors are defined at the level that they are still
+valid at that time. So best put color definitions like the above in the document
+style.
+
+This is an experimental interface anyway so we don't explain the parameters yet
+as there might be more of them.
+
+\stopchapter
+
+\stopcomponent

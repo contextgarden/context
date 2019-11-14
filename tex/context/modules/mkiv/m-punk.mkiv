@@ -63,8 +63,8 @@ local flusher = {
                 boundingbox = { 0, -d, w, h },
             }
             characters[n] = {
-                commands = { -- todo: xforms, should happen in backend
-                    { "special", "pdf: " .. concat(l," ") },
+                commands = { -- todo: type 3 in lmtx
+                    { "pdf", concat(l," ") },
                 }
             }
         else
