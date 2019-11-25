@@ -54,8 +54,9 @@ local findtail          = nuts.tail
 local nextdir           = nuts.traversers.dir
 local nextnode          = nuts.traversers.node
 
-local rangedimensions   = node.direct.rangedimensions
+local rangedimensions   = node.direct.rangedimensions -- nuts ?
 local effectiveglue     = nuts.effective_glue
+local start_of_par      = nuts.start_of_par
 
 local texget            = tex.get
 
@@ -423,21 +424,23 @@ local function reset_state()
  -- page_v_origin = 0 -- trueinch
 end
 
-local function dirstackentry(t,k)
-    local v = {
-        cur_h = 0,
-        cur_v = 0,
-        ref_h = 0,
-        ref_v = 0,
-    }
-    t[k] = v
-    return v
-end
+-- local function dirstackentry(t,k)
+--     local v = {
+--         cur_h = 0,
+--         cur_v = 0,
+--         ref_h = 0,
+--         ref_v = 0,
+--     }
+--     t[k] = v
+--     return v
+-- end
 
+----- dirstack = { }
 local dirstack = setmetatableindex(dirstackentry)
 
 local function reset_dir_stack()
-    dirstack = setmetatableindex(dirstackentry)
+ -- dirstack = setmetatableindex(dirstackentry)
+    dirstack = { }
 end
 
 local function flushlatelua(current,h,v)
@@ -802,38 +805,69 @@ local hlist_out, vlist_out  do
                 local dir, cancel = getdirection(current)
                 if cancel then
                     local ds = dirstack[current]
-                    ref_h = ds.ref_h
-                    ref_v = ds.ref_v
-                    cur_h = ds.cur_h
-                    cur_v = ds.cur_v
+                    if ds then
+                        ref_h = ds.ref_h
+                        ref_v = ds.ref_v
+                        cur_h = ds.cur_h
+                        cur_v = ds.cur_v
+                    else
+                        -- pardir
+                    end
                     pos_r = dir
                 else
-                    local enddir, width = calculate_width_to_enddir(this_box,current)
-                    local ds = dirstack[enddir]
-                    ds.cur_h = cur_h + width
-                    if dir ~= pos_r then
-                        cur_h = ds.cur_h
-                    end
-                    if enddir ~= current then
-                        local ds = dirstack[enddir]
-                        ds.cur_v = cur_v
-                        ds.ref_h = ref_h
-                        ds.ref_v = ref_v
-                        setdirection(enddir,pos_r)
-                    end
-                    if pos_r == righttoleft_code then
-                        pos_h = ref_h - cur_h
-                    else
-                        pos_h = ref_h + cur_h
-                    end
-                    pos_v = ref_v - cur_v
-                    -- synced
-                    ref_h = pos_h
-                    ref_v = pos_v
-                    cur_h = 0
-                    cur_v = 0
-                    pos_r = dir
-                end
+--                     local enddir, width = calculate_width_to_enddir(this_box,current)
+--                     local ds = dirstack[enddir]
+--                     ds.cur_h = cur_h + width
+--                     if dir ~= pos_r then
+--                         cur_h = ds.cur_h
+--                     end
+--                     if enddir ~= current then
+--                      -- local ds = dirstack[enddir]
+--                         ds.cur_v = cur_v
+--                         ds.ref_h = ref_h
+--                         ds.ref_v = ref_v
+--                         setdirection(enddir,pos_r)
+--                     end
+--                     if pos_r == righttoleft_code then
+--                         pos_h = ref_h - cur_h
+--                     else
+--                         pos_h = ref_h + cur_h
+--                     end
+--                     pos_v = ref_v - cur_v
+--                     -- synced
+--                     ref_h = pos_h
+--                     ref_v = pos_v
+--                     cur_h = 0
+--                     cur_v = 0
+--                     pos_r = dir
+--                 end
+local enddir, width = calculate_width_to_enddir(this_box,current)
+local new_h = cur_h + width
+if dir ~= pos_r then
+    cur_h = new_h
+end
+if enddir ~= current then
+    dirstack[enddir] = {
+        cur_h = new_h,
+        cur_v = cur_v,
+        ref_h = ref_h,
+        ref_v = ref_v,
+    }
+    setdirection(enddir,pos_r)
+end
+if pos_r == righttoleft_code then
+    pos_h = ref_h - cur_h
+else
+    pos_h = ref_h + cur_h
+end
+pos_v = ref_v - cur_v
+-- synced
+ref_h = pos_h
+ref_v = pos_v
+cur_h = 0
+cur_v = 0
+pos_r = dir
+end
             elseif id == whatsit_code then
                 if subtype == literalwhatsit_code then
                     flushliteral(current,pos_h,pos_v)
@@ -857,6 +891,11 @@ local hlist_out, vlist_out  do
                 end
             elseif id == marginkern_code then
                 cur_h = cur_h + getkern(current)
+--             elseif id == localpar_code and start_of_par(current) then
+--                 local pardir = getdirection(current) or lefttoright_code
+--                 if pardir == righttoleft_code then
+--                 end
+--             end
             end
             -- There is no gain in skipping over this when we have zero progression
             -- and such.

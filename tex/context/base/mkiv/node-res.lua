@@ -338,7 +338,7 @@ end
 function nutpool.textdir(dir) -- obsolete !
     local t = copy_nut(textdir)
     if dir then
-        setdir(t,dir)
+        setdirection(t,dir)
     end
     return t
 end

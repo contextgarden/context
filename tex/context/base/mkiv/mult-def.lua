@@ -9629,6 +9629,10 @@ return {
    ["pe"]="شماره‌خود",
    ["ro"]="numarpropriu",
   },
+  ["packcriterium"]={
+   ["en"]="packcriterium",
+   ["nl"]="opelkaarcriterium",
+  },
   ["page"]={
    ["cs"]="stranka",
    ["de"]="seite",

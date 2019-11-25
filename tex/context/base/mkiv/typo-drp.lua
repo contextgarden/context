@@ -62,6 +62,7 @@ local new_kern          = nodepool.kern
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 local remove_node       = nuts.remove
+local start_of_par      = nuts.start_of_par
 
 local nextnode          = nuts.traversers.node
 local nextglyph         = nuts.traversers.glyph
@@ -333,7 +334,7 @@ end
 -- we can count ... when all done, we can disable ...
 
 function initials.handler(head)
-    if getid(head) == localpar_code then
+    if getid(head) == localpar_code and start_of_par(head) then
         local settings = getprop(head,a_initial)
         if settings then
             disableaction("processors","typesetters.initials.handler")

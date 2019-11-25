@@ -1041,15 +1041,16 @@ end
 
 do
 
-    local mprint      = mp.print
-    local fprint      = mp.fprint
-    local qprint      = mp.quoted
-    local getwhd      = job.positions.whd
-    local getxy       = job.positions.xy
-    local getposition = job.positions.position
-    local getpage     = job.positions.page
-    local getregion   = job.positions.region
-    local getmacro    = tokens.getters.macro
+    local mprint       = mp.print
+    local fprint       = mp.fprint
+    local qprint       = mp.quoted
+    local jobpositions = job.positions
+    local getwhd       = jobpositions.whd
+    local getxy        = jobpositions.xy
+    local getposition  = jobpositions.position
+    local getpage      = jobpositions.page
+    local getregion    = jobpositions.region
+    local getmacro     = tokens.getters.macro
 
     function mp.positionpath(name)
         local w, h, d = getwhd(name)

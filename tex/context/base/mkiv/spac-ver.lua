@@ -153,6 +153,7 @@ local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
 local hpack_node          = nuts.hpack
 local vpack_node          = nuts.vpack
+local start_of_par        = nuts.start_of_par
 
 local nextnode            = nuts.traversers.node
 local nexthlist           = nuts.traversers.hlist
@@ -291,7 +292,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and getsubtype(list) == 0 then
+        if id == localpar_code and start_of_par(list) then
             list = getnext(list)
             if not next then
                 return nil
@@ -327,7 +328,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and getsubtype(list) == 0 then
+        if id == localpar_code and start_of_par(list) then
             list = getnext(list)
             if not list then
                 return false
@@ -2063,6 +2064,7 @@ end
 do
 
     local outer   = texnest[0]
+
     local enabled = true
     local trace   = false
     local report  = logs.reporter("vspacing")

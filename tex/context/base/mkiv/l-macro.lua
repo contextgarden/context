@@ -273,7 +273,7 @@ macros.loaded = loaded
 
 function required(name,trace)
     local filename = file.addsuffix(name,"lua")
-    local fullname = resolvers and resolvers.find_file(filename) or filename
+    local fullname = resolvers and resolvers.findfile(filename) or filename
     if not fullname or fullname == "" then
         return false
     end

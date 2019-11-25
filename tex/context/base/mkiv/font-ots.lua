@@ -213,6 +213,7 @@ local find_node_tail     = nuts.tail
 local flush_node_list    = nuts.flush_list
 local flush_node         = nuts.flush_node
 local end_of_math        = nuts.end_of_math
+local start_of_par       = nuts.start_of_par
 
 local setmetatable       = setmetatable
 local setmetatableindex  = table.setmetatableindex
@@ -3804,7 +3805,7 @@ do
 
         local initialrl = 0
 
-        if getid(head) == localpar_code and getsubtype(head) == 0 then
+        if getid(head) == localpar_code and start_of_par(head) then
             initialrl = pardirstate(head)
         elseif direction == 1 or direction == "TRT" then
             initialrl = -1
@@ -3958,7 +3959,7 @@ do
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                             start = getnext(start)
-                     -- elseif id == localpar_code then
+                     -- elseif id == localpar_code and start_of_par(start) then
                      --     rlparmode, rlmode = pardirstate(start)
                      --     start = getnext(start)
                         else
@@ -4042,7 +4043,7 @@ do
                         elseif id == dir_code then
                             topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                             start = getnext(start)
-                     -- elseif id == localpar_code then
+                     -- elseif id == localpar_code and start_of_par(start) then
                      --     rlparmode, rlmode = pardirstate(start)
                      --     start = getnext(start)
                         else
@@ -4153,7 +4154,7 @@ do
             elseif id == dir_code then
                 topstack, rlmode = txtdirstate(start,dirstack,topstack,rlparmode)
                 start = getnext(start)
-         -- elseif id == localpar_code then
+         -- elseif id == localpar_code and start_of_par(start) then
          --     rlparmode, rlmode = pardirstate(start)
          --     start = getnext(start)
             else

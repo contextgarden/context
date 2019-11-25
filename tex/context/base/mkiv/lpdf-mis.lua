@@ -332,7 +332,7 @@ local plusspecs = {
         direction = "L2R",
     },
     [v_righttoleft] ={
-        direction = "R2R",
+        direction = "R2L",
     },
     [v_nomenubar] ={
         nomenubar = true,

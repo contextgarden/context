@@ -1296,9 +1296,9 @@ do
 
 end
 
--- inspect(readers.loadtfmvf(resolvers.find_file("mi-iwonari.tfm")))
--- inspect(readers.loadtfm(resolvers.find_file("texnansi-palatinonova-regular.tfm")))
--- inspect(readers.loadtfm(resolvers.find_file("cmex10.tfm")))
--- inspect(readers.loadtfm(resolvers.find_file("cmr10.tfm")))
+-- inspect(readers.loadtfmvf(resolvers.findfile("mi-iwonari.tfm")))
+-- inspect(readers.loadtfm(resolvers.findfile("texnansi-palatinonova-regular.tfm")))
+-- inspect(readers.loadtfm(resolvers.findfile("cmex10.tfm")))
+-- inspect(readers.loadtfm(resolvers.findfile("cmr10.tfm")))
 -- local t = readers.loadtfmvf("texnansi-lte50019.tfm")
 -- inspect(t)

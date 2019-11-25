@@ -1363,6 +1363,21 @@ local wrapup, registerpage  do
         end
     end
 
+    -- We can have this, but then via codeinjections etc. Later.
+
+ -- function structures.pages.swapthem()
+ --     local n = lpdf.getnofpages()
+ --     local t = { }
+ --     for i=1,n do
+ --         t[i] = i
+ --     end
+ --     for i=2,math.odd(n) and n or (n-1),2 do
+ --         t[i]   = i+1
+ --         t[i+1] = i
+ --     end
+ --     lpdf.setpageorder(t)
+ -- end
+
     wrapup = function(driver)
 
         -- hook (to reshuffle pages)

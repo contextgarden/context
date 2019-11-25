@@ -70,16 +70,18 @@
         draw d withcolor "ColorTwo" withpen pencircle scaled (o - 5) ;
         draw l withcolor white      withpen pencircle scaled (o / 5) ;
         draw l withcolor "ColorTwo" withpen pencircle scaled (o /10) ;
-        draw thelabel.ulft(t xsized .5PaperWidth,lrcorner Page shifted - (PaperWidth/20,-PaperWidth/40)) ;
+        draw thelabel.ulft((t xsized .5PaperWidth),lrcorner Page shifted - (PaperWidth/20,-PaperWidth/40)) ;
     StopPage ;
 \stopMPpage
 
-
 \startsubject[title={Introduction}]
 
-There is not really a long term roadmap for development. One reason is that there is already
-a lot available. When we started with \LUATEX, the \CONTEXT\ code was mostly rewritten,
-and that process is more of less finished. Of course there is always work left.
+There is not really a long term roadmap for development. One reason is that there
+is already a lot available. When we started with \LUATEX, the \CONTEXT\ code was
+mostly rewritten from \MKII\ to \MKIV, and that process is more of less finished.
+Of course there is always work left. We have moved on to \LUAMETATEX\ and \LMTX\
+as follow up on \MKIV. Deep down some things might (and will) change but the user
+interface will stay the same (as usual).
 
 This file is not a complete overview of our plans but users can at least get an
 idea of what we're working on and what is coming. Feel free to submit
@@ -93,35 +95,32 @@ Hasselt NL
 
 \stopsubject
 
-\startsubject[title={On the agenda for \LUATEX}]
+\startsubject[title={On the agenda for \LUAMETATEX}]
+
+The agenda for \LUATEX\ is basically empty as this program is (supposed to be)
+frozen, but for \LUAMETATEX\ we can still consider improvements. In fact, there
+are quite some changes between the engines already (internally). Items that
+concern \LUATEX\ have been removed from the agenda but some improvements in
+\LUAMETATEX\ might trickle back.
 
 \startitemize
     \startitem
-        cleanup passive nodes
+        cleanup passive nodes in the par builder
     \stopitem
     \startitem
-        optimize some callback resolution (more direct)
+        optimize some callback resolution (more direct) but there is not that
+        much to gain there
     \stopitem
     \startitem
-        add \type {--output-filename} for \PDF\ filename
+        remove local par in head of line when done with linebreak and maybe also
+        ensure leftskip and rightskip
     \stopitem
     \startitem
-        more consistent \type {lang_variables} and \type {tex_language} in \type
-        {texlang.w} and also store the \type {*mins}
+        only return nil in lua helpers when we expect multiple calls in in one
+        line
     \stopitem
     \startitem
-        remove local par in head of line when done with linebreak
-    \stopitem
-    \startitem
-        check why leftskip doesn't always inherit attributes (maybe dir notes don't have them)
-        (also check redundant \type {delete_attribute_ref} after \type {new_glue})
-    \stopitem
-    \startitem
-        only return nil when we expect multiple calls in in one line
-    \stopitem
-    \startitem
-        pdf injection in virtual characters (currently qQ interferes with font switch
-        flushing) so a pdf page hack is needed
+        experiment a bit more with the new protrusion code
     \stopitem
 \stopitemize
 
@@ -140,7 +139,7 @@ Hasselt NL
         add flag to font for math engine
     \stopitem
     \startitem
-        get rid of components
+        get rid of components in glyph nodes
     \stopitem
     \startitem
         play with box attributes
@@ -150,14 +149,23 @@ Hasselt NL
         styles, properties)
     \stopitem
     \startitem
+        freeze actions and tasks (by name or function), maybe a register
+        function that does that so no one can overload built-in features
+    \startitem
         redo some of the spacing (adapt to improvements in engine)
     \stopitem
     \startitem
-        reorganize position data (more subtables)
+        more node and code injections
+    \stopitem
+    \startitem
+        maybe reorganize position data (more subtables)
     \stopitem
     \startitem
         use \type {\matheqnogapstep}, \type {\Ustack}, \type {\mathscriptsmode},
         \type {\mathdisplayskipmode} and other new math primitives
+    \stopitem
+    \startitem
+        cleanup some lua helpers (io.exists vs lfs.isfile)
     \stopitem
 \stopitemize
 

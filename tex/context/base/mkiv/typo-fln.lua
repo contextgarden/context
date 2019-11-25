@@ -71,6 +71,7 @@ local insert_node_after  = nuts.insert_after
 local remove_node        = nuts.remove
 local getdimensions      = nuts.dimensions
 local hpack_node_list    = nuts.hpack
+local start_of_par       = nuts.start_of_par
 
 local nodepool           = nuts.pool
 local newpenalty         = nodepool.penalty
@@ -369,7 +370,7 @@ end
 actions[v_default] = actions[v_line]
 
 function firstlines.handler(head)
-    if getid(head) == localpar_code then
+    if getid(head) == localpar_code and start_of_par(head) then
         local settings = getprop(head,a_firstline)
         if settings then
             disableaction("processors","typesetters.firstlines.handler")

@@ -166,6 +166,8 @@
 
 \def\layoutdistance#1#2{\ifdim\zeropoint<#1#2\else\zeropoint\fi}
 
+% \newconditional\reverselayout
+
 \def\page_layouts_set_dimensions
   {\global\naturalmarginwidth        \layoutparameter\c!margin
    \global\naturaledgewidth          \layoutparameter\c!edge
@@ -194,8 +196,7 @@
    \global\headerdistance            \layoutdistance\headerheight    \naturalheaderdistance
    \global\textdistance                                              \naturaltextdistance
    \global\footerdistance            \layoutdistance\footerheight    \naturalfooterdistance
-   \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance
-   }
+   \global\bottomdistance            \layoutdistance\bottomheight    \naturalbottomdistance}
 
 \def\page_layouts_set_distances % local in \setreducedvsize
   {\headerdistance\layoutdistance\headerheight\naturalheaderdistance
@@ -729,12 +730,28 @@
      +\rightedgetotal
    \relax
    % \page_layouts_check_next % here ?
+   \page_layouts_check_direction
    \page_layouts_calculate_extras
    \page_target_check_centering
    \calculatehsizes
    \calculatevsizes
    \page_layouts_check_pseudo_columns
    \page_backgrounds_recalculate}
+
+\def\page_layouts_check_direction
+  {\edef\p_direction{\layoutparameter\c!direction}%
+   \ifx\p_direction\v!reverse
+     \globalswapdimens\naturalleftedgedistance  \naturalrightedgedistance
+     \globalswapdimens\naturalleftmargindistance\naturalrightmargindistance
+     \globalswapdimens\leftedgedistance         \rightedgedistance
+     \globalswapdimens\leftmargindistance       \rightmargindistance
+     \globalswapdimens\leftmarginwidth          \rightmarginwidth
+     \globalswapdimens\leftedgewidth            \rightedgewidth
+     \globalswapdimens\backspace                \cutspace
+     \expandafter\setsystemmode
+   \else
+     \expandafter\resetsystemmode
+   \fi{reverselayout}}
 
 \def\page_layouts_check_pseudo_columns
   {\global\layoutcolumns\layoutparameter\c!columns
@@ -1408,6 +1425,7 @@
                       \c!dx=\zeropoint,
                       \c!dy=\zeropoint,
                     \c!grid=\v!no,
+               \c!direction=\v!normal,
                   \c!preset=,
                   \c!setups=\systemsetupsprefix\s!default,
               \c!clipoffset=\zeropoint,

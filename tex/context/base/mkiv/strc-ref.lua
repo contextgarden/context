@@ -427,7 +427,7 @@ end
 
 local function synchronizepage(reference) -- non public helper
     reference.realpage = texgetcount("realpageno")
-    if jobpositions.used then
+    if jobpositions.used() then
         reference.x, reference.y = getpos()
     end
 end

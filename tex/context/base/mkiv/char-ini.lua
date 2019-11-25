@@ -1526,7 +1526,7 @@ do
     )^1)
 
     local function load()
-        local name = resolvers.find_file("char-emj.lua")
+        local name = resolvers.findfile("char-emj.lua")
         local data = name and name ~= "" and dofile(name) or { }
         local hash = { }
         for d, c in next, data do

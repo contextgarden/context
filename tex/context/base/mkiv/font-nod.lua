@@ -77,6 +77,7 @@ local copy_node_list   = nuts.copy_list
 local hpack_node_list  = nuts.hpack
 local flush_node_list  = nuts.flush_list
 local protect_glyphs   = nuts.protect_glyphs
+local start_of_par     = nuts.start_of_par
 
 local nextnode         = nuts.traversers.node
 local nextglyph        = nuts.traversers.glyph
@@ -395,7 +396,7 @@ function step_tracers.codes(i,command,space)
         local char, id = isglyph(c)
         if char then
             showchar(char,id)
-        elseif id == dir_code or (id == localpar_code and getsubtype(c) == 0) then
+        elseif id == dir_code or (id == localpar_code and start_of_par(c)) then
             context("[%s]",getdirection(c) or "?")
         elseif id == disc_code then
             local pre, post, replace = getdisc(c)

@@ -9,8 +9,9 @@ if not modules then modules = { } end modules ['trac-set'] = { -- might become u
 -- maybe this should be util-set.lua
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
+local print = print
 local concat, sortedhash = table.concat, table.sortedhash
-local format, find, lower, gsub, topattern = string.format, string.find, string.lower, string.gsub, string.topattern
+local formatters, find, lower, gsub, topattern = string.formatters, string.find, string.lower, string.gsub, string.topattern
 local is_boolean = string.is_boolean
 local settings_to_hash = utilities.parsers.settings_to_hash
 local allocate = utilities.storage.allocate
@@ -254,8 +255,8 @@ end
 
 local enable, disable, register, list, show = setters.enable, setters.disable, setters.register, setters.list, setters.show
 
-function setters.report(setter,...)
-    print(format("%-15s : %s\n",setter.name,format(...)))
+function setters.report(setter,fmt,...)
+    print(formatters["%-15s : %s\n"](setter.name,formatters[fmt](...)))
 end
 
 local function default(setter,name)

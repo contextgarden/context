@@ -2947,6 +2947,8 @@ local collectresults  do -- too many locals otherwise
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
 
+    local start_of_par     = nuts.start_of_par
+
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
 
@@ -3321,7 +3323,7 @@ local collectresults  do -- too many locals otherwise
                     last = nil
                     currentparagraph = nil
                 end
-            elseif not localparagraph and id == localpar_code and subtype == 0 then
+            elseif not localparagraph and id == localpar_code and start_of_par(n) then
                 localparagraph = getattr(n,a_taggedpar)
             end
             p   = n
@@ -3962,7 +3964,7 @@ local htmltemplate = [[
 
         end
 
-        local examplefilename = resolvers.find_file("export-example.css")
+        local examplefilename = resolvers.findfile("export-example.css")
         if examplefilename then
             local data = io.loaddata(examplefilename)
             if not data or data == "" then

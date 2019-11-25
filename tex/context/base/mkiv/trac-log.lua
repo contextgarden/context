@@ -845,38 +845,6 @@ local nesting      = 0
 local verbose      = false
 local hasscheme    = url.hasscheme
 
-function logs.show_open(name)
- -- if hasscheme(name) ~= "virtual" then
- --     if verbose then
- --         nesting = nesting + 1
- --         report_files("level %s, opening %s",nesting,name)
- --     else
- --         write(formatters["(%s"](name)) -- tex adds a space
- --     end
- -- end
-end
-
-function logs.show_close(name)
- -- if hasscheme(name) ~= "virtual" then
- --     if verbose then
- --         report_files("level %s, closing %s",nesting,name)
- --         nesting = nesting - 1
- --     else
- --         write(")") -- tex adds a space
- --     end
- -- end
-end
-
-function logs.show_load(name)
- -- if hasscheme(name) ~= "virtual" then
- --     if verbose then
- --         report_files("level %s, loading %s",nesting+1,name)
- --     else
- --         write(formatters["(%s)"](name))
- --     end
- -- end
-end
-
 -- there may be scripts out there using this:
 
 local simple = logs.reporter("comment")

@@ -121,18 +121,17 @@ local f_region    = formatters["region:%s"]
 local f_tag_three = formatters["%s:%s:%s"]
 local f_tag_two   = formatters["%s:%s"]
 
-jobpositions.used = false
-
 local nofregular  = 0
 local nofspecial  = 0
 local splitter    = lpeg.splitat(":",true)
 
+local pagedata   = { }
+local columndata = setmetatableindex("table") -- per page
+local freedata   = setmetatableindex("table") -- per page
+
 local function initializer()
     tobesaved = jobpositions.tobesaved
     collected = jobpositions.collected
-    local pagedata   = { }
-    local columndata = setmetatableindex("table")
-    local freedata   = setmetatableindex("table")
     for tag, data in next, collected do
         local prefix, rest = lpegmatch(splitter,tag)
         if prefix == "p" then
@@ -174,102 +173,23 @@ local function initializer()
             end
         end
     end
-    jobpositions.page   = pagedata
-    jobpositions.column = columndata
-    jobpositions.free   = freedata
-    jobpositions.used   = next(collected)
+    jobpositions.pagedata   = pagedata
 end
 
--- -- we can gain a little when we group positions but then we still have to
--- -- deal with regions and cells so we either end up with lots of extra small
--- -- tables pointing to them and/or assembling/disassembling so in the end
--- -- it makes no sense to do it (now) and still have such a mix
+function jobpositions.used()
+    return next(collected) -- we can safe it
+end
+
+function jobpositions.getfree(page)
+    return freedata[page]
+end
+
+-- we can gain a little when we group positions but then we still have to
+-- deal with regions and cells so we either end up with lots of extra small
+-- tables pointing to them and/or assembling/disassembling so in the end
+-- it makes no sense to do it (now) and still have such a mix
 --
--- local splitter = lpeg.splitat(":",true)
---
--- local function setpos(t,k,v)
---     local class, tag = lpegmatch(splitter,k)
---     if tag then
---         local c = rawget(t,class)
---         if c then
---             c[tonumber(tag) or tag] = v
---         else
---             rawset(t,class,{ [tonumber(tag) or tag] = v })
---         end
---     else
---         t.default[tonumber(k) or k] = v
---     end
--- end
---
--- local function getpos(t,k)
---     local class, tag = lpegmatch(splitter,k)
---     if tag then
---         local c = rawget(t,class)
---         if c then
---             return c[tonumber(tag) or tag]
---         end
---     else
---         return c.default[tonumber(k) or k]
---     end
--- end
---
--- tobesaved.default = tobesaved.default or { }
--- setmetatablenewindex(tobesaved,setpos)
--- setmetatableindex   (tobesaved,getpos)
---
--- local function initializer()
---     tobesaved = jobpositions.tobesaved
---     collected = jobpositions.collected
---
---     tobesaved.default = tobesaved.default or { }
---     collected.default = collected.default or { }
---
---     setmetatablenewindex(tobesaved,setpos)
---     setmetatableindex   (collected,getpos)
---     setmetatableindex   (tobesaved,getpos)
---
---     for class, list in next, collected do
---         for tag, data in next, list do
---             setmetatable(data,default)
---             nofregular = nofregular + 1
---         end
---     end
---
---     local pagedata = collected.page or { }
---     local freedata = setmetatableindex("table")
---
---     for tag, data in next, collected.free or { } do
---         local t = freedata[data.p or 0]
---         t[#t+1] = data
---     end
---
---     local pages = structures.pages.collected
---     if pages then
---         local last = nil
---         for p=1,#pages do
---             local data = pagedata[p]
---             local free = freedata[p]
---             if free then
---                 sort(free,function(a,b) return b.y < a.y end) -- order matters !
---             end
---             if data then
---                 last      = data
---                 last.free = free
---             elseif last then
---                 local t = setmetatableindex({ free = free, p = p },last)
---                 if not pagedata[p] then
---                     pagedata[p] = t
---                 end
---             end
---         end
---     end
---     jobpositions.page = pagedata
---     jobpositions.free = freedata
---     jobpositions.used = next(collected)
--- end
---
--- function jobpositions.getcollected(class,tag) if tag then return collected[class..tag] else return collected[class] end end
--- function jobpositions.gettobesaved(class,tag) if tag then return tobesaved[class..tag] else return tobesaved[class] end end
+-- proof of concept code removed ... see archive
 
 local function finalizer()
     -- We make the (possible extensive) shape lists sparse working
@@ -818,12 +738,22 @@ function jobpositions.replace(id,p,x,y,w,h,d)
     collected[id] = { p = p, x = x, y = y, w = w, h = h, d = d } -- c g
 end
 
-function jobpositions.page(id)
+local function getpage(id)
     local jpi = collected[id]
     return jpi and jpi.p
 end
 
-function jobpositions.region(id)
+local function getcolumn(id)
+    local jpi = collected[id]
+    return jpi and jpi.c or false
+end
+
+local function getparagraph(id)
+    local jpi = collected[id]
+    return jpi and jpi.n
+end
+
+local function getregion(id)
     local jpi = collected[id]
     if jpi then
         local r = jpi.r
@@ -838,20 +768,15 @@ function jobpositions.region(id)
     return false
 end
 
-function jobpositions.column(id)
-    local jpi = collected[id]
-    return jpi and jpi.c or false
-end
+jobpositions.page      = getpage
+jobpositions.column    = getcolumn
+jobpositions.paragraph = getparagraph
+jobpositions.region    = getregion
 
-function jobpositions.paragraph(id)
-    local jpi = collected[id]
-    return jpi and jpi.n
-end
-
-jobpositions.p = jobpositions.page
-jobpositions.r = jobpositions.region
-jobpositions.c = jobpositions.column
-jobpositions.n = jobpositions.paragraph
+jobpositions.p = getpage      -- not used, kind of obsolete
+jobpositions.c = getcolumn    -- idem
+jobpositions.n = getparagraph -- idem
+jobpositions.r = getregion    -- idem
 
 function jobpositions.x(id)
     local jpi = collected[id]
@@ -1046,7 +971,7 @@ local function onsamepage(list,page)
 end
 
 local function columnofpos(realpage,xposition)
-    local p = job.positions.column[realpage]
+    local p = columndata[realpage]
     if p then
         for i=1,#p do
             local c = p[i]
@@ -1318,7 +1243,7 @@ scanners.MPposset = function() -- name (special helper, used in backgrounds)
     local b = f_b_tag(name)
     local e = f_e_tag(name)
     local w = f_w_tag(name)
-    local p = f_p_tag(jobpositions.n(b))
+    local p = f_p_tag(getparagraph(b))
     MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
 end
 

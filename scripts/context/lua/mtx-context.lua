@@ -1596,6 +1596,17 @@ end
 
 do
 
+    local htmlerrorpage = getargument("htmlerrorpage")
+    if htmlerrorpage == "scite" then
+        directives.enable("system.showerror=scite")
+    elseif htmlerrorpage then
+        directives.enable("system.showerror")
+    end
+
+end
+
+do
+
     local silent = getargument("silent")
     if type(silent) == "string" then
         directives.enable(format("logs.blocked={%s}",silent))

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/14/19 17:07:21
+-- merge date  : 11/25/19 17:28:15
 
 do -- begin closure to overcome local limits and interference
 
@@ -4702,6 +4702,7 @@ if not modules then modules={} end modules ['data-con']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
+local setmetatable=setmetatable
 local format,lower,gsub=string.format,string.lower,string.gsub
 local trace_cache=false  trackers.register("resolvers.cache",function(v) trace_cache=v end)
 local trace_containers=false  trackers.register("resolvers.containers",function(v) trace_containers=v end)
@@ -4709,16 +4710,21 @@ local trace_storage=false  trackers.register("resolvers.storage",function(v) tra
 containers=containers or {}
 local containers=containers
 containers.usecache=true
+local getwritablepath=caches.getwritablepath
+local getreadablepaths=caches.getreadablepaths
+local cacheiswritable=caches.is_writable
+local loaddatafromcache=caches.loaddata
+local savedataincache=caches.savedata
 local report_containers=logs.reporter("resolvers","containers")
 local allocated={}
 local mt={
  __index=function(t,k)
   if k=="writable" then
-   local writable=caches.getwritablepath(t.category,t.subcategory) or { "." }
+   local writable=getwritablepath(t.category,t.subcategory) or { "." }
    t.writable=writable
    return writable
   elseif k=="readables" then
-   local readables=caches.getreadablepaths(t.category,t.subcategory) or { "." }
+   local readables=getreadablepaths(t.category,t.subcategory) or { "." }
    t.readables=readables
    return readables
   end
@@ -4749,7 +4755,7 @@ function containers.define(category,subcategory,version,enabled)
  end
 end
 function containers.is_usable(container,name)
- return container.enabled and caches and caches.is_writable(container.writable,name)
+ return container.enabled and caches and cacheiswritable(container.writable,name)
 end
 function containers.is_valid(container,name)
  if name and name~="" then
@@ -4763,7 +4769,7 @@ function containers.read(container,name)
  local storage=container.storage
  local stored=storage[name]
  if not stored and container.enabled and caches and containers.usecache then
-  stored=caches.loaddata(container.readables,name,container.writable)
+  stored=loaddatafromcache(container.readables,name,container.writable)
   if stored and stored.cache_version==container.version then
    if trace_cache or trace_containers then
     report_containers("action %a, category %a, name %a","load",container.subcategory,name)
@@ -4779,17 +4785,20 @@ function containers.read(container,name)
  end
  return stored
 end
-function containers.write(container,name,data)
+function containers.write(container,name,data,fast)
  if data then
   data.cache_version=container.version
   if container.enabled and caches then
-   local unique,shared=data.unique,data.shared
-   data.unique,data.shared=nil,nil
-   caches.savedata(container.writable,name,data)
+   local unique=data.unique
+   local shared=data.shared
+   data.unique=nil
+   data.shared=nil
+   savedataincache(container.writable,name,data,fast)
    if trace_cache or trace_containers then
     report_containers("action %a, category %a, name %a","save",container.subcategory,name)
    end
-   data.unique,data.shared=unique,shared
+   data.unique=unique
+   data.shared=shared
   end
   if trace_cache or trace_containers then
    report_containers("action %a, category %a, name %a","store",container.subcategory,name)
@@ -5022,6 +5031,13 @@ if not nuts.setreplace then
  end
  function nuts.setreplace(n,h)
   setfield(n,"replace",h)
+ end
+end
+do
+ local getsubtype=nuts.getsubtype
+ function nuts.start_of_par(n)
+  local s=getsubtype(n)
+  return s==0 or s==2 
  end
 end
 
@@ -26281,6 +26297,7 @@ local find_node_tail=nuts.tail
 local flush_node_list=nuts.flush_list
 local flush_node=nuts.flush_node
 local end_of_math=nuts.end_of_math
+local start_of_par=nuts.start_of_par
 local setmetatable=setmetatable
 local setmetatableindex=table.setmetatableindex
 local nextnode=nuts.traversers.node
@@ -29251,7 +29268,7 @@ do
    checkstep(head)
   end
   local initialrl=0
-  if getid(head)==localpar_code and getsubtype(head)==0 then
+  if getid(head)==localpar_code and start_of_par(head) then
    initialrl=pardirstate(head)
   elseif direction==1 or direction=="TRT" then
    initialrl=-1

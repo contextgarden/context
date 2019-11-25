@@ -1065,6 +1065,21 @@
 \def\referencecolumnnumber
   {\clf_referencecolumn}
 
+% So we need : instead of \ but that's only lmtx:
+%
+% \def\referencecolumnnumber
+%   {\numexpr\dimexpr\clf_referenceposx-\cutspace\relax:\dimexpr\makeupwidth/\nofcolumns\relax+\plusone\relax}
+%
+% Tacos patch of the older one, kept here as illustration
+%
+% \def\referencecolumnnumber
+%   {\numexpr
+%       \dimexpr\clf_referenceposx-\cutspace-\makeupwidth/(2*\nofcolumns)\relax
+%      /\dimexpr                             \makeupwidth/   \nofcolumns \relax
+%      +\plusone
+%    \relax}
+
+
 \unexpanded\def\tracedpagestate
   {{\blue\tttf(\ifcase\referencepagedetail unknown\or same\or previous\or next\or above\or below\else unknown\fi)}}
 

@@ -191,6 +191,9 @@
             <cd:parameter name="grid">
                 <cd:inherit name="definegridsnapping"/>
             </cd:parameter>
+            <cd:parameter name="packcriterium">
+                <cd:constant type="cd:number"/>
+            </cd:parameter>
              <cd:inherit name="setupcounter"/>
         </cd:assignments>
     </cd:define>

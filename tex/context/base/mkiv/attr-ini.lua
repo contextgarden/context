@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 }
 
 local next, type = next, type
+local osexit = os.exit
 
 --[[ldx--
 <p>We start with a registration system for atributes so that we can use the
@@ -76,7 +77,7 @@ function attributes.private(name) -- at the lua end (hidden from user)
             sharedstorage.attributes_last_private = last
         else
             report_attribute("no more room for private attributes")
-            os.exit()
+            osexit()
         end
         number = last
         numbers[name], names[number], list[number] = number, name, { }
@@ -93,7 +94,7 @@ function attributes.public(name) -- at the lua end (hidden from user)
             sharedstorage.attributes_last_public = last
         else
             report_attribute("no more room for public attributes")
-            os.exit()
+            osexit()
         end
         number = last
         numbers[name], names[number], list[number] = number, name, { }

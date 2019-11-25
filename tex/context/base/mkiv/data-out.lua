@@ -6,13 +6,12 @@ if not modules then modules = { } end modules ['data-out'] = {
     license   = "see context related readme files"
 }
 
-local allocate  = utilities.storage.allocate
-local resolvers = resolvers
+local allocate       = utilities.storage.allocate
 
+local resolvers      = resolvers
 local registermethod = resolvers.registermethod
 
-local savers = allocate { helpers = { } }
-
-resolvers.savers = savers
+local savers         = allocate { helpers = { } }
+resolvers.savers     = savers
 
 registermethod("savers", savers, "uri")

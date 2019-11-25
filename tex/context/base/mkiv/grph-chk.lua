@@ -15,6 +15,7 @@ local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_bitmap     = logs.reporter("graphics","bitmap")
 
 local checkers          = figures.checkers
+local genericchecker    = checkers.generic
 
 local placeholder       = graphics.bitmaps.placeholder
 
@@ -26,6 +27,7 @@ local placeholder       = graphics.bitmaps.placeholder
 -- The method implemented below has the same performance as the hard coded inclusion
 -- but opens up some possibilities (like merging fonts) that I will look into some
 -- day.
+
 
 function checkers.pdf(data)
     local request = data.request
@@ -96,7 +98,7 @@ function checkers.pdf(data)
             end
         end
     end
-    return checkers.generic(data)
+    return genericchecker(data)
 end
 
 local function wrappedidentify(identify,filename)
@@ -163,7 +165,7 @@ function checkers.jpg(data)
             end
         end
     end
-    return checkers.generic(data)
+    return genericchecker(data)
 end
 
 function checkers.jp2(data) -- idem as jpg
@@ -199,7 +201,7 @@ function checkers.jp2(data) -- idem as jpg
             end
         end
     end
-    return checkers.generic(data)
+    return genericchecker(data)
 end
 
 function checkers.png(data) -- same as jpg (for now)
@@ -245,5 +247,5 @@ function checkers.png(data) -- same as jpg (for now)
             end
         end
     end
-    return checkers.generic(data)
+    return genericchecker(data)
 end

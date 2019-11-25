@@ -74,7 +74,10 @@
                     <short>strip Lua code (only meant for production where no errors are expected)</short>
                 </flag>
                 <flag name="errors" value="list">
-                    <short>show errors at the end of a run, quit when in list (also when <ref name="--silent"/>)</short>
+                    <short>show errors at the end of a run, quit when in list (also when <ref name="silent"/>)</short>
+                </flag>
+                <flag name="htmlerrorpage">
+                    <short>generate html error page instead (optional: =scite)</short>
                 </flag>
                 <flag name="noconsole">
                     <short>disable logging to the console (logfile only)</short>
@@ -131,12 +134,16 @@
                 <flag name="nonstopmode">
                     <short>run without stopping</short>
                 </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="nosynctex">
                     <short>never initializes synctex (for production runs)</short>
                 </flag>
                 <flag name="synctex">
                     <short>run with synctex enabled (better use \setupsynctex[state=start]</short>
                 </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="nodates">
                     <short>omit runtime dates in pdf file (optional value: a number (this 1970 offset time) or string "YYYY-MM-DD HH:MM")</short>
                 </flag>
@@ -146,7 +153,7 @@
                 <flag name="trailerid">
                     <short>alternative trailer id (or constant one)</short>
                 </flag>
-                </subcategory>
+            </subcategory>
             <subcategory>
                 <flag name="generate">
                     <short>generate file database etc. (as luatools does)</short>

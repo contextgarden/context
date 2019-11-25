@@ -46,7 +46,7 @@ local dirname           = file.dirname
 local is_qualified_path = file.is_qualified_path
 
 local cleanpath         = resolvers.cleanpath
-local inputstack        = resolvers.inputstack
+local toppath           = resolvers.toppath
 local resolveprefix     = resolvers.resolve
 
 local hasscheme         = url.hasscheme
@@ -789,7 +789,7 @@ end
 
 local function autoname(name)
     if name == "*" then
-        name = nameonly(inputstack[#inputstack] or name)
+        name = nameonly(toppath() or name)
     end
     return name
 end

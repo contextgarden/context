@@ -25,6 +25,8 @@ local jobpositions      = job.positions
 local formatters        = string.formatters
 local setmetatableindex = table.setmetatableindex
 
+local enableaction      = nodes.tasks.enableaction
+
 local commands          = commands
 local context           = context
 
@@ -76,6 +78,7 @@ local getdepth          = nuts.getdepth
 local nodecodes         = nodes.nodecodes
 local localpar_code     = nodecodes.localpar
 
+local start_of_par      = nuts.start_of_par
 local insert_before     = nuts.insert_before
 local insert_after      = nuts.insert_after
 
@@ -85,6 +88,7 @@ local unsetvalue        = attributes.unsetvalue
 
 local jobpositions      = job.positions
 local getpos            = jobpositions.getpos
+local getfree           = jobpositions.getfree
 
 local data              = { }
 local realpage          = 1
@@ -161,7 +165,7 @@ local function flush(head,f,l,a,parent,depth)
             ln = new_hlist(setlink(new_rule(65536,65536*4,0),new_kern(-65536),ln))
             rn = new_hlist(setlink(new_rule(65536,0,65536*4),new_kern(-65536),rn))
         end
-        if getid(f) == localpar_code and getsubtype(f) == 0 then -- we need to clean this mess
+        if getid(f) == localpar_code and start_of_par(f) then -- we need to clean this mess
             insert_after(head,f,ln)
         else
             head, f = insert_before(head,f,ln)
@@ -193,7 +197,7 @@ local function registerbackground(name)
         }
         texsetattribute(a_textbackground,n)
         if not enabled then
-            nodes.tasks.enableaction("contributers", "nodes.handlers.textbackgrounds")
+            enableaction("contributers", "nodes.handlers.textbackgrounds")
             enabled = true
         end
     else
@@ -1130,7 +1134,7 @@ local function fetchmultipar(n,anchor,page)
                 local k = data.bpos.k
                 if k ~= 3 then
                     -- to be checked: no need in txt mode
-                    freemultipar(pagedata,jobpositions.free[page])
+                    freemultipar(pagedata,getfree(page))
                 end
                 local nofmultipars = #pagedata
                 if trace_shapes then

@@ -77,6 +77,7 @@ local getdimensions        = nuts.dimensions
 local getrangedimensions   = nuts.rangedimensions
 local traverse             = nuts.traverse
 local find_node_tail       = nuts.tail
+local start_of_par         = nuts.start_of_par
 
 local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
@@ -419,7 +420,7 @@ local function inject_areas(head,attribute,make,stack,done,skip,parent,pardir,tx
             local direction, pop = getdirection(current)
             txtdir = not pop and direction -- we might need a stack
         elseif id == localpar_code then
-            if getsubtype(current) == 0 then
+            if start_of_par(current) then
                 pardir = getdirection(current)
             end
         else

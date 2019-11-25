@@ -17847,6 +17847,9 @@
      <cd:parameter name="grid">
       <cd:inherit name="definegridsnapping"/>
      </cd:parameter>
+     <cd:parameter name="packcriterium">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
      <cd:inherit name="setupcounter"/>
     </cd:assignments>
    </cd:arguments>
@@ -18506,6 +18509,9 @@
      </cd:parameter>
      <cd:parameter name="grid">
       <cd:inherit name="definegridsnapping"/>
+     </cd:parameter>
+     <cd:parameter name="packcriterium">
+      <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:inherit name="setupcounter"/>
     </cd:assignments>
@@ -20135,6 +20141,10 @@
      </cd:parameter>
      <cd:parameter name="artoffset">
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="direction">
+      <cd:constant default="yes" type="normal"/>
+      <cd:constant type="reverse"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>

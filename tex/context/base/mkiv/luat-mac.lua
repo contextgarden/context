@@ -22,6 +22,7 @@ local rep, sub = string.rep, string.sub
 local setmetatable = setmetatable
 local filesuffix = file.suffix
 local convertlmxstring = lmx and lmx.convertstring
+local savedata = io.savedata
 
 local pushtarget, poptarget = logs.pushtarget, logs.poptarget
 
@@ -195,34 +196,26 @@ local checker = P("%") * (1 - newline - P("macros"))^0
 
 -- maybe namespace
 
-local macros = { } resolvers.macros = macros
+local resolvers  = resolvers
+
+local macros     = { }
+resolvers.macros = macros
+
+local loadtexfile = resolvers.loadtexfile
 
 function macros.preprocessed(str,strip)
     return lpegmatch(parser,str,1,strip)
 end
 
 function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
-    local data = resolvers.loadtexfile(oldname)
+    local data = loadtexfile(oldname)
     data = interfaces.preprocessed(data) or "" -- interfaces not yet defined
-    io.savedata(newname,data)
+    savedata(newname,data)
 end
 
 function macros.version(data)
     return lpegmatch(checker,data)
 end
-
--- function macros.processmkvi(str,filename)
---     if filename and filesuffix(filename) == "mkvi" or lpegmatch(checker,str) == "mkvi" then
---         local oldsize = #str
---         str = lpegmatch(parser,str,1,true) or str
---         pushtarget("logfile")
---         report_macros("processed mkvi file %a, delta %s",filename,oldsize-#str)
---         poptarget()
---     end
---     return str
--- end
---
--- utilities.sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
 
 -- the document variables hack is temporary
 
@@ -305,40 +298,33 @@ end
 
 macros.processmklx = macros.processmkvi
 
-local sequencers = utilities.sequencers
-
-if sequencers then
-
-    sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmk")
-    sequencers.appendaction(resolvers.openers.helpers.textfileactions,"system","resolvers.macros.processmkvi")
-
-end
-
 -- bonus
 
-if resolvers.schemes then
+local schemes = resolvers.schemes
+
+if schemes then
 
     local function handler(protocol,name,cachename)
         local hashed = url.hashed(name)
         local path = hashed.path
         if path and path ~= "" then
-            local str = resolvers.loadtexfile(path)
+            local str = loadtexfile(path)
             if validvi(path,str) then
                 -- already done automatically
-                io.savedata(cachename,str)
+                savedata(cachename,str)
             else
                 local result = lpegmatch(parser,str,1,true) or str
                 pushtarget("logfile")
                 report_macros("processed scheme %a, delta %s",filename,#str-#result)
                 poptarget()
-                io.savedata(cachename,result)
+                savedata(cachename,result)
             end
         end
         return cachename
     end
 
-    resolvers.schemes.install('mkvi',handler,1)
-    resolvers.schemes.install('mklx',handler,1)
+    schemes.install('mkvi',handler,1)
+    schemes.install('mklx',handler,1)
 
 end
 
@@ -430,7 +416,7 @@ local encodepattern = Cs((encodecomment + 1)^0)
 local decodecomment = P(commentsignal) / "%%%%" -- why doubles here?
 local decodepattern = Cs((decodecomment + 1)^0)
 
-function resolvers.macros.encodecomment(str)
+function macros.encodecomment(str)
     if txtcatcodes and tex.catcodetable == txtcatcodes then
         return lpegmatch(encodepattern,str) or str
     else
@@ -438,7 +424,7 @@ function resolvers.macros.encodecomment(str)
     end
 end
 
-function resolvers.macros.decodecomment(str) -- normally not needed
+function macros.decodecomment(str) -- normally not needed
     return txtcatcodes and lpegmatch(decodepattern,str) or str
 end
 
@@ -446,9 +432,22 @@ end
 -- resolvers.macros.encodecommentpattern = encodepattern
 -- resolvers.macros.decodecommentpattern = decodepattern
 
-function resolvers.macros.enablecomment(thecatcodes)
-    if not txtcatcodes then
-        txtcatcodes = thecatcodes or catcodes.numbers.txtcatcodes
-        utilities.sequencers.appendaction(resolvers.openers.helpers.textlineactions,"system","resolvers.macros.encodecomment")
+local sequencers   = utilities.sequencers
+local appendaction = sequencers and sequencers.appendaction
+
+if appendaction then
+
+    local textlineactions = resolvers.openers.helpers.textlineactions
+    local textfileactions = resolvers.openers.helpers.textfileactions
+
+    appendaction(textfileactions,"system","resolvers.macros.processmk")
+    appendaction(textfileactions,"system","resolvers.macros.processmkvi")
+
+    function macros.enablecomment(thecatcodes)
+        if not txtcatcodes then
+            txtcatcodes = thecatcodes or catcodes.numbers.txtcatcodes
+            appendaction(textlineactions,"system","resolvers.macros.encodecomment")
+        end
     end
+
 end

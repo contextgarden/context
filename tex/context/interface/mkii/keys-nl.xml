@@ -235,6 +235,7 @@
 		<cd:variable name='handwritten' value='handschrift'/>
 		<cd:variable name='hang' value='hang'/>
 		<cd:variable name='hanging' value='hangend'/>
+		<cd:variable name='hangingboth' value='beidehangend'/>
 		<cd:variable name='head' value='kop'/>
 		<cd:variable name='header' value='hoofd'/>
 		<cd:variable name='headintext' value='kopintekst'/>
@@ -1050,6 +1051,7 @@
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='eigennummer'/>
+		<cd:constant name='packcriterium' value='opelkaarcriterium'/>
 		<cd:constant name='page' value='pagina'/>
 		<cd:constant name='pageboundaries' value='paginaovergangen'/>
 		<cd:constant name='pagecolor' value='paginakleur'/>
@@ -1059,6 +1061,7 @@
 		<cd:constant name='pageconversion' value='pageconversion'/>
 		<cd:constant name='pageconversionset' value='pageconversionset'/>
 		<cd:constant name='pageleft' value='pageleft'/>
+		<cd:constant name='pagemethod' value='paginamethode'/>
 		<cd:constant name='pagenumber' value='paginanummer'/>
 		<cd:constant name='pageprefix' value='pageprefix'/>
 		<cd:constant name='pageprefixconnector' value='pageprefixconnector'/>

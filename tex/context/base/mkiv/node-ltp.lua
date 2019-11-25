@@ -286,8 +286,6 @@ local protrusionboundary_code = boundarycodes.protrusion
 
 local leaders_code         = leadercodes.leaders
 
-local localpar_code        = nodecodes.localpar
-
 local userkern_code        = kerncodes.userkern
 local italickern_code      = kerncodes.italiccorrection
 local fontkern_code        = kerncodes.fontkern
@@ -2845,8 +2843,6 @@ do
         local adjust_tail       = adjust_head and find_tail(adjust_head)
         local pre_adjust_tail   = pre_adjust_head and find_tail(pre_adjust_head)
 
-        new_dir_stack(hpack_dir)
-
         local checked_expansion = false
 
         if cal_expand_ratio then
@@ -2983,7 +2979,7 @@ do
                     end
                     adjust_tail = find_tail(list)
                 elseif id == dir_code then
-                    hpack_dir = checked_line_dir(stack,current) or hpack_dir
+                    -- no need to deal with directions here (as we only support two)
                 elseif id == marginkern_code then
                     local width = getwidth(current)
                     if cal_expand_ratio then
@@ -3018,9 +3014,7 @@ do
 
         local delta  = width - natural
         if delta == 0 then
-            setfield(hlist,"glue_sign",0)
-            setfield(hlist,"glue_order",0)
-            setfield(hlist,"glue_set",0)
+            setglue(hlist,0,0,0) -- set order sign
         elseif delta > 0 then
             -- natural width smaller than requested width
             local order = (total_stretch[4] ~= 0 and 4 or total_stretch[3] ~= 0 and 3) or
@@ -3057,13 +3051,9 @@ do
             end
             local tso = total_stretch[order]
             if tso ~= 0 then
-                setfield(hlist,"glue_sign",1)
-                setfield(hlist,"glue_order",order)
-                setfield(hlist,"glue_set",delta/tso)
+                setglue(hlist,delta/tso,order,1) -- set order sign
             else
-                setfield(hlist,"glue_sign",0)
-                setfield(hlist,"glue_order",order)
-                setfield(hlist,"glue_set",0)
+                setglue(hlist,0,order,0) -- set order sign
             end
             if font_expand_ratio ~= 0 then
                 -- todo
@@ -3113,13 +3103,9 @@ do
             end
             local tso = total_shrink[order]
             if tso ~= 0 then
-                setfield(hlist,"glue_sign",2)
-                setfield(hlist,"glue_order",order)
-                setfield(hlist,"glue_set",-delta/tso)
+                setglue(hlist,-delta/tso,order,2) -- set order sign
             else
-                setfield(hlist,"glue_sign",0)
-                setfield(hlist,"glue_order",order)
-                setfield(hlist,"glue_set",0)
+                setglue(hlist,0,order,0) -- set order sign
             end
             if font_expand_ratio ~= 0 then
                 -- todo

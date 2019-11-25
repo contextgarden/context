@@ -214,12 +214,7 @@ local function loadoutlines(cache,filename,sub,instance)
 end
 
 local function cachethem(cache,hash,data)
-    local fast = caches.fast
-    if compact_streams then
-        caches.fast = true
-    end
-    containers.write(cache,hash,data)
-    caches.fast = fast
+    containers.write(cache,hash,data,compact_streams) -- arg 4 aka fast
     return containers.read(cache,hash) -- frees old mem
 end
 

@@ -6,104 +6,27 @@ if not modules then modules = { } end modules ['trac-deb'] = {
     license   = "see context related readme files"
 }
 
-local lpeg, status = lpeg, status
+-- This is an old mechanism, a result of some experiments in the early days of
+-- luatex and mkiv, but still nice anyway.
 
-local lpegmatch = lpeg.match
+local status = status
+
+local tonumber, tostring, type = tonumber, tostring, type
 local format, concat, match, find, gsub = string.format, table.concat, string.match, string.find, string.gsub
-local tonumber, tostring = tonumber, tostring
 
 -- maybe tracers -> tracers.tex (and tracers.lua for current debugger)
 
------ report_tex  = logs.reporter("tex error")
------ report_lua  = logs.reporter("lua error")
-local report_nl   = logs.newline
-local report_str  = logs.writer
+----- report_tex    = logs.reporter("tex error")
+----- report_lua    = logs.reporter("lua error")
+local report_nl     = logs.newline
+local report_str    = logs.writer
 
-tracers           = tracers or { }
-local tracers     = tracers
-
-tracers.lists     = { }
-local lists       = tracers.lists
-
-tracers.strings   = { }
-local strings     = tracers.strings
-
-local texgetdimen = tex.getdimen
-local texgettoks  = tex.gettoks
-local texgetcount = tex.getcount
-local texgethelp  = tex.gethelptext or function() end
-local fatalerror  = tex.fatalerror
-
-local implement   = interfaces.implement
-
-strings.undefined = "undefined"
-
-lists.scratch = {
-    0, 2, 4, 6, 8
-}
-
-lists.internals = {
-    'p:hsize', 'p:parindent', 'p:leftskip','p:rightskip',
-    'p:vsize', 'p:parskip', 'p:baselineskip', 'p:lineskip', 'p:topskip'
-}
-
-lists.context = {
-    'd:lineheight',
-    'c:realpageno', 'c:userpageno', 'c:pageno', 'c:subpageno'
-}
-
-local types = {
-    ['d'] = tracers.dimen,
-    ['c'] = tracers.count,
-    ['t'] = tracers.toks,
-    ['p'] = tracers.primitive
-}
-
-local splitboth = lpeg.splitat(":")
-local splittype = lpeg.firstofsplit(":")
-local splitname = lpeg.secondofsplit(":")
-
-function tracers.type(csname)
-    return lpegmatch(splittype,csname)
-end
-
-function tracers.name(csname)
-    return lpegmatch(splitname,csname) or csname
-end
-
-function tracers.cs(csname)
-    local tag, name = lpegmatch(splitboth,csname)
-    if name and types[tag] then
-        return types[tag](name)
-    else
-        return tracers.primitive(csname)
-    end
-end
-
-function tracers.dimen(name)
-    local d = texgetdimen(name)
-    return d and number.topoints(d) or strings.undefined
-end
-
-function tracers.count(name)
-    return texgetcount(name) or strings.undefined
-end
-
-function tracers.toks(name,limit)
-    local t = texgettoks(name)
-    return t and string.limit(t,tonumber(limit) or 40) or strings.undefined
-end
-
-function tracers.primitive(name)
-    return tex[name] or strings.undefined
-end
-
-function tracers.knownlist(name)
-    local l = lists[name]
-    return l and #l > 0
-end
+tracers             = tracers or { }
+local tracers       = tracers
 
 local savedluaerror = nil
+local usescitelexer = nil
+local quitonerror   = true
 
 local function errorreporter(luaerror)
     local category = luaerror and "lua error" or "tex error"
@@ -123,41 +46,46 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
             end
         end
     end
-    local lines = data and string.splitlines(data)
-    if lines and #lines > 0 then
-        if luaerrorline and luaerrorline > 0 then
-            -- lua error: linenumber points to last line
-            local start = "\\startluacode"
-            local stop  = "\\stopluacode"
-            local n = linenumber
-            for i=n,1,-1 do
-                local line = lines[i]
-                if not line then
-                    break
-                elseif find(line,start) then
-                    n = i + luaerrorline - 1
-                    if n <= linenumber then
-                        linenumber = n
+    local scite = usescitelexer and require("util-sci")
+    if scite then
+        return utilities.scite.tohtml(data,"tex",linenumber or true,false)
+    else
+        local lines = data and string.splitlines(data)
+        if lines and #lines > 0 then
+            if luaerrorline and luaerrorline > 0 then
+                -- lua error: linenumber points to last line
+                local start = "\\startluacode"
+                local stop  = "\\stopluacode"
+                local n = linenumber
+                for i=n,1,-1 do
+                    local line = lines[i]
+                    if not line then
+                        break
+                    elseif find(line,start) then
+                        n = i + luaerrorline - 1
+                        if n <= linenumber then
+                            linenumber = n
+                        end
+                        break
                     end
-                    break
                 end
             end
-        end
-        offset = tonumber(offset) or 10
-        linenumber = tonumber(linenumber) or 10
-        local start = math.max(linenumber - offset,1)
-        local stop = math.min(linenumber + offset,#lines)
-        if stop > #lines then
-            return "<linenumber past end of file>"
-        else
-            local result, fmt = { }, "%" .. #tostring(stop) .. "d %s  %s"
-            for n=start,stop do
-                result[#result+1] = format(fmt,n,n == linenumber and ">>" or "  ",lines[n])
+            offset = tonumber(offset) or 10
+            linenumber = tonumber(linenumber) or 10
+            local start = math.max(linenumber - offset,1)
+            local stop = math.min(linenumber + offset,#lines)
+            if stop > #lines then
+                return "<linenumber past end of file>"
+            else
+                local result, fmt = { }, "%" .. #tostring(stop) .. "d %s  %s"
+                for n=start,stop do
+                    result[#result+1] = format(fmt,n,n == linenumber and ">>" or "  ",lines[n])
+                end
+                return concat(result,"\n")
             end
-            return concat(result,"\n")
+        else
+            return "<empty file>"
         end
-    else
-        return "<empty file>"
     end
 end
 
@@ -180,8 +108,6 @@ local function processerror(offset)
  -- print("[[ last location : " .. tostring(status.lastwarninglocation or "<unset>") .. " ]]")
  -- print("[[ last context  : " .. tostring(status.lasterrorcontext    or "<unset>") .. " ]]")
 
-    local inputstack   = resolvers.inputstack
---     local filename     = inputstack[#inputstack-1] or status.filename -- weird, why -1, something is wrong
     local filename     = status.filename
     local linenumber   = tonumber(status.linenumber) or 0
     local lastcontext  = status.lasterrorcontext
@@ -200,12 +126,11 @@ local function processerror(offset)
         lastluaerror = lastluaerror, -- can be the same as lasttexerror
         luaerrorline = luaerrorline,
         lastcontext  = lastcontext,
-        lasttexhelp  = texgethelp(),
+        lasttexhelp  = tex.gethelptext and tex.gethelptext() or nil,
     }
 end
 
 -- so one can overload the printer if (really) needed
-
 
 if fatalerror then
     callback.register("terminal_input",function(what)
@@ -219,11 +144,13 @@ else
  -- tex.print("\\nonstopmode")
 end
 
-local quitonerror = true
-
 directives.register("system.quitonerror",function(v)
     quitonerror = toboolean(v)
  -- tex.print("\\errorstopmode")
+end)
+
+directives.register("system.usescitelexer",function(v)
+    usescitelexer = toboolean(v)
 end)
 
 local busy = false
@@ -294,16 +221,10 @@ end
 luatex.wrapup(function() os.remove(file.addsuffix(tex.jobname .. "-error","log")) end)
 
 local function processwarning(offset)
- -- local inputstack   = resolvers.inputstack
- -- local filename     = inputstack[#inputstack] or status.filename
- -- local linenumber   = tonumber(status.linenumber) or 0
     local lastwarning  = status.lastwarningstring or "?"
     local lastlocation = status.lastwarningtag or "?"
     resetmessages()
     tracers.printwarning {
-     -- filename     = filename,
-     -- linenumber   = linenumber,
-     -- offset       = tonumber(offset) or 10,
         lastwarning  = lastwarning ,
         lastlocation = lastlocation,
     }
@@ -335,20 +256,27 @@ lmx = lmx or { }
 lmx.htmfile = function(name) return environment.jobname .. "-status.html" end
 lmx.lmxfile = function(name) return resolvers.findfile(name,'tex') end
 
+local function reportback(lmxname,default,variables)
+    if lmxname == false then
+        return variables
+    else
+        local name = lmx.show(type(lmxname) == "string" and lmxname or default,variables)
+        if name then
+            logs.report("context report","file: %s",name)
+        end
+    end
+end
+
 function lmx.showdebuginfo(lmxname)
     local variables = {
         ['title']                = 'ConTeXt Debug Information',
         ['color-background-one'] = lmx.get('color-background-green'),
         ['color-background-two'] = lmx.get('color-background-blue'),
     }
-    if lmxname == false then
-        return variables
-    else
-        lmx.show(lmxname or 'context-debug.lmx',variables)
-    end
+    reportback(lmxname,"context-debug.lmx",variables)
 end
 
-function lmx.showerror(lmxname)
+local function showerror(lmxname)
     local filename, linenumber, errorcontext = status.filename, tonumber(status.linenumber) or 0, ""
     if not filename then
         filename, errorcontext = 'unknown', 'error in filename'
@@ -366,17 +294,18 @@ function lmx.showerror(lmxname)
         ['filename']             = filename,
         ['errorcontext']         = errorcontext,
     }
-    if lmxname == false then
-        return variables
-    else
-        lmx.show(lmxname or 'context-error.lmx',variables)
-    end
+    reportback(lmxname,"context-error.lmx",variables)
     luatex.abort()
 end
 
-function lmx.overloaderror()
-    callback.register('show_error_hook',     function() lmx.showerror() end) -- prevents arguments being passed
-    callback.register('show_lua_error_hook', function() lmx.showerror() end) -- prevents arguments being passed
+lmx.showerror = showerror
+
+function lmx.overloaderror(v)
+    if v == "scite" then
+        usescitelexer = true
+    end
+    callback.register('show_error_hook',     function() showerror() end) -- prevents arguments being passed
+    callback.register('show_lua_error_hook', function() showerror() end) -- prevents arguments being passed
 end
 
 directives.register("system.showerror", lmx.overloaderror)
@@ -415,6 +344,8 @@ directives.register("system.showerror", lmx.overloaderror)
 --         os.execute(editor)
 --     end
 -- end)
+
+local implement = interfaces.implement
 
 implement { name = "showtrackers",       actions = trackers.show }
 implement { name = "enabletrackers",     actions = trackers.enable,     arguments = "string" }

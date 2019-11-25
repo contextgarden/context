@@ -129,6 +129,8 @@ local noflines          = 0
 -- This is the third version, a mix between immediate (prestice lines) and delayed
 -- as we don't want anchors that are not used.
 
+-- I will make a better variant once lmtx is stable i.e. less clutter.
+
 local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize

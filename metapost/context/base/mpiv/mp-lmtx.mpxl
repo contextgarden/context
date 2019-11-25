@@ -19,15 +19,18 @@ if known context_lmtx : endinput ; fi ;
 boolean context_lmtx ; context_lmtx := true ;
 
 presetparameters "text" [
-    offset   = 0,
-    strut    = "auto",
-    style    = "",
-    color    = "",
-    text     = "",
-    anchor   = "",
-    format   = "",
-    position = origin,
-    trace    = false,
+    offset     = 0,
+    strut      = "auto",
+    style      = "",
+    color      = "",
+    text       = "",
+    anchor     = "",
+    format     = "",
+    position   = origin,
+    trace      = false,
+
+    background      = "color",
+    backgroundcolor = "gray",
 ] ;
 
 def lmt_text = applyparameters "text" "lmt_do_text" enddef ;
@@ -36,13 +39,14 @@ vardef lmt_do_text =
     image (
         pushparameters "text" ;
         save style, anchor, txt, fmt, strt ;
-        string style, anchor, txt, fmt, strt ;
+        string style, anchor, txt, fmt, strt, bgr ;
         interim textextoffset := getparameter "offset" ;
         style := getparameter "style" ;
         anchor := getparameter "anchor" ;
         strt := getparameter "strut" ;
         fmt := getparameter "format" ;
         txt := getparameter "text" ;
+        bgr := getparameter "background" ;
         if fmt <> "" :
             txt := "\formatone{" & fmt & "}{" & txt & "}"
         fi ;
@@ -63,6 +67,9 @@ vardef lmt_do_text =
                 getparameter "position"
             )
             withcolor getparameter "color" ;
+        if bgr = "color" :
+            addbackground withcolor getparameter "backgroundcolor" ;
+        fi ;
         popparameters ;
     )
 enddef ;

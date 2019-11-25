@@ -6,48 +6,60 @@ if not modules then modules = { } end modules ['data-use'] = {
     license   = "see context related readme files"
 }
 
-local format, lower, gsub, find = string.format, string.lower, string.gsub, string.find
+local format = string.format
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_mounts = logs.reporter("resolvers","mounts")
 
 local resolvers = resolvers
+local findfile  = resolvers.findfile
 
--- we will make a better format, maybe something xml or just text or lua
-
-resolvers.automounted = resolvers.automounted or { }
-
-function resolvers.automount(usecache)
-    local mountpaths = resolvers.cleanpathlist(resolvers.expansion('TEXMFMOUNT'))
-    if (not mountpaths or #mountpaths == 0) and usecache then
-        mountpaths = caches.getreadablepaths("mount")
-    end
-    if mountpaths and #mountpaths > 0 then
-        resolvers.starttiming()
-        for k=1,#mountpaths do
-            local root = mountpaths[k]
-            local f = io.open(root.."/url.tmi")
-            if f then
-                for line in f:lines() do
-                    if line then
-                        if find(line,"^[%%#%-]") then -- or %W
-                            -- skip
-                        elseif find(line,"^zip://") then
-                            if trace_locating then
-                                report_mounts("mounting %a",line)
-                            end
-                            table.insert(resolvers.automounted,line)
-                            resolvers.usezipfile(line)
-                        end
-                    end
-                end
-                f:close()
-            end
-        end
-        resolvers.stoptiming()
-    end
-end
+-- -- This should mount a zip file so that we can run from zip files but I never went
+-- -- on with it. It's really old code, from right when we started with luatex and
+-- -- mkiv. Nowadays I'd use a lua specification file instead of a line based url.tmi,
+-- -- file so just to be modern I patched it but it's untested. This is a normally a
+-- -- startup-only feature.
+--
+-- do
+--
+--     local mounted = { }
+--
+--     function resolvers.automount(usecache)
+--         local mountpaths = resolvers.cleanpathlist(resolvers.expansion('TEXMFMOUNT'))
+--         if (not mountpaths or #mountpaths == 0) and usecache then
+--             mountpaths = caches.getreadablepaths("mount")
+--         end
+--         if mountpaths and #mountpaths > 0 then
+--             resolvers.starttiming()
+--             for k=1,#mountpaths do
+--                 local root = mountpaths[k]
+--                 local list = table.load("automount.lua")
+--                 if list then
+--                     local archives = list.archives
+--                     if archives then
+--                         for i=1,#archives do
+--                             local archive = archives[i]
+--                             local already = false
+--                             for i=1,#mounted do
+--                                 if archive == mounted[i] then
+--                                     already = true
+--                                     break
+--                                 end
+--                             end
+--                             if not already then
+--                                 mounted[#mounted+1] = archive
+--                                 resolvers.usezipfile(archive)
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--             resolvers.stoptiming()
+--         end
+--     end
+--
+-- end
 
 -- status info
 
@@ -63,7 +75,7 @@ function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) -
         local luvdata = {
             enginebanner  = enginebanner,
             formatbanner  = formatbanner,
-            sourcehash    = md5.hex(io.loaddata(resolvers.findfile(sourcefile)) or "unknown"),
+            sourcehash    = md5.hex(io.loaddata(findfile(sourcefile)) or "unknown"),
             sourcefile    = sourcefile,
             luaversion    = LUAVERSION,
             formatid      = LUATEXFORMATID,
@@ -92,7 +104,7 @@ function statistics.checkfmtstatus(texname)
         if lfs.isfile(luvname) then
             local luv = dofile(luvname)
             if luv and luv.sourcefile then
-                local sourcehash = md5.hex(io.loaddata(resolvers.findfile(luv.sourcefile)) or "unknown")
+                local sourcehash = md5.hex(io.loaddata(findfile(luv.sourcefile)) or "unknown")
                 local luvbanner = luv.enginebanner or "?"
                 if luvbanner ~= enginebanner then
                     return format("engine mismatch (luv: %s <> bin: %s)",luvbanner,enginebanner)

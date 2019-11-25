@@ -62,7 +62,8 @@
         <tr><th>--directives</th><td>list</td><td>set directive variables (show list with --showdirectives)</td></tr>
         <tr><th>--silent</th><td>list</td><td>disable logcatgories (show list with --showlogcategories)</td></tr>
         <tr><th>--strip</th><td></td><td>strip Lua code (only meant for production where no errors are expected)</td></tr>
-        <tr><th>--errors</th><td>list</td><td>show errors at the end of a run, quit when in list (also when ----silent)</td></tr>
+        <tr><th>--errors</th><td>list</td><td>show errors at the end of a run, quit when in list (also when --silent)</td></tr>
+        <tr><th>--htmlerrorpage</th><td></td><td>generate html error page instead (optional: =scite)</td></tr>
         <tr><th>--noconsole</th><td></td><td>disable logging to the console (logfile only)</td></tr>
         <tr><th>--purgeresult</th><td></td><td>purge result file before run</td></tr>
         <tr><th/><td/><td/></tr>
@@ -83,8 +84,10 @@
         <tr><th/><td/><td/></tr>
         <tr><th>--batchmode</th><td></td><td>run without stopping and do not show messages on the console</td></tr>
         <tr><th>--nonstopmode</th><td></td><td>run without stopping</td></tr>
+        <tr><th/><td/><td/></tr>
         <tr><th>--nosynctex</th><td></td><td>never initializes synctex (for production runs)</td></tr>
         <tr><th>--synctex</th><td></td><td>run with synctex enabled (better use \setupsynctex[state=start]</td></tr>
+        <tr><th/><td/><td/></tr>
         <tr><th>--nodates</th><td></td><td>omit runtime dates in pdf file (optional value: a number (this 1970 offset time) or string "YYYY-MM-DD HH:MM")</td></tr>
         <tr><th>--nocompression</th><td></td><td>forcefully turns off compression in the backend</td></tr>
         <tr><th>--trailerid</th><td></td><td>alternative trailer id (or constant one)</td></tr>

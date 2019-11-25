@@ -204,6 +204,7 @@ nuts.writable_spec           = direct.writable_spec
 nuts.write                   = direct.write
 nuts.mlist_to_hlist          = direct.mlist_to_hlist
 nuts.has_dimensions          = direct.has_dimensions
+nuts.start_of_par            = direct.start_of_par
 
 if not nuts.mlist_to_hlist then
 
@@ -399,6 +400,23 @@ local remove = CONTEXTLMTXMODE > 0 and d_remove_node or function(head,current,fr
         end
     end
     return head, current
+end
+
+-- for now
+
+if not nuts.start_of_par then
+
+    local localparcodes = nodes.localparcodes
+    local hmodepar_code = localparcodes.vmode_par
+    local vmodepar_code = localparcodes.hmode_par
+
+    local getsubtype    = nuts.getsubtype
+
+    function nuts.start_of_par(n)
+        local s = getsubtype(n)
+        return s == hmodepar_code or s == vmodepar_code
+    end
+
 end
 
 -- for now

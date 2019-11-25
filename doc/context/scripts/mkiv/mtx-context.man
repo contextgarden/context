@@ -69,7 +69,10 @@ disable logcatgories (show list with --showlogcategories)
 strip Lua code (only meant for production where no errors are expected)
 .TP
 .B --errors=list
-show errors at the end of a run, quit when in list (also when ----silent)
+show errors at the end of a run, quit when in list (also when --silent)
+.TP
+.B --htmlerrorpage
+generate html error page instead (optional: =scite)
 .TP
 .B --noconsole
 disable logging to the console (logfile only)

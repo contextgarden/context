@@ -82,6 +82,7 @@ local hpack_nodes        = nuts.hpack
 local insert_node_before = nuts.insert_before
 local insert_node_after  = nuts.insert_after
 local protect_glyphs     = nuts.protect_glyphs
+local start_of_par       = nuts.start_of_par
 
 local nextnode           = nuts.traversers.next
 local nexthlist          = nuts.traversers.hlist
@@ -434,7 +435,7 @@ function splitters.split(head) -- best also pass the direction
             end
             local direction, pop = getdirection(current)
             r2l = not pop and direction == righttoleft
-        elseif id == localpar_code and getsubtype(current) == 0 then
+        elseif id == localpar_code and start_of_par(current) then
             if start then
                 flush() -- very unlikely as this starts a paragraph
             end

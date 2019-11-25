@@ -343,7 +343,7 @@ local loadmapfile, loadmapline, getmapentry  do
             if not encoding then
                 return
             end
-            local pfbfile = resolvers.find_file(m[3],"pfb")
+            local pfbfile = resolvers.findfile(m[3],"pfb")
             if not pfbfile or pfbfile == "" then
                 return
             end

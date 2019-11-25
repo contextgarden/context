@@ -25,6 +25,8 @@ if not modules then modules = { } end modules ['data-pre'] = {
 -- version         : operating system version
 -- release         : operating system release
 
+local insert, remove = table.insert, table.remove
+
 local resolvers     = resolvers
 local prefixes      = resolvers.prefixes
 
@@ -121,8 +123,10 @@ prefixes.path = prefixes.pathname
 -- This one assumes that inputstack is set (used in the tex loader). It is a momentary resolve
 -- as the top of the input stack changes.
 
+local inputstack = { }
+local stackpath  = resolvers.stackpath
+
 local function toppath()
-    local inputstack = resolvers.inputstack -- dependency, actually the code should move but it's
     if not inputstack then                  -- more convenient to keep it here
         return "."
     end
@@ -139,7 +143,7 @@ end
 -- stucture.
 
 local function jobpath()
-    local path = resolvers.stackpath()
+    local path = stackpath()
     if not path or path == "" then
         return "."
     else
@@ -147,8 +151,18 @@ local function jobpath()
     end
 end
 
-resolvers.toppath = toppath
-resolvers.jobpath = jobpath
+local function pushinputname(name)
+    insert(inputstack,name)
+end
+
+local function popinputname(name)
+    return remove(inputstack)
+end
+
+resolvers.toppath       = toppath
+resolvers.jobpath       = jobpath
+resolvers.pushinputname = pushinputname
+resolvers.popinputname  = popinputname
 
 -- This hook sit into the resolver:
 

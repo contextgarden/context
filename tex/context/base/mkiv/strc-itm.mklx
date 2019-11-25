@@ -467,26 +467,17 @@
 \setvalue{\??itemgroupkeyword\v!seven      }{\letitemgroupparameter\c!n\plusseven}
 \setvalue{\??itemgroupkeyword\v!eight      }{\letitemgroupparameter\c!n\pluseight}
 \setvalue{\??itemgroupkeyword\v!nine       }{\letitemgroupparameter\c!n\plusnine}
-%setvalue{\??itemgroupkeyword\v!standard   }{\setupcurrentitemgroup
-%                                              [\c!width     =1.5\emwidth,%
-%                                               \c!distance  =.5\emwidth,%
-%                                               \c!factor    =0,%
-%                                               \c!inner     =,%
-%                                               \c!beforehead=,%
-%                                               \c!afterhead =\blank,%
-%                                               \c!before    =\blank,%
-%                                               \c!inbetween =\blank,%
-%                                               \c!after     =\blank]}
-\setvalue{\??itemgroupkeyword\v!standard   }{\setitemgroupparameter\c!width     {1.5\emwidth}%
-                                             \setitemgroupparameter\c!distance  {.5\emwidth}%
-                                             \letitemgroupparameter\c!factor    \!!zerocount
-                                             \letitemgroupparameter\c!inner     \empty
-                                             \letitemgroupparameter\c!beforehead\empty
-                                             \letitemgroupparameter\c!afterhead \blank
-                                             \letitemgroupparameter\c!before    \blank
-                                             \letitemgroupparameter\c!inbetween \blank
-                                             \letitemgroupparameter\c!after     \blank}
-
+\setvalue{\??itemgroupkeyword\v!standard   }{\setitemgroupparameter\c!width        {1.5\emwidth}%
+                                             \setitemgroupparameter\c!distance     {.5\emwidth}%
+                                            %\letitemgroupparameter\c!factor       \!!zerocount
+                                             \letitemgroupparameter\c!factor       {\zerocount}%
+                                             \setitemgroupparameter\c!packcriterium{\zerocount}%
+                                             \letitemgroupparameter\c!inner        \empty
+                                             \letitemgroupparameter\c!beforehead   \empty
+                                             \letitemgroupparameter\c!afterhead    \blank
+                                             \letitemgroupparameter\c!before       \blank
+                                             \letitemgroupparameter\c!inbetween    \blank
+                                             \letitemgroupparameter\c!after        \blank}
 
 \def\strc_itemgroups_initialize_local
   {\setfalse\c_strc_itemgroups_inline
@@ -879,6 +870,12 @@
        \ifconditional\c_strc_itemgroups_text \else
          \par
        \fi
+     \fi
+   \fi
+   %
+   \ifconditional\c_strc_itemgroups_pack
+     \ifnum\currentnofitems>\itemgroupparameter\c!packcriterium\relax\else
+       \setfalse\c_strc_itemgroups_pack
      \fi
    \fi
    %
@@ -1836,6 +1833,7 @@
    \c!lefttext=(,
    \c!righttext=),
    \c!start=1,
+   \c!packcriterium=\zerocount,
    \c!criterium=\v!all, % permits 0 and negative numbers
   %\c!option=,
    \c!textdistance=\v!space, % none big medium small <dimension>

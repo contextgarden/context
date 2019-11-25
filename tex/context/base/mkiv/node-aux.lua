@@ -473,13 +473,34 @@ end
 --     end
 -- end
 
-function nuts.setparproperty(action,...)
-    local tail = tonut(texnest[texnest.ptr].tail)
-    while tail do
-        if getid(tail) == localpar_code then
-            return action(tail,...)
-        else
+do
+
+    local localparcodes = nodes.localparcodes
+    local hmodepar_code = localparcodes.vmode_par
+    local vmodepar_code = localparcodes.hmode_par
+
+    local getsubtype    = nuts.getsubtype
+
+    function nuts.setparproperty(action,...)
+        local tail = tonut(texnest[texnest.ptr].tail)
+        while tail do
+            if getid(tail) == localpar_code then
+                local s = getsubtype(tail)
+                if s == hmodepar_code or s == vmodepar_code then
+                    return action(tail,...)
+                else
+                    -- something is wrong here
+                end
+            end
             tail = getprev(tail)
         end
     end
+
+    local getsubtype = nodes.getsubtype
+
+    function nodes.start_of_par(n)
+        local s = getsubtype(n)
+        return s == hmodepar_code or s == vmodepar_code
+    end
+
 end

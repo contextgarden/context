@@ -57,12 +57,12 @@
 \registerctxluafile{data-res}{}
 \registerctxluafile{data-inp}{}
 \registerctxluafile{data-out}{}
-\registerctxluafile{data-fil}{}
+\registerctxluafile{data-fil}{} % opener gets overloaded in data-tex
 
-\registerctxluafile{data-pre}{}
-\registerctxluafile{data-tex}{}
+\registerctxluafile{data-pre}{} % after data-res
+\registerctxluafile{data-bin}{} % before data-tex
+\registerctxluafile{data-tex}{} % after data-pre
 \registerctxluafile{data-vir}{}
-\registerctxluafile{data-bin}{}
 \registerctxluafile{data-zip}{}
 %registerctxluafile{data-crl}{}
 \registerctxluafile{data-sch}{}

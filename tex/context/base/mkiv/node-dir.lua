@@ -31,13 +31,18 @@ local dirvalues     = nodes.dirvalues
 local lefttoright   = dirvalues.lefttoright
 local righttoleft   = dirvalues.righttoleft
 
-local localparnewgraf_code = 0
+local localparcodes = nodes.localparcodes
+local hmodepar_code = localparcodes.vmode_par
+local vmodepar_code = localparcodes.hmode_par
 
-local function newstack(head,direction)
+function nodes.dirstack(head,direction)
     local stack = { }
     local top   = 0
-    if head and getid(head) == localpar_code and getsubtype(head) == localparnewgraf_code then
-        direction = getdirection(head)
+    if head and getid(head) == localpar_code then
+        local s = getsubtype(head)
+        if s == hmodepar_code or s == vmodepar_code then
+            direction = getdirection(head)
+        end
     end
     if not direction then
         direction = lefttoright
