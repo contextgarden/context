@@ -9,8 +9,6 @@ if not modules then modules = { } end modules ['font-imp-quality'] = {
 if not context then return end
 
 local next, type, tonumber = next, type, tonumber
-local byte = string.byte
-local insert = table.insert
 
 local fonts              = fonts
 local utilities          = utilities
@@ -65,26 +63,63 @@ local vectors      = expansions.vectors or allocate()
 expansions.classes = classes
 expansions.vectors = vectors
 
--- beware, pdftex itself uses percentages * 10
---
--- todo: get rid of byte() here
-
-classes.preset = { stretch = 2, shrink = 2, step = .5, factor = 1 }
+classes.preset = {
+    stretch = 2,
+    shrink  = 2,
+    step    = .5,
+    factor  = 1,
+}
 
 classes['quality'] = {
-    stretch = 2, shrink = 2, step = .5, vector = 'default', factor = 1
+    stretch = 2,
+    shrink  = 2,
+    step    = .5,
+    vector  = 'default',
+    factor  = 1,
 }
 
 vectors['default'] = {
-    [byte('A')] = 0.5, [byte('B')] = 0.7, [byte('C')] = 0.7, [byte('D')] = 0.5, [byte('E')] = 0.7,
-    [byte('F')] = 0.7, [byte('G')] = 0.5, [byte('H')] = 0.7, [byte('K')] = 0.7, [byte('M')] = 0.7,
-    [byte('N')] = 0.7, [byte('O')] = 0.5, [byte('P')] = 0.7, [byte('Q')] = 0.5, [byte('R')] = 0.7,
-    [byte('S')] = 0.7, [byte('U')] = 0.7, [byte('W')] = 0.7, [byte('Z')] = 0.7,
-    [byte('a')] = 0.7, [byte('b')] = 0.7, [byte('c')] = 0.7, [byte('d')] = 0.7, [byte('e')] = 0.7,
-    [byte('g')] = 0.7, [byte('h')] = 0.7, [byte('k')] = 0.7, [byte('m')] = 0.7, [byte('n')] = 0.7,
-    [byte('o')] = 0.7, [byte('p')] = 0.7, [byte('q')] = 0.7, [byte('s')] = 0.7, [byte('u')] = 0.7,
-    [byte('w')] = 0.7, [byte('z')] = 0.7,
-    [byte('2')] = 0.7, [byte('3')] = 0.7, [byte('6')] = 0.7, [byte('8')] = 0.7, [byte('9')] = 0.7,
+    [0x0041] = 0.5, -- A
+    [0x0042] = 0.7, -- B
+    [0x0043] = 0.7, -- C
+    [0x0044] = 0.5, -- D
+    [0x0045] = 0.7, -- E
+    [0x0046] = 0.7, -- F
+    [0x0047] = 0.5, -- G
+    [0x0048] = 0.7, -- H
+    [0x004B] = 0.7, -- K
+    [0x004D] = 0.7, -- M
+    [0x004E] = 0.7, -- N
+    [0x004F] = 0.5, -- O
+    [0x0050] = 0.7, -- P
+    [0x0051] = 0.5, -- Q
+    [0x0052] = 0.7, -- R
+    [0x0053] = 0.7, -- S
+    [0x0055] = 0.7, -- U
+    [0x0057] = 0.7, -- W
+    [0x005A] = 0.7, -- Z
+    [0x0061] = 0.7, -- a
+    [0x0062] = 0.7, -- b
+    [0x0063] = 0.7, -- c
+    [0x0064] = 0.7, -- d
+    [0x0065] = 0.7, -- e
+    [0x0067] = 0.7, -- g
+    [0x0068] = 0.7, -- h
+    [0x006B] = 0.7, -- k
+    [0x006D] = 0.7, -- m
+    [0x006E] = 0.7, -- n
+    [0x006F] = 0.7, -- o
+    [0x0070] = 0.7, -- p
+    [0x0071] = 0.7, -- q
+    [0x0073] = 0.7, -- s
+    [0x0075] = 0.7, -- u
+    [0x0077] = 0.7, -- w
+    [0x007A] = 0.7, -- z
+    [0x0032] = 0.7, -- 2
+    [0x0033] = 0.7, -- 3
+    [0x0036] = 0.7, -- 6
+    [0x0038] = 0.7, -- 8
+    [0x0039] = 0.7, -- 9
 }
 
 vectors['quality'] = vectors['default'] -- metatable ?
@@ -174,20 +209,16 @@ local vectors       = protrusions.vectors
 
 -- the values need to be revisioned
 
-classes.preset = { factor = 1, left = 1, right = 1 }
+classes.preset = {
+    factor = 1,
+    left   = 1,
+    right  = 1,
+}
 
-classes['pure'] = {
-    vector = 'pure', factor = 1
-}
-classes['punctuation'] = {
-    vector = 'punctuation', factor = 1
-}
-classes['alpha'] = {
-    vector = 'alpha', factor = 1
-}
-classes['quality'] = {
-    vector = 'quality', factor = 1
-}
+classes['pure']        = { vector = 'pure',        factor = 1 }
+classes['punctuation'] = { vector = 'punctuation', factor = 1 }
+classes['alpha']       = { vector = 'alpha',       factor = 1 }
+classes['quality']     = { vector = 'quality',     factor = 1 }
 
 vectors['pure'] = {
 
@@ -250,24 +281,24 @@ vectors['punctuation'] = {
 
 vectors['alpha'] = {
 
-    [byte("A")] = { .05, .05 },
-    [byte("F")] = {   0, .05 },
-    [byte("J")] = { .05,   0 },
-    [byte("K")] = {   0, .05 },
-    [byte("L")] = {   0, .05 },
-    [byte("T")] = { .05, .05 },
-    [byte("V")] = { .05, .05 },
-    [byte("W")] = { .05, .05 },
-    [byte("X")] = { .05, .05 },
-    [byte("Y")] = { .05, .05 },
+    [0x0041] = { .05, .05 }, -- A
+    [0x0046] = {   0, .05 }, -- F
+    [0x004A] = { .05,   0 }, -- J
+    [0x004B] = {   0, .05 }, -- K
+    [0x004C] = {   0, .05 }, -- L
+    [0x0054] = { .05, .05 }, -- T
+    [0x0056] = { .05, .05 }, -- V
+    [0x0057] = { .05, .05 }, -- W
+    [0x0058] = { .05, .05 }, -- X
+    [0x0059] = { .05, .05 }, -- Y
 
-    [byte("k")] = {   0, .05 },
-    [byte("r")] = {   0, .05 },
-    [byte("t")] = {   0, .05 },
-    [byte("v")] = { .05, .05 },
-    [byte("w")] = { .05, .05 },
-    [byte("x")] = { .05, .05 },
-    [byte("y")] = { .05, .05 },
+    [0x006B] = {   0, .05 }, -- k
+    [0x0072] = {   0, .05 }, -- r
+    [0x0074] = {   0, .05 }, -- t
+    [0x0076] = { .05, .05 }, -- v
+    [0x0077] = { .05, .05 }, -- w
+    [0x0078] = { .05, .05 }, -- x
+    [0x0079] = { .05, .05 }, -- y
 
 }
 
@@ -301,7 +332,9 @@ vectors['quality'] = table.merged(
 -- \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn,featurefile=texgyrepagella-regularxx.fea]
 
 classes['double'] = { -- for testing opbd
-    factor = 2, left = 1, right = 1,
+    factor = 2,
+    left   = 1,
+    right  = 1,
 }
 
 local function map_opbd_onto_protrusion(tfmdata,value,opbd)
@@ -434,8 +467,7 @@ local function initialize(tfmdata,value)
                         report_protrusions("setting class %a, vector %a, factor %a, left %a, right %a",
                             value,class.vector,factor,left,right)
                     end
-                    local data = characters.data
-                    local emwidth = tfmdata.parameters.quad
+                    local data    = characters.data
                     local lfactor = left  * factor
                     local rfactor = right * factor
                     if trace_protrusion then

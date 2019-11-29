@@ -14879,7 +14879,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sbx"] = package.loaded["util-sbx"] or true
 
--- original size: 21058, stripped down to: 13199
+-- original size: 21084, stripped down to: 13214
 
 if not modules then modules={} end modules ['util-sbx']={
  version=1.001,
@@ -15125,6 +15125,7 @@ local iopopen=sandbox.original(io.popen)
 local reported={}
 local function validcommand(name,program,template,checkers,defaults,variables,reporter,strict)
  if validbinaries~=false and (validbinaries==true or validbinaries[program]) then
+  local binpath=nil
   if variables then
    for variable,value in next,variables do
     local chktype=checkers[variable]
@@ -15164,8 +15165,8 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
      end
     end
    end
+   binpath=variables.binarypath
   end
-  local binpath=variables.binarypath
   if type(binpath)=="string" and binpath~="" then
    program=binpath.."/"..program
   end
@@ -26128,8 +26129,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040817
--- stripped bytes    : 412122
+-- original bytes    : 1040843
+-- stripped bytes    : 412133
 
 -- end library merge
 

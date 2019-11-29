@@ -31,16 +31,15 @@ local getwhd            = nuts.getwhd
 local getkern           = nuts.getkern
 local getheight         = nuts.getheight
 local getdepth          = nuts.getdepth
-local getwidth          = nuts.getwidth
+----- getwidth          = nuts.getwidth
 local getnext           = nuts.getnext
 local getsubtype        = nuts.getsubtype
 local getid             = nuts.getid
 local getleader         = nuts.getleader
-local getglue           = nuts.getglue
+----- getglue           = nuts.getglue
 local getshift          = nuts.getshift
 local getdata           = nuts.getdata
-local getboxglue        = nuts.getboxglue
-local getexpansion      = nuts.getexpansion
+----- getexpansion      = nuts.getexpansion
 local getreplace        = nuts.getreplace
 local setreplace        = nuts.setreplace
 local getfont           = nuts.getfont
@@ -57,6 +56,7 @@ local nextnode          = nuts.traversers.node
 local rangedimensions   = node.direct.rangedimensions -- nuts ?
 local effectiveglue     = nuts.effective_glue
 local start_of_par      = nuts.start_of_par
+local dirdimensions     = nuts.dirdimensions
 
 local texget            = tex.get
 
@@ -511,27 +511,27 @@ local hlist_out, vlist_out  do
 
     -- to be checked: begin- or enddir kan nil zijn, weird
 
-    local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
-        local dir_nest = 1
-        local enddir   = begindir
-        for current, subtype in nextdir, getnext(begindir) do
-            if subtype == normaldir_code then -- todo
-                dir_nest = dir_nest + 1
-            else
-                dir_nest = dir_nest - 1
-            end
-            if dir_nest == 0 then -- does the type matter
-                enddir = current
-                local width = rangedimensions(this_box,begindir,enddir)
-                return enddir, width
-            end
-        end
-        if enddir == begindir then
-            local width = rangedimensions(this_box,begindir) -- ,enddir)
-            return enddir, width
-        end
-        return enddir, 0
-    end
+ -- local function calculate_width_to_enddir(this_box,begindir) -- can be a helper
+ --     local dir_nest = 1
+ --     local enddir   = begindir
+ --     for current, subtype in nextdir, getnext(begindir) do
+ --         if subtype == normaldir_code then -- todo
+ --             dir_nest = dir_nest + 1
+ --         else
+ --             dir_nest = dir_nest - 1
+ --         end
+ --         if dir_nest == 0 then -- does the type matter
+ --             enddir = current
+ --             local width = rangedimensions(this_box,begindir,enddir)
+ --             return enddir, width
+ --         end
+ --     end
+ --     if enddir == begindir then
+ --         local width = rangedimensions(this_box,begindir) -- ,enddir)
+ --         return enddir, width
+ --     end
+ --     return enddir, 0
+ -- end
 
     -- check frequencies of nodes
 
@@ -815,59 +815,33 @@ local hlist_out, vlist_out  do
                     end
                     pos_r = dir
                 else
---                     local enddir, width = calculate_width_to_enddir(this_box,current)
---                     local ds = dirstack[enddir]
---                     ds.cur_h = cur_h + width
---                     if dir ~= pos_r then
---                         cur_h = ds.cur_h
---                     end
---                     if enddir ~= current then
---                      -- local ds = dirstack[enddir]
---                         ds.cur_v = cur_v
---                         ds.ref_h = ref_h
---                         ds.ref_v = ref_v
---                         setdirection(enddir,pos_r)
---                     end
---                     if pos_r == righttoleft_code then
---                         pos_h = ref_h - cur_h
---                     else
---                         pos_h = ref_h + cur_h
---                     end
---                     pos_v = ref_v - cur_v
---                     -- synced
---                     ref_h = pos_h
---                     ref_v = pos_v
---                     cur_h = 0
---                     cur_v = 0
---                     pos_r = dir
---                 end
-local enddir, width = calculate_width_to_enddir(this_box,current)
-local new_h = cur_h + width
-if dir ~= pos_r then
-    cur_h = new_h
-end
-if enddir ~= current then
-    dirstack[enddir] = {
-        cur_h = new_h,
-        cur_v = cur_v,
-        ref_h = ref_h,
-        ref_v = ref_v,
-    }
-    setdirection(enddir,pos_r)
-end
-if pos_r == righttoleft_code then
-    pos_h = ref_h - cur_h
-else
-    pos_h = ref_h + cur_h
-end
-pos_v = ref_v - cur_v
--- synced
-ref_h = pos_h
-ref_v = pos_v
-cur_h = 0
-cur_v = 0
-pos_r = dir
-end
+                    local width, enddir = dirdimensions(this_box,current)
+                    local new_h = cur_h + width
+                    if dir ~= pos_r then
+                        cur_h = new_h
+                    end
+                    if enddir ~= current then
+                        dirstack[enddir] = {
+                            cur_h = new_h,
+                            cur_v = cur_v,
+                            ref_h = ref_h,
+                            ref_v = ref_v,
+                        }
+                        setdirection(enddir,pos_r)
+                    end
+                    if pos_r == righttoleft_code then
+                        pos_h = ref_h - cur_h
+                    else
+                        pos_h = ref_h + cur_h
+                    end
+                    pos_v = ref_v - cur_v
+                    -- synced
+                    ref_h = pos_h
+                    ref_v = pos_v
+                    cur_h = 0
+                    cur_v = 0
+                    pos_r = dir
+                end
             elseif id == whatsit_code then
                 if subtype == literalwhatsit_code then
                     flushliteral(current,pos_h,pos_v)

@@ -168,6 +168,10 @@ addformatter(formatters,"font:features",[["'"..sequenced(%s," ",true).."'"]],{ s
 
 constructors.resolvevirtualtoo = true -- context specific (due to resolver)
 
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+    constructors.fixprotrusion = false
+end
+
 constructors.sharefonts        = true -- experimental
 constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0

@@ -51,6 +51,8 @@ constructors.cacheintex      = true -- so we see the original table in fonts.fon
 
 constructors.addtounicode    = true
 
+constructors.fixprotrusion   = true
+
 -- This might become an interface:
 
 local designsizes           = allocate()
@@ -599,7 +601,10 @@ function constructors.scale(tfmdata,specification)
     --
     constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --
-    local protrusionfactor = (targetquad ~= 0 and 1000/targetquad) or 0
+    -- I need to fix this in luatex ... get rid of quad there so that we can omit this here.
+    --
+    local protrusionfactor = constructors.fixprotrusion and ((targetquad ~= 0 and 1000/targetquad) or 1) or 1
+    --
     local scaledwidth      = defaultwidth  * hdelta
     local scaledheight     = defaultheight * vdelta
     local scaleddepth      = defaultdepth  * vdelta

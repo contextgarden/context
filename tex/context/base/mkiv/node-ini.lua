@@ -184,6 +184,7 @@ if not gluecodes.indentskip then
     gluecodes.indentskip     = gluecodes.userskip
     gluecodes.lefthangskip   = gluecodes.userskip
     gluecodes.righthangskip  = gluecodes.userskip
+    gluecodes.correctionskip = gluecodes.userskip
 end
 
 if CONTEXTLMTXMODE > 0 then

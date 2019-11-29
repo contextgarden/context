@@ -51,8 +51,10 @@ local setprev            = nuts.setprev
 local setcomponents      = nuts.setcomponents
 local setattrlist        = nuts.setattrlist
 
-local nextnode           = nuts.traversers.node
-local nextglyph          = nuts.traversers.glyph
+local traversers         = nuts.traversers
+local nextnode           = traversers.node
+local nextglyph          = traversers.glyph
+
 local flush_node         = nuts.flush
 local flush_list         = nuts.flush_list
 local hpack_nodes        = nuts.hpack
@@ -501,6 +503,77 @@ do
     function nodes.start_of_par(n)
         local s = getsubtype(n)
         return s == hmodepar_code or s == vmodepar_code
+    end
+
+end
+
+-- Currently only in luametatex ... experimental anyway .. if it doesn't end
+-- up in luatex I'll move this to a different module.
+
+do
+
+    local nextnode           = traversers.glue
+    local findfail           = nuts.tail
+
+    local getid              = nuts.getid
+    local getsubtype         = nuts.getsubtype
+    local getlist            = nuts.getlist
+    local getwidth           = nuts.getwidth
+
+    local direct             = node.direct
+
+    local nodecodes          = nodes.nodecodes
+    local skipcodes          = nodes.skipcodes
+
+    local hlist_code         = nodecodes.hlist
+    local line_code          = nodecodes.line
+
+    local leftskip_code      = skipcodes.leftskip
+    local rightskip_code     = skipcodes.rightskip
+    local lefthangskip_code  = skipcodes.lefthangskip
+    local righthangskip_code = skipcodes.righthangskip
+    local indentskip_code    = skipcodes.indentskip
+    local parfillskip_code   = skipcodes.parfillskip
+
+    local find_node = direct.find_node or function(h,t,s)
+        if h then
+            if s then
+                for node, subtype in traversers[t] do
+                    if s == subtype then
+                        return current
+                    end
+                end
+            else
+                for node, subtype in traversers[t] do
+                    return current, subtype
+                end
+            end
+        end
+    end
+
+    nuts.find_node = find_node
+
+    nuts.getnormalizeline = direct.getnormalizeline or function() return 0 end
+    nuts.setnormalizeline = direct.setnormalizeline or function()          end
+
+    nuts.getnormalizedline = direct.getnormalizedline or function(h)
+        if getid(h) == hlist_code and getsubtype(h) == line_code then
+            local ls, rs = 0, 0
+            local lh, rh = 0, 0
+            local is, ps = 0, 0
+            local h = getlist(h)
+            local t = findtail(h)
+            for n, subtype in nextglue, h do
+                if     subtype == leftskip_code      then ls = getwidth(n)
+                elseif subtype == rightskip_code     then rs = getwidth(n)
+                elseif subtype == lefthangskip_code  then lh = getwidth(n)
+                elseif subtype == righthangskip_code then rh = getwidth(n)
+                elseif subtype == indentskip_code    then is = getwidth(n)
+                elseif subtype == parfillskip_code   then ps = getwidth(n)
+                end
+            end
+            return ls, rs, lh, rh, is, ps, h, t
+        end
     end
 
 end

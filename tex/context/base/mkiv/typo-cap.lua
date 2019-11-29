@@ -315,8 +315,8 @@ register(variables.camel,  camel)             --  10
 register(variables.cap,    variables.capital) -- clone
 register(variables.Cap,    variables.Capital) -- clone
 
--- this can be more clever: when we unset we can actually
--- use the same attr ref if needed
+-- This can be more clever: when we unset we can actually use the same attr ref if
+-- needed. Using properties to block further usage is not faster.
 
 function cases.handler(head) -- not real fast but also not used on much data
     local start    = head

@@ -1,71 +1,96 @@
 if not modules then modules = { } end modules ['node-dir'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
-    author    = "Taco Hoekwater and Hans Hagen",
+    author    = "Hans Hagen",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
--- This is experimental code, so when I change it I need to check other modules
--- too.
---
--- Local par nodes are somewhat special. They start a paragraph and then register
--- the par direction. But they can also show op mid paragraph in which case they
--- register boxes and penalties. In that case the direction should not be affected.
---
--- We can assume that when hpack and prelinebreak filters are called, a local par
--- still sits at the head, but after a linebreak pass this node can be after the
--- leftskip (when present).
+local nodes             = nodes
+local nuts              = nodes.nuts
 
-local nodes         = nodes
-local nuts          = nodes.nuts
+local normaldir_code    = nodes.dircodes.normal
+local line_code         = nodes.listcodes.line
+local lefttoright_code  = nodes.dirvalues.lefttoright
 
-local nodecodes     = nodes.nodecodes
-local localpar_code = nodecodes.localpar
+local getnext           = nuts.getnext
+local getlist           = nuts.getlist
+local getwhd            = nuts.getwhd
+local getdirection      = nuts.getdirection
 
-local getid         = nuts.getid
-local getsubtype    = nuts.getsubtype
-local getdirection  = nuts.getdirection
+local setlist           = nuts.setlist
 
-local dirvalues     = nodes.dirvalues
-local lefttoright   = dirvalues.lefttoright
-local righttoleft   = dirvalues.righttoleft
+local nextdir           = nuts.traversers.dir
+local nexthlist         = nuts.traversers.hlist
 
-local localparcodes = nodes.localparcodes
-local hmodepar_code = localparcodes.vmode_par
-local vmodepar_code = localparcodes.hmode_par
+local rangedimensions   = nuts.rangedimensions
+local insert_before     = nuts.insert_before
 
-function nodes.dirstack(head,direction)
-    local stack = { }
-    local top   = 0
-    if head and getid(head) == localpar_code then
-        local s = getsubtype(head)
-        if s == hmodepar_code or s == vmodepar_code then
-            direction = getdirection(head)
-        end
-    end
-    if not direction then
-        direction = lefttoright
-    elseif direction == "TLT" then
-        direction = lefttoright
-    elseif direction == "TRT" then
-        direction = righttoleft
-    end
-    local function update(node)
-        local dir, pop = getdirection(node)
-        if not pop then
-            top = top + 1
-            stack[top] = dir
-            return dir
-        elseif top == 0 then
-            return direction
-        elseif top == 1 then
-            top = 0
-            return direction
+local new_rule          = nuts.pool.rule
+local new_kern          = nuts.pool.kern
+
+local setcolor          = nodes.tracers.colors.set
+local settransparency   = nodes.tracers.transparencies.set
+
+local function dirdimensions(parent,begindir) -- can be a helper
+    local level  = 1
+    local enddir = begindir
+    local width  = 0
+    for current, subtype in nextdir, getnext(begindir) do
+        if subtype == normaldir_code then -- todo
+            level = level + 1
         else
-            top = top - 1
-            return stack[top]
+            level = level - 1
+        end
+        if level == 0 then -- does the type matter
+            enddir = current
+            width  = rangedimensions(parent,begindir,enddir)
         end
     end
-    return direction, update
+    if enddir == begindir then
+        width = rangedimensions(parent,begindir)
+    end
+    return width, enddir
 end
+
+nuts.dirdimensions = dirdimensions
+
+local function colorit(list,current,dir,w,h,d)
+    local rule  = new_rule(w,h,d)
+    local kern  = new_kern(-w)
+    local color = dir == lefttoright_code and "trace:s" or "trace:o"
+    setcolor(rule,color)
+    settransparency(rule,color)
+    list, current = insert_before(list,current,kern)
+    list, current = insert_before(list,current,rule)
+    return list, current
+end
+
+function nodes.tracers.directions(head)
+    for hlist, subtype in nexthlist, head do
+        if subtype == line_code then
+            local list = getlist(hlist)
+            local w, h, d = getwhd(hlist)
+            list = colorit(list,list,getdirection(hlist),w,h,d)
+            for current in nextdir, list do
+                local dir, cancel = getdirection(current)
+                if not cancel then
+                    local width = dirdimensions(hlist,current)
+                    list = colorit(list,current,dir,width,h,d)
+                end
+            end
+            setlist(hlist,list)
+        end
+    end
+    return head
+end
+
+local enabled = false
+
+trackers.register("nodes.directions", function(v)
+    if not enabled then
+        enabled = true
+        nodes.tasks.appendaction("finalizers","after","nodes.tracers.directions",nil,"nut","enabled")
+    end
+    nodes.tasks.setaction(v)
+end)

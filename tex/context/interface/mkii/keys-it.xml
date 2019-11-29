@@ -1051,6 +1051,7 @@
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='numeroproprio'/>
+		<cd:constant name='packcriterium' value='packcriterium'/>
 		<cd:constant name='page' value='pagina'/>
 		<cd:constant name='pageboundaries' value='limitipagina'/>
 		<cd:constant name='pagecolor' value='colorepagina'/>

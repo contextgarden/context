@@ -10,7 +10,7 @@ local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
 local type, tonumber, next = type, tonumber, next
 local gmatch = string.gmatch
 local formatters = string.formatters
-local compactfloat = number.compactfloat
+local round = math.round
 
 -- This module started out in the early days of mkiv and luatex with visualizing
 -- kerns related to fonts. In the process of cleaning up the visual debugger code it
@@ -388,11 +388,12 @@ local c_skip_b          = "trace:m"
 local c_glyph           = "trace:o"
 local c_ligature        = "trace:s"
 local c_white           = "trace:w"
-local c_math            = "trace:r"
+local c_math            = "trace:s"
 local c_origin          = "trace:o"
 local c_discretionary   = "trace:d"
 local c_expansion       = "trace:o"
 local c_depth           = "trace:o"
+local c_indent          = "trace:s"
 
 local c_positive_d      = "trace:db"
 local c_negative_d      = "trace:dr"
@@ -514,7 +515,7 @@ local glyphexpansion do
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then
-                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local text = hpack_string(round(extra),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,2*exheight)
                 local list = getlist(text)
                 if extra > 0 then
@@ -548,7 +549,7 @@ local kernexpansion do
             extra = extra / 1000
             local info = f_cache[extra]
             if not info then
-                local text = hpack_string(compactfloat(extra,"%.1f"),usedfont)
+                local text = hpack_string(round(extra),usedfont)
                 local rule = new_rule(emwidth/fraction,exheight,4*exheight)
                 local list = getlist(text)
                 if extra > 0 then
@@ -858,22 +859,25 @@ end
 
 local ruledglue do
 
-    local gluecodes       = nodes.gluecodes
-    local leadercodes     = nodes.gluecodes
+    local gluecodes           = nodes.gluecodes
+    local leadercodes         = nodes.gluecodes
 
-    local userskip_code   = gluecodes.userskip
-    local spaceskip_code  = gluecodes.spaceskip
-    local xspaceskip_code = gluecodes.xspaceskip
-    local leftskip_code   = gluecodes.leftskip
-    local rightskip_code  = gluecodes.rightskip
+    local userskip_code       = gluecodes.userskip
+    local spaceskip_code      = gluecodes.spaceskip
+    local xspaceskip_code     = gluecodes.xspaceskip
+    local leftskip_code       = gluecodes.leftskip
+    local rightskip_code      = gluecodes.rightskip
+    local parfillskip_code    = gluecodes.parfillskip
+    local indentskip_code     = gluecodes.indentskip
+    local correctionskip_code = gluecodes.correctionskip
 
-    local cleaders_code   = leadercodes.cleaders
+    local cleaders_code       = leadercodes.cleaders
 
     local g_cache_v = caches["vglue"]
     local g_cache_h = caches["hglue"]
 
     local tags = {
-     -- [gluecodes.userskip]              = "US",
+     -- [userskip_code]                   = "US",
         [gluecodes.lineskip]              = "LS",
         [gluecodes.baselineskip]          = "BS",
         [gluecodes.parskip]               = "PS",
@@ -881,15 +885,9 @@ local ruledglue do
         [gluecodes.belowdisplayskip]      = "DB",
         [gluecodes.abovedisplayshortskip] = "SA",
         [gluecodes.belowdisplayshortskip] = "SB",
-        [gluecodes.leftskip]              = "LS",
-        [gluecodes.rightskip]             = "RS",
         [gluecodes.topskip]               = "TS",
         [gluecodes.splittopskip]          = "ST",
         [gluecodes.tabskip]               = "AS",
-        [gluecodes.spaceskip]             = "SP",
-        [gluecodes.xspaceskip]            = "XS",
-        [gluecodes.parfillskip]           = "PF",
-        [gluecodes.indentskip]            = "IN",
         [gluecodes.lefthangskip]          = "LH",
         [gluecodes.righthangskip]         = "RH",
         [gluecodes.thinmuskip]            = "MS",
@@ -901,6 +899,13 @@ local ruledglue do
         [leadercodes.gleaders]            = "GL",
      -- true                              = "VS",
      -- false                             = "HS",
+        [leftskip_code]                   = "LS",
+        [rightskip_code]                  = "RS",
+        [spaceskip_code]                  = "SP",
+        [xspaceskip_code]                 = "XS",
+        [parfillskip_code]                = "PF",
+        [indentskip_code]                 = "IN",
+        [correctionskip_code]             = "CS",
     }
 
     -- we sometimes pass previous as we can have issues in math (not watertight for all)
@@ -917,6 +922,8 @@ local ruledglue do
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
+            elseif subtype == parfillskip_code or subtype == indentskip_code or subtype == correctionskip_code then
+                info = sometext(amount,l_glue,c_indent)
             elseif subtype == userskip_code then
                 if width > 0 then
                     info = sometext(amount,l_glue,c_positive)

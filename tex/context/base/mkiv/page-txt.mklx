@@ -500,13 +500,13 @@
 
 \def\page_layouts_left_edge_element_indeed#text#style#color#width%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty\else
+   \ifx\p_text\empty
+     \kern\leftedgewidth
+   \else
       \hbox to \leftedgewidth\bgroup
         \hss
         \page_layouts_process_element_indeed#style#color#width%
       \egroup
-   \else
-     \kern\leftedgewidth
    \fi}
 
 \def\page_layouts_left_edge_element#text#style#color#width%
@@ -517,13 +517,13 @@
 
 \def\page_layouts_right_edge_element_indeed#text#style#color#width%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty\else
+   \ifx\p_text\empty
+     \kern\rightedgewidth
+   \else
       \hbox to \rightedgewidth\bgroup
         \page_layouts_process_element_indeed#style#color#width%
         \hss
       \egroup
-   \else
-     \kern\rightedgewidth
    \fi}
 
 \def\page_layouts_right_edge_element#text#style#color#width%
@@ -601,7 +601,7 @@
    \else
      \hbox to \makeupwidth\bgroup
        \page_layouts_place_extra_text_left
-       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth%
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth
        \hss
      \egroup
      \kern-\makeupwidth
@@ -610,7 +610,7 @@
    \ifx\p_text\empty\else
      \hbox to \makeupwidth\bgroup
        \hss
-       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth%
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
        \hss
      \egroup
      \kern-\makeupwidth
@@ -621,7 +621,7 @@
    \else
      \hbox to \makeupwidth\bgroup
        \hss
-       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth%
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth
      \egroup
    \fi}
 
@@ -629,7 +629,7 @@
   {\letfromlayoutelementparameter\p_text\c!righttext
    \ifx\p_text\empty\else
      \hbox to \makeupwidth\bgroup
-       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth%
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth
        \hss
      \egroup
      \kern-\makeupwidth
@@ -638,7 +638,7 @@
    \ifx\p_text\empty\else
      \hbox to \makeupwidth\bgroup
        \hss
-       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth%
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
        \hss
      \egroup
      \kern-\makeupwidth
@@ -656,7 +656,7 @@
    \else
      \hbox to \makeupwidth\bgroup
        \hss
-       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth%
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth
        \page_layouts_place_extra_text_right
      \egroup
    \fi}

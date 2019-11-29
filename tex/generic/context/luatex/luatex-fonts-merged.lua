@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 11/25/19 17:28:15
+-- merge date  : 11/29/19 21:47:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -8763,6 +8763,7 @@ constructors.cache=containers.define("fonts","constructors",constructors.version
 constructors.privateoffset=fonts.privateoffsets.textbase or 0xF0000
 constructors.cacheintex=true 
 constructors.addtounicode=true
+constructors.fixprotrusion=true
 local designsizes=allocate()
 constructors.designsizes=designsizes
 local loadedfonts=allocate()
@@ -9155,7 +9156,7 @@ function constructors.scale(tfmdata,specification)
   targetparameters.descender=delta*descender
  end
  constructors.enhanceparameters(targetparameters)
- local protrusionfactor=(targetquad~=0 and 1000/targetquad) or 0
+ local protrusionfactor=constructors.fixprotrusion and ((targetquad~=0 and 1000/targetquad) or 1) or 1
  local scaledwidth=defaultwidth*hdelta
  local scaledheight=defaultheight*vdelta
  local scaleddepth=defaultdepth*vdelta

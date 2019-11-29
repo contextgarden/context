@@ -322,6 +322,7 @@ local reported  = { }
 
 local function validcommand(name,program,template,checkers,defaults,variables,reporter,strict)
     if validbinaries ~= false and (validbinaries == true or validbinaries[program]) then
+        local binpath = nil
         if variables then
             for variable, value in next, variables do
                 local chktype = checkers[variable]
@@ -363,8 +364,8 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
                     end
                 end
             end
+            binpath = variables.binarypath
         end
-        local binpath = variables.binarypath
         if type(binpath) == "string" and binpath ~= "" then
             -- this works on the console but not from e.g. scite
          -- program = '"' .. binpath .. "/" .. program .. '"'

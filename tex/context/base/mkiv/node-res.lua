@@ -183,6 +183,10 @@ local lineskip          = register_nut(new_nut(glue_code,gluecodes.lineskip))
 local baselineskip      = register_nut(new_nut(glue_code,gluecodes.baselineskip))
 local leftskip          = register_nut(new_nut(glue_code,gluecodes.leftskip))
 local rightskip         = register_nut(new_nut(glue_code,gluecodes.rightskip))
+local lefthangskip      = register_nut(new_nut(glue_code,gluecodes.lefthangskip))
+local righthangskip     = register_nut(new_nut(glue_code,gluecodes.righthangskip))
+local indentskip        = register_nut(new_nut(glue_code,gluecodes.indentskip))
+local correctionskip    = register_nut(new_nut(glue_code,gluecodes.correctionskip))
 
 local temp              = register_nut(new_nut(nodecodes.temp,0))
 
@@ -319,6 +323,18 @@ function nutpool.rightskip(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(rightskip,width,stretch,shrink,stretch_order,shrink_order)
 end
 
+function nutpool.lefthangskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(lefthangskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.righthangskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(righthangskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.indentskip(width,stretch,shrink,stretch_order,shrink_order)
+    return someskip(indentskip,width,stretch,shrink,stretch_order,shrink_order)
+end
+
 function nutpool.lineskip(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(lineskip,width,stretch,shrink,stretch_order,shrink_order)
 end
@@ -333,14 +349,6 @@ function nutpool.disc(pre,post,replace)
         setdisc(d,pre,post,replace)
     end
     return d
-end
-
-function nutpool.textdir(dir) -- obsolete !
-    local t = copy_nut(textdir)
-    if dir then
-        setdirection(t,dir)
-    end
-    return t
 end
 
 function nutpool.direction(dir,swap)

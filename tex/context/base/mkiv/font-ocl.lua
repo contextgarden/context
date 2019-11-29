@@ -439,6 +439,8 @@ do
         local xmlfirst   = xml.first
 
         function otfsvg.filterglyph(entry,index)
+            -- we only support decompression in lmtx, so one needs to wipe the
+            -- cache when invalid xml is reported
             local svg  = xmlconvert(entry.data)
             local root = svg and xmlfirst(svg,"/svg[@id='glyph"..index.."']")
             local data = root and tostring(root)
