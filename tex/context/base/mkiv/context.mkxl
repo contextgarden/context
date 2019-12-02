@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.11.29 21:47}
+\edef\contextversion{2019.12.02 18:28}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -211,7 +211,7 @@
 
 \loadmarkfile{regi-ini}
 \loadmarkfile{enco-ini}
-\loadmarkfile{hand-ini}
+\loadmkxlfile{hand-ini}
 
 \loadmkxlfile{lang-ini} % LMTX
 \loadmarkfile{lang-hyp} % also loads dis

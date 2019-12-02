@@ -364,12 +364,13 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
 
     local width, height, depth, naturalwidth
     if current then
-        width, height, depth, factor = getwhd(current,true)
-        naturalwidth = width
-        if factor ~= 0 then
-         -- width = (1.0 + factor/1000000.0) * width
-            width = width + width * factor/1000000.0
-         -- width = width + width * 0.000001 * factor
+        naturalwidth, height, depth, factor = getwhd(current,true)
+        if factor == 0 then
+            width = naturalwidth
+        else
+         -- width = (1.0 + factor/1000000.0) * naturalwidth
+            width = naturalwidth + naturalwidth * factor/1000000.0
+         -- width = naturalwidth + naturalwidth * 0.000001 * factor
         end
     else
         width  = data.width or 0

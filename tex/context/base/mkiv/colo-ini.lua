@@ -510,6 +510,9 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
     colorset[name] = true-- maybe we can store more
 end
 
+-- You cannot overload a local color so one then has to use some prefix, like
+-- mp:red. Kind of protection.
+
 local function defineprocesscolordirect(settings)
     if settings then
         local name = settings.name

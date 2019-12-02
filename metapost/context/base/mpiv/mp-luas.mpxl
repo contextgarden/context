@@ -241,6 +241,10 @@ newinternal mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = 
 newinternal mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
 newinternal mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;
 
+% You cannot overload a local color bu using a prefix works ok:
+%
+% \definecolor [ name = "mp:myred", r = .9 ] ;
+
 newinternal mfid_definecolor ; mfid_definecolor := scriptindex "definecolor" ;
 
 def definecolor = runscript mfid_definecolor ; enddef ; % the semicolon prevents lookahead
