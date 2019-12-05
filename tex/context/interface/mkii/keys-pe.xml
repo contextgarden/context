@@ -235,6 +235,7 @@
 		<cd:variable name='handwritten' value='دست‌نوشته'/>
 		<cd:variable name='hang' value='بیاویز'/>
 		<cd:variable name='hanging' value='آویزان'/>
+		<cd:variable name='hangingboth' value='hangingboth'/>
 		<cd:variable name='head' value='سر'/>
 		<cd:variable name='header' value='سربرگ'/>
 		<cd:variable name='headintext' value='headintext'/>
@@ -1050,6 +1051,7 @@
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='شماره‌خود'/>
+		<cd:constant name='packcriterium' value='packcriterium'/>
 		<cd:constant name='page' value='صفحه'/>
 		<cd:constant name='pageboundaries' value='مرزهای‌صفحه'/>
 		<cd:constant name='pagecolor' value='رنگ‌صفحه'/>
@@ -1059,6 +1061,7 @@
 		<cd:constant name='pageconversion' value='pageconversion'/>
 		<cd:constant name='pageconversionset' value='pageconversionset'/>
 		<cd:constant name='pageleft' value='pageleft'/>
+		<cd:constant name='pagemethod' value='pagemethod'/>
 		<cd:constant name='pagenumber' value='شماره‌صفحه'/>
 		<cd:constant name='pageprefix' value='pageprefix'/>
 		<cd:constant name='pageprefixconnector' value='pageprefixconnector'/>

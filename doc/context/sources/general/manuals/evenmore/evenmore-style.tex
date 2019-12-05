@@ -1,0 +1,67 @@
+% \enablelmtx
+% \nopdfcompression
+
+\startenvironment evenmore-style
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
+
+\logo [LUAMETATEX] {LuaMeta\TeXsuffix}
+
+\setupbodyfont[plex,10pt] % not that ok for titling
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0pt,
+   footer=1cm,
+   footerdistance=5mm,
+   backspace=2cm,
+   cutspace=15mm,
+   topspace=2cm,
+   bottomspace=1cm,
+   style=bold,
+   color=maincolor]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupwhitespace
+  [big]
+
+\setupfootertexts
+  [][{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}][]
+
+\definecolor
+  [maincolor]
+  [darkgray]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   color=maincolor]
+
+\setuphead
+  [section]
+  [style=\bfa,
+   color=maincolor]
+
+\setuphead
+  [subsection]
+  [style=\bf,
+   color=maincolor]
+
+\setupalign
+  [tolerant,stretch]
+
+\setuptyping
+  [color=maincolor]
+
+\setuptype
+  [color=maincolor]
+
+\setupitemize
+  [color=maincolor]
+
+\stopenvironment

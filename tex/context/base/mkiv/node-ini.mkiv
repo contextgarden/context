@@ -17,6 +17,10 @@
 
 \newcount\filterstate \filterstate\plusone % hm, public
 
+\ifcase\contextlmtxmode \else
+    \registerctxluafile{node-cmp}{}
+\fi
+
 \registerctxluafile{node-ini}{}
 \registerctxluafile{node-met}{}
 \registerctxluafile{node-nut}{}

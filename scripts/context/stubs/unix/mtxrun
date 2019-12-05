@@ -4631,7 +4631,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-gzip"] = package.loaded["l-gzip"] or true
 
--- original size: 2980, stripped down to: 2054
+-- original size: 5115, stripped down to: 1699
 
 if not modules then modules={} end modules ['l-gzip']={
  version=1.001,
@@ -4639,35 +4639,46 @@ if not modules then modules={} end modules ['l-gzip']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-if gzip then
- local suffix,suffixes=file.suffix,file.suffixes
+gzip=gzip or {} 
+if not zlib then
+ zlib=xzip 
+elseif not xzip then
+ xzip=zlib
+end
+if zlib then
+ local suffix=file.suffix
+ local suffixes=file.suffixes
+ local find=string.find
+ local openfile=io.open
+ local gzipwindow=15+16 
+ local gziplevel=3
+ local identifier="^\x1F\x8B\x08"
+ local compress=zlib.compress
+ local decompress=zlib.decompress
  function gzip.load(filename)
-  local f=io.open(filename,"rb")
+  local f=openfile(filename,"rb")
   if not f then
-  elseif suffix(filename)=="gz" then
-   f:close()
-   local g=gzip.open(filename,"rb")
-   if g then
-    local str=g:read("*all")
-    g:close()
-    return str
-   end
   else
-   local str=f:read("*all")
+   local data=f:read("*all")
    f:close()
-   return str
+   if data and data~="" then
+    if suffix(filename)=="gz" then
+     data=decompress(data,gzipwindow)
+    end
+    return data
+   end
   end
  end
- function gzip.save(filename,data)
+ function gzip.save(filename,data,level)
   if suffix(filename)~="gz" then
    filename=filename..".gz"
   end
-  local f=io.open(filename,"wb")
+  local f=openfile(filename,"wb")
   if f then
-   local s=zlib.compress(data or "",9,nil,15+16)
-   f:write(s)
+   data=compress(data or "",level or gziplevel,nil,gzipwindow)
+   f:write(data)
    f:close()
-   return #s
+   return #data
   end
  end
  function gzip.suffix(filename)
@@ -4675,58 +4686,24 @@ if gzip then
   local gzipped=extra=="gz"
   return suffix,gzipped
  end
-else
-end
-if flate then
- local type=type
- local find=string.find
- local compress=flate.gz_compress
- local decompress=flate.gz_decompress
- local absmax=128*1024*1024
- local initial=64*1024
- local identifier="^\x1F\x8B\x08"
  function gzip.compressed(s)
   return s and find(s,identifier)
  end
  function gzip.compress(s,level)
   if s and not find(s,identifier) then 
    if not level then
-    level=3
+    level=gziplevel
    elseif level<=0 then
     return s
    elseif level>9 then
     level=9
    end
-   return compress(s,level) or s
+   return compress(s,level or gziplevel,nil,gzipwindow) or s
   end
  end
- function gzip.decompress(s,size,iterate)
+ function gzip.decompress(s)
   if s and find(s,identifier) then
-   if type(size)~="number" then
-    size=initial
-   end
-   if size>absmax then
-    size=absmax
-   end
-   if type(iterate)=="number" then
-    max=size*iterate
-   elseif iterate==nil or iterate==true then
-    iterate=true
-    max=absmax
-   end
-   if max>absmax then
-    max=absmax
-   end
-   while true do
-    local d=decompress(s,size)
-    if d then
-     return d
-    end
-    size=2*size
-    if not iterate or size>max then
-     return false
-    end
-   end
+   return decompress(s,gzipwindow)
   else
    return s
   end
@@ -15960,7 +15937,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 18645, stripped down to: 11291
+-- original size: 19243, stripped down to: 10700
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15971,7 +15948,7 @@ if not modules then modules={} end modules ['util-zip']={
 local type,tostring,tonumber=type,tostring,tonumber
 local sort=table.sort
 local find,format,sub,gsub=string.find,string.format,string.sub,string.gsub
-local osdate,ostime=os.date,os.time
+local osdate,ostime,osclock=os.date,os.time,os.clock
 local ioopen=io.open
 local loaddata,savedata=io.loaddata,io.savedata
 local filejoin,isdir,dirname,mkdirs=file.join,lfs.isdir,file.dirname,dir.mkdirs
@@ -15987,10 +15964,6 @@ local band=bit32.band
 local rshift=bit32.rshift
 local lshift=bit32.lshift
 local decompress,calculatecrc
-if flate then
- decompress=flate.flate_decompress
- calculatecrc=flate.update_crc32
-else
  local zlibdecompress=zlib.decompress
  local zlibchecksum=zlib.crc32
  decompress=function(source,targetsize)
@@ -16004,7 +15977,6 @@ else
  calculatecrc=function(buffer,initial)
   return zlibchecksum(initial or 0,buffer)
  end
-end
 local zipfiles={}
 utilities.zipfiles=zipfiles
 local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
@@ -16113,6 +16085,7 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
    z.handle=nil
   end
  end
+ local expandsize=xzip.expandsize
  function unzipfile(z,filename,check)
   local hash=z.hash
   if not hash then
@@ -16129,7 +16102,11 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
     setposition(handle,position)
     local result=readstring(handle,compressed)
     if data.method==8 then
-     result=decompress(result,data.uncompressed)
+     if expandsize then
+      result=expandsize(result,data.uncompressed)
+     else
+      result=decompress(result)
+     end
     end
     if check and data.crc32~=calculatecrc(result) then
      print("checksum mismatch")
@@ -16148,14 +16125,14 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
  zipfiles.list=getziplist
  zipfiles.found=foundzipfile
 end
-if flate then do
+if xzip then 
  local writecardinal1=files.writebyte
  local writecardinal2=files.writecardinal2le
  local writecardinal4=files.writecardinal4le
  local logwriter=logs.writer
  local globpattern=dir.globpattern
- local compress=flate.flate_compress
- local checksum=flate.update_crc32
+ local compress=xzip.compress
+ local checksum=xzip.crc32
  local function fromdostime(dostime,dosdate)
   return ostime {
    year=rshift(dosdate,9)+1980,
@@ -16352,18 +16329,20 @@ if flate then do
     local count=#list
     local step=number.idiv(count,10)
     local done=0
+    local steps=verbose=="steps"
+    local time=steps and osclock()
     for i=1,count do
      local l=list[i]
      local n=l.filename
      local d=unzipfile(z,n) 
      local p=filejoin(path,n)
      if mkdirs(dirname(p)) then
-      if verbose=="steps" then
+      if steps then
        total=total+#d
        done=done+1
        if done>=step then
         done=0
-        logwriter(format("%4i files of %4i done, %10i bytes",i,count,total))
+        logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
        end
       elseif verbose then
        logwriter(n)
@@ -16371,8 +16350,8 @@ if flate then do
       savedata(p,d)
      end
     end
-    if verbose=="steps" then
-     logwriter(format("%4i files of %4i done, %10i bytes",count,count,total))
+    if steps then
+     logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",count,count,total,osclock()-time))
     end
     closezipfile(z)
     return true
@@ -16383,37 +16362,8 @@ if flate then do
  end
  zipfiles.zipdir=zipdir
  zipfiles.unzipdir=unzipdir
-end end
-if flate then
- local streams=utilities.streams
- local openfile=streams.open
- local closestream=streams.close
- local setposition=streams.setposition
- local getsize=streams.size
- local readcardinal4=streams.readcardinal4le
- local getstring=streams.getstring
- local decompress=flate.gz_decompress
- function zipfiles.gunzipfile(filename)
-  local strm=openfile(filename)
-  if strm then
-   setposition(strm,getsize(strm)-4+1)
-   local size=readcardinal4(strm)
-   local data=decompress(getstring(strm),size)
-   closestream(strm)
-   return data
-  end
- end
-elseif gzip then
- local openfile=gzip.open
- function zipfiles.gunzipfile(filename)
-  local g=openfile(filename,"rb")
-  if g then
-   local d=g:read("*a")
-   d:close()
-   return d
-  end
- end
 end
+zipfiles.gunzipfile=gzip.load
 
 
 end -- of closure
@@ -26129,8 +26079,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040843
--- stripped bytes    : 412133
+-- original bytes    : 1043576
+-- stripped bytes    : 415812
 
 -- end library merge
 

@@ -3106,9 +3106,9 @@ end
 
 do
 
-    local family_font    = node.family_font
-    local new_glyph      = nodes.pool.glyph
-    local fontproperties = fonts.hashes.properties
+    local getfontoffamily = font.getfontoffamily
+    local new_glyph       = nodes.pool.glyph
+    local fontproperties  = fonts.hashes.properties
 
     local function getprivateslot(id,name)
         if not name then
@@ -3177,7 +3177,7 @@ do
         name      = "getprivatemathchar",
         arguments = "string",
         actions   = function(name)
-            local p = getprivateslot(family_font(0),name)
+            local p = getprivateslot(getfontoffamily(0),name)
             if p then
                 context(utfchar(p))
             end

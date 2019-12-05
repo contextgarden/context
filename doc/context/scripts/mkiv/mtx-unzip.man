@@ -14,11 +14,8 @@
 .B --list
 list files in archive
 .TP
-.B --junk
-flatten unzipped directory structure
-.TP
 .B --extract
-extract files
+extract files [--silent --steps]
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

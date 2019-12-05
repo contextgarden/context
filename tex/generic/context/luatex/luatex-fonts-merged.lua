@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/02/19 18:28:49
+-- merge date  : 12/05/19 18:44:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -8690,6 +8690,9 @@ fonts.privateoffsets={
  mathbase=0xFF000,
  keepnames=false,
 }
+if not tex.getfontoffamily then
+ tex.getfontoffamily=node.family_font 
+end
 
 end -- closure
 

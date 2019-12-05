@@ -163,7 +163,7 @@ local fencesstack = { }
 
 -- local function getunicode(n) -- instead of getchar
 --     local char = getchar(n)
---  -- local font = font_of_family(getfield(n,"fam")) -- font_of_family
+--  -- local font = getfontoffamily(getfield(n,"fam"))
 --     local font = getfont(n)
 --     local data = fontcharacters[font][char]
 --     return data.unicode or char

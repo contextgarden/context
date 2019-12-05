@@ -16,7 +16,7 @@ local type, tostring, tonumber = type, tostring, tonumber
 local sort = table.sort
 
 local find, format, sub, gsub = string.find, string.format, string.sub, string.gsub
-local osdate, ostime = os.date, os.time
+local osdate, ostime, osclock = os.date, os.time, os.clock
 local ioopen = io.open
 local loaddata, savedata = io.loaddata, io.savedata
 local filejoin, isdir, dirname, mkdirs = file.join, lfs.isdir, file.dirname, dir.mkdirs
@@ -36,12 +36,12 @@ local lshift        = bit32.lshift
 
 local decompress, calculatecrc
 
-if flate then
-
-    decompress   = flate.flate_decompress
-    calculatecrc = flate.update_crc32
-
-else
+-- if flate then
+--
+--     decompress   = flate.flate_decompress
+--     calculatecrc = flate.update_crc32
+--
+-- else
 
     local zlibdecompress = zlib.decompress
     local zlibchecksum   = zlib.crc32
@@ -59,7 +59,7 @@ else
         return zlibchecksum(initial or 0,buffer)
     end
 
-end
+-- end
 
 local zipfiles      = { }
 utilities.zipfiles  = zipfiles
@@ -183,6 +183,8 @@ local openzipfile, closezipfile, unzipfile, foundzipfile, getziphash, getziplist
         end
     end
 
+    local expandsize = xzip.expandsize
+
     function unzipfile(z,filename,check)
         local hash = z.hash
         if not hash then
@@ -201,7 +203,11 @@ local openzipfile, closezipfile, unzipfile, foundzipfile, getziphash, getziplist
                 setposition(handle,position)
                 local result = readstring(handle,compressed)
                 if data.method == 8 then
-                    result = decompress(result,data.uncompressed)
+                    if expandsize then
+                        result = expandsize(result,data.uncompressed)
+                    else
+                        result = decompress(result)
+                    end
                 end
                 if check and data.crc32 ~= calculatecrc(result) then
                     print("checksum mismatch")
@@ -223,7 +229,7 @@ local openzipfile, closezipfile, unzipfile, foundzipfile, getziphash, getziplist
 
 end
 
-if flate then do
+if xzip then -- flate then do
 
     local writecardinal1 = files.writebyte
     local writecardinal2 = files.writecardinal2le
@@ -232,8 +238,10 @@ if flate then do
     local logwriter      = logs.writer
 
     local globpattern    = dir.globpattern
-    local compress       = flate.flate_compress
-    local checksum       = flate.update_crc32
+--     local compress       = flate.flate_compress
+--     local checksum       = flate.update_crc32
+    local compress       = xzip.compress
+    local checksum       = xzip.crc32
 
  -- local function fromdostime(dostime,dosdate)
  --     return ostime {
@@ -469,18 +477,20 @@ if flate then do
                 local count = #list
                 local step  = number.idiv(count,10)
                 local done  = 0
+                local steps = verbose == "steps"
+                local time  = steps and osclock()
                 for i=1,count do
                     local l = list[i]
                     local n = l.filename
                     local d = unzipfile(z,n) -- true for check
                     local p = filejoin(path,n)
                     if mkdirs(dirname(p)) then
-                        if verbose == "steps" then
+                        if steps then
                             total = total + #d
                             done = done + 1
                             if done >= step then
                                 done = 0
-                                logwriter(format("%4i files of %4i done, %10i bytes",i,count,total))
+                                logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
                             end
                         elseif verbose then
                             logwriter(n)
@@ -488,8 +498,8 @@ if flate then do
                         savedata(p,d)
                     end
                 end
-                if verbose == "steps" then
-                    logwriter(format("%4i files of %4i done, %10i bytes",count,count,total))
+                if steps then
+                    logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",count,count,total,osclock()-time))
                 end
                 closezipfile(z)
                 return true
@@ -502,48 +512,50 @@ if flate then do
     zipfiles.zipdir   = zipdir
     zipfiles.unzipdir = unzipdir
 
-end end
-
-if flate then
-
-    local streams       = utilities.streams
-    local openfile      = streams.open
-    local closestream   = streams.close
-    local setposition   = streams.setposition
-    local getsize       = streams.size
-    local readcardinal4 = streams.readcardinal4le
-    local getstring     = streams.getstring
-    local decompress    = flate.gz_decompress
-
-    -- id1=1 id2=1 method=1 flags=1 mtime=4(le) extra=1 os=1
-    -- flags:8 comment=...<nul> flags:4 name=...<nul> flags:2 extra=...<nul> flags:1 crc=2
-    -- data:?
-    -- crc=4 size=4
-
-    function zipfiles.gunzipfile(filename)
-        local strm = openfile(filename)
-        if strm then
-            setposition(strm,getsize(strm) - 4 + 1)
-            local size = readcardinal4(strm)
-            local data = decompress(getstring(strm),size)
-            closestream(strm)
-            return data
-        end
-    end
-
-elseif gzip then
-
-    local openfile = gzip.open
-
-    function zipfiles.gunzipfile(filename)
-        local g = openfile(filename,"rb")
-        if g then
-            local d = g:read("*a")
-            d:close()
-            return d
-        end
-    end
-
 end
+
+zipfiles.gunzipfile = gzip.load
+
+-- if flate then
+--
+--     local streams       = utilities.streams
+--     local openfile      = streams.open
+--     local closestream   = streams.close
+--     local setposition   = streams.setposition
+--     local getsize       = streams.size
+--     local readcardinal4 = streams.readcardinal4le
+--     local getstring     = streams.getstring
+--     local decompress    = flate.gz_decompress
+--
+--     -- id1=1 id2=1 method=1 flags=1 mtime=4(le) extra=1 os=1
+--     -- flags:8 comment=...<nul> flags:4 name=...<nul> flags:2 extra=...<nul> flags:1 crc=2
+--     -- data:?
+--     -- crc=4 size=4
+--
+--     function zipfiles.gunzipfile(filename)
+--         local strm = openfile(filename)
+--         if strm then
+--             setposition(strm,getsize(strm) - 4 + 1)
+--             local size = readcardinal4(strm)
+--             local data = decompress(getstring(strm),size)
+--             closestream(strm)
+--             return data
+--         end
+--     end
+--
+-- elseif gzip then
+--
+--     local openfile = gzip.open
+--
+--     function zipfiles.gunzipfile(filename)
+--         local g = openfile(filename,"rb")
+--         if g then
+--             local d = g:read("*a")
+--             d:close()
+--             return d
+--         end
+--     end
+--
+-- end
 
 return zipfiles

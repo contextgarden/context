@@ -136,8 +136,6 @@ local set_visual         = nuts.setvisual
 
 local mlist_to_hlist     = nuts.mlist_to_hlist
 
-local font_of_family     = node.family_font
-
 local new_kern           = nodepool.kern
 local new_submlist       = nodepool.submlist
 local new_noad           = nodepool.noad
@@ -152,6 +150,7 @@ local fontitalics        = fonthashes.italics
 local variables          = interfaces.variables
 local texsetattribute    = tex.setattribute
 local texgetattribute    = tex.getattribute
+local getfontoffamily    = tex.getfontoffamily
 local unsetvalue         = attributes.unsetvalue
 local implement          = interfaces.implement
 
@@ -512,7 +511,7 @@ do
                             report_families("no bold replacement for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
                         end
                         setfam(pointer,newa)
-                    elseif not fontcharacters[font_of_family(newa)][bold] then
+                    elseif not fontcharacters[getfontoffamily(newa)][bold] then
                         if trace_families then
                             report_families("no bold character for %C, family %s with remap %s becomes %s with remap %s",char,a,familymap[a],newa,familymap[newa])
                         end
@@ -529,7 +528,7 @@ do
                     end
                 else
                     local char = getchar(pointer)
-                    if not fontcharacters[font_of_family(a)][char] then
+                    if not fontcharacters[getfontoffamily(a)][char] then
                         if trace_families then
                             report_families("no bold replacement for %C",char)
                         end
@@ -553,14 +552,14 @@ do
                     a = a - 3
                 end
                 local char = getfield(pointer,"small_char")
-                local okay = fontcharacters[font_of_family(a)][char]
+                local okay = fontcharacters[getfontoffamily(a)][char]
                 if okay then
                     setfield(pointer,"small_fam",a)
                 elseif a > 2 then
                     setfield(pointer,"small_fam",a-3)
                 end
                 local char = getfield(pointer,"large_char")
-                local okay = fontcharacters[font_of_family(a)][char]
+                local okay = fontcharacters[getfontoffamily(a)][char]
                 if okay then
                     setfield(pointer,"large_fam",a)
                 elseif a > 2 then
@@ -585,7 +584,7 @@ do
     --                 a = a - 3
     --             end
     --             local char = getchar(pointer)
-    --             local okay = fontcharacters[font_of_family(a)][char]
+    --             local okay = fontcharacters[getfontoffamily(a)][char]
     --             if okay then
     --                 setfam(pointer,a)
     --             elseif a > 2 then
@@ -792,7 +791,7 @@ do
                 local chr = getchar(delimiter)
                 if chr > 0 then
                     local fam = getfam(delimiter)
-                    local id = font_of_family(fam)
+                    local id = getfontoffamily(fam)
                     if id > 0 then
                         local data = fontdata[id]
                         local char = mathematics.big(data,chr,size,method)
@@ -1362,7 +1361,7 @@ do
     local fontresources   = fonts.hashes.resources
 
     local function getalternate(fam,tag,current)
-        local resources = fontresources[font_of_family(fam)]
+        local resources = fontresources[getfontoffamily(fam)]
         local attribute = unsetvalue
         if resources then
             local mathalternates = resources.mathalternates

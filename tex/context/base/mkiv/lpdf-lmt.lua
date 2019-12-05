@@ -43,7 +43,7 @@ local bpfactor     <const> = number.dimenfactors.bp
 
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
-local zlibcompress         = flate.zip_compress or zlib.compress
+local zlibcompress         = (xzip or zlib).compress
 
 local nuts                 = nodes.nuts
 local tonut                = nodes.tonut

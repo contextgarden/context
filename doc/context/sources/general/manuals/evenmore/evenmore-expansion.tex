@@ -1,0 +1,148 @@
+% language=us
+
+\environment evenmore-style
+
+\startcomponent evenmore-expansion
+
+\startchapter[title=Expansion]
+
+Character expansion was introduced in \PDFTEX\ a couple of decades ago. It is a
+mechanism that scales glyphs horizontally in order to reduce excessive whitespace
+that is needed to properly justify a paragraph. I must admit that I never use it
+myself but there are users who do. Although this mechanism evolved a bit, and in
+\LUATEX\ is implemented a bit different, the basics remained the same. If you
+have no clue what this is about, you can just quite reading here.
+
+A font can be set up to expand characters by a certain amount: they can shrink or
+stretch. This is driven by three parameters: \type {step}, \type {stretch} and
+\type {shrink}. The values are in thousands because \TEX\ has no float quantity.
+Originally these values were percentages of the width of a glyph, later they
+became related to the em width but in \LUATEX\ we went back to the former
+definition.
+
+In \CONTEXT\ \MKIV\ we have an interface that works as follows:
+
+\startbuffer
+\startluacode
+    local classes = fonts.expansions.classes
+
+    classes.qualitya = {
+        vector  = "default",
+        factor  = 1,
+        stretch = 4,
+        shrink  = 2,
+        step    = .5,
+    }
+
+    classes.qualityb = {
+        vector  = "default",
+        factor  = 1,
+        stretch = 8,
+        shrink  = 4,
+        step    = .5,
+    }
+
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The default vector looks like this:
+
+\starttyping[option=LUA]
+vectors['default'] = {
+    [0x0041] = 0.5, -- A
+    [0x0042] = 0.7, -- B
+    -- and some more
+}
+\stoptyping
+
+The values that we pass to the engine are stretch 40, shrink 20, and step 5 for
+\type {qualitya} and stretch 80, shrink 40, and step 5 for \type {qualityb}, so
+we multiply by 10. In the engine the step is limited to 100, the stretch to 1000
+and the shrink to 500. But these extremes produce quite bad results.
+
+The expansion class is set with the \type {expansion} feature, as in:
+
+\startbuffer
+\definefontfeature [basea] [default] [expansion=qualitya]
+\definefontfeature [baseb] [default] [expansion=qualityb]
+
+\definefont [FontA] [Serif*basea]
+\definefont [FontB] [Serif*baseb]
+
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer[sample]
+    \setupalign[verytolerant,stretch,hz] % hz triggers expansion
+    \dorecurse {30} {%
+        {\FontB \darkred test me #1,} \FontA \dorecurse{#1}{test ##1, }%
+    }\par
+\stopbuffer
+
+In \in {figure} [hz:1] we see this in action, using the following code:
+
+\typebuffer[sample][option=TEX]
+
+\startplacefigure[reference=hz:1]
+    \getbuffer[sample]
+\stopplacefigure
+
+There is one drawback with this method, although so far I never heard a user
+complain, which can be an indication of how this mechanism is used: you cannot
+mix fonts with different step, stretch and|/|or shrink. As we just did this in
+the example, this statement is not really true in \LUAMETATEX: there we only need
+to keep the step the same. This is compatible in the sense that otherwise we
+would quit the run, so at least we carry on: the smallest stretch and shrink is
+taken. But, we do issue a warning (once) because there can be side effects! This
+is not that pretty a solution anyway because it depends on what font is used
+first.
+
+It is for this reason that we have another option: in \CONTEXT\ \LMTX\ you can
+define a specific expansion:
+
+\startbuffer
+\defineexpansion
+  [myexpansion]
+  [step=1, % default
+   stretch=50,
+   shrink=20]
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+There is no need to have a different step than~1. In \PDFTEX\ instances are
+created per step used, but in \LUATEX\ this is more fluid. There is no gain in
+using different steps. We just keep it for compatibility reasons. This specific
+expansion is enables with:
+
+\starttyping[option=TEX]
+\setexpansion[myexpansion]
+\stoptyping
+
+and the result is shown in \in {figure} [hz:2]. This time the set expansion wins
+over the one set in the font. All fonts that have the expansion feature set are
+treated the same. By using this method you can locally have different values.
+
+\startplacefigure[reference=hz:2]
+    \setexpansion[myexpansion]
+    \getbuffer[sample]
+\stopplacefigure
+
+Deep down we use some new primitives:
+
+\starttyping[option=TEX]
+\adjustspacingstep
+\adjustspacingstretch
+\adjustspacingshrink
+\stoptyping
+
+The step is limited to 100 (10\percent) and the stretch and shrink to 500
+(50\percent) and the stretch to 1000 (100\percent) but these extremes are only
+useful for examples.
+
+\stopchapter
+
+\stopcomponent

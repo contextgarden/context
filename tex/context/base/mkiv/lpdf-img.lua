@@ -51,8 +51,8 @@ local pdfminorversion      = lpdf.minorversion
 
 local createimage          = images.create
 
-local zlibcompress         = flate and flate.zip_compress or zlib.compress
-local zlibdecompress       = zlib.decompress -- todo
+local zlibcompress         = (xzip or zlib).compress
+local zlibdecompress       = (xzip or zlib).decompress
 
 local trace                = false
 

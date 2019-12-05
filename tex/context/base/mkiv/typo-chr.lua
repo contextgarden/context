@@ -101,7 +101,6 @@ local texsetcount       = tex.setcount
 
 local flush_node        = nodes.flush_node
 local flush_list        = nodes.flush_list
------ start_of_par      = nodes.start_of_par
 
 local settexattribute   = tex.setattribute
 local punctuation       = characters.is_punctuation

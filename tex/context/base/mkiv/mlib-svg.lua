@@ -2924,7 +2924,7 @@ do
             local entry = svgshapes[i]
             local data  = entry.data
             if decompress then
-                data = decompress(data,128*1024) or data
+                data = decompress(data) or data
             end
             local specification = {
                 data   = xmlconvert(data),
@@ -2971,7 +2971,7 @@ do
             local entry = svgshapes[i]
             local data  = entry.data
             if decompress then
-                data = decompress(data,128*1024) or data
+                data = decompress(data) or data
             end
             local specification = {
                 data   = xmlconvert(data),
@@ -3024,7 +3024,7 @@ do
                                     if index >= entry.first and index <= entry.last then
                                         local data  = entry.data
                                         if data then
-                                            local root = xml.convert(gzip.decompress(data,128*1024) or data)
+                                            local root = xml.convert(gzip.decompress(data) or data)
                                             return metapost.svgtomp (
                                                 {
                                                     data   = root,

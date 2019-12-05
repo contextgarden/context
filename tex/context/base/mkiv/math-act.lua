@@ -441,7 +441,8 @@ mathematics.tweaks = tweaks
 -- helpers
 
 local setmetatableindex  = table.setmetatableindex
-local family_font        = node.family_font
+
+local getfontoffamily    = tex.getfontoffamily
 
 local fontcharacters     = fonts.hashes.characters
 local extensibles        = utilities.storage.allocate()
@@ -512,7 +513,7 @@ setmetatableindex(extensibles,function(extensibles,font)
 end)
 
 local function extensiblecode(family,unicode)
-    return extensibles[family_font(family or 0)][unicode][1]
+    return extensibles[getfontoffamily(family or 0)][unicode][1]
 end
 
 -- left       : [head] ...
@@ -522,7 +523,7 @@ end
 -- abs(right["start"] - right["end"]) | right.advance | characters[right.glyph].width
 
 local function horizontalcode(family,unicode)
-    local font    = family_font(family or 0)
+    local font    = getfontoffamily(family or 0)
     local data    = extensibles[font][unicode]
     local kind    = data[1]
     local loffset = 0

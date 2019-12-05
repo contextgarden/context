@@ -430,6 +430,9 @@
         }%
         \doifelselist\currenthead\donothing
           {\definelist[\currenthead][\c!prefix=\v!no]}%
+        % we can't do this now for backward compatibility reasons
+      % \doifelselist\currenthead\donothing
+      %   {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \else
         \normalexpanded {%
             \setheadparameter{\c!label}{\currenthead}%
