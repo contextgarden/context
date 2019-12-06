@@ -53,6 +53,6 @@ fonts.privateoffsets = {
     keepnames     = false,   -- when set to true names are always kept (not for context)
 }
 
-if not tex.getfontoffamily then
+if node and not tex.getfontoffamily then
     tex.getfontoffamily = node.family_font -- we moved this
 end

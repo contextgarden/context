@@ -1275,7 +1275,7 @@ do
                 end
             end
         end
-        if ExtGState or ColorSpace or Pattern or Shading or Fonts then
+        if ExtGState or ColorSpace or Pattern or Shading or Font then
             local collected = pdfdictionary {
                 ExtGState  = ExtGState,
                 ColorSpace = ColorSpace,
