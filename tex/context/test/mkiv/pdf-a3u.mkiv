@@ -1,14 +1,12 @@
-% PDF/A-2a
+% PDF/A-3u
 
-\enabletrackers[structure.tags,backend.tags,backend.xmp]
+\enabletrackers[backend.xmp]
 
 \setupbackend
-  [format=PDF/A-2a,
+  [format=PDF/A-3u,
    intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
    profile={sRGB.icc,default_gray.icc},
    level=0]
-
-\setuptagging[state=start]
 
 \setupinteraction[state=start]% needed for attachment
 %\setupattachment[method=hidden]
@@ -43,8 +41,7 @@ Test it
 \egroup
 
 
-% inclusion of PDF/A is allowed; TODO: test if ANY version (even newer) is allowed
-%\attachment[file={attachment_pdf-a1a-2005.pdf}, type={application/pdf}]
-\attachment[file={attachment_pdf-a1b-2005.pdf}, type={application/pdf}]
+% inclusion of any file type is allowed
+\attachment[file=cow.pdf, type={application/pdf}]
 
 \stoptext

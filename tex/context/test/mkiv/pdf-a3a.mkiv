@@ -1,9 +1,6 @@
 % PDF/A-3a
 
-\nopdfcompression
-
-
-\enabletrackers[structure.tags,backend.tags]
+\enabletrackers[structure.tags,backend.tags,backend.xmp]
 
 \setupbackend
   [format=PDF/A-3a,
@@ -13,11 +10,16 @@
 
 \setuptagging[state=start]
 
+\setupinteraction[state=start]% needed for attachment
+%\setupattachment[method=hidden]
+
 \setupcolors[cmyk=no]
 \definecolor[rgbblack][b=0.01]
-\definecolor[transtest][r=1,g=1,t=.5]
+\definecolor[transtest][r=1,g=1,t=.25]
 
 \placebookmarks[chapter][all][force=yes]
+
+
 
 \starttext
 
@@ -39,5 +41,9 @@ Test it
     \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
     \blackrule[width=1cm,height=1cm,color=transtest]
 \egroup
+
+
+% inclusion of any file type is allowed
+\attachment[file=cow.pdf, type={application/pdf}]
 
 \stoptext

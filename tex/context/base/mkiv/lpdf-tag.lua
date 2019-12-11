@@ -26,6 +26,7 @@ local nodeinjections      = backends.pdf.nodeinjections
 local codeinjections      = backends.pdf.codeinjections
 
 local enableaction        = nodes.tasks.enableaction
+local disableaction       = nodes.tasks.disableaction
 
 local pdfdictionary       = lpdf.dictionary
 local pdfarray            = lpdf.array
@@ -695,13 +696,36 @@ end
 
 -- this belongs elsewhere (export is not pdf related)
 
-function codeinjections.enabletags(tg,lb)
-    structures.tags.handler = nodeinjections.addtags
-    enableaction("shipouts","structures.tags.handler")
-    enableaction("shipouts","nodes.handlers.accessibility")
-    enableaction("math","noads.handlers.tags")
-    -- maybe also textblock
-    if trace_tags then
-        report_tags("enabling structure tags")
+local permitted = true
+local enabled   = false
+
+function codeinjections.settaggingsupport(option)
+    if option == false then
+        if enabled then
+            disableaction("shipouts","structures.tags.handler")
+            disableaction("shipouts","nodes.handlers.accessibility") -- maybe not this one
+            disableaction("math","noads.handlers.tags")
+            enabled = false
+        end
+        if permitted then
+            if trace_tags then
+                report_tags("blocking structure tags")
+            end
+            permitted = false
+        end
+    end
+end
+
+function codeinjections.enabletags()
+    if permitted and not enabled then
+        structures.tags.handler = nodeinjections.addtags
+        enableaction("shipouts","structures.tags.handler")
+        enableaction("shipouts","nodes.handlers.accessibility")
+        enableaction("math","noads.handlers.tags")
+        -- maybe also textblock
+        if trace_tags then
+            report_tags("enabling structure tags")
+        end
+        enabled = true
     end
 end

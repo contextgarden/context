@@ -166,10 +166,7 @@ if sandboxing then
 
     -- We block some potential escapes from protection.
 
-    context [[
-        \let\primitive      \relax
-        \let\normalprimitive\relax
-    ]]
+    context [[\let\primitive\relax\let\normalprimitive\relax]]
 
     debug = {
         traceback = traceback,

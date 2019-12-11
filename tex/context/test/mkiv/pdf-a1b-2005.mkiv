@@ -1,6 +1,6 @@
 % PDF/A-1b:2005
 
-\enabletrackers[structure.tags,backend.tags,backend.xmp]
+\enabletrackers[backend.xmp]
 
 \setupbackend
   [format=PDF/A-1b:2005,
@@ -9,21 +9,20 @@
  % profile={sRGB.icc,default_gray.icc}]
    level=0]
 
-\setuptagging[state=start] % needed even for 'b'-version
-
 \setupcolors[cmyk=no]
 \definecolor[rgbblack][b=0.01]
-\definecolor[transtest][r=1,g=1,t=.5]
+\definecolor[transtest][r=1,g=1,t=.25]% transparency is not allowed
+
+
 
 \starttext
 
 \starttextcolor[rgbblack] % forced /DeviceGray causes problems; we need a trigger
 
-Text is needed, otherwise tagging base entries are not applied.
+Test it.
 
 \stoptextcolor
 
-%\startTEXpage
 \hbox\bgroup
     \blackrule[width=1cm,height=1cm,color=red]
     \blackrule[width=1cm,height=1cm,color=green]
@@ -32,6 +31,5 @@ Text is needed, otherwise tagging base entries are not applied.
     \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
     \blackrule[width=1cm,height=1cm,color=transtest]
 \egroup
-%\stopTEXpage
 
 \stoptext

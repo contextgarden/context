@@ -34,7 +34,7 @@ local band          = bit32.band
 local rshift        = bit32.rshift
 local lshift        = bit32.lshift
 
-local decompress, calculatecrc
+local decompress, expandsize, calculatecrc
 
 -- if flate then
 --
@@ -44,16 +44,16 @@ local decompress, calculatecrc
 -- else
 
     local zlibdecompress = zlib.decompress
+    local zlibexpandsize = zlib.expandsize
     local zlibchecksum   = zlib.crc32
 
-    decompress = function(source,targetsize)
-        local target = zlibdecompress(source,-15)
-        if target then
-            return target
-        else
-            return false, 1
-        end
+    decompress = function(source)
+        return zlibdecompress(source,-15) -- auto
     end
+
+    expandsize = zlibexpandsize and function(source,targetsize)
+        return zlibexpandsize(source,targetsize,-15) -- auto
+    end or decompress
 
     calculatecrc = function(buffer,initial)
         return zlibchecksum(initial or 0,buffer)
@@ -182,8 +182,6 @@ local openzipfile, closezipfile, unzipfile, foundzipfile, getziphash, getziplist
             z.handle = nil
         end
     end
-
-    local expandsize = xzip.expandsize
 
     function unzipfile(z,filename,check)
         local hash = z.hash
@@ -483,19 +481,23 @@ if xzip then -- flate then do
                     local l = list[i]
                     local n = l.filename
                     local d = unzipfile(z,n) -- true for check
-                    local p = filejoin(path,n)
-                    if mkdirs(dirname(p)) then
-                        if steps then
-                            total = total + #d
-                            done = done + 1
-                            if done >= step then
-                                done = 0
-                                logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+                    if d then
+                        local p = filejoin(path,n)
+                        if mkdirs(dirname(p)) then
+                            if steps then
+                                total = total + #d
+                                done = done + 1
+                                if done >= step then
+                                    done = 0
+                                    logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+                                end
+                            elseif verbose then
+                                logwriter(n)
                             end
-                        elseif verbose then
-                            logwriter(n)
+                            savedata(p,d)
                         end
-                        savedata(p,d)
+                    else
+                        logwriter(format("problem with file %s",n))
                     end
                 end
                 if steps then

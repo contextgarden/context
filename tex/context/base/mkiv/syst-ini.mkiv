@@ -97,13 +97,12 @@
 %D Initialization of primitives.
 
 \directlua {
-    local baseprimitives = tex.extraprimitives("core","tex")
-    local moreprimitives = tex.extraprimitives("etex","luatex")
+    local primitives = tex.extraprimitives("core","tex","etex","luatex")
 
-    tex.enableprimitives("",moreprimitives)
+  % table.sort(primitives)
 
-    tex.enableprimitives("normal",baseprimitives)
-    tex.enableprimitives("normal",moreprimitives)
+    tex.enableprimitives("",      primitives)
+    tex.enableprimitives("normal",primitives)
 
     function tex.enableprimitives() end
 }

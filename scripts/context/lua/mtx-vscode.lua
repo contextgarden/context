@@ -318,7 +318,6 @@ function scripts.vscode.generate(targetpath)
         }
 
         report("saving task %a in %a",category,filename)
-
         io.savedata(filename,data)
 
     end

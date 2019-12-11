@@ -61,16 +61,34 @@ function texconfig.init()
 
     libraries = { -- we set it here as we want libraries also 'indexed'
         basiclua = {
-            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package", "bit32",
+            -- always
+            "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
+            -- bonus
+            "bit32", "utf8",
         },
-        basictex = { -- noad
-            "callback", "font", "img", "lang", "lua", "node", "pdf", "status", "tex", "texconfig", "texio", "token",
+        basictex = {
+            -- always
+            "callback", "font", "lang", "lua", "node", "status", "tex", "texconfig", "texio", "token",
+             -- not in luametatex
+            "img", "pdf",
         },
         extralua = {
-            "gzip",  "zip", "zlib", "lfs", "ltn12", "mime", "socket", "md5", "fio", "unicode", "utf",
+            -- not in luametatex
+            "unicode", "utf", "gzip",  "zip", "zlib",
+            -- in luametatex
+            "xzip", "xmath", "xcomplex", "basexx",
+            -- maybe some day in luametatex
+            "lz4", "lzo",
+            -- always (mime can go)
+            "lfs","socket", "mime", "md5", "sha2", "fio", "sio",
         },
         extratex = {
-            "pdfe", "kpse", "mplib",
+            -- not in luametatex
+            "kpse",
+            -- always
+            "pdfe", "mplib",
+            -- in luametatex
+            "pdfdecode", "pngdecode",
         },
         obsolete = {
             "epdf",
@@ -123,16 +141,24 @@ function texconfig.init()
 
     -- shortcut and helper
 
-    local setbytecode = lua.setbytecode
-    local getbytecode = lua.getbytecode
+    local setbytecode  = lua.setbytecode
+    local getbytecode  = lua.getbytecode
+    local callbytecode = lua.callbytecode or function(i)
+        local b = getbytecode(i)
+        if b then
+            b()
+            return true
+        else
+            return false
+        end
+    end
 
     local function init(start)
         local i = start
         local t = os.clock()
         while true do
-            local b = getbytecode(i)
+            local b = callbytecode(i)
             if b then
-                b() ;
                 setbytecode(i,nil) ;
                 i = i + 1
             else

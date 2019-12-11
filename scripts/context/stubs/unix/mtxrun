@@ -15937,7 +15937,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-zip"] = package.loaded["util-zip"] or true
 
--- original size: 19243, stripped down to: 10700
+-- original size: 19496, stripped down to: 10858
 
 if not modules then modules={} end modules ['util-zip']={
  version=1.001,
@@ -15963,17 +15963,16 @@ local getposition=files.getposition
 local band=bit32.band
 local rshift=bit32.rshift
 local lshift=bit32.lshift
-local decompress,calculatecrc
+local decompress,expandsize,calculatecrc
  local zlibdecompress=zlib.decompress
+ local zlibexpandsize=zlib.expandsize
  local zlibchecksum=zlib.crc32
- decompress=function(source,targetsize)
-  local target=zlibdecompress(source,-15)
-  if target then
-   return target
-  else
-   return false,1
-  end
+ decompress=function(source)
+  return zlibdecompress(source,-15) 
  end
+ expandsize=zlibexpandsize and function(source,targetsize)
+  return zlibexpandsize(source,targetsize,-15) 
+ end or decompress
  calculatecrc=function(buffer,initial)
   return zlibchecksum(initial or 0,buffer)
  end
@@ -16085,7 +16084,6 @@ local openzipfile,closezipfile,unzipfile,foundzipfile,getziphash,getziplist  do
    z.handle=nil
   end
  end
- local expandsize=xzip.expandsize
  function unzipfile(z,filename,check)
   local hash=z.hash
   if not hash then
@@ -16335,19 +16333,23 @@ if xzip then
      local l=list[i]
      local n=l.filename
      local d=unzipfile(z,n) 
-     local p=filejoin(path,n)
-     if mkdirs(dirname(p)) then
-      if steps then
-       total=total+#d
-       done=done+1
-       if done>=step then
-        done=0
-        logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+     if d then
+      local p=filejoin(path,n)
+      if mkdirs(dirname(p)) then
+       if steps then
+        total=total+#d
+        done=done+1
+        if done>=step then
+         done=0
+         logwriter(format("%4i files of %4i done, %10i bytes, %0.3f seconds",i,count,total,osclock()-time))
+        end
+       elseif verbose then
+        logwriter(n)
        end
-      elseif verbose then
-       logwriter(n)
+       savedata(p,d)
       end
-      savedata(p,d)
+     else
+      logwriter(format("problem with file %s",n))
      end
     end
     if steps then
@@ -26079,8 +26081,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1043576
--- stripped bytes    : 415812
+-- original bytes    : 1043829
+-- stripped bytes    : 415907
 
 -- end library merge
 

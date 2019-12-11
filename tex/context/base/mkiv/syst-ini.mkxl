@@ -94,18 +94,48 @@
 
 \chardef\statuswrite   128
 
-%D Initialization of primitives.
+%D First we need to initialization the primitives. Because \CONTEXT\ is already a
+%D pretty old macro package, we have a couple of issues with respect to primitives.
+%D The \ETEX\ engine added a few as did \PDFTEX. The \LUATEX\ engine added even
+%D more. This means that there can be a potential clash between primitives and
+%D existing macros. The most noticeable ones are:
+%D
+%D \starttyping
+%D \protected
+%D \expanded
+%D \unexpanded
+%D \stoptyping
+%D
+%D Because we had macros like that before the primitives showed up. The protection
+%D related macros were there before we even knew about extensions to the engine.
+%D When the expansion related ones were introduced, we originally came up with
+%D different names but due to requests we used the current names, somethng that in
+%D retrospect was a bad idea: they should have gotten different names in \LUATEX, if
+%D only because at that time only \CONTEXT\ was using them in rolling releases.
+%D Anyway, we're now stuck with this situation, and it means that one should use the
+%D \type {\normal...} variants in low level code:
+%D
+%D \starttyping
+%D \normalexpanded
+%D \normalprotected
+%D \normalunexpanded
+%D \stoptyping
+%D
+%D In the end not using different names in \LUATEX\ for these kind of backfires. It
+%D makes not much sense to fix this in \LUAMETATEX\ because we're now to long on the
+%D road. It is actually the reason why we have the option in \LUATEX\ to alias all
+%D primitives in one go using a prefix. Actually this trick could be used to recover
+%D a primitive meaning: just enable it with some prefix and \type {\let} the
+%D original to that. But \unknown\ we prevent that trick below.
+%D
+%D The code below differs from \LUATEX: in \LUAMETATEX\ all primitives are already
+%D available; it cannot limit itself to being \TEX\ or \ETEX. It could not do that
+%D anyway because there are differences (no backend, to mention one).
 
 \directlua {
-    local baseprimitives = tex.extraprimitives("core","tex")
-    local moreprimitives = tex.extraprimitives("etex","luatex")
-
-    tex.enableprimitives("",moreprimitives)
-
-    tex.enableprimitives("normal",baseprimitives)
-    tex.enableprimitives("normal",moreprimitives)
-
-    function tex.enableprimitives() end
+    local primitives = tex.extraprimitives()  % "core","tex","etex","luatex"
+    tex.enableprimitives("normal",primitives) % could default to everything
+    function tex.enableprimitives() end       % so we kind of protect what's there
 }
 
 \def\space{ }
