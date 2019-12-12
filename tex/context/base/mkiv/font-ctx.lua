@@ -176,6 +176,26 @@ constructors.sharefonts        = true -- experimental
 constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
+constructors.autocleanup       = true
+
+-- we can get rid of the tfm instance when we have fast access to the
+-- scaled character dimensions at the tex end, e.g. a fontobject.width
+-- actually we already have some of that now as virtual keys in glyphs
+--
+-- flushing the kern and ligature tables from memory saves a lot (only
+-- base mode) but it complicates vf building where the new characters
+-- demand this data .. solution: functions that access them
+
+-- font.getcopy = font.getfont -- we always want the table that context uses
+
+function constructors.cleanuptable(tfmdata)
+    if constructors.autocleanup and tfmdata.properties.virtualized then
+        for k, v in next, tfmdata.characters do
+            if v.commands then v.commands = nil end
+        --  if v.kerns    then v.kerns    = nil end
+        end
+    end
+end
 
 do
 

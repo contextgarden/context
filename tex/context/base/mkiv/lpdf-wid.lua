@@ -271,16 +271,16 @@ lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
 function codeinjections.embedfile(specification)
     if enabled then
-        local data     = specification.data
-        local filename = specification.file
-        local name     = specification.name or ""
-        local title    = specification.title or ""
-        local hash     = specification.hash or filename
-        local keepdir  = specification.keepdir -- can change
-        local usedname = specification.usedname
-        local filetype = specification.filetype
-        local compress = specification.compress
-        local mimetype = specification.mimetype or specification.mime
+        local data      = specification.data
+        local filename  = specification.file
+        local name      = specification.name or ""
+        local title     = specification.title or ""
+        local hash      = specification.hash or filename
+        local keepdir   = specification.keepdir -- can change
+        local usedname  = specification.usedname
+        local filetype  = specification.filetype
+        local compress  = specification.compress
+        local mimetype  = specification.mimetype or specification.mime
         if filename == "" then
             filename = nil
         end
@@ -323,9 +323,10 @@ function codeinjections.embedfile(specification)
         end
         -- needs to be cleaned up:
         usedname = usedname ~= "" and usedname or filename or name
-        local basename = keepdir == true and usedname or basefilename(usedname)
-        local basename = gsub(basename,"%./","")
-        local savename = name ~= "" and name or basename
+        local basename  = keepdir == true and usedname or basefilename(usedname)
+        local basename  = gsub(basename,"%./","")
+        local savename  = name ~= "" and name or basename
+        local foundname = specification.foundname or filename
         if not filetype or filetype == "" then
             filetype = name and (filename and filesuffix(filename)) or "txt"
         end
@@ -339,7 +340,7 @@ function codeinjections.embedfile(specification)
             f = pdfflushstreamobject(data,a)
             specification.data = true -- signal that still data but already flushed
         else
-            local modification = modificationtime(specification.foundname or filename)
+            local modification = modificationtime(foundname)
             if attributes then
                 a.Params = {
                     Size    = attributes.size,
@@ -393,21 +394,22 @@ function nodeinjections.attachfile(specification)
         local title      = specification.title      or ""
         local subtitle   = specification.subtitle   or ""
         local author     = specification.author     or ""
+        local onlyname   = filename and filenameonly(filename) or ""
         if registered == "" then
             registered = filename
         end
         if author == "" and title ~= "" then
             author = title
-            title  = filename or ""
+            title  = onlyname or ""
         end
         if author == "" then
-            author = filename or "<unknown>"
+            author = onlyname or "<unknown>"
         end
         if title == "" then
             title = registered
         end
         if title == "" and filename then
-            title = filenameonly(filename)
+            title = onlyname
         end
         local aref = attachments[registered]
         if not aref then
@@ -438,6 +440,7 @@ function nodeinjections.attachfile(specification)
                 CA       = analyzetransparency(specification.transparencyvalue),
                 AP       = appearance,
                 OC       = analyzelayer(specification.layer),
+                F        = 0, -- another rediculous need to satisfy validation (optional and zero is default)
             }
             local width  = specification.width  or 0
             local height = specification.height or 0
@@ -529,6 +532,7 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         Name      = name,
         NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
+        F         = 0, -- another rediculous need to satisfy validation (optional and zero is default)
     }
     local width  = specification.width  or 0
     local height = specification.height or 0

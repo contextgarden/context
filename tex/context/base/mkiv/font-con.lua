@@ -40,7 +40,6 @@ local setmetatableindex      = table.setmetatableindex
 -- will be directives
 
 constructors.dontembed       = allocate()
-constructors.autocleanup     = true
 constructors.namemode        = "fullpath" -- will be a function
 
 constructors.version         = 1.01
@@ -136,21 +135,10 @@ make this profitable and the <l n='lua'/> based variant was just faster. A days
 wasted day but an experience richer.</p>
 --ldx]]--
 
--- we can get rid of the tfm instance when we have fast access to the
--- scaled character dimensions at the tex end, e.g. a fontobject.width
--- actually we already have some of that now as virtual keys in glyphs
---
--- flushing the kern and ligature tables from memory saves a lot (only
--- base mode) but it complicates vf building where the new characters
--- demand this data .. solution: functions that access them
-
 function constructors.cleanuptable(tfmdata)
-    if constructors.autocleanup and tfmdata.properties.virtualized then
-        for k, v in next, tfmdata.characters do
-            if v.commands then v.commands = nil end
-        --  if v.kerns    then v.kerns    = nil end
-        end
-    end
+    -- This no longer makes sense because the addition of font.getcopy and its
+    -- possible usage in generic implicates that we need to return the whole
+    -- lot now.
 end
 
 -- experimental, sharing kerns (unscaled and scaled) saves memory
