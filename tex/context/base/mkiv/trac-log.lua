@@ -1044,8 +1044,8 @@ end
 -- this is somewhat slower but prevents out-of-order messages when print is mixed
 -- with texio.write
 
-io.stdout:setvbuf('no')
-io.stderr:setvbuf('no')
+-- io.stdout:setvbuf('no')
+-- io.stderr:setvbuf('no')
 
 -- windows: > nul  2>&1
 -- unix   : > null 2>&1

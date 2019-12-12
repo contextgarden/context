@@ -402,7 +402,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true, -- new
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = true,
+            attachments             = true, -- new
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -428,7 +428,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = "externa",
+            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
             end
@@ -456,7 +456,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = "external",
+            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
             end
@@ -484,7 +484,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = "internal",
+            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
             end
@@ -510,7 +510,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = "external",
+            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
             end
@@ -536,7 +536,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = false,
             include_charsets        = false,
-            attachments             = "external",
+            attachments             = true,
             inject_metadata         = function()
                 injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
             end

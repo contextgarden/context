@@ -55,6 +55,7 @@ local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local odd = math.odd
+local isfile, isdir, modificationtime = lfs.isfile, lfs.isdir, lfs.modification
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -832,7 +833,7 @@ local function register(askedname,specification)
                 if subpath and subpath ~= "" and subpath ~= "."  then
                     newpath = newpath .. "/" .. subpath
                 end
-                if not lfs.isdir(newpath) then
+                if not isdir(newpath) then
                     dir.makedirs(newpath)
                     if not file.is_writable(newpath) then
                         if trace_conversion then
@@ -870,8 +871,8 @@ local function register(askedname,specification)
                 local newname = file.join(newpath,newbase)
                 oldname = collapsepath(oldname)
                 newname = collapsepath(newname)
-                local oldtime = lfs.attributes(oldname,'modification') or 0
-                local newtime = lfs.attributes(newname,'modification') or 0
+                local oldtime = modificationtime(oldname) or 0
+                local newtime = modificationtime(newname) or 0
                 if newtime == 0 or oldtime > newtime then
                     if trace_conversion then
                         report_inclusion("converting %a (%a) from %a to %a",askedname,oldname,format,newformat)
@@ -1003,7 +1004,7 @@ local function locate(request) -- name, format, cache
         end
     else
         local foundname = resolvers.findbinfile(askedname)
-        if not foundname or not lfs.isfile(foundname) then -- foundname can be dummy
+        if not foundname or not isfile(foundname) then -- foundname can be dummy
             if trace_figures then
                 report_inclusion("unknown url %a",askedname)
             end
@@ -1390,7 +1391,7 @@ function existers.generic(askedname,resolve)
     local result
     if hasscheme(askedname) then
         result = resolvers.findbinfile(askedname)
-    elseif lfs.isfile(askedname) then
+    elseif isfile(askedname) then
         result = askedname
     elseif resolve then
         result = resolvers.findbinfile(askedname)

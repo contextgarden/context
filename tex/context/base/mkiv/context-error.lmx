@@ -46,7 +46,7 @@
             </table>
             <br/>
             <pre>
-            <?lua pv('errorcontext')?>
+<?lua pv('errorcontext')?>
             </pre>
         </div></div>
         <div id="bottom"><div id="bottom-one"><div id="bottom-two">

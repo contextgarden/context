@@ -26,6 +26,8 @@ if not modules then modules = { } end modules ['lpdf-wid'] = {
 
 local tonumber, next = tonumber, next
 local gmatch, gsub, find, lower = string.gmatch, string.gsub, string.find, string.lower
+local filenameonly, basefilename, filesuffix, addfilesuffix = file.nameonly, file.basename, file.suffix, file.addsuffix
+local isfile, modificationtime = lfs.isfile, lfs.modification
 local stripstring = string.strip
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -224,21 +226,11 @@ local tobesavedobjrefs  = utilities.storage.allocate()
 local collectedobjrefs  = utilities.storage.allocate()
 local permitted         = true
 local enabled           = true
-local embedded          = true
 
 function codeinjections.setattachmentsupport(option)
     if option == false then
         permitted = false
         enabled   = false
-        embedded  = true
-    elseif not permitted then
-        -- already dealt with
-    elseif option == "internal" or option == true then
-        enabled  = true
-        embedded = true
-    elseif option == "external" then
-        enabled  = true
-        embedded = false
     end
 end
 
@@ -321,7 +313,7 @@ function codeinjections.embedfile(specification)
                 return r
             else
                 local foundname = resolvers.findbinfile(filename) or ""
-                if foundname == "" or not lfs.isfile(foundname) then
+                if foundname == "" or not isfile(foundname) then
                     filestreams[filename] = false
                     return nil
                 else
@@ -329,15 +321,15 @@ function codeinjections.embedfile(specification)
                 end
             end
         end
-        -- needs to cleaned up:
+        -- needs to be cleaned up:
         usedname = usedname ~= "" and usedname or filename or name
-        local basename = keepdir == true and usedname or file.basename(usedname)
+        local basename = keepdir == true and usedname or basefilename(usedname)
         local basename = gsub(basename,"%./","")
         local savename = name ~= "" and name or basename
         if not filetype or filetype == "" then
-            filetype = name and (filename and file.suffix(filename)) or "txt"
+            filetype = name and (filename and filesuffix(filename)) or "txt"
         end
-        savename = file.addsuffix(savename,filetype) -- type is mandate for proper working in viewer
+        savename = addfilesuffix(savename,filetype) -- type is mandate for proper working in viewer
         local a = pdfdictionary {
             Type    = pdfconstant("EmbeddedFile"),
             Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
@@ -347,12 +339,11 @@ function codeinjections.embedfile(specification)
             f = pdfflushstreamobject(data,a)
             specification.data = true -- signal that still data but already flushed
         else
-            local foundname  = specification.foundname or filename
-            local attributes = lfs.attributes(foundname)
+            local modification = modificationtime(specification.foundname or filename)
             if attributes then
                 a.Params = {
                     Size    = attributes.size,
-                    ModDate = lpdf.pdftimestamp(attributes.modification),
+                    ModDate = lpdf.pdftimestamp(modification),
                 }
             end
             f = pdfflushstreamfileobject(foundname,a,compress)
@@ -388,7 +379,7 @@ function nodeinjections.attachfile(specification)
                 specification.file = registered
             end
             local foundname = resolvers.findbinfile(filename) or ""
-            if foundname == "" or not lfs.isfile(foundname) then
+            if foundname == "" or not isfile(foundname) then
                 report_attachment("invalid filename %a, ignoring registered %a",filename,registered)
                 return nil
             else
@@ -414,6 +405,9 @@ function nodeinjections.attachfile(specification)
         end
         if title == "" then
             title = registered
+        end
+        if title == "" and filename then
+            title = filenameonly(filename)
         end
         local aref = attachments[registered]
         if not aref then
@@ -510,17 +504,16 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     local subtitle = specification.subtitle or "" -- as author
     local author   = specification.author   or ""
     local option   = settings_to_hash(specification.option or "")
-    if author == "" then
-        if title == "" then
-            title = tag
-        end
-    else
+    if author ~= "" then
         if subtitle == "" then
             subtitle = title
         elseif title ~= "" then
             subtitle = subtitle .. ", " .. title
         end
         title = author
+    end
+    if title == "" then
+        title = tag
     end
     local content, richcontent = checkcontent(text,option)
     local d = pdfdictionary {

@@ -4222,7 +4222,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 21984, stripped down to: 10148
+-- original size: 22175, stripped down to: 10302
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -4244,15 +4244,24 @@ local checkedsplit=string.checkedsplit
 local P,R,S,C,Cs,Cp,Cc,Ct=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Cs,lpeg.Cp,lpeg.Cc,lpeg.Ct
 local attributes=lfs.attributes
 function lfs.isdir(name)
- return attributes(name,"mode")=="directory"
+ if name then
+  return attributes(name,"mode")=="directory"
+ end
 end
 function lfs.isfile(name)
- local a=attributes(name,"mode")
- return a=="file" or a=="link" or nil
+ if name then
+  local a=attributes(name,"mode")
+  return a=="file" or a=="link" or nil
+ end
 end
 function lfs.isfound(name)
- local a=attributes(name,"mode")
- return (a=="file" or a=="link") and name or nil
+ if name then
+  local a=attributes(name,"mode")
+  return (a=="file" or a=="link") and name or nil
+ end
+end
+function lfs.modification(name)
+ return name and attributes(name,"modification") or nil
 end
 if sandbox then
  sandbox.redefine(lfs.isfile,"lfs.isfile")
@@ -4717,7 +4726,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3309, stripped down to: 2218
+-- original size: 3414, stripped down to: 2307
 
 if not modules then modules={} end modules ['l-md5']={
  version=1.001,
@@ -4736,6 +4745,8 @@ if not md5 then
 end
 local md5,file=md5,file
 local gsub=string.gsub
+local modification,isfile,touch=lfs.modification,lfs.isfile,lfs.touch
+local loaddata,savedata=io.loaddata,io.savedata
 do
  local patterns=lpeg and lpeg.patterns
  if patterns then
@@ -4751,10 +4762,11 @@ do
   md5.sumHEXA=md5.HEX
  end
 end
+local md5HEX=md5.HEX
 function file.needsupdating(oldname,newname,threshold) 
- local oldtime=lfs.attributes(oldname,"modification")
+ local oldtime=modification(oldname)
  if oldtime then
-  local newtime=lfs.attributes(newname,"modification")
+  local newtime=modification(newname)
   if not newtime then
    return true 
   elseif newtime>=oldtime then
@@ -4770,31 +4782,32 @@ function file.needsupdating(oldname,newname,threshold)
 end
 file.needs_updating=file.needsupdating
 function file.syncmtimes(oldname,newname)
- local oldtime=lfs.attributes(oldname,"modification")
- if oldtime and lfs.isfile(newname) then
-  lfs.touch(newname,oldtime,oldtime)
+ local oldtime=modification(oldname)
+ if oldtime and isfile(newname) then
+  touch(newname,oldtime,oldtime)
  end
 end
-function file.checksum(name)
+local function checksum(name)
  if md5 then
-  local data=io.loaddata(name)
+  local data=loaddata(name)
   if data then
-   return md5.HEX(data)
+   return md5HEX(data)
   end
  end
  return nil
 end
+file.checksum=checksum
 function file.loadchecksum(name)
  if md5 then
-  local data=io.loaddata(name..".md5")
+  local data=loaddata(name..".md5")
   return data and (gsub(data,"%s",""))
  end
  return nil
 end
 function file.savechecksum(name,checksum)
- if not checksum then checksum=file.checksum(name) end
+ if not checksum then checksum=checksum(name) end
  if checksum then
-  io.savedata(name..".md5",checksum)
+  savedata(name..".md5",checksum)
   return checksum
  end
  return nil
@@ -12928,7 +12941,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 32997, stripped down to: 21715
+-- original size: 33003, stripped down to: 21667
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -13737,8 +13750,6 @@ else
   print(format(...))
  end
 end
-io.stdout:setvbuf('no')
-io.stderr:setvbuf('no')
 if package.helpers.report then
  package.helpers.report=logs.reporter("package loader") 
 end
@@ -26081,8 +26092,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1043829
--- stripped bytes    : 415907
+-- original bytes    : 1044131
+-- stripped bytes    : 416014
 
 -- end library merge
 
