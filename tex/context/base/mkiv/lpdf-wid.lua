@@ -57,6 +57,7 @@ local v_max                    = variables.max
 local v_yes                    = variables.yes
 
 local pdfconstant              = lpdf.constant
+local pdfnull                  = lpdf.null
 local pdfdictionary            = lpdf.dictionary
 local pdfarray                 = lpdf.array
 local pdfreference             = lpdf.reference
@@ -254,7 +255,8 @@ local function flushembeddedfiles()
         for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
-            elseif referenced[tag] == "hidden" then
+--             elseif referenced[tag] == "hidden" then
+            elseif referenced[tag] ~= "hidden" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
             else
@@ -440,7 +442,7 @@ function nodeinjections.attachfile(specification)
                 CA       = analyzetransparency(specification.transparencyvalue),
                 AP       = appearance,
                 OC       = analyzelayer(specification.layer),
-                F        = 0, -- another rediculous need to satisfy validation (optional and zero is default)
+                F        = pdfnull(), -- another rediculous need to satisfy validation
             }
             local width  = specification.width  or 0
             local height = specification.height or 0
@@ -532,7 +534,7 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         Name      = name,
         NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
-        F         = 0, -- another rediculous need to satisfy validation (optional and zero is default)
+        F         = pdfnull(), -- another rediculous need to satisfy validation
     }
     local width  = specification.width  or 0
     local height = specification.height or 0

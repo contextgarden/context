@@ -59,7 +59,11 @@
     if #document.files == 0 then
         context("no files given")
     else
-        for _, filename in ipairs(document.files) do
+        if document.arguments.pattern then
+            document.files = dir.glob(document.arguments.pattern)
+        end
+        for i=1,#document.files do
+            local filename = document.files[i]
             if not string.find(filename,"^mtx%-context%-") then
                 logs.report("copy",filename)
                 context.getfiguredimensions

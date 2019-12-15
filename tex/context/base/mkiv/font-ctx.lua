@@ -1498,7 +1498,7 @@ do  -- else too many locals
 
     --
 
-    function definers.define(specification)
+    local function define(specification)
         --
         local name = specification.name
         if not name or name == "" then
@@ -1546,6 +1546,7 @@ do  -- else too many locals
                     texdefinefont(specification.global,cs,tfmdata)
                     csnames[tfmdata] = cs
                 end
+                stoptiming(fonts)
                 return tfmdata, fontdata[tfmdata]
             else
                 local id = definefont(tfmdata)
@@ -1557,11 +1558,13 @@ do  -- else too many locals
                 end
                 constructors.cleanuptable(tfmdata)
                 constructors.finalize(tfmdata)
+                stoptiming(fonts)
                 return id, tfmdata
             end
-            stoptiming(fonts)
         end
     end
+
+    definers.define = define
 
     -- local id, cs = fonts.definers.internal { }
     -- local id, cs = fonts.definers.internal { number = 2 }
@@ -1589,7 +1592,7 @@ do  -- else too many locals
             else
                 specification.cs = cs
             end
-            id = definers.define {
+            id = define {
                 name = name,
                 size = size,
                 cs   = cs,
@@ -1601,13 +1604,25 @@ do  -- else too many locals
         return id, csnames[id]
     end
 
+    local read
+
+    if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then -- maybe always
+        read = function(name,size)
+            return (define { name = name, size = size } or 0)
+        end
+    else
+        read = definers.read
+    end
+
+    callbacks.register('define_font', read, "definition of fonts (tfmdata preparation)")
+
     -- here
 
     local infofont = 0
 
     function fonts.infofont()
         if infofont == 0 then
-            infofont = definers.define { name = "dejavusansmono", size = texsp("6pt") }
+            infofont = define { name = "dejavusansmono", size = texsp("6pt") }
         end
         return infofont
     end

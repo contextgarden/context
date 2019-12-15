@@ -903,6 +903,8 @@ if images then do
                             value = pdfnull()
                         elseif kind == reference_object_code then
                             value = deepcopyobject(xref,copied,entry)
+                        elseif entry == nil then
+                            value = pdfnull()
                         else
                             value = tostring(entry)
                         end

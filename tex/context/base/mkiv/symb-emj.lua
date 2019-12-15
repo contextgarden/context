@@ -24,6 +24,7 @@ local tonode          = nuts.tonode
 local tonut           = nuts.tonut
 local remove_node     = nuts.remove
 local isglyph         = nuts.isglyph
+local getnext         = nuts.getnext
 
 local function removemodifiers(head)
     local head    = tonut(head)

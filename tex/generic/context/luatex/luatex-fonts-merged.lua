@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/12/19 19:23:52
+-- merge date  : 12/15/19 17:24:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -35346,7 +35346,6 @@ local variants=allocate()
 specifiers.variants=variants
 definers.methods=definers.methods or {}
 local internalized=allocate() 
-local lastdefined=nil 
 local loadedfonts=constructors.loadedfonts
 local designsizes=constructors.designsizes
 local resolvefile=fontgoodies and fontgoodies.filenames and fontgoodies.filenames.resolve or function(s) return s end
@@ -35607,9 +35606,6 @@ function constructors.readanddefine(name,size)
  end
  return fontdata[id],id
 end
-function definers.current() 
- return lastdefined
-end
 function definers.registered(hash)
  local id=internalized[hash]
  return id,id and fontdata[id]
@@ -35660,7 +35656,6 @@ function definers.read(specification,size,id)
    end
   end
  end
- lastdefined=tfmdata or id 
  if not tfmdata then 
   report_defining("unknown font %a, loading aborted",specification.name)
  elseif trace_defining and type(tfmdata)=="table" then
@@ -35676,7 +35671,9 @@ end
 function font.getfont(id)
  return fontdata[id] 
 end
-callbacks.register('define_font',definers.read,"definition of fonts (tfmdata preparation)")
+if not context then
+ callbacks.register('define_font',definers.read,"definition of fonts (tfmdata preparation)")
+end
 
 end -- closure
 
