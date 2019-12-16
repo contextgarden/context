@@ -131,11 +131,10 @@ local function nbsp(head,current)
     local para = fontparameters[getfont(current)]
     if getattr(current,a_alignstate) == 1 then -- flushright
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,0,0)
-        setsubtype(current,spaceskip_code)
     else
         head, current = inject_nobreak_space(0x00A0,head,current,para.space,para.spacestretch,para.spaceshrink)
-        setsubtype(current,spaceskip_code)
     end
+    setsubtype(current,spaceskip_code)
     return head, current
 end
 

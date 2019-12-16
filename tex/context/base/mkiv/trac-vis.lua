@@ -893,6 +893,8 @@ local ruledglue do
         [gluecodes.thinmuskip]            = "MS",
         [gluecodes.medmuskip]             = "MM",
         [gluecodes.thickmuskip]           = "ML",
+        [gluecodes.intermathskip]         = "IM",
+        [gluecodes.mathskip]              = "MT",
         [leadercodes.leaders]             = "NL",
         [leadercodes.cleaders]            = "CL",
         [leadercodes.xleaders]            = "XL",

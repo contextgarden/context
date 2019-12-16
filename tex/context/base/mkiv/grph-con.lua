@@ -12,6 +12,7 @@ local tonumber          = tonumber
 local longtostring      = string.longtostring
 local formatters        = string.formatters
 local expandfilename    = dir.expandname
+local isfile            = lfs.isfile
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
@@ -121,7 +122,7 @@ do -- eps | ps
         local presets  = resolutions[resolution or "high"] or resolutions.high
         local level    = codeinjections.getformatoption("pdf_level") or "1.3"
         local tmpname  = oldname
-        if not tmpname or tmpname == "" or not lfs.isfile(tmpname) then
+        if not tmpname or tmpname == "" or not isfile(tmpname) then
             return
         end
         if cleanups.ai then
@@ -289,7 +290,7 @@ do -- png | jpg | profiles
     local pngconverters = converters.png
 
     local function profiles()
-        if not lfs.isfile(rgbprofile) then
+        if not isfile(rgbprofile) then
             local found = resolvers.findfile(rgbprofile)
             if found and found ~= "" then
                 rgbprofile = found
@@ -297,7 +298,7 @@ do -- png | jpg | profiles
                 report_figures("unknown profile %a",rgbprofile)
             end
         end
-        if not lfs.isfile(cmykprofile) then
+        if not isfile(cmykprofile) then
             local found = resolvers.findfile(cmykprofile)
             if found and found ~= "" then
                 cmykprofile = found

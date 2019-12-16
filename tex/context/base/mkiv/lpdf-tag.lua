@@ -376,6 +376,7 @@ function nodeinjections.addtags(head)
         root           = { pref = pdfreference(structure_ref), kids = structure_kids }
         names          = pdfarray()
     end
+
     local function collectranges(head,list)
         for n, id in nextnode, head do
             if id == glyph_code then
@@ -404,7 +405,10 @@ end
                  -- end
                     last = nil
                 else
-                    collectranges(getlist(n),n)
+                    local list = getlist(n)
+                    if list then
+                        collectranges(list,n)
+                    end
                 end
             end
         end
@@ -431,7 +435,6 @@ end
     local top    = nil
     local noftop = 0
 
-
     local function inject(start,stop,list,literal,left,right)
         local prev = getprev(start)
         if prev then
@@ -442,7 +445,7 @@ end
         else
             setlink(literal,start)
         end
-        if list and getlist(list) == start then
+        if list and not prev then
             setlist(list,literal)
         end
         local literal = copy_node(EMCliteral)
@@ -502,7 +505,6 @@ end
                     prev = prv
                 end
             end
-
             if prev then
                 literal = pageliteral(makecontent(prev,id,specification))
             elseif ignore then
