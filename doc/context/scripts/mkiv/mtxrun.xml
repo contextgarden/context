@@ -9,7 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
-    <flag name="evaluate"><short>run code passed on the commandline (between quotes)</short></flag>
+    <flag name="evaluate"><short>run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
@@ -28,6 +28,7 @@
     <flag name="stubpath" value="binpath"><short>paths where stubs wil be written</short></flag>
     <flag name="windows"><short>create windows (mswin) stubs</short></flag>
     <flag name="unix"><short>create unix (linux) stubs</short></flag>
+    <flag name="addbinarypath"><short>prepend the (found) binarypath to runners</short></flag>
    </subcategory>
    <subcategory>
     <flag name="verbose"><short>give a bit more info</short></flag>

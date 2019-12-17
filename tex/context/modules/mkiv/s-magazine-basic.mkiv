@@ -24,6 +24,8 @@
 %D will produce unwanted side effects. So, if some feature or settings is needed,
 %D let me know.
 
+%D By now (2019) it's an old style that needs an overhaul ...
+
 % These are reserved for PRAGMA-ADE, don't use them yourself!
 
 % \setupdocument[main=Tricky]
@@ -67,13 +69,6 @@
 \startreusableMPgraphic{middlepaper}
     fill OverlayBox
         withshademethod "circular"
-        withshadecenter center (0.5,0.5)
-        withshadecolors ("InnerColor","OuterColor") ;
-\stopreusableMPgraphic
-
-\startreusableMPgraphic{rightpaper}
-    fill OverlayBox
-        withshademethod "circular"
         withshadecenter center (0,0.5)
         withshadecolors ("InnerColor","OuterColor") ;
 \stopreusableMPgraphic
@@ -81,7 +76,14 @@
 \startreusableMPgraphic{leftpaper}
     fill OverlayBox
         withshademethod "circular"
-        withshadecenter center (1,0.5)
+        withshadecenter center (-0.5,0.5)
+        withshadecolors ("InnerColor","OuterColor") ;
+\stopreusableMPgraphic
+
+\startreusableMPgraphic{rightpaper}
+    fill OverlayBox
+        withshademethod "circular"
+        withshadecenter center (0.5,0.5)
         withshadecolors ("InnerColor","OuterColor") ;
 \stopreusableMPgraphic
 
@@ -472,7 +474,7 @@
    before={\setups[titlepage,title]},
    after={\setups[cleanup,listing,lastpage]}]
 
-\continueifinputfile {s-mag-01.mkiv}
+\continueifinputfile {s-magazine-basic.mkiv}
 
 \startbuffer[abstract]
     This is the zero issue of a semi periodical. The associated style can be used

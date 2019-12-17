@@ -1,0 +1,93 @@
+%D \module
+%D   [       file=syst-con,
+%D        version=2006.09.16, % real old stuff ... 2000.12.10
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Conversions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\registerctxluafile{syst-con}{}
+
+\unprotect
+
+%D \macros{lchexnumber,uchexnumber,lchexnumbers,uchexnumbers}
+%D
+%D In addition to the uppercase hex conversion, as needed in math families, we
+%D occasionally need a lowercase one.
+
+\def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
+\def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
+\def\lchexnumbers#1{\clf_lchexnumbers\numexpr#1\relax}
+\def\uchexnumbers#1{\clf_uchexnumbers\numexpr#1\relax}
+
+\let\hexnumber\uchexnumber
+
+%D \macros{octnumber}
+%D
+%D For \UNICODE\ remapping purposes, we need octal numbers.
+
+\def\octnumber#1{\clf_octnumber\numexpr#1\relax}
+
+%D \macros{hexstringtonumber,octstringtonumber}
+%D
+%D This macro converts a two character hexadecimal number into a decimal number,
+%D thereby taking care of lowercase characters as well.
+
+\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
+\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
+
+%D \macros{rawcharacter}
+%D
+%D This macro can be used to produce proper 8 bit characters that we sometimes need
+%D in backends and round||trips.
+
+\def\rawcharacter#1{\clf_rawcharacter\numexpr#1\relax}
+
+%D \macros{twodigits, threedigits}
+%D
+%D These macros provides two or three digits always:
+
+\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
+\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
+
+%D \macros{modulonumber}
+%D
+%D In the conversion macros described in \type {core-con} we need a wrap||around
+%D method. The following solution is provided by Taco.
+%D
+%D The \type {modulonumber} macro expands to the mathematical modulo of a positive
+%D integer. It is crucial for it's application that this macro is fully exandable.
+%D
+%D The expression inside the \type {\numexpr} itself is somewhat bizarre because
+%D \ETEX\ uses a rounding division instead of truncation. If \ETEX's division would
+%D have behaved like \TEX's normal\type {\divide}, then the expression could have
+%D been somewhat simpler, like \type {#2-(#2/#1)*#1}. This works just as well, but a
+%D bit more complex.
+%D
+%D \starttyping
+%D \def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
+%D \stoptyping
+%D
+%D But \unknown\ now we can also do this:
+
+\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
+
+%D \macros{setcalculatedsin,setcalculatedcos,setcalculatedtan}
+
+\unexpanded\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
+\unexpanded\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
+\unexpanded\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
+
+%D \macros{formatted,format}
+
+           \def\formatted#1{\ctxcommand{format(#1)}} % not clf
+\unexpanded\def\format   #1{\ctxcommand{format(#1)}} % not clf
+
+%D The \type {\modulatednumber} and \type {\realnumber} macros have been removed.
+
+\protect \endinput

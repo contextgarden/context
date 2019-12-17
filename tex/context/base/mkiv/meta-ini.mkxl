@@ -1,0 +1,1465 @@
+%D \module
+%D   [       file=meta-ini,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\ currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% initializations:
+%
+% - pass settings from tex to mp (delayed expansion)
+% - used by context core (and modules)
+% - cummulative definitions
+% - flushed each graphic
+% - can be disabled per instance
+% - managed at the tex end
+%
+% extensions:
+%
+% - add mp functionality (immediate expansion)
+% - cummulative
+% - all instances or subset of instances
+% - can be disabled per instance
+% - managed at the lua/mp end
+% - could be managed at the tex end but no real reason and also messy
+%
+% definitions:
+%
+% - add mp functionality (delayed expansion)
+% - cummulative
+% - per instance
+% - managed at the tex end
+%
+% inclusions:
+%
+% - add mp functionality (delayed expansion)
+% - cummulative only when [+]
+% - per instance
+% - managed at the tex end
+%
+% order of execution:
+%
+%   definitions
+%   extensions
+%   inclusions
+%   beginfig
+%     initializations
+%     graphic
+%   endfig
+
+% The instance will be implemented stepwise ... I should redo some code in order to
+% make the macros look better than they do now.
+
+\writestatus{loading}{MetaPost Graphics / Initializations}
+
+\registerctxluafile{meta-ini}{}
+
+\unprotect
+
+\newtoks \everyMPgraphic          % mp % public or not ?
+
+\appendtoks
+    \restoreendofline % see interferences-001.tex
+\to \everyMPgraphic
+
+\def\MPruntimefile    {mprun}
+\def\currentMPformat  {metafun}
+\def\defaultMPinstance{metafun}
+
+\installcorenamespace{mpinstance}
+\installcorenamespace{mpinclusions}
+\installcorenamespace{mpdefinitions}
+\installcorenamespace{mpgraphic}
+\installcorenamespace{mpstaticgraphic}
+\installcorenamespace{mpclip}
+
+\newtoks \t_meta_initializations  % tex, each
+\def     \t_meta_inclusions     {\csname\??mpinclusions \currentMPinstance\endcsname} % token register
+\def     \t_meta_definitions    {\csname\??mpdefinitions\currentMPinstance\endcsname} % token register
+
+%D The next command is, of course, dedicated to Mojca, who needs it for gnuplot.
+%D Anyway, the whole multiple engine mechanism is to keep her gnuplot from
+%D interfering.
+
+\unexpanded\def\startMPdefinitions
+  {\dosinglegroupempty\meta_start_definitions}
+
+\def\meta_start_definitions#1#2\stopMPdefinitions
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \gtoksapp\t_meta_definitions{#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
+
+\let\stopMPdefinitions\relax
+
+\unexpanded\def\startMPextensions
+  {\dosinglegroupempty\meta_start_extensions}
+
+\def\meta_start_extensions#1#2\stopMPextensions % we could use buffers instead
+  {\clf_setmpextensions{#1}{#2}}
+
+\let\stopMPextensions\relax
+
+\unexpanded\def\startMPinitializations#1\stopMPinitializations % for all instances, when enabled
+  {\gtoksapp\t_meta_initializations{#1}}
+
+\let\stopMPinitializations\relax
+
+\unexpanded\def\startMPinclusions
+  {\dosingleempty\meta_start_inclusions}
+
+\unexpanded\def\meta_start_inclusions[#1]%
+  {\edef\m_meta_option{#1}%
+   \dosinglegroupempty\meta_start_inclusions_indeed}
+
+\def\meta_start_inclusions_indeed#1#2\stopMPinclusions
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \ifx\m_meta_option\!!plustoken \else
+     \global\t_meta_inclusions\emptytoks
+   \fi
+   \gtoksapp\t_meta_inclusions{#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
+
+\let\stopMPinclusions\relax
+
+\unexpanded\def\MPinclusions
+  {\dosingleempty\meta_inclusions}
+
+\def\meta_inclusions[#1]%
+  {\edef\m_meta_option{#1}%
+   \dosinglegroupempty\meta_inclusions_indeed}
+
+\def\meta_inclusions_indeed#1#2%
+  {\let\m_meta_saved_instance\currentMPinstance
+   \edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \ifx\m_meta_option\!!plustoken \else
+     \global\t_meta_inclusions\emptytoks
+   \fi
+   \gtoksapp\t_meta_inclusions{#2}%
+   \let\currentMPinstance\m_meta_saved_instance}
+
+\installcommandhandler \??mpinstance {MPinstance} \??mpinstance
+
+\setupMPinstance
+  [\s!format=metafun,
+   \s!extensions=\v!no,
+   \s!initializations=\v!no,
+   \c!method=\s!default,
+   \c!textstyle=,
+   \c!textcolor=]
+
+\appendtoks
+    \ifcsname\??mpdefinitions\currentMPinstance\endcsname \else
+      \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
+    \fi
+    \ifcsname\??mpinclusions\currentMPinstance\endcsname \else
+      \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
+    \fi
+    \t_meta_definitions\emptytoks % in case we redefine
+    \t_meta_inclusions \emptytoks % in case we redefine
+\to \everydefineMPinstance
+
+\unexpanded\def\resetMPinstance[#1]%
+  {\writestatus\m!metapost{reset will be implemented when needed}}
+
+\def\meta_analyze_graphicname[#1]%
+ %{\normalexpanded{\meta_analyze_graphicname_indeed[#1::::]}}
+  {\normalexpanded{\meta_analyze_graphicname_indeed[#1}::::]}
+
+\def\meta_show_properties_indeed
+  {\writestatus{metapost}{name: \currentMPgraphicname, instance: \currentMPinstance, format: \currentMPformat}}
+
+\let\meta_show_properties\donothing
+
+\installtextracker
+  {metapost.properties}
+  {\let\meta_show_properties\meta_show_properties_indeed}
+  {\let\meta_show_properties\donothing}
+
+\unexpanded\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
+  {\edef\currentMPgraphicname{#2}%
+   \ifx\currentMPgraphicname\empty
+     \edef\currentMPgraphicname{#1}%
+     \let\currentMPinstance\defaultMPinstance
+   \orelse\ifcsname\??mpdefinitions#1\endcsname
+     \edef\currentMPinstance{#1}%
+   \else
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_show_properties}
+
+\def\currentMPgraphicname{\s!unknown}
+\def\currentMPinstance   {\defaultMPinstance}
+\def\currentMPformat     {\currentMPinstance}
+
+\defineMPinstance[metafun]    [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[minifun]    [\s!format=minifun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[extrafun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+\defineMPinstance[lessfun]    [\s!format=metafun]
+\defineMPinstance[doublefun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!double]
+\defineMPinstance[binaryfun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!binary]
+\defineMPinstance[decimalfun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
+
+\defineMPinstance[mprun]      [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
+
+\defineMPinstance[metapost]   [\s!format=mpost]
+\defineMPinstance[nofun]      [\s!format=mpost]
+\defineMPinstance[doublepost] [\s!format=mpost,\c!method=\s!double]
+\defineMPinstance[binarypost] [\s!format=mpost,\c!method=\s!binary]
+\defineMPinstance[decimalpost][\s!format=mpost,\c!method=\s!decimal]
+
+\defineMPinstance[simplefun]  [\s!format=metafun,\c!method=\s!double] % maybe use minifun
+
+%defineMPinstance[megapost]   [\s!format=mpost,\c!method=\s!decimal]
+
+\newconditional\c_meta_include_initializations
+
+\def\meta_begin_graphic_group#1%
+  {\begingroup
+   \meta_analyze_graphicname[#1]}
+
+\def\meta_end_graphic_group
+  {\endgroup}
+
+\def\MPaskedfigure{false}
+
+\def\meta_flush_current_initializations
+  {\ifconditional\c_meta_include_initializations
+     \the\t_meta_initializations
+   \fi}
+
+\def\meta_flush_current_inclusions
+  {\the\t_meta_inclusions}
+
+\def\meta_flush_current_definitions
+  {\the\t_meta_definitions}
+
+\def\meta_start_current_graphic
+  {\begingroup
+   \meta_enable_include
+   \the\everyMPgraphic
+   \edef\p_initializations{\MPinstanceparameter\s!initializations}%
+   \ifx\p_initializations\v!yes
+     \settrue \c_meta_include_initializations
+   \else
+     \setfalse\c_meta_include_initializations
+   \fi
+   \edef\p_setups{\MPinstanceparameter\c!setups}%
+   \ifx\p_setups\empty \else
+     \setups[\p_setups]%
+   \fi
+   \useMPinstancestyleparameter\c!textstyle}
+
+\def\meta_set_current_color
+  {\useMPinstancecolorparameter\c!textcolor}
+
+\def\meta_stop_current_graphic
+  {\global\t_meta_definitions\emptytoks
+   \global\t_meta_inclusions\emptytoks
+   \endgroup}
+
+\def\meta_process_graphic_start
+  {\pushMPboundingbox
+   \setbox\b_meta_graphic\hpack\bgroup}
+
+\let\meta_relocate_graphic\relax % experimental hook
+
+\def\meta_process_graphic_stop
+  {\egroup
+   \meta_place_graphic
+   \meta_relocate_graphic
+   \popMPboundingbox}
+
+\unexpanded\def\meta_process_graphic_instance#1%
+  {\edef\currentMPinstance{#1}%
+   \ifx\currentMPinstance\empty
+     \let\currentMPinstance\defaultMPinstance
+   \fi
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_process_graphic}
+
+\unexpanded\def\meta_process_graphic#1% todo: extensions and inclusions outside beginfig
+  {\meta_start_current_graphic
+   \forgetall
+   \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+   \meta_process_graphic_start
+     \normalexpanded{\noexpand\clf_mpgraphic
+         instance        {\currentMPinstance}%
+         format          {\currentMPformat}%
+         data            {#1;}%
+         initializations {\meta_flush_current_initializations}%
+    \ifx\p_extensions\v!yes
+         extensions      {\clf_getmpextensions{\currentMPinstance}}% goes through tex again
+    \fi
+         inclusions      {\meta_flush_current_inclusions}%
+         definitions     {\meta_flush_current_definitions}%
+         figure          {\MPaskedfigure}%
+         method          {\MPinstanceparameter\c!method}%
+         namespace       {\??graphicvariable\currentmpvariableclass:}%
+    \relax}%
+   \meta_process_graphic_stop
+   \meta_stop_current_graphic}
+
+\let\meta_process_graphic_figure_start\relax
+\let\meta_process_graphic_figure_stop \relax
+
+\unexpanded\def\processMPfigurefile#1% special case: obeys beginfig .. endfig and makes pages
+  {\begingroup
+   \let\normal_meta_process_graphic_start\meta_process_graphic_start
+   \let\normal_meta_process_graphic_stop \meta_process_graphic_stop
+   \let\meta_process_graphic_start\relax
+   \let\meta_process_graphic_stop \relax
+   \def\meta_process_graphic_figure_start{\startTEXpage[\c!offset=\v!overlay,\c!align=]\normal_meta_process_graphic_start}%
+   \def\meta_process_graphic_figure_stop {\normal_meta_process_graphic_stop\stopTEXpage}
+   \def\MPaskedfigure{all}%
+   \meta_process_graphic{input "#1" ;}%
+   \endgroup}
+
+%D Calling up previously defined graphics.
+
+% \def\includeMPgraphic#1% gets expanded !
+%   {\ifcsname\??mpgraphic#1\endcsname
+%      \csname\??mpgraphic#1\endcsname ; % ; is safeguard
+%    \fi}
+%
+% \unexpanded\def\meta_enable_include % public
+%   {\let\meta_handle_use_graphic     \thirdofthreearguments
+%    \let\meta_handle_reusable_graphic\thirdofthreearguments}
+%
+% but ... we want this too:
+%
+% \startuseMPgraphic{x}
+%     draw textext("\externalfigure[foo.pdf]") ;
+% \stopuseMPgraphic
+%
+% \useMPgraphic{x}
+%
+% so we cannot overload unless we let back to the original meanings each graphic
+% ... a better solution is:
+
+\def\includeMPgraphic#1% gets expanded !
+  {\ifcsname\??mpgraphic#1\endcsname
+     \doubleexpandafter\fourthoffourarguments\lastnamedcs ; % ; is safeguard
+   \fi}
+
+\let\meta_enable_include\relax
+
+%D Drawings (stepwise built):
+
+\newif\ifMPdrawingdone \MPdrawingdonefalse
+
+\unexpanded\def\finalizeMPdrawing
+  {\MPdrawingdonetrue}
+
+\let\MPdrawingdata\empty
+
+\unexpanded\def\resetMPdrawing
+  {\glet\MPdrawingdata\empty
+   \global\MPdrawingdonefalse}
+
+\unexpanded\def\pushMPdrawing
+  {\globalpushmacro\MPdrawingdata
+   \glet\MPdrawingdata\empty}
+
+\unexpanded\def\popMPdrawing
+  {\globalpopmacro\MPdrawingdata}
+
+\unexpanded\def\getMPdrawing
+  {\ifMPdrawingdone
+     \expandafter\meta_process_graphic\expandafter{\MPdrawingdata}% is this expansion still needed?
+   \fi}
+
+\def\startMPdrawing
+  {\dosingleempty\meta_start_drawing}
+
+\def\meta_start_drawing[#1]#2\stopMPdrawing % to be redone, this ascii stuff
+  {\relax
+   \bgroup
+   \meta_enable_include
+   \doifelse{#1}{-}{\convertargument#2\to\asciia}{\def\asciia{#2}}%
+   \xdef\MPdrawingdata{\MPdrawingdata\asciia}%
+   \egroup}
+
+\let\stopMPdrawing\relax
+
+\def\MPdrawing#1%
+  {\relax
+   \bgroup
+   \meta_enable_include
+   \xdef\MPdrawingdata{\MPdrawingdata#1}%
+   \egroup}
+
+\unexpanded\def\startMPclip#1#2\stopMPclip % todo: store at the lua end or just store less
+  {\setgvalue{\??mpclip#1}{#2}}
+
+\let\stopMPclip\relax
+
+\unexpanded\def\meta_grab_clip_path#1#2#3%
+  {\begingroup
+   \d_overlay_width #2\relax
+   \d_overlay_height#3\relax
+   \edef\width {\the\d_overlay_width \space}%
+   \edef\height{\the\d_overlay_height\space}%
+   \edef\currentMPclip{#1}%
+   \ifcsname\??mpclip\currentMPclip\endcsname
+     \meta_grab_clip_path_yes
+   \else
+     \meta_grab_clip_path_nop
+   \fi
+   \endgroup}
+
+\def\meta_grab_clip_path_yes
+  {\meta_start_current_graphic
+     \normalexpanded{\noexpand\clf_mpsetclippath
+       instance        {\currentMPinstance}%
+       format          {\currentMPformat}%
+       data            {\csname\??mpclip\currentMPclip\endcsname}%
+       initializations {\meta_flush_current_initializations}%
+       useextensions   {\MPinstanceparameter\s!extensions}%
+       inclusions      {\meta_flush_current_inclusions}%
+       method          {\MPinstanceparameter\c!method}%
+       width           \d_overlay_width
+       height          \d_overlay_height
+     \relax}%
+   \meta_stop_current_graphic}
+
+\def\meta_grab_clip_path_nop
+  {\clf_mpsetclippath
+     width  \d_overlay_width
+     height \d_overlay_height
+   \relax}
+
+%D Since we want labels to follow the document settings, we also set the font
+%D related variables.
+
+\unexpanded\def\MPfontsizehskip#1%
+  {\dontleavehmode
+   \begingroup
+   \definedfont[#1]%
+   \hskip\clf_currentdesignsize\scaledpoint\relax
+   \endgroup}
+
+\definefontsynonym[MetafunDefault][Regular*default]
+
+\startMPinitializations % scale is not yet ok
+    defaultfont:="\truefontname{MetafunDefault}";
+  % defaultscale:=\the\bodyfontsize/10pt; % only when hard coded 10pt
+  % defaultscale:=1;
+\stopMPinitializations
+
+%D A signal that we're in combined \CONTEXT||\METAFUN mode:
+
+\startMPextensions
+    string contextversion;contextversion:="\contextversion"; % expanded
+\stopMPextensions
+
+%D \macros
+%D   {setupMPvariables}
+%D
+%D When we build collections of \METAPOST\ graphics, like background and buttons,
+%D the need for passing settings arises. By (mis|)|using the local prefix that
+%D belongs to \type {\framed}, we get a rather natural interface to backgrounds. To
+%D prevent conflicts, we will use the \type {-} in \METAPOST\ specific variables,
+%D like:
+%D
+%D \starttyping
+%D \setupMPvariables[meta:button][size=20pt]
+%D \stoptyping
+
+% \lineheight  2pt  2  \scratchcounter  red  0.4  .5\bodyfontsize
+%
+% see cont-loc for test code
+
+%D Currently the inheritance of backgrounds does not work and we might drop it
+%D anyway (too messy)
+
+\newbox\b_meta_variable_box
+
+\let \currentmpvariableclass          \empty
+\let \m_meta_current_variable         \empty
+\let \m_meta_current_variable_template\empty
+
+\installcorenamespace{graphicvariable}
+
+\def\meta_prepare_variable_default{\MPcolor{black}} % just to be sure we use a color but ...
+
+\unexpanded\def\setupMPvariables
+  {\dodoubleempty\meta_setup_variables}
+
+\def\meta_setup_variables[#1][#2]%
+  {\ifsecondargument
+     \getrawparameters[\??graphicvariable#1:][#2]%
+   \else
+     \getrawparameters[\??graphicvariable:][#1]%
+   \fi}
+
+\unexpanded\def\presetMPvariable
+  {\dodoubleargument\meta_preset_variable}
+
+\def\meta_preset_variable[#1][#2=#3]%
+  {\ifcsname\??graphicvariable#1:#2\endcsname \else
+     \setvalue{\??graphicvariable#1:#2}{#3}%
+   \fi}
+
+\def\MPrawvar#1#2% no checking
+  {\begincsname\??graphicvariable#1:#2\endcsname}
+
+\def\MPvariable#1% todo: could be a framed chain
+  {\begincsname\??graphicvariable\currentmpvariableclass:#1\endcsname}
+
+\unexpanded\def\useMPvariables
+  {\dodoubleargument\meta_use_variables}
+
+\def\meta_use_variables[#1][#2]%
+  {\edef\currentmpvariableclass{#1}%
+   \meta_prepare_variables{#2}}
+
+\unexpanded\def\meta_prepare_variables#1%
+  {\processcommalist[#1]\meta_prepare_variable}
+
+\unexpanded\def\meta_prepare_variable#1%
+  {\edef\m_meta_current_variable_template
+     {\??graphicvariable\currentmpvariableclass:#1}%
+   \edef\m_meta_current_variable
+     {\begincsname\m_meta_current_variable_template\endcsname}%
+   \ifx\m_meta_current_variable\empty
+     \expandafter\meta_prepare_variable_nop
+   \else
+     \expandafter\meta_prepare_variable_yes
+   \fi}
+
+\unexpanded\def\meta_prepare_instance_variables
+  {\expandafter\processcommalist\expandafter[\m_meta_instance_variables]\meta_prepare_instance_variable}
+
+\unexpanded\def\meta_prepare_instance_variable#1%
+  {\edef\m_meta_current_variable_template
+     {\??graphicvariable\currentmpvariableclass:#1}%
+   \edef\m_meta_current_variable
+     {\ifcsname\m_meta_current_variable_template\endcsname
+         \lastnamedcs
+      \else
+         \begincsname\??graphicvariable\currentMPgraphicname:#1\endcsname
+      \fi}%
+   \ifx\m_meta_current_variable\empty
+     \expandafter\meta_prepare_variable_nop
+   \else
+     \expandafter\meta_prepare_variable_yes
+   \fi}
+
+\def\meta_prepare_variable_nop
+  {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
+
+\def\meta_prepare_variable_color % we use the attribute so we dont' go through namedcolor (why not)
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
+
+\def\meta_prepare_variable_number
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\number\m_meta_current_variable}}% also accepts 0.number
+
+\def\meta_prepare_variable_dimension
+  {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\the\dimexpr\m_meta_current_variable}}
+
+\def\meta_prepare_variable_yes
+  {\ifchkdim\m_meta_current_variable\or
+     \meta_prepare_variable_dimension
+   \else\ifchknum\m_meta_current_variable\or
+     \meta_prepare_variable_number
+   \else
+      \doifelsecolor\m_meta_current_variable
+        \meta_prepare_variable_color
+        \meta_prepare_variable_dimension
+   \fi\fi}
+
+\let\MPvar         \MPvariable
+\let\setMPvariables\setupMPvariables
+
+%D \macros
+%D   {startuniqueMPgraphic, uniqueMPgraphic}
+%D
+%D This macros is probably of most use to myself, since I like to use graphics that
+%D adapt themselves. The next \METAPOST\ kind of graphic is both unique and reused
+%D when possible.
+%D
+%D \starttyping
+%D \defineoverlay[example][\uniqueMPgraphic{test}]
+%D
+%D \startuniqueMPgraphic {test}
+%D   draw OverlayBox ;
+%D \stopuniqueMPgraphic
+%D
+%D \startuniqueMPgraphic {test}
+%D   draw OverlayBox ;
+%D \stopuniqueMPgraphic
+%D \stoptyping
+
+\def\overlaystamp % watch the \MPcolor, since colors can be redefined
+  {\the\d_overlay_width    :%
+   \the\d_overlay_height   :%
+   \the\d_overlay_depth    :%
+   \the\d_overlay_offset   :%
+   \the\d_overlay_linewidth:%
+   \MPcolor\overlaycolor   :%  % todo, expand once \m_overlaycolor
+   \MPcolor\overlaylinecolor}  % todo, expand once \m_overlaylinecolor
+
+%D A better approach is to let additional variables play a role in determining the
+%D uniqueness. In the next macro, the second, optional, argument is used to
+%D guarantee the uniqueness, as well as prepare variables for passing them to
+%D \METAPOST.
+%D
+%D \starttyping
+%D \startuniqueMPgraphic{meta:hash}{gap,angle,...}
+%D \stoptyping
+%D
+%D The calling macro also accepts a second argument. For convenient use in overlay
+%D definitions, we use \type {{}} instead of \type {[]}.
+%D
+%D \starttyping
+%D \uniqueMPgraphic{meta:hash}{gap=10pt,angle=30}
+%D \stoptyping
+
+\newcount\c_meta_object_counter
+\newbox  \b_meta_graphic
+
+% hm, isn't this already done elsewhere?
+
+\unexpanded\def\meta_obey_box_depth
+  {\setbox\b_meta_graphic\hpack\bgroup
+     \raise\MPlly\box\b_meta_graphic
+   \egroup}
+
+\unexpanded\def\meta_ignore_box_depth
+  {\normalexpanded
+     {\meta_obey_box_depth % hence the \unexpanded
+      \wd\b_meta_graphic\the\wd\b_meta_graphic
+      \ht\b_meta_graphic\the\ht\b_meta_graphic
+      \dp\b_meta_graphic\the\dp\b_meta_graphic}}
+
+\unexpanded\def\meta_obey_box_origin
+  {\setbox\b_meta_graphic\hpack\bgroup
+     \kern\MPllx\raise\MPlly\box\b_meta_graphic
+   \egroup}
+
+\unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth}
+\unexpanded\def\ignoreMPboxdepth{\let\meta_relocate_box\meta_ignore_box_depth}
+\unexpanded\def\obeyMPboxorigin {\let\meta_relocate_box\meta_obey_box_origin}
+\unexpanded\def\normalMPboxdepth{\let\meta_relocate_box\relax}
+
+\let\meta_relocate_box\relax
+
+\unexpanded\def\meta_place_graphic % the converter also displaces so in fact we revert
+  {\meta_relocate_box
+   \box\b_meta_graphic}
+
+\unexpanded\def\meta_reuse_box#1#2#3#4#5% space delimiting would save some tokens
+  {\MPllx#2\MPlly#3\MPurx#4\MPury#5%
+   \hpack{\forcecolorhack\getobject{MP}{#1}}} % else no proper color intent
+
+\unexpanded\def\meta_use_box
+  {\setunreferencedobject{MP}}
+
+\def\meta_handle_unique_graphic#1#2#3% when there are too many, we can store data at the lua end, although,
+  {\begingroup                       % when there are that many they're probably not that unique anyway
+   \edef\currentmpvariableclass{#1}%
+   \extendMPoverlaystamp{#2}% incl prepare
+   \ifcsname\??mpgraphic\overlaystamp:#1\endcsname
+     \lastnamedcs
+   \else
+     \meta_enable_include % redundant
+     \global\advance\c_meta_object_counter\plusone
+     \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+     \setxvalue{\??mpgraphic\overlaystamp:#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+     \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
+   \fi
+   \endgroup}
+
+\unexpanded\def\startuniqueMPgraphic
+  {\dodoublegroupempty\meta_start_unique_graphic}
+
+\let\stopuniqueMPgraphic\relax
+
+\def\meta_start_unique_graphic#1%
+  {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_unique_graphic_indeed#1#2#3\stopuniqueMPgraphic
+  {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
+
+\unexpanded\def\uniqueMPgraphic
+  {\dodoublegroupempty\meta_unique_graphic}
+
+\def\meta_unique_graphic#1#2%
+  {\meta_begin_graphic_group{#1}%
+   \setupMPvariables[#1][#2]%
+   \begincsname\??mpgraphic#1\endcsname\empty
+   \meta_end_graphic_group}
+
+\def\meta_handle_use_graphic#1#2#3%
+  {\begingroup
+   \edef\currentmpvariableclass{#1}%
+   \edef\m_meta_instance_variables{#2}%
+   \ifx\m_meta_instance_variables\empty \else
+     \meta_prepare_instance_variables
+   \fi
+   \meta_enable_include % redundant
+   \meta_process_graphic{#3}%
+   \endgroup}
+
+\unexpanded\def\startuseMPgraphic
+  {\dodoublegroupempty\meta_start_use_graphic}
+
+\let\stopuseMPgraphic\relax
+
+\def\meta_start_use_graphic#1%
+  {\normalexpanded{\meta_start_use_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_use_graphic_indeed#1#2#3\stopuseMPgraphic
+  {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+
+\unexpanded\def\startusableMPgraphic % redundant but handy
+  {\dodoublegroupempty\meta_start_usable_graphic}
+
+\let\stopusableMPgraphic\relax
+
+\def\meta_start_usable_graphic#1%
+  {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_usable_graphic_indeed#1#2#3\stopusableMPgraphic
+  {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+
+\def\meta_handle_reusable_graphic#1#2#3%
+  {\begingroup
+   \edef\currentmpvariableclass{#1}%
+   \edef\m_meta_instance_variables{#2}%
+   \ifx\m_meta_instance_variables\empty \else
+     \meta_prepare_instance_variables
+   \fi
+   \meta_enable_include % redundant
+   \global\advance\c_meta_object_counter\plusone
+   \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+   \setxvalue{\??mpgraphic#1}{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+   \csname\??mpgraphic#1\endcsname\empty
+   \endgroup}
+
+\unexpanded\def\startreusableMPgraphic
+  {\dodoublegroupempty\meta_start_reusable_graphic}
+
+\let\stopreusableMPgraphic\relax
+
+\def\meta_start_reusable_graphic#1%
+  {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
+  {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
+
+\unexpanded\def\useMPgraphic
+  {\dodoublegroupempty\meta_use_graphic}
+
+\def\meta_use_graphic#1#2%
+  {\meta_begin_graphic_group{#1}%
+   \ifcsname\??mpgraphic#1\endcsname
+     \edef\usedMPgraphicname{#1}%
+   \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
+     \let\usedMPgraphicname\currentMPgraphicname
+   \else
+     \let\usedMPgraphicname\empty
+   \fi
+   \ifx\usedMPgraphicname\empty
+     % message
+   \else
+     \doifsomething{#2}{\setupMPvariables[\usedMPgraphicname][#2]}%
+     \csname\??mpgraphic\usedMPgraphicname\endcsname
+   \fi
+   \meta_end_graphic_group}
+
+\let\reuseMPgraphic   \useMPgraphic   % we can save a setup here if needed
+\let\reusableMPgraphic\reuseMPgraphic % we can save a setup here if needed
+
+%D \macros
+%D   {startuniqueMPpagegraphic,uniqueMPpagegraphic}
+%D
+%D Experimental.
+
+\def\m_meta_page_prefix{\doifelseoddpage oe}
+
+\def\overlaypagestamp
+  {\m_meta_page_prefix     :%
+   \the\d_overlay_width    :%
+   \the\d_overlay_height   :%
+   \the\d_overlay_depth    :%
+   \the\d_overlay_offset   :%
+   \the\d_overlay_linewidth:%
+   \MPcolor\overlaycolor   :%
+   \MPcolor\overlaylinecolor}
+
+\unexpanded\def\startuniqueMPpagegraphic
+  {\dodoublegroupempty\meta_start_unique_page_graphic}
+
+\let\stopuniqueMPpagegraphic\relax
+
+\def\meta_start_unique_page_graphic#1%
+  {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
+
+\unexpanded\def\meta_start_unique_page_graphic_indeed#1#2#3\stopuniqueMPpagegraphic % inefficient, double storage
+  {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%        % but these also keep the state
+   \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}        % and meaning will be redefined
+
+\unexpanded\def\uniqueMPpagegraphic
+  {\dodoublegroupempty\meta_unique_page_graphic}
+
+\def\meta_unique_page_graphic#1#2%
+  {\meta_begin_graphic_group{#1}%
+   \let\overlaystamp\overlaypagestamp
+   \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
+   \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
+   \meta_end_graphic_group}
+
+%D One way of defining a stamp is:
+%D
+%D \starttyping
+%D \def\extendMPoverlaystamp#1%
+%D   {\def\docommand##1%
+%D      {\edef\overlaystamp{\overlaystamp:\MPvariable{##1}}}%
+%D    \processcommalist[#1]\docommand}
+%D \stoptyping
+%D
+%D Since we need to feed \METAPOST\ with expanded dimensions, we introduce a
+%D dedicated expansion engine. We redefine \type {\extendMPoverlaystamp} to
+
+\unexpanded\def\extendMPoverlaystamp#1%
+  {\processcommalist[#1]\meta_extend_overlay_stamp}
+
+\def\meta_extend_overlay_stamp#1%
+  {\meta_prepare_instance_variable{#1}%
+   \edef\overlaystamp{\overlaystamp:\MPvariable{#1}}}
+
+\unexpanded\def\getMPdata  {\clf_getMPdata}
+           \let\rawMPdata   \clf_getMPdata
+
+\unexpanded\def\getMPstored{\clf_getMPstored}
+           \let\rawMPstored \clf_getMPstored
+
+%D We need this trick because we need to make sure that the tex scanner sees
+%D newlines and does not quit. Also, we do need to flush the buffer under a normal
+%D catcode regime in order to expand embedded tex macros. As usual with buffers,
+%D \type {#1} can be a list.
+
+\unexpanded\def\processMPbuffer
+  {\dosingleempty\meta_process_buffer}
+
+\def\meta_process_buffer[#1]%
+  {\meta_begin_graphic_group{#1}%
+   \meta_process_graphic{\clf_feedback{\currentMPgraphicname}}%
+   \meta_end_graphic_group}
+
+\unexpanded\def\runMPbuffer
+  {\dosingleempty\meta_run_buffer}
+
+\def\meta_run_buffer[#1]% processing only
+  {\startnointerference\meta_process_buffer[#1]\stopnointerference}
+
+%D \macros
+%D   {startMPenvironment, resetMPenvironment}
+%D
+%D In order to synchronize the main \TEX\ run and the runs local to \METAPOST,
+%D environments can be passed.
+
+\unexpanded\def\startMPenvironment
+  {\begingroup
+   \catcode\endoflineasciicode \ignorecatcode
+   \dosingleempty\meta_start_environment}
+
+\def\meta_start_environment[#1]#2\stopMPenvironment
+  {\endgroup
+   \edef\m_meta_option{#1}
+   \ifx\m_meta_option\s!reset
+     \resetMPenvironment % reset mp toks
+   \orelse\ifx\m_meta_option\v!global
+     #2%                 % use in main doc too
+   \orelse\ifx\m_meta_option\!!plustoken
+     #2%                 % use in main doc too
+   \fi
+   \clf_mptexset{\detokenize{#2}}}
+
+\let\stopMPenvironment\relax
+
+\unexpanded\def\resetMPenvironment
+  {\clf_mptexreset}
+
+\unexpanded\def\useMPenvironmentbuffer[#1]%
+  {\clf_mptexsetfrombuffer{#1}}
+
+%D This command takes \type {[reset]} as optional argument.
+%D
+%D \starttyping
+%D \startMPenvironment
+%D   \setupbodyfont[pos,14.4pt]
+%D \stopMPenvironment
+%D
+%D \startMPcode
+%D   draw btex \sl Hans Hagen etex scaled 5 ;
+%D \stopMPcode
+%D \stoptyping
+%D
+%D The most simple case:
+
+\unexpanded\def\startMPcode
+  {\dosinglegroupempty\meta_start_code}
+
+\let\stopMPcode\relax
+
+\def\meta_start_code
+  {\iffirstargument
+     \expandafter\meta_start_code_instance
+   \else
+     \expandafter\meta_start_code_standard
+   \fi}
+
+\def\meta_start_code_instance#1#2\stopMPcode
+  {\begingroup
+   \edef\currentMPinstance{#1}%
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_enable_include
+   \meta_process_graphic{#2}%
+   \endgroup}
+
+\def\meta_start_code_standard#1#2\stopMPcode
+  {\begingroup
+   \let\currentMPinstance\defaultMPinstance
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_process_graphic{#2}%
+   \endgroup}
+
+\unexpanded\def\MPcode
+  {\dodoublegroupempty\meta_code}
+
+\def\meta_code
+  {\ifsecondargument
+     \expandafter\meta_code_instance
+   \else
+     \expandafter\meta_code_standard
+   \fi}
+
+\def\meta_code_instance#1#2%
+  {\meta_begin_graphic_group{#1}%
+   \meta_enable_include
+   \meta_process_graphic{#2}%
+   \meta_end_graphic_group}
+
+\def\meta_code_standard#1#2%
+  {\let\currentMPinstance\defaultMPinstance
+   \meta_enable_include
+   \meta_process_graphic{#1}}
+
+% a bit nasty (also needed for compatibility:
+
+% \startMPrun input mp-www.mp ; \stopMPrun
+% \externalfigure[mprun.3][width=10cm,height=8cm]
+
+% \startMPrun{mprun} input mp-www.mp ; \stopMPrun % instance
+% \externalfigure[mprun.4][width=10cm,height=8cm]
+
+\let\MPruninstance\defaultMPinstance
+
+\unexpanded\def\useMPrun#1#2% name n
+  {\begingroup
+   \def\MPaskedfigure{#2}%
+   \doifelsenothing{#1}
+     {\useMPgraphic{mprun}}%
+     {\useMPgraphic{#1}}%
+   \endgroup}
+
+\unexpanded\def\startMPrun
+  {\dosinglegroupempty\meta_start_run}
+
+\def\meta_start_run#1#2\stopMPrun
+  {\iffirstargument
+     \startuseMPgraphic{#1}#2\stopuseMPgraphic
+   \else
+     \startuseMPgraphic{mprun}#2\stopuseMPgraphic
+   \fi}
+
+\let\stopMPrun\relax
+
+%D The \type {\resetMPenvironment} is a quick way to erase
+%D the token list.
+%D
+%D You should be aware of independencies. For instance, if you use a font
+%D in a graphic that is not used in the main document, you need to load the
+%D typescript at the outer level (either directly or by using the global
+%D option).
+%D
+%D \starttyping
+%D \usetypescript[palatino][texnansi]
+%D
+%D \startMPenvironment
+%D     \usetypescript[palatino][texnansi]
+%D     \enableregime[utf]
+%D     \setupbodyfont[palatino]
+%D \stopMPenvironment
+%D
+%D \startMPpage
+%D     draw btex aap‒noot coördinatie – één etex ;
+%D \stopMPpage
+%D \stoptyping
+
+%D Loading specific \METAPOST\ related definitions is
+%D accomplished by:
+
+\unexpanded\def\useMPlibrary[#1]{\clf_useMPlibrary{#1}}
+
+%D \macros
+%D   {setMPtext, MPtext, MPstring, MPbetex}
+%D
+%D To be documented:
+%D
+%D \starttyping
+%D \setMPtext{identifier}{text}
+%D
+%D \MPtext  {identifier}
+%D \MPstring{identifier}
+%D \MPbetex {identifier}
+%D \stoptyping
+
+\installcorenamespace{mptext}
+
+\unexpanded\def\setMPtext#1#2% todo : #1 must be made : safe
+  {\defconvertedargument\ascii{#2}%
+   \dodoglobal\letvalue{\??mptext#1}\ascii}
+
+\def\MPtext  #1{\begincsname\??mptext#1\endcsname\empty}
+\def\MPstring#1{"\begincsname\??mptext#1\endcsname\empty"}
+\def\MPbetex #1{btex \begincsname\??mptext#1\endcsname\space etex}
+
+%D In order to communicate conveniently with the \TEX\ engine, we introduce some
+%D typesetting variables.
+
+% \setupcolors[state=stop,conversion=never] % quite tricky ... type mismatch
+
+% \startMPextensions
+%     color OverlayColor,OverlayLineColor;
+% \stopMPextensions
+
+\startMPinitializations
+    CurrentLayout:="\currentlayout";
+\stopMPinitializations
+
+% \startMPinitializations
+%     OverlayWidth:=\overlaywidth;
+%     OverlayHeight:=\overlayheight;
+%     OverlayDepth:=\overlaydepth;
+%     OverlayLineWidth:=\overlaylinewidth;
+%     OverlayOffset:=\overlayoffset;
+% \stopMPinitializations
+
+%D A dirty trick, ** in colo-ini.lua (mpcolor). We cannot use a vardef, because
+%D that fails with spot colors.
+
+\startMPinitializations
+    def OverlayLineColor=\ifx\overlaylinecolor\empty black \else\MPcolor{\overlaylinecolor} \fi enddef;
+    def OverlayColor    =\ifx\overlaycolor    \empty black \else\MPcolor{\overlaycolor}     \fi enddef;
+\stopMPinitializations
+
+% \newcount\c_overlay_colormodel
+% \newcount\c_overlay_color
+% \newcount\c_overlay_transparency
+% \newcount\c_overlay_linecolor
+% \newcount\c_overlay_linetransparency
+
+% \appendtoks
+%     \c_overlay_colormodel      \attribute\colormodelattribute
+%     \c_overlay_color           \colo_helpers_inherited_current_ca\overlaycolor
+%     \c_overlay_transparency    \colo_helpers_inherited_current_ta\overlaycolor
+%     \c_overlay_linecolor       \colo_helpers_inherited_current_ca\overlaylinecolor
+%     \c_overlay_linetransparency\colo_helpers_inherited_current_ta\overlaylinecolor
+% \to \everyMPgraphic
+
+% \startMPinitializations
+%     BaseLineSkip:=\the\baselineskip;
+%     LineHeight:=\the\baselineskip;
+%     BodyFontSize:=\the\bodyfontsize;
+%     %
+%     TopSkip:=\the\topskip;
+%     StrutHeight:=\strutheight;
+%     StrutDepth:=\strutdepth;
+%     %
+%     CurrentWidth:=\the\hsize;
+%     CurrentHeight:=\the\vsize;
+%     HSize:=\the\hsize ;
+%     VSize:=\the\vsize ;
+%     %
+%     EmWidth:=\the\emwidth;
+%     ExHeight:=\the\exheight;
+% \stopMPinitializations
+
+\appendtoks
+    \disablediscretionaries
+   %\disablecompoundcharacters
+\to \everyMPgraphic
+
+% \appendtoks % before color, inefficient, replace by low level copy
+%     \doregistercolor{currentcolor}\currentcolorname
+% \to \everyMPgraphic
+
+% \color[green]{abc \startMPcode
+% fill fullcircle scaled 3cm withoutcolor;
+% fill fullcircle scaled 2cm withcolor \MPcolor{currentcolor} ;
+% fill fullcircle scaled 1cm withcolor \MPcolor{red} ;
+% \stopMPcode def}
+
+\appendtoks
+    \baselineskip1\baselineskip
+    \lineheight  1\lineheight
+    \topskip     1\topskip
+\to \everyMPgraphic
+
+\appendtoks
+    \let \# \letterhash
+    \let \_ \letterunderscore
+    \let \& \letterampersand
+    \let \{ \letteropenbrace
+    \let \} \letterclosebrace
+\to \everyMPgraphic
+
+%D \macros
+%D   {PDFMPformoffset}
+%D
+%D In \PDF, forms are clipped and therefore we have to take precautions to get this
+%D right. Since this is related to objects, we use the same offset as used there.
+
+\def\PDFMPformoffset{\objectoffset}
+
+\newtoks\everyinsertMPfile
+
+\startMPextensions
+    def initialize_form_numbers =
+        do_initialize_numbers;
+    enddef;
+\stopMPextensions
+
+\startMPextensions
+    vardef ForegroundBox =
+        unitsquare xysized(HSize,VSize)
+    enddef ;
+\stopMPextensions
+
+% \startMPextensions
+%     PageFraction := 1 ;
+% \stopMPextensions
+
+% \startMPinitializations
+%     PageFraction := if \lastpage>1: (\realfolio-1)/(\lastpage-1) else: 1 fi ;
+% \stopMPinitializations
+
+\startMPdefinitions {metapost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+\startMPdefinitions {binarypost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+\startMPdefinitions {decimalpost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+\startMPdefinitions {doublepost}
+    if unknown context_bare : input mp-bare.mpiv ; fi ;
+\stopMPdefinitions
+
+% \startMPdefinitions {nofun}
+%     if unknown context_bare : input mp-bare.mpiv ; fi ;
+% \stopMPdefinitions
+
+%D And some more. These are not really needed since we don't use the normal figure
+%D inclusion macros any longer.
+
+\appendtoks
+    \externalfigurepostprocessors\emptytoks % safeguard
+\to \everyinsertMPfile
+
+%D We also take care of disabling fancy figure features, that can terribly interfere
+%D when dealing with symbols, background graphics and running (postponed) graphics.
+%D You won't believe me if I tell you what funny side effects can occur. One took me
+%D over a day to uncover when processing the screen version of the \METAFUN\ manual.
+
+\def\doifelseMPgraphic#1%
+  {\ifcsname\??mpgraphic   #1\endcsname\expandafter\firstoftwoarguments \orelse
+   \ifcsname\??mpgraphic o:#1\endcsname\expandafter\firstoftwoarguments \orelse
+   \ifcsname\??mpgraphic e:#1\endcsname\expandafter\firstoftwoarguments \else
+                                       \expandafter\secondoftwoarguments\fi}
+
+\let\doifMPgraphicelse\doifelseMPgraphic
+
+%D New:
+
+\definelayerpreset % no dx,dy - else nasty non-mp placement
+  [mp]
+  [\c!y=-\MPury,
+   \c!x=\MPllx,
+   \c!method=\v!fit]
+
+\definelayer
+  [mp]
+  [\c!preset=mp]
+
+%D Usage:
+%D
+%D \starttyping
+%D \defineviewerlayer[one][state=start]
+%D \defineviewerlayer[two][state=stop]
+%D
+%D \startuseMPgraphic{step-1}
+%D   fill fullcircle scaled 10cm withcolor red ;
+%D \stopuseMPgraphic
+%D
+%D \startuseMPgraphic{step-2}
+%D   fill fullcircle scaled 5cm withcolor green ;
+%D \stopuseMPgraphic
+%D
+%D \setlayer[mp]{\viewerlayer[one]{\useMPgraphic{step-1}}}
+%D \setlayer[mp]{\viewerlayer[two]{\useMPgraphic{step-2}}}
+%D
+%D \ruledhbox{\flushlayer[mp]}
+%D \stoptyping
+%D
+%D Reusing graphics is also possible (now):
+%D
+%D \starttyping
+%D \startreusableMPgraphic{axis}
+%D   tickstep := 1cm ; ticklength := 2mm ;
+%D   drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+%D   tickstep := tickstep/2 ; ticklength := ticklength/2 ;
+%D   drawticks unitsquare xscaled 4cm yscaled 3cm shifted (-1cm,-1cm) ;
+%D \stopreusableMPgraphic
+%D
+%D \startuseMPgraphic{demo}
+%D   drawpoint "1cm,1.5cm" ;
+%D \stopuseMPgraphic
+%D
+%D \definelayer[mp][preset=mp]
+%D \setlayer[mp]{\reuseMPgraphic{axis}}
+%D \setlayer[mp]{\useMPgraphic{demo}}
+%D \ruledhbox{\flushlayer[mp]}
+%D \stoptyping
+
+%D \macros
+%D   {startstaticMPfigure,useMPstaticfigure}
+%D
+%D Static figures are processed only when there has been something changed. Here is
+%D Aditya Mahajan's testcase:
+%D
+%D \startbuffer
+%D \startstaticMPfigure{circle}
+%D   fill fullcircle scaled 1cm withcolor blue;
+%D \stopstaticMPfigure
+%D
+%D \startstaticMPfigure{axis}
+%D   drawarrow (0,0)--(2cm,0) ;
+%D   drawarrow (0,0)--(0,2cm) ;
+%D   label.llft(textext("(0,0)") ,origin) ;
+%D \stopstaticMPfigure
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\unexpanded\def\startstaticMPfigure#1#2\stopstaticMPfigure
+  {\startreusableMPgraphic{\??mpstaticgraphic#1}#2\stopreusableMPgraphic}
+
+\unexpanded\def\startstaticMPgraphic
+  {\dodoublegroupempty\meta_start_static_graphic}
+
+\def\meta_start_static_graphic#1#2#3\stopstaticMPgraphic
+  {\startreusableMPgraphic{\??mpstaticgraphic#1}{#2}#3\stopreusableMPgraphic}
+
+\let\stopstaticMPfigure \relax
+\let\stopstaticMPgraphic\relax
+
+\unexpanded\def\usestaticMPfigure
+  {\dodoubleempty\meta_use_static_figure}
+
+\def\meta_use_static_figure[#1][#2]%
+  {\ifsecondargument
+     \scale[#2]{\reuseMPgraphic{\??mpstaticgraphic#1}}%
+   \else
+     \reuseMPgraphic{\??mpstaticgraphic#1}%
+   \fi}
+
+%D Goody for preventing overflows:
+
+\def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+
+%D There is no way to distinguish the black color that you get when you issue a
+%D \type {draw} without color specification from a color that has an explicit black
+%D specification unless you set the variable \type {defaultcolormodel} to 1.
+%D Hoewever, in that case you cannot distinguish that draw from one with a \type
+%D {withoutcolor} specification. This means that we have to provide multiple
+%D variants of inheritance.
+%D
+%D In any case we need to tell the converter what the inherited color is to start
+%D with. Case~3 is kind of unpredictable as it closely relates to the order in which
+%D paths are flushed. If you want to inherit automatically from the surrounding, you
+%D can best stick to variant 1. Variant 0 (an isolated graphic) is the default.
+%D
+%D \startbuffer
+%D \startuseMPgraphic{test}
+%D     drawoptions(withpen pencircle scaled 1pt) ;
+%D     def shift_cp = currentpicture := currentpicture shifted (-15pt,0) ; enddef ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt               ; shift_cp ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt withcolor red ; shift_cp ;
+%D     draw fullcircle scaled 10pt withoutcolor  ; shift_cp ;
+%D     fill fullcircle scaled 10pt               ; shift_cp ;
+%D \stopuseMPgraphic
+%D
+%D \starttabulate
+%D \NC 0\quad \NC \MPcolormethod0 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 1\quad \NC \MPcolormethod1 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 2\quad \NC \MPcolormethod2 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \NC 3\quad \NC \MPcolormethod3 \green XX\quad \useMPgraphic{test}\quad XX \NC \NR
+%D \stoptabulate
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+\newconstant\MPcolormethod
+
+\appendtoks
+    \clf_mpsetoutercolor
+        \MPcolormethod\space
+        \attribute\colormodelattribute\space
+        \attribute\colorattribute\space
+        \dogetattribute{transparency}\relax
+\to \everyMPgraphic
+
+% \startMPinitializations
+%     defaultcolormodel := \ifcase\MPcolormethod1\or1\or3\else3\fi;
+% \stopMPinitializations
+
+%D macros
+%D  {mprunvar,mpruntab,mprunset}
+%D
+%D \starttyping
+%D \startMPcode
+%D     passvariable("version","1.0") ;
+%D     passvariable("number",123) ;
+%D     passvariable("string","whatever") ;
+%D     passvariable("point",(1.5,2.8)) ;
+%D     passvariable("triplet",(1/1,1/2,1/3)) ;
+%D     passvariable("quad",(1.1,2.2,3.3,4.4)) ;
+%D     passvariable("boolean",false) ;
+%D     passvariable("path",fullcircle scaled 1cm) ;
+%D     draw fullcircle scaled 20pt ;
+%D \stopMPcode
+%D
+%D \ctxlua{inspect(metapost.variables)}
+%D
+%D \MPrunvar{version} \MPruntab{quad}{3} (\MPrunset{triplet}{,})
+%D
+%D $(x,y) = (\MPruntab{point}{1},\MPruntab{point}{2})$
+%D $(x,y) = (\MPrunset{point}{,})$
+%D \stoptyping
+
+\def\MPrunvar  #1{\clf_mprunvar{#1}}         \let\mprunvar\MPrunvar
+\def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \let\mpruntab\MPruntab % #2 is number
+\def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \let\mprunset\MPrunset
+
+\prependtoks \clf_mppushvariables \to \everybeforepagebody
+\appendtoks  \clf_mppopvariables  \to \everyafterpagebody
+
+\let\MPpushvariables\clf_mppushvariables
+\let\MPpopvariables \clf_mppopvariables
+
+%D We also provide an outputless run:
+
+\unexpanded\def\startMPcalculation
+  {\begingroup
+   \setbox\nextbox\hpack\bgroup
+   \dosinglegroupempty\meta_start_calculation}
+
+\let\stopMPcalculation\relax
+
+\def\meta_start_calculation
+  {\iffirstargument
+     \expandafter\meta_start_calculation_instance
+   \else
+     \expandafter\meta_start_calculation_standard
+   \fi}
+
+\def\meta_start_calculation_instance#1#2\stopMPcalculation
+  {\edef\currentMPinstance{#1}%
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_enable_include
+   \meta_process_graphic{#2;draw origin}%
+   \egroup
+   \endgroup}
+
+\def\meta_start_calculation_standard#1#2\stopMPcalculation
+  {\let\currentMPinstance\defaultMPinstance
+   \let\currentMPgraphicname\empty
+   \edef\currentMPformat{\MPinstanceparameter\s!format}%
+   \meta_process_graphic{#2;draw origin}%
+   \egroup
+   \endgroup}
+
+%D \macros
+%D   {setupMPgraphics}
+%D
+%D Here is a generic setup command:
+
+\installcorenamespace{MPgraphics}
+
+\installsetuponlycommandhandler \??MPgraphics {MPgraphics}
+
+%D Here we hook in the outer color. When \type {color} is set to \type {global} we
+%D get the outer color automatically. If you change this setting, you should do it
+%D grouped in order not to make other graphics behave in unexpected ways.
+
+\appendtoks
+    \doifelse{\directMPgraphicsparameter\c!color}\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%
+\to \everysetupMPgraphics
+
+\setupMPgraphics
+  [\c!color=\v!local]
+
+%D This can save some runtime: rename the mpy file from a first run (when stable) to
+%D another file and reuse it. One can also use the original filename, but a copy is
+%D often better.
+%D
+%D \starttyping
+%D \setupMPgraphics
+%D   [mpy=\jobname.mpy]
+%D \stoptyping
+
+\appendtoks
+    \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
+    \ifx\p_mpy\empty \else
+      \let\MPdataMPYfile\p_mpy
+      \clf_registermpyfile{\p_mpy}%
+    \fi
+\to \everysetupMPgraphics
+
+%D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
+
+\def\MPdpar#1#2{\the\dimexpr#1#2\relax\empty}
+\def\MPnpar#1#2{\the\numexpr#1#2\relax\empty}
+\def\MPspar#1#2{"#1#2"}
+
+%D Done.
+
+\protect \endinput

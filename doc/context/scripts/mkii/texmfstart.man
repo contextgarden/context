@@ -1,6 +1,6 @@
 .TH "mtxrun" "1" "01-01-2019" "version 1.33" "ConTeXt TDS Runner Tool"
 .SH NAME
-.B mtxrun
+ mtxrun - ConTeXt TDS Runner Tool
 .SH SYNOPSIS
 .B mtxrun [
 .I OPTIONS ...
@@ -15,7 +15,7 @@
 run an mtx script (lua prefered method) (--noquotes), no script gives list
 .TP
 .B --evaluate
-run code passed on the commandline (between quotes)
+run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)
 .TP
 .B --execute
 run a script or program (texmfstart method) (--noquotes)
@@ -58,6 +58,9 @@ create windows (mswin) stubs
 .TP
 .B --unix
 create unix (linux) stubs
+.TP
+.B --addbinarypath
+prepend the (found) binarypath to runners
 .TP
 .B --verbose
 give a bit more info

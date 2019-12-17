@@ -97,13 +97,12 @@
 %D Initialization of primitives.
 
 \directlua {
-    local baseprimitives = tex.extraprimitives("core","tex")
-    local moreprimitives = tex.extraprimitives("etex","luatex")
+    local primitives = tex.extraprimitives("core","tex","etex","luatex")
 
-    tex.enableprimitives("",moreprimitives)
+  % table.sort(primitives)
 
-    tex.enableprimitives("normal",baseprimitives)
-    tex.enableprimitives("normal",moreprimitives)
+    tex.enableprimitives("",      primitives)
+    tex.enableprimitives("normal",primitives)
 
     function tex.enableprimitives() end
 }
@@ -370,6 +369,7 @@
 \newdimen\scratchwidth
 \newdimen\scratchheight
 \newdimen\scratchdepth
+\newdimen\scratchtotal
 
 \newdimen\scratchoffset
 \newdimen\scratchleftoffset
@@ -412,7 +412,7 @@
 \newdimen \zeropoint     \zeropoint     0pt
 \newdimen \onepoint      \onepoint      1pt
 \newdimen \halfapoint    \halfapoint    0.5pt
-\newdimen \maxdimen      \maxdimen      16383.99999pt
+\newdimen \maxdimen      \maxdimen      16383.99999pt % 1073741823sp
 \newcount \maxcount      \maxcount      2147483647
 \newdimen \onebasepoint  \onebasepoint  1bp
 \newdimen \scaledpoint   \scaledpoint   1sp
@@ -570,9 +570,7 @@
 \newif\ifdone
 \newif\iffound
 
-%D Potential primitive in \LUATEX:
-
-\ifdefined\htdp \else \def\htdp#1{\dimexpr\ht#1+\dp#1\relax} \fi
+\def\htdp#1{\dimexpr\ht#1+\dp#1\relax}
 
 %D A few shortcuts:
 
@@ -619,48 +617,64 @@
 %D have number 0 (used to be char node) and ligature nodes are mapped to 7. That way
 %D macro packages can use the same symbolic names as in traditional \ETEX. Keep in
 %D mind that the internal node numbers are different and that there are more node
-%D types that 15.
+%D types that 15. The mode parameter forces \LUAMETATEX\ to use the real node
+%D numbers.
 
-\chardef\charnodecode          =  0
-\chardef\hlistnodecode         =  1
-\chardef\vlistnodecode         =  2
-\chardef\rulenodecode          =  3
-\chardef\insertnodecode        =  4
-\chardef\marknodecode          =  5
-\chardef\adjustnodecode        =  6
-\chardef\ligaturenodecode      =  7
-\chardef\discretionarynodecode =  8
-\chardef\whatsitnodecode       =  9
-\chardef\mathnodecode          = 10
-\chardef\gluenodecode          = 11
-\chardef\kernnodecode          = 12
-\chardef\penaltynodecode       = 13
-\chardef\unsetnodecode         = 14
-\chardef\mathsnodecode         = 15
+\ifdefined\internalcodesmode
+
+    \internalcodesmode\plusone
+
+  % \chardef\gluenodecode          = 12
+  % \chardef\kernnodecode          = 13
+  % \chardef\penaltynodecode       = 14
+
+\else
+
+  % \chardef\charnodecode          =  0
+  % \chardef\hlistnodecode         =  1
+  % \chardef\vlistnodecode         =  2
+  % \chardef\rulenodecode          =  3
+  % \chardef\insertnodecode        =  4
+  % \chardef\marknodecode          =  5
+  % \chardef\adjustnodecode        =  6
+  % \chardef\ligaturenodecode      =  7
+  % \chardef\discretionarynodecode =  8
+  % \chardef\whatsitnodecode       =  9
+  % \chardef\mathnodecode          = 10
+    \chardef\gluenodecode          = 11
+    \chardef\kernnodecode          = 12
+    \chardef\penaltynodecode       = 13
+  % \chardef\unsetnodecode         = 14
+  % \chardef\mathsnodecode         = 15
+
+\fi
 
 %D Constants to be used with \type {\currentiftype}. I wonder if we will ever
-%D use these in \CONTEXT.
+%D use these in \CONTEXT. We have a few more anyway and in \LUAMETATEX\ we
+%D have different numbers. So for now let's just not define them. The
+%D previously mentioned mode parameters enables the real numbers (we have
+%D some more and they are therefore ordered differently).
 
-\chardef\charifcode     =  1
-\chardef\catifcode      =  2
-\chardef\numifcode      =  3
-\chardef\dimifcode      =  4
-\chardef\oddifcode      =  5
-\chardef\vmodeifcode    =  6
-\chardef\hmodeifcode    =  7
-\chardef\mmodeifcode    =  8
-\chardef\innerifcode    =  9
-\chardef\voidifcode     = 10
-\chardef\hboxifcode     = 11
-\chardef\vboxifcode     = 12
-\chardef\xifcode        = 13
-\chardef\eofifcode      = 14
-\chardef\trueifcode     = 15
-\chardef\falseifcode    = 16
-\chardef\caseifcode     = 17
-\chardef\definedifcode  = 18
-\chardef\csnameifcode   = 19
-\chardef\fontcharifcode = 20
+% \chardef\charifcode     =  1
+% \chardef\catifcode      =  2
+% \chardef\numifcode      =  3
+% \chardef\dimifcode      =  4
+% \chardef\oddifcode      =  5
+% \chardef\vmodeifcode    =  6
+% \chardef\hmodeifcode    =  7
+% \chardef\mmodeifcode    =  8
+% \chardef\innerifcode    =  9
+% \chardef\voidifcode     = 10
+% \chardef\hboxifcode     = 11
+% \chardef\vboxifcode     = 12
+% \chardef\xifcode        = 13
+% \chardef\eofifcode      = 14
+% \chardef\trueifcode     = 15
+% \chardef\falseifcode    = 16
+% \chardef\caseifcode     = 17
+% \chardef\definedifcode  = 18
+% \chardef\csnameifcode   = 19
+% \chardef\fontcharifcode = 20
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.
@@ -695,7 +709,7 @@
    \tracinggroups    \plusone
    \tracingifs       \plusone
    \tracingscantokens\plusone
-   \tracingnesting   \plusone
+   \tracingnesting   \plustwo
    \tracingassigns   \plustwo}
 
 \normalprotected\def\loggingall
@@ -719,6 +733,11 @@
    \tracingstats     \zerocount
    \tracingcommands  \zerocount
    \tracingonline    \zerocount}
+
+%D When we want to see a box we can as well show all of it.
+
+\showboxdepth  \maxdimen
+\showboxbreadth\maxdimen
 
 %D Just for tracing purposes we set:
 
@@ -800,6 +819,9 @@
 \let\ifconditional \ifcase
 
 \let\then\relax % so that we can say: \ifnum1>2\then -)
+
+\def\truecondition {\iftrue}
+\def\falsecondition{\iffalse}
 
 %D \macros
 %D   {newmacro,setnewmacro,newfraction}
@@ -1002,7 +1024,7 @@
        \spanomit \advance\mscount\minusone
    \repeat}
 
-%D Backend:
+%D For the \LUATEX\ backend (overloaded anyway):
 
 \ifdefined\pdfvariable
 
@@ -1093,20 +1115,26 @@
     \let\pagebottomoffset\voffset \let\normalpagebottomoffset\voffset
 \fi
 
-%D Handy.
+%D Handy (this will change, again).
 
-\suppresslongerror    \plusone
-\suppressoutererror   \plusone
-\suppressmathparerror \plusone
-\suppressifcsnameerror\plusone
+\ifdefined\suppresslongerror        \suppresslongerror        \plusone  \fi
+\ifdefined\suppressoutererror       \suppressoutererror       \plusone  \fi
+\ifdefined\suppressmathparerror     \suppressmathparerror     \plusone  \fi
+\ifdefined\suppressifcsnameerror    \suppressifcsnameerror    \plusone  \fi
+\ifdefined\suppressfontnotfounderror\suppressfontnotfounderror\zerocount\fi
 
-\let     \suppresslongerror    \relax
-\newcount\suppresslongerror                       \let\normalsuppresslongerror    \suppresslongerror
-\let     \suppressoutererror   \suppresslongerror \let\normalsuppressoutererror   \suppresslongerror
-\let     \suppressmathparerror \suppresslongerror \let\normalsuppressmathparerror \suppresslongerror
-\let     \suppressifcsnameerror\suppresslongerror \let\normalsuppressifcsnameerror\suppresslongerror
+\let     \suppresslongerror        \relax
+\newcount\suppresslongerror                           \let\normalsuppresslongerror        \suppresslongerror
+\let     \suppressoutererror       \suppresslongerror \let\normalsuppressoutererror       \suppresslongerror
+\let     \suppressmathparerror     \suppresslongerror \let\normalsuppressmathparerror     \suppresslongerror
+\let     \suppressifcsnameerror    \suppresslongerror \let\normalsuppressifcsnameerror    \suppresslongerror
+\let     \suppressfontnotfounderror\suppresslongerror \let\normalsuppressfontnotfounderror\suppresslongerror
 
 \matheqnogapstep\zerocount % for now
+
+%D Experiment:
+
+\ifdefined\frozen \else \def\frozen{} \let\normalfrozen\frozen \fi
 
 %D Now we define a few helpers that we need in a very early stage. We have no
 %D message system yet but redundant definitions are fatal anyway.
@@ -1135,5 +1163,15 @@
 \let\normalstopimath    \Ustopmath
 \let\normalstartdmath   \Ustartdisplaymath
 \let\normalstopdmath    \Ustopdisplaymath
+
+%D Also better here:
+
+\def\wildcardsymbol{*}
+
+%D Get rid of this, we don't need it. If we ever need to check the order we will
+%D use proper symbolic constants.
+
+\let\eTeXglueshrinkorder \undefined
+\let\eTeXgluestretchorder\undefined
 
 \protect \endinput

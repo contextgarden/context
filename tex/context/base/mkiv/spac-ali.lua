@@ -24,10 +24,13 @@ local getid            = nuts.getid
 local getlist          = nuts.getlist
 local setlist          = nuts.setlist
 local setlink          = nuts.setlink
+local getdirection     = nuts.getdirection
 local takeattr         = nuts.takeattr
 local getsubtype       = nuts.getsubtype
 local getwidth         = nuts.getwidth
 local findtail         = nuts.tail
+
+local righttoleft_code = nodes.dirvalues.righttoleft
 
 local hpack_nodes      = nuts.hpack
 
@@ -85,17 +88,28 @@ local function handler(head,leftpage,realpageno) -- traverse_list
                         elseif align == 2 then -- flushleft
                             action = leftpage and 2 or 1
                         end
+                        -- WS: watch this
+                        local direction = getdirection(current)
+                        -- or should this happen at the tex end:
+                        if direction == righttoleft_code then
+                            if action == 1 then
+                                action = 2
+                            elseif action == 2 then
+                                action = 1
+                            end
+                        end
+                        --
                         if action == 1 then
                             local head = getlist(current)
                             setlink(findtail(head),new_stretch(3)) -- append
-                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly",direction))
                             if trace_realign then
                                 report_realign("flushing left, align %a, page %a, realpage %a",align,pageno,realpageno)
                             end
                         elseif action == 2 then
                             local list = getlist(current)
                             local head = setlink(new_stretch(3),list) -- prepend
-                            setlist(current,hpack_nodes(head,getwidth(current),"exactly"))
+                            setlist(current,hpack_nodes(head,getwidth(current),"exactly",direction))
                             if trace_realign then
                                 report_realign("flushing right. align %a, page %a, realpage %a",align,pageno,realpageno)
                             end

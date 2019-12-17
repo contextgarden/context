@@ -3,12 +3,12 @@
  <metadata>
   <entry name="name">mtx-cache</entry>
   <entry name="detail">ConTeXt &amp; MetaTeX Cache Management</entry>
-  <entry name="version">0.10</entry>
+  <entry name="version">1.01</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="purge"><short>remove not used files</short></flag>
+    <flag name="make"><short>generate databases and formats</short></flag>
     <flag name="erase"><short>completely remove cache</short></flag>
     <flag name="list"><short>show cache</short></flag>
    </subcategory>

@@ -10,8 +10,7 @@ if not modules then modules = { } end modules ['data-lua'] = {
 
 local package, lpeg = package, lpeg
 
-local gsub = string.gsub
-local concat = table.concat
+local loadfile = loadfile
 local addsuffix = file.addsuffix
 
 local P, S, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.Cs, lpeg.match
@@ -25,6 +24,8 @@ local methods       = helpers.methods or { }
 
 local resolvers     = resolvers
 local resolveprefix = resolvers.resolve
+local expandedpaths = resolvers.expandedpathlistfromvariable
+local findfile      = resolvers.findfile
 
 helpers.report      = logs.reporter("resolvers","libraries")
 
@@ -50,9 +51,9 @@ function helpers.cleanpath(path) -- hm, don't we have a helper for this?
     return resolveprefix(lpegmatch(pattern,path))
 end
 
-local loadedaslib  = helpers.loadedaslib
-local registerpath = helpers.registerpath
-local lualibfile   = helpers.lualibfile
+local loadedaslib   = helpers.loadedaslib
+local registerpath  = helpers.registerpath
+local lualibfile    = helpers.lualibfile
 
 local luaformatpaths
 local libformatpaths
@@ -61,7 +62,7 @@ local function getluaformatpaths()
     if not luaformatpaths then
         luaformatpaths = { }
         for i=1,#luaformats do
-            registerpath("lua format","lua",luaformatpaths,resolvers.expandedpathlistfromvariable(luaformats[i]))
+            registerpath("lua format","lua",luaformatpaths,expandedpaths(luaformats[i]))
         end
     end
     return luaformatpaths
@@ -71,7 +72,7 @@ local function getlibformatpaths()
     if not libformatpaths then
         libformatpaths = { }
         for i=1,#libformats do
-            registerpath("lib format","lib",libformatpaths,resolvers.expandedpathlistfromvariable(libformats[i]))
+            registerpath("lib format","lib",libformatpaths,expandedpaths(libformats[i]))
         end
     end
     return libformatpaths
@@ -81,8 +82,8 @@ local function loadedbyformat(name,rawname,suffixes,islib,what)
     local trace  = helpers.trace
     local report = helpers.report
     for i=1,#suffixes do -- so we use findfile and not a lookup loop
-        local format = suffixes[i]
-        local resolved = resolvers.findfile(name,format) or ""
+        local format   = suffixes[i]
+        local resolved = findfile(name,format) or ""
         if trace then
             report("%s format, identifying %a using format %a",what,name,format)
         end

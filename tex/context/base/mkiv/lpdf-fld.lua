@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
     license   = "see context related readme files"
 }
 
+-- TURN OFF: preferences -> forms -> highlight -> etc
+
 -- The problem with widgets is that so far each version of acrobat has some
 -- rendering problem. I tried to keep up with this but it makes no sense to do so as
 -- one cannot rely on the viewer not changing. Especially Btn fields are tricky as
@@ -87,6 +89,7 @@ local pdfflushobject          = lpdf.flushobject
 local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfshareobject          = lpdf.shareobject
 local pdfreserveobject        = lpdf.reserveobject
+local pdfpagereference        = lpdf.pagereference
 local pdfaction               = lpdf.action
 local pdfmajorversion         = lpdf.majorversion
 
@@ -911,8 +914,11 @@ end
 local collected     = pdfarray()
 local forceencoding = false
 
+-- todo : check #opt
+
 local function finishfields()
     local sometext = forceencoding
+    local somefont = next(usedfonts)
     for name, field in sortedhash(fields) do
         local kids = field.kids
         if kids then
@@ -943,15 +949,33 @@ local function finishfields()
             Fields          = pdfreference(pdfflushobject(collected)),
             CO              = fieldsetlist(calculationset),
         }
-        if sometext then
+        if sometext or somefont then
             checkpdfdocencoding()
-            usedfonts.tttf = fontnames.tt.tf
-            acroform.DA = "/tttf 12 Tf 0 g"
+            if sometext then
+                usedfonts.tttf = fontnames.tt.tf
+                acroform.DA = "/tttf 12 Tf 0 g"
+            end
             acroform.DR = pdfdictionary {
                 Font     = registerfonts(),
                 Encoding = pdfdocencodingcapsule,
             }
         end
+        -- maybe:
+     -- if sometext then
+     --     checkpdfdocencoding()
+     --     if sometext then
+     --         usedfonts.tttf = fontnames.tt.tf
+     --         acroform.DA = "/tttf 12 Tf 0 g"
+     --     end
+     --     acroform.DR = pdfdictionary {
+     --         Font     = registerfonts(),
+     --         Encoding = pdfdocencodingcapsule,
+     --     }
+     -- elseif somefont then
+     --     acroform.DR = pdfdictionary {
+     --         Font     = registerfonts(),
+     --     }
+     -- end
         lpdf.addtocatalog("AcroForm",pdfreference(pdfflushobject(acroform)))
     end
 end
@@ -1350,6 +1374,65 @@ local function makeradioparent(field,specification)
     save_parent(field,specification,d,true)
 end
 
+-- local function makeradiochild(name,specification)
+--     local field  = clones[name]
+--     local parent = nil
+--     local pname  = nil
+--     if field then
+--         pname  = field.parent
+--         field  = radios[pname]
+--         parent = fields[pname]
+--         if not parent.pobj then
+--             if trace_fields then
+--                 report_fields("forcing parent radio %a",parent.name)
+--             end
+--             makeradioparent(parent,parent)
+--         end
+--     else
+--         field = radios[name]
+--         if not field then
+--             report_fields("there is some problem with field %a",name)
+--             return nil
+--         end
+--         pname  = field.parent
+--         parent = fields[pname]
+--         if not parent.pobj then
+--             if trace_fields then
+--                 report_fields("using parent radio %a",name)
+--             end
+--             makeradioparent(parent,parent)
+--         end
+--     end
+--     if trace_fields then
+--         report_fields("using child radio %a with values %a and default %a",name,field.values,field.default)
+--     end
+--     local fontsymbol = specification.fontsymbol
+--  -- fontsymbol = "circle"
+--     local d = pdfdictionary {
+--         Subtype = pdf_widget,
+--         Parent  = pdfreference(parent.pobj),
+--         F       = fieldplus(specification),
+--         OC      = fieldlayer(specification),
+--         AA      = fieldactions(specification),
+--         H       = pdf_n,
+-- -- H       = pdf_p,
+-- -- P       = pdfpagereference(true),
+--     }
+--     if fontsymbol and fontsymbol ~= "" then
+--         specification.fontsymbol = todingbat(fontsymbol)
+--         specification.fontstyle = "symbol"
+--         specification.fontalternative = "dingbats"
+--         d.DA = fieldsurrounding(specification)
+--         d.MK = fieldrendering(specification)
+--         return save_kid(parent,specification,d) -- todo: what if no value
+--     else
+--         local appearance, default, value = fieldstates_radio(field,name,fields[pname])
+--         d.AP = appearance
+--         d.AS = default -- /Whatever
+--         return save_kid(parent,specification,d,value)
+--     end
+-- end
+
 local function makeradiochild(name,specification)
     local field, parent = clones[name], nil
     if field then
@@ -1398,6 +1481,8 @@ local function makeradiochild(name,specification)
     local appearance, default, value = fieldstates_radio(field,name,fields[field.parent])
     d.AP = appearance
     d.AS = default -- /Whatever
+-- d.MK = pdfdictionary { BC = pdfarray {0}, BG = pdfarray { 1 } }
+d.BS = pdfdictionary { S = pdfconstant("I"), W = 1 }
     return save_kid(parent,specification,d,value)
 end
 

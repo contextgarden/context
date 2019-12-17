@@ -9,8 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="list"><short>list files in archive</short></flag>
-    <flag name="junk"><short>flatten unzipped directory structure</short></flag>
-    <flag name="extract"><short>extract files</short></flag>
+    <flag name="extract"><short>extract files [--silent --steps]</short></flag>
    </subcategory>
   </category>
  </flags>

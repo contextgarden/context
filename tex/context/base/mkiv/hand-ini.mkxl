@@ -1,0 +1,111 @@
+%D \module
+%D   [       file=hand-ini,
+%D        version=2008.02.12,
+%D          title=\CONTEXT\ Handling Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Handling is implemented differently in \MKIV. Maybe I'll cook up
+%D some compatibility hack.
+
+% \definefontfeature[demo][default][mode=node,expansion=quality]
+% \definefontfeature[demo][default][mode=node,protrusion=pure]
+
+% experimental setup:
+%
+%  \showframe \setupalign[hanging] \enabletrackers[fonts.protrusion]
+%
+%  \definefontfeature[default] [default][mode=node,script=latn]
+%  %definefontfeature[whatever][default][mode=node,lfbd=yes,rtbd=yes,script=latn]
+%  \definefontfeature[whatever][default][mode=node,protrusion=quality]
+%  \definefontfeature[whocares][default][mode=node,protrusion=yes,opbd=yes,script=latn] % left|right|yes
+%
+%  \definedfont[fxlbi.otf*default]  \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%  \definedfont[fxlbi.otf*whatever] \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%  \definedfont[fxlbi.otf*whocares] \input tufte 0123456789 \par \dorecurse{15}{1 2 3 4 5 6 7 8 9 0 } \par
+%
+%  %definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn,featurefile=texgyrepagella-regularxx.fea]
+%  \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn]
+%
+%  \definedfont[texgyrepagella-regularxx.otf*whocares] \input tufte
+
+\unprotect
+
+%D New stuff.
+
+\unexpanded\def\setupfontexpansion {\dodoubleargument\font_expansion_setup }
+\unexpanded\def\setupfontprotrusion{\dodoubleargument\font_protrusion_setup}
+
+\def\font_expansion_setup [#1][#2]{\clf_setupfontexpansion {#1}{#2}}
+\def\font_protrusion_setup[#1][#2]{\clf_setupfontprotrusion{#1}{#2}}
+
+% \setupfontprotrusion[quality-upright][vector=quality]
+% \setupfontprotrusion[quality-slanted][vector=quality,right=1.5]
+
+\let\adjustspacing\relax \newcount\adjustspacing % a little bit protection
+\let\protrudechars\relax \newcount\protrudechars % a little bit protection
+
+% at some point we can introduce extreme expansion, i.e. \normaladjustspacing\plustwo
+
+% 0 = disabled
+% 1 = notused (thesis)
+% 2 = glyph + kern
+% 3 = glyph only
+
+\def\font_expansion_enable  {\normaladjustspacing\plusthree}
+\def\font_expansion_enable_k{\normaladjustspacing\plustwo}
+%def\font_expansion_enable_n{\normaladjustspacing\plusone}
+\def\font_expansion_disable {\normaladjustspacing\zerocount}
+
+\def\font_protruding_enable_b{\normalprotrudechars\plusthree} % also deal with r2l (experimental lmtx)
+\def\font_protruding_enable  {\normalprotrudechars\plustwo  }
+\def\font_protruding_disable {\normalprotrudechars\zerocount}
+
+\appendtoks \font_expansion_disable  \to \everyforgetall % Here or not here?
+\appendtoks \font_protruding_disable \to \everyforgetall % Here or not here?
+
+% \def\fonthandlingerror{\writestatus\m!fonts{font handling is replaced by features in mkiv}}
+%
+% \let\fonthandling\empty
+%
+% \unexpanded\def\startfonthandling  #1{\fonthandlingerror\fonthandlingerror\gobbleuntil\stopfonthandling} % can't happen
+% \unexpanded\def\definefonthandling   {\dotripleempty\dodefinefonthandling}
+% \unexpanded\def\setupfonthandling    {\dodoubleempty\dosetupfonthandling }
+% \def\dodefinefonthandling[#1][#2][#3]{\fonthandlingerror}
+% \def\dosetupfonthandling     [#1][#2]{\fonthandlingerror}
+% \def\usehandling                 [#1]{\fonthandlingerror}
+
+\installcorenamespace{expansion}
+
+\installcommandhandler \??expansion {expansion} \??expansion
+
+\appendtoks
+    \setuevalue{\??expansion:\currentexpansion}%
+      {\adjustspacingstep   \expansionparameter\c!step\relax
+       \adjustspacingstretch\expansionparameter\c!stretch\relax
+       \adjustspacingshrink \expansionparameter\c!shrink\relax}%
+\to \everydefineexpansion
+
+\defineexpansion
+  [\c!step=1,
+   \c!stretch=40,
+   \c!shrink=20]
+
+% \defineexpansion
+%   [myexpansion]
+%   [\c!stretch=50,
+%    \c!shrink=20]
+
+\unexpanded\def\setexpansion
+  {\dosingleempty\font_expansion_set}
+
+\unexpanded\def\font_expansion_set[#1]%
+  {\begincsname\??expansion:#1\endcsname}
+
+\protect \endinput

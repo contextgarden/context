@@ -26,7 +26,16 @@ zip:///texmf-mine.zip?tree=/tex/texmf-projects
 </typing>
 --ldx]]--
 
-local resolvers = resolvers
+local resolvers    = resolvers
+local findfile     = resolvers.findfile
+local registerfile = resolvers.registerfile
+local splitmethod  = resolvers.splitmethod
+local prependhash  = resolvers.prependhash
+local starttiming  = resolvers.starttiming
+local extendtexmf  = resolvers.extendtexmfvariable
+local stoptiming   = resolvers.stoptiming
+
+local urlquery     = url.query
 
 zip                   = zip or { }
 local zip             = zip
@@ -50,8 +59,10 @@ if zipfiles then
     validfile = zipfiles.found
     wholefile = zipfiles.unzip
 
+    local listzip = zipfiles.list
+
     traversezip = function(zfile)
-        return ipairs(zipfiles.list(zfile))
+        return ipairs(listzip(zfile))
     end
 
     local streams     = utilities.streams
@@ -120,13 +131,13 @@ local function validzip(str) -- todo: use url splitter
     end
 end
 
-function zip.openarchive(name)
+local function openarchive(name)
     if not name or name == "" then
         return nil
     else
         local arch = archives[name]
         if not arch then
-           local full = resolvers.findfile(name) or ""
+           local full = findfile(name) or ""
            arch = full ~= "" and openzip(full) or false
            archives[name] = arch
         end
@@ -134,16 +145,19 @@ function zip.openarchive(name)
     end
 end
 
-function zip.closearchive(name)
+local function closearchive(name)
     if not name or (name == "" and archives[name]) then
         closezip(archives[name])
         archives[name] = nil
     end
 end
 
+zip.openarchive  = openarchive
+zip.closearchive = closearchive
+
 function resolvers.locators.zip(specification)
     local archive = specification.filename
-    local zipfile = archive and archive ~= "" and zip.openarchive(archive) -- tricky, could be in to be initialized tree
+    local zipfile = archive and archive ~= "" and openarchive(archive) -- tricky, could be in to be initialized tree
     if trace_locating then
         if zipfile then
             report_zip("locator: archive %a found",archive)
@@ -151,14 +165,6 @@ function resolvers.locators.zip(specification)
             report_zip("locator: archive %a not found",archive)
         end
     end
-end
-
-function resolvers.hashers.zip(specification)
-    local archive = specification.filename
-    if trace_locating then
-        report_zip("loading file %a",archive)
-    end
-    resolvers.usezipfile(specification.original)
 end
 
 function resolvers.concatinators.zip(zipfile,path,name) -- ok ?
@@ -169,14 +175,17 @@ function resolvers.concatinators.zip(zipfile,path,name) -- ok ?
     end
 end
 
-function resolvers.finders.zip(specification)
+local finders  = resolvers.finders
+local notfound = finders.notfound
+
+function finders.zip(specification)
     local original = specification.original
-    local archive = specification.filename
+    local archive  = specification.filename
     if archive then
-        local query = url.query(specification.query)
+        local query     = urlquery(specification.query)
         local queryname = query.name
         if queryname then
-            local zfile = zip.openarchive(archive)
+            local zfile = openarchive(archive)
             if zfile then
                 if trace_locating then
                     report_zip("finder: archive %a found",archive)
@@ -197,17 +206,21 @@ function resolvers.finders.zip(specification)
     if trace_locating then
         report_zip("finder: %a not found",original)
     end
-    return resolvers.finders.notfound()
+    return notfound()
 end
 
-function resolvers.openers.zip(specification)
+local openers    = resolvers.openers
+local notfound   = openers.notfound
+local textopener = openers.helpers.textopener
+
+function openers.zip(specification)
     local original = specification.original
-    local archive = specification.filename
+    local archive  = specification.filename
     if archive then
-        local query = url.query(specification.query)
+        local query     = urlquery(specification.query)
         local queryname = query.name
         if queryname then
-            local zfile = zip.openarchive(archive)
+            local zfile = openarchive(archive)
             if zfile then
                 if trace_locating then
                     report_zip("opener; archive %a opened",archive)
@@ -217,7 +230,7 @@ function resolvers.openers.zip(specification)
                     if trace_locating then
                         report_zip("opener: file %a found",queryname)
                     end
-                    return resolvers.openers.helpers.textopener('zip',original,handle)
+                    return textopener('zip',original,handle)
                 elseif trace_locating then
                     report_zip("opener: file %a not found",queryname)
                 end
@@ -229,24 +242,26 @@ function resolvers.openers.zip(specification)
     if trace_locating then
         report_zip("opener: %a not found",original)
     end
-    return resolvers.openers.notfound()
+    return notfound()
 end
 
-function resolvers.loaders.zip(specification)
+local loaders  = resolvers.loaders
+local notfound = loaders.notfound
+
+function loaders.zip(specification)
     local original = specification.original
-    local archive = specification.filename
+    local archive  = specification.filename
     if archive then
-        local query = url.query(specification.query)
+        local query     = urlquery(specification.query)
         local queryname = query.name
         if queryname then
-            local zfile = zip.openarchive(archive)
+            local zfile = openarchive(archive)
             if zfile then
                 if trace_locating then
                     report_zip("loader: archive %a opened",archive)
                 end
                 local data = wholefile(zfile,queryname)
                 if data then
-                    logs.show_load(original)
                     if trace_locating then
                         report_zip("loader; file %a loaded",original)
                     end
@@ -262,52 +277,28 @@ function resolvers.loaders.zip(specification)
     if trace_locating then
         report_zip("loader: %a not found",original)
     end
-    return resolvers.openers.notfound()
+    return notfound()
 end
 
 -- zip:///somefile.zip
 -- zip:///somefile.zip?tree=texmf-local -> mount
 
-function resolvers.usezipfile(archive)
-    local specification = resolvers.splitmethod(archive) -- to be sure
-    local archive = specification.filename
-    if archive and not registeredfiles[archive] then
-        local z = zip.openarchive(archive)
-        if z then
-            local tree = url.query(specification.query).tree or ""
-            if trace_locating then
-                report_zip("registering: archive %a",archive)
-            end
-            resolvers.starttiming()
-            resolvers.prependhash('zip',archive)
-            resolvers.extendtexmfvariable(archive) -- resets hashes too
-            registeredfiles[archive] = z
-            resolvers.registerfilehash(archive,resolvers.registerzipfile(z,tree))
-            resolvers.stoptiming()
-        elseif trace_locating then
-            report_zip("registering: unknown archive %a",archive)
-        end
-    elseif trace_locating then
-        report_zip("registering: archive %a not found",archive)
-    end
-end
-
-function resolvers.registerzipfile(z,tree)
+local function registerzipfile(z,tree)
     local names    = { }
     local files    = { } -- somewhat overkill .. todo
     local remap    = { } -- somewhat overkill .. todo
     local n        = 0
     local filter   = tree == "" and "^(.+)/(.-)$" or format("^%s/(.+)/(.-)$",tree)
-    local register = resolvers.registerfile
     if trace_locating then
         report_zip("registering: using filter %a",filter)
     end
+    starttiming()
     for i in traversezip(z) do
         local filename = i.filename
         local path, name = match(filename,filter)
         if not path then
             n = n + 1
-            register(names,filename,"")
+            registerfile(names,filename,"")
             local usedname  = lower(filename)
             files[usedname] = ""
             if usedname ~= filename then
@@ -325,10 +316,44 @@ function resolvers.registerzipfile(z,tree)
             -- directory
         end
     end
+    stoptiming()
     report_zip("registering: %s files registered",n)
     return {
      -- metadata = { },
         files    = files,
         remap    = remap,
     }
+end
+
+local function usezipfile(archive)
+    local specification = splitmethod(archive) -- to be sure
+    local archive       = specification.filename
+    if archive and not registeredfiles[archive] then
+        local z = openarchive(archive)
+        if z then
+            local tree = urlquery(specification.query).tree or ""
+            if trace_locating then
+                report_zip("registering: archive %a",archive)
+            end
+            prependhash('zip',archive)
+            extendtexmf(archive) -- resets hashes too
+            registeredfiles[archive] = z
+            registerfilehash(archive,registerzipfile(z,tree))
+        elseif trace_locating then
+            report_zip("registering: unknown archive %a",archive)
+        end
+    elseif trace_locating then
+        report_zip("registering: archive %a not found",archive)
+    end
+end
+
+resolvers.usezipfile      = usezipfile
+resolvers.registerzipfile = registerzipfile
+
+function resolvers.hashers.zip(specification)
+    local archive = specification.filename
+    if trace_locating then
+        report_zip("loading file %a",archive)
+    end
+    usezipfile(specification.original)
 end

@@ -78,18 +78,6 @@
     \fi
 \to \everysetupsystem
 
-\let\m_system_job_suffix\s!unknown
-
-\appendtoks
-    \resetsystemmode{suffix-\m_system_job_suffix}%
-    \edef\m_system_job_suffix{\jobsuffix}%
-    \setsystemmode{suffix-\m_system_job_suffix}%
-\to \everysetupsystem
-
-% \appendtoks
-%     \ctxcommand{updatefilenames("\jobame","\inputfilename","\outputfilename")}%
-% \to \everysetupsystem
-
 \newconditional\prerollrun % when true it means that we have a forced number of runs
 
 % Some mechanisms (see x-res-01) use either \jobfilename or

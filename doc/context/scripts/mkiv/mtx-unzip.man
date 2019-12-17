@@ -1,6 +1,6 @@
 .TH "mtx-unzip" "1" "01-01-2019" "version 0.10" "Simple Unzipper"
 .SH NAME
-.B mtx-unzip
+ mtx-unzip - Simple Unzipper
 .SH SYNOPSIS
 .B mtxrun --script unzip [
 .I OPTIONS ...
@@ -14,11 +14,8 @@
 .B --list
 list files in archive
 .TP
-.B --junk
-flatten unzipped directory structure
-.TP
 .B --extract
-extract files
+extract files [--silent --steps]
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

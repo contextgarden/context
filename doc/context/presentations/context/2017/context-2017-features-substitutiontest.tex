@@ -1,0 +1,141 @@
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "singlesubstitution",
+        type = "substitution",
+        data = {
+            a = "X",
+            b = "P",
+        }
+    }
+\stopluacode
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "alternatesubstitution",
+        type = "alternate",
+        data = {
+            a = { "X", "Y" },
+            b = { "P", "Q" },
+        }
+    }
+\stopluacode
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "multiplesubstitution",
+        type = "multiple",
+        data = {
+            a = { "X", "Y" },
+            b = { "P", "Q" },
+        }
+    }
+\stopluacode
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name = "ligaturesubstitution",
+        type = "ligature",
+        data = {
+            ['1'] = { "a", "b" },
+            ['2'] = { "d", "a" },
+        }
+    }
+\stopluacode
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "chainsubstitution-1",
+        type    = "chainsubstitution",
+     -- flags   = { false, false, false, false },
+        lookups = {
+            {
+                type = "substitution",
+                data = {
+                    ["b"] = "B",
+                    ["c"] = "C",
+                },
+            },
+        },
+     -- steps    = {
+     --     {
+     --         rules = {
+     --             {
+     --                 before  = { { "a" } },
+     --                 current = { { "b", "c" } },
+     --                 lookups = { 1 },
+     --             },
+     --         },
+     --     },
+     -- },
+        data = {
+            rules = {
+                {
+                    before  = { { "a" } },
+                    current = { { "b", "c" } },
+                    lookups = { 1 },
+                },
+            },
+        },
+    }
+\stopluacode
+
+\startluacode
+    fonts.handlers.otf.addfeature {
+        name    = "chainsubstitution-2",
+        type    = "chainsubstitution",
+        prepend = 1,
+        lookups = {
+            {
+                type = "multiple",
+                data = {
+                    ["f"] = { "f", 0x200C },
+                },
+            },
+            {
+                type = "substitution",
+                data = {
+                    ["a"] = "1",
+                    ["b"] = "2",
+                    ["c"] = "3",
+                },
+            },
+        },
+        data = {
+            rules = {
+                {
+                    current = { { "f" }, { "f" } },
+                    lookups = { 1 },
+                },
+                {
+                    current = { { "a" }, { "b" }, { "c" } },
+                    lookups = { 2, false, 2 },
+                },
+            },
+        }
+    }
+\stopluacode
+
+\definefontfeature[singlesubstitution]   [singlesubstitution=yes]
+\definefontfeature[alternatesubstitution][alternatesubstitution=2]
+\definefontfeature[multiplesubstitution] [multiplesubstitution=yes]
+\definefontfeature[ligaturesubstitution] [ligaturesubstitution=yes]
+\definefontfeature[chainsubstitution-1]  [chainsubstitution-1=yes]
+\definefontfeature[chainsubstitution-2]  [chainsubstitution-2=yes]
+
+\setupbodyfont[dejavu]
+
+\starttext
+
+\definedfont[Serif*default] \showfontkerns \showfontitalics \showglyphs
+
+\startTEXpage
+                                  abracadabra\par
+    {\addff   {singlesubstitution}abracadabra\par}
+    {\addff{alternatesubstitution}abracadabra\par}
+    {\addff {multiplesubstitution}abracadabra\par}
+    {\addff {ligaturesubstitution}abracadabra\par}
+    {\addff  {chainsubstitution-1}abracadabra\par}
+    {\addff  {chainsubstitution-2}effe abcdef !f\par}
+\stopTEXpage
+
+\stoptext

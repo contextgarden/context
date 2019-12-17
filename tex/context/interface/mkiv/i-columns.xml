@@ -34,10 +34,10 @@
                     <cd:constant type="no"/>
                 </cd:parameter>
                 <cd:parameter name="align">
-                    <cd:inherit type="setupalign"/>
+                    <cd:inherit name="setupalign"/>
                 </cd:parameter>
                 <cd:parameter name="tolerance">
-                    <cd:inherit type="setuptolerance"/>
+                    <cd:inherit name="setuptolerance"/>
                 </cd:parameter>
                 <cd:parameter name="blank">
                     <cd:inherit name="blank"/>
@@ -81,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsimplecolumnhsize" level="system" category="columns" file="page-mul.mkiv">
+    <cd:command name="setsimplecolumnshsize" level="system" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="n">
@@ -103,7 +103,7 @@
     <cd:command name="simplecolumns" type="environment" level="system" category="columns" file="page-mul.mkiv">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setsimplecolumnhsize"/>
+                <cd:inherit name="setsimplecolumnshsize"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

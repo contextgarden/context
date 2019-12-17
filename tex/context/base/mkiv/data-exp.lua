@@ -423,7 +423,7 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
     return files, remap, n, m, r
 end
 
-function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
+local function scanfiles(path,branch,usecache,onlyonce,tolerant)
     local realpath = resolveprefix(path)
     if usecache then
         local content = fullcache[realpath]
@@ -480,8 +480,10 @@ function resolvers.scanfiles(path,branch,usecache,onlyonce,tolerant)
     return content
 end
 
+resolvers.scanfiles = scanfiles
+
 function resolvers.simplescanfiles(path,branch,usecache)
-    return resolvers.scanfiles(path,branch,usecache,true,true) -- onlyonce
+    return scanfiles(path,branch,usecache,true,true) -- onlyonce
 end
 
 function resolvers.scandata()

@@ -61,6 +61,7 @@ if context then
         buffer.tab_indents                     = true
         buffer.back_space_un_indents           = true
         buffer.indentation_guides              = not CURSES and buffer.IV_LOOKBOTH or buffer.IV_NONE
+        buffer.wrap_length                     = 80 
 
         buffer.sel_eol_filled                  = true
      -- buffer.sel_alpha                       =

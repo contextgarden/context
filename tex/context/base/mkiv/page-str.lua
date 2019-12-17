@@ -177,19 +177,21 @@ function streams.synchronize(list) -- this is an experiment !
         for i=1,#list do
             local name = list[i]
             local dana = data[name]
-            local slot = dana[m]
-            if slot then
-                local vbox = vpack_node_list(slot)
-                local wd, ht, dp = getwhd(vbox)
-                if ht > height then
-                    height = ht
-                end
-                if dp > depth then
-                    depth = dp
-                end
-                dana[m] = vbox
-                if trace_flushing then
-                    report_streams("slot %s of %a is packed to height %p and depth %p",m,name,ht,dp)
+            if dana then
+                local slot = dana[m]
+                if slot then
+                    local vbox = vpack_node_list(slot)
+                    local wd, ht, dp = getwhd(vbox)
+                    if ht > height then
+                        height = ht
+                    end
+                    if dp > depth then
+                        depth = dp
+                    end
+                    dana[m] = vbox
+                    if trace_flushing then
+                        report_streams("slot %s of %a is packed to height %p and depth %p",m,name,ht,dp)
+                    end
                 end
             end
         end
@@ -202,41 +204,43 @@ function streams.synchronize(list) -- this is an experiment !
         for i=1,#list do
             local name = list[i]
             local dana = data[name]
-            local vbox = dana[m]
-            if vbox then
-                local wd, ht, dp = getwhd(vbox)
-                local delta_height = height - ht
-                local delta_depth  = depth  - dp
-                if delta_height > 0 or delta_depth > 0 then
-                    if false then
-                        -- actually we need to add glue and repack
-                        setwhd(vbox,false,height,depth)
-                        if trace_flushing then
-                            report_streams("slot %s of %a with delta (%p,%p) is compensated",m,i,delta_height,delta_depth)
-                        end
-                    else
-                        -- this is not yet ok as we also need to keep an eye on vertical spacing
-                        -- so we might need to do some splitting or whatever
-                        local list  = getlist(vbox)
-                        local tail  = list and slide_node_list(list)
-                        local n     = 0
-                        local delta = delta_height -- for tracing
-                        while delta > 0 do
-                            -- we need to add some interline penalties
-                            local line = copy_node_list(getbox("strutbox"))
-                            setwhd(line,false,strutht,strutdp)
-                            if tail then
-                                setlink(tail,line)
+            if dana then
+                local vbox = dana[m]
+                if vbox then
+                    local wd, ht, dp = getwhd(vbox)
+                    local delta_height = height - ht
+                    local delta_depth  = depth  - dp
+                    if delta_height > 0 or delta_depth > 0 then
+                        if false then
+                            -- actually we need to add glue and repack
+                            setwhd(vbox,false,height,depth)
+                            if trace_flushing then
+                                report_streams("slot %s of %a with delta (%p,%p) is compensated",m,i,delta_height,delta_depth)
                             end
-                            tail  = line
-                            n     = n + 1
-                            delta = delta - struthtdp
-                        end
-                        dana[m] = vpack_node_list(getlist(vbox))
-                        setlist(vbox)
-                        flush_node(vbox)
-                        if trace_flushing then
-                            report_streams("slot %s:%s with delta (%p,%p) is compensated by %s lines",m,i,delta_height,delta_depth,n)
+                        else
+                            -- this is not yet ok as we also need to keep an eye on vertical spacing
+                            -- so we might need to do some splitting or whatever
+                            local list  = getlist(vbox)
+                            local tail  = list and slide_node_list(list)
+                            local n     = 0
+                            local delta = delta_height -- for tracing
+                            while delta > 0 do
+                                -- we need to add some interline penalties
+                                local line = copy_node_list(getbox("strutbox"))
+                                setwhd(line,false,strutht,strutdp)
+                                if tail then
+                                    setlink(tail,line)
+                                end
+                                tail  = line
+                                n     = n + 1
+                                delta = delta - struthtdp
+                            end
+                            dana[m] = vpack_node_list(getlist(vbox))
+                            setlist(vbox)
+                            flush_node(vbox)
+                            if trace_flushing then
+                                report_streams("slot %s:%s with delta (%p,%p) is compensated by %s lines",m,i,delta_height,delta_depth,n)
+                            end
                         end
                     end
                 end

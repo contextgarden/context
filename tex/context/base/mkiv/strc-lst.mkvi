@@ -1117,7 +1117,7 @@
                     \hangindent\dimexpr\wd\b_strc_lists_number+\scratchdistance\relax
                     \hangafter\ifx\p_hang\v!no\zerocount\else\plusone\fi
                     \scratchdimen\listalternativeparameter\c!distance\relax
-                    \ifdim\wd\b_strc_lists_page=\zeropoint \else\ifdim\scratchdimen>\zeropoint\relax
+                    \ifzeropt\wd\b_strc_lists_page \else \ifdim\scratchdimen>\zeropoint\relax
                         \rightskip\scratchdimen\!!plus\listalternativeparameter\c!stretch\relax
                         \parfillskip-\rightskip
                     \fi \fi
@@ -1144,7 +1144,7 @@
                 \strc_lists_limitated_text\currentlistentrytitle
                 \endstrut
                 \endgroup
-                \ifdim\wd\b_strc_lists_page=\zeropoint\else
+                \ifzeropt\wd\b_strc_lists_page\else
                     \nobreak
                     \currentlistfiller
                     \box\b_strc_lists_page
@@ -1381,7 +1381,7 @@
         \leftskip\scratchoffset
     \else
         \scratchwidth\p_width
-        \ifdim\scratchoffset=\zeropoint
+        \ifzeropt\scratchoffset
             \leftskip\dimexpr\scratchwidth+\scratchdistance\relax
         \else
             \leftskip\scratchoffset

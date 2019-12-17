@@ -126,7 +126,7 @@
   {\otfstepspace
    \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
    \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
-   \ifdim\wd\scratchbox=\zeropoint
+   \ifzeropt\wd\scratchbox
      \scratchwidth.125\onepoint
      \scratchdistance\dimexpr(\emwidth/2-\scratchwidth)\relax
      \kern\scratchdistance

@@ -56,7 +56,9 @@ local constants = {
     "__le", "__lt", "__metatable", "__mode", "__mul", "__newindex",
     "__pow", "__sub", "__tostring", "__unm", "__len",
     "__pairs", "__ipairs",
+    "__close",
     "NaN",
+   "<const>", "<toclose>",
 }
 
 -- local tokenmappings = { }
@@ -66,9 +68,11 @@ local constants = {
 -- for i=1,#constants do tokenmappings[constants[i]] = "constant" }
 
 local internals = { -- __
-    "add", "call", "concat", "div", "eq", "gc", "index",
+    "add", "call", "concat", "div", "idiv", "eq", "gc", "index",
     "le", "lt", "metatable", "mode", "mul", "newindex",
     "pow", "sub", "tostring", "unm", "len",
+    "pairs", "ipairs",
+    "close",
 }
 
 local depricated = {
@@ -80,8 +84,8 @@ local depricated = {
 local csnames = { -- todo: option
     "commands",
     "context",
---     "ctxcmd",
---     "ctx",
+ -- "ctxcmd",
+ -- "ctx",
     "metafun",
     "metapost",
 }
@@ -224,10 +228,12 @@ local csname        = token("user",    p_csnames + p_ctnames)
                       + ( token("special", S(".:")) * optionalspace * token("user", validword) )^1
                       )^-1
 
+-- we could also check S(".:") * p_keyword etc, could be faster
+
 local identifier    = token("default", validword)
                     * ( optionalspace * token("special", S(".:")) * optionalspace * (
                             token("warning", p_keywords) +
-                            token("data", p_internals) +
+                            token("data", p_internals) + -- needs checking
                             token("default", validword )
                     ) )^0
 
@@ -375,12 +381,14 @@ lualexer._rules_cld = {
     { "keyword",      keyword      },
     { "function",     builtin      },
     { "csname",       csname       },
+    { "goto",         gotokeyword  },
     { "constant",     constant     },
     { "identifier",   identifier   },
     { "string",       string       },
     { "longcomment",  longcomment  },
     { "shortcomment", shortcomment }, -- should not be used inline so best signal it as comment (otherwise complex state till end of inline)
     { "number",       number       },
+    { "label",        gotolabel    },
     { "operator",     operator     },
     { "rest",         rest         },
 }

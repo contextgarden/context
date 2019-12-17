@@ -1,0 +1,52 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-groups
+
+\startchapter[title={Groups}]
+
+This is just a quick example of an experimental features.
+
+\startbuffer
+\startMPcode
+    fill fullcircle scaled 2cm shifted ( 5mm,2cm) withcolor "darkblue" ;
+    fill fullcircle scaled 2cm shifted (15mm,2cm) withcolor "darkblue" ;
+
+    fill fullcircle scaled 2cm shifted ( 5mm,-2cm) withcolor "darkgreen" ;
+    fill fullcircle scaled 2cm shifted (15mm,-2cm) withcolor "darkgreen" ;
+
+    draw image (
+        fill fullcircle scaled 4cm                 withcolor "darkred" ;
+        fill fullcircle scaled 4cm shifted (2cm,0) withcolor "darkred" ;
+
+        setgroup currentpicture to boundingbox currentpicture
+            withtransparency (1,.5) ;
+    ) ;
+
+    draw image (
+        fill fullcircle scaled 3cm                 withcolor "darkyellow"
+            withtransparency (1,.5) ;
+        fill fullcircle scaled 3cm shifted (2cm,0) withcolor "darkyellow"
+            withtransparency (1,.5) ;
+    ) ;
+
+    addbackground withcolor "darkgray" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+A group create an object that when transparency is applied is treated as
+a group.
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+(Groups might become more powerful in the future, like reusable components but
+then some more juggling is needed.)
+
+\stopchapter
+
+\stopcomponent

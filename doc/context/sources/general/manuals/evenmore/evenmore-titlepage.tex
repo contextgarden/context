@@ -1,0 +1,45 @@
+\startcomponent evenmore-titlepage
+
+\environment evenmore-style
+
+% \usetypescriptfile[latinmodern]
+% \usetypescript[mono][latin-modern]
+% \definefont[MyFontA][LMTypewriter-Dark*none]
+% \definefont[MyFontB][LMTypewriterVarWd-Regular*default]
+
+\definefont[MyFontA][MonoBold*none]
+\definefont[MyFontB][Serif*default]
+
+\startMPpage[pagestate=stop]
+
+StartPage ;
+
+    fill Page withcolor .1 ;
+
+    numeric d ; d := PaperWidth/4 ;
+
+    numeric w ; w := d ;
+    numeric h ; h := 2d ;
+
+    draw textext.rt ("\MyFontA E") xsized d shifted (0w,PaperHeight- 36mm) withcolor "darkred"     ;
+    draw textext.rt ("\MyFontA V") xsized d shifted (1w,PaperHeight- 36mm) withcolor "darkgreen"   ;
+    draw textext.rt ("\MyFontA E") xsized d shifted (2w,PaperHeight- 36mm) withcolor "darkblue"    ;
+    draw textext.rt ("\MyFontA N") xsized d shifted (3w,PaperHeight- 36mm) withcolor "darkorange"  ;
+    draw textext.rt ("\MyFontA M") xsized d shifted (0w,PaperHeight-104mm) withcolor "darkcyan"    ;
+    draw textext.rt ("\MyFontA O") xsized d shifted (1w,PaperHeight-104mm) withcolor "darkmagenta" ;
+    draw textext.rt ("\MyFontA R") xsized d shifted (2w,PaperHeight-104mm) withcolor "darkyellow"  ;
+    draw textext.rt ("\MyFontA E") xsized d shifted (3w,PaperHeight-104mm) withcolor "darkgray"    ;
+
+%     draw textext.lft ("\MyFontB\setstrut\strut fun with")    ysized 30mm shifted lrcorner Page shifted (-1cm,8cm) withcolor "white"    ;
+%     draw textext.lft ("\MyFontB\setstrut\strut luametatex")  ysized 30mm shifted lrcorner Page shifted (-1cm,5cm) withcolor "white"    ;
+%     draw textext.lft ("\MyFontB\setstrut\strut and context") ysized 30mm shifted lrcorner Page shifted (-1cm,2cm) withcolor "white"    ;
+
+    draw textext.lft ("\MyFontB\setstrut\strut fun with")    ysized 27mm shifted lrcorner Page shifted (-10mm,70mm) withcolor "white"    ;
+    draw textext.lft ("\MyFontB\setstrut\strut luametatex")  ysized 27mm shifted lrcorner Page shifted (-10mm,45mm) withcolor "white"    ;
+    draw textext.lft ("\MyFontB\setstrut\strut and context") ysized 27mm shifted lrcorner Page shifted (-10mm,20mm) withcolor "white"    ;
+
+StopPage ;
+
+\stopMPpage
+
+\stopcomponent

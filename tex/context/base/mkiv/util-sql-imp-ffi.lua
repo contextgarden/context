@@ -153,7 +153,7 @@ ffi.cdef [[
     ); */
 
 ]]
-
+-- trackers.enable("*lib*")
 local sql                    = utilities.sql
 ----- mysql                  = ffi.load(os.name == "windows" and "libmysql" or "libmysqlclient")
 ----- mysql                  = ffilib(os.name == "windows" and "libmysql" or "libmysqlclient")

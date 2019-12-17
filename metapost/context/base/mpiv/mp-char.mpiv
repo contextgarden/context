@@ -31,6 +31,7 @@ numeric flow_shape_width            ; flow_shape_width            := 45pt ;
 numeric flow_grid_height            ; flow_grid_height            := 40pt ;
 numeric flow_shape_height           ; flow_shape_height           := 30pt ;
 numeric flow_chart_offset           ; flow_chart_offset           :=  2pt ;
+numeric flow_chart_clip_offset      ; flow_chart_offset           := 10pt ;
 string  flow_chart_background_color ; flow_chart_background_color := "white" ;
 boolean flow_show_mid_points        ; flow_show_mid_points        := false ;
 boolean flow_show_con_points        ; flow_show_con_points        := false ;
@@ -102,6 +103,7 @@ def flow_new_chart =
     flow_grid_height            := 40pt ;
     flow_shape_height           := 30pt ;
     flow_chart_offset           :=  2pt ;
+    flow_chart_clip_offset      := 10pt ;
     flow_chart_background_color := "white" ;
     flow_show_mid_points        := false ;
     flow_show_con_points        := false ;
@@ -1070,7 +1072,7 @@ enddef ;
 
 def flow_end_chart =
     begingroup ;
-    save p ; path p ;
+    save p, c ; path p, c ;
     flow_flush_shapes ;
     flow_flush_connections ;
     flow_flush_pictures ;
@@ -1086,8 +1088,9 @@ def flow_end_chart =
          (flow_cmax_x,flow_cmax_y)--(flow_cmin_x,flow_cmax_y)--cycle))
        flow_scaled_to_grid ;
     %draw p withcolor red ;
+    c := p enlarged flow_chart_clip_offset ;
     p := p enlarged flow_chart_offset ;
-    clip currentpicture to p ;
+    clip currentpicture to c ;
     setbounds currentpicture to p ;
     endgroup ;
     currentpicture := currentpicture scaled flow_chart_scale ;

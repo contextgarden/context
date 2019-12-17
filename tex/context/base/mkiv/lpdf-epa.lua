@@ -31,7 +31,6 @@ local report_field      = logs.reporter("backend","field")
 local report_outline    = logs.reporter("backend","outline")
 
 local lpdf              = lpdf
-local epdf              = epdf
 local backends          = backends
 local context           = context
 
@@ -73,7 +72,7 @@ local maxdimen          = 0x3FFFFFFF -- 2^30-1
 
 local bpfactor          = number.dimenfactors.bp
 
-local layerspec = { -- predefining saves time
+local layerspec = {
     "epdfcontent"
 }
 
@@ -144,11 +143,18 @@ end
 
 local layerused = false
 
+-- local function initializelayer(height,width)
+--     if not layerused then
+--         context.definelayer(layerspec, { height = height .. "bp", width = width .. "bp" })
+--         layerused = true
+--     end
+-- end
+
 local function initializelayer(height,width)
-    if not layerused then
-        context.definelayer(layerspec, { height = height .. "bp", width = width .. "bp" })
+--     if not layerused then
+        context.setuplayer(layerspec, { height = height .. "bp", width = width .. "bp" })
         layerused = true
-    end
+--     end
 end
 
 function codeinjections.flushmergelayer()
@@ -294,6 +300,12 @@ function codeinjections.mergereferences(specification)
             if annotation then
                 if annotation.Subtype == "Link" then
                     local a = annotation.A
+                    if not a then
+                        local d = annotation.Dest
+                        if d then
+                            annotation.A = { S = "GoTo", D = d } -- no need for a dict
+                        end
+                    end
                     if not a then
                         report_link("missing link annotation")
                     else

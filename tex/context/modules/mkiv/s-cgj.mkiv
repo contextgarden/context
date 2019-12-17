@@ -1,258 +1,231 @@
-%D \module
-%D   [file=s-cgj.mkiv,
-%D    version=2018.09.28,
-%D    title=Context group style file,
-%D    subtitle=CG-journal base style,
-%D    author={Adrian Egger, W. Egger, Taco Hoekwater},
-%D    date=\currentdate,
-%D    copyright={Context Group}]
+%\module [
+%  file=s-cgj.mkiv,
+%  version=2012.12.05,
+%  title=Context group style file,
+%  subtitle=CG-journal base style,
+%  author={Adrian Egger, W. Egger, Taco Hoekwater},
+%  date=\currentdate,
+%  copyright={Context Group}%
+%]
 
-%D \type {\enablemode[draft]} has to come before loading the style. Maybe some
-%D day I'll make something more official and then some \type {everydraft} or so.
+\enablemode[cgjpagecolumns]
 
 % Fixme and todo ...
 
-\startmodule[cgj]
+\definecolor[NoteColor]      [g=1,r=.25,b=.25]
+\definecolor[WarnColor]      [r=1,g=.25,b=.25]
 
-\definecolor[NoteColor][g=1,r=.25,b=.25]
-\definecolor[WarnColor][r=1,g=.25,b=.25]
+\def\todo#1%
+  {\startframedtext
+    [background=color,backgroundcolor=NoteColor]
+  {\bf TODO:}~~#1\par
+  \stopframedtext }
 
-\unexpanded\def\todo#1%
-  {\startframedtext[background=color,backgroundcolor=NoteColor]
-     \dontleavehmode\start\bf TODO:\stop~~#1\par
-   \stopframedtext}
+\def\fixme#1%
+  {\startframedtext
+    [background=color,backgroundcolor=WarnColor]
+  {\bf FIXME:}~~#1\par
+  \stopframedtext }
 
-\unexpanded\def\fixme#1%
-  {\startframedtext[background=color,backgroundcolor=WarnColor]
-     \dontleavehmode\start\bf FIXME:\stop~~#1\par
-   \stopframedtext }
+% There is a draft mode, which enables all frames
+% \enablemode[draft]
 
-%D Base set of variables. The actual values are set in the file
-%D CG-journal.
+\doifmodeelse
+  {draft}
+  {\def\OnOff{on}\showframe}
+  {\def\OnOff{off}}
 
+
+% Base set of variables
+% The actual values are set in the file CG-journal
 \setvariables
   [CG-Journal]
   [Title={Journal},
    RunningTitle={Journal},
    SubTitle={From the base set of variables},
    Version=1.0,
-   NOFColumns=2]
+   NOFColumns=2,
+  ]
+\setupinteraction[
+    state=start,
+    color=,
+    contrastcolor=,
+    style=,
+    title=Journal,
+    author=context group,
+]
+\placebookmarks[title,chapter,subject,section][chapter]
+\setupinteractionscreen[option={doublesided,bookmark}]
 
 \startmode[onecolumn,fullwidth]
-    \setvariables
-      [CG-Journal]
-      [NOFColumns=1]
+\setvariables
+  [CG-Journal]
+  [NOFColumns=1]
 \stopmode
 
-% Fonts setup.
-
+% Fonts setup
 \usetypescriptfile[plex]
+%\usetypescriptfile[type-inconsolata]
 
 \starttypescript [cgj]
-    \definetypeface [cgj] [rm] [serif][ibmplex-light] [default]
-    \definetypeface [cgj] [ss] [sans] [ibmplex-light] [default]
-    \definetypeface [cgj] [mm] [math] [palatino]      [default]
-    \definetypeface [cgj] [tt] [mono] [ibmplex]       [default][rscale=0.9]
+ \definetypeface [cgj] [rm] [serif][ibmplex]    [default]
+ \definetypeface [cgj] [ss] [sans] [ibmplex]    [default]
+ \definetypeface [cgj] [mm] [math] [palatino]   [default]
+ \definetypeface [cgj] [tt] [mono] [ibmplex]    [default] [rscale=0.9]
 \stoptypescript
 
 \starttypescript [cgj-light]
-    \definetypeface [cgj-light] [rm] [serif][ibmplex-extralight] [default]
-    \definetypeface [cgj-light] [ss] [sans] [ibmplex-extralight] [default]
-    \definetypeface [cgj-light] [mm] [math] [palatino]           [default]
-    \definetypeface [cgj-light] [tt] [mono] [ibmplex-extralight] [default][rscale=0.9]
+ \definetypeface [cgj-light] [rm] [serif][ibmplex]       [default]
+ \definetypeface [cgj-light] [ss] [sans] [ibmplex-light] [default]
+ \definetypeface [cgj-light] [mm] [math] [palatino]      [default]
+ \definetypeface [cgj-light] [tt] [mono] [ibmplex]       [default] [rscale=0.9]
 \stoptypescript
 
-\starttypescript [cgj-extralight]
-    \definetypeface [cgj-extralight] [rm] [serif][ibmplex-thin] [default]
-    \definetypeface [cgj-extralight] [ss] [sans] [ibmplex-thin] [default]
-    \definetypeface [cgj-extralight] [mm] [math] [palatino]     [default]
-    \definetypeface [cgj-extralight] [tt] [mono] [ibmplex-thin] [default][rscale=0.9]
-\stoptypescript
+\usebodyfont[cgj-light,ss,10pt]
+\setupbodyfont[cgj,ss,10pt]
 
-\usebodyfont
-  [cgj-light,cgj-extralight]
-
-\setupbodyfont
-  [cgj,ss,10pt]
-
-\definebodyfontenvironment[10pt][interlinespace=13pt]
+\definebodyfontenvironment[10pt][interlinespace=12pt]
 \definebodyfontenvironment[12pt][interlinespace=16pt]
 \definebodyfontenvironment[16pt][interlinespace=20pt]
-
-\setupinterlinespace
-  [line=13pt]
-
+\setupinterlinespace[line=12pt]
 \let\sl\it
 
-%D Path to the logos
+% Path to the logos
+\setupexternalfigures[directory=./Logos]
 
-\setupexternalfigures
-  [directory=./Logos,
-   location={global,local,default}]
-
-%D Logos: black logo only.
-
+% Logos
+% Black logo only
 \useexternalfigure
   [Logo]
   [cg_corp_logo_loop_black_cmyk]
-  [width=30mm,
-   height=19mm]
-
-%D Black logo with text
-
+  [width=30mm,height=19mm]
+%Black logo with text
 \useexternalfigure
   [LogoText]
   [cg_corp_logo_text_black_cmyk]
-  [width=50mm,
-   height=35.2mm]
+  [width=50mm,height=35.2mm]
 
-%D Colors
-
+% Colors
 \definecolor[CGlightblue][c=1,m=.15,y=0,k=0]
-\definecolor[CGdeepblue] [c=1,m=.8,y=0,k=.3]
-\definecolor[CGgray]     [c=0,m=0,y=0,k=.1]
+\definecolor[CGdeepblue][c=1,m=.8,y=0,k=.3]
+\definecolor[CGgray][c=0,m=0,y=0,k=.1]
 
-%D Article styles
-
+% Article styles
 \definealternativestyle
    [Articleheading]
    [{\switchtobodyfont[16pt,ss]\bf}]
-
 \definealternativestyle
    [Articlesubheading]
    [{\switchtobodyfont[16pt,ss]\tf}]
-
 \definealternativestyle
    [Authorname]
    [{\switchtobodyfont[12pt,ss]\it}]
-
 \definealternativestyle
    [Sectionheading]
    [{\switchtobodyfont[12pt,ss]\bf\setupinterlinespace[line=12pt]}]
-
 \definealternativestyle
    [Subsectionheading]
    [{\switchtobodyfont[cgj-light,10pt,ss]\bf\setupinterlinespace[line=10pt]}]
-
 \definealternativestyle
    [IntroCopy]
    [{\switchtobodyfont[12pt,ss]\tf}]
-
 \definealternativestyle
    [PagenumberStyle]
    [{\switchtobodyfont[cgj-light,10pt,ss]\bf}]
 
-%D Headerstyles:Breadcrumbs
-
+% Headerstyles - Breadcrumbs
 \definealternativestyle
    [BreadcrumbMd]
-   [{\switchtobodyfont[cgj-light,10pt,ss]\bf}]
-
+   [{\switchtobodyfont[10pt,ss]\bf}]
 \definealternativestyle
    [BreadcrumbRg]
-   [{\switchtobodyfont[cgj,10pt,ss]}]
-
+   [{\switchtobodyfont[cgj-light,10pt,ss]\bf}]
 \definealternativestyle
    [BreadcrumbLt]
    [{\switchtobodyfont[10pt,ss]\tf}]
-
 \definealternativestyle
    [BreadcrumbTh]
    [{\switchtobodyfont[cgj-light,10pt,ss]\tf}]
 
-%D Captionstyles
-
+% Captionstyles
 \definealternativestyle
    [Captionheading]
    [{\switchtobodyfont[8pt,ss]\bf\setupinterlinespace[line=8pt]}]
-
 \definealternativestyle
    [Captiontext]
    [{\switchtobodyfont[8pt,ss]\tf\setupinterlinespace[line=8pt]}]
 
-%D Article signature
-
+% Article signature
 \definealternativestyle
    [Signaturestyle]
    [{\switchtobodyfont[10pt,ss]\it}]
 
-%D Article footnotes
-
+% Article footnotes
 \definealternativestyle
    [Articlefootnotes]
    [{\switchtobodyfont[8pt,ss]\tf}]
 
-%D Index and TOC styles
-
+% Index /TOC styles
+% It  looks like the inheritance is gone.
+%\definealternativestyle
+%   [IndexContents][Articleheading]
 \definealternativestyle
    [IndexContents]
    [{\switchtobodyfont[16pt,ss]\bf\setupinterlinespace[line=18pt]}]
-
 \definealternativestyle
    [IndexArticleTitle]
    [{\switchtobodyfont[12pt,ss]\tf\setupinterlinespace[line=20pt]}]
-
 \definealternativestyle
    [IndexNumber]
    [{\switchtobodyfont[12pt,ss]\bf\setupinterlinespace[line=20pt]}]
-
 \definealternativestyle
    [IndexAuthor]
    [{\switchtobodyfont[12pt,ss]\it\setupinterlinespace[line=20pt]}]
 
-%D Math: still missing.
+% Math
+% --> still missing
 
-%D Verbatim
-
+% Verbatim
 \definealternativestyle
    [DisplayMonospaced]
-   [\tt]
-
+   [{\switchtobodyfont[10pt,tt]\setupinterlinespace[line=12pt]}]
 \definealternativestyle
    [DisplayMonospacedX]
-   [{\switchtobodyfont[8pt,tt]}]
-
+   [{\switchtobodyfont[8pt,tt]\setupinterlinespace[line=11pt]}]
 \definealternativestyle
    [DisplayMonospacedS]
-   [{\switchtobodyfont[9pt,tt]\setupinterlinespace[line=10pt]}]
+   [{\switchtobodyfont[9pt,tt]\setupinterlinespace[line=12pt]}]
 
-%D Blank adjustment
-
-\defineblank[CGblank]       [6pt]
-\defineblank[BigCGblank]   [24pt]
+% \blank adjustment
+\defineblank[CGblank][6pt]
+\defineblank[BigCGblank][24pt]
 \defineblank[MediumCGblank][12pt]
 
-%D Paper definition
+% Paper definition
+\definepapersize[Journal][width=210mm,height=266mm]
+\setuppapersize[Journal][Journal]
 
-\definepapersize
-  [Journal]
-  [width=210mm,
-   height=266mm]
 
-\setuppapersize
-  [Journal]
-  [Journal]
-
-%D General layout
-
+% General layout
 \definelayout
   [General]
-  [topspace=18mm,
+  [topspace=20mm,
    backspace=28mm,
    header=5mm,
-   headerdistance=7mm,
-   footer=5mm,
+   headerdistance=5mm,
+   footer=3mm,
    footerdistance=5mm,
    width=157mm,
    height=224mm,
-   marking=on]
+   marking=on,
+  ]
 
 \definelayout
   [Content]
-  [topspace=18mm,
+  [topspace=20mm,
    backspace=28mm,
    header=5mm,
-   headerdistance=7mm,
+   headerdistance=5mm,
    footer=0mm,
    footerdistance=0mm,
    width=157mm,
@@ -260,52 +233,62 @@
    margindistance=4mm,
    rightmargin=21mm,
    leftmargin=21mm,
-   marking=on]
+   marking=on,
+  ]
 
 \definelayout
   [Imprint]
-  [topspace=18mm,
+  [topspace=20mm,
    backspace=28mm,
    header=5mm,
-   headerdistance=7mm,
-   footer=5mm,
+   headerdistance=5mm,
+   footer=3mm,
    footerdistance=5mm,
    width=107mm,
    height=224mm,
    margindistance=4mm,
    rightmargin=45.3mm,
    leftmargin=21mm,
-   marking=on]
+   marking=on,
+  ]
 
 \definelayout
   [SingleColumn]
-  [topspace=18mm,
+  [topspace=20mm,
    backspace=55mm,
    header=5mm,
-   headerdistance=7mm,
-   footer=5mm,
+   headerdistance=5mm,
+   footer=3mm,
    footerdistance=5mm,
    width=130mm,
    height=224mm,
    margindistance=4mm,
    leftmargin=48mm,
    rightmargin=21mm,
-   marking=on]
+   marking=on,
+  ]
 
-%D Pagenumbering: Pagenumber is set in the footer
+% Pagenumbering: Pagenumber is set in the footer
+\setuppagenumbering[location=,alternative=doublesided]
 
-\setuppagenumbering
-  [location=,
-   alternative=doublesided]
-
-%D Head-definitions
+% Head-definitions
+% The distances according to the style-guide
+% H1 = Article title
+% H2 = Section title (1. Bla bla)
+% H3 = Subsection title (1.1 Bla bla)
+% H4 = Subsubsection title (1.1.1 Bla bla)
+%
+% Between abstract and body: 2 lines 10/12pt --> 24 pt: BigCGblank
+% Between H2 and bodycopy/H3: 1 line 6/6pt   -->  6 pt: CGblank
+% Between H3 and bodycopy/H4: 1 line 6/6pt   -->  6 pt: CGblank
+% End H2 paragraph: 2 lines 10/12pt          --> 24 pt: BigCGblank
+% End H3 paragraph: 1 line 6/6pt             -->  6 pt: CGblank
 
 \setuphead
   [title]
   [style=Articleheading,
    after={\blank[BigCGblank]},
    page=yes]
-
 \setuphead
   [part]
   [placehead=no,
@@ -314,9 +297,8 @@
    page=no,
    numbercommand=,
    expansion=yes]
-
 \setuphead
-  [section]
+  [section,subject]
   [style=Sectionheading,
    before={\blank[BigCGblank]},
    after={\blank[CGblank]},
@@ -324,8 +306,8 @@
    distance=4pt,
    align={flushleft,nothyphenated},
    resetnumber=yes,
-   continue=yes]
-
+   continue=yes,
+  ]
 \setuphead
   [subsection]
   [style=Subsectionheading,
@@ -335,49 +317,41 @@
    distance=4pt,
    align={flushleft,nothyphenated},
    resetnumber=yes,
-   continue=yes]
-
-\setuphead
-  [subject]
-  [style=Sectionheading,
-   before={\blank[BigCGblank]},
-   after=]
-
+   continue=yes,
+  ]
+%\setuphead
+%  [subject]
+%  [style=Sectionheading,before={\blank[BigCGblank]},after=]
 \setuphead
   [subsubject]
   [style=Subsectionheading,
    before={\blank[CGblank]},
    after={\blank[CGblank]},
-   sectionstopper=]
+   sectionstopper=,
+  ]
+% Columns
+% The setup of the columns is done at the moment columns are started (see end of file)
 
-%D A special head for the footnote section in multicolumn mode excuse the low-level
-%D rule, I wanted it to look like the start of footnotes in single column mode. (TH)
+% Index/TOC page setups
+\unprotect
 
-\definehead
-  [footnotesubject]
-  [subject]
+   \def\listboxproperties       {\strc_lists_get_reference_attribute}
+   \def\listrenderingsetup      {\the\t_lists_every_renderingtext}
+   \def\listrenderingsynchronize{\the\t_lists_every_renderingsynchronize}
 
-\setuphead
-  [footnotesubject]
-  [style=Sectionheading,
-   before={\kern -13pt},
-   after={\smash{\lower 13pt\hbox{\vrule width 2.5cm height 1pt depth 0pt}}}]
+\protect
 
-
-%D The setup of the columns is done at the moment columns are started (see end
-%D of file)
-
-%D Index/TOC page setups
+% now you can say:
 
 \definelistalternative
-  [CGJ:Index]
-  [renderingsetup=CGJ:Indexheading]
-
+ [CGJ:Index]
+ [renderingsetup=CGJ:Indexheading]
 \definelistalternative
-  [CGJ:Index:Chapter]
-  [renderingsetup=CGJ:Indexheading:Chapter]
+ [CGJ:Index:Chapter]
+ [renderingsetup=CGJ:Indexheading:Chapter]
 
-\startsetups[CGJ:Indexheading:Chapter]
+
+ \startsetups[CGJ:Indexheading:Chapter]
     \listparameter{before}
     \vbox \listboxproperties{all} {
         \forgetall
@@ -388,14 +362,20 @@
             \useliststyleandcolor{numberstyle}{numbercolor}
             \currentlistentrypagenumber
         \egroup}
+        % \bgroup
+        %             \useliststyleandcolor{numberstyle}{numbercolor}
+        %             \currentlistsymbol
+        %         \egroup
+        % .\space
         \bgroup
             \useliststyleandcolor{textstyle}{textcolor}
             \smash{\currentlistentrytitle}%
         \egroup
+        % \par
     }
     \par
     \listparameter{after}
-\stopsetups
+ \stopsetups
 
 \startsetups[CGJ:Indexheading]
    \listparameter{before}
@@ -405,9 +385,15 @@
        \listrenderingsynchronize
        \hbox to 15mm{
        \bgroup
+           %\useliststyleandcolor{pagestyle}{pagecolor}
            \useliststyleandcolor{numberstyle}{numbercolor}
            \currentlistentrypagenumber
        \egroup}
+       % \bgroup
+       %            \useliststyleandcolor{numberstyle}{numbercolor}
+       %            \currentlistsymbol
+       %        \egroup
+       %        .\space
        \bgroup
            \useliststyleandcolor{textstyle}{textcolor}
            \currentlistentrytitle
@@ -419,45 +405,71 @@
 \stopsetups
 
 \setuplist
-  [part]
-  [before={\blank[CGblank]},
-   after=,
-   style=IndexContents,
-   numberstyle=\IndexNumber,
-   textstyle=\IndexArticleTitle,
-   prefix=no,
-   alternative=CGJ:Index:Chapter]
+ [part]
+ [before={\blank[CGblank]},
+  after=,
+  style=IndexContents,
+  numberstyle=\IndexNumber,
+  textstyle=\IndexArticleTitle,
+  prefix=no,
+  alternative=CGJ:Index:Chapter]
 
-%D Captions
+%\setuplist
+% [section]
+% [before={\blank[CGblank]},
+%  after={},
+%  style=IndexHeaderB,
+%  % numberstyle=\bf,
+%  %   textstyle=\bfa,
+%  prefix=no,
+%  alternative=CGJ:Index]
+%
+%\setuplist
+% [subsection]
+% [before={},
+%  after={},
+%  style=IndexHeaderC,
+%  % numberstyle=\bf,
+%  % textstyle=\bfa,
+%  prefix=no,
+%  alternative=CGJ:Index]
 
+% Floats
+
+% \setupfloat
+%   [figure]
+%   []
+
+% Captions
 \setupcaptions
   [suffix={.},
+   width=max,
    headstyle=\Captionheading,
    style=\Captiontext,
-   distance=6pt]
+   distance=2pt
+  ]
 
 \setupcaption[figure][way=bypart]
 \setupcaption[table] [way=bypart]
 
-%D Datacollection: article parameters (other fields and defaults)
-
-\unexpanded\def\CGJBibData[#1]%
+% Datacollection: article parameters (other fields and defaults)
+\def\CGJBibData[#1]%
   {\getparameters
-     [CGJ]
-     [SubTitle=,
-      RunningAuthor=,
-      RunningTitle=Example,
-      Email=,
-      Address=,
-      Page=1,
-      Title={My Article},
-      Author={Example Author},
-      Period=,
-      Number=,
-      Year=,
-      TocAuthor=,
-      TocTitle=,
-      #1]%
+    [CGJ]
+    [SubTitle=,
+    RunningAuthor=,
+    RunningTitle=Example,
+    Email=,
+    Address=,
+    Page=1,
+    Title={My Article},
+    Author={Example Author},
+    Period=,
+    Number=,
+    Year=,
+    TocAuthor=,
+    TocTitle=,
+    #1]%
    \doifnothing
       {\CGJRunningTitle}
       {\let\CGJRunningTitle\CGJTitle}%
@@ -470,116 +482,130 @@
    \doifnothing
       {\CGJTocTitle}
       {\let\CGJTocTitle\CGJTitle}%
-   \setvariables
-     [CGJToc]
-     [Author=\CGJTocAuthor,
-      Title=\CGJTocTitle]% for TOC
+   \setvariables[CGJToc][Author=\CGJTocAuthor,
+                         Title=\CGJTocTitle]% for TOC
   }
 
-\unexpanded\def\dostartArticle[#1]
-  {\CGJBibData[#1]
-   \doifelse
-     {\getvariable{CG-Journal}{NOFColumns}}
-     {1}
-     {\doifmodeelse{fullwidth}
-        {\setuplayout[General]}
-        {\setuplayout[SingleColumn]}}
-     {\setupnotes[location=none]
-      \setuplayout[General]}%
-   \bgroup
-     {\switchtobodyfont[16pt]\Articleheading\CGJTitle\par}
-     {\doifsomething{\CGJSubTitle}
-        {\switchtobodyfont[16pt]\Articlesubheading\CGJSubTitle\par}}
-     {\doifsomething{\CGJAuthor}
-        {\switchtobodyfont[12pt]\Authorname \CGJAuthor}\par}
-     \part
-       {\getvariable{CGJToc}{Title}%
-        \doifsomething{\getvariable{CGJToc}{Author}}{ \emdash\ }%
-        \IndexAuthor\getvariable{CGJToc}{Author}}
-     \godown[13pt]%
-   \egroup
-   \par
-   \hyphenpenalty1000\relax}
+\def\dostartArticle[#1]{%
+  \CGJBibData[#1]
+  % \pageno=\CGJPage
+  % \setupuserpagenumber[start=\CGJPage]
+  \doifelse
+      {\getvariable{CG-Journal}{NOFColumns}}
+      {1}
+      {\doifmodeelse{fullwidth}
+          {\setuplayout[General]}
+          {\setuplayout[SingleColumn]}}
+      {\setuplayout
+          [General]}%
+   \doifmode{cgjpagecolumns}
+     {\definepagecolumns [cgjpagecolumns][n=\getvariable{CG-Journal}{NOFColumns},distance=12pt,page=no]}
+  \bgroup
+    {\switchtobodyfont[16pt]\Articleheading\CGJTitle\par}
+    {\doifsomething{\CGJSubTitle}
+      {\switchtobodyfont[16pt]\Articlesubheading\CGJSubTitle\par}}
+    {\doifsomething
+      {\CGJAuthor}
+      {\switchtobodyfont[12pt]\Authorname \CGJAuthor}\par}
+    \part{\getvariable{CGJToc}{Title}%
+          \doifsomething{\getvariable{CGJToc}{Author}}{ \emdash\ }%
+          \IndexAuthor\getvariable{CGJToc}{Author}}
+    \godown[16pt]
+  \egroup
+  \hyphenpenalty1000}
 
-\unexpanded\def\startArticle
-  {\dosingleempty\dostartArticle}
+\def\startArticle{\dosingleempty\dostartArticle}
 
-\def\signArticle
-  {}
+\def\signArticle{}
 
-%D In multicolumn mode, footnotes come are at the end of the article:
+\def\CGJRunningTitle {}
+\def\CGJRunningAuthor {}
+\unprotect
+\def\mystoppagecolumns%
+  {\page \endgroup \page_otr_command_set_vsize \page_otr_command_set_hsize \page \endgroup}
+\protect
 
-\startsetups article:after
-    \startfootnotesubject[title=]
-        \placefootnotes
-    \stopfootnotesubject
-\stopsetups
-
-\unexpanded\def\stopArticle
-  {\doifelse{\getvariable{CG-Journal}{NOFColumns}}{1}
-     {\par
-      \signArticle}
-     {\setups{article:after}
-      \par
-      \signArticle
-      \stoppagecolumns}
-   \page}
-
-\unexpanded\def\startAbstract
-  {\bgroup
-   \switchtobodyfont[12pt]
-   \IntroCopy}
-
-\unexpanded\def\stopAbstract
-  {\par
-   \egroup
-   \finishAbstract}
-
-\unexpanded\def\finishAbstract
-  {\doifelse {\getvariable{CG-Journal}{NOFColumns}} {1}
-     {\blank[BigCGblank]}
-     {\vbox{\blank[BigCGblank]}%
-      \par
-      \startpagecolumns[balance=yes,distance=12pt,page=no,n=\getvariable{CG-Journal}{NOFColumns}]
-      \setupitemgroup[itemize][packed]
-      \setuplayout[grid=yes]} % grid mode only in columns
+\def\stopArticle{%
+  \par\signArticle
+  \doifmodeelse{cgjcolumnsets}
+    {\stopcolumnset \page}
+    {\doifmodeelse{cgjpagecolumns}
+      {\mystoppagecolumns}
+      {\doifmodeelse{cgjmixedcolumns}
+        {\stopmixedcolumns \page}
+        {\stopcolumns \page}%
+      }%
+    }%
   }
 
+\def\startAbstract{%
+  \bgroup
+    \switchtobodyfont[12pt]
+    \IntroCopy}
 
-\unexpanded\def\noAbstract
-  {\kern -24pt
-   \finishAbstract}
 
-%D Headertexts
+\def\finishAbstract{%
+  \blank[BigCGblank]%
+  \doif
+      {\getvariable{CG-Journal}{NOFColumns}}
+      {>1}
+      {\setupcolumns
+        [n=\getvariable{CG-Journal}{NOFColumns},
+         distance=4mm,
+         balance=yes,
+        ]
+      }
+    \doifmodeelse{cgjcolumnsets}
+      {\definecolumnset[cgjcolumnsets][n=\getvariable{CG-Journal}{NOFColumns},balance=yes]%
+       \startcolumnset[cgjcolumnsets]}
+      {\doifmodeelse{cgjpagecolumns}
+         {\par\ifnum \getvariable{CG-Journal}{NOFColumns}>1 \hbox{}\par\fi\startpagecolumns[cgjpagecolumns]}
+         {\doifmodeelse{cgjmixedcolumns}
+           {\definemixedcolumns[cgjmixedcolumns][n=\getvariable{CG-Journal}{NOFColumns},balance=yes,blank={line,fixed}]%
+            \startmixedcolumns[cgjmixedcolumns]}
+           {\startcolumns[n=\getvariable{CG-Journal}{NOFColumns}]}%
+         }%
+       }%
+}
 
+\def\stopAbstract{%
+  \par
+  \egroup
+  \finishAbstract}
+
+\def\noAbstract{\kern -24pt \finishAbstract}
+
+
+% Headertexts
 \startsetups[Header:texts]
-    \setupheadertexts
-        [] [{{\BreadcrumbLt\CGJRunningTitle}{\BreadcrumbTh\doifsomething{\CGJRunningAuthor}{\ > }\CGJRunningAuthor}}] %odd
-        [{\BreadcrumbMd contextgroup}{\BreadcrumbRg\ > \getvariable{CG-Journal}{RunningTitle}}] [] %even
+  \setupheadertexts
+    []
+    [{{\BreadcrumbLt\CGJRunningTitle}{\BreadcrumbTh\doifsomething{\CGJRunningAuthor}{\ > }\CGJRunningAuthor}}] %odd
+    [{\BreadcrumbMd contextgroup}{\BreadcrumbRg\ > \getvariable{CG-Journal}{RunningTitle}}] %even
+    []
 \stopsetups
 
-%D Footertexts
 
+% Footertexts
 \startsetups[Footer:texts]
   \setupfootertexts
-    [] [\PagenumberStyle\pagenumber]
-    [\PagenumberStyle\pagenumber] []
+    []
+    [\PagenumberStyle\pagenumber]
+    [\PagenumberStyle\pagenumber]
+    []
 \stopsetups
 
-%D Setup tolerance, stretch.
+% Setup tolerance, stretch
+\setuptolerance[tolerant,stretch]
 
-\setuptolerance
-  [tolerant,stretch]
-
-%D Setting up footnotes.
+% Setting up footnotes
 
 \setupnotation
   [footnote]
   [way=bypart,
-  rule=on]
+   rule=on]
 
-%D Adjustments to the container containing the footnotes.
-
+% Adjustments to the container containing the footnotes
 \setupnote
   [footnote]
   [frame=off,
@@ -588,62 +614,64 @@
    background=,
    rulecolor=black,    %% the line above the inserts
    rulethickness=1pt,
-   next={ },
-   split=verystrict,
-   scope=page,
    style=Articlefootnotes]
 
-\doifmodeelse {draft} {\setupnote[footnote][frame=on]}
 
-% Setup typing.
-
-\setupnarrower
-  [middle=3mm,
-   left=5mm]
+% Setup typing
+\setupnarrower[middle=3mm]
+\setupnarrower[left=5mm]
 
 \definetextbackground
-  [verbatim]
+  [typingbg]
   [frame=off,
+   location=paragraph,
    background=color,
    backgroundcolor=CGgray,
-   leftoffset=2mm,rightoffset=2mm,
-   topoffset=2mm,bottomoffset=2mm,
-   location=paragraph,
+   width=\hsize,
+   leftoffset=2mm, % doesnt work in the current beta
    align=flushleft]
-
-\doifmodeelse {draft} {\definetextbackground[verbatim][frame=on]}
-
-\definetextbackground
-  [verbatimitem]
-  [verbatim]
-
-\setuptextbackground
-  [verbatimitem]
-  [before=,
-   after=,
-   width=\the\dimexpr\hsize-10.5mm\relax]
-
+   
 \startsetups typing:before
-    \blank[MediumCGblank]
-    \starttextbackground[verbatim]
+  \blank[MediumCGblank]
+  \starttextbackground[typingbg][style=DisplayMonospacedS]
+  \hfuzz=7.02pt % don't care if it bleeds in to the frame a little
+  \setupnarrower[left=2mm] % because leftoffset does not work in the current beta
+  \startnarrower[left]
 \stopsetups
 
 \startsetups typing:before:small
-    \blank[MediumCGblank]
-    \starttextbackground[verbatim]
+  \blank[MediumCGblank]
+  \starttextbackground[typingbg][style=DisplayMonospacedX]
+  \hfuzz=6.3pt % don't care if it bleeds in to the frame a little
+  \setupnarrower[left=2mm]
+  \startnarrower[left]
 \stopsetups
 
 \startsetups typing:after
-    \stoptextbackground
-    \blank[MediumCGblank]
+  \stopnarrower\par
+  \stoptextbackground
+  \blank[MediumCGblank]
 \stopsetups
 
 \startsetups typing:before:item
-    \starttextbackground[verbatimitem]
+%  \blank[3pt]
+  \startframedtext
+    [frame=off,
+     before=,
+     after=,
+     background=color,
+     backgroundcolor=CGgray,
+     width=\the\dimexpr\hsize-10.5mm\relax,
+     offset=3mm,
+     align=flushleft,
+     style=DisplayMonospacedS,
+    ]
+  \hfuzz=7.02pt % don't care if it bleeds in to the frame a little
 \stopsetups
 
 \startsetups typing:after:item
-    \stoptextbackground
+  \stopframedtext
+%  \blank[3pt]
 \stopsetups
 
 \setuptyping
@@ -652,24 +680,15 @@
    before=\setups{typing:before},
    after=\setups{typing:after}]
 
-\setuptype
-  [style=DisplayMonospaced]
-
-%D When verbatim becomes too large:
-
-\definetyping
-  [smalltyping]
-
+\definetyping[smalltyping]
 \setuptyping
   [smalltyping]
   [style=DisplayMonospacedX,
    before=\setups{typing:before:small},
    after=\setups{typing:after}]
 
-\unexpanded\def\smalltypefile{\typefile[smalltyping][]}
 
-%D Bullet lists.
-
+% Bullet lists
 \setupitemgroup
   [itemize]
   [each]
@@ -679,7 +698,15 @@
    align=right,
    before={\blank[MediumCGblank]\startnarrower[left]},
    after={\stopnarrower\blank[MediumCGblank]},
-   inbetween={\blank[CGblank]}]
+   inbetween={\blank[CGblank]},
+  ]
+
+\def\Href#1{\underbar{\hyphenatedurl{#1}}}
+
+\setupformulas[align=flushleft,margin=5mm]
+
+\setupquotation[before={\blank[CGblank]\switchtobodyfont[8pt]\setupinterlinespace[line=12pt]},
+                after={\par\blank[CGblank]}]
 
 \definedescription
   [description]
@@ -688,27 +715,8 @@
    before={\blank},
    after={\blank}]
 
-\setupformula
-  [align=flushleft,
-   margin=5mm]
-
-\setupquotation
-  [before={\blank[CGblank]\switchtobodyfont[10pt]},
-   after={\blank[CGblank]}]
-
-\setupwhitespace
-  [medium]
-
-\usemodule[abr-02,abr-03,abr-04]
-
-\unexpanded\def\Href#1{\underbar{\hyphenatedurl{#1}}}
 \unexpanded\def\CG    {\ConTeXt\ group}
 
-\setnewconstant\kindofpagetextareas\plusone % partial page. HH: low level, no high level switch (yet)
+\usemodule[abr-02]
 
-%D There is a draft mode, which enables all frames:
-
-\doifmode {draft} {\showframe}
-
-\stopmodule
-
+\endinput

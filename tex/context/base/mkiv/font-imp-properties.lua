@@ -35,7 +35,6 @@ local constructors       = fonts.constructors
 local getprivate         = constructors.getprivate
 
 local allocate           = utilities.storage.allocate
-local family_font        = node.family_font
 
 local setmetatableindex  = table.setmetatableindex
 

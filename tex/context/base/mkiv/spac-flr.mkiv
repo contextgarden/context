@@ -47,14 +47,14 @@
    \edef\currentfiller{#1}%
    \usefillerstyleandcolor\c!style\c!color
    \scratchdimen\fillerparameter\c!leftmargin\relax
-   \ifdim\scratchdimen=\zeropoint\else
+   \ifzeropt\scratchdimen\else
      \hskip\scratchdimen
    \fi
    \fillerparameter\c!left\relax
    \expandnamespaceparameter\??filleralternative\fillerparameter\c!alternative\s!unknown\relax
    \fillerparameter\c!right\relax
    \scratchdimen\fillerparameter\c!rightmargin\relax
-   \ifdim\scratchdimen=\zeropoint\else
+   \ifzeropt\scratchdimen\else
      \hskip\scratchdimen
    \fi
    \endgroup
@@ -80,7 +80,7 @@
    \begingroup
    \edef\currentfiller{#1}%
    \scratchdimen\dimexpr\fillerparameter\c!rightmargindistance\relax
-   \ifdim\scratchdimen=\zeropoint\else
+   \ifzeropt\scratchdimen\else
      \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
    \fi
    \spac_fillers_indeed[#1]%

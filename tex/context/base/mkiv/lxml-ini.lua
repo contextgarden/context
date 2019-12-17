@@ -82,7 +82,7 @@ implement { name = "xmllast",              actions = lxml.last,              arg
 implement { name = "xmllastatt",           actions = lxml.lastatt }
 implement { name = "xmllastmatch",         actions = lxml.lastmatch }
 implement { name = "xmllastpar",           actions = lxml.lastpar }
-implement { name = "xmlload",              actions = lxml.load,              arguments = "3 strings" }
+implement { name = "xmlloadfile",          actions = lxml.load,              arguments = "3 strings" }
 implement { name = "xmlloadbuffer",        actions = lxml.loadbuffer,        arguments = "3 strings" }
 implement { name = "xmlloaddata",          actions = lxml.loaddata,          arguments = "3 strings" }
 implement { name = "xmlloaddirectives",    actions = lxml.directives.load,   arguments = "string" }

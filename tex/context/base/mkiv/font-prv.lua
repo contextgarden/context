@@ -76,3 +76,7 @@ end
 function helpers.privateslot(name)
     return rawget(sharedprivates,name)
 end
+
+function helpers.newprivateslot(name)
+    return sharedprivates[name]
+end

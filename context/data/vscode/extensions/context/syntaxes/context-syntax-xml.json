@@ -1,0 +1,222 @@
+{
+ "name" : "context.xml",
+ "patterns" : [
+  {
+   "include" : "#comment"
+  },
+  {
+   "include" : "#cdata"
+  },
+  {
+   "include" : "#instruction_xml"
+  },
+  {
+   "include" : "#instruction_lua"
+  },
+  {
+   "include" : "#instruction"
+  },
+  {
+   "include" : "#close"
+  },
+  {
+   "include" : "#open"
+  },
+  {
+   "include" : "#element_error"
+  },
+  {
+   "include" : "#entity"
+  }
+ ],
+ "repository" : {
+  "attribute_double" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.plain.attribute.double.namespace.xml"
+    },
+    "2" : {
+     "name" : "context.constant.attribute.double.name.xml"
+    },
+    "3" : {
+     "name" : "context.special.attribute.double.open.xml"
+    },
+    "4" : {
+     "name" : "context.string.attribute.double.text.xml"
+    },
+    "5" : {
+     "name" : "context.special.attribute.double.close.xml"
+    }
+   },
+   "match" : "((?:[-\u005Cw.]+:)?)([-\u005Cw.:]+)\u005Cs*=\u005Cs*(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)"
+  },
+  "attribute_single" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.plain.attribute.single.namespace.xml"
+    },
+    "2" : {
+     "name" : "context.constant.attribute.single.name.xml"
+    },
+    "3" : {
+     "name" : "context.special.attribute.single.open.xml"
+    },
+    "4" : {
+     "name" : "context.string.attribute.single.text.xml"
+    },
+    "5" : {
+     "name" : "context.special.attribute.single.close.xml"
+    }
+   },
+   "match" : "((?:[-\u005Cw.]+:)?)([-\u005Cw.:]+)\u005Cs*=\u005Cs*(')((?:\u005C\u005C'|[^'])*)(')"
+  },
+  "attributes" : {
+   "patterns" : [
+    {
+     "include" : "#attribute_double"
+    },
+    {
+     "include" : "#attribute_single"
+    }
+   ]
+  },
+  "cdata" : {
+   "begin" : "<!\u005C[CDATA\u005C[",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.cdata.open.xml"
+    }
+   },
+   "end" : "]]>",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.cdata.close.xml"
+    }
+   },
+   "name" : "context.default.cdata.text.xml"
+  },
+  "close" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.keyword.close.open.xml"
+    },
+    "2" : {
+     "name" : "context.plain.close.namespace.xml"
+    },
+    "3" : {
+     "name" : "context.keyword.close.name.xml"
+    },
+    "4" : {
+     "name" : "context.keyword.close.close.xml"
+    }
+   },
+   "match" : "(</)((?:[-\u005Cw.]+:)?)([-\u005Cw.:]+)\u005Cs*(>)"
+  },
+  "comment" : {
+   "begin" : "<!--",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.comment.open.xml"
+    }
+   },
+   "end" : "-->",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.comment.close.xml"
+    }
+   },
+   "name" : "context.comment.comment.text.xml"
+  },
+  "element_error" : {
+   "match" : "<?:([^>]*)>",
+   "name" : "context.error.error.xml"
+  },
+  "entity" : {
+   "match" : "&.*?;",
+   "name" : "context.constant.entity.xml"
+  },
+  "instruction" : {
+   "begin" : "<\u005C?[-\u005Cw.:]+",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.open.xml"
+    }
+   },
+   "end" : "\u005C?>",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.close.xml"
+    }
+   },
+   "name" : "context.default.instruction.text.xml"
+  },
+  "instruction_lua" : {
+   "begin" : "<\u005C?lua",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.lua.open.xml"
+    }
+   },
+   "end" : "\u005C?>",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.lua.close.xml"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "source.context.cld"
+    }
+   ]
+  },
+  "instruction_xml" : {
+   "begin" : "<\u005C?xml",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.xml.open.xml"
+    }
+   },
+   "end" : "\u005C?>",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.instruction.xml.close.xml"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#attributes"
+    }
+   ]
+  },
+  "open" : {
+   "begin" : "(<)((?:[-\u005Cw.]+:)?)([-\u005Cw.:]+)",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.keyword.open.open.xml"
+    },
+    "2" : {
+     "name" : "context.plain.open.namespace.xml"
+    },
+    "3" : {
+     "name" : "context.keyword.open.name.xml"
+    }
+   },
+   "end" : "(/?)(>)",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.keyword.open.empty.xml"
+    },
+    "2" : {
+     "name" : "context.keyword.open.close.xml"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "#attributes"
+    }
+   ]
+  }
+ },
+ "scopeName" : "source.context.xml",
+ "version" : "1.0.0"
+}

@@ -279,7 +279,7 @@ local getnext         = nuts.getnext
 local getid           = nuts.getid
 local getlist         = nuts.getlist
 local getsubtype      = nuts.getsubtype
-local getfield        = nuts.getfield
+local getreplace      = nuts.getreplace
 local getbox          = nuts.getbox
 local getwhd          = nuts.getwhd
 local getkern         = nuts.getkern
@@ -372,7 +372,7 @@ function fonts.metapost.boxtomp(n,kind)
                 result[#result+1] = code
                 dx = dx + width
             elseif id == disc_code then
-                local replace = getfield(current,"replace")
+                local replace = getreplace(current)
                 if replace then
                     dx = dx + horizontal(parent,replace,xoffset+dx,yoffset)
                 end

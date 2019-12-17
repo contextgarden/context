@@ -7,18 +7,14 @@ if not modules then modules = { } end modules ['anch-snc'] = {
 }
 
 
-function mp.xxOverlayRegion()
-    local r = tokens.getters.macro("m_overlay_region")
-    mp.quoted('"'.. r .. '"')
---     mp.print('"'.. r .. '"')
-end
-
 -- use factors as in mlib-int.lua
 
 local tonumber, next, setmetatable = tonumber, next, setmetatable
 local concat, sort, remove, copy = table.concat, table.sort, table.remove, table.copy
 local match, find = string.match, string.find
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+
+local P, Cc = lpeg.P, lpeg.Cc
 
 local setmetatableindex = table.setmetatableindex
 
@@ -28,11 +24,10 @@ local mpnumeric         = mp.numeric
 local mppoints          = mp.points
 local texgetdimen       = tex.getdimen
 
-local p_number = lpeg.patterns.cardinal/tonumber
-local p_space  = lpeg.patterns.whitespace^0
-local p_tag    = lpeg.P("syncpos:") * p_number * lpeg.P(":") * p_number
-local p_option = p_number -- for now
-               * ((lpeg.P(",") * p_space * lpeg.P("reset") * lpeg.Cc(true)) + lpeg.Cc(false))
+local p_number = patterns.cardinal/tonumber
+local p_space  = patterns.whitespace^0
+local p_tag    = P("syncpos:") * p_number * P(":") * p_number
+local p_option = p_number * ((P(",") * p_space * P("reset") * Cc(true)) + Cc(false)) -- for now
 
 local list     = { }
 local colors   = setmetatableindex("table")
@@ -269,3 +264,9 @@ function mp.sync_get_y() mpnumeric((list.page.y or 0)*factor) end
 function mp.sync_get_w() mpnumeric((list.page.w or 0)*factor) end
 function mp.sync_get_h() mpnumeric((list.page.h or 0)*factor) end
 function mp.sync_get_d() mpnumeric((list.page.d or 0)*factor) end
+
+-- function mp.xxOverlayRegion()
+--     local r = tokens.getters.macro("m_overlay_region")
+--     mp.quoted('"'.. r .. '"')
+-- end
+

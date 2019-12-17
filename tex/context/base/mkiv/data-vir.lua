@@ -6,7 +6,8 @@ if not modules then modules = { } end modules ['data-vir'] = {
     license   = "see context related readme files"
 }
 
-local formatters, validstrings = string.formatters, string.valid
+local type = type
+local formatters = string.formatters
 
 local trace_virtual  = false
 local report_virtual = logs.reporter("resolvers","virtual")
@@ -15,23 +16,29 @@ trackers.register("resolvers.locating", function(v) trace_virtual = v end)
 trackers.register("resolvers.virtual",  function(v) trace_virtual = v end)
 
 local resolvers = resolvers
+local savers    = resolvers.savers
 
-local finders, openers, loaders, savers = resolvers.finders, resolvers.openers, resolvers.loaders, resolvers.savers
+local data        = { }
+local n           = 0 -- hm, number can be query
+local f_virtual_n = formatters["virtual://%s.%s"]
+local f_virtual_y = formatters["virtual://%s-%s.%s"]
 
-local data      = { }
-local n         = 0 -- hm, number can be query
-local f_virtual = formatters["virtual://%s.%s"]
-
-function savers.virtual(specification,content)
+function savers.virtual(specification,content,suffix)
     n = n + 1 -- one number for all namespaces
-    local path = specification.path
-    local filename = f_virtual(path ~= "" and path or "virtualfile",n)
+    local path = type(specification) == "table" and specification.path or specification
+    if type(path) ~= "string" or path == "" then
+        path = "virtualfile"
+    end
+    local filename = suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
     if trace_virtual then
         report_virtual("saver: file %a saved",filename)
     end
     data[filename] = content
     return filename
 end
+
+local finders  = resolvers.finders
+local notfound = finders.notfound
 
 function finders.virtual(specification)
     local original = specification.original
@@ -45,9 +52,13 @@ function finders.virtual(specification)
         if trace_virtual then
             report_virtual("finder: unknown file %a",original)
         end
-        return finders.notfound()
+        return notfound()
     end
 end
+
+local openers    = resolvers.openers
+local notfound   = openers.notfound
+local textopener = openers.helpers.textopener
 
 function openers.virtual(specification)
     local original = specification.original
@@ -59,14 +70,17 @@ function openers.virtual(specification)
         data[original] = nil -- when we comment this we can have error messages
         -- With utf-8 we signal that no regime is to be applied!
      -- characters.showstring(d)
-        return openers.helpers.textopener("virtual",original,d,"utf-8")
+        return textopener("virtual",original,d,"utf-8")
     else
         if trace_virtual then
             report_virtual("opener: file %a not found",original)
         end
-        return openers.notfound()
+        return notfound()
     end
 end
+
+local loaders  = resolvers.loaders
+local notfound = loaders.notfound
 
 function loaders.virtual(specification)
     local original = specification.original
@@ -81,5 +95,5 @@ function loaders.virtual(specification)
     if trace_virtual then
         report_virtual("loader: file %a not loaded",original)
     end
-    return loaders.notfound()
+    return notfound()
 end

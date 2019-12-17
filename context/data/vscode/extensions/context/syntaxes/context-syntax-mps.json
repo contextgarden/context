@@ -1,0 +1,179 @@
+{
+ "name" : "context.mps",
+ "patterns" : [
+  {
+   "include" : "#comment"
+  },
+  {
+   "include" : "#internal"
+  },
+  {
+   "include" : "#shortcut"
+  },
+  {
+   "include" : "#luacall_suffixed"
+  },
+  {
+   "include" : "#luacall"
+  },
+  {
+   "include" : "#helper"
+  },
+  {
+   "include" : "#plain"
+  },
+  {
+   "include" : "#primitive"
+  },
+  {
+   "include" : "#texstuff"
+  },
+  {
+   "include" : "#suffix"
+  },
+  {
+   "include" : "#identifier"
+  },
+  {
+   "include" : "#number"
+  },
+  {
+   "include" : "#quoted"
+  },
+  {
+   "include" : "#special"
+  },
+  {
+   "include" : "#texlike"
+  },
+  {
+   "include" : "#extra"
+  }
+ ],
+ "repository" : {
+  "comment" : {
+   "match" : "%.*$\u005Cn?",
+   "name" : "context.comment.comment.mps"
+  },
+  "extra" : {
+   "match" : "\u005C~|\u005C||`|_|\u005C^|\u005C\u005C|/|\u005C-|\u005C+\u005C-\u005C+|\u005C+\u005C+|\u005C+|\u005C*|\u005C'|\u005C&|\u005C%",
+   "name" : "context.extra"
+  },
+  "helper" : {
+   "match" : "(zmod|ystretched|ysized|xysized|xyscaled|xstretched|xsized|withtransparency|withshadevector|withshadetransform|withshadestep|withshaderadius|withshadeorigin|withshademethod|withshadefraction|withshadefactor|withshadedomain|withshadedirection|withshadecolors|withshadecenter|withshade|withproperties|withmask|withlinearshade|withgrey|withgray|withcircularshade|whitecolor|wdpart|visualizepaths|visualizedfill|visualizeddraw|verbatim|utfsub|utflen|urtriangle|urmoved|urenlarged|urcircle|uptriangle|unspiked|unitvector|unittriangle|unitdiamond|unitcircle|uniquelist|undrawfill|undecorated|undashed|uncolored|ultriangle|ulmoved|ulenlarged|ulcircle|tripled|triangle|transparent|transparency|tostring|topenlarged|topboundary|topath|topair|tolist|tohash|tocycle|thetextext|thetexbox|theoffset|thelabel|texvar|texvar|textextoffset|textext|texstr|texstr|texmode|texbox|tensecircle|tcircle|tanh|tand|tan|systemmode|superellipsed|strut|stretched|straightpath|straightpairs|straightfunction|stoppassingvariable|startpassingvariable|squeezed|squarepath|sqr|spotcolor|space|sortlist|softened|snapped|smoothed|sized|sinh|sin|simplified|shownshadevector|shownshadeorigin|shortened|shapedlist|shadedup|shadedright|shadedleft|shadedinto|shadeddown|shaded|settoks|setmacro|setdimen|setcount|scriptindex|rule|roundedsquare|righttriangle|rightof|rightenlarged|rightboundary|rightarrow|resolvedcolor|resetdrawoptions|resetarrows|report|register|redecorated|readfile|rcircle|rawtextext|rawtexbox|randomshifted|randomizedcontrols|randomized|radian|quote|quotation|pushcurrentpicture|pushboundingbox|punked|property|properties|prefix|prefix|pow|positionxy|positionwhd|positionregion|positionpxy|positionpath|positionpage|positioninregion|positioncurve|positionbox|positionatanchor|positionanchor|popcurrentpicture|popboundingbox|pointof|pi|perpendicular|percent|penpoint|pencilled|peepholed|pathconnectors|passvariable|passarrayvariable|paralleled|paired|outsideof|outlinetexttopath|outlinetext|outerboundingbox|originpath|onlayer|oddly|nothing|notcached|normalfill|normaldraw|nofill|nodraw|newhash|naturalizepaths|namedcolor|multitonecolor|mp|mirroredabout|mirrored|luacall|lua|lrtriangle|lrmoved|lrenlarged|lrcircle|log|loadmodule|loadimage|loadfile|loadfigure|ln|lltriangle|llmoved|llenlarged|llcircle|listtolines|listtocurves|listsize|listlast|linearpath|lefttriangle|leftof|leftenlarged|leftboundary|leftarrow|lcircle|laddered|label|keepcached|istextext|isobject|isarray|isarray|invtan|invsin|inverted|invcos|inv|intersection_point|intersection_found|interpolated|insideof|inpath|innerboundingbox|inhash|infont|infinite|htpart|greyscale|greyed|grayscale|grayed|graphictext|gettoks|getmacro|getdimen|getcount|function|fulltriangle|fullsquare|fulldiamond|formatted|format|fillup|filloutlinetext|figure|externalfigure|exp|evenly|epsed|eofillup|eofill|eoclip|enlonged|enlarged|drawwholepath|drawpoints|drawpointoptions|drawpointlabels|drawpoint|drawpathoptions|drawpathonly|drawpath|drawoutlinetext|draworiginoptions|draworigin|drawlineoptions|drawlabeloptions|drawfill|drawdoublearrows|drawcontrolpoints|drawcontroloptions|drawcontrollines|drawboundoptions|drawboundingbox|drawboundary|dquote|dppart|downtriangle|dofill|dodraw|disposehash|dispose|dimension|detailpaths|detaileddraw|defineshade|decorated|ddecimal|dddecimal|ddddecimal|cutends|curvedpath|curvedpairs|curvedfunction|curved|crossingunder|crossed|crlf|cotd|cot|cosh|cos|cornered|copylist|constructedpath|constructedpairs|constructedfunction|condition|complemented|complementary|comment|colortype|colorpart|colorlike|colordecimalslist|colordecimals|cmyk|clearxy|circularpath|checkedbounds|checkbounds|centerarrow|center|break|boundingradius|boundingpoint|boundingcircle|boundingbox|bottomenlarged|bottomboundary|blownup|blackcolor|bitmapimage|bcircle|bbwidth|bbheight|basiccolors|autoalign|atan|asinh|asin|asgroup|arrowpath|area|anchored|along|addbackground|acosh|acos|SPACE|PERCENT|MP|DQUOTE|CRLF)(?=[^a-zA-Z\u005C_@!?-ÿ])",
+   "name" : "context.command.metafun.helper.mps"
+  },
+  "identifier" : {
+   "match" : "[a-zA-Z\u005C_@!?-ÿ]+",
+   "name" : "context.default.identifier.mps"
+  },
+  "internal" : {
+   "match" : "\u005C\u005C|\u005C.\u005C.\u005C.|\u005C.\u005C.|\u005C-\u005C-\u005C-|\u005C-\u005C-|\u005C&",
+   "name" : "context.reserved.internal.mps"
+  },
+  "luacall" : {
+   "begin" : "(lua)\u005Cs*(\u005C()\u005Cs*(\u0022)",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.embedded.lua.command.mps"
+    },
+    "2" : {
+     "name" : "context.special.lua.open.mps"
+    },
+    "3" : {
+     "name" : "context.special.lua.text.open.mps"
+    }
+   },
+   "end" : "(\u0022)\u005Cs*(\u005C))",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.special.lua.text.close.mps"
+    },
+    "2" : {
+     "name" : "context.special.lua.close.mps"
+    }
+   },
+   "patterns" : [
+    {
+     "include" : "source.context.cld"
+    }
+   ]
+  },
+  "luacall_suffixed" : {
+   "begin" : "(lua)",
+   "end" : "(?!(\u005Cs*[\u005C.]\u005Cs*[a-zA-Z\u005C_@!?-ÿ]+))",
+   "name" : "context.embedded.luacall.mps",
+   "patterns" : [
+    {
+     "match" : "[\u005C.]",
+     "name" : "context.default.luacall.qualifier.mps"
+    }
+   ]
+  },
+  "number" : {
+   "match" : "[\u005C-]?[0-9]+(\u005C.[0-9]+)?([eE]\u005C-?[0-9]+)?",
+   "name" : "context.number.number.mps"
+  },
+  "plain" : {
+   "match" : "(z|z|yellow|withdots|white|whatever|upto|up|unitvector|unitsquare|unfilldraw|unfill|undraw|triplet|tracingnone|tracingall|totransform|thru|thelabel|tensepath|takepower|superellipse|stop|softjoin|shipit|savepen|round|rotatedaround|rotatedabout|right|relax|reflectedabout|red|range|quartercircle|quadruplet|pt|pickup|pensquare|penspec|penrazor|penpos|penlabels|pc|origin|nullpen|mod|mm|min|max|makelabel|magenta|loggingall|left|laboff|labels|label|inverse|intersectionpoint|interact|incr|in|in|image|identity|hide|halfcircle|green|gobbled|gobble|fullcircle|font_extra_space|font_coding_scheme|flex|filldraw|fill|extra_setup|extra_endfig|extra_endchar|extra_beginfig|extra_beginchar|exitunless|evenly|endglyph|endfig|endchar|drawoptions|drawdot|drawdblarrow|drawarrow|draw|downto|down|dotprod|dotlabels|dotlabel|div|directionpoint|direction|dir|define_whole_vertical_pixels|define_whole_vertical_blacker_pixels|define_whole_pixels|define_whole_blacker_pixels|define_pixels|define_horizontal_corrected_pixels|define_good_y_pixels|define_good_x_pixels|define_corrected_pixels|define_blacker_pixels|defaultfont|decr|dd|dashpattern|cyan|cuttings|cutdraw|cutbefore|cutafter|currentpicture|currentpen|counterclockwise|cm|clearxy|clearpen|clearpen|clearit|change_width|center|ceiling|cc|capsule_end|bymatrix|bye|buildcycle|bp|blue|blankpicture|blacker|black|beginglyph|beginfig|beginchar|bbox|background|arrowhead|abs)(?=[^a-zA-Z\u005C_@!?-ÿ])",
+   "name" : "context.plain.plain.mps"
+  },
+  "primitive" : {
+   "match" : "(zscaled|yypart|yxpart|yscaled|ypart|yoffset|yellowpart|year|xypart|xxpart|xscaled|xpart|xoffset|write|withprescript|withpostscript|withpen|within|withcolor|withcmykcolor|warningcheck|vppp|void|vardef|urt|urcorner|until|unknown|uniformdeviate|ulft|ulcorner|turningnumber|turningcheck|truecorners|true|troffmode|transformed|transform|tracingtitles|tracingstats|tracingspecs|tracingrestores|tracingpens|tracingoutput|tracingonline|tracingmacros|tracinglostchars|tracingequations|tracingedges|tracingcommands|tracingchoices|tracingcapsules|totalweight|top|to|time|textual|text|tertiarydef|tertiary|tension|suffix|substring|subpath|stroked|string|str|step|sqrt|special|smoothing|slanted|sind|showvariable|showtoken|showstopping|showdependencies|show|shipout|shifted|setgroup|setbounds|secondarydef|secondary|screen_rows|screen_cols|scantokens|scaled|save|runscript|rt|rotated|rgbcolor|reverse|restoreclipcolor|redpart|readfrom|randomseed|proofing|prologues|primarydef|primary|prescriptpart|precontrol|postscriptpart|postcontrol|point|pixels_per_inch|picture|penspec|penpart|penoffset|pencircle|pen|pausing|pathpart|path|pair|outputtemplate|outputformat|outer|or|openwindow|openit|on|off|of|odd|oct|numspecial|numeric|numbersystem|nullpicture|notransforms|not|normaldeviate|nodisplays|newinternal|mpxbreak|mpprocset|month|mlog|miterlimit|minute|mexp|message|maketext|makepen|makepath|magentapart|lrt|lrcorner|lowres_fix|llft|llcorner|linejoin|linecap|ligtable|lft|let|length|known|kern|intersectiontimes|interpath|interim|input|inner|infont|imagerules|if|hround|hppp|hour|hex|headerbyte|greypart|greycolor|greenpart|graypart|grayfont|graycolor|granularity|glyph|gfcorners|forsuffixes|forever|for|fontsize|fontsize|fontpart|fontmapline|fontmapfile|fontmaking|fontdimen|floor|fillin|filled|filenametemplate|fi|false|extra_endfig|extra_beginfig|extensible|expr|expandafter|exitif|errmessage|envelope|endinput|endgroup|endfor|enddef|end|elseif|else|doublepath|displaying|display|directiontime|designsize|delimiters|def|decimal|day|dashpart|dashed|cycle|cyanpart|currentwindow|currenttransform|curl|cullit|cull|cosd|controls|contour|colormodel|color|cmykcolor|closefrom|clipped|clip|charwd|charlist|charic|charht|charext|charexists|chardy|chardx|chardp|charcode|char|bounded|boundarychar|bot|bot|boolean|bluepart|blackpart|begingroup|autorounding|arctime|arclength|angle|and|and|also|addto|ASCII)(?=[^a-zA-Z\u005C_@!?-ÿ])",
+   "name" : "context.primitive.primitive.mps"
+  },
+  "quoted" : {
+   "begin" : "\u0022",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.special.string.open.mps"
+    }
+   },
+   "end" : "\u0022",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.special.string.close.mps"
+    }
+   },
+   "name" : "context.string.string.text.mps"
+  },
+  "shortcut" : {
+   "match" : "(textextoffset|textextanchor|squared|sq|softlighttransparent|shadefactor|screentransparent|saturationtransparent|rounded|rgbcolormodel|pushparameters|presetparameters|popparameters|pen_top|pen_rt|pen_lft|pen_bot|overlaytransparent|normaltransparent|nocolormodel|multiplytransparent|mitered|metapostversion|maxdimensions|luminositytransparent|lightentransparent|labeloffset|join_radius|infinity|huetransparent|hasparameter|hasoption|hardlighttransparent|greycolormodel|graycolormodel|getparametertext|getparameters|getparameterpen|getparameterpath|getparameterdefault|getparametercount|getparameter|getmaxparametercount|exclusiontransparent|epsilon|eps|drawoptionsfactor|dq|dotlabeldiam|ditto|differencetransparent|definecolor|defaultscale|defaultpen|darkentransparent|crossingscale|crossingoption|contextlmtxmode|colortransparent|colordodgetransparent|colorburntransparent|cmykcolormodel|charscale|butt|beveled|bboxmargin|applyparameters|ahvariant|ahscale|ahlength|ahfactor|ahdimple|ahangle|EOF)(?=[^a-zA-Z\u005C_@!?-ÿ])",
+   "name" : "context.data.shortcut.mps"
+  },
+  "special" : {
+   "match" : "}|{|\u005C]|\u005C[|@#|>|=|<|:|\u005C)|\u005C(|#@|#|\u005C\u0022",
+   "name" : "context.special.special.mps"
+  },
+  "suffix" : {
+   "match" : "@#|#@|#",
+   "name" : "context.number.suffix.mps"
+  },
+  "texlike" : {
+   "match" : "\u005C[a-zA-Z\u005C_@!?-ÿ]+",
+   "name" : "context.warning.unexpected.tex.mps"
+  },
+  "texstuff" : {
+   "begin" : "((?:b|verbatim)tex)\u005Cs+",
+   "beginCaptures" : {
+    "1" : {
+     "name" : "context.primitive.tex.open.mps"
+    }
+   },
+   "end" : "\u005Cs+(etex)",
+   "endCaptures" : {
+    "1" : {
+     "name" : "context.primitive.tex.close.mps"
+    }
+   },
+   "name" : "context.string.tex.mps",
+   "patterns" : [
+    {
+     "include" : "source.context.tex"
+    }
+   ]
+  }
+ },
+ "scopeName" : "source.context.mps",
+ "version" : "1.0.0"
+}

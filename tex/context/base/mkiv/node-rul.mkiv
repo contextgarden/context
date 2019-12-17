@@ -146,6 +146,12 @@
      {\node_rules_set{#1}\barparameter\c!left}%
      {\relax\barparameter\c!right}}
 
+\unexpanded\def\inlinebar[#1]%
+  {\node_rules_direct{#1}}
+
+% \unexpanded\def\inlinecurrentbar
+%   {\node_rules_direct{\currentbar}}
+
 % store in properties
 
 \unexpanded\def\node_rules_set#1% maybe reverse the 1000 (also maybe use more attributes instead of settings)

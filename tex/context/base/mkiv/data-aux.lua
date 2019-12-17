@@ -8,29 +8,33 @@ if not modules then modules = { } end modules ['data-aux'] = {
 
 local find = string.find
 local type, next = type, next
+local addsuffix, removesuffix = file.addsuffix, file.removesuffix
+local loaddata, savedata = io.loaddata, io.savedata
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local resolvers = resolvers
+local cleanpath = resolvers.cleanpath
+local findfiles = resolvers.findfiles
 
 local report_scripts = logs.reporter("resolvers","scripts")
 
 function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per se a suffix
  -- local scriptpath = "scripts/context/lua"
     local scriptpath = "context/lua"
-    newname = file.addsuffix(newname,"lua")
-    local oldscript = resolvers.cleanpath(oldname)
+    local oldscript  = cleanpath(oldname)
+    local newname    = addsuffix(newname,"lua")
+    local newscripts = findfiles(newname) or { }
     if trace_locating then
         report_scripts("to be replaced old script %a", oldscript)
     end
-    local newscripts = resolvers.findfiles(newname) or { }
     if #newscripts == 0 then
         if trace_locating then
             report_scripts("unable to locate new script")
         end
     else
         for i=1,#newscripts do
-            local newscript = resolvers.cleanpath(newscripts[i])
+            local newscript = cleanpath(newscripts[i])
             if trace_locating then
                 report_scripts("checking new script %a", newscript)
             end
@@ -42,17 +46,17 @@ function resolvers.updatescript(oldname,newname) -- oldname -> own.name, not per
                 if trace_locating then
                     report_scripts("new script should come from %a",scriptpath)
                 end
-            elseif not (find(oldscript,file.removesuffix(newname).."$") or find(oldscript,newname.."$")) then
+            elseif not (find(oldscript,removesuffix(newname).."$") or find(oldscript,newname.."$")) then
                 if trace_locating then
                     report_scripts("invalid new script name")
                 end
             else
-                local newdata = io.loaddata(newscript)
+                local newdata = loaddata(newscript)
                 if newdata then
                     if trace_locating then
                         report_scripts("old script content replaced by new content: %s",oldscript)
                     end
-                    io.savedata(oldscript,newdata)
+                    savedata(oldscript,newdata)
                     break
                 elseif trace_locating then
                     report_scripts("unable to load new script")

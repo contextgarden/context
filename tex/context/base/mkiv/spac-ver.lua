@@ -153,6 +153,7 @@ local remove_node         = nuts.remove
 local count_nodes         = nuts.countall
 local hpack_node          = nuts.hpack
 local vpack_node          = nuts.vpack
+local start_of_par        = nuts.start_of_par
 
 local nextnode            = nuts.traversers.node
 local nexthlist           = nuts.traversers.hlist
@@ -168,6 +169,7 @@ local nodepool            = nuts.pool
 
 local new_penalty         = nodepool.penalty
 local new_kern            = nodepool.kern
+local new_glue            = nodepool.glue
 local new_rule            = nodepool.rule
 
 local nodecodes           = nodes.nodecodes
@@ -290,7 +292,7 @@ end
 local function validvbox(parentid,list)
     if parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and getsubtype(list) == 0 then
+        if id == localpar_code and start_of_par(list) then
             list = getnext(list)
             if not next then
                 return nil
@@ -326,7 +328,7 @@ local function already_done(parentid,list,a_snapmethod) -- todo: done when only 
     -- problem: any snapped vbox ends up in a line
     if list and parentid == hlist_code then
         local id = getid(list)
-        if id == localpar_code and getsubtype(list) == 0 then
+        if id == localpar_code and start_of_par(list) then
             list = getnext(list)
             if not list then
                 return false
@@ -2062,6 +2064,7 @@ end
 do
 
     local outer   = texnest[0]
+
     local enabled = true
     local trace   = false
     local report  = logs.reporter("vspacing")
@@ -2157,25 +2160,103 @@ do
 
     trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
-    function vspacing.forcestrutdepth(n,depth,trace_mode)
+    local last = nil
+
+ -- function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
+ --     local box = texgetbox(n)
+ --     if box then
+ --         box = tonut(box)
+ --         local head = getlist(box)
+ --         if head then
+ --             local tail = find_node_tail(head)
+ --             if tail and getid(tail) == hlist_code then
+ --                 local dp = getdepth(tail)
+ --                 if dp < depth then
+ --                     setdepth(tail,depth)
+ --                     outer.prevdepth = depth
+ --                     if trace or trace_mode > 0 then
+ --                         nuts.setvisual(tail,"depth")
+ --                     end
+ --                 end
+ --             end
+ --         end
+ --     end
+ -- end
+
+    function vspacing.forcestrutdepth(n,depth,trace_mode,plus)
         local box = texgetbox(n)
         if box then
             box = tonut(box)
             local head = getlist(box)
             if head then
                 local tail = find_node_tail(head)
-                if tail and getid(tail) == hlist_code then
-                    local dp = getdepth(tail)
-                    if dp < depth then
-                        setdepth(tail,depth)
-                        outer.prevdepth = depth
-                        if trace or trace_mode > 0 then
-                            nuts.setvisual(tail,"depth")
+                if tail then
+                    if getid(tail) == hlist_code then
+                        local dp = getdepth(tail)
+                        if dp < depth then
+                            setdepth(tail,depth)
+                            outer.prevdepth = depth
+                            if trace or trace_mode > 0 then
+                                nuts.setvisual(tail,"depth")
+                            end
                         end
+                    end
+                    last = nil
+                    if plus then
+                        -- penalty / skip ...
+                        local height = 0
+                        local sofar  = 0
+                        local same   = false
+                        local seen   = false
+                        local list   = { }
+                              last   = nil
+                        while tail do
+                            local id = getid(tail)
+                            if id == hlist_code or id == vlist_code then
+                                local w, h, d = getwhd(tail)
+                                height = height + h + d + sofar
+                                sofar  = 0
+                                last   = tail
+                            elseif id == kern_code then
+                                sofar = sofar + getkern(tail)
+                            elseif id == glue_code then
+                                if seen then
+                                    sofar = sofar + getwidth(tail)
+                                    seen  = false
+                                else
+                                    break
+                                end
+                            elseif id == penalty_code then
+                                local p = getpenalty(tail)
+                                if p >= 10000 then
+                                    same = true
+                                    seen = true
+                                else
+                                    break
+                                end
+                            else
+                                break
+                            end
+                            tail = getprev(tail)
+                        end
+                        texsetdimen("global","d_spac_prevcontent",same and height or 0)
                     end
                 end
             end
         end
+    end
+
+    function vspacing.pushatsame()
+        -- needs better checking !
+        if last then -- setsplit
+            nuts.setnext(getprev(last))
+            nuts.setprev(last)
+        end
+    end
+
+    function vspacing.popatsame()
+        -- needs better checking !
+        nuts.write(last)
     end
 
 end
@@ -2201,6 +2282,25 @@ do
         name      = "forcestrutdepth",
         arguments = { "integer", "dimension", "integer" },
         actions   = vspacing.forcestrutdepth,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "forcestrutdepthplus",
+        arguments = { "integer", "dimension", "integer", true },
+        actions   = vspacing.forcestrutdepth,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "pushatsame",
+        actions   = vspacing.pushatsame,
+        scope     = "private"
+    }
+
+    implement {
+        name      = "popatsame",
+        actions   = vspacing.popatsame,
         scope     = "private"
     }
 

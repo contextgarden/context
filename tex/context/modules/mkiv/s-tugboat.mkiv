@@ -1,32 +1,33 @@
 %D \module
 %D   [      file=t-tugboat
-%D        version=$Id: t-tugboat.tex 111 2013-02-25 17:56:22Z bnb $
+%D        version=$Id: s-tugboat.mkiv 246 2019-09-09 18:22:19Z karl $
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=\TUGBOAT\ base style,
-%D         author=Aditya Mahajan,
+%D         author=Aditya Mahajan and others,
 %D           date=\currentdate,
 %D      copyright=Public Domain]
 
-%D This file is derived from \filename{s-tug-02} written by Hans Hagen
-%D and Steve Grathwohl. Karl Berry asked me for some changes in the
-%D \TUGBOAT\ style files. The original file had an option of typesetting
-%D on a grid. That was too clever for me to understand, and hence to
-%D modify. Since \TUGBOAT\ usually does not typeset on a grid, I redid the
-%D style, borrowing parts from \filename{s-tug-02} and redoing some
-%D parts from scratch.
+%D \filename {s-tug-02} was originally written by Hans Hagen and Steve Grathwohl,
+%D and used grid typesetting. \filename {t-tugboat} was a major revision by Aditya
+%D Mahajan, no grid. \filename {s-tugboat.mkiv} was another major revision by Taco
+%D Hoekwater and Alan Braslau, now with pagecolumns. The latest version has been
+%D adapted by Karl Berry.
 
-%D \section Variables %<<<1
+%D HH: most articles are not that demanding, otherwise I'd probably redefine some
+%D of the code below. So, for now things gets adapted when needed.
+
+%D \section{Variables}
 %D
 %D We store the information about the article in variables.
 
 \setvariables
   [tugboat]
   [type=article,
-   columns=no,
-   grid=yes]
+   columns=yes,
+   grid=no]
 
 \setvariables
-  [tugboat]
+  [tugboat] % overridden from ../tugboat.dates if present.
   [year=1900,
    volume=0,
    number=0,
@@ -38,45 +39,44 @@
    subtitle=,
    keywords=,
    author=T. Boat,
-   address=Pragmatically Advanced tugboats \\
-           314 Pi Ave. \\
-           8061GH Hasselt NL,
-   email={tugboat@tug.org}]
+   address=Pragmatically Advanced tugboats\\314 Pi Ave.\\8061GH Hasselt NL,
+   email={pragboat@tug.org}]
 
-%D \section Font Setup %<<<1
+%D \section{Font Setup}
 %D
-%D \TUGBOAT\ uses slightly different interline space than the default.
-%D So we change the interline space.
+%D \TUGBOAT\ uses standard CM interline spacing.
 
-\definebodyfontenvironment    [8pt] [interlinespace=9.5pt, big=9pt,  small=7pt]
-\definebodyfontenvironment    [9pt] [interlinespace=11pt, big=10pt,  small=8pt]
-\definebodyfontenvironment   [10pt] [interlinespace=12pt, big=12pt,  small=9pt]
-\definebodyfontenvironment   [12pt] [interlinespace=14pt,big=14.4pt,small=10pt]
-\definebodyfontenvironment [14.4pt] [interlinespace=18pt,big=14.4pt,small=12pt]
-\definebodyfontenvironment [9.8pt]  % Because 9.8pt is used in typing environments
+\definebodyfontenvironment    [8pt] [interlinespace=9.5pt, big=9pt,   small=7pt]
+\definebodyfontenvironment    [9pt] [interlinespace=11pt,  big=10pt,  small=8pt]
+\definebodyfontenvironment   [10pt] [interlinespace=12pt,  big=12pt,  small=9pt]
+\definebodyfontenvironment   [12pt] [interlinespace=14pt,  big=14.4pt,small=10pt]
+\definebodyfontenvironment [14.4pt] [interlinespace=18pt,  big=14.4pt,small=12pt]
 
-%D \TUGBOAT\ uses Computer Modern fonts, and \CONTEXT\ uses Latin Modern
-%D by default. So, we just specify the font size.
+%D \TUGBOAT\ uses Computer Modern fonts, and \CONTEXT\ uses Latin Modern by default,
+%D which is fine. So, we just specify the font size.
 
 \setupbodyfont [10pt]
 
-% Italic rather than slanted for emphasis.
-\setupbodyfontenvironment[default][em=italic]
+%D \TUGBOAT\ uses italic rather than slanted for emphasis.
 
-% Break after these chars in urls, not before.
+\setupbodyfontenvironment
+  [default]
+  [em=italic]
+
+%D Break after these chars in urls, not before.
+
 \sethyphenatedurlafter /
 \sethyphenatedurlafter .
 \sethyphenatedurlafter _
 
-%D \section Layout Setup %<<<1
+%D \section{Layout Setup}
 %D
-%D The original layout used in the \LATEX\ style for \TUGBOAT\ is a bit
-%D ambiguous. It uses low|-|level \TEX\ syntax, rather than changing the
-%D layout in a human understandable way (for example, by using the
-%D \mono{geometry} package. I have tried to translate it to \CONTEXT\ as
-%D far as I understand.
+%D The original layout used in the \LATEX\ style for \TUGBOAT\ uses low|-|level
+%D \TEX\ syntax.
 
-\setuppapersize[letter][letter]
+\setuppapersize
+  [letter]
+  [letter]
 
 \setuplayout
   [topspace=3.8pc,% was 3.5pc
@@ -95,32 +95,43 @@
    margindistance=1pc,
   ]
 
-\setupcolumns[distance=1.5pc]
+%D With pagecolumns, seemingly can't get single-column floats. (HH: not sure
+%D what is meant but probably that it can't be done in the running text.)
+
+\enablemode [pagecolumns]
+
+%D KB: With columnsets, get unwanted gridsetting and blank last pages. HH: can
+%D be solved but columnsets normally get set up beforehand (figures and such).
+
+% \enablemode [columnsets]
+% \startmode [columnsets]
+%    \usemodule [newcolumnsets]
+% \stopmode
 
 \setuppagenumbering
   [location=,
    alternative=doublesided]
 
-%D In \TUGBOAT\ different articles are glued together to form the final
-%D journal, so we do not want each article to occupy even number of
-%D pages.
+%D In \TUGBOAT\ different articles are glued together to form the final journal, so
+%D we do not want each article to occupy an even number of pages. (Except this seems
+%D to have no effect with pagecolumns.) HH: page columns are actually just single
+%D columns but combined, so it supports side floats and such.
 
 \installpagebreakhandler {last} {}
 
-%D \section Indentation %<<<1
+%D \section{Indentation}
 %D
-%D We use automatic indentation control, that is: no
-%D indentation after titles and skips.
+%D We use automatic indentation control, that is: no indentation after titles and
+%D skips.
 
 \setupindenting[20pt,yes]
 
-%D We do not want indentation after lists.
+%D We do not usually want indentation after lists.
 
 \setupenumerations [indentnext=no]
-
 \setupdescriptions [indentnext=no]
 
-%D \section Itemize
+%D \section{Itemize}
 %D
 %D And these. We typeset itemizations ragged right.
 
@@ -144,70 +155,112 @@
   [1]
   [packed]
 
-%D \section Section Headings %<<<1
+%D \section{Section Headings}
 %D
-%D We follow the \TUGBOAT\ style for sections. I do not know if
-%D \type{align=right} also disables hyphenation. Lets wait and see on
-%D this. Rest all is straight forward. It took me a while to realize
-%D that in \LATEX\ \type{\@startsection} the absolute value of before
-%D skip (fourth argument) is important and not the sign.
+%D We follow the \TUGBOAT\ style for sections. I do not know if \type {align=right}
+%D also disables hyphenation (HH: no that is independent). Let's wait and see on
+%D this. The rest is straightforward. It took me a while to realize that in \LATEX\
+%D \type {\@startsection} the absolute value of before skip (fourth argument) is
+%D important and not the sign.
 
 \setuphead
-  [section,subsection, subsubsection,
-   subject, subsubject, subsubsubject]
+  [section,subsection,subsubsection,
+   subject,subsubject,subsubsubject]
   [style=bold,
    align=right,
    before={\blank[8pt]},
    after={\blank[4pt]}]
 
-%D \section Spacing <<<1
+%D \section{Spacing}
 %D
-%D We define a logical skip. This is equal to the \tex{topsep} in latex,
-%D and most environments should have this skip.
+%D We define a logical skip. This is equal to the \type {\topsep} in \LATEX, and
+%D most environments should have this skip.
 
-\defineblank[tugblank][3pt]
-\setupblank[3pt]
+\defineblank
+  [tugblank]
+  [3pt]
 
+%D HH: In fact, \type \setupblank[tugblank] would deal with most of the blanks
+%D anyway, but let's not change this now.
 
-\setupitemize[1][before={\blank[tugblank]},after={\blank[tugblank]},
-                 inbetween={\blank[tugblank]}]
+\setupblank
+  [3pt]
 
-\setuplines[before={\blank[tugblank]},after={\blank[tugblank]},
-            inbetween={\blank[tugblank]}]
+\setupitemize
+  [1]
+  [before={\blank[tugblank]},
+   after={\blank[tugblank]},
+   inbetween={\blank[tugblank]}]
+
+\setuplines
+  [before={\blank[tugblank]},
+   after={\blank[tugblank]},
+   inbetween={\blank[tugblank]}]
 
 %D \section Typing %<<<1
 %D
-%D \TUGBOAT\ uses a smaller font size for verbatim typesetting.
+%D \TUGBOAT\ uses a smaller font size for verbatim typesetting. Not sure why
+%D \type {nowhite} is used here.
 
 \setuptyping
   [option=none,
-   % mkiv arbitrarily scales lm somehow randomly; 10pt gets 9pt back,
-   % we make it a little smaller.
-   bodyfont=9.8pt,
-   before={\blank[nowhite]}, % AM: If this is too small, use \blank[nowhite,tugblank]}
+   bodyfont=9pt,
+   before={\blank[nowhite,tugblank]},
    after={\blank[back,nowhite,tugblank]}]
 
-%D \section Footnotes %<<<1
+%D Do not colorize code.
+
+\setuptyping[LUA][option=]
+\setuptyping[TEX][option=]
+\setuptyping[MP] [option=]
+
+%D Tiny line numbers in numbered code (not text size)
+
+\setuplinenumbering[style=\tfxx] % \infofont would be really tiny
+
+%D \section{Figure captions}
+%D
+%D \TUGBOAT\ uses a smaller font size for captions, too; \type {\small} gives 8pt,
+%D and we want 9pt, so we have to manually fix the baselines.
+
+\setupcaptions
+  [headstyle=\AcroFontBold,
+   style={\AcroFont\advance\baselineskip by -1pt},
+   align=right]
+
+%D We like a colon after the caption label.
+
+\let\floatcaptionsuffix=:
+
+% Prefer floats in text.
+
+\setupfloat[figure][align=middle,default=here]
+\setupfloat[table] [align=middle,default=here]
+
+%D \section{Footnotes}
 %D
 %D Not entirely a la \TUGBOAT:
 
-\setupfootnotes
-  [bodyfont=9pt,
-   location=columns%,
-%   rule={\hrule width 5pc height .4pt depth 0pt\relax \kern \strutdepth}
-]
+% rule={\hrule width 5pc height .4pt depth 0pt\relax \kern \strutdepth},
 
-\setupnotation[footnote]
+\setupfootnotes
+  [bodyfont=9pt]
+
+\doif {\getvariable{tugboat}{columns}} {yes} {
+    \setupfootnotes
+      [location=columns]
+}
+
+\setupnotation
+  [footnote]
   [location=joinedup,
    width=fit,
    headstyle=normal,
    distance=.5em]
 
-%>>>
-%D \section List %<<<
+%D \section{List}
 %D
-%D We define a standard description and enumeration
-%D environment.
+%D We define a standard description and enumeration environment.
 
 \definedescription
   [description]
@@ -223,30 +276,25 @@
    before={\blank[tugblank]},
    after={\blank[tugblank]}]
 
-
-% >>>
-%D \section References %<<<
+%D \section{References}
 %D
-%D The bib does not handle urls nicely. So we provide a stop gap solution.
+%D More or less like plain BibTeX + ltugboat.
 
-\definereferenceformat[cite][left={[},right={]}]
-\defineitemgroup [bibliography] [levels=1]
-\setupitemgroup  [bibliography]
-                 [symbol=n,
-                  left={[},
-                  right={]},
-                  width=1.5em,
-                  stopper=,
-                  itemalign=flushright,
-                  inbetween={\blank[small]}]
+\setupbtx
+  [default:list:numbering]
+  [left={[},
+   right={]}]
+
+\setupbtxlist
+  [default]
+  [width=2em,
+   style={\frenchspacing},
+   align={raggedright,verystrict}]
 
 %D Instead of color, we use weighted gray scales:
+
 \setupcolors
   [conversion=always]
-
-%D English it is.
-\mainlanguage
-  [en]
 
 %D We define some logical skips
 
@@ -261,26 +309,28 @@
 
 \startsetups tugboat:abstract:setup
 
-  \setuptolerance
-    [horizontal, tolerant]
+  % \setuptolerance
+  %   [horizontal, tolerant]
 
-  \setupnarrower
-    [before={\blank[.5\baselineskip]},
-%    after={\blank[10pt plus4pt minus4pt]},
-    after={\blank[10pt]},
-    middle=4.875pc]
+    \setupnarrower
+      [before={\blank[.5\baselineskip]},
+     % after={\blank[10pt plus4pt minus4pt]},
+       after={\blank[10pt]},
+       middle=4.875pc]
+
+    \setupindenting
+      [20pt,yes]
 
 \stopsetups
 
-%D Headers and footers are different for normal issues
-%D and proceedings.
+%D Headers and footers.
 
 \startsetups tugboat:banner:text:article
 
-  {\sl TUGboat},\space
-  Volume \getvariable{tugboat}{volume}\space
-  (\getvariable{tugboat}{year}),\space
-  No.\space\getvariable{tugboat}{number}
+    {\sl TUGboat},\space
+    Volume \getvariable{tugboat}{volume}\space
+    (\getvariable{tugboat}{year}),\space
+    No.\space\getvariable{tugboat}{number}
 
 \stopsetups
 
@@ -288,9 +338,9 @@
 
 \startsetups tugboat:banner:text:proceedings
 
-  \setups{tugboat:banner:text:article}
-  \thinspace---\thinspace
-  \postissno
+    \setups{tugboat:banner:text:article}
+    \thinspace---\thinspace
+    \postissno
 
 \stopsetups
 
@@ -300,26 +350,15 @@
     [\setups{tugboat:banner:text:article}]
     [\pagenumber]
 
-% no footer in regular articles
-%  \setupfootertexts
-%    [][\getvariable{tugboat}{author}]
-%    [\getvariable{tugboat}{title}][]
-
-\stopsetups
-
-\startsetups tugboat:banner:setup:proceedings
-
-  \setupheadertexts
-    [][\getvariable{tugboat}{title}]
-    [\getvariable{tugboat}{author}][]
+    % no footer in regular articles
 
   \setupfootertexts
-    [\setups{tugboat:banner:text:proceedings}]
-    [\pagenumber]
+    [][\getvariable{tugboat}{author}]
+    [\getvariable{tugboat}{title}][]
 
 \stopsetups
 
-%D article is default so,
+%D article is default.
 
 \setups{tugboat:banner:setup:article}
 
@@ -330,204 +369,117 @@
 
 \startsetups tugboat:grid:setup:settings:yes
 
-  \setupblank
-    [line]
+    \setupblank
+      [line]
 
-  \defineblank [tugbefore]    [halfline]
-  \defineblank [tuginbetween] [halfline]
+    \defineblank [tugbefore]    [halfline]
+    \defineblank [tuginbetween] [halfline]
 
 \stopsetups
 
-\startsetups tugboat:grid:setup:no
-
+% \startsetups tugboat:grid:setup:no
+%
 %   \setupblank
 %     [halfline]
-
+%
 %   \defineblank [medium]       [halfline]
 %   \defineblank [tugbefore]    [halfline]
 %   \defineblank [tuginbetween] [halfline]
-
-\stopsetups
+%
+% \stopsetups
 
 \startsetups tugboat:introduction:article
 
-%   \blank[halfline]
-
-  \start
-    \def\\{\unskip\space\&\space\ignorespaces}
-    \hbox{\indent\getvariable{tugboat}{author}}
-    \par
-  \stop
-
-
-\stopsetups
-
-\startsetups tugboat:introduction:proceedings
-
-  \blank[20pt]
-
-  \start
-    \switchtobodyfont[12pt]
-    \def\\{\unskip\space\&\space\ignorespaces}
-    \getvariable{tugboat}{author}
-    \par
-  \stop
+  % \blank[halfline]
 
     \start
-    \switchtobodyfont[9pt]
-    \def\\{\unskip,\space\ignorespaces}
-    \getvariable{tugboat}{address}
-    \par
-    {\tt\getvariable{tugboat}{email}}
-    \par
-  \stop
-
+        \def\\{\unskip\space\&\space\ignorespaces}
+        \hbox{\indent\getvariable{tugboat}{author}}
+        \par
+    \stop
 
 \stopsetups
 
 \startsetups tugboat:article:start
 
-  \starttext
+    \starttext
 
-  \setups{tugboat:columns:\getvariable{tugboat}{columns}}
-  \setups{tugboat:banner:setup:\getvariable{tugboat}{type}}
+    \setups{tugboat:columns:\getvariable{tugboat}{columns}}
+    \setups{tugboat:banner:setup:\getvariable{tugboat}{type}}
 
-  \doif{\getvariable{tugboat}{columns}}{yes}{\startcolumns}
+    \doif {\getvariable{tugboat}{columns}} {yes} {
+        \doifmodeelse {columnset}  {
+            \startcolumnset
+        } {
+            \doifmodeelse {pagecolumns} {
+                \startpagecolumns
+            } {
+                \startcolumns
+            }
+        }
+    }
 
+    \setcounter
+      [userpage]
+      [\getvariable{tugboat}{page}]
 
-  % AM: Why set these again?
-  % \setupheadertexts
-  %   [\setups{tugboat:banner:text:article}]
-  %   [pagenumber]
+    \setups{tugboat:grid:setup:\getvariable{tugboat}{grid}}
 
-  % \setuppagenumber
-  %   [number=\getvariable{tugboat}{page}]
-  \setcounter[userpage][\getvariable{tugboat}{page}]
+    \snaptogrid \vbox \bgroup
 
-  % \setuplayout
-  %   [grid=\getvariable{tugboat}{grid}]
+        \forgetall
+        \hrule height .6pt
+        \blank[halfline]
+        \start
+            \let\\=\par
+            {\bf\getvariable{tugboat}{title}}
+            \par
+            \blank[halfline]
+            \hskip20pt\getvariable{tugboat}{author}
+        \stop
 
-  % % instead of \startmode   [*grid] ... \stopmode
-  % % instead of \startnotmode[*grid] ... \stopnotmode
+        \blank[line]
 
-  \setups{tugboat:grid:setup:\getvariable{tugboat}{grid}}
+        \doiftext {\getbuffer[abstract]} {
+            \let\\=\endgraf
+            \setups{tugboat:abstract:setup}
+            \subject{Abstract}
+            \getbuffer[abstract]
+        }
 
-  \snaptogrid \vbox \bgroup
-
-    \forgetall
-\hrule height .6pt
-\blank[halfline]
-    \start
-      \let\\=\par
-      {\bf\getvariable{tugboat}{title}}
-      \par
-      \blank[halfline]
-      \hskip20pt\getvariable{tugboat}{author}
-    \stop
-
-%     \setups{tugboat:introduction:\getvariable{tugboat}{type}}
-
-    \blank[line]
-
-    \doiftext{\getbuffer[abstract]}
-    {\let\\=\endgraf
-     \setups{tugboat:abstract:setup}
-     \subject{Abstract}
-     \getbuffer[abstract]}
-  \egroup
-\stopsetups
-
-\startsetups tugboat:proceedings:start
-
-  \starttext
-
-  \setups{tugboat:columns:\getvariable{tugboat}{columns}}
-  \setups{tugboat:banner:setup:\getvariable{tugboat}{type}}
-
-  \setupheader
-    [state=empty]
-
-  \setuppagenumber
-    [number=\getvariable{tugboat}{page}]
-
-  \setuplayout
-    [grid=\getvariable{tugboat}{grid}]
-
-  % instead of \startmode   [*grid] ... \stopmode
-  % instead of \startnotmode[*grid] ... \stopnotmode
-  \doifmodeelse{*grid}{\setups{tugboat:grid:setup:yes}}{\setups{tugboat:grid:setup:no}}
-%  \setups{tugboat:grid:setup:\systemmodevalue{grid}{yes}{no}}
-
-  \snaptogrid \vbox \bgroup
-
-    \forgetall
-
-    \start
-      \switchtobodyfont[14.4pt]
-      \let\\=\par
-      \getvariable{tugboat}{title}
-      \par
-    \stop
-
-    \setups{tugboat:introduction:\getvariable{tugboat}{type}}
-
-    \blank[9pt]% plus3pt minus3pt]
-
-    \let\\=\par
-    \setups{tugboat:abstract:setup}
-    \midaligned{\bf Abstract}
-
-    \startnarrower[middle]
-       \getbuffer[abstract]
-    \stopnarrower
-
-  %  \blank[10pt plus4pt minus4pt]
-
-  \egroup
-
-  \doif{\getvariable{tugboat}{columns}}{yes}{\startcolumns}
+    \egroup
 
 \stopsetups
-
-\def\signaturewidth{13pc}
-
-\definefontsynonym[LMSY][lmsy10]
-\def\mydiamond{\getglyph{LMSY}{\char5}}
 
 \startsetups tugboat:affiliation:article
 
-  \blank[line]
-
-  \snaptogrid \vbox \bgroup
-
-     \forgetall
-
-     \leftskip=\textwidth \advance\leftskip by -\signaturewidth
-
-     \let\\=\par
-     \leavevmode\llap{\mydiamond\enspace}\getvariable{tugboat}{author}
-     \par
-     \getvariable{tugboat}{address}
-     \par
-     {\tt\getvariable{tugboat}{email}}
-
-  \egroup
-
-\stopsetups
-
-\startsetups tugboat:affiliation:proceedings
-
-    % nothing fancy at the end
+    \blank[line]
+    \begingroup
+        \leftskip=5.7pc
+        \noindent
+        \llap{\sym{\diamond}\enspace}
+        \getvariable{tugboat}{author}
+        \\
+        \getvariable{tugboat}{address}
+        \\
+        {\tt\getvariable{tugboat}{email}}
+        \par
+    \endgroup
 
 \stopsetups
 
 \startsetups tugboat:article:stop
 
-  \setups{tugboat:affiliation:\getvariable{tugboat}{type}}
+    \setups{tugboat:affiliation:\getvariable{tugboat}{type}}
 
-  \doif{\getvariable{tugboat}{columns}}{yes}{\stopcolumns}
+    % article joining in the issue.
 
-  \page
+    \ifx\writelastpage\undefined \else
+        \begingroup
+        \count0=\count1 % because context uses \count0
+        \writelastpage{+1}%
+        \endgroup
+    \fi
 
   \stoptext
 
@@ -538,125 +490,213 @@
 \setuptolerance
   [strict]
 
-%D One can use the following setups (in the article) to
-%D collect settings specific to normal and/or multi
-%D column typesetting.
+%D Hz is fine but hanging can hang quotes out too far.
+
+\setupalign[hz]
+
+%D Let's see boxes overfull by >.5pt
+
+\overfullrule =  2pt % yes, I want to see
+\hfuzz        = .5pt
+
+%D One can use the following setups (in the article) to collect settings specific to
+%D normal and|/|or multi column typesetting.
 
 \startsetups tugboat:columns:yes
 
+    \doifmodeelse {columnset} {
+        \setuplayout
+            [grid=no]
+        \setupcolumnset
+            [distance=1.5pc]
+    } {
+        \doifmodeelse {pagecolumns} {
+            \setuplayout
+                [grid=no]
+            \setuppagecolumns
+                [distance=1.5pc]
+         } {
+            \setupcolumns
+                [distance=1.5pc]
+        }
+    }
+
 \stopsetups
 
-\startsetups tugboat:columns:no
+% \startsetups tugboat:columns:no
+%
+% \stopsetups
 
-\stopsetups
+%D Logos, abbreviations: lots could be better here.
 
-% >>> Logos, abbreviations: TODO: Clean up <<<
-\font\mflogo = logo10
-\def\MF{{\mflogo META\-FONT}}
+\font\mflogo=logo10 % hm, better use \definefont
 
-\def\ALEPH{Aleph}
-\def\API{\acro{API}}
-\def\CCODE{C}
-\def\CD{\acro{CD}}
-\def\CMYK{\acro{CMYK}}
-\def\CONTEXT{C\kern-.0333emon\-\kern-.0667em\TeX\kern-.0333emt}
-\def\CPU{\acro{CPU}}
-\def\DVI{\acro{DVI}}
-\def\DVIPDFMX{dvipdfmx}
-\def\DVIPS{dvips}
-\def\ETEX{$\varepsilon$-\kern-.125em\TeX}
-\def\FTP{\acro{FTP}}
-\def\HTTP{\acro{HTTP}}
-\def\IO{\acro{I/O}}
-\def\ISO{\acro{ISO}}
-\def\KPSEWHICH{kpsewhich}
-\def\KPSE{\acro{KPSE}}
+%D HH: I'm pretty sure that this doesn't really work as it probably assumes some
+%D specific math family setup and that's not how \MKIV\ works. The TB definition
+%D doesn't scale with font changes and also doesn't adapt itself to style changes.
+
 \newcount\TestCount
-\newbox\TestBox
-\def\La{\TestCount=\the\fam \leavevmode L%
-        \setbox\TestBox=\hbox{$\fam\TestCount\scriptstyle A$}%
-        \kern-.5\wd\TestBox\raise.42ex\box\TestBox}
-\def\LATEX{\La\kern-.15em\TeX}
-\def\LATEXE{\LaTeX{}\kern.05em2$_{\textstyle\varepsilon}$}
-\def\LINUX{Linux}
-\def\LPEG{Lpeg}
-\def\LUAJIT{Lua\acro{JIT}}
-\def\LUATEX{Lua\-\TeX}
-\def\LUATOOLS{lua\-tools}
-\def\LUA{Lua}
-\def\MATHML{Math\acro{ML}}
-\def\METAFUN{Metafun}
-\def\METAPOST{MetaPost}
-\def\METATEX{Meta\TeX{}}
-\def\MKII{Mk\acro{II}}
-\def\MKIV{Mk\acro{IV}}
-\def\MPLIB{\acro{MP}lib}
-\def\MPTOPDF{mp\-to\-pdf}
-\def\MSWINDOWS{Windows}
-\def\MTXTOOLS{mtx\-tools}
-\def\NFSS{\acro{NFSS}}
-\def\OPENMATH{Open\-Math}
-\def\OPENTYPE{Open\-Type}
-\def\PASCAL{Pascal}
-\def\PDFTEX{pdf\/\-\TeX}
-\def\PDF{\acro{PDF}}
-\def\POSIX{\acro{POSIX}}
-\def\PRAGMA{Pragma \acro{ADE}}
+\newbox  \TestBox
+
+\def\La
+  {\dontleavehmode
+   \begingroup
+   \TestCount=\the\fam % no meaningful fams in text mode in ConTeXt
+   \setbox\TestBox=\hbox{$\fam\TestCount\scriptstyle A$}%
+   L\kern-.5\wd\TestBox\raise.42ex\box\TestBox
+   \endgroup}
+
+%D Probably this will do a better job:
+
+% \def\La
+%   {\dontleavehmode
+%    \begingroup
+%    \setbox\scratchbox\hbox{\tx A}% % or \txx
+%    L\kern-.5\wd\scratchbox\raise.42ex\scratchbox
+%    \endgroup}
+
+\def\ALEPH     {Aleph}
+\def\API       {\acro{API}}
+\def\CCODE     {C}
+\def\CD        {\acro{CD}}
+\def\CMYK      {\acro{CMYK}}
+\def\CONTEXT   {C\kern-.0333emon\-\kern-.0667em\TeX\kern-.0333emt}
+\def\Cplusplus {C\plusplus}
+\def\CPU       {\acro{CPU}}
+\def\DVI       {\acro{DVI}}
+\def\DVIPDFMX  {dvipdfmx}
+\def\DVIPS     {dvips}
+\def\ETEX      {$\varepsilon$-\kern-.125em\TeX}
+\def\FTP       {\acro{FTP}}
+\def\HTTP      {\acro{HTTP}}
+\def\IO        {\acro{I/O}}
+\def\ISO       {\acro{ISO}}
+\def\KPSE      {\acro{KPSE}}
+\def\KPSEWHICH {kpsewhich}
+\def\LATEX     {\La\kern-.15em\TeX}
+\def\LATEXE    {\LaTeX{}\kern.05em2$_{\textstyle\varepsilon}$}
+\def\LINUX     {Linux}
+\def\LPEG      {Lpeg}
+\def\LUA       {Lua}
+\def\LUAJIT    {Lua\acro{JIT}}
+\def\LUATEX    {Lua\-\TeX}
+\def\LUATOOLS  {lua\-tools}
+\def\MATHML    {Math\acro{ML}}
+\def\METAFUN   {Metafun}
+\def\METAPOST  {MetaPost}
+\def\METATEX   {Meta\TeX{}}
+\def\MF        {{\mflogo META\-FONT}}
+\def\MKII      {Mk\acro{II}}
+\def\MKIV      {Mk\acro{IV}}
+\def\MPLIB     {\acro{MP}lib}
+\def\MPTOPDF   {mp\-to\-pdf}
+\def\MSWINDOWS {Windows}
+\def\MTXTOOLS  {mtx\-tools}
+\def\NFSS      {\acro{NFSS}}
+\def\OPENMATH  {Open\-Math}
+\def\OPENTYPE  {Open\-Type}
+\def\PASCAL    {Pascal}
+\def\PDF       {\acro{PDF}}
+\def\PDFTEX    {pdf\/\-\TeX}
+\def\plusplus  {\lower.45ex\hbox{$^{++}$}}
+\def\POSIX     {\acro{POSIX}}
 \def\POSTSCRIPT{Post\-Script}
-\def\RGB{\acro{RGB}}
-\def\RUBY{Ruby}
-\def\SCITE{Sci\acro{TE}}
-\def\TDS{\acro{TDS}}
-\def\TEXBOOK{{\sl The \TeX book}}
-\def\TEXEXEC{\TeX exec}
-\def\TEX{\TeX}
-\def\TFM{\acro{TFM}}
-\def\TRUETYPE{True\-Type}
-\def\TYPEONE{Type~1}
-\def\UTF{\acro{UTF}}
-\def\WEBC{Web2C}
-\def\XETEX{X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
-\def\XML{\acro{XML}}
-\def\XPATH{\acro{XP}ath}
-\def\XSLT{\acro{XSLT}}
-\def\XSLTPROC{\acro{XSLTPROC}}
-\def\ZIP{zip}
+\def\PRAGMA    {Pragma \acro{ADE}}
+\def\RGB       {\acro{RGB}}
+\def\RUBY      {Ruby}
+\def\SCITE     {Sci\acro{TE}}
+\def\TDS       {\acro{TDS}}
+\def\TEX       {\TeX}
+\def\TEXBOOK   {{\sl The \TeX book}}
+\def\TEXEXEC   {\TeX exec}
+\def\TFM       {\acro{TFM}}
+\def\TRUETYPE  {True\-Type}
+\def\TYPEONE   {Type~1}
+\def\UTF       {\acro{UTF}}
+\def\WEBC      {Web2C}
+\def\XETEX     {X\lower.5ex\hbox{\kern-.15em\mirror{E}}\kern-.1667em\TeX}
+\def\XML       {\acro{XML}}
+\def\XPATH     {\acro{XP}ath}
+\def\XSLT      {\acro{XSLT}}
+\def\XSLTPROC  {\acro{XSLTPROC}}
+\def\ZIP       {zip}
 
-\def\Dash{\unskip\thinspace---\thinspace\ignorespaces}
-\def\slash{/\penalty0 \hskip0pt \relax}
+\def\Dash      {\unskip\nobreak\thinspace---\thinspace\ignorespaces}
+\def\slash     {/\penalty0 \hskip0pt \relax}
 
-\definefont[AcroFont][Serif sa .91]
-\def\acro#1{{\AcroFont #1}}
+% \acro for one point size smaller. Don't know how to do this for real.
 
-\lefthyphenmin=2 \righthyphenmin=3 % disallow x- or -xx breaks
+\definefont[AcroFont]     [Serif*default     sa .91]
+\definefont[AcroFontBold] [SerifBold*default sa .91]
+\definefont[AcroFontSmall][Serif*default     sa .80]
 
-\hyphenation{Post-Script data-base data-bases}
+\unexpanded\def\acro     #1{{\AcroFont      #1}} % could be a style definition
+\unexpanded\def\acrobf   #1{{\AcroFontBold  #1}} % could be a style definition
+\unexpanded\def\acrosmall#1{{\AcroFontSmall #1}} % could be a style definition
 
-% hack to read tugboat.dates settings.
-\def\vol#1, #2.{\def\tubvol{#1}\def\tubnum{#2}}
-\def\issyear#1.{\def\tubyear{#1}}
-\newcount\issueseqno
+%D This is English; disallow x- or -xx breaks. (These are already the defaults
+%D but let's keep this anyway.)
 
-% >>>
-%D Good bye. <<<
+\setuplanguage
+  [en]
+  [lefthyphenmin=2,
+   righthyphenmin=3]
 
-\doifnotmode{demo}{\endinput}
+% \lefthyphenmin  = 2
+% \righthyphenmin = 3
 
-\showgrid
+\mainlanguage
+  [en]
+
+\hyphenation {
+    Post-Script
+    data-base
+    data-bases
+}
+
+%D A hack to read \type {tugboat.dates} settings.
+
+\doifelsefileexists {../tugboat.dates} {
+
+    \newif   \ifPrelimDraft
+    \newcount\issueseqno
+
+    \def\vol    #1, #2.{\gdef\tubvol {#1}%
+                        \gdef\tubnum {#2}}
+    \def\issyear    #1.{\gdef\tubyear{#1}}
+
+    \input ../tugboat.dates
+
+    \setevariables
+      [tugboat]
+      [year=\tubyear,
+       volume=\tubvol,
+       number=\tubnum,
+       page=\the\count0]
+
+} {
+    % nothing
+}
+
+%D Good bye.
+
+\continueifinputfile{s-tugboat.mkiv}
+
+% \showgrid
 
 \starttext
 
 \StartArticle
 
 \StartAbstract
-    \input bryson
+    \samplefile{bryson}
 \StopAbstract
 
 \dorecurse{30}{\input ward \endgraf} \page
 
 \startitemize
-\item \input ward
-\item \input ward
+    \startitem \samplefile{ward} \stopitem
+    \startitem \samplefile{ward} \stopitem
 \stopitemize
 
 \StopArticle
@@ -666,15 +706,15 @@
 \StartArticle
 
 \StartAbstract
-    \input bryson
+    \samplefile{bryson}
 \StopAbstract
 
-\dorecurse{30}{\input ward \endgraf} \page
+\dorecurse {30} {
+    \samplefile{ward}\endgraf
+} \page
 
 \StopArticle
 
 \stoptext
 
 % >>>
-
-% vim: foldmethod=marker foldmarker=<<<,>>>

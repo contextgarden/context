@@ -265,7 +265,7 @@ function breakpoints.handler(head)
                         -- for now we collect but when found ok we can move the handler here
                         -- although it saves nothing in terms of performance
                         local lang = getlang(current)
-                        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+                        local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[languages.numbers[lang]] or cmap[""])
                         if smap then
                             local skip  = smap.skip
                             local start = current
@@ -314,17 +314,17 @@ function breakpoints.handler(head)
         return head
     end
     -- we have hits
-    local numbers = languages.numbers
+ -- local numbers = languages.numbers
     for i=1,#done do
         local data  = done[i]
         local start = data[1]
         local stop  = data[2]
         local cmap  = data[3]
         local smap  = data[4]
---         -- we do a sanity check for language
---         local lang  = getlang(start)
---         local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
---         if smap then
+        -- we do a sanity check for language
+     -- local lang  = getlang(start)
+     -- local smap = lang and lang >= 0 and lang < 0x7FFF and (cmap[numbers[lang]] or cmap[""])
+     -- if smap then
             local nleft = smap.nleft
             local cleft = 0
             local prev  = getprev(start)
@@ -392,7 +392,7 @@ function breakpoints.handler(head)
                         head, start = method(head,start,stop,smap,kern)
                     end
                 end
---             end
+         -- end
         end
     end
     return head

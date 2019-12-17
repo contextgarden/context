@@ -145,9 +145,54 @@ of special and only makes sense when you use the graphic database options. The
 and how conversion of images takes place.
 
 The \type {graphics.lognames} will make sure that some extra information about
-used graphics is saved in the log file, while \type {graphics.usage} will produce
-a file \typ {<jobname>-figures-usage.lua} that contains information about found
-(or not found) images and the way they are used.
+used graphics is saved in the log file, The \type {graphics.usage} tracker will
+produce a file \typ {<jobname>-figures-usage.lua} that contains information about
+found (or not found) images and the way they are used.
+
+\stopsection
+
+\startsection[title=Compression]
+
+A \PNG\ image uses several methods for compression. The image data itself can be
+compacted by taking pixels around each individual pixel into account. Storing
+deltas instead of absolute values can for instance result in strips of zeros.
+These in turn compress well using zlib compression. Each scanline starts with a
+filterbyte that indicates how to look at the surrounding pixels. While in \PDF\ a
+\JPEG\ image is included as|-|is, a \PNG\ often take a bit more work. A
+(optional) mask has to be split off, as does an (optional) index. In the worst
+case we need to deinterlace. The \PNG\ inclusion mechanism in \CONTEXT\ \LMTX\
+takes care of this in an as efficient as possible way. Nevertheless there are
+some knobs you can turn:
+
+\starttyping
+\enabledirectives[graphics.png.recompress]
+\enabledirectives[graphics.png.compresslevel=9]
+\stoptyping
+
+A higher compress level makes the run somewhat smaller but also fives smaller
+files. The default compress level is~3. When an image doesn't need to be
+transformed (due to mask, index or interlace), you have to force recompression
+with the \type {recompress} directive. The sample image \type {mill.png} has a
+size of \type {154,869} bytes.
+
+\starttyping
+\startTEXpage
+    \externalfigure[mill.png]
+\stopTEXpage
+\stoptyping
+
+The next table shows the consequences of setting the directives. The runtime is
+of course dependent of the machine you run the sample on. If you have lots of
+images it might make sense to have a final run with a higher compress level. The
+\PDF\ file has some extra overhead (like metadata and page related information).
+
+\starttabulate[|l|c|c|c|]
+\BC               \BC compression \BC filesize \BC runtime \NC \NR
+\BC default       \NC             \NC 156,964  \NC 0.516   \NC \NR
+\BC recompress    \NC 3           \NC 144,418  \NC 0.531   \NC \NR
+\BC compresslevel \NC 0           \NC 281,071  \NC 0.516   \NC \NR
+\BC compresslevel \NC 9           \NC 137,375  \NC 0.547   \NC \NR
+\stoptabulate
 
 \stopsection
 

@@ -201,6 +201,7 @@ function viewerlayers.start(name)
     else
         texsetattribute(a_viewerlayer,a)
     end
+    -- or macro
     texsettokenlist("currentviewerlayertoks",name)
 end
 

@@ -1,6 +1,6 @@
 .TH "mtx-update" "1" "01-01-2019" "version 1.03" "ConTeXt Minimals Updater"
 .SH NAME
-.B mtx-update
+ mtx-update - ConTeXt Minimals Updater
 .SH SYNOPSIS
 .B mtxrun --script update [
 .I OPTIONS ...

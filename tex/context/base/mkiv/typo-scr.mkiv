@@ -138,18 +138,21 @@
   {\dontleavehmode
    \runninghbox\bgroup
    \edef\currentlowhigh{#1}%
-   \dosingleempty}                 % #2
+   \dosingleempty}                    % #2
 
 \unexpanded\def\typo_scripts_lowhigh_indeed[#1]#2#3% todo: align .. [#1] is compatible hack
   {\dostarttagged\t!subsup\currentlowhigh
+   \scratchdimen\lowhighparameter\c!distance\relax
    \setbox\plusfour\hpack{\typo_scripts_lowhigh_low_high\lower\c!down\t!sub{#2}}%
    \setbox\plussix \hpack{\typo_scripts_lowhigh_low_high\raise\c!up  \t!sup{#3}}%
-   \doif{#1}{\v!left}
-     {\ifdim\wd\plusfour<\wd\plussix
-        \setbox\plusfour\hpack to \wd\plussix {\hss\box\plusfour}%
-      \else
-        \setbox\plussix \hpack to \wd\plusfour{\hss\box\plussix }%
-      \fi}%
+   \edef\p_align{#1}%
+   \ifx\p_align\v!left
+     \ifdim\wd\plusfour<\wd\plussix
+       \setbox\plusfour\hpack to \wd\plussix {\hss\box\plusfour}%
+     \else
+       \setbox\plussix \hpack to \wd\plusfour{\hss\box\plussix }%
+     \fi
+   \fi
    \ifdim\wd\plusfour<\wd\plussix
      \wd\plusfour\zeropoint
      \box\plusfour
@@ -163,9 +166,7 @@
    \egroup}
 
 \def\typo_scripts_lowhigh_low_high#1#2#3#4%
-  {\dontleavehmode
-   \begingroup
-   \kern\lowhighparameter\c!distance\relax
+  {\kern\scratchdimen
    \setbox\scratchbox\hpack\bgroup
      #1\lowhighparameter#2\hbox\bgroup
        \ifx\fontsize\empty
@@ -184,8 +185,7 @@
    \egroup
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
-   \box\scratchbox
-   \endgroup}
+   \box\scratchbox}
 
 \unexpanded\def\typo_scripts_highlow_indeed[#1]#2#3%
   {\typo_scripts_lowhigh_indeed[#1]{#3}{#2}}

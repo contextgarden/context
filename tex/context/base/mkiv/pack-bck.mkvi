@@ -105,6 +105,11 @@
    \strut
    \vskip-2\lineheight
    \strut
+   % safeguard added
+   \ifdim\dimexpr\pagetotal+2\lineheight\relax>\pagegoal
+     \page
+   \fi
+   % till here
    \egroup
    \dimen2\leftskip % new **
    \forgetall
@@ -120,7 +125,7 @@
      \splitmaxdepth\boxmaxdepth
      \splittopskip\topskip
      \doloop
-       {\ifdim\pagetotal=\zeropoint % empty page
+       {\ifzeropt\pagetotal % empty page
           \scratchdimen\textheight
           \backgroundsplitmode\plusone % split to max height
         \else

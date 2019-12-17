@@ -68,7 +68,7 @@ local runners = {
         name     = "bibtex",
         method   = "execute",
         program  = "bibtex",
-        template = [["%filename%"]],
+        template = "%filename%",
         checkers = {
             filename = "readable",
         }
@@ -77,7 +77,7 @@ local runners = {
         name     = "mlbibtex",
         method   = "execute",
         program  = "mlbibcontext",
-        template = [["%filename%"]],
+        template = "%filename%",
         checkers = {
             filename = "readable",
         }

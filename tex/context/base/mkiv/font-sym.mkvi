@@ -24,12 +24,10 @@
 %D \getglyph{fontname}{character}
 %D \stoptyping
 %D
-%D This macro is used in for instance the symbol modules and
-%D as one can see, it does obey the small and even smaller
-%D sizes. The \type {\symbolicfont} macro can be used to
-%D switch to a font named \type {fontname} (see \type
-%D {cont-log} and \type {symb-eur} for examples of symbolic
-%D definitions.
+%D This macro is used in for instance the symbol modules and as one can see, it does
+%D obey the small and even smaller sizes. The \type {\symbolicfont} macro can be
+%D used to switch to a font named \type {fontname} (see \type {cont-log} and \type
+%D {symb-eur} for examples of symbolic definitions.
 
 \def\v_font_string_a
   {\ifx\fontstyle\s!rm \s!Serif \else
@@ -118,15 +116,14 @@
 
 \let\doifitalicelse\doifelseitalic
 
-%D For an example of usage of the following command,
-%D see \type {cont-log.tex}.
+%D For an example of usage of the following command, see \type {cont-log.tex}.
 %D
 %D \starttyping
 %D \def\symbolicfont#specification{\definedfont[\glyphfontfile{#specification} sa *]}
 %D \stoptyping
 %D
-%D Since we know what scaling it to be applied, we can
-%D implement a much faster alternative:
+%D Since we know what scaling it to be applied, we can implement a much faster
+%D alternative:
 
 \installcorenamespace{symbolfont}
 
@@ -189,8 +186,7 @@
 \unexpanded\def\symbolicscaledfont{\setsscaledstyledsymbolicfont\fontbody}
 \unexpanded\def\symbolicscaledfont{\setscaledstyledsymbolicfont\fontbody}
 
-%D The last implementation of \type {\getglyph} permits
-%D definitions like:
+%D The last implementation of \type {\getglyph} permits definitions like:
 %D
 %D \starttyping
 %D \definefontsynonym [EuroSans]            [eurose]
@@ -211,15 +207,13 @@
 %D \ss \tf\euro \bf\euro \sla\euro \itd\euro \bs\euro \bic\euro
 %D \stoptyping
 %D
-%D The shape as well as the size is adapted to the current
-%D environment.
+%D The shape as well as the size is adapted to the current environment.
 
 %D \macros
 %D   {setfont}
 %D
-%D Every now and then we want to define a font directly, for
-%D instance when we typeset title pages. The next macro saves
-%D some typing:
+%D Every now and then we want to define a font directly, for instance when we
+%D typeset title pages. The next macro saves some typing:
 
 \unexpanded\def\setfont% geen \font_helpers_set_font mogelijk
   {\afterassignment\font_basics_set_font\font\nextfont=}
@@ -233,8 +227,7 @@
 %D \setfont cmr10 at 60pt
 %D \stoptyping
 %D
-%D After which the font is active and the baselines and
-%D struts are set.
+%D After which the font is active and the baselines and struts are set.
 
 %D \macros{doiffontcharelse}
 

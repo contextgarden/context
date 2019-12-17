@@ -1,0 +1,120 @@
+{
+ "name" : "context.sql",
+ "patterns" : [
+  {
+   "include" : "#keyword_standard"
+  },
+  {
+   "include" : "#keyword_dialect"
+  },
+  {
+   "include" : "#identifier"
+  },
+  {
+   "include" : "#string_double"
+  },
+  {
+   "include" : "#string_single"
+  },
+  {
+   "include" : "#string_reverse"
+  },
+  {
+   "include" : "#comment_long"
+  },
+  {
+   "include" : "#comment_short"
+  },
+  {
+   "include" : "#number"
+  },
+  {
+   "include" : "#operator"
+  }
+ ],
+ "repository" : {
+  "comment_long" : {
+   "begin" : "/\u005C*",
+   "beginCaptures" : {
+    "0" : {
+     "name" : "context.command.comment.open.sql"
+    }
+   },
+   "end" : "\u005C*/",
+   "endCaptures" : {
+    "0" : {
+     "name" : "context.command.comment.close.sql"
+    }
+   },
+   "name" : "context.comment.comment.text.sql"
+  },
+  "comment_short" : {
+   "match" : "%.*$\u005Cn?",
+   "name" : "context.comment.comment.comment.sql"
+  },
+  "identifier" : {
+   "match" : "[a-zA-Z\u005C_][a-zA-Z0-9\u005C_]*",
+   "name" : "context.text.identifier.sql"
+  },
+  "keyword_dialect" : {
+   "match" : "(zerofill|year_month|xor|x509|writetext|width_bucket|waitfor|volatile|verbose|variables|variable|varcharacter|varchar2|varbinary|var_samp|var_pop|validator|validate|valid|vacuum|utc_timestamp|utc_time|utc_date|user_defined_type_schema|user_defined_type_name|user_defined_type_code|user_defined_type_catalog|use|updatetext|unsigned|unnamed|unlock|unlisten|unencrypted|uncommitted|unbounded|uid|uescape|type|tsequal|trusted|truncate|trigger_schema|trigger_name|trigger_catalog|transforms|transform|transactions_rolled_back|transactions_committed|transaction_active|tran|top_level_count|top|toast|tinytext|tinyint|tinyblob|ties|than|textsize|text|terminated|terminate|template|temp|tablespace|tables|table_name|sysid|sysdate|synonym|superuser|successful|sublist|subclass_origin|style|structure|string|strict|straight_join|storage|stdout|stdin|stddev_samp|stddev_pop|status|statistics|statement|starting|stable|ssl|sqrt|sqlca|sql_warnings|sql_small_result|sql_select_limit|sql_low_priority_updates|sql_log_update|sql_log_off|sql_calc_found_rows|sql_big_tables|sql_big_selects|sql_big_result|specific_name|spatial|source|soname|simple|shutdown|show|share|setuser|setof|server_name|serializable|sequence|separator|self|security|second_microsecond|scope_schema|scope_name|scope_catalog|schemas|schema_name|scale|save|rule|rownum|rowid|rowguidcol|rowcount|row_number|row_count|routine_schema|routine_name|routine_catalog|rlike|returned_sqlstate|returned_octet_length|returned_length|returned_cardinality|restore|restart|resource|reset|require|replication|replace|repeatable|rename|reload|reindex|regr_syy|regr_sxy|regr_sxx|regr_slope|regr_r2|regr_intercept|regr_count|regr_avgy|regr_avgx|regexp|reconfigure|recheck|readtext|raw|rank|raiserror|raid0|quote|purge|processlist|process|procedural|proc|print|prepared|preorder|prefix|preceding|power|postfix|pli|plan|placing|percentile_disc|percentile_cont|percent_rank|percent|pctfree|password|pascal|parameters|parameter_specific_schema|parameter_specific_name|parameter_specific_catalog|parameter_ordinal_position|parameter_name|parameter_mode|pack_keys|owner|overriding|overlay|outfile|others|ordering|options|optionally|optimize|operator|operation|openxml|openrowset|openquery|opendatasource|online|oids|offsets|offset|offline|off|octets|number|nulls|nullable|nowait|notnull|notify|nothing|nosuperuser|normalized|normalize|nonclustered|nologin|noinherit|nocreateuser|nocreaterole|nocreatedb|nocompress|nocheck|noaudit|no_write_to_binlog|nesting|name|myisam|mumps|move|more|monthname|modify|mode|mod|mlslabel|minvalue|minute_second|minute_microsecond|minus|min_rows|middleint|message_text|message_octet_length|message_length|mediumtext|mediumint|mediumblob|maxvalue|maxextents|max_rows|matched|m|low_priority|longtext|longblob|long|logs|login|lock|location|load|ln|listen|lines|lineno|limit|less|length|least|last_insert_id|lancompiler|kill|keys|key_type|key_member|k|isnull|isam|invoker|intersection|int8|int4|int3|int2|int1|instead|instantiable|instance|insert_id|initialize|initial|inherits|inherit|infix|infile|index|increment|including|include|implicit|implementation|immutable|ilike|ignore|identitycol|identity_insert|identified|hour_second|hour_minute|hour_microsecond|hosts|host|holdlock|high_priority|hierarchy|heap|header|greatest|grants|granted|generated|g|fusion|fulltext|freeze|freetexttable|freetext|forward|fortran|force|following|flush|floor|float8|float4|final|fillfactor|file|fields|explain|exp|existing|exclusive|excluding|exclude|every|escaped|errlvl|enum|end-exec|encrypted|encoding|enclosed|enable|dynamic_function_code|dynamic_function|dump|dummy|dual|div|distributed|distinctrow|dispatch|disk|disable|dictionary|destructor|destroy|derived|deny|dense_rank|delimiters|delimiter|delayed|delay_key_write|degree|definer|defined|defaults|dbcc|dayofyear|dayofweek|dayofmonth|day_second|day_minute|day_microsecond|day_hour|datetime_interval_precision|datetime_interval_code|datetime|databases|database|cursor_name|cume_dist|csv|createuser|createrole|createdb|covar_samp|covar_pop|corr|copy|conversion|containstable|constraint_schema|constraint_name|constraint_catalog|connection_name|condition_number|compute|compress|completion|committed|comment|command_function_code|command_function|columns|column_name|collect|collation_schema|collation_name|collation_catalog|cobol|clustered|cluster|class_origin|class|checksum|checkpoint|checked|characters|characteristics|character_set_schema|character_set_name|character_set_catalog|change|chain|ceiling|ceil|catalog_name|cardinality|cache|c|bulk|browse|break|bool|bitvar|bernoulli|backward|backup|avg_row_length|auto_increment|audit|attributes|attribute|assignment|analyze|analyse|always|also|alias|aggregate|admin|ada|access|abs|abort|a|ZEROFILL|YEAR_MONTH|XOR|X509|WRITETEXT|WIDTH_BUCKET|WAITFOR|VOLATILE|VERBOSE|VARIABLES|VARIABLE|VARCHARACTER|VARCHAR2|VARBINARY|VAR_SAMP|VAR_POP|VALIDATOR|VALIDATE|VALID|VACUUM|UTC_TIMESTAMP|UTC_TIME|UTC_DATE|USER_DEFINED_TYPE_SCHEMA|USER_DEFINED_TYPE_NAME|USER_DEFINED_TYPE_CODE|USER_DEFINED_TYPE_CATALOG|USE|UPDATETEXT|UNSIGNED|UNNAMED|UNLOCK|UNLISTEN|UNENCRYPTED|UNCOMMITTED|UNBOUNDED|UID|UESCAPE|TYPE|TSEQUAL|TRUSTED|TRUNCATE|TRIGGER_SCHEMA|TRIGGER_NAME|TRIGGER_CATALOG|TRANSFORMS|TRANSFORM|TRANSACTIONS_ROLLED_BACK|TRANSACTIONS_COMMITTED|TRANSACTION_ACTIVE|TRAN|TOP_LEVEL_COUNT|TOP|TOAST|TINYTEXT|TINYINT|TINYBLOB|TIES|THAN|TEXTSIZE|TEXT|TERMINATED|TERMINATE|TEMPLATE|TEMP|TABLESPACE|TABLES|TABLE_NAME|SYSID|SYSDATE|SYNONYM|SUPERUSER|SUCCESSFUL|SUBLIST|SUBCLASS_ORIGIN|STYLE|STRUCTURE|STRING|STRICT|STRAIGHT_JOIN|STORAGE|STDOUT|STDIN|STDDEV_SAMP|STDDEV_POP|STATUS|STATISTICS|STATEMENT|STARTING|STABLE|SSL|SQRT|SQLCA|SQL_WARNINGS|SQL_SMALL_RESULT|SQL_SELECT_LIMIT|SQL_LOW_PRIORITY_UPDATES|SQL_LOG_UPDATE|SQL_LOG_OFF|SQL_CALC_FOUND_ROWS|SQL_BIG_TABLES|SQL_BIG_SELECTS|SQL_BIG_RESULT|SPECIFIC_NAME|SPATIAL|SOURCE|SONAME|SIMPLE|SHUTDOWN|SHOW|SHARE|SETUSER|SETOF|SERVER_NAME|SERIALIZABLE|SEQUENCE|SEPARATOR|SELF|SECURITY|SECOND_MICROSECOND|SCOPE_SCHEMA|SCOPE_NAME|SCOPE_CATALOG|SCHEMAS|SCHEMA_NAME|SCALE|SAVE|RULE|ROWNUM|ROWID|ROWGUIDCOL|ROWCOUNT|ROW_NUMBER|ROW_COUNT|ROUTINE_SCHEMA|ROUTINE_NAME|ROUTINE_CATALOG|RLIKE|RETURNED_SQLSTATE|RETURNED_OCTET_LENGTH|RETURNED_LENGTH|RETURNED_CARDINALITY|RESTORE|RESTART|RESOURCE|RESET|REQUIRE|REPLICATION|REPLACE|REPEATABLE|RENAME|RELOAD|REINDEX|REGR_SYY|REGR_SXY|REGR_SXX|REGR_SLOPE|REGR_R2|REGR_INTERCEPT|REGR_COUNT|REGR_AVGY|REGR_AVGX|REGEXP|RECONFIGURE|RECHECK|READTEXT|RAW|RANK|RAISERROR|RAID0|QUOTE|PURGE|PROCESSLIST|PROCESS|PROCEDURAL|PROC|PRINT|PREPARED|PREORDER|PREFIX|PRECEDING|POWER|POSTFIX|PLI|PLAN|PLACING|PERCENTILE_DISC|PERCENTILE_CONT|PERCENT_RANK|PERCENT|PCTFREE|PASSWORD|PASCAL|PARAMETERS|PARAMETER_SPECIFIC_SCHEMA|PARAMETER_SPECIFIC_NAME|PARAMETER_SPECIFIC_CATALOG|PARAMETER_ORDINAL_POSITION|PARAMETER_NAME|PARAMETER_MODE|PACK_KEYS|OWNER|OVERRIDING|OVERLAY|OUTFILE|OTHERS|ORDERING|OPTIONS|OPTIONALLY|OPTIMIZE|OPERATOR|OPERATION|OPENXML|OPENROWSET|OPENQUERY|OPENDATASOURCE|ONLINE|OIDS|OFFSETS|OFFSET|OFFLINE|OFF|OCTETS|NUMBER|NULLS|NULLABLE|NOWAIT|NOTNULL|NOTIFY|NOTHING|NOSUPERUSER|NORMALIZED|NORMALIZE|NONCLUSTERED|NOLOGIN|NOINHERIT|NOCREATEUSER|NOCREATEROLE|NOCREATEDB|NOCOMPRESS|NOCHECK|NOAUDIT|NO_WRITE_TO_BINLOG|NESTING|NAME|MYISAM|MUMPS|MOVE|MORE|MONTHNAME|MODIFY|MODE|MOD|MLSLABEL|MINVALUE|MINUTE_SECOND|MINUTE_MICROSECOND|MINUS|MIN_ROWS|MIDDLEINT|MESSAGE_TEXT|MESSAGE_OCTET_LENGTH|MESSAGE_LENGTH|MEDIUMTEXT|MEDIUMINT|MEDIUMBLOB|MAXVALUE|MAXEXTENTS|MAX_ROWS|MATCHED|M|LOW_PRIORITY|LONGTEXT|LONGBLOB|LONG|LOGS|LOGIN|LOCK|LOCATION|LOAD|LN|LISTEN|LINES|LINENO|LIMIT|LESS|LENGTH|LEAST|LAST_INSERT_ID|LANCOMPILER|KILL|KEYS|KEY_TYPE|KEY_MEMBER|K|ISNULL|ISAM|INVOKER|INTERSECTION|INT8|INT4|INT3|INT2|INT1|INSTEAD|INSTANTIABLE|INSTANCE|INSERT_ID|INITIALIZE|INITIAL|INHERITS|INHERIT|INFIX|INFILE|INDEX|INCREMENT|INCLUDING|INCLUDE|IMPLICIT|IMPLEMENTATION|IMMUTABLE|ILIKE|IGNORE|IDENTITYCOL|IDENTITY_INSERT|IDENTIFIED|HOUR_SECOND|HOUR_MINUTE|HOUR_MICROSECOND|HOSTS|HOST|HOLDLOCK|HIGH_PRIORITY|HIERARCHY|HEAP|HEADER|GREATEST|GRANTS|GRANTED|GENERATED|G|FUSION|FULLTEXT|FREEZE|FREETEXTTABLE|FREETEXT|FORWARD|FORTRAN|FORCE|FOLLOWING|FLUSH|FLOOR|FLOAT8|FLOAT4|FINAL|FILLFACTOR|FILE|FIELDS|EXPLAIN|EXP|EXISTING|EXCLUSIVE|EXCLUDING|EXCLUDE|EVERY|ESCAPED|ERRLVL|ENUM|END-EXEC|ENCRYPTED|ENCODING|ENCLOSED|ENABLE|DYNAMIC_FUNCTION_CODE|DYNAMIC_FUNCTION|DUMP|DUMMY|DUAL|DIV|DISTRIBUTED|DISTINCTROW|DISPATCH|DISK|DISABLE|DICTIONARY|DESTRUCTOR|DESTROY|DERIVED|DENY|DENSE_RANK|DELIMITERS|DELIMITER|DELAYED|DELAY_KEY_WRITE|DEGREE|DEFINER|DEFINED|DEFAULTS|DBCC|DAYOFYEAR|DAYOFWEEK|DAYOFMONTH|DAY_SECOND|DAY_MINUTE|DAY_MICROSECOND|DAY_HOUR|DATETIME_INTERVAL_PRECISION|DATETIME_INTERVAL_CODE|DATETIME|DATABASES|DATABASE|CURSOR_NAME|CUME_DIST|CSV|CREATEUSER|CREATEROLE|CREATEDB|COVAR_SAMP|COVAR_POP|CORR|COPY|CONVERSION|CONTAINSTABLE|CONSTRAINT_SCHEMA|CONSTRAINT_NAME|CONSTRAINT_CATALOG|CONNECTION_NAME|CONDITION_NUMBER|COMPUTE|COMPRESS|COMPLETION|COMMITTED|COMMENT|COMMAND_FUNCTION_CODE|COMMAND_FUNCTION|COLUMNS|COLUMN_NAME|COLLECT|COLLATION_SCHEMA|COLLATION_NAME|COLLATION_CATALOG|COBOL|CLUSTERED|CLUSTER|CLASS_ORIGIN|CLASS|CHECKSUM|CHECKPOINT|CHECKED|CHARACTERS|CHARACTERISTICS|CHARACTER_SET_SCHEMA|CHARACTER_SET_NAME|CHARACTER_SET_CATALOG|CHANGE|CHAIN|CEILING|CEIL|CATALOG_NAME|CARDINALITY|CACHE|C|BULK|BROWSE|BREAK|BOOL|BITVAR|BERNOULLI|BACKWARD|BACKUP|AVG_ROW_LENGTH|AUTO_INCREMENT|AUDIT|ATTRIBUTES|ATTRIBUTE|ASSIGNMENT|ANALYZE|ANALYSE|ALWAYS|ALSO|ALIAS|AGGREGATE|ADMIN|ADA|ACCESS|ABS|ABORT|A)(?=[^a-zA-Z])",
+   "name" : "context.keyword.reserved.dialect.sql"
+  },
+  "keyword_standard" : {
+   "match" : "(zone|year|write|work|without|within|with|window|while|where|whenever|when|view|varying|varchar|values|value|using|user|usage|upper|update|until|unnest|unknown|unique|union|undo|under|true|trim|trigger|treat|translation|translate|transaction|trailing|to|timezone_minute|timezone_hour|timestamp|time|then|temporary|tablesample|table|system_user|system|symmetric|sum|substring|submultiset|static|state|start|sqlwarning|sqlstate|sqlexception|sqlerror|sqlcode|sql|specifictype|specific|space|some|smallint|size|similar|signal|sets|set|session_user|session|sensitive|select|section|second|search|scroll|scope|schema|savepoint|rows|row|routine|rollup|rollback|role|right|revoke|returns|return|result|restrict|resignal|repeat|release|relative|referencing|references|ref|recursive|real|reads|read|range|public|procedure|privileges|prior|primary|preserve|prepare|precision|position|path|partition|partial|parameter|pad|overlaps|over|output|outer|out|ordinality|order|or|option|open|only|on|old|of|octet_length|object|numeric|nullif|null|not|none|no|next|new|nclob|nchar|natural|national|names|multiset|month|module|modifies|minute|min|method|merge|member|max|match|map|lower|loop|locator|localtimestamp|localtime|local|like|level|left|leave|leading|lateral|last|large|language|key|join|iterate|isolation|is|into|interval|intersect|integer|int|insert|insensitive|input|inout|inner|initially|indicator|in|immediate|if|identity|hour|hold|having|handler|grouping|group|grant|goto|go|global|get|general|function|full|from|free|found|foreign|for|float|first|filter|fetch|false|extract|external|exit|exists|execute|exec|exception|except|escape|equals|end|elseif|else|element|each|dynamic|drop|double|domain|do|distinct|disconnect|diagnostics|deterministic|descriptor|describe|desc|deref|depth|delete|deferred|deferrable|default|declare|decimal|dec|deallocate|day|date|data|cycle|cursor|current_user|current_transform_group_for_type|current_timestamp|current_time|current_role|current_path|current_default_transform_group|current_date|current|cube|cross|create|count|corresponding|convert|continue|contains|constructor|constraints|constraint|connection|connect|condition|commit|column|collation|collate|coalesce|close|clob|check|character_length|character|char_length|char|catalog|cast|case|cascaded|cascade|called|call|by|breadth|both|boolean|blob|bit_length|bit|binary|bigint|between|begin|before|avg|authorization|atomic|at|asymmetric|assertion|asensitive|asc|as|array|are|any|and|alter|allocate|all|after|add|action|absolute|ZONE|YEAR|WRITE|WORK|WITHOUT|WITHIN|WITH|WINDOW|WHILE|WHERE|WHENEVER|WHEN|VIEW|VARYING|VARCHAR|VALUES|VALUE|USING|USER|USAGE|UPPER|UPDATE|UNTIL|UNNEST|UNKNOWN|UNIQUE|UNION|UNDO|UNDER|TRUE|TRIM|TRIGGER|TREAT|TRANSLATION|TRANSLATE|TRANSACTION|TRAILING|TO|TIMEZONE_MINUTE|TIMEZONE_HOUR|TIMESTAMP|TIME|THEN|TEMPORARY|TABLESAMPLE|TABLE|SYSTEM_USER|SYSTEM|SYMMETRIC|SUM|SUBSTRING|SUBMULTISET|STATIC|STATE|START|SQLWARNING|SQLSTATE|SQLEXCEPTION|SQLERROR|SQLCODE|SQL|SPECIFICTYPE|SPECIFIC|SPACE|SOME|SMALLINT|SIZE|SIMILAR|SIGNAL|SETS|SET|SESSION_USER|SESSION|SENSITIVE|SELECT|SECTION|SECOND|SEARCH|SCROLL|SCOPE|SCHEMA|SAVEPOINT|ROWS|ROW|ROUTINE|ROLLUP|ROLLBACK|ROLE|RIGHT|REVOKE|RETURNS|RETURN|RESULT|RESTRICT|RESIGNAL|REPEAT|RELEASE|RELATIVE|REFERENCING|REFERENCES|REF|RECURSIVE|REAL|READS|READ|RANGE|PUBLIC|PROCEDURE|PRIVILEGES|PRIOR|PRIMARY|PRESERVE|PREPARE|PRECISION|POSITION|PATH|PARTITION|PARTIAL|PARAMETER|PAD|OVERLAPS|OVER|OUTPUT|OUTER|OUT|ORDINALITY|ORDER|OR|OPTION|OPEN|ONLY|ON|OLD|OF|OCTET_LENGTH|OBJECT|NUMERIC|NULLIF|NULL|NOT|NONE|NO|NEXT|NEW|NCLOB|NCHAR|NATURAL|NATIONAL|NAMES|MULTISET|MONTH|MODULE|MODIFIES|MINUTE|MIN|METHOD|MERGE|MEMBER|MAX|MATCH|MAP|LOWER|LOOP|LOCATOR|LOCALTIMESTAMP|LOCALTIME|LOCAL|LIKE|LEVEL|LEFT|LEAVE|LEADING|LATERAL|LAST|LARGE|LANGUAGE|KEY|JOIN|ITERATE|ISOLATION|IS|INTO|INTERVAL|INTERSECT|INTEGER|INT|INSERT|INSENSITIVE|INPUT|INOUT|INNER|INITIALLY|INDICATOR|IN|IMMEDIATE|IF|IDENTITY|HOUR|HOLD|HAVING|HANDLER|GROUPING|GROUP|GRANT|GOTO|GO|GLOBAL|GET|GENERAL|FUNCTION|FULL|FROM|FREE|FOUND|FOREIGN|FOR|FLOAT|FIRST|FILTER|FETCH|FALSE|EXTRACT|EXTERNAL|EXIT|EXISTS|EXECUTE|EXEC|EXCEPTION|EXCEPT|ESCAPE|EQUALS|END|ELSEIF|ELSE|ELEMENT|EACH|DYNAMIC|DROP|DOUBLE|DOMAIN|DO|DISTINCT|DISCONNECT|DIAGNOSTICS|DETERMINISTIC|DESCRIPTOR|DESCRIBE|DESC|DEREF|DEPTH|DELETE|DEFERRED|DEFERRABLE|DEFAULT|DECLARE|DECIMAL|DEC|DEALLOCATE|DAY|DATE|DATA|CYCLE|CURSOR|CURRENT_USER|CURRENT_TRANSFORM_GROUP_FOR_TYPE|CURRENT_TIMESTAMP|CURRENT_TIME|CURRENT_ROLE|CURRENT_PATH|CURRENT_DEFAULT_TRANSFORM_GROUP|CURRENT_DATE|CURRENT|CUBE|CROSS|CREATE|COUNT|CORRESPONDING|CONVERT|CONTINUE|CONTAINS|CONSTRUCTOR|CONSTRAINTS|CONSTRAINT|CONNECTION|CONNECT|CONDITION|COMMIT|COLUMN|COLLATION|COLLATE|COALESCE|CLOSE|CLOB|CHECK|CHARACTER_LENGTH|CHARACTER|CHAR_LENGTH|CHAR|CATALOG|CAST|CASE|CASCADED|CASCADE|CALLED|CALL|BY|BREADTH|BOTH|BOOLEAN|BLOB|BIT_LENGTH|BIT|BINARY|BIGINT|BETWEEN|BEGIN|BEFORE|AVG|AUTHORIZATION|ATOMIC|AT|ASYMMETRIC|ASSERTION|ASENSITIVE|ASC|AS|ARRAY|ARE|ANY|AND|ALTER|ALLOCATE|ALL|AFTER|ADD|ACTION|ABSOLUTE)(?=[^a-zA-Z])",
+   "name" : "context.keyword.reserved.standard.sql"
+  },
+  "number" : {
+   "match" : "[\u005C-]?[0-9]+(\u005C.[0-9]+)?([eEpP]\u005C-?[0-9]+)?",
+   "name" : "context.number.number.sql"
+  },
+  "operator" : {
+   "match" : "\u005C~|}|\u005C||{|\u005C^|\u005C]|\u005C[|\u005C?|>|=|<|;|:|/|\u005C.|\u005C-|\u005C+|\u005C*|\u005C)|\u005C(|\u005C&|\u005C%|\u005C!",
+   "name" : "context.special.operator.sql"
+  },
+  "string_double" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.special.doublequoted.open.sql"
+    },
+    "2" : {
+     "name" : "context.text.doublequoted.text.sql"
+    },
+    "3" : {
+     "name" : "context.special.doublequoted.close.sql"
+    }
+   },
+   "match" : "(\u0022)((?:\u005C\u005C\u0022|[^\u0022])*)(\u0022)"
+  },
+  "string_reverse" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.special.reversequoted.open.sql"
+    },
+    "2" : {
+     "name" : "context.text.reversequoted.text.sql"
+    },
+    "3" : {
+     "name" : "context.special.reversequoted.close.sql"
+    }
+   },
+   "match" : "(`)((?:\u005C\u005C`|[^`])*)(`)"
+  },
+  "string_single" : {
+   "captures" : {
+    "1" : {
+     "name" : "context.special.singlequoted.open.sql"
+    },
+    "2" : {
+     "name" : "context.text.singlequoted.text.sql"
+    },
+    "3" : {
+     "name" : "context.special.singlequoted.close.sql"
+    }
+   },
+   "match" : "(')((?:\u005C\u005C'|[^'])*)(')"
+  }
+ },
+ "scopeName" : "source.context.sql",
+ "version" : "1.0.0"
+}

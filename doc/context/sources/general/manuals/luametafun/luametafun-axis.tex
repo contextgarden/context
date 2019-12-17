@@ -1,0 +1,83 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-axis
+
+\startchapter[title={Axis}]
+
+The axis macro is the result of one of the first experiments with the key|/|value
+interface in \METAFUN. Let's show a lot in one example:
+
+\startbuffer[1]
+\startMPcode
+    draw lmt_axis [
+        sx =   5mm, sy =   5mm,
+        nx =  20,   ny =  10,
+        dx =   5,   dy =   2,
+        tx =  10,   ty =  10,
+
+        list = {
+            [
+                connect = true,
+                color   = "darkred",
+                close   = true,
+                points  = { (1, 1), (15, 8), (2, 10) },
+                texts   = { "segment 1", "segment 2", "segment 3" }
+            ],
+            [
+                connect = true,
+                color   = "darkgreen",
+                points  = { (2, 2), (4, 1), (10, 3), (16, 8), (19, 2) },
+                labels  = { "a", "b", "c", "d", "e" }
+            ],
+            [
+                connect = true,
+                color   = "darkblue",
+                close   = true,
+                points  = { (5, 3), (8, 8), (16, 1) },
+                labels  = { "1", "2", "3" }
+            ]
+        },
+
+    ] withpen pencircle scaled 1mm  ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+\startplacefigure[reference=axis:1]
+    \getbuffer[1]
+\stopplacefigure
+
+This macro will probably be extended at some point.
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name         \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC nx           \NC numeric \NC 1       \NC \NC \NR
+\NC dx           \NC numeric \NC 1       \NC \NC \NR
+\NC tx           \NC numeric \NC 0       \NC \NC \NR
+\NC sx           \NC numeric \NC 1       \NC \NC \NR
+\NC startx       \NC numeric \NC 0       \NC \NC \NR
+\NC ny           \NC numeric \NC 1       \NC \NC \NR
+\NC dy           \NC numeric \NC 1       \NC \NC \NR
+\NC ty           \NC numeric \NC 0       \NC \NC \NR
+\NC sy           \NC numeric \NC 1       \NC \NC \NR
+\NC starty       \NC numeric \NC 0       \NC \NC \NR
+\ML                                      \NC \NC \NR
+\NC samples      \NC list    \NC         \NC \NC \NR
+\NC list         \NC list    \NC         \NC \NC \NR
+\NC connect      \NC boolean \NC false   \NC \NC \NR
+\NC list         \NC list    \NC         \NC \NC \NR
+\NC close        \NC boolean \NC false   \NC \NC \NR
+\NC samplecolors \NC list    \NC         \NC \NC \NR
+\NC axiscolor    \NC string  \NC         \NC \NC \NR
+\NC textcolor    \NC string  \NC         \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

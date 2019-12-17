@@ -159,7 +159,7 @@
                     <cd:constant type="frame"/>
                     <cd:constant type="empty"/>
                 </cd:parameter>
-                <cd:parameter name="forgroundcolor">
+                <cd:parameter name="foregroundcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="reset">

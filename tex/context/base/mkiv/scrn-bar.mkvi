@@ -129,7 +129,7 @@
    \setupcurrentinteractionbar[#settings]%
    \d_scrn_bar_width   \interactionbarparameter\c!width\relax
    \d_scrn_bar_distance\interactionbarparameter\c!distance\relax
-   \ifdim\d_scrn_bar_width=\zeropoint
+   \ifzeropt\d_scrn_bar_width
      \d_scrn_bar_width1.5\emwidth
    \fi
    \doifnothing{\interactionbarparameter\c!height}{\letinteractionbarparameter\c!height\v!broad}%
@@ -145,7 +145,7 @@
      [   \v!page=>\advance\scratchcounterone\plusfour,
       \v!subpage=>\advance\scratchcounterone\plusfour,
       \s!unknown=>\advance\scratchcounterone\plusone]%
-   \ifdim\d_scrn_bar_width=\zeropoint
+   \ifzeropt\d_scrn_bar_width
      \scratchdimenone\dimexpr2\emwidth+\d_scrn_bar_distance\relax
      \scratchdimentwo\dimexpr\scratchcounterone\scratchdimenone-\d_scrn_bar_distance\relax
    \else

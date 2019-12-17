@@ -70,7 +70,7 @@
      {\anch_positions_trace_action_yes
       \the\everyinsertpositionaction
       \the\everypositionaction
-      \csname\??positionaction\currentpositionaction\endcsname
+      \begincsname\??positionaction\currentpositionaction\endcsname
       \anch_positions_cleanup_action}%
    \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
    \endgroup}
@@ -367,7 +367,7 @@
    \obeyMPboxorigin % do we also set the size ? when needed this must be done in mp ... might change
    \def\anch_positions_meta_graphic_direct{\anch_positions_meta_graphic_nested{#3}}% takes two extra arguments
    \setbox\b_anch_positions_graphic\hbox % \hpack
-     {\ignorespaces\csname#1#2\endcsname\removelastspace}%
+     {\ignorespaces\begincsname#1#2\endcsname\removelastspace}%
    \smashbox\b_anch_positions_graphic
    \box\b_anch_positions_graphic
    \endgroup}
@@ -377,7 +377,7 @@
    \setupMPvariables[#2][#1,#3]%
    \edef\currentmpvariableclass{#2}%
    \anch_positions_meta_graphic_prepare
-   \csname\??positiongraphic#2\endcsname
+   \begincsname\??positiongraphic#2\endcsname
    \endgroup}%
 
 \def\startMPpositionmethod#1#2\stopMPpositionmethod

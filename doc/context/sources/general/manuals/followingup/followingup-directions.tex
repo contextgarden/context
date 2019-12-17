@@ -1,0 +1,778 @@
+% language=us
+
+\startcomponent followingup-directions
+
+\environment followingup-style
+
+\startchapter[title={Directions}]
+
+\startsection[title={Introduction}]
+
+In \LUATEX\ the directional model taken from \OMEGA\ has been upgraded a bit. For
+instance in addition to the \type {\*dir} commands we have \type {\*direction}
+commands that take a number instead of a keyword. This is a bit more efficient and
+consistent as using these keywords was kind of un|-|\TEX. Internally direction
+related nodes (text directions) are not whatsits but first class nodes. We also
+use a subtype that indicates the push or pop state.
+
+The \LUATEX\ directional model provides four directions which is a subset of the
+many that \OMEGA\ provided, indicated by three letters, like \type {TRT} and
+\type {LTT}. In the beginning we had them all fixed\footnote {This was doen by
+Hartmut by rigorously checking all possible combinations} and thereby implemented
+but being in doubt about their usefulness we dropped most of them, just four were
+kept. However, in practice only right|-|to|-|left makes sense. Going from top to
+bottom in Japanese or Mongolian can also involve glyph rotation, which actually
+is not implemented in the engine at all. Spacing and inter|-|character breaks
+have to be implemented and in the end one has to combine the results into a
+page body. So, in practice you end up with juggling node list and macro magic in
+the page builder. The \type {LTL} (number~2) and \type {RTT} (number~3)
+directions are not used for serious work. Therefore, in \LUAMETATEX\ the model
+has been adapted. In the end, it was not entirely clear anyway what the three
+letters were indicating in each direction property (page, body, par, text, math)
+as most had no real meaning.
+
+As a side note: if you leave the (not really working well) vertical directions
+out of the picture, directional typesetting is not that hard to deal with and has
+hardly any consequences for the code. This is because horizontal dimensions are
+not affected by direction, only the final ship out is: when a run (wrapped in an
+hbox) goes the other way, the backend effectively has to skip the width and then
+with each component goes back. Not much more is involved. This means that a
+bidirectional engine is rather simple. The complications are more in the way a
+macro package deals with it, in relation to the input as well as the layout. The
+backend has to do the real work. \footnote {Of course when one hooks in \LUA\
+code taking care of direction can be needed!}
+
+\stopsection
+
+\startsection[title=Two directions]
+
+We now have only two directions left: the default left|-|to|-|right (l2r) and
+right|-|to|-|left (r2l). They work the same as before and in the backend we can
+get rid of the fuzzy parallel and rotation (which actually was just stacking
+nodes) heuristics.
+
+Reducing the lot to two directions simplifies some code in the engine. This is
+because when calculating dimensions a change in horizontal direction doesn't
+influence the width, height and depth in an orthogonal way. Because there are no
+longer top|-|down items we don't need to swap the height and or depth with the
+width. This also means that we don't need to keep much track of direction
+changes. Technically an hpack doesn't need to know its own direction and we can
+set it to any value afterwards if we want because the calculation are not
+influenced by it; so that also simplified matters.
+
+The \type {\bodydir} and \type {\pagedir} already didn't make much sense, and in
+\CONTEXT\ we actually intercepted them, so now they are removed. The body
+direction is always left|-|to|-|right and the page direction was only consulted
+in the backend code which we no longer have. Another side effect of going with
+only two directions is that rules no longer need to carry the direction property:
+there is no flipping of width with height and depth needed.
+
+\stopsection
+
+\startsection[title=Four orientations]
+
+Instead of the top|-|bottom variants we now have four orientations plus a bunch
+of anchoring options. Of course one could use the backend save, restore and
+matrix whatsits but a natural feature makes more sense. Let's start with what
+happens normally:
+
+\startbuffer[1]
+This is a \LUAMETATEX\ goodie.
+\stopbuffer
+
+\startbuffer[2]
+\hbox orientation 2{This is a \LUAMETATEX\ goodie.}
+\stopbuffer
+
+\startbuffer[3]
+This is a \hbox orientation 2{\LUAMETATEX} goodie.
+\stopbuffer
+
+\startbuffer[4]
+\hbox orientation 2{This is a \hbox orientation 002{\LUAMETATEX} goodie.}
+\stopbuffer
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[1]}\quad{\showstruts\strut}\blank
+
+This line has height and depth. We can rotate this sentence by 180 degrees around
+the baseline in which case the depth and height are flipped.
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[2]}\quad{\showstruts\strut}\blank
+
+or we flip part:
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[3]}\quad{\showstruts\strut}\blank
+
+or flip nested:
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[4]}\quad{\showstruts\strut}\blank
+
+but we're talking boxes, so the above examples are defined as:
+
+\typebuffer[1,2,3,4]
+
+The \type {orientation} keyword does the magic here. There are four such
+orientations with zero being the default. We saw that two rotates over 180
+degrees, so one and three are left for up and down.
+
+\startbuffer[5]
+\hbox orientation 0 {\TEX} and
+\hbox orientation 1 {\TEX} and
+\hbox orientation 2 {\TEX} and
+\hbox orientation 3 {\TEX}
+\stopbuffer
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[5]}\quad{\showstruts\strut}\blank
+
+This is codes as:
+
+\typebuffer[5]
+
+The landscape and seascape variants both sit on top of the baseline while the
+flipped variant has its depth swapped with the height. Although this would be
+enough a bit more control is possible. The number is actually a three byte hex
+number:
+
+\starttyping
+0x<X><Y><O>
+\stoptyping
+
+or in \TEX\ syntax
+
+\starttyping
+"<X><Y><O>
+\stoptyping
+
+We saw that the last byte regulates the orientation. The first and second one
+deal with anchoring horizontally and vertically. The vertical options of the
+horizontal variants anchor on the baseline, lower corner, upper corner or center.
+
+\startbuffer[6]
+\hbox orientation "002 {\TEX} and
+\hbox orientation "012 {\TEX} and
+\hbox orientation "022 {\TEX} and
+\hbox orientation "032 {\TEX}
+\stopbuffer
+
+\typebuffer[6]
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[6]}\quad{\showstruts\strut}\blank
+
+\startbuffer[7]
+\hbox orientation "002 {\TEX} and
+\hbox orientation "102 {\TEX} and
+\hbox orientation "202 {\TEX} and
+\hbox orientation "302 {\TEX} and
+\hbox orientation "402 {\TEX}
+\stopbuffer
+
+The horizontal options of the horizontal variants anchor in the center, left, right,
+halfway left and halfway right.
+
+\typebuffer[7]
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[7]}\quad{\showstruts\strut}\blank
+
+All combinations will be shown on the next pages, so we suffice with telling that
+for the vertical variants we can vertically anchor on the baseline, top, bottom
+or center, while horizontally we center, hang left or right, halfway left or
+right, and in addition align on the (rotated) baseline left or right.
+
+The orientation has consequences for the dimensions so they are dealt with in the
+expected way in constructing lines, paragraphs and pages, but the anchoring is
+virtual. As a bonus, we have two extra variants for orientation zero: on top of
+baseline or below, with dimensions taken into account.
+
+\startbuffer[8]
+\hbox orientation "000 {\TEX} and
+\hbox orientation "004 {\TEX} and
+\hbox orientation "005 {\TEX}
+\stopbuffer
+
+\typebuffer[8]
+
+\blank{\showstruts\strut}\quad\ruledhbox{\inlinebuffer[8]}\quad{\showstruts\strut}\blank
+
+\definecolor[brcolorh][r=1,t=.5,a=1]
+\definecolor[brcolord][b=1,t=.5,a=1]
+\definecolor[brcolorm][g=1,t=.5,a=1]
+
+\starttexdefinition ShowAnchor
+    \blackrule[width=2pt,height=1pt,depth=1pt,color=darkgray]
+\stoptexdefinition
+
+\starttexdefinition DemoRule#1#2#3
+    \ShowAnchor
+    \ruledhbox {
+        \hbox orientation "#1#2#3 {
+            \blackrule[height=6mm,depth=0mm,width=8mm,color=brcolorh]\kern-8mm\relax
+            \blackrule[height=0mm,depth=3mm,width=8mm,color=brcolord]\kern-8mm\relax
+            \blackrule[height=2mm,depth=-1mm,width=8mm,color=brcolorm]
+        }
+    }
+    \ShowAnchor
+\stoptexdefinition
+
+\starttexdefinition DemoText#1#2#3
+    \ShowAnchor
+    \ruledhbox{\hbox orientation "#1#2#3 {\red\TEX}}
+    \ShowAnchor
+\stoptexdefinition
+
+\starttexdefinition DemoSet #1#2
+    \startcombination[nx=4,ny=7,width=10cm]
+        {#200#1}{\ttxx 0x00#1} {#201#1}{\ttxx 0x01#1} {#202#1}{\ttxx 0x02#1} {#203#1}{\ttxx 0x03#1}
+        {#210#1}{\ttxx 0x10#1} {#211#1}{\ttxx 0x11#1} {#212#1}{\ttxx 0x12#1} {#213#1}{\ttxx 0x13#1}
+        {#220#1}{\ttxx 0x20#1} {#221#1}{\ttxx 0x21#1} {#222#1}{\ttxx 0x22#1} {#223#1}{\ttxx 0x23#1}
+        {#230#1}{\ttxx 0x30#1} {#231#1}{\ttxx 0x31#1} {#232#1}{\ttxx 0x32#1} {#233#1}{\ttxx 0x33#1}
+        {#240#1}{\ttxx 0x40#1} {#241#1}{\ttxx 0x41#1} {#242#1}{\ttxx 0x42#1} {#243#1}{\ttxx 0x43#1}
+        {#250#1}{\ttxx 0x50#1} {#251#1}{\ttxx 0x51#1} {#252#1}{\ttxx 0x52#1} {#253#1}{\ttxx 0x53#1}
+        {#260#1}{\ttxx 0x60#1} {#261#1}{\ttxx 0x61#1} {#262#1}{\ttxx 0x62#1} {#263#1}{\ttxx 0x63#1}
+    \stopcombination
+\stoptexdefinition
+
+\startplacefigure[title={orientation 0}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet0\DemoRule}}\stopplacefigure
+\startplacefigure[title={orientation 1}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet1\DemoRule}}\stopplacefigure
+\startplacefigure[title={orientation 2}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet2\DemoRule}}\stopplacefigure
+\startplacefigure[title={orientation 3}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet3\DemoRule}}\stopplacefigure
+
+\startplacefigure[title={orientation 0}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet0\DemoText}}\stopplacefigure
+\startplacefigure[title={orientation 1}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet1\DemoText}}\stopplacefigure
+\startplacefigure[title={orientation 2}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet2\DemoText}}\stopplacefigure
+\startplacefigure[title={orientation 3}]\scale[width=\textwidth]{\framed[offset=1cm]{\DemoSet3\DemoText}}\stopplacefigure
+
+% \page
+
+The anchoring can look somewhat confusing but you need to keep in mind that it is
+normally only used in very controlled circumstances and not in running text.
+Wrapped in macros users don't see the details. We're talking boxes here, so or
+instance:
+
+\startbuffer
+test\quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "002 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "002 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "012 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "022 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "032 \bgroup\strut test\egroup test%
+\egroup \quad
+\hbox orientation 3 \bgroup
+    \strut test\hbox orientation "042 \bgroup\strut test\egroup test%
+\egroup
+\quad test
+\stopbuffer
+
+\typebuffer
+
+gives:
+
+\startlinecorrection[blank]
+\ruledhbox\bgroup \showcolorstruts \showboxes \inlinebuffer \egroup
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Right|-|to|-|left typesetting}]
+
+Another aspect to keep in mind when we transform is the already mentioned
+right|-|to|-|left direction. We show some examples where we do things like this:
+
+\starttyping
+\hbox{\hbox
+    orientation #1
+    {\strut abcd}}
+\hbox{\hbox
+    orientation #1
+    to 15mm
+    {\strut abcd}}
+\hbox{\hbox
+    orientation #1
+    direction 1
+    {\righttoleft\strut abcd}}
+\hbox{\hbox
+    orientation #1
+    direction 1
+    to 15mm {\righttoleft\strut abcd}}
+\stoptyping
+
+\starttexdefinition TestH #1
+    \dontcomplain
+    \setbox\scratchbox\hbox{abcd}%
+    x\ruledhbox{\hbox orientation #1             to \wd\scratchbox  {\strut abcd}}x\quad
+    x\ruledhbox{\hbox orientation #1             to 15mm            {\strut abcd}}x\quad
+    x\ruledhbox{\hbox orientation #1 direction 1 to \wd\scratchbox  {\righttoleft\strut abcd}}x\quad
+    x\ruledhbox{\hbox orientation #1 direction 1 to 15mm            {\righttoleft\strut abcd}}x%
+\stoptexdefinition
+
+\starttexdefinition TestV #1
+    \dontcomplain
+    \setbox\scratchbox\hbox{abcd}%
+    x\ruledvbox{\vbox orientation #1             {\hsize \wd\scratchbox\strut abcd}}x\quad
+    x\ruledvbox{\vbox orientation #1             {\hsize           15mm\strut abcd}}x\quad
+    x\ruledvbox{\vbox orientation #1 {\righttoleft\hsize \wd\scratchbox\strut abcd}}x\quad
+    x\ruledvbox{\vbox orientation #1 {\righttoleft\hsize           15mm\strut abcd}}x%
+\stoptexdefinition
+
+\startplacefigure[title={Horizontal boxes.}]
+    \startcombination[nx=2,ny=2]
+        {\TestH 0} {orientation 0}
+        {\TestH 2} {orientation 2}
+        {\TestH 1} {orientation 1}
+        {\TestH 3} {orientation 3}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[title={Vertical boxes.}]
+    \startcombination[nx=2,ny=2]
+        {\TestV 0} {orientation 0}
+        {\TestV 2} {orientation 2}
+        {\TestV 1} {orientation 1}
+        {\TestV 3} {orientation 3}
+    \stopcombination
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Vertical typesetting}]
+
+I'm no expert on vertical typesetting and have no application for it either. But
+from what I've seen vertically positioned glyphs are normally used in rather
+straightforward situations. Here I will just give some examples of how
+transformations can be used to achieve certain effects. It is no big deal to make
+macros or use \LUA\ to apply magic to node lists but it is beyond this description
+to discuss that.
+
+Before we fine tune this example we have to discuss another feature. When a \typ
+{orientation} keyword is given optionally \type {xoffset} and \type {yoffset} can
+be specified. These offsets are {\em not} taken into account when calculating
+dimensions. This is different from the offsets (at the \LUA\ end) used in glyphs
+because there the vertical offset is taken into account. Here are some examples
+of offsets in packaged lists:
+
+\startbuffer
+\hbox
+    {test 1}
+\hbox
+    orientation 0
+    yoffset  15pt
+    xoffset 150pt
+    {test}
+\vbox
+    orientation 0
+    {\hbox{test}}
+\vbox
+    orientation 0
+    yoffset  -5pt
+    xoffset 130pt
+    {\hbox{test}}
+\vbox
+    orientation 0
+    yoffset 2pt
+    {\hbox{test}}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \start \showboxes \bfd \getbuffer \stop
+\stoplinecorrection
+
+In order to demonstrate some hacking, we first define a font that supports
+chinese glyphs:
+
+\startbuffer
+\definefont[NotoCJK][NotoSansCJKtc-Regular*default @ 24pt]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We put some text in a horizontal box; it doesn't show up in verbatim but you
+get the idea nevertheless:
+
+\startbuffer
+\hbox{\NotoCJK 通用规范汉字表}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection[blank]
+    \start \showboxes \getbuffer \stop
+\stoplinecorrection
+
+Let's now rotate this line of text:
+
+\startbuffer[1]
+\hbox orientation 1 {\NotoCJK 通用规范汉字表}
+\stopbuffer
+
+\typebuffer[1]
+
+The result is shown in a while. Because we also need to rotate the glyphs we
+deconstruct the box.
+
+\startbuffer[2]
+\hbox orientation 1 \bgroup \NotoCJK %
+    \vbox {\hbox {通}}%
+    \vbox {\hbox {用}}%
+    \vbox {\hbox {规}}%
+    \vbox {\hbox {test}}%
+    \vbox {\hbox {范}}%
+    \vbox {\hbox {汉}}%
+    \vbox {\hbox {字}}%
+    \vbox {\hbox {表}}%
+\egroup
+\stopbuffer
+
+\typebuffer[2]
+
+Next we rotate the glyphs.
+
+\startbuffer[3]
+\hbox orientation 1 \bgroup \NotoCJK %
+    \vbox orientation 3 {\hbox {通}}%
+    \vbox orientation 3 {\hbox {用}}%
+    \vbox orientation 3 {\hbox {规}}%
+    \vbox orientation 0 {\hbox {test}}%
+    \vbox orientation 3 {\hbox {范}}%
+    \vbox orientation 3 {\hbox {汉}}%
+    \vbox orientation 3 {\hbox {字}}%
+    \vbox orientation 3 {\hbox {表}}%
+\egroup
+\stopbuffer
+
+\typebuffer[3]
+
+This still looks bad so we kick in some offsets and glue:
+
+\startbuffer[4]
+\dontleavehmode\hbox orientation 1 \bgroup \NotoCJK
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {通}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {用}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {规}}\hskip.6ex
+    \vbox
+        {\hbox             {test}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {范}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {汉}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {字}}\hskip.2ex
+    \vbox
+        orientation 0 yoffset -.1ex
+        {\hbox orientation 3 {表}}\hskip.2ex
+\egroup
+\stopbuffer
+
+\typebuffer[4]
+
+Now we're ready to compare the results
+
+\startlinecorrection[blank]
+    \startcombination[9*1]
+        {\showboxes \getbuffer[1]} {1}
+        {\showboxes \getbuffer[2]} {2}
+        {\showboxes \getbuffer[3]} {3}
+        {\showboxes \getbuffer[4]} {4}
+        {\quad}{}
+        {\getbuffer[1]} {1}
+        {\getbuffer[2]} {2}
+        {\getbuffer[3]} {3}
+        {\getbuffer[4]} {4}
+    \stopcombination
+\stoplinecorrection
+
+This could of course also be done with traditional kerns, raising and|/|or
+lowering and messing around with dimensions. It's just that when manipulating
+such rather complex constructs a little help (and efficiency) makes a difference,
+also at the \LUA\ end. Of course one can argue the result but all is
+programmable in the end.
+
+\stopsection
+
+\startsection[title={Considerations}]
+
+Just in case you wonder if using these offsets is better than using normal kerning
+and shifting, in practice offsets are not more efficient. Let's compare the
+alternatives. We go from most to least efficient.
+
+\starttyping
+\setbox\scratchbox\hpack{}
+\boxxoffset\scratchbox\scratchdimen
+\boxyoffset\scratchbox\scratchdimen
+\stoptyping
+
+This sets the offsets and by setting them we also trigger the transform. Scanning
+is fast and so is setting them. One million times expanding this takes (as
+reference) 0.73 seconds on my current machine.
+
+\starttyping
+\setbox\scratchbox\hpack
+  orientation \zerocount
+  xoffset     \scratchdimen
+  yoffset     \scratchdimen
+  {}
+\stoptyping
+
+This takes a bit more time, 1.11 seconds, because the keywords have to be scanned
+which happens on a token by token base.
+
+\starttyping
+\setbox\scratchbox\hpack{}
+\scratchheight\ht\scratchbox
+\scratchdepth\dp\scratchbox
+\setbox\scratchbox\hpack
+  {\kern\scratchdimen
+   \raise\scratchdimen\box\scratchbox
+   \kern\scratchdimen}
+\ht\scratchbox\scratchheight
+\dp\scratchbox\scratchdepth
+\stoptyping
+
+Now we're up to 1.69 seconds for the million expansions. Not only do we have some
+parsing going on, but we also have assignments and extra packing, which means
+calculations taking place.
+
+\starttyping
+\setbox\scratchbox\hpack{}
+\scratchwidth\wd\scratchbox
+\scratchheight\ht\scratchbox
+\scratchdepth\dp\scratchbox
+\setbox\scratchbox\hpack
+  {\kern\scratchdimen
+   \raise\scratchdimen\box\scratchbox}
+\wd\scratchbox\scratchwidth
+\ht\scratchbox\scratchheight
+\dp\scratchbox\scratchdepth
+\stoptyping
+
+This variant is about as fast, as I measured 1.72 seconds. So, compared to the
+0.73 seconds for the first variant, is this better? Does it help when we look at
+our existing macros and adapt them?
+
+Normally we don't have an empty box and normally we use \type {\hbox} because we
+want the content to be processed. And a million times building a list and
+processing content (which means runs over the list) will make the differences
+in timing become noise. Add to that garbage collection (in \LUA) and memory
+management (in \TEX) and it even becomes unpredictable. Seeing differences of
+a factor two in such timings is no exception.
+
+Another aspect is the parsing. When these commands are wrapped in macros we're
+talking expanding tokens which is pretty fast. When it comes from the input file
+a conversion to tokens has to happen too. And we will never see millions of such
+sequences in a source file.
+
+The backend also plays a role. Handling a kern or shift is more efficient than
+analyzing transforms (and offsets) especially in a \LUA\ variant. But on the
+other hand, we don't have an extra wrapping in a box so that actually saves work.
+
+So, before a \CONTEXT\ user thinks \quotation {Let's update macros and change
+policy.}, just consider staying with proven good old \TEX\ approaches. These
+features are mostly meant for efficient low level manipulations as discussed in
+relation to for instance handling scripts. In the rather large \CONTEXT\ code
+base there are really only a few places where it will make code look nicer, but
+there I don't expect an impact on performance.
+
+\stopsection
+
+\startsection[title={Integration}]
+
+How these mechanisms are used depends on ones needs and the macro package used.
+It makes no sense to cook up generic solutions because integration in a macro
+package is too different. But anyhow we'll give an example of some (definitely
+non optimized) \LUA\ magic.
+
+\startbuffer
+\startluacode
+local glyph_id = node.id("glyph")
+local fontdata = fonts.hashes.identifiers -- assumes generic font loader
+
+local function is_vertical(c)
+  -- more ranges matter but this will do here
+  return c >= 0x04E00 and c <= 0x09FFF
+end
+
+function document.go_vertical(boxnumber)
+  local box = tex.getbox(boxnumber)
+  local n   = box.list
+  while n do
+    if n.id == glyph_id and is_vertical(n.char) then
+      local o = .2 * fontdata[n.font].parameters.xheight
+      local prev, next = n.prev, n.next
+      n.next, n.prev = nil, nil
+      local l = nodes.new("hlist")
+      l.list = n
+      local w, h, d = n.width, n.height, n.depth
+      if prev then
+          prev.next, l.prev = l, prev
+      else
+          box.list = l
+      end
+      if next then
+          l.next, next.prev = next, l
+      end
+      l.width, l.height, l.depth  = h + d + o, w, 0
+      l.orientation = 0x003
+      l.xoffset, l.yoffset = o/2, -o/2
+      l.hoffset, l.doffset = h, d - o
+      n = next
+    else
+      n = n.next
+    end
+  end
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We will use some other magic that we won't discuss here which relates to handling
+scripts. For Hangul one needs to inject breakpoints and if needed also glue
+between characters. The script environment does this. We also need to bump the
+interline spacing. First we define a regular text helper and an auxiliary box.
+
+\startbuffer[1]
+\unexpanded\def\stripe#1%
+  {\hbox orientation 0 yoffset .2\exheight{\strut #1}}
+
+\newbox\MyVerticalBox
+\stopbuffer
+
+\typebuffer[1]
+
+Next we fill that box with some mix of text (I have no clue what, as I just
+copied it from some web page).
+
+\startbuffer[2a]
+\setbox\MyVerticalBox\hbox \bgroup
+    \NotoCJK
+    \startscript[hangul]%
+    \dorecurse{20}{通用规范汉字表 \stripe{test #1} }%
+    \unskip % remove last space
+    \stopscript
+\egroup
+\stopbuffer
+
+\typebuffer[2a]
+
+We then apply the \LUA\ magic to the result:
+
+\startbuffer[3a]
+\ctxlua{document.go_vertical(\number\MyVerticalBox)}
+\stopbuffer
+
+\typebuffer[3a]
+
+and finally assemble the result:
+
+\startbuffer[4a]
+\ruledvbox orientation 1 to \textwidth \bgroup
+    \setupinterlinespace[40pt]
+    \hsize .95\textheight
+    \unhbox\MyVerticalBox
+    \vfill
+\egroup
+\stopbuffer
+
+\typebuffer[4a]
+
+The result is shown in \in {figure} [fig:verticalmagic-1]. Of course this
+approach is not that user friendly but it just serves as example. In \CONTEXT\ we
+can follow a different route. First we define a new font feature. It is probably
+clear that we need some code elsewhere that does something useful with this
+information, but I will nos show this as it is rather \CONTEXT\ dependent.
+
+\startbuffer[2b]
+\definefontfeature
+  [vertical]
+  [vertical={%
+    orientation=3,%
+    down=.1,%
+    right=.1,%
+    ranges={%
+      cjkcompatibility,%
+      cjkcompatibilityforms,%
+      cjkcompatibilityideographs,%
+      cjkcompatibilityideographssupplement,%
+      cjkradicalssupplement,%
+    % cjkstrokes,%
+      cjksymbolsandpunctuation,%
+      cjkunifiedideographs,%
+      cjkunifiedideographsextensiona,%
+      cjkunifiedideographsextensionb,%
+      cjkunifiedideographsextensionc,%
+      cjkunifiedideographsextensiond,%
+      cjkunifiedideographsextensione,%
+      cjkunifiedideographsextensionf,%
+    }%
+  }]
+\stopbuffer
+
+\typebuffer[2b]
+
+We apply this feature to a font:
+
+\startbuffer[3b]
+\definefont
+  [NotoCJKvertical]
+  [NotoSansCJKtc-Regular*default,vertical @ 24pt]
+\stopbuffer
+
+\typebuffer[3b]
+
+\startbuffer[4b]
+\setbox\MyVerticalBox\hbox\bgroup
+    \NotoCJKvertical
+    \startscript[hangul]%
+    \dorecurse{20}{通用规范汉字表 \stripe{test #1} }%
+    \unskip
+    \stopscript
+\egroup
+\stopbuffer
+
+\typebuffer[4b]
+
+\startbuffer[5b]
+\ruledvbox orientation 1 to \textwidth \bgroup
+    \setupinterlinespace[40pt]
+    \hsize .95\textheight
+    \unhbox\MyVerticalBox
+    \vfill
+\egroup
+\stopbuffer
+
+\typebuffer[5b]
+
+The result is shown in \in {figure} [fig:verticalmagic-2]. Again this approach is
+not that user friendly but it already is a bit easier.
+
+\startplacefigure[reference=fig:verticalmagic-1,title={Some vertical magic using manipulations.}]
+    \getbuffer[1,2a,3a,4a]
+\stopplacefigure
+
+\startplacefigure[reference=fig:verticalmagic-2,title={Some vertical magic using fonts.}]
+    \getbuffer[1,2b,3b,4b,5b]
+\stopplacefigure
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

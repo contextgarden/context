@@ -1,0 +1,153 @@
+\usemodule[present-lines]
+
+\definecolor[maincolor][r=.4,g=.4]
+
+\startdocument[title=Font features,subtitle={\CONTEXT\ 2017 Maibach}]
+
+\startchapter[title=What are they]
+
+\startitemize
+    \startitem
+        built in substitution that is often optional like ligatures but for some
+        languages mandate
+    \stopitem
+    \startitem
+        built in positioning that is assumed to be applied like kerning, mark
+        anchoring cursive
+    \stopitem
+    \startitem
+        external properties like coloring, spacing, fallback combinations
+    \stopitem
+    \startitem
+        engine related tricks like expansion and protrusion
+    \stopitem
+    \startitem
+        tracing options
+    \stopitem
+    \startitem
+        whatever you like \unknown\ so let me know
+    \stopitem
+    \blank[2*big]
+    \startitem
+        so in \CONTEXT\ we have font features (driven by font) and pseudo
+        features (driven by additional needs)
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Substitution]
+
+\startitemize
+    \startitem
+        single: replace one by another
+    \stopitem
+    \startitem
+        alternate: replace one by one of a set
+    \stopitem
+    \startitem
+        multiple: replace one by multiple others
+    \stopitem
+    \startitem
+        ligature: replace multiple by one shape
+    \stopitem
+    \blank[2*big]
+    \startitem
+        contextual lookups and replacements with look back and look ahead
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Positioning]
+
+\startitemize
+    \startitem
+        single: repositioning a glyph (with optional marks), this includes
+        traditional kerning
+    \stopitem
+    \startitem
+        pairwise: repositioning two adjacent glyphs (with optional marks)
+    \stopitem
+    \startitem
+        anchoring: often used for marks to base glyphs, ligatures and other marks
+    \stopitem
+    \startitem
+        attachment: often used for cursive scripts, pasting glyphs in a word together
+    \stopitem
+    \blank[2*big]
+    \startitem
+        contextual lookups and positioning with look back and look ahead
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Related]
+
+\startitemize
+    \startitem
+        analyze: needed for dealing with features that need information about
+        initial, medial, final and isolated properties
+    \stopitem
+    \startitem
+        reordering: needed for script like devanagari
+    \stopitem
+    \startitem
+        spacing: deals with for positioning glyphs and spaces
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Pitfalls]
+
+\startitemize
+    \startitem
+        solutions for similar tasks can be quite different which makes tracing
+        or checking sometimes hard (many ways to make ligatures)
+    \stopitem
+    \startitem
+        order matters and demands careful font design but it is hard to predict
+        all cases
+    \stopitem
+    \startitem
+        a sloppy font design can result in a performance hit or huge fonts
+    \stopitem
+    \startitem
+        features can be bugged and fonts vendors seldom have an update policy
+    \stopitem
+    \startitem
+        shapers can differ due to assumptions, heuristics, interpreting
+        specifications, bugs, \unknown
+    \stopitem
+\stopitemize
+
+\stopchapter
+
+\startchapter[title=Examples]
+    \startitem
+        all kind of substitutions: \type {2017-features-substitutiontest.tex}
+    \stopitem
+    \startitem
+        simple inter character kerns: \type {2017-features-kerntest.tex}
+    \stopitem
+    \startitem
+        single character positioning: \type {2017-features-singletest.tex}
+    \stopitem
+    \startitem
+        pairwise character positioning: \type {2017-features-pairtest.tex}
+    \stopitem
+    \startitem
+        contextual positioning: \type {2017-features-contexttest.tex}
+    \stopitem
+    \startitem
+        kerning with space (glue): \type {2017-features-spacetest.tex}
+    \stopitem
+\startitemize
+
+\stopitemize
+
+\stopchapter
+
+\stopdocument

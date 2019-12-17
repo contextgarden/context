@@ -1,6 +1,6 @@
 .TH "mtx-texworks" "1" "01-01-2019" "version 1.00" "TeXworks Startup Script"
 .SH NAME
-.B mtx-texworks
+ mtx-texworks - TeXworks Startup Script
 .SH SYNOPSIS
 .B mtxrun --script texworks [
 .I OPTIONS ...

@@ -1,0 +1,390 @@
+%D \module
+%D   [       file=lang-lab,
+%D        version=1997.08.27,
+%D          title=\CONTEXT\ Language Macros,
+%D       subtitle=Labels,
+%D         author=Hans Hagen / Tobias Burnus,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Language Macros / Labels}
+
+\registerctxluafile{lang-lab}{}
+\registerctxluafile{lang-txt}{}
+
+\unprotect
+
+%D Left-overs:
+
+\ifdefined\sixperemspace \else
+    \def\sixperemspace{\normalUchar"2006}
+\fi
+
+%D In this module we deal with language dependant labels and prefixes, like in {\em
+%D Figure~12} and {\em Chapter 1}. In this file we set the default values. Users can
+%D easily overrule these.
+%D
+%D This module is dedicated to the grandfather of Tobias Burnus, who's extensive
+%D languages oriented library helped us a lot in finding the right translations. All
+%D those labels are collected in files that reflect their common ancestor.
+%D
+%D Not all languages can be satisfied with the labeling mechanism as provided here.
+%D Chinese for instance put a label in front as well as after a part number. This is
+%D why the current implementation of labels supports two labels too.
+
+%D \macros
+%D   {setupheadtext, setuplabeltext}
+%D
+%D First we present some macros that deal with what we will call head and label
+%D texts. Such texts are defines by:
+%D
+%D \showsetup{setupheadtext}
+%D \showsetup{setuplabeltext}
+%D
+%D A regular \CONTEXT\ stores some 1500 labels at most.
+%D
+%D These commands accept all kind of inputs:
+%D
+%D \starttyping
+%D \setuplabeltext [language] [labellabel=text]
+%D \setuplabeltext [language] [labellabel=text,labellabel=text,...]
+%D \setuplabeltext            [labellabel=text]
+%D \setuplabeltext            [labellabel=text,labellabel=text,...]
+%D \stoptyping
+%D
+%D The last two cases concern the current language.
+
+\installcorenamespace{label}
+
+\let\currentlabelcategory\empty
+
+\unexpanded\def\definelabelclass
+  {\dodoubleempty\lang_labels_define_class}
+
+\def\lang_labels_define_class[#1][#2]%
+  {\normalexpanded
+     {\lang_labels_define_class_indeed
+        {#1}%
+        {\ifsecondargument#2\else\zerocount\fi}%
+        \expandafter\noexpand\csname   dogetupsome#1text\endcsname
+        \expandafter\noexpand\csname          #1language\endcsname
+        \expandafter\noexpand\csname dodogetupsome#1text\endcsname
+        \expandafter\noexpand\csname          left#1text\endcsname
+        \expandafter\noexpand\csname         right#1text\endcsname
+        \expandafter\noexpand\csname             #1texts\endcsname
+        \expandafter\noexpand\csname              #1text\endcsname}}
+
+% hm, not interfaced
+
+\let\thetextprefix\empty
+
+\unexpanded\def\lang_labels_define_class_indeed#1#2#3#4#5#6#7#8#9%
+  {\setuvalue{setup#1text}{\protecttextprefixes#2\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{preset#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_setup}%
+   \setuvalue{copy#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dodoubleempty\lang_labels_text_prefix_copy}%
+   \setuvalue{start#1text}{\protecttextprefixes1\def\currenttextprefixclass{#1}\dotripleempty\lang_labels_text_prefix_start[#1]}%
+   \letvalue{stop#1text}\relax
+   \def#4{\reallanguagetag{\defaultlanguage\currentmainlanguage}}%
+   \ifnum#2=\plustwo % used for math and tags
+     \def#3{#5#4}%
+     \def#5##1##2% ##1=language
+       {\ifcsname\??label\currentlabelcategory#1:##1:##2\endcsname
+          \lastnamedcs
+        \orelse\ifcsname\??label#1:##1:##2\endcsname
+          \lastnamedcs
+      % \orelse\ifcsname\??language#4\s!default\endcsname
+      %   \expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+        \orelse\ifcsname\??language##1\s!default\endcsname
+         %\expandafter#5\csname\??language##1\s!default\endcsname{##2}%
+          \expandafter#5\lastnamedcs{##2}%
+        \orelse\ifcsname\??label\currentlabelcategory#1:##2\endcsname
+          \lastnamedcs
+        \orelse\ifcsname\??label#1:##2\endcsname
+          \lastnamedcs
+        \orelse\ifcsname\??label\currentlabelcategory#1:\s!en:##2\endcsname
+          \lastnamedcs
+        \orelse\ifcsname\??label#1:\s!en:##2\endcsname
+          \lastnamedcs
+        \else
+          ##2%
+        \fi}%
+     \let#6\gobbleoneargument
+     \let#7\gobbleoneargument
+     \let#8\gobbletwoarguments
+     \let#9#3%
+   \else
+     \unexpanded\def#3{#5#4}%
+     \unexpanded\def#5##1##2%
+       {\ifcsname\??label#1:##1:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+        \orelse\ifcsname\??language#4\s!default\endcsname
+         %\expandafter#5\csname\??language#4\s!default\endcsname{##2}%
+          \expandafter#5\lastnamedcs{##2}%
+        \orelse\ifcsname\??label#1:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+        \orelse\ifcsname\??label#1:\s!en:##2\endcsname
+         %\expandafter\let\expandafter\thetextprefix\csname\??label#1:\s!en:##2\endcsname
+          \expandafter\let\expandafter\thetextprefix\lastnamedcs
+        \else
+          \let\thetextprefix\dummytextprefix
+        \fi}%
+     \unexpanded\def#6##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+     \unexpanded\def#7##1{#3{##1}\expandafter\flushrightlabelclass\thetextprefix}%
+     \unexpanded\def#8##1{#3{##1}\expandafter\flushbothlabelclass \thetextprefix}% #2
+     \unexpanded\def#9##1{#3{##1}\expandafter\flushleftlabelclass \thetextprefix}%
+   \fi
+   \appendtoks
+     \let#6\firstofoneargument % to be checked
+     \let#7\firstofoneargument % to be checked
+     \let#8\firstofoneargument % to be checked
+     \let#9\firstofoneargument % to be checked
+   \to \everysimplifycommands}
+
+\let\flushleftlabelclass \firstoftwoarguments
+\let\flushrightlabelclass\secondoftwoarguments
+\def\flushbothlabelclass #1#2#3{#1#3#2}
+\def\dummytextprefix     {\empty\empty}
+
+%D \macros
+%D   {headtext, labeltext, leftlabeltext, rightlabeltext, labeltexts}
+%D
+%D Once defined, head and label texts can be called upon using:
+%D
+%D \showsetup{headtext}
+%D \showsetup{labeltext}
+%D
+%D \macros
+%D   {presetheadtext,presetlabeltext}
+%D
+%D These macros enable us to automatically define head and label texts without
+%D replacing predefined ones. They are internal macros.
+
+\appendtoks \let\labellanguage\currentlanguage \to \everycurrentdate
+
+\newconstant\protecttextprefixes
+
+\let\currenttextprefixtag  \s!unknown
+\let\currenttextprefixclass\s!unknown
+
+\def\lang_labels_text_prefix_start[#1][#2][#3]% class language name
+  {\ifthirdargument
+     \edef\currenttextprefixtag{\reallanguagetag{#2}}%
+     \edef\currenttextprefixname{#3}%
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \edef\currenttextprefixname{#2}%
+   \fi
+   \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
+
+\def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
+  {\expandafter\edef\csname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname%
+     {{\clf_strip{#1}}\empty}}
+
+\def\lang_labels_text_prefix_setup[#1][#2]%
+  {\ifsecondargument
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_setup_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \processcommalist[#1]\lang_labels_text_prefix_setup_indeed
+   \fi}
+
+\def\lang_labels_text_prefix_setup_indeed#1%
+  {\lang_labels_text_prefix_assign[#1]}
+
+\def\lang_labels_text_prefix_assign[#1=#2]%
+  {\lang_labels_text_prefix_assign_indeed{#1}[#2,,]}
+
+\def\lang_labels_text_prefix_assign_indeed#1%
+  {\ifcase\protecttextprefixes
+     % no checking
+     \expandafter\lang_labels_text_prefix_assign_yes
+   \or
+     % checking
+     \ifcsname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname
+       \expandafter\expandafter\expandafter\lang_labels_text_prefix_assign_nop
+     \else
+       \expandafter\expandafter\expandafter\lang_labels_text_prefix_assign_yes
+     \fi
+   \or
+     % simple assignment (a bit overkill but it fits in the whole)
+     \expandafter\lang_labels_text_prefix_assign_dumb
+   \fi{#1}}
+
+\let\m_lang_labels_left \empty
+\let\m_lang_labels_right\empty
+
+% \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
+%   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
+%    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
+%    \ifx\m_lang_labels_right\empty
+%      \ifx\m_lang_labels_left\empty
+%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
+%      \else
+%        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
+%      \fi
+%    \else
+%      \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}{#3}}%
+%    \fi}
+%
+% how we love obscure efficicency ...
+
+\def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
+  {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
+   \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
+   \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1%
+     \ifx\m_lang_labels_right\empty
+       \ifx\m_lang_labels_left\empty
+         \endcsname{\empty\empty}%
+       \else
+         \endcsname{{#2}\empty}%
+       \fi
+     \else
+       \endcsname{{#2}{#3}}%
+     \fi}
+
+\def\lang_labels_text_prefix_assign_nop#1[#2]%
+  {}
+
+\def\lang_labels_text_prefix_assign_dumb#1[#2,#3]%
+  {\expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{#2}}
+
+\unexpanded\def\setlabeltextpair#1#2#3#4#5% a fast one for usage at the Lua end
+  {%\writestatus{!!!!}{#1:\reallanguagetag{#2}:#3}%
+   \expandafter\def\csname\??label#1:\reallanguagetag{#2}:#3\endcsname{{#4}{#5}}} % class tag key left right
+
+\def\lang_labels_text_prefix_copy[#1][#2]%
+  {\ifsecondargument
+     \edef\currenttextprefixtag{\reallanguagetag{#1}}%
+     \processcommalist[#2]\lang_labels_text_prefix_copy_indeed
+   \else
+     \edef\currenttextprefixtag{\reallanguagetag\currentmainlanguage}%
+     \processcommalist[#1]\lang_labels_text_prefix_copy_indeed
+   \fi}
+
+\def\lang_labels_text_prefix_copy_indeed#1%
+  {\lang_labels_text_prefix_copy_pair[#1]}
+
+\def\lang_labels_text_prefix_copy_pair[#1=#2]%
+  {\lang_labels_text_prefix_copy_pair_indeed{#1}[#2,,]}
+
+% \def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
+%   {\expandafter\let
+%      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\expandafter\endcsname
+%      \csname\??label\currenttextprefixclass:\currenttextprefixtag:#2\endcsname}
+%
+% this delays the aliasing so that we can switch maillanguage in between
+
+\def\lang_labels_text_prefix_copy_pair_indeed#1[#2,#3]%
+  {\expandafter\edef\csname\??label\currenttextprefixclass:#1\endcsname
+     {{\noexpand\csname\??label\currenttextprefixclass:\noexpand\reallanguagetag\noexpand\currentmainlanguage:#2\endcsname}{}}}
+
+\definelabelclass [head]      [0] % titles
+\definelabelclass [label]     [0] % texts
+\definelabelclass [mathlabel] [0] % functions
+\definelabelclass [taglabel]  [2] % tags
+
+\clf_definelabels{head}{titles}\s!true\relax
+\clf_definelabels{label}{texts}\s!true\relax
+\clf_definelabels{mathlabel}{functions}\s!false\relax
+\clf_definelabels{taglabel}{tags}\s!false\relax
+
+%D \macros
+%D   {translate}
+%D
+%D Sometimes macros contain language specific words that are to be typeset. Such
+%D macros can be made (more) language independant by using:
+%D
+%D \showsetup{translate}
+%D
+%D like for instance:
+%D
+%D \starttyping
+%D \translate[en=something,nl=iets]
+%D \stoptyping
+%D
+%D which expands to {\em something} or {\em iets}, depending on de current language.
+
+\installcorenamespace{translation}
+
+\unexpanded\def\translate
+  {\dosingleempty\lang_translate}
+
+\def\lang_translate[#1]%
+  {\getparameters[\??translation][#1]%
+   \ifcsname\??translation\currentlanguage\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??translation\s!en\endcsname
+     \lastnamedcs
+   \else
+     [translation #1]%
+   \fi}
+
+%D When used without argument, the last defined values are used. This enables
+%D repetitive use like
+%D
+%D \starttyping
+%D \en \translate\ means \nl \translate
+%D \stoptyping
+
+%D \macros
+%D   {assigntranslation}
+%D
+%D This macro is a system macro, and can be used to assign a translation to a macro.
+%D Its form is:
+%D
+%D \starttyping
+%D \assigntranslation[en=something,nl=iets]\to\command
+%D \stoptyping
+
+\unexpanded\def\assigntranslation[#1]\to#2% bad, this \to
+  {\getparameters[\??translation][#1]%
+   \edef#2{\begincsname\??translation\currentlanguage\endcsname}}
+
+%D \macros
+%D   {commalistsentence}
+%D
+%D Redone in \LUA:
+%D
+%D \startbuffer
+%D \commalistsentence[aap,noot,mies]
+%D \commalistsentence[aap,noot]
+%D \commalistsentence[aap]
+%D \commalistsentence[a,b,c]
+%D \commalistsentence[a,b,c][{ \& },{ and }]
+%D \commalistsentence[a,b,c][+,-]
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\unexpanded\def\commalistsentence
+  {\dodoubleempty\typo_helpers_concat_comma_list}
+
+\def\typo_helpers_concat_comma_list[#1][#2]%
+  {\clf_concatcommalist
+     text       {#1}%
+     separators {#2}%
+     separator  {\detokenize\expandafter{\normalexpanded{\labeltext{and-1}}}}%
+     last       {\detokenize\expandafter{\normalexpanded{\labeltext{and-2}}}}%
+   \relax}
+
+\setuplabeltext [\s!nl] [and-1={{, }}, and-2={{ en }}]   % 1, 2 en 3
+\setuplabeltext [\s!en] [and-1={{, }}, and-2={{, }}]     % 1, 2, 3
+\setuplabeltext [\s!de] [and-1={{, }}, and-2={{ und }}]  % 1, 2 und 3
+\setuplabeltext [\s!hr] [and-1={{, }}, and-2={{ i }}]    % 1, 2 i 3
+
+%D Goodie (handy at \LUA\ end):
+
+\unexpanded\def\LABELTEXT#1{\WORD{\labeltext{#1}}} % only for simple cases!
+
+\protect \endinput

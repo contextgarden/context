@@ -360,7 +360,7 @@
 
     <cd:command name="date" level="document" category="counter language" file="core-con.mkiv">
         <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
+            <cd:assignments list="yes">
                 <cd:parameter name="d">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
@@ -502,6 +502,7 @@
                 <cd:constant type="set␣2"/>
                 <cd:constant type="set␣3"/>
                 <cd:constant type="continued"/>
+                <cd:constant type="zero"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
             <cd:resolve name="argument-number"/>
@@ -641,5 +642,15 @@
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="zeronumberconversion" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="actualyear"  level="style" category="system" file="core-con.mkiv" />
+    <cd:command name="actualmonth" level="style" category="system" file="core-con.mkiv" />
+    <cd:command name="actualday"   level="style" category="system" file="core-con.mkiv" />
 
 </cd:interface>

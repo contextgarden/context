@@ -1106,13 +1106,16 @@ function vfmath.define(specification,set,goodies)
         end
     end
     --
+    main.mathparameters = mathparameters -- still traditional ones
+    -- This should change (some day) as it's the only place where we look forward,
+    -- so better is to also reserve the id already which then involves some more
+    -- management (so not now).
     fontlist[#fontlist+1] = {
         id   = font.nextid(),
         size = size,
     }
-    --
-    main.mathparameters = mathparameters -- still traditional ones
     vfmath.addmissing(main,#fontlist,size)
+    --
     mathematics.addfallbacks(main)
     --
     main.properties.math_is_scaled = true -- signal

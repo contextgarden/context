@@ -53,7 +53,6 @@
     <cd:interfacefile filename="i-clipping.xml"/>
     <cd:interfacefile filename="i-collector.xml"/>
     <cd:interfacefile filename="i-color.xml"/>
-    <cd:interfacefile filename="i-columns.xml"/>
     <cd:interfacefile filename="i-combination.xml"/>
     <cd:interfacefile filename="i-commandhandler.xml"/>
     <cd:interfacefile filename="i-comment.xml"/>
@@ -198,6 +197,7 @@
     <cd:interfacefile filename="i-setups.xml"/>
     <cd:interfacefile filename="i-shift.xml"/>
     <cd:interfacefile filename="i-sidebar.xml"/>
+    <cd:interfacefile filename="i-simplecolumns.xml"/>
     <cd:interfacefile filename="i-smash.xml"/>
     <cd:interfacefile filename="i-sort.xml"/>
     <cd:interfacefile filename="i-soundtrack.xml"/>

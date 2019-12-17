@@ -24,13 +24,16 @@ local tonut         = nuts.tonut
 local getnext       = nuts.getnext
 local getid         = nuts.getid
 local getlist       = nuts.getlist
-local getattr       = nuts.getattr
+----- getattr       = nuts.getattr
+local getprop       = nuts.getprop
 
-local setattr       = nuts.setattr
+----- setattr       = nuts.setattr
+local setprop       = nuts.setprop
 local setlink       = nuts.setlink
 local setlist       = nuts.setlist
 local setprev       = nuts.setprev
 local setnext       = nuts.setnext
+local setboth       = nuts.setboth
 
 local remove_node   = nuts.remove
 
@@ -60,11 +63,11 @@ local function locate(head,first,last,ni,nm)
         elseif migrate_inserts and id == insert_code then
             local insert
             head, current, insert = remove_node(head,current)
-            setnext(insert)
             if first then
+                setnext(insert)
                 setlink(last,insert)
             else
-                setprev(insert)
+                setboth(insert)
                 first = insert
             end
             last = insert
@@ -72,11 +75,11 @@ local function locate(head,first,last,ni,nm)
         elseif migrate_marks and id == mark_code then
             local mark
             head, current, mark = remove_node(head,current)
-            setnext(mark)
             if first then
+                setnext(mark)
                 setlink(last,mark)
             else
-                setprev(mark)
+                setboth(mark)
                 first = mark
             end
             last = mark
@@ -98,8 +101,13 @@ function nodes.handlers.migrate(head,where)
             local id = getid(current)
             -- inserts_too is a temp hack, we should only do them when it concerns
             -- newly placed (flushed) inserts
-            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not getattr(current,a_migrated) then
-                setattr(current,a_migrated,1)
+
+            -- todo: getprop / setprop
+
+         -- if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not getattr(current,a_migrated) then
+            if id == vlist_code or id == hlist_code or (inserts_too and id == insert_code) and not getprop(current,"migrated") then
+             -- setattr(current,a_migrated,1)
+                setprop(current,"migrated",true)
                 t_sweeps = t_sweeps + 1
                 local h = getlist(current)
                 local first, last, ni, nm
@@ -112,7 +120,7 @@ function nodes.handlers.migrate(head,where)
                 end
                 if first then
                     t_inserts = t_inserts + ni
-                    t_marks = t_marks + nm
+                    t_marks   = t_marks   + nm
                     if trace_migrations and (ni > 0 or nm > 0) then
                         report_nodes("sweep %a, container %a, %s inserts and %s marks migrated outwards during %a",
                             t_sweeps,nodecodes[id],ni,nm,where)
@@ -126,7 +134,7 @@ function nodes.handlers.migrate(head,where)
                     current = last
                 end
             end
-            current = getnext(next)
+            current = getnext(current)
         end
         return head
     end

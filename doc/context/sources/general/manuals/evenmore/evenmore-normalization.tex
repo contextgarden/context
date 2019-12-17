@@ -1,0 +1,239 @@
+% language=us
+
+% \enabletrackers[nodes.directions]
+
+\environment evenmore-style
+
+\startcomponent evenmore-normalization
+
+\startchapter[title=Normalization]
+
+What I describe here was long due. I delayed it because when enabled it had best
+also be used and I need to (check and) adapt some code to it in order to profit
+from it. So, if used at all, it will take some time to have an effect on the
+\CONTEXT\ code base. But first some background information.
+
+When \TEX\ builds a paragraph it splits the current text stream (that makes up
+the paragraph) into lines where each line becomes an horizontal box. In \LUATEX,
+this process is split into distinctive steps, contrary to regular \TEX\ where the
+splitting is combined with hyphenation, ligature construction and font kerning.
+But what all engines have in common is that after the decision is made about what
+a line is, the result gets packages into the horizontal box.
+
+The decision making is influenced by quite some factors, like:
+
+\startitemize[packed]
+\startitem
+    The indentation of the first line, driven by the presence of a box of
+    with a certain width and no height and depth (its always there, also when
+    the indentation is zero).
+\stopitem
+\startitem
+    Hanging indentation, which can happen at each corner of the paragraph, or
+    alternatively a specific parshape.
+\stopitem
+\startitem
+    Left and|/|or right margins, aka left skip and right skip. A right skip is
+    always present, even when zero.
+\stopitem
+\startitem
+    The way the last line gets aligns, aka parfill skip.
+\stopitem
+\startitem
+    Directional changes that need to be carries over to the next line.
+\stopitem
+\startitem
+    Optional protrusion of characters to the left of right of the line, something
+    that is sensitive for directional changes.
+\stopitem
+\startitem
+    Expansion of characters in order to get better inter|-|word spacing and|/|or
+    to prevent lines being too bad. There can be stretch as well as shrink but
+    on a per line basis. Inter|-|character kerns can also get that treatment.
+\stopitem
+\startitem
+    The penalties associated to hyphenation: the pre|-|last line, the last two
+    lines, a list of penalties (\ETEX), specific penalties bound to hyphenation
+    pints (\LUATEX).
+\stopitem
+\startitem
+    The wish to have more or less lines than optimal, aka looseness. I have to
+    admit that I never use that feature.
+\stopitem
+\stopitemize
+
+In traditional \TEX\ it doesn't really matter how the resulting boxes look like,
+as long as the following steps can handle them, and those steps don't look into
+those boxes. In fact, unless you unpack a box, only the backend deals with the
+content. But in \LUATEX\ we have callbacks that hook into several stages and {\em
+can} look into the constructed boxes. In \LUATEX\ these boxes also have embedded
+directional information (needed by the backend) and (although that is seldom
+used) left or right boxed material, a features inherited from \ALEPH|/|\OMEGA.
+And when messing around with the content of boxes one has to know what can be
+seen there. In principle the code can be reorganized a it but adding additional
+functionality is not that trivial because we want to stay close to the original
+implementation, even if it has been messed up a bit by successive additions.
+Eventually I might give it a try to integrate all these features a bit better,
+but on the other hand: it works.
+
+\starttexdefinition Sample #1#2
+    \startluacode
+        document.normalizestate = nodes.getnormalizeline()
+        nodes.setnormalizeline(#1)
+    \stopluacode
+    \startsubsubject[title={normalization #1, #2}]
+        \typebuffer[#2]
+        \startlinecorrection
+            \forgetall
+            \start
+                \setupalign[verytolerant,stretch]
+                \showmakeup[line,hbox,vbox,glue]
+                \vbox{\getbuffer[#2]\samplefile{sapolsky}}
+            \stop
+            \par
+        \stoplinecorrection
+    \stopsubject
+    \startluacode
+        nodes.setnormalizeline(document.normalizestate)
+    \stopluacode
+\stoptexdefinition
+
+\startbuffer[sample-1]
+    \parindent  = 20pt
+    \leftskip   = 40pt
+    \rightskip  = 50pt
+    \hangindent =  0pt
+    \hangafter  =  0
+\stopbuffer
+
+\startbuffer[sample-2]
+    \parindent  =  0pt
+    \leftskip   =  0pt
+    \rightskip  =  0pt
+    \hangindent =-20pt
+    \hangafter  = -3
+\stopbuffer
+
+\startbuffer[sample-3]
+    \parindent  =  0pt
+    \leftskip   =  0pt
+    \rightskip  =  0pt
+    \hangindent = 20pt
+    \hangafter  =  3
+\stopbuffer
+
+\startbuffer[sample-4]
+    \parindent  =  0pt
+    \leftskip   = 10pt
+    \rightskip  = 30pt
+    \hangindent = 20pt
+    \hangafter  =  3
+\stopbuffer
+
+In the next examples we show how the result of typesetting a paragraph looks
+like. We use the Sapolsky quote from the distribution. The cyan glue nodes are
+the left and right skip nodes, and the gray one at the end of the last line
+represents the parfill skip. The magenta ones at the edge are baseline skips. An
+indentation is shown in gray too. As experiment we have four normalization levels
+but in the end only the highest level makes sense, simply because normalization
+makes no sense unless one consistently normalizes all. We just keep the
+granularity because it makes it possible to explain what gets done.
+
+\texdefinition{Sample}{0}{sample-1}
+\texdefinition{Sample}{0}{sample-2}
+\texdefinition{Sample}{0}{sample-3}
+\texdefinition{Sample}{0}{sample-4}
+
+You might have noticed that the right skip is always there but the left skip is
+absent when it is zero. As said, as long as the result is okay, it does not
+really matter. But \unknown\ in \LUATEX\ (and therefore \CONTEXT) it can have
+consequences because there we can kick in a callback that does something with
+lines. Such a callback often has to deal with these specific glues and them being
+optional makes for more testing. The more predictable the order is, the better.
+Although we can easily normalize lines (in a callback) to always have a left skip
+too it is also an option in the engine.
+
+\texdefinition{Sample}{1}{sample-1}
+\texdefinition{Sample}{1}{sample-2}
+\texdefinition{Sample}{1}{sample-3}
+\texdefinition{Sample}{1}{sample-4}
+
+In the previous examples there are always left skips as well as right skips. It
+makes no sense to have an option to omit both zero left and right skips, because
+that again is unpredictable. But we can go further.
+
+\texdefinition{Sample}{2}{sample-1}
+\texdefinition{Sample}{2}{sample-2}
+\texdefinition{Sample}{2}{sample-3}
+\texdefinition{Sample}{2}{sample-4}
+
+In these examples the indentation has been turned into a glue as well (actually
+it is more a kern but using a glue makes more sense). The hanging indentation
+however is not seen here: it is not represented by glue but instead sort of
+hidden in the width of the box and a shift of its content.
+
+\texdefinition{Sample}{3}{sample-1}
+\texdefinition{Sample}{3}{sample-2}
+\texdefinition{Sample}{3}{sample-3}
+\texdefinition{Sample}{3}{sample-4}
+
+In the previous examples the hanging indentation is turned into left and right
+hang skips. These cannot be set at the \TEX\ end, but are injected when we
+instruct the normalizer to do so.
+
+\texdefinition{Sample}{4}{sample-1}
+\texdefinition{Sample}{4}{sample-2}
+\texdefinition{Sample}{4}{sample-3}
+\texdefinition{Sample}{4}{sample-4}
+
+The previous examples differ from the previous set in that they push these hang
+related glue nodes before the left and after the right skip. As I couldn't make
+up my mind yet, I let \LUAMETATEX\ just provide both variants.
+
+The option to keep hang related information explicitly in the line has some
+consequences. First of all, we now have glue and not some shift|/|width
+combination. Second, we have introduced an incompatibility: the lines now always
+have the proper width. You might have noticed that but we can show it more
+explicitly. We use two parameter sets
+
+\startbuffer[sample-5]
+    \hangindent = 20pt
+    \hangafter  =  0
+\stopbuffer
+
+\startbuffer[sample-6]
+    \hangindent =-20pt
+    \hangafter  =  0
+\stopbuffer
+
+\Sample{0}{sample-5}
+\Sample{4}{sample-5}
+
+\Sample{0}{sample-6}
+\Sample{4}{sample-6}
+
+A not yet mention part of the normalization is that, because they are no longer
+of relevance, the special local par nodes have been removed. The one that starts
+a paragraph is turned into a normal directional node if needed, so that we get
+properly balanced pairs of directional nodes. It must been said that the code
+that does all this is a bit of a mess. We want to stay close to the original
+code, but we also need to deal with all these extensions, like directions,
+protrusion, extra boxes, etc.
+
+Not shown here is that there is a fifth mode of operation. When we enable that
+level an overfull box will get a correction skip so that the right skip etc are
+properly aligned. How useful this is: we'll see.
+
+Now, when I decide to keep this feature, which can be set at the \LUA\ end to do
+the previously mentioned tasks, depending on a feature level ranging from zero to
+four, I also need to check the impact on existing \CONTEXT\ code, which
+(currently) is complicated by the fact that most is shared between \MKIV\ and
+\LMTX, and only \LUAMETATEX\ has this normalization feature. I will probably
+enable it for a while locally in order to see if there are side effects. Then,
+when the code base gets adapted, we have to assume that normalization happens, so
+there is no way back.
+
+\stopchapter
+
+\stopcomponent
+

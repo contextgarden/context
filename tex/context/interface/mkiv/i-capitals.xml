@@ -167,6 +167,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="cap" level="style" category="fonts" file="typo-cap.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="mixedcaps" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
@@ -180,6 +186,18 @@
     </cd:command>
 
     <cd:command name="Caps" level="style" category="fonts" file="typo-cap.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="capital" level="style" category="fonts" file="typo-cap.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="smallcaps" level="style" category="fonts" file="typo-cap.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

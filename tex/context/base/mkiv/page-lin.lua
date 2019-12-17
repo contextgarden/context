@@ -40,7 +40,7 @@ local v_next             = variables.next
 local v_page             = variables.page
 local v_no               = variables.no
 
-local properties         = nodes.properties
+local properties         = nodes.properties.data
 
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes

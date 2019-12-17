@@ -90,13 +90,18 @@
 
 % \definesection (could become \definehead with one parameter)
 
-\definesection[\s!section-1] % part
-\definesection[\s!section-2] % chapter
-\definesection[\s!section-3] % section
-\definesection[\s!section-4] % subsection
-\definesection[\s!section-5] % subsubsection
-\definesection[\s!section-6] % subsubsubsection
-\definesection[\s!section-7] % subsubsubsubsection
+\definesection[\s!section-1]  % part
+\definesection[\s!section-2]  % chapter
+\definesection[\s!section-3]  % section
+\definesection[\s!section-4]  % subsection
+\definesection[\s!section-5]  % subsubsection
+\definesection[\s!section-6]  % subsubsubsection
+\definesection[\s!section-7]  % subsubsubsubsection
+\definesection[\s!section-8]  % subsubsubsubsubsection
+\definesection[\s!section-9]  % subsubsubsubsubsubsection
+\definesection[\s!section-10] % subsubsubsubsubsubsubsection
+\definesection[\s!section-11] % subsubsubsubsubsubsubsubsection
+\definesection[\s!section-12] % subsubsubsubsubsubsubsubsubsection
 
 % \definehead
 
@@ -131,6 +136,31 @@
   [\v!subsubsubsubsection]
   [\c!section=\s!section-7,
    \c!default=\v!subsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsection]
+  [\c!section=\s!section-8,
+   \c!default=\v!subsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsection]
+  [\c!section=\s!section-9,
+   \c!default=\v!subsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsection]
+  [\c!section=\s!section-10,
+   \c!default=\v!subsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-11,
+   \c!default=\v!subsubsubsubsubsubsubsection]
+
+\definehead
+  [\v!subsubsubsubsubsubsubsubsubsection]
+  [\c!section=\s!section-12,
+   \c!default=\v!subsubsubsubsubsubsubsubsection]
 
 \definehead
   [\v!title]
@@ -168,63 +198,6 @@
    \c!default=\v!subsubsubsubsection,
    \c!incrementnumber=\v!no]
 
-\setuphead
-  [\v!part]
-  [\c!placehead=\v!no]
-
-\setuphead
-  [\v!chapter]
-  [\v!appendix\c!label=\v!appendix,
-   \v!bodypart\c!label=\v!chapter]       %   bijlageconversie=\Character
-
-\setuphead
-  [\v!section]
-  [\v!appendix\c!label=\v!section,
-   \v!bodypart\c!label=\v!section]       %   bijlageconversie=\Character
-
-\setuphead
-  [\v!subsection]
-  [\v!appendix\c!label=\v!subsection,
-   \v!bodypart\c!label=\v!subsection]    %   bijlageconversie=\Character
-
-\setuphead
-  [\v!subsubsection]
-  [\v!appendix\c!label=\v!subsubsection,
-   \v!bodypart\c!label=\v!subsubsection] %   bijlageconversie=\Character
-
-% extras
-
-\definesection[\s!section-8]   % subsubsubsubsubsection
-\definesection[\s!section-9]   % subsubsubsubsubsubsection
-\definesection[\s!section-10]  % subsubsubsubsubsubsubsection
-\definesection[\s!section-11]  % subsubsubsubsubsubsubsubsection
-\definesection[\s!section-12]  % subsubsubsubsubsubsubsubsubsection
-
-\definehead
-  [\v!subsubsubsubsubsection]
-  [\c!section=\s!section-8,
-   \c!default=\v!subsubsubsubsection]
-
-\definehead
-  [\v!subsubsubsubsubsubsection]
-  [\c!section=\s!section-9,
-   \c!default=\v!subsubsubsubsubsection]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsection]
-  [\c!section=\s!section-10,
-   \c!default=\v!subsubsubsubsubsubsection]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsubsection]
-  [\c!section=\s!section-11,
-   \c!default=\v!subsubsubsubsubsubsubsection]
-
-\definehead
-  [\v!subsubsubsubsubsubsubsubsubsection]
-  [\c!section=\s!section-12,
-   \c!default=\v!subsubsubsubsubsubsubsubsection]
-
 \definehead
   [\v!subsubsubsubsubsubject]
   [\c!coupling=\v!subsubsubsubsubsection,
@@ -254,6 +227,34 @@
   [\c!coupling=\v!subsubsubsubsubsubsubsubsubsection,
    \c!default=\v!subsubsubsubsubsubsubsubsubsection,
    \c!incrementnumber=\v!no]
+
+% setups
+
+\setuphead
+  [\v!part]
+  [\c!placehead=\v!no]
+
+\setuphead
+  [\v!chapter]
+  [\v!appendix\c!label=\v!appendix,
+   \v!bodypart\c!label=\v!chapter]       %   bijlageconversie=\Character
+
+\setuphead
+  [\v!section]
+  [\v!appendix\c!label=\v!section,
+   \v!bodypart\c!label=\v!section]       %   bijlageconversie=\Character
+
+\setuphead
+  [\v!subsection]
+  [\v!appendix\c!label=\v!subsection,
+   \v!bodypart\c!label=\v!subsection]    %   bijlageconversie=\Character
+
+\setuphead
+  [\v!subsubsection]
+  [\v!appendix\c!label=\v!subsubsection,
+   \v!bodypart\c!label=\v!subsubsection] %   bijlageconversie=\Character
+
+% prefixes
 
 \defineprefixset
   [\v!all]
@@ -321,12 +322,17 @@
   [\c!before={\blank[\v!preference,\v!big]}, % sort of mkii compatible, watch columns
    \c!after=]
 
-\setuplist [\v!part]                [\c!width=0\emwidth]
-\setuplist [\v!chapter]             [\c!width=2\emwidth]
-\setuplist [\v!section]             [\c!width=3\emwidth]
-\setuplist [\v!subsection]          [\c!width=4\emwidth]
-\setuplist [\v!subsubsection]       [\c!width=5\emwidth]
-\setuplist [\v!subsubsubsection]    [\c!width=6\emwidth]
+\setuplist [\v!part] [\c!width=0\emwidth]
+\setuplist [\v!chapter] [\c!width=2\emwidth]
+\setuplist [\v!section] [\c!width=3\emwidth]
+\setuplist [\v!subsection] [\c!width=4\emwidth]
+\setuplist [\v!subsubsection] [\c!width=5\emwidth]
+\setuplist [\v!subsubsubsection] [\c!width=6\emwidth]
 \setuplist [\v!subsubsubsubsection] [\c!width=7\emwidth]
+\setuplist [\v!subsubsubsubsubsection] [\c!width=8\emwidth]
+\setuplist [\v!subsubsubsubsubsubsection] [\c!width=9\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsection] [\c!width=10\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsubsection] [\c!width=11\emwidth]
+\setuplist [\v!subsubsubsubsubsubsubsubsubsection] [\c!width=12\emwidth]
 
 \protect \endinput

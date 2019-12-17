@@ -20,24 +20,22 @@
 %D \macros
 %D   {setobject,getobject,ifinobject}
 %D
-%D Boxes can be considered reuable objects. Traditionally once passed
-%D to the \DVI\ file, such objects cannot be reused. In \PDF\ however,
-%D reusing is possible and sometimes even a necessity. Therefore,
-%D \CONTEXT\ supports reusable objects and \LUATEX\ has native support
-%D for so called box resources.
+%D Boxes can be considered reuable objects. Traditionally once passed to the \DVI\
+%D file, such objects cannot be reused. In \PDF\ however, reusing is possible and
+%D sometimes even a necessity. Therefore, \CONTEXT\ supports reusable objects and
+%D \LUATEX\ has native support for so called box resources.
 %D
-%D The first application of objects in \CONTEXT\ concerned \METAPOST\
-%D graphics and fill||in form fields. Reusing resources can save lots
-%D of bytes and sometimes also runtime.
+%D The first application of objects in \CONTEXT\ concerned \METAPOST\ graphics and
+%D fill||in form fields. Reusing resources can save lots of bytes and sometimes also
+%D runtime.
 %D
 %D \starttyping
 %D \setobject{class}{name}\somebox{}
 %D \getobject{class}{name}
 %D \stoptyping
 %D
-%D Here \type {\somebox} can be whatever box specification suits \TEX.
-%D Although the implementation in \MKIV\ is somewhat different the
-%D principles have not changed.
+%D Here \type {\somebox} can be whatever box specification suits \TEX. Although the
+%D implementation in \MKIV\ is somewhat different the principles have not changed.
 
 \installcorenamespace {objects}
 

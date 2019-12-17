@@ -1,0 +1,41 @@
+
+\environment luametafun-style
+
+\startcomponent luametafun-titlepage
+
+\startMPpage
+
+    fill Page withcolor "darkblue" ;
+
+    path p ; p := (0,0) -- (0,4) -- (2,2) -- (4,4) -- (4,0) ;
+
+    p := p scaled 20; p := p shifted - center p ;
+
+    draw image (
+        for i=1 upto 1000 :
+            draw p shifted (center Page randomized urcorner Page) ;
+        endfor ;
+    ) withcolor "darkgreen" ;
+
+    setbounds currentpicture to Page ;
+
+    draw
+     %  textext.ulft("\ss luametafun")
+        textext.ulft("\ss metafun xl")
+        xsized .55bbwidth(Page)
+        shifted lrcorner Page
+        shifted (-15mm,35mm)
+        withcolor "white"
+    ;
+
+    draw
+        textext.ulft("\ss Hans Hagen")
+        xsized .3bbwidth(Page)
+        shifted lrcorner Page
+        shifted (-15mm,15mm)
+        withcolor "white"
+    ;
+
+\stopMPpage
+
+\stopcomponent

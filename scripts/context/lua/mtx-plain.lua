@@ -6,11 +6,13 @@ if not modules then modules = { } end modules ['mtx-plain'] = {
     license   = "see context related readme files"
 }
 
--- future version will use the texmf-cache/generic/formats/<engine> path
+-- Future version will use the texmf-cache/generic/formats/<engine> path
 -- instead because then we can use some more of the generic context
 -- initializers ... in that case we will also use the regular database
 -- instead of kpse here, just like with the font database code (as that
--- one also works with kpse runtime)
+-- one also works with kpse runtime).
+
+-- Maybe I have to update this one to use more recent ways to run programs.
 
 local format = string.format
 

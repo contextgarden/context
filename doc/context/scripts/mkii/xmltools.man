@@ -1,6 +1,6 @@
 .TH "xmltools" "1" "01-01-2019" "version 1.2.2" "XMLTools"
 .SH NAME
-.B xmltools
+ xmltools - XMLTools
 .SH SYNOPSIS
 .B xmltools [
 .I OPTIONS ...

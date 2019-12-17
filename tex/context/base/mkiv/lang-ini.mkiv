@@ -195,19 +195,35 @@
 \unexpanded\def\installlanguage
   {\dodoubleargument\lang_basics_install}
 
+% \def\lang_basics_install[#1][#2]%
+%   {\doifelseassignment{#2}
+%      {\doifelselanguage{#1}
+%         {\getparameters[\??language#1][#2]}
+%         {\setvalue{\??languagelinked#1}{#1}%
+%          \lang_basics_install_indeed{#1}{#1}%
+%          \getparameters[\??language#1][\c!state=\v!start,#2]}%
+%       \edef\currentsetuplanguage{#1}%
+%       \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
+%       \the\everysetuplanguage}
+%      {\setvalue{\??languagelinked#1}{#2}%
+%       \clf_setlanguagesynonym{#1}{#2}%
+%       \lang_basics_install_indeed{#1}{#2}}}
+
 \def\lang_basics_install[#1][#2]%
-  {\doifelseassignment{#2}
-     {\doifelselanguage{#1}
-        {\getparameters[\??language#1][#2]}
-        {\setvalue{\??languagelinked#1}{#1}%
-         \lang_basics_install_indeed{#1}{#1}%
-         \getparameters[\??language#1][\c!state=\v!start,#2]}%
-      \edef\currentsetuplanguage{#1}%
-      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
-      \the\everysetuplanguage}
-     {\setvalue{\??languagelinked#1}{#2}%
-      \clf_setlanguagesynonym{#1}{#2}%
-      \lang_basics_install_indeed{#1}{#2}}}
+  {\ifcondition\validassignment{#2}%
+     \doifelselanguage{#1}
+       {\getparameters[\??language#1][#2]}
+       {\setvalue{\??languagelinked#1}{#1}%
+        \lang_basics_install_indeed{#1}{#1}%
+        \getparameters[\??language#1][\c!state=\v!start,#2]}%
+     \edef\currentsetuplanguage{#1}%
+     \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
+     \the\everysetuplanguage
+   \else
+     \setvalue{\??languagelinked#1}{#2}%
+     \clf_setlanguagesynonym{#1}{#2}%
+     \lang_basics_install_indeed{#1}{#2}%
+  \fi}
 
 \def\lang_basics_install_indeed#1#2%
   {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}

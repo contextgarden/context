@@ -42,7 +42,8 @@
 \unexpanded\def\math_eqalign_distance
   {\relax
    \ifdim\d_math_eqalign_distance>\zeropoint
-     \hskip\d_math_eqalign_distance
+   % \hskip\d_math_eqalign_distance
+     \tabskip\d_math_eqalign_distance
    \fi
    \mathalignmentparameter\c!separator
    \relax}
@@ -68,7 +69,7 @@
 
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
-   \d_math_eqalign_distance\mathalignmentparameter\c!distance
+   \d_math_eqalign_distance\mathalignmentparameter\c!distance\relax
    \scratchcounterone\mathalignmentparameter\c!m
    \scratchcountertwo\mathalignmentparameter\c!n
    \etoksapp\scratchtoks{\the\t_math_align_a}%
@@ -712,6 +713,8 @@
 
 \let\math_cases_NR\math_align_NR_generic
 
+\installmacrostack\math_cases_NC
+
 \unexpanded\def\math_cases_start_indeed[#1]%
   {\iffirstargument
      \setupcurrentmathcases[#1]%
@@ -724,7 +727,7 @@
    \fi
    \mathcasesparameter\c!left
    \vcenter\bgroup
-   \pushmacro\math_cases_NC
+   \push_macro_math_cases_NC
    \let\endmath\relax
    \let\NC\math_cases_NC_zero
    \let\MC\math_cases_MC_zero
@@ -743,7 +746,7 @@
      \hfil
      \aligntab
      \hskip\mathcasesparameter\c!distance\relax
-     \popmacro\math_cases_NC
+     \pop_macro_math_cases_NC
      \math_cases_strut % looks better
      \alignmark\alignmark
      \hfil
@@ -968,9 +971,16 @@
   {\c_math_eqalign_column\zerocount
    \rawprocesscommacommand[\mathmatrixparameter\c!align]\math_matrix_set_columns_step}
 
+\newcount\c_math_eqalign_column_saved
+\newcount\c_math_eqalign_first_saved
+
+% \installglobalmacrostack\c_math_matrix_first
+
 \unexpanded\def\math_matrix_start#1%
   {\begingroup
-   \globalpushmacro\c_math_matrix_first
+   \globalpushmacro\c_math_matrix_first % hm, does that work?
+   \c_math_eqalign_column_saved\c_math_eqalign_column
+   \c_math_eqalign_first_saved \c_math_eqalign_first
    \edef\currentmathmatrix{#1}%
    \dosingleempty\math_matrix_start_indeed}
 
@@ -985,6 +995,8 @@
 
 \def\math_matrix_stop
   {\math_matrix_stop_processing
+   \global\c_math_eqalign_first\c_math_eqalign_first_saved
+   \global\c_math_eqalign_column\c_math_eqalign_column_saved
    \globalpopmacro\c_math_matrix_first
    \endgroup}
 
@@ -1457,7 +1469,7 @@
      \ifcase\mathraggedstatus\or\or\hfill\or\hfill\fi
    \else
      \ifconditional\c_strc_math_indent
-       \ifdim\d_strc_math_indent=\zeropoint\else
+       \ifzeropt\d_strc_math_indent\else
          \hangafter\plusone
          \hangindent\d_strc_math_indent
        \fi
@@ -1817,31 +1829,31 @@
    \or
      \bgroup \hsize\displaywidth
    \fi
-     \ifcase\mathnumberstatus
+   \ifcase\mathnumberstatus
+     \strc_math_flush_box
+   \or % status 1
+     \ifcase\c_strc_math_number_location
        \strc_math_flush_box
-     \or % status 1
-       \ifcase\c_strc_math_number_location
-         \strc_math_flush_box
-       \or % number left
-         \ifzeropt\wd\b_strc_formulas_number
-           \strc_math_flush_number_no
-         \else
-           \strc_math_flush_number_left
-         \fi
-       \else % number right
-         \ifzeropt\wd\b_strc_formulas_number
-           \strc_math_flush_number_no
-         \else
-           \strc_math_flush_number_right
-         \fi
+     \or % number left
+       \ifzeropt\wd\b_strc_formulas_number
+         \strc_math_flush_number_no
+       \else
+         \strc_math_flush_number_left
        \fi
-     \or % status 2
-        \hskip\d_math_number_correction % probably no longer used
-        \strc_math_flush_box
-        \hss
-     \else
-       \strc_math_flush_box
+     \else % number right
+       \ifzeropt\wd\b_strc_formulas_number
+         \strc_math_flush_number_no
+       \else
+         \strc_math_flush_number_right
+       \fi
      \fi
+   \or % status 2
+      \hskip\d_math_number_correction % probably no longer used
+      \strc_math_flush_box
+      \hss
+   \else
+     \strc_math_flush_box
+   \fi
    \ifcase\c_strc_math_vertical
    \or
    \or
@@ -1864,22 +1876,22 @@
         % 4=disable 6=only when no spaces
         \mathsurroundskip\mathematicsparameter\c!textdistance\relax
         \ifzeropt\mathsurroundskip
-        \ifdim\gluestretch\mathsurroundskip=\zeropoint
-            \ifdim\glueshrink\mathsurroundskip=\zeropoint
-            \mathsurroundmode\plussix
+          \ifzeropt\gluestretch\mathsurroundskip
+            \ifzeropt\glueshrink\mathsurroundskip
+              \mathsurroundmode\plussix
             \else
-            \mathsurroundskip\zeropoint
-            \mathsurroundmode\plusfour
+              \mathsurroundskip\zeropoint
+              \mathsurroundmode\plusfour
             \fi
-        \else
+          \else
             \mathsurroundmode\plussix
-        \fi
+          \fi
         \else
-        \mathsurroundmode\plussix
+          \mathsurroundmode\plussix
         \fi
     \else
-        \mathsurroundmode\plusfour
-        \mathsurroundskip\zeropoint
+      \mathsurroundmode\plusfour
+      \mathsurroundskip\zeropoint
     \fi
 \to \everymathematics
 

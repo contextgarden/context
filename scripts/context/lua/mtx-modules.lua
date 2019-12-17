@@ -22,8 +22,8 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="convert"><short>convert source files (tex, mkii, mkiv, mp) to 'ted' files</short></flag>
-    <flag name="process"><short>process source files (tex, mkii, mkiv, mp) to 'pdf' files</short></flag>
+    <flag name="convert"><short>convert source files (tex, mkii, mkiv, mp, etc.) to 'ted' files</short></flag>
+    <flag name="process"><short>process source files (tex, mkii, mkiv, mp, etc.) to 'pdf' files</short></flag>
     <flag name="prep"><short>use original name with suffix 'prep' appended</short></flag>
     <flag name="direct"><short>use old method instead of extra</short></flag>
    </subcategory>
@@ -163,7 +163,12 @@ local function source_to_ted(inpname,outname,filetype)
     return true
 end
 
-local suffixes = table.tohash { 'tex', 'mkii', 'mkiv', 'mkvi', 'mp', 'mpii', 'mpiv' }
+local suffixes = table.tohash {
+    "tex",
+    "mkii",
+    "mkiv", "mkvi", "mkil", "mkli",
+    "mp", "mpii", "mpiv",
+}
 
 function scripts.modules.process(runtex)
     local processed = { }

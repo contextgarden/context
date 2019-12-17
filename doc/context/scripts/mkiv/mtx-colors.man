@@ -1,6 +1,6 @@
 .TH "mtx-colors" "1" "01-01-2019" "version 0.10" "ConTeXt Color Management"
 .SH NAME
-.B mtx-colors
+ mtx-colors - ConTeXt Color Management
 .SH SYNOPSIS
 .B mtxrun --script colors [
 .I OPTIONS ...

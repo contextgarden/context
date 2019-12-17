@@ -1,0 +1,31 @@
+%D \module
+%D   [       file=core-lmt,
+%D        version=2018.08.2,
+%D          title=\CONTEXT\ System Macros,
+%D       subtitle=Primitives,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt System Macros / Primitives}
+
+%D This is offered temporarily because in the end we don't expect u sers to use the
+%D low level direction directives directly.
+
+\registerctxluafile{core-lmt}{}
+
+\unprotect
+
+% nothing yet
+
+\protect \endinput
+
+% \starttext
+%     abc{\textdir TRTdef}ghi
+%     abc{\textdir trtdef}ghi
+%     \boxdirection0=1
+% \stoptext

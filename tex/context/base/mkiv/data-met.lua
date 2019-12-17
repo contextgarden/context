@@ -6,9 +6,12 @@ if not modules then modules = { } end modules ['data-met'] = {
     license   = "see context related readme files"
 }
 
-local find, format = string.find, string.format
-local sequenced = table.sequenced
+local type = type
+local find = string.find
 local addurlscheme, urlhashed = url.addscheme, url.hashed
+local collapsepath, joinfile = file.collapsepath, file.join
+
+local report_methods = logs.reporter("resolvers","methods")
 
 local trace_locating = false
 local trace_methods  = false
@@ -16,31 +19,38 @@ local trace_methods  = false
 trackers.register("resolvers.locating", function(v) trace_methods = v end)
 trackers.register("resolvers.methods",  function(v) trace_methods = v end)
 
---~ trace_methods = true
-
-local report_methods = logs.reporter("resolvers","methods")
-
-local allocate = utilities.storage.allocate
-
-local resolvers = resolvers
+local allocate   = utilities.storage.allocate
+local resolvers  = resolvers
 
 local registered = { }
 
 local function splitmethod(filename) -- todo: filetype in specification
     if not filename then
-        return { scheme = "unknown", original = filename }
+        return {
+            scheme   = "unknown",
+            original = filename,
+        }
     end
     if type(filename) == "table" then
         return filename -- already split
     end
-    filename = file.collapsepath(filename,".") -- hm, we should keep ./ in some cases
-
+    filename = collapsepath(filename,".") -- hm, we should keep ./ in some cases
     if not find(filename,"://",1,true) then
-        return { scheme = "file", path = filename, original = filename, filename = filename }
+        return {
+            scheme   = "file",
+            path     = filename,
+            original = filename,
+            filename = filename,
+        }
     end
-    local specification = url.hashed(filename)
+    local specification = urlhashed(filename)
     if not specification.scheme or specification.scheme == "" then
-        return { scheme = "file", path = filename, original = filename, filename = filename }
+        return {
+            scheme   = "file",
+            path     = filename,
+            original = filename,
+            filename = filename,
+        }
     else
         return specification
     end
@@ -53,7 +63,7 @@ end
 --     if type(filename) == "table" then
 --         return filename -- already split
 --     end
---     return url.hashed(filename)
+--     return urlhashed(filename)
 -- end
 
 resolvers.splitmethod = splitmethod -- bad name but ok
@@ -64,11 +74,12 @@ resolvers.splitmethod = splitmethod -- bad name but ok
 local function methodhandler(what,first,...) -- filename can be nil or false
     local method = registered[what]
     if method then
-        local how, namespace = method.how, method.namespace
+        local how       = method.how
+        local namespace = method.namespace
         if how == "uri" or how == "url" then
             local specification = splitmethod(first)
-            local scheme = specification.scheme
-            local resolver = namespace and namespace[scheme]
+            local scheme        = specification.scheme
+            local resolver      = namespace and namespace[scheme]
             if resolver then
                 if trace_methods then
                     report_methods("resolving, method %a, how %a, handler %a, argument %a",what,how,scheme,first)
@@ -112,7 +123,10 @@ end
 resolvers.methodhandler = methodhandler
 
 function resolvers.registermethod(name,namespace,how)
-    registered[name] = { how = how or "tag", namespace = namespace }
+    registered[name] = {
+        how       = how or "tag",
+        namespace = namespace
+    }
     namespace["byscheme"] = function(scheme,filename,...)
         if scheme == "file" then
             return methodhandler(name,filename,...)
@@ -122,7 +136,7 @@ function resolvers.registermethod(name,namespace,how)
     end
 end
 
-local concatinators = allocate { notfound = file.join       }  -- concatinate paths
+local concatinators = allocate { notfound = joinfile        }  -- concatinate paths
 local locators      = allocate { notfound = function() end  }  -- locate databases
 local hashers       = allocate { notfound = function() end  }  -- load databases
 local generators    = allocate { notfound = function() end  }  -- generate databases

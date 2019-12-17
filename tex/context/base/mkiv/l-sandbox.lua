@@ -281,20 +281,24 @@ end
 
 loadfile = register(loadfile,"loadfile")
 
+if supported("lua") then
+    lua.openfile = register(lua.openfile,"lua.openfile")
+end
+
 if supported("io") then
-    io.open               = register(io.open,              "io.open")
-    io.popen              = register(io.popen,             "io.popen") -- needs checking
-    io.lines              = register(io.lines,             "io.lines")
-    io.output             = register(io.output,            "io.output")
-    io.input              = register(io.input,             "io.input")
+    io.open   = register(io.open,  "io.open")
+    io.popen  = register(io.popen, "io.popen") -- needs checking
+    io.lines  = register(io.lines, "io.lines")
+    io.output = register(io.output,"io.output")
+    io.input  = register(io.input, "io.input")
 end
 
 if supported("os") then
-    os.execute            = register(os.execute,           "os.execute")
-    os.spawn              = register(os.spawn,             "os.spawn")
-    os.exec               = register(os.exec,              "os.exec")
-    os.rename             = register(os.rename,            "os.rename")
-    os.remove             = register(os.remove,            "os.remove")
+    os.execute = register(os.execute,"os.execute")
+    os.spawn   = register(os.spawn,  "os.spawn")
+    os.exec    = register(os.exec,   "os.exec")
+    os.rename  = register(os.rename, "os.rename")
+    os.remove  = register(os.remove, "os.remove")
 end
 
 if supported("lfs") then

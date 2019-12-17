@@ -12,6 +12,9 @@ if context then
     os.exit()
 end
 
+-- There is no need for a special script to generate this list as it's seldom
+-- changes: inspect(fonts.encodings.agl.unicodes) will do.
+
 return {
  ["A"]=65,
  ["AE"]=198,
@@ -1603,6 +1606,7 @@ return {
  ["eightideographicparen"]=12839,
  ["eightinferior"]=8328,
  ["eightmonospace"]=65304,
+ ["eightoldstyle"]=56,
  ["eightparen"]=9339,
  ["eightperiod"]=9359,
  ["eightpersian"]=1784,
@@ -1760,6 +1764,7 @@ return {
  ["fiveideographicparen"]=12836,
  ["fiveinferior"]=8325,
  ["fivemonospace"]=65301,
+ ["fiveoldstyle"]=53,
  ["fiveparen"]=9336,
  ["fiveperiod"]=9356,
  ["fivepersian"]=1781,
@@ -1788,6 +1793,7 @@ return {
  ["fourinferior"]=8324,
  ["fourmonospace"]=65300,
  ["fournumeratorbengali"]=2551,
+ ["fouroldstyle"]=52,
  ["fourparen"]=9335,
  ["fourperiod"]=9355,
  ["fourpersian"]=1780,
@@ -2616,6 +2622,7 @@ return {
  ["nineideographicparen"]=12840,
  ["nineinferior"]=8329,
  ["ninemonospace"]=65305,
+ ["nineoldstyle"]=57,
  ["nineparen"]=9340,
  ["nineperiod"]=9360,
  ["ninepersian"]=1785,
@@ -2782,6 +2789,7 @@ return {
  ["oneinferior"]=8321,
  ["onemonospace"]=65297,
  ["onenumeratorbengali"]=2548,
+ ["oneoldstyle"]=49,
  ["oneparen"]=9332,
  ["oneperiod"]=9352,
  ["onepersian"]=1777,
@@ -3298,6 +3306,7 @@ return {
  ["sevenideographicparen"]=12838,
  ["seveninferior"]=8327,
  ["sevenmonospace"]=65303,
+ ["sevenoldstyle"]=55,
  ["sevenparen"]=9338,
  ["sevenperiod"]=9358,
  ["sevenpersian"]=1783,
@@ -3394,6 +3403,7 @@ return {
  ["sixideographicparen"]=12837,
  ["sixinferior"]=8326,
  ["sixmonospace"]=65302,
+ ["sixoldstyle"]=54,
  ["sixparen"]=9337,
  ["sixperiod"]=9357,
  ["sixpersian"]=1782,
@@ -3602,6 +3612,7 @@ return {
  ["threeinferior"]=8323,
  ["threemonospace"]=65299,
  ["threenumeratorbengali"]=2550,
+ ["threeoldstyle"]=51,
  ["threeparen"]=9334,
  ["threeperiod"]=9354,
  ["threepersian"]=1779,
@@ -3722,6 +3733,7 @@ return {
  ["twoinferior"]=8322,
  ["twomonospace"]=65298,
  ["twonumeratorbengali"]=2549,
+ ["twooldstyle"]=50,
  ["twoparen"]=9333,
  ["twoperiod"]=9353,
  ["twopersian"]=1778,
@@ -4088,6 +4100,7 @@ return {
  ["zerohackarabic"]=1632,
  ["zeroinferior"]=8320,
  ["zeromonospace"]=65296,
+ ["zerooldstyle"]=48,
  ["zeropersian"]=1776,
  ["zerosuperior"]=8304,
  ["zerothai"]=3664,

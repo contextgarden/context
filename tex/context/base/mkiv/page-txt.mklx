@@ -1,0 +1,969 @@
+% macros=mkvi
+
+%D \module
+%D   [       file=page-txt, % copied from main-001,
+%D        version=1997.03.31,
+%D          title=\CONTEXT\ Page Macros,
+%D       subtitle=Texts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Page Macros / Texts}
+
+\unprotect
+
+\newtoks\toptextcontent     \newtoks\leftedgetextcontent
+\newtoks\headertextcontent  \newtoks\leftmargintextcontent
+\newtoks\footertextcontent  \newtoks\rightmargintextcontent
+\newtoks\bottomtextcontent  \newtoks\rightedgetextcontent
+
+\newtoks\texttextcontent
+
+%D \macros
+%D  {setuptop, setupheader, setuptext,setupfooter, setupbottom}
+%D
+%D The macros in this module sometimes look a bit more complicated than needed,
+%D which is a direct result of the fact that their ancestors are quite old and
+%D upward compatibility is a must.
+%D
+%D \showsetup{setuptop}
+%D \showsetup{setupheader}
+%D \showsetup{setuptext}
+%D \showsetup{setupfooter}
+%D \showsetup{setupbottom}
+
+\installcorenamespace{layouttexts}
+\installcorenamespace{layouttextsline}
+\installcorenamespace{layouttextsreset}
+\installcorenamespace{layouttextssynchronize}
+\installcorenamespace{layouttextstrut}
+\installcorenamespace{layouttextspecial}
+\installcorenamespace{layouttextcontent}
+
+\installcommandhandler \??layouttexts {layoutelement} \??layouttexts
+
+% \appendtoks
+%     \resetlayoutelementparameter\c!lefttext   % resolves better
+%     \resetlayoutelementparameter\c!middletext
+%     \resetlayoutelementparameter\c!righttext
+% \to \everydefinelayoutelement
+
+\definelayoutelement[\v!top   ]
+\definelayoutelement[\v!header]
+\definelayoutelement[\v!text  ]
+\definelayoutelement[\v!footer]
+\definelayoutelement[\v!bottom]
+
+\definelayoutelement[\v!top   :\v!text]  [\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!text]  [\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!text]  [\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!text]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!text]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
+
+\definelayoutelement[\v!top   :\v!margin][\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!margin][\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!margin][\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!margin][\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!margin][\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
+
+\definelayoutelement[\v!top   :\v!edge]  [\v!top   ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!header:\v!edge]  [\v!header][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!text  :\v!edge]  [\v!text  ][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!footer:\v!edge]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
+\definelayoutelement[\v!bottom:\v!edge]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
+
+\unexpanded\def\setuplayouttext
+  {\dotripleempty\page_layouts_setup_text}
+
+\def\page_layouts_setup_text[#vertical][#horizontal][#settings]%
+  {\ifthirdargument
+     \setuplayoutelement[#vertical:#horizontal][#settings]%
+   \else
+     \setuplayoutelement[#vertical][#horizontal]%
+   \fi}
+
+\appendtoks
+    \ifx\currentlayoutelement\empty\else
+        \page_layouts_synchronize_element\currentlayoutelement % brr, can be vertical:horizontal
+    \fi
+\to \everysetuplayoutelement
+
+\def\page_layouts_reset_element_status#vertical%
+  {\expandafter\normalgdef\csname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
+
+\def\page_layouts_set_element_status_normal#vertical%
+  {\expandafter\glet\csname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
+   \expandafter\glet\csname\??layouttextsreset#vertical\endcsname\relax
+   \page_layouts_synchronize_element{#vertical}}
+
+\def\page_layouts_synchronize_element#vertical%
+  {\xdef\previoustextstate{\csname\??layouttextssynchronize#vertical\endcsname}% can be a let
+   \edef\currenttextstate {\namedlayoutelementparameter{#vertical}\c!state}%
+  %\writestatus{>>}{[#vertical:\currenttextstate/\previoustextstate]}%
+   \ifx\currenttextstate\previoustextstate \else
+     \page_layouts_synchronize_element_indeed{#vertical}%
+   \fi}
+
+\def\page_layouts_synchronize_element_indeed#vertical%
+  {\ifx\currenttextstate \v!high \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\previoustextstate\v!high \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\currenttextstate \v!none \calculatevsizes\page_backgrounds_recalculate \orelse
+   \ifx\previoustextstate\v!none \calculatevsizes\page_backgrounds_recalculate \fi
+   \letgvalue{\??layouttextssynchronize#vertical}\currenttextstate}
+
+\unexpanded\def\setuptop   {\dotripleempty\page_layouts_setup_text[\v!top   ]}
+\unexpanded\def\setupheader{\dotripleempty\page_layouts_setup_text[\v!header]}
+\unexpanded\def\setuptext  {\dotripleempty\page_layouts_setup_text[\v!text  ]}
+\unexpanded\def\setupfooter{\dotripleempty\page_layouts_setup_text[\v!footer]}
+\unexpanded\def\setupbottom{\dotripleempty\page_layouts_setup_text[\v!bottom]}
+
+%D We inherit some settings:
+
+\setuplayoutelement
+  [  \c!leftstyle=\layoutelementparameter\c!style,
+   \c!middlestyle=\layoutelementparameter\c!style,
+    \c!rightstyle=\layoutelementparameter\c!style,
+     \c!leftcolor=\layoutelementparameter\c!color,
+   \c!middlecolor=\layoutelementparameter\c!color,
+    \c!rightcolor=\layoutelementparameter\c!color,
+     \c!leftwidth=\layoutelementparameter\c!width,
+   \c!middlewidth=\layoutelementparameter\c!width,
+    \c!rightwidth=\layoutelementparameter\c!width]
+
+%D \macros
+%D  {noheaderandfooterlines,notopandbottomlines}
+%D
+%D Although not really needed, the following shortcuts sometimes come in handy.
+%D
+%D \showsetup{noheaderandfooterlines}
+%D \showsetup{notopandbottomlines}
+
+\unexpanded\def\noheaderandfooterlines
+  {\setuplayoutelement[\v!header][\c!state=\v!empty]%
+   \setuplayoutelement[\v!footer][\c!state=\v!empty]}
+
+\unexpanded\def\notopandbottomlines
+  {\setuplayoutelement[\v!top   ][\c!state=\v!empty]%
+   \setuplayoutelement[\v!bottom][\c!state=\v!empty]}
+
+%D \macros
+%D  {setuptoptexts,setupheadertexts,setuptexttexts,setupfootertexts,setupbottomtexts}
+%D
+%D The next macros take one or more arguments. The exact setup depends on the number
+%D of arguments. Although not that intuitive, the current scheme evolved out of the
+%D original. When margin and edge texts as well as middle texts showed up, the
+%D current odd|/|even scheme surfaced.
+%D
+%D \showsetup{setuptoptexts}
+%D \showsetup{setupheadertexts}
+%D \showsetup{setuptexttexts}
+%D \showsetup{setupfootertexts}
+%D \showsetup{setupbottomtexts}
+%D
+%D Only the following have checking for pagenumber, date and mark built in, so when
+%D someone uses the key|/|value interface these things have to be set explicitly as
+%D part of the text.
+
+\unexpanded\def\setuptoptexts   {\dosixtupleempty\page_layouts_setup_texts[\v!top   ]}
+\unexpanded\def\setupheadertexts{\dosixtupleempty\page_layouts_setup_texts[\v!header]}
+\unexpanded\def\setuptexttexts  {\dosixtupleempty\page_layouts_setup_texts[\v!text  ]}
+\unexpanded\def\setupfootertexts{\dosixtupleempty\page_layouts_setup_texts[\v!footer]}
+\unexpanded\def\setupbottomtexts{\dosixtupleempty\page_layouts_setup_texts[\v!bottom]}
+
+\unexpanded\def\page_layouts_setup_text_six[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:#horizontal}%
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#a}{#d}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#b}{#c}}}
+
+\unexpanded\def\page_layouts_setup_text_five[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_double{#horizontal}{#c}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_double{#a}{#b}}}
+
+\unexpanded\def\page_layouts_setup_text_four[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:#horizontal}%
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#a}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#b}}}
+
+\unexpanded\def\page_layouts_setup_text_three[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \setlayoutelementparameter\c!lefttext {\page_layouts_process_element_single{#horizontal}}%
+   \setlayoutelementparameter\c!righttext{\page_layouts_process_element_single{#a}}}
+
+\unexpanded\def\page_layouts_setup_text_two[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \setlayoutelementparameter  \c!middletext{\page_layouts_process_element_single{#horizontal}}}
+
+\unexpanded\def\page_layouts_setup_text_one[#vertical][#horizontal][#a][#b][#c][#d]%
+  {\edef\currentlayoutelement{#vertical:\v!text}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext
+   \edef\currentlayoutelement{#vertical:\v!margin}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext
+   \edef\currentlayoutelement{#vertical:\v!edge}%
+   \resetlayoutelementparameter\c!lefttext
+   \resetlayoutelementparameter\c!righttext
+   \resetlayoutelementparameter\c!middletext}
+
+\unexpanded\def\page_layouts_setup_texts
+  {\ifsixthargument \expandafter\page_layouts_setup_text_six  \orelse
+   \iffifthargument \expandafter\page_layouts_setup_text_five \orelse
+   \iffourthargument\expandafter\page_layouts_setup_text_four \orelse
+   \ifthirdargument \expandafter\page_layouts_setup_text_three\orelse
+   \ifsecondargument\expandafter\page_layouts_setup_text_two  \else
+                    \expandafter\page_layouts_setup_text_one  \fi}
+
+%D Left and right texts are swapped on odd and even pages, but only when double
+%D sided typesetting is enabled.
+
+\setvalue{\??layouttextstrut\v!yes}{\setstrut\strut} % maybe more variants
+
+\let\m_page_layouts_element_content\empty
+
+\unexpanded\def\page_layouts_process_element_single#content%
+  {\edef\m_page_layouts_element_content{\detokenize{#content}}% so no \v!xxx
+   \ifcsname\??layouttextspecial\m_page_layouts_element_content\endcsname
+     \lastnamedcs
+   \else
+     \doifelsemarking\m_page_layouts_element_content
+       {\getmarking[\m_page_layouts_element_content][\v!first]}%
+       {#content}%
+   \fi}
+
+\unexpanded\def\page_layouts_process_element_double#first#second%
+  {\doifelseoddpage
+     {\page_layouts_process_element_single{#first}}
+     {\page_layouts_process_element_single{#second}}}
+
+\unexpanded\def\page_layouts_process_element_indeed#style#color#width%
+  {\begingroup
+   \uselayoutelementstyleandcolor#style#color%
+   \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
+   \ignorecrlf
+   \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
+   \ifx\currentlayoutelementwidth\empty\else
+     \expandafter\page_layouts_process_element_limited
+   \fi\p_text
+   \endgroup}
+
+\def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
+% {\limitatetext{#content{}{}{}}\currentlayoutelementwidth\unknown}
+  {\limitated
+      left     \currentlayoutelementwidth
+      text     {#content}
+      sentinel {\unknown}
+   \relax}
+
+\setvalue{\??layouttextspecial\v!pagenumber}{\page_layouts_place_page_number}
+\setvalue{\??layouttextspecial\v!date      }{\currentdate}
+
+%D When specified, the texts are automatically limited in length.
+
+\appendtoks \page_layouts_place_text_line\v!top   \topheight    \to \toptextcontent
+\appendtoks \page_layouts_place_text_line\v!header\headerheight \to \headertextcontent
+\appendtoks \page_layouts_place_text_line\v!text  \textheight   \to \texttextcontent
+\appendtoks \page_layouts_place_text_line\v!footer\footerheight \to \footertextcontent
+\appendtoks \page_layouts_place_text_line\v!bottom\bottomheight \to \bottomtextcontent
+
+%D Texts can be disabled, moved up and ignored, depending in the \type {status}
+%D variable. This is handled by the next couple of macros.
+
+\newcount\c_page_layouts_element_state_n
+
+\def\page_layouts_set_element_status#vertical%
+  {\c_page_layouts_element_state_n=0\namedlayoutelementparameter#vertical\c!n\relax
+   \ifcase\c_page_layouts_element_state_n
+     \edef\textlinestatus{\namedlayoutelementparameter#vertical\c!state}%
+   \else
+     \setxvalue{\namedlayoutelementhash#vertical\c!n}{\the\numexpr\c_page_layouts_element_state_n+\minusone}%
+     \let\textlinestatus\v!stop
+   \fi}
+
+\appendtoks
+   \doifinset\v!header\floatspecification{\setxvalue{\namedlayoutelementhash\v!header\c!n}{1}}%
+   \doifinset\v!footer\floatspecification{\setxvalue{\namedlayoutelementhash\v!footer\c!n}{1}}%
+\to \everybeforeflushedpagefloat
+
+\unexpanded\def\page_layouts_place_text_line#vertical%
+  {\page_layouts_set_element_status#vertical\relax
+   \ifcsname\??layouttextsline\textlinestatus\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\page_layouts_place_text_line_unknown
+   \fi#vertical}
+
+\unexpanded\def\doifelselayouttextline#vertical% shown or not
+  {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
+   \ifx\currentlayoutelementstate\v!normal
+      \expandafter\firstoftwoarguments
+   \orelse\ifx\currentlayoutelementstate\v!start
+      \expandafter\firstoftwoarguments
+   \else
+      \expandafter\secondoftwoarguments
+   \fi}
+
+\unexpanded\def\doifelselayoutsomeline#vertical% present or not
+  {\edef\currentlayoutelementstate{\namedlayoutelementparameter{#vertical}\c!state}%
+   \ifx\currentlayoutelementstate\v!none
+     \expandafter\secondoftwoarguments
+   \orelse\ifx\currentlayoutelementstate\v!high
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+\let\doiflayouttextlineelse\doifelselayouttextline
+\let\doiflayoutsomelineelse\doifelselayoutsomeline
+
+\newconditional\resyncaftertextline
+
+\setvalue{\??layouttextsline\v!normal}{\page_layouts_place_text_line_indeed}
+\setvalue{\??layouttextsline\empty   }{\page_layouts_place_text_line_indeed}
+
+\letvalue{\??layouttextsline\v!none}\gobbletwoarguments
+\letvalue{\??layouttextsline\v!stop}\gobbletwoarguments
+
+\setvalue{\??layouttextsline\v!high}#vertical#height%
+  {\global\settrue\resyncaftertextline
+   \page_layouts_reset_element_status#vertical}
+
+\setvalue{\??layouttextsline\v!empty}#vertical#height%
+  {\page_layouts_reset_element_status#vertical}
+
+\setvalue{\??layouttextsline\v!start}#vertical#height%
+  {\page_layouts_reset_element_status#vertical%
+   \page_layouts_place_text_line_indeed#vertical#height}
+
+\setvalue{\??layouttextsline\v!nomarking}#vertical#height%
+  {\bgroup
+   \page_layouts_reset_element_status#vertical%
+   \settrue\inhibitgetmarking
+   \page_layouts_place_text_line_indeed#vertical#height%
+   \egroup}
+
+% \setupheadertexts            [11]
+% \definetext [title] [header] [aa]
+% \setupheadertexts            [11] [22]
+% \definetext [title] [header] [aa] [bb]
+% \setupheadertexts            [text] [11] [22]
+% \definetext [title] [header] [text] [aa] [bb]
+% \setupheadertexts            [11] [22] [33] [44]
+% \definetext [title] [header] [aa] [bb] [cc] [dd]
+% \setupheadertexts            [text] [11] [22] [33] [44]
+% \definetext [title] [header] [text] [aa] [bb] [cc] [dd]
+
+\def\page_layouts_place_text_line_unknown#vertical#height%
+  {\global\settrue\resyncaftertextline
+   \begingroup % new
+   \page_layouts_reset_element_status#vertical%
+   \begincsname\namedlayoutelementhash{#vertical}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!text}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!margin}\textlinestatus\endcsname
+   \begincsname\namedlayoutelementhash{#vertical:\v!edge}\textlinestatus\endcsname
+   \page_layouts_place_text_line_indeed#vertical#height%
+   \endgroup}
+
+\letvalue{\??layouttextsline\s!unknown}\page_layouts_place_text_line_unknown
+
+%D The following macro has to be called after a page is flushed.
+
+\unexpanded\def\resetlayouttextlines % public
+  {\begincsname\??layouttextsreset\v!top   \endcsname
+   \begincsname\??layouttextsreset\v!header\endcsname
+   \begincsname\??layouttextsreset\v!text  \endcsname
+   \begincsname\??layouttextsreset\v!footer\endcsname
+   \begincsname\??layouttextsreset\v!bottom\endcsname
+   \ifconditional\resyncaftertextline
+     \calculateglobalvsizes
+     \page_backgrounds_recalculate
+     \global\setfalse\resyncaftertextline
+   \fi}
+
+\def\getspecificlayouttext#vertical#horizontal#what%
+  {\begincsname\namedlayoutelementhash{#vertical:#horizontal}#what\endcsname}
+
+% \settext[header][text][middle][xxx][yyy]
+
+\unexpanded\def\settextcontent
+  {\doquintupleempty\page_layouts_set_text_content}
+
+\def\page_layouts_set_text_content[#vertical][#horizontal][#one][#two][#three]% header text middle text/text
+  {\iffifthargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#three}}%
+   \orelse\iffourthargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\begincsname\??layouttextcontent\v!text:#one\endcsname\c!middletext}%
+       {\page_layouts_process_element_double{#two}{#two}}%
+   \orelse\ifthirdargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}\c!middletext}%
+       {\page_layouts_process_element_double{#one}{#one}}%
+   \fi}
+
+\let\currentlayoutelement\relax
+
+\unexpanded\def\resettextcontent
+  {\dotripleempty\page_layouts_reset_text_content}
+
+\def\page_layouts_reset_text_content[#vertical][#horizontal][#tag]% header text middle
+  {\edef\currentlayoutelement{#vertical:#horizontal}%
+   \ifthirdargument
+     \letvalueempty{\layoutelementhash\begincsname\??layouttextcontent\v!text:#tag\endcsname\c!middletext}%
+   \orelse\ifsecondargument
+     \resetlayoutelementparameter\c!lefttext
+     \resetlayoutelementparameter\c!middletext
+     \resetlayoutelementparameter\c!righttext
+   \fi}
+
+\letvalue{\??layouttextcontent\v!text:\c!middle}\c!middletext
+\letvalue{\??layouttextcontent\v!text:\c!left  }\c!lefttext
+\letvalue{\??layouttextcontent\v!text:\c!right }\c!righttext
+
+%D The placement of a whole line is handled by the next two macros. These are hooked
+%D into the general purpose token list registers mentioned before.
+
+\let\currentlayouttextline\relax
+
+\def\page_layouts_place_text_line_indeed#vertical#height%
+  {\let\currentlayouttextline#vertical%
+   \ifdim#height>\zeropoint\relax  % prevents pagenumbers when zero height
+     \page_layouts_place_text_line_left_or_right{#height}%
+   \fi}
+
+\def\page_layouts_place_text_line_left_or_right#height%
+  {\goleftonpage
+   \setbox\b_page_layouts_element\vbox to #height
+     {\vsize#height\relax
+     %\hsize\zeropoint % hack so that e.g. after=\hairline gives predictable results
+      \hsize\totaltextwidth
+      \normalbaselines
+      \let\\\ignoredlinebreak
+      \let\crlf\ignoredlinebreak
+      \namedlayoutelementparameter\currentlayouttextline\c!before
+      \doifbothsidesoverruled
+        \page_layouts_place_text_line_right
+        \page_layouts_place_text_line_right
+        \page_layouts_place_text_line_left
+      \namedlayoutelementparameter\currentlayouttextline\c!after
+      \vkern\zeropoint}% keep the \dp, beware of \vtops, never change this!
+   \dp\b_page_layouts_element\zeropoint
+   \box\b_page_layouts_element
+   \vkern-#height\relax}
+
+\let\page_layouts_place_extra_text_left \empty % historic
+\let\page_layouts_place_extra_text_right\empty % historic
+
+\def\page_layouts_place_text_line_right
+  {\hpack
+     {\ifdim\leftedgewidth>\zeropoint
+        \page_layouts_left_edge_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth
+      \fi
+      \ifdim\leftmarginwidth>\zeropoint
+        \page_layouts_left_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\zerocount
+      \fi
+      \ifdim\makeupwidth>\zeropoint
+        \page_layouts_text_body_element_l_m_r_e
+      \fi
+      \ifdim\rightmarginwidth>\zeropoint
+        \page_layouts_right_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\plusone
+      \fi
+      \ifdim\rightedgewidth>\zeropoint
+        \page_layouts_right_edge_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth
+      \fi}}
+
+\def\page_layouts_place_text_line_left
+  {\hpack
+     {\ifdim\leftedgewidth>\zeropoint
+        \page_layouts_left_edge_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth
+      \fi
+      \ifdim\leftmarginwidth>\zeropoint
+        \page_layouts_left_margin_element\c!righttext\c!rightstyle\c!rightcolor\c!rightwidth\zerocount
+      \fi
+      \ifdim\makeupwidth>\zeropoint
+        \page_layouts_text_body_element_e_r_m_l
+      \fi
+      \ifdim\rightmarginwidth>\zeropoint
+        \page_layouts_right_margin_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth\plusone
+      \fi
+      \ifdim\rightedgewidth>\zeropoint
+        \page_layouts_right_edge_element\c!lefttext\c!leftstyle\c!leftcolor\c!leftwidth
+      \fi}}
+
+\def\page_layouts_left_edge_element_indeed#text#style#color#width%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\leftedgewidth
+   \else
+      \hbox to \leftedgewidth\bgroup
+        \hss
+        \page_layouts_process_element_indeed#style#color#width%
+      \egroup
+   \fi}
+
+\def\page_layouts_left_edge_element#text#style#color#width%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
+   \page_layouts_place_element_indeed\leftedgewidth
+     {\page_layouts_left_edge_element_indeed#text#style#color#width}%
+   \kern\leftedgedistance}
+
+\def\page_layouts_right_edge_element_indeed#text#style#color#width%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\rightedgewidth
+   \else
+      \hbox to \rightedgewidth\bgroup
+        \page_layouts_process_element_indeed#style#color#width%
+        \hss
+      \egroup
+   \fi}
+
+\def\page_layouts_right_edge_element#text#style#color#width%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!edge}%
+   \kern\rightedgedistance
+   \page_layouts_place_element_indeed\rightedgewidth
+     {\page_layouts_right_edge_element_indeed#text#style#color#width}}
+
+% margin needs checking!
+
+\def\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\leftmarginwidth
+   \else
+     \hbox to \leftmarginwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed#style#color#width%
+     \egroup
+   \fi
+   \ifcase#margintoo\or
+     \letfromlayoutelementparameter\p_text\c!margintext
+     \ifx\p_text\empty\else
+       \kern-\leftmarginwidth
+       \hbox to \leftmarginwidth\bgroup
+         \hss
+         \p_text % styling ?
+       \egroup
+     \fi
+   \fi}
+
+\def\page_layouts_left_margin_element#text#style#color#width#margintoo%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+   \page_layouts_place_element_indeed\leftmarginwidth
+     {\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo}%
+   \kern\leftmargindistance}
+
+\def\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo%
+  {\letfromlayoutelementparameter\p_text#text%
+   \ifx\p_text\empty
+     \kern\rightmarginwidth
+   \else
+     \hbox to \rightmarginwidth\bgroup
+       \page_layouts_process_element_indeed#style#color#width%
+       \hss
+     \egroup
+   \fi
+   \ifcase#margintoo\or
+     \letfromlayoutelementparameter\p_text\c!margintext
+     \ifx\p_text\empty\else
+       \kern-\rightmarginwidth
+       \hbox to \rightmarginwidth\bgroup
+         \p_text % ? styling
+         \hss
+       \egroup
+     \fi
+   \fi}
+
+\def\page_layouts_right_margin_element#text#style#color#width#margintoo%
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!margin}%
+   \kern\rightmargindistance
+   \page_layouts_place_element_indeed\rightmarginwidth
+     {\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo}}
+
+\def\page_layouts_text_body_element_indeed_l_m_r_e
+  {\letfromlayoutelementparameter\p_text\c!lefttext
+   \ifx\p_text\empty
+     \ifx\page_layouts_place_extra_text_left\empty\else
+       \hbox to \makeupwidth\bgroup
+         \page_layouts_place_extra_text_left
+         \hss
+       \egroup
+       \kern-\makeupwidth
+     \fi
+   \else
+     \hbox to \makeupwidth\bgroup
+       \page_layouts_place_extra_text_left
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!middletext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!righttext
+   \ifx\p_text\empty
+     \kern\makeupwidth
+   \else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth
+     \egroup
+   \fi}
+
+\def\page_layouts_text_body_element_indeed_e_r_m_l
+  {\letfromlayoutelementparameter\p_text\c!righttext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!middletext
+   \ifx\p_text\empty\else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
+       \hss
+     \egroup
+     \kern-\makeupwidth
+   \fi
+   \letfromlayoutelementparameter\p_text\c!lefttext
+   \ifx\p_text\empty
+     \ifx\page_layouts_place_extra_text_right\empty
+       \kern\makeupwidth
+     \else
+       \hbox to \makeupwidth\bgroup
+         \hss
+         \page_layouts_place_extra_text_right
+       \egroup
+     \fi
+   \else
+     \hbox to \makeupwidth\bgroup
+       \hss
+       \page_layouts_process_element_indeed\c!leftstyle\c!leftcolor\c!leftwidth
+       \page_layouts_place_extra_text_right
+     \egroup
+   \fi}
+
+\def\page_layouts_text_body_element_l_m_r_e
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+   \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_l_m_r_e}
+
+\def\page_layouts_text_body_element_e_r_m_l
+  {\edef\currentlayoutelement{\currentlayouttextline:\v!text}%
+   \page_layouts_place_element_indeed\makeupwidth\page_layouts_text_body_element_indeed_e_r_m_l}
+
+\def\page_layouts_place_element_indeed#width#content%
+  {\vbox % to \vsize
+     {\hsize#width\relax
+      \layoutelementparameter\c!before
+      \setlayoutcomponentattribute\currentlayoutelement
+      \hbox \layoutcomponentboxattribute to #width{#content}%
+      \layoutelementparameter\c!after}}
+
+%D Although it is far better to use backgrounds for this purpose, one can add a rule
+%D in the following way. This method makes the rules disappear in case of an empty
+%D text line. Consider this a feature.
+%D
+%D \starttyping
+%D \setupheadertexts[left][right]
+%D
+%D \setupheader[text][after=\hrule,style=bold]
+%D
+%D \starttext
+%D   \input tufte \page
+%D   \setupheader[state=empty]
+%D   \input tufte \page
+%D \stoptext
+%D \stoptyping
+
+%D This code will move to \type {page-flt.tex}.
+
+\appendtoks \placerightmarginblock \kern-\rightmarginwidth \to \rightmargintextcontent
+\appendtoks \placeleftmarginblock  \kern-\leftmarginwidth  \to \leftmargintextcontent
+
+%D \macros
+%D   {definetext}
+%D
+%D Some macros ago, we implemented the \type {status} option \type {unknown}. This
+%D one is used to take care of symbolic texts handlers.
+%D
+%D \showsetup{definetext}
+%D
+%D The next example demonstrates how we can use this mechanism to provide page
+%D (event) dependent text lines.
+%D
+%D \starttyping
+%D \definetext[chapter][footer][pagenumber]
+%D \setuphead[chapter][header=high,footer=chapter]
+%D \setupheadertexts[pagenumber]
+%D \setupfootertexts[left][right]
+%D \chapter{eerste} \dorecurse{20}{\input tufte \relax}
+%D \chapter{tweede} \dorecurse{20}{\input tufte \relax}
+%D \stoptyping
+
+\unexpanded\def\definetext
+  {\doseventupleempty\page_layouts_define_text}
+
+\def\page_layouts_define_text[#tag][#vertical][#horizontal][#a][#b][#c][#d]%
+  {\ifseventhargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_six  [#vertical][#horizontal][#a][#b][#c][#d]}%
+   \orelse\ifsixthargument
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_five [#vertical][#horizontal][#a][#b][#c][]}%
+   \orelse\iffifthargument
+     \setvalue{\namedlayoutelementhash{#vertical:#horizontal}#tag}{\page_layouts_setup_text_four [#vertical][#horizontal][#a][#b][][]}%
+   \orelse\iffourthargument
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_three[#vertical][#horizontal][#a][][][]}%
+   \else
+     \setvalue{\namedlayoutelementhash            {#vertical}#tag}{\page_layouts_setup_text_two  [#vertical][#horizontal][][][][]}%
+   \fi}
+
+%D A few more page breakers:
+
+\installpagebreakmethod \v!empty
+  {\page_otr_flush_all_floats
+   \page_otr_command_next_page
+   \doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}%
+   \doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}%
+   \page_otr_insert_dummy_page}
+
+\installpagebreakmethod \v!header
+  {\doifnot{\namedlayoutelementparameter\v!header\c!state}\v!stop{\setuplayoutelement[\v!header][\c!state=\v!empty]}}
+
+\installpagebreakmethod \v!footer
+  {\doifnot{\namedlayoutelementparameter\v!footer\c!state}\v!stop{\setuplayoutelement[\v!footer][\c!state=\v!empty]}}
+
+%D While the header and footer lines are moved away from the main text, the top and
+%D bottom lines are centered.
+
+\setuplayoutelement[\v!top   ][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setuplayoutelement[\v!header][\c!state=\v!normal,\c!n=0,\c!before=,    \c!after=\vss,\c!strut=\v!yes]
+\setuplayoutelement[\v!text  ][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
+\setuplayoutelement[\v!footer][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=,    \c!strut=\v!yes]
+\setuplayoutelement[\v!bottom][\c!state=\v!normal,\c!n=0,\c!before=\vss,\c!after=\vss,\c!strut=]
+
+%D Moved here from strc-pag:
+%D
+%D We reset a previous location but only when it has a pagenumber associated. This
+%D is a rather messy test but better than the MkII way where we use states and keep
+%D settings.
+
+\let\m_page_layouts_page_number_location  \relax
+\let\m_page_layouts_page_number_location_v\relax
+\let\m_page_layouts_page_number_location_h\relax
+\let\m_page_layouts_page_number_location_x\relax
+
+\def\page_layouts_place_page_number   % also elsewhere .. beware, not \unexpanded else
+  {\strc_pagenumbers_place_location}  % test below fails
+
+\def\page_layouts_reset_page_number_location
+  {\ifx\m_page_layouts_page_number_location_v\relax\else
+     \edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+     \edef\page_layouts_previous_page_number_locator{\detokenizedlayoutelementparameter\m_page_layouts_page_number_location_x}%
+     \doif{\meaning\page_layouts_previous_page_number_locator}{\meaning\page_layouts_place_page_number}
+       {\resetlayoutelementparameter\m_page_layouts_page_number_location_x}%
+   \fi}
+
+\def\page_layouts_set_page_number_location
+  {\edef\currentlayoutelement{\m_page_layouts_page_number_location_v:\m_page_layouts_page_number_location_h}%
+   \letlayoutelementparameter\m_page_layouts_page_number_location_x\page_layouts_place_page_number
+   \ifx\m_page_layouts_page_number_location_x\c!marginedgetext
+     \let\page_layouts_place_extra_text_left \page_layouts_place_page_number_left
+     \let\page_layouts_place_extra_text_right\page_layouts_place_page_number_right
+   \else
+     \let\page_layouts_place_extra_text_left \empty
+     \let\page_layouts_place_extra_text_right\empty
+   \fi}
+
+\def\page_layouts_identify_page_number_location
+  {\let\m_page_layouts_page_number_location_v\v!footer
+   \let\m_page_layouts_page_number_location_h\v!text
+   \let\m_page_layouts_page_number_location_x\c!middletext
+   \processallactionsinset[\directpagenumberingparameter\c!location]
+     [    \v!header=>\let\m_page_layouts_page_number_location_v\v!header,
+          \v!footer=>\let\m_page_layouts_page_number_location_v\v!footer,
+          \v!middle=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!middletext,
+            \v!left=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+           \v!right=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!righttext,
+          \v!inleft=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \let\m_page_layouts_page_number_location_x\c!lefttext,
+         \v!inright=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \let\m_page_layouts_page_number_location_x\c!righttext,
+        \v!inmargin=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+          \v!margin=>\let\m_page_layouts_page_number_location_h\v!margin
+                     \def\m_page_layouts_page_number_location_x{\ifdoublesided\c!margintext\else\c!righttext\fi},
+        \v!atmargin=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!marginedgetext,
+      \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
+                     \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
+
+\unexpanded\def\strc_pagenumbers_set_location
+  {\edef\p_strc_pagenumbers_location{\directpagenumberingparameter\c!location}%
+   \ifx\p_strc_pagenumbers_location\m_page_layouts_page_number_location
+      % unchanged
+   \else
+     \let\m_page_layouts_page_number_location\p_strc_pagenumbers_location
+     \page_layouts_reset_page_number_location
+     \ifx\p_strc_pagenumbers_location\empty
+       % set otherwise
+     \orelse\ifx\p_strc_pagenumbers_location\v!none
+       % set otherwise
+     \else
+       \page_layouts_identify_page_number_location
+       \page_layouts_set_page_number_location
+     \fi
+   \fi}
+
+\def\page_layouts_place_page_number_left % historic
+  {\begingroup
+   \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
+   \ifzeropt\wd\scratchbox\else
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
+       \box\scratchbox\tfskip
+     \else
+       \hpack to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
+     \fi
+   \fi
+   \endgroup}
+
+\def\page_layouts_place_page_number_right % historic
+  {\begingroup
+   \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
+   \ifzeropt\wd\scratchbox\else
+     \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
+     \ifx\p_strc_pagenumbers_width\empty
+       \tfskip\box\scratchbox
+     \else
+       \hpack to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
+     \fi
+   \fi
+   \endgroup}
+
+\strc_pagenumbers_set_location % initializes
+
+\newbox\b_page_layouts_element
+
+\def\page_layouts_insert_elements
+  {\ifcase\pageornamentstate
+     \page_layouts_place_elements_indeed % we could have a special flag for always ignored
+   \fi}
+
+\def\page_layouts_place_elements_indeed
+  {\setbox\b_page_layouts_element\vpack
+     {\dontcomplain
+      \calculatereducedvsizes
+      \swapmargins
+      \offinterlineskip
+      \vkern\dimexpr-\topheight-\topdistance\relax
+      \the\toptextcontent
+      \vkern\dimexpr\topheight+\topdistance\relax
+      \the\headertextcontent
+      \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
+      \anch_positions_place_anchors
+      \vkern\dimexpr-\textdistance-\textheight\relax
+      \the\texttextcontent
+      \vkern\textheight
+      \the\everyendoftextbody
+      \vkern\footerdistance
+      \the\footertextcontent
+      \vkern\dimexpr\footerheight+\bottomdistance\relax
+      \the\bottomtextcontent
+      \vkern\bottomheight
+      \vfilll}%
+  \smashbox\b_page_layouts_element
+  \box\b_page_layouts_element}
+
+% \ifdefined\page_prepare_backgrounds\else
+%     \let\page_prepare_backgrounds\gobbleoneargument
+% \fi
+
+% only for very special controlled cases or experiments:
+
+\let\page_scale_text_box\gobbleoneargument
+
+\def\page_insert_body#1#2%
+  {\setbox\b_page_layouts_element\vpack
+     {\offinterlineskip
+      \calculatereducedvsizes
+      \calculatehsizes
+      \swapmargins
+      \vkern\dimexpr\headerheight+\headerdistance+\textdistance\relax
+      \dontleavehmode
+     %\page_prepare_backgrounds{#2}%
+      \hpack to \makeupwidth
+        {\begingroup
+           \swapmargins
+           \goleftonpage
+           \ifdim\leftedgewidth>\zeropoint
+             \the\leftedgetextcontent
+             \kern\dimexpr\leftedgewidth+\leftedgedistance\relax
+           \fi
+           \ifdim\leftmarginwidth>\zeropoint
+             \the\leftmargintextcontent
+             \kern\dimexpr\leftmarginwidth+\leftmargindistance\relax
+           \fi
+         \endgroup
+         \page_apply_postprocessors_page{#2}%
+         \settextpagecontent\b_page_layouts_element{#1}{#2}%
+         \page_backgrounds_add_to_text\b_page_layouts_element
+         \page_grids_add_to_box\b_page_layouts_element
+         \page_scale_text_box\b_page_layouts_element
+         \box\b_page_layouts_element
+         \begingroup
+           \ifdim\rightmarginwidth>\zeropoint
+             \kern\rightmargindistance
+             \the\rightmargintextcontent
+             \kern\rightmarginwidth
+           \fi
+           \ifdim\rightedgewidth>\zeropoint
+             \kern\rightedgedistance
+             \the\rightedgetextcontent
+             \kern\rightedgewidth
+           \fi
+         \endgroup
+         \hss}}%
+   \smashbox\b_page_layouts_element
+   \box\b_page_layouts_element}
+
+%D The main text area has to be combined with some additional (tracing) information.
+%D
+%D This will be stored as normal and overloaded in page-lyr and later in page-spr we
+%D overload the the stored version .. evenatually i will clear up the experimental
+%D mess.
+
+\def\settextpagecontent#1#2#3% #2 and #3 will disappear / is overloaded
+  {\setbox#1\hpack to \makeupwidth
+     {\hss                     % so don't change this
+      \setlayoutcomponentattribute{\v!page:\v!text}%
+      \vpack \layoutcomponentboxattribute to \textheight
+        {\offinterlineskip
+         \freezetextwidth
+         \hsize\textwidth      % local variant of \sethsize  <<< in columns?
+         \boxmaxdepth\maxdepth
+         \noindent             % content can be < \hsize
+         \page_otr_command_package_contents#2#3}% this will vbox
+      \hss}%
+   \dp#1\zeropoint}
+
+\protect \endinput

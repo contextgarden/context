@@ -1,0 +1,5 @@
+These files are generated. You can use these extensions with for instance:
+
+  code.exe --extensions-dir <someplace>/tex/texmf-context/context/data/vscode/extensions --install-extension context
+
+There are examples of scripts and keybindings too.

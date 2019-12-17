@@ -584,6 +584,26 @@ local template = [[
 return function(%s) return %s end
 ]]
 
+-- this might move
+
+local pattern = Cs(Cc('"') * (
+    (1-S('"\\\n\r'))^1
+  + P('"')  / '\\"'
+  + P('\\') / '\\\\'
+  + P('\n') / '\\n'
+  + P('\r') / '\\r'
+)^0 * Cc('"'))
+
+patterns.escapedquotes = pattern
+
+function string.escapedquotes(s)
+    return lpegmatch(pattern,s)
+end
+
+-- print(string.escapedquotes('1\\23\n"'))
+
+-- but for now here
+
 local preamble = ""
 
 local environment = {
@@ -609,10 +629,11 @@ local environment = {
     formattednumber = number.formatted,
     sparseexponent  = number.sparseexponent,
     formattedfloat  = number.formattedfloat,
-    stripzero       = lpeg.patterns.stripzero,
-    stripzeros      = lpeg.patterns.stripzeros,
+    stripzero       = patterns.stripzero,
+    stripzeros      = patterns.stripzeros,
+    escapedquotes   = string.escapedquotes,
 
-    FORMAT          = string.f9,
+    FORMAT          = string.f6,
 }
 
 -- -- --
@@ -685,11 +706,13 @@ local format_q = function()
     -- lua 5.3 has a different q than lua 5.2 (which does a tostring on numbers)
  -- return format("(a%s ~= nil and format('%%q',a%s) or '')",n,n)
     return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
+ -- return format("(a%s ~= nil and escapedquotes(tostring(a%s)) or '')",n,n)
 end
 
-local format_Q = function() -- can be optimized
+local format_Q = function() -- fast escaping
     n = n + 1
-    return format("format('%%q',tostring(a%s))",n)
+--  return format("format('%%q',tostring(a%s))",n)
+    return format("escapedquotes(tostring(a%s))",n)
 end
 
 local format_i = function(f)
@@ -885,7 +908,7 @@ local format_L = function()
     return format("(a%s and 'TRUE' or 'FALSE')",n)
 end
 
-local format_n = function() -- strips leading and trailing zeros and removes .0
+local format_n = function() -- strips leading and trailing zeros and removes .0, beware: can produce e notation
     n = n + 1
     return format("((a%s %% 1 == 0) and format('%%i',a%s) or tostring(a%s))",n,n,n)
 end
@@ -915,13 +938,30 @@ end
 --     end
 -- end
 
-local format_N = function(f) -- strips leading and trailing zeros
-    n = n + 1
-    -- stripzero (singular) as we only have a number
-    if not f or f == "" then
-        f = ".9"
-    end -- always a leading number !
-    return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+local format_N  if environment.FORMAT then
+
+    format_N = function(f)
+        n = n + 1
+        if not f or f == "" then
+            return format("FORMAT(a%s,'%%.9f')",n)
+        elseif f == ".6" then
+            return format("FORMAT(a%s)",n)
+        else
+            return format("FORMAT(a%s,'%%%sf')",n,f)
+        end
+    end
+
+else
+
+    format_N = function(f) -- strips leading and trailing zeros
+        n = n + 1
+        -- stripzero (singular) as we only have a number
+        if not f or f == "" then
+            f = ".9"
+        end -- always a leading number !
+        return format("(((a%s %% 1 == 0) and format('%%i',a%s)) or lpegmatch(stripzero,format('%%%sf',a%s)))",n,n,f,n)
+    end
+
 end
 
 local format_a = function(f)
@@ -1328,9 +1368,9 @@ patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"
 -- escaping by lpeg is faster for strings without quotes, slower on a string with quotes, but
 -- faster again when other q-escapables are found (the ones we don't need to escape)
 
-add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = lpeg.patterns.xmlescape })
-add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = lpeg.patterns.texescape })
-add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = lpeg.patterns.luaescape })
+add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = patterns.xmlescape })
+add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = patterns.texescape })
+add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = patterns.luaescape })
 
 -- -- yes or no:
 --
@@ -1407,4 +1447,32 @@ local f_16_16 = formatters["%0.5N"]
 
 function number.to16dot16(n)
     return f_16_16(n/65536.0)
+end
+
+--
+
+if not string.explode then
+
+    local tsplitat = lpeg.tsplitat
+
+    local p_utf   = patterns.utf8character
+    local p_check = C(p_utf) * (P("+") * Cc(true))^0
+    local p_split = Ct(C(p_utf)^0)
+    local p_space = Ct((C(1-P(" ")^1) + P(" ")^1)^0)
+
+    function string.explode(str,symbol)
+        if symbol == "" then
+            return lpegmatch(p_split,str)
+        elseif symbol then
+            local a, b = lpegmatch(p_check,symbol)
+            if b then
+                return lpegmatch(tsplitat(P(a)^1),str)
+            else
+                return lpegmatch(tsplitat(a),str)
+            end
+        else
+            return lpegmatch(p_space,str)
+        end
+    end
+
 end

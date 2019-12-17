@@ -1,0 +1,83 @@
+% language=us
+
+\startcomponent followingup-rejected
+
+\environment followingup-style
+
+\startchapter[title={Rejected}]
+
+\startsection[title={Introduction}]
+
+During the development of \LUATEX\ some extensions were considered but rejected
+after some experiments. I already forgot about some that were tried the last
+decade. I will not discuss what has been added already to \LUATEX.
+
+\stopsection
+
+\startsection[title={Conditionals}]
+
+The \LUATEX\ manual describes a few conditional primitives that were added. One
+thing I played with was a native definer, think of \type {\idef} but in the end
+rejected it, because in practice it was seldom needed. Another useful one would
+be \type {\ifnothing} but the current implementation of \type {\ifx} is already
+pretty efficient so there is nothing to gain here. Another rejected one is \type
+{\ifxcase} which takes a token and compares that with a sequence, like
+
+\starttyping
+\ifxcase\foo\alpha
+\or\beta
+\or\gamma
+\else
+\fi
+\stoptyping
+
+As this was never available, in \CONTEXT\ already different strategies were
+followed so I could only find a few places where this could make code more
+readable. But who knows, I might change my mind when I split the code base and can
+adapt code accordingly although it doesn't make much sense for the more high
+level modules because it would only affect a few lines and maintaining duplicate
+files is no fun. \footnote {But playing with extensions that make for better code
+{\em is} fun.}
+
+\stopsection
+
+\startsection[title={Dimensions}]
+
+A primitive that returns the height plus depth would make sense (\type {hd}) but
+one can easily define one and the gain can be neglected. So, for now this has
+been rejected. Also, one can use the token scanners to implement that kind of
+primitives but of course that then does have a penalty in terms of performance.
+\footnote {Okay, in the end I decided to just add a primitive for this, but only
+as part of a larger set of box related primitives.}
+
+\stopsection
+
+\startsection[title={The something}]
+
+I played a bit with intercepting \type {\the} so that we could define commands
+that also respond to this expander. It didn't work out well because full
+expansion happens, even with protected macros:
+
+\starttyping
+\protected\def\foo{...] \the\foo
+\stoptyping
+
+We just have to accept this and it's no big deal.
+
+\stopsection
+
+\startsection[title={Primitives}]
+
+Occasionally I'm wondering if we should have a way to flag primitives and macros
+as being frozen but in the end it might not pay off. At some point I decided that
+at least the \type {\primitive} and \type {\ifprimitive} could go away as they
+are not really working as expected. It's better to have nothing than something
+bad. Also, we can easily clone the whole set of primitives in a new namespace
+with \LUA\ if we want. \footnote {But \unknown\ in the end we got something else
+back.}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

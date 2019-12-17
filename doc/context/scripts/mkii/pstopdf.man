@@ -1,6 +1,6 @@
 .TH "pstopdf" "1" "01-01-2019" "version 2.0.1" "PStoPDF"
 .SH NAME
-.B pstopdf
+ pstopdf - PStoPDF
 .SH SYNOPSIS
 .B pstopdf [
 .I OPTIONS ...

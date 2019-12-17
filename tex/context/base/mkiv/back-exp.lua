@@ -34,7 +34,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- check setting __i__
 
 local next, type, tonumber = next, type, tonumber
-local sub, gsub = string.sub, string.gsub
+local sub, gsub, match = string.sub, string.gsub, string.match
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
@@ -46,7 +46,7 @@ local replacetemplate = utilities.templates.replace
 
 local trace_export  = false  trackers.register  ("export.trace",         function(v) trace_export  = v end)
 local trace_spacing = false  trackers.register  ("export.trace.spacing", function(v) trace_spacing = v end)
-local trace_detail  = false  trackers.register  ("export.trace.detail",  function(v) trace_detail  = v end)
+local trace_details = false  trackers.register  ("export.trace.details", function(v) trace_details = v end)
 
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
@@ -1234,28 +1234,38 @@ do
             local ndata = #data
             local roottg = root.tg
             if roottg == "msubsup" then
+                -- kind of tricky: we have a diufferent order in display mode
                 local nucleus, superscript, subscript
-                for i=1,ndata do
-                    local di = data[i]
-                    if not di then
-                        -- weird
-                    elseif di.content then
-                        -- text
-                    elseif not nucleus then
-                        nucleus = i
-                    elseif not superscript then
-                        superscript = i
-                    elseif not subscript then
-                        subscript = i
-                    else
-                        -- error
+                if ndata > 3 then
+                    -- error
+                else
+                    for i=1,ndata do
+                        local di = data[i]
+                        if not di then
+                            -- weird
+                        elseif di.content then
+                            -- text
+                        else
+                            local s = specifications[di.fulltag]
+                            if s.subscript then
+                                subscript = i
+                            elseif s.superscript then
+                                superscript = i
+                            else
+                                nucleus = i
+                            end
+                        end
                     end
-                end
-                if superscript and subscript then
-                    local sup, sub = data[superscript], data[subscript]
-                    data[superscript], data[subscript] = sub, sup
-                 -- sub.__o__, sup.__o__ = subscript, superscript
-                    sub.__i__, sup.__i__ = superscript, subscript
+                    if superscript or subscript then
+                        -- we probably always have 3 anyway ... needs checking
+                        local nuc = nucleus     and data[nucleus]
+                        local sub = subscript   and data[subscript]
+                        local sup = superscript and data[superscript]
+                        local n = 0 -- play safe
+                        if nuc then n = n + 1 ; data[n] = nuc end
+                        if sub then n = n + 1 ; data[n] = sub end
+                        if sup then n = n + 1 ; data[n] = sup end
+                    end
                 end
          -- elseif roottg == "msup" or roottg == "msub" then
          --     -- m$^2$
@@ -1982,6 +1992,10 @@ do
         end
     end
 
+    function structurestags.gettablecell(fulltag)
+        return tabledata[fulltag]
+    end
+
     function extras.tablecell(di,element,n,fulltag)
         local hash = tabledata[fulltag]
         if hash then
@@ -2015,6 +2029,10 @@ do
                 kind  = kind, -- 1 = bold head
             }
         end
+    end
+
+    function structurestags.gettabulatecell(fulltag)
+        return tabulatedata[fulltag]
     end
 
     function extras.tabulate(di,element,n,fulltag)
@@ -2081,6 +2099,29 @@ do
         if hash then
             setattribute(di,"dataset",hash.dataset)
             setattribute(di,"tag",hash.tag)
+        end
+    end
+
+end
+
+do
+
+    local usedparagraphs = { }
+
+    function structurestags.setparagraph(align)
+        if align ~= "" then
+            usedparagraphs[locatedtag("paragraph")] = {
+                dataset = dataset,
+                tag     = tag,
+                align   = align,
+            }
+        end
+    end
+
+    function extras.paragraph(di,element,n,fulltag)
+        local hash = usedparagraphs[fulltag]
+        if hash then
+            setattribute(di,"align",hash.align)
         end
     end
 
@@ -2659,16 +2700,16 @@ local function push(fulltag,depth)
     end
     local treedata = tree.data
     local t = { -- maybe we can use the tag table
-        tg         = tg,
-        fulltag    = fulltag,
-        detail     = detail,
-        n          = n, -- already a number
-        element    = element,
-        nature     = nature,
-        data       = { },
-        attribute  = currentattribute,
-        parnumber  = currentparagraph,
-        record     = record, -- we can consider storing properties
+        tg        = tg,
+        fulltag   = fulltag,
+        detail    = detail,
+        n         = n, -- already a number
+        element   = element,
+        nature    = nature,
+        data      = { },
+        attribute = currentattribute,
+        parnumber = currentparagraph,
+        record    = record, -- we can consider storing properties
     }
     treedata[#treedata+1] = t
     currentdepth = currentdepth + 1
@@ -2701,9 +2742,9 @@ local function pop()
         currentdepth = currentdepth - 1
         if trace_export then
             if top then
-                report_export("%w</%s>",currentdepth,tree.tg)
+                report_export("%w</%s>",currentdepth,match(top,"[^>]+"))
             else
-                report_export("</%s>",tree.tg)
+                report_export("</BAD>")
             end
         end
     else
@@ -2906,6 +2947,8 @@ local collectresults  do -- too many locals otherwise
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
 
+    local start_of_par     = nuts.start_of_par
+
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
 
@@ -2947,7 +2990,7 @@ local collectresults  do -- too many locals otherwise
         local maybewrong
         local pid
         for n, id, subtype in nextnode, head do
-            if trace_detail then
+            if trace_details then
                 showdetail(n,id,subtype)
             end
             if id == glyph_code then
@@ -3280,7 +3323,7 @@ local collectresults  do -- too many locals otherwise
                     last = nil
                     currentparagraph = nil
                 end
-            elseif not localparagraph and id == localpar_code and subtype == 0 then
+            elseif not localparagraph and id == localpar_code and start_of_par(n) then
                 localparagraph = getattr(n,a_taggedpar)
             end
             p   = n
@@ -3921,7 +3964,7 @@ local htmltemplate = [[
 
         end
 
-        local examplefilename = resolvers.find_file("export-example.css")
+        local examplefilename = resolvers.findfile("export-example.css")
         if examplefilename then
             local data = io.loaddata(examplefilename)
             if not data or data == "" then
@@ -4249,4 +4292,10 @@ implement {
     name      = "settagpublication",
     actions   = structurestags.setpublication,
     arguments = "2 strings"
+}
+
+implement {
+    name      = "settagparagraph",
+    actions   = structurestags.setparagraph,
+    arguments = "string"
 }

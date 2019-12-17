@@ -7,6 +7,7 @@ if not modules then modules = { } end modules ['attr-ini'] = {
 }
 
 local next, type = next, type
+local osexit = os.exit
 
 --[[ldx--
 <p>We start with a registration system for atributes so that we can use the
@@ -33,6 +34,8 @@ attributes.list       = attributes.list     or { }
 attributes.states     = attributes.states   or { }
 attributes.handlers   = attributes.handlers or { }
 attributes.unsetvalue = -0x7FFFFFFF
+
+local currentfont     = font.current
 
 local names           = attributes.names
 local numbers         = attributes.numbers
@@ -74,7 +77,7 @@ function attributes.private(name) -- at the lua end (hidden from user)
             sharedstorage.attributes_last_private = last
         else
             report_attribute("no more room for private attributes")
-            os.exit()
+            osexit()
         end
         number = last
         numbers[name], names[number], list[number] = number, name, { }
@@ -91,7 +94,7 @@ function attributes.public(name) -- at the lua end (hidden from user)
             sharedstorage.attributes_last_public = last
         else
             report_attribute("no more room for public attributes")
-            os.exit()
+            osexit()
         end
         number = last
         numbers[name], names[number], list[number] = number, name, { }
@@ -146,7 +149,7 @@ function attributes.save(name)
     end
     store[name] = {
         attr = t,
-        font = font.current(),
+        font = currentfont(),
     }
 end
 
@@ -163,7 +166,8 @@ function attributes.restore(name)
         end
         if font then
          -- tex.font = font
-            context.getvalue(fonts.hashes.csnames[font]) -- we don't have a direct way yet (will discuss it with taco)
+         -- context.getvalue(fonts.hashes.csnames[font])
+            currentfont(font)
         end
     end
  -- store[name] = nil

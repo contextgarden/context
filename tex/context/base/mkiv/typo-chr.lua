@@ -99,8 +99,8 @@ local wordboundary_code = boundarycodes.word
 local texgetnest        = tex.getnest -- to be used
 local texsetcount       = tex.setcount
 
-local flush_node        = node.flush_node
-local flush_list        = node.flush_list
+local flush_node        = nodes.flush_node
+local flush_list        = nodes.flush_list
 
 local settexattribute   = tex.setattribute
 local punctuation       = characters.is_punctuation
@@ -175,7 +175,7 @@ local function pickup(head,tail,str)
         while true do
             local prev = first.prev
             if prev and prev[a_marked] == attr then
-                if prev.id == localpar_code then -- and prev.subtype == 0
+                if prev.id == localpar_code then -- and start_of_par(prev)
                     break
                 else
                     first = prev
@@ -283,6 +283,8 @@ interfaces.implement {
 --         context.sprint(t_lastnodeid)
 --     end,
 -- }
+
+-- not needed in lmtx ...
 
 interfaces.implement {
     name    = "lastnodeid",

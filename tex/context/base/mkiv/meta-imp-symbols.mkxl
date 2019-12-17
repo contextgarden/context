@@ -1,0 +1,99 @@
+%D \module
+%D   [       file=meta-imp-symbols,
+%D        version=2019.10.01,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Symbols,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is an (experimental) prelude to more.
+
+\startMPcalculation{simplefun}
+
+    pen SymbolPen ; SymbolPen := pencircle scaled 1/4 ;
+
+    vardef SymbolBullet        = fill   unitcircle      scaled  3       shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x2022 •
+    vardef SymbolDash          = draw   (origin--right) scaled  3       shifted (1.5,3.0) withpen SymbolPen scaled 2 enddef ; % 0x2013 –
+    vardef SymbolTriangle      = draw   unittriangle    scaled  3       shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x25B6 ⊳
+    vardef SymbolCircle        = fill   unitcircle      scaled  3       shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x2218 ∘
+    vardef SymbolSquare        = draw   unitsquare      scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x25A1 □
+    vardef SymbolDiamond       = draw   unitdiamond     scaled  3       shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x22C4 ⋄
+    vardef SymbolBlackTriangle = fillup unittriangle    scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x25B6 ▶
+    vardef SymbolBlackSquare   = fillup unitsquare      scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x25A0 ■
+    vardef SymbolBlackDiamond  = fillup unitdiamond     scaled (3-1/16) shifted (1.5,1.5) withpen SymbolPen          enddef ; % 0x25C6 ◆
+
+    vardef SymbolNotDef =
+        draw center unitcircle
+            scaled 3
+            shifted (1.5,1.5)
+            withpen SymbolPen scaled 4
+    enddef ;
+
+    vardef SymbolStar =  % 0x22C6 % ⋆
+        SymbolNotDef
+    enddef ;
+
+    vardef SymbolCheckmark =  % 0x2713 ✓
+        SymbolNotDef
+    enddef ;
+
+    vardef SymbolAsterisk =  % 0x2217 ∗
+        SymbolNotDef
+    enddef ;
+
+    % We could set code directly to the meaning of the macro.
+
+    lmt_registerglyphs [
+        name     = "symbols",
+        units    = 10,
+        usecolor = true,
+        width    = 6,
+        height   = 6,
+        depth    = 0,
+        code     = "SymbolNotDef ;",
+    ] ;
+
+    lmt_registerglyph [ category = "symbols", unicode = "0x2022", code  = "SymbolBullet ;"        ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x2013", code  = "SymbolDash ;"          ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x22C6" ] ; % , code  = "SymbolStar ;"          ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x22B3", code  = "SymbolTriangle ;"      ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x2218", code  = "SymbolCircle ;"        ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25A1", code  = "SymbolSquare ;"        ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x22C4", code  = "SymbolDiamond ;"       ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x2713" ] ; % , code  = "SymbolCheckmark ;"     ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x2217" ] ; % , code  = "SymbolAsterisk ;"      ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25B6", code  = "SymbolBlackTriangle ;" ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25A0", code  = "SymbolBlackSquare ;"   ] ;
+    lmt_registerglyph [ category = "symbols", unicode = "0x25C6", code  = "SymbolBlackDiamond ;"  ] ;
+
+\stopMPcalculation
+
+\continueifinputfile{meta-imp-symbols.mkxl}
+
+\usemodule[article-basic] \setupbodyfont[pagella]
+
+\starttext
+
+\definefontfeature[metasymbols][mps=symbols]
+
+\definefont[MyFont] [Serif*default,metasymbols sa 1]
+
+Some metasymbols:
+
+\startitem {\MyFont                 • □ ◆}\quad Regular rendering. \stopitem
+\startitem {\MyFont\red             • □ ◆}\quad Rendering with color. \stopitem
+\startitem {\MyFont\blue\showglyphs • □ ◆}\quad Idem but with boundingboxes shown. \stopitem
+
+And some more:
+
+\startlines
+    • – ⋆ ⊳ ∘ □ ⋄ ✓ ∗ ▶ ■ ◆
+    {\MyFont • – ⋆ ⊳ ∘ □ ⋄ ✓ ∗ ▶ ■ ◆}
+\stoplines
+
+\stoptext

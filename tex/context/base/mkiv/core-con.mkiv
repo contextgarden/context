@@ -186,9 +186,9 @@
 %D \macros
 %D   {normaltime,normalyear,normalmonth,normalday}
 %D
-%D The last part of this module is dedicated to converting dates. Because we
-%D want to use as meaningful commands as possible, and because \TEX\ already
-%D uses up some of those, we save the original meanings.
+%D The last part of this module is dedicated to converting dates. Because we want to
+%D use as meaningful commands as possible, and because \TEX\ already uses up some of
+%D those, we save the original meanings.
 
 % \savenormalmeaning\time
 % \savenormalmeaning\year
@@ -274,8 +274,8 @@
 %D \getbuffer
 %D \stoplines
 %D
-%D The macro \type {\getdayoftheweek} can be used to calculate the number
-%D \type {\normalweekday}.
+%D The macro \type {\getdayoftheweek} can be used to calculate the number \type
+%D {\normalweekday}.
 
 %D \macros
 %D   {doifleapyearelse,
@@ -363,8 +363,8 @@
 %D
 %D \typebuffer
 %D
-%D The date is specified by one character keys. When no date is given, we
-%D get the current date.
+%D The date is specified by one character keys. When no date is given, we get the
+%D current date.
 %D
 %D \startlines
 %D \getbuffer
@@ -425,26 +425,25 @@
 \unexpanded\def\date
   {\dodoubleempty\syst_converters_date}
 
-\def\syst_converters_date[#1][#2]%
+\def\syst_converters_date[#1][#2]% sets the date !
   {\dontleavehmode
-   \begingroup
-   \scratchcounterone  \normalyear
-   \scratchcountertwo  \normalmonth
-   \scratchcounterthree\normalday
    \iffirstargument
-     \letdummyparameter\c!y\empty
-     \letdummyparameter\c!m\empty
-     \letdummyparameter\c!d\empty
+     \begingroup
+     \letdummyparameter\c!d\normalday
+     \letdummyparameter\c!m\normalmonth
+     \letdummyparameter\c!y\normalyear
      \getdummyparameters[#1]%
-     \edef\temp{\dummyparameter\c!y}\ifx\temp\empty\else\scratchcounterone  \temp\fi
-     \edef\temp{\dummyparameter\c!m}\ifx\temp\empty\else\scratchcountertwo  \temp\fi
-     \edef\temp{\dummyparameter\c!d}\ifx\temp\empty\else\scratchcounterthree\temp\fi
-     \relax
+     \normalexpanded
+       {\endgroup
+        \normalday  \number\directdummyparameter\c!d\relax
+        \normalmonth\number\directdummyparameter\c!m\relax
+        \normalyear \number\directdummyparameter\c!y\relax}%
    \fi
+   \begingroup
    \the\everycurrentdate
    \clf_currentdate
      {#2}{\currentdatespecification}{\labellanguage}%
-     \scratchcounterone\scratchcountertwo\scratchcounterthree
+     \normalyear\normalmonth\normalday
    \endgroup}
 
 \def\rawdate[#1]% expandable and no labels
@@ -535,10 +534,10 @@
 \installcorenamespace {conversionarguments}
 \installcorenamespace {conversionwords}
 
-%D It might be better to move more to lua as we also need conversion there
-%D and doublicating logic doesn't make things cleaner. It means that all
-%D conversions will get a language argument too. However, we permit definitions
-%D at the \TEX\ end so we have to provide some hybrid method.
+%D It might be better to move more to \LUA\ as we also need conversion there and
+%D doublicating logic doesn't make things cleaner. It means that all conversions
+%D will get a language argument too. However, we permit definitions at the \TEX\ end
+%D so we have to provide some hybrid method.
 
 % checkedconversion(method,n,language)
 
@@ -561,9 +560,9 @@
 \def\syst_converters_checked_conversion#1#2%
   {\clf_checkedconversion{#1}\numexpr#2\relax}
 
-%D If a conversion is just a font switch then we need to make sure that the
-%D number is indeed ends up as number in the input, so we need to handle the
-%D second argument.
+%D If a conversion is just a font switch then we need to make sure that the number
+%D is indeed ends up as number in the input, so we need to handle the second
+%D argument.
 
 \def\convertnumber#1#2% expandable
   {\csname\??conversionarguments

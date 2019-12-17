@@ -205,6 +205,24 @@ function characteralign.handler(head,where)
     local method          = dataset.method
     -- we can think of constraints
     if method == v_number then
+
+        local function bothdigit(current) -- this could become a helper
+            local prev, next = getboth(current)
+            if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then
+                local pchar    = getchar(prev)
+                local nchar    = getchar(next)
+                local pdata    = fontcharacters[getfont(prev)][pchar]
+                local ndata    = fontcharacters[getfont(next)][nchar]
+                local punicode = pdata and pdata.unicode or pchar -- we ignore tables
+                local nunicode = ndata and ndata.unicode or nchar -- we ignore tables
+                if punicode and nunicode and categories[punicode] == "nd" and categories[nunicode] == "nd" then
+                    return true
+                else
+                    return false
+                end
+            end
+        end
+
         while current do
             local char, id = isglyph(current)
             if char then
@@ -266,10 +284,9 @@ function characteralign.handler(head,where)
             elseif (b_start or a_start) and id == glue_code then
                 -- maybe only in number mode
                 -- somewhat inefficient
-                local prev, next = getboth(current)
-                if next and prev and getid(next) == glyph_code and getid(prev) == glyph_code then -- too much checking
+                if bothdigit(current) then
                     local width = fontcharacters[getfont(b_start or a_start)][separator or period].width
-                    setglue(current,width)
+                    setglue(current,width,0,0)
                     setattr(current,a_character,punctuationspace)
                     if a_start then
                         a_stop = current

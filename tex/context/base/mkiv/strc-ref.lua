@@ -427,7 +427,7 @@ end
 
 local function synchronizepage(reference) -- non public helper
     reference.realpage = texgetcount("realpageno")
-    if jobpositions.used then
+    if jobpositions.used() then
         reference.x, reference.y = getpos()
     end
 end
@@ -2603,15 +2603,52 @@ implement {
     arguments = { "string", "boolean", "boolean" }
 }
 
-local function referencerealpage()
-    local actions = references.currentset
-    return not actions and 0 or actions.realpage or setreferencerealpage(actions)
-end
+-- local function referencerealpage()
+--     local actions = references.currentset
+--     return not actions and 0 or actions.realpage or setreferencerealpage(actions)
+-- end
+--
+-- implement {
+--     name      = "referencerealpage",
+--     actions   = { referencerealpage, context },
+--  -- arguments = "string" -- hm, weird
+-- }
 
 implement {
-    name      = "referencerealpage",
-    actions   = { referencerealpage, context },
-    arguments = "string"
+    name    = "referencerealpage",
+    actions = function()
+        local actions = references.currentset
+        context(not actions and 0 or actions.realpage or setreferencerealpage(actions))
+    end
+}
+
+local function referencepos(key)
+    local actions = references.currentset
+    local i = actions[1].i -- brrr
+    local v = 0
+    if i then
+        local a = i.references
+        if a then
+            v = a[key] or 0
+        end
+    end
+    return v
+end
+
+implement { name = "referenceposx", actions = function() context("%p",referencepos("x")) end }
+implement { name = "referenceposy", actions = function() context("%p",referencepos("y")) end }
+
+
+implement {
+    name    = "referencecolumn",
+    actions = function()
+        local actions = references.currentset
+        local column  = 1
+        if actions then
+            column = jobpositions.columnofpos(actions.realpage or setreferencerealpage(actions),referencepos("x"))
+        end
+        context(column or 1)
+    end
 }
 
 local plist, nofrealpages

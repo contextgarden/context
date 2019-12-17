@@ -15,7 +15,8 @@
 %D is needed because we don't want to load the (mostly not used in generic) data
 %D files.
 
-%D Indicorder is not yet filled in completely.
+%D Indicorder is not yet filled in completely. Some 'indic=m' are now 'indic=o'
+%D due to patches/analysis by Kai Eigner.
 
 \startluacode
 
@@ -69,7 +70,7 @@ for k, c in next, chardata do
 end
 
 local template = string.formatters [ [[
--- automatically generated from context data
+-- automatically generated from context data (luatex-basics-prepare.tex)
 
 characters = characters or { }
 
@@ -84,6 +85,8 @@ characters.blockrange = { }
 %s
 
 -- done
+
+return characters.indicgroups
 ]] ]
 
 io.savedata("luatex-basics-chr.lua",template(
@@ -91,7 +94,32 @@ io.savedata("luatex-basics-chr.lua",template(
     table.serialize(indicgroups,"characters.indicgroups")
 ))
 
+
+-- -- code for comparing patched tables (info we feed back in char-def.lua)
+
+-- local hans = table.load("t:/sources/luatex-basics-chr.lua")
+-- local kai  = table.load("e:/tmp/indic/luatex-basics-chr.lua")
+--
+-- for name, h in table.sortedhash(hans) do
+--     for kk, vv in table.sortedhash(kai[name]) do
+--         if h[kk] ~= vv and vv then
+--             local _h = h[kk]
+--             local _k = vv
+--             if type(_h) ~= "table" or type(_k) ~= "table" or not table.identical(_h,_k) then
+--                 print("what", name)
+--                 print("index",kk)
+--                 print("hex  ",string.format("%04X",kk))
+--                 print("hans ",h[kk])
+--                 print("kai  ", vv)
+--                 print("")
+--             end
+--         end
+--     end
+-- end
+
 \stopluacode
+
+
 
 \startTEXpage[offset=10pt]
     \tttf generated file: luatex-basics-chr.lua

@@ -1,0 +1,618 @@
+%D \module
+%D   [       file=type-ini,
+%D        version=2001.03.05,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Initialization,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typescript Macros / Initialization}
+
+\registerctxluafile{type-ini}{}
+
+%D The default fontclass is empty. We could demand always using fontclasses, and
+%D then make the calling macros simplier (always assume fontclass) but apart from
+%D downward compatibility issues, it would make global, class spanning definitions a
+%D pain. Some day we will introduce a default class.
+%D
+%D The \type {type-ini} and \type {font-ini} modules come as a pair and have mutual
+%D dependencies.
+%D
+%D At some point we will only store in memory so some code can go away.
+
+\unprotect
+
+\definesystemvariable {ts} % TypeScript / for the moment we keep this one
+
+\newcount      \c_font_typescripts_n_of_preloaded
+\newconditional\c_font_typescripts_quit
+\newtoks       \c_font_typescripts_document
+\newconditional\c_font_typescripts_preload
+\newconditional\c_font_typescripts_first_pass          \settrue\c_font_typescripts_first_pass
+
+\newif         \iftypescriptfound              % will become a mode
+\newif         \iftracetypescripts
+
+\newtoks       \everybeforedefinetypeface
+\newtoks       \everyafterdefinetypeface
+
+\let\typescriptfiles   \empty
+\let\currenttypescripts\empty
+\let\currenttypefile   \empty
+
+\installmacrostack\currenttypefile
+
+\let\typescriptone  \empty % public, used in typescripts
+\let\typescripttwo  \empty % public, used in typescripts
+\let\typescriptthree\empty % public, used in typescripts
+
+\installmacrostack\typescriptone
+\installmacrostack\typescripttwo
+\installmacrostack\typescriptthree
+
+\let\fontclassstyle \empty
+
+\installmacrostack\fontclassstyle
+
+\let\m_font_typescripts_one  \empty
+\let\m_font_typescripts_two  \empty
+\let\m_font_typescripts_three\empty
+\let\m_font_typescripts_check\empty
+\let\m_font_typescripts_match\empty
+
+\installmacrostack\m_font_typescripts_one
+\installmacrostack\m_font_typescripts_two
+\installmacrostack\m_font_typescripts_three
+
+\let\t_font_typescripts\relax % uses as synonym
+
+\installcorenamespace{typescriptcache}
+\installcorenamespace{typescriptfiles}
+\installcorenamespace{typescriptonce}
+\installcorenamespace{typescriptsynonyms}
+\installcorenamespace{typescriptprefix}
+\installcorenamespace{typescriptinheritances}
+\installcorenamespace{typescriptdefaultstyles}
+\installcorenamespace{typescriptrelatives}
+
+\definesystemvariable{ts} % TypeScript
+
+% tricky ... here we push/pop ... so \let
+
+\let\typescriptmethod\plusone % 1: empty==all==true  2: empty==false
+\let\typescriptstate \plustwo % 1: process 2: store
+
+\installmacrostack\typescriptmethod
+\installmacrostack\typescriptstate
+
+\unexpanded\def\starttypescriptcollection
+  {\dosingleempty\font_typescripts_collection_start}
+
+\def\font_typescripts_collection_start[#tag]%
+  {}
+
+\let\stoptypescriptcollection\relax
+
+\unexpanded\def\usetypescriptfile[#filename]%
+  {\doifelse{#filename}\v!reset
+     {\let\typescriptfiles\empty}
+     {\splitfilename{#filename}%
+      \addtocommalist\splitoffbase\typescriptfiles}}
+
+\unexpanded\def\usetypescript     {\dotripleempty\font_typescripts_use_one}
+\unexpanded\def\usetypescriptexact{\dotripleempty\font_typescripts_use_two}
+
+\def\font_typescripts_use_one{\let\typescriptmethod\plusone\font_typescripts_use}
+\def\font_typescripts_use_two{\let\typescriptmethod\plustwo\font_typescripts_use}
+
+\installmacrostack\stoptypescript
+
+\unexpanded\def\font_typescripts_use[#one][#two][#three]%
+  {\push_macro_m_font_typescripts_one
+   \push_macro_m_font_typescripts_two
+   \push_macro_m_font_typescripts_three
+   \edef\m_font_typescripts_one  {\truetypescript{#one}}%
+   \edef\m_font_typescripts_two  {\truetypescript{#two}}%
+   \edef\m_font_typescripts_three{\truetypescript{#three}}%
+   \push_macro_typescriptone
+   \push_macro_typescripttwo
+   \push_macro_typescriptthree
+   \push_macro_typescriptmethod
+   \push_macro_typescriptstate
+   \push_macro_stoptypescript
+   \typescriptfoundfalse
+   \let\typescriptstate\plusone % why
+   \iftracetypescripts
+     \writestatus\m!fonts{request: [\m_font_typescripts_one] [\m_font_typescripts_two] [\m_font_typescripts_three]}%
+   \fi
+   \ifhmode
+     \font_typescripts_use_inline
+   \else
+     \font_typescripts_use_display
+   \fi
+   \setfalse\c_font_typescripts_first_pass
+   \pop_macro_stoptypescript
+   \pop_macro_typescriptstate
+   \pop_macro_typescriptmethod
+   \pop_macro_typescriptthree
+   \pop_macro_typescripttwo
+   \pop_macro_typescriptone
+   \pop_macro_m_font_typescripts_three
+   \pop_macro_m_font_typescripts_two
+   \pop_macro_m_font_typescripts_one}
+
+\def\font_typescripts_use_display
+  {\processcommacommand[\typescriptfiles]\font_typescripts_load_file
+   \the\c_font_typescripts_document}
+
+\let\font_typescripts_use_inline\font_typescripts_use_display
+
+\unexpanded\def\preloadtypescripts
+  {\ifproductionrun\settrue\c_font_typescripts_preload\fi}
+
+\prependtoks
+    \preloadtypescripts
+\to \everyjob
+
+\unexpanded\def\loadtypescriptfile[#1]%
+  {\push_macro_typescriptstate
+   \let\typescriptstate\plustwo % assumes 2 at the outer level
+   \clf_loadtypescriptfile{#1}%
+   \pop_macro_typescriptstate}
+
+\unexpanded\def\loadfoundtypescriptfile#1%
+  {\startreadingfile
+   \unprotect
+   \pushendofline
+   \input{#1}%
+   \popendofline
+   \protect
+   \stopreadingfile}
+
+\unexpanded\def\quittypescriptscanning
+  {\settrue\c_font_typescripts_quit} % public
+
+\def\font_typescripts_start_store#definitions\stoptypescript
+  {\global\advance\c_font_typescripts_n_of_preloaded\plusone
+   \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
+     {\starttypescript#definitions\stoptypescript}%
+   \gtoksapp\t_font_typescripts\expandafter
+     {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
+
+\def\font_typescripts_collection_start_store#definitions\stoptypescriptcollection
+  {\global\advance\c_font_typescripts_n_of_preloaded\plusone
+   \expandafter\normalgdef\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname
+     {\starttypescriptcollection#definitions\stoptypescriptcollection}%
+   \gtoksapp\t_font_typescripts\expandafter
+     {\csname\??typescriptcache\the\c_font_typescripts_n_of_preloaded\endcsname}}
+
+\def\font_typescripts_load_file#filename%
+  {\setfalse\c_font_typescripts_quit
+   \push_macro_currenttypefile
+   \def\currenttypefile{#filename}%
+   \ifconditional\c_font_typescripts_preload
+     \font_typescript_process_typescript_file_and_store
+   \else
+     \font_typescript_process_typescript_file
+   \fi
+   \pop_macro_currenttypefile
+   \ifconditional\c_font_typescripts_quit
+     \quitcommalist
+     \setfalse\c_font_typescripts_quit
+   \fi}
+
+\def\font_typescript_process_typescript_file_and_store
+  {\expandafter\let\expandafter\t_font_typescripts\csname\??typescriptfiles\currenttypefile\endcsname
+   \ifx\t_font_typescripts\relax
+     \font_typescript_process_typescript_store_indeed
+   \fi
+   \the\t_font_typescripts}
+
+\def\font_typescript_process_typescript_store_indeed
+  {\newtoks\t_font_typescripts % is \relaxed elsewhere
+   \begingroup
+     \let\starttypescript          \font_typescripts_start_store
+     \let\starttypescriptcollection\font_typescripts_collection_start_store
+     \font_typescript_process_typescript_file
+   \endgroup
+   \expandafter\let\csname\??typescriptfiles\currenttypefile\endcsname\t_font_typescripts}
+
+\def\font_typescript_process_typescript_file
+  {\clf_doprocesstypescriptfile{\currenttypefile}}
+
+\unexpanded\def\usetypescriptonce
+  {\dotripleempty\font_typescripts_use_once}
+
+\def\font_typescripts_use_once[#one][#two][#three]%
+  {\ifcsname\??typescriptonce#one:#two:#three\endcsname
+     \writestatus\m!fonts{once (#one) (#two) (#three)}%
+   \else
+     \expandafter\let\csname\??typescriptonce#one:#two:#three\endcsname\relax
+     \font_typescripts_use[#one][#two][#three]%
+   \fi}
+
+% \definetypescriptsynonym[lbr][cmr]
+
+\unexpanded\def\definetypescriptsynonym
+  {\dodoubleempty\font_typescripts_synonym_define}
+
+\def\font_typescripts_synonym_define[#name][#synonym]%
+  {\ifsecondargument\setevalue{\??typescriptsynonyms#name}{#synonym}\fi}
+
+\def\truetypescript#name% recursive so no \lastnamedcs
+  {\ifcsname\??typescriptsynonyms#name\endcsname
+    %\expandafter\truetypescript\csname\??typescriptsynonyms#name\endcsname
+     \expandafter\truetypescript\lastnamedcs
+   \else
+     #name%
+   \fi}
+
+% script [serif] [default]         [size]
+% script [serif] [computer-modern] [size]
+% script [serif] [computer-modern] [ec]
+% script [serif] [computer-modern] [name]
+% script [serif] [computer-modern] [special]
+
+\prependtoks
+    \settrue\c_font_typescripts_first_pass
+\to \everyjob
+
+\unexpanded\def\starttypescript
+  {\ifcase\typescriptstate
+     % 0 = skip
+     \expandafter\font_typescripts_start_gobble
+   \or
+     % 1 = process
+     \expandafter\font_typescripts_start_process
+   \or
+     % 2 = store
+     \expandafter\font_typescripts_start_document
+   \else
+     % ? = skip
+     \expandafter\font_typescripts_start_gobble
+   \fi}
+
+\def\font_typescripts_start_gobble#definitions\stoptypescript{}
+
+\def\font_typescripts_start_document#definitions\stoptypescript
+  {\toksapp\c_font_typescripts_document{\starttypescript#definitions\stoptypescript}}
+
+\def\font_typescripts_start_process % could be a faster \doifelsenextoptionalif needed
+  {\let\typescriptone  \m_font_typescripts_one
+   \let\typescripttwo  \m_font_typescripts_two
+   \let\typescriptthree\m_font_typescripts_three
+   \let\m_font_typescripts_match\empty
+   \doifelsenextoptionalcs\font_typescripts_start_process_one\font_typescripts_start_process_all}
+
+\def\font_typescripts_start_process_all % could be a \let
+  {\ifconditional\c_font_typescripts_first_pass
+     \expandafter\font_typescripts_start_process_indeed
+   \else
+     % skip this since it may do unwanted resets, like
+     % setting symbolic font names to unknown, especially
+     % in run time user type scripts
+     \expandafter\font_typescripts_start_gobble
+   \fi}
+
+\def\font_typescripts_show_match
+  {\writestatus\m!fonts{match:\ifx\currenttypefile\relax\space *\fi \m_font_typescripts_match}}
+
+\def\font_typescripts_start_process_yes
+  {\ifdone
+     \typescriptfoundtrue
+     \iftracetypescripts\font_typescripts_show_match\fi
+     \expandafter\font_typescripts_start_process_indeed
+   \else
+     \expandafter\font_typescripts_start_gobble
+   \fi}
+
+\def\font_typescripts_start_process_one
+  {\font_typescripts_check\m_font_typescripts_one\typescriptone\font_typescripts_start_process_again_one}
+
+\def\font_typescripts_start_process_two
+  {\font_typescripts_check\m_font_typescripts_two\typescripttwo\font_typescripts_start_process_again_two}
+
+\def\font_typescripts_start_process_three
+  {\font_typescripts_check\m_font_typescripts_three\typescriptthree\font_typescripts_start_process_again_three}
+
+\def\font_typescripts_start_process_again_one
+  {\doifelsenextoptionalcs\font_typescripts_start_process_two\font_typescripts_start_process_yes}
+
+\def\font_typescripts_start_process_again_two
+  {\doifelsenextoptionalcs\font_typescripts_start_process_three\font_typescripts_start_process_yes}
+
+\let\font_typescripts_start_process_again_three\font_typescripts_start_process_yes
+
+\def\font_typescripts_start_process_indeed
+  {\push_macro_fontclass}
+
+\unexpanded\def\stoptypescript
+  {\pop_macro_fontclass}
+
+\def\font_typescripts_check#asked#target#followup[#value]% script use value next
+  {\donefalse
+   \edef\m_font_typescripts_check{#value}%
+   \ifx\m_font_typescripts_check\empty % no longer needed / met
+     \ifcase\typescriptmethod\or\donetrue\fi
+   \orelse\ifx#asked\s!all
+     \donetrue
+   \orelse\ifx\m_font_typescripts_check\s!all
+     \donetrue
+   \orelse\ifx#asked\m_font_typescripts_check % saves 10% trace so probably faster too
+     \donetrue
+     \let#target\m_font_typescripts_check
+   \else
+     \doifelsecommon\m_font_typescripts_check#asked\donetrue\donefalse
+     \ifdone
+       \let#target\commalistelement
+     \fi
+   \fi
+   \ifdone
+     \iftracetypescripts\extendtypescriptmatch\fi
+     \expandafter#followup%
+   \else
+     \expandafter\font_typescripts_start_gobble
+   \fi}
+
+\def\extendtypescriptmatch
+  {\edef\m_font_typescripts_match{\m_font_typescripts_match\space[\m_font_typescripts_check]}}
+
+%D Map files will go away in \LUATEX, but till that happens we use stripped down
+%D support for loading them.
+
+\unexpanded\def\loadmapfile{\dosingleempty\font_map_load_file}
+\unexpanded\def\loadmapline{\dodoubleempty\font_map_load_line}
+
+\def\font_map_load_file[#filename]%
+  {\clf_loadmapfile{#filename}}
+
+\def\font_map_load_line[#kind][#data]%
+  {\clf_loadmapline{#kind}{#data}}
+
+\unexpanded\def\forgetmapfiles
+  {\clf_resetmapfiles}
+
+% \prependtoks
+%     \loadmapfile[mkiv-base.map]% can't we preload this one?
+% \to \everystarttext
+
+%D A handy shortcut:
+
+% \definetypescriptprefix[serif][Serif]
+% \definetypescriptprefix[sans] [Sans]
+% \definetypescriptprefix[mono] [Mono]
+%
+% \starttypescript [serif,sans,mono] [handling,hanging,hz] [pure,normal,hz,quality]
+%  \setupfontsynonym [\typescriptprefix\typescriptone] [handling=\typescriptthree]
+% \stoptypescript
+
+\unexpanded\def\definetypescriptprefix
+  {\dodoubleargument\font_typescripts_define_prefix}
+
+\def\font_typescripts_define_prefix[#name][#prefix]%
+  {\setgvalue{\??typescriptprefix#name}{#prefix}} % made global
+
+\def\typescriptprefix#name%
+ %{\ifcsname\??typescriptprefix#name\endcsname\csname\??typescriptprefix#name\endcsname\else#name\fi}
+  {\ifcsname\??typescriptprefix#name\endcsname\lastnamedcs\else#name\fi}
+
+% defining typefaces:
+%
+% \definetypeface [joke] [rm]
+% \definetypeface [joke] [rm] [settings]
+% \definetypeface [joke] [rm] [serif] [lucida]
+% \definetypeface [joke] [rm] [serif] [lucida] [size]
+% \definetypeface [joke] [rm] [serif] [lucida] [size] [settings]
+% \definetypeface [joke] [specification]
+
+\unexpanded\def\definetypeface
+  {\dosixtupleargument\font_typefaces_define}
+
+\appendtoks
+    \font_helpers_reset_fontclass_math_families\fontclass
+\to \everybeforedefinetypeface
+
+%D This hooks into the font switcher:
+
+\settrue\autotypescripts
+
+\unexpanded\def\trycurrentfontclass#typeface%
+  {\ifconditional\autotypescripts
+     \usetypescript[#typeface]%
+     \ifcsname\??fontclassyes#typeface\endcsname
+       \edef\fontclass{#typeface}%
+     \else
+       \iftracetypescripts\writestatus\m!fonts{auto load typescript file 1: [#typeface]}\fi
+       \usetypescriptfile[#typeface]%
+       \usetypescript[#typeface]%
+       \ifcsname\??fontclassyes#typeface\endcsname
+         \edef\fontclass{#typeface}%
+       \else
+         % todo: message
+         \letvalueempty{\??fontclassnop#typeface}%
+       \fi
+     \fi
+   \else
+     % todo: message
+     \letvalueempty{\??fontclassnop#typeface}%
+   \fi}
+
+%D Now we define:
+
+\def\font_typefaces_define
+  {\iffifthargument
+     \expandafter\font_typefaces_define_a
+   \orelse\iffourthargument
+     \expandafter\font_typefaces_define_b
+   \orelse\ifthirdargument
+     \expandafter\font_typefaces_define_c
+   \else
+     \expandafter\font_typefaces_define_d
+   \fi}
+
+\def\font_typefaces_define_a[#name][#style][#fontshape][#fontname][#fontsize][#settings]%
+  {\iftracetypescripts\writestatus\m!fonts{define: [#name] [#style] [#fontshape] [#fontname]}\fi
+   \font_typefaces_define_indeed[#name][#style]%
+   \font_typefaces_defining_start{#name}{#style}{#settings}%
+     \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+     \iftypescriptfound
+       % we're okay
+     \orelse\ifconditional\autotypescripts
+       \iftracetypescripts\writestatus\m!fonts{auto load typescript file 2: [#fontname]}\fi
+       \usetypescriptfile[#fontname]%
+       \font_typescripts_use_one[#fontshape][#fontname][\s!name]% [\s!name,\s!default]%
+     \fi
+     \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
+   \font_typefaces_defining_stop}
+
+\def\font_typefaces_define_b[#name][#style][#fontshape][#fontname][#dummya][#dummyb]%
+  {\font_typefaces_define_a[#name][#style][#fontshape][#fontname][\s!default][#dummyb]}
+
+\def\font_typefaces_define_c[#name][#style][#dummya][#dummyb][#dummyc][#dummyd]%
+  {\font_typefaces_define_indeed[#name][#style]}
+
+\def\font_typefaces_define_d[#name][#specification][#dummya][#dummyb][#dummyc][#dummyd]% use definitions in lfg file
+  {\clf_definetypeface{#name}{#specification}}
+
+\def\font_typefaces_define_indeed[#name][#style]% saveguard against redefinition
+  {\doifsomething{#name}
+     {\ifcsname\??typescriptdefaultstyles#name\endcsname \else
+        \registerfontclass{#name}%
+        \setxvalue{\??typescriptdefaultstyles#name}{#style}%
+      \fi
+      \ifcsname#name\endcsname \else
+        \setugvalue{#name}{\switchtotypeface[#name][#style]}%
+      \fi}}
+
+\def\font_typefaces_defining_start#name#style#settings%
+  {\let\@@tsrscale    \!!plusone % as we push/pop
+   \let\@@tsfeatures  \empty
+   \let\@@tsfallbacks \empty
+   \let\@@tsgoodies   \empty
+   \let\@@tsdirection \empty
+   \let\@@tsdesignsize\empty
+   \geteparameters[\??ts][#settings]% todo raw
+   \push_macro_fontclass
+   \push_macro_fontclassstyle
+   \setcurrentfontclass{#name}%
+   \savefontclassparameters{#style}\@@tsrscale\@@tsfeatures\@@tsfallbacks\@@tsgoodies\@@tsdesignsize\@@tsdirection
+   \the\everybeforedefinetypeface}
+
+\def\tsvar#key#default% undocumented and unofficial
+  {\expandafter\ifx\csname\??ts#key\endcsname\empty
+     #default%
+   \else
+     \csname\??ts#key\endcsname
+   \fi}
+
+\def\font_typefaces_defining_stop
+  {\the\everyafterdefinetypeface
+   \pop_macro_fontclassstyle
+   \pop_macro_fontclass}
+
+\def\dofastdefinetypeface#name#style#fontshape#fontsize#settings% called from the lua end (via case d)
+  {\font_typefaces_define_indeed[#name][#style]%
+   \font_typefaces_defining_start{#name}{#style}{#settings}%
+   \font_typescripts_use_one[#fontshape][#fontsize][\s!size]%
+   \font_typefaces_defining_stop}
+
+\unexpanded\def\setuptypeface% [class] [settings]
+  {\dodoubleempty\font_typefaces_setup}
+
+\unexpanded\def\switchtotypeface% [class] [settings]
+  {\dodoubleempty\font_typefaces_switch}
+
+\def\font_typefaces_setup[#class][#settings]%
+  {\setcurrentfontclass{#class}%
+   \let\globalfontclass\fontclass
+   \ifsecondargument
+     \setupbodyfont[#settings]%
+   \orelse\ifx\fontclass\empty
+     \setupbodyfont[\s!rm]%
+   \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+    %\setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+     \expandafter\setupbodyfont\expandafter[\lastnamedcs]%
+   \else
+     \setupbodyfont[\s!rm]%
+   \fi
+   \ifmmode\mr\else\tf\fi} % needed ?
+
+\def\font_typefaces_switch[#class][#settings]%
+  {\setcurrentfontclass{#class}%
+   \let\globalfontclass\globalfontclass
+   \ifsecondargument
+     \switchtobodyfont[#settings]%
+   \orelse\ifx\fontclass\empty
+     \switchtobodyfont[\s!rm]%
+   \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+    %\switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
+     \expandafter\switchtobodyfont\expandafter[\lastnamedcs]%
+   \else
+     \switchtobodyfont[\s!rm]%
+   \fi
+   \ifmmode\mr\else\tf\fi} % needed ?
+
+%D For Taco:
+%D
+%D \starttyping
+%D \inherittypeface[palatino][rm][postscript]
+%D \inherittypeface[palatino][rm][\fontclass]
+%D \inherittypeface[palatino][rm] % == \fontclass
+%D \inherittypeface[palatino] % == [rm,ss,tt,mm]
+%D \stoptyping
+
+\unexpanded\def\inherittypeface
+  {\dotripleempty\font_typescripts_inherit_indeed}
+
+\def\font_typescripts_inherit_indeed[#name][#styles][#parentclass]%
+  {\doifelsenothing{#styles}
+     {\font_typescripts_inherit_indeed[#name][\s!rm,\s!ss,\s!tt,\s!mm][\fontclass]}
+     {\doifnot{#name}{#parentclass}
+        {\glet\font_typescripts_inherit_check\font_typescripts_inherit_check_indeed
+         \def\font_typescripts_inherit_check_step#style{\setevalue{\??typescriptinheritances#name:#style}{#parentclass}}%
+         \processcommalist[#styles]\font_typescripts_inherit_check_step}}}
+
+\let\font_typescripts_inherit_check_step\relax
+
+%D This hooks into the font mechanism with:
+
+\def\font_typescripts_inherit_check_indeed#name% called often
+  {\ifcsname\??typescriptinheritances\fontclass:#name\endcsname
+    %\expandafter\let\expandafter\fontclass\csname\??typescriptinheritances\fontclass:#name\endcsname
+     \expandafter\let\expandafter\fontclass\lastnamedcs
+   \fi}
+
+\let\font_typescripts_inherit_check\gobbleoneargument
+
+% not yet:
+%
+% \def\font_helpers_check_relative_font_id
+%   {\ifcsname\??typescriptrelatives\fontclass\endcsname
+%      \expandafter\let\expandafter\relativefontid\csname\??typescriptrelatives\fontclass\endcsname
+%    \else
+%      \expandafter\normalxdef\csname\??typescriptrelatives\fontclass\endcsname{\the\lastfontid}%
+%      \let\relativefontid\minusone
+%    \fi}
+
+\def\v_font_string_d % default fontstyle (expands to \s!Serif in font-ini)
+  {\expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!rm \s!Serif \else
+   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!ss \s!Sans  \else
+   \expandafter\ifx\csname\??typescriptdefaultstyles\fontclass\endcsname\s!tt \s!Mono  \else
+                                                                              \s!Serif \fi\fi\fi}
+
+\unexpanded\def\font_helpers_set_fontstyle_of_fontclass
+  {\ifx\fontclass\empty
+     \let\fontstyle\s!rm
+   \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
+    %\edef\fontstyle{\csname\??typescriptdefaultstyles\fontclass\endcsname}%
+     \edef\fontstyle{\lastnamedcs}%
+   \else
+     \let\fontstyle\s!rm
+   \fi}
+
+\protect \endinput

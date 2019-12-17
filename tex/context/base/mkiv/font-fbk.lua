@@ -189,6 +189,7 @@ local function composecharacters(tfmdata)
                                                     chr_t,
                                                 }
                                             end
+t.depth = a_ury
                                         elseif c_ury > a_lly then -- messy test
                                             local dy
                                             if compose then
@@ -219,6 +220,7 @@ local function composecharacters(tfmdata)
                                             else
                                                 dy = - deltaxheight + extraxheight
                                             end
+t.height = a_ury-dy
                                             local right = rightcommand[dx+dd]
                                             local down  = downcommand[dy]
                                             if trace_visualize then
@@ -245,6 +247,7 @@ local function composecharacters(tfmdata)
                                                     chr_t,
                                                 }
                                             end
+t.height = a_ury
                                         end
                                     end
                                 else

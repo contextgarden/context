@@ -1,0 +1,156 @@
+%D \module
+%D   [       file=back-pdf,
+%D        version=2009.04.15,
+%D          title=\CONTEXT\ Backend Macros,
+%D       subtitle=\PDF,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D The less there is here, the better. After a decade it is time to remove the \type
+%D {\pdf*} ones completely. For the moment I keep them commented but even that will
+%D go away.
+
+\writestatus{loading}{ConTeXt Backend Macros / PDF}
+
+\registerctxluafile{lpdf-ini}{optimize}
+\registerctxluafile{lpdf-lmt}{optimize}
+
+\registerctxluafile{lpdf-col}{}
+\registerctxluafile{lpdf-xmp}{}
+\registerctxluafile{lpdf-ano}{}
+\registerctxluafile{lpdf-res}{}
+\registerctxluafile{lpdf-mis}{}
+\registerctxluafile{lpdf-ren}{}
+\registerctxluafile{lpdf-grp}{}
+\registerctxluafile{lpdf-wid}{}
+\registerctxluafile{lpdf-fld}{}
+\registerctxluafile{lpdf-mov}{}
+\registerctxluafile{lpdf-u3d}{} % this will become a module
+\registerctxluafile{lpdf-swf}{} % this will become a module
+\registerctxluafile{lpdf-tag}{}
+\registerctxluafile{lpdf-fmt}{}
+\registerctxluafile{lpdf-pde}{}
+\registerctxluafile{lpdf-img}{optimize}
+\registerctxluafile{lpdf-epa}{}
+\registerctxluafile{lpdf-emb}{optimize}
+\registerctxluafile{lpdf-fnt}{}
+
+\registerctxluafile{back-pdp}{}
+\registerctxluafile{back-pdf}{} % some code will move to lpdf-*
+
+\loadmarkfile{back-u3d} % this will become a module
+\loadmarkfile{back-swf} % this will become a module
+
+\unprotect
+
+%D We will minimize the number of calls to \PDF\ specific primitives and delegate
+%D all management and injection of code to the backend.
+%D
+%D Because we do a lot in \LUA\ and don't want interferences, we nil most of the
+%D \PDFTEX\ primitives. Of course one can always use the \type {\pdfvariable},
+%D \type {\pdfextension} and \type {\pdffeedback} primitives but it will probably
+%D have bad side effects.
+
+\unexpanded\def\pdfextension{\clf_pdfextension}
+           \def\pdffeedback {\clf_pdffeedback}
+
+%D For the moment we keep this for tikz but hopefully it will at some point use
+%D the proper ones. Consider them obsolete:
+
+\unexpanded\def\pdfliteral  {\clf_pdfliteral}
+\unexpanded\def\pdfobj      {\clf_pdfobj}%
+\unexpanded\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}
+\unexpanded\def\pdfrefobj   {\clf_pdfrefobj }
+
+\unexpanded\def\pdfrestore  {\clf_restore}
+\unexpanded\def\pdfsave     {\clf_save}
+\unexpanded\def\pdfsetmatrix{\clf_setmatrix}
+
+           \let\pdfxform     \saveboxresource
+           \let\pdflastxform \lastsavedboxresourceindex
+           \let\pdfrefxform  \useboxresource
+
+%D Here are quick and dirty compression flippers, mostly used when testing something
+%D as one can best stick to the defaults that also adapt to specific standards.
+
+\unexpanded\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
+\unexpanded\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
+\unexpanded\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
+\unexpanded\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
+
+%D PDF/X (maybe combine the two lua calls)
+
+\setupbackend
+  [xmpfile=]
+
+\appendtoks
+    \edef\p_file{\backendparameter{xmpfile}}%
+    \ifx\p_file\empty\else
+      \clf_setxmpfile{\p_file}%
+    \fi
+\to \everysetupbackend
+
+%D This will change:
+
+\appendtoks
+    \clf_setformat
+         format  {\backendparameter\c!format}%
+         level   {\backendparameter\c!level}%
+         option  {\backendparameter\c!option}%
+         profile {\backendparameter\c!profile}%
+         intent  {\backendparameter\c!intent}%
+         file    {\backendparameter\c!file}%
+    \relax
+\to \everysetupbackend
+
+%D These are the only official methods to add stuff to the resources. If more is
+%D needed for third party low level code, it can be added.
+
+\unexpanded\def\pdfbackendsetcatalog       #1#2{\clf_lpdf_addtocatalog{#1}{#2}}
+\unexpanded\def\pdfbackendsetinfo          #1#2{\clf_lpdf_addtoinfo{#1}{#2}}
+\unexpanded\def\pdfbackendsetname          #1#2{\clf_lpdf_addtonames{#1}{#2}}
+
+\unexpanded\def\pdfbackendsetpageattribute #1#2{\clf_lpdf_addtopageattributes{#1}{#2}}
+\unexpanded\def\pdfbackendsetpagesattribute#1#2{\clf_lpdf_addtopagesattributes{#1}{#2}}
+\unexpanded\def\pdfbackendsetpageresource  #1#2{\clf_lpdf_addtopageresources{#1}{#2}}
+
+\unexpanded\def\pdfbackendsetextgstate     #1#2{\clf_lpdf_adddocumentextgstate{#1}{#2}}
+\unexpanded\def\pdfbackendsetcolorspace    #1#2{\clf_lpdf_adddocumentcolorspace{#1}{#2}}
+\unexpanded\def\pdfbackendsetpattern       #1#2{\clf_lpdf_adddocumentpattern{#1}{#2}}
+\unexpanded\def\pdfbackendsetshade         #1#2{\clf_lpdf_adddocumentshade{#1}{#2}}
+
+           \def\pdfbackendcurrentresources     {\clf_lpdf_collectedresources}
+           \def\pdfcolor                     #1{\clf_lpdf_color\numexpr\thecolorattribute{#1}\relax}
+
+%D This is a temporary hack mthat will be removed, improved or somehow can become
+%D default.
+
+\def\TransparencyHack{\setupcolors[\c!pagecolormodel=\v!auto]}
+
+%D Just in case one needs this \unknown:
+%D
+%D \starttyping
+%D text \pdfbackendactualtext{Meier}{Müller} text
+%D \stoptyping
+
+\unexpanded\def\pdfbackendactualtext#1#2% not interfaced
+  {\clf_startactualtext{#2}%
+   #1%
+   \clf_stopactualtext}
+
+\let\pdfactualtext\pdfbackendactualtext
+
+%D Bah, this is also needed for tikz:
+
+\ifdefined\pdfsavepos\else
+    \let\pdfsavepos \savepos
+    \let\pdflastxpos\lastxpos
+    \let\pdflastypos\lastypos
+\fi
+
+\protect \endinput

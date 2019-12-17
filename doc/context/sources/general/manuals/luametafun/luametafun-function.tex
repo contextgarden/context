@@ -1,0 +1,296 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-function
+
+\startchapter[title={Function}]
+
+It is tempting to make helpers that can do a lot. However, that also means that
+we need to explain a lot. Instead it makes more sense to have specific helpers
+and just make another one when needed. Rendering functions falls into this
+category. At some point users will come up with specific cases that other users
+can use. Therefore, the solution presented here is not the ultimate answer. We
+start with a simple example:
+
+\startbuffer[1]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 20, xstep = .1,
+        ymin = -2, ymax =  2,
+
+        sx = 1mm, xsmall = 80, xlarge = 20,
+        sy = 4mm, ysmall = 40, ylarge =  4,
+
+        linewidth = .025mm, offset = .1mm,
+
+        code = "1.5 * math.sind (50 * x - 150)",
+    ]
+        xsized 8cm
+    ;
+\stopMPcode
+\stopbuffer
+
+\startplacefigure
+    \getbuffer[1]
+\stopplacefigure
+
+This image is defined as follows:
+
+\typebuffer[1][option=TEX]
+
+\startbuffer[2]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 20, xstep = .1,
+        ymin = -2, ymax =  2,
+
+        sx = 1mm, xsmall = 80, xlarge = 20,
+        sy = 4mm, ysmall = 40, ylarge =  4,
+
+        linewidth = .025mm, offset = .1mm,
+
+        xticks    = "bottom",
+        yticks    = "left",
+        xlabels   = "nolimits",
+        ylabels   = "yes",
+        code      = "1.5 * math.sind (50 * x - 150)",
+      % frame     = "ticks",
+        frame     = "sticks",
+        ycaption  = "\strut \rotate[rotation=90]{something vertical, using $\sin{x}$}",
+        xcaption  = "\strut something horizontal",
+        functions = {
+            [ xmin =  1.0, xmax =  7.0, close = true, fillcolor = "darkred" ],
+            [ xmin =  7.0, xmax = 12.0, close = true, fillcolor = "darkgreen" ],
+            [ xmin = 12.0, xmax = 19.0, close = true, fillcolor = "darkblue" ],
+            [
+                drawcolor = "darkyellow",
+                drawsize  = 2
+            ]
+        }
+    ]
+        xsized TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+We can draw multiple functions in one go. The next sample split the drawing over
+a few ranges and is defined as follows; in \in {figure} [function:2] we see the
+result.
+
+\typebuffer[2][option=TEX]
+
+
+\startplacefigure[reference=function:2]
+    \getbuffer[2]
+\stopplacefigure
+
+Instead of the same function, we can draw different ones and when we use transparency
+we get nice results too.
+
+\startbuffer[3]
+\definecolor[MyColorR][r=.5,t=.5,a=1]
+\definecolor[MyColorG][g=.5,t=.5,a=1]
+\definecolor[MyColorB][b=.5,t=.5,a=1]
+
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 20, xstep = .1,
+        ymin = -1, ymax =  1,
+
+        sx = 1mm, xsmall = 80, xlarge = 20,
+        sy = 4mm, ysmall = 40, ylarge =  4,
+
+        linewidth = .025mm, offset = .1mm,
+
+        functions = {
+            [
+                code      = "math.sind (50 * x - 150)",
+                close     = true,
+                fillcolor = "MyColorR"
+            ],
+            [
+                code      = "math.cosd (50 * x - 150)",
+                close     = true,
+                fillcolor = "MyColorB"
+            ]
+        },
+    ]
+        xsized TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3][option=TEX]
+
+\startplacefigure[reference=function:3]
+    \getbuffer[3]
+\stopplacefigure
+
+It is important to choose a good step. In \in {figure} [function:4] we show 4
+variants and it is clear that in this case using straight line segments is better
+(or at least more efficient with small steps).
+
+\startbuffer[4a]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 10, xstep = .1,
+        ymin = -1, ymax =  1,
+
+        sx = 1mm, sy = 4mm,
+
+        linewidth = .025mm, offset = .1mm,
+
+        code  = "math.sind (50 * x^2 - 150)",
+        shape = "curve"
+    ]
+        xsized .45TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4b]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 10, xstep = .01,
+        ymin = -1, ymax =  1,
+
+        sx = 1mm, sy = 4mm,
+
+        linewidth = .025mm, offset = .1mm,
+
+        code  = "math.sind (50 * x^2 - 150)",
+        shape = "curve"
+    ]
+        xsized .45TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4c]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 10, xstep = .1,
+        ymin = -1, ymax =  1,
+
+        sx = 1mm, sy = 4mm,
+
+        linewidth = .025mm, offset = .1mm,
+
+        code  = "math.sind (50 * x^2 - 150)",
+        shape = "line"
+    ]
+        xsized .45TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[4d]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xmin =  0, xmax = 10, xstep = .01,
+        ymin = -1, ymax =  1,
+
+        sx = 1mm, sy = 4mm,
+
+        linewidth = .025mm, offset = .1mm,
+
+        code  = "math.sind (50 * x^2 - 150)",
+        shape = "line"
+    ]
+        xsized .45TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4a][option=TEX]
+
+\startplacefigure[reference=function:4]
+    \startcombination[2*2]
+        {\getbuffer[4a]} {\type {xstep=.10} and \type {shape="curve"}}
+        {\getbuffer[4b]} {\type {xstep=.01} and \type {shape="curve"}}
+        {\getbuffer[4c]} {\type {xstep=.10} and \type {shape="line"}}
+        {\getbuffer[4d]} {\type {xstep=.01} and \type {shape="line"}}
+    \stopcombination
+\stopplacefigure
+
+You can manipulate the axis (a bit) by tweaking the first and last ticks. In the
+case of \in {figure} [function:5] we also put the shape on top of the axis.
+
+\startbuffer[5]
+\startMPcode{doublefun}
+    draw lmt_function [
+        xfirst =  9, xlast = 21, ylarge = 2, ysmall = 1/5,
+        yfirst = -1, ylast =  1, xlarge = 2, xsmall = 1/4,
+
+        xmin = 10, xmax = 20, xstep = .25,
+        ymin = -1, ymax =  1,
+
+        drawcolor = "darkmagenta",
+        shape     = "steps",
+        code      = "0.5 * math.random(-2,2)",
+        linewidth = .025mm,
+        offset    = .1mm,
+        reverse   = true,
+    ]
+        xsized TextWidth
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startplacefigure[reference=function:5]
+    \getbuffer[5]
+\stopplacefigure
+
+The whole repertoire of parameters (in case of doubt just check the source code as this
+kind of code is not that hard to follow) is:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name        \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC sx          \NC numeric \NC 1mm    \NC horizontal scale factor \NC \NR
+\NC sy          \NC numeric \NC 1mm    \NC vertical scale factor \NC \NR
+\NC offset      \NC numeric \NC 0      \NC \NC \NR
+\NC xmin        \NC numeric \NC 1      \NC \NC \NR
+\NC xmax        \NC numeric \NC 1      \NC \NC \NR
+\NC xstep       \NC numeric \NC 1      \NC \NC \NR
+\NC xsmall      \NC numeric \NC        \NC optional step of small ticks \NC \NR
+\NC xlarge      \NC numeric \NC        \NC optional step of large ticks \NC \NR
+\NC xlabels     \NC string  \NC no     \NC \type {yes}, \type {no} or \type {nolimits} \NC \NR
+\NC xticks      \NC string  \NC bottom \NC possible locations are \type {top}, \type {middle} and \type {bottom} \NC \NR
+\NC xcaption    \NC string  \NC        \NC \NC \NR
+\NC ymin        \NC numeric \NC 1      \NC \NC \NR
+\NC ymax        \NC numeric \NC 1      \NC \NC \NR
+\NC ystep       \NC numeric \NC 1      \NC \NC \NR
+\NC ysmall      \NC numeric \NC        \NC optional step of small ticks \NC \NR
+\NC ylarge      \NC numeric \NC        \NC optional step of large ticks \NC \NR
+\NC xfirst      \NC numeric \NC        \NC left of \type {xmin} \NC \NR
+\NC xlast       \NC numeric \NC        \NC right of \type {xmax} \NC \NR
+\NC yfirst      \NC numeric \NC        \NC below \type {ymin} \NC \NR
+\NC ylast       \NC numeric \NC        \NC above \type {ymax} \NC \NR
+\NC ylabels     \NC string  \NC no     \NC \type {yes}, \type {no} or \type {nolimits} \NC \NR
+\NC yticks      \NC string  \NC left   \NC possible locations are \type {left}, \type {middle} and \type {right} \NC \NR
+\NC ycaption    \NC string  \NC        \NC \NC \NR
+\NC code        \NC string  \NC        \NC \NC \NR
+\NC close       \NC boolean \NC false  \NC \NC \NR
+\NC shape       \NC string  \NC curve  \NC or \type {line} \NC \NR
+\NC fillcolor   \NC string  \NC        \NC \NC \NR
+\NC drawsize    \NC numeric \NC 1      \NC \NC \NR
+\NC drawcolor   \NC string  \NC        \NC \NC \NR
+\NC frame       \NC string  \NC        \NC options are \type {yes}, \type {ticks} and \type {sticks} \NC \NR
+\NC linewidth   \NC numeric \NC .05mm  \NC \NC \NR
+\NC pointsymbol \NC string  \NC        \NC like type {dots} \NC \NR
+\NC pointsize   \NC numeric \NC 2      \NC \NC \NR
+\NC pointcolor  \NC string  \NC        \NC \NC \NR
+\NC xarrow      \NC string  \NC        \NC \NC \NR
+\NC yarrow      \NC string  \NC        \NC \NC \NR
+\NC reverse     \NC boolean \NC false  \NC when \type {true} draw the function between axis and labels \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

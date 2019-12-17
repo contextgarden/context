@@ -1,0 +1,1882 @@
+%D \module
+%D   [       file=strc-itm,
+%D        version=2008.10.20,
+%D          title=\CONTEXT\ Structure Macros,
+%D       subtitle=Itemgroups,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Structure Macros / Itemgroups}
+
+\registerctxluafile{strc-itm}{}
+
+%D As we analyze/register widths and such we could as well push and pop the numbers
+%D at the \LUA\ end (which saves a few calls).
+%D
+%D Cleaning up this module happened around the time when Kate Bush came up with the
+%D nicest numbered list of words: 50 Words For Snow. It's therefore no surprise that
+%D I had that cd running several times when updating this code. One of the
+%D highlights of 2011.
+%D
+%D This module needs to be rewritten but that is tricky with respect to
+%D compatibilitity. Basically each major variant (regular, text, columns,
+%D horizontal, etc) needs to be on its own.
+
+% todo: check breaks
+% todo: check grouping
+% todo: fixedconversion
+
+% \startitemize[n,packed]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse]
+% \item test \item test \item test
+% \stopitemize
+%
+% \startitemize[n,packed,reverse] \item test \item test \stopitemize
+% \startitemize[continue]
+% \item test \startitemize[n,packed] \item test \item test \stopitemize
+% \item test
+% \item test
+% \stopitemize
+% \startitemize[continue] \item test \stopitemize
+%
+% \startitemize[n,packed] \item test \item test \stopitemize
+% \startitemize[continue] \item test            \stopitemize
+% \startitemize[continue] \item test            \stopitemize
+%
+% \setupwhitespace[big]
+% \starttext
+%     test \startitemize[joinedup]                \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite]        \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,before] \item test \item test \stopitemize test \par
+%     test \startitemize[joinedup,nowhite,after]  \item test \item test \stopitemize test \par
+% \stoptext
+%
+% test / example
+%
+% \startnarrower[left] \startcolumns[n=3] \startitemize
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopcolumns\stopnarrower \blank
+%
+% \startnarrower[left] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \stopnarrower \blank
+%
+% \setupitemize[leftmargin=1.5em] \startitemize[columns,three]
+% \item \input ward \item \input ward \item \input ward
+% \stopitemize \blank
+%
+% beware, we don't group (yet) as we want to keep the left/right skip
+%
+% \startitemize
+% \startitem \stopitem
+% some intermediate text that will properly indent
+% \startitem \stopitem
+% \stopitem
+%
+% so we need to keep that property
+%
+% \startitemize
+%   \starthead {xx} test \stophead
+%   \startitem test \stopitem
+%   \startitem test \stopitem
+% \stopitemize
+%
+% Sometimes the user demands get pretty weird:
+%
+% \startitemize
+%   \item test
+%   \item test
+%   \headsym{xx} test \par test
+% \stopitemize
+%
+% aligned items
+%
+% \startitemize[n,fit,broad][itemalign=flushright]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+%
+% \setupitemgroup[itemize][each][fit]
+% \setupitemgroup[itemize][each][distance=.5em,factor=1,itemalign=flushright]
+%
+% \startitemize[n]
+%      \dorecurse{100}{\item The first item.}
+% \stopitemize
+%
+% \defineitemgroup[gbitemize]
+% \setupitemgroup[gbitemize][each][headstyle=bold]
+%
+% \startgbitemize
+% \txt{italian} some italians like this kind of cross||breed between
+%   an itemize and a description
+% \txt{sicilians} i wonder how many sicilian mathematicians do a thesis
+%   on the math involved in predicting the next big bang of the vulcano
+% \stopgbitemize
+%
+% \startitemize[n,repeat]
+%     \noitem \startitemize[a] \item Item 1.a. \item Item 1.b. \stopitemize
+%     \noitem \startitemize[a] \item Item 2.a. \item Item 2.b. \stopitemize
+% \stopitemize
+%
+% \startitemize[n,repeat][width=0pt]
+%   \noitem \startitemize[a][width=2em] \item Item 1.a. \item Item 1.b. \stopitemize
+%   \noitem \startitemize[a][width=2em] \item Item 2.a. \item Item 2.b. \stopitemize
+% \stopitemize
+%
+% \startbuffer
+% \item
+%   \startitemize[n]
+%   \item item 1.1
+%   \item item 1.2
+%   \startitemize[n] \item item 1.2.1 \item item 1.2.2 \stopitemize
+%   \item item 1.3
+%   \stopitemize
+% \item
+%   \startitemize[n] \item item 2.1 \item item 2.2 \stopitemize
+% \item item 3
+%   \startitemize[n] \item item 3.1 \item item 3.2 \stopitemize
+% \item
+%   \startitemize[n] \item item 4.1 \item item 4.2 \stopitemize
+% \stopbuffer
+%
+% \startitemize[n,repeat,6*broad,packed] \getbuffer \stopitemize \blank[3*big]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize \blank[3*big]
+% \setupitemize[each][atmargin][width=3em]
+% \startitemize[n,repeat,packed]         \getbuffer \stopitemize
+%
+% todo: assume startitem ... stopitem and do an autostopitem .. cleaner for
+% elements
+%
+% \startitemize[text][space=medium]
+% \item one \item two \item three
+% \stopitemize
+%
+% For Giuseppe "Oblomov" Bilotta, inspired on a suggestion by Taco
+% Hoekwater.
+%
+% \def\MyItemCommand#1{{\bf#1}\quad}
+% \setupitemgroup[itemize][command=\MyItemCommand]
+%
+% \startitemize
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \item {test} is this okay?
+% \stopitemize
+
+\unprotect
+
+\newconditional\c_strc_itemgroups_sub
+\newconditional\c_strc_itemgroups_head
+\newconditional\c_strc_itemgroups_intro
+\newconditional\c_strc_itemgroups_randomize
+\newconditional\c_strc_itemgroups_horizontal
+\newconditional\c_strc_itemgroups_collecting
+\newconditional\c_strc_itemgroups_auto_intro
+\newconditional\c_strc_itemgroups_pack
+\newconditional\c_strc_itemgroups_paragraph
+\newconditional\c_strc_itemgroups_text
+\newconditional\c_strc_itemgroups_text_saved
+\newconditional\c_strc_itemgroups_first
+\newconditional\c_strc_itemgroups_before
+\newconditional\c_strc_itemgroups_after
+\newconditional\c_strc_itemgroups_nowhite
+\newconditional\c_strc_itemgroups_joined
+\newconditional\c_strc_itemgroups_reverse
+\newconditional\c_strc_itemgroups_continue
+\newconditional\c_strc_itemgroups_fitting
+\newconditional\c_strc_itemgroups_indented_first
+\newconditional\c_strc_itemgroups_inline
+\newconditional\c_strc_itemgroups_columns
+\newconditional\c_strc_itemgroups_concat
+\newconditional\c_strc_itemgroups_txt
+\newconditional\c_strc_itemgroups_extra
+\newconditional\c_strc_itemgroups_repeat
+\newconditional\c_strc_itemgroups_inline_head
+
+% 0 = before/after
+% 1 = between unless before
+% 2 = between
+
+\newconstant   \c_strc_itemgroups_spacing_mode   \c_strc_itemgroups_spacing_mode\plustwo
+\newconditional\c_strc_itemgroups_optimize       \settrue\c_strc_itemgroups_optimize
+\newconditional\c_strc_itemgroups_auto_concat    \settrue\c_strc_itemgroups_auto_concat
+
+\newsignal     \d_strc_itemgroups_signal
+
+\newbox        \b_strc_itemgroups
+
+\newdimen      \d_strc_itemgroups_list_width
+\newdimen      \d_strc_itemgroups_asked_width
+
+\newdimen      \d_strc_itemgroups_max_width      % multipass
+\newcount      \c_strc_itemgroups_max_items      % multipass
+
+\newcount      \c_strc_itemgroups_n_of_items
+\newcount      \c_strc_itemgroups_nesting
+\newcount      \c_strc_itemgroups_column_depth
+
+\def           \v_strc_itemgroups_counter        {itemgroup:\currentparentitemgroup}
+\let           \m_strc_itemgroups_repeat_start   \empty
+\def           \v_strc_itemgroups_unknown_symbol {?}
+\let           \m_strc_itemgroups_indenting      \empty
+\let           \m_strc_itemgroups_destination    \empty
+
+\let           \currentitemlevel                 \!!zerocount % public
+\def           \currentnofitems                  {\the\c_strc_itemgroups_max_items}
+\def           \currentitemnumber                {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
+
+\newtoks       \itemgroupcommands                % maybe public
+
+\def           \currentitemgroupsymbol           {n}    % here we cannot use a _ in the name
+\let           \currentitemgroupconversionset    \empty % here we cannot use a _ in the name
+\let           \currentitemgroupsegments         \empty
+
+\def\strc_itemgroups_register_status
+  {\clf_registeritemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\c_strc_itemgroups_n_of_items\dimexpr\itemgroupparameter\c!maxwidth\relax}
+
+\def\strc_itemgroups_check_n_of_items % we could do this at the lua end and save a call (i.e. will be dimen and counter)
+  {\clf_analyzeitemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\relax
+   \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
+
+% todo: \dodosetreference -> \strc_counters_register_component (to be checked)
+
+\def\strc_itemgroups_insert_reference % we will make a decent number helper
+  {\iftrialtypesetting \orelse \ifx\currentitemreference \empty \else
+     \strc_itemgroups_insert_reference_indeed
+   \fi}
+
+\def\strc_itemgroups_insert_extra_reference
+  {\iftrialtypesetting \orelse \ifx\currentitemreference \empty \else
+     \normalexpanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
+   \fi}
+
+\def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
+  {% needs testing, gave problems:
+   \setnextinternalreference
+   % no need to collect nodes in \b_strc_destination_nodes here ... maybe at some point
+   \strc_references_start_destination_nodes
+   % this is somewhat over the top ... we should use the counter's reference
+   \clf_setdestinationattribute
+     {%
+         metadata {%
+             kind            {item}% was item, why?
+         \ifx\currentreferencecoding\s!xml
+             xmlroot         {\xmldocument}% only useful when text
+         \fi
+             catcodes        \catcodetable
+         }%
+         references {%
+             internal        \locationcount % no: this spoils references
+           % block           {\currentsectionblock}%
+             view            {\interactionparameter\c!focus}%
+             prefix          {\referenceprefix}%
+             reference       {\currentitemreference}%
+         }%
+         prefixdata {%
+             prefix          {\namedcounterparameter\v_strc_itemgroups_counter\c!prefix}%
+             separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixseparatorset}%
+             conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversion}%
+             conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconversionset}%
+             set             {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixset}%
+             segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixsegments}%
+           % segments        {\askedprefixsegments}%
+             connector       {\namedcounterparameter\v_strc_itemgroups_counter\c!prefixconnector}%
+         }%
+         numberdata {%
+             numbers         {\v_strc_itemgroups_counter}%
+             separatorset    {\namedcounterparameter\v_strc_itemgroups_counter\c!numberseparatorset}%
+           % conversion      {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversion}%
+           % conversionset   {\namedcounterparameter\v_strc_itemgroups_counter\c!numberconversionset}%
+           % fixedconversion {\currentitemgroupconversionset}%
+             conversionset   {fixed::\currentitemgroupconversionset}% temp hack
+           %
+           % for the moment no stopper, we need to make references configurable first
+           % stopper         {\namedcounterparameter\v_strc_itemgroups_counter\c!numberstopper}%
+             segments        {\namedcounterparameter\v_strc_itemgroups_counter\c!numbersegments}%
+         }%
+     }%
+   \relax
+   \strc_references_stop_destination_nodes
+   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   % will become an option:
+   \ifnum\lastdestinationattribute>\zerocount
+     \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
+       \strc_references_flush_destination_nodes
+     \egroup
+   \fi}
+
+%D Defining and setup:
+
+\installcorenamespace{itemgroup}
+\installcorenamespace{itemgroupoption}
+\installcorenamespace{itemgroupsetting}
+\installcorenamespace{itemgroupkeyword}
+\installcorenamespace{itemgroupalign}
+\installcorenamespace{itemgrouplocal}
+\installcorenamespace{itemgroupglobal}
+\installcorenamespace{itemgroupdistance}
+\installcorenamespace{itemgroupstack}
+\installcorenamespace{itemgroupfirst}
+\installcorenamespace{itemgroupstart}
+
+\installcommandhandler \??itemgroup {itemgroup} \??itemgroup
+
+\let\setupitemgroups\setupitemgroup
+
+\appendtoks
+    \setuevalue{\e!start\currentitemgroup}{\startitemgroup[\currentitemgroup]}%
+    \setuevalue{\e!stop \currentitemgroup}{\stopitemgroup}%
+    \setuevalue{\e!setup\currentitemgroup\e!endsetup}{\setupitemgroup[\currentitemgroup]}% obsolete
+    \let\currentparentitemgroup\currentitemgroup
+    \definecounter[\v_strc_itemgroups_counter]%
+    % beware ... we cannot use _ as the conversion set is not expanded
+    % \defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]%
+\to \everydefineitemgroup
+
+%D Global states
+
+\def\strc_itemgroups_store_continue_state#options#settings%
+   {\setxvalue{\??itemgroupoption \currentitemgroup}{\strc_itemgroups_process_options{#options}}%
+    \setgvalue{\??itemgroupsetting\currentitemgroup}{\setupcurrentitemgroup[#settings]}}
+
+\def\strc_itemgroups_fetch_continue_state
+  {\csname\??itemgroupoption \currentitemgroup\endcsname
+   \csname\??itemgroupsetting\currentitemgroup\endcsname}
+
+\def\strc_itemgroups_reset_continue_state
+  {\expandafter\glet\csname\??itemgroupoption \currentitemgroup\endcsname\relax
+   \expandafter\glet\csname\??itemgroupsetting\currentitemgroup\endcsname\relax}
+
+% These will become keywords. We will also add a feature to keep the while set
+% together.
+
+\definevspacing[\v!item @0]     [penalty:0]     % allow
+\definevspacing[\v!item @10000] [penalty:10000] % no
+\definevspacing[\v!item @-5]    [penalty:-5]
+\definevspacing[\v!item @5]     [penalty:5]
+\definevspacing[\v!item @500]   [penalty:500]   % discourage .. too low, 5000 is better
+
+\def\strc_itemgroups_insert_break_when_needed#break%
+  {\ifconditional\c_strc_itemgroups_optimize
+     \ifconditional\c_strc_itemgroups_text \else
+       #break\relax
+     \fi
+   \fi}
+
+\def\strc_itemgroups_insert_breakallow       {\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_breakallow_indeed}
+\def\strc_itemgroups_insert_breakno          {\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_breakno_indeed   }
+\def\strc_itemgroups_insert_break            {\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_break_indeed     }
+\def\strc_itemgroups_insert_nobreak          {\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_nobreak_indeed   }
+
+\def\strc_itemgroups_insert_breakallow_indeed{\vspacing[\v!item @0]}
+\def\strc_itemgroups_insert_breakno_indeed   {\vspacing[\v!item @10000]}
+\def\strc_itemgroups_insert_break_indeed     {\flushnotes
+                                              \vspacing[\v!item @-5]}
+\def\strc_itemgroups_insert_nobreak_indeed   {\flushnotes
+                                              \ifinsidecolumns % todo
+                                                \vspacing[\v!item @5]%
+                                              \else
+                                                \vspacing[\v!item @500]%
+                                              \fi}
+
+\unexpanded\def\strc_itemgroups_process_options#options%
+  {\processcommacommand[#options]\strc_itemgroups_process_option} % expansion of options is handy for xml
+
+% \installcommalistprocessorcommand \strc_itemgroups_process_option_list \strc_itemgroups_process_option
+%
+% \unexpanded\def\strc_itemgroups_process_options#options%
+%   {\normalexpanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
+
+\def\strc_itemgroups_process_option#option%
+  {\edef\itemgroupconstantvalue{#option}%
+   \ifx\itemgroupconstantvalue\empty\else
+     \splitatasterisk\itemgroupconstantvalue\itemgroupfirst\itemgroupsecond
+     \ifx\itemgroupsecond\empty
+        \let\itemgroupsecond\itemgroupfirst
+        \let\itemgroupfirst\!!plusone
+     \fi
+     \ifcsname\??itemgroupkeyword\itemgroupsecond\endcsname
+       \lastnamedcs
+     \else
+       \strc_itemgroups_set_symbol\itemgroupconstantvalue
+     \fi
+   \fi}
+
+\def\strc_itemgroups_process_set_option_pack
+  {\ifcase\c_strc_itemgroups_nesting \else
+     \settrue\c_strc_itemgroups_pack
+   \fi}
+
+\def\strc_itemgroups_process_set_option_unpack
+  {\ifcase\c_strc_itemgroups_nesting\else
+     \setfalse\c_strc_itemgroups_pack
+   \fi}
+
+\setvalue{\??itemgroupkeyword\!!zerocount  }{} % ignore 0
+\setvalue{\??itemgroupkeyword\v!packed     }{\strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!unpacked   }{\strc_itemgroups_process_set_option_unpack}
+\setvalue{\??itemgroupkeyword\v!intro      }{\settrue\c_strc_itemgroups_intro} % here? not set to false
+\setvalue{\??itemgroupkeyword\v!autointro  }{\settrue\c_strc_itemgroups_auto_intro}
+\setvalue{\??itemgroupkeyword\v!broad      }{\ifx\itemgroupfirst\empty
+                                               \let\itemgroupfirst\!!plusone
+                                             \fi
+                                             \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!text       }{\settrue\c_strc_itemgroups_text
+                                             \settrue\c_strc_itemgroups_inline
+                                             \settrue\c_strc_itemgroups_joined
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!before     }{\settrue\c_strc_itemgroups_before}
+\setvalue{\??itemgroupkeyword\v!after      }{\settrue\c_strc_itemgroups_after}
+\setvalue{\??itemgroupkeyword\v!nowhite    }{\settrue\c_strc_itemgroups_nowhite}
+\setvalue{\??itemgroupkeyword\v!margin     }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!inmargin   }{\setitemgroupparameter\c!width{-2em}} % signal
+\setvalue{\??itemgroupkeyword\v!atmargin   }{\ifnum\c_strc_itemgroups_nesting>\plusone
+                                               \setitemgroupparameter\c!width{0em}%
+                                             \fi} % signal
+\setvalue{\??itemgroupkeyword\v!intext     }{\settrue\c_strc_itemgroups_inline}
+\setvalue{\??itemgroupkeyword\v!headintext }{\settrue\c_strc_itemgroups_inline_head}
+\setvalue{\??itemgroupkeyword\v!loose      }{\setfalse\c_strc_itemgroups_optimize}
+\setvalue{\??itemgroupkeyword\v!fit        }{\settrue\c_strc_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!nofit      }{\setfalse\c_strc_itemgroups_fitting}
+\setvalue{\??itemgroupkeyword\v!paragraph  }{\settrue\c_strc_itemgroups_paragraph
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!joinedup   }{\settrue\c_strc_itemgroups_joined
+                                             \strc_itemgroups_process_set_option_pack}
+\setvalue{\??itemgroupkeyword\v!notjoinedup}{\setfalse\c_strc_itemgroups_joined}
+\setvalue{\??itemgroupkeyword\v!serried    }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
+                                             \letitemgroupparameter\c!factor\itemgroupfirst}
+\setvalue{\??itemgroupkeyword\v!stopper    }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
+\setvalue{\??itemgroupkeyword\v!nostopper  }{\letitemgroupparameter\c!placestopper\v!no} % keep {}
+\setvalue{\??itemgroupkeyword\v!repeat     }{\settrue\c_strc_itemgroups_repeat}
+\setvalue{\??itemgroupkeyword\v!norepeat   }{\setfalse\c_strc_itemgroups_repeat}
+\setvalue{\??itemgroupkeyword\v!reverse    }{\settrue\c_strc_itemgroups_reverse}
+\setvalue{\??itemgroupkeyword\v!columns    }{\settrue\c_strc_itemgroups_columns}
+\setvalue{\??itemgroupkeyword\v!one        }{\letitemgroupparameter\c!n\plusone}
+\setvalue{\??itemgroupkeyword\v!two        }{\letitemgroupparameter\c!n\plustwo}
+\setvalue{\??itemgroupkeyword\v!three      }{\letitemgroupparameter\c!n\plusthree}
+\setvalue{\??itemgroupkeyword\v!four       }{\letitemgroupparameter\c!n\plusfour}
+\setvalue{\??itemgroupkeyword\v!five       }{\letitemgroupparameter\c!n\plusfive}
+\setvalue{\??itemgroupkeyword\v!six        }{\letitemgroupparameter\c!n\plussix}
+\setvalue{\??itemgroupkeyword\v!seven      }{\letitemgroupparameter\c!n\plusseven}
+\setvalue{\??itemgroupkeyword\v!eight      }{\letitemgroupparameter\c!n\pluseight}
+\setvalue{\??itemgroupkeyword\v!nine       }{\letitemgroupparameter\c!n\plusnine}
+\setvalue{\??itemgroupkeyword\v!standard   }{\setitemgroupparameter\c!width        {1.5\emwidth}%
+                                             \setitemgroupparameter\c!distance     {.5\emwidth}%
+                                            %\letitemgroupparameter\c!factor       \!!zerocount
+                                             \letitemgroupparameter\c!factor       {\zerocount}%
+                                             \setitemgroupparameter\c!packcriterium{\zerocount}%
+                                             \letitemgroupparameter\c!inner        \empty
+                                             \letitemgroupparameter\c!beforehead   \empty
+                                             \letitemgroupparameter\c!afterhead    \blank
+                                             \letitemgroupparameter\c!before       \blank
+                                             \letitemgroupparameter\c!inbetween    \blank
+                                             \letitemgroupparameter\c!after        \blank}
+
+\def\strc_itemgroups_initialize_local
+  {\setfalse\c_strc_itemgroups_inline
+   \setfalse\c_strc_itemgroups_concat
+   \setfalse\c_strc_itemgroups_txt
+   %
+   \setfalse\c_strc_itemgroups_reverse
+   \setfalse\c_strc_itemgroups_intro
+   \setfalse\c_strc_itemgroups_auto_intro
+   \setfalse\c_strc_itemgroups_before
+   \setfalse\c_strc_itemgroups_after
+   \setfalse\c_strc_itemgroups_nowhite
+   \setfalse\c_strc_itemgroups_randomize
+   \setfalse\c_strc_itemgroups_horizontal
+   \setfalse\c_strc_itemgroups_collecting
+   \setfalse\c_strc_itemgroups_intro
+   \setfalse\c_strc_itemgroups_continue
+   % this will be a constant
+   \setfalse\c_strc_itemgroups_head
+   \setfalse\c_strc_itemgroups_sub
+   \setfalse\c_strc_itemgroups_symbol
+   \setfalse\c_strc_itemgroups_columns
+   % to be checked
+   \let\m_strc_itemgroups_destination\empty
+   \let\strc_itemgroups_used_symbol  \empty % ** start value
+   \let\strc_itemgroups_margin_symbol\empty
+   \let\strc_itemgroups_extra_symbol \empty
+   %
+   \global\letitemgroupparameter\c!maxwidth\!!zeropoint
+   }
+
+\setvalue{\??itemgroupfirst\v!intro       }{\settrue\c_strc_itemgroups_intro}
+\setvalue{\??itemgroupfirst\v!continue    }{\settrue\c_strc_itemgroups_continue}
+\setvalue{\??itemgroupfirst\v!random      }{\settrue\c_strc_itemgroups_randomize
+                                            \settrue\c_strc_itemgroups_collecting}
+\setvalue{\??itemgroupkeyword\v!horizontal}{\settrue\c_strc_itemgroups_horizontal
+                                            \settrue\c_strc_itemgroups_collecting
+                                            \settrue\c_strc_itemgroups_inline
+                                            \settrue\c_strc_itemgroups_joined
+                                            \strc_itemgroups_process_set_option_pack}
+
+\def\strc_itemgroups_preset_stage_one#options%
+  {\processcommacommand[#options]\strc_itemgroups_preset_stage_one_indeed}
+
+% \installcommalistprocessorcommand \strc_itemgroups_preset_stage_one_list \strc_itemgroups_preset_stage_one_indeed
+%
+% \def\strc_itemgroups_preset_stage_one#options%
+%   {\normalexpanded{\strc_itemgroups_preset_stage_one_list[#options]}}
+
+\def\strc_itemgroups_preset_stage_one_indeed#option%
+  {\ifcsname\??itemgroupfirst#option\endcsname
+     \lastnamedcs
+   \fi}
+
+\ifdefined\dotagsetitemgroup \else \let\dotagsetitemgroup\relax             \fi
+\ifdefined\dotagsetitem      \else \let\dotagsetitem     \gobbleoneargument \fi
+
+\def\strc_itemgroups_tag_start_group
+  {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
+   \dotagsetitemgroup}
+
+\def\strc_itemgroups_tag_stop_group
+  {\dostoptagged}
+
+\def\strc_itemgroups_before_command
+  {\ifconditional\c_strc_itemgroups_nowhite
+     \ifconditional\c_strc_itemgroups_before
+       \ifcase\c_strc_itemgroups_nesting\or\itemgroupparameter\c!before\fi
+     \else
+       \nowhitespace
+     \fi
+   \orelse\ifconditional\c_strc_itemgroups_joined
+     % \empty
+   \else
+     \itemgroupparameter\c!before
+   \fi}
+
+\def\strc_itemgroups_after_command
+  {\ifconditional\c_strc_itemgroups_nowhite
+     \ifconditional\c_strc_itemgroups_after
+       \ifcase\c_strc_itemgroups_nesting\or\itemgroupparameter\c!after\fi
+     \else
+       \nowhitespace
+     \fi
+   \orelse\ifconditional\c_strc_itemgroups_joined
+     % \empty
+   \else
+     \itemgroupparameter\c!after
+   \fi}
+
+\def\strc_itemgroups_between_command
+  {\ifconditional\c_strc_itemgroups_nowhite
+     \nowhitespace
+   \orelse\ifconditional\c_strc_itemgroups_joined
+     % \empty
+   \else
+     \itemgroupparameter\c!inbetween
+   \fi}
+
+\def\strc_itemgroups_before_head_command
+  {\ifconditional\c_strc_itemgroups_nowhite
+     \nowhitespace
+   \orelse\ifconditional\c_strc_itemgroups_joined
+     % \empty
+   \else
+     \itemgroupparameter\c!beforehead
+   \fi}
+
+\def\strc_itemgroups_after_head_command
+  {\ifconditional\c_strc_itemgroups_nowhite
+     \nowhitespace
+   \orelse\ifconditional\c_strc_itemgroups_joined
+     % \empty
+   \else
+     \itemgroupparameter\c!afterhead
+   \fi}
+
+% compatible setup command:
+
+\let\strc_itemgroups_normal_setup\setupitemgroup
+
+\unexpanded\def\setupitemgroup
+  {\doquadrupleempty\strc_itemgroups_setup}
+
+\def\strc_itemgroups_setup[#category][#levels][#options][#settings]% category level|each options|settings settings|options
+  {\edef\strc_itemgroups_setup_what{#levels}%
+   \iffourthargument
+     \ifx\strc_itemgroups_setup_what\v!each
+       \strc_itemgroups_setup_each{#category}{#options}%
+       \strc_itemgroups_setup_each{#category}{#settings}%
+     \else
+       \strc_itemgroups_setup_list{#levels}{#category}{#options}%
+       \strc_itemgroups_setup_list{#levels}{#category}{#settings}%
+     \fi
+   \orelse\ifthirdargument
+     \ifx\strc_itemgroups_setup_what\v!each
+       \strc_itemgroups_setup_each{#category}{#options}%
+     \else
+       \strc_itemgroups_setup_list{#levels}{#category}{#options}%
+     \fi
+   \orelse\ifsecondargument
+     \strc_itemgroups_setup_each{#category}{#levels}%
+   \else
+     \strc_itemgroups_normal_setup[#category]% == settings
+   \fi}
+
+% can be made a bit faster
+
+% \def\strc_itemgroups_setup_each#category#whatever%
+%   {\doifelseassignment{#whatever}
+%      {\strc_itemgroups_normal_setup[#category][#whatever]}
+%      {\strc_itemgroups_normal_setup[#category][\c!option={#whatever}]}}
+
+\def\strc_itemgroups_setup_each#category#whatever%
+  {\ifcondition\validassignment{#whatever}%
+     \strc_itemgroups_normal_setup[#category][#whatever]%
+   \else
+     \strc_itemgroups_normal_setup[#category][\c!option={#whatever}]%
+   \fi}
+
+\def\strc_itemgroups_setup_list_level_a#category#whatever#level%
+  {\strc_itemgroups_normal_setup[#category:#level][#whatever]}
+
+\def\strc_itemgroups_setup_list_level_b#category#whatever#level%
+  {\strc_itemgroups_normal_setup[#category:#level][\c!option={#whatever}]}
+
+% \def\strc_itemgroups_setup_list#subcategories#category#whatever%
+%   {\doifelseassignment{#whatever}
+%      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}}
+%      {\processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}}}
+
+\def\strc_itemgroups_setup_list#subcategories#category#whatever%
+  {\ifcondition\validassignment{#whatever}%
+     \processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_a{#category}{#whatever}}%
+   \else
+     \processcommalist[#subcategories]{\strc_itemgroups_setup_list_level_b{#category}{#whatever}}%
+   \fi}
+
+\def\strc_itemgroups_increment_item_counter
+  {\ifconditional\c_strc_itemgroups_sub \else
+     \ifconditional\c_strc_itemgroups_symbol \else % \ifx\strc_itemgroups_extra_symbol\empty
+       \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
+     \fi
+   \fi}
+
+\unexpanded\def\strc_itemgroups_insert_item_counter
+  {\ifconditional\c_strc_itemgroups_repeat
+     \ifcase\c_strc_itemgroups_nesting
+       % skip
+     \or
+       \strc_itemgroups_insert_item_counter_indeed % this could become an option
+     \else
+       \strc_itemgroups_insert_item_counter_indeed
+     \fi
+   \else
+     \strc_itemgroups_insert_item_counter_indeed
+   \fi}
+
+\def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
+  {\begingroup                                  % can be optimized ... best move some to strc-num
+   \setupcounter
+     [\v_strc_itemgroups_counter]%
+     [\c!prefix=\itemgroupparameter\c!prefix,
+      \c!prefixstopper=\itemgroupparameter\c!prefixstopper,
+      \c!prefixseparatorset=\itemgroupparameter\c!prefixseparatorset,
+      \c!prefixconversion=\itemgroupparameter\c!prefixconversion,
+      \c!prefixconversionset=\itemgroupparameter\c!prefixseparatorset,
+      \c!prefixset=\itemgroupparameter\c!prefixset,
+      \c!prefixsegments=\itemgroupparameter\c!prefixsegments,
+      \c!prefixconnector=\itemgroupparameter\c!prefixconnector,
+      \c!criterium=\itemgroupparameter\c!criterium,
+      \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
+      \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
+      \c!numberconversionset=\v_strc_itemgroups_counter,
+      \c!numbersegments=\currentitemgroupsegments]%
+   % there will be a fixedconversion key
+  %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   %
+   \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
+   \strc_itemgroups_insert_reference
+   \endgroup}
+
+% needs testing (maybe it need to happen later)
+%
+% \appendtoks
+%    \setupcounter
+%      [\v_strc_itemgroups_counter]%
+%      [\c!prefix=\itemgroupparameter\c!prefix,
+%       \c!prefixstopper=\itemgroupparameter\c!prefixstopper,
+%       \c!prefixseparatorset=\itemgroupparameter\c!prefixseparatorset,
+%       \c!prefixconversion=\itemgroupparameter\c!prefixconversion,
+%       \c!prefixconversionset=\itemgroupparameter\c!prefixseparatorset,
+%       \c!prefixset=\itemgroupparameter\c!prefixset,
+%       \c!prefixsegments=\itemgroupparameter\c!prefixsegments,
+%       \c!prefixconnector=\itemgroupparameter\c!prefixconnector,
+%       \c!criterium=\itemgroupparameter\c!criterium,
+%       \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
+%       \c!numberstopper=\expdoif{\itemgroupparameter\c!placestopper}\v!yes{\itemgroupparameter\c!stopper},
+%       \c!numberconversionset=\v_strc_itemgroups_counter,
+%       \c!numbersegments=\currentitemgroupsegments]%
+% \to\itemgroupcommands
+%
+% \def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
+%   {\begingroup                                  % can be optimized ... best move some to strc-num
+%    % there will be a fixedconversion key
+%   %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%    \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%    %
+%    \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
+%    \strc_itemgroups_insert_reference
+%    \endgroup}
+
+\def\strc_itemgroups_set_symbol#symbol%
+  {\edef\strc_itemgroups_tmp_symbol{#symbol}%
+   \ifx\strc_itemgroups_tmp_symbol\empty \else
+     \doifelsesymboldefined\strc_itemgroups_tmp_symbol
+        \strc_itemgroups_set_symbol_symbol
+        {\doifelseconversiondefined\strc_itemgroups_tmp_symbol
+           \strc_itemgroups_set_symbol_conversion
+           \donothing}%
+   \fi}
+
+\def\strc_itemgroups_set_symbol_symbol
+  {\let\currentitemgroupsymbol\strc_itemgroups_tmp_symbol
+   \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
+   \strc_itemgroups_store_local_symbol\v_strc_itemgroups_unknown_symbol
+   \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_symbol_item
+   \let\strc_itemgroups_asked_symbol\empty}
+
+\def\strc_itemgroups_set_symbol_conversion
+  {\let\currentitemgroupsymbol\strc_itemgroups_tmp_symbol
+   \strc_itemgroups_store_global_symbol\currentitemgroupsymbol
+   \strc_itemgroups_store_local_symbol\strc_itemgroups_insert_item_counter
+   \let\strc_itemgroups_used_symbol\strc_itemgroups_set_symbol_conversion_item
+   \let\strc_itemgroups_asked_symbol\empty}
+
+\def\strc_itemgroups_set_symbol_symbol_item
+  {\symbol[\currentitemgroupsymbol]}
+
+\def\strc_itemgroups_set_symbol_conversion_item
+  {\ifconditional\c_strc_itemgroups_text
+     % maybe block stopper here, but one can as well clone an itemgroup then
+     \itemgroupparameter\c!lefttext
+     \strc_itemgroups_fetch_local_symbol
+     \itemgroupparameter\c!righttext
+   \else
+     \itemgroupparameter\c!left
+     \strc_itemgroups_fetch_local_symbol
+     \itemgroupparameter\c!right
+   \fi}
+
+\def\strc_itemgroups_calculate_list_width#level%
+  {\let\savedcurrentitemgroup\currentitemgroup
+   \edef\currentitemgroup{\currentparentitemgroup:\number#level}%
+   \ifdim\d_strc_itemgroups_max_width>\zeropoint
+     \d_strc_itemgroups_list_width\d_strc_itemgroups_max_width
+   \orelse\ifnum\itemgroupparameter\c!factor>\zerocount
+     \d_strc_itemgroups_list_width\itemgroupparameter\c!step\relax
+     \ifzeropt\d_strc_itemgroups_list_width \d_strc_itemgroups_list_width=.5em\fi
+     \multiply\d_strc_itemgroups_list_width \itemgroupparameter\c!factor
+     \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
+   \else
+     \d_strc_itemgroups_list_width\itemgroupparameter\c!width\relax
+   \fi
+   \advance\d_strc_itemgroups_list_width\itemgroupparameter\c!distance\relax
+   \let\currentitemgroup\savedcurrentitemgroup}
+
+\unexpanded\def\startitemgroup
+  {\dotripleempty\strc_itemgroups_start}
+
+\def\strc_itemgroups_start[#category][#options][#settings]%
+  {\begingroup % (1)
+   \def\currentitemgroup{#category}% no nested mixing of itemgroups
+   \let\currentparentitemgroup\currentitemgroup
+   \global\advance\c_strc_itemgroups_nesting\plusone
+   \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%
+   \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
+   \edef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
+   %
+   \ifthirdargument
+     \strc_itemgroups_start_indeed[#options][#settings]%
+   \orelse\ifsecondargument
+     \ifcondition\validassignment{#options}%
+       \strc_itemgroups_start_indeed[][#options]%
+     \else
+       \strc_itemgroups_start_indeed[#options][]%
+     \fi
+   \else
+     \strc_itemgroups_start_indeed[][]%
+   \fi}
+
+\def\strc_itemgroups_start_indeed[#options][#settings]%
+  {\edef\itemgroupoptions{\itemgroupparameter\c!option}%
+   \edef\itemgroupextraoptions{#options}%
+   \ifx\itemgroupoptions\empty
+     \let\itemgroupoptions\itemgroupextraoptions
+   \orelse\ifx\itemgroupextraoptions\empty
+     % ok
+   \else
+     \edef\itemgroupoptions{\itemgroupoptions,\itemgroupextraoptions}%
+   \fi
+   \begingroup % (2)
+   \the\itemgroupcommands
+   \let\c_strc_itemgroups_text_saved\c_strc_itemgroups_text
+   \strc_itemgroups_initialize_local
+   \strc_itemgroups_preset_stage_one\itemgroupoptions
+%
+%    \ifhmode
+%      \ifconditional\c_strc_itemgroups_auto_concat
+%        \ifdim\lastskip=\d_strc_itemgroups_signal
+%          \settrue\c_strc_itemgroups_concat
+%        \fi
+%      \fi
+%      \ifconditional\c_strc_itemgroups_text_saved \else
+%        \ifconditional\c_strc_itemgroups_text \else
+%          \par
+%        \fi
+%      \fi
+%    \fi
+%
+   \iftrialtypesetting
+     \strc_counters_save\v_strc_itemgroups_counter
+   \fi
+   \c_strc_itemgroups_n_of_items\zerocount
+   \strc_itemgroups_check_n_of_items
+   \ifx\itemgroupoptions\empty
+     \strc_itemgroups_setup_symbol_default
+     \strc_itemgroups_reset_continue_state
+     \setupcurrentitemgroup[#settings]%
+   \else
+     \strc_itemgroups_process_options\itemgroupoptions
+     \setupcurrentitemgroup[#settings]%
+     \ifconditional\c_strc_itemgroups_continue
+       \strc_itemgroups_setup_symbol_continue
+       \strc_itemgroups_fetch_continue_state
+     \else
+       \strc_itemgroups_setup_symbol_asked
+       \strc_itemgroups_store_continue_state\itemgroupoptions{#settings}%
+     \fi
+   \fi
+   %
+   \ifhmode
+     \ifconditional\c_strc_itemgroups_auto_concat
+       \ifdim\lastskip=\d_strc_itemgroups_signal
+         \settrue\c_strc_itemgroups_concat
+       \fi
+     \fi
+     \ifconditional\c_strc_itemgroups_text_saved \else
+       \ifconditional\c_strc_itemgroups_text \else
+         \par
+       \fi
+     \fi
+   \fi
+   %
+   \ifconditional\c_strc_itemgroups_pack
+     \ifnum\currentnofitems>\itemgroupparameter\c!packcriterium\relax\else
+       \setfalse\c_strc_itemgroups_pack
+     \fi
+   \fi
+   %
+   \ifnum\c_strc_itemgroups_nesting=\plusone % NIEUW
+     \doadaptleftskip {\itemgroupparameter\c!margin}%
+     \doadaptleftskip {\itemgroupparameter\c!leftmargin}%
+     \doadaptrightskip{\itemgroupparameter\c!rightmargin}%
+   \fi
+   %
+   \doadaptleftskip {\itemgroupparameter\c!leftmargindistance}%
+   \doadaptrightskip{\itemgroupparameter\c!rightmargindistance}%
+   %
+   \usealignparameter\itemgroupparameter
+   \edef\m_strc_itemgroups_indenting{\itemgroupparameter\c!indenting}%
+   \ifnum\c_strc_itemgroups_nesting>\zerocount
+     \settrue\c_strc_itemgroups_first
+     \ifconditional\c_strc_itemgroups_continue \else
+       \strc_counters_restart_sub\v_strc_itemgroups_counter\currentitemlevel{\numexpr\itemgroupparameter\c!start-\plusone\relax}%
+     \fi
+   \fi
+   \ifx\strc_itemgroups_used_symbol\empty
+     \strc_itemgroups_set_symbol\strc_itemgroups_asked_symbol % ** default value
+     \ifx\strc_itemgroups_used_symbol\empty
+       \let\currentitemgroupsymbol\currentitemlevel % ** fall back
+     \fi
+   \fi
+   \ifconditional\c_strc_itemgroups_auto_intro\ifnum\prevgraf<\plusthree
+     \settrue\c_strc_itemgroups_intro
+   \fi\fi
+   \ifconditional\c_strc_itemgroups_paragraph
+     \ifnum\c_strc_itemgroups_nesting>\plusone
+       \letitemgroupparameter\c!inbetween\empty
+     \fi
+   \fi
+   \ifconditional\c_strc_itemgroups_pack
+     \letitemgroupparameter\c!inbetween\empty
+   \fi
+   \ifconditional\c_strc_itemgroups_columns
+     \ifinsidecolumns\else\ifcase\c_strc_itemgroups_column_depth
+       \global\c_strc_itemgroups_column_depth\c_strc_itemgroups_nesting % global ?
+       \strc_itemgroups_before_command
+       \strc_itemgroups_tag_start_group
+       \strc_itemgroups_start_columns
+     \fi\fi
+   \fi
+   \ifconditional\c_strc_itemgroups_fitting
+     \ifdim\d_strc_itemgroups_max_width>\zeropoint
+       \letitemgroupparameter\c!width\d_strc_itemgroups_max_width
+     \fi
+   \fi
+   \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+   \ifdim\d_strc_itemgroups_list_width>\zeropoint\relax
+     \ifconditional\c_strc_itemgroups_inline\else
+       \advance\leftskip\d_strc_itemgroups_list_width\relax
+     \fi
+   \fi
+   \ifx\m_strc_itemgroups_repeat_start\empty
+     \let\currentitemgroupconversionset \currentitemgroupsymbol
+     \edef\currentitemgroupsegments     {\currentitemlevel}%
+   \else
+     \edef\currentitemgroupconversionset{\currentitemgroupconversionset,\currentitemgroupsymbol}%
+     \edef\currentitemgroupsegments     {\m_strc_itemgroups_repeat_start:\currentitemlevel}%
+   \fi
+   \d_strc_itemgroups_asked_width\itemgroupparameter\c!width\relax
+   \startcollectitems}
+
+\let\startcollectitems\relax
+\let\stopcollectitems \relax
+
+\letvalue{\??itemgroupalign\v!flushleft }\relax
+\letvalue{\??itemgroupalign\v!right     }\relax
+\letvalue{\??itemgroupalign\v!flushright}\hfill
+\letvalue{\??itemgroupalign\v!left      }\hfill
+\letvalue{\??itemgroupalign\v!middle    }\hfil
+\letvalue{\??itemgroupalign\v!center    }\hfil
+
+\def\strc_itemgroups_left_sym_filler
+  {\csname\??itemgroupalign\itemgroupparameter\c!symalign\endcsname}
+
+% symbols + states
+
+\def\strc_itemgroups_store_global_symbol#symbol%
+  {\letgvalue{\??itemgroupglobal\currentitemgroup:\currentitemlevel}#symbol}
+
+\def\strc_itemgroups_store_local_symbol#symbol%
+  {\letgvalue{\??itemgrouplocal\currentitemgroup:\currentitemlevel}#symbol}
+
+\def\strc_itemgroups_fetch_global_symbol
+  {\csname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname}
+
+\def\strc_itemgroups_fetch_local_symbol
+  {\csname\??itemgrouplocal\currentitemgroup:\currentitemlevel\endcsname}
+
+\def\strc_itemgroups_setup_symbol_default
+  {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}%
+   \strc_itemgroups_store_global_symbol\empty}
+
+\def\strc_itemgroups_setup_symbol_continue
+  {\ifcsname\??itemgroupglobal\currentitemgroup:\currentitemlevel\endcsname
+     \let\strc_itemgroups_asked_symbol\strc_itemgroups_fetch_global_symbol
+   \else
+     \let\strc_itemgroups_asked_symbol\currentitemlevel
+   \fi}
+
+\def\strc_itemgroups_setup_symbol_asked
+   {\edef\strc_itemgroups_asked_symbol{\itemgroupparameter\c!symbol}}
+
+\ifdefined\strc_itemgroups_start_columns
+
+    % already defined in page-mix
+
+\else
+
+    % will be redefined in page-mix
+
+    \ifdefined\startcolumns \else
+        \unexpanded\def\startcolumns[#settings]{}
+        \unexpanded\def\stopcolumns            {}
+    \fi
+
+    \def\strc_itemgroups_start_columns
+      {\startcolumns
+         [\c!n=\itemgroupparameter\c!n,
+          \c!height=,
+          \c!rule=\v!off,
+          \c!balance=\v!yes,
+          \c!align=\v!no]}
+
+    \def\strc_itemgroups_stop_columns
+      {\stopcolumns}
+
+\fi
+
+\unexpanded\def\stopitemgroup
+  {\stopcollectitems
+   \ifconditional\c_strc_itemgroups_text
+     \removeunwantedspaces
+     \space
+     \ignorespaces
+   \else
+     \par
+   \fi
+   \strc_itemgroups_register_status
+   \ifconditional\c_strc_itemgroups_first \else
+     \dostoptagged
+     \dostoptagged
+   % \endgroup % (3)
+   \fi
+   \ifnum\c_strc_itemgroups_column_depth=\c_strc_itemgroups_nesting\relax
+     \strc_itemgroups_stop_columns
+     \global\c_strc_itemgroups_column_depth\zerocount % global ?
+     \strc_itemgroups_tag_stop_group
+     \strc_itemgroups_after_command
+     \dontrechecknextindentation
+   \orelse\ifnum\c_strc_itemgroups_nesting=\plusone
+     \strc_itemgroups_insert_breakallow
+     \strc_itemgroups_tag_stop_group
+     \strc_itemgroups_after_command
+     \useindentnextparameter\itemgroupparameter
+   \else
+     % nieuw, not yet nobreak handling
+     \strc_itemgroups_tag_stop_group
+     \ifcase\c_strc_itemgroups_spacing_mode
+       \strc_itemgroups_after_command
+     \or
+       \strc_itemgroups_after_command
+     \fi
+     \dontrechecknextindentation
+   \fi
+   % new test, needed in sidefloats (surfaced in volker's proceedings)
+   \iftrialtypesetting
+     \strc_counters_restore\v_strc_itemgroups_counter % could happen in LUA
+   \fi
+   \global\advance\c_strc_itemgroups_nesting\minusone
+   \xdef\currentitemlevel{\number\c_strc_itemgroups_nesting}%
+  %\ifconditional\c_strc_itemgroups_text
+     \endgroup % (2)
+     \endgroup % (1)
+  %\else
+  %  \endgroup % (2)
+  %  \endgroup % (1)
+  %  \par % hm, already done, and dangerous as \c_strc_itemgroups_text is already forgotten
+  %\fi
+   \dorechecknextindentation}
+
+% The items.
+
+\unexpanded\def\startitemgroupitem
+  {\dosingleempty\strc_itemgroups_start_item}
+
+\def\strc_itemgroups_start_item_first
+  {\setfalse\c_strc_itemgroups_first
+ % \begingroup % (3)
+   \ifcase\c_strc_itemgroups_nesting
+                                           % 0
+   \or
+     \strc_itemgroups_start_item_first_one % 1
+   \else
+     \strc_itemgroups_start_item_first_two % 2+
+   \fi}
+
+\def\strc_itemgroups_start_item_first_one
+  {\ifcase\c_strc_itemgroups_column_depth
+     \ifconditional\c_strc_itemgroups_intro\strc_itemgroups_insert_breakno\fi
+     \strc_itemgroups_before_command
+     \strc_itemgroups_tag_start_group
+     \ifconditional\c_strc_itemgroups_intro\strc_itemgroups_insert_breakno\fi
+   \fi}
+
+\def\strc_itemgroups_start_item_first_two
+  {\ifconditional\c_strc_itemgroups_paragraph\else
+     \edef\previtemlevel{\the\numexpr\c_strc_itemgroups_nesting-\plusone}%
+     \ifcase\c_strc_itemgroups_spacing_mode
+       \strc_itemgroups_before_command
+     \or
+       \doifelsenothing\strc_itemgroups_before_command % should possibly expand to empty
+         {\nameditemgroupparameter{\currentparentitemgroup:\previtemlevel}\c!inbetween}%
+         \strc_itemgroups_before_command
+     \else
+       \nameditemgroupparameter{\currentparentitemgroup:\previtemlevel}\c!inbetween
+     \fi
+     \strc_itemgroups_tag_start_group
+   \fi}
+
+\def\strc_itemgroups_start_item_next
+  {\dostoptagged % ok? what do we stop here?
+   \dostoptagged % ok? what do we stop here?
+   \ifconditional\c_strc_itemgroups_text
+     \ifhmode
+       % WS: make the distance between items customizable, think about better default values -> see itemize-1.tex
+       \strc_itemgroups_set_text_item_distance% HH: moved out and made configurable (sort of)
+       \removeunwantedspaces
+       \hskip\m_strc_itemgroups_text_distance\relax
+     \fi
+   \else
+     \strc_itemgroups_between_command
+   \fi}
+
+% c_strc_itemgroups_concat:
+%
+% the problem is that we use leftskip so concat cannot reliable take the height into
+% account; it's .. rather tricky when white space in there anyway (due to \par) .. so
+% we rely on a special blank method
+%
+% \startitemize[n]
+%     \item bla
+%     \item \startitemize[a]
+%         \item bla $\displaystyle\int^{x^{y^4}}$ \item bla
+%     \stopitemize
+% \stopitemize
+
+\unexpanded\def\strc_itemgroups_start_item[#reference]% we can reuse more
+  {\def\currentitemreference{#reference}%
+   \ifconditional\c_strc_itemgroups_text
+     % begin of item
+   \else
+     \par
+   \fi
+   \ifconditional\c_strc_itemgroups_concat
+     \strc_itemgroups_insert_breakno
+   \fi
+   \strc_itemgroups_increment_item_counter
+   \ifconditional\c_strc_itemgroups_first
+     \strc_itemgroups_start_item_first
+   \else
+     \strc_itemgroups_start_item_next
+   \fi
+   \ifconditional\c_strc_itemgroups_concat
+     \spac_overlay_lines % see spac-ver.mkvi ... a typical potential problem
+     \setfalse\c_strc_itemgroups_concat
+   \fi
+   \dostarttagged\t!item\empty
+  % \dotagsetitem\empty
+   \dostarttagged\t!itemtag\empty
+   \strc_itemgroups_insert_item
+   \dostoptagged
+   \ifconditional\c_strc_itemgroups_pack
+     \setupwhitespace[\v!none]%
+   \fi
+   \itemgroupparameter\c!inner % will become obsolete (better use setups)
+   \strc_itemgroups_margin_symbol
+   \let\strc_itemgroups_margin_symbol\relax
+   \dostarttagged\t!itemcontent\empty
+   \begstrut % \strut
+   \nobreak                            % else problems with intext items
+   \seteffectivehsize % NEW !
+   \hskip\d_strc_itemgroups_signal     % concat
+   \itemgroupparameter\c!command}
+
+\unexpanded\def\stopitemgroupitem
+  {\ifhmode
+     \endstrut % new per 2017-12-15
+   \fi
+   \ifconditional\c_strc_itemgroups_text
+     % nothing
+   \else
+     \endgraf
+   \fi}
+\unexpanded\def\startitemgrouphead
+  {\dosingleempty\strc_itemgroups_start_head}
+
+\unexpanded\def\strc_itemgroups_start_head[#reference]%
+  {\ifconditional\c_strc_itemgroups_first \else
+     \strc_itemgroups_insert_breakallow
+   \fi
+   \ifconditional\c_strc_itemgroups_pack \else
+     \strc_itemgroups_before_head_command
+   \fi
+   \ifconditional\c_strc_itemgroups_first
+     \ifconditional\c_strc_itemgroups_intro \else
+       \ifcase\c_strc_itemgroups_nesting
+         \strc_itemgroups_insert_breakallow
+       \fi
+     \fi
+   \fi
+   \strc_itemgroups_start_item[#reference]%
+   \pickupgroupedcommand
+     \strc_itemgroups_start_head_indeed
+     \strc_itemgroups_stop_head_indeed
+     \strc_itemgroups_head_body_indeed}
+
+\unexpanded\def\stopitemgrouphead
+  {\dostoptagged
+   \stopitemgroupitem}
+
+\unexpanded\def\strc_itemgroups_start_head_indeed
+  {\settrue\c_strc_itemgroups_head
+   \dotagsetitem\s!head% % weird place
+   \dostarttagged\t!itemhead\empty
+   \useitemgroupstyleandcolor\c!headstyle\c!headcolor\ignorespaces}
+
+\unexpanded\def\strc_itemgroups_stop_head_indeed
+  {\removeunwantedspaces
+   \dostoptagged
+   \ifconditional\c_strc_itemgroups_inline_head
+       \space
+       \ignorespaces
+   \else
+     \ifconditional\c_strc_itemgroups_text
+       \space
+       \ignorespaces
+     \else
+       \par
+     \fi
+     \strc_itemgroups_insert_breakno
+     \ifconditional\c_strc_itemgroups_pack\else\strc_itemgroups_after_head_command\fi
+     \strc_itemgroups_insert_breakno
+  \fi}
+
+\unexpanded\def\strc_itemgroups_head_body_indeed
+  {\dostarttagged\t!itembody\empty
+   \noindentation
+   \ignorespaces}
+
+% Simple commands.
+
+\unexpanded\def\strc_itemgroups_start_do_item
+  {\startitemgroupitem}
+
+\unexpanded\def\strc_itemgroups_start_no_item
+  {\let\currentitemreference\empty
+   \strc_itemgroups_increment_item_counter
+  %\advance\c_strc_itemgroups_n_of_items\plusone
+   \setbox\b_strc_itemgroups\emptyhbox
+   \strc_itemgroups_check_for_repeated
+   \ignorespaces}
+
+\unexpanded\def\strc_itemgroups_start_button[#destination]%
+  {\edef\m_strc_itemgroups_destination{#destination}%
+   \startitemgroupitem}
+
+\unexpanded\def\strc_itemgroups_start_symbol#text%
+  {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
+   \startitemgroupitem
+   \dotagsetitem\s!symbol}
+
+\unexpanded\def\strc_itemgroups_start_dummy
+  {\strc_itemgroups_start_symbol
+  %\strut\strut} % two ?
+   \begstrut}
+
+\unexpanded\def\strc_itemgroups_start_subitem
+  {\settrue\c_strc_itemgroups_sub
+   \startitemgroupitem
+   \dotagsetitem\s!sub}
+
+\unexpanded\def\strc_itemgroups_start_edge#text%
+  {\strc_itemgroups_start_symbol
+     {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+      \dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+      \hbox to \d_strc_itemgroups_list_width
+        {#text\hskip\itemgroupparameter\c!distance}%
+      \dostoptagged}}
+
+\unexpanded\def\strc_itemgroups_start_margin#text%
+  {\def\strc_itemgroups_margin_symbol % brrr
+     {\dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+      \llap
+        {\begingroup
+         \useitemgroupstyleandcolor\c!marstyle\c!marcolor
+         #text% keep em/ex local
+         \endgroup
+         \hskip\dimexpr\leftskip+\leftmargindistance\relax}%
+      \dostoptagged}%
+   \startitemgroupitem
+   \dotagsetitem\s!margin}
+
+\unexpanded\def\strc_itemgroups_start_text#text%
+  {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
+   \settrue\c_strc_itemgroups_txt
+   \startitemgroupitem}
+
+% \unexpanded\def\strc_itemgroups_start_head
+%   {\settrue\c_strc_itemgroups_head
+%    \startitemgrouphead}
+
+\unexpanded\def\strc_itemgroups_start_items
+  {\dosingleempty\strc_itemgroups_start_items_indeed}
+
+\unexpanded\def\strc_itemgroups_start_items_indeed[#whatever]% something got lost
+  {\strc_itemgroups_start_edge
+     {\dorecurse{0\itemgroupparameter\c!items}{\strc_itemgroups_used_symbol\hss}%
+      \unskip}}
+
+% \unexpanded\def\startspecialitemgroupitem[#name]%
+%   {\csname\??itemgroupstart\ifcsname\??itemgroupstart#name\endcsname#name\else\v!item\fi\endcsname}
+
+\unexpanded\def\startspecialitemgroupitem[#name]%
+  {\ifcsname\??itemgroupstart#name\endcsname
+      \expandafter\lastnamedcs
+    \else
+      \expandafter\strc_itemgroups_start_do_item
+    \fi}
+
+\unexpanded\def\stopspecialitemgroupitem
+  {\stopitemgroupitem}
+
+\letvalue{\??itemgroupstart\v!item}\strc_itemgroups_start_do_item
+\letvalue{\??itemgroupstart\v!sub }\strc_itemgroups_start_subitem
+\letvalue{\??itemgroupstart\v!sym }\strc_itemgroups_start_symbol
+\letvalue{\??itemgroupstart\v!ran }\strc_itemgroups_start_edge
+\letvalue{\??itemgroupstart\v!its }\strc_itemgroups_start_items
+\letvalue{\??itemgroupstart\v!mar }\strc_itemgroups_start_margin
+
+\def\optimizelistitemsbreak
+  {\ifcase\c_strc_itemgroups_column_depth
+     \ifconditional\c_strc_itemgroups_optimize
+       \ifcase\c_strc_itemgroups_max_items
+       \orelse\ifnum\c_strc_itemgroups_max_items=\plusthree
+         \ifnum\c_strc_itemgroups_n_of_items>\plusone
+           \strc_itemgroups_insert_nobreak
+         \fi
+       \orelse\ifnum\c_strc_itemgroups_max_items>\plusthree
+         \ifnum\c_strc_itemgroups_n_of_items=\plustwo
+           \ifconditional\c_strc_itemgroups_intro
+             \strc_itemgroups_insert_breakno
+           \else
+             \strc_itemgroups_insert_nobreak
+           \fi
+         \orelse\ifnum\c_strc_itemgroups_max_items=\c_strc_itemgroups_n_of_items\relax
+           \strc_itemgroups_insert_nobreak
+         \orelse\ifnum\c_strc_itemgroups_n_of_items>\plustwo
+           \strc_itemgroups_insert_break
+         \else
+           \ifconditional\c_strc_itemgroups_intro\else\strc_itemgroups_insert_break\fi
+         \fi
+       \fi
+     \fi
+   \fi}
+
+\def\strc_itemgroups_handle_text_item
+  {\scratchdimen\wd\b_strc_itemgroups
+   \advance \scratchdimen \itemgroupparameter\c!distance\relax
+   \ifdim\scratchdimen>\d_strc_itemgroups_list_width
+     \advance\scratchdimen -\d_strc_itemgroups_list_width
+   \else
+     \scratchdimen\zeropoint
+   \fi
+   \llap{\hbox to \d_strc_itemgroups_list_width{\ifconditional\c_strc_itemgroups_sub\llap{+\enspace}\fi\box\b_strc_itemgroups\hss}}% was: \hfill
+   \hskip\scratchdimen}
+
+\def\strc_itemgroups_handle_lapped_item_positive
+  {\llap
+     {\dontcomplain
+      \hbox to \d_strc_itemgroups_list_width
+        {\ifconditional\c_strc_itemgroups_sub
+           \dostarttagged\t!ignore\empty
+           \llap{+\enspace}%
+           \dostoptagged
+         \fi
+         \strc_itemgroups_left_sym_filler
+         \box\b_strc_itemgroups % can already have a forced widt, only factor handled here
+         \hfil
+         \hskip\itemgroupparameter\c!distance}}}
+
+\def\strc_itemgroups_handle_lapped_item_negative
+  {\llap
+     {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
+        \llap{+\enspace}%
+        \dostoptagged
+      \fi
+      \box\b_strc_itemgroups
+      \hskip\leftmargindistance}}
+
+\def\strc_itemgroups_handle_groups_text_item
+  {\hbox
+     {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
+        +\enspace
+        \dostoptagged
+      \fi
+      \box\b_strc_itemgroups
+      \hskip\interwordspace}%
+   \nobreak}
+
+\def\strc_itemgroups_handle_groups_inline_item
+  {\hbox to \d_strc_itemgroups_list_width
+     {\ifconditional\c_strc_itemgroups_sub
+        \dostarttagged\t!ignore\empty
+        \llap{+\enspace}%
+        \dostoptagged
+      \fi
+      \box\b_strc_itemgroups
+      \hss}} % was: \hfill
+
+\unexpanded\def\strc_itemgroups_start_head_sym#text%
+  {\def\strc_itemgroups_extra_symbol{#text}%
+   \settrue\c_strc_itemgroups_symbol
+   \settrue\c_strc_itemgroups_head
+   \strc_itemgroups_start_head}
+
+\def\strc_itemgroups_make_symbol_box
+  {\setbox\b_strc_itemgroups\autodirhbox
+     {\ifconditional\c_strc_itemgroups_head
+        \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
+          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
+          \strc_itemgroups_extra_symbol
+        \else
+          \useitemgroupstyleandcolor\c!headstyle\c!headcolor
+          \strc_itemgroups_used_symbol
+        \fi
+      \else
+        \ifconditional\c_strc_itemgroups_symbol
+          \strc_itemgroups_insert_extra_reference
+          \useitemgroupstyleandcolor\c!symstyle\c!symcolor
+          \strc_itemgroups_extra_symbol
+        \else
+          \useitemgroupstyleandcolor\c!style\c!color
+          \strc_itemgroups_used_symbol
+        \fi
+      \fi}%
+   \let\strc_itemgroups_extra_symbol\empty
+   \setfalse\c_strc_itemgroups_symbol}
+
+\def\strc_itemgroups_make_fitting_box
+  {\ifdim\wd\b_strc_itemgroups>\itemgroupparameter\c!maxwidth\relax
+     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\the\wd\b_strc_itemgroups}}%
+   \fi
+   \ifdim\d_strc_itemgroups_max_width>\zeropoint
+     \setbox\b_strc_itemgroups\simplealignedbox
+       {\dimexpr\d_strc_itemgroups_max_width+\itemgroupparameter\c!distance\relax}
+       {\itemgroupparameter\c!itemalign}
+       {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}%
+   \fi}
+
+\def\strc_itemgroups_make_aligned_box
+  {\doifsomething{\itemgroupparameter\c!itemalign}
+     {\setbox\b_strc_itemgroups\simplealignedbox
+        {\dimexpr\d_strc_itemgroups_asked_width+\itemgroupparameter\c!distance\relax}
+        {\itemgroupparameter\c!itemalign}
+        {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}}}
+
+\def\strc_itemgroups_make_destination_box
+  {\iftrialtypesetting \orelse \ifx\m_strc_itemgroups_destination\empty \else
+     \setbox\b_strc_itemgroups\hbox{\directgotobox{\box\b_strc_itemgroups}[\m_strc_itemgroups_destination]}%
+   \fi}
+
+\def\strc_itemgroups_check_indenting
+  {\setfalse\c_strc_itemgroups_indented_first
+   \ifx\m_strc_itemgroups_indenting\empty \else
+     \normalexpanded{\setupindenting[\v!reset,\v!yes,\m_strc_itemgroups_indenting]}%
+     \ifconditional\c_spac_indentation_indent_first % better is to have a mode
+       \doifnot{\itemgroupparameter\c!alignsymbol}\v!yes
+         {\settrue\c_strc_itemgroups_indented_first}%
+     \fi
+   \fi}
+
+\def\strc_itemgroups_check_for_repeated
+  {\ifconditional\c_strc_itemgroups_repeat
+     \ifx\m_strc_itemgroups_repeat_start\empty
+       \edef\m_strc_itemgroups_repeat_start{\currentitemlevel}%
+     \fi
+   \else
+     \let\m_strc_itemgroups_repeat_start\empty
+   \fi}
+
+\def\strc_itemgroups_insert_item
+  {\ifconditional\c_strc_itemgroups_text % again?
+    % begin of item
+   \else
+     \par % done twice?
+   \fi
+   \advance\c_strc_itemgroups_n_of_items\plusone
+   \optimizelistitemsbreak
+   \strc_itemgroups_check_indenting
+   \dontleavehmode
+   \ifconditional\c_strc_itemgroups_indented_first
+     \hskip-\parindent
+   \fi
+   \strc_itemgroups_make_symbol_box
+   \strc_itemgroups_make_destination_box
+   \ifconditional\c_strc_itemgroups_fitting
+     \strc_itemgroups_make_fitting_box
+   \else\ifdim\d_strc_itemgroups_asked_width>\zeropoint
+     \strc_itemgroups_make_aligned_box
+   \fi\fi
+   \let\m_strc_itemgroups_destination\empty
+   \ht\b_strc_itemgroups\strutheight % just in case a symbols is not yet available in
+   \dp\b_strc_itemgroups\strutdepth  % the current run (more a mkii mp side artifact)
+   \strc_itemgroups_check_for_repeated
+   \ifdim\d_strc_itemgroups_asked_width<\zeropoint\relax
+     \strc_itemgroups_handle_lapped_item_negative
+   \else
+     \ifzeropt\d_strc_itemgroups_asked_width
+       \strc_itemgroups_calculate_list_width\plusone
+     \else
+       \strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+     \fi
+     \ifconditional\c_strc_itemgroups_text
+       \strc_itemgroups_handle_groups_text_item
+     \orelse\ifconditional\c_strc_itemgroups_inline
+       \strc_itemgroups_handle_groups_inline_item
+     \orelse\ifconditional\c_strc_itemgroups_txt
+       \strc_itemgroups_handle_text_item
+     \else
+       \strc_itemgroups_handle_lapped_item_positive
+     \fi
+   \fi
+   \setfalse\c_strc_itemgroups_head
+   \setfalse\c_strc_itemgroups_sub
+   \ifconditional\c_strc_itemgroups_indented_first
+     \hskip\parindent
+   \fi
+   \ignorespaces}
+
+\def\strc_itemgroups_start_item_nop
+  {\let\currentitemreference\empty
+   \strc_itemgroups_increment_item_counter
+   \advance\c_strc_itemgroups_n_of_items\plusone
+   \setbox\b_strc_itemgroups\hbox
+     {\useitemgroupstyleandcolor\c!style\c!color
+      \strc_itemgroups_used_symbol}%
+   \strc_itemgroups_check_for_repeated
+   \ignorespaces}
+
+\setvalue{\??itemgroupdistance\v!none}%
+  {\let\m_strc_itemgroups_text_distance\zeropoint}
+
+\setvalue{\??itemgroupdistance\v!space}%
+  {\def\m_strc_itemgroups_text_distance{\interwordspace\!!plus\interwordstretch\!!minus\interwordshrink}}
+
+\setvalue\??itemgroupdistance % catches empty value
+  {\let\m_strc_itemgroups_text_distance\zeropoint}
+
+\unexpanded\def\strc_itemgroups_set_text_item_distance
+  {\edef\m_strc_itemgroups_text_distance{\itemgroupparameter\c!textdistance}%
+   \ifx\m_strc_itemgroups_text_distance\empty
+     %
+   \orelse\ifcsname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
+     \lastnamedcs
+   \else
+     \strc_itemgroups_set_text_item_distance_indeed
+   \fi}
+
+\def\strc_itemgroups_set_text_item_distance_indeed
+  {\assignvalue
+     \m_strc_itemgroups_text_distance
+     \m_strc_itemgroups_text_distance
+     {.5\interwordspace\!!plus.5\emwidth}%
+     {\interwordspace  \!!plus  \emwidth}%
+     {\emwidth         \!!plus  \interwordstretch\!!minus\interwordshrink}}
+
+% \unexpanded\def\strc_itemgroups_default_command
+%   {\EveryPar{\ignorespaces}% needed ?
+%    \ignorespaces}
+
+\unexpanded\def\strc_itemgroups_default_command
+  {\ignorespaces}
+
+%D Special case:
+
+\unexpanded\def\strc_itemgroups_head#text\par
+  {\startitemgrouphead{#text}}
+
+%D The local commands:
+
+\appendtoks
+    \let\item            \strc_itemgroups_start_do_item
+    \let\noitem          \strc_itemgroups_start_no_item
+    \let\itm             \strc_itemgroups_start_do_item
+    \let\but             \strc_itemgroups_start_button
+    \let\nop             \strc_itemgroups_start_dummy
+    \let\txt             \strc_itemgroups_start_text
+    \let\head            \strc_itemgroups_head
+    \let\headsym         \strc_itemgroups_start_head_sym
+    \let\startitem       \startitemgroupitem
+    \let\stopitem        \stopitemgroupitem
+    \let\starthead       \startitemgrouphead
+    \let\stophead        \stopitemgroupitemhead
+    \let\startspecialitem\startspecialitemgroupitem
+    \let\stopspecialitem \stopspecialitemgroupitem
+\to \itemgroupcommands
+
+\ifx\currentinterface \v!english \else
+
+    \appendtoks
+        \expandafter\let\csname\v!item        \endcsname\strc_itemgroups_start_do_item
+        \expandafter\let\csname\v!sub         \endcsname\strc_itemgroups_start_subitem
+        \expandafter\let\csname\v!sym         \endcsname\strc_itemgroups_start_symbol
+        \expandafter\let\csname\v!ran         \endcsname\strc_itemgroups_start_edge
+        \expandafter\let\csname\v!head        \endcsname\strc_itemgroups_head
+        \expandafter\let\csname\v!its         \endcsname\strc_itemgroups_start_items
+        \expandafter\let\csname\v!mar         \endcsname\strc_itemgroups_start_margin
+        \expandafter\let\csname\v!txt         \endcsname\strc_itemgroups_start_text
+        \expandafter\let\csname\e!start\v!item\endcsname\startitemgroupitem
+        \expandafter\let\csname\e!stop \v!item\endcsname\stopitemgroupitem
+        \expandafter\let\csname\e!start\v!head\endcsname\startitemgrouphead
+        \expandafter\let\csname\e!stop \v!head\endcsname\stopitemgrouphead
+    \to \itemgroupcommands
+
+\fi
+
+\relaxvalueifundefined \v!item
+\relaxvalueifundefined \v!sub
+\relaxvalueifundefined \v!sym
+\relaxvalueifundefined \v!ran
+\relaxvalueifundefined \v!head
+\relaxvalueifundefined \v!its
+\relaxvalueifundefined \v!mar
+\relaxvalueifundefined \v!txt
+\relaxvalueifundefined {\e!start\v!item}
+\relaxvalueifundefined {\e!stop \v!item}
+\relaxvalueifundefined {\e!start\v!head}
+\relaxvalueifundefined {\e!stop \v!head}
+
+%D A nice example of a plugin:
+%D
+%D \startbuffer
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,random,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D
+%D \startitemize[a,packed]
+%D \startitem first  \stopitem \startitem second \stopitem
+%D \startitem third  \stopitem \startitem fourth \stopitem
+%D \stopitemize
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+
+% better collectitems als conditional and a real plugin mechanism (some day)
+
+\newcount\c_strc_itemgroups_collected_stored
+\newcount\c_strc_itemgroups_collected_done
+\newcount\c_strc_itemgroups_collected_current
+
+% \expandafter\def\expandafter\strc_itemgroups_collected_store\expandafter#\expandafter1\csname\e!stop\v!item\endcsname % use grabuntil
+%   {\advance\c_strc_itemgroups_collected_stored\plusone
+%    \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
+
+\let\strc_itemgroups_collected_store\relax
+
+\normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
+  {\advance\c_strc_itemgroups_collected_stored\plusone
+   \setvalue{\??itemgroupstack\number\c_strc_itemgroups_collected_stored}{\startitemgroupitem#1\stopitemgroupitem}}
+
+\def\strc_itemgroups_collected_flush_randomize
+  {\collecteditemgroupitem}
+
+\def\strc_itemgroups_collected_flush_horizontal
+  {\begingroup
+   \scratchcounter\itemgroupparameter\c!n\relax
+   \ifnum\c_strc_itemgroups_collected_done>\plusone
+     \ifcase\modulonumber\scratchcounter\c_strc_itemgroups_collected_done\relax
+       % compensate for rounding errors
+       \hfill % \hskip\zeropoint plus \scaledpoint minus \scaledpoint
+       \allowbreak
+     \fi
+   \fi
+   \noindent % no \dontleavehmode
+   \hbox to \dimexpr\availablehsize/\scratchcounter\relax{\collecteditemgroupitem\hss}%
+   \endgroup}
+
+% \def\strc_itemgroups_collected_flush_indeed
+%   {\collecteditemgroupitem
+%    \iftrialtypesetting
+%      \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}%
+%    \fi}
+
+\def\strc_itemgroups_collected_flush_indeed
+  {\collecteditemgroupitem
+   \undefinevalue{\??itemgroupstack\number\c_strc_itemgroups_collected_current}}
+
+\def\strc_itemgroups_collected_flush
+  {\ifconditional\c_strc_itemgroups_randomize
+     \getrandomcount\c_strc_itemgroups_collected_current\plusone\c_strc_itemgroups_collected_stored
+   \else
+     \advance\c_strc_itemgroups_collected_current\plusone
+   \fi
+   \ifcsname\??itemgroupstack\number\c_strc_itemgroups_collected_current\endcsname
+     \edef\collecteditemgroupitem{\lastnamedcs}%
+     \ifconditional\c_strc_itemgroups_horizontal
+       \strc_itemgroups_collected_flush_horizontal
+     \else
+       \strc_itemgroups_collected_flush_indeed
+     \fi
+     \advance\c_strc_itemgroups_collected_done\plusone
+   \fi
+   \ifnum\c_strc_itemgroups_collected_done<\c_strc_itemgroups_collected_stored
+     \expandafter\strc_itemgroups_collected_flush
+   \fi}
+
+\unexpanded\def\stopcollectitems
+  {\ifconditional\c_strc_itemgroups_collecting
+     \c_strc_itemgroups_collected_done   \zerocount
+     \c_strc_itemgroups_collected_current\zerocount
+     \ifnum\c_strc_itemgroups_collected_stored>\zerocount
+       \ifconditional\c_strc_itemgroups_horizontal
+         \strc_itemgroups_before_command
+         \setfalse\c_strc_itemgroups_first
+         \strc_itemgroups_collected_flush
+        %\strc_itemgroups_after_command % triggered elsewhere
+       \else
+         \strc_itemgroups_collected_flush
+       \fi
+     \fi
+   \fi}
+
+\unexpanded\def\startcollectitems
+  {\ifconditional\c_strc_itemgroups_collecting
+     \c_strc_itemgroups_collected_stored\zerocount
+     \letvalue{\e!start\v!item}\strc_itemgroups_collected_store
+   \fi}
+
+%D Left-overs:
+
+\unexpanded\def\item
+  {\strc_itemgroups_item_alone}
+
+\def\strc_itemgroups_item_alone[#category]#text\par
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+   \startitem#text\stopitem
+   \stopitemgroup}
+
+\unexpanded\def\head
+  {\strc_itemgroups_head_alone}
+
+\def\strc_itemgroups_head_alone[#category]#head\par#body\par
+  {\doifelsesomething{#category}{\startitemgroup[#category]}{\startitemgroup[\v!itemize]}%
+   \starthead{#head}#body\stophead
+   \stopitemgroup}
+
+\setuvalue{\e!start\v!item}%
+  {\startitemgroup[\v!itemize]%
+   \startitemgroupitem
+   \setuvalue{\e!stop\v!item}{\stopitemgroupitem\stopitemgroup}}
+
+% \def\sym#text%
+%   {\noindent
+%    \begingroup
+%    \setbox\scratchbox\hbox{\settrialtypesetting#text}%
+%    \setbox\scratchbox\hbox\ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#text\hfil}%
+%    \normalexpanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
+%    \ignorespaces}
+
+%D End of plugin.
+
+%D Something for tables:
+
+\unexpanded\def\itemtag
+  {\dosingleempty\strc_itemgroups_item_tag}
+
+\unexpanded\def\strc_itemgroups_item_tag[#reference]% we can reuse more
+  {\def\currentitemreference{#reference}%
+   \iftrialtypesetting
+     \strc_counters_save\v_strc_itemgroups_counter
+     \strc_itemgroups_increment_item_counter
+     \strc_itemgroups_insert_item_tag_indeed
+     \strc_counters_restore\v_strc_itemgroups_counter
+   \else
+     \strc_itemgroups_increment_item_counter
+     \strc_itemgroups_insert_item_tag_indeed
+   \fi}
+
+\def\strc_itemgroups_insert_item_tag_indeed
+  {\letitemgroupparameter\c!distance\zeropoint
+   %letitemgroupparameter\c!width\zeropoint
+   \strc_itemgroups_make_symbol_box
+   \strc_itemgroups_make_destination_box
+   \let\m_strc_itemgroups_destination\empty
+   \ht\b_strc_itemgroups\strutheight
+   \dp\b_strc_itemgroups\strutdepth
+   \box\b_strc_itemgroups
+   \ignorespaces}
+
+%D Done again.
+
+\setupitemgroup
+  [\c!margin=\zeropoint,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!leftmargindistance=\zeropoint,
+   \c!rightmargindistance=\zeropoint,
+   \c!indentnext=\v!yes,
+   \c!width=1.5\emwidth,
+   \c!factor=0,
+  %\c!distance=.5em, % is now:
+   \c!step=.5\emwidth, % deals with broad
+   \c!distance=\zeropoint,
+  %\c!align=\v!normal, % definitely not \v!normal !
+  %\c!symalign=,
+  %\c!color=,
+  %\c!indenting=, % untouched if empty
+  %\c!style=,
+   \c!marstyle=\v!type,
+  %\c!symstyle=,
+  %\c!headstyle=,
+  %\c!marcolor=,
+  %\c!symcolor=,
+  %\c!headcolor=,
+  %\c!beforehead=,
+   \c!symcolor=\itemgroupparameter\c!color, % new per 2012.01.17
+   \c!symstyle=\itemgroupparameter\c!style, % new per 2012.01.17
+   \c!afterhead=\blank,
+   \c!before=\blank,
+   \c!inbetween=\blank,
+   \c!after=\blank,
+  %\c!stopper=.,
+   \c!placestopper=\v!yes,
+   \c!stopper=.,
+  %\c!inner=,
+   \c!n=2,
+   \c!items=4,
+   \c!levels=10,
+   \c!lefttext=(,
+   \c!righttext=),
+   \c!start=1,
+   \c!packcriterium=\zerocount,
+   \c!criterium=\v!all, % permits 0 and negative numbers
+  %\c!option=,
+   \c!textdistance=\v!space, % none big medium small <dimension>
+   \c!command=\strc_itemgroups_default_command,
+   \c!indenting=\v!next,
+  %\c!alignsymbol=v!no,
+   \c!symbol=\currentitemlevel,
+   \c!prefix=\v!no,
+  %\c!prefixstopper=.,
+  %\c!prefixseparatorset=,
+  %\c!prefixconversion=,
+  %\c!prefixconversionset=,
+  %\c!prefixset=,
+  %\c!prefixsegments=1:100,
+   \c!prefixconnector=.,
+   \c!numberseparatorset=,
+   \c!numberconversionset=,
+   \c!numberstopper=.,
+   \c!numbersegments=1]
+
+\defineitemgroup
+  [\v!itemize]
+
+%D This is really ugly I should get rid of the global mess, whuch is a side
+%D effect of the simple \type {\item} interface that we're stuck with for
+%D compatibility reasons. See footnotes for usage. It's probablynot robust
+%D for mixed itemgroups so in the end I need to get rid of the globals. One
+%D problem is that counters are set.
+
+\defineitemgroup
+  [\v!itemize:\v!note]
+
+\def\strc_itemgroups_push
+  {\edef\strc_itemgroups_pop
+     {\xdef\noexpand\currentitemlevel{\currentitemlevel}%
+      \global\c_strc_itemgroups_nesting     \the\c_strc_itemgroups_nesting     \relax
+      \global\c_strc_itemgroups_column_depth\the\c_strc_itemgroups_column_depth\relax}%
+   \global\c_strc_itemgroups_column_depth\zerocount
+   \global\c_strc_itemgroups_nesting     \zerocount
+   \glet\currentitemlevel\!!zerocount
+   \unexpanded\def\startitemize{\startitemgroup[\v!itemize:\v!note]}%
+   \unexpanded\def\stopitemize {\stopitemgroup}}
+
+\let\strc_itemgroups_pop\relax
+
+\protect \endinput

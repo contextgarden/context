@@ -603,8 +603,18 @@
    \edef\p_sy{#2}%
    \dowithnextboxcs\grph_scale_fast_sx_xy_finish\hbox}
 
+% \def\grph_scale_fast_sx_xy_finish
+%   {\grph_scale_check_sx_sy
+%    \grph_scale_calculations_nop
+%    \grph_scale_apply
+%    \box\nextbox
+%    \egroup}
+
 \def\grph_scale_fast_sx_xy_finish
   {\grph_scale_check_sx_sy
+   \d_grph_scale_wd\wd\nextbox
+   \d_grph_scale_ht\ht\nextbox
+   \d_grph_scale_dp\dp\nextbox
    \grph_scale_calculations_nop
    \grph_scale_apply
    \box\nextbox
@@ -924,12 +934,10 @@
    \doifelserightpage{\def\p_rotation_rotation{90}}{\def\p_rotation_rotation{270}}}
 
 \setvalue{\??rotatepreset\v!default}%
-  {\edef\p_rotation_rotation{\realnumber{\p_rotation_rotation}}}% get rid of leading zeros and spaces
+  {}
 
 \def\grph_rotate_finish_yes
-  {\csname\??rotatepreset
-     \ifcsname\??rotatepreset\p_rotation_rotation\endcsname\p_rotation_rotation\else\v!default\fi
-   \endcsname
+  {\begincsname\??rotatepreset\p_rotation_rotation\endcsname
    \setbox\nextbox\vpack{\box\nextbox}% not really needed
    \dontcomplain
    \ifconditional\c_grph_rotate_center

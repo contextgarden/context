@@ -1,0 +1,422 @@
+%D \module
+%D   [       file=font-fil,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Classes and Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Classes and Files}
+
+\unprotect
+
+%D Personally I think that using \TEX\ macro packages is complicated by the way
+%D fonts are handled. Apart from the many encodings, we also deal with different
+%D naming schemes. Confronted with this problem, I decided to change the definitions
+%D into:
+%D
+%D \starttyping
+%D \definebodyfont [12pt] [rm] [tf=Times-Roman at 12pt]
+%D \stoptyping
+%D
+%D combined with for instance:
+%D
+%D \starttyping
+%D \definefontsynonym [Times-Roman] [tir]
+%D \stoptyping
+
+% \definetypeface[palatino][rm][serif][palatino,allbold][default]
+%
+% \startfontclass[palatino]
+%   \definefontsynonym [Serif]        [SerifBold]
+%   \definefontsynonym [SerifItalic]  [SerifBoldItalic]
+%   \definefontsynonym [SerifSlanted] [SerifBoldSlanted]
+%   \definefontsynonym [SerifCaps]    [SerifBold]
+% \stopfontclass
+%
+% \setupbodyfont[palatino]
+
+\unexpanded\def\startfontclass
+  {\dosingleempty\font_basics_start_font_class}
+
+\def\font_basics_start_font_class[#class]%
+  {\push_macro_fontclass
+   \doifelse{#class}\v!each
+     {\let\fontclass\empty}
+     {\doifsomething{#class}{\def\fontclass{#class}}}}
+
+\unexpanded\def\stopfontclass
+  {\pop_macro_fontclass}
+
+\def\classfont#class#name{#class#name} % \definefont[whatever][\classfont{xx}{yy} at 10pt]
+
+%D \macros
+%D   {definefontsynonym, doifelsefontsynonym,
+%D    expandfontsynonym, truefontname, truefontdata}
+%D
+%D While looking for fonts, fontsynonyms are used for accessing
+%D the files!
+%D
+%D \starttyping
+%D \definefontsynonym[Serif][Lucida-Bright]
+%D \definefontsynonym[Lucida-Bright][lbr][encoding=texnansi]
+%D \stoptyping
+
+\installcorenamespace {fontfile} % file synonyms
+
+\let\m_font_name\empty
+\let\m_font_file\empty
+
+\def \defaultfontfile{\truefontname{Normal}} % was cmtt10, but that one is gone
+\edef\nullfontname   {\fontname\nullfont}
+
+\unexpanded\def\definefontsynonym[#name]#crap[#file]%
+  {\edef\m_font_name{#name}%
+   \edef\m_font_file{#file}%
+   \ifx\fontclass\empty
+      \expandafter\font_basics_define_font_synonym_nop
+   \else
+      \expandafter\font_basics_define_font_synonym_yes
+   \fi}
+
+\unexpanded\def\font_basics_define_font_synonym_nop
+  {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
+   \doifelsenextoptionalcs\font_basics_define_font_synonym_nop_opt\font_basics_define_font_synonym_nop_nil}
+
+\unexpanded\def\font_basics_define_font_synonym_yes
+  {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
+   \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
+
+\unexpanded\def\edefinefontsynonym[#name]#crap[#file]%
+  {\edef\m_font_name{#name}%
+   \edef\m_font_file{#file}%
+   \ifx\fontclass\empty
+      \expandafter\font_basics_define_font_synonym_nop_expanded
+   \else
+      \expandafter\font_basics_define_font_synonym_yes_expanded
+   \fi}
+
+\unexpanded\def\font_basics_define_font_synonym_nop_expanded#crap[#spec]%
+  {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
+   \normalexpanded{\font_basics_define_font_synonym_nop_opt[#1]}}
+
+\unexpanded\def\font_basics_define_font_synonym_yes_expanded#crap[#spec]%
+  {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
+   \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
+
+\unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
+  {\let\p_features  \undefined
+   \let\p_fallbacks \undefined
+   \let\p_goodies   \undefined
+   \let\p_designsize\undefined
+   \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
+
+\unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
+  {\let\p_features  \undefined
+   \let\p_fallbacks \undefined
+   \let\p_goodies   \undefined
+   \let\p_designsize\undefined
+   \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
+
+% todo: check if we can use \edef but then we need to protect \mathsizesuffix .. in fact that
+% can be default then: \let\mathsizesuffix\relax .. i need to play with it first
+
+\def\font_basics_get_font_parameter_nop#key=#value,%
+  {\if]#key%
+     \font_basics_get_font_parameter_nop_finish
+   \else
+     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+     \expandafter\font_basics_get_font_parameter_nop
+   \fi}
+
+\def\font_basics_get_font_parameter_yes#key=#value,%
+  {\if]#key%
+     \font_basics_get_font_parameter_yes_finish
+   \else
+     \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+     \expandafter\font_basics_get_font_parameter_yes
+   \fi}
+
+% helpers, some day these will be toks and counts
+
+% \def\fntsetdefname {\glet\somefontname\defaultfontfile}
+% \def\fntsetsomename{\gdef\somefontname} % takes argument
+% \def\fntsetnopsize {\let\somefontsize\empty}
+% \def\fntsetsomesize{\def\somefontsize}  % takes argument
+
+% happens later, else mkvi parsing gets into troubles
+
+% end of helpers
+
+% we could collect them in one macro (but no expansion)
+
+\def\font_basics_define_font_synonym_nop_nil
+  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\undefined
+   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\undefined}
+
+\def\font_basics_define_font_synonym_yes_nil
+  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\undefined
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\undefined}
+
+\def\font_basics_get_font_parameter_nop_finish
+  {\expandafter\let\csname\??fontfile\m_font_name\s!features  \endcsname\p_features
+   \expandafter\let\csname\??fontfile\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \expandafter\let\csname\??fontfile\m_font_name\s!goodies   \endcsname\p_goodies
+   \expandafter\let\csname\??fontfile\m_font_name\s!designsize\endcsname\p_designsize}
+
+\def\font_basics_get_font_parameter_yes_finish
+  {\expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!features  \endcsname\p_features
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!fallbacks \endcsname\p_fallbacks
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!goodies   \endcsname\p_goodies
+   \expandafter\glet\csname\??fontfile\fontclass\m_font_name\s!designsize\endcsname\p_designsize}
+
+%\definefontsynonym [KopFont] [\fontclassname{officina}{SerifBold}]
+%
+%\defineclassfontsynonym [KopFont] [officina] [SerifBold]
+
+\unexpanded\def\defineclassfontsynonym
+  {\dotripleargument\font_basics_define_class_font_synonym}
+
+%\definefontsynonym[#tag][\fontclassname{#class}{#fileortag}]}
+
+\def\font_basics_define_class_font_synonym[#tag][#class][#fileortag]% needs testing
+  {\expandafter\normaldef\csname\??fontfile\fontclass#tag\endcsname{\fontclassname{#class}{#fileortag}}%
+   \font_basics_define_font_synonym_yes_nil}
+
+\let\definefontfile\definefontsynonym % dedicated to Taco Hoekwater
+
+\unexpanded\def\setupfontsynonym
+  {\dodoubleempty\dosetupfontsynonym}
+
+\def\dosetupfontsynonym[#name][#settings]% not yet supported, will do when needed
+  {}
+
+% todo: replace * by ... less messy with features
+
+\def\truefontname#name%
+  {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
+
+\def\font_helpers_true_fontname#name*#first#rest*#crap\relax
+  {\ifcsname\??fontfile\fontclass#name\endcsname
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile\fontclass#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
+   \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile\defaultfontclass#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
+   \orelse\ifcsname\??fontfile#name\endcsname
+     \ifx#first\empty
+      %\expandafter\truefontname\csname\??fontfile#name\endcsname
+       \expandafter\truefontname\lastnamedcs
+     \else
+      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname*#first#rest%
+       \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+     \fi
+   \else
+     #name\ifx#first\empty\else*#first#rest\fi
+   \fi}
+
+\def\font_helpers_true_fontname_check#name%
+  {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
+
+\def\font_helpers_true_fontname_check_indeed#name*#crap\relax
+  {\ifcsname\??fontfile\fontclass#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \orelse\ifcsname\??fontfile#name\endcsname
+    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname
+     \expandafter\font_helpers_true_fontname_check\lastnamedcs
+   \else
+     #name%
+   \fi}
+
+% ok when the last lookup is not stripped .. we need to be able to define synonyms for symbols
+%
+% \def\truefontname#name%
+%  %{\normalexpanded{\noexpand\font_helpers_true_fontname{\clf_truefontname{#name}}}}
+%   {\expandafter\expandafter\expandafter\font_helpers_true_fontname\expandafter\expandafter\expandafter{\clf_truefontname{#name}}}
+%
+% \def\font_helpers_true_fontname#name%
+%   {\ifcsname\??fontfile\fontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \orelse\ifcsname\??fontfile#name\endcsname
+%      \expandafter\font_helpers_true_fontname\expandafter{\lastnamedcs}%
+%    \else
+%    % \clf_truefontname{#name}%
+%      #name% so the last one can have features !
+%    \fi}
+
+\def\expandfontsynonym#command#name% one level expansion
+  {\ifcsname\??fontfile\fontclass#name\endcsname
+    %\expandafter\normaldef\expandafter#command\expandafter{\csname\??fontfile\fontclass#name\endcsname}%
+     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
+   \orelse\ifcsname\??fontfile\defaultfontclass#2\endcsname
+    %\expandafter\normaldef\expandafter#command\expandafter{\csname\??fontfile\defaultfontclass#name\endcsname}%
+     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
+   \fi}
+
+\def\doifelsefontsynonym#name%
+  {\ifcsname\??fontfile\fontclass#name\endcsname
+     \expandafter\firstoftwoarguments
+   \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
+\let\doiffontsynonymelse\doifelsefontsynonym
+
+%D \macros
+%D   {tracedfontname}
+%D
+%D A goody:
+
+\def\tracedfontname#name%
+  {#name\ifcsname\??fontfile\fontclass#name\endcsname
+    %\expandafter\tracedfontname\csname\??fontfile\fontclass#name\endcsname
+     \expandafter\tracedfontname\lastnamedcs
+   \orelse\ifcsname\??fontfile#name\endcsname
+    %\expandafter\tracedfontname\csname\??fontfile#name\endcsname
+     \expandafter\tracedfontname\lastnamedcs
+   \fi}
+
+%D \macros
+%D   {fontclass, defaultfontclass}
+%D
+%D The fontclass model was introduced a while after we implement the basic font
+%D model and at that time we still defaulted to no model at all. Nowadays we default
+%D to the \type {modern} fontclass.
+
+\let\fontclass       \empty
+\let\defaultfontclass\empty
+
+\def\fontclassname#class#name% tricky ... no lastnamedcs here due to nesting
+  {\ifcsname\??fontfile#class#name\endcsname
+     \fontclassname{#class}{\csname\??fontfile#class#name\endcsname}%
+   \orelse\ifcsname\??fontfile#name\endcsname
+     \fontclassname{#class}{\csname\??fontfile#name\endcsname}%
+   \else
+     #2%
+   \fi}
+
+\installmacrostack\fontclass
+
+%D Files or names can have properties and these need to be consulted at some point.
+%D They can inherit them.
+
+% Why these expanded and rscale not ... maybe not worth the trouble (delayed
+% expansion actually would be better i.e. macros in feature specs). Test
+% without pre-expansion.
+
+\def\font_helpers_update_font_class_parameters
+  {\edef\m_font_class_direction {\begincsname\??fontclass\fontclass\fontstyle\s!direction \endcsname}%
+   \edef\m_font_class_features  {\begincsname\??fontclass\fontclass\fontstyle\s!features  \endcsname}%
+   \edef\m_font_class_fallbacks {\begincsname\??fontclass\fontclass\fontstyle\s!fallbacks \endcsname}%
+   \edef\m_font_class_goodies   {\begincsname\??fontclass\fontclass\fontstyle\s!goodies   \endcsname}%
+   \edef\m_font_class_designsize{\begincsname\??fontclass\fontclass\fontstyle\s!designsize\endcsname}}
+
+% resolve
+
+\def\font_helpers_set_features_yes#name%
+  {\ifcsname\??fontfile\fontclass#name\s!features\endcsname \edef\m_font_features{\lastnamedcs}\orelse          % class + symbolic_name
+   \ifcsname\??fontfile          #name\s!features\endcsname \edef\m_font_features{\lastnamedcs}\orelse          % symbolic_name
+   \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_features_yes\lastnamedcs \orelse % class + parent_name
+   \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_features_yes\lastnamedcs \else   % parent_name
+   \let\m_font_features\empty\fi}
+
+\def\font_helpers_set_fallbacks_yes#name%
+  {\ifcsname\??fontfile\fontclass#name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
+   \ifcsname\??fontfile          #name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
+   \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_fallbacks_yes\lastnamedcs \orelse
+   \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_fallbacks_yes\lastnamedcs \else
+   \let\m_font_fallbacks\empty\fi}
+
+\def\font_helpers_set_goodies_yes#name%
+  {\ifcsname\??fontfile\fontclass#name\s!goodies  \endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
+   \ifcsname\??fontfile          #name\s!goodies  \endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
+   \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_goodies_yes\lastnamedcs \orelse
+   \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_goodies_yes\lastnamedcs \else
+   \let\m_font_goodies\empty\fi}
+
+\def\font_helpers_set_designsize_yes#name%
+  {\ifcsname\??fontfile\fontclass#name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
+   \ifcsname\??fontfile          #name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
+   \ifcsname\??fontfile\fontclass#name\endcsname \expandafter\font_helpers_set_designsize_yes\lastnamedcs \orelse
+   \ifcsname\??fontfile          #name\endcsname \expandafter\font_helpers_set_designsize_yes\lastnamedcs \else
+   \let\m_font_designsize\empty\fi}
+
+\def\font_helpers_set_features_nop#name%
+  {\ifcsname\??fontfile#name\s!features\endcsname \edef\m_font_features{\lastnamedcs}\orelse
+   \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_features_nop\lastnamedcs \else
+   \let\m_font_features\empty\fi}
+
+\def\font_helpers_set_fallbacks_nop#name%
+  {\ifcsname\??fontfile#name\s!fallbacks\endcsname \edef\m_font_fallbacks{\lastnamedcs}\orelse
+   \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_fallbacks_nop\lastnamedcs \else
+   \let\m_font_fallbacks\empty\fi}
+
+\def\font_helpers_set_goodies_nop#name%
+  {\ifcsname\??fontfile#name\s!goodies\endcsname \edef\m_font_goodies{\lastnamedcs}\orelse
+   \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_goodies_nop\lastnamedcs \else
+   \let\m_font_goodies\empty\fi}
+
+\def\font_helpers_set_designsize_nop#name%
+  {\ifcsname\??fontfile#name\s!designsize\endcsname \edef\m_font_designsize{\lastnamedcs}\orelse
+   \ifcsname\??fontfile#name\endcsname \expandafter\font_helpers_set_designsize_nop\lastnamedcs \else
+   \let\m_font_designsize\empty\fi}
+
+\def\font_helpers_update_font_parameters_yes
+  {\font_helpers_set_features_yes  \somefontname
+   \font_helpers_set_fallbacks_yes \somefontname
+   \font_helpers_set_goodies_yes   \somefontname
+   \font_helpers_set_designsize_yes\somefontname}
+
+\def\font_helpers_update_font_parameters_nop
+  {\font_helpers_set_features_nop  \somefontname
+   \font_helpers_set_fallbacks_nop \somefontname
+   \font_helpers_set_goodies_nop   \somefontname
+   \font_helpers_set_designsize_nop\somefontname}
+
+\def\font_helpers_update_font_parameters
+ {\ifx\fontclass\empty\font_helpers_update_font_parameters_nop\else\font_helpers_update_font_parameters_yes\fi}
+
+\installcorenamespace{fontclass}
+
+% we can pack them (don't use \setxvalue!)
+
+\unexpanded\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
+  {\letgvalue{\??fontclass\fontclass#style\s!rscale    }#rscale%
+   \letgvalue{\??fontclass\fontclass#style\s!features  }#features%
+   \letgvalue{\??fontclass\fontclass#style\s!fallbacks }#fallbacks%
+   \letgvalue{\??fontclass\fontclass#style\s!goodies   }#goodies%
+   \letgvalue{\??fontclass\fontclass#style\s!designsize}#designsize%
+   \letgvalue{\??fontclass\fontclass#style\s!direction }#direction}% math
+
+% bonus
+
+\let\currentfontinstancespec\clf_currentfontinstancespec % expandable
+
+\protect \endinput

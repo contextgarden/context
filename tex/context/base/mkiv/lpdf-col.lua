@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lpdf-col'] = {
     license   = "see context related readme files"
 }
 
+-- slants also page ?
+
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local char, byte, format, gsub, rep, gmatch = string.char, string.byte, string.format, string.gsub, string.rep, string.gmatch
 local settings_to_array, settings_to_numbers = utilities.parsers.settings_to_array, utilities.parsers.settings_to_numbers
@@ -740,36 +742,36 @@ do
     end)
 
  -- local fillcolors = {
- --     red        = { "pdf", "origin", "1 0 0 rg" },
- --     green      = { "pdf", "origin", "0 1 0 rg" },
- --     blue       = { "pdf", "origin", "0 0 1 rg" },
- --     gray       = { "pdf", "origin", ".5 g" },
- --     black      = { "pdf", "origin", "0 g" },
- --     palered    = { "pdf", "origin", "1 .75 .75 rg" },
- --     palegreen  = { "pdf", "origin", ".75 1 .75 rg" },
- --     paleblue   = { "pdf", "origin", ".75 .75 1 rg" },
- --     palegray   = { "pdf", "origin", ".75 g" },
+ --     red        = { "pdf", "page", "1 0 0 rg" },
+ --     green      = { "pdf", "page", "0 1 0 rg" },
+ --     blue       = { "pdf", "page", "0 0 1 rg" },
+ --     gray       = { "pdf", "page", ".5 g" },
+ --     black      = { "pdf", "page", "0 g" },
+ --     palered    = { "pdf", "page", "1 .75 .75 rg" },
+ --     palegreen  = { "pdf", "page", ".75 1 .75 rg" },
+ --     paleblue   = { "pdf", "page", ".75 .75 1 rg" },
+ --     palegray   = { "pdf", "page", ".75 g" },
  -- }
  --
  -- local strokecolors = {
- --     red        = { "pdf", "origin", "1 0 0 RG" },
- --     green      = { "pdf", "origin", "0 1 0 RG" },
- --     blue       = { "pdf", "origin", "0 0 1 RG" },
- --     gray       = { "pdf", "origin", ".5 G" },
- --     black      = { "pdf", "origin", "0 G" },
- --     palered    = { "pdf", "origin", "1 .75 .75 RG" },
- --     palegreen  = { "pdf", "origin", ".75 1 .75 RG" },
- --     paleblue   = { "pdf", "origin", ".75 .75 1 RG" },
- --     palegray   = { "pdf", "origin", ".75 G" },
+ --     red        = { "pdf", "page", "1 0 0 RG" },
+ --     green      = { "pdf", "page", "0 1 0 RG" },
+ --     blue       = { "pdf", "page", "0 0 1 RG" },
+ --     gray       = { "pdf", "page", ".5 G" },
+ --     black      = { "pdf", "page", "0 G" },
+ --     palered    = { "pdf", "page", "1 .75 .75 RG" },
+ --     palegreen  = { "pdf", "page", ".75 1 .75 RG" },
+ --     paleblue   = { "pdf", "page", ".75 .75 1 RG" },
+ --     palegray   = { "pdf", "page", ".75 G" },
  -- }
  --
  -- backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
  --
- --     red          = { "pdf", "origin", "1 0 0 rg 1 0 0 RG" },
- --     green        = { "pdf", "origin", "0 1 0 rg 0 1 0 RG" },
- --     blue         = { "pdf", "origin", "0 0 1 rg 0 0 1 RG" },
- --     gray         = { "pdf", "origin", ".75 g .75 G" },
- --     black        = { "pdf", "origin", "0 g 0 G" },
+ --     red          = { "pdf", "page", "1 0 0 rg 1 0 0 RG" },
+ --     green        = { "pdf", "page", "0 1 0 rg 0 1 0 RG" },
+ --     blue         = { "pdf", "page", "0 0 1 rg 0 0 1 RG" },
+ --     gray         = { "pdf", "page", ".75 g .75 G" },
+ --     black        = { "pdf", "page", "0 g 0 G" },
  --
  --  -- rulecolors   = fillcolors,
  --  -- fillcolors   = fillcolors,
@@ -792,7 +794,7 @@ do
 
     local c_cache = setmetatableindex(function(t,m)
         local v = setmetatableindex(function(t,c)
-            local p = { "pdf", "origin", "q " .. pdfcolor(m,c) }
+            local p = { "pdf", "page", "q " .. pdfcolor(m,c) }
             t[c] = p
             return p
         end)
@@ -806,7 +808,7 @@ do
         local p = pdftransparency(transparency)
         local v = setmetatableindex(function(t,colormodel)
             local v = setmetatableindex(function(t,color)
-                local v = { "pdf", "origin", "q " .. pdfcolor(colormodel,color) .. " " .. p }
+                local v = { "pdf", "page", "q " .. pdfcolor(colormodel,color) .. " " .. p }
                 t[color] = v
                 return v
             end)
@@ -830,8 +832,8 @@ do
     backends.pdf.tables.vfspecials = allocate { -- todo: distinguish between glyph and rule color
 
         startcolor = startcolor,
-     -- stopcolor  = { "pdf", "origin", "0 g 0 G Q" },
-        stopcolor  = { "pdf", "origin", "Q" },
+     -- stopcolor  = { "pdf", "page", "0 g 0 G Q" },
+        stopcolor  = { "pdf", "page", "Q" },
 
         startslant = startslant,
         stopslant  = { "pdf", "origin", "Q" },

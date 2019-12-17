@@ -208,11 +208,11 @@ report("checking file %s/%s: %s",dirname,basename,ok and "okay" or "skipped")
                                         local oldpath = lfs.currentdir()
                                         lfs.chdir(newpath)
                                         scripts.watch.save_exa_modes(joblog,ctmname)
-                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
+                                        if pipe then result = os.resultof(command) else result = os.execute(command) end
                                         lfs.chdir(oldpath)
                                     else
                                         scripts.watch.save_exa_modes(joblog,ctmname)
-                                        if pipe then result = os.resultof(command) else result = os.spawn(command) end
+                                        if pipe then result = os.resultof(command) else result = os.execute(command) end
                                     end
                                     report("return value: %s", result)
                                     done = true

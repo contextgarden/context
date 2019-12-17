@@ -160,8 +160,8 @@
 \unexpanded\def\dimension#1%
   {\pushmacro\dodimensionsignal
    \gdef\dodimensionsignal{\kern\dimensionsignal}%
-   \ifdim\lastskip=\zeropoint\relax
-     \ifdim\lastkern=\zeropoint\relax
+   \ifzeropt\lastskip
+     \ifzeropt\lastkern
        \ifmmode
          \mathematics{\dimensionhalfspace\dimensionhalfspace\dimensiontypeface#1}%
        \else

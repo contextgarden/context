@@ -1,0 +1,48 @@
+% PDF/A-2b
+
+\enabletrackers[backend.xmp]
+
+\setupbackend
+  [format=PDF/A-2b,
+   intent=sRGB IEC61966-2.1, % use <info> entry here; otherwise problems with predefined default profile
+   profile={sRGB.icc,default_gray.icc},
+   level=0]
+
+\setupinteraction[state=start]% needed for attachment
+%\setupattachment[method=hidden]
+
+\setupcolors[cmyk=no]
+\definecolor[rgbblack][b=0.01]
+\definecolor[transtest][r=1,g=1,t=.25]
+
+\placebookmarks[chapter][all][force=yes]
+
+
+
+\starttext
+
+\starttextcolor[rgbblack]
+
+\startchapter[title=aa,bookmark=bb,list=cc,marking=dd]
+
+Test for PDF/A-2b
+
+\stopchapter
+
+\stoptextcolor
+
+\hbox\bgroup
+    \blackrule[width=1cm,height=1cm,color=red]
+    \blackrule[width=1cm,height=1cm,color=green]
+    \blackrule[width=1cm,height=1cm,color=blue]
+    \blackrule[width=1cm,height=1cm,color=rgbblack]
+    \blackrule[width=1cm,height=1cm,color=transtest]\hskip-.5cm
+    \blackrule[width=1cm,height=1cm,color=transtest]
+\egroup
+
+
+% inclusion of PDF/A is allowed; TODO: test if ANY version (even newer) is allowed
+\attachment[file={attachment_pdf-a1a-2005.pdf}, type={application/pdf}]
+%\attachment[file={attachment_pdf-a1b-2005.pdf}, type={application/pdf}]
+
+\stoptext

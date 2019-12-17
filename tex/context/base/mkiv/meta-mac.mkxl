@@ -1,0 +1,66 @@
+%D \module
+%D   [       file=meta-scn,
+%D        version=2019.07.19,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=LMTX support,
+%D         author=Hans Hagen,
+%D           date=\ currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+\unexpanded\def\defineMPparameterset[#1]{\clf_lmt_parameters_define{#1}}
+\unexpanded\def\presetMPparameters  [#1]{\clf_lmt_parameters_preset{#1}}
+\unexpanded\def\resetMPparameters   [#1]{\clf_lmt_parameters_reset {#1}}
+
+% \unexpanded\def\useMPgraphic
+%   {\doifnextoptionalelse\meta_use_MP_graphic_yes\meta_use_MP_graphic_nop}
+
+% \def\meta_use_MP_graphic_nop
+%   {\dodoublegroupempty\meta_use_graphic}
+
+% \def\meta_use_MP_graphic_yes
+%   {\dodoubleempty\meta_use_graphic_new}
+
+% \def\meta_use_graphic_new[#1][#2]%
+%   {\begingroup
+%    % If really needed weh can use grouplevel but normally these graphics are
+%    % not nested.
+%    \clf_lmt_parameters_preset{#1}[#2]%
+%    \meta_use_graphic{#1}{}%
+%    \clf_lmt_parameters_reset{#1}%
+%    \endgroup}
+
+\unexpanded\def\useMPmacro
+  {\dotripleempty\meta_use_macro}
+
+\def\meta_use_macro[#1][#2][#3]%
+  {\ifthirdargument
+     \meta_begin_graphic_group{#1}%
+     \meta_enable_include
+     \clf_lmt_parameters_preset{#2}[#3]%
+     \meta_process_graphic{lmt_#2;}%
+     \clf_lmt_parameters_reset{#2}%
+     \meta_end_graphic_group
+   \else\ifsecondargument
+     \doifelseassignment{#2}
+       {\let\currentMPinstance\defaultMPinstance
+        \meta_enable_include
+        \clf_lmt_parameters_preset{#1}[#2]%
+        \meta_process_graphic{lmt_#1;}%
+        \clf_lmt_parameters_reset{#1}}%
+       {\meta_begin_graphic_group{#1}%
+        \meta_enable_include
+        \meta_process_graphic{lmt_#1;}%
+        \meta_end_graphic_group}%
+   \else
+     \let\currentMPinstance\defaultMPinstance
+     \meta_enable_include
+     \meta_process_graphic{lmt_#1;}%
+   \fi\fi}
+
+\protect

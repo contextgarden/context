@@ -1,0 +1,373 @@
+% language=us
+
+\startcomponent followingup-evolution
+
+\environment followingup-style
+
+% Yes, music is still evolving in qualitive ways ...
+%
+% Home Is - Jacob Collier with VOCES8
+%
+% and as long as there's interesting new music to run into I keep
+% doing thse kind of things.
+
+\startchapter[title={Evolution}]
+
+\startsection[title={Introduction}]
+
+The original idea behind \TEX\ is that of a relatively small kernel with (either
+or not system dependent) extensions. One such extension is the \DVI\ backend, and
+later \PDFTEX\ added a \PDF\ backend. Other extensions are \quote {writing to
+files} and \quote {writing to the output medium} using so called specials. This
+extension mechanism permits \TEX\ to support, for instance, color and image
+inclusion.
+
+The \LUATEX\ project started from \PDFTEX, including its extensions like font
+expansion, and combined that with (bi|)|directional typesetting from the, at that
+moment, stable \OMEGA\ variant \ALEPH. During the more than a decade development
+we integrated expansion in a more efficient way and limited directions to the
+four that made sense. The assumption that \UNICODE\ has the future lead to \UTF8
+being used all over the place.
+
+The \LUATEX\ variant opens up the internals using the \LUA\ extension language.
+The idea was (and still is) that instead if adding more and more hard coded
+solutions, one can use \LUA\ to do it on demand. So, for instance \OPENTYPE\
+fonts are supported by providing a font file reader but the implementation of
+features is up to \LUA. From \PDFTEX\ the graphic inclusions were inherited but
+an image and \PDF\ reading library provided a few more possibilities, for
+instance for querying properties. An important integral part of \LUATEX\ is the
+\METAPOST\ library, but apart from that one, the amount of libraries is kept at a
+minimum. That way we're free of dependencies and compilation hassles.
+
+With version 1.0 the functionality became official and with version 1.1 the
+functionality became more of less frozen. The main reason for this is that
+further extensions would violate the principle of using \LUA\ instead of hard
+coding solutions. Another reason is that at some point you have to provide a
+stable machinery for macro packages so that backward as well as forward
+compatibility over a longer period is possible. Also, because one can use \TEX\
+in (unattended) workflows sudden changes become undesirable.
+
+\stopsection
+
+\startsection[title={What next?}]
+
+Does it stop here? We have reached a reasonable stable state with \CONTEXT\
+\MKIV\ and can basically do what we want to do. However, during the more than a
+decade development of this \MKII\ follow up, the idea surfaced that we can go
+more minimal in the engine. Basically we can go back to where \TEX\ started: a
+core plus extension mechanism. What does that mean? First of all, there is the
+very efficient frontend: scanning macros, expanding them and constructing node
+lists, all within a powerful grouping mechanism. There is no reason to reconsider
+that. The core of the interface is also well documented, for instance in the
+\TEX\ book. We added some primitives to \LUATEX, but most of them are of no real
+importance to users; they make more sense to macro package writers.
+
+Original \TEX\ has a \DVI\ backend which is a simple representation of a page:
+characters and rules positioned on some grid. A separate program has to convert
+that into something for a printer. There is a basic extension mechanism that
+permits injection of so called specials that get passed to the external program
+so that for instance an image can be included. Given that \LUATEX\ is mostly used
+to generate \PDF, using so called wide fonts in a \UNICODE\ universe, a \DVI\
+backend is not that useful. In fact, one can then better use the faster \PDFTEX\
+program or just \ETEX\ or \TEX: use the best tool available for the job.
+
+The backend however can be left out and can be implemented in \LUA\ instead. In
+fact, most of the backend related code in \CONTEXT\ doesn't really use the
+\LUATEX\ backend features at all. The backend is only used to convert the page
+stream to a \PDF\ content stream, include images, include fonts and manage low
+level objects. Everything specific to \PDF\ is already done in \LUA. Of course
+this has a performance penalty but given the overhead already present in
+\CONTEXT\ it is bearable.
+
+Alongside the frontend the \METAPOST\ library plays an important role in
+\CONTEXT: integration between \TEX, \METAPOST\ and \LUA\ is pretty tight and a
+unique property of \CONTEXT. But, for instance the font reader library is no
+longer used. Also the interfacing to the \TEX\ Directory Structure was done in
+\LUA, originally for performance reasons as it reduced startup time by more that
+a second. For some of the frontend code (like hyphenation and par building) we
+can kick in \LUA\ variants too but there is not much to gain there. (I know that
+some users use them with success.)
+
+So, traditional \TEX\ can be summarized as:
+
+\starttyping
+tex core + dvi backend + tex extensions
+\stoptyping
+
+where the extension interface provide a few goodies. If we would have to summarize
+\LUATEX\ we could say:
+
+\starttyping
+tex core + dvi & pdf backend + tex extensions + lua callbacks
+\stoptyping
+
+The core interprets the input and does the typesetting. In order to be able to
+typeset \TEX\ only needs the dimensions of characters and information about
+spacing (which in principle are sort of independent) in math mode a few more
+properties are needed, like snippets that make large symbols. In text mode
+ligature and kerning information can be used too. However, in \LUATEX, where
+normally \OPENTYPE\ fonts are used, that information is provided from \LUA. This
+means that one can also think of:
+
+\starttyping
+tex core + basic font data + tex extensions + lua callbacks
+\stoptyping
+
+Compared to regular \TEX\ this is not that different, and it's what \CONTEXT\ can
+do with. So, it will be no surprise that when I wondered what \LUATEX\ 2.0 could
+be that a more minimalistic approach was considered: back to the basics.
+
+\stopsection
+
+\startsection[title={Roadmap}]
+
+Before I continue it is good to mention the following. One of the burdens that
+\CONTEXT\ users (and developers) carry is that the outside world likes putting
+labels on \CONTEXT, like \quotation {A macro package depending on \PDFTEX} in a
+time that we supported \DVI\ at the same level using a more of less generic
+driver model. The same is true for \MKIV, e.g.\ \quotation {\CONTEXT\ uses a lot
+of \LUA\ and moves away from \TEX} while in fact we provide a hybrid tool: you
+can use \TEX\ input (which most users do) but also \LUA\ (which can be handy) or
+\XML\ (which some publishers demand and definitely seems to be used by some
+\CONTEXT\ power users). A special one is \quotation {\CONTEXT\ is kind of plain
+\TEX, so you have to program all yourself.} Reality is that \CONTEXT\ is an
+integrated system, where \TEX\ and \METAPOST\ work together to provide a lot of
+integrated functionality. Because of \LUATEX\ development and the relation
+between an updated engine and the beta version of \CONTEXT, the impression can be
+that we have an unstable system. This strategy of parallel adaptation is the only
+way to really test of things work as expected. Because we have a rather fast
+update cycle normally users don't suffer that much from it.
+
+The core of whatever we follow up with is and remains \TEX, just because I like
+it. So, when I talk about a small core, I actually still talk about \TEX. The
+main reason is that it's way easier (and readable) to code some solutions in this
+hybrid fashion. A pure \LUA\ solution is no fun, maybe even a pain, and I have no
+use for it, but a pure \TEX\ solution can be cumbersome too. And \TEX\ input is
+just very convenient and for that one needs a \TEX\ interpreter. I would already
+have dropped out when \TEX\ was not part of the game: an intriguing, puzzling and
+powerful toy. And \METAPOST\ and \LUA\ add even more fun. So, I settle for a mix
+between three interesting languages. And, because I seldom run into professional
+demand for \LUATEX\ related support (or high end, high performance rendering),
+the fun factor has always been the driving force.
+
+All that said, for practical reasons, when we explore a follow up in the
+perspective of \CONTEXT, we will use the working title \LUAMETATEX\ instead.
+\LUAMETATEX\ has the current \LUATEX\ frontend, some \LUA\ libraries, but no
+backend. Gone are the font reader, image inclusion, \DVI\ and \PDF\ backend
+(including font inclusion) and the interface to the \TDS. Can that work? As
+mentioned, the font reader was already not used in \CONTEXT\ for quite a while. An
+alternative page stream builder was also in good working condition in \CONTEXT\
+when \LUATEX\ 1.08 was released and around \LUATEX\ 1.09 image inclusion was
+replaced (\PDF\ inclusion was already accompanied for a while by a \LUA\
+variant). Currently (fall 2018) \CONTEXT\ is able to completely construct the
+\PDF\ file which also meant font inclusion. However, it didn't make much sense to
+release that code yet because after all, there was minimal gain when using it
+with a full blown \LUATEX. Also, switching to this variant involved some runtime
+adaption of code which might confuse users. But above all, it needed more
+testing, and releasing something before an upcoming \TEX Live code freeze is a
+bad idea.
+
+During \LUATEX\ development a few times we got suggestions for additional
+features but merely looking at them already made clear that what works for
+someone in a particular case, can introduce side effects that make (for instance)
+\CONTEXT\ fail. And, how many folks keep \CONTEXT\ in mind? So, when \LUATEX\
+goes into maintenance mode, specific distributions could accept patches outside
+our control, which has the danger that a binary (suggesting to be \LUATEX)
+doesn't work with \CONTEXT. Of course we cannot change something ourselves either
+without looking around. And I'm not even bringing possible negative side effects
+on performance into the discussion here.
+
+When developing \LUATEX\ some ideas were dropped or delayed and these can now be
+explored without the danger of messing up the stable version. It has always been
+relatively easy to adapt \CONTEXT\ to changes so an (at least for now)
+experimental follow up can be dealt with too, but this time the concept of \quote
+{experimental} is really bound to \CONTEXT. When something is found useful (or
+can be improved) it can always (after testing it for a while) be fed back into
+\LUATEX, as long as it doesn't break something. I'll decide on that later.
+
+In the documentation of \TEX, when discussing the extension mechanism, Donald
+Knuth says:
+
+\startquotation
+The goal of a \TEX\ extender should be to minimize alterations to the standard
+parts of the program, and to avoid them completely if possible. He or she should
+also be quite sure that there's no easy way to accomplish the desired goals with
+the standard features that \TEX\ already has. \quotation {Think thrice before
+extending}, because that may save a lot of work, and it will also keep
+incompatible extensions of \TEX\ from proliferating.
+\stopquotation
+
+With the in the next chapters discussed reduction of backend and some frontend
+code, combined with hooks that can trigger callbacks, we try to come close to
+this objective. Now, the last sentence of this quote relates to stability and
+this is also a reason why we enter this new thread: the smaller the core is, the
+less subjected we are to change. Think of this: I haven't used \CONTEXT\ \MKII\
+in over a decade. A \PDFTEX\ format still gets generated but I have no clue if
+the engine has been changed in ways that make some code behave differently (it
+could also be the ecosystem related to that engine), but I assume it's still
+behaving the same. The same has to become true for stock \LUATEX\ and \MKIV\ and
+for \CONTEXT\ it can even become more true with \LUAMETATEX. We'll see.
+
+\stopsection
+
+\startsection[title={Experiments}]
+
+This (still sort of) prototype of what \LUAMETATEX\ could be boils down to a much
+smaller binary, and not that much more \LUA\ code on top of what we already have.
+There are no longer dependencies on third party code, apart from \LUA\ (\type
+{pplib} is tuned for \LUATEX\ and permanent part of the code base). Performance
+wise the backend of the experimental version makes a run upto 5\% slower than
+when using a native backend (on processing the \LUATEX\ manual) but history has
+learned that we can gain some of that back in due time. Performance also depends
+a bit on the properties of the document. Interesting is that better control over
+the output showed that \PDF\ output of the mentioned manual was a bit smaller
+(but that might change). \footnote {In the meantime the experimental version can
+process the \LUATEX\ manual 5\endash10\% faster and the result is still smaller.}
+
+The experiments actually started already years ago with no longer using the font
+loader. It sort of went this way:
+
+\startitemize
+\startitem
+    Stepwise \CONTEXT\ functionality started using a combination of \TEX\ and
+    \LUA\ code and we got an idea of what was needed. The most demanding part
+    was support for fonts.
+\stopitem
+\startitem
+    Font handling was done in \LUA\ because it's flexible which is what \TEX ies
+    are accustomed to. The \OPENTYPE\ and \PDF\ standards would not be called
+    standards if some implementation was impossible and so far we're ok. (Some
+    more script support will be provided in future versions.)
+\stopitem
+\startitem
+    We stopped using the fontforge font loader but use one written in \LUA\
+    instead. One reason for this was that when variable fonts showed up we wanted
+    to support it in \CONTEXT\ right from the start (not that there has been much
+    demand). The same is true for fonts using color (like emoji). Also, fighting
+    the built|-|in \FONTFORGE\ heuristics was hard.
+\stopitem
+\startitem
+    The (large and dependent on \CPLUSPLUS) poppler library used for \PDF\
+    embedding has been replaced by a small lightweight library in pure \CCODE.
+    This was triggered at a chat during a bacho\TEX\ meeting.
+\stopitem
+\startitem
+    The hard coded \PDF\ inclusion can be swapped with a \LUA\ based one so that
+    we can for instance filter the page stream. We already had a hybrid solution
+    in \CONTEXT\ anyway for other reasons (merging annotations, layers,
+    bookmarks, etc.).
+\stopitem
+\startitem
+    The page stream constructor got a (shipout and xforms) by a \LUA\ variant,
+    but I decided not to make that an independent option in stock \LUATEX\ with
+    \CONTEXT\ \MKIV, although for a while I had the option \type {--lmtx} for
+    activating that experimental code.
+\stopitem
+\startitem
+    Then of course bitmap image inclusion had to be done by \LUA\ code, in order
+    to see if we can get rid of another external dependency as some of these
+    libraries get frequent updates while in practice we only use a very small
+    subset of functionality. Indeed this was possible. \footnote {I have a pure
+    \LUA\ parser for \PDF\ too, so at some point that might get included in the
+    \CONTEXT\ code base.}
+\stopitem
+\startitem
+    With some effort (deciphering specs and such) the font inclusion could also
+    be done by a \LUA. This was made possible by the fact that we already had
+    support for variable fonts. More tricks are possible and will be explored.
+\stopitem
+\startitem
+    Finally the \PDF\ file construction and \PDF\ object management had to be
+    implemented. This was actually the easiest part.
+\stopitem
+\stopitemize
+
+Performance wise the \LUA\ font loader is faster than the built in one. The same
+is true for \PDF\ inclusion but in practice that is unnoticeable. Bitmap
+inclusion is currently slower for interlaced images (seldom used in print) and
+just as efficient for other types. The page stream constructor is definitely
+slower but this is compensated by the faster font inclusion and \PDF\ file
+construction. Of course it all depends on the kind of content, but these are the
+observation as of fall 2018. Anyway, they were enough reason to continue this
+experiment.
+
+One thing to keep in mind is that the smaller the binary and the less code paths
+we have, the better future performance might be. Computers are not becoming much
+faster for single thread processes like \TEX, so the less we jump around code
+space (memory) the better it probably is for \CPU\ caching (as caches are not
+growing much either).
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+Normally when writing this kind of code I make sure that I can enable such new
+mechanisms on top of others but at some point one has to decide how to really
+integrate them. For instance, we can do font inclusion independent of \PDF\
+generation or page stream construction independent of \PDF\ generation and|/|or
+font inclusion but in the end that doesn't make sense and makes the code base a
+bit of a mess. So, this is how it will go.
+
+Stock \LUATEX\ with \MKIV\ will use the normal backend but probably there might
+be an option to overload the built|-|in image inclusion so that one can avoid the
+abortion of a run in case of problematic images. Complete \PDF\ file
+construction, which then also includes page stream construction, font embedding
+and object management might be available as option for \MKIV\ with \LUATEX\ 1.10
+(for a while) but will be default when using \LUAMETATEX. When we move on \LMTX\
+support might evolve in more sophisticated trickery. \footnote {A few months
+later I decided that this made no sense, and that it was cleaner to just leave
+that approach for \LMTX\ only. So, now both engines use different code
+exclusively.}
+
+Once tested a bit in real documents experimental code will end up in the
+distribution. That code can then be turned into production code (read: cleaned up
+and reshuffled a bit). We can streamline the engine code base: strip the
+components that are not needed any more, remove some obsolete features, optimize
+the code, strip some functions from \LUA\ libraries, rename some helpers, and
+finally add some documentation. There are some plans to extend \METAPOST\ so also
+things can get added. Concerning the \LUA\ interface it means that \type
+{slunicode} is removed, the embedded socket related \LUA\ code goes external (but
+the library stays), the font loader gets removed, the \type {img} library goes
+away, no longer \PNG\ libraries are embedded, synctex is stripped out (but the
+fields in nodes stay or get extended). \footnote {Much later I also decided to
+remove the zip file reader library.} The resulting binary will be much smaller
+and the code base more independent and smaller too. In the process \LUAJIT\
+support might be dropped as well, simply because it no longer is in sync with
+stock \LUA, but that also depends on how complex long term maintenance becomes.
+\footnote {As we will see in following chapters, indeed support for \LUAJIT\ has
+been dropped while \LUA\ got upgraded to 5.4.}
+
+Because such a stripped down binary is no longer what got presented as \LUATEX\
+version~1, it will basically become \LUATEX\ version 2, but then we have the
+problem that its binary name clashes with the original. This is why it will be
+run as \typ {luametatex}. For \CONTEXT\ it's not that relevant as it will run on
+both \LUATEX\ 1.10 and its lean and mean successor. I might also provide a plain
+\TEX\ (read: generic) version but that is to be decided because it probably
+doesn't make much sense to spend time on it. As usual we will test this within
+the \CONTEXT\ beta program. The good thing is that it doesn't interact with
+\LUATEX, so that other macro packages are not affected. Another side effect can
+be that we uncover issues with \LUATEX\ 1.10 and that we can experiment with some
+improvements that we feed back into the parent.
+
+At the \CONTEXT\ end of this there are some plans to extend the export, maybe
+improve already present \PDF\ tagging (if found useful), add some more input
+(xml) manipulations, and maybe extend (virtual) font handling a bit, now that we
+no longer are bound to the currently used packet model. Contrary to what one
+might expect this is not really dependent on the engine.
+
+How do we proceed? As with the transition from \MKII\ to \MKIV, it will all
+happen stepwise. This means that for a while the code base will be a bit hybrid
+but at some point it might be partially split to make things cleaner, not that I
+expect many fundamental differences (certainly not in the front|-|end). This
+dualistic approach means more work but also makes that we keep a working
+\CONTEXT. We also need to keep an eye on for instance generic commands as used in
+tikz: we can't drop them so we emulate them (so far with success). As the time of
+this writing, begin November 2018, the \CONTEXT\ test suite can be processed in
+\LMTX\ mode without problems so I'm confident that it will work out ok. The next
+chapter describes the results of how we did the above in more detail.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

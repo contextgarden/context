@@ -1,0 +1,500 @@
+%D \module
+%D   [       file=font-mat,
+%D        version=2011.01.13, % (copied fron font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Math,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Math}
+
+\unprotect
+
+%D Be nice:
+
+\ifdefined\??fontinstanceready \else \installcorenamespace{fontinstanceready} \fi
+\ifdefined\??fontinstancebasic \else \installcorenamespace{fontinstancebasic} \fi
+\ifdefined\??fontinstanceclass \else \installcorenamespace{fontinstanceclass} \fi
+
+%D The order 3 2 1 of siuze matters: needed for math-fbk relative size storage!
+
+%D \macros
+%D   {textonly}
+%D
+%D Traditionally math has a big impact on font definitions, mainly because we need
+%D to define alphabet variants using families and fonts. This means that one can
+%D easily get 10 fonts loaded per math size. In \MKIV\ we use a different approach:
+%D one family which has either a virtual font made of traditional fonts, or an
+%D \OPENTYPE\ font that has it all.
+%D
+%D We currently use only one math family but in the future we might consider using a
+%D second one for bold math. For the moment we keep the \MKII\ method of using a
+%D token register for definitions but we already dropped the text and symbols ones
+%D since they now live in the same family.
+
+\newtoks       \t_font_math_strategies
+\newconditional\c_font_synchronize_math_fonts \settrue\c_font_synchronize_math_fonts
+
+\unexpanded\def\font_helpers_synchronize_math % math stuff in mmode
+  {\ifconditional\c_font_synchronize_math_fonts\the\t_font_math_strategies\fi}
+
+\unexpanded\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
+
+%D The main math font definer. We have removed some optimized code simply because we
+%D now always have a fontclass. We could check for fontclass being default or empty
+%D and save a few tests but it does not help us when no math is defined.
+%D
+%D Because we want to keep mr=.. and mb=... settings (read: not break downward
+%D compatibility by enforcing mrlr etc) we need a bit more code that optimal.
+
+% todo: \c_font_fam_mr
+
+\let\c_font_fam_mr   \zerocount  % math regular
+\let\c_font_fam_mr_lr\plusone    % math regular l2r
+\let\c_font_fam_mr_rl\plustwo    % math regular r2l
+
+\let\c_font_fam_mb   \plusthree  % math bold
+\let\c_font_fam_mb_lr\plusfour   % math bold l2r
+\let\c_font_fam_mb_rl\plusfive   % math bold r2l
+
+\definesystemattribute[mathfamily][public]
+
+\newconditional\c_font_bidirectional_mathstrategy  % can be default, not that much overhead: \settrue\c_font_bidirectional_mathstrategy
+\newconditional\c_font_complete_bold_mathstrategy  \settrue\c_font_complete_bold_mathstrategy
+
+\def\mathtextsuffix        {-text}
+\def\mathscriptsuffix      {-script}
+\def\mathscriptscriptsuffix{-scriptscript}
+
+\def\mathsizesuffix{\ifcase\fontface\or\mathtextsuffix\or\mathscriptsuffix\or\mathscriptscriptsuffix\fi}
+
+%D Beware: truefontname also does a fallback on defaultfontclass so there
+%D can be some interference here, which is why we use a different method
+%D for bold.
+
+\def\font_helpers_set_math_family_a
+  {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+     \lastnamedcs \orelse
+   \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+     \lastnamedcs \else
+     \font_helpers_set_math_family_b
+   \fi}
+
+\def\font_helpers_set_math_family_b
+  {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+     \lastnamedcs \orelse
+   \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+     \lastnamedcs \else
+     \font_helpers_set_math_family_c
+   \fi}
+
+\def\font_helpers_set_math_family_c
+  {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+     \lastnamedcs \orelse
+   \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+     \lastnamedcs \else
+                                                                                                  \settrue \c_font_auto_size
+   \fi}
+
+\let\mathsizesuffix\empty
+
+\def\font_helpers_set_math_family_indeed#mrtag#family% \fontface etc are also used later on
+  {\let\savedfontbody\fontbody
+   \let\fontfamily#family%
+   % the order is important as we depend on known id's when completing fonts
+   % enabling is needed when we have fallbacks which spoils the families
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % defines
+   \font_helpers_set_math_family_a\scriptscriptfont#mrtag\font % enables
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \font_helpers_set_math_family_a\scriptfont      #mrtag\font % defines
+   \font_helpers_set_math_family_a\scriptfont      #mrtag\font % enables
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
+   \font_helpers_set_math_family_a\textfont        #mrtag\font % enables
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \let\fontbody\savedfontbody
+   \setfalse\c_font_auto_size}
+
+\def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
+  {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+     \lastnamedcs #font#mbfam\font \orelse
+   \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+     \lastnamedcs #font#mbfam\font \else
+     #font#mbfam#font#mrfam%
+   \fi}
+
+\def\font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
+  {\let\savedfontclass\defaultfontclass
+   \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
+   \let\savedfontbody\fontbody
+   \let\fontfamily#familytag%
+   \let\mathsizesuffix\mathscriptscriptsuffix\let\fontface\!!plusthree
+   \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\scriptscriptfont#mbfam#mrfam% enables
+   \let\mathsizesuffix\mathscriptsuffix      \let\fontface\!!plustwo
+   \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\scriptfont      #mbfam#mrfam% enables
+   \let\mathsizesuffix\mathtextsuffix        \let\fontface\!!plusone
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
+   \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables
+   \let\mathsizesuffix\empty                 \let\fontface\!!zerocount
+   \let\fontbody\savedfontbody
+   \let\defaultfontclass\savedfontclass
+   \setfalse\c_font_auto_size}
+
+% optimized: math fonts are never changed (10K \bfa $x$: 3.2 => 2.5 (baseline 1.0))
+%
+% sort of tricky: we cannot reset in \everybeforedefinetypeface as we don't know
+% all sizes so we postpone the optimization to the first starttext
+%
+% pitfall: we should reset 'm when a fontclass name is reused
+
+\newconditional\optimizemathfontdefinitions \settrue\optimizemathfontdefinitions
+
+\def\font_helpers_set_math_family#mrfam#familytag%
+  {\ifconditional\optimizemathfontdefinitions
+     \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+       % \writestatus{fonts}{math: reusing \fontclass\fontbody\s!mm#familytag\fontsize1}%
+       \font_helpers_preset_math_family_indeed#mrfam#familytag%
+     \else
+       % \writestatus{fonts}{math: defining \fontclass\fontbody\s!mm#familytag\fontsize1}%
+       \font_helpers_set_math_family_indeed#mrfam#familytag%
+     \fi
+   \else
+     \font_helpers_set_math_family_indeed#mrfam#familytag%
+   \fi}
+
+\def\font_helpers_set_math_family_bold#mbfam#familytag#mrfam%
+  {\ifconditional\optimizemathfontdefinitions
+    %\ifcsname\??fontinstanceclass\fontclass-\textface-\s!mm-#familytag-\fontsize-1\endcsname
+     \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+       \font_helpers_preset_math_family_indeed#mbfam#familytag%
+     \else
+       \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
+     \fi
+   \else
+     \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
+   \fi}
+
+%D It can happen that we use a bodyfont with no math in which case we have a problem
+%D with setting the global bodyfont size in the page builder. For instance in:
+%D
+%D \starttext
+%D     \definetypeface[test][rm][serif][pagella][default]
+%D     \setupbodyfont[test]
+%D     test
+%D \stoptext
+%D
+%D This is why we need the check. At the cost of some extra checking we gain a
+%D little in restoring global states and, what's more important, we get rid of large
+%D math parameter push/pop in tracingall when not needed.
+
+\def\font_helpers_preset_math_family_indeed#fam#familytag%
+  {\expandafter\let\expandafter\v_font_math_one\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+   \ifx\v_font_math_one\relax
+     \font_helpers_preset_math_family_warning
+   \orelse\ifnum\fontid\textfont#fam=\fontid\v_font_math_one\else
+     \font_helpers_preset_math_family_indeed_changed#fam#familytag%
+   \fi}
+
+\def\font_helpers_preset_math_family_warning
+  {\writestatus{fonts}{math: unset for global bodyfont \fontclass\space at \fontbody}}
+
+\def\font_helpers_preset_math_family_indeed_changed#fam#familytag%
+  {\scriptscriptfont#fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-3\endcsname
+   \scriptfont      #fam\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-2\endcsname
+   \textfont        #fam\v_font_math_one}
+
+\let\font_helpers_reset_fontclass_math_families\gobbleoneargument
+
+%D It would be nice if characters could be defined in a neutral way (say fam 255)
+%D and be mapped to a real family during noad list construction. However, this
+%D changes tex in critical places so for the moment we simulate this using
+%D manipulation.
+%D
+%D For tracing purposes we use three families but in l2r mode 1 and 2 are copies of
+%D 0 while in rl mode 0 is a copy of 1. There is no real overhead involved in this.
+%D This also permits different font definitions for normal and mixed.
+
+\let\m_font_class_direction\empty
+\let\m_font_class_features \empty
+\let\m_font_class_fallbacks\empty
+\let\m_font_class_goodies  \empty
+
+\let\m_font_direction\empty
+\let\m_font_features \empty
+\let\m_font_fallbacks\empty
+\let\m_font_goodies  \empty
+
+\appendtoks % can be analyzed once
+    % why here ..
+   %\edef\m_font_class_direction{\ifcsname\??fontclass\fontclass\s!mm\s!direction\endcsname\csname\??fontclass\fontclass\s!mm\s!direction\endcsname\fi}%
+    \edef\m_font_class_direction{\begincsname\??fontclass\fontclass\s!mm\s!direction\endcsname}%
+    % ...
+    \ifx\m_font_class_direction\v!both
+      \settrue\c_font_bidirectional_mathstrategy
+    \else
+      \setfalse\c_font_bidirectional_mathstrategy
+    \fi
+\to \t_font_math_strategies
+
+\def\font_helpers_bidirectional_mathstrategy_yes
+  {\font_helpers_set_math_family\c_font_fam_mr_lr\s!mrlr
+   \font_helpers_set_math_family\c_font_fam_mr_rl\s!mrrl
+   \ifnum\fontid\textfont\c_font_fam_mr=\fontid\textfont\c_font_fam_mr_lr\else
+     \font_helpers_bidirectional_mathstrategy_yes_changed
+   \fi}
+
+\def\font_helpers_bidirectional_mathstrategy_yes_changed
+  {\textfont        \c_font_fam_mr\textfont        \c_font_fam_mr_lr
+   \scriptfont      \c_font_fam_mr\scriptfont      \c_font_fam_mr_lr
+   \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr_lr}
+
+\def\font_helpers_bidirectional_mathstrategy_nop
+  {\font_helpers_set_math_family\c_font_fam_mr\s!mr
+   \ifnum\fontid\textfont\c_font_fam_mr_rl=\fontid\textfont\c_font_fam_mr\else
+     \font_helpers_bidirectional_mathstrategy_nop_changed
+   \fi}
+
+\def\font_helpers_bidirectional_mathstrategy_nop_changed
+  {\textfont        \c_font_fam_mr_lr\textfont        \c_font_fam_mr
+   \scriptfont      \c_font_fam_mr_lr\scriptfont      \c_font_fam_mr
+   \scriptscriptfont\c_font_fam_mr_lr\scriptscriptfont\c_font_fam_mr
+   \textfont        \c_font_fam_mr_rl\textfont        \c_font_fam_mr
+   \scriptfont      \c_font_fam_mr_rl\scriptfont      \c_font_fam_mr
+   \scriptscriptfont\c_font_fam_mr_rl\scriptscriptfont\c_font_fam_mr}
+
+\appendtoks
+    \ifconditional\c_font_bidirectional_mathstrategy
+      \font_helpers_bidirectional_mathstrategy_yes
+    \else
+      \font_helpers_bidirectional_mathstrategy_nop
+    \fi
+\to \t_font_math_strategies
+
+\def\font_helpers_complete_bold_mathstrategy_yes_bidi
+  {\font_helpers_set_math_family_bold\c_font_fam_mb_lr\s!mblr\c_font_fam_mr_lr
+   \font_helpers_set_math_family_bold\c_font_fam_mb_rl\s!mbrl\c_font_fam_mr_rl
+   \ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mb_lr\else
+     \font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+   \fi}
+
+\def\font_helpers_complete_bold_mathstrategy_yes_bidi_changed
+  {\textfont        \c_font_fam_mb\textfont        \c_font_fam_mb_lr
+   \scriptfont      \c_font_fam_mb\scriptfont      \c_font_fam_mb_lr
+   \scriptscriptfont\c_font_fam_mb\scriptscriptfont\c_font_fam_mb_lr}
+
+\def\font_helpers_complete_bold_mathstrategy_yes
+  {\font_helpers_set_math_family_bold\c_font_fam_mb\s!mb\c_font_fam_mr\relax
+   \ifnum\fontid\textfont\c_font_fam_mb_rl=\fontid\textfont\c_font_fam_mb\else
+     \font_helpers_complete_bold_mathstrategy_yes_changed
+   \fi}
+
+\def\font_helpers_complete_bold_mathstrategy_yes_changed
+  {\textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mb
+   \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mb
+   \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mb
+   \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mb
+   \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mb
+   \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mb}
+
+\def\font_helpers_complete_bold_mathstrategy_nop
+  {\ifnum\fontid\textfont\c_font_fam_mb=\fontid\textfont\c_font_fam_mr\else
+     \font_helpers_complete_bold_mathstrategy_nop_changed
+   \fi}
+
+\def\font_helpers_complete_bold_mathstrategy_nop_changed
+  {\textfont        \c_font_fam_mb   \textfont        \c_font_fam_mr
+   \scriptfont      \c_font_fam_mb   \scriptfont      \c_font_fam_mr
+   \scriptscriptfont\c_font_fam_mb   \scriptscriptfont\c_font_fam_mr
+   \textfont        \c_font_fam_mb_lr\textfont        \c_font_fam_mr_lr
+   \scriptfont      \c_font_fam_mb_lr\scriptfont      \c_font_fam_mr_lr
+   \scriptscriptfont\c_font_fam_mb_lr\scriptscriptfont\c_font_fam_mr_lr
+   \textfont        \c_font_fam_mb_rl\textfont        \c_font_fam_mr_rl
+   \scriptfont      \c_font_fam_mb_rl\scriptfont      \c_font_fam_mr_rl
+   \scriptscriptfont\c_font_fam_mb_rl\scriptscriptfont\c_font_fam_mr_rl}
+
+\def\font_helpers_apply_complete_bold_mathstrategy
+  {\ifconditional\c_font_complete_bold_mathstrategy
+     \ifconditional\c_font_bidirectional_mathstrategy
+       \font_helpers_complete_bold_mathstrategy_yes_bidi
+     \else
+       \font_helpers_complete_bold_mathstrategy_yes
+     \fi
+   \else
+     \font_helpers_complete_bold_mathstrategy_nop
+   \fi}
+
+\appendtoks
+    \font_helpers_apply_complete_bold_mathstrategy
+\to \t_font_math_strategies
+
+\ifdefined\defaultmathfamily \else
+    \setnewconstant\defaultmathfamily\zerocount
+\fi
+
+\appendtoks
+    \fam\defaultmathfamily % all characters and symbols are in this family
+\to \everymathematics
+
+\unexpanded\def\font_helpers_synchronize_math_family_mr
+  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+     \ifconditional\c_math_right_to_left
+       \plustwo
+     \else
+       \plusone
+     \fi
+   \else
+     \zerocount
+   \fi}
+
+\unexpanded\def\font_helpers_synchronize_math_family_mb
+  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+     \ifconditional\c_math_right_to_left
+       \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
+     \else
+       \ifconditional\c_font_pseudo_bold_math_state\plusseven\else\plusfour\fi
+     \fi
+   \else
+     \ifconditional\c_font_pseudo_bold_math_state\plussix\else\plusthree\fi
+   \fi}
+
+\installcorenamespace{fontmathsynchronizer}
+\installcorenamespace{fontmathstoredstrategy}
+
+\letvalue{\??fontmathsynchronizer\s!tf }\font_helpers_synchronize_math_family_mr
+\letvalue{\??fontmathsynchronizer\s!sl }\font_helpers_synchronize_math_family_mr
+\letvalue{\??fontmathsynchronizer\s!it }\font_helpers_synchronize_math_family_mr
+\letvalue{\??fontmathsynchronizer\s!bf }\font_helpers_synchronize_math_family_mb
+\letvalue{\??fontmathsynchronizer\s!bs }\font_helpers_synchronize_math_family_mb
+\letvalue{\??fontmathsynchronizer\s!bi }\font_helpers_synchronize_math_family_mb
+\letvalue{\??fontmathsynchronizer\empty}\font_helpers_synchronize_math_family_mr
+
+% \def\font_helpers_synchronize_math_family
+%   {\csname\??fontmathsynchronizer\ifcsname\??fontmathsynchronizer\fontalternative\endcsname\fontalternative\fi\endcsname}
+
+\def\font_helpers_synchronize_math_family
+  {\ifcsname\??fontmathsynchronizer\fontalternative\endcsname
+     \lastnamedcs
+   \else
+     \font_helpers_synchronize_math_family_mr
+   \fi}
+
+\ifdefined \fontid % we need to keep this test for a while
+    \appendtoks
+        \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
+            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
+        \else
+            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
+        \fi
+    \to \t_font_math_strategies
+\else
+    \appendtoks
+        \edef\currentmathfontmr{\fontname\textfont\zerocount}%
+        \edef\currentmathfontmb{\fontname\textfont\plusthree}%
+        \ifx\currentmathfontmr\currentmathfontmb
+            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
+        \else
+            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
+        \fi
+    \to \t_font_math_strategies
+\fi
+
+%def\font_helpers_synchronize_math_bold_strategy{\csname\??fontmathstoredstrategy\fontclass\endcsname}
+\def\font_helpers_synchronize_math_bold_strategy{\begincsname\??fontmathstoredstrategy\fontclass\endcsname}
+
+\newconditional\c_font_pseudo_bold_math_state
+
+\def\font_helpers_set_math_partial_bold_strategy{\settrue \c_font_pseudo_bold_math_state}
+\def\font_helpers_set_math_full_bold_strategy   {\setfalse\c_font_pseudo_bold_math_state}
+
+\appendtoks
+    \font_helpers_synchronize_math_bold_strategy
+\to \everymathematics
+
+%D Bold is somewhat special as we might want both full-bold-math mixed regular-math,
+%D as well as automatic adaption to outer bold (in titles and inline text bold) so
+%D we will need explicit switches as well as an automatic one. (We will use lucida
+%D as an example.)
+
+\ifdefined\mathdefault \else \let\mathdefault\relax \fi
+
+\newconditional\c_math_bold
+
+\unexpanded\def\mr % math regular
+  {\ifmmode
+     \font_helpers_synchronize_math_family_mr
+   \else
+     \font_helpers_set_current_font_alternative\s!mr
+   \fi
+   \mathdefault
+   \setfalse\c_math_bold}
+
+\unexpanded\def\mb % math bold
+  {\ifmmode
+     \font_helpers_synchronize_math_family_mb
+   \else
+     \font_helpers_set_current_font_alternative\s!mb
+   \fi
+   \mathdefault
+   \settrue\c_math_bold}
+
+\appendtoks
+    \font_helpers_synchronize_math_family % auto bold
+\to \everymathematics
+
+\appendtoks
+    \ifconditional\c_math_bold\mb\fi
+\to \everymathematics
+
+%D \macros
+%D   {bigmath,nobigmath}
+%D
+%D We can inhibit this slow||downer with:
+
+% these can best be combined
+
+% 0=never 1=everymath 2=always
+
+\setnewconstant\synchronizebigmathflag\plusone
+
+\appendtoks
+  \ifcase\synchronizebigmathflag
+    % never
+  \or
+    \synchronizebigmath
+  \or
+    % always
+  \fi
+\to \everymathematics
+
+\unexpanded\def\nobigmath  {\synchronizebigmathflag\zerocount}
+\unexpanded\def\autobigmath{\synchronizebigmathflag\plusone\synchronizebigmath}
+\unexpanded\def\bigmath    {\synchronizebigmathflag\plustwo\synchronizebigmath}
+
+\let\bigmathfontsize\empty
+
+\unexpanded\def\synchronizebigmath
+  {\ifx\bigmathfontsize\fontsize
+     % already in sync
+   \else
+     \let\bigmathfontsize\fontsize
+     \font_helpers_synchronize_math
+   \fi}
+
+\unexpanded\def\font_helpers_check_big_math_synchronization
+  {\ifcase\synchronizebigmathflag
+     % never
+   \or
+     \ifmmode \synchronizebigmath \fi
+   \or
+     \synchronizebigmath
+   \fi}
+
+\protect \endinput

@@ -44,11 +44,16 @@
 \definefittingpage
   [MPpage]
   [\c!align=,
-   \c!command=\meta_process_graphic_instance{\fittingpageparameter\c!instance},
+   \c!command=\meta_process_graphic_command,
    \c!instance=]
 
 \unexpanded\def\setupMPpage
   {\setupfittingpage[MPpage]}
+
+\unexpanded\def\meta_process_graphic_command
+  {\doif{\fittingpageparameter\c!alternative}\v!offset
+     {\def\meta_relocate_graphic{\clf_setpageorigin\MPllx\MPlly\relax}}%
+   \meta_process_graphic_instance{\fittingpageparameter\c!instance}}
 
 %D \macros
 %D  {MPfigure}

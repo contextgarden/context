@@ -1,0 +1,84 @@
+% language=us
+
+\startcomponent followingup-compilation
+
+\environment followingup-style
+
+\startchapter[title={Compilation}]
+
+Compiling \LUATEX\ is possible because after all it's what I do on my machine.
+The \LUATEX\ source tree is part of a larger infrastructure: \TEX Live. Managing
+that one is work for specialists and the current build system is the work of
+experts over a quite long period of time. When you only compile \LUATEX\ it goes
+unnoticed that there are many dependencies, some of which are actually unrelated
+to \LUATEX\ itself but are a side effect of the complexity of the build
+structure.
+
+When going from \LUATEX\ to \LUAMETATEX\ many dependencies were removed and I
+eventually ended up with a simpler setup. The source tree went down to less than
+30 MB and zipped to around 4 MB. That makes it possible to consider adding the
+code to the regular \CONTEXT\ distribution.
+
+One reason for doing that is that one keeps the current version of the engine
+packaged with the current version of \CONTEXT. But a more important one is that
+it fulfils a demand. Some time ago we were asked by some teachers participating
+in a (basically free) math method for technical education what guarantees there
+are that the tools used are available forever. Now, even with \LUAMETATEX\ one
+has to set up a compiler but it is much easier than installing the whole \TEX
+Live infrastructure for that. A third reason is that it gives me a comfortable
+feeling that I myself can compile it anywhere as can \CONTEXT\ users who want to
+do that.
+
+The source tree traditionally has libs in a separate directory (lua, luajit, zlib
+and zziplib). However, it is more practical to have them alongside our normal
+source. These are relative small collections of files that never change so there
+is no reason not to do it. \footnote {If I ever decide to add more libraries,
+only the minimal interfaces needed will be provided, but at this moment there are
+no such plans.}
+
+Another assumption we're going to make is that we use 64 bit binaries. There is
+no need to support obsolete platforms either. As a start we make sure it compiles
+on the platforms used by \CONTEXT\ users. Basically we make a kind of utility.
+For now I can compile the \WINDOWS\ 32 bit binaries that my colleague needs in
+half a minute anyway, but in the long run we will settle for 64 bits.
+
+I spent about a week figuring out why the compilation is so complex (by
+selectively removing components). At some point compilation on \OSX\ stopped
+working. When the minimum was reached I decided to abandon the automake tool
+chain and see if \type {cmake} could be used (after all, Mojca challenged that).
+In retrospect I should have done that sooner because in a day I could get all
+relevant platforms working. Flattening the source tree was a next step and so
+there is no way back now. What baffled me (and Alan, who at some point joined in
+testing \OSX) is the speed of compilation. My pretty old laptop needed about half
+a minute to get the job done and even on a raspberry pi with only a flash card
+just a few minutes were needed. At that point, as we could remove more make
+related files, the compressed 11 MB archive (\type {tar.xz}) shrunk to just over
+2~MB. Interesting is that compiling \MPLIB\ takes most time, and when one compiles
+in parallel (on more cores) that one finishes last.
+
+For the record: I do all this on a laptop running \MSWINDOWS\ 10 using the Linux
+subsystem. When that came around, Luigi made me a working setup for cross
+compilation but in the meantime with GCC 8.2 all works out of the box. I edit the
+files at the \MSWINDOWS\ end (using \SCITE), compile at the \LINUX\ end, and test
+everything on \MSWINDOWS. It is a pretty convenient setup.
+
+When compilation got faster it became also more convenient to do some more code
+reshuffling. This time I decided to pack the global variables into structures,
+more or less organized the way the header files were organized. It gives a bit
+more verbosity but also has the side effects that (at least in principle) the
+\CPU\ cache can perform better because neighboring variables are often cached as
+part of the deal. Now it might be imagination, but in the process I did notice
+that mid March processing the manual went down to below 11.7 seconds while before
+it stayed around 12.1 seconds. Of course this is not that relevant currently, but
+I might make a difference on less capable processors (as in a low power setup).
+It anyway didn't hurt.
+
+In the meantime some of the constants used in the program got prefixes or
+suffixes to make them more unique and for instance the use of \type {normal} as
+equivalent for zero was made a bit more distinctive as we now have more subtypes.
+That is: all the subtypes were collected in enumerations instead of \CCODE\
+defines. Back to the basics.
+
+\stopchapter
+
+\stopcomponent

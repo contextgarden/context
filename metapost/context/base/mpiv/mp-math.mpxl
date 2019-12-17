@@ -1,0 +1,161 @@
+%D \module
+%D   [       file=mp-math.mpiv,
+%D        version=2019.07.26, % was mp-core: 1999.08.01, anchoring
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=extra math functions,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known context_math : endinput ; fi ;
+
+boolean context_math ; context_math := true ;
+
+% draw textext(decimal runscript("mp.numeric(xmath.gamma(.12))")) ;
+
+newinternal mfid_m_acos       ; mfid_m_acos       := scriptindex "m_acos"       ; def m_acos      = runscript mfid_m_acos      enddef ;
+newinternal mfid_m_acosh      ; mfid_m_acosh      := scriptindex "m_acosh"      ; def m_acosh     = runscript mfid_m_acosh     enddef ;
+newinternal mfid_m_asin       ; mfid_m_asin       := scriptindex "m_asin"       ; def m_asin      = runscript mfid_m_asin      enddef ;
+newinternal mfid_m_asinh      ; mfid_m_asinh      := scriptindex "m_asinh"      ; def m_asinh     = runscript mfid_m_asinh     enddef ;
+newinternal mfid_m_atan       ; mfid_m_atan       := scriptindex "m_atan"       ; def m_atan      = runscript mfid_m_atan      enddef ;
+newinternal mfid_m_atantwo    ; mfid_m_atantwo    := scriptindex "m_atan2"      ; def m_atantwo   = runscript mfid_m_atantwo   enddef ; % atan2
+newinternal mfid_m_atanh      ; mfid_m_atanh      := scriptindex "m_atanh"      ; def m_atanh     = runscript mfid_m_atanh     enddef ;
+newinternal mfid_m_cbrt       ; mfid_m_cbrt       := scriptindex "m_cbrt"       ; def m_cbrt      = runscript mfid_m_cbrt      enddef ;
+newinternal mfid_m_ceil       ; mfid_m_ceil       := scriptindex "m_ceil"       ; def m_ceil      = runscript mfid_m_ceil      enddef ;
+newinternal mfid_m_copysign   ; mfid_m_copysign   := scriptindex "m_copysign"   ; def m_copysign  = runscript mfid_m_copysign  enddef ;
+newinternal mfid_m_cos        ; mfid_m_cos        := scriptindex "m_cos"        ; def m_cos       = runscript mfid_m_cos       enddef ;
+newinternal mfid_m_cosh       ; mfid_m_cosh       := scriptindex "m_cosh"       ; def m_cosh      = runscript mfid_m_cosh      enddef ;
+newinternal mfid_m_deg        ; mfid_m_deg        := scriptindex "m_deg"        ; def m_deg       = runscript mfid_m_deg       enddef ;
+newinternal mfid_m_erf        ; mfid_m_erf        := scriptindex "m_erf"        ; def m_erf       = runscript mfid_m_erf       enddef ;
+newinternal mfid_m_erfc       ; mfid_m_erfc       := scriptindex "m_erfc"       ; def m_erfc      = runscript mfid_m_erfc      enddef ;
+newinternal mfid_m_exp        ; mfid_m_exp        := scriptindex "m_exp"        ; def m_exp       = runscript mfid_m_exp       enddef ;
+newinternal mfid_m_exptwo     ; mfid_m_exptwo     := scriptindex "m_exp2"       ; def m_exptwo    = runscript mfid_m_exptwo    enddef ; % exp2
+newinternal mfid_m_expm       ; mfid_m_expm       := scriptindex "m_expm1"      ; def m_expm      = runscript mfid_m_expm      enddef ; % expm1
+newinternal mfid_m_fabs       ; mfid_m_fabs       := scriptindex "m_fabs"       ; def m_fabs      = runscript mfid_m_fabs      enddef ;
+newinternal mfid_m_fdim       ; mfid_m_fdim       := scriptindex "m_fdim"       ; def m_fdim      = runscript mfid_m_fdim      enddef ;
+newinternal mfid_m_floor      ; mfid_m_floor      := scriptindex "m_floor"      ; def m_floor     = runscript mfid_m_floor     enddef ;
+newinternal mfid_m_fma        ; mfid_m_fma        := scriptindex "m_fma"        ; def m_fma       = runscript mfid_m_fma       enddef ;
+newinternal mfid_m_fmax       ; mfid_m_fmax       := scriptindex "m_fmax"       ; def m_fmax      = runscript mfid_m_fmax      enddef ;
+newinternal mfid_m_fmin       ; mfid_m_fmin       := scriptindex "m_fmin"       ; def m_fmin      = runscript mfid_m_fmin      enddef ;
+newinternal mfid_m_fmod       ; mfid_m_fmod       := scriptindex "m_fmod"       ; def m_fmod      = runscript mfid_m_fmod      enddef ;
+newinternal mfid_m_frexp      ; mfid_m_frexp      := scriptindex "m_frexp"      ; def m_frexp     = runscript mfid_m_frexp     enddef ;
+newinternal mfid_m_gamma      ; mfid_m_gamma      := scriptindex "m_gamma"      ; def m_gamma     = runscript mfid_m_gamma     enddef ;
+newinternal mfid_m_hypot      ; mfid_m_hypot      := scriptindex "m_hypot"      ; def m_hypot     = runscript mfid_m_hypot     enddef ;
+newinternal mfid_m_isfinite   ; mfid_m_isfinite   := scriptindex "m_isfinite"   ; def m_isfinite  = runscript mfid_m_isfinite  enddef ;
+newinternal mfid_m_isinf      ; mfid_m_isinf      := scriptindex "m_isinf"      ; def m_isinf     = runscript mfid_m_isinf     enddef ;
+newinternal mfid_m_isnan      ; mfid_m_isnan      := scriptindex "m_isnan"      ; def m_isnan     = runscript mfid_m_isnan     enddef ;
+newinternal mfid_m_isnormal   ; mfid_m_isnormal   := scriptindex "m_isnormal"   ; def m_isnormal  = runscript mfid_m_isnormal  enddef ;
+newinternal mfid_m_jz         ; mfid_m_jz         := scriptindex "m_j0"         ; def m_jz        = runscript mfid_m_jz        enddef ; % j0
+newinternal mfid_m_j          ; mfid_m_j          := scriptindex "m_j1"         ; def m_j         = runscript mfid_m_j         enddef ; % j1
+newinternal mfid_m_jn         ; mfid_m_jn         := scriptindex "m_jn"         ; def m_jn        = runscript mfid_m_jn        enddef ;
+newinternal mfid_m_ldexp      ; mfid_m_ldexp      := scriptindex "m_ldexp"      ; def m_ldexp     = runscript mfid_m_ldexp     enddef ;
+newinternal mfid_m_lgamma     ; mfid_m_lgamma     := scriptindex "m_lgamma"     ; def m_lgamma    = runscript mfid_m_lgamma    enddef ;
+newinternal mfid_m_log        ; mfid_m_log        := scriptindex "m_log"        ; def m_log       = runscript mfid_m_log       enddef ;
+newinternal mfid_m_logten     ; mfid_m_logte      := scriptindex "m_log10"      ; def m_logten    = runscript mfid_m_logten    enddef ; % log10
+newinternal mfid_m_logp       ; mfid_m_logp       := scriptindex "m_log1p"      ; def m_logp      = runscript mfid_m_logp      enddef ; % log1p
+newinternal mfid_m_logtwo     ; mfid_m_logtwo     := scriptindex "m_log2"       ; def m_logtwo    = runscript mfid_m_logtwo    enddef ; % log2
+newinternal mfid_m_logb       ; mfid_m_logb       := scriptindex "m_logb"       ; def m_logb      = runscript mfid_m_logb      enddef ;
+newinternal mfid_m_modf       ; mfid_m_modf       := scriptindex "m_modf"       ; def m_modf      = runscript mfid_m_modf      enddef ;
+newinternal mfid_m_nearbyint  ; mfid_m_nearbyint  := scriptindex "m_nearbyint"  ; def m_nearbyint = runscript mfid_m_nearbyint enddef ;
+newinternal mfid_m_nextafter  ; mfid_m_nextafter  := scriptindex "m_nextafter"  ; def m_nextafter = runscript mfid_m_nextafter enddef ;
+newinternal mfid_m_pow        ; mfid_m_pow        := scriptindex "m_pow"        ; def m_pow       = runscript mfid_m_pow       enddef ;
+newinternal mfid_m_rad        ; mfid_m_rad        := scriptindex "m_rad"        ; def m_rad       = runscript mfid_m_rad       enddef ;
+newinternal mfid_m_remainder  ; mfid_m_remainder  := scriptindex "m_remainder"  ; def m_remainder = runscript mfid_m_remainder enddef ;
+newinternal mfid_m_remquo     ; mfid_m_remquo     := scriptindex "m_remquo"     ; def m_remquo    = runscript mfid_m_remquo    enddef ;
+newinternal mfid_m_round      ; mfid_m_round      := scriptindex "m_round"      ; def m_round     = runscript mfid_m_round     enddef ;
+newinternal mfid_m_scalbn     ; mfid_m_scalbn     := scriptindex "m_scalbn"     ; def m_scalbn    = runscript mfid_m_scalbn    enddef ;
+newinternal mfid_m_sin        ; mfid_m_sin        := scriptindex "m_sin"        ; def m_sin       = runscript mfid_m_sin       enddef ;
+newinternal mfid_m_sinh       ; mfid_m_sinh       := scriptindex "m_sinh"       ; def m_sinh      = runscript mfid_m_sinh      enddef ;
+newinternal mfid_m_sqrt       ; mfid_m_sqrt       := scriptindex "m_sqrt"       ; def m_sqrt      = runscript mfid_m_sqrt      enddef ;
+newinternal mfid_m_tan        ; mfid_m_tan        := scriptindex "m_tan"        ; def m_tan       = runscript mfid_m_tan       enddef ;
+newinternal mfid_m_tanh       ; mfid_m_tanh       := scriptindex "m_tanh"       ; def m_tanh      = runscript mfid_m_tanh      enddef ;
+newinternal mfid_m_tgamma     ; mfid_m_tgamma     := scriptindex "m_tgamma"     ; def m_tgamma    = runscript mfid_m_tgamma    enddef ;
+newinternal mfid_m_trunc      ; mfid_m_trunc      := scriptindex "m_trunc"      ; def m_trunc     = runscript mfid_m_trunc     enddef ;
+newinternal mfid_m_yz         ; mfid_m_yz         := scriptindex "m_y0"         ; def m_yz        = runscript mfid_m_yz        enddef ; % y0
+newinternal mfid_m_y          ; mfid_m_y          := scriptindex "m_y1"         ; def m_y         = runscript mfid_m_y         enddef ; % y1
+newinternal mfid_m_yn         ; mfid_m_yn         := scriptindex "m_yn"         ; def m_yn        = runscript mfid_m_yn        enddef ;
+
+newinternal mfid_c_sin        ; mfid_c_asin       := scriptindex "c_sin"        ; def c_sin       = runscript mfid_c_sin       enddef ;
+newinternal mfid_c_cos        ; mfid_c_acos       := scriptindex "c_cos"        ; def c_cos       = runscript mfid_c_cos       enddef ;
+newinternal mfid_c_tan        ; mfid_c_acos       := scriptindex "c_tan"        ; def c_tan       = runscript mfid_c_tan       enddef ;
+newinternal mfid_c_sinh       ; mfid_c_acos       := scriptindex "c_sinh"       ; def c_sinh      = runscript mfid_c_sinh      enddef ;
+newinternal mfid_c_cosh       ; mfid_c_acos       := scriptindex "c_cosh"       ; def c_cosh      = runscript mfid_c_cosh      enddef ;
+newinternal mfid_c_tanh       ; mfid_c_acos       := scriptindex "c_tanh"       ; def c_tanh      = runscript mfid_c_tanh      enddef ;
+
+newinternal mfid_c_asin       ; mfid_c_acos       := scriptindex "c_asin"       ; def c_asin      = runscript mfid_c_asin      enddef ;
+newinternal mfid_c_acos       ; mfid_c_acos       := scriptindex "c_acos"       ; def c_acos      = runscript mfid_c_acos      enddef ;
+newinternal mfid_c_atan       ; mfid_c_acos       := scriptindex "c_atan"       ; def c_atan      = runscript mfid_c_atan      enddef ;
+newinternal mfid_c_asinh      ; mfid_c_acos       := scriptindex "c_asinh"      ; def c_asinh     = runscript mfid_c_asinh     enddef ;
+newinternal mfid_c_acosh      ; mfid_c_acos       := scriptindex "c_acosh"      ; def c_acosh     = runscript mfid_c_acosh     enddef ;
+newinternal mfid_c_atanh      ; mfid_c_acos       := scriptindex "c_atanh"      ; def c_atanh     = runscript mfid_c_atanh     enddef ;
+
+newinternal mfid_c_sqrt       ; mfid_c_acos       := scriptindex "c_sqrt"       ; def c_sqrt      = runscript mfid_c_sqrt      enddef ;
+newinternal mfid_c_abs        ; mfid_c_acos       := scriptindex "c_abs"        ; def c_abs       = runscript mfid_c_abs       enddef ;
+newinternal mfid_c_arg        ; mfid_c_acos       := scriptindex "c_arg"        ; def c_arg       = runscript mfid_c_arg       enddef ;
+newinternal mfid_c_conj       ; mfid_c_acos       := scriptindex "c_conj"       ; def c_conj      = runscript mfid_c_conj      enddef ;
+newinternal mfid_c_exp        ; mfid_c_acos       := scriptindex "c_exp"        ; def c_exp       = runscript mfid_c_exp       enddef ;
+newinternal mfid_c_log        ; mfid_c_acos       := scriptindex "c_log"        ; def c_log       = runscript mfid_c_log       enddef ;
+newinternal mfid_c_proj       ; mfid_c_acos       := scriptindex "c_proj"       ; def c_proj      = runscript mfid_c_proj      enddef ;
+
+newinternal mfid_c_erf        ; mfid_c_erf        := scriptindex "c_erf"        ; def c_erf       = runscript mfid_c_erf       enddef ;
+newinternal mfid_c_erfc       ; mfid_c_erfc       := scriptindex "c_erfc"       ; def c_erfc      = runscript mfid_c_erfc      enddef ;
+newinternal mfid_c_erfcx      ; mfid_c_erfcx      := scriptindex "c_erfcx"      ; def c_erfcx     = runscript mfid_c_erfcx     enddef ;
+newinternal mfid_c_erfi       ; mfid_c_erfi       := scriptindex "c_erfi"       ; def c_erfi      = runscript mfid_c_erfi      enddef ;
+
+%           mfid_c_imag       ; mfid_c_acos       := scriptindex "c_imag"       ; def c_imag      = runscript mfid_c_imag      enddef ;
+%           mfid_c_real       ; mfid_c_acos       := scriptindex "c_real"       ; def c_real      = runscript mfid_c_real      enddef ;
+%           mfid_c_neg        ; mfid_c_neg        := scriptindex "c_neg"        ; def c_neg       = runscript mfid_c_neg       enddef ;
+
+newinternal mfid_c_pow        ; mfid_c_pow        := scriptindex "c_pow"        ; def c_pow (expr a,b) = runscript mfid_c_pow a b enddef ;
+%           mfid_c_add        ; mfid_c_add        := scriptindex "c_add"        ; def c_add (expr a,b) = runscript mfid_c_add a b enddef ;
+%           mfid_c_sub        ; mfid_c_sub        := scriptindex "c_sub"        ; def c_sub (expr a,b) = runscript mfid_c_sub a b enddef ;
+newinternal mfid_c_mul        ; mfid_c_mul        := scriptindex "c_mul"        ; def c_mul (expr a,b) = runscript mfid_c_mul a b enddef ;
+newinternal mfid_c_div        ; mfid_c_div        := scriptindex "c_div"        ; def c_div (expr a,b) = runscript mfid_c_div a b enddef ;
+
+newinternal mfid_c_voigt      ; mfid_c_voigt      := scriptindex "c_voigt"      ; def c_voigt     (expr a,b,c) = runscript mfid_c_voigt      a b c enddef ;
+newinternal mfid_c_voigt_hwhm ; mfid_c_voigt_hwhm := scriptindex "c_voigt_hwhm" ; def c_voigt_hwhm(expr a,b)   = runscript mfid_c_voigt_hwhm a b   enddef ;
+
+vardef c_add (expr a, b) = a + b   enddef ;
+vardef c_sub (expr a, b) = a + b   enddef ;
+vardef c_imag(expr a)    = ypart a enddef ;
+vardef c_real(expr a)    = xpart a enddef ;
+vardef c_neg (expr a)    = -a      enddef ;
+
+if (numbersystem == "scaled") or (numbersystem == "double") :
+
+  % vardef sqrt primary x = m_sqrt x                            enddef ;
+
+  % vardef sqr  primary x = x*x                                 enddef ;
+  % vardef log  primary x = if x=0: 0 else: mlog(x)/mlog(10) fi enddef ;
+  % vardef ln   primary x = if x=0: 0 else: mlog(x)/256 fi      enddef ;
+  % vardef exp  primary x = (mexp 256)**x                       enddef ;
+  % vardef inv  primary x = if x=0: 0 else: x**-1 fi            enddef ;
+
+    vardef sin  primary x = m_sin  x enddef ; vardef sinh  primary x = m_sinh  x enddef ;
+    vardef cos  primary x = m_cos  x enddef ; vardef cosh  primary x = m_cosh  x enddef ;
+    vardef tan  primary x = m_tan  x enddef ; vardef tanh  primary x = m_tanh  x enddef ;
+    vardef asin primary x = m_asin x enddef ; vardef asinh primary x = m_asinh x enddef ;
+    vardef acos primary x = m_acos x enddef ; vardef acosh primary x = m_acosh x enddef ;
+    vardef atan primary x = m_atan x enddef ; vardef atanh primary x = m_atanh x enddef ;
+
+    vardef invsin primary x = (m_asin(x))/radian enddef ;
+    vardef invcos primary x = (m_acos(x))/radian enddef ;
+    vardef invtan primary x = (m_atan(x))/radian enddef ;
+
+
+  % vardef sind primary x = angle(m_sin x) enddef ;
+  % vardef cosd primary x = angle(m_cos x) enddef ;
+  % vardef tand primary x = angle(m_tan x) enddef ;
+
+    vardef asind primary x = angle(m_asin x) enddef ;
+    vardef acosd primary x = angle(m_acos x) enddef ;
+    vardef atand primary x = angle(m_atan x) enddef ;
+
+  % vardef tand primary x = sind(x)/cosd(x)  enddef ;
+  % vardef cotd primary x = cosd(x)/sind(x)  enddef ;
+
+fi ;

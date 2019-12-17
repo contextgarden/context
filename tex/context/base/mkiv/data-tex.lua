@@ -6,20 +6,25 @@ if not modules then modules = { } end modules ['data-tex'] = {
     license   = "see context related readme files"
 }
 
+local tostring, tonumber, type = tostring, tonumber, type
 local char, find = string.char, string.find
-local insert, remove = table.insert, table.remove
 
 local trace_locating = false trackers.register("resolvers.locating", function(v) trace_locating = v end)
 
 local report_tex = logs.reporter("resolvers","tex")
 
-local resolvers = resolvers
 
 local sequencers        = utilities.sequencers
-local methodhandler     = resolvers.methodhandler
-local splitlines        = string.splitlines
 local utffiletype       = utf.filetype
 local setmetatableindex = table.setmetatableindex
+local loaddata          = io.loaddata
+----- readall           = io.readall
+
+local resolvers         = resolvers
+local methodhandler     = resolvers.methodhandler
+local loadbinfile       = resolvers.loadbinfile
+local pushinputname     = resolvers.pushinputname
+local popinputname      = resolvers.popinputname
 
 -- local fileprocessor = nil
 -- local lineprocessor = nil
@@ -36,8 +41,9 @@ local textlineactions = sequencers.new {
     results      = "str",
 }
 
-local helpers     = resolvers.openers.helpers
-local appendgroup = sequencers.appendgroup
+local helpers      = resolvers.openers.helpers
+local appendgroup  = sequencers.appendgroup
+local appendaction = sequencers.appendaction
 
 helpers.textfileactions = textfileactions
 helpers.textlineactions = textlineactions
@@ -52,10 +58,6 @@ appendgroup(textlineactions,"after" ) -- user
 
 local ctrl_d = char( 4) -- unix
 local ctrl_z = char(26) -- windows
-
-resolvers.inputstack = resolvers.inputstack or { }
-
-local inputstack = resolvers.inputstack
 
 ----------------------------------------
 
@@ -84,18 +86,25 @@ end
 
 -----------------------------------------
 
-function helpers.textopener(tag,filename,filehandle,coding)
+local wideutfcoding = {
+    ["utf-16-be"] = utf.utf16_to_utf8_be_t,
+    ["utf-16-le"] = utf.utf16_to_utf8_le_t,
+    ["utf-32-be"] = utf.utf32_to_utf8_be_t,
+    ["utf-32-le"] = utf.utf32_to_utf8_le_t,
+}
+
+local function textopener(tag,filename,filehandle,coding)
     local lines
     local t_filehandle = type(filehandle)
     if not filehandle then
-        lines = io.loaddata(filename)
+        lines = loaddata(filename)
     elseif t_filehandle == "string" then
         lines = filehandle
     elseif t_filehandle == "table" then
         lines = filehandle
     else
-        lines = filehandle:read("*a") -- io.readall(filehandle) ... but never that large files anyway
-     -- lines = io.readall(filehandle)
+        lines = filehandle:read("*a") -- readall(filehandle) ... but never that large files anyway
+     -- lines = readall(filehandle)
         filehandle:close()
     end
     if type(lines) == "string" then
@@ -103,14 +112,9 @@ function helpers.textopener(tag,filename,filehandle,coding)
         if trace_locating then
             report_tex("%a opener: %a opened using method %a",tag,filename,coding)
         end
-        if coding == "utf-16-be" then
-            lines = utf.utf16_to_utf8_be_t(lines)
-        elseif coding == "utf-16-le" then
-            lines = utf.utf16_to_utf8_le_t(lines)
-        elseif coding == "utf-32-be" then
-            lines = utf.utf32_to_utf8_be_t(lines)
-        elseif coding == "utf-32-le" then
-            lines = utf.utf32_to_utf8_le_t(lines)
+        local wideutf = wideutfcoding[coding]
+        if wideutf then
+            lines = wideutf(lines)
         else -- utf8 or unknown (could be a mkvi file)
             local runner = textfileactions.runner
             if runner then
@@ -125,19 +129,17 @@ function helpers.textopener(tag,filename,filehandle,coding)
     if lines[noflines] == "" then -- maybe some special check is needed
         lines[noflines] = nil
     end
-    logs.show_open(filename)
-    insert(inputstack,filename)
+    pushinputname(filename)
     local currentline, noflines = 0, noflines
     local t = {
         filename    = filename,
         noflines    = noflines,
      -- currentline = 0,
         close       = function()
+            local usedname = popinputname() -- should match filename
             if trace_locating then
                 report_tex("%a closer: %a closed",tag,filename)
             end
-            logs.show_close(filename)
-            remove(inputstack)
             t = nil
         end,
         reader      = function(self)
@@ -176,6 +178,8 @@ function helpers.textopener(tag,filename,filehandle,coding)
     return t
 end
 
+helpers.settextopener(textopener) -- can only be done once
+
 function resolvers.findtexfile(filename,filetype)
     return methodhandler('finders',filename,filetype)
 end
@@ -191,7 +195,7 @@ end
 
 function resolvers.loadtexfile(filename,filetype)
     -- todo: optionally apply filters
-    local ok, data, size = resolvers.loadbinfile(filename, filetype)
+    local ok, data, size = loadbinfile(filename, filetype)
     return data or ""
 end
 
@@ -202,14 +206,14 @@ local function installhandler(namespace,what,where,func)
         where, func = "after", where
     end
     if where == "before" or where == "after" then
-        sequencers.appendaction(namespace,where,func)
+        appendaction(namespace,where,func)
     else
         report_tex("installing input %a handlers in %a is not possible",what,tostring(where))
     end
 end
 
-function resolvers.installinputlinehandler(...) installhandler(helpers.textlineactions,"line",...) end
-function resolvers.installinputfilehandler(...) installhandler(helpers.textfileactions,"file",...) end
+function resolvers.installinputlinehandler(...) installhandler(textlineactions,"line",...) end
+function resolvers.installinputfilehandler(...) installhandler(textfileactions,"file",...) end
 
 -- local basename = file.basename
 -- resolvers.installinputlinehandler(function(str,filename,linenumber,noflines)

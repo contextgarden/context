@@ -1,0 +1,250 @@
+%D \module
+%D   [       file=mp-luas.mpiv,
+%D        version=2014.04.14,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=\LUA,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known context_luas : endinput ; fi ;
+
+% When I prototyped the runscript primitive I was just thinking of a usage like
+% the original \directlua primitive in luatex: genererate something and pipe
+% that back to metapost, and have access to some internals. Instead of compiling
+% the code a the metapost end here we delegate that to the lua end. Only strings
+% get passed. Of course in the end the real usage got a bit beyong the intended
+% usage. So, in addition to some definitions here there are and will be use in
+% other metafun modules too. Of course in retrospect I should have done this five
+% years earlier.
+
+boolean context_luas ; context_luas := true ;
+
+newinternal mfid_scriptindex ;
+mfid_scriptindex := runscript("mp.mf_script_index('scriptindex')") ;
+
+def scriptindex = runscript mfid_scriptindex enddef ;
+
+string mfun_lua_bs ; mfun_lua_bs := "[===[" ;
+string mfun_lua_es ; mfun_lua_es := "]===]" ;
+
+vardef mlib_luas_luacall(text t) =
+    runscript("" for s = t :
+        if string s :
+            & s
+          % & mfun_lua_bs & s & mfun_lua_es
+        elseif numeric s :
+            & decimal s
+        elseif boolean s :
+            & if s : "true" else : "false" fi
+        elseif pair s :
+            & mfun_pair_to_table(s)
+        elseif path s :
+            & mfun_path_to_table(s)
+        elseif rgbcolor s :
+            & mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            & mfun_cmyk_to_table(s)
+        else :
+            & ditto & tostring(s) & ditto
+        fi endfor
+    )
+enddef ;
+
+newinternal mfun_luas_b ;
+
+def mlib_luas_luadone =
+    exitif numeric begingroup mfun_luas_b := 1 ; endgroup ;
+enddef ;
+
+vardef mlib_luas_lualist(expr c)(text t) = % we could use mlib_luas_s instead of c
+    interim mfun_luas_b := 0 ;
+    runscript(c & for s = t :
+        if mfun_luas_b = 0 :
+            "("
+          % hide(mfun_luas_b := 1)
+            mlib_luas_luadone
+        else :
+            ","
+        fi
+        &
+        if string s :
+            mfun_lua_bs & s & mfun_lua_es
+        elseif numeric s :
+            decimal s
+        elseif boolean s :
+            if s : "true" else : "false" fi
+        elseif pair s :
+            mfun_pair_to_table(s)
+        elseif path s :
+            mfun_path_to_table(s)
+        elseif rgbcolor s :
+            mfun_rgb_to_table(s)
+        elseif cmykcolor s :
+            mfun_cmyk_to_table(s)
+        else :
+            ditto & tostring(s) & ditto
+        fi & endfor if mfun_luas_b = 0 : "()" else : ")" fi
+    )
+enddef ;
+
+def luacall = mlib_luas_luacall enddef ; % why no let
+
+vardef lualist@#(text t) = mlib_luas_lualist(str @#)(t) enddef ;
+
+string mlib_luas_s ; % saves save/restore
+
+vardef lua@#(text t) =
+    mlib_luas_s := str @# ;
+    if length(mlib_luas_s) > 0 :
+        mlib_luas_lualist(mlib_luas_s,t)
+    else :
+        mlib_luas_luacall(t)
+    fi
+enddef ;
+
+vardef MP@#(text t) =
+    mlib_luas_lualist("MP." & str @#,t)
+enddef ;
+
+def message expr t =
+    lua.mp.report(tostring(t)) ;
+enddef ;
+
+% Color:
+
+% We do a low level runscript:
+%
+% lua.mp.namedcolor(s)       % conflicts with macro namedcolor
+% lua.mp.mf_named_color(s)   % okay but, can also be
+% lua.mp("mf_named_color",s) % which gives expansion mess
+
+newinternal mfid_resolvedcolor ; mfid_resolvedcolor := scriptindex "namedcolor" ;
+
+def resolvedcolor = runscript mfid_resolvedcolor enddef ;
+
+% Modes:
+
+vardef texmode   (expr s) = lua.mp("mode",      s) enddef ;
+vardef systemmode(expr s) = lua.mp("systemmode",s) enddef ;
+
+% A few helpers
+
+vardef isarray   suffix a = lua.mp.isarray  (str a) enddef ;
+vardef prefix    suffix a = lua.mp.prefix   (str a) enddef ;
+vardef dimension suffix a = lua.mp.dimension(str a) enddef ;
+
+% More access
+
+vardef getmacro(expr k)   = lua.mp._get_macro_(k)   enddef ;
+vardef getdimen(expr k)   = lua.mp._get_dimen_(k)   enddef ;
+vardef getcount(expr k)   = lua.mp._get_count_(k)   enddef ;
+vardef gettoks (expr k)   = lua.mp._get_toks_ (k)   enddef ;
+
+def setmacro(expr k,v) = lua.mp._set_macro_(k,v) enddef ;
+def setdimen(expr k,v) = lua.mp._set_dimen_(k,v) enddef ;
+def setcount(expr k,v) = lua.mp._set_count_(k,v) enddef ;
+def settoks (expr k,v) = lua.mp._set_toks_ (k,v) enddef ;
+
+vardef positionpath  (expr name) = lua.mp.positionpath  (name) enddef ;
+vardef positioncurve (expr name) = lua.mp.positioncurve (name) enddef ;
+vardef positionxy    (expr name) = lua.mp.positionxy    (name) enddef ;
+vardef positionpxy   (expr name) = lua.mp.positionpxy   (name) enddef ;
+vardef positionwhd   (expr name) = lua.mp.positionwhd   (name) enddef ;
+vardef positionpage  (expr name) = lua.mp.positionpage  (name) enddef ;
+vardef positionregion(expr name) = lua.mp.positionregion(name) enddef ;
+vardef positionbox   (expr name) = lua.mp.positionbox   (name) enddef ;
+vardef positionanchor            = lua.mp.positionanchor()     enddef ;
+
+let wdpart     = redpart ;
+let htpart     = greenpart ;
+let dppart     = bluepart ;
+
+vardef positioninregion =
+    currentpicture := currentpicture shifted - positionxy(positionanchor) ;
+enddef ;
+
+vardef positionatanchor(expr name) =
+    currentpicture := currentpicture shifted - positionxy(name) ;
+enddef ;
+
+vardef texvar(expr name) = lua.mp.texvar(name) enddef ;
+vardef texstr(expr name) = lua.mp.texstr(name) enddef ;
+
+newinternal mfid_path_lengthof ; mfid_path_lengthof := scriptindex "pathlengthof" ;
+newinternal mfid_path_pointof  ; mfid_path_pointof  := scriptindex "pathpointof" ;
+newinternal mfid_path_leftof   ; mfid_path_leftof   := scriptindex "pathleftof" ;
+newinternal mfid_path_rightof  ; mfid_path_rightof  := scriptindex "pathrightof" ;
+newinternal mfid_path_reset    ; mfid_path_reset    := scriptindex "pathreset" ;
+
+% 25 pct gain
+
+   def inpath            = = 1 step 1 until runscript mfid_path_lengthof   enddef ;
+vardef pointof primary i =                  runscript mfid_path_pointof  i enddef ;
+vardef leftof  primary i =                  runscript mfid_path_leftof   i enddef ;
+vardef rightof primary i =                  runscript mfid_path_rightof  i enddef ;
+
+% another 10 pct gain
+
+% def inpath   = = 1 step 1 until runscript mfid_path_lengthof enddef ;
+% def pointof  =                  runscript mfid_path_pointof  enddef ;
+% def leftof   =                  runscript mfid_path_leftof   enddef ;
+% def rightof  =                  runscript mfid_path_rightof  enddef ;
+
+extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
+
+vardef utflen(expr s)     = lua.mp.utflen(s)     enddef ;
+vardef utfsub(expr s,f,t) = lua.mp.utfsub(s,f,t) enddef ;
+
+newinternal mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
+newinternal mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
+newinternal mfid_hasparameter         ; mfid_hasparameter         := scriptindex "hasparameter" ;
+newinternal mfid_hasoption            ; mfid_hasoption            := scriptindex "hasoption" ;
+newinternal mfid_getparameter         ; mfid_getparameter         := scriptindex "getparameter" ;
+newinternal mfid_getparameterdefault  ; mfid_getparameterdefault  := scriptindex "getparameterdefault" ;
+newinternal mfid_getparametercount    ; mfid_getparametercount    := scriptindex "getparametercount" ;
+newinternal mfid_getmaxparametercount ; mfid_getmaxparametercount := scriptindex "getmaxparametercount" ;
+newinternal mfid_getparameterpath     ; mfid_getparameterpath     := scriptindex "getparameterpath" ;
+newinternal mfid_getparameterpen      ; mfid_getparameterpen      := scriptindex "getparameterpen" ;
+newinternal mfid_getparametertext     ; mfid_getparametertext     := scriptindex "getparametertext" ;
+%%%%%%%%%%% mfid_getparameteroption   ; mfid_getparameteroption   := scriptindex "getparameteroption" ;
+newinternal mfid_applyparameters      ; mfid_applyparameters      := scriptindex "applyparameters" ;
+newinternal mfid_pushparameters       ; mfid_pushparameters       := scriptindex "pushparameters" ;
+newinternal mfid_popparameters        ; mfid_popparameters        := scriptindex "popparameters" ;
+
+def getparameters        = runscript mfid_getparameters        enddef ;
+def presetparameters     = runscript mfid_presetparameters     enddef ;
+def hasparameter         = runscript mfid_hasparameter         enddef ;
+def hasoption            = runscript mfid_hasoption            enddef ;
+def getparameter         = runscript mfid_getparameter         enddef ;
+def getparameterdefault  = runscript mfid_getparameterdefault  enddef ;
+def getparametercount    = runscript mfid_getparametercount    enddef ;
+def getmaxparametercount = runscript mfid_getmaxparametercount enddef ;
+def getparameterpath     = runscript mfid_getparameterpath     enddef ;
+def getparameterpen      = runscript mfid_getparameterpen      enddef ;
+def getparametertext     = runscript mfid_getparametertext     enddef ;
+%%% getparameteroption   = runscript mfid_getparameteroption   enddef ;
+def applyparameters      = runscript mfid_applyparameters      enddef ;
+def pushparameters       = runscript mfid_pushparameters       enddef ;
+def popparameters        = runscript mfid_popparameters        enddef ;
+
+% This might also be done in stock mkiv:
+
+newinternal mfid_year   ; mfid_year   := scriptindex "year"   ; vardef year   = runscript mfid_year   enddef ;
+newinternal mfid_month  ; mfid_month  := scriptindex "month"  ; vardef month  = runscript mfid_month  enddef ;
+newinternal mfid_day    ; mfid_day    := scriptindex "day"    ; vardef day    = runscript mfid_day    enddef ;
+newinternal mfid_hour   ; mfid_hour   := scriptindex "hour"   ; vardef hour   = runscript mfid_hour   enddef ;
+newinternal mfid_minute ; mfid_minute := scriptindex "minute" ; vardef minute = runscript mfid_minute enddef ;
+newinternal mfid_second ; mfid_second := scriptindex "second" ; vardef second = runscript mfid_second enddef ;
+
+% You cannot overload a local color bu using a prefix works ok:
+%
+% \definecolor [ name = "mp:myred", r = .9 ] ;
+
+newinternal mfid_definecolor ; mfid_definecolor := scriptindex "definecolor" ;
+
+def definecolor = runscript mfid_definecolor ; enddef ; % the semicolon prevents lookahead

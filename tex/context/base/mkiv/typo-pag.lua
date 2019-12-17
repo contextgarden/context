@@ -108,93 +108,94 @@ function parbuilders.registertogether(line,specification) -- might change
     end
 end
 
-local function keeptogether(start,a)
-    if start then
-        local specification = cache[a]
-        if a then
-            local current = getnext(start)
-            local previous = start
-            local total = getdepth(previous)
-            local slack = specification.slack
-            local threshold = specification.depth - slack
+local function keeptogether(start,a,specification)
+    local current   = getnext(start)
+    local previous  = start
+    local total     = getdepth(previous)
+    local slack     = specification.slack
+    local threshold = specification.depth - slack
+    if trace_keeptogether then
+        report_keeptogether("%s, index %s, total %p, threshold %p, slack %p","list",a,total,threshold,slack)
+    end
+    while current do
+        local id = getid(current)
+        if id == vlist_code or id == hlist_code then
+            local wd, ht, dp = getwhd(current)
+            total = total + ht + dp
             if trace_keeptogether then
-                report_keeptogether("%s, index %s, total %p, threshold %p, slack %p","list",a,total,threshold,slack)
+                report_keeptogether("%s, index %s, total %p, threshold %p","list",a,total,threshold)
             end
-            while current do
-                local id = getid(current)
-                if id == vlist_code or id == hlist_code then
-                    local wd, ht, dp = getwhd(current)
-                    total = total + ht + dp
-                    if trace_keeptogether then
-                        report_keeptogether("%s, index %s, total %p, threshold %p","list",a,total,threshold)
-                    end
-                    if total <= threshold then
-                        if getid(previous) == penalty_code then
-                            setpenalty(previous,10000)
-                        else
-                            insert_node_after(head,previous,new_penalty(10000))
-                        end
-                    else
-                        break
-                    end
-                elseif id == glue_code then
-                    -- hm, breakpoint, maybe turn this into kern
-                    total = total + getwidth(current)
-                    if trace_keeptogether then
-                        report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
-                    end
-                    if total <= threshold then
-                        if getid(previous) == penalty_code then
-                            setpenalty(previous,10000)
-                        else
-                            insert_node_after(head,previous,new_penalty(10000))
-                        end
-                    else
-                        break
-                    end
-                elseif id == kern_code then
-                    total = total + getkern(current)
-                    if trace_keeptogether then
-                        report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
-                    end
-                    if total <= threshold then
-                        if getid(previous) == penalty_code then
-                            setpenalty(previous,10000)
-                        else
-                            insert_node_after(head,previous,new_penalty(10000))
-                        end
-                    else
-                        break
-                    end
-                elseif id == penalty_code then
-                    if total <= threshold then
-                        if getid(previous) == penalty_code then
-                            setpenalty(previous,10000)
-                        end
-                        setpenalty(current,10000)
-                    else
-                        break
-                    end
+            if total <= threshold then
+                if getid(previous) == penalty_code then
+                    setpenalty(previous,10000)
+                else
+                    insert_node_after(head,previous,new_penalty(10000))
                 end
-                previous = current
-                current = getnext(current)
+            else
+                break
+            end
+        elseif id == glue_code then
+            -- hm, breakpoint, maybe turn this into kern
+            total = total + getwidth(current)
+            if trace_keeptogether then
+                report_keeptogether("%s, index %s, total %p, threshold %p","glue",a,total,threshold)
+            end
+            if total <= threshold then
+                if getid(previous) == penalty_code then
+                    setpenalty(previous,10000)
+                else
+                    insert_node_after(head,previous,new_penalty(10000))
+                end
+            else
+                break
+            end
+        elseif id == kern_code then
+            total = total + getkern(current)
+            if trace_keeptogether then
+                report_keeptogether("%s, index %s, total %s, threshold %s","kern",a,total,threshold)
+            end
+            if total <= threshold then
+                if getid(previous) == penalty_code then
+                    setpenalty(previous,10000)
+                else
+                    insert_node_after(head,previous,new_penalty(10000))
+                end
+            else
+                break
+            end
+        elseif id == penalty_code then
+            if total <= threshold then
+                if getid(previous) == penalty_code then
+                    setpenalty(previous,10000)
+                end
+                setpenalty(current,10000)
+            else
+                break
             end
         end
+        previous = current
+        current = getnext(current)
     end
 end
 
 -- also look at first non glue/kern node e.g for a dropped caps
 
 function parbuilders.keeptogether(head)
-    local done    = false
+    local done    = false -- can go
     local current = head
     while current do
         if getid(current) == hlist_code then
             local a = takeattr(current,a_keeptogether)
             if a and a > 0 then
-                keeptogether(current,a)
-                cache[a] = nil
-                done = true
+                local specification = cache[a]
+                if specification then
+                    keeptogether(current,a,specification)
+                    -- this is tricky ... we need a better resetter, maybe some
+                    -- injected latelua or a gc method on a property (interesting
+                    -- experiment)
+                    cache[a] = nil
+                    done = true
+                end
             end
         end
         current = getnext(current)

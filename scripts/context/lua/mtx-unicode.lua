@@ -57,11 +57,11 @@ if not modules then modules = { } end modules ['mtx-unicode'] = {
 -- curl -o unicodedata.txt               http://www.unicode.org/Public/UNIDATA/UnicodeData.txt
 -- curl -o unihan.zip                    http://www.unicode.org/Public/UNIDATA/Unihan.zip
 --
--- curl -o emoji-data.txt                http://unicode.org/Public/emoji/11.0/emoji-data.txt
--- curl -o emoji-sequences.txt           http://unicode.org/Public/emoji/11.0/emoji-sequences.txt
--- curl -o emoji-variation-sequences.txt http://unicode.org/Public/emoji/11.0/emoji-variation-sequences.txt
--- curl -o emoji-zwj-sequences.txt       http://unicode.org/Public/emoji/11.0/emoji-zwj-sequences.txt
--- curl -o emoji-test.txt                http://unicode.org/Public/emoji/11.0/emoji-test.txt
+-- curl -o emoji-data.txt                http://unicode.org/Public/emoji/12.0/emoji-data.txt
+-- curl -o emoji-sequences.txt           http://unicode.org/Public/emoji/12.0/emoji-sequences.txt
+-- curl -o emoji-variation-sequences.txt http://unicode.org/Public/emoji/12.0/emoji-variation-sequences.txt
+-- curl -o emoji-zwj-sequences.txt       http://unicode.org/Public/emoji/12.0/emoji-zwj-sequences.txt
+-- curl -o emoji-test.txt                http://unicode.org/Public/emoji/12.0/emoji-test.txt
 --
 -- todo:
 --
@@ -526,10 +526,21 @@ function scripts.unicode.load()
     end
 end
 
+-- local variants_emoji={
+--   [0xFE0E]="text style",
+--   [0xFE0F]="emoji style",
+-- }
+--
+-- local variants_forms={
+--    [0xFE00]="corner-justified form",
+--    [0xFE01]="centered form",
+-- }
+
 function scripts.unicode.save(filename)
     if preamble then
         local data = table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true })
         data = gsub(data,"%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}","variants_emoji")
+        data = gsub(data,"%{%s+%[0xFE00%]=\"corner%-justified form\",%s+%[0xFE01%]=\"centered form\",%s+%}","variants_forms")
         io.savedata(filename,preamble .. data)
     end
 end
@@ -722,8 +733,10 @@ else
         scripts.unicode.extras()
         scripts.unicode.save("char-def-new.lua")
         scripts.unicode.emoji("char-emj-new.lua")
+        report("saved file %a","char-def-new.lua")
+        report("saved file %a (current 12.0, check for updates, see above!)","char-emj-new.lua")
     else
         report("nothing to do")
     end
-    report("stop working on %a, output char-def-new.lua\n",lfs.currentdir())
+    report("stop working on %a\n",lfs.currentdir())
 end

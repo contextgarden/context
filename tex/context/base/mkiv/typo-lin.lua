@@ -129,6 +129,8 @@ local noflines          = 0
 -- This is the third version, a mix between immediate (prestice lines) and delayed
 -- as we don't want anchors that are not used.
 
+-- I will make a better variant once lmtx is stable i.e. less clutter.
+
 local function finalize(prop,key) -- delayed calculations
     local line     = prop.line
     local hsize    = prop.hsize
@@ -410,14 +412,13 @@ end
 
 local latelua     = nodepool.latelua
 local setposition = jobpositions.setspec
-local t_anchor    = { x = true, c = true } -- needs checking
 
 local function setanchor(h_anchor)
     return latelua {
         action = setposition,
         name   = "md:h",
         index  = h_anchor,
-        value  = t_anchor, -- really shared ?
+        value  = { x = true, c = true },
     }
 end
 

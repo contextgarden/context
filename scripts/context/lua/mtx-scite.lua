@@ -25,7 +25,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="words"><short>convert spell-*.txt into spell-*.lua</short></flag>
     <flag name="tree"><short>converts a tree into an html tree (--source --target --numbers)</short></flag>
-    <flag name="file"><short>converts a file into an html tree (--source --target --numbers --lexer)</short></flag>
+    <flag name="file"><short>converts a file into an html file (--source --target --numbers --lexer)</short></flag>
    </subcategory>
   </category>
  </flags>

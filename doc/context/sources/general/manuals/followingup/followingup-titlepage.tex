@@ -1,0 +1,58 @@
+\startcomponent followingup-titlepage
+
+\environment followingup-style
+
+\startluacode
+    function document.graphic()
+        local min, max, random, round = math.min, math.max, math.random, math.round
+
+        local width  = 210
+        local height = 297
+
+        local bitmap = graphics.bitmaps.new(width,height,"rgb",1)
+        local data   = bitmap.data
+
+        for i=1,height do
+            local d = data[i]
+            for j=1,width do
+ --               d[j] = { 0, 0, random(100,200) }
+                d[j] = { 0, 0, random(128,255) }
+            end
+        end
+
+        graphics.bitmaps.tocontext(bitmap,"210bp","297bp")
+    end
+\stopluacode
+
+\startuseMPgraphic{graphic}
+    StartPage ;
+      % fill Page
+      %     withcolor "maincolor" ;
+        draw textext.urt("\bf \WORD{following up}")
+            rotated 90
+            ysized (PaperHeight-10mm)
+            shifted lrcorner Page
+            shifted (-10mm,5mm)
+            withcolor "middlegray" ;
+        draw textext.lft("\bf\strut\ConTeXt")
+            ysized 4.5cm
+            shifted lrcorner Page
+            shifted (-50mm,70mm)
+            withcolor "white" ;
+        draw textext.lft("\bf\strut lm\kern-.1ex tx")
+            ysized 4cm
+            shifted lrcorner Page
+            shifted (-50mm,37.5mm)
+            withcolor "white" ;
+    StopPage ;
+\stopuseMPgraphic
+
+\startpagemakeup[pagestate=stop] % doubledided=no
+    \startoverlay
+      % {luametatex} % for searching
+        {\scale[width=\paperwidth]{\ctxlua{document.graphic()}}}
+        {\useMPgraphic{graphic}}
+    \stopoverlay
+\stoppagemakeup
+
+\stopcomponent

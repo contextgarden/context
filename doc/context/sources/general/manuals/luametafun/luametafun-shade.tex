@@ -1,0 +1,230 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-shade
+
+\startchapter[title={Shade}]
+
+{\em This interface is still experimental!}
+
+Shading is complex. We go from one color to another on a continuum either linear
+or circular. We have to make sure that we cover the whole shape and that means
+that we have to guess a little, although one can influence this with parameters.
+It can involve a bit of trial and error, which is more complex that using a
+graphical user interface but this is the price we pay. It goes like this:
+
+\startbuffer[1]
+\startMPcode
+definecolor [ name = "MyColor3", r = 0.22, g = 0.44, b = 0.66 ] ;
+definecolor [ name = "MyColor4", r = 0.66, g = 0.44, b = 0.22 ] ;
+
+draw lmt_shade [
+    path      = fullcircle scaled 4cm,
+    direction = "right",
+    domain    = { 0, 2 },
+    colors    = { "MyColor3", "MyColor4" },
+] ;
+
+draw lmt_shade [
+    path      = fullcircle scaled 3cm,
+    direction = "left",
+    domain    = { 0, 2 },
+    colors    = { "MyColor3", "MyColor4" },
+] shifted (45mm,0) ;
+
+draw lmt_shade [
+    path      = fullcircle scaled 5cm,
+    direction = "up",
+    domain    = { 0, 2 },
+    colors    = { "MyColor3", "MyColor4" },
+] shifted (95mm,0) ;
+
+draw lmt_shade [
+    path      = fullcircle scaled 1cm,
+    direction = "down",
+    domain    = { 0, 2 },
+    colors    = { "MyColor3", "MyColor4" },
+] shifted (135mm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[1][option=TEX]
+
+Normally this is good enough as demonstrated in \in {figure} [shade:1] because
+we use shades as backgrounds. In the case of a circular shade we need to tweak
+the domain because guessing doesn't work well.
+
+\startplacefigure[reference=shade:1,title={Simple circular shades.}]
+    \getbuffer[1]
+\stopplacefigure
+
+\startbuffer[2]
+\startMPcode
+draw lmt_shade [
+    path        = fullsquare scaled 4cm,
+    alternative = "linear",
+    direction   = "right",
+    colors      = { "MyColor3", "MyColor4" },
+] ;
+
+draw lmt_shade [
+    path        = fullsquare scaled 3cm,
+    direction   = "left",
+    alternative = "linear",
+    colors      = { "MyColor3", "MyColor4" },
+] shifted (45mm,0) ;
+
+draw lmt_shade [
+    path        = fullsquare scaled 5cm,
+    direction   = "up",
+    alternative = "linear",
+    colors      = { "MyColor3", "MyColor4" },
+] shifted (95mm,0) ;
+
+draw lmt_shade [
+    path        = fullsquare scaled 1cm,
+    direction   = "down",
+    alternative = "linear",
+    colors      = { "MyColor3", "MyColor4" },
+] shifted (135mm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[2][option=TEX]
+
+\startplacefigure[reference=shade:2,title={Simple rectangular shades.}]
+    \getbuffer[2]
+\stopplacefigure
+
+The \type {direction} relates to the boundingbox. Instead of a keyword you can
+also give two values, indicating points on the boundingbox. Because a boundingbox
+has four points, the \type {up} direction is equivalent to \type {{0.5,2.5}}.
+
+The parameters \type {center}, \type {factor}, \type {vector} and \type {domain}
+are a bit confusing but at some point the way they were implemented made sense,
+so we keep them as they are. The center moves the center of the path that is used
+as anchor for one color proportionally to the bounding box: the given factor is
+multiplied by half the width and height.
+
+\startbuffer[3]
+\startMPcode
+draw lmt_shade [
+    path      = fullcircle scaled 5cm,
+    domain    = { .2, 1.6 },
+    center    = { 1/10, 1/10 },
+    direction = "right",
+    colors    = { "MyColor3", "MyColor4" },
+    trace     = true,
+] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[3][option=TEX]
+
+\startplacefigure[reference=shade:3,title={Moving the centers.}]
+    \getbuffer[3]
+\stopplacefigure
+
+A vector takes the given points on the path as centers for the colors, see \in
+{figure} [shade:4].
+
+\startbuffer[4]
+\startMPcode
+draw lmt_shade [
+    path      = fullcircle scaled 5cm,
+    domain    = { .2, 1.6 },
+    vector    = { 2, 4 },
+    direction = "right",
+    colors    = { "MyColor3", "MyColor4" },
+    trace     = true,
+] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[4][option=TEX]
+
+\startplacefigure[reference=shade:4,title={Using a vector (points).}]
+    \getbuffer[4]
+\stopplacefigure
+
+Messing with the radius in combination with the previously mentioned domain
+is really trial and error, as seen in \in {figure} [shade:5].
+
+\startbuffer[5]
+\startMPcode
+draw lmt_shade [
+    path      = fullcircle scaled 5cm,
+    domain    = { 0.5, 2.5 },
+    radius    = { 2cm, 6cm },
+    direction = "right",
+    colors    = { "MyColor3", "MyColor4" },
+    trace     = true,
+] ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[5][option=TEX]
+
+\startplacefigure[reference=shade:5,title={Tweaking the radius.}]
+    \getbuffer[5]
+\stopplacefigure
+
+But actually the radius used alone works quite well as shown in \in {figure}
+[shade:6].
+
+\startbuffer[6]
+\startMPcode
+draw lmt_shade [
+    path        = fullcircle scaled 5cm,
+    colors      = { "red", "green" },
+    trace       = true,
+] ;
+
+draw lmt_shade [
+    path        = fullcircle scaled 5cm,
+    colors      = { "red", "green" },
+    radius      = 2.5cm,
+    trace       = true,
+] shifted (6cm,0) ;
+
+draw lmt_shade [
+    path        = fullcircle scaled 5cm,
+    colors      = { "red", "green" },
+    radius      = 2.0cm,
+    trace       = true,
+] shifted (12cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[6][option=TEX]
+
+\startplacefigure[reference=shade:6,title={Just using the radius.}]
+    \getbuffer[6]
+\stopplacefigure
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name         \BC type           \BC default      \BC comment \NC \NR
+\ML
+\NC alternative \NC string          \NC circular \NC or \type {linear} \NC \NR
+\NC path        \NC path            \NC          \NC \NC \NR
+\NC trace       \NC boolean         \NC false    \NC \NC \NR
+\NC domain      \NC set of numerics \NC          \NC \NC \NR
+\NC radius      \NC numeric         \NC          \NC \NC \NR
+\NC             \NC set of numerics \NC          \NC \NC \NR
+\NC factor      \NC numeric         \NC          \NC \NC \NR
+\NC origin      \NC pair            \NC          \NC \NC \NR
+\NC             \NC set of pairs    \NC          \NC \NC \NR
+\NC vector      \NC set of numerics \NC          \NC \NC \NR
+\NC colors      \NC set of strings  \NC          \NC \NC \NR
+\NC center      \NC numeric         \NC          \NC \NC \NR
+\NC             \NC set of numerics \NC          \NC \NC \NR
+\NC direction   \NC string          \NC          \NC \type{up}, \type {down}, \type {left}, \type {right} \NC \NR
+\NC             \NC set of numerics \NC          \NC two points on the boundingbox \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

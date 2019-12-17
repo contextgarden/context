@@ -227,26 +227,74 @@
 
 \newtoks\everycombination
 
+% \def\pack_combinations_start[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
+%   {\edef\currentcombination{#1}%
+%    \edef\currentcombinationspec{#2}%
+%    \ifx\currentcombinationspec\empty
+%      \doifelseassignment{#1}%
+%        {\let\currentcombination\empty
+%         \setupcurrentcombination[#1]%
+%         \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
+%        {\doifelseinstring{*}\currentcombination
+%           {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+%            \let\currentcombination\empty}
+%           {\doifelsenumber\currentcombination
+%              {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+%               \let\currentcombination\empty}
+%              {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}}%
+%    \else
+%      \doifelseassignment{#2}%
+%        {\setupcurrentcombination[#2]%
+%         \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
+%        {\edef\currentcombinationspec{\currentcombinationspec*\plusone*}}%
+%    \fi
+%    %
+%    \forgetall
+%    %
+%    \the\everycombination
+%    %
+%    \let\startcontent\pack_common_content_start
+%    \let\stopcontent \pack_common_content_stop
+%    \let\startcaption\pack_common_caption_start
+%    \let\stopcaption \pack_common_caption_stop
+%    %
+%    \edef\p_height  {\combinationparameter\c!height}%
+%    \edef\p_width   {\combinationparameter\c!width}%
+%    \edef\p_location{\combinationparameter\c!location}%
+%    \edef\p_distance{\combinationparameter\c!distance}%
+%    %
+%    \pack_combinations_location_reset
+%    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
+%    %
+%    \dostarttaggedchained\t!combination\currentcombination\??combination
+%    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
+%    \let\combination\empty % permits \combination{}{} handy for cld
+%    \normalexpanded{\pack_combinations_start_indeed[\currentcombinationspec]}}
+
 \def\pack_combinations_start[#1][#2]% needs a cleanup, also nx ny (pretty old, this one)
   {\edef\currentcombination{#1}%
    \edef\currentcombinationspec{#2}%
    \ifx\currentcombinationspec\empty
-     \doifelseassignment{#1}%
-       {\let\currentcombination\empty
-        \setupcurrentcombination[#1]%
-        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
-       {\doifelseinstring{*}\currentcombination
-          {\edef\currentcombinationspec{\currentcombination*\plusone*}%
-           \let\currentcombination\empty}
-          {\doifelsenumber\currentcombination
-             {\edef\currentcombinationspec{\currentcombination*\plusone*}%
-              \let\currentcombination\empty}
-             {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}}%
+     \ifcondition\validassignment{#1}%
+       \let\currentcombination\empty
+       \setupcurrentcombination[#1]%
+       \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+     \else
+       \doifelseinstring{*}\currentcombination
+         {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+          \let\currentcombination\empty}
+         {\doifelsenumber\currentcombination
+            {\edef\currentcombinationspec{\currentcombination*\plusone*}%
+             \let\currentcombination\empty}
+            {\edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
+     \fi
    \else
-     \doifelseassignment{#2}%
-       {\setupcurrentcombination[#2]%
-        \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}}
-       {\edef\currentcombinationspec{\currentcombinationspec*\plusone*}}%
+     \ifcondition\validassignment{#2}%
+       \setupcurrentcombination[#2]%
+       \edef\currentcombinationspec{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+     \else
+       \edef\currentcombinationspec{\currentcombinationspec*\plusone*}%
+     \fi
    \fi
    %
    \forgetall
@@ -521,10 +569,8 @@
         {\pack_combinations_float_hack_a{\recurselevel}}%
         {\pack_combinations_float_hack_b{\recurselevel}}%
       \to\scratchtoks}% brrr
-     \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
-   \doifassignmentelse{#1}
-     {\expanded{\startcombination[#1]\the\scratchtoks}\stopcombination}%
-     {\expanded{\startcombination[#1]\the\scratchtoks}\stopcombination}%
+   \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
+   \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
    \resetlocalfloats
    \egroup}
 

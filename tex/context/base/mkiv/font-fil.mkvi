@@ -15,11 +15,10 @@
 
 \unprotect
 
-%D Personally I think that using \TEX\ macro packages is
-%D complicated by the way fonts are handled. Apart from the
-%D many encodings, we also deal with different naming schemes.
-%D Confronted with this problem, I decided to change the
-%D definitions into:
+%D Personally I think that using \TEX\ macro packages is complicated by the way
+%D fonts are handled. Apart from the many encodings, we also deal with different
+%D naming schemes. Confronted with this problem, I decided to change the definitions
+%D into:
 %D
 %D \starttyping
 %D \definebodyfont [12pt] [rm] [tf=Times-Roman at 12pt]
@@ -307,10 +306,9 @@
 %D \macros
 %D   {fontclass, defaultfontclass}
 %D
-%D The fontclass model was introduced a while after we implement
-%D the basic font model and at that time we still defaulted to
-%D no model at all. Nowadays we default to the \type {modern}
-%D fontclass.
+%D The fontclass model was introduced a while after we implement the basic font
+%D model and at that time we still defaulted to no model at all. Nowadays we default
+%D to the \type {modern} fontclass.
 
 \let\fontclass       \empty
 \let\defaultfontclass\empty
@@ -326,8 +324,8 @@
 
 \installmacrostack\fontclass
 
-%D Files or names can have properties and these need to be consulted
-%D at some point. They can inherit them.
+%D Files or names can have properties and these need to be consulted at some point.
+%D They can inherit them.
 
 % Why these expanded and rscale not ... maybe not worth the trouble (delayed
 % expansion actually would be better i.e. macros in feature specs). Test

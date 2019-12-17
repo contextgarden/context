@@ -167,10 +167,10 @@
 
 \appendtoks
     \ifcsname\??mpdefinitions\currentMPinstance\endcsname \else
-        \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
+      \expandafter\newtoks\csname\??mpdefinitions\currentMPinstance\endcsname
     \fi
     \ifcsname\??mpinclusions\currentMPinstance\endcsname \else
-        \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
+      \expandafter\newtoks\csname\??mpinclusions\currentMPinstance\endcsname
     \fi
     \t_meta_definitions\emptytoks % in case we redefine
     \t_meta_inclusions \emptytoks % in case we redefine
@@ -243,7 +243,6 @@
   {\ifconditional\c_meta_include_initializations
      \the\t_meta_initializations
    \fi}
- % \theMPrandomseed;}
 
 \def\meta_flush_current_inclusions
   {\the\t_meta_inclusions}
@@ -279,9 +278,12 @@
   {\pushMPboundingbox
    \setbox\b_meta_graphic\hpack\bgroup}
 
+\let\meta_relocate_graphic\relax % experimental hook
+
 \def\meta_process_graphic_stop
   {\egroup
    \meta_place_graphic
+   \meta_relocate_graphic
    \popMPboundingbox}
 
 \unexpanded\def\meta_process_graphic_instance#1%
@@ -408,37 +410,42 @@
 
 \let\stopMPclip\relax
 
-\unexpanded\def\meta_grab_clip_path#1#2#3#4% #4 is alternative (called in backend code)
+\unexpanded\def\meta_grab_clip_path#1#2#3%
   {\begingroup
-   \edef\width {#2}% \let\overlaywidth \width
-   \edef\height{#3}% \let\overlayheight\height
-   \d_overlay_width #2\onebasepoint
-   \d_overlay_height#3\onebasepoint
+   \d_overlay_width #2\relax
+   \d_overlay_height#3\relax
+   \edef\width {\the\d_overlay_width \space}%
+   \edef\height{\the\d_overlay_height\space}%
    \edef\currentMPclip{#1}%
    \ifcsname\??mpclip\currentMPclip\endcsname
-     \meta_grab_clip_path_indeed
-     \ifx\MPclippath\empty
-       \xdef\MPclippath{#4}%
-     \fi
+     \meta_grab_clip_path_yes
    \else
-     \xdef\MPclippath{#4}%
+     \meta_grab_clip_path_nop
    \fi
    \endgroup}
 
-\def\meta_grab_clip_path_indeed
+\def\meta_grab_clip_path_yes
   {\meta_start_current_graphic
      \normalexpanded{\noexpand\clf_mpsetclippath
-          instance        {\currentMPinstance}%
-          format          {\currentMPformat}%
-          data            {\csname\??mpclip\currentMPclip\endcsname}%
-          initializations {\meta_flush_current_initializations}%
-          useextensions   {\MPinstanceparameter\s!extensions}%
-          inclusions      {\meta_flush_current_inclusions}%
-          method          {\MPinstanceparameter\c!method}%
+       instance        {\currentMPinstance}%
+       format          {\currentMPformat}%
+       data            {\csname\??mpclip\currentMPclip\endcsname}%
+       initializations {\meta_flush_current_initializations}%
+       useextensions   {\MPinstanceparameter\s!extensions}%
+       inclusions      {\meta_flush_current_inclusions}%
+       method          {\MPinstanceparameter\c!method}%
+       width           \d_overlay_width
+       height          \d_overlay_height
      \relax}%
    \meta_stop_current_graphic}
 
-%D Since we want lables to follow the document settings, we also set the font
+\def\meta_grab_clip_path_nop
+  {\clf_mpsetclippath
+     width  \d_overlay_width
+     height \d_overlay_height
+   \relax}
+
+%D Since we want labels to follow the document settings, we also set the font
 %D related variables.
 
 \unexpanded\def\MPfontsizehskip#1%
@@ -565,7 +572,7 @@
 \def\meta_prepare_variable_nop
   {\expandafter \let\csname\m_meta_current_variable_template\endcsname\meta_prepare_variable_default}
 
-\def\meta_prepare_variable_color
+\def\meta_prepare_variable_color % we use the attribute so we dont' go through namedcolor (why not)
   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname{\MPcolor\m_meta_current_variable}}
 
 \def\meta_prepare_variable_number
@@ -604,7 +611,11 @@
 %D \defineoverlay[example][\uniqueMPgraphic{test}]
 %D
 %D \startuniqueMPgraphic {test}
-%D   draw unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+%D   draw OverlayBox ;
+%D \stopuniqueMPgraphic
+%D
+%D \startuniqueMPgraphic {test}
+%D   draw OverlayBox ;
 %D \stopuniqueMPgraphic
 %D \stoptyping
 
@@ -655,10 +666,10 @@
      \kern\MPllx\raise\MPlly\box\b_meta_graphic
    \egroup}
 
-\unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth  }
+\unexpanded\def\obeyMPboxdepth  {\let\meta_relocate_box\meta_obey_box_depth}
 \unexpanded\def\ignoreMPboxdepth{\let\meta_relocate_box\meta_ignore_box_depth}
-\unexpanded\def\obeyMPboxorigin {\let\meta_relocate_box\meta_obey_box_origin }
-\unexpanded\def\normalMPboxdepth{\let\meta_relocate_box\relax              }
+\unexpanded\def\obeyMPboxorigin {\let\meta_relocate_box\meta_obey_box_origin}
+\unexpanded\def\normalMPboxdepth{\let\meta_relocate_box\relax}
 
 \let\meta_relocate_box\relax
 
@@ -691,20 +702,19 @@
 \unexpanded\def\startuniqueMPgraphic
   {\dodoublegroupempty\meta_start_unique_graphic}
 
+\let\stopuniqueMPgraphic\relax
+
 \def\meta_start_unique_graphic#1%
   {\normalexpanded{\meta_start_unique_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_unique_graphic_indeed#1#2#3\stopuniqueMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_unique_graphic{#1}{#2}{#3}}}
 
-\let\stopuniqueMPgraphic\relax
-
 \unexpanded\def\uniqueMPgraphic
   {\dodoublegroupempty\meta_unique_graphic}
 
 \def\meta_unique_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
-%    \setupMPvariables[\currentMPgraphicname][#2]%
    \setupMPvariables[#1][#2]%
    \csname\??mpgraphic#1\endcsname\empty
    \meta_end_graphic_group}
@@ -722,6 +732,8 @@
 
 \unexpanded\def\startuseMPgraphic
   {\dodoublegroupempty\meta_start_use_graphic}
+
+\let\stopuseMPgraphic\relax
 
 % \def\meta_start_use_graphic#1#2#3\stopuseMPgraphic
 %   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
@@ -741,21 +753,16 @@
 \unexpanded\def\meta_start_use_graphic_indeed#1#2#3\stopuseMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
 
-\let\stopuseMPgraphic\relax
-
 \unexpanded\def\startusableMPgraphic % redundant but handy
   {\dodoublegroupempty\meta_start_usable_graphic}
 
-% \def\meta_start_usable_graphic#1#2#3\stopusableMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
+\let\stopusableMPgraphic\relax
 
 \def\meta_start_usable_graphic#1%
   {\normalexpanded{\meta_start_usable_graphic_indeed{#1}}}
 
 \unexpanded\def\meta_start_usable_graphic_indeed#1#2#3\stopusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_use_graphic{#1}{#2}{#3}}}
-
-\let\stopusableMPgraphic\relax
 
 \def\meta_handle_reusable_graphic#1#2#3%
   {\begingroup
@@ -774,8 +781,7 @@
 \unexpanded\def\startreusableMPgraphic
   {\dodoublegroupempty\meta_start_reusable_graphic}
 
-% \def\meta_start_reusable_graphic#1#2#3\stopreusableMPgraphic
-%   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
+\let\stopreusableMPgraphic\relax
 
 \def\meta_start_reusable_graphic#1%
   {\normalexpanded{\meta_start_reusable_graphic_indeed{#1}}}
@@ -783,17 +789,8 @@
 \unexpanded\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\setgvalue{\??mpgraphic#1}{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
 
-\let\stopreusableMPgraphic\relax
-
 \unexpanded\def\useMPgraphic
   {\dodoublegroupempty\meta_use_graphic}
-
-% \def\meta_use_graphic#1#2%
-%   {\meta_begin_graphic_group{#1}%
-%   %\doifsomething{#2}{\setupMPvariables[\currentMPgraphicname][#2]}%
-%    \doifsomething{#2}{\setupMPvariables[#1][#2]}%
-%    \csname\??mpgraphic#1\endcsname\empty
-%    \meta_end_graphic_group}
 
 \def\meta_use_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
@@ -822,9 +819,6 @@
 
 \def\m_meta_page_prefix{\doifelseoddpage oe}
 
-% \def\overlaypagestamp
-%   {\m_meta_page_prefix:\overlaywidth:\overlayheight:\overlaydepth:\MPcolor\overlaycolor:\MPcolor\overlaylinecolor}
-
 \def\overlaypagestamp
   {\m_meta_page_prefix     :%
    \the\d_overlay_width    :%
@@ -838,9 +832,7 @@
 \unexpanded\def\startuniqueMPpagegraphic
   {\dodoublegroupempty\meta_start_unique_page_graphic}
 
-% \def\meta_start_unique_page_graphic#1#2#3\stopuniqueMPpagegraphic              % inefficient, double storage
-%   {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%   % but these also keep the state
-%    \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}   % and meaning will be redefined
+\let\stopuniqueMPpagegraphic\relax
 
 \def\meta_start_unique_page_graphic#1%
   {\normalexpanded{\meta_start_unique_page_graphic_indeed{#1}}}
@@ -849,15 +841,12 @@
   {\setgvalue{\??mpgraphic o:#1}{\meta_handle_unique_graphic{o:#1}{#2}{#3}}%        % but these also keep the state
    \setgvalue{\??mpgraphic e:#1}{\meta_handle_unique_graphic{e:#1}{#2}{#3}}}        % and meaning will be redefined
 
-\let\stopuniqueMPpagegraphic\relax
-
 \unexpanded\def\uniqueMPpagegraphic
   {\dodoublegroupempty\meta_unique_page_graphic}
 
 \def\meta_unique_page_graphic#1#2%
   {\meta_begin_graphic_group{#1}%
    \let\overlaystamp\overlaypagestamp
-%    \setupMPvariables[\m_meta_page_prefix:\currentMPgraphicname][#2]% prefix is new here
    \setupMPvariables[\m_meta_page_prefix:#1][#2]% prefix is new here
    \csname\??mpgraphic\m_meta_page_prefix:#1\endcsname\empty
    \meta_end_graphic_group}
@@ -954,6 +943,8 @@
 \unexpanded\def\startMPcode
   {\dosinglegroupempty\meta_start_code}
 
+\let\stopMPcode\relax
+
 \def\meta_start_code
   {\iffirstargument
      \expandafter\meta_start_code_instance
@@ -977,8 +968,6 @@
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
    \meta_process_graphic{#2}%
    \endgroup}
-
-\let\stopMPcode\relax
 
 \unexpanded\def\MPcode
   {\dodoublegroupempty\meta_code}
@@ -1425,6 +1414,8 @@
    \setbox\nextbox\hpack\bgroup
    \dosinglegroupempty\meta_start_calculation}
 
+\let\stopMPcalculation\relax
+
 \def\meta_start_calculation
   {\iffirstargument
      \expandafter\meta_start_calculation_instance
@@ -1448,8 +1439,6 @@
    \meta_process_graphic{#2;draw origin}%
    \egroup
    \endgroup}
-
-\let\stopMPcalculation\relax
 
 %D \macros
 %D   {setupMPgraphics}

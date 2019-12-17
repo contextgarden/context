@@ -58,7 +58,7 @@
      \scratchcounter\zerocount
      \scratchtoks\emptytoks
      \def\docommand##1%
-       {\setbox\scratchbox\hbox{\useMPgraphic{##1}}%
+       {\setbox\scratchbox\hpack{\useMPgraphic{##1}}%
         \global\parfirst\zerocount
         \getMPdata
         \setshapecharacteristics
@@ -389,7 +389,7 @@
 %D \stoplinecorrection
 
 \unexpanded\def\TightText#1#2#3#4%
-  {\hbox % \ruledhbox
+  {\hpack
      {\startMPcode
         picture p ; p := image (graphictext "#1" withfillcolor red) ;
         draw p xsized #2 ysized #3 withcolor \MPcolor{#4} ;

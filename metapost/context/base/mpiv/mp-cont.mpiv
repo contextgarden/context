@@ -1,0 +1,158 @@
+%D \module
+%D   [       file=mp-cont.mpiv,
+%D        version=1999.03.10,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Interfaces,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is rather preliminary and subjected to changes.
+
+if known context_cont : endinput ; fi ;
+
+boolean context_cont ; context_cont := true ;
+
+string CurrentLayout ; CurrentLayout := "default" ;
+
+boolean mfun_swapped ;
+
+def SwapPageState =
+    mfun_swapped := true ; % eventually this will go !
+enddef ;
+
+extra_beginfig := extra_beginfig & "mfun_swapped := false ;" ;
+
+% runscript("mp.PaperHeight()") is much faster than lua.mp.PaperHeight() so we use that now:
+
+vardef PaperHeight          = runscript("mp.PaperHeight()")          enddef ;
+vardef PaperWidth           = runscript("mp.PaperWidth()")           enddef ;
+vardef PrintPaperHeight     = runscript("mp.PrintPaperHeight()")     enddef ;
+vardef PrintPaperWidth      = runscript("mp.PrintPaperWidth()")      enddef ;
+vardef TopSpace             = runscript("mp.TopSpace()")             enddef ;
+vardef BottomSpace          = runscript("mp.BottomSpace()")          enddef ;
+vardef BackSpace            = runscript("mp.BackSpace()")            enddef ;
+vardef CutSpace             = runscript("mp.CutSpace()")             enddef ;
+vardef MakeupHeight         = runscript("mp.MakeupHeight()")         enddef ;
+vardef MakeupWidth          = runscript("mp.MakeupWidth()")          enddef ;
+vardef TopHeight            = runscript("mp.TopHeight()")            enddef ;
+vardef TopDistance          = runscript("mp.TopDistance()")          enddef ;
+vardef HeaderHeight         = runscript("mp.HeaderHeight()")         enddef ;
+vardef HeaderDistance       = runscript("mp.HeaderDistance()")       enddef ;
+vardef TextHeight           = runscript("mp.TextHeight()")           enddef ;
+vardef FooterDistance       = runscript("mp.FooterDistance()")       enddef ;
+vardef FooterHeight         = runscript("mp.FooterHeight()")         enddef ;
+vardef BottomDistance       = runscript("mp.BottomDistance()")       enddef ;
+vardef BottomHeight         = runscript("mp.BottomHeight()")         enddef ;
+vardef LeftEdgeWidth        = runscript("mp.LeftEdgeWidth()")        enddef ;
+vardef LeftEdgeDistance     = runscript("mp.LeftEdgeDistance()")     enddef ;
+vardef LeftMarginWidth      = runscript("mp.LeftMarginWidth()")      enddef ;
+vardef LeftMarginDistance   = runscript("mp.LeftMarginDistance()")   enddef ;
+vardef TextWidth            = runscript("mp.TextWidth()")            enddef ;
+vardef RightMarginDistance  = runscript("mp.RightMarginDistance()")  enddef ;
+vardef RightMarginWidth     = runscript("mp.RightMarginWidth()")     enddef ;
+vardef RightEdgeDistance    = runscript("mp.RightEdgeDistance()")    enddef ;
+vardef RightEdgeWidth       = runscript("mp.RightEdgeWidth()")       enddef ;
+vardef InnerMarginDistance  = runscript("mp.InnerMarginDistance()")  enddef ;
+vardef InnerMarginWidth     = runscript("mp.InnerMarginWidth()")     enddef ;
+vardef OuterMarginDistance  = runscript("mp.OuterMarginDistance()")  enddef ;
+vardef OuterMarginWidth     = runscript("mp.OuterMarginWidth()")     enddef ;
+vardef InnerEdgeDistance    = runscript("mp.InnerEdgeDistance()")    enddef ;
+vardef InnerEdgeWidth       = runscript("mp.InnerEdgeWidth()")       enddef ;
+vardef OuterEdgeDistance    = runscript("mp.OuterEdgeDistance()")    enddef ;
+vardef OuterEdgeWidth       = runscript("mp.OuterEdgeWidth()")       enddef ;
+vardef PageOffset           = runscript("mp.PageOffset()")           enddef ;
+vardef PageDepth            = runscript("mp.PageDepth()")            enddef ;
+vardef LayoutColumns        = runscript("mp.LayoutColumns()")        enddef ;
+vardef LayoutColumnDistance = runscript("mp.LayoutColumnDistance()") enddef ;
+vardef LayoutColumnWidth    = runscript("mp.LayoutColumnWidth()")    enddef ;
+
+vardef OnRightPage          = runscript("mp.OnRightPage()")          enddef ;
+vardef OnOddPage            = runscript("mp.OnOddPage()")            enddef ;
+vardef InPageBody           = runscript("mp.InPageBody()")           enddef ;
+
+vardef RealPageNumber       = runscript("mp.RealPageNumber()")       enddef ;
+vardef LastPageNumber       = runscript("mp.LastPageNumber()")       enddef ; % duplicates
+
+vardef PageNumber           = runscript("mp.PageNumber()")           enddef ;
+vardef NOfPages             = runscript("mp.NOfPages()")             enddef ;
+
+vardef SubPageNumber        = runscript("mp.SubPageNumber()")        enddef ;
+vardef NOfSubPages          = runscript("mp.NOfSubPages()")          enddef ;
+
+vardef CurrentColumn        = runscript("mp.CurrentColumn()")        enddef ;
+vardef NOfColumns           = runscript("mp.NOfColumns()")           enddef ;
+
+vardef BaseLineSkip         = runscript("mp.BaseLineSkip()")         enddef ;
+vardef LineHeight           = runscript("mp.LineHeight()")           enddef ;
+vardef BodyFontSize         = runscript("mp.BodyFontSize()")         enddef ;
+
+vardef TopSkip              = runscript("mp.TopSkip()")              enddef ;
+vardef StrutHeight          = runscript("mp.StrutHeight()")          enddef ;
+vardef StrutDepth           = runscript("mp.StrutDepth()")           enddef ;
+
+vardef CurrentWidth         = runscript("mp.CurrentWidth()")         enddef ;
+vardef CurrentHeight        = runscript("mp.CurrentHeight()")        enddef ;
+
+vardef HSize                = runscript("mp.HSize()")                enddef ; % duplicates
+vardef VSize                = runscript("mp.VSize()")                enddef ; % duplicates
+
+vardef EmWidth              = runscript("mp.EmWidth()")              enddef ;
+vardef ExHeight             = runscript("mp.ExHeight()")             enddef ;
+
+vardef PageFraction         = runscript("mp.PageFraction()")         enddef ;
+
+vardef SpineWidth           = runscript("mp.SpineWidth()")           enddef ;
+vardef PaperBleed           = runscript("mp.PaperBleed()")           enddef ;
+
+%      CurrentLayout        = runscript("mp.CurrentLayout()")    enddef ;
+vardef OverlayWidth         = runscript("mp.OverlayWidth()")     enddef ;
+vardef OverlayHeight        = runscript("mp.OverlayHeight()")    enddef ;
+vardef OverlayDepth         = runscript("mp.OverlayDepth()")     enddef ;
+vardef OverlayLineWidth     = runscript("mp.OverlayLineWidth()") enddef ;
+vardef OverlayOffset        = runscript("mp.OverlayOffset()")    enddef ;
+vardef OverlayRegion        = runscript("mp.OverlayRegion()")    enddef ;
+%      OverlayLineColor     = runscript("mp.OverlayLineColor()") enddef ;
+%      OverlayColor         = runscript("mp.OverlayColor()")     enddef ;
+
+vardef defaultcolormodel    = runscript("mp.defaultcolormodel()") enddef ;
+
+vardef LeftMarginWidth     = if mfun_swapped and not OnRightPage : runscript("mp.RightMarginWidth()")    else : runscript("mp.LeftMarginWidth()")     fi enddef ;
+vardef RightMarginWidth    = if mfun_swapped and not OnRightPage : runscript("mp.LeftMarginWidth()")     else : runscript("mp.RightMarginWidth()")    fi enddef ;
+vardef LeftMarginDistance  = if mfun_swapped and not OnRightPage : runscript("mp.RightMarginDistance()") else : runscript("mp.LeftMarginDistance()")  fi enddef ;
+vardef RightMarginDistance = if mfun_swapped and not OnRightPage : runscript("mp.LeftMarginDistance()")  else : runscript("mp.RightMarginDistance()") fi enddef ;
+
+vardef LeftEdgeWidth       = if mfun_swapped and not OnRightPage : runscript("mp.RightEdgeWidth()")      else : runscript("mp.LeftEdgeWidth()")       fi enddef ;
+vardef RightEdgeWidth      = if mfun_swapped and not OnRightPage : runscript("mp.LeftEdgeWidth()")       else : runscript("mp.RightEdgeWidth()")      fi enddef ;
+vardef LeftEdgeDistance    = if mfun_swapped and not OnRightPage : runscript("mp.RightEdgeDistance()")   else : runscript("mp.LeftEdgeDistance()")    fi enddef ;
+vardef RightEdgeDistance   = if mfun_swapped and not OnRightPage : runscript("mp.LeftEdgeDistance()")    else : runscript("mp.RightEdgeDistance()")   fi enddef ;
+
+vardef BackSpace           = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi runscript("mp.BackSpace()") enddef ;
+vardef CutSpace            = if mfun_swapped and not OnRightPage : PaperWidth - MakeupWidth - fi runscript("mp.CutSpace()")  enddef ;
+
+% better use:
+
+vardef OuterMarginWidth    = if not OnRightPage : runscript("mp.LeftMarginWidth()")     else : runscript("mp.RightMarginWidth()")    fi enddef ;
+vardef InnerMarginWidth    = if not OnRightPage : runscript("mp.RightMarginWidth()")    else : runscript("mp.LeftMarginWidth()")     fi enddef ;
+vardef OuterMarginDistance = if not OnRightPage : runscript("mp.LeftMarginDistance()")  else : runscript("mp.RightMarginDistance()") fi enddef ;
+vardef InnerMarginDistance = if not OnRightPage : runscript("mp.RightMarginDistance()") else : runscript("mp.LeftMarginDistance()")  fi enddef ;
+
+vardef OuterEdgeWidth      = if not OnRightPage : runscript("mp.LeftEdgeWidth()")       else : runscript("mp.RightEdgeWidth()")      fi enddef ;
+vardef InnerEdgeWidth      = if not OnRightPage : runscript("mp.RightEdgeWidth()")      else : runscript("mp.LeftEdgeWidth()")       fi enddef ;
+vardef OuterEdgeDistance   = if not OnRightPage : runscript("mp.LeftEdgeDistance()")    else : runscript("mp.RightEdgeDistance()")   fi enddef ;
+vardef InnerEdgeDistance   = if not OnRightPage : runscript("mp.RightEdgeDistance()")   else : runscript("mp.LeftEdgeDistance()")    fi enddef ;
+
+vardef OuterSpaceWidth     = if not OnRightPage : runscript("mp.BackSpace()")           else : runscript("mp.CutSpace()")            fi enddef ;
+vardef InnerSpaceWidth     = if not OnRightPage : runscript("mp.CutSpace()")            else : runscript("mp.BackSpace()")           fi enddef ;
+
+% indices
+
+vardef OuterMargin = if not OnRightPage : LeftMargin  else : RightMargin fi enddef ;
+vardef InnerMargin = if not OnRightPage : RightMargin else : LeftMargin  fi enddef ;
+
+vardef OuterEdge   = if not OnRightPage : LeftEdge    else : RightEdge   fi enddef ;
+vardef InnerEdge   = if not OnRightPage : Rightedge   else : LeftEdge    fi enddef ;

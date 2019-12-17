@@ -1,0 +1,256 @@
+%D \module
+%D   [       file=font-emp,
+%D        version=20120106, % (moved from font-ini)
+%D          title=\CONTEXT\ Font Macros,
+%D       subtitle=Emphasis,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Font Macros / Emphasis}
+
+\unprotect
+
+%D \macros
+%D  {em,emphasistypeface,emphasisboldface}
+%D
+%D The next macro started as a copy of Donald Arseneau's \type {\em} (\TUGNEWS\
+%D Vol.~3, no.~1, 1994). His implementation was a bit more sophisticated version of
+%D the standard \LATEX\ one. We further enhanced the macro, so now it also adapts
+%D itself to boldface mode. Because we favor {\sl slanted} type over {\it italic},
+%D we made the emphasis adaptable, for instance:
+%D
+%D \starttyping
+%D \def\emphasistypeface {\it}
+%D \def\emphasisboldface {\bi}
+%D \stoptyping
+%D
+%D But we prefer:
+%D
+%D \starttyping
+%D \unexpanded\def\emphasistypeface{\sl}
+%D \unexpanded\def\emphasisboldface{\bs}
+%D \stoptyping
+%D
+%D or even better:
+
+\let\m_font_emphasized_typeface\empty
+
+\def\font_emphasis_checked_typeface#slanted#italic%
+  {\edef\m_font_emphasized_typeface{\font_bodyfontvariable\s!em}%
+   \ifx\m_font_emphasized_typeface\v!slanted
+     #slanted%
+   \orelse\ifx\m_font_emphasized_typeface\v!italic
+     #italic%
+   \orelse\ifx\m_font_emphasized_typeface\empty
+     #slanted%
+   \else
+     \csname\m_font_emphasized_typeface\endcsname
+   \fi}
+
+\unexpanded\def\emphasistypeface{\font_emphasis_checked_typeface\sl\it}
+\unexpanded\def\emphasisboldface{\font_emphasis_checked_typeface\bs\bi}
+
+\unexpanded\def\normalboldface % public
+  {\relax
+   \ifx\fontalternative\s!it\bi\orelse
+   \ifx\fontalternative\s!sl\bs\else
+                            \bf\fi}
+
+\unexpanded\def\normalitalicface % public
+  {\relax
+   \ifx\fontalternative\s!tf\it\orelse
+   \ifx\fontalternative\s!bf\bi\else
+                            \tf\fi}
+
+\unexpanded\def\normalslantedface % public
+  {\relax \ifx\fontalternative\s!tf\sl
+   \orelse\ifx\fontalternative\s!bf\bs
+   \else                           \tf\fi}
+
+\unexpanded\def\normaltypeface % public
+  {\relax
+   \ifx\fontalternative\s!bi \it \orelse
+   \ifx\fontalternative\s!bs \sl \else
+                             \tf \fi}
+
+\unexpanded\def\swaptypeface % public
+  {\relax
+   \ifx\fontalternative\s!it \tf               \orelse
+   \ifx\fontalternative\s!sl \tf               \orelse
+   \ifx\fontalternative\s!bf \emphasisboldface \orelse
+   \ifx\fontalternative\s!bs \bf               \orelse
+   \ifx\fontalternative\s!bi \bf               \else
+                             \emphasistypeface \fi}
+
+\let\typeface   \normaltypeface    % public
+\let\boldface   \normalboldface    % public
+\let\slantedface\normalslantedface % public
+\let\italicface \normalitalicface  % public
+\let\swapface   \swaptypeface      % public
+
+%D To be set with the default body font environment: \type
+%D {em} being \type {slanted} or \type {italic}.
+
+% maybe a \csname...\fontalternative\endcsname
+
+\newconditional\c_font_emphasis_needed
+
+\unexpanded\def\em
+  {\relax
+   \ifdim\slantperpoint>\zeropoint
+     \settrue\c_font_emphasis_needed
+   \else
+     \setfalse\c_font_emphasis_needed
+   \fi
+   \font_emphasis_set_emphasis_boldface % new
+   \ifx\fontalternative\s!it
+     \unexpanded\def\emphasistypeface{\it}\tf
+   \orelse\ifx\fontalternative\s!sl
+     \unexpanded\def\emphasistypeface{\sl}\tf
+   \orelse\ifx\fontalternative\s!bf
+     \emphasisboldface
+   \orelse\ifx\fontalternative\s!bs
+     \unexpanded\def\emphasisboldface{\bs}\bf
+   \orelse\ifx\fontalternative\s!bi
+     \unexpanded\def\emphasisboldface{\bi}\bf
+   \else
+     \emphasistypeface
+   \fi
+   \ifconditional\c_font_emphasis_needed\else
+     \expandafter\aftergroup
+   \fi
+   \emphasiscorrection}
+
+%D The next feature was not present in previous versions. It
+%D takes care of \type {\em \bf ...} situations.
+
+\let\font_emphasis_saved_emphasis_boldface\relax
+
+\def\font_emphasis_set_emphasis_boldface
+  {\let\font_emphasis_saved_emphasis_boldface\bf
+   \let\font_emphasis_set_emphasis_boldface\relax
+   \let\bf\font_emphasis_bold_bold}
+
+\unexpanded\def\font_emphasis_bold_bold
+  {%\relax
+   \let\bf\relax % new
+   \ifx\fontalternative\s!it
+     \bi
+   \orelse\ifx\fontalternative\s!sl
+     \bs
+   \else
+     \font_emphasis_saved_emphasis_boldface
+   \fi
+   \let\bf\font_emphasis_saved_emphasis_boldface}
+
+%D Donald's (adapted) macros take the next character into account when placing
+%D italic correction. As a bonus we also look for something that looks like a dash,
+%D in which case we don't correct.
+
+\let\italiccorrection=\/ % tex primitive
+
+\def\emphasiscorrection % public, not in raw alignment groups, else omit problem
+  {\ifhmode\ifnum\currentgrouptype=\aligngroupcode\else
+     \expandafter\expandafter\expandafter\font_emphasis_look
+   \fi\fi}
+
+\def\font_emphasis_look
+  {\begingroup
+   \futurelet\nexttoken\font_emphasis_test}
+
+\def\font_emphasis_test
+  {\ifcat\noexpand\nexttoken,% we can do better in luatex ... some day ...
+     \expandafter\font_emphasis_a
+   \else
+     \expandafter\font_emphasis_b
+   \fi}
+
+\def\font_emphasis_a
+  {\futurelet\nexttoken\font_emphasis_correction}
+
+\def\font_emphasis_correction
+   {\setbox\scratchbox\hbox{\nexttoken}% tricky as next can be a macro
+    \ifzeropt\ht\scratchbox % probably a space
+      \expandafter\font_emphasis_b
+    \orelse\ifdim\ht\scratchbox<.3\exheight
+      \expandafter\expandafter\expandafter\endgroup
+    \else
+      \expandafter\expandafter\expandafter\font_emphasis_b
+    \fi}
+
+\def\font_emphasis_b
+  {\scratchskip\lastskip
+   \ifzeropt\scratchskip
+     \italiccorrection\relax
+   \else
+     \unskip\italiccorrection\hskip\scratchskip
+   \fi
+   \endgroup}
+
+%D We end with some examples which show the behavior when some punctuation is met.
+%D We also show how the mechanism adapts itself to bold, italic and slanted typing.
+%D
+%D \startbuffer
+%D test {test}test       \par
+%D test {\sl test}test   \par
+%D test {\em test}test   \par
+%D test {\em test}--test \par
+%D
+%D test {test}, test     \par
+%D test {\em test}, test \par
+%D
+%D test {\em test {\em test {\em test} test} test} test \par
+%D test {\bf test {\em test {\em test} test} test} test \par
+%D test {\sl test {\em test {\em test} test} test} test \par
+%D test {\it test {\em test {\em test} test} test} test \par
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D We get:
+%D
+%D \startpacked
+%D \getbuffer
+%D \stoppacked
+
+%D \macros
+%D   {emphbf,emphit,emphsl,emphtf}
+%D
+%D The next emphasis alternatives are for \THANH. They adapt their style as good as
+%D possible. These macros are obsolete in \MKIV.
+
+% \unexpanded\def\emphbf{\groupedcommand{\bf\def\emphit{\bi}\def\emphsl{\bs}}{}}
+% \unexpanded\def\emphit{\groupedcommand{\it\def\emphbf{\bi}\def\emphsl{\sl}}{}}
+% \unexpanded\def\emphsl{\groupedcommand{\sl\def\emphbf{\bs}\def\emphit{\it}}{}}
+% \unexpanded\def\emphtf{\groupedcommand{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}{}}
+% \unexpanded\def\emph  {\groupedcommand{\em}{}}
+
+\unexpanded\def\font_emphasis_bf{\bf\def\emphit{\bi}\def\emphsl{\bs}}
+\unexpanded\def\font_emphasis_it{\it\def\emphbf{\bi}\def\emphsl{\sl}}
+\unexpanded\def\font_emphasis_sl{\sl\def\emphbf{\bs}\def\emphit{\it}}
+\unexpanded\def\font_emphasis_tf{\tf\def\emphbf{\bf}\def\emphit{\it}\def\emphsl{\sl}}
+
+\unexpanded\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
+\unexpanded\def\emphit{\triggergroupedcommandcs\font_emphasis_it}
+\unexpanded\def\emphsl{\triggergroupedcommandcs\font_emphasis_sl}
+\unexpanded\def\emphtf{\triggergroupedcommandcs\font_emphasis_tf}
+\unexpanded\def\emph  {\triggergroupedcommandcs\em}
+
+\unexpanded\def\emphasized{\bgroup\em\let\nexttoken}
+
+%D \startbuffer
+%D TEXT {\emphbf text \emphit text  \emphtf text  \emphsl text}  TEXT
+%D TEXT  \emphbf{text \emphit{text} \emphtf{text} \emphsl{text}} TEXT
+%D \stopbuffer
+%D
+%D \typebuffer
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\protect \endinput

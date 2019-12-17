@@ -246,6 +246,10 @@
                     <cd:constant type="positive"/>
                     <cd:constant type="all"/>
                 </cd:parameter>
+                <cd:parameter name="hidenumber">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -316,6 +320,30 @@
             <cd:resolve name="keyword-section"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placerawheaddata" level="system" category="structure" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-section"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placerawheadtext" level="system" category="structure" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-section"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placerawheadnumber" level="system" category="structure" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-section"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="repeathead" level="document" category="structure" file="strc-sec.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-section"/>
         </cd:arguments>
     </cd:command>
 

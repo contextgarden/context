@@ -1,0 +1,171 @@
+%D \module
+%D   [       file=mlib-pdf,
+%D        version=2008.03.25,
+%D          title=\METAPOST\ Integrated Graphics,
+%D       subtitle=Conversion to PDF,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\unprotect
+
+%D We use bit more code that needed because we want to limit the amount of boxing.
+
+\registerctxluafile{mlib-pdf}{}
+
+%D Some code is shared between MPLIB and MPS. The following variables are also
+%D available for introspection and other purposes.
+
+\ifdefined\MPwidth  \else \newdimen\MPwidth  \fi
+\ifdefined\MPheight \else \newdimen\MPheight \fi
+
+\ifdefined\MPllx    \else \newdimen\MPllx    \fi
+\ifdefined\MPlly    \else \newdimen\MPlly    \fi
+\ifdefined\MPurx    \else \newdimen\MPurx    \fi
+\ifdefined\MPury    \else \newdimen\MPury    \fi
+
+\ifdefined\MPbox    \else \newbox  \MPbox    \fi
+
+\unexpanded\def\setMPboundingbox#1#2#3#4% at some point we might pass them as base or scaled points
+  {\global\MPllx   #1\onebasepoint
+   \global\MPlly   #2\onebasepoint
+   \global\MPurx   #3\onebasepoint
+   \global\MPury   #4\onebasepoint
+   \global\MPwidth \dimexpr\MPurx-\MPllx\relax
+   \global\MPheight\dimexpr\MPury-\MPlly\relax}
+
+\unexpanded\def\resetMPboundingbox
+  {\global\MPwidth \zeropoint
+   \global\MPheight\zeropoint
+   \global\MPllx   \zeropoint
+   \global\MPlly   \zeropoint
+   \global\MPurx   \zeropoint
+   \global\MPury   \zeropoint}
+
+\let\popMPboundingbox\relax
+
+\unexpanded\def\pushMPboundingbox
+  {\edef\popMPboundingbox
+     {\global\MPwidth \the\MPwidth
+      \global\MPheight\the\MPheight
+      \global\MPllx   \the\MPllx
+      \global\MPlly   \the\MPlly
+      \global\MPurx   \the\MPurx
+      \global\MPury   \the\MPury
+      \relax}}
+
+% we need to combine these
+
+\unexpanded\def\repositionMPboxindeed
+  {\setbox\MPbox\hpack\bgroup
+     \kern-\MPllx
+     \raise-\MPlly
+     \box\MPbox
+   \egroup}
+
+\unexpanded\def\repositionMPbox
+  {\ifzeropt\MPllx
+     \ifzeropt\MPlly
+       % okay
+     \else
+       \repositionMPboxindeed
+     \fi
+   \else
+     \repositionMPboxindeed
+   \fi}
+
+\unexpanded\def\finalizeMPbox
+  {\repositionMPbox
+   \setbox\MPbox\vpack to \MPheight\bgroup
+     \vfill
+     \hsize\MPwidth
+     \smashbox\MPbox
+     \box\MPbox
+   \egroup
+   \wd\MPbox\MPwidth
+   \ht\MPbox\MPheight}
+
+% combined
+
+\unexpanded\def\finalizeMPbox
+  {\boxxoffset\MPbox-\MPllx\relax
+   \boxyoffset\MPbox\dimexpr\boxyoffset\MPbox-\MPheight-\MPlly\relax
+   \wd\MPbox\MPwidth
+   \ht\MPbox\MPheight}
+
+% MPLIB specific:
+
+\def\MPLIBtoPDF{\clf_mpflushliteral} % expanded
+
+\unexpanded\def\startMPLIBtoPDF#1#2#3#4%
+  {\meta_process_graphic_figure_start
+   \dostarttagged\t!mpgraphic\empty
+   \naturalhpack attr \imageattribute \plusone \bgroup
+   \dousecolorparameter\s!black\forcecolorhack
+   \setMPboundingbox{#1}{#2}{#3}{#4}%
+   \setbox\MPbox\vpack\bgroup
+ % \forgetall % already done elsewhere
+   \noindent} % forces the proper cm in the backend
+
+\unexpanded\def\stopMPLIBtoPDF
+  {\egroup
+   \finalizeMPbox
+   \box\MPbox
+   \egroup
+   \dostoptagged
+   \meta_process_graphic_figure_stop}
+
+\def\MPLIBflushreset % This can (will) move to the Lua end.
+  {\clf_mpflushreset}
+
+%D Kind of special:
+%
+% test.mp:
+%
+% beginfig(1) fill fullcircle scaled 10cm withcolor red  ; endfig ;
+% beginfig(2) draw fullcircle scaled  5cm withcolor blue ; endfig ;
+% beginfig(3) draw textext("just some text")             ; endfig ;
+%
+% standalone pages:
+%
+% \starttext
+%     \directMPgraphic{input "test.mp" ;}
+% \stoptext
+
+\let\normalstartMPLIBtoPDF\startMPLIBtoPDF
+\let\normalstopMPLIBtoPDF \stopMPLIBtoPDF
+
+\unexpanded\def\directstartMPLIBtoPDF{\startTEXpage\normalstartMPLIBtoPDF}
+\unexpanded\def\directstopMPLIBtoPDF {\normalstopMPLIBtoPDF\stopTEXpage}
+
+\unexpanded\def\directMPgraphic
+  {\dodoublegroupempty\mlib_direct_graphic}
+
+\def\mlib_direct_graphic#1#2% makes pages (todo: make boxes)
+  {\meta_begin_graphic_group{#1}%
+   \let\startMPLIBtoPDF\directstartMPLIBtoPDF
+   \let\stopMPLIBtoPDF \directstopMPLIBtoPDF
+   \meta_start_current_graphic
+     \forgetall
+     \edef\p_extensions{\MPinstanceparameter\s!extensions}%
+     \normalexpanded{\noexpand\clf_mpgraphic
+         instance        {\currentMPinstance}%
+         format          {\currentMPformat}%
+         data            {#2;}%
+         initializations {\meta_flush_current_initializations}%
+    \ifx\p_extensions\v!yes
+         extensions      {\clf_getmpextensions{\currentMPinstance}}%
+    \fi
+         inclusions      {\meta_flush_current_inclusions}%
+         definitions     {\meta_flush_current_definitions}%
+         figure          {all}%
+         method          {\MPinstanceparameter\c!method}%
+     \relax}%
+   \meta_stop_current_graphic
+   \meta_end_graphic_group}
+
+\protect \endinput

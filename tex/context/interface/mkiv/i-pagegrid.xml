@@ -277,7 +277,29 @@
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupcolumnsetspan"/>
+                <cd:parameter name="c">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="r">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="tblr"/>
+                    <cd:constant type="lrtb"/>
+                    <cd:constant type="tbrl"/>
+                    <cd:constant type="rltb"/>
+                    <cd:constant type="fxtb"/>
+                    <cd:constant type="btlr"/>
+                    <cd:constant type="lrbt"/>
+                    <cd:constant type="btrl"/>
+                    <cd:constant type="rlbt"/>
+                    <cd:constant type="fxbt"/>
+                    <cd:constant type="fixd"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="none" default="yes"/>
+                    <cd:constant type="wide"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

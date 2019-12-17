@@ -140,4 +140,10 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="crlf" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+
+    <cd:command name="settestcrlf" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+
+    <cd:command name="crlfplaceholder" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+
 </cd:interface>

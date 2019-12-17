@@ -1,0 +1,78 @@
+% language=us
+
+\environment luametafun-style
+\environment luametafun-mesh-examples
+
+\startcomponent luametafun-mesh
+
+\startchapter[title={Mesh}]
+
+This is more a gimmick than of real practical use. A mesh is a set of paths that
+gets transformed into hyperlinks. So, as a start you need to enable these:
+
+\starttyping[option=TEX]
+\setupinteraction
+  [state=start,
+   color=white,
+   contrastcolor=white]
+\stoptyping
+
+We just give a bunch of examples of meshes. A path is divided in smaller paths and
+each of them is part of the same hyperlink. An application is for instance clickable
+maps but (so far) only Acrobat supports such paths.
+
+\typebuffer[1][option=TEX]
+
+Such a definition is used as follows. First we define the mesh as overlay:
+
+\starttyping[option=TEX]
+\defineoverlay[MyPath1][\useMPgraphic{MyPath1}]
+\stoptyping
+
+Then, later on, this overlay can be used as background for a button. Here we just
+jump to another page. The rendering is shown in \in {figure} [mesh:1].
+
+\starttyping[option=TEX]
+\button
+  [height=3cm,
+   width=4cm,
+   background=MyPath1,
+   frame=off]
+  {Example 1}
+  [realpage(2)]
+\stoptyping
+
+\startplacefigure[reference=mesh:1]
+    \externalfigure[luametafun-mesh-examples][page=1,width=.45\textwidth]
+\stopplacefigure
+
+More interesting are non|-|rectangular shapes so we show a bunch of them. You can
+pass multiple paths, influence the accuracy by setting the number of steps and show
+the mesh with the tracing option.
+
+\typebuffer[2][option=TEX]
+\typebuffer[3][option=TEX]
+\typebuffer[4][option=TEX]
+\typebuffer[5][option=TEX]
+\typebuffer[6][option=TEX]
+\typebuffer[7][option=TEX]
+
+This is typical a feature that, if used at all, needs some experimenting but at
+least the traced images look interesting enough. The six examples are shown in
+\in {figure} [mesh:2].
+
+\startplacefigure[reference=mesh:2]
+    \startcombination[2*3]
+        {\externalfigure[luametafun-mesh-examples][page=2,width=.45\textwidth]} {\type {MyPath2}}
+        {\externalfigure[luametafun-mesh-examples][page=3,width=.45\textwidth]} {\type {MyPath3}}
+        {\externalfigure[luametafun-mesh-examples][page=4,width=.45\textwidth]} {\type {MyPath4}}
+        {\externalfigure[luametafun-mesh-examples][page=5,width=.45\textwidth]} {\type {MyPath5}}
+        {\externalfigure[luametafun-mesh-examples][page=6,width=.45\textwidth]} {\type {MyPath6}}
+        {\externalfigure[luametafun-mesh-examples][page=7,width=.45\textwidth]} {\type {MyPath7}}
+    \stopcombination
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent
+

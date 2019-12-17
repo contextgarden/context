@@ -29,6 +29,7 @@ local scannumber     = scanners.number
 local scankeyword    = scanners.keyword
 local scankeywordcs  = scanners.keywordcs
 local scanword       = scanners.word
+local scankey        = scanners.key
 local scancode       = scanners.code
 local scanboolean    = scanners.boolean
 local scandimen      = scanners.dimen
@@ -144,6 +145,26 @@ scanners.list        = scanlist
 scanners.table       = scantable
 scanners.conditional = scanconditional
 
+function scanners.whd()
+    local width, height, depth
+    while true do
+        if scankeyword("width") then
+            width = scandimen()
+        elseif scankeyword("height") then
+            height = scandimen()
+        elseif scankeyword("depth") then
+            depth = scandimen()
+        else
+            break
+        end
+    end
+    if width or height or depth then
+        return width or 0, height or 0, depth or 0
+    else
+        -- we inherit
+    end
+end
+
 local shortcuts = {
     tokens          = tokens,
     bits            = tokenbits,
@@ -160,10 +181,15 @@ local shortcuts = {
     scankeyword     = scankeyword,
     scankeywordcs   = scankeywordcs,
     scanword        = scanword,
+ -- scankey         = scankey,
     scancode        = scancode,
     scanboolean     = scanboolean,
     scandimen       = scandimen,
     scandimension   = scandimen,
+    scanbox         = scanners.box,
+    scanhbox        = scanners.hbox,
+    scanvbox        = scanners.vbox,
+    scanvtop        = scanners.vtop,
     scanconditional = scanconditional,
     scanopen        = scanopen,
     scanclose       = scanclose,
