@@ -27,6 +27,7 @@ local nodes, node = nodes, node
 
 local nuts               = nodes.nuts
 
+local getboth            = nuts.getboth
 local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
@@ -198,7 +199,7 @@ local methods = {
     end,
 
     [0x00A0] = function(head,current) -- nbsp
-        local next = getnext(current)
+        local prev, next = getboth(current)
         if next then
             local char = isglyph(current)
             if not char then
@@ -215,7 +216,6 @@ local methods = {
                 return false
             end
         end
-        local prev = getprev(current)
         if prev then
             local char = isglyph(prev)
             if char and nbsphash[char] then

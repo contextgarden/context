@@ -349,49 +349,50 @@ local function preparesplit(specification) -- a rather large function
         lastcontent = nil
     end
 
- -- local function backtrack(start)
- --     local current = start
- --     -- first skip over glue and penalty
- --     while current do
- --         local id = getid(current)
- --         if id == glue_code then
- --             if trace_state then
- --                 report_state("backtracking over %s in column %s, value %p","glue",column,getwidth(current))
- --             end
- --             current = getprev(current)
- --         elseif id == penalty_code then
- --             if trace_state then
- --                 report_state("backtracking over %s in column %s, value %i","penalty",column,getpenalty(current))
- --             end
- --         else
- --             break
- --         end
- --     end
- --     -- then skip over content
- --     while current do
- --         local id = getid(current)
- --         if id == glue_code then
- --             if trace_state then
- --                 report_state("quitting at %s in column %s, value %p","glue",column,getwidth(current))
- --             end
- --             break
- --         elseif id == penalty_code then
- --             if trace_state then
- --                 report_state("quitting at %s in column %s, value %i","penalty",column,getpenalty(current))
- --             end
- --             break
- --         else
- --             current = getprev(current)
- --         end
- --     end
- --     if not current then
- --         if trace_state then
- --             report_state("no effective backtracking in column %s",column)
- --         end
- --         current = start
- --     end
- --     return current
- -- end
+    local function backtrack(start)
+        local current = start
+        -- first skip over glue and penalty
+        while current do
+            local id = getid(current)
+            if id == glue_code then
+                if trace_state then
+                    report_state("backtracking over %s in column %s, value %p","glue",column,getwidth(current))
+                end
+                current = getprev(current)
+            elseif id == penalty_code then
+                if trace_state then
+                    report_state("backtracking over %s in column %s, value %i","penalty",column,getpenalty(current))
+                end
+                current = getprev(current)
+            else
+                break
+            end
+        end
+        -- then skip over content
+        while current do
+            local id = getid(current)
+            if id == glue_code then
+                if trace_state then
+                    report_state("quitting at %s in column %s, value %p","glue",column,getwidth(current))
+                end
+                break
+            elseif id == penalty_code then
+                if trace_state then
+                    report_state("quitting at %s in column %s, value %i","penalty",column,getpenalty(current))
+                end
+                break
+            else
+                current = getprev(current)
+            end
+        end
+        if not current then
+            if trace_state then
+                report_state("no effective backtracking in column %s",column)
+            end
+            current = start
+        end
+        return current
+    end
 
     local function gotonext()
         if lastcurrent then
@@ -400,8 +401,11 @@ local function preparesplit(specification) -- a rather large function
                     report_state("backtracking to preferred break in column %s",column)
                 end
                 -- todo: also remember height/depth
-             -- current = backtrack(lastcurrent) -- not ok, we go to far back so why was this needed
-                current = lastcurrent
+                if true then -- todo: option to disable this
+                    current = backtrack(lastcurrent) -- not ok yet
+                else
+                    current = lastcurrent
+                end
                 backtracked = true
             end
             lastcurrent = nil

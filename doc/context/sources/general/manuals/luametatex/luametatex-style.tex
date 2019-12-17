@@ -52,6 +52,7 @@
 
 \setuptabulate
   [blank={small,samepage},
+   margin=.25em,
    headstyle=bold,
    rulecolor=maincolor,
    rulethickness=1pt,
@@ -437,6 +438,10 @@
 \hyphenation{sub-nodes}
 
 \def\currentlibraryindex{\namedstructureuservariable{section}{library}}
+
+\setupregister
+  [alternative=a,
+   balance=no]
 
 \setupregister
   [libraryindex]

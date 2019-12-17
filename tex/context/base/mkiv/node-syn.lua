@@ -154,7 +154,10 @@ local kern_code          = nodecodes.kern
 ----- rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+local dir_code           = nodecodes.dir
 local fontkern_code      = kerncodes.fontkern
+
+local cancel_code        = nodes.dircodes.cancel
 
 local insert_before      = nuts.insert_before
 local insert_after       = nuts.insert_after
@@ -641,6 +644,19 @@ local function collect_max(head,parent)
                 current = getnext(current)
                 if current then
                     id = getid(current)
+
+-- while id == dir_code do
+--     current = getnext(current)
+--     if current then
+--         id = getid(current)
+--     else
+--         if tag > 0 then
+--             head = inject(parent,head,first,last,tag,line)
+--         end
+--         return head
+--     end
+-- end
+
                 else
                     if tag > 0 then
                         head = inject(parent,head,first,last,tag,line)
@@ -649,12 +665,12 @@ local function collect_max(head,parent)
                 end
             end
         end
-        -- pick up(as id can have changed)
+        -- pick up (as id can have changed)
         if id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then
                 local l = collect(list,current)
-                if l ~= list then
+                if l and l ~= list then
                     setlist(current,l)
                 end
             end
@@ -692,7 +708,7 @@ end
 
 function synctex.stop()
     if enabled then
---         filehandle:write(s_vlist,s_hlist)
+     -- filehandle:write(s_vlist,s_hlist)
         filehandle:write(s_hlist)
         writeanchor()
         filehandle:write("}",nofsheets,eol)
