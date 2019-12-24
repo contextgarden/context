@@ -2102,7 +2102,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 42323, stripped down to: 21574
+-- original size: 42339, stripped down to: 21588
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2111,7 +2111,7 @@ if not modules then modules={} end modules ['l-table']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
+local type,next,tostring,tonumber,select,rawget=type,next,tostring,tonumber,select,rawget
 local table,string=table,string
 local concat,sort=table.concat,table.sort
 local format,lower,dump=string.format,string.lower,string.dump
@@ -3779,7 +3779,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 18985, stripped down to: 10149
+-- original size: 18925, stripped down to: 10095
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -3793,7 +3793,7 @@ local date,time=os.date,os.time
 local find,format,gsub,upper,gmatch=string.find,string.format,string.gsub,string.upper,string.gmatch
 local concat=table.concat
 local random,ceil,randomseed=math.random,math.ceil,math.randomseed
-local rawget,rawset,type,getmetatable,setmetatable,tonumber,tostring=rawget,rawset,type,getmetatable,setmetatable,tonumber,tostring
+local type,setmetatable,tonumber,tostring=type,setmetatable,tonumber,tostring
 do
  local selfdir=os.selfdir
  if selfdir=="" then
@@ -15775,7 +15775,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6567, stripped down to: 4329
+-- original size: 6551, stripped down to: 4315
 
  if not modules then modules={} end modules ['luat-env']={
  version=1.001,
@@ -15784,7 +15784,7 @@ package.loaded["luat-env"] = package.loaded["luat-env"] or true
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local rawset,rawget,loadfile=rawset,rawget,loadfile
+local rawset,loadfile=rawset,loadfile
 local gsub=string.gsub
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
 local report_lua=logs.reporter("resolvers","lua")
@@ -26092,8 +26092,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1044131
--- stripped bytes    : 416014
+-- original bytes    : 1044071
+-- stripped bytes    : 416008
 
 -- end library merge
 

@@ -666,7 +666,7 @@ local flushliteral  do
             elseif mode == rawliteral_code then
                 pdf_end_string_nl()
             else
-                print("check literal")
+                report("check literal")
                 pdf_goto_pagemode()
                 pdf_set_pos(pos_h,pos_v)
             end
@@ -898,7 +898,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
         if l then
             return l.name
         else
-            print("no box resource",index)
+            report("no box resource %S",index)
         end
     end
 
@@ -952,7 +952,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
             setprop(tonut(rule),"index",index)
             return rule, wd, ht, dp
         else
-            print("no box resource",index)
+            report("no box resource %S",index)
         end
     end
 
@@ -961,7 +961,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
         if l then
             return l.width, l.height, l.depth, l.margin
         else
-            print("no box resource",index)
+            report("no box resource %S",index)
         end
     end
 
@@ -1034,7 +1034,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
         if l then
             return l.name
         else
-            print("no image resource",index)
+            report("no image resource %S",index)
         end
     end
 
@@ -1093,7 +1093,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
               groupref  = pdfincludeimage(index)  -- needs to be sorted out, bad name (no longer mixed anyway)
 
         if not kind then
-            print("invalid image",index)
+            report("invalid image %S",index)
             return
         end
 
@@ -1741,7 +1741,7 @@ local nofobjects    = 0
 local offset        = 0
 local f             = false
 local flush         = false
-local threshold     = 40 -- also #("/Filter /FlateDecode")
+local threshold     = 40 -- also #("/Filter /FlateDecode") (compression threshold)
 local objectstream  = true
 local compress      = true
 local cache         = false
@@ -1751,6 +1751,14 @@ local lastdeferred  = false
 local majorversion  = 1
 local minorversion  = 7
 local trailerid     = true
+
+directives.register("backend.pdf.threshold",function(v)
+    if v then
+        threshold = tonumber(v) or 40
+    else
+        threshold = -1000
+    end
+end)
 
 local f_object       = formatters["%i 0 obj\010%s\010endobj\010"]
 local f_stream_n_u   = formatters["%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
@@ -1930,7 +1938,7 @@ end
 
 local function flushstreamobj(data,n,dict,comp,nolength)
     if not data then
-        print("no data for",dict)
+        report("no data for %S",dict)
         return
     end
     if not n then

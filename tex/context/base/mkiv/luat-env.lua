@@ -11,7 +11,7 @@
 -- sense. Much of this evolved before bytecode arrays were available and so a lot of
 -- code has disappeared already.
 
-local rawset, rawget, loadfile = rawset, rawget, loadfile
+local rawset, loadfile = rawset, loadfile
 local gsub = string.gsub
 
 local trace_locating = false  trackers.register("resolvers.locating", function(v) trace_locating = v end)

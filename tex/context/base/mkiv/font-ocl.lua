@@ -363,7 +363,6 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
     local actuale       = { "pdf", "page", e } -- saves tables
     --
     local vfimage = lpdf and lpdf.vfimage or function(wd,ht,dp,data,name)
-        -- needed for generic (if used there at all)
         local name = storepdfdata(data)
         return { "image", { filename = name, width = wd, height = ht, depth = dp } }
     end

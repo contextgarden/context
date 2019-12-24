@@ -13,6 +13,9 @@ local bpfactor          = number.dimenfactors.bp
 local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
 local report_bitmap     = logs.reporter("graphics","bitmap")
+local report_pdf        = logs.reporter("graphics","pdf")
+
+local trace_pdf         = false  trackers.register("graphics.pdf", function(v) trace_pdf = v end)
 
 local checkers          = figures.checkers
 local genericchecker    = checkers.generic
@@ -28,7 +31,6 @@ local placeholder       = graphics.bitmaps.placeholder
 -- but opens up some possibilities (like merging fonts) that I will look into some
 -- day.
 
-
 function checkers.pdf(data)
     local request = data.request
     local used    = data.used
@@ -39,11 +41,23 @@ function checkers.pdf(data)
         local querypdf = image.query
         local copypage = image.copy
         local pdfdoc   = nil
+        local filename = nil
         request.scanimage = function(t)
-            pdfdoc = openpdf(t.filename,request.userpassword,request.ownerpassword)
             if pdfdoc then
-                --
-                pdfdoc.nofcopiedpages = 0
+                if trace_pdf then
+                    report_pdf("scan image %a",filename)
+                end
+                if not filename then
+                    filename = pdfdoc.filename
+                end
+            else
+                filename = t.filename
+                if trace_pdf then
+                    report_pdf("open and scan image %a",filename)
+                end
+                pdfdoc = openpdf(filename,request.userpassword,request.ownerpassword)
+            end
+            if pdfdoc then
                 --
                 local info = querypdf(pdfdoc,request.page,request.size)
                 if info then
@@ -63,19 +77,19 @@ function checkers.pdf(data)
                         rotation = 0
                     end
                     return {
-                        filename    = filename,
-                     -- page        = 1,
-                        pages       = pdfdoc.nofpages,
-                        width       = width,
-                        height      = height,
-                        depth       = 0,
-                        colordepth  = 0,
-                        xres        = 0,
-                        yres        = 0,
-                        xsize       = width,
-                        ysize       = height,
-                        rotation    = rotation,
-                        pdfdoc      = pdfdoc,
+                        filename   = filename,
+                     -- page       = 1,
+                        pages      = pdfdoc.nofpages,
+                        width      = width,
+                        height     = height,
+                        depth      = 0,
+                        colordepth = 0,
+                        xres       = 0,
+                        yres       = 0,
+                        xsize      = width,
+                        ysize      = height,
+                        rotation   = rotation,
+                        pdfdoc     = pdfdoc,
                     }
                 end
             end
@@ -85,9 +99,21 @@ function checkers.pdf(data)
                 pdfdoc = t.pdfdoc
             end
             if pdfdoc then
-                local result = copypage(pdfdoc,request.page,nil,request.compact,request.width,request.height,request.attr)
-                pdfdoc.nofcopiedpages = pdfdoc.nofcopiedpages + 1
-                if pdfdoc.nofcopiedpages >= pdfdoc.nofpages then
+                local page   = request.page
+                local copied = pdfdoc.nofcopied or 0
+                if not pdfdoc.copied[page] then
+                    pdfdoc.copied[page] = true
+                    copied = copied + 1
+                end
+                pdfdoc.nofcopied = copied
+                if trace_pdf then
+                    report_pdf("copy page %i from image %a, %i pages copied",page,filename,copied)
+                end
+                local result = copypage(pdfdoc,page,nil,request.compact,request.width,request.height,request.attr)
+                if pdfdoc.nofcopied >= pdfdoc.nofpages then
+                    if trace_pdf then
+                        report_pdf("closing image %a, %i pages copied",filename,copied)
+                    end
                     closepdf(pdfdoc)
                     pdfdoc = nil
                     t.pdfdoc = nil

@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['font-enc'] = {
 
 -- this module is obsolete
 
-local next = next
+local next, rawget = next, rawget
 local match, gmatch, gsub = string.match, string.gmatch, string.gsub
 
 local setmetatableindex = table.setmetatableindex

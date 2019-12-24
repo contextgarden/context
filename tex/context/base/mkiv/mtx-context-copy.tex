@@ -56,6 +56,8 @@
 
 \startluacode
 
+    local find = string.find
+
     if #document.files == 0 then
         context("no files given")
     else
@@ -64,7 +66,7 @@
         end
         for i=1,#document.files do
             local filename = document.files[i]
-            if not string.find(filename,"^mtx%-context%-") then
+            if not find(filename,"^mtx%-context%-") and not find(filename,"^context%-extra") then
                 logs.report("copy",filename)
                 context.getfiguredimensions
                     { filename }

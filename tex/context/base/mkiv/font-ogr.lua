@@ -40,6 +40,8 @@ otf.pngenabled    = true
 -- todo: maybe collapse indices so that we have less files (harder to debug)
 -- todo: manage (read: assign) font id's in lua so we know in advance
 
+-- what here and what in backend ...
+
 do
 
     -- This is a prelude to something better but I'm still experimenting.
@@ -64,8 +66,8 @@ do
         local d_tfmdata          = setmetatableindex({ },t_tfmdata)
         local d_properties       = setmetatableindex({ },t_properties)
         d_tfmdata.properties     = d_properties
-        local d_characters       = setmetatableindex({ },t_characters)
-        local d_descriptions     = setmetatableindex({ },t_descriptions)
+        local d_characters       = { } -- setmetatableindex({ },t_characters)   -- hm, index vs unicode
+        local d_descriptions     = { } -- setmetatableindex({ },t_descriptions) -- hm, index vs unicode
         d_tfmdata.characters     = d_characters
         d_tfmdata.descriptions   = d_descriptions
         d_properties.instance    = - droppedin -- will become an extra element in the hash
@@ -108,12 +110,12 @@ do
                             -- todo: prepend
                             v.commands = { { "slot", slot, idx } }
                             -- hack to prevent that type 3 also gets 'use' flags .. todo
-                            local c = { commands = false, index = idx, dropin = tfmdata }
-                            local d = { index = idx, dropin = tfmdata }
+                            local c = { commands = false, index = idx, dropin = tfmdrop }
+                            local d = { } -- { index = idx, dropin = tfmdrop }
                             setmetatableindex(c,v)
                             setmetatableindex(d,description)
                             dropchars[idx] = c
-                            dropdescs[idx] = d
+                            dropdescs[idx] = d -- not needed
                         end
                     end
                 end
@@ -149,12 +151,12 @@ do
                         -- todo: prepend
                         v.commands = { { "slot", slot, idx } }
                         -- hack to prevent that type 3 also gets 'use' flags .. todo
-                        local c = { commands = false, index = idx, dropin = tfmdata }
-                        local d = { index = idx, dropin = tfmdata }
+                        local c = { commands = false, index = idx, dropin = tfmdrop }
+                        local d = { } -- index = idx, dropin = tfmdrop }
                         setmetatableindex(c,v)
                         setmetatableindex(d,description)
                         dropchars[idx] = c
-                        dropdescs[idx] = d
+                        dropdescs[idx] = d -- not needed
                     end
                 end
             end
@@ -454,6 +456,8 @@ local initializeoverlay  do
                 local idx  = 255
                 local slot = 0
                 --
+                -- todo: delay
+                --
                 for k, v in next, characters do
                     local index = v.index
                     if index then
@@ -480,11 +484,11 @@ local initializeoverlay  do
                                 v.commands = { u, { "slot", slot, idx } }
                                 -- hack to prevent that type 3 also gets 'use' flags .. todo
                                 local c = { commands = false, index = idx, dropin = tfmdata }
-                                local d = { index = idx, dropin = tfmdata }
+                                local d = { } -- index = idx, dropin = tfmdrop
                                 setmetatableindex(c,v)
                                 setmetatableindex(d,description)
                                 dropchars[idx] = c
-                                dropdescs[idx] = d
+                                dropdescs[idx] = d -- not needed
                             end
                         end
                     end
@@ -535,6 +539,7 @@ local initializesvg  do
                     local svgfile   = containers.read(otf.svgcache,hash)
                     local svgshapes = svgfile and svgfile.svgshapes
                     pdfshapes = svgshapes and metapost.svgshapestopdf(svgshapes,pdftarget,report_svg,tfmdata.parameters.units) or { }
+                    -- look at ocl: we should store scale and x and y
                     containers.write(otf.pdfcache, pdfhash, {
                         pdfshapes = pdfshapes,
                         timestamp = timestamp,

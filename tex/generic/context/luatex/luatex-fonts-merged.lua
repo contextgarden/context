@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/17/19 16:16:32
+-- merge date  : 12/24/19 19:44:19
 
 do -- begin closure to overcome local limits and interference
 
@@ -1049,7 +1049,7 @@ if not modules then modules={} end modules ['l-table']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local type,next,tostring,tonumber,select=type,next,tostring,tonumber,select
+local type,next,tostring,tonumber,select,rawget=type,next,tostring,tonumber,select,rawget
 local table,string=table,string
 local concat,sort=table.concat,table.sort
 local format,lower,dump=string.format,string.lower,string.dump
@@ -10885,7 +10885,7 @@ if not modules then modules={} end modules ['font-otr']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local next,type,tonumber=next,type,tonumber
+local next,type,tonumber,rawget=next,type,tonumber,rawget
 local byte,lower,char,gsub=string.byte,string.lower,string.char,string.gsub
 local fullstrip=string.fullstrip
 local floor,round=math.floor,math.round
@@ -15123,7 +15123,15 @@ do
    else
     popped=3
    end
-   top=top-(stack[top-1]+2)
+   local t=stack[top-1]
+   if t then
+    top=top-(t+2)
+    if top<0 then
+     top=0
+    end
+   else
+    top=0
+   end
   else
    top=0
   end
@@ -23933,7 +23941,7 @@ if not modules then modules={} end modules ['font-oto']={
 local concat,unpack=table.concat,table.unpack
 local insert,remove=table.insert,table.remove
 local format,gmatch,gsub,find,match,lower,strip=string.format,string.gmatch,string.gsub,string.find,string.match,string.lower,string.strip
-local type,next,tonumber,tostring,rawget=type,next,tonumber,tostring,rawget
+local type,next,tonumber,tostring=type,next,tonumber,tostring
 local trace_baseinit=false  trackers.register("otf.baseinit",function(v) trace_baseinit=v end)
 local trace_singles=false  trackers.register("otf.singles",function(v) trace_singles=v end)
 local trace_multiples=false  trackers.register("otf.multiples",function(v) trace_multiples=v end)
@@ -33509,7 +33517,7 @@ if not modules then modules={} end modules ['font-onr']={
  license="see context related readme files"
 }
 local fonts,logs,trackers,resolvers=fonts,logs,trackers,resolvers
-local next,type,tonumber,rawget,rawset=next,type,tonumber,rawget,rawset
+local next,type,tonumber,rawset=next,type,tonumber,rawset
 local match,lower,gsub,strip,find=string.match,string.lower,string.gsub,string.strip,string.find
 local char,byte,sub=string.char,string.byte,string.sub
 local abs=math.abs

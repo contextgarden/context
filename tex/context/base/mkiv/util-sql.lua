@@ -60,7 +60,7 @@ if not modules then modules = { } end modules ['util-sql'] = {
 
 local format, match = string.format, string.match
 local random = math.random
-local rawset, setmetatable, getmetatable, load, type = rawset, setmetatable, getmetatable, load, type
+local rawset, rawget, setmetatable, getmetatable, load, type = rawset, rawget, setmetatable, getmetatable, load, type
 local P, S, V, C, Cs, Ct, Cc, Cg, Cf, patterns, lpegmatch = lpeg.P, lpeg.S, lpeg.V, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.patterns, lpeg.match
 local concat = table.concat
 

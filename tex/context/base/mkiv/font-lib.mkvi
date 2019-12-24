@@ -49,12 +49,16 @@
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}
 \registerctxluafile{font-osd}{}
-% \doifelsefileexists{font-osm.lua}{\registerctxluafile{font-osm}{}}{}
+%registerctxluafile{font-osm}{}
 
 \ifcase\contextlmtxmode
-    \registerctxluafile{font-ocl}{}
+    \ifnum\luatexversion>111
+        \registerctxluafile{font-ocm}{} % mkiv new
+    \else
+        \registerctxluafile{font-ocl}{} % generic (will become luatex-fonts-ocl)
+    \fi
 \else
-    \registerctxluafile{font-ogr}{}
+    \registerctxluafile{font-ogr}{} % lmtx
 \fi
 
 % we use otf code for type one
@@ -152,6 +156,22 @@
            \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
            \def\cleanfontname          #1{\clf_cleanfontname{#1}}
 \unexpanded\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
+
+% this is an ugly hack needed for postponed inclusion stuff ... don't try
+% to understand this ... these are kind of old mkiv solutions
+
+\unexpanded\def\typethreefont#1{\setfontid#1\relax}
+\unexpanded\def\typethreechar#1{\char#1\hskip-\fontcharwd\font#1\relax}
+\unexpanded\def\typethreelast#1{\char#1\relax}
+\unexpanded\def\typethreecode#1{\pdfliteral direct {#1}}
+
+\newtoks\typethreetoks
+\let    \typethreemacro\empty
+
+\typethreetoks {%
+    \setbox\zerocount\hpack{\typethreemacro}%
+    \setbox\zerocount\hpack{\raise\dp\zerocount\box\zerocount}%
+}
 
 
 \protect \endinput

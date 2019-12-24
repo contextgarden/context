@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ["page-cst"] = {
 
 -- todo: check what is used
 
-local next, type, tonumber = next, type, tonumber
+local next, type, tonumber, rawget = next, type, tonumber, rawget
 local ceil, odd, round = math.ceil, math.odd, math.round
 local lower = string.lower
 local copy = table.copy

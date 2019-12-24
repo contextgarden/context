@@ -11,6 +11,7 @@ moduledata.fonts.features = moduledata.fonts.features or { }
 
 -- for the moment only otf
 
+local rawget = rawget
 local insert, remove, sortedhash = table.insert, table.remove, table.sortedhash
 
 local v_yes  = interfaces.variables.yes

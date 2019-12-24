@@ -74,7 +74,7 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
 -- ins       : when hyphenationbounds 2 or 3
 -- adjust    : when hyphenationbounds 2 or 3
 
-local type, rawset, tonumber, next = type, rawset, tonumber, next
+local type, rawget, rawset, tonumber, next = type, rawget, rawset, tonumber, next
 
 local P, R, S, Cg, Cf, Ct, Cc, C, Carg, Cs = lpeg.P, lpeg.R, lpeg.S, lpeg.Cg, lpeg.Cf, lpeg.Ct, lpeg.Cc, lpeg.C, lpeg.Carg, lpeg.Cs
 local lpegmatch = lpeg.match

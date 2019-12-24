@@ -6,7 +6,6 @@ if not modules then modules = { } end modules ['math-ext'] = {
     license   = "see context related readme files"
 }
 
-local rawget = rawget
 local basename = file.basename
 local sortedhash  = table.sortedhash
 

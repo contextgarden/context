@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['publ-tra'] = {
 
 -- todo: use context.tt .. more efficient, less code
 
-local next, type = next, type
+local next, type, rawget = next, type, rawget
 
 local sortedhash        = table.sortedhash
 local sortedkeys        = table.sortedkeys

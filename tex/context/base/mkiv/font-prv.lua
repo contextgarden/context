@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['font-prv'] = {
     license   = "see context related readme files"
 }
 
-local type = type
+local type, rawget = type, rawget
 local formatters = string.formatters
 
 local fonts             = fonts

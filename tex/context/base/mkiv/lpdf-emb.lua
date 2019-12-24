@@ -27,7 +27,10 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 -- with manual tweaking in desk top publishing applications. Keep in mind that Emoji
 -- can have funny dimensions (e.g. to be consistent within a font, so no tight ones).
 
-local next, type, unpack = next, type, unpack
+-- When we have moved to lmtx I will document a bit more. Till then it's experimental
+-- and subjected to change.
+
+local next, type, unpack, rawget = next, type, unpack, rawget
 local char, byte, gsub, sub, match, rep, gmatch = string.char, string.byte, string.gsub, string.sub, string.match, string.rep, string.gmatch
 local formatters = string.formatters
 local format = string.format
@@ -1539,16 +1542,18 @@ do
 
         local embedimage = images.embed
 
-        local f_glyph    = formatters["G%d"]
-        local f_char     = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
-        local f_width    = formatters["%.6N 0 d0"]
-        local f_index    = formatters["I%d"]
-        local f_image    = formatters["%.6N 0 d0 /%s Do"]
-        local f_image_xy = formatters["%.6N 0 d0 1 0 0 1 %.3N %.3N cm /%s Do"]
-        local f_image_d  = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
-        local f_stream   = formatters["%.6N 0 d0 %s"]
-        local f_stream_c = formatters["%.6N 0 0 0 0 0 d1 %s"]
-        local f_stream_d = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
+        local f_glyph      = formatters["G%d"]
+        local f_char       = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
+        local f_width      = formatters["%.6N 0 d0"]
+        local f_index      = formatters["I%d"]
+        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.3N %.3N cm /%s Do"]
+        local f_image_c    = formatters["/%s Do"]
+        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.3N %.3N cm /%s Do"]
+        local f_image_w    = formatters["%.6N 0 d0 %s"]
+        local f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
+        local f_stream     = formatters["%.6N 0 d0 %s"]
+        local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"]
+        local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to
@@ -1583,10 +1588,9 @@ do
             return result.glyphs, scalefactor, pktopdf, false, false
         end
 
-        -- not scaling in svg but here using a cm might be more efficient in terms of bytes
-        -- as we get smaller numbers
-
         -- pdf inclusion
+
+        local used = setmetatableindex("table")
 
         function methods.pdf(filename,details)
             local properties = details.properties
@@ -1599,22 +1603,43 @@ do
                 local units    = details.parameters.units
                 local factor   = units * bpfactor / scale
                 local fixdepth = pdfshapes.fixdepth
+                local useddoc  = used[pdfdoc]
                 local function pdftopdf(glyph,data)
-                    local width  = data.width or 0
-                    local image  = copypage(pdfdoc,glyph)
-                    embedimage(image)
-                    width        = width * factor
-                    nofglyphs    = nofglyphs + 1
-                    local name   = f_glyph(nofglyphs)
-                    xforms[name] = pdfreference(image.objnum)
-                    if fixdepth then
-                        local depth  = data.depth  or 0
-                        local height = data.height or 0
-                        if depth ~= 0 or height ~= 0 then
-                            return f_image_d(width,(-height-depth)*factor,name), width
+                    local width     = (data.width or 0) * factor
+                    local image     = useddoc[glyph]
+                    local reference = nil
+                    if not image then
+                        image        = embedimage(copypage(pdfdoc,glyph))
+                        nofglyphs    = nofglyphs + 1
+                        local name   = f_glyph(nofglyphs)
+                        local stream = nil
+                        if fixdepth then
+                            local depth  = data.depth  or 0
+                            local height = data.height or 0
+                            if depth ~= 0 or height ~= 0 then
+                                local d     = data.dropin.descriptions[data.index]
+                                local b     = d.boundingbox
+                                local l     = b[1]
+                                local r     = b[3]
+                                local w     = r - l
+                                local scale = w / d.width
+                                local x     = l
+                                local y     = - b[4] - b[2] - d.depth
+                                local scale = w / (image.width * bpfactor)
+                                stream = f_image_c_xy(scale,scale,x,y,name)
+                            else
+                                stream = f_image_c(name)
+                            end
+                        else
+                            stream = f_image_c(name)
                         end
+                        useddoc[glyph]           = image
+                        image.embedded_name      = name
+                        image.embedded_stream    = stream
+                        image.embedded_reference = pdfreference(image.objnum)
                     end
-                    return f_image(width,name), width
+                    xforms[image.embedded_name] = image.embedded_reference
+                    return f_image_w(width,image.embedded_stream), width
                 end
                 local function closepdf()
                  -- closepdf(pdfdoc)
@@ -1700,15 +1725,16 @@ do
 
         function methods.png(filename,details)
             local properties = details.properties
-            local parameters = details.parameters
-            local png        = properties.png
-            local hash       = png.hash
             local pngshapes  = properties.indexdata[1]
-            local xforms     = pdfdictionary()
-            local nofglyphs  = 0
-            local scale      = 10 * parameters.size/parameters.designsize
-            local factor     = bpfactor / scale
             if pngshapes then
+                local parameters = details.parameters
+                local png        = properties.png
+                local hash       = png.hash
+                local xforms     = pdfdictionary()
+                local nofglyphs  = 0
+                local scale      = 10 * parameters.size/parameters.designsize
+                local factor     = bpfactor / scale
+                local units      = parameters.units / 1000
                 local function pngtopdf(glyph,data)
                  -- local width   = data.width
                     local info    = graphics.identifiers.png(glyph.data,"string")
@@ -1717,8 +1743,8 @@ do
                     embedimage(image)
                     nofglyphs     = nofglyphs + 1
                     local width   = (data.width or 0) * factor
-                    local xoffset = (glyph.x or 0) / 1000 -- or units ?
-                    local yoffset = (glyph.y or 0) / 1000 -- or units ?
+                    local xoffset = (glyph.x or 0) / units
+                    local yoffset = (glyph.y or 0) / units
                     local name    = f_glyph(nofglyphs)
                     xforms[name]  = pdfreference(image.objnum)
                     local pdf     = f_image_xy(width,xoffset,yoffset,name)
@@ -1738,16 +1764,15 @@ do
             local colrshapes = details.properties.indexdata[1]
             local colrvalues = details.properties.indexdata[2]
             local usedfonts  = { }
-            local dd         = details.fontdata.descriptions -- temp hack
             local function colrtopdf(description,data)
                 -- descriptions by index
                 local colorlist = description.colors
                 if colorlist then
-                    local dropdata  = data.dropin
-                    local dropid    = dropdata.properties.id
-                    local dropunits = dropdata.parameters.units -- shared
-                    usedfonts[dropid] = dropid
-
+                    local dropdata     = data.dropin
+                    local dropid       = dropdata.properties.id
+                    local dropunits    = dropdata.parameters.units -- shared
+                    local descriptions = dropdata.descriptions
+                    usedfonts[dropid]  = dropid
                     local w = description.width or 0
                     local s = #colorlist
                     local l = nil
@@ -1761,7 +1786,7 @@ do
                             n = n + 1 ; t[n] = v
                             l = v
                         end
-                        local e = dd[entry.slot]
+                        local e = descriptions[entry.slot]
                         if e then
                             n = n + 1 ; t[n] = f_char(dropid,e.index)
                         end
@@ -1803,9 +1828,9 @@ do
             local charprocs   = pdfdictionary()
             local basefont    = pdfconstant(basefontname)
             local d           = 0
+            local w           = 0
             local forcenotdef = minindex > 0
             local lastindex   = -0xFF
-
             if forcenotdef then
                 widths[0] = 0
                 minindex  = 0
@@ -1824,6 +1849,7 @@ do
             for i=1,maxindex-minindex+1 do
                 widths[i] = 0
             end
+
             for index, data in sortedhash(indices) do
                 local name  = f_index(index)
                 local glyph = glyphs[index]
@@ -2011,7 +2037,8 @@ function lpdf.flushfonts()
         end
     end
 
-    -- this is no not yet ok for tfm / type 1
+    -- this is no not yet ok for tfm / type 1 .. we need to move the nested blobs ourside the loop
+
     for hash, details in sortedhash(mainfonts) do
         local filename = details.filename
         if next(details.indices) then

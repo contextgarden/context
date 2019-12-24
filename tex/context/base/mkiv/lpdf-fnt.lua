@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['lpdf-fnt'] = {
 -- This is experimental code.
 
 local match, gmatch = string.match, string.gmatch
-local tonumber = tonumber
+local tonumber, rawget = tonumber, rawget
 
 local pdfreserveobject = lpdf.reserveobject
 local pdfincludechar   = lpdf.includechar

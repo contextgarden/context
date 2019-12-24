@@ -32,10 +32,32 @@ local new_kern          = nuts.pool.kern
 local setcolor          = nodes.tracers.colors.set
 local settransparency   = nodes.tracers.transparencies.set
 
+-- local function dirdimensions(parent,begindir) -- can be a helper
+--     local level   = 1
+--     local enddir  = begindir
+--     local width   = 0
+--     for current, subtype in nextdir, getnext(begindir) do
+--         if subtype == normaldir_code then -- todo
+--             level = level + 1
+--         else
+--             level = level - 1
+--         end
+--         if level == 0 then -- does the type matter
+--             enddir = current
+--             width  = rangedimensions(parent,begindir,enddir)
+--             return width, enddir
+--         end
+--     end
+--     if enddir == begindir then
+--         width = rangedimensions(parent,begindir)
+--     end
+--     return width, enddir
+-- end
+
 local function dirdimensions(parent,begindir) -- can be a helper
-    local level  = 1
-    local enddir = begindir
-    local width  = 0
+    local level   = 1
+    local lastdir = nil
+    local width   = 0
     for current, subtype in nextdir, getnext(begindir) do
         if subtype == normaldir_code then -- todo
             level = level + 1
@@ -43,14 +65,10 @@ local function dirdimensions(parent,begindir) -- can be a helper
             level = level - 1
         end
         if level == 0 then -- does the type matter
-            enddir = current
-            width  = rangedimensions(parent,begindir,enddir)
+            return (rangedimensions(parent,begindir,current)), current
         end
     end
-    if enddir == begindir then
-        width = rangedimensions(parent,begindir)
-    end
-    return width, enddir
+    return (rangedimensions(parent,begindir)), begindir
 end
 
 nuts.dirdimensions = dirdimensions

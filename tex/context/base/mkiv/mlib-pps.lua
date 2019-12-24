@@ -447,7 +447,7 @@ function models.cmyk(cr)
             local y = cr[3]
             local k = cr[4]
             if c == m and m == y and y == 0 then
-                k = k - 1
+                k = 1 - k
                 return checked_color_pair(f_gray,k,k)
             else
                 return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
@@ -462,7 +462,11 @@ function models.cmyk(cr)
         local y = cr[3]
         local k = cr[4]
         if n == 3 then
-            c, m, y, k = rgbtocmyk(c,m,y)
+            if c == m and m == y then
+                k, c, m, y = 1 - c, 0, 0, 0
+            else
+                c, m, y, k = rgbtocmyk(c,m,y)
+            end
         end
         return checked_color_pair(f_cmyk,c,m,y,k,c,m,y,k)
     end

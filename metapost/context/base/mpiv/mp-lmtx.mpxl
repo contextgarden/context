@@ -655,45 +655,46 @@ vardef lmt_do_function =
             code    := getparameter "code" ;
             swap    := getparameter "reverse" ;
 
-            if swap : p := image ( fi
+            p := image (
 
-            if (getparametercount "functions") > 0 :
-                for s = 1 upto getparametercount "functions" :
-                    pushparameters "functions" s ;
+                if (getparametercount "functions") > 0 :
+                    for s = 1 upto getparametercount "functions" :
+                        pushparameters "functions" s ;
+                        lmt_do_function_p (
+                            getparameterdefault "xmin",
+                            getparameterdefault "xmax",
+                            getparameterdefault "xstep",
+                            getparameterdefault "code",
+                            getparameterdefault "shape",
+                            getparameterdefault "close",
+                            getparameterdefault "fillcolor",
+                            getparameterdefault "drawsize",
+                            getparameterdefault "drawcolor",
+                            getparameterdefault "pointsymbol",
+                            getparameterdefault "pointsize",
+                            getparameterdefault "pointcolor"
+                        ) ;
+                        popparameters ;
+                    endfor ;
+                elseif code <> "" :
                     lmt_do_function_p (
-                        getparameterdefault "xmin",
-                        getparameterdefault "xmax",
-                        getparameterdefault "xstep",
-                        getparameterdefault "code",
-                        getparameterdefault "shape",
-                        getparameterdefault "close",
-                        getparameterdefault "fillcolor",
-                        getparameterdefault "drawsize",
-                        getparameterdefault "drawcolor",
-                        getparameterdefault "pointsymbol",
-                        getparameterdefault "pointsize",
-                        getparameterdefault "pointcolor"
+                        getparameter "xmin",
+                        getparameter "xmax",
+                        getparameter "xstep",
+                        getparameter "code",
+                        getparameter "shape",
+                        getparameter "close",
+                        getparameter "fillcolor",
+                        getparameter "drawsize",
+                        getparameter "drawcolor",
+                        getparameter "pointsymbol",
+                        getparameter "pointsize",
+                        getparameter "pointcolor"
                     ) ;
-                    popparameters ;
-                endfor ;
-            elseif code <> "" :
-                lmt_do_function_p (
-                    getparameter "xmin",
-                    getparameter "xmax",
-                    getparameter "xstep",
-                    getparameter "code",
-                    getparameter "shape",
-                    getparameter "close",
-                    getparameter "fillcolor",
-                    getparameter "drawsize",
-                    getparameter "drawcolor",
-                    getparameter "pointsymbol",
-                    getparameter "pointsize",
-                    getparameter "pointcolor"
-                ) ;
-            fi ;
+                fi ;
+            ) ;
 
-            if swap : ) ; fi
+            if not swap : draw p fi ;
 
             option := getparameter "xticks" ;
             if option = "top" :
@@ -725,6 +726,25 @@ vardef lmt_do_function =
             ymin := getparameterdefault "yfirst" ymin ;
             ymax := getparameterdefault "ylast"  ymax ;
 
+            if hasoption "frame" "ticks,sticks" :
+                if xsmall > 0 :
+                    if hasoption "frame" "horizontal" :
+                        for i = ymin step ((ymax-ymin)/ysmall) until ymax :
+                            draw (xmin,i) -- (xmax,i) ;
+                        endfor ;
+                        dodraw (xmin,ymin) ; % flush snippets
+                    fi ;
+                fi ;
+                if ysmall > 0 :
+                    if hasoption "frame" "vertical" :
+                        for i = xmin step ((xmax-xmin)/xsmall) until xmax :
+                            draw (i,ymin) -- (i,ymax) ;
+                        endfor ;
+                        dodraw (xmin,ymin) ; % flush snippets
+                    fi ;
+                fi ;
+            fi ;
+
             option := getparameter "xarrow" ;
             if option = "yes" :
                 save ahlength ; ahlength  := tl ;
@@ -743,35 +763,53 @@ vardef lmt_do_function =
                 draw (xmin,ymin) -- (xmin,ymax) ;
             fi ;
 
-            option := getparameter "frame" ;
-            if option = "yes" :
+            if hasoption "frame" "yes" :
                 draw (xmin,ymin) -- (xmax,ymin) -- (xmax,ymax) -- (xmin,ymax) -- cycle ;
-            elseif (option = "ticks") or (option = "sticks") :
-                draw (xmin,ymin) -- (xmax,ymin) -- (xmax,ymax) -- (xmin,ymax) -- cycle ;
+            fi ;
+
+            if hasoption "frame" "ticks,sticks" :
                 if xsmall > 0 :
-                    txs := ((0,0) -- (0,tl)) if option = "sticks" : rotated 180 fi ;
-                    txs := txs transformed tr ;
-                    for i = xmin step ((xmax-xmin)/xsmall) until xmax :
-                        nodraw txs shifted (i,ymin) ;
-                    endfor ;
-                    txs := (0,0) -- (0,-tl) if option = "sticks" : rotated 180 fi ;
-                    txs := txs transformed tr ;
-                    for i = xmin step ((xmax-xmin)/xsmall) until xmax :
-                        nodraw txs shifted (i,ymax) ;
-                    endfor ;
+                    if hasoption "frame" "horizontal" :
+                        for i = ymin step ((ymax-ymin)/ysmall) until ymax :
+                            draw (xmin,i) -- (xmax,i) ;
+                        endfor ;
+                    fi ;
+                    if hasoption "frame" "bottom" :
+                        txs := ((0,0) -- (0,tl)) if hasoption "frame" "sticks" : rotated 180 fi ;
+                        txs := txs transformed tr ;
+                        for i = xmin step ((xmax-xmin)/xsmall) until xmax :
+                            nodraw txs shifted (i,ymin) ;
+                        endfor ;
+                    fi ;
+                    if hasoption "frame" "top" :
+                        txs := (0,0) -- (0,-tl) if hasoption "frame" "sticks" : rotated 180 fi ;
+                        txs := txs transformed tr ;
+                        for i = xmin step ((xmax-xmin)/xsmall) until xmax :
+                            nodraw txs shifted (i,ymax) ;
+                        endfor ;
+                    fi ;
                     dodraw (xmin,ymin) ; % flush snippets
                 fi ;
                 if ysmall > 0 :
-                    tys := (0,0) -- (tl,0) if option = "sticks" : rotated 180 fi ;
-                    tys := tys transformed tr ;
-                    for i = ymin step ysmall until ymax :
-                        nodraw tys shifted (xmin,i) ;
-                    endfor ;
-                    tys := (0,0) -- (-tl,0) if option = "sticks" : rotated 180 fi ;
-                    tys := tys transformed tr ;
-                    for i = ymin step ysmall until ymax :
-                        nodraw tys shifted (xmax,i) ;
-                    endfor ;
+                    if hasoption "frame" "vertical" :
+                        for i = xmin step ((xmax-xmin)/xsmall) until xmax :
+                            draw (i,ymin) -- (i,ymax) ;
+                        endfor ;
+                    fi ;
+                    if hasoption "frame" "left" :
+                        tys := (0,0) -- (tl,0) if hasoption "frame" "sticks" : rotated 180 fi ;
+                        tys := tys transformed tr ;
+                        for i = ymin step ((ymax-ymin)/ysmall) until ymax :
+                            nodraw tys shifted (xmin,i) ;
+                        endfor ;
+                    fi ;
+                    if hasoption "frame" "right" :
+                        tys := (0,0) -- (-tl,0) if hasoption "frame" "sticks" : rotated 180 fi ;
+                        tys := tys transformed tr ;
+                        for i = ymin step ((ymax-ymin)/ysmall) until ymax :
+                            nodraw tys shifted (xmax,i) ;
+                        endfor ;
+                    fi ;
                     dodraw (xmin,ymin) ; % flush snippets
                 fi ;
             fi ;

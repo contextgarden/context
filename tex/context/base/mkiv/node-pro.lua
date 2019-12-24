@@ -176,7 +176,8 @@ end
 
 do
 
-    local texnest       = tex.nest
+    ----- texnest       = tex.nest
+    local getnest       = tex.getnest
 
     local getlist       = nuts.getlist
     local setlist       = nuts.setlist
@@ -188,7 +189,7 @@ do
 
     function processors.contribute_filter(groupcode)
         if groupcode == "box" then -- "pre_box"
-            local whatever = texnest[texnest.ptr]
+            local whatever = getnest()
             if whatever then
                 local line = whatever.tail
                 if line then

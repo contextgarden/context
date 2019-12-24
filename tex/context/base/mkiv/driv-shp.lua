@@ -543,7 +543,6 @@ local hlist_out, vlist_out  do
         local ref_v = pos_v
         local ref_r = pos_r
               pos_r = getdirection(this_box)
-
         local boxwidth,
               boxheight,
               boxdepth   = getwhd(this_box)
@@ -774,7 +773,7 @@ local hlist_out, vlist_out  do
                     end
                     local total = height + depth
                     if total > 0 then
-                        local xoffset, yoffset, left, right = getoffsets(current)
+                        local xoffset, yoffset, left, right = getoffsets(current) -- top bottom
                         if left ~= 0 then
                             pos_v  = pos_v + left
                             total  = total - left
@@ -842,6 +841,7 @@ local hlist_out, vlist_out  do
                     cur_h = 0
                     cur_v = 0
                     pos_r = dir
+                    goto synced
                 end
             elseif id == whatsit_code then
                 if subtype == literalwhatsit_code then
@@ -866,11 +866,11 @@ local hlist_out, vlist_out  do
                 end
             elseif id == marginkern_code then
                 cur_h = cur_h + getkern(current)
---             elseif id == localpar_code and start_of_par(current) then
---                 local pardir = getdirection(current) or lefttoright_code
---                 if pardir == righttoleft_code then
---                 end
---             end
+         -- elseif id == localpar_code and start_of_par(current) then
+         --     local pardir = getdirection(current) or lefttoright_code
+         --     if pardir == righttoleft_code then
+         --     end
+         -- end
             end
             -- There is no gain in skipping over this when we have zero progression
             -- and such.
@@ -880,7 +880,7 @@ local hlist_out, vlist_out  do
                 pos_h = ref_h + cur_h
             end
             pos_v = ref_v - cur_v
-            -- synced
+            ::synced::
         end
         pos_h = ref_h
         pos_v = ref_v
@@ -1083,14 +1083,13 @@ local hlist_out, vlist_out  do
                         local xoffset, yoffset, left, right = getoffsets(current)
                         if left ~= 0 then
                             width = width - left
-                            cur_h = cur_h + left
+                            xoffset = left
                         end
                         if right ~= 0 then
                             width = width - right
                         end
                         if pos_r == righttoleft_code then
-                            cur_h   = cur_h - width
-                            xoffset = - xoffset
+                            xoffset = - xoffset - width
                         end
                         flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype)
                     end
@@ -1124,7 +1123,7 @@ local hlist_out, vlist_out  do
                 pos_h = ref_h + cur_h
             end
             pos_v = ref_v - cur_v
-            -- synced
+            ::synced::
         end
         pos_h = ref_h
         pos_v = ref_v

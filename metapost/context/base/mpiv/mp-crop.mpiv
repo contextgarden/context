@@ -45,10 +45,10 @@ enddef ;
 vardef crop_marks_cmyk =
     pickup pencircle scaled 1/2 ;
     save p ; picture p ; p := image (
-        fill ulcircle   scaled 12.5 withcolor (1,0,0,0) ;
-        fill urcircle   scaled 12.5 withcolor (0,1,0,0) ;
-        fill lrcircle   scaled 12.5 withcolor (0,0,1,0) ;
-        fill llcircle   scaled 12.5 withcolor (0,0,0,1) ;
+        fill ulcircle scaled 12.5 withcolor (1,0,0,0) ;
+        fill urcircle scaled 12.5 withcolor (0,1,0,0) ;
+        fill lrcircle scaled 12.5 withcolor (0,0,1,0) ;
+        fill llcircle scaled 12.5 withcolor (0,0,0,1) ;
         draw (-10,0) -- (10,0) ;
         draw (0,-10) -- (0,10) ;
         draw fullcircle scaled 12.5 ;
@@ -59,10 +59,10 @@ enddef ;
 
 vardef crop_marks_gray =
     save p ; picture p ; p := image (
-        fill ulcircle   scaled 12.5 withcolor (0.00) ;
-        fill urcircle   scaled 12.5 withcolor (0.25) ;
-        fill lrcircle   scaled 12.5 withcolor (0.50) ;
-        fill llcircle   scaled 12.5 withcolor (0.75) ;
+        fill ulcircle scaled 12.5 withcolor (0.00) ;
+        fill urcircle scaled 12.5 withcolor (0.25) ;
+        fill lrcircle scaled 12.5 withcolor (0.50) ;
+        fill llcircle scaled 12.5 withcolor (0.75) ;
         draw (-10,0) -- (10,0) ;
         draw (0,-10) -- (0,10) ;
         draw (-6,0) -- (6,0) withcolor white ;
@@ -75,14 +75,14 @@ enddef ;
 
 vardef crop_marks_cmykrgb =
     save p ; picture p ; p := image (
-        fill ulcircle   scaled 15 withcolor (1,0,0) ;
-        fill urcircle   scaled 15 withcolor (0,1,0) ;
-        fill lrcircle   scaled 15 withcolor (0,0,1) ;
-        fill llcircle   scaled 15 withcolor (.5,.5,.5) ;
-        fill ulcircle   scaled 10 withcolor (1,0,0,0) ;
-        fill urcircle   scaled 10 withcolor (0,1,0,0) ;
-        fill lrcircle   scaled 10 withcolor (0,0,1,0) ;
-        fill llcircle   scaled 10 withcolor (0,0,0,1) ;
+        fill ulcircle scaled 15 withcolor (1,0,0) ;
+        fill urcircle scaled 15 withcolor (0,1,0) ;
+        fill lrcircle scaled 15 withcolor (0,0,1) ;
+        fill llcircle scaled 15 withcolor (.5,.5,.5) ;
+        fill ulcircle scaled 10 withcolor (1,0,0,0) ;
+        fill urcircle scaled 10 withcolor (0,1,0,0) ;
+        fill lrcircle scaled 10 withcolor (0,0,1,0) ;
+        fill llcircle scaled 10 withcolor (0,0,0,1) ;
         draw (-10,0) -- (10,0) ;
         draw (0,-10) -- (0,10) ;
         draw fullcircle scaled 10 ;

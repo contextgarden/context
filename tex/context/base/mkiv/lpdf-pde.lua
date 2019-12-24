@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- PPCRYPT_PASS                 -1   encryption present, need non-empty password
 -- PPCRYPT_FAIL                 -2   invalid or unsupported encryption (eg. undocumented in pdf spec)
 
-local setmetatable, rawset, rawget, type, next = setmetatable, rawset, rawget, type, next
+local setmetatable, type, next = setmetatable, type, next
 local tostring, tonumber, unpack = tostring, tonumber, unpack
 local char, byte, find = string.char, string.byte, string.find
 local abs = math.abs
@@ -405,21 +405,25 @@ function resolvers.pages(document)
     --
     for pagenumber=1,nofpages do
         local rawpagedata   = rawpages[pagenumber]
-        local pagereference = rawpagedata[3]
-        local pageobject    = rawpagedata[1]
-        local pagedata      = some_dictionary(pageobject,document)
-        if pagedata and pageobject then
-            pagedata.number   = pagenumber
-            pagedata.MediaBox = getbox(pageobject,"MediaBox")
-            pagedata.CropBox  = getbox(pageobject,"CropBox")
-            pagedata.BleedBox = getbox(pageobject,"BleedBox")
-            pagedata.ArtBox   = getbox(pageobject,"ArtBox")
-            pagedata.TrimBox  = getbox(pageobject,"TrimBox")
-            pages[pagenumber] = pagedata
-            __xrefs__[pagedata]      = pagereference
-            __cache__[pagereference] = pagedata
+        if rawpagedata then
+            local pagereference = rawpagedata[3]
+            local pageobject    = rawpagedata[1]
+            local pagedata      = some_dictionary(pageobject,document)
+            if pagedata and pageobject then
+                pagedata.number   = pagenumber
+                pagedata.MediaBox = getbox(pageobject,"MediaBox")
+                pagedata.CropBox  = getbox(pageobject,"CropBox")
+                pagedata.BleedBox = getbox(pageobject,"BleedBox")
+                pagedata.ArtBox   = getbox(pageobject,"ArtBox")
+                pagedata.TrimBox  = getbox(pageobject,"TrimBox")
+                pages[pagenumber] = pagedata
+                __xrefs__[pagedata]      = pagereference
+                __cache__[pagereference] = pagedata
+            else
+            report_epdf("missing pagedata for page %i, case %i",pagenumber,1)
+            end
         else
-            report_epdf("missing pagedata for page %i",i)
+            report_epdf("missing pagedata for page %i, case %i",pagenumber,2)
         end
     end
     --
@@ -455,6 +459,8 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
             if __data__ then
                 document = {
                     filename   = filename,
+                    nofcopied  = 0,
+                    copied     = { },
                     __cache__  = { },
                     __xrefs__  = { },
                     __fonts__  = { },
@@ -481,6 +487,9 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
         statistics.stoptiming(lpdf_epdf)
      -- print(statistics.elapsedtime(lpdf_epdf))
     end
+    if document then
+        nofloaded = nofloaded + 1
+    end
     return document or nil
 end
 
@@ -491,9 +500,9 @@ function lpdf_epdf.unload(filename)
     if type(filename) == "string" then
         local document = loaded[filename]
         if document then
-         -- pdfclose(document)
             loaded[document] = nil
             loaded[filename] = nil
+            pdfclose(document.__data__)
         end
     end
 end
@@ -1016,6 +1025,8 @@ if images then do
 
     local openpdf  = lpdf_epdf.load
     local closepdf = lpdf_epdf.unload
+
+    -- todo: keep track of already open files
 
     local function newpdf(str,userpassword,ownerpassword)
         return openpdf(str,userpassword,ownerpassword,true)

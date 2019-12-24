@@ -74,7 +74,6 @@ local unsetvalue         = attributes.unsetvalue
 local current_font       = font.current
 
 local texsetbox          = tex.setbox
-local texnest            = tex.nest
 
 local report_error       = logs.reporter("node-aux:error")
 
@@ -465,26 +464,17 @@ function nuts.use_components(head,current)
     return head, first, last
 end
 
--- function nuts.current_tail()
---     local whatever = texnest[texnest.ptr]
---     if whatever then
---         local tail = whatever.tail
---         if tail then
---             return tonut(tail)
---         end
---     end
--- end
-
 do
 
     local localparcodes = nodes.localparcodes
     local hmodepar_code = localparcodes.vmode_par
     local vmodepar_code = localparcodes.hmode_par
 
+    local getnest       = tex.getnest
     local getsubtype    = nuts.getsubtype
 
     function nuts.setparproperty(action,...)
-        local tail = tonut(texnest[texnest.ptr].tail)
+        local tail = tonut(getnest().tail)
         while tail do
             if getid(tail) == localpar_code then
                 local s = getsubtype(tail)

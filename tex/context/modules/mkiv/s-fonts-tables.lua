@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['s-fonts-tables'] = {
 moduledata.fonts          = moduledata.fonts        or { }
 moduledata.fonts.tables   = moduledata.fonts.tables or { }
 
+local rawget, type = rawget, type
+
 local setmetatableindex   = table.setmetatableindex
 local sortedhash          = table.sortedhash
 local sortedkeys          = table.sortedkeys

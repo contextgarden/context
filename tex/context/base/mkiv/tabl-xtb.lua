@@ -26,7 +26,7 @@ this mechamism will be improved so that it can replace its older cousin.
 -- todo: use linked list instead of r/c array
 -- todo: we can use the sum of previously forced widths for column spans
 
-local tonumber, next, rawget = tonumber, next, rawget
+local tonumber, next = tonumber, next
 
 local commands            = commands
 local context             = context

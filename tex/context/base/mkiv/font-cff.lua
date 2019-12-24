@@ -1351,6 +1351,8 @@ do
 
     -- These are probably used for special cases i.e. call out to the
     -- postscript interpreter (p 61 of the spec as well as chapter 8).
+    --
+    -- This needs checking (I have to ask Taco next time we meet.)
 
     local popped = 3
     local hints  = 3
@@ -1367,7 +1369,15 @@ do
             else
                 popped = 3
             end
-            top = top - (stack[top-1] + 2)
+            local t = stack[top-1]
+            if t then
+                top = top - (t + 2)
+                if top < 0 then
+                    top = 0
+                end
+            else
+                top = 0
+            end
         else
             top = 0
         end

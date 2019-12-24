@@ -2310,7 +2310,7 @@ if environment.initex then
     statistics.register("font processing", function()
         local l = { }
         for what, handler in table.sortedpairs(handlers) do
-            local features = handler.features
+            local features = handler and handler.features
             if features then
                 l[#l+1] = format("[%s (base initializers: %s) (base processors: %s) (base manipulators: %s) (node initializers: %s) (node processors: %s) (node manipulators: %s)]",
                     what,

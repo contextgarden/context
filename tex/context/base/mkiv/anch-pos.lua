@@ -24,10 +24,9 @@ more efficient.</p>
 -- we need virtual table accessors as well as have tag/id accessors ... we don't
 -- save much here (at least not now)
 
-local tostring, next, rawget, rawset, setmetatable, tonumber = tostring, next, rawget, rawset, setmetatable, tonumber
+local tostring, next, setmetatable, tonumber = tostring, next, setmetatable, tonumber
 local sort = table.sort
 local format, gmatch = string.format, string.gmatch
-local rawget = rawget
 local lpegmatch = lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate = utilities.storage.allocate
