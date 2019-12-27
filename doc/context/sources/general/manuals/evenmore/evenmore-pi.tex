@@ -1,0 +1,134 @@
+% language=us
+
+\environment evenmore-style
+
+% This appeared in TB 126, thanks to Karl Berry for fixing the English.
+
+\startcomponent evenmore-pi
+
+\startchapter[title=\TEX\ and Pi]
+
+This is a short status report \footnote {This chapter appeared in \TUGBOAT\ 40:3.
+Thanks to Karl Berry for corrections.} on Pi, not the famous version number of
+\TEX\ (among other things), but the small machine, meant for education but
+nowadays also used for Internet Of Things projects, process control and toy
+projects. While the majority of \TEX\ installations run on an Intel processor,
+the Raspberry Pi has an \ARM\ central processing unit. In fact, its main chip has
+the same foundation as those found in settop boxes all around the world. It's
+made for entertainment, not for number crunching.
+
+At the \CONTEXT\ meetings, it has become tradition to play with electronic
+gadgets. Every year we are curious what Harald K\"onig might bring this time. The
+last couple of meetings we also had talks about using \TEX\ and \METAPOST\ for
+designing (home|-|scale, automated) railroad systems, using \LUATEX\ for running
+domotica applications, using \METAPOST\ for rendering high quality graphics from
+data from appliances, presenting \TEX\ at computer and electronics bootcamps, and
+more. This year Frans Goddijn also brought back memories of low speed modem
+sounds, from the early days of \TEX\ support. It is these things that make the
+meetings fun.
+
+This year the meeting was in Belgium, close to the border of the Netherlands, and
+on the way there Mojca Miklavec traveled via my home, where the contextgarden
+compile farm runs on a server with plenty of cores, lots of memory and big disks.
+But the farm also has an old Mac connected as well as a tiny underpowered
+Raspberry Pi 2 for \ARM\ binaries that we had to fix: the small micro \SSD\ card
+in it had finally given up. This is no surprise if you realize that it does a
+daily compilation of the whole \TEX\ Live setup and also compiles \LUATEX,
+\LUAMETATEX\ and pplib when changes occur. Replacing the card worked out but
+nevertheless we decided to take the small machine with us to the meeting. We also
+took an external (2.5 inch) \SSD\ box with us. The idea was to order a Raspberry
+Pi~4 on location, the much praised successor of the older models, the one with
+4~\GB\ of memory, real \USB~3 ports and proper Ethernet.
+
+At the meeting Harald showed us that he had version~1, 3 and~4 machines with him
+because he was looking into an energy control setup based on Zigbee devices. So
+we had the full range of Pi's there to play with.
+
+This is a long introduction but the message is that we are dealing with a small
+but popular device with up to now four generations, using an architecture
+supported in \TEX\ distributions. So how does that relate to \CONTEXT ? One of
+the reasons for \LUAMETATEX\ going lean and mean is that computers are no longer
+getting much faster and \quote {multiple small} energy|-|wise has more appeal
+than \quote {one large}. So then the question is: how can we make \TEX\ run fast
+on small instead of gambling on big becoming even bigger (which does not seem to
+be happening anyway).
+
+At the meeting Harald gave a talk \quotation {Which Raspberry Pi is the best for
+\CONTEXT ?} and I will use his data to give an overview: see Table~\ref{rpispec}.
+
+\starttabulate[||c|c|c|c|]
+\BC model     \BC 1         \BC 2         \BC 3         \BC 4          \NC \NR
+\BC chipset   \NC BCM2835   \NC BCM2835   \NC BCM2835   \NC BCM2835    \NC \NR
+\BC CPU core  \NC v6l rev 7 \NC v7l rev 5 \NC v7l rev 4 \NC v7l rev 3  \NC \NR
+\BC cores     \NC 1         \NC 4         \NC 4         \NC 4          \NC \NR
+\BC free mem  \NC 443080    \NC 948308    \NC 948304    \NC 3999784    \NC \NR
+\BC idlemips  \NC 997.08    \NC 38.40     \NC 38.40     \NC 108.00     \NC \NR
+\BC bogomips  \NC 997.08    \NC 57.60     \NC 76.80     \NC 270.00     \NC \NR
+\BC read SD   \NC 23.0 MB/s \NC 23.2 MB/s \NC 23.2 MB/s \NC  45.1 MB/s \NC \NR
+\BC read USB  \NC           \NC 30.0 MB/s \NC 30.0 MB/s \NC 320.0 MB/s \NC \NR
+\stoptabulate
+
+After some discussion at the presentation we decided to discard the (absurd)
+bogomips value for the tiny Pi~1 computing board and not take the values for the
+others too seriously. But it will be clear that, especially when we consider the
+external drive that things have improved. The table doesn't mention Ethernet
+speed but because the~4 now has real support for it (instead of sharing the \USB\
+bus) we get close to 1~\GB/s there.
+
+The real performance test is of course processing a \TEX\ document and what
+better to test than the \TEX\ book. The processing time in seconds, after initial
+caching of files and fonts is:
+
+\starttabulate[||c|c|c|c|]
+\BC model                   \BC 1      \BC 2      \BC 3      \BC 4      \NC \NR
+\BC \TEX book               \NC 13.649 \NC  7.023 \NC  4.553 \NC  1.694 \NC \NR
+\BC {\tt context --make}    \NC        \NC 19.949 \NC 11.796 \NC  6.034 \NC \NR
+\BC {\tt context --make} TL \NC 89.454 \NC 46.578 \NC 29.256 \NC 14.146 \NC \NR
+\stoptabulate
+
+The test of making the \CONTEXT\ format using \LUATEX\ gives an indication of how
+well the \IO\ performs: it loads the file database, some 460 \LUA\ modules and
+355 \TEX\ source files. On my laptop with Intel i7-3840QM with 16GB memory and
+decent \SSD\ it takes 3.5 seconds (and 1 second less for \LUAMETATEX\ because
+there we don't compress the format file). Somehow a regular \TEXLIVE\
+installation performs much worse than the one from the contextgarden.
+
+We didn't test real \CONTEXT\ documents at the meeting but when I came home the
+Pi~4 was bound again to the compile farm. Harald and Mojca had prepared the
+machine to boot from the internal micro \SSD\ and use the external disk for the
+rest. So, when we could compile \LUAMETATEX\ again, I made an \ARM\ installer for
+\LMTX, and after that could not resist doing a simple test. First of course came
+generating the format. It took 6.3 seconds to make one, which is a bit more than
+Harald measured. I see a hiccup at the end so I guess that it has to do with the
+(external) disk or maybe there is some throttling going on because the machine
+sits on top of a (warm) server.
+
+More interesting was testing a real document: the upcoming \LUAMETATEX\ manual.
+It has 226 pages, uses 21 font files, processes 225 \METAPOST\ graphics, and in
+order to get it \LUAMETATEX\ does more than 50\% of the work in \LUA, including
+all font and backend|-|related operations. On my laptop it needs 9.5~seconds and
+on the Pi~4 it uses 33~seconds. Of course, if I take a more modern machine than
+this 8|-|year|-|old workhorse, I probably need half the time, but still the
+performance of the Raspberry Pi~4 is quite impressive. It uses hardly any energy
+and can probably compete rather well with a virtual machine on a heavily loaded
+machine. It means that when we ever have to upgrade the server, I can consider
+replacement by an Ethernet switch, with power over Ethernet, connected to a bunch
+of small Raspberries, also because normally one would connect to some shared
+storage medium.
+
+Because I was curious how the dedicated small Fitlet that I use for controlling
+my lights and heating performs I also processed the manual there. After making
+the format, which takes 6~seconds, processing the manual took a little less than
+30~seconds. In that respect it performs the same as a Raspberry Pi~4. But, inside
+that small (way more expensive) computer is an dual core AMD A10 Micro-6700T APU
+(with AMD Radeon R6 Graphics), running a recent 64|-|bit Ubuntu. It does some
+2400 bogomips (compare that to the values of the Pi). I was a bit surprised that
+it didn't outperform the Raspberry because the (fast \SSD) disk is connected to
+the main board and it has more memory and horsepower. It might be that in the end
+an \ARM\ processor is simply better suited for the kind of byte juggling that
+\TEX\ does, where special \CPU\ features and multiple cores don't contribute
+much. It definitely demonstrates that we cannot neglect this platform.
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,739 @@
+% language=us
+
+\environment evenmore-style
+
+\useMPlibrary[threesix]
+
+\startcomponent evenmore-threesix
+
+\startchapter[title={ThreeSix, Don Knuths first colorfont?}]
+
+In the process of reaching completion and perfection Don Knuth occasionally posts
+links to upcoming parts of the TAOCP series on his web pages. Now, I admit that
+much is way beyond me but I do understand (and like) the graphics and I know that
+Don uses \METAPOST. The next example code is just a proof of concept but might
+eventually become a decent module (with helpers) for making (runtime) fonts.
+After all, we need to adapt to current developments and \TEX ies always are
+willing to adapt and experiment. This chapter was written at the same time as
+the previous one on \TYPETHREE\ fonts so you might want to read that first.
+
+The font explored here is \type {FONT36}, used in \quotation {A potpourri of
+puzzles} and flagged as \quotation {a special font designed for dissection
+puzzles} (in fascicle 9b for Volume 4). Playing with and visualizing for me often
+works better than formulas, which then distracts me from the original purpose,
+but let's have a closer look anyway.
+
+\startlinecorrection
+    \scale[width=\textwidth]{\DEKFontA 1234567890} \vskip1ex
+    \scale[width=\textwidth]{\DEKFontA ABC{\red DE}FGHIJ{\red K}LM} \vskip1ex
+    \scale[width=\textwidth]{\DEKFontA NOPQRSTUVWXYZ}
+\stoplinecorrection
+
+The font has a fixed maximum height of 8~quantities. There is no depth in the
+characters. Some characters are wider. In this example we use a tight bounding
+box. In \CONTEXT\ speak this font is just a regular font but with a special
+feature enabled.
+
+\starttyping
+\definefontfeature
+  [fontthreesix]
+  [default]
+  [metapost=fontthreesix]
+
+\definefont[DEKFontA][Serif*fontthreesix]
+\stoptyping
+
+After this the \type {\DEKFontA} command will set this font as current font. The
+definition mentions \type {Serif} as font name. In \CONTEXT\ this name will
+resolve in the currently defined Serif, so when your document uses Latin Modern
+that will be the one. The \type {fontthreesix} will make this instance use that
+feature set, and the feature definition has the defaults as parent (so we get
+kerning, ligatures, etc.) but as extra feature also \type {metapost}. This means
+that the new glyphs that are about to be defined will actually be injected in the
+\type {Serif}! We will replace characters in that instance. So, the following:
+
+\startbuffer[taocp]
+This font is used in \quotation {The Art Of Computer Programming} by
+Don Knuth, not in volume~1, 2 or~3, but in number~4!
+\stopbuffer
+
+\typebuffer[taocp]
+
+comes out as:
+
+\startnarrower
+\DEKFontA \getbuffer[taocp]
+\stopnarrower
+
+But that doesn't look too good, so we will tweak the font a bit:
+
+\starttyping
+\definefontfeature
+  [fontthreesix-color]
+  [default]
+  [metapost={category=fontthreesix,spread=.1}]
+
+\definefont[DEKFontD][Serif*fontthreesix]
+\stoptyping
+
+The \type {spread} (multiplied by the font unit, which is 12 basepoints here)
+will add a bit more spacing around the blob:
+
+\startnarrower
+\DEKFontD \getbuffer[taocp]
+\stopnarrower
+
+Now, keep in mind that we're talking of a real font here. You can cut and paste
+these characters. It's just the default uppercase Latin alphabet plus digits.
+
+Before we go and look at some of the code needed to render this, a few more
+examples will be given.
+
+\startlinecorrection
+    \scale[width=\textwidth]{\DEKFontB 1234567890}    \vskip4pt
+    \scale[width=\textwidth]{\DEKFontB ABCDEFGHIJKLM} \vskip4pt
+    \scale[width=\textwidth]{\DEKFontB NOPQRSTUVWXYZ}
+\stoplinecorrection
+
+In the above example we not only use color, but also a different shape and random
+colors (that is: random per \TEX\ job). The feature definition for this is:
+
+\starttyping
+\definefontfeature
+  [fontthreesix-color]
+  [default]
+  [metapost={%
+    category=fontthreesix,shape=diamond,%
+    color=random,pen=fancy,spread=.1%
+  }]
+\stoptyping
+
+Possible shapes are \type {circle}, \type {diamond} and \type {square} and
+instead of a random color one can give a known color name. Using transparency
+makes no sense in this font.
+
+A nice usage for this font are initials: % 4 for lm
+
+\startbuffer
+\setupinitial[font=Serif*fontthreesix-initial sa 5]
+{\DEKFontB \placeinitial \input zapf\par}
+\stopbuffer
+
+\typebuffer
+
+The initial feature is defined as:
+
+\starttyping
+\definefontfeature
+  [fontthreesix-initial]
+  [metapost={category=fontthreesix,color=random,shape=circle}]
+\stoptyping
+
+We use this in quoting Hermann Zapf, one that for sure is very applicable in
+a case like this:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+Some combinations of sub|-|features are shown in \in {figure} [threesix:dek]. We
+blow up the diamond with fancy pen example in \in {figure} [threesix:tex]. Alas,
+the \TEX\ logo doesn't look that good in such a font. Using it for acronyms is
+not a good idea anyway, but maybe you can figure out \in {figure}
+[threesix:taocp].
+
+% todo penx peny penr
+
+\definefontfeature
+  [fontthreesix-circle]
+  [metapost={category=fontthreesix,shape=circle,color=random}]
+\definefontfeature
+  [fontthreesix-square]
+  [metapost={category=fontthreesix,shape=square,color=random}]
+\definefontfeature
+  [fontthreesix-diamond]
+  [metapost={category=fontthreesix,shape=diamond,color=random}]
+\definefontfeature
+  [fontthreesix-circle-pen]
+  [metapost={category=fontthreesix,shape=circle,color=random,pen=fancy}]
+\definefontfeature
+  [fontthreesix-square-pen]
+  [metapost={category=fontthreesix,shape=square,color=random,pen=fancy}]
+\definefontfeature
+  [fontthreesix-diamond-pen]
+  [metapost={category=fontthreesix,shape=diamond,color=random,pen=fancy}]
+\definefontfeature
+  [fontthreesix-circle-random]
+  [metapost={category=fontthreesix,random=yes,shape=circle,color=random}]
+\definefontfeature
+  [fontthreesix-square-random]
+  [metapost={category=fontthreesix,random=yes,shape=square,color=random}]
+\definefontfeature
+  [fontthreesix-diamond-random]
+  [metapost={category=fontthreesix,random=yes,shape=diamond,color=random}]
+
+\definefontfeature
+  [fontthreesix-circle-random-spread]
+  [metapost={category=fontthreesix,random=yes,shape=circle,color=random,spread=.1}]
+
+\startplacefigure[reference=threesix:dek]
+    \startcombination[3*3]
+        {\scale[width=.3\textwidth]{\definedfont        [Serif*fontthreesix-circle]D\kern1pt E\kern 1ptK}} {\type{shape=circle}}
+        {\scale[width=.3\textwidth]{\definedfont        [Serif*fontthreesix-square]D\kern1pt E\kern 1ptK}} {\type{shape=square}}
+        {\scale[width=.3\textwidth]{\definedfont       [Serif*fontthreesix-diamond]D\kern1pt E\kern 1ptK}} {\type{shape=diamond}}
+        {\scale[width=.3\textwidth]{\definedfont    [Serif*fontthreesix-circle-pen]D\kern1pt E\kern 1ptK}} {\type{shape=circle,pen=fancy}}
+        {\scale[width=.3\textwidth]{\definedfont    [Serif*fontthreesix-square-pen]D\kern1pt E\kern 1ptK}} {\type{shape=square,pen=fancy}}
+        {\scale[width=.3\textwidth]{\definedfont   [Serif*fontthreesix-diamond-pen]D\kern1pt E\kern 1ptK}} {\type{shape=diamond,pen=fancy}}
+        {\scale[width=.3\textwidth]{\definedfont [Serif*fontthreesix-circle-random]D\kern1pt E\kern 1ptK}} {\type{shape=circle,random=yes}}
+        {\scale[width=.3\textwidth]{\definedfont [Serif*fontthreesix-square-random]D\kern1pt E\kern 1ptK}} {\type{shape=square,random=yes}}
+        {\scale[width=.3\textwidth]{\definedfont[Serif*fontthreesix-diamond-random]D\kern1pt E\kern 1ptK}} {\type{shape=diamond,random=yes}}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[reference=threesix:tex]
+\scale[width=\textwidth]{\definedfont[Serif*fontthreesix-diamond-pen]T\lower.5ex\hbox spread .1em{\hss E\hss}X}
+\stopplacefigure
+
+\startplacefigure[reference=threesix:taocp]
+\scale[width=\textwidth]{\definedfont[Serif*fontthreesix-circle-random-spread]TAOCP}
+\stopplacefigure
+
+You can quit reading now or expose yourself to how this is coded. We use a
+combination of \LUA\ and \METAPOST, but different solutions are possible. The
+shapes are entered (or course) with zeros and ones.
+
+\starttyping
+\startluacode
+local font36 = {
+    ["0"] = "00111100 01111110 11000011 11000011 11000011 ...",
+    ["1"] = "00011100 11111100 11101100 00001100 00001100 ...",
+    .....
+    ["D"] = "11111100 11100010 01100011 01100011 01100011 ...",
+    ["E"] = "1111111 1110001 0110101 0111100 0110100 0110001 ...",
+    .....
+    ["K"] = "11101110 11100100 01101000 01110000 01111000 ...",
+    .....
+}
+\stopluacode
+\stoptyping
+
+We also use \LUA\ to register this font. The actual code looks slightly different
+because it uses some helpers from the \CONTEXT\ \LUA\ libraries. We remap the
+bits pattern onto \METAPOST\ macro calls.
+
+\starttyping
+\startluacode
+local replace = {
+    ["0"] = "N;",
+    ["1"] = "Y;",
+    [" "] = "L;",
+}
+
+function MP.registerthreesix(name)
+    fonts.dropins.registerglyphs {
+        name     = name,
+        units    = 12,
+        usecolor = true,
+    }
+    for u, v in table.sortedhash(font36) do
+        local ny     = 8
+        local nx     = (#v - ny + 1) // ny
+        local height = ny * 1.1 - 0.1
+        local width  = nx * 1.1 - 0.1
+        local code   = string.gsub(v,".",replace)
+        fonts.dropins.registerglyph {
+            category = name,
+            unicode  = utf.byte(u),
+            width    = width,
+            height   = height,
+            code     = string.format("ThreeSix(%s);",code),
+        }
+    end
+end
+
+MP.registerthreesix("fontthreesix")
+\stopluacode
+\stoptyping
+
+So, after this the font \type {fontthreesix} is known to the system but we still
+need to provide \METAPOST\ code to generate it. The glyphs themselves are now
+just sequences of \type {N}, \type {Y} and \type {L} with some wrapper code
+around it. The definitions are put in the \type {MP} namespace simply because a
+first version initialized in \METAPOST, and there could create variants, but in
+the end I settled on the parameter interface at the \TEX\ end.
+
+The next definition looks a bit complex but normally such a macro is
+stepwise constructed. Notice how we can query the sub features. In order to make
+that possible the regular \METAFUN\ parameter handling code is used. We just push
+the sub|-|features into to \type {mpsfont} namespace.
+
+\starttyping
+\startMPcalculation{simplefun}
+
+def InitializeThreeSix =
+    save Y, N, L, S ; save dx, dy, nx, ny ; save currentpen ;
+    save shape, fillcolor, mypen, random, spread, hoffset ;
+    string shape, fillcolor, mypen ; boolean random ;
+    pen currentpen ;
+    dx :=   11/10 ;
+    dy := - 11/10 ;
+    nx := - dx ;
+    ny :=   0 ;
+    shape      := getparameterdefault "mpsfont" "shape" "circle" ;
+    random     := hasoption           "mpsfont" "random" "true" ;
+    fillcolor  := getparameterdefault "mpsfont" "color" "" ;
+    mypen      := getparameterdefault "mpsfont" "pen" "" ;
+    spread     := getparameterdefault "mpsfont" "spread" 0 ;
+    hoffset    := 12 * spread / 2 ;
+    currentpen := pencircle
+        if mypen = "fancy" :
+            xscaled 1/20 yscaled 2/20 rotated 45
+        else :
+            scaled 1/20
+        fi ;
+    if shape == "square" :
+        def S =
+            unitsquare if random : randomized 1/10 fi
+            shifted (nx,ny)
+        enddef ;
+    elseif shape = "diamond" :
+        def S =
+            unitdiamond if random : randomized 1/10 fi
+            shifted (nx,ny)
+        enddef ;
+    else :
+        def S =
+            unitcircle if random : randomizedcontrols 1/20 fi
+            shifted (nx,ny)
+        enddef ;
+    fi ;
+    def N =
+        nx := nx + dx ;
+        draw S ;
+    enddef ;
+    if fillcolor = "random" :
+        def Y =
+            nx := nx + dx ;
+            fillup S withcolor white randomized (2/3,2/3,2/3) ;
+        enddef ;
+    elseif fillcolor = "" :
+        def Y =
+            nx := nx + dx ;
+            fillup S ;
+        enddef ;
+    else :
+        def Y =
+            nx := nx + dx ;
+            fillup S withcolor fillcolor ;
+        enddef ;
+    fi ;
+    def L =
+        nx := - dx ;
+        ny := ny + dy ;
+    enddef ;
+enddef ;
+
+vardef ThreeSix (text code) =
+    InitializeThreeSix ; % todo: once per instance run
+    draw image (code) shifted (hoffset,-ny) ;
+enddef ;
+
+\stopMPcalculation
+\stoptyping
+
+This code is not that efficient in the sense that there's quite some
+\METAPOST|-|\LUA|-|\METAPOST\ traffic going on, for instance each parameter check
+involves this, but in practice performance is quite okay, certainly for such a
+small font. There will be an initializer option some day soon. The \type
+{simplefun} is a reference to an \MPLIB\ instance that does load \METAFUN\ but
+only the modules that make no sense for this kind of usage. It also enforces
+double mode. The calculations wrapper just executes the code and does not place
+some (otherwise empty) graphic.
+
+% After playing with the font I see the beauty of the descriptions in the
+% pre|-|fascicle 9b but I still feel pretty stupid. Lucky for me there are
+% exercises like 999, tagged as \quote {for dummies}, so I'm not alone.
+
+Those who have seen (and|/|or read) \quotation {Concrete Mathematics} will have
+noticed the use of inline images, like dice. Dice are also used in \quotation
+{pre-fascicle 5a} (I need a few more lives to grasp that, so I stick to the
+images for now!). So, to compensate the somewhat complex code above, I will show
+how to accomplish that. This time we do all in \METAPOST:
+
+\startMPcalculation{simplefun}
+
+def DiceFrame =
+    pickup pencircle scaled 1/2 ;
+    draw unitsquare scaled 8 ;
+    pickup pencircle scaled 3/2 ;
+enddef ;
+
+vardef DiceOne =
+    DiceFrame ;
+    draw (4,4) ;
+enddef ;
+vardef DiceTwoA =
+    DiceFrame ;
+    draw (2,6) ; draw (6,2) ;
+enddef ;
+vardef DiceTwoB =
+    DiceFrame ;
+    draw (6,6) ; draw (2,2) ;
+enddef ;
+vardef DiceTwo =
+    if hasoption "mpsfont" "option" "reverse" :
+        DiceTwoB
+    else :
+        DiceTwoA
+    fi ;
+enddef ;
+vardef DiceThreeA =
+    DiceFrame ;
+    draw (2,6) ; draw (4,4) ; draw (6,2) ;
+enddef ;
+vardef DiceThreeB =
+    DiceFrame ;
+    draw (6,6) ; draw (4,4) ; draw (2,2) ;
+enddef ;
+vardef DiceThree =
+    if hasoption "mpsfont" "option" "reverse" :
+        DiceThreeB
+    else :
+        DiceThreeA
+    fi ;
+enddef ;
+vardef DiceFour =
+    DiceFrame ;
+    draw (2,6) ; draw (6,6) ; draw (2,2) ; draw (6,2) ;
+enddef ;
+vardef DiceFive =
+    DiceFrame ;
+    draw (2,6) ; draw (6,6) ; draw (4,4) ; draw (2,2) ; draw (6,2) ;
+enddef ;
+vardef DiceSix =
+    DiceFrame ;
+    draw (2,6) ; draw (6,6) ; draw (2,4) ; draw (6,4) ; draw (2,2) ; draw (6,2) ;
+enddef ;
+
+vardef DiceBad =
+    pickup pencircle scaled 1/2 ;
+    draw unitsquare scaled 8 ;
+    draw (1,7) -- (7,1) ; draw (1,1) -- (7,7) ;
+enddef ;
+
+lmt_registerglyphs [
+    name     = "dice",
+    units    = 12,
+    width    = 8,
+    height   = 8,
+    depth    = 0,
+    usecolor = true,
+] ;
+
+lmt_registerglyph [ category = "dice", unicode = "0x2680", code = "DiceOne;" ] ;
+lmt_registerglyph [ category = "dice", unicode = "0x2681", code = "DiceTwo;" ] ;
+lmt_registerglyph [ category = "dice", unicode = "0x2682", code = "DiceThree;" ] ;
+lmt_registerglyph [ category = "dice", unicode = "0x2683", code = "DiceFour;" ] ;
+lmt_registerglyph [ category = "dice", unicode = "0x2684", code = "DiceFive;" ] ;
+lmt_registerglyph [ category = "dice", unicode = "0x2685", code = "DiceSix;" ] ;
+
+lmt_registerglyph [ category = "dice", private = "invaliddice", code = "DiceBad;" ] ;
+
+\stopMPcalculation
+
+This is not that hard to follow. We define some shapes first. These could have
+been assigned to the \type {code} parameter directly but this is nicer. Next we
+register the font itself and after that we set glyphs. We also set the official
+\UNICODE\ slots. So, copying a dice can either result in a digit or in a
+\UNICODE\ slot for a dice. In the example below we switch to a color which
+demonstrates that our dice can be colored at the \TEX\ end. It's either that or
+coloring at the \METAPOST\ end as both demand a different kind of \TYPETHREE\
+embedding trickery.
+
+We actually predefine three features. The digits one will map regular digit in
+the input to dice. We accomplish that via a font feature:
+
+\startbuffer
+\startluacode
+fonts.handlers.otf.addfeature("dice:digits", {
+    type      = "substitution",
+    order     = { "dice:digits" },
+    nocheck   = true,
+    data      = {
+        [0x30] = "invaliddice",
+        [0x31] = 0x2680,
+        [0x32] = 0x2681,
+        [0x33] = 0x2682,
+        [0x34] = 0x2683,
+        [0x35] = 0x2684,
+        [0x36] = 0x2685,
+        [0x37] = "invaliddice",
+        [0x38] = "invaliddice",
+        [0x39] = "invaliddice",
+    },
+} )
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This kind of trickery is part of the font machinery used in \CONTEXT\ and permits
+runtime adaption of fonts, so we just use the same mechanism. The \type {nocheck}
+is needed to avoid this feature not kicking in due to lack of (at the time of
+checking) yet undefined dice.
+
+\startbuffer
+\definefontfeature
+  [dice:normal]
+  [default]
+  [metapost={category=dice}]
+\definefontfeature
+  [dice:reverse]
+  [default]
+  [metapost={category=dice,option=reverse}]
+\definefontfeature
+  [dice:digits]
+  [dice:digits=yes]
+
+\definefont[DiceN] [Serif*dice:normal]
+\definefont[DiceD] [Serif*dice:normal,dice:digits]
+\definefont[DiceR] [Serif*dice:reverse,dice:digits]
+
+{\DiceD Does 1 it 4 work? And {\darkgreen 3} too?} {\DiceR And how about
+{\darkred 3} then? But 8 should sort of fail!}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The six digits and \UNICODE\ characters come out the same:
+
+\startbuffer
+\red  \DiceD \dostepwiserecurse   {`1}   {`6}{1}{\char#1\quad}%
+\blue \DiceN \dostepwiserecurse{"2680}{"2685}{1}{\char#1\quad}%
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+    \scale[width=\textwidth]{\getbuffer\unskip}
+\stoplinecorrection
+
+It is tempting to implement for instance~7 as two dice (a one to multi mapping in
+\OPENTYPE\ speak) but then one has to decide what combination is taken. One can
+also implement ligatures so that for instance 12 results in two six dice. But I
+think that's over the top and only showing \TEX\ muscles. It is anyway not that
+hard to do as we have an interface for that already.
+
+So why not do the dominos as well? Because there are so many dominos we predefine
+the shapes and then register the lot in a loop. We have horizontal and vertical
+variants. Being lazy I just made two helpers while one could have done but with
+some rotation and shifting of the horizontal one. The loop could be a macro but
+we don't save much code that way.
+
+\startbuffer
+\startMPcalculation{simplefun}
+
+picture Dominos[] ;
+
+Dominos[0] := image() ;
+Dominos[1] := image(draw(4,4);) ;
+Dominos[2] := image(draw(2,6);draw(6,2););
+Dominos[3] := image(draw(2,6);draw(4,4);draw(6,2););
+Dominos[4] := image(draw(2,6);draw(6,6);draw(2,2);draw(6,2););
+Dominos[5] := image(draw(2,6);draw(6,6);draw(4,4);draw(2,2);draw(6,2););
+Dominos[6] := image(draw(2,6);draw(4,6);draw(6,6);draw(2,2);draw(4,2);draw(6,2););
+
+lmt_registerglyphs [
+    name     = "dominos",
+    units    = 12,
+    width    = 16,
+    height   = 8,
+    depth    = 0,
+    usecolor = true,
+] ;
+
+def DrawDominoH(expr a, b) =
+    draw image (
+        pickup pencircle scaled 1/2 ;
+        if (getparameterdefault "mpsfont" "color" "") = "black" :
+            fillup unitsquare xyscaled (16,8) ;
+            draw (8,.5) -- (8,7.5) withcolor white ;
+            pickup pencircle scaled 3/2 ;
+            draw Dominos[a]
+                withpen currentpen
+                withcolor white ;
+            draw Dominos[b] shifted (8,0)
+                withpen currentpen
+                withcolor white ;
+        else :
+            draw unitsquare xyscaled (16,8) ;
+            draw (8,0) -- (8,8) ;
+            pickup pencircle scaled 3/2 ;
+            draw Dominos[a]
+                withpen currentpen ;
+            draw Dominos[b] shifted (8,0)
+                withpen currentpen ;
+        fi ;
+    ) ;
+enddef ;
+
+def DrawDominoV(expr a, b) = % is H rotated and shifted
+    draw image (
+        pickup pencircle scaled 1/2 ;
+        if (getparameterdefault "mpsfont" "color" "") = "black" :
+            fillup unitsquare xyscaled (8,16) ;
+            draw (.5,8) -- (7.5,8) withcolor white ;
+            pickup pencircle scaled 3/2 ;
+            draw Dominos[a] rotatedaround(center Dominos[a],90)
+                withpen currentpen
+                withcolor white  ;
+            draw Dominos[b] rotatedaround(center Dominos[b],90) shifted (0,8)
+                withpen currentpen
+                withcolor white  ;
+        else :
+            draw unitsquare xyscaled (8,16) ;
+            draw (0,8) -- (8,8) ;
+            pickup pencircle scaled 3/2 ;
+            draw Dominos[a] rotatedaround(center Dominos[a],90)
+                withpen currentpen ;
+            draw Dominos[b] rotatedaround(center Dominos[b],90) shifted (0,8)
+                withpen currentpen ;
+        fi ;
+    ) ;
+enddef ;
+
+begingroup
+    save unicode ; numeric unicode ; unicode := 127025 ; % 1F031
+
+    for i=0 upto 6 :
+        for j=0 upto 6 :
+            lmt_registerglyph [
+                category = "dominos",
+                unicode  = unicode,
+                code     = "DrawDominoH(" & decimal i & "," & decimal j & ");",
+                width    = 16,
+                height   = 8,
+            ] ;
+            unicode := unicode + 1 ;
+        endfor ;
+    endfor ;
+
+    save unicode ; numeric unicode ; unicode := 127075 ;
+
+    for i=0 upto 6 :
+        for j=0 upto 6 :
+            lmt_registerglyph [
+                category = "dominos",
+                unicode  = unicode,
+                code     = "DrawDominoV(" & decimal i & "," & decimal j & ");",
+                width    = 8,
+                height   = 16,
+            ] ;
+            unicode := unicode + 1 ;
+        endfor ;
+    endfor ;
+endgroup ;
+
+\stopMPcalculation
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Again we predefine a couple of features:
+
+\startbuffer
+\definefontfeature
+  [dominos:white]
+  [default]
+  [metapost={category=dominos}]
+
+\definefontfeature
+  [dominos:black]
+  [default]
+  [metapost={category=dominos,color=black}]
+
+\definefontfeature
+  [dominos:digits]
+  [dominos:digits=yes]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+This last feature is yet to be defined. We could deal with the invalid dominos
+with some substitution trickery but let's keep it simple.
+
+\startbuffer
+\startluacode
+local ligatures = { }
+local unicode   = 127025
+
+for i=0x30,0x36 do
+    for j=0x30,0x36 do
+        ligatures[unicode] = { i, j }
+        unicode = unicode + 1 ;
+    end
+end
+
+fonts.handlers.otf.addfeature("dominos:digits", {
+    type      = "ligature",
+    order     = { "dominos:digits" },
+    nocheck   = true,
+    data      = ligatures,
+} )
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+That leaves showing an example. We define a few fonts and again we just extend
+the Serif:
+
+\startbuffer
+\definefont[DominoW][Serif*dominos:white]
+\definefont[DominoB][Serif*dominos:black]
+\definefont[DominoD][Serif*dominos:white,dominos:digits]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+The example is:
+
+\startbuffer
+\DominoW
+    \char"1F043\quad 🀱\quad
+    \char"1F052\quad 🀲\quad
+    \char"1F038\quad 🀳\quad
+    \darkgreen\char"1F049\quad \char"1F07B\quad
+\DominoB
+    \char"1F087\quad
+    \char"1F088\quad
+    \char"1F089\quad
+\DominoD
+    \darkred 12\quad56\quad64
+\stopbuffer
+
+\typebuffer
+
+Watch the ligatures in action:
+
+\startlinecorrection
+    \scale[width=\textwidth]{\getbuffer\unskip}
+\stoplinecorrection
+
+To what extent the usage of symbols like dice and dominos as characters in the
+mentioned book are responsible for them being in \UNICODE, I don't know. Now with
+all these emoji showing up one can wonder about graphics in such a standard
+anyway. But for sure, even after more than three decades, Don still makes nice
+fonts.
+
+A treasure of tiny graphics can be found in \quotation {pre-fascicle 5c} and many
+are in color! In fact, it has dominos too. It must have been a lot of fun writing
+this! I'm thinking of turning the pentominoes into a font where a \type {GPOS}
+feature can deal with the inter|-|pentomino kerning (which mighty work out okay
+for example~36. The windmill dominos also make a nice example for a font where
+ligatures will boil down to the base form and the (one or more) blades are laid
+over. It's definitely an inspiring read.
+
+\stopchapter
+
+\stoptext

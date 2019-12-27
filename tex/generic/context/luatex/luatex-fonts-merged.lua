@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 12/24/19 19:44:19
+-- merge date  : 12/27/19 16:34:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -29615,19 +29615,27 @@ registerotffeature {
   plug=otf.pluginprocessor,
  }
 }
+local function markinitializer(tfmdata,value)
+ local properties=tfmdata.properties
+ properties.checkmarks=value
+end
+registerotffeature {
+ name="checkmarks",
+ description="check mark widths",
+ default=true,
+ initializers={
+  node=markinitializer,
+ },
+}
 otf.handlers=handlers
+if context then
+
+--removed
+
+else
+end
 local setspacekerns=nodes.injections.setspacekerns if not setspacekerns then os.exit() end
-local tag="kern" 
-if fontfeatures then
- function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
-  local features=fontfeatures[font]
-  local enabled=features and features.spacekern and features[tag]
-  if enabled then
-   setspacekerns(font,sequence)
-  end
-  return head,enabled
- end
-else 
+local tag="kern"
  function handlers.trigger_space_kerns(head,dataset,sequence,initialrl,font,attr)
   local shared=fontdata[font].shared
   local features=shared and shared.features
@@ -29637,7 +29645,6 @@ else
   end
   return head,enabled
  end
-end
 local function hasspacekerns(data)
  local resources=data.resources
  local sequences=resources.sequences
@@ -29820,18 +29827,6 @@ registerotffeature {
  default=true,
  initializers={
   node=spaceinitializer,
- },
-}
-local function markinitializer(tfmdata,value)
- local properties=tfmdata.properties
- properties.checkmarks=value
-end
-registerotffeature {
- name="checkmarks",
- description="check mark widths",
- default=true,
- initializers={
-  node=markinitializer,
  },
 }
 

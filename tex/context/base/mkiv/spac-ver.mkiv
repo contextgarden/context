@@ -2168,11 +2168,14 @@
      \doubleexpandafter\gobbleoneargument
    \fi\fi}
 
-\unexpanded\def\useblankparameter#1% faster local variant
-  {\edef\m_spac_blank_asked{#1\c!blank}%
+\unexpanded\def\usespecificblankparameter#1#2% faster local variant
+  {\edef\m_spac_blank_asked{#1#2}%
    \ifx\m_spac_blank_asked\empty\else
      \directvspacing\m_spac_blank_asked
    \fi}
+
+\unexpanded\def\useblankparameter#1% faster local variant
+  {\usespecificblankparameter#1\c!blank}
 
 %D Handy (and faster):
 

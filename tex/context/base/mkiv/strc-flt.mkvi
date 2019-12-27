@@ -418,25 +418,34 @@
    \noindent
    \gdef\lastcaptiontag{\strut\thecurrentfloatnumber}% was xdef ... needs checking
    \begingroup
-     \usefloatcaptionstyleandcolor\c!style\c!color
-     \clf_doifelselisthastitle{\currentfloat}\numexpr\currentfloatnumber\relax
-       \donothing
-       \emptyfloatcaptiontrue
-     \ifnofloatnumber
-     \else
-       \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
-       \ifnofloatcaption \else \ifemptyfloatcaption \else
-         \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
-           {\floatcaptionparameter\c!headseparator\relax
-            \scratchskip\floatcaptionparameter\c!distance\relax
-            \dotfskip\scratchskip\emergencystretch.5\scratchskip}
-           {\blank[\floatcaptionparameter\c!spaceinbetween]}%
-       \fi \fi
-     \fi
      \ifnofloatcaption
        \global\d_strc_floats_caption_height\zeropoint
        \global\d_strc_floats_caption_depth \zeropoint
      \else
+       \usefloatcaptionstyleandcolor\c!style\c!color
+       \clf_doifelselisthastitle{\currentfloat}\numexpr\currentfloatnumber\relax
+         \donothing
+         \emptyfloatcaptiontrue
+       \ifnofloatnumber \else \ifnofloatcaption \else
+         \ifemptyfloatcaption
+           \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
+         \else
+           \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
+             {\scratchskip\floatcaptionparameter\c!distance\relax
+              \setbox\scratchbox\hbox
+                {\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor
+                 \thecurrentfloatnumber
+                 \floatcaptionparameter\c!headseparator
+                 \dotfskip\scratchskip}%
+              \doifelse{\floatcaptionparameter\c!hang}\v!yes
+                 {\leftskip\wd\scratchbox
+                  \llap{\box\scratchbox}}
+                 {\unhbox\scratchbox}%
+               \emergencystretch.5\scratchskip}
+             {\hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
+              \blank[\floatcaptionparameter\c!spaceinbetween]}%
+         \fi
+       \fi \fi
        \usefloatcaptionstyleandcolor\c!textstyle\c!textcolor
        \global\d_strc_floats_caption_height\strutheight
        \global\d_strc_floats_caption_depth \strutdepth

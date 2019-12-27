@@ -452,6 +452,9 @@
                 <cd:parameter name="headseparator">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
+                <cd:parameter name="headcommand">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
                 <cd:parameter name="inbetween">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>

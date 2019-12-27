@@ -29,7 +29,7 @@ presetparameters "text" [
     position   = origin,
     trace      = false,
 
-    background      = "color",
+    background      = "", % "color",
     backgroundcolor = "gray",
 ] ;
 
@@ -1104,13 +1104,14 @@ enddef ;
 
 vardef lmt_do_chart_text(expr s, i, value) =
     lmt_text [
-        style  = labelstyle,
-        format = labelformat,
-        strut  = labelstrut,
-        anchor = labelanchor,
-        offset = labelgap,
-        color  = labelcolor,
-        text   = (getparameterdefault "labels" s i (decimal value))
+        style      = labelstyle,
+        format     = labelformat,
+        strut      = labelstrut,
+        anchor     = labelanchor,
+        offset     = labelgap,
+        color      = labelcolor,
+        text       = (getparameterdefault "labels" s i (decimal value))
+        background = "",
     ]
 enddef ;
 
@@ -1129,10 +1130,11 @@ def lmt_do_chart_legend =
         for i=1 upto n :
             dy := dy - ddy ;
             l := lmt_text [
-                text   = getparameter "legend" i,
-                anchor = "rt"
-                style  = labelstyle,
-                color  = labelcolor,
+                text       = getparameter "legend" i,
+                anchor     = "rt"
+                style      = labelstyle,
+                color      = labelcolor,
+                background = "",
             ] ;
             fill leftboundary l rightenlarged w
                 shifted (dx,dy+d)
@@ -1879,12 +1881,13 @@ vardef lmt_do_contour =
                             withcolor lua.mp.lmt_contours_color(v) ;
                         draw
                             lmt_text [
-                                trace    = trace,
-                                anchor   = "llft",
-                                format   = fmt,
-                                text     = decimal lua.mp.lmt_contours_value(v),
-                                style    = getparameter "zstyle",
-                                position = (wx,0)
+                                trace      = trace,
+                                anchor     = "llft",
+                                format     = fmt,
+                                text       = decimal lua.mp.lmt_contours_value(v),
+                                style      = getparameter "zstyle",
+                                position   = (wx,0),
+                                background = "",
                             ]
                             if ry <> 0 : ysized (ry) fi
                             shifted (w+ox+tx+sx,dy+sy+oy)
@@ -1921,11 +1924,12 @@ vardef lmt_do_contour =
                             n := al/2 ; s := (w - al) / xlab ; d := (xmax - xmin) / xlab ;
                             for i=xmin step d until xmax :
                                 draw lmt_text [
-                                    trace  = trace,
-                                    anchor = "bot",
-                                    format = getparameter "xformat",
-                                    style  = getparameter "xstyle",
-                                    text   = decimal i
+                                    trace      = trace,
+                                    anchor     = "bot",
+                                    format     = getparameter "xformat",
+                                    style      = getparameter "xstyle",
+                                    text       = decimal i
+                                    background = "",
                                 ]
                                     if ry <> 0 : ysized (ry) fi
                                     shifted (n,-at-ao)
@@ -1965,11 +1969,12 @@ vardef lmt_do_contour =
                             n := al/2 ; s := (h - al) / ylab ; d := (ymax - ymin) / ylab ;
                             for i=ymin step d until ymax :
                                 draw lmt_text [
-                                    trace  = trace,
-                                    anchor = "lft",
-                                    format = getparameter "yformat",
-                                    style  = getparameter "ystyle",
-                                    text   = decimal i
+                                    trace      = trace,
+                                    anchor     = "lft",
+                                    format     = getparameter "yformat",
+                                    style      = getparameter "ystyle",
+                                    text       = decimal i
+                                    background = "",
                                 ]
                                     if ry <> 0 : ysized (ry) fi
                                     shifted (-at-ao,n)
@@ -1990,9 +1995,10 @@ vardef lmt_do_contour =
 
                     draw
                         lmt_text [
-                            trace  = trace,
-                            anchor = "bot",
-                            text   = lua.mp.lmt_contours_range()
+                            trace      = trace,
+                            anchor     = "bot",
+                            text       = lua.mp.lmt_contours_range()
+                            background = "",
                         ]
                         if ry <> 0 : ysized (ry) fi
                         shifted (w/2,d-ty)
@@ -2002,9 +2008,10 @@ vardef lmt_do_contour =
 
                     draw
                         lmt_text [
-                            trace  = trace,
-                            anchor = "lrt",
-                            text   = lua.mp.lmt_contours_xrange()
+                            trace      = trace,
+                            anchor     = "lrt",
+                            text       = lua.mp.lmt_contours_xrange()
+                            background = "",
                         ]
                         if ry <> 0 : ysized (ry) fi
                         shifted (0,d-ty)
@@ -2012,9 +2019,10 @@ vardef lmt_do_contour =
 
                     draw
                         lmt_text [
-                            trace  = trace,
-                            anchor = "llft",
-                            text   = lua.mp.lmt_contours_yrange()
+                            trace      = trace,
+                            anchor     = "llft",
+                            text       = lua.mp.lmt_contours_yrange()
+                            background = "",
                         ]
                         if ry <> 0 : ysized (ry) fi
                         shifted (w,d-ty)
@@ -2028,10 +2036,11 @@ vardef lmt_do_contour =
 
                     draw
                         lmt_text [
-                            trace  = trace,
-                            anchor = "bot",
-                            style  = getparameter "functionstyle",
-                            text   = lua.mp.lmt_contours_function()
+                            trace      = trace,
+                            anchor     = "bot",
+                            style      = getparameter "functionstyle",
+                            text       = lua.mp.lmt_contours_function()
+                            background = "",
                         ]
                         if ry <> 0 : ysized (ry) fi
                         shifted (w/2,ypart llcorner currentpicture - ty)

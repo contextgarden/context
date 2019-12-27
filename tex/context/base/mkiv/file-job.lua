@@ -1114,11 +1114,11 @@ function document.setfilenames()
     end
 end
 
-implement { name = "setdocumentcommandline",   actions = document.setcommandline,  onlyonce = true }
-implement { name = "setdocumentmodes",         actions = document.setmodes,        onlyonce = true }
-implement { name = "setdocumentmodules",       actions = document.setmodules,      onlyonce = true }
-implement { name = "setdocumentenvironments",  actions = document.setenvironments, onlyonce = true }
-implement { name = "setdocumentfilenames",     actions = document.setfilenames,    onlyonce = true }
+implement { name = "setdocumentcommandline",  actions = document.setcommandline,  onlyonce = true }
+implement { name = "setdocumentmodes",        actions = document.setmodes,        onlyonce = true }
+implement { name = "setdocumentmodules",      actions = document.setmodules,      onlyonce = true }
+implement { name = "setdocumentenvironments", actions = document.setenvironments, onlyonce = true }
+implement { name = "setdocumentfilenames",    actions = document.setfilenames,    onlyonce = true }
 
 do
 

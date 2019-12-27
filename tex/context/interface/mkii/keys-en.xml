@@ -235,6 +235,7 @@
 		<cd:variable name='handwritten' value='handwritten'/>
 		<cd:variable name='hang' value='hang'/>
 		<cd:variable name='hanging' value='hanging'/>
+		<cd:variable name='hangingboth' value='hangingboth'/>
 		<cd:variable name='head' value='head'/>
 		<cd:variable name='header' value='header'/>
 		<cd:variable name='headintext' value='headintext'/>
@@ -1050,6 +1051,7 @@
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='ownnumber'/>
+		<cd:constant name='packcriterium' value='packcriterium'/>
 		<cd:constant name='page' value='page'/>
 		<cd:constant name='pageboundaries' value='pageboundaries'/>
 		<cd:constant name='pagecolor' value='pagecolor'/>

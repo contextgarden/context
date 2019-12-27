@@ -170,7 +170,7 @@ end
 
 local function add_backgrounds(head,id,list)
     if list then
-    for current, id, subtype, list in nextlist, list do
+        for current, id, subtype, list in nextlist, list do
             if list then
                 if alignments and subtype == alignmentlist_code then
                     local l = add_alignbackgrounds(current,list)
