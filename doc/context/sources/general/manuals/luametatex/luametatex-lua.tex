@@ -1,0 +1,224 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-lua
+
+\startchapter[reference=lua,title={Using \LUAMETATEX}]
+
+\startsection[title={Initialization},reference=init]
+
+\startsubsection[title={\LUAMETATEX\ as a \LUA\ interpreter}]
+
+\topicindex {initialization}
+\topicindex {\LUA+interpreter}
+
+Although \LUAMETATEX\ is primarily meant as a \TEX\ engine, it can also serve as
+a stand alone \LUA\ interpreter. There are two ways to make \LUAMETATEX\ behave
+like a standalone \LUA\ interpreter:
+
+\startitemize[packed]
+\startitem
+    if a \type {--luaonly} option is given on the commandline, or
+\stopitem
+\startitem
+    if the only non|-|option argument (file) on the commandline has the extension
+    \type {lua} or \type {luc}.
+\stopitem
+\stopitemize
+
+In this mode, it will set \LUA's \type {arg[0]} to the found script name, pushing
+preceding options in negative values and the rest of the command line in the
+positive values, just like the \LUA\ interpreter does.
+
+\LUAMETATEX\ will exit immediately after executing the specified \LUA\ script and is,
+in effect, a somewhat bulky stand alone \LUA\ interpreter with a bunch of extra
+preloaded libraries.
+
+When no argument is given, \LUAMETATEX\ will look for a \LUA\ file with the same
+name as the binary and run that one when present. This makes it possible to use
+the engine as a stub. For instance, in \CONTEXT\ a symlink from \type {mtxrun} to
+type {luametatex} will run the \type {mtxrun.lua} script when present in the same
+path as the binary itself
+
+\stopsubsection
+
+\startsubsection[title={Other commandline processing}]
+
+\topicindex {command line}
+
+When the \LUAMETATEX\ executable starts, it looks for the \type {--lua} command line
+option. If there is no \type {--lua} option, the command line is interpreted in a
+similar fashion as the other \TEX\ engines. All options are accepted but only some
+have are understood by \LUAMETATEX\ itself:
+
+\starttabulate[|l|p|]
+\DB commandline argument    \BC explanation \NC \NR
+\TB
+\NC \type{--credits}        \NC display credits and exit \NC \NR
+\NC \type{--fmt=FORMAT}     \NC load the format file \type {FORMAT} \NC\NR
+\NC \type{--help}           \NC display help and exit \NC\NR
+\NC \type{--ini}            \NC be \type {iniluatex}, for dumping formats \NC\NR
+\NC \type{--jobname=STRING} \NC set the job name to \type {STRING} \NC \NR
+\NC \type{--lua=FILE}       \NC load and execute a \LUA\ initialization script \NC\NR
+\NC \type{--version}        \NC display version and exit \NC \NR
+\LL
+\stoptabulate
+
+There are less options than with \LUATEX, because one has to deal with them in
+\LUA\ anyway. There are no options to enter a safer mode or control executing
+programs. This can easily be achieved with a startup \LUA\ script.
+
+The value to use for \prm {jobname} is decided as follows:
+
+\startitemize
+\startitem
+    If \type {--jobname} is given on the command line, its argument will be the
+    value for \prm {jobname}, without any changes. The argument will not be
+    used for actual input so it need not exist. The \type {--jobname} switch only
+    controls the \prm {jobname} setting.
+\stopitem
+\startitem
+    Otherwise, \prm {jobname} will be the name of the first file that is read
+    from the file system, with any path components and the last extension (the
+    part following the last \type {.}) stripped off.
+\stopitem
+\startitem
+    There is an exception to the previous point: if the command line goes into
+    interactive mode (by starting with a command) and there are no files input
+    via \prm {everyjob} either, then the \prm {jobname} is set to \type
+    {texput} as a last resort.
+\stopitem
+\stopitemize
+
+Next the initialization script is loaded and executed. From within the script,
+the entire command line is available in the \LUA\ table \type {arg}, beginning
+with \type {arg[0]}, containing the name of the executable. As consequence
+warnings about unrecognized options are suppressed.
+
+Command line processing happens very early on. So early, in fact, that none of
+\TEX's initializations have taken place yet. The \LUA\ libraries that don't deal
+with \TEX\ are initialized early.
+
+\LUAMETATEX\ allows some of the command line options to be overridden by reading
+values from the \type {texconfig} table at the end of script execution (see the
+description of the \type {texconfig} table later on in this document for more
+details on which ones exactly).
+
+So let's summarize this. The handling of when is called jobname is a bit complex.
+There can be explicit names set on the command line but when not set they can be
+taken from the \type {texconfig} table.
+
+\starttabulate[|l|T|T|T|]
+\NC startup filename \NC --lua     \NC a \LUA\ file  \NC                      \NC \NR
+\NC startup jobname  \NC --jobname \NC a \TEX\ tex   \NC texconfig.jobname    \NC \NR
+\NC startup dumpname \NC --fmt     \NC a format file \NC texconfig.formatname \NC \NR
+\stoptabulate
+
+These names are initialized according to \type {--luaonly} or the first filename
+seen in the list of options. Special treatment of \type {&} and \type {*} as well
+as interactive startup is gone.
+
+When we are in \TEX\ mode at some point the engine needs a filename, for instance
+for opening a log file. At that moment the set jobname becomes the internal one
+and when it has not been set which internalized to jobname but when not set
+becomes \type {texput}. When you see a \type {texput.log} file someplace on your
+system it normally indicates a bad run.
+
+When running on \MSWINDOWS\ the command line, filenames, environment variable
+access etc.\ internally uses the current code page but to the user is exposed as
+\UTF8. Normally users won't notice this.
+
+% fileio_state     .jobname         : a tex string (set when a (log) file is opened)
+% engine_state     .startup_jobname : handles by option parser
+% environment_state.input_name      : temporary interceptor
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUA\ behaviour}]
+
+\startsubsection[title={The \LUA\ version}]
+
+\topicindex {\LUA+libraries}
+\topicindex {\LUA+extensions}
+
+We currently use \LUA\ 5.4 and will follow developments of the language but
+normally with some delay. Therefore the user needs to keep an eye on (subtle)
+differences in successive versions of the language. Here is an example of one
+aspect.
+
+\LUA s \type {tostring} function (and \type {string.format} may return values in
+scientific notation, thereby confusing the \TEX\ end of things when it is used as
+the right|-|hand side of an assignment to a \prm {dimen} or \prm {count}. The
+output of these serializers also depend on the \LUA\ version, so in \LUA\ 5.3 you
+can get different output than from 5.2. It is best not to depend the automatic
+cast from string to number and vise versa as this can change in future versions.
+
+\stopsubsection
+
+\startsubsection[title={Locales}]
+
+\index {locales}
+
+In stock \LUA, many things depend on the current locale. In \LUAMETATEX, we can't
+do that, because it makes documents unportable. While \LUAMETATEX\ is running if
+forces the following locale settings:
+
+\starttyping
+LC_CTYPE=C
+LC_COLLATE=C
+LC_NUMERIC=C
+\stoptyping
+
+There is no way to change that as it would interfere badly with the often
+language specific conversions needed at the \TEX\ end.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUA\ modules}]
+
+\topicindex {\LUA+libraries}
+\topicindex {\LUA+modules}
+
+Of course the regular \LUA\ modules are present. In addition we provide the \type
+{lpeg} library by Roberto Ierusalimschy, This library is not \UNICODE|-|aware,
+but interprets strings on a byte|-|per|-|byte basis. This mainly means that \type
+{lpeg.S} cannot be used with \UTF8 characters encoded in more than two bytes, and
+thus \type {lpeg.S} will look for one of those two bytes when matching, not the
+combination of the two. The same is true for \type {lpeg.R}, although the latter
+will display an error message if used with multibyte characters. Therefore \type
+{lpeg.R('aä')} results in the message \type {bad argument #1 to 'R' (range must
+have two characters)}, since to \type {lpeg}, \type {ä} is two 'characters'
+(bytes), so \type {aä} totals three. In practice this is no real issue and with
+some care you can deal with \UNICODE\ just fine.
+
+There are some more libraries present. These are discussed on a later chapter.
+For instance we embed \type {luasocket} but contrary to \LUATEX\ don't embed the
+related \LUA\ code. An adapted version of \type {luafilesystem} is also included.
+There is a more extensive math library and there are libraries that deal with
+encryption and compression.
+
+\stopsection
+
+\startsection[title={Testing}]
+
+\topicindex {testing}
+
+For development reasons you can influence the used startup date and time. By
+setting the \type {start_time} variable in the \type {texconfig} table; as with
+other variables we use the internal name there. When Universal Time is needed,
+set the entry \type {use_utc_time} in the \type {texconfig} table.
+
+In \CONTEXT\ we provide the command line argument \type {--nodates} that does
+a bit more than disabling dates; it avoids time dependent information in the
+output file for instance.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

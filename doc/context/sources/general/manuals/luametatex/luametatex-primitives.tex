@@ -1,0 +1,392 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-primitives
+
+\startchapter[reference=primitives,title={Primitives aka commands}]
+
+\startsection[title=Introduction]
+
+The starting point of \LUATEX\ is \PDFTEX, which itself contains regular \TEX\
+and \ETEX. Because directional support was needed we also took some code from
+\ALEPH\ (\OMEGA). In a later stage the backend specific commands were isolated in
+its own namespace which resulted in a cleaner code base where the backend code no
+longer was interwoven with the normal frontend primitives. We also promoted some
+generic constructs (like box resources and directions) to core functionality.
+
+Some of the \PDFTEX\ support primitives have been around from the start but when
+\LUA\ integration became better and when a token scanner library was added, not
+all of those made sense as primitives. In previous chapters we already mentioned
+what is gone from the core. Deep down some more has changes but not all is
+reflected at the primitive level. Because there is still a considerable amount of
+new primitives, a summary is given below.
+
+\stopsection
+
+\startsection[title=Languages]
+
+\starttabulate[|||p|]
+\NC \type {automatichyphenmode}       \NC integer       \NC \NC \NR
+\NC \type {automatichyphenpenalty}    \NC integer       \NC \NC \NR
+\NC \type {hyphenpenaltymode}         \NC integer       \NC \NC \NR
+\NC \type {compoundhyphenmode}        \NC integer       \NC \NC \NR
+\NC \type {exceptionpenalty}          \NC integer       \NC \NC \NR
+\NC \type {explicithyphenpenalty}     \NC integer       \NC \NC \NR
+\NC \type {hyphenationbounds}         \NC integer       \NC \NC \NR
+\NC \type {hjcode}                    \NC charactercode \NC \NC \NR
+\NC \type {hyphenationmin}            \NC charactercode \NC \NC \NR
+\NC \type {postexhyphenchar}          \NC charactercode \NC \NC \NR
+\NC \type {posthyphenchar}            \NC charactercode \NC \NC \NR
+\NC \type {preexhyphenchar}           \NC charactercode \NC \NC \NR
+\NC \type {prehyphenchar}             \NC charactercode \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Fonts]
+
+\starttabulate[|||p|]
+\NC \type {tracingfonts}              \NC integer            \NC \NC \NR
+\NC \type {suppressfontnotfounderror} \NC integer            \NC \NC \NR
+\NC \type {setfontid}                 \NC integer            \NC \NC \NR
+\NC \type {fontid}                    \NC font               \NC \NC \NR
+\NC \type {efcode}                    \NC font charactercode \NC \NC \NR
+\NC \type {lpcode}                    \NC font charactercode \NC \NC \NR
+\NC \type {rpcode}                    \NC font charactercode \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Math]
+
+\starttabulate[|||p|]
+\NC \type {matholdmode}               \NC integer          \NC \NC \NR
+\NC \type {mathstyle}                 \NC integer          \NC \NC \NR
+\NC \type {matheqnogapstep}           \NC integer          \NC \NC \NR
+\NC \type {Uskewed}                   \NC                  \NC \NC \NR
+\NC \type {Uskewedwithdelims}         \NC                  \NC \NC \NR
+\NC \type {Ustartdisplaymath}         \NC                  \NC \NC \NR
+\NC \type {Ustartmath}                \NC                  \NC \NC \NR
+\NC \type {Ustopdisplaymath}          \NC                  \NC \NC \NR
+\NC \type {Ustopmath}                 \NC                  \NC \NC \NR
+\NC \type {crampeddisplaystyle}       \NC                  \NC \NC \NR
+\NC \type {crampedtextstyle}          \NC                  \NC \NC \NR
+\NC \type {crampedscriptstyle}        \NC                  \NC \NC \NR
+\NC \type {crampedscriptscriptstyle}  \NC                  \NC \NC \NR
+\NC \type {Umathchardef}              \NC                  \NC \NC \NR
+\NC \type {Umathcharnumdef}           \NC                  \NC \NC \NR
+\NC \type {mathdisplayskipmode}       \NC integer          \NC \NC \NR
+\NC \type {mathscriptsmode}           \NC integer          \NC \NC \NR
+\NC \type {mathnolimitsmode}          \NC integer          \NC \NC \NR
+\NC \type {mathitalicsmode}           \NC integer          \NC \NC \NR
+\NC \type {mathrulesmode}             \NC integer          \NC \NC \NR
+\NC \type {mathrulesfam}              \NC integer          \NC \NC \NR
+\NC \type {mathdelimitersmode}        \NC integer          \NC \NC \NR
+\NC \type {mathflattenmode}           \NC integer          \NC \NC \NR
+\NC \type {mathpenaltiesmode}         \NC integer          \NC \NC \NR
+\NC \type {mathrulethicknessmode}     \NC integer          \NC \NC \NR
+\NC \type {mathscriptboxmode}         \NC integer          \NC \NC \NR
+\NC \type {mathscriptcharmode}        \NC integer          \NC \NC \NR
+\NC \type {mathsurroundmode}          \NC integer          \NC \NC \NR
+\NC \type {nokerns}                   \NC integer          \NC \NC \NR
+\NC \type {noligs}                    \NC integer          \NC \NC \NR
+\NC \type {prebinoppenalty}           \NC integer          \NC \NC \NR
+\NC \type {predisplaygapfactor}       \NC integer          \NC \NC \NR
+\NC \type {prerelpenalty}             \NC integer          \NC \NC \NR
+\NC \type {Usuperscript}              \NC command          \NC \NC \NR
+\NC \type {Usubscript}                \NC command          \NC \NC \NR
+\NC \type {Unosuperscript}            \NC command          \NC \NC \NR
+\NC \type {Unosubscript}              \NC command          \NC \NC \NR
+\NC \type {Umathcode}                 \NC                  \NC \NC \NR
+\NC \type {Umathcodenum}              \NC                  \NC \NC \NR
+\NC \type {Udelcode}                  \NC                  \NC \NC \NR
+\NC \type {Udelcodenum}               \NC                  \NC \NC \NR
+\NC \type {Umathaxis}                 \NC family dimension \NC \NC \NR
+\NC \type {Umathbinbinspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathbinclosespacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathbininnerspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathbinopenspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathbinopspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathbinordspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathbinpunctspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathbinrelspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathclosebinspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathcloseclosespacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathcloseinnerspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathcloseopenspacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathcloseopspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathcloseordspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathclosepunctspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathcloserelspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathconnectoroverlapmin}  \NC family dimension \NC \NC \NR
+\NC \type {Umathfractiondelsize}      \NC family dimension \NC \NC \NR
+\NC \type {Umathfractiondenomdown}    \NC family dimension \NC \NC \NR
+\NC \type {Umathfractiondenomvgap}    \NC family dimension \NC \NC \NR
+\NC \type {Umathfractionnumup}        \NC family dimension \NC \NC \NR
+\NC \type {Umathfractionnumvgap}      \NC family dimension \NC \NC \NR
+\NC \type {Umathfractionrule}         \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerbinspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerclosespacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerinnerspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathinneropenspacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathinneropspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerordspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerpunctspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathinnerrelspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitabovebgap}       \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitabovekern}       \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitabovevgap}       \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitbelowbgap}       \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitbelowkern}       \NC family dimension \NC \NC \NR
+\NC \type {Umathlimitbelowvgap}       \NC family dimension \NC \NC \NR
+\NC \type {Umathnolimitsubfactor}     \NC family dimension \NC \NC \NR
+\NC \type {Umathnolimitsupfactor}     \NC family dimension \NC \NC \NR
+\NC \type {Umathopbinspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathopclosespacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathopenbinspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathopenclosespacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathopeninnerspacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathopenopenspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathopenopspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathopenordspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathopenpunctspacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathopenrelspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathoperatorsize}         \NC family dimension \NC \NC \NR
+\NC \type {Umathopinnerspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathopopenspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathopopspacing}          \NC family dimension \NC \NC \NR
+\NC \type {Umathopordspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathoppunctspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathoprelspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathordbinspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathordclosespacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathordinnerspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathordopenspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathordopspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathordordspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathordpunctspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathordrelspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathoverbarkern}          \NC family dimension \NC \NC \NR
+\NC \type {Umathoverbarrule}          \NC family dimension \NC \NC \NR
+\NC \type {Umathoverbarvgap}          \NC family dimension \NC \NC \NR
+\NC \type {Umathoverdelimiterbgap}    \NC family dimension \NC \NC \NR
+\NC \type {Umathoverdelimitervgap}    \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctbinspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctclosespacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctinnerspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctopenspacing}     \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctopspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctordspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctpunctspacing}    \NC family dimension \NC \NC \NR
+\NC \type {Umathpunctrelspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathquad}                 \NC family dimension \NC \NC \NR
+\NC \type {Umathradicaldegreeafter}   \NC family dimension \NC \NC \NR
+\NC \type {Umathradicaldegreebefore}  \NC family dimension \NC \NC \NR
+\NC \type {Umathradicaldegreeraise}   \NC family dimension \NC \NC \NR
+\NC \type {Umathradicalkern}          \NC family dimension \NC \NC \NR
+\NC \type {Umathradicalrule}          \NC family dimension \NC \NC \NR
+\NC \type {Umathradicalvgap}          \NC family dimension \NC \NC \NR
+\NC \type {Umathrelbinspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathrelclosespacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathrelinnerspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathrelopenspacing}       \NC family dimension \NC \NC \NR
+\NC \type {Umathrelopspacing}         \NC family dimension \NC \NC \NR
+\NC \type {Umathrelordspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathrelpunctspacing}      \NC family dimension \NC \NC \NR
+\NC \type {Umathrelrelspacing}        \NC family dimension \NC \NC \NR
+\NC \type {Umathskewedfractionhgap}   \NC family dimension \NC \NC \NR
+\NC \type {Umathskewedfractionvgap}   \NC family dimension \NC \NC \NR
+\NC \type {Umathspaceafterscript}     \NC family dimension \NC \NC \NR
+\NC \type {Umathstackdenomdown}       \NC family dimension \NC \NC \NR
+\NC \type {Umathstacknumup}           \NC family dimension \NC \NC \NR
+\NC \type {Umathstackvgap}            \NC family dimension \NC \NC \NR
+\NC \type {Umathsubshiftdown}         \NC family dimension \NC \NC \NR
+\NC \type {Umathsubshiftdrop}         \NC family dimension \NC \NC \NR
+\NC \type {Umathsubsupshiftdown}      \NC family dimension \NC \NC \NR
+\NC \type {Umathsubsupvgap}           \NC family dimension \NC \NC \NR
+\NC \type {Umathsubtopmax}            \NC family dimension \NC \NC \NR
+\NC \type {Umathsupbottommin}         \NC family dimension \NC \NC \NR
+\NC \type {Umathsupshiftdrop}         \NC family dimension \NC \NC \NR
+\NC \type {Umathsupshiftup}           \NC family dimension \NC \NC \NR
+\NC \type {Umathsupsubbottommax}      \NC family dimension \NC \NC \NR
+\NC \type {Umathunderbarkern}         \NC family dimension \NC \NC \NR
+\NC \type {Umathunderbarrule}         \NC family dimension \NC \NC \NR
+\NC \type {Umathunderbarvgap}         \NC family dimension \NC \NC \NR
+\NC \type {Umathunderdelimiterbgap}   \NC family dimension \NC \NC \NR
+\NC \type {Umathunderdelimitervgap}   \NC family dimension \NC \NC \NR
+\NC \type {Udelimiter}                \NC                  \NC \NC \NR
+\NC \type {Umathaccent}               \NC                  \NC \NC \NR
+\NC \type {Umathchar}                 \NC                  \NC \NC \NR
+\NC \type {Umathcharnum}              \NC                  \NC \NC \NR
+\NC \type {Ustack}                    \NC                  \NC \NC \NR
+\NC \type {Uradical}                  \NC                  \NC \NC \NR
+\NC \type {Uroot}                     \NC                  \NC \NC \NR
+\NC \type {Uunderdelimiter}           \NC                  \NC \NC \NR
+\NC \type {Uoverdelimiter}            \NC                  \NC \NC \NR
+\NC \type {Udelimiterunder}           \NC                  \NC \NC \NR
+\NC \type {Udelimiterover}            \NC                  \NC \NC \NR
+\NC \type {Uhextensible}              \NC                  \NC \NC \NR
+\NC \type {Uchar}                     \NC                  \NC \NC \NR
+\NC \type {Umathcharclass}            \NC                  \NC \NC \NR
+\NC \type {Umathcharfam}              \NC                  \NC \NC \NR
+\NC \type {Umathcharslot}             \NC                  \NC \NC \NR
+\NC \type {Uleft}                     \NC                  \NC \NC \NR
+\NC \type {Umiddle}                   \NC                  \NC \NC \NR
+\NC \type {Uright}                    \NC                  \NC \NC \NR
+\NC \type {Uvextensible}              \NC                  \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Boxes and directions]
+
+\starttabulate[|||p|]
+\NC \type {pardirection}              \NC direction       \NC \NC \NR
+\NC \type {textdirection}             \NC direction       \NC \NC \NR
+\NC \type {mathdirection}             \NC direction       \NC \NC \NR
+\NC \type {linedirection}             \NC direction       \NC \NC \NR
+\NC \type {breakafterdirmode}         \NC integer         \NC \NC \NR
+\NC \type {shapemode}                 \NC integer         \NC \NC \NR
+\NC \type {fixupboxesmode}            \NC integer         \NC \NC \NR
+\NC \type {boxdirection}              \NC box direction   \NC \NC \NR
+\NC \type {boxorientation}            \NC box orientation \NC rotation over 90, 180, 270 degrees \NC \NR
+\NC \type {boxxoffset}                \NC box xoffset     \NC leaves dimensions untounched \NC \NR
+\NC \type {boxyoffset}                \NC box yoffset     \NC leaves dimensions untounched \NC \NR
+\NC \type {boxxmove}                  \NC box xmove       \NC offsets that reflect on dimensions \NC \NR
+\NC \type {boxymove}                  \NC box ymove       \NC offsets that reflect on dimensions \NC \NR
+\NC \type {boxtotal}                  \NC box ht+dp       \NC height plus depth (and when assigned halfs) \NC \NR
+\NC \type {boxattr}                   \NC box attr value  \NC (sets) a specific attribute to a value \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Scanning]
+
+\starttabulate[|||p|]
+\NC \type {aftergrouped}              \NC text                    \NC like aftergroup but for given list \NC \NR
+\NC \type {alignmark}                 \NC                         \NC equivalent to hash token \NC \NR
+\NC \type {aligntab}                  \NC                         \NC equivalent to tab token  \NC \NR
+\NC \type {begincsname}               \NC command                 \NC variant of \type {\csname} that ignores undefined commands \NC \NR
+\NC \type {catcodetable}              \NC integer                 \NC switch to catcode table \NC \NR
+\NC \type {csstring}                  \NC command                 \NC the command without preceding escape character \NC \NR
+\NC \type {endlocalcontrol}           \NC command                 \NC switches back to the main control loop \NC \NR
+\NC \type {etoksapp}                  \NC tokenregister text      \NC append expanded text to given tokenregister \NC \NR
+\NC \type {etokspre}                  \NC tokenregister text      \NC prepend expanded text to given tokenregister \NC \NR
+\NC \type {expanded}                  \NC text                    \NC expands the given text \NC \NR
+\NC \type {frozen}                    \NN prefix                  \NC \NC \NR
+\NC \type {futureexpand}              \NN token command command   \NC expands second ot third token depending on first match \NC \NR
+\NC \type {futureexpandis}            \NN token command command   \NC as \type {futureexpand} but also skips pars \NC \NR
+\NC \type {futureexpandisap}          \NN token command command   \NC same as idem but doesn't push back skipped spaces \NC \NR
+\NC \type {gtoksapp}                  \NC tokenregister text      \NC globally append text to given tokenregister \NC \NR
+\NC \type {gtokspre}                  \NC tokenregister text      \NC globally prepend text to given tokenregister \NC \NR
+\NC \type {ifabsdim}                  \NC dimension <=> dimension \NC test the absolute value of the given dimension \NC \NR
+\NC \type {ifabsnum}                  \NC integer <=> integer     \NC test the absolute value of the given integer \NC \NR
+\NC \type {ifcondition}               \NC command                 \NC assume the next token is a test (so skip as if) \NC \NR
+\NC \type {ifdimen}                   \NC possibly a dimension    \NC acts like an \type {\ifcase} with 1 for valid and 2 for invalid \NC \NR
+\NC \type {ifincsname}                \NC command                 \NC check if we're inside a csname expansion \NC \NR
+\NC \type {ifnumval}                  \NC                         \NC \NC \NR
+\NC \type {ifdimval}                  \NC                         \NC \NC \NR
+\NC \type {ifchknum}                  \NC                         \NC \NC \NR
+\NC \type {ifchkdim}                  \NC                         \NC \NC \NR
+\NC \type {ifcmpnum}                  \NC                         \NC \NC \NR
+\NC \type {ifcmpdim}                  \NC                         \NC \NC \NR
+\NC \type {ifusercmd}                 \NC command                 \NC \NC \NR
+\NC \type {ifprotected}               \NC command                 \NC \NC \NR
+\NC \type {iffrozen}                  \NC command                 \NC \NC \NR
+\NC \type {iftok}                     \NC                         \NC \NC \NR
+\NC \type {ifcstok}                   \NC                         \NC \NC \NR
+\NC \type {internalcodesmode}         \NC integer                 \NC \NC \NR
+%NC \type {ifprimitive}               \NC command                 \NC check if the given command is a primitive \NC \NR
+\NC \type {immediateassigned}         \NC command                 \NC (todo) expand the following assignment now\NC \NR
+\NC \type {immediateassignment}       \NC command                 \NC (todo) expand the following assignment now\NC \NR
+\NC \type {initcatcodetable}          \NC integer                 \NC initialize catcode table \NC \NR
+\NC \type {lastnamedcs}               \NC command                 \NC last found command of \type {\ifcsname} construction \NC \NR
+\NC \type {nospaces}                  \NC integer                 \NC don't inject spaces \NC \NR
+%NC \type {primitive}                 \NC command                 \NC expands the next primitive equivalent \NC \NR
+\NC \type {orelse}                    \NC condition               \NC \NC \NR
+\NC \type {pxdimen}                   \NC dimension               \NC multiplier for the \type {px} unit \NC \NR
+\NC \type {savecatcodetable}          \NC integer                 \NC save catcode table \NC \NR
+\NC \type {scantextokens}             \NC text                    \NC \type {\scantokens} without file side effects \NC \NR
+\NC \type {suppressifcsnameerror}     \NC integer                 \NC recover from issues in csname testing \NC \NR
+\NC \type {suppresslongerror}         \NC integer                 \NC make \type {\long} a nop \NC \NR
+\NC \type {suppressmathparerror}      \NC integer                 \NC accepts \type {\par} and empty lines in math \NC \NR
+\NC \type {suppressoutererror}        \NC integer                 \NC make \type {\outer} a nop \NC \NR
+\NC \type {suppressprimitiveerror}    \NC integer                 \NC don't report an invalid \type {\primitive} \NC \NR
+\NC \type {toksapp}                   \NC tokenregister text      \NC append text to given tokenregister \NC \NR
+\NC \type {tokspre}                   \NC tokenregister text      \NC prepend text to given tokenregister \NC \NR
+\NC \type {xtoksapp}                  \NC tokenregister text      \NC globally append expanded text to given tokenregister \NC \NR
+\NC \type {xtokspre}                  \NC tokenregister text      \NC globally prepend expanded text to given tokenregister \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Typesetting]
+
+\starttabulate[|||p|]
+\NC \type {protrudechars}             \NC integer       \NC \NC \NR
+\NC \type {localbrokenpenalty}        \NC integer       \NC \NC \NR
+\NC \type {localinterlinepenalty}     \NC integer       \NC \NC \NR
+\NC \type {adjustspacing}             \NC integer       \NC \NC \NR
+\NC \type {boundary}                  \NC command       \NC \NC \NR
+\NC \type {noboundary}                \NC command       \NC \NC \NR
+\NC \type {protrusionboundary}        \NC command       \NC \NC \NR
+\NC \type {wordboundary}              \NC command       \NC \NC \NR
+\NC \type {leftghost}                 \NC charactercode \NC \NC \NR
+\NC \type {rightghost}                \NC charactercode \NC \NC \NR
+\NC \type {nohrule}                   \NC command       \NC \NC \NR
+\NC \type {novrule}                   \NC command       \NC \NC \NR
+\NC \type {insertht}                  \NC number        \NC \NC \NR
+\NC \type {quitvmode}                 \NC command       \NC \NC \NR
+\NC \type {leftmarginkern}            \NC dimension     \NC \NC \NR
+\NC \type {rightmarginkern}           \NC dimension     \NC \NC \NR
+\NC \type {localleftbox}              \NC box           \NC \NC \NR
+\NC \type {localrightbox}             \NC box           \NC \NC \NR
+\NC \type {gleaders}                  \NC command       \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\LUA]
+
+\starttabulate[|||p|]
+\NC \type {luacopyinputnodes}         \NC integer \NC \NC \NR
+\NC \type {luadef}                    \NC         \NC \NC \NR
+\NC \type {luabytecodecall}           \NC         \NC \NC \NR
+\NC \type {luafunctioncall}           \NC         \NC \NC \NR
+\NC \type {latelua}                   \NC         \NC \NC \NR
+\NC \type {lateluafunction}           \NC         \NC \NC \NR
+\NC \type {luabytecode}               \NC         \NC \NC \NR
+\NC \type {luaescapestring}           \NC         \NC \NC \NR
+\NC \type {luafunction}               \NC         \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Management]
+
+\starttabulate[|||p|]
+\NC \type {outputbox}                 \NC integer \NC \NC \NR
+\NC \type {clearmarks}                \NC         \NC \NC \NR
+\NC \type {attribute}                 \NC         \NC \NC \NR
+\NC \type {glet}                      \NC         \NC \NC \NR
+\NC \type {letcharcode}               \NC         \NC \NC \NR
+\NC \type {attributedef}              \NC         \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Miscellaneous]
+
+\starttabulate[|||p|]
+\NC \type {luatexversion}             \NC         \NC \NC \NR
+\NC \type {formatname}                \NC         \NC \NC \NR
+\NC \type {luatexbanner}              \NC         \NC \NC \NR
+\NC \type {luatexrevision}            \NC         \NC \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

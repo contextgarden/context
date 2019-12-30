@@ -48,7 +48,8 @@ local macros = { -- copied from cpp.lua
 }
 
 local luatexs = {
-    "word", "halfword", "quarterword", "scaled", "pointer", "glueratio",
+    "word", "halfword", "quarterword", "scaledwhd", "scaled", "pointer", "glueratio", "strnumber",
+    "dumpstream", "memoryword",
 }
 
 local space         = patterns.space -- S(" \n\r\t\f\v")

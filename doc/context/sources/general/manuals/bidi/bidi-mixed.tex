@@ -1,0 +1,178 @@
+% language=us
+
+\startcomponent bidi-mixed
+
+\environment bidi-style
+
+\startchapter[title=A mixed layout]
+
+The typesetting engine normally works from left to right and top to bottom. Going
+from right to left actually involved two decisions:
+
+\startitemize[packed]
+\startitem the direction of the display elements, the paragraphs \stopitem
+\startitem the direction of the inline text, the lines \stopitem
+\stopitemize
+
+The first one is kept track of in a state variable. Every paragraph starts with
+a node that carries, among other information, that state. This node is added
+automatically and does not interfere with the typesetting. The inline direction
+is more intrusive as it is marked by nodes that indicate the beginning and end
+of a reversed strip. This mechanism is rather reliable and normally works out
+well. Take this:
+
+\startbuffer
+left {\righttoleft right} left
+left{ \righttoleft right} left
+left {\righttoleft right }left
+left{ \righttoleft right }left
+\stopbuffer
+
+\typebuffer
+
+You can see that we need to be careful with spaces as they can end up inside or
+outside a substream and by swapping next to each other:
+
+\startlines
+\getbuffer
+\stoplines
+
+We can wrap the lines in boxes as in:
+
+\startbuffer
+\hbox{left\space{\bf\righttoleft right}\space left}
+\hbox{left{\bf\space \righttoleft right}\space left}
+\hbox{left\space{\bf\righttoleft right\space}left}
+\hbox{left{\bf\space\righttoleft right\space}left}
+\stopbuffer
+
+\typebuffer
+
+\definecolor[ShineThrough][s=0,a=1,t=.2]
+
+When visualize the spaces we get this:
+
+\startlines\ShineThrough
+\showmakeup[space,hbox]\getbuffer
+\stoplines
+
+The space of a normal and bold font in the same family normally is the same but
+let's mix with a larger size:
+
+\startbuffer
+\hbox{left {\bfa\righttoleft right} left}
+\hbox{left{\bfa\space \righttoleft right} left}
+\hbox{left {\bfa\righttoleft right }left}
+\hbox{left{\bfa\space\righttoleft right }left}
+\stopbuffer
+
+\typebuffer
+
+Now we get the following. As you can see, it really matters where we put the
+braces.
+
+\startlines
+\ShineThrough\showmakeup[space,hbox]\getbuffer
+\stoplines
+
+Once you are accustomed to tagging and \TEX\ you will probably not fall into
+these traps. In \in {figure} [fig:spaces] we show a large version.
+
+\startplacefigure[location=top,title={Watch your spaces!},reference=fig:spaces]
+    \scale
+      [width=\hsize]
+      {\vbox{\ShineThrough\showmakeup[space,hbox]\getbuffer}}
+\stopplacefigure
+
+The \type {\righttoleft} command actually has two meanings. This can best be seen
+from an example.
+
+\startbuffer
+\righttoleft \bf How will this come out?
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer \par \stop
+
+\startbuffer
+And \righttoleft \bf how will this come out?
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer \par \stop
+
+When we start a paragraph (or in \TEX\ speak: when we are still in vertical mode)
+the paragraph direction as well as the inline direction is set. Otherwise only
+the inline direction is set. There are low level \TEX\ commands (primitives) to
+set the direction but you can best {\em not} use these because we need to do a
+bit more than that.
+
+There are quite some low level commands related to changing directions. Some deal
+with the layout, some with boxes. We might provide more in the future.
+
+\starttabulate[|l|p|]
+\FL
+\NC \type {\lefttoright}                  \NC l2r dir node or paragraph property \NC \NR
+\NC \type {\righttoleft}                  \NC r2l dir node or paragraph property \NC \NR
+\NC \type {\checkedlefttoright}           \NC l2r dir node or paragraph property (unless already set) \NC \NR
+\NC \type {\checkedrighttoleft}           \NC r2l dir node or paragraph property (unless already set) \NC \NR
+\ML
+\NC \type {\synchronizeinlinedirection}   \NC pickup a (possibly) reset state \NC \NR
+\NC \type {\synchronizelayoutdirection}   \NC pickup a (possibly) reset state \NC \NR
+\NC \type {\synchronizedisplaydirection}  \NC pickup a (possibly) reset state \NC \NR
+\ML
+\NC \type {\righttolefthbox}              \NC r2l \type {\hbox} \NC \NR
+\NC \type {\lefttorighthbox}              \NC l2r \type {\hbox} \NC \NR
+\NC \type {\righttoleftvbox}              \NC r2l \type {\vbox} \NC \NR
+\NC \type {\lefttorightvbox}              \NC l2r \type {\vbox} \NC \NR
+\NC \type {\righttoleftvtop}              \NC r2l \type {\vtop} \NC \NR
+\NC \type {\lefttorightvtop}              \NC l2r \type {\vtop} \NC \NR
+\ML
+\NC \type {\leftorrighthbox}              \NC l2r or r2l \type {\hbox} \NC \NR
+\NC \type {\leftorrightvbox}              \NC l2r or r2l \type {\vbox} \NC \NR
+\NC \type {\leftorrightvtop}              \NC l2r or r2l \type {\vtop} \NC \NR
+\ML
+\NC \type {\autodirhbox}                  \NC l2r or r2l \type {\hbox} (a bit more clever) \NC \NR
+\NC \type {\autodirvbox}                  \NC l2r or r2l \type {\vbox} (a bit more clever) \NC \NR
+\NC \type {\autodirvtop}                  \NC l2r or r2l \type {\vtop} (a bit more clever) \NC \NR
+\ML
+\NC \type {\bidilre}                      \NC character \type {U+202A}, enforce l2r state    \NC \NR
+\NC \type {\bidirle}                      \NC character \type {U+202B}, enforce r2l state    \NC \NR
+\NC \type {\bidipop}                      \NC character \type {U+202C}, return to last state \NC \NR
+\NC \type {\bidilro}                      \NC character \type {U+202D}, override l2r state   \NC \NR
+\NC \type {\bidirlo}                      \NC character \type {U+202E}, override r2l state   \NC \NR
+\NC \type {\lefttorightmark} \type {\lrm} \NC character \type {U+200E}, l2r indicator        \NC \NR
+\NC \type {\righttoleftmark} \type {\rlm} \NC character \type {U+200F}, r2l indicator        \NC \NR
+\ML
+\NC \type {\dirlre}                       \NC switch to l2r mode using \type {\bidilre} or \lefttoright \NC \NR
+\NC \type {\dirrle}                       \NC switch to r2l mode using \type {\bidirle} or \righttoleft \NC \NR
+\NC \type {\dirlro}                       \NC enforce l2r mode   using \type {\bidilro} or \lefttoright \NC \NR
+\NC \type {\dirrlo}                       \NC enforce r2l mode   using \type {\bidirlo} or \righttoleft \NC \NR
+\ML
+\NC \type {\naturalhbox}                  \NC a normal l2r \type {hbox}  \NC \NR
+\NC \type {\naturalvbox}                  \NC a normal l2r \type {vbox}  \NC \NR
+\NC \type {\naturalvtop}                  \NC a normal l2r \type {vtop}  \NC \NR
+\NC \type {\naturalhpack}                 \NC a normal l2r \type {hpack} \NC \NR
+\NC \type {\naturalvpack}                 \NC a normal l2r \type {vpack} \NC \NR
+\LL
+\stoptabulate
+
+When we talk about layout, we mean the overall layout, concerning the document as
+a whole. We can have a dominantly l2r, dominantly r2l or mixed setup. In a next
+chapter we will give more details on the dominant setup. Here we stick to
+mentioning that the document flow direction is set with
+
+\starttyping
+\setupalign[r2l] % or r2l
+\stoptyping
+
+When a command to setup an environment has a \type {align} parameter, the same
+keywords can be uses as part of the specification. \footnote {We haven't tested
+all situations and possible interferences. Just report anomalies to the mailing
+list.}
+
+\stopchapter
+
+\stopcomponent

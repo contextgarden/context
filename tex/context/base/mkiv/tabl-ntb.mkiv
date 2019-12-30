@@ -1303,8 +1303,13 @@
    \ifconditional\c_strc_tags_enabled
      \tabl_ntb_start_tagged
    \fi
-   \hbox\bgroup
-   \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
+   % we are in sync but just to be sure:
+   \synchronizedisplaydirection
+   \synchronizeinlinedirection
+   \hbox
+     \usedirectionparameterreverse\naturaltablelocalparameter
+     \bgroup
+     \kern\dimexpr\d_tabl_ntb_leftmargindistance\relax}
 
 \unexpanded\def\tabl_ntb_row_align_stop
   {\kern\dimexpr\d_tabl_ntb_rightmargindistance-\d_tabl_ntb_columndistance\relax

@@ -1153,26 +1153,6 @@
 \letvalue{\??alignsimplereverse\v!flushright}\spac_align_simple_left
 \letvalue{\??alignsimplereverse\v!middle    }\spac_align_simple_middle
 
-% \unexpanded\def\simplealignedbox#1#2%
-%   {\hbox \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
-%    \fi}
-
-% \unexpanded\def\simplealignedboxplus#1#2#3%
-%   {\hbox #3 \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
-%    \fi}
-
-% \unexpanded\def\simplealignedbox#1#2%
-%   {\hbox \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
-%    \fi}
-%
-% \unexpanded\def\simplealignedboxplus#1#2#3%
-%   {\hbox #3 \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimple\ifcsname\??alignsimple#2\endcsname#2\else\v!right\fi\expandafter\endcsname
-%    \fi}
-
 \unexpanded\def\simplealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
      \ifcsname\??alignsimple#2\endcsname
@@ -1201,16 +1181,6 @@
    \fi}
 
 \newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
-
-% \unexpanded\def\simplereversealignedbox#1#2%
-%   {\hbox \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
-%    \fi}
-%
-% \unexpanded\def\simplereversealignedboxplus#1#2#3%
-%   {\hbox #3 \ifdim#1>\zeropoint to #1
-%      \csname\??alignsimplereverse\ifcsname\??alignsimplereverse#2\endcsname#2\else\v!left\fi\expandafter\endcsname
-%    \fi}
 
 \unexpanded\def\simplereversealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1
@@ -1253,5 +1223,17 @@
 \def\spac_align_definehbox[#1][#2]%
   {\setvalue{hbox#1}##1{\hbox to #2{\begstrut##1\endstrut\hss}}}
 
+%D Some direction related helpers:
+
+\installcorenamespace {reverse}
+
+\setvalue{\??reverse\v!normal }{\ifconditional\inlinelefttoright\else\s!reverse\fi}
+\setvalue{\??reverse\v!reverse}{\ifconditional\inlinelefttoright     \s!reverse\fi}
+
+\ifcase\contextlmtxmode
+  \let\usedirectionparameterreverse\gobbleoneargument
+\else
+  \def\usedirectionparameterreverse#1{\begincsname\??reverse#1\c!direction\endcsname}
+\fi
 
 \protect \endinput

@@ -79,7 +79,7 @@
 
 \starttext
 
-\definefontfeature[metasymbols][mps=symbols]
+\definefontfeature[metasymbols][metapost=symbols]
 
 \definefont[MyFont] [Serif*default,metasymbols sa 1]
 

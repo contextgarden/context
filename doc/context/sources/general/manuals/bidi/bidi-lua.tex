@@ -1,0 +1,38 @@
+% language=us
+
+\startcomponent bidi-lua
+
+\environment bidi-style
+
+\startchapter[title={The \LUA\ interface}]
+
+We assume that you run \CONTEXT\ \MKIV\ in combination with \LUATEX. Direction
+support in this engine has been improved over time. Originally the \OMEGA\
+(\ALEPH) direction model was used but in the meantime it has been stripped to the
+basics, and what used to be so called whatsits (extension nodes) are now first
+class nodes. Of the many directions only four are kept in \LUATEX\ and they are
+indicated by three letters:
+
+\starttabulate[|l|l|l|]
+\NC 0 \NC \type {TLT} \NC left to right \NC \NR
+\NC 1 \NC \type {TRT} \NC right to left \NC \NR
+\NC 2 \NC \type {LTL} \NC not used in context (obsolete) \NC \NR
+\NC 3 \NC \type {RTT} \NC not used in context (obsolete) \NC \NR
+\stoptabulate
+
+In \LUAMETATEX, and therefore \CONTEXT\ \LMTX\ we only have the first two.
+Therefore in \LMTX\ you normally don't have to worry about checking for them at
+the \LUA\ end because they are irrelevant for calculations (the vertical ones
+swapped the horizontal and vertical progression). Also, when really needed, we
+use the \type {direction} keys with numerical indicators, so zero for \type {l2r}
+and one for \type {r2l}. These values are used for local par nodes as well as
+direction nodes. In addition a direction node has a subtype:
+
+\starttabulate[|l|l|l|]
+\NC 0 \NC \type {normal} \NC comparable to \type {+} \NC \NR
+\NC 1 \NC \type {cancel} \NC comparable to \type {-} \NC \NR
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent

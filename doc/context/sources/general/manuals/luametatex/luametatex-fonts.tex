@@ -1,0 +1,596 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-fonts
+
+\startchapter[reference=fonts,title={Fonts}]
+
+\startsection[title={Introduction}]
+
+Only traditional font support is built in, anything more needs to be implemented
+in \LUA. This is conform the \LUATEX\ philosophy. When you pass a font to the
+frontend only the dimensions matter, as these are used in typesetting, and
+optionally ligatures and kerns when you rely on the built|-|in font handler. For
+math some extra data is needed, like information about extensibles and next in
+size glyphs. You can of course put more information in your \LUA\ tables because
+when such a table is passed to \TEX\ only that what is needed is filtered from
+it.
+
+Because there is no built|-|in backend, virtual font information is not used. If
+you want to be compatible you'd better make sure that your tables are okay, and
+in that case you can best consult the \LUATEX\ manual. For instance, parameters
+like \type {extend} are backend related and the standard \LUATEX\ backend sets
+the standard here.
+
+\stopsection
+
+\startsection[title={Defining fonts}]
+
+All \TEX\ fonts are represented to \LUA\ code as tables, and internally as
+\CCODE\ structures. All keys in the table below are saved in the internal font
+structure if they are present in the table passed to \type {font.define}. When
+the callback is set, which is needed for \type {\font} to work, its function
+gets the name and size passed, and it has to return a valid font identifier (a
+positive number).
+
+For the engine to work well, the following information has to be present at
+the font level:
+
+\starttabulate[|l|l|pl|]
+\DB key                 \BC value type \BC description \NC \NR
+\TB
+\NC \type {name}        \NC string     \NC metric (file) name \NC \NR
+\NC \type {characters}  \NC table      \NC the defined glyphs of this font \NC \NR
+\NC \type {designsize}  \NC number     \NC expected size (default: 655360 == 10pt) \NC \NR
+\NC \type {fonts}       \NC table      \NC locally used fonts \NC \NR
+\NC \type {hyphenchar}  \NC number     \NC default: \TEX's \prm {hyphenchar} \NC \NR
+\NC \type {parameters}  \NC hash       \NC default: 7 parameters, all zero \NC \NR
+\NC \type {size}        \NC number     \NC the required scaling (by default the same as designsize) \NC \NR
+\NC \type {skewchar}    \NC number     \NC default: \TEX's \prm {skewchar} \NC \NR
+\NC \type {stretch}     \NC number     \NC the \quote {stretch} \NC \NR
+\NC \type {shrink}      \NC number     \NC the \quote {shrink} \NC \NR
+\NC \type {step}        \NC number     \NC the \quote {step} \NC \NR
+\NC \type {nomath}      \NC boolean    \NC this key allows a minor speedup for text fonts; if it
+                                           is present and true, then \LUATEX\ will not check the
+                                           character entries for math|-|specific keys \NC \NR
+\NC \type {oldmath}     \NC boolean    \NC this key flags a font as representing an old school \TEX\
+                                           math font and disables the \OPENTYPE\ code path \NC \NR
+\LL
+\stoptabulate
+
+The \type {parameters} is a hash with mixed key types. There are seven possible
+string keys, as well as a number of integer indices (these start from 8 up). The
+seven strings are actually used instead of the bottom seven indices, because that
+gives a nicer user interface.
+
+The names and their internal remapping are:
+
+\starttabulate[|l|c|]
+\DB name                  \BC remapping \NC \NR
+\TB
+\NC \type {slant}         \NC 1 \NC \NR
+\NC \type {space}         \NC 2 \NC \NR
+\NC \type {space_stretch} \NC 3 \NC \NR
+\NC \type {space_shrink}  \NC 4 \NC \NR
+\NC \type {x_height}      \NC 5 \NC \NR
+\NC \type {quad}          \NC 6 \NC \NR
+\NC \type {extra_space}   \NC 7 \NC \NR
+\LL
+\stoptabulate
+
+The \type {characters} table is a list of character hashes indexed by an integer
+number. The number is the \quote {internal code} \TEX\ knows this character by.
+For proper paragraph building and math rendering the following fields can be
+present in en entry in the \type {characters} table. You can of course add all
+kind of extra fields. The engine only uses those that it needs for typesetting
+a paragraph or formula.
+
+Each character hash itself is a hash. For example, here is the character \quote
+{f} (decimal 102) in the font \type {cmr10 at 10pt}. The numbers that represent
+dimensions are in scaled points.
+
+\starttyping
+[102] = {
+    ["width"]  = 200250,
+    ["height"] = 455111,
+    ["depth"]  = 0,
+    ["italic"] = 50973,
+    ["kerns"]  = {
+        [63] = 50973,
+        [93] = 50973,
+        [39] = 50973,
+        [33] = 50973,
+        [41] = 50973
+    },
+    ["ligatures"] = {
+        [102] = { ["char"] = 11, ["type"] = 0 },
+        [108] = { ["char"] = 13, ["type"] = 0 },
+        [105] = { ["char"] = 12, ["type"] = 0 }
+    }
+}
+\stoptyping
+
+Providing ligatures and kerns this way permits \TEX\ to construct ligatures and
+add inter|-|character kerning. However, normally you will use an \OPENTYPE\ font
+in combination with \LUA\ code that does this. In \CONTEXT\ we have base mode
+that uses the engine, and node mode that uses \LUA. A monospaced font normally
+has no ligatures and kerns and is normally not processed at all.
+
+\starttabulate[|l|l|pl|]
+\DB key                      \BC type    \BC description \NC\NR
+\TB
+\NC \type {width}            \NC number  \NC width in sp (default 0) \NC\NR
+\NC \type {height}           \NC number  \NC height in sp (default 0) \NC\NR
+\NC \type {depth}            \NC number  \NC depth in sp (default 0) \NC\NR
+\NC \type {italic}           \NC number  \NC italic correction in sp (default 0) \NC\NR
+\NC \type {top_accent}       \NC number  \NC top accent alignment place in sp (default zero) \NC\NR
+\NC \type {bot_accent}       \NC number  \NC bottom accent alignment place, in sp (default zero) \NC\NR
+\NC \type {left_protruding}  \NC number  \NC left protruding factor (\lpr {lpcode}) \NC\NR
+\NC \type {right_protruding} \NC number  \NC right protruding factor (\lpr {rpcode}) \NC\NR
+\NC \type {expansion_factor} \NC number  \NC expansion factor (\lpr {efcode}) \NC\NR
+\NC \type {next}             \NC number  \NC \quote {next larger} character index \NC\NR
+\NC \type {extensible}       \NC table   \NC constituent parts of an extensible recipe \NC\NR
+\NC \type {vert_variants}    \NC table   \NC constituent parts of a vertical variant set \NC \NR
+\NC \type {horiz_variants}   \NC table   \NC constituent parts of a horizontal variant set \NC \NR
+\NC \type {kerns}            \NC table   \NC kerning information \NC\NR
+\NC \type {ligatures}        \NC table   \NC ligaturing information \NC\NR
+\NC \type {mathkern}         \NC table   \NC math cut-in specifications \NC\NR
+\LL
+\stoptabulate
+
+Two very special string indexes can be used also: \type {left_boundary} is a
+virtual character whose ligatures and kerns are used to handle word boundary
+processing. \type {right_boundary} is similar but not actually used for anything
+(yet).
+
+The values of \type {top_accent}, \type {bot_accent} and \type {mathkern} are
+used only for math accent and superscript placement, see \at {page} [math] in
+this manual for details. The values of \type {left_protruding} and \type
+{right_protruding} are used only when \lpr {protrudechars} is non-zero. Whether
+or not \type {expansion_factor} is used depends on the font's global expansion
+settings, as well as on the value of \lpr {adjustspacing}.
+
+A math character can have a \type {next} field that points to a next larger
+shape. However, the presence of \type {extensible} will overrule \type {next}, if
+that is also present. The \type {extensible} field in turn can be overruled by
+\type {vert_variants}, the \OPENTYPE\ version. The \type {extensible} table is
+very simple:
+
+\starttabulate[|l|l|p|]
+\DB key        \BC type   \BC description                \NC\NR
+\TB
+\NC \type{top} \NC number \NC top character index        \NC\NR
+\NC \type{mid} \NC number \NC middle character index     \NC\NR
+\NC \type{bot} \NC number \NC bottom character index     \NC\NR
+\NC \type{rep} \NC number \NC repeatable character index \NC\NR
+\LL
+\stoptabulate
+
+The \type {horiz_variants} and \type {vert_variants} are arrays of components.
+Each of those components is itself a hash of up to five keys:
+
+\starttabulate[|l|l|p|]
+\DB key             \BC type   \BC explanation \NC \NR
+\TB
+\NC \type{glyph}    \NC number \NC The character index. Note that this is an encoding number, not a name. \NC \NR
+\NC \type{extender} \NC number \NC One (1) if this part is repeatable, zero (0) otherwise. \NC \NR
+\NC \type{start}    \NC number \NC The maximum overlap at the starting side (in scaled points). \NC \NR
+\NC \type{end}      \NC number \NC The maximum overlap at the ending side (in scaled points). \NC \NR
+\NC \type{advance}  \NC number \NC The total advance width of this item. It can be zero or missing,
+                                   then the natural size of the glyph for character \type {component}
+                                   is used. \NC \NR
+\LL
+\stoptabulate
+
+The \type {kerns} table is a hash indexed by character index (and \quote
+{character index} is defined as either a non|-|negative integer or the string
+value \type {right_boundary}), with the values of the kerning to be applied, in
+scaled points.
+
+The \type {ligatures} table is a hash indexed by character index (and \quote
+{character index} is defined as either a non|-|negative integer or the string
+value \type {right_boundary}), with the values being yet another small hash, with
+two fields:
+
+\starttabulate[|l|l|p|]
+\DB key         \BC type   \BC description \NC \NR
+\TB
+\NC \type{type} \NC number \NC the type of this ligature command, default 0 \NC \NR
+\NC \type{char} \NC number \NC the character index of the resultant ligature \NC \NR
+\LL
+\stoptabulate
+
+The \type {char} field in a ligature is required. The \type {type} field inside a
+ligature is the numerical or string value of one of the eight possible ligature
+types supported by \TEX. When \TEX\ inserts a new ligature, it puts the new glyph
+in the middle of the left and right glyphs. The original left and right glyphs
+can optionally be retained, and when at least one of them is kept, it is also
+possible to move the new \quote {insertion point} forward one or two places. The
+glyph that ends up to the right of the insertion point will become the next
+\quote {left}.
+
+\starttabulate[|l|c|l|l|]
+\DB textual (Knuth)       \BC number \BC string        \BC result      \NC\NR
+\TB
+\NC \type{l + r =: n}     \NC 0      \NC \type{=:}     \NC \type{|n}   \NC\NR
+\NC \type{l + r =:| n}    \NC 1      \NC \type{=:|}    \NC \type{|nr}  \NC\NR
+\NC \type{l + r |=: n}    \NC 2      \NC \type{|=:}    \NC \type{|ln}  \NC\NR
+\NC \type{l + r |=:| n}   \NC 3      \NC \type{|=:|}   \NC \type{|lnr} \NC\NR
+\NC \type{l + r  =:|> n}  \NC 5      \NC \type{=:|>}   \NC \type{n|r}  \NC\NR
+\NC \type{l + r |=:> n}   \NC 6      \NC \type{|=:>}   \NC \type{l|n}  \NC\NR
+\NC \type{l + r |=:|> n}  \NC 7      \NC \type{|=:|>}  \NC \type{l|nr} \NC\NR
+\NC \type{l + r |=:|>> n} \NC 11     \NC \type{|=:|>>} \NC \type{ln|r} \NC\NR
+\LL
+\stoptabulate
+
+The default value is~0, and can be left out. That signifies a \quote {normal}
+ligature where the ligature replaces both original glyphs. In this table the~\type {|}
+indicates the final insertion point.
+
+\stopsection
+
+\startsection[reference=virtualfonts,title={Virtual fonts}]
+
+% \topicindex {fonts+virtual}
+
+Virtual fonts have been introduced to overcome limitations of good old \TEX. They
+were mostly use for providing a direct mapping from for instance accented
+characters onto a glyph. The backend was responsible for turning a reference to a
+character slot into a real glyph, possibly constructed from other glyphs. In our
+case there is no backend so there is also no need to pass this information
+through \TEX. But it can of course be part of the font information and because it is
+a kind of standard, we describe it here.
+
+A character is virtual when it has a \type {commands} array as part of the data.
+A virtual character can itself point to virtual characters but be careful with
+nesting as you can create loops and overflow the stack (which often indicates an
+error anyway).
+
+At the font level there can be a \type {fonts} an (indexed) \LUA\ table. The
+values are one- or two|-|key hashes themselves, each entry indicating one of the
+base fonts in a virtual font. In case your font is referring to itself in for
+instance a virtual font, you can use the \type {slot} command with a zero font
+reference, which indicates that the font itself is used. So, a table looks like
+this:
+
+\starttyping
+fonts = {
+  { name = "ptmr8a", size = 655360 },
+  { name = "psyr", size = 600000 },
+  { id = 38 }
+}
+\stoptyping
+
+The first referenced font (at index~1) in this virtual font is \type {ptrmr8a}
+loaded at 10pt, and the second is \type {psyr} loaded at a little over 9pt. The
+third one is a previously defined font that is known to \LUATEX\ as font id~38.
+The array index numbers are used by the character command definitions that are
+part of each character.
+
+The \type {commands} array is a hash where each item is another small array,
+with the first entry representing a command and the extra items being the
+parameters to that command. The allowed commands and their arguments are:
+
+\starttabulate[|l|l|l|p|]
+\DB command        \BC arguments \BC type      \BC description \NC \NR
+\TB
+\NC \type{font}    \NC 1         \NC number    \NC select a new font from the local \type {fonts} table \NC \NR
+\NC \type{char}    \NC 1         \NC number    \NC typeset this character number from the current font,
+                                                   and move right by the character's width \NC \NR
+\NC \type{node}    \NC 1         \NC node      \NC output this node (list), and move right
+                                                   by the width of this list\NC \NR
+\NC \type{slot}    \NC 2         \NC 2 numbers \NC a shortcut for the combination of a font and char command\NC \NR
+\NC \type{push}    \NC 0         \NC           \NC save current position\NC \NR
+\NC \type{nop}     \NC 0         \NC           \NC do nothing \NC \NR
+\NC \type{pop}     \NC 0         \NC           \NC pop position \NC \NR
+\NC \type{rule}    \NC 2         \NC 2 numbers \NC output a rule $ht*wd$, and move right. \NC \NR
+\NC \type{down}    \NC 1         \NC number    \NC move down on the page \NC \NR
+\NC \type{right}   \NC 1         \NC number    \NC move right on the page \NC \NR
+\NC \type{special} \NC 1         \NC string    \NC output a \prm {special} command \NC \NR
+\NC \type{pdf}     \NC 2         \NC 2 strings \NC output a \PDF\ literal, the first string is one of \type {origin},
+                                                   \type {page}, \type {text}, \type {font}, \type {direct} or \type {raw}; if you
+                                                   have one string only \type {origin} is assumed \NC \NR
+\NC \type{lua}     \NC 1         \NC string,
+                                     function  \NC execute a \LUA\ script when the glyph is embedded; in case of a
+                                                   function it gets the font id and character code passed \NC \NR
+\NC \type{image}   \NC 1         \NC image     \NC output an image (the argument can be either an \type {<image>} variable or an \type {image_spec} table) \NC \NR
+\NC \type{comment} \NC any       \NC any       \NC the arguments of this command are ignored \NC \NR
+\LL
+\stoptabulate
+
+When a font id is set to~0 then it will be replaced by the currently assigned
+font id. This prevents the need for hackery with future id's.
+
+The \type {pdf} option also accepts a \type {mode} keyword in which case the
+third argument sets the mode. That option will change the mode in an efficient
+way (passing an empty string would result in an extra empty lines in the \PDF\
+file. This option only makes sense for virtual fonts. The \type {font} mode only
+makes sense in virtual fonts. Modes are somewhat fuzzy and partially inherited
+from \PDFTEX.
+
+\starttabulate[|l|p|]
+\DB mode           \BC description \NC \NR
+\TB
+\NC \type {origin} \NC enter page mode and set the position \NC \NR
+\NC \type {page}   \NC enter page mode \NC \NR
+\NC \type {text}   \NC enter text mode \NC \NR
+\NC \type {font}   \NC enter font mode (kind of text mode, only in virtual fonts) \NC \NR
+\NC \type {always} \NC finish the current string and force a transform if needed \NC \NR
+\NC \type {raw}    \NC finish the current string \NC \NR
+\LL
+\stoptabulate
+
+You always need to check what \PDF\ code is generated because there can be all
+kind of interferences with optimization in the backend and fonts are complicated
+anyway. Here is a rather elaborate glyph commands example using such keys:
+
+\starttyping
+...
+commands = {
+    { "push" },                     -- remember where we are
+    { "right", 5000 },              -- move right about 0.08pt
+    { "font", 3 },                  -- select the fonts[3] entry
+    { "char", 97 },                 -- place character 97 (ASCII 'a')
+ -- { "slot", 2, 97 },              -- an alternative for the previous two
+    { "pop" },                      -- go all the way back
+    { "down", -200000 },            -- move upwards by about 3pt
+    { "special", "pdf: 1 0 0 rg" }  -- switch to red color
+ -- { "pdf", "origin", "1 0 0 rg" } -- switch to red color (alternative)
+    { "rule", 500000, 20000 }       -- draw a bar
+    { "special", "pdf: 0 g" }       -- back to black
+ -- { "pdf", "origin", "0 g" }      -- back to black (alternative)
+}
+...
+\stoptyping
+
+The default value for \type {font} is always~1 at the start of the
+\type {commands} array. Therefore, if the virtual font is essentially only a
+re|-|encoding, then you do usually not have created an explicit \quote {font}
+command in the array.
+
+Rules inside of \type {commands} arrays are built up using only two dimensions:
+they do not have depth. For correct vertical placement, an extra \type {down}
+command may be needed.
+
+Regardless of the amount of movement you create within the \type {commands}, the
+output pointer will always move by exactly the width that was given in the \type
+{width} key of the character hash. Any movements that take place inside the \type
+{commands} array are ignored on the upper level.
+
+The special can have a \type {pdf:}, \type {pdf:origin:},  \type {pdf:page:},
+\type {pdf:direct:} or  \type {pdf:raw:} prefix. When you have to concatenate
+strings using the \type {pdf} command might be more efficient.
+
+The fields mentioned above can be found in external fonts. It is good to keep in
+mind that we can extend this model, given that the backend knows what to do with
+it.
+
+\stopsection
+
+\startsection[title={Additional \TEX\ commands}]
+
+\startsubsection[title={Font syntax}]
+
+\topicindex {fonts}
+
+\LUATEX\ will accept a braced argument as a font name:
+
+\starttyping
+\font\myfont = {cmr10}
+\stoptyping
+
+This allows for embedded spaces, without the need for double quotes. Macro
+expansion takes place inside the argument.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {fontid} and \lpr {setfontid}}]
+
+\startsyntax
+\fontid\font
+\stopsyntax
+
+This primitive expands into a number. It is not a register so there is no need to
+prefix with \prm {number} (and using \prm {the} gives an error). The currently
+used font id is \fontid\font. Here are some more:
+
+\starttabulate[|l|c|c|]
+\DB style \BC command \BC font id \NC \NR
+\TB
+\NC normal      \NC \type {\tf} \NC \tf \fontid\font \NC \NR
+\NC bold        \NC \type {\bf} \NC \bf \fontid\font \NC \NR
+\NC italic      \NC \type {\it} \NC \it \fontid\font \NC \NR
+\NC bold italic \NC \type {\bi} \NC \bi \fontid\font \NC \NR
+\LL
+\stoptabulate
+
+These numbers depend on the macro package used because each one has its own way
+of dealing with fonts. They can also differ per run, as they can depend on the
+order of loading fonts. For instance, when in \CONTEXT\ virtual math \UNICODE\
+fonts are used, we can easily get over a hundred ids in use. Not all ids have to
+be bound to a real font, after all it's just a number.
+
+The primitive \lpr {setfontid} can be used to enable a font with the given id,
+which of course needs to be a valid one.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {noligs} and \lpr {nokerns}}]
+
+\topicindex {ligatures+suppress}
+\topicindex {kerns+suppress}
+
+These primitives prohibit ligature and kerning insertion at the time when the
+initial node list is built by \LUATEX's main control loop. You can enable these
+primitives when you want to do node list processing of \quote {characters}, where
+\TEX's normal processing would get in the way.
+
+\startsyntax
+\noligs <integer>!crlf
+\nokerns <integer>
+\stopsyntax
+
+These primitives can also be implemented by overloading the ligature building and
+kerning functions, i.e.\ by assigning dummy functions to their associated
+callbacks. Keep in mind that when you define a font (using \LUA) you can also
+omit the kern and ligature tables, which has the same effect as the above.
+
+\stopsubsection
+
+\startsubsection[title={\type{\nospaces}}]
+
+\topicindex {spaces+suppress}
+
+This new primitive can be used to overrule the usual \prm {spaceskip} related
+heuristics when a space character is seen in a text flow. The value~\type{1}
+triggers no injection while \type{2} results in injection of a zero skip. In \in
+{figure} [fig:nospaces] we see the results for four characters separated by a
+space.
+
+\startplacefigure[reference=fig:nospaces,title={The \lpr {nospaces} options.}]
+\startcombination[3*2]
+    {\ruledhbox to 5cm{\vtop{\hsize 10mm\nospaces=0\relax x x x x \par}\hss}} {\type {0 / hsize 10mm}}
+    {\ruledhbox to 5cm{\vtop{\hsize 10mm\nospaces=1\relax x x x x \par}\hss}} {\type {1 / hsize 10mm}}
+    {\ruledhbox to 5cm{\vtop{\hsize 10mm\nospaces=2\relax x x x x \par}\hss}} {\type {2 / hsize 10mm}}
+    {\ruledhbox to 5cm{\vtop{\hsize  1mm\nospaces=0\relax x x x x \par}\hss}} {\type {0 / hsize 1mm}}
+    {\ruledhbox to 5cm{\vtop{\hsize  1mm\nospaces=1\relax x x x x \par}\hss}} {\type {1 / hsize 1mm}}
+    {\ruledhbox to 5cm{\vtop{\hsize  1mm\nospaces=2\relax x x x x \par}\hss}} {\type {2 / hsize 1mm}}
+\stopcombination
+\stopplacefigure
+
+\stopsubsection
+
+\startsubsection[title={\type{\protrusionboundary}}]
+
+\topicindex {protrusion}
+\topicindex {boundaries}
+
+The protrusion detection mechanism is enhanced a bit to enable a bit more complex
+situations. When protrusion characters are identified some nodes are skipped:
+
+\startitemize[packed,columns,two]
+\startitem zero glue \stopitem
+\startitem penalties \stopitem
+\startitem empty discretionaries \stopitem
+\startitem normal zero kerns \stopitem
+\startitem rules with zero dimensions \stopitem
+\startitem math nodes with a surround of zero \stopitem
+\startitem dir nodes \stopitem
+\startitem empty horizontal lists \stopitem
+\startitem local par nodes \stopitem
+\startitem inserts, marks and adjusts \stopitem
+\startitem boundaries \stopitem
+\startitem whatsits \stopitem
+\stopitemize
+
+Because this can not be enough, you can also use a protrusion boundary node to
+make the next node being ignored. When the value is~1 or~3, the next node will be
+ignored in the test when locating a left boundary condition. When the value is~2
+or~3, the previous node will be ignored when locating a right boundary condition
+(the search goes from right to left). This permits protrusion combined with for
+instance content moved into the margin:
+
+\starttyping
+\protrusionboundary1\llap{!\quad}«Who needs protrusion?»
+\stoptyping
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={The \LUA\ font library}][library=font]
+
+\startsubsection[title={Introduction}]
+
+The \LUA\ font library is reduced to a few commands. Contrary to \LUATEX\ there
+is no loading of \TFM\ or \VF\ files. The explanation of the following commands
+is in the \LUATEX\ manual.
+
+\starttabulate[|l|pl|]
+\DB function              \BC description \NC\NR
+\TB
+\NC \type {current}       \NC returns the id of the currently active font \NC \NR
+\NC \type {max}           \NC returns the last assigned font identifier \NC \NR
+\NC \type {setfont}       \NC enables a font setfont (sets the current font id) \NC \NR
+\NC \type {addcharacters} \NC adds characters to a font \NC \NR
+\NC \type {define}        \NC defined a font \NC \NR
+\NC \type {id}            \NC returns the id that relates to a command name \NC \NR
+\LL
+\stoptabulate
+
+For practical reasons the management of font identifiers is still done by \TEX\
+but it can become an experiment to delegate that to \LUA\ as well.
+
+\stopsubsection
+
+\startsubsection[title={Defining a font with \type {define}, \type {addcharacters} and \type
+{setfont}}]
+
+\topicindex {fonts+define}
+\topicindex {fonts+extend}
+
+Normally you will use a callback to define a font but there's also a \LUA\
+function that does the job.
+
+\startfunctioncall
+id = font.define(<table> f)
+\stopfunctioncall
+
+Within reasonable bounds you can extend a font after it has been defined. Because
+some properties are best left unchanged this is limited to adding characters.
+
+\startfunctioncall
+font.addcharacters(<number n>, <table> f)
+\stopfunctioncall
+
+The table passed can have the fields \type {characters} which is a (sub)table
+like the one used in define, and for virtual fonts a \type {fonts} table can be
+added. The characters defined in the \type {characters} table are added (when not
+yet present) or replace an existing entry. Keep in mind that replacing can have
+side effects because a character already can have been used. Instead of posing
+restrictions we expect the user to be careful. The \type {setfont} helper is
+a more drastic replacer and only works when a font has not been used yet.
+
+\stopsubsection
+
+\startsubsection[title={Font ids: \type {id}, \type {max} and \type {current}}]
+
+\topicindex {fonts+id}
+\topicindex {fonts+current}
+
+\startfunctioncall
+<number> i = font.id(<string> csname)
+\stopfunctioncall
+
+This returns the font id associated with \type {csname}, or $-1$ if \type
+{csname} is not defined.
+
+\startfunctioncall
+<number> i = font.max()
+\stopfunctioncall
+
+This is the largest used index so far. The currently active font id can be
+queried or set with:
+
+\startfunctioncall
+<number> i = font.current()
+font.current(<number> i)
+\stopfunctioncall
+
+\stopsubsection
+
+% \startsubsection[title={Glyph data: \lpr {glyphdata}]
+%
+% This primitive can be used to set an additional glyph property. Of course it's very
+% macro package dependant what is done with that. Consider it an experiment (we had
+% some room left in the glyphs data structure). It's basically an single attribute.
+%
+% \stopsubsection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

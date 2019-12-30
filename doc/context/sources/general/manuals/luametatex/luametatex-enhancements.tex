@@ -1,0 +1,1781 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-enhancements
+
+\startchapter[reference=enhancements,title={Basic \TEX\ enhancements}]
+
+\startsection[title={Introduction}]
+
+\startsubsection[title={Primitive behaviour}]
+
+From day one, \LUATEX\ has offered extra features compared to the superset of
+\PDFTEX, which includes \ETEX, and \ALEPH. This has not been limited to the
+possibility to execute \LUA\ code via \prm {directlua}, but \LUATEX\ also adds
+functionality via new \TEX|-|side primitives or extensions to existing ones. The
+same is true fir \LUAMETATEX. Some primitives have \type {luatex} in their name
+and there will be no \type {luametatex} variants. This is because we consider
+\LUAMETATEX\ to be \LUATEX 2\high{+}.
+
+Contrary to the \LUATEX\ engine \LUAMETATEX\ enables all its primitives. You can
+clone (a selection of) primitives with a different prefix, like:
+
+\starttyping
+\directlua { tex.enableprimitives('normal',tex.extraprimitives()) }
+\stoptyping
+
+The \type {extraprimitives} function returns the whole list or a subset,
+specified by one or more keywords \type {core}, \type {tex}, \type {etex} or
+\type {luatex}. \footnote {At some point this function might be changed to return
+the whole list always}.
+
+But be aware that the curly braces may not have the proper \prm {catcode}
+assigned to them at this early time (giving a \quote {Missing number} error), so
+it may be needed to put these assignments before the above line:
+
+\starttyping
+\catcode `\{=1
+\catcode `\}=2
+\stoptyping
+
+More fine|-|grained primitives control is possible and you can look up the
+details in \in {section} [luaprimitives]. For simplicity's sake, this manual
+assumes that you have executed the \prm {directlua} command as given above.
+
+The startup behaviour documented above is considered stable in the sense that
+there will not be backward|-|incompatible changes any more. We have promoted some
+rather generic \PDFTEX\ primitives to core \LUATEX\ ones, and a few that we
+inherited from \ALEPH\ (\OMEGA) are also promoted. Effectively this means that we
+now only have the \type {tex}, \type {etex} and \type {luatex} sets left.
+
+\stopsubsection
+
+\startsubsection[title={Experiments}]
+
+There are a few extensions to the engine regarding the macro machinery. Some are
+already well tested but others are (still) experimental. Although they are likely
+to stay, their exact behaviour might evolve. Because \LUAMETATEX\ is also used
+for experiments, this is not a problem. We can always decide to also add some of
+what is discussed here to \LUATEX, but it will happen with a delay.
+
+There are all kind of small improvements that might find their way into stock
+\LUATEX: a few more helpers, some cleanup of code, etc. We'll see. In any case,
+if you play with these before they are declared stable, unexpected side effects
+are what you have to accept.
+
+\stopsubsection
+
+\startsubsection[title={Version information}]
+
+\startsubsubsection[title={\lpr {luatexbanner}, \lpr {luatexversion} and \lpr {luatexrevision}}]
+
+\topicindex{version}
+\topicindex{banner}
+
+There are three primitives to test the version of \LUATEX\ (and \LUAMETATEX):
+
+\unexpanded\def\VersionHack#1% otherwise different luatex and luajittex runs
+  {\ctxlua{%
+     local banner = "\luatexbanner"
+     local banner = string.match(banner,"(.+)\letterpercent(") or banner
+     context(string.gsub(banner ,"jit",""))%
+  }}
+
+\starttabulate[|l|l|pl|]
+\DB primitive             \BC value
+                          \BC explanation \NC \NR
+\TB
+\NC \lpr {luatexbanner}   \NC \VersionHack{\luatexbanner}
+                          \NC the banner reported on the command line \NC \NR
+\NC \lpr {luatexversion}  \NC \the\luatexversion
+                          \NC a combination of major and minor number \NC \NR
+\NC \lpr {luatexrevision} \NC \luatexrevision
+                          \NC the revision number, the current value is \NC \NR
+\LL
+\stoptabulate
+
+A version is defined as follows:
+
+\startitemize
+\startitem
+    The major version is the integer result of \lpr {luatexversion} divided by
+    100. The primitive is an \quote {internal variable}, so you may need to prefix
+    its use with \prm {the} depending on the context.
+\stopitem
+\startitem
+    The minor version is the two|-|digit result of \lpr {luatexversion} modulo 100.
+\stopitem
+\startitem
+    The revision is reported by \lpr {luatexrevision}. This primitive expands to
+    a positive integer.
+\stopitem
+\startitem
+    The full version number consists of the major version, minor version and
+    revision, separated by dots.
+\stopitem
+\stopitemize
+
+\stopsubsubsection
+
+The \LUAMETATEX\ version number starts at 2 in order to prevent a clash with
+\LUATEX, and the version commands are the same. This is a way to indicate that
+these projects are related.
+
+\startsubsubsection[title={\lpr {formatname}}]
+
+\topicindex{format}
+
+The \lpr {formatname} syntax is identical to \prm {jobname}. In \INITEX, the
+expansion is empty. Otherwise, the expansion is the value that \prm {jobname} had
+during the \INITEX\ run that dumped the currently loaded format. You can use this
+token list to provide your own version info.
+
+\stopsubsubsection
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\UNICODE\ text support}]
+
+\startsubsection[title={Extended ranges}]
+
+\topicindex{\UNICODE}
+
+Text input and output is now considered to be \UNICODE\ text, so input characters
+can use the full range of \UNICODE\ ($2^{20}+2^{16}-1 = \hbox{0x10FFFF}$). Later
+chapters will talk of characters and glyphs. Although these are not
+interchangeable, they are closely related. During typesetting, a character is
+always converted to a suitable graphic representation of that character in a
+specific font. However, while processing a list of to|-|be|-|typeset nodes, its
+contents may still be seen as a character. Inside the engine there is no clear
+separation between the two concepts. Because the subtype of a glyph node can be
+changed in \LUA\ it is up to the user. Subtypes larger than 255 indicate that
+font processing has happened.
+
+A few primitives are affected by this, all in a similar fashion: each of them has
+to accommodate for a larger range of acceptable numbers. For instance, \prm
+{char} now accepts values between~0 and $1{,}114{,}111$. This should not be a
+problem for well|-|behaved input files, but it could create incompatibilities for
+input that would have generated an error when processed by older \TEX|-|based
+engines. The affected commands with an altered initial (left of the equal sign)
+or secondary (right of the equal sign) value are: \prm {char}, \prm {lccode},
+\prm {uccode}, \lpr {hjcode}, \prm {catcode}, \prm {sfcode}, \lpr {efcode}, \lpr
+{lpcode}, \lpr {rpcode}, \prm {chardef}.
+
+As far as the core engine is concerned, all input and output to text files is
+\UTF-8 encoded. Input files can be pre|-|processed using the \type {reader}
+callback. This will be explained in \in {section} [iocallback]. Normalization of
+the \UNICODE\ input is on purpose not built|-|in and can be handled by a macro
+package during callback processing. We have made some practical choices and the
+user has to live with those.
+
+Output in byte|-|sized chunks can be achieved by using characters just outside of
+the valid \UNICODE\ range, starting at the value $1{,}114{,}112$ (0x110000). When
+the time comes to print a character $c>=1{,}114{,}112$, \LUATEX\ will actually
+print the single byte corresponding to $c$ minus 1{,}114{,}112.
+
+Contrary to other \TEX\ engines, the output to the terminal is as|-|is so there
+is no escaping with \type {^^}. We operate in a \UTF\ universe.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {Uchar}}]
+
+\topicindex{\UNICODE}
+
+The expandable command \lpr {Uchar} reads a number between~0 and $1{,}114{,}111$
+and expands to the associated \UNICODE\ character.
+
+\stopsubsection
+
+\startsubsection[title={Extended tables}]
+
+All traditional \TEX\ and \ETEX\ registers can be 16-bit numbers. The affected
+commands are:
+
+\startfourcolumns
+\startlines
+\prm {count}
+\prm {dimen}
+\prm {skip}
+\prm {muskip}
+\prm {marks}
+\prm {toks}
+\prm {countdef}
+\prm {dimendef}
+\prm {skipdef}
+\prm {muskipdef}
+\prm {toksdef}
+\prm {insert}
+\prm {box}
+\prm {unhbox}
+\prm {unvbox}
+\prm {copy}
+\prm {unhcopy}
+\prm {unvcopy}
+\prm {wd}
+\prm {ht}
+\prm {dp}
+\prm {setbox}
+\prm {vsplit}
+\stoplines
+\stopfourcolumns
+
+Fonts are loaded via \LUA\ and a minimal amount of information is kept at the
+\TEX\ end. Sharing resources is up to the loaders. The engine doesn't really care
+about what a character (or glyph) number represents (an \UNICODE\ or index) as it
+only is interested in dimensions.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Attributes}]
+
+\startsubsection[title={Nodes}]
+
+\topicindex {nodes}
+
+When \TEX\ reads input it will interpret the stream according to the properties
+of the characters. Some signal a macro name and trigger expansion, others open
+and close groups, trigger math mode, etc. What's left over becomes the typeset
+text. Internally we get a linked list of nodes. Characters become \nod {glyph}
+nodes that have for instance a \type {font} and \type {char} property and \typ
+{\kern 10pt} becomes a \nod {kern} node with a \type {width} property. Spaces are
+alien to \TEX\ as they are turned into \nod {glue} nodes. So, a simple paragraph
+is mostly a mix of sequences of \nod {glyph} nodes (words) and \nod {glue} nodes
+(spaces). A node can have a subtype to that it can be recognized as for instance
+a space related glue.
+
+The sequences of characters at some point are extended with \nod {disc} nodes
+that relate to hyphenation. After that font logic can be applied and we get a
+list where some characters can be replaced, for instance multiple characters can
+become one ligature, and font kerns can be injected. This is driven by the
+font properties.
+
+Boxes (like \prm {hbox} and \prm {vbox}) become \nod {hlist} or \nod {vlist}
+nodes with \type {width}, \type {height}, \type {depth} and \type {shift}
+properties and a pointer \type {list} to its actual content. Boxes can be
+constructed explicitly or can be the result of subprocesses. For instance, when
+lines are broken into paragraphs, the lines are a linked list of \nod {hlist}
+nodes, possibly with glue and penalties in between.
+
+Internally nodes have a number. This number is actually an index in the memory
+used to store nodes.
+
+So, to summarize: all that you enter as content eventually becomes a node, often
+as part of a (nested) list structure. They have a relative small memory footprint
+and carry only the minimal amount of information needed. In traditional \TEX\ a
+character node only held the font and slot number, in \LUATEX\ we also store some
+language related information, the expansion factor, etc. Now that we have access
+to these nodes from \LUA\ it makes sense to be able to carry more information
+with an node and this is where attributes kick in.
+
+\stopsubsection
+
+\startsubsection[title={Attribute registers}]
+
+\topicindex {attributes}
+
+Attributes are a completely new concept in \LUATEX. Syntactically, they behave a
+lot like counters: attributes obey \TEX's nesting stack and can be used after
+\prm {the} etc.\ just like the normal \prm {count} registers.
+
+\startsyntax
+\attribute <16-bit number> <optional equals> <32-bit number>!crlf
+\attributedef <csname> <optional equals> <16-bit number>
+\stopsyntax
+
+Conceptually, an attribute is either \quote {set} or \quote {unset}. Unset
+attributes have a special negative value to indicate that they are unset, that
+value is the lowest legal value: \type {-"7FFFFFFF} in hexadecimal, a.k.a.
+$-2147483647$ in decimal. It follows that the value \type {-"7FFFFFFF} cannot be
+used as a legal attribute value, but you {\it can\/} assign \type {-"7FFFFFFF} to
+\quote {unset} an attribute. All attributes start out in this \quote {unset}
+state in \INITEX.
+
+Attributes can be used as extra counter values, but their usefulness comes mostly
+from the fact that the numbers and values of all \quote {set} attributes are
+attached to all nodes created in their scope. These can then be queried from any
+\LUA\ code that deals with node processing. Further information about how to use
+attributes for node list processing from \LUA\ is given in~\in {chapter}[nodes].
+
+Attributes are stored in a sorted (sparse) linked list that are shared when
+possible. This permits efficient testing and updating. You can define many
+thousands of attributes but normally such a large number makes no sense and is
+also not that efficient because each node carries a (possibly shared) link to a
+list of currently set attributes. But they are a convenient extension and one of
+the first extensions we implemented in \LUATEX.
+
+In \LUAMETATEX\ we try to minimize the memory footprint and creation of these
+attribute lists more aggressive sharing them. This feature is still somewhat
+experimental.
+
+\stopsubsection
+
+\startsubsection[title={Box attributes}]
+
+\topicindex {attributes}
+\topicindex {boxes}
+
+Nodes typically receive the list of attributes that is in effect when they are
+created. This moment can be quite asynchronous. For example: in paragraph
+building, the individual line boxes are created after the \prm {par} command has
+been processed, so they will receive the list of attributes that is in effect
+then, not the attributes that were in effect in, say, the first or third line of
+the paragraph.
+
+Similar situations happen in \LUATEX\ regularly. A few of the more obvious
+problematic cases are dealt with: the attributes for nodes that are created
+during hyphenation, kerning and ligaturing borrow their attributes from their
+surrounding glyphs, and it is possible to influence box attributes directly.
+
+When you assemble a box in a register, the attributes of the nodes contained in
+the box are unchanged when such a box is placed, unboxed, or copied. In this
+respect attributes act the same as characters that have been converted to
+references to glyphs in fonts. For instance, when you use attributes to implement
+color support, each node carries information about its eventual color. In that
+case, unless you implement mechanisms that deal with it, applying a color to
+already boxed material will have no effect. Keep in mind that this
+incompatibility is mostly due to the fact that separate specials and literals are
+a more unnatural approach to colors than attributes.
+
+It is possible to fine-tune the list of attributes that are applied to a \type
+{hbox}, \type {vbox} or \type {vtop} by the use of the keyword \type {attr}. The
+\type {attr} keyword(s) should come before a \type {to} or \type {spread}, if
+that is also specified. An example is:
+
+\startbuffer[tex]
+\attribute997=123
+\attribute998=456
+\setbox0=\hbox {Hello}
+\setbox2=\hbox attr 999 = 789 attr 998 = -"7FFFFFFF{Hello}
+\stopbuffer
+
+\startbuffer[lua]
+  for b=0,2,2 do
+    for a=997, 999 do
+      tex.sprint("box ", b, " : attr ",a," : ",tostring(tex.box[b]     [a]))
+      tex.sprint("\\quad\\quad")
+      tex.sprint("list ",b, " : attr ",a," : ",tostring(tex.box[b].list[a]))
+      tex.sprint("\\par")
+    end
+  end
+\stopbuffer
+
+\typebuffer[tex]
+
+Box 0 now has attributes 997 and 998 set while box 2 has attributes 997 and 999
+set while the nodes inside that box will all have attributes 997 and 998 set.
+Assigning the maximum negative value causes an attribute to be ignored.
+
+To give you an idea of what this means at the \LUA\ end, take the following
+code:
+
+\typebuffer[lua]
+
+Later we will see that you can access properties of a node. The boxes here are so
+called \nod {hlist} nodes that have a field \type {list} that points to the
+content. Because the attributes are a list themselves you can access them by
+indexing the node (here we do that with \type {[a]}. Running this snippet gives:
+
+\start
+    \getbuffer[tex]
+    \startpacked \tt
+        \ctxluabuffer[lua]
+    \stoppacked
+\stop
+
+Because some values are not set we need to apply the \type {tostring} function
+here so that we get the word \type {nil}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={\LUA\ related primitives}]
+
+\startsubsection[title={\prm {directlua}}]
+
+In order to merge \LUA\ code with \TEX\ input, a few new primitives are needed.
+The primitive \prm {directlua} is used to execute \LUA\ code immediately. The
+syntax is
+
+\startsyntax
+\directlua <general text>
+\stopsyntax
+
+The \syntax {<general text>} is expanded fully, and then fed into the \LUA\
+interpreter. After reading and expansion has been applied to the \syntax
+{<general text>}, the resulting token list is converted to a string as if it was
+displayed using \type {\the\toks}. On the \LUA\ side, each \prm {directlua} block
+is treated as a separate chunk. In such a chunk you can use the \type {local}
+directive to keep your variables from interfering with those used by the macro
+package.
+
+The conversion to and from a token list means that you normally can not use \LUA\
+line comments (starting with \type {--}) within the argument. As there typically
+will be only one \quote {line} the first line comment will run on until the end
+of the input. You will either need to use \TEX|-|style line comments (starting
+with \%), or change the \TEX\ category codes locally. Another possibility is to
+say:
+
+\starttyping
+\begingroup
+\endlinechar=10
+\directlua ...
+\endgroup
+\stoptyping
+
+Then \LUA\ line comments can be used, since \TEX\ does not replace line endings
+with spaces. Of course such an approach depends on the macro package that you
+use.
+
+The \prm {directlua} command is expandable. Since it passes \LUA\ code to the
+\LUA\ interpreter its expansion from the \TEX\ viewpoint is usually empty.
+However, there are some \LUA\ functions that produce material to be read by \TEX,
+the so called print functions. The most simple use of these is \type
+{tex.print(<string> s)}. The characters of the string \type {s} will be placed on
+the \TEX\ input buffer, that is, \quote {before \TEX's eyes} to be read by \TEX\
+immediately. For example:
+
+\startbuffer
+\count10=20
+a\directlua{tex.print(tex.count[10]+5)}b
+\stopbuffer
+
+\typebuffer
+
+expands to
+
+\getbuffer
+
+Here is another example:
+
+\startbuffer
+$\pi = \directlua{tex.print(math.pi)}$
+\stopbuffer
+
+\typebuffer
+
+will result in
+
+\getbuffer
+
+Note that the expansion of \prm {directlua} is a sequence of characters, not of
+tokens, contrary to all \TEX\ commands. So formally speaking its expansion is
+null, but it places material on a pseudo-file to be immediately read by \TEX, as
+\ETEX's \prm {scantokens}. For a description of print functions look at \in
+{section} [sec:luaprint].
+
+Because the \syntax {<general text>} is a chunk, the normal \LUA\ error handling
+is triggered if there is a problem in the included code. The \LUA\ error messages
+should be clear enough, but the contextual information is still pretty bad.
+Often, you will only see the line number of the right brace at the end of the
+code.
+
+While on the subject of errors: some of the things you can do inside \LUA\ code
+can break up \LUAMETATEX\ pretty bad. If you are not careful while working with
+the node list interface, you may even end up with assertion errors from within
+the \TEX\ portion of the executable.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {luaescapestring}}]
+
+\topicindex {escaping}
+
+This primitive converts a \TEX\ token sequence so that it can be safely used as
+the contents of a \LUA\ string: embedded backslashes, double and single quotes,
+and newlines and carriage returns are escaped. This is done by prepending an
+extra token consisting of a backslash with category code~12, and for the line
+endings, converting them to \type {n} and \type {r} respectively. The token
+sequence is fully expanded.
+
+\startsyntax
+\luaescapestring <general text>
+\stopsyntax
+
+Most often, this command is not actually the best way to deal with the
+differences between \TEX\ and \LUA. In very short bits of \LUA\ code it is often
+not needed, and for longer stretches of \LUA\ code it is easier to keep the code
+in a separate file and load it using \LUA's \type {dofile}:
+
+\starttyping
+\directlua { dofile("mysetups.lua") }
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\lpr {luafunction}, \lpr {luafunctioncall} and \lpr {luadef}}]
+
+The \prm {directlua} commands involves tokenization of its argument (after
+picking up an optional name or number specification). The tokenlist is then
+converted into a string and given to \LUA\ to turn into a function that is
+called. The overhead is rather small but when you have millions of calls it can
+have some impact. For this reason there is a variant call available: \lpr
+{luafunction}. This command is used as follows:
+
+\starttyping
+\directlua {
+    local t = lua.get_functions_table()
+    t[1] = function() tex.print("!") end
+    t[2] = function() tex.print("?") end
+}
+
+\luafunction1
+\luafunction2
+\stoptyping
+
+Of course the functions can also be defined in a separate file. There is no limit
+on the number of functions apart from normal \LUA\ limitations. Of course there
+is the limitation of no arguments but that would involve parsing and thereby give
+no gain. The function, when called in fact gets one argument, being the index, so
+in the following example the number \type {8} gets typeset.
+
+\starttyping
+\directlua {
+    local t = lua.get_functions_table()
+    t[8] = function(slot) tex.print(slot) end
+}
+\stoptyping
+
+The \lpr {luafunctioncall} primitive does the same but is unexpandable, for
+instance in an \prm {edef}. In addition \LUATEX\ provides a definer:
+
+\starttyping
+                 \luadef\MyFunctionA 1
+          \global\luadef\MyFunctionB 2
+\protected\global\luadef\MyFunctionC 3
+\stoptyping
+
+You should really use these commands with care. Some references get stored in
+tokens and assume that the function is available when that token expands. On the
+other hand, as we have tested this functionality in relative complex situations
+normal usage should not give problems.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {luabytecode} and \lpr {luabytecodecall}}]
+
+Analogue to the function callers discussed in the previous section we have byte
+code callers. Again the call variant is unexpandable.
+
+\starttyping
+\directlua {
+    lua.bytecode[9998] = function(s)
+        tex.sprint(s*token.scan_int())
+    end
+    lua.bytecode[5555] = function(s)
+        tex.sprint(s*token.scan_dimen())
+    end
+}
+\stoptyping
+
+This works with:
+
+\starttyping
+\luabytecode    9998 5  \luabytecode    5555 5sp
+\luabytecodecall9998 5  \luabytecodecall5555 5sp
+\stoptyping
+
+The variable \type {s} in the code is the number of the byte code register that
+can be used for diagnostic purposes. The advantage of bytecode registers over
+function calls is that they are stored in the format (but without upvalues).
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Catcode tables}]
+
+\startsubsection[title={Catcodes}]
+
+\topicindex {catcodes}
+
+Catcode tables are a new feature that allows you to switch to a predefined
+catcode regime in a single statement. You can have lots of different tables, but
+if you need a dozen you might wonder what you're doing. . This subsystem is
+backward compatible: if you never use the following commands, your document will
+not notice any difference in behaviour compared to traditional \TEX. The contents
+of each catcode table is independent from any other catcode table, and its
+contents is stored and retrieved from the format file.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {catcodetable}}]
+
+\startsyntax
+\catcodetable <15-bit number>
+\stopsyntax
+
+The primitive \lpr {catcodetable} switches to a different catcode table. Such a
+table has to be previously created using one of the two primitives below, or it
+has to be zero. Table zero is initialized by \INITEX.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {initcatcodetable}}]
+
+\startsyntax
+\initcatcodetable <15-bit number>
+\stopsyntax
+
+The primitive \lpr {initcatcodetable} creates a new table with catcodes
+identical to those defined by \INITEX. The new catcode table is allocated
+globally: it will not go away after the current group has ended. If the supplied
+number is identical to the currently active table, an error is raised. The
+initial values are:
+
+\starttabulate[|c|c|l|l|]
+\DB catcode \BC character               \BC equivalent \BC category          \NC \NR
+\TB
+\NC  0 \NC \tttf \letterbackslash       \NC         \NC \type {escape}       \NC \NR
+\NC  5 \NC \tttf \letterhat\letterhat M \NC return  \NC \type {car_ret}      \NC \NR
+\NC  9 \NC \tttf \letterhat\letterhat @ \NC null    \NC \type {ignore}       \NC \NR
+\NC 10 \NC \tttf <space>                \NC space   \NC \type {spacer}       \NC \NR
+\NC 11 \NC {\tttf a} \endash\ {\tttf z} \NC         \NC \type {letter}       \NC \NR
+\NC 11 \NC {\tttf A} \endash\ {\tttf Z} \NC         \NC \type {letter}       \NC \NR
+\NC 12 \NC everything else              \NC         \NC \type {other}        \NC \NR
+\NC 14 \NC \tttf \letterpercent         \NC         \NC \type {comment}      \NC \NR
+\NC 15 \NC \tttf \letterhat\letterhat ? \NC delete  \NC \type {invalid_char} \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={\lpr {savecatcodetable}}]
+
+\startsyntax
+\savecatcodetable <15-bit number>
+\stopsyntax
+
+\lpr {savecatcodetable} copies the current set of catcodes to a new table with
+the requested number. The definitions in this new table are all treated as if
+they were made in the outermost level.
+
+The new table is allocated globally: it will not go away after the current group
+has ended. If the supplied number is the currently active table, an error is
+raised.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Tokens, commands and strings}]
+
+\startsubsection[title={\lpr {scantextokens}}]
+
+\topicindex {tokens+scanning}
+
+The syntax of \lpr {scantextokens} is identical to \prm {scantokens}. This
+primitive is a slightly adapted version of \ETEX's \prm {scantokens}. The
+differences are:
+
+\startitemize
+\startitem
+    The last (and usually only) line does not have a \prm {endlinechar}
+    appended.
+\stopitem
+\startitem
+    \lpr {scantextokens} never raises an EOF error, and it does not execute
+    \prm {everyeof} tokens.
+\stopitem
+\startitem
+    There are no \quote {\unknown\ while end of file \unknown} error tests
+    executed. This allows the expansion to end on a different grouping level or
+    while a conditional is still incomplete.
+\stopitem
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title={\lpr {toksapp}, \lpr {tokspre}, \lpr {etoksapp}, \lpr {etokspre},
+\lpr {gtoksapp}, \lpr {gtokspre}, \lpr {xtoksapp},  \lpr {xtokspre}}]
+
+Instead of:
+
+\starttyping
+\toks0\expandafter{\the\toks0 foo}
+\stoptyping
+
+you can use:
+
+\starttyping
+\etoksapp0{foo}
+\stoptyping
+
+The \type {pre} variants prepend instead of append, and the \type {e} variants
+expand the passed general text. The \type {g} and \type {x} variants are global.
+
+\stopsubsection
+
+\startsubsection[title={\prm {csstring}, \lpr {begincsname} and \lpr {lastnamedcs}}]
+
+These are somewhat special. The \prm {csstring} primitive is like
+\prm {string} but it omits the leading escape character. This can be
+somewhat more efficient than stripping it afterwards.
+
+The \lpr {begincsname} primitive is like \prm {csname} but doesn't create
+a relaxed equivalent when there is no such name. It is equivalent to
+
+\starttyping
+\ifcsname foo\endcsname
+  \csname foo\endcsname
+\fi
+\stoptyping
+
+The advantage is that it saves a lookup (don't expect much speedup) but more
+important is that it avoids using the \prm {if} test. The \lpr {lastnamedcs}
+is one that should be used with care. The above example could be written as:
+
+\starttyping
+\ifcsname foo\endcsname
+  \lastnamedcs
+\fi
+\stoptyping
+
+This is slightly more efficient than constructing the string twice (deep down in
+\LUATEX\ this also involves some \UTF8 juggling), but probably more relevant is
+that it saves a few tokens and can make code a bit more readable.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {clearmarks}}]
+
+\topicindex {marks}
+
+This primitive complements the \ETEX\ mark primitives and clears a mark class
+completely, resetting all three connected mark texts to empty. It is an
+immediate command.
+
+\startsyntax
+\clearmarks <16-bit number>
+\stopsyntax
+
+\stopsubsection
+
+\startsubsection[title={\lpr {alignmark} and \lpr {aligntab}}]
+
+The primitive \lpr {alignmark} duplicates the functionality of \type {#} inside
+alignment preambles, while \lpr {aligntab} duplicates the functionality of \type
+{&}.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {letcharcode}}]
+
+This primitive can be used to assign a meaning to an active character, as in:
+
+\starttyping
+\def\foo{bar} \letcharcode123=\foo
+\stoptyping
+
+This can be a bit nicer than using the uppercase tricks (using the property of
+\prm {uppercase} that it treats active characters special).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {glet}}]
+
+This primitive is similar to:
+
+\starttyping
+\protected\def\glet{\global\let}
+\stoptyping
+
+but faster (only measurable with millions of calls) and probably more convenient
+(after all we also have \type {\gdef}).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {expanded}, \lpr {immediateassignment} and \lpr {immediateassigned}}]
+
+\topicindex {expansion}
+
+The \lpr {expanded} primitive takes a token list and expands it content which can
+come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
+You can compare it with what happens inside the body of an \prm {edef}. But this
+kind of expansion it still doesn't expand some primitive operations.
+
+\startbuffer
+\newcount\NumberOfCalls
+
+\def\TestMe{\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+The result is a macro that has the not expanded code in its body:
+
+\getbuffer
+
+Instead we can define \tex {TestMe} in a way that expands the assignment
+immediately. You need of course to be aware of preventing look ahead interference
+by using a space or \tex {relax} (often an expression works better as it doesn't
+leave an \tex {relax}).
+
+\startbuffer
+\def\TestMe{\immediateassignment\advance\NumberOfCalls1 }
+
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+\edef\Tested{\TestMe foo:\the\NumberOfCalls}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+This time the counter gets updates and we don't see interference in the
+resulting \tex {Tested} macro:
+
+\getbuffer
+
+Here is a somewhat silly example of expanded comparison:
+
+\startbuffer
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassignment\edef\tempa{#1}%
+   \immediateassignment\edef\tempb{#2}%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+
+\edef\Tested
+  {(\expandeddoifelse{abc}{def}{yes}{nop}/%
+    \expandeddoifelse{abc}{abc}{yes}{nop})}
+
+\meaning\Tested
+\stopbuffer
+
+\typebuffer
+
+It gives:
+
+\getbuffer
+
+A variant is:
+
+\starttyping
+\def\expandeddoifelse#1#2#3#4%
+  {\immediateassigned{
+     \edef\tempa{#1}%
+     \edef\tempb{#2}%
+   }%
+   \ifx\tempa\tempb
+     \immediateassignment\def\next{#3}%
+   \else
+     \immediateassignment\def\next{#4}%
+   \fi
+   \next}
+\stoptyping
+
+The possible error messages are the same as using assignments in preambles of
+alignments and after the \prm {accent} command. The supported assignments are the
+so called prefixed commands (except box assignments).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {ignorepars}}]
+
+This primitives is like \prm {ignorespaces} but also skips paragraph ending
+commands (normally \prm {par} and empty lines).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {futureexpand}, \lpr {futureexpandis}, \lpr {futureexpandisap}}]
+
+These commands are use as:
+
+\starttyping
+\futureexpand\sometoken\whenfound\whennotfound
+\stoptyping
+
+When there is no match and a space was gobbled a space will be put back. The
+\type {is} variant doesn't do that while the \type {isap} even skips \type
+{\pars}, These characters stand for \quote {ignorespaces} and \quote
+{ignorespacesandpars}.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {aftergrouped}}]
+
+There is a new experimental feature that can inject multiple tokens to after the group
+ends. An example demonstrate its use:
+
+\startbuffer
+{
+    \aftergroup A \aftergroup B \aftergroup C
+test 1 : }
+
+{
+    \aftergrouped{What comes next 1}
+    \aftergrouped{What comes next 2}
+    \aftergrouped{What comes next 3}
+test 2 : }
+
+
+{
+    \aftergroup A \aftergrouped{What comes next 1}
+    \aftergroup B \aftergrouped{What comes next 2}
+    \aftergroup C \aftergrouped{What comes next 3}
+test 3 : }
+
+{
+    \aftergrouped{What comes next 1} \aftergroup A
+    \aftergrouped{What comes next 2} \aftergroup B
+    \aftergrouped{What comes next 3} \aftergroup C
+test 4 : }
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\startpacked\getbuffer\stoppacked
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Conditions]
+
+\startsubsection[title={\lpr{ifabsnum} and \lpr {ifabsdim}}]
+
+There are two tests that we took from \PDFTEX:
+
+\startbuffer
+\ifabsnum -10 = 10
+    the same number
+\fi
+\ifabsdim -10pt = 10pt
+    the same dimension
+\fi
+\stopbuffer
+
+\typebuffer
+
+This gives
+
+\blank {\tt \getbuffer} \blank
+
+\stopsubsection
+
+\startsubsection[title={\lpr{ifcmpnum}, \lpr {ifcmpdim}, \lpr {ifnumval}, \lpr
+{ifdimval}, \lpr {ifchknum} and \lpr {ifchkdim}}]
+
+\topicindex {conditions+numbers}
+\topicindex {conditions+dimensions}
+\topicindex {numbers}
+\topicindex {dimensions}
+
+New are the ones that compare two numbers or dimensions:
+
+\startbuffer
+\ifcmpnum 5 8 less \or equal \else more \fi
+\ifcmpnum 5 5 less \or equal \else more \fi
+\ifcmpnum 8 5 less \or equal \else more \fi
+\stopbuffer
+
+\typebuffer \blank {\tt \getbuffer} \blank
+
+and
+
+\startbuffer
+\ifcmpdim 5pt 8pt less \or equal \else more \fi
+\ifcmpdim 5pt 5pt less \or equal \else more \fi
+\ifcmpdim 8pt 5pt less \or equal \else more \fi
+\stopbuffer
+
+\typebuffer \blank {\tt \getbuffer} \blank
+
+There are also some number and dimension tests. All four expose the \type {\else}
+branch when there is an error, but two also report if the number is less, equal
+or more than zero.
+
+\startbuffer
+\ifnumval  -123  \or < \or = \or > \or ! \else ? \fi
+\ifnumval     0  \or < \or = \or > \or ! \else ? \fi
+\ifnumval   123  \or < \or = \or > \or ! \else ? \fi
+\ifnumval   abc  \or < \or = \or > \or ! \else ? \fi
+
+\ifdimval -123pt \or < \or = \or > \or ! \else ? \fi
+\ifdimval    0pt \or < \or = \or > \or ! \else ? \fi
+\ifdimval  123pt \or < \or = \or > \or ! \else ? \fi
+\ifdimval  abcpt \or < \or = \or > \or ! \else ? \fi
+\stopbuffer
+
+\typebuffer \blank {\tt \getbuffer} \blank
+
+\startbuffer
+\ifchknum  -123  \or okay \else bad \fi
+\ifchknum     0  \or okay \else bad \fi
+\ifchknum   123  \or okay \else bad \fi
+\ifchknum   abc  \or okay \else bad \fi
+
+\ifchkdim -123pt \or okay \else bad \fi
+\ifchkdim    0pt \or okay \else bad \fi
+\ifchkdim  123pt \or okay \else bad \fi
+\ifchkdim  abcpt \or okay \else bad \fi
+\stopbuffer
+
+\typebuffer \blank {\tt \getbuffer} \blank
+
+\stopsubsection
+
+\startsubsection[title={\lpr {iftok} and \lpr {ifcstok}}]
+
+\topicindex {conditions+tokens}
+\topicindex {tokens}
+
+Comparing tokens and macros can be done with \type {\ifx}. Two extra test are
+provided in \LUAMETATEX:
+
+\startbuffer
+\def\ABC{abc} \def\DEF{def} \def\PQR{abc} \newtoks\XYZ \XYZ {abc}
+
+\iftok{abc}{def}\relax  (same) \else [different] \fi
+\iftok{abc}{abc}\relax  [same] \else (different) \fi
+\iftok\XYZ {abc}\relax  [same] \else (different) \fi
+
+\ifcstok\ABC \DEF\relax (same) \else [different] \fi
+\ifcstok\ABC \PQR\relax [same] \else (different) \fi
+\ifcstok{abc}\ABC\relax [same] \else (different) \fi
+\stopbuffer
+
+\typebuffer \startpacked[blank] {\tt\nospacing\getbuffer} \stoppacked
+
+You can check if a macro is is defined as protected with \type {\ifprotected}
+while frozen macros can be tested with \type {\iffrozen}. A provisional \type
+{\ifusercmd} tests will check if a command is defined at the user level (and this
+one might evolve).
+
+\stopsubsection
+
+\startsubsection[title={\lpr {ifcondition}}]
+
+\topicindex {conditions}
+
+This is a somewhat special one. When you write macros conditions need to be
+properly balanced in order to let \TEX's fast branch skipping work well. This new
+primitive is basically a no||op flagged as a condition so that the scanner can
+recognize it as an if|-|test. However, when a real test takes place the work is
+done by what follows, in the next example \tex {something}.
+
+\starttyping
+\unexpanded\def\something#1#2%
+  {\edef\tempa{#1}%
+   \edef\tempb{#2}
+   \ifx\tempa\tempb}
+
+\ifcondition\something{a}{b}%
+    \ifcondition\something{a}{a}%
+        true 1
+    \else
+        false 1
+    \fi
+\else
+    \ifcondition\something{a}{a}%
+        true 2
+    \else
+        false 2
+    \fi
+\fi
+\stoptyping
+
+If you are familiar with \METAPOST, this is a bit like \type {vardef} where the macro
+has a return value. Here the return value is a test.
+
+Experiments with something \type {\ifdef} actually worked ok but were rejected
+because in the end it gave no advantage so this generic one has to do. The \type
+{\ifcondition} test is basically is a no|-|op except when branches are skipped.
+However, when a test is expected, the scanner gobbles it and the next test result
+is used. Here is an other example:
+
+\startbuffer
+\def\mytest#1%
+  {\ifabsdim#1>0pt\else
+     \expandafter \unless
+   \fi
+   \iftrue}
+
+\ifcondition\mytest{10pt}\relax non-zero \else zero \fi
+\ifcondition\mytest {0pt}\relax non-zero \else zero \fi
+\stopbuffer
+
+\typebuffer \blank {\tt \getbuffer} \blank
+
+The last expansion in a macro like \type {\mytest} has to be a condition and here
+we use \type {\unless} to negate the result.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {orelse}}]
+
+Sometimes you have successive tests that, when laid out in the source lead to
+deep trees. The \type {\ifcase} test is an exception. Experiments with \type
+{\ifcasex} worked out fine but eventually were rejected because we have many
+tests so it would add a lot. As \LUAMETATEX\ permitted more experiments,
+eventually an alternative was cooked up, one that has some restrictions but is
+relative lightweight. It goes like this:
+
+\starttyping
+\ifnum\count0<10
+    less
+\orelse\ifnum\count0=10
+    equal
+\else
+    more
+\fi
+\stoptyping
+
+The \type {\orelse} has to be followed by one of the if test commands, except
+\type {\ifcondition}, and there can be an \type {\unless} in front of such a
+command. These restrictions make it possible to stay in the current condition
+(read: at the same level). If you need something more complex, using \type
+{\orelse} is probably unwise anyway. In case you wonder about performance, there
+is a little more checking needed when skipping branches but that can be
+neglected. There is some gain due to staying at the same level but that is only
+measurable when you runs tens of millions of complex tests and in that case it is
+very likely to drown in the real action. It's a convenience mechanism, in the
+sense that it can make your code look a bit easier to follow.
+
+There is an nice side effect of this mechanism. When you define:
+
+\starttyping
+\def\quitcondition{\orelse\iffalse}
+\stoptyping
+
+you can do this:
+
+\starttyping
+\ifnum\count0<10
+    less
+\orelse\ifnum\count0=10
+    equal
+    \quitcondition
+    indeed
+\else
+    more
+\fi
+\stoptyping
+
+Of course it is only useful at the right level, so you might end up with cases like
+
+\starttyping
+\ifnum\count0<10
+    less
+\orelse\ifnum\count0=10
+    equal
+    \ifnum\count2=30
+        \expandafter\quitcondition
+    \fi
+    indeed
+\else
+    more
+\fi
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\lpr {ifprotected}, \lpr {frozen}, \lpr {iffrozen} and \lpr {ifusercmd}}]
+
+These checkers deal with control sequences. You can check if a command is a
+protected one, that is, defined with the \type {\protected} prefix. A command is
+frozen when it has been defined with the \type {\frozen} prefix. Beware: only
+macros can be frozen. A user command is a command that is not part of the
+predefined set of commands. This is an experimental command.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Boxes, rules and leaders}]
+
+\startsubsection[title={\lpr {outputbox}}]
+
+\topicindex {output}
+
+This integer parameter allows you to alter the number of the box that will be
+used to store the page sent to the output routine. Its default value is 255, and
+the acceptable range is from 0 to 65535.
+
+\startsyntax
+\outputbox = 12345
+\stopsyntax
+
+\stopsubsection
+
+\startsubsection[title={\prm {vpack}, \prm {hpack} and \prm {tpack}}]
+
+These three primitives are like \prm {vbox}, \prm {hbox} and \prm {vtop}
+but don't apply the related callbacks.
+
+\stopsubsection
+
+\startsubsection[title={\prm {vsplit}}]
+
+\topicindex {splitting}
+
+The \prm {vsplit} primitive has to be followed by a specification of the required
+height. As alternative for the \type {to} keyword you can use \type {upto} to get
+a split of the given size but result has the natural dimensions then.
+
+\stopsubsection
+
+\startsubsection[title={Images and reused box objects},reference=sec:imagedandforms]
+
+In original \TEX\ image support is dealt with via specials. It's not a native
+feature of the engine. All that \TEX\ cares about is dimensions, so in practice
+that meant: using a box with known dimensions that wraps a special that instructs
+the backend to include an image. The wrapping is needed because a special itself
+is a whatsit and as such has no dimensions.
+
+In \PDFTEX\ a special whatsit for images was introduced and that one {\em has}
+dimensions. As a consequence, in several places where the engine to deal with the
+dimensions of nodes, it now has to check the details of whatsits. By inheriting
+code from \PDFTEX, the \LUATEX\ engine also had that property. However, at some
+point this approach was abandoned and a more natural trick was used: images (and
+box resources) became a special kind of rules, and as rules already have
+dimensions, the code could be simplified.
+
+When direction nodes and localpar nodes also became first class nodes, whatsits
+again became just that: nodes representing whatever you want, but without
+dimensions, and therefore they could again be ignored when dimensions mattered.
+And, because images were disguised as rules, as mentioned ,their dimensions
+automatically were taken into account. This seperation between front and backend
+cleaned up the code base already quite a bit.
+
+In \LUAMETATEX\ we still have the image specific subtypes for rules, but the
+engine never looks at subtypes of rules. That was up to the backend. This means
+that image support is not present in \LUAMETATEX. When an image specification was
+parsed the special properties, like the filename, or additional attributes, were
+stored in the backend and all that \LUATEX\ does is registering a reference to an
+image s specification in the rule node. But, having no backend means nothing is
+stored, which in turn would make the image inclusion primitives kind of weird.
+
+Therefore you need to realize that contrary to \LUATEX, {\em in \LUAMETATEX\
+support for images and box reuse is not built in}! However, we can assume that
+an implementation uses rules in a similar fashion as \LUATEX\ does. So, you can
+still consider images and box reuse to be core concepts. Here we just mention the
+primitives that \LUATEX\ provides. They are not available in the engine but can
+of course be implemented in \LUA.
+
+\starttabulate[|l|p|]
+\DB command \BC explanation \NC \NR
+\TB
+\NC \lpr {saveboxresource}             \NC save the box as an object to be included later \NC \NR
+\NC \lpr {saveimageresource}           \NC save the image as an object to be included later \NC \NR
+\NC \lpr {useboxresource}              \NC include the saved box object here (by index) \NC \NR
+\NC \lpr {useimageresource}            \NC include the saved image object here (by index) \NC \NR
+\NC \lpr {lastsavedboxresourceindex}   \NC the index of the last saved box object \NC \NR
+\NC \lpr {lastsavedimageresourceindex} \NC the index of the last saved image object \NC \NR
+\NC \lpr {lastsavedimageresourcepages} \NC the number of pages in the last saved image object \NC \NR
+\LL
+\stoptabulate
+
+An implementation probably should accepts the usual optional dimension parameters
+for \type {\use...resource} in the same format as for rules. With images, these
+dimensions are then used instead of the ones given to \lpr {useimageresource} but
+the original dimensions are not overwritten, so that a \lpr {useimageresource}
+without dimensions still provides the image with dimensions defined by \lpr
+{saveimageresource}. These optional parameters are not implemented for \lpr
+{saveboxresource}.
+
+\starttyping
+\useimageresource width 20mm height 10mm depth 5mm \lastsavedimageresourceindex
+\useboxresource   width 20mm height 10mm depth 5mm \lastsavedboxresourceindex
+\stoptyping
+
+Examples or optional entries are \type {attr} and \type {resources} that accept a
+token list, and the \type {type} key. When set to non|-|zero the \type {/Type}
+entry is omitted. A value of 1 or 3 still writes a \type {/BBox}, while 2 or 3
+will write a \type {/Matrix}. But, as said: this is entirely up to the backend.
+Generic macro packages (like \type {tikz}) can use these assumed primitives so
+one can best provide them. It is probably, for historic reasons, the only more or
+less standardized image inclusion interface one can expect to work in all macro
+packages.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {hpack}, \lpr {vpack} and \lpr {tpack}}]
+
+These three primitives are the equivalents of \type {\hbox}, \type {\vbox} and
+\type {\vtop} but they don't trigger the packaging related callbacks. Of course
+one never know if content needs a treatment so using them should be done with
+care.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {nohrule} and \lpr {novrule}}]
+
+\topicindex {rules}
+
+Because introducing a new keyword can cause incompatibilities, two new primitives
+were introduced: \lpr {nohrule} and \lpr {novrule}. These can be used to
+reserve space. This is often more efficient than creating an empty box with fake
+dimensions.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {gleaders}},reference=sec:gleaders]
+
+\topicindex {leaders}
+
+This type of leaders is anchored to the origin of the box to be shipped out. So
+they are like normal \prm {leaders} in that they align nicely, except that the
+alignment is based on the {\it largest\/} enclosing box instead of the {\it
+smallest\/}. The \type {g} stresses this global nature.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Languages}]
+
+\startsubsection[title={\lpr {hyphenationmin}}]
+
+\topicindex {languages}
+\topicindex {hyphenation}
+
+This primitive can be used to set the minimal word length, so setting it to a value
+of~$5$ means that only words of 6 characters and more will be hyphenated, of course
+within the constraints of the \prm {lefthyphenmin} and \prm {righthyphenmin}
+values (as stored in the glyph node). This primitive accepts a number and stores
+the value with the language.
+
+\stopsubsection
+
+\startsubsection[title={\prm {boundary}, \prm {noboundary}, \prm {protrusionboundary} and \prm {wordboundary}}]
+
+The \prm {noboundary} command is used to inject a whatsit node but now injects a normal
+node with type \nod {boundary} and subtype~0. In addition you can say:
+
+\starttyping
+x\boundary 123\relax y
+\stoptyping
+
+This has the same effect but the subtype is now~1 and the value~123 is stored.
+The traditional ligature builder still sees this as a cancel boundary directive
+but at the \LUA\ end you can implement different behaviour. The added benefit of
+passing this value is a side effect of the generalization. The subtypes~2 and~3
+are used to control protrusion and word boundaries in hyphenation and have
+related primitives.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Control and debugging}]
+
+\startsubsection[title={Tracing}]
+
+\topicindex {tracing}
+
+If \prm {tracingonline} is larger than~2, the node list display will also print
+the node number of the nodes.
+
+\stopsubsection
+
+\startsubsection[title={\lpr {lastnodetype}, \lpr {lastnodesubtype}, \lpr
+{currentiftype} and \lpr {internalcodesmode}.}]
+
+The \ETEX\ command \type {\lastnodetype} is limited to some nodes. When the
+parameter \type {\internalcodesmode} is set to a non|-|zero value the normal
+(internally used) numbers are reported. The same is true for \type
+{\currentiftype}, as we have more conditionals and also use a different order.
+The \type {\lastnodesubtype} is a bonus.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Files}]
+
+\startsubsection[title={File syntax}]
+
+\topicindex {files+names}
+
+\LUAMETATEX\ will accept a braced argument as a file name:
+
+\starttyping
+\input {plain}
+\openin 0 {plain}
+\stoptyping
+
+This allows for embedded spaces, without the need for double quotes. Macro
+expansion takes place inside the argument.
+
+The \lpr {tracingfonts} primitive that has been inherited from \PDFTEX\ has
+been adapted to support variants in reporting the font. The reason for this
+extension is that a csname not always makes sense. The zero case is the default.
+
+\starttabulate[|l|l|]
+\DB value \BC reported \NC \NR
+\TB
+\NC \type{0} \NC \type{\foo xyz} \NC \NR
+\NC \type{1} \NC \type{\foo (bar)} \NC \NR
+\NC \type{2} \NC \type{<bar> xyz} \NC \NR
+\NC \type{3} \NC \type{<bar @ ..pt> xyz} \NC \NR
+\NC \type{4} \NC \type{<id>} \NC \NR
+\NC \type{5} \NC \type{<id: bar>} \NC \NR
+\NC \type{6} \NC \type{<id: bar @ ..pt> xyz} \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={Writing to file}]
+
+\topicindex {files+writing}
+
+You can now open upto 127 files with \prm {openout}. When no file is open writes
+will go to the console and log. The \type {write} related primitives have to be
+implemented as part of a backend! As a consequence a system command is no longer
+possible but one can use \type {os.execute} to do the same.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title={Math}]
+
+\topicindex {math}
+
+We will cover math extensions in its own chapter because not only the font
+subsystem and spacing model have been enhanced (thereby introducing many new
+primitives) but also because some more control has been added to existing
+functionality. Much of this relates to the different approaches of traditional
+\TEX\ fonts and \OPENTYPE\ math.
+
+\stopsection
+
+\startsection[title={Fonts}]
+
+\topicindex {fonts}
+
+Like math, we will cover fonts extensions in its own chapter. Here we stick to
+mentioning that loading fonts is different in \LUAMETATEX. As in \LUATEX\ we have
+the extra primitives \type {\fontid} and \type {\setfontid}, \type {\noligs} and
+\type {\nokerns}, and \type {\nospaces}. The other new primitives in \LUATEX\
+have been dropped.
+
+\stopsection
+
+\startsection[title=Directions]
+
+\topicindex {\OMEGA}
+\topicindex {\ALEPH}
+\topicindex {directions}
+
+\startsubsection[title={Two directions}]
+
+The directional model in \LUAMETATEX\ is a simplified version the the model used
+in \LUATEX. In fact, not much is happening at all: we only register a change in
+direction.
+
+\stopsubsection
+
+\startsubsection[title={How it works}]
+
+The approach is that we try to make node lists balanced but also try to avoid
+some side effects. What happens is quite intuitive if we forget about spaces
+(turned into glue) but even there what happens makes sense if you look at it in
+detail. However that logic makes in|-|group switching kind of useless when no
+proper nested grouping is used: switching from right to left several times
+nested, results in spacing ending up after each other due to nested mirroring. Of
+course a sane macro package will manage this for the user but here we are
+discussing the low level injection of directional information.
+
+This is what happens:
+
+\starttyping
+\textdirection 1 nur {\textdirection 0 run \textdirection 1 NUR} nur
+\stoptyping
+
+This becomes stepwise:
+
+\startnarrower
+\starttyping
+injected: [push 1]nur {[push 0]run [push 1]NUR} nur
+balanced: [push 1]nur {[push 0]run [pop 0][push 1]NUR[pop 1]} nur[pop 0]
+result  : run {RUNrun } run
+\stoptyping
+\stopnarrower
+
+And this:
+
+\starttyping
+\textdirection 1 nur {nur \textdirection 0 run \textdirection 1 NUR} nur
+\stoptyping
+
+becomes:
+
+\startnarrower
+\starttyping
+injected: [+TRT]nur {nur [+TLT]run [+TRT]NUR} nur
+balanced: [+TRT]nur {nur [+TLT]run [-TLT][+TRT]NUR[-TRT]} nur[-TRT]
+result  : run {run RUNrun } run
+\stoptyping
+\stopnarrower
+
+Now, in the following examples watch where we put the braces:
+
+\startbuffer
+\textdirection 1 nur {{\textdirection 0 run} {\textdirection 1 NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+This becomes:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+Compare this to:
+
+\startbuffer
+\textdirection 1 nur {{\textdirection 0 run }{\textdirection 1 NUR}} nur
+\stopbuffer
+
+\typebuffer
+
+Which renders as:
+
+\startnarrower
+\getbuffer
+\stopnarrower
+
+So how do we deal with the next?
+
+\startbuffer
+\def\ltr{\textdirection 0\relax}
+\def\rtl{\textdirection 1\relax}
+
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer
+
+It gets typeset as:
+
+\startnarrower
+\startlines
+\getbuffer
+\stoplines
+\stopnarrower
+
+We could define the two helpers to look back, pick up a skip, remove it and
+inject it after the dir node. But that way we loose the subtype information that
+for some applications can be handy to be kept as|-|is. This is why we now have a
+variant of \lpr {textdirection} which injects the balanced node before the skip.
+Instead of the previous definition we can use:
+
+\startbuffer[def]
+\def\ltr{\linedirection 0\relax}
+\def\rtl{\linedirection 1\relax}
+\stopbuffer
+
+\typebuffer[def]
+
+and this time:
+
+\startbuffer[txt]
+run {\rtl nur {\ltr run \rtl NUR \ltr run \rtl NUR} nur}
+run {\ltr run {\rtl nur \ltr RUN \rtl nur \ltr RUN} run}
+\stopbuffer
+
+\typebuffer[txt]
+
+comes out as a properly spaced:
+
+\startnarrower
+\startlines
+\getbuffer[def,txt]
+\stoplines
+\stopnarrower
+
+Anything more complex that this, like combination of skips and penalties, or
+kerns, should be handled in the input or macro package because there is no way we
+can predict the expected behaviour. In fact, the \lpr {linedir} is just a
+convenience extra which could also have been implemented using node list parsing.
+
+\stopsubsection
+
+\startsubsection[title={Controlling glue with \lpr {breakafterdirmode}}]
+
+Glue after a dir node is ignored in the linebreak decision but you can bypass that
+by setting \lpr {breakafterdirmode} to~\type {1}. The following table shows the
+difference. Watch your spaces.
+
+\def\ShowSome#1{%
+    \BC \type{#1}
+    \NC \breakafterdirmode\zerocount\hsize\zeropoint#1
+    \NC
+    \NC \breakafterdirmode\plusone\hsize\zeropoint#1
+    \NC
+    \NC \NR
+}
+
+\starttabulate[|l|Tp(1pt)|w(5em)|Tp(1pt)|w(5em)|]
+    \DB
+    \BC \type{0}
+    \NC
+    \BC \type{1}
+    \NC
+    \NC \NR
+    \TB
+    \ShowSome{pre {\textdirection 0 xxx} post}
+    \ShowSome{pre {\textdirection 0 xxx }post}
+    \ShowSome{pre{ \textdirection 0 xxx} post}
+    \ShowSome{pre{ \textdirection 0 xxx }post}
+    \ShowSome{pre { \textdirection 0 xxx } post}
+    \ShowSome{pre {\textdirection 0\relax\space xxx} post}
+    \LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title={Controling parshapes with \lpr {shapemode}}]
+
+Another adaptation to the \ALEPH\ directional model is control over shapes driven
+by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter
+\lpr {shapemode}:
+
+\starttabulate[|c|l|l|]
+\DB value    \BC \prm {hangindent} \BC \prm {parshape} \NC \NR
+\TB
+\BC \type{0} \NC  normal             \NC normal            \NC \NR
+\BC \type{1} \NC  mirrored           \NC normal            \NC \NR
+\BC \type{2} \NC  normal             \NC mirrored          \NC \NR
+\BC \type{3} \NC  mirrored           \NC mirrored          \NC \NR
+\LL
+\stoptabulate
+
+The value is reset to zero (like \prm {hangindent} and \prm {parshape})
+after the paragraph is done with. You can use negative values to prevent
+this. In \in {figure} [fig:shapemode] a few examples are given.
+
+\startplacefigure[reference=fig:shapemode,title={The effect of \type {shapemode}.}]
+    \startcombination[2*3]
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+                \pardirection 0 \textdirection 0
+                \hangindent 40pt \hangafter -3
+                \leftskip10pt \input tufte \par
+         \egroup} {TLT: hangindent}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardirection 0 \textdirection 0
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TLT: parshape}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardirection 1 \textdirection 1
+            \hangindent 40pt \hangafter -3
+            \leftskip10pt \input tufte \par
+         \egroup} {TRT: hangindent mode 0}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \pardirection 1 \textdirection 1
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TRT: parshape mode 0}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \shapemode=3
+            \pardirection 1 \textdirection 1
+            \hangindent 40pt \hangafter -3
+            \leftskip10pt \input tufte \par
+         \egroup} {TRT: hangindent mode 1 & 3}
+        {\ruledvbox \bgroup \setuptolerance[verytolerant]
+            \hsize .45\textwidth \switchtobodyfont[6pt]
+            \shapemode=3
+            \pardirection 1 \textdirection 1
+            \parshape 4 0pt .8\hsize 10pt .8\hsize 20pt .8\hsize 0pt \hsize
+            \input tufte \par
+         \egroup} {TRT: parshape mode 2 & 3}
+    \stopcombination
+\stopplacefigure
+
+We have \type {\pardirection}, \type {\textdirection}, \type {\mathdirection} and
+\type {\linedirection} that is like \type {\textdirection} but with some
+additional (inline) glue checking.
+
+\stopsubsection
+
+\startsubsection[title=Orientations]
+
+As mentioned, the difference with \LUATEX\ is that we only have numeric
+directions and that there are only two: left|-|to|-|right (\type {0}) and
+right|-|to|-|left (\type {1}). The direction of a box is set with \type
+{direction}.
+
+In addition to that boxes can now have an \type {orientation} keyword followed by
+optional \type {xoffset} and|/|or \type {yoffset} keywords. The offsets don't
+have consequences for the dimensions. The alternatives \type {xmove} and \type
+{ymove} on the contrary are reflected in the dimensions. Just play with them. The
+offsets and moves only are accepted when there is also an orientation, so no time
+is wasted on testing for these rarely used keywords. There are related primitives
+\type {\box...} that set these properties.
+
+As these are experimental it will not be explained here (yet). They are covered
+in the descriptions of the development of \LUAMETATEX: articles and|/|or
+documents in the \CONTEXT\ distribution. For now it is enough to know that the
+orientation can be up, down, left or right (rotated) and that it has some
+anchoring variants. Combined with the offsets this permits macro writers to
+provide solutions for top|-|down and bottom|-|up writing directions, something
+that is rather macro package specific and used for scripts that need
+manipulations anyway. The \quote {old} vertical directions were never okay and
+therefore not used.
+
+There are a couple of properties in boxes that you can set and query but that
+only really take effect when the backend supports them. When usage on \CONTEXT\
+shows that is't okay, they will become official, so we just mention them: \type
+{\boxdirection}, \type {\boxattr}, \type {\boxorientation}, \type {\boxxoffset},
+\type {\boxyoffset}, \type {\boxxmove}, \type {\boxymove} and \type {\boxtotal}.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Expressions]
+
+The \type {*expr} parsers now accept \type {:} as operator for integer division
+(the \type {/} operators does rounding. This can be used for division compatible
+with \type {\divide}. I'm still wondering if adding a couple of bit operators
+makes sense (for integers).
+
+\stopsection
+
+\startsection[title=Nodes]
+
+The \ETEX\ primitive \type {\lastnodetype} is not honest in reporting the
+internal numbers as it uses its own values. But you can set \type
+{\internalcodesmode} to a non|-|zero value to get the real id's instead. In
+addition there is \type {\lastnodesubtype}.
+
+Another last one is \type {\lastnamedcs} which holds the last match but this one
+should be used with care because one never knows if in the meantime something
+else \quote {last} has been seen.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

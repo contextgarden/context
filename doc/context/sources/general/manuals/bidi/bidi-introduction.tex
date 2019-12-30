@@ -1,0 +1,53 @@
+% language=us
+
+\startcomponent bidi-introduction
+
+\environment bidi-style
+
+\startchapter[title=Introduction]
+
+With \CONTEXT\ you can typeset in two directions: from left to right and from
+right to left. In fact you can also combine these two directions, like this:
+
+\startbuffer
+There are many {\righttoleft \maincolor \it scripts in use} and some run into the
+other direction. However, there is {\righttoleft \maincolor \it no fixed relation
+{\lefttoright \black \it between the} direction of the script} and cars being
+driven left or right of the road.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Even someone not familiar with right to left typesetting can see what happens
+here, or not? In fact Luigi Scarso pointed out that the \type {fixed} reversed
+into {\righttoleft \type {fixed}} but not in the example where {\bf fixed}
+becomes {\righttoleft \bf fixed}. This signals an important property of the way
+the text gets processed: you input something, at some points font features get
+applied (like ligatures) and in the end the resulting glyph stream is reversed.
+By that time the combination of {\bf f}+{\bf i} has become {\bf fi}! So, be
+prepared for surprises.
+
+This manual is written by a left to right user so don't expect a manual on
+semitic typesetting. Also don't expect a (yet) complete manual. I'll add whatever
+comes to mind. This is not a manual about Hebrew or Arabic, if only because I
+can't read any of those scripts (languages). I leave that to others to cover.
+
+This is work in progress and might always be! So expect errors and typos. As with
+anything related to typesetting the truth about how it should be done and what
+looks best is not absolute. So, the most we can offer is flexibility and the way
+\CONTEXT\ is setup permits that.
+
+Of course this is not possible without input. When we moved to \CONTEXT\ \LMTX,
+the bidi thread was picked up by Mohammad Hossein Bateni, Idris Samawi Hamid,
+Wolfgang Schuster and myself. So, expect more!
+
+\startlines
+Hans Hagen
+Hasselt, NL
+\stoplines
+
+\stopchapter
+
+\stopcomponent

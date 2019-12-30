@@ -1,0 +1,33 @@
+\startcomponent bidi-titlepage
+
+\environment bidi-style
+
+\startMPpage
+
+    picture p, q, r, s ;
+
+    p := textext("l2r") xsized .9PaperWidth ;
+    q := textext("r2l") xsized .9PaperWidth ;
+    r := textext("a few tips") xsized .9PaperWidth ;
+    s := textext("\bf\ss hans\quad\space\quad hagen") xsized .5bbheight(p);
+
+    p := p shifted - llcorner p ;
+    q := q shifted - llcorner q ;
+    r := r shifted - llcorner r ;
+    s := s shifted - llcorner s ;
+
+    fill Page withcolor "darkyellow" ;
+
+    p := p shifted (.05PaperWidth,ypart .5[ulcorner Page, urcorner Page]-1.1bbheight(p)) ;
+    q := q shifted (.05PaperWidth,ypart .5[ulcorner Page, urcorner Page]-1.1bbheight(p)-1.15bbheight(q)) ;
+    r := r shifted (.05PaperWidth,ypart .5[llcorner Page, lrcorner Page]+0.3bbheight(r)) ;
+    s := s shifted (.66PaperWidth,ypart .5[llcorner Page, lrcorner Page]+1.5bbheight(s)) ;
+
+    draw p withcolor "lightgray" ;
+    draw q withcolor "lightgray" ;
+    draw r withcolor "middleblue" ;
+    draw s withcolor "lightgray" ;
+
+\stopMPpage
+
+\stopcomponent

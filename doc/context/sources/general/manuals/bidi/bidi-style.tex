@@ -1,0 +1,123 @@
+\startenvironment bidi-style
+
+\usemodule[abr-04]
+
+\dontcomplain
+
+\startbuffer[preamble-fonts]
+\definefontfallback
+  [Serif] [scheherazaderegular*arabic]
+  [arabic] [force=yes,rscale=1.5]
+\definefontfallback
+  [SerifBold] [scheherazadebold*arabic]
+  [arabic] [force=yes,rscale=1.5]
+\definefontfallback
+  [SerifItalic] [scheherazaderegular*arabic]
+  [arabic] [force=yes,rscale=1.5]
+\definefontfallback
+  [SerifBoldItalic] [scheherazadebold*arabic]
+  [arabic] [force=yes,rscale=1.5]
+
+\definefontfallback
+  [Serif] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBold] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifItalic] [sileot*hebrew]
+  [hebrew] [force=yes]
+\definefontfallback
+  [SerifBoldItalic] [sileot*hebrew]
+  [hebrew] [force=yes]
+
+\definefontfallback
+  [Mono] [almfixed*none]
+  [arabic] [force=yes]
+
+\definefontfallback
+  [Mono] [sileot*none]
+  [hebrew] [force=yes,factor=1] % factor forces a monospace
+
+\setupbodyfont
+  [dejavu,10pt]
+\stopbuffer
+
+\startbuffer[preamble-languages]
+\setuplanguage[ar][font=arabic,bidi=right]
+\setuplanguage[he][font=hebrew,bidi=right]
+\stopbuffer
+
+\getbuffer[preamble-fonts]
+\getbuffer[preamble-languages]
+
+\setuplayout
+  [backspace=15mm,
+   topspace=15mm,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+% \setuptyping
+%   [color=middleblue]
+%
+% \setuptype
+%   [color=middleblue]
+
+\usemodule[scite]
+
+\setuptyping
+  [option=TEX]
+
+\setuptype
+  [option=TEX]
+
+\definecolor
+  [maincolor]
+  [middleblue]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [color=darkyellow]
+
+\setuphead
+  [chapter]
+  [style=\bfc]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\startluacode
+    local report = logs.reporter("directions","check")
+    local line   = 0
+    function nodes.tracers.checkdirections(head)
+        line = line + 1
+        report("line: %i",line)
+        for n in nodes.traverse_id(nodes.nodecodes.dir,head) do
+            report("  %s (%i,%i)",n.dir,n.subtype,n.direction)
+        end
+        return head, false
+    end
+
+    nodes.tasks.appendaction("contributers","after","nodes.tracers.checkdirections")
+    nodes.tasks.disableaction("contributers","nodes.tracers.checkdirections")
+\stopluacode
+
+\installtextracker
+   {directions.check}
+   {\ctxlua{nodes.tasks.enableaction("contributers","nodes.tracers.checkdirections")}}
+   {\ctxlua{nodes.tasks.disableaction("contributers","nodes.tracers.checkdirections")}}
+
+% \enabletrackers[directions.check]
+% \disabletrackers[directions.check]
+
+\stopenvironment

@@ -2300,7 +2300,6 @@
      \t_tabl_tabulate_preamble
        {\aligntab
         \tabl_tabulate_flush_indent
-% \global\advance\c_tabl_tabulate_noflines\plusone
         \strut
         \alignmark\alignmark
         \tabskip\d_tabl_tabulate_margin
@@ -2312,7 +2311,6 @@
      \t_tabl_tabulate_preamble
        {\aligntab
         \tabl_tabulate_flush_indent
-% \global\advance\c_tabl_tabulate_noflines\plusone
         \strut
         \alignmark\alignmark
         \aligntab
@@ -2326,7 +2324,6 @@
    \c_tabl_tabulate_has_rule_spec_last \zerocount
    \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
    %
- % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
    \d_tabl_tabulate_width\zeropoint
    \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
    \toksapp\t_tabl_tabulate_preamble{%
@@ -2355,12 +2352,12 @@
      {\notesenabledfalse
       \d_tabl_tabulate_indent\zeropoint
       \settrialtypesetting % very important
-\anch_backgrounds_text_level_start
+      \anch_backgrounds_text_level_start
       \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
-\anch_backgrounds_text_level_stop
-\ifcase\c_anch_backgrounds_text_state\else
-  \global\settrue\tablehaspositions
-\fi
+      \anch_backgrounds_text_level_stop
+      \ifcase\c_anch_backgrounds_text_state\else
+        \global\settrue\tablehaspositions
+      \fi
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
      \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
@@ -2400,12 +2397,20 @@
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
- % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
-   \expandafter\halign\expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
+   \toksapp\everycr{%
+     \noalign{\the\t_tabl_tabulate_every_real_row}%
+     \dostoptagged
+     \dostarttagged\t!tabulaterow\empty
+   }%
+    % we are in sync but just to be sure:
+   \synchronizedisplaydirection
+   \synchronizeinlinedirection
+   \halign
+     \usedirectionparameterreverse\tabulateparameter
+     \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
    \dostoptagged
    \dostoptagged
-   \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
+   \ifhmode\par\prevdepth\strutdp\fi % temporary hack
    \ifx\p_distance\v!grid
      \vskip-\strutdp % experimental tm-prikkels
    \fi

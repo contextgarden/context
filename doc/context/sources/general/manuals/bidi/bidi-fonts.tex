@@ -1,0 +1,99 @@
+% language=us
+
+\startcomponent bidi-fonts
+
+\environment bidi-style
+
+\startchapter[title={Setting up fonts}]
+
+So let's see how Arabic and Hebrew come out:
+
+\startbuffer
+The sentence \quotation {I have no clue what this means.} is translated (by
+Google Translate) into \quotation {\ar \righttoleft ليس لدي أي فكرة عما يعنيه هذا.}
+which is then translated back to \quotation {I have no idea what this means.} so
+maybe arabic has no clue what a clue is. The suggested Arabic pronunciation is
+\quotation {lays laday 'ayu fikrat eamaa yaenih hadha}. Hebrew also likes ideas
+more: \quotation {\he \righttoleft אין לי מושג מה זה אומר}.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+According to Idris Hamid the Arabic should actually be this: \quotation {\ar
+لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا} and the transliteration \quotation {Laysa
+ladayya ayyu fikratin ʿammā yaʿnihi hādhā}.
+
+The \CONTEXT\ (or any \TEX) ecosystem deals with languages and fonts. Languages
+(that relate to scripts) have specific characteristics, like running from right
+to left, and fonts provide a repertoire of glyphs and features. There is no real
+(standard) relationship between these. In for instance browsers, there are
+automatic fallback systems for missing characters in a font: another font is
+taken. These fallbacks are often not easy to tweak.
+
+In this document we use Dejavu and although that font has Arabic shapes in its
+monospace variant, the serifs come without them (at least when I write this
+down). Before we actually define the bodyfont we hook in some fallbacks. The
+typescript for Dejavu has lines like this:
+
+\starttyping
+\definefontsynonym
+  [SerifBoldItalic]
+  [name:dejavuserifbolditalic]
+  [features=default,
+   fallbacks=SerifBoldItalic]
+\stoptyping
+
+This permits us to do this:
+
+\typebuffer[preamble-fonts]
+
+In addition we set up the languages:
+
+\typebuffer[preamble-languages]
+
+The following example demonstrates what the effects of these commands are:
+
+\startbuffer
+{لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
+{אין לי מושג מה זה אומר.}
+{\righttoleft لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
+{\righttoleft אין לי מושג מה זה אומר.}
+{\ar \righttoleft لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
+{\he \righttoleft אין לי מושג מה זה אומר.}
+{\ar لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
+{\he אין לי מושג מה זה אומר.}
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+In principle you can also rely on automatic direction changes, for instance
+by using the following command:
+
+\starttyping
+\setupdirections
+  [bidi=global,
+   method=three]
+\stoptyping
+
+But that doesn't do a font switch for you, nor does it do any of the other
+language related settings. It really helps if you properly tag your
+document content, as in:
+
+\starttyping
+{\ar لَيْسَ لَدَيَّ أَيُّ فِكْرَةٍ عَمَّا يَعْنِيهِ هٰذَا.}
+{\he אין לי מושג מה זה אומר.}
+\stoptyping
+
+One reason to set the \type {font} parameter for a language is that it will
+activate the right features in a font. Instead of falling back on some default,
+we can be very specific in what we want to enable.
+
+\stopchapter
+
+\stopcomponent

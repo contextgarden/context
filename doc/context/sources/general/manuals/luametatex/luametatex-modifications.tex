@@ -1,0 +1,440 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-modifications
+
+\startchapter[reference=modifications,title={The original engines}]
+
+\startsection[title=The merged engines]
+
+\startsubsection[title=The rationale]
+
+\topicindex {engines}
+\topicindex {history}
+
+The first version of \LUATEX, made by Hartmut after we discussed the possibility
+of an extension language, only had a few extra primitives and it was largely the
+same as \PDFTEX. It was presented to the public in 2005. As part of the Oriental
+\TEX\ project, Taco merged substantial parts of \ALEPH\ into the code and some
+more primitives were added. Then we started more fundamental experiments. After
+many years, when the engine had become more stable, the decision was made to
+clean up the rather hybrid nature of the program. This means that some primitives
+were promoted to core primitives, often with a different name, and that others
+were removed. This also made it possible to start cleaning up the code base. In
+\in {chapter} [enhancements] we discussed some new primitives, here we will cover
+most of the adapted ones.
+
+During more than a decade stepwise new functionality was added and after 10 years
+the more of less stable version 1.0 was presented. But we continued and after
+some 15 years the \LUAMETATEX\ follow up entered its first testing stage. But
+before details about the engine are discussed in successive chapters, we first
+summarize where we started from. Keep in mind that in \LUAMETATEX\ we have a bit
+less than in \LUATEX, so this section differs from the one in the \LUATEX\
+manual.
+
+Besides the expected changes caused by new functionality, there are a number of
+not|-|so|-|expected changes. These are sometimes a side|-|effect of a new
+(conflicting) feature, or, more often than not, a change necessary to clean up
+the internal interfaces. These will also be mentioned.
+
+\stopsubsection
+
+\startsubsection[title=Changes from \TEX\ 3.1415926]
+
+\topicindex {\TEX}
+
+Of course it all starts with traditional \TEX. Even if we started with \PDFTEX,
+most still comes from original Knuthian \TEX. But we divert a bit.
+
+\startitemize
+
+\startitem
+    The current code base is written in \CCODE, not \PASCAL. The original \CWEB\
+    documentation is kept when possible and not wrapped in tagged comments. As a
+    consequence instead of one large file plus change files, we now have multiple
+    files organized in categories like \type {tex}, \type {luaf}, \type
+    {languages}, \type {fonts}, \type {libraries}, etc. There are some artifacts
+    of the conversion to \CCODE, but these got (and get) removed stepwise. The
+    documentation, which is actually comes from the mix of engines (via so called
+    change files) is kept as much as possible. Of course we want to stay as close
+    as possible to the original so that the documentation of the fundamentals
+    behind \TEX\ by Don Knuth still applies. However, because we use \CCODE, some
+    documentation is a bit off. Also, most global variables are now collected in
+    structures, but the original names were kept. There are lots of so called
+    macros too.
+\stopitem
+
+\startitem
+    See \in {chapter} [languages] for many small changes related to paragraph
+    building, language handling and hyphenation. The most important change is
+    that adding a brace group in the middle of a word (like in \type {of{}fice})
+    does not prevent ligature creation. Also, the hyphenation, ligature building
+    and kerning has been split so that we can hook in alternative or extra code
+    wherever we like. There are various options to control discretionary
+    injection and related penalties are now integrated in these nodes. Language
+    information is now bound to glyphs. The number of languages in \LUAMETATEX\
+    is smaller than in \LUATEX.
+\stopitem
+
+\startitem
+    There is no pool file, all strings are embedded during compilation. This also
+    removed some memory constraints. We kept token and node memory management
+    because it is convenient and efficient but parts were reimplemented in order
+    to remove some constraints. Token memory management is largely the same.
+\stopitem
+
+\startitem
+    The specifier \type {plus 1 fillll} does not generate an error. The extra
+    \quote {l} is simply typeset.
+\stopitem
+
+\startitem
+    The upper limit to \prm {endlinechar} and \prm {newlinechar} is 127.
+\stopitem
+
+\startitem
+    Because the backend is not built|-|in, the magnification (\prm {mag})
+    primitive is not doing nothing. A \type {shipout} just discards the content
+    of the given box. The write related primitives have to be implemented in the
+    used macro package using \LUA. None of the \PDFTEX\ derived primitives is
+    present.
+\stopitem
+
+\startitem
+    There is more control over some (formerly hard|-|coded) math properties. In fact,
+    there is a whole extra bit of math related code because we need to deal with
+    \OPENTYPE\ fonts.
+\stopitem
+
+\startitem
+    The \type {\outer} and \type {\long} prefixed are silently ignored. It is
+    permitted to use \type {\par} in math.
+\stopitem
+
+\startitem
+    Because there is no font loader, a \LUA\ variant is free to either support or
+    not the \OMEGA\ \type {ofm} file format. As there are hardly any such fonts
+    it probably makes no sense.
+\stopitem
+
+\startitem
+    The lack of a backend means that some primitives related to it are not
+    implemented. This is no big deal because it is possible to use the scanner
+    library to implement them as needed, which depends on the macro package and
+    backend.
+\stopitem
+
+\startitem
+    When detailed logging is enabled more detail is output with respect to what
+    nodes are involved. This is a side effect of the core nodes having more
+    detailed subtype information. The benefit of more detail wins from any wish
+    to be byte compatible in the logging. One can always write additional logging
+    in \LUA.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from \ETEX\ 2.2]
+
+\topicindex {\ETEX}
+
+Being the de|-|facto standard extension of course we provide the \ETEX\
+features, but with a few small adaptations.
+
+\startitemize
+
+\startitem
+    The \ETEX\ functionality is always present and enabled so the prepended
+    asterisk or \type {-etex} switch for \INITEX\ is not needed.
+\stopitem
+
+\startitem
+    The \TEXXET\ extension is not present, so the primitives \type
+    {\TeXXeTstate}, \type {\beginR}, \type {\beginL}, \type {\endR} and \type
+    {\endL} are missing. Instead we used the \OMEGA|/|\ALEPH\ approach to
+    directionality as starting point, albeit it has been changed quite a bit,
+    so that we're probably not that far from \TEXXET.
+\stopitem
+
+\startitem
+    Some of the tracing information that is output by \ETEX's \prm
+    {tracingassigns} and \prm {tracingrestores} is not there. Also keep in mind
+    that tracing doesn't involve what \LUA\ does.
+\stopitem
+
+\startitem
+    Register management in \LUAMETATEX\ uses the \OMEGA|/|\ALEPH\ model, so the
+    maximum value is 65535 and the implementation uses a flat array instead of
+    the mixed flat & sparse model from \ETEX.
+\stopitem
+
+\startitem
+    Because we don't use change files on top of original \TEX, the integration of
+    \ETEX\ functionality is bit more natural, code wise.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from \PDFTEX\ 1.40]
+
+\topicindex {\PDFTEX}
+
+Because we want to produce \PDF\ the most natural starting point was the popular
+\PDFTEX\ program. We inherit the stable features, dropped most of the
+experimental code and promoted some functionality to core \LUATEX\ functionality
+which in turn triggered renaming primitives. However, as the backend was dropped,
+not that much from \PDFTEX\ is present any more. Basically all we now inherit
+from \PDFTEX\ is expansion and protrusion but even that has been adapted. So
+don't expect \LUAMETATEX\ to be compatible.
+
+\startitemize
+
+\startitem
+    The experimental primitives \lpr {ifabsnum} and \lpr {ifabsdim} have been
+    promoted to core primitives.
+\stopitem
+
+\startitem
+    The primitives \lpr {ifincsname}, \lpr {expanded} and \lpr {quitvmode}
+    have become core primitives.
+\stopitem
+
+\startitem
+    As the hz (expansion) and protrusion mechanism are part of the core the
+    related primitives \lpr {lpcode}, \lpr {rpcode}, \lpr {efcode}, \lpr
+    {leftmarginkern}, \lpr {rightmarginkern} are promoted to core primitives. The
+    two commands \lpr {protrudechars} and \lpr {adjustspacing} control these
+    processes.
+\stopitem
+
+\startitem
+    In \LUAMETATEX\ three extra primitives can be used to overload the font
+    specific settings: \lpr {adjustspacingstep} (max: 100), \lpr
+    {adjustspacingstretch} (max: 1000) and \lpr {adjustspacingshrink} (max: 500).
+\stopitem
+
+\startitem
+    The hz optimization code has been partially redone so that we no longer need
+    to create extra font instances. The front- and backend have been decoupled
+    and the glyph and kern nodes carry the used values. In \LUATEX\ that made a
+    more efficient generation of \PDF\ code possible. It also resulted in much
+    cleaner code. The backend code is gone, but of course the information is
+    still carried around.
+\stopitem
+
+\startitem
+    When \lpr {adjustspacing} has value~2, hz optimization will be applied to
+    glyphs and kerns. When the value is~3, only glyphs will be treated. A value
+    smaller than~2 disables this feature. With value of~1, font expansion is
+    applied after \TEX's normal paragraph breaking routines have broken the
+    paragraph into lines. In this case, line breaks are identical to standard
+    \TEX\ behavior (as with \PDFTEX). But \unknown\ this is a left|-|over from
+    the early days of \PDFTEX\ when this feature was part of a research topic. At
+    some point level~1 might be dropped from \LUAMETATEX.
+\stopitem
+
+\startitem
+    When \lpr {protrudechars} has a value larger than zero characters at the edge
+    of a line can be made to hang out. A value of~2 will take the protrusion into
+    account when breaking a paragraph into lines. A value of~3 will try to deal
+    with right|-|to|-|left rendering; this is a still experimental feature.
+\stopitem
+
+\startitem
+    The pixel multiplier dimension \lpr {pxdimen} has be inherited as core
+    primitive.
+\stopitem
+
+\startitem
+    The primitive \lpr {tracingfonts} is now a core primitive but doesn't relate
+    to the backend.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from \ALEPH\ RC4]
+
+\topicindex {\ALEPH}
+
+In \LUATEX\ we took the 32 bit aspects and much of the directional mechanisms and
+merged it into the \PDFTEX\ code base as starting point for further development.
+Then we simplified directionality, fixed it and opened it up. In \LUAMETATEX\ not
+that much of the later is left. We only have two horizontal directions. Instead
+of vertical directions we introduce an orientation model bound to boxes.
+
+The already reduced|-|to|-|four set of directions now only has two members:
+left|-|to|-|right and right|-|to|-|left. They don't do much as it is the backend
+that has to deal with them. When paragraphs are constructed a change in
+horizontal direction is irrelevant for calculating the dimensions. So, basically
+most that we do is registering state and passing that on till the backend can do
+something with it.
+
+Here is a summary of inherited functionality:
+
+\startitemize
+
+\startitem
+    The \type {^^} notation has been extended: after \type {^^^^} four
+    hexadecimal characters are expected and after \type {^^^^^^} six hexadecimal
+    characters have to be given. The original \TEX\ interpretation is still valid
+    for the \type {^^} case but the four and six variants do no backtracking,
+    i.e.\ when they are not followed by the right number of hexadecimal digits
+    they issue an error message. Because \type {^^^} is a normal \TEX\ case, we
+    don't support the odd number of \type {^^^^^} either.
+\stopitem
+
+\startitem
+    Glues {\it immediately after} direction change commands are not legal
+    breakpoints. There is a bit more sanity testing for the direction state.
+\stopitem
+
+\startitem
+    The placement of math formula numbers is direction aware and adapts
+    accordingly. Boxes carry directional information but rules don't.
+\stopitem
+
+\startitem
+    There are no direction related primitives for page and body directions. The
+    paragraph, text and math directions are specified using primitives that
+    take a number.
+\stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Changes from standard \WEBC]
+
+\topicindex {\WEBC}
+
+The \LUAMETATEX\ codebase is not dependent on the \WEBC\ framework. The
+interaction with the file system and \TDS\ is up to \LUA. There still might be
+traces but eventually the code base should be lean and mean. The \METAPOST\
+library is coded in \CWEB\ and in order to be independent from related tools,
+conversion to \CCODE\ is done with a \LUA\ script ran by, surprise, \LUAMETATEX.
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Implementation notes]
+
+\startsubsection[title=Memory allocation]
+
+\topicindex {memory}
+
+The single internal memory heap that traditional \TEX\ used for tokens and nodes
+is split into two separate arrays. Each of these will grow dynamically when
+needed. Internally a token or node is an index into these arrays. This permits
+for an efficient implementation and is also responsible for the performance of
+the core. The original documentation in \TEX\ The Program mostly applies!
+
+\stopsubsection
+
+\startsubsection[title=Sparse arrays]
+
+The \prm {mathcode}, \prm {delcode}, \prm {catcode}, \prm {sfcode}, \prm {lccode}
+and \prm {uccode} (and the new \lpr {hjcode}) tables are now sparse arrays that
+are implemented in~\CCODE. They are no longer part of the \TEX\ \quote
+{equivalence table} and because each had 1.1 million entries with a few memory
+words each, this makes a major difference in memory usage. Performance is not
+really hurt by this.
+
+The \prm {catcode}, \prm {sfcode}, \prm {lccode}, \prm {uccode} and \lpr {hjcode}
+assignments don't show up when using the \ETEX\ tracing routines \prm
+{tracingassigns} and \prm {tracingrestores} but we don't see that as a real
+limitation. It also saves a lot of clutter.
+
+A side|-|effect of the current implementation is that \prm {global} is now more
+expensive in terms of processing than non|-|global assignments but not many users
+will notice that.
+
+The glyph ids within a font are also managed by means of a sparse array as glyph
+ids can go up to index $2^{21}-1$ but these are never accessed directly so again
+users will not notice this.
+
+\stopsubsection
+
+\startsubsection[title=Simple single|-|character csnames]
+
+\topicindex {csnames}
+
+Single|-|character commands are no longer treated specially in the internals,
+they are stored in the hash just like the multiletter csnames.
+
+The code that displays control sequences explicitly checks if the length is one
+when it has to decide whether or not to add a trailing space.
+
+Active characters are internally implemented as a special type of multi|-|letter
+control sequences that uses a prefix that is otherwise impossible to obtain.
+
+\stopsubsection
+
+\startsubsection[title=Binary file reading]
+
+\topicindex {files+binary}
+
+All of the internal code is changed in such a way that if one of the \type
+{read_xxx_file} callbacks is not set, then the file is read by a \CCODE\ function
+using basically the same convention as the callback: a single read into a buffer
+big enough to hold the entire file contents. While this uses more memory than the
+previous code (that mostly used \type {getc} calls), it can be quite a bit faster
+(depending on your \IO\ subsystem). So far we never had issues with this approach.
+
+\stopsubsection
+
+\startsubsection[title=Tabs and spaces]
+
+\topicindex {space}
+\topicindex {newline}
+
+We conform to the way other \TEX\ engines handle trailing tabs and spaces. For
+decades trailing tabs and spaces (before a newline) were removed from the input
+but this behaviour was changed in September 2017 to only handle spaces. We are
+aware that this can introduce compatibility issues in existing workflows but
+because we don't want too many differences with upstream \TEXLIVE\ we just follow
+up on that patch (which is a functional one and not really a fix). It is up to
+macro packages maintainers to deal with possible compatibility issues and in
+\LUAMETATEX\ they can do so via the callbacks that deal with reading from files.
+
+The previous behaviour was a known side effect and (as that kind of input
+normally comes from generated sources) it was normally dealt with by adding a
+comment token to the line in case the spaces and|/|or tabs were intentional and
+to be kept. We are aware of the fact that this contradicts some of our other
+choices but consistency with other engines. We still stick to our view that at
+the log level we can (and might be) more incompatible. We already expose some
+more details anyway.
+
+\stopsubsection
+
+\startsubsection[title=Logging]
+
+The information that goes into the log file can be different from \LUATEX, and
+might even differ a bit more in the future. The main reason is that inside the
+engine we have more granularity, which for instance means that we output subtype
+related information when nodes are printed. Of course we could have offered a
+compatibility mode but it serves no purpose. Over time there have been many
+subtle changes to control logs in the \TEX\ ecosystems so another one is
+bearable.
+
+In a similar fashion, there is a bit different behaviour when \TEX\ expects
+input, which in turn is a side effect of removing the interception of \type {*}
+and \type {&} which made for cleaner code (quite a bit had accumulated as side
+effect of continuous adaptations in the \TEX\ ecosystems). There was already code
+that was never executed, simply as side effect of the way \LUATEX\ initializes
+itself (one needs to enable classes of primitives for instance).
+
+\stopsubsection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

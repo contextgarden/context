@@ -1,0 +1,573 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-libraries
+
+\startchapter[reference=libraries,title={Extra libraries}]
+
+\startsection[title=Introduction]
+
+The libraries can be grouped in categories like fonts, languages, \TEX,
+\METAPOST, \PDF, etc. There are however also some that are more general puspose
+and these are discussed here.
+
+\stopsection
+
+\startsection[title=File and string readers: \type {fio} and type {sio}]
+
+This library provides a set of functions for reading numbers from a file and
+in addition to the regular \type {io} library functions. The following
+work on normal \LUA\ file handles.
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name        \BC arguments \BC results \NC \NR
+\TB
+\NC readcardinal1     \NC (f)      \NC a 1 byte unsigned integer \NC \NR
+\NC readcardinal2     \NC (f)      \NC a 2 byte unsigned integer \NC \NR
+\NC readcardinal3     \NC (f)      \NC a 3 byte unsigned integer \NC \NR
+\NC readcardinal4     \NC (f)      \NC a 4 byte unsigned integer \NC \NR
+\NC readcardinaltable \NC (f,n,b)  \NC \type {n} cardinals of \type {b} bytes \NC \NR
+\NC readinteger1      \NC (f)      \NC a 1 byte signed integer \NC \NR
+\NC readinteger2      \NC (f)      \NC a 2 byte signed integer \NC \NR
+\NC readinteger3      \NC (f)      \NC a 3 byte signed integer \NC \NR
+\NC readinteger4      \NC (f)      \NC a 4 byte signed integer \NC \NR
+\NC readintegertable  \NC (f,n,b)  \NC \type {n} integers of \type {b} bytes \NC \NR
+\NC readfixed2        \NC (f)      \NC a 2 byte float (used in font files) \NC \NR
+\NC readfixed4        \NC (f)      \NC a 4 byte float (used in font files) \NC \NR
+\NC read2dot14        \NC (f)      \NC a 2 byte float (used in font files) \NC \NR
+\NC setposition       \NC (f,p)    \NC goto position \type {p} \NC \NR
+\NC getposition       \NC (f)      \NC get the current position \NC \NR
+\NC skipposition      \NC (f,n)    \NC skip \type {n} positions \NC \NR
+\NC readbytes         \NC (f,n)    \NC \type {n} bytes \NC \NR
+\NC readbytetable     \NC (f,n)    \NC \type {n} bytes\NC \NR
+\LL
+\stoptabulate
+
+When relevant there are also variants that end with \type {le} that do it the
+little endian way.
+
+A similar set of function as in the \type {fio} library is available in the \type
+{sio} library: \libidx {sio} {readcardinal1}, \libidx {sio} {readcardinal2},
+\libidx {sio} {readcardinal3}, \libidx {sio} {readcardinal4}, \libidx {sio}
+{readcardinaltable}, \libidx {sio} {readinteger1}, \libidx {sio} {readinteger2},
+\libidx {sio} {readinteger3}, \libidx {sio} {readinteger4}, \libidx {sio}
+{readintegertable}, \libidx {sio} {readfixed2}, \libidx {sio} {readfixed4},
+\libidx {sio} {read2dot14}, \libidx {sio} {setposition}, \libidx {sio}
+{getposition}, \libidx {sio} {skipposition}, \libidx {sio} {readbytes} and
+\libidx {sio} {readbytetable}. Here the first argument is a string instead of a
+file handle.
+
+\stopsection
+
+\startsection[title=\type{md5}]
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name \BC arguments \BC results \NC \NR
+\TB
+\NC sum  \NC \NC \NC \NR
+\NC hex  \NC \NC \NC \NR
+\NC HEX  \NC \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{sha2}]
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name      \BC arguments \BC results \NC \NR
+\TB
+\NC digest256 \NC \NC \NC \NR
+\NC digest384 \NC \NC \NC \NR
+\NC digest512 \NC \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+% \startsection[title=\type{flate}]
+%
+% \starttabulate[|Tw(12em)|T|T|]
+% \DB name             \BC arguments \BC results \NC \NR
+% \TB
+% \NC flate_compress   \NC \NC \NC \NR
+% \NC flate_decompress \NC \NC \NC \NR
+% \NC zip_compress     \NC \NC \NC \NR
+% \NC zip_decompress   \NC \NC \NC \NR
+% \NC gz_compress      \NC \NC \NC \NR
+% \NC gz_decompress    \NC \NC \NC \NR
+% \NC update_adler32   \NC \NC \NC \NR
+% \NC update_crc32     \NC \NC \NC \NR
+% \LL
+% \stoptabulate
+%
+% \stopsection
+
+\startsection[title=\type{xzip}]
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name             \BC arguments \BC results \NC \NR
+\TB
+\NC compress   \NC \NC \NC \NR
+\NC decompress \NC \NC \NC \NR
+\NC adler32    \NC \NC \NC \NR
+\NC crc32      \NC \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{xmath}]
+
+This library just opens up standard \CCODE\ math library and the main reason for
+it being there is that it permits advanced graphics in \METAPOST\ (via the \LUA\
+interface). There are three constant values:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name \BC arguments \BC results \NC \NR
+\TB
+\NC inf  \NC \emdash \NC \cldcontext{xmath.inf} \NC \NR
+\NC nan  \NC \emdash \NC \cldcontext{xmath.nan} \NC \NR
+\NC pi   \NC \emdash \NC \cldcontext{xmath.pi}  \NC \NR
+\LL
+\stoptabulate
+
+and a lot of functions:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name       \BC arguments \BC results \NC \NR
+\TB
+\NC acos       \NC (a)       \NC \NC \NR
+\NC acosh      \NC (a)       \NC \NC \NR
+\NC asin       \NC (a)       \NC \NC \NR
+\NC asinh      \NC (a)       \NC \NC \NR
+\NC atan       \NC (a[,b])   \NC \NC \NR
+\NC atan2      \NC (a[,b])   \NC \NC \NR
+\NC atanh      \NC (a)       \NC \NC \NR
+\NC cbrt       \NC (a)       \NC \NC \NR
+\NC ceil       \NC (a)       \NC \NC \NR
+\NC copysign   \NC (a,b)     \NC \NC \NR
+\NC cos        \NC (a)       \NC \NC \NR
+\NC cosh       \NC (a)       \NC \NC \NR
+\NC deg        \NC (a)       \NC \NC \NR
+\NC erf        \NC (a)       \NC \NC \NR
+\NC erfc       \NC (a)       \NC \NC \NR
+\NC exp        \NC (a)       \NC \NC \NR
+\NC exp2       \NC (a)       \NC \NC \NR
+\NC expm1      \NC (a)       \NC \NC \NR
+\NC fabs       \NC (a)       \NC \NC \NR
+\NC fdim       \NC (a,b)     \NC \NC \NR
+\NC floor      \NC (a)       \NC \NC \NR
+\NC fma        \NC (a,b,c)   \NC \NC \NR
+\NC fmax       \NC (...)     \NC \NC \NR
+\NC fmin       \NC (...)     \NC \NC \NR
+\NC fmod       \NC (a,b)     \NC \NC \NR
+\NC frexp      \NC (a,b)     \NC \NC \NR
+\NC gamma      \NC (a)       \NC \NC \NR
+\NC hypot      \NC (a,b)     \NC \NC \NR
+\NC isfinite   \NC (a)       \NC \NC \NR
+\NC isinf      \NC (a)       \NC \NC \NR
+\NC isnan      \NC (a)       \NC \NC \NR
+\NC isnormal   \NC (a)       \NC \NC \NR
+\NC j0         \NC (a)       \NC \NC \NR
+\NC j1         \NC (a)       \NC \NC \NR
+\NC jn         \NC (a,b)     \NC \NC \NR
+\NC ldexp      \NC (a,b)     \NC \NC \NR
+\NC lgamma     \NC (a)       \NC \NC \NR
+\NC l0         \NC (a)       \NC \NC \NR
+\NC l1         \NC (a)       \NC \NC \NR
+\NC ln         \NC (a,b)     \NC \NC \NR
+\NC log        \NC (a[,b])   \NC \NC \NR
+\NC log10      \NC (a)       \NC \NC \NR
+\NC log1p      \NC (a)       \NC \NC \NR
+\NC log2       \NC (a)       \NC \NC \NR
+\NC logb       \NC (a)       \NC \NC \NR
+\NC modf       \NC (a,b)     \NC \NC \NR
+\NC nearbyint  \NC (a)       \NC \NC \NR
+\NC nextafter  \NC (a,b)     \NC \NC \NR
+\NC pow        \NC (a,b)     \NC \NC \NR
+\NC rad        \NC (a)       \NC \NC \NR
+\NC remainder  \NC (a,b)     \NC \NC \NR
+\NC remquo     \NC (a,b)     \NC \NC \NR
+\NC round      \NC (a)       \NC \NC \NR
+\NC scalbn     \NC (a,b)     \NC \NC \NR
+\NC sin        \NC (a)       \NC \NC \NR
+\NC sinh       \NC (a)       \NC \NC \NR
+\NC sqrt       \NC (a)       \NC \NC \NR
+\NC tan        \NC (a)       \NC \NC \NR
+\NC tanh       \NC (a)       \NC \NC \NR
+\NC tgamma     \NC (a)       \NC \NC \NR
+\NC trunc      \NC (a)       \NC \NC \NR
+\NC y0         \NC (a)       \NC \NC \NR
+\NC y1         \NC (a)       \NC \NC \NR
+\NC yn         \NC (a)       \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{xcomplex}]
+
+\LUAMETATEX\ also provides a complex library \type {xcomplex}. The complex
+number is a userdatum:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name       \BC arguments \BC results \NC \NR
+\TB
+\NC new        \NC (r,i)     \NC a complex userdata type \NC \NR
+\NC tostring   \NC (z)       \NC a string representation \NC \NR
+\NC topair     \NC (z)       \NC two numbers \NC \NR
+\LL
+\stoptabulate
+
+There is a bunch of functions that take a complex number:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name       \BC arguments \BC results \NC \NR
+\TB
+\NC abs       \NC (a)       \NC \NC \NR
+\NC arg       \NC (a)       \NC \NC \NR
+\NC imag      \NC (a)       \NC \NC \NR
+\NC real      \NC (a)       \NC \NC \NR
+\NC onj       \NC (a)       \NC \NC \NR
+\NC proj      \NC (a)       \NC \NC \NR
+\NC exp"      \NC (a)       \NC \NC \NR
+\NC log       \NC (a)       \NC \NC \NR
+\NC sqrt      \NC (a)       \NC \NC \NR
+\NC pow       \NC (a,b)     \NC \NC \NR
+\NC sin       \NC (a)       \NC \NC \NR
+\NC cos       \NC (a)       \NC \NC \NR
+\NC tan       \NC (a)       \NC \NC \NR
+\NC asin      \NC (a)       \NC \NC \NR
+\NC acos      \NC (a)       \NC \NC \NR
+\NC atan      \NC (a)       \NC \NC \NR
+\NC sinh      \NC (a)       \NC \NC \NR
+\NC cosh      \NC (a)       \NC \NC \NR
+\NC tanh      \NC (a)       \NC \NC \NR
+\NC asinh     \NC (a)       \NC \NC \NR
+\NC acosh     \NC (a)       \NC \NC \NR
+\NC atanh     \NC (a)       \NC \NC \NR
+\LL
+\stoptabulate
+
+These are accompanied by \type {libcerf} functions:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name       \BC arguments \BC results \NC \NR
+\TB
+\NC erf        \NC (a)       \NC The complex error function erf(z) \NC \NR
+\NC erfc       \NC (a)       \NC The complex complementary error function erfc(z) = 1 - erf(z) \NC \NR
+\NC erfcx      \NC (a)       \NC The underflow-compensating function erfcx(z) = exp(z^2) erfc(z) \NC \NR
+\NC erfi       \NC (a)       \NC The imaginary error function erfi(z) = -i erf(iz) \NC \NR
+\NC dawson     \NC (a)       \NC Dawson's integral D(z) = sqrt(pi)/2 * exp(-z^2) * erfi(z) \NC \NR
+\NC voigt      \NC (a,b,c)   \NC The convolution of a Gaussian and a Lorentzian \NC \NR
+\NC voigt_hwhm \NC (a,b)     \NC The half width at half maximum of the Voigt profile \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{lfs}]
+
+The original \type {lfs} module has been adapted a bit to our needs but for
+practical reasons we kept the namespace. This module will probably evolve a bit
+over time.
+
+\starttabulate[|Tw(12em)|T|Tp|]
+\DB name              \BC arguments \BC results \NC \NR
+\TB
+\NC attributes        \NC (name) \NC \NC \NR
+\NC chdir             \NC (name) \NC \NC \NR
+\NC currentdir        \NC ()     \NC \NC \NR
+\NC dir               \NC (name) \NC \type {name}, \type {mode}, \type {size} and \type {mtime} \NC \NR
+\NC mkdir             \NC (name) \NC \NC \NR
+\NC rmdir             \NC (name) \NC \NC \NR
+\NC touch             \NC (name) \NC \NC \NR
+\NC link              \NC (name) \NC \NC \NR
+\NC symlinkattributes \NC (name) \NC \NC \NR
+\NC isdir             \NC (name) \NC \NC \NR
+\NC isfile            \NC (name) \NC \NC \NR
+\NC iswriteabledir    \NC (name) \NC \NC \NR
+\NC iswriteablefile   \NC (name) \NC \NC \NR
+\NC isreadabledir     \NC (name) \NC \NC \NR
+\NC isreadablefile    \NC (name) \NC \NC \NR
+\LL
+\stoptabulate
+
+The \type {dir} function is a traverser which in addition to the name returns
+some more properties. Keep in mind that the traverser loops over a directory and
+that it doesn't run well when used nested. This is a side effect of the operating
+system. It is also the reason why we return some properties because querying them
+via \type {attributes} would interfere badly.
+
+The following attributes are returned by \type {attributes}:
+
+\starttabulate[|Tw(12em)|T|]
+\DB name         \BC value \NC \NR
+\TB
+\NC mode         \NC \NC \NR
+\NC size         \NC \NC \NR
+\NC modification \NC \NC \NR
+\NC access       \NC \NC \NR
+\NC change       \NC \NC \NR
+\NC permissions  \NC \NC \NR
+\NC nlink        \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{pngdecode}]
+
+This module is experimental and used in image inclusion. It is not some general
+purpose module and is supposed to be used in a very controlled way. The
+interfaces might evolve.
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name        \BC arguments                      \BC results \NC \NR
+\TB
+\NC applyfilter \NC (str,nx,ny,slice)              \NC string \NC \NR
+\NC splitmask   \NC (str,nx,ny,bpp,bytes)          \NC string \NC \NR
+\NC interlace   \NC (str,nx,ny,slice,pass)         \NC string \NC \NR
+\NC expand      \NC (str,nx,ny,parts,xline,factor) \NC string \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\type{basexx}]
+
+Some more experimental helpers:
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name      \BC arguments \BC results \NC \NR
+\TB
+\NC encode16  \NC (str[,newline])  \NC string \NC \NR
+\NC decode16  \NC (str)            \NC string \NC \NR
+\NC encode64  \NC (str[,newline])  \NC string \NC \NR
+\NC decode64  \NC (str)            \NC string \NC \NR
+\NC encode85  \NC (str[,newline])  \NC string \NC \NR
+\NC decode85  \NC (str)            \NC string \NC \NR
+\NC encodeRL  \NC (str)            \NC string \NC \NR
+\NC decodeRL  \NC (str)            \NC string \NC \NR
+\NC encodeLZW \NC (str[,defaults]) \NC string \NC \NR
+\NC decodeLZW \NC (str[,defaults]) \NC string \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title={Multibyte \type {string} functions}]
+
+The \type {string} library has a few extra functions, for example \libidx
+{string} {explode}. This function takes upto two arguments: \type
+{string.explode(s[,m])} and returns an array containing the string argument \type
+{s} split into sub-strings based on the value of the string argument \type {m}.
+The second argument is a string that is either empty (this splits the string into
+characters), a single character (this splits on each occurrence of that
+character, possibly introducing empty strings), or a single character followed by
+the plus sign \type {+} (this special version does not create empty sub-strings).
+The default value for \type {m} is \quote {\type { +}} (multiple spaces). Note:
+\type {m} is not hidden by surrounding braces as it would be if this function was
+written in \TEX\ macros.
+
+The \type {string} library also has six extra iterators that return strings
+piecemeal: \libidx {string} {utfvalues}, \libidx {string} {utfcharacters},
+\libidx {string} {characters}, \libidx {string} {characterpairs}, \libidx
+{string} {bytes} and \libidx {string} {bytepairs}.
+
+\startitemize
+\startitem
+    \type {string.utfvalues(s)}: an integer value in the \UNICODE\ range
+\stopitem
+\startitem
+    \type {string.utfcharacters(s)}: a string with a single \UTF-8 token in it
+\stopitem
+\startitem
+    \type {string.cWharacters(s)}: a string containing one byte
+\stopitem
+\startitem
+    \type {string.characterpairs(s)}: two strings each containing one byte or an
+    empty second string if the string length was odd
+\stopitem
+\startitem
+    \type {string.bytes(s)}: a single byte value
+\stopitem
+\startitem
+    \type {string.bytepairs(s)}: two byte values or nil instead of a number as
+    its second return value if the string length was odd
+\stopitem
+\stopitemize
+
+The \type {string.characterpairs()} and \type {string.bytepairs()} iterators
+are useful especially in the conversion of \UTF16 encoded data into \UTF8.
+
+There is also a two|-|argument form of \type {string.dump()}. The second argument
+is a boolean which, if true, strips the symbols from the dumped data. This
+matches an extension made in \type {luajit}. This is typically a function that
+gets adapted as \LUA\ itself progresses.
+
+The \type {string} library functions \type {len}, \type {lower}, \type {sub}
+etc.\ are not \UNICODE|-|aware. For strings in the \UTF8 encoding, i.e., strings
+containing characters above code point 127, the corresponding functions from the
+\type {slnunicode} library can be used, e.g., \type {unicode.utf8.len}, \type
+{unicode.utf8.lower} etc.\ The exceptions are \type {unicode.utf8.find}, that
+always returns byte positions in a string, and \type {unicode.utf8.match} and
+\type {unicode.utf8.gmatch}. While the latter two functions in general {\it
+are} \UNICODE|-|aware, they fall|-|back to non|-|\UNICODE|-|aware behavior when
+using the empty capture \type {()} but other captures work as expected. For the
+interpretation of character classes in \type {unicode.utf8} functions refer to
+the library sources at \hyphenatedurl {http://luaforge.net/projects/sln}.
+
+Version 5.3 of \LUA\ provides some native \UTF8 support but we have added a few
+similar helpers too: \libidx {string} {utfvalue}, \libidx {string} {utfcharacter}
+and \libidx {string} {utflength}.
+
+\startitemize
+\startitem
+    \type {string.utfvalue(s)}: returns the codepoints of the characters in the
+    given string
+\stopitem
+\startitem
+    \type {string.utfcharacter(c,...)}: returns a string with the characters of
+    the given code points
+\stopitem
+\startitem
+    \type {string.utflength(s)}: returns the length of the given string
+\stopitem
+\stopitemize
+
+These three functions are relative fast and don't do much checking. They can be
+used as building blocks for other helpers.
+
+\stopsection
+
+\startsection[title={Extra \type {os} library functions}]
+
+The \type {os} library has a few extra functions and variables: \libidx {os}
+{selfdir}, \libidx {os} {selfarg}, \libidx {os} {setenv}, \libidx {os} {env}, \libidx {os}
+{gettimeofday}, \libidx {os} {type}, \libidx {os} {name} and \libidx {os}
+{uname}, that we will discuss here. There are also some time related helpers in
+the \type {lua} namespace.
+
+\startitemize
+
+% selfbin
+% selfpath
+% selfdir
+% selfbase
+% selfname
+% selfcore
+
+\startitem
+    \type {os.selfdir} is a variable that holds the directory path of the
+    actual executable. For example: \type {\directlua {tex.sprint(os.selfdir)}}.
+\stopitem
+
+\startitem
+    \type {os.selfarg} is a table with the command line arguments.
+\stopitem
+
+\startitem
+    \type {os.setenv(key,value)} sets a variable in the environment. Passing
+    \type {nil} instead of a value string will remove the variable.
+\stopitem
+
+\startitem
+    \type {os.env} is a hash table containing a dump of the variables and
+    values in the process environment at the start of the run. It is writeable,
+    but the actual environment is \notabene {not} updated automatically.
+\stopitem
+
+\startitem
+    \type {os.gettimeofday} returns the current \quote {\UNIX\ time}, but as a
+    float. Keep in mind that there might be platforms where this function is
+    available.
+\stopitem
+
+\startitem
+    \type {os.type} is a string that gives a global indication of the class of
+    operating system. The possible values are currently \type {windows}, \type
+    {unix}, and \type {msdos} (you are unlikely to find this value \quote {in the
+    wild}).
+\stopitem
+
+\startitem
+    \type {os.name} is a string that gives a more precise indication of the
+    operating system. These possible values are not yet fixed, and for \type
+    {os.type} values \type {windows} and \type {msdos}, the \type {os.name}
+    values are simply \type {windows} and \type {msdos}
+
+    The list for the type \type {unix} is more precise: \type {linux}, \type
+    {freebsd}, \type {kfreebsd}, \type {cygwin}, \type {openbsd}, \type
+    {solaris}, \type {sunos} (pre-solaris), \type {hpux}, \type {irix}, \type
+    {macosx}, \type {gnu} (hurd), \type {bsd} (unknown, but \BSD|-|like), \type
+    {sysv}, \type {generic} (unknown). But \unknown\ we only provide \LUAMETATEX\
+    binaries for the mainstream variants.
+
+    Officially we only support mainstream systems: \MSWINDOWS, \LINUX, \FREEBSD\
+    and \OSX. Of course one can build \LUAMETATEX\ for other systems, in which
+    case on has to check the above.
+\stopitem
+
+\startitem
+    \type {os.uname} returns a table with specific operating system
+    information acquired at runtime. The keys in the returned table are all
+    string values, and their names are: \type {sysname}, \type {machine}, \type
+    {release}, \type {version}, and \type {nodename}.
+\stopitem
+
+\stopitemize
+
+\stopsection
+
+\startsection[title={The \type {lua} library functions}]
+
+The \type {lua} library provide some general helpers.
+
+\startitemize
+
+\startitem
+    The \type {newtable} and \type {newindex} functions can be used to create
+    tables with space reserved beforehand for the given amount of entries.
+\stopitem
+
+\startitem
+    The \type {getstacktop} function returns a number that can be used for
+    diagnostic purposes.
+\stopitem
+
+\startitem
+    The functions \type {getruntime}, \type {getcurrenttime}, \type
+    {getpreciseticks} and \type {getpreciseseconds} return what their name
+    suggests.
+\stopitem
+
+\startitem
+    On \MSWINDOWS\ the \type {getcodepage} function returns two numbers, one
+    for the command handler and one for the graphical user interface.
+\stopitem
+
+\startitem
+    The name of the startup file is reported by \type {getstartupfile}.
+\stopitem
+
+\startitem
+    The \LUA\ version is reported by \type {getversion}.
+\stopitem
+
+\startitem
+    The \type {lua.openfile} function can be used instead of \type {io.open}. On
+    \MSWINDOWS\ it will convert the filename to a so called wide one which means
+    that filenames in \UTF8 encoding will work ok. On the other hand, names given
+    in the codepage won't.
+\stopitem
+
+\stopitemize
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

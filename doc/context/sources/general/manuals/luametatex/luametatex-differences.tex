@@ -1,0 +1,209 @@
+% language=uk
+
+\environment luametatex-style
+
+\startcomponent luametatex-differences
+
+\startchapter[reference=differences,title={Differences with \LUATEX}]
+
+As \LUAMETATEX\ is a leaner and meaner \LUATEX, this chapter will discuss
+what is gone. We start with the primitives that were dropped.
+
+\starttabulate[|l|pl|]
+\NC fonts       \NC \type {\letterspacefont}
+                    \type {\copyfont}
+                    \type {\expandglyphsinfont}
+                    \type {\ignoreligaturesinfont}
+                    \type {\tagcode}
+                \NC \NR
+\NC backend     \NC \type {\dviextension}
+                    \type {\dvivariable }
+                    \type {\dvifeedback}
+                    \type {\pdfextension}
+                    \type {\pdfvariable }
+                    \type {\pdffeedback}
+                    \type {\dviextension}
+                    \type {\draftmode}
+                    \type {\outputmode}
+                \NC \NR
+\NC dimensions  \NC \type {\pageleftoffset}
+                    \type {\pagerightoffset}
+                    \type {\pagetopoffset}
+                    \type {\pagebottomoffset}
+                    \type {\pageheight}
+                    \type {\pagewidth}
+                \NC \NR
+\NC resources   \NC \type {\saveboxresource}
+                    \type {\useboxresource}
+                    \type {\lastsavedboxresourceindex}
+                    \type {\saveimageresource}
+                    \type {\useimageresource}
+                    \type {\lastsavedimageresourceindex}
+                    \type {\lastsavedimageresourcepages}
+                \NC \NR
+\NC positioning \NC \type {\savepos}
+                    \type {\lastxpos}
+                    \type {\lastypos}
+                \NC \NR
+\NC directions  \NC \type {\textdir}
+                    \type {\linedir}
+                    \type {\mathdir}
+                    \type {\pardir}
+                    \type {\pagedir}
+                    \type {\bodydir}
+                    \type {\pagedirection}
+                    \type {\bodydirection}
+                \NC \NR
+\NC randomizer  \NC \type {\randomseed}
+                    \type {\setrandomseed}
+                    \type {\normaldeviate}
+                    \type {\uniformdeviate}
+                \NC \NR
+\NC utilities   \NC \type {\synctex}
+                \NC \NR
+\NC extensions  \NC \type {\latelua}
+                    \type {\lateluafunction}
+                    \type {\immediate}
+                    \type {\openout}
+                    \type {\write}
+                    \type {\closeout}
+                \NC \NR
+\NC control     \NC \type {\suppressfontnotfounderror}
+                    \type {\suppresslongerror}
+                    \type {\suppressprimitiveerror}
+                    \type {\suppressmathparerror}
+                    \type {\suppressifcsnameerror}
+                    \type {\suppressoutererror}
+                    \type {\mathoption}
+                \NC \NR
+\NC whatever    \NC \type {\primitive}
+                    \type {\ifprimitive}
+                \NC \NR
+\NC ignored     \NC \type {\long}
+                    \type {\outer}
+                    \type {\mag}
+                \NC \NR
+\stoptabulate
+
+The resources and positioning primitives are actually useful but can be defined
+as macros that (via \LUA) inject nodes in the input that suit the macro package
+and backend. The three||letter direction primitives are gone and the numeric
+variants are now leading. There is no need for page and body related directions
+and they don't work well in \LUATEX\ anyway. We only have two directions left.
+
+The primitive related extensions were not that useful and reliable so they have
+been removed. There are some new variants that will be discussed later. The \type
+{\outer} and \type {\long} prefixes are gone as they don't make much sense
+nowadays and them becoming dummies opened the way to something new, again to be
+discussed elsewhere. I don't think that (\CONTEXT) users will notice it. The
+\type {\suppress..} features are now default.
+
+The \type {\shipout} primitive does no ship out but just erases the content of
+the box, if that hasn't happened already in another way.
+
+The extension primitives relate to the backend (when not immediate) and can be
+implemented as part of a backend design using generic whatsits. There is only one
+type of whatsit now. In fact we're now closer to original \TEX\ with respect to
+the extensions.
+
+The \type {img} library has been removed as it's rather bound to the backend. The
+\type {slunicode} library is also gone. There are some helpers in the string
+library that can be used instead and one can write additional \LUA\ code if
+needed. There is no longer a \type {pdf} backend library.
+
+In the \type {node}, \type {tex} and \type {status} library we no longer have
+helpers and variables that relate to the backend. The \LUAMETATEX\ engine is in
+principle \DVI\ and \PDF\ unaware. There are only generic whatsit nodes that can
+be used for some management related tasks. For instance you can use them to
+implement user nodes.
+
+The \KPSE\ library is no longer built|-|in. Because there is no backend, quite
+some file related callbacks could go away. The following file related callbacks
+remained (till now):
+
+\starttyping
+find_write_file find_data_file find_format_file
+open_data_file read_data_file
+\stoptyping
+
+Also callbacks related to errors stay:
+
+\starttyping
+show_error_hook show_lua_error_hook,
+show_error_message show_warning_message
+\stoptyping
+
+The (job) management hooks are kept:
+
+\starttyping
+process_jobname
+start_run stop_run wrapup_run
+pre_dump
+start_file stop_file
+\stoptyping
+
+Because we use a more generic whatsit model, there is a new callback:
+
+\starttyping
+show_whatsit
+\stoptyping
+
+Being the core of extensibility, the typesetting callbacks of course stayed. This
+is what we ended up with:
+
+\starttyping
+find_log_file, find_data_file, find_format_file, open_data_file, read_data_file,
+process_jobname, start_run, stop_run, define_font, pre_output_filter,
+buildpage_filter, hpack_filter, vpack_filter, hyphenate, ligaturing, kerning,
+pre_linebreak_filter, linebreak_filter, post_linebreak_filter,
+append_to_vlist_filter, mlist_to_hlist, pre_dump, start_file, stop_file,
+handle_error_hook, show_error_hook, show_lua_error_hook, show_error_message,
+show_warning_message, hpack_quality, vpack_quality, insert_local_par,
+contribute_filter, build_page_insert, wrapup_run, new_graf, make_extensible,
+show_whatsit, terminal_input,
+\stoptyping
+
+As in \LUATEX\ font loading happens with the following callback. This time it
+really needs to be set because there is no built|-|in font loader.
+
+\starttyping
+define_font
+\stoptyping
+
+There are all kind of subtle differences in the implementation, for instance we
+no longer intercept \type {*} and \type {&} as these were already replaced long
+ago in \TEX\ engines by command line options. Talking of options, only a few are
+left.
+
+We took our time for reaching a stable state in \LUATEX. Among the reasons is the
+fact that most was experimented with in \CONTEXT. It took many man|-|years to
+decide what to keep and how to do things. Of course there are places when things
+can be improved and it might happen in \LUAMETATEX. Contrary to what is sometimes
+suggested, the \LUATEX|-|\CONTEXT\ \MKIV\ combination (assuming matched versions)
+has been quite stable. It made no sense otherwise. Most \CONTEXT\ functionality
+didn't change much at the user level. Of course there have been issues, as is
+natural with everything new and beta, but we have a fast update cycle.
+
+The same is true for \LUAMETATEX\ and \CONTEXT\ \LMTX: it can be used for
+production as usual and in practice \CONTEXT\ users tend to use the beta
+releases, which proves this. Of course, of you use low level features that are
+experimental you're on your own. Also, as with \LUATEX\ it might take many years
+before a long term stable is defined. The good news is that, the source code
+being part of the \CONTEXT\ distribution, there is always a properly working,
+more of less long term stable, snapshot.
+
+The error reporting subsystem has been redone a little but is still fundamentally
+the same. We don't really assume interactive usage but if someone uses it, it
+might be noticed that it is not possible to backtrack or inject something. Of
+course it is no big deal to implement all that in \LUA\ if needed. It removes a
+system dependency and makes for a bit cleaner code.
+
+There are new primitives too as well as some extensions to existing primitive
+functionality. These are described in following chapters but there might be
+hidden treasures in the binary. If you locate them, don't automatically assume
+them to stay, some might be part of experiments!
+
+\stopchapter
+
+\stopcomponent
+

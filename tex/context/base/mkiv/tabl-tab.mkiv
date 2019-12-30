@@ -864,8 +864,13 @@
    \lineskip     \zeropoint
    \tabskip      \zeropoint
    \edef\p_tabl_table_textwidth{\directtablesparameter\c!textwidth}%
-   \halign \ifx\p_tabl_table_textwidth\empty \else to \ifx\p_tabl_table_textwidth\v!max \hsize \else \p_tabl_table_textwidth \fi\fi
-%    \the\!taTableSpread
+   % we are not in sync so:
+   \synchronizedisplaydirection
+   \synchronizeinlinedirection
+   \halign
+     \usedirectionparameterreverse\directtablesparameter
+     \ifx\p_tabl_table_textwidth\empty \else to \ifx\p_tabl_table_textwidth\v!max \hsize \else \p_tabl_table_textwidth \fi\fi
+    %\the\!taTableSpread
      \bgroup
      \span
      \the\!taPreamble
