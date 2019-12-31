@@ -582,22 +582,22 @@
 \def\pack_layers_flush_double#1%
   {\startoverlay
      {\ifcsname\??layerbox\currentlayer\endcsname
-        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+        \ifvoid\lastnamedcs\else \chardef\b_layer_two\lastnamedcs
           \pack_layers_flush_indeed\plusone\currentlayer\b_layer_two
         \fi
       \fi}%
      {\ifcsname\??layerbox\currentlayer:\the\realpageno\endcsname
-        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+        \ifvoid\lastnamedcs\else \chardef\b_layer_two\lastnamedcs
           \pack_layers_flush_indeed\zerocount{\currentlayer:\the\realpageno}\b_layer_two
         \fi
       \fi}%
      {\ifcsname\??layerbox#1\currentlayer\endcsname
-        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+        \ifvoid\lastnamedcs\else \chardef\b_layer_two\lastnamedcs
           \pack_layers_flush_indeed\plusone{#1\currentlayer}\b_layer_two
         \fi
       \fi}%
      {\ifcsname\??layerbox#1\currentlayer:\the\realpageno\endcsname
-        \ifvoid\lastnamedcss\else \chardef\b_layer_two\lastnamedcs
+        \ifvoid\lastnamedcs\else \chardef\b_layer_two\lastnamedcs
           \pack_layers_flush_indeed\zerocount{#1\currentlayer:\the\realpageno}\b_layer_two
         \fi
       \fi}%

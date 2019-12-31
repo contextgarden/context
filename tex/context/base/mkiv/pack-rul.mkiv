@@ -468,25 +468,40 @@
   {\def\pack_framed_define_overlay_indeed##1{\setvalue{\??overlay##1}{\executedefinedoverlay{##1}{#2}}}%
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
 
+% \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
+%   {\bgroup % redundant grouping
+%    \setbox\scratchbox\hbox\bgroup
+%      \ifzeropt\d_framed_target_dp
+%        \the\everyoverlay#2% saves wrapping (and lua call)
+%      \else
+%        \lower\d_framed_target_dp
+%        \hbox{\the\everyoverlay#2}%
+%      \fi
+%    \egroup
+%    \setlayoutcomponentattribute{\v!overlay:#1}%
+%    \setbox\scratchbox\hpack \layoutcomponentboxattribute
+%      {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
+%       \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \d_overlay_height !
+%       \box\scratchbox}%
+%    \wd\scratchbox\d_framed_target_wd
+%    \ht\scratchbox\d_framed_target_ht
+%    \dp\scratchbox\d_framed_target_dp
+%    \box\scratchbox
+%    \egroup}
+
+% 20191231: moved from cont-exp:
+
 \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
   {\bgroup % redundant grouping
-   \setbox\scratchbox\hbox\bgroup
-     \ifzeropt\d_framed_target_dp
-       \the\everyoverlay#2% saves wrapping (and lua call)
-     \else
-       \lower\d_framed_target_dp
-       \hbox{\the\everyoverlay#2}%
-     \fi
-   \egroup
    \setlayoutcomponentattribute{\v!overlay:#1}%
-   \setbox\scratchbox\hpack \layoutcomponentboxattribute
-     {\kern -.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
-      \raise-.5\dimexpr\ht\scratchbox-\d_framed_target_ht\relax % not \d_overlay_height !
-      \box\scratchbox}%
+   \setbox\scratchbox\hbox{\the\everyoverlay#2}%
+   \hpack to \d_framed_target_wd \layoutcomponentboxattribute
+     {\hskip-.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax
+      \box\scratchbox
+      \hss}%
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
    \dp\scratchbox\d_framed_target_dp
-   \box\scratchbox
    \egroup}
 
 %D \macros
