@@ -1,4 +1,4 @@
-.TH "mtx-context" "1" "01-01-2019" "version 1.03" "ConTeXt Process Management"
+.TH "mtx-context" "1" "01-01-2020" "version 1.03" "ConTeXt Process Management"
 .SH NAME
  mtx-context - ConTeXt Process Management
 .SH SYNOPSIS

@@ -73,7 +73,9 @@
 \registerctxluafile{data-use}{}
 \registerctxluafile{data-aux}{}
 
-\registerctxluafile{util-lib}{}
+\ifcase\contextlmtxmode
+    \registerctxluafile{util-lib}{}
+\fi
 
 \registerctxluafile{luat-cbk}{}
 \registerctxluafile{luat-run}{}

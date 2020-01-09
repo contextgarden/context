@@ -22117,7 +22117,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 69574, stripped down to: 44470
+-- original size: 69575, stripped down to: 44470
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -25278,7 +25278,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-lst"] = package.loaded["data-lst"] or true
 
--- original size: 1912, stripped down to: 1591
+-- original size: 2038, stripped down to: 1696
 
 if not modules then modules={} end modules ['data-lst']={
  version=1.001,
@@ -25300,15 +25300,23 @@ local splitpath=resolvers.splitpath
 local knownvariables=resolvers.knownvariables
 local report_lists=logs.reporter("resolvers","lists")
 local report_resolved=logs.reporter("system","resolved")
+local function tabstr(str)
+ if not str then
+  return "unset"
+ elseif type(str)=='table' then
+  return concat(str," | ")
+ else
+  return str
+ end
+end
 function listers.variables(pattern)
  local result=resolvers.knownvariables(pattern)
- local unset={ "unset" }
  for key,value in sortedhash(result) do
   report_lists(key)
-  report_lists("  env: % | t",value.environment or unset)
-  report_lists("  var: % | t",value.variable or unset)
-  report_lists("  exp: % | t",value.expansion   or unset)
-  report_lists("  res: % | t",value.resolved or unset)
+  report_lists("  env: %s",tabstr(value.environment))
+  report_lists("  var: %s",tabstr(value.variable))
+  report_lists("  exp: %s",tabstr(value.expansion))
+  report_lists("  res: %s",tabstr(value.resolved))
  end
 end
 function listers.configurations()
@@ -25335,7 +25343,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lib"] = package.loaded["util-lib"] or true
 
--- original size: 16094, stripped down to: 8443
+-- original size: 17659, stripped down to: 9560
 
 if not modules then modules={} end modules ['util-lib']={
  version=1.001,
@@ -25387,7 +25395,7 @@ local function locate(required,version,trace,report,action)
  else
   local required_name=required_base.."."..os.libsuffix
   local version=type(version)=="string" and version~="" and version or false
-  local engine="luatex"
+  local engine=environment.ownmain or false
   if trace and not done then
    local list=expandpaths("lib") 
    for i=1,#list do
@@ -25497,6 +25505,7 @@ local function locate(required,version,trace,report,action)
  end
  return library or nil
 end
+resolvers.locatelib=locate 
 do
  local report_swiglib=logs.reporter("swiglib")
  local trace_swiglib=false
@@ -25644,6 +25653,50 @@ if FFISUPPORTED and ffi and ffi.load then
     return library
    elseif type(state)=="userdata" then
     return library
+   end
+  end
+ end
+end
+do
+ local isfile=lfs.isfile
+ local report=logs.reporter("resolvers","lib")
+ local trace=false
+ trackers.register("resolvers.lib",function(v) trace=v end)
+ local function action(filename)
+  return isfile(filename) and filename or false
+ end
+ function resolvers.findlib(required) 
+  local list=directives.value("system.librarynames" )
+  local only=nameonly(required)
+  if type(list)=="table" then
+   list=list[only]
+   if type(list)=="table" then
+    if trace then
+     report("using lookup list for library %a: % | t",only,list)
+    end
+   else
+    list={ only }
+   end
+  else
+   list={ only }
+  end
+  for i=1,#list do
+   local name=list[i]
+   local found=locate(name,false,trace,report,action)
+   if found then
+    return found
+   end
+  end
+  local getpaths=resolvers.expandedpathlistfromvariable
+  if getpaths then
+   local list=getpaths("PATH")
+   local base=addsuffix(only,os.libsuffix)
+   for i=1,#list do
+    local full=joinfile(list[i],base)
+    local found=locate(full,false,trace,report,action)
+    if found then
+     return found
+    end
    end
   end
  end
@@ -26092,8 +26145,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1044071
--- stripped bytes    : 416008
+-- original bytes    : 1045763
+-- stripped bytes    : 416478
 
 -- end library merge
 

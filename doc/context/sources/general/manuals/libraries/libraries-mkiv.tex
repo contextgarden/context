@@ -107,6 +107,39 @@ StopPage ;
 
 \startsection[title=Introduction]
 
+Since we started developing \LUATEX\ several methods have been explored with
+regards to external libraries. Now, before we go into details, it must be said
+that in practice this feature is hardly needed. If someone really needs it, it is
+likely to be in a setting where one can also write some library interface and
+compile \LUATEX\ to suit it. So, what we're talking of here is probably not of
+interest for all of you.
+
+In the perspective of \CONTEXT\ a dependency on a library is not what we have in
+mind when we advocate long term usage (and stability) of a workflow. If you see
+\TEX\ as an independent component but still depend on its use of libraries you
+might consider having a backup plan in case a library is no longer maintained, of
+when it gets replaced by another favourite, as happens. There are several ways to
+use a library, and we mention a few here.
+
+The first one is to use \LUA\ {\em wrapper} libraries that interface to some {\em
+specific} library. This is what you do when you use \LUA\ as stand alone program.
+In that case you depend on someone cooking up an efficient and reliable
+interface. Then you depend on the author or others to provide the binaries. If
+there is only one target platform you can wonder if you like that additional
+dependency. Another aspect to keep in mind is that such a wrapper library has to
+match both the used library and the version of \LUA\ that you use. When we use
+this method in \LUATEX, one also has also to make sure that the \LUATEX\ binary
+is compiled in a way that permits loading (this has to do with exposing symbols
+that need a runtime binding).
+
+Because this didn't work out well in practice, already before version 1.0 showed
+up we explored a flexible way to create libraries suited for \LUATEX. This
+project was tagged \quotation {\SWIGLIB}. An infrastructure was created and a
+couple of example library interfaces were provided. However, in practice this
+never catched on and we don't expect distributions to provide libraries in
+addition to the main \LUATEX\ binary, but the framework is there for those who
+want to play with it.
+
 Not long after we released \LUATEX\ 1.0, we started experimenting a bit more with
 so called foreign function interface: \FFI. Originally that interface to external
 libraries was only available in \LUAJITTEX, but a good and compatible alternative
@@ -115,39 +148,43 @@ to know how it works, as long as it works. It means that in addition to \SWIGLIB
 we have a method that doesn't demand compilation as it uses normal (public)
 libraries.
 
-Of course one needs to make sure that the right version of a library is used.
-And, as there is the danger of the \API\ having been changed in an incompatible
-way one can wonder if such a dependency is really what one wants. On the other
-hand one can expect \CONTEXT\ to keep up.
+A last alternative we mention is to just add the libraries to the \LUATEX\
+engine. In fact, this happens: the \METAPOST\ binary has been provided this way
+for quite a while now. In \LUAMETATEX\ for instance some more math related
+libraries were added, simply because the overhead is not that large and because
+it is a way to extend \METAPOST\ beyond what it provided out of the box.
 
-Do you really need libraries? For instance does it really make sense to use curl,
-ghostscript or graphicmagic libraries while the command line version is
-(normally) just as efficient and avoids a dependency. This is even more true if
-you realizes that for instance a fetch or conversion only needs to happen once
-per run or in fact only when there is some change in the resource.
-
-On the other hand, when accessing databases one can avoid the often slower
-command line calls and save the hassle of intermediate files. Here efficiency
-wins. Also, when \CONTEXT\ is used in a high performance database backend
-application a distribution and the used libraries are not updated on a daily
-basis.
+Before we proceed, ask yourself this questions: \quotation {Do I really need more
+libraries?} For instance does it really make sense to use \CURL, \GHOSTSCRIPT\ or
+\GRAPHICSMAGICK\ libraries while the command line version is (normally) just as
+efficient and avoids a dependency. This is even more true if you realizes that
+for instance a fetch or conversion only needs to happen once per run or in fact
+only when there is some change in the resource. On the other hand, when accessing
+databases one can avoid the often slower command line calls and save the hassle
+of intermediate files. Here efficiency wins. Also, when \CONTEXT\ is used in a
+high performance database backend application a distribution and the used
+libraries are not updated on a daily basis. Anyway, if the answer to the
+question, and it can depend on what variant of \CONTEXT\ you use: \MKIV\ or
+\LMTX, is \quotation {Yes!} then read on.
 
 \stopsection
 
-\startsection[title=Supported]
+\startsection[title=Usage in \MKIV]
 
-Apart from some experiments we currently can use \FFI\ interfaced libraries in:
+Although there are (still) some examples of \SWIGLIB\ in \MKIV\ we now assume
+that the \FFI\ interface is used. Apart from some experiments we currently can
+use \FFI\ interfaced libraries in:
 
 \starttabulate[|l|l|l|l|l|]
 \FL
-\BC module               \BC library       \BC windows     \BC unix           \NC \NR
+\BC module               \BC library        \BC windows     \BC unix           \NC \NR
 \ML
-\NC util-crl             \NC curl          \NC libcurl     \NC libcurl        \NC \NR % todo: client and ffi
-\NC util-sql-imp-ffi     \NC mysql         \NC libmysql    \NC libmysqlclient \NC \NR
-\NC util-sql-imp-sqlite  \NC sqlite        \NC sqlite3     \NC sqlite3        \NC \NR
-%NC font-phb-imp-library \NC harfbuzz      \NC libharfbuzz \NC libharfbuzz    \NC \NR % for testing uniscribe (idris fonts)
-%NC                      \NC ghostscript   \NC             \NC                \NC \NR % only a few experiments
-%NC                      \NC graphicmagick \NC             \NC                \NC \NR % only a few experiments
+\NC util-crl             \NC curl           \NC libcurl     \NC libcurl        \NC \NR % todo: client and ffi
+\NC util-sql-imp-ffi     \NC mysql          \NC libmysql    \NC libmysqlclient \NC \NR
+\NC util-sql-imp-sqlite  \NC sqlite         \NC sqlite3     \NC sqlite3        \NC \NR
+%NC font-phb-imp-library \NC harfbuzz       \NC libharfbuzz \NC libharfbuzz    \NC \NR % old, for testing uniscribe (idris fonts)
+%NC                      \NC ghostscript    \NC             \NC                \NC \NR % only a few experiments
+%NC                      \NC graphicsmagick \NC             \NC                \NC \NR % only a few experiments
 \LL
 \stoptabulate
 
@@ -161,7 +198,7 @@ different versions. You can try to play safe and put libraries in the \TEX\ tree
 instance on my system they are in:
 
 \starttyping
-c:/data/tex-context/tex/texmf-win64/bin/lib/luatex/lua/whatever/libwhatever.dll
+c:/data/tex-context/tex/texmf-win64/bin/lib/luatex/foo/libfoo.dll
 \stoptyping
 
 You can trace where libraries are looked for with:
@@ -179,9 +216,59 @@ trackers.enable("resolvers.ffilib")
 The library is first located on one of the valid \TDS\ paths (these are sort of
 standardized in \TEX\ distributions) and then using the normal \FFI\ loader.
 
-As this is all still experimental in \LUATEX\ there is not much more to say about
-it now. Of course this kind of specialized support to a large degree depends on
-the need to use it.
+\stopsection
+
+\startsection[title=Usage in \LMTX]
+
+In \CONTEXT\ \LMTX\ we only have so called \quote {optional} libraries. Actually
+they are just simple interfaces that register themselves in the \type {optional}
+namespace and that can load the real library at runtime. The approach is rather
+lightweight in the sense that compilation of the \LUAMETATEX\ binary doesn't
+depend on additional resources (there is no need to have the libraries on the
+system or their source code to be present) and that at runtime there is no need
+to have the libraries present. This sounds similar to delayed loading of \LUA\
+wrapper libraries but the difference is that there is no potential \LUA\ version
+clash and we also still have one single (relatively small) binary.
+
+This approach works ok because in practice only very few users need a library and
+when they do they have to compile the interface anyway. And, as they compile,
+they can as well add a few lines that are needed to integrate their library to
+the optional mechanism. If you depend on such extensions, you quite certainly
+know what you're doing and need to maintain a code base very careful.
+
+There are some optional libraries present, like:
+
+\starttabulate[|l|l|l|l|l|]
+\FL
+\BC module                  \BC library        \BC windows     \BC unix           \NC \NR
+\ML
+\NC libs-imp-curl           \NC curl           \NC libcurl     \NC libcurl        \NC \NR
+\NC libs-imp-mysql          \NC mysql          \NC libmysql    \NC libmysqlclient \NC \NR
+\NC libs-imp-sqlite         \NC sqlite         \NC sqlite3     \NC sqlite3        \NC \NR
+%NC libs-imp-postgress      \NC libpg          \NC libpg       \NC libpg          \NC \NR % untested
+\NC libs-imp-zint           \NC libzint        \NC libzint     \NC libzint        \NC \NR
+\NC libs-imp-ghostscript    \NC ghostscript    \NC gswin64     \NC libgs          \NC \NR
+\NC libs-imp-graphicsmagick \NC graphicsmagick \NC several     \NC unknown        \NC \NR
+%NC font-phb-imp-internal   \NC hb             \NC libharfbuzz \NC libharfbuzz    \NC \NR % maybe, for idris, testing uniscribe
+\LL
+\stoptabulate
+
+It is still to be decided how these will be used. An example of a library that
+can be used out of the box is \ZINT\ for using barcodes: see \type {m-zint.mkxl}
+for an example of its usage. The \SQL\ libraries have their own manuals and have
+been around for a while. They have a common encapsulating infrastructure written
+in \LUA.
+
+It is best to keep libraries in a place where you can keep an eye on them being
+updated, like
+
+\starttyping
+c:/data/tex-context/tex/texmf-win64/bin/lib/luametatex/foo/libfoo.dll
+\stoptyping
+
+You could of course use the ones provided by the system or maybe use symbolic
+links so that you still keep en eye on changes. The \CONTEXT\ distribution might
+at some point provide the libraries that we support.
 
 \stopsection
 
@@ -191,7 +278,7 @@ the need to use it.
 \NC author    \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
 \NC version   \NC \currentdate \NC \NR
 \NC website   \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
-\NC comment   \NC many thanks to Luigi Scarso for taking care of ffi support in the engines \NC \NR
+\NC comment   \NC many thanks to Luigi Scarso for taking care of \FFI\ support in the engines \NC \NR
 \stoptabulate
 
 \stopsection

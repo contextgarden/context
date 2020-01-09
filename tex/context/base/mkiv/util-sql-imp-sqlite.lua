@@ -66,6 +66,7 @@ ffi.cdef [[
     const char *sqlite3_errmsg (
         sqlite3*
     );
+
 ]]
 
 local ffi_tostring = ffi.string

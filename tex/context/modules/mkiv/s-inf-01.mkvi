@@ -26,8 +26,13 @@
 
 \startluacode
     local format, gsub, find, match = string.format, string.gsub, string.find, string.match
+    local setmetatableindex = table.setmetatableindex
 
-    local list, size, comp, used, nope = { }, { }, { }, { mkii = { }, mkiv = { }, mkvi = { } }, { 0, 0, 0, 0, 0 }
+    local list = { }
+    local size = { }
+    local comp = { }
+    local used = setmetatableindex("table")
+    local nope = setmetatableindex("number")
 
     local omit = {
         "char%-def%.lua",
@@ -39,7 +44,7 @@
         "colo%-pan.tex", ".*test.*"
     }
     local types = {
-        "tex", "mkii", "mkiv", "mkvi", "lua", -- "mpiv"
+        "tex", "mkii", "mkiv", "mkvi", "mkxl", "mklx", "lua", -- "mpiv"
     }
     local patterns = {
         "^([a-z][a-z][a-z][a-z])%-[a-z0-9%-]+%.[a-z]+",
@@ -64,10 +69,16 @@
                         end
                     end
                     if okay then
-                        local lm, sm, cm = list[category], size[category], comp[category]
+                        local lm = list[category]
+                        local sm = size[category]
+                        local cm = comp[category]
                         if not lm then
-                            lm, sm, cm = { 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }
-                            list[category], size[category], comp[category] = lm, sm, cm
+                            lm = setmetatableindex("number")
+                            sm = setmetatableindex("number")
+                            cm = setmetatableindex("number")
+                            list[category] = lm
+                            size[category] = sm
+                            comp[category] = cm
                         end
                         lm[n] = lm[n] + 1
                         local done = true
@@ -90,7 +101,7 @@
                             logs.report("error","unknown file %a",name)
                             data = ""
                         end
-                        sm[n+5] = sm[n+5] + #data
+                        sm[n+#types] = sm[n+#types] + #data
                         if done then
                             sm[n] = sm[n] + #data
                         else
@@ -121,7 +132,7 @@
         end
         local max, what = 0, (what == "size" and size) or list
         for k, v in table.sortedpairs(what) do
-            for i=1,5 do if v[i] > max then max = v[i] end end
+            for i=1,7 do if v[i] > max then max = v[i] end end
         end
         return max, what, function(n) return (max == 0 and 0) or (n == 0 and 0) or n/max end
     end
@@ -130,14 +141,15 @@
 
     function document.context_state_1(what)
         local max, what, norm = prepare(what)
-        context.starttabulate { "|Tl|T|T|T|T|T|" }
+        context.starttabulate { "|Tl|T|T|T|T|T|T|T|" }
         context.NC()
         context(category)
         context.NC()
         for i=1,#types do
             local n, m = 0, 0
             for k, v in next, list do
-                local nn, mm = what[k][i], what[k][i+5]
+                local nn = what[k][i]
+                local mm = what[k][i+#types]
                 n = n + nn
                 m = m + (mm or nn)
             end
@@ -150,18 +162,14 @@
         for k, v in table.sortedpairs(what) do
             local c = what == size and comp[k] or nope
             context.NC()
-            context("\\bf %s~%s~~%s~~%s",
+            context("\\bf %s~%s~~%s~~%s~~%s~~%s",
                 (used.mkii[k] and "ii") or "~~",
                 (used.mkiv[k] and "iv") or "~~",
                 (used.mkvi[k] and "vi") or "~~",
+                (used.mkiv[k] and "xl") or "~~",
+                (used.mkvi[k] and "lx") or "~~",
                 k
             )
-         -- context("%s\\enspace %s\\quad %s\\quad %s",
-         --     (used.mkii[k] and "ii") or "\\quad",
-         --     (used.mkiv[k] and "iv") or "\\quad",
-         --     (used.mkvi[k] and "vi") or "\\quad",
-         --     k
-         -- )
             context.NC()
             for i=1,#types do
                 context.Bar(types[i],v[i],c[i],f_norm(norm(v[i])))
@@ -190,19 +198,21 @@
 \definecolor[bar:mkii][middleblue]
 \definecolor[bar:mkiv][middlered]
 \definecolor[bar:mkvi][middleyellow]
+\definecolor[bar:mkxl][middlemagenta]
+\definecolor[bar:mklx][middlecyan]
 \definecolor[bar:lua] [middlegray]
 
 \newcount\UpCounter
 
 \starttexdefinition Top #what#fraction#total#bigones
-    \hbox to 5em{\hss#total}%
+    \hbox to 7em{\hss#total}%
     \enspace
     \hbox {{\bf#what}\ifnum#total=#bigones\else~#bigones\rlap{~+}\fi\hss}%
 \stoptexdefinition
 
 \starttexdefinition Bar #color#size#nobigones#fraction
     \ifcase#size\else
-        \hbox to 5em{\hss\ifcase#nobigones\else\llap{-~}\fi#size}%
+        \hbox to 7em{\hss\ifcase#nobigones\else\llap{-~}\fi#size}%
         \enspace
         \blackrule[color=bar:#color,width=#fraction\dimexpr 20em\relax,height=.8\strutht]%
     \fi
@@ -214,7 +224,7 @@
 \stoptexdefinition
 
 \starttexdefinition StopUp
-    \par\nointerlineskip\blackrule[height=1pt,width=5em,depth=0pt,color=darkgray]
+    \par\nointerlineskip\blackrule[height=1pt,width=7em,depth=0pt,color=darkgray]
     \par\tttf\strut\UpName\par
     \egroup
     \ifnum\UpCounter=17
@@ -259,9 +269,9 @@
         {The size of (core) files used in ConTeXt (- : large data files excluded; + : large data files included; comment and spaces removed)}
         {1}{size}
     \Show
-        {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, lua).}
+        {The relative number of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua).}
         {2}{number}
     \Show
-        {The relative size of files used in ConTeXt (tex, mkii, mkiv, mkvi, lua).}
+        {The relative size of files used in ConTeXt (tex, mkii, mkiv, mkvi, mkxl, mklx, lua).}
         {2}{size}
 \stoptext

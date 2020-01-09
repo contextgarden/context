@@ -16,6 +16,11 @@
 \registerctxluafile{util-tpl}{}
 \registerctxluafile{util-sql}{}
 
+\ifcase\contextlmtxmode\else
+    \registerctxluafile{libs-imp-mysql}{}
+    \registerctxluafile{libs-imp-sqlite}{}
+\fi
+
 \setupmodule
 
 \doifsomething {\currentmoduleparameter{method}}{

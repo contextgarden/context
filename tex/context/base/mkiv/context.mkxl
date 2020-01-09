@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2019.12.31 11:28}
+\edef\contextversion{2020.01.09 11:17}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -589,6 +589,8 @@
 \loadmarkfile{task-ini}
 
 \loadmarkfile{syst-cmp} % compatibility stuff moved here
+
+\loadmkxlfile{libs-ini}
 
 \loadmarkfile{cont-run} % the main runner (used in cont-yes.mkiv)
 

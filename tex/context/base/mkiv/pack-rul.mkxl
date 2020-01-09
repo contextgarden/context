@@ -491,26 +491,13 @@
 %    \egroup}
 
 % 20191231: moved from cont-exp:
-%
-% % this is like the old:
-%
-% \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
-%   {\bgroup % redundant grouping
-%    \setlayoutcomponentattribute{\v!overlay:#1}%
-%    \setbox\scratchbox\hbox \layoutcomponentboxattribute{\the\everyoverlay#2}%
-%    \boxxoffset\scratchbox-.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
-%  % \boxyoffset\scratchbox-.5\dimexpr\ht\scratchbox-\d_framed_target_ht+\d_framed_target_dp\relax % not \d_overlay_height !
-%    \wd\scratchbox\d_framed_target_wd
-%    \ht\scratchbox\d_framed_target_ht
-%    \dp\scratchbox\d_framed_target_dp
-%    \box\scratchbox
-%    \egroup}
 
 \unexpanded\def\executedefinedoverlay#1#2% we can share the definitions
   {\bgroup % redundant grouping
    \setlayoutcomponentattribute{\v!overlay:#1}%
-   \setbox\scratchbox\layoutcomponentboxattribute\hbox{\the\everyoverlay#2}%
-   \boxxoffset\scratchbox-.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax
+   \setbox\scratchbox\hbox \layoutcomponentboxattribute{\the\everyoverlay#2}%
+   \boxxoffset\scratchbox-.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
+   \boxyoffset\scratchbox-.5\dimexpr\ht\scratchbox-\d_framed_target_ht+\d_framed_target_dp\relax % not \d_overlay_height !
    \wd\scratchbox\d_framed_target_wd
    \ht\scratchbox\d_framed_target_ht
    \dp\scratchbox\d_framed_target_dp

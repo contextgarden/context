@@ -109,16 +109,43 @@ local defaults     = { __index =
     },
 }
 
-setmetatableindex(sql.methods,function(t,k)
-    if type(k) == "string" then
-        report_state("start loading method %a",k)
-        require("util-sql-imp-"..k)
-        report_state("loading method %a done",k)
-        return rawget(t,k)
-    else
-        report_state("invalid method %a",tostring(k))
-    end
-end)
+if optional then
+
+    local methods = {
+        ffi       = "mysql",
+        library   = "mysql",
+        swiglib   = "mysql",
+        postgress = "postgress",
+        sqlite    = "sqlite"
+        sqlite3   = "sqlite"
+    }
+
+    setmetatableindex(sql.methods,function(t,k)
+        local m = methods[k
+        if m then
+            report_state("start loading method %a as %a",k,m)
+            require("libs-imp-" .. m)
+            report_state("loading method %a done",k)
+            return rawget(t,m)
+        else
+            report_state("invalid method %a",tostring(k))
+        end
+    end)
+
+else
+
+    setmetatableindex(sql.methods,function(t,k)
+        if type(k) == "string" then
+            report_state("start loading method %a",k)
+            require("util-sql-imp-" .. k)
+            report_state("loading method %a done",k)
+            return rawget(t,k)
+        else
+            report_state("invalid method %a",tostring(k))
+        end
+    end)
+
+end
 
 -- converters
 

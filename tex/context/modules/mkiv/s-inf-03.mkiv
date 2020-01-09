@@ -58,11 +58,18 @@
    \quad\pagenumber\quad
    \rlap{\goto{\hbox to 5cm{next\hss}}[nextpage]}]
 
+\ifcase\contextlmtxmode
+    \setupinteraction
+      [title={ConTeXt MkIV}]
+\else
+    \setupinteraction
+      [title={ConTeXt LMTX}]
+\fi
+
 \setupinteraction
   [state=start,
    style=,
    color=,
-   title={ConTeXt MkIV},
    subtitle={Lua modules and functions},
    author={Hans Hagen - automatically generated},
    contrastcolor=]
@@ -128,7 +135,7 @@ end
     \stopnarrower
     \vfill
     \vfill
-    \hskip10mm\scale[width=\dimexpr\paperwidth-20mm\relax]{\ttbf\white\ConTeXt\ MkIV}
+    \hskip10mm\scale[width=\dimexpr\paperwidth-20mm\relax]{\ttbf\white\ConTeXt\ \ifcase\contextlmtxmode MkIV\else LMTX\fi}
     \par
   % \hskip10mm\scale[width=\dimexpr\paperwidth-20mm\relax]{\white \strut Lua infrastructure \emdash\ \currentdate}
     \vfill

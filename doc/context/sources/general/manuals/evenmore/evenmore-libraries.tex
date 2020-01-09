@@ -1,0 +1,186 @@
+% language=us
+
+\startcomponent evenmore-libraries
+
+\environment evenmore-style
+
+\startchapter[title={Libraries}]
+
+\startsection[title={Introduction}]
+
+The \LUAMETATEX\ binary comes with a couple of libraries built in. These normally
+provide enough functionality to get a \TEX\ job done. But take the case where
+need to manipulate (or convert) an image before we can include it? It would be
+nice if \CONTEXT\ does that for you so having some features in the binary that
+handle it make sense. However, given that such a conversion only happens once it
+makes more sense to just call an external program and let that deal with it. It
+is for that reason that the \CONTEXT\ code base has hardly any library related
+code: most of what one wants to do can be done by calling a program. Some callers
+are built in, others can be dealt with using the Adityas filter module. The most
+significant runtime exception is probably accessing \SQL\ databases where it
+might be more efficient to use a library call instead of calling a client. And
+even then the main reason for that interface being present is the simple fact
+that I (ab)use the engine to serve requests that need some kind of database
+access. Another example of where we need some external program is in generating
+barcodes. Here one can argue that it does make sense to do that runtime, for
+instance because they change or because one doesn't like to have dozens of cached
+barcode images on disk.
+
+In this chapter I will explain how we deal with libraries in \LUAMETATEX. Because
+libraries create a dependency an approach is chosen that tries to avoid bloating
+the source tree with additional header and source files. This is made easy by the
+fact that we don't need full blown interfaces to libraries where all methods are
+exposed. We know what we need and most of these tasks somehow relate to
+typesetting which is a limited application with known demands in terms of input,
+output and performance. We don't need to serve every possible scenario.
+
+\stopsection
+
+\startsection[title={Using \LUA\ libraries}]
+
+One approach is to use a \LUA\ library that sits between the embedded \LUA\ instance
+and the external library. Say that one does this:
+
+\starttyping
+local mylib = require("mylib")
+\stoptyping
+
+This can locate and load the file \type {mylib.lua} which implements a bunch of
+(\LUA) functions. But, it can also load a library, for instance \type
+{mylib.dll}, a binary that provides functions that themselves can call external
+ones. Often such a library is also responsible for some resource management which
+is then done via userdata objects. Such a connector library on the one hand
+refers to \LUA\ library methods (like \type {const char * str = lua_tostring (L,
+1);} for fetching a \LUA\ string variable from the argument list) and on the
+other hand to those in the external library (like passing that string \type {str}
+to a function and passing the result back to \LUA\ with \type {lua_pushstring (L,
+result);}). If we would follow that approach in \LUAMETATEX\ it means that in
+addition to the main binary (on \MSWINDOWS\ that is \type {luametatex.exe}) there
+is also an extra intermediate binary (on \MSWINDOWS\ that is \type {mylib.dll})
+plus the external library (on \MSWINDOWS\ that could be \type {foolib.dll}) which
+itself can depend on other libraries.
+
+In this approach we need to compile the extra intermediate libraries alongside
+the main \LUAMETATEX\ binary. Quite likely we then need access to the header
+files of the external libraries too. We might even decide to put the dependencies
+in our source tree. But, this is not what we like to do: it adds extra work, we
+need to keep an eye on updates and operating specific patches, we complicate the
+compilation, etc. This all contradicts the fact that we want \LUAMETATEX\ to be
+simple. There is no need to complicate the setup just because a very few users
+want to use some library. Add to this the fact that quite likely we need to
+provide a version of \LUAMETATEX\ that exposes its \LUA\ related symbols which
+makes for a larger binary. So, this approach is not really an option because
+at the same time we like to keep the binary (and memory footprint) as small
+as possible (think of running in a container or on a low energy device).
+
+\stopsection
+
+\startsection[title=A variant]
+
+There are a few issues when you use \LUA\ libraries from elsewhere. First of all,
+you need to get hold of one that matches the version of \LUA\ that you use. There
+are not that many and some only can be set up as part of a larger framework.
+Also, you can find plenty of modules that seem not to be maintained (or maybe
+they are just very stable and I'm wrong here). Also, not all platforms are
+supported equally well. Then there is the question to what extend libraries are
+to stay. What is considered to be the standard today might not be tomorrow. Even
+in the rather stable \TEX\ ecosystem we see them come and go. These are all
+reasons to avoid hard coded dependencies. Ideally we like users to be able to
+compile \LUAMETATEX\ in the future without too must hassle.
+
+A couple of years after we started the \LUATEX\ project, a solution for using
+libraries was implemented, called \SWIGLIB, because it uses the swig
+infrastructure. It was an attempt to come up with a more or less standard
+approach, a rather one|-|to|-|one mapping so that basically any library could be
+interfaced. But, probably because no one really needs libraries, it never catched
+on. In \MKIV\ we still support loading libraries made that way but in \LMTX\ that
+code has been removed.
+
+As a side note: the code that deals with this in \MKIV\ also deals with version
+specific loading. When we were playing with for instance \MYSQL\ libs we found
+out that it made sense to be able to support different \API s, but in the end,
+given the rare usage of libraries, that made no sense either. Therefore in \LMTX\
+locating libraries has version support removes and as a consequence is much
+simpler (code|-|wise).
+
+\stopsection
+
+\startsection[title=Foreign function interfaces]
+
+Then there is a \FFI\ interface, first introduced in \LUAJITTEX\ as it is part of
+\LUAJIT, and later a similar library was built|-|in \LUATEX. But \LUAJIT\ doesn't
+conceptually follow \LUA\ upgrades and its future is unsure so in \LUAMETATEX\
+there is no \JIT\ variant (the \JIT\ part was never used anyway as it only slowed
+down a run; we just used the \FFI\ part plus the fact that the restricted virtual
+machine performs better). The \FFI\ library used in \LUATEX\ also comes from
+elsewhere and it doesn't seem to be maintained any longer, so that code is to be
+kept working in the perspective of \LUATEX. Both technologies hook into the
+processor architecture and are somewhat complex so when their maintenance becomes
+unsure we have to reconsider using them. Not all hardware platforms are supported
+\footnote {As I write this only Intel works while ARM doesn't and only on
+\MSWINDOWS, \LINUX\ and \OSX\ I can compile without alignment warnings} and the
+functionality can differ in details per platform. To some extend we can keep
+using \FFI\ in \LUATEX\ because Luigi takes care of it, but who knows when it
+becomes too problematic. Does it make sense to adopt a library that needs tweaks
+depending on architectures? For now we're good for \LUATEX, so for a while we're
+also okay (in \MKIV).
+
+The nice thing about \FFI\ is that one can define the interface at runtime. Of
+course this interface has to fit the current version of the library \API, but
+that is doable. It is up to a user of a library to determine where it comes from.
+It can be put in the \TEX\ tree but also being taken from wherever the operating
+system put it in the path. Of course that can then be a bit of an issue when
+there are different versions because programs can ship their own variants, but
+when you use a library you probably are aware of that and know what you're doing.
+A drawback of \FFI\ is that it opens up the whole machinery pretty low level,
+which can be considered a risk. Some can consider that to be a security threat.
+It for these reasons that \LUAMETATEX\ doesn't provide the \FFI\ feature; users
+who depend on it can of course use \MKIV\ with \LUATEX.
+
+\stopsection
+
+\startsection[title=So how to proceed?]
+
+When a library and its \LUA\ interface are kept external the main binary has to
+be compiled in a way that permits loading libraries (read: symbols need to be
+known). When we use \FFI\ that is not needed. And when a library is internal we
+have the disadvantage that we mentioned at the start of this chapter.
+
+So, how do we combine the advantages of \FFI\ (runtime binding), external
+libraries (no need to have all that code in the code base) and internal libraries
+(no loading issues)? At some point it stroke me that we actually can do that with
+not that much effort. The solution was probably subconsciously implanted by
+noticing the fact that the \LUAMETATEX\ machinery uses function pointers in some
+places and the fact that when a \LUA\ library is loaded by \LUA\ itself, a
+specific initialization function is called to initialize it: by combining these
+concepts we can delay the binding till when a library is needed.
+
+In \LUAMETATEX\ we can therefore have some optional libraries that offer a
+minimal interface because after all we can do a lot at the \LUA\ end. Optional
+libraries register themselves in the global \type {optional} table. We're talking
+of a couple of hundred lines of \CCODE\ for a simple binding. The functions in an
+optional library table can be used (accessed) without loading the library and
+then just do nothing useful. So, before using them you need to load the third
+party library but we can safely assume that the \LUA\ wrapper code calls an
+initializer when it needs some feature. That initializer, which by the way is
+located at the \LUA\ end, loads the external library, and when that is successful
+the needed helpers are bound by resolving function pointers. There is no
+dependency when nothing is used: the main binary stays lean and mean because the
+binding normally only adds a few \KB. Users can compile without dependencies and
+when used performance is quite okay (no \FFI\ overhead).
+
+The \LUAMETATEX\ distribution only ships a few such bindings but these can serve
+as example. What is shipped has a proper \LUA\ companion file and these are then
+the standard one used in the \CONTEXT\ distribution. Think of \MYSQL\ and
+\SQLITE\ (for databases), \ZINT\ (for barcodes), simple \CURL\ (for fetching
+stuff), \GHOSTSCRIPT\ and \GRAPHICSMAGICK\ (for some conversions) bindings . When
+compiled into \LUAMETATEX\ these will add some interfacing code to the main
+binary but that gets compensated by the removal of the \FFI\ library. The \LUA\
+interfaces provide just enough to get us going. At some point we can consider
+providing libraries as optional part of an installation because we can generate
+them using the buildbot infrastructure managed by Mojca, but the core
+distribution (source code) is kept clean.
+
+\stopsection
+
+\stopcomponent

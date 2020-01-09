@@ -66,9 +66,6 @@ ffi.cdef [[
         void *extension;
     } MYSQL_field;
 
-    void free(void*ptr);
-    void * malloc(size_t size);
-
     MYSQL_instance * mysql_init (
         MYSQL_instance *mysql
     );

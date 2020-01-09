@@ -120,7 +120,8 @@ local function locate(required,version,trace,report,action)
         -- initialize a few variables
         local required_name = required_base .. "." .. os.libsuffix
         local version       = type(version) == "string" and version ~= "" and version or false
-        local engine        = "luatex" -- environment.ownmain or false
+--         local engine        = "luatex" -- environment.ownmain or false
+        local engine        = environment.ownmain or false
         --
         if trace and not done then
             local list = expandpaths("lib") -- fresh, no reuse
@@ -239,6 +240,8 @@ local function locate(required,version,trace,report,action)
     end
     return library or nil
 end
+
+resolvers.locatelib = locate -- for now
 
 do
 
@@ -458,3 +461,53 @@ ffilib("libmysql","5.6.14")
 -- Watch out, the last one is less explicit and lacks the swiglib prefix.
 
 ]]--
+
+do
+
+    local isfile = lfs.isfile
+    local report = logs.reporter("resolvers","lib")
+    local trace  = false
+
+    trackers.register("resolvers.lib", function(v) trace = v end)
+
+    local function action(filename)
+        return isfile(filename) and filename or false
+    end
+
+    function resolvers.findlib(required) -- todo: cache
+        local list = directives.value("system.librarynames" )
+        local only = nameonly(required)
+        if type(list) == "table" then
+            list = list[only]
+            if type(list) == "table" then
+                if trace then
+                    report("using lookup list for library %a: % | t",only,list)
+                end
+            else
+                list = { only }
+            end
+        else
+            list = { only }
+        end
+        for i=1,#list do
+            local name  = list[i]
+            local found = locate(name,false,trace,report,action)
+            if found then
+                return found
+            end
+        end
+        local getpaths = resolvers.expandedpathlistfromvariable
+        if getpaths then
+            local list = getpaths("PATH")
+            local base = addsuffix(only,os.libsuffix)
+            for i=1,#list do
+                local full  = joinfile(list[i],base)
+                local found = locate(full,false,trace,report,action)
+                if found then
+                    return found
+                end
+            end
+        end
+    end
+
+end

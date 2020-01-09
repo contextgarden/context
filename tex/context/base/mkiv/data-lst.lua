@@ -25,15 +25,24 @@ local knownvariables       = resolvers.knownvariables
 local report_lists         = logs.reporter("resolvers","lists")
 local report_resolved      = logs.reporter("system","resolved")
 
+local function tabstr(str)
+    if not str then
+        return "unset"
+    elseif type(str) == 'table' then
+        return concat(str," | ")
+    else
+        return str
+    end
+end
+
 function listers.variables(pattern)
     local result = resolvers.knownvariables(pattern)
-    local unset  = { "unset" }
     for key, value in sortedhash(result) do
         report_lists(key)
-        report_lists("  env: % | t",value.environment or unset)
-        report_lists("  var: % | t",value.variable    or unset)
-        report_lists("  exp: % | t",value.expansion   or unset)
-        report_lists("  res: % | t",value.resolved    or unset)
+        report_lists("  env: %s",tabstr(value.environment))
+        report_lists("  var: %s",tabstr(value.variable))
+        report_lists("  exp: %s",tabstr(value.expansion))
+        report_lists("  res: %s",tabstr(value.resolved))
     end
 end
 

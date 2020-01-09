@@ -1,4 +1,4 @@
-.TH "mtx-cache" "1" "01-01-2019" "version 1.01" "ConTeXt & MetaTeX Cache Management"
+.TH "mtx-cache" "1" "01-01-2020" "version 1.01" "ConTeXt & MetaTeX Cache Management"
 .SH NAME
  mtx-cache - ConTeXt & MetaTeX Cache Management
 .SH SYNOPSIS

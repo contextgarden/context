@@ -1,0 +1,61 @@
+%D \module
+%D   [       file=m-zint,
+%D        version=2010.12.07,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Zint Barcode Generator,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Using \type {zint} seems to be the easiest way to generate
+%D (PDF417) barcodes so therefore we now have this module. There
+%D are proper (also windows) binaries at:
+%D
+%D \starttyping
+%D http://www.zint.org.uk
+%D \stoptyping
+%D
+%D There is a bit more code than needed as we want to be able to
+%D feed names.
+
+\registerctxluafile{libs-imp-zint}{}
+
+\unprotect
+
+\definefont[usedzintfont][dejavusansmono at 10bp]
+
+\unexpanded\def\barcode[#1]% [alternative=,text=]
+  {\bgroup
+   \usedzintfont
+   \getdummyparameters
+     [\c!alternative=,\c!text=,#1]%
+   \scale
+     [#1]%
+     {\ctxlua{utilities.zint.execute{code="\dummyparameter\c!alternative",text=\!!bs\dummyparameter\c!text\!!es}}}%
+   \egroup}
+
+\protect
+
+\continueifinputfile{libs-imp-zint.mkxl}
+
+\starttext
+
+% \dorecurse{1000}{
+    \startTEXpage
+        \barcode[alternative=PDF417,text={Hans Hagen}]%
+        \blank
+        \barcode[alternative=PDF417,text={Ton Otten}]%
+        \blank
+        \barcode[alternative=ISBN,text=9789490688011]%
+        \blank
+        \barcode[alternative=isbn,text=9789490688011,width=3cm]%
+    \stopTEXpage
+% }
+
+\stoptext
+
+

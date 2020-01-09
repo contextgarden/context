@@ -66,7 +66,9 @@
    \ifzeropt\parindent\else
      \doifemptytoks\everypar\spac_indentation_set_everypar
    \fi
-   \ifconditional\c_spac_indentation_indent_first\else
+   \ifconditional\c_spac_indentation_indent_first
+     \spac_indentation_variant_yes % better than: \let\checkindentation\relax
+   \else
      \spac_indentation_variant_no
    \fi
    \spac_indentation_check_toggle}

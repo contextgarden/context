@@ -1,4 +1,4 @@
-.TH "mtx-metapost" "1" "01-01-2019" "version 0.10" "MetaPost to PDF processor"
+.TH "mtx-metapost" "1" "01-01-2020" "version 0.10" "MetaPost to PDF processor"
 .SH NAME
  mtx-metapost - MetaPost to PDF processor
 .SH SYNOPSIS

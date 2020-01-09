@@ -1,4 +1,4 @@
-.TH "mtx-package" "1" "01-01-2019" "version 0.10" "Distribution Related Goodies"
+.TH "mtx-package" "1" "01-01-2020" "version 0.10" "Distribution Related Goodies"
 .SH NAME
  mtx-package - Distribution Related Goodies
 .SH SYNOPSIS

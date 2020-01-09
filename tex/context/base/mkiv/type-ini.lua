@@ -81,7 +81,7 @@ local patterns = {
 --     elseif name_two == name then
 --         report("unknown library %a",name_one)
 --     else
---         commands.uselibrary {
+--         resolvers.uselibrary {
 --             name     = name_two,
 --             patterns = patterns,
 --             action   = action,

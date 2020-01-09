@@ -93,5 +93,3 @@ function resolvers.uselibrary(specification) -- todo: reporter
         end
     end
 end
-
-commands.uselibrary = resolvers.uselibrary -- for the moment

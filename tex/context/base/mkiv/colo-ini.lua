@@ -1101,7 +1101,7 @@ local function failure(name)
 end
 
 local function usecolors(name)
-    commands.uselibrary {
+    resolvers.uselibrary {
         category = "color definition",
         name     = name,
         patterns = patterns,

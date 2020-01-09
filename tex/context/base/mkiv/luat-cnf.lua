@@ -157,7 +157,12 @@ function texconfig.init()
         local i = start
         local t = os.clock()
         while true do
-            local b = callbytecode(i)
+         -- local b = callbytecode(i)
+            local e, b = pcall(callbytecode,i)
+            if not e then
+                print("\nfatal error : unable to load bytecode, maybe wipe the cache first\n")
+                os.exit()
+            end
             if b then
                 setbytecode(i,nil) ;
                 i = i + 1
