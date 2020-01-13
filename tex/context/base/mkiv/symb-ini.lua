@@ -21,6 +21,7 @@ local report_symbols = logs.reporter ("fonts","symbols")
 local status_symbols = logs.messenger("fonts","symbols")
 
 local patterns = {
+    CONTEXTLMTXMODE > 0 and "symb-imp-%s.mkxl" or "",
     "symb-imp-%s.mkiv",
     "symb-imp-%s.tex",
     -- obsolete:
@@ -29,12 +30,8 @@ local patterns = {
 }
 
 local function action(name,foundname)
-    -- context.startnointerference()
-    context.startreadingfile()
-    context.input(foundname)
+    commands.loadlibrary(name,foundname,false)
     status_symbols("library %a loaded",name)
-    context.stopreadingfile()
-    -- context.stopnointerference()
 end
 
 local function failure(name)

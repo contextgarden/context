@@ -78,13 +78,13 @@ context|div.document {
 	font-family  : "DejaVu Serif", "Lucida Bright", serif ;
 	font-size    : 12pt ;
  /*	line-height  : 14.4pt; */
- 	line-height  : 2.8ex;
+	line-height  : 2.8ex;
 	max-width    : 50em ;
 	padding      : 1em ;
- /* text-align   : justify ;    */
-    text-align   : justify ;
- /*	hyphens      : manual ;     */
- /* text-justify : inter-word ; */
+ /*	text-align   : justify ; */
+	text-align   : justify ;
+ /*	hyphens      : manual ; */
+ /*	text-justify : inter-word ; */
 }
 
 document>metadata,
@@ -124,7 +124,7 @@ context|div.document context|div.metadata context|div.metavariable.metaname-titl
 	font-family   : "DejaVu Serif", "Lucida Bright", serif ;
 	font-weight   : bold ;
 	font-size     : 3em ;
-    text-align    : left ;
+	text-align    : left ;
 	margin-bottom : 2ex ;
 }
 
@@ -183,7 +183,7 @@ context|div.section {
 sectioncaption,
 context|div.sectioncaption {
 	display          : block ;
-    text-align       : left ;
+	text-align       : left ;
 	page-break-after : avoid ;
 	margin-top       : 3ex ;
 	margin-bottom    : 2ex ;
@@ -343,7 +343,7 @@ context|div.section.summary context|div.sectioncaption context|div.sectiontitle 
 	border-bottom-style : solid ;
 	border-color        : rgb(50%,50%,100%) ;
 	border-width        : .15em;
-    text-align          : left ;
+	text-align          : left ;
 }
 
 section[detail="subsummary"]>sectioncaption>sectiontitle,
@@ -355,7 +355,7 @@ context|div.section.subsummary context|div.sectioncaption context|div.sectiontit
 	border-color        : rgb(50%,50%,100%) ;
 	border-bottom-style : dotted ;
 	border-width        : .15em ;
-    text-align          : left ;
+	text-align          : left ;
 }
 
 /* itemgroup   : display */
@@ -367,13 +367,13 @@ context|div.section.subsummary context|div.sectioncaption context|div.sectiontit
 /* suffix : '.' ;        */
 
 @counter-style lower-greek { /* css 3 */
-    type   : non-repeating ;
-    glyphs : 'α' 'β' 'γ' 'δ' 'ε' 'ζ' 'η' 'θ' 'ι' 'κ' 'λ' 'μ' 'ν' 'ξ' 'ο' 'π' 'ρ' 'σ' 'τ' 'υ' 'φ' 'χ' 'ψ' 'ω' ;
+	type   : non-repeating ;
+	glyphs : 'α' 'β' 'γ' 'δ' 'ε' 'ζ' 'η' 'θ' 'ι' 'κ' 'λ' 'μ' 'ν' 'ξ' 'ο' 'π' 'ρ' 'σ' 'τ' 'υ' 'φ' 'χ' 'ψ' 'ω' ;
 }
 
 @counter-style upper-greek { /* css 3 */
-    type   : non-repeating ;
-    glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
+	type   : non-repeating ;
+	glyphs : 'Α' 'B' 'Γ' 'Δ' 'Ε' 'Ζ' 'Η' 'Θ' 'Ι' 'Κ' 'Λ' 'Μ' 'Ν' 'Ξ' 'Ο' 'Π' 'Ρ' 'Σ' 'Τ' 'Υ' 'Φ' 'Χ' 'Ψ' 'Ω' ;
 }
 
 itemgroup,
@@ -428,11 +428,11 @@ context|div.description {
 descriptiontag,
 context|div.descriptiontag {
 	display      : inline ;
-    float        : left ;
-    clear        : left ;
+	float        : left ;
+	clear        : left ;
 	margin-right : 1em ;
-    text-align   : left ;
-    font-weight  : bold ;
+	text-align   : left ;
+	font-weight  : bold ;
 }
 
 descriptioncontent,
@@ -537,8 +537,8 @@ context|div.registerlocation:after {
 	content        : "\25B6\00A0\00A0" ;
 	color          : rgb(40%,40%,40%) ;
 	font-size      : x-small ;
-    line-height    : 0 ;
-    padding-top    : 0.5ex ;
+	line-height    : 0 ;
+	padding-top    : 0.5ex ;
 	vertical-align : top ;
 }
 
@@ -814,22 +814,22 @@ context|div.delimitedblock.quote:after {
 
 delimited,
 context|div.delimited {
-    display : inline
+	display : inline
 }
 
 delimitedcontent,
 context|div.delimitedcontent {
-    display : inline
+	display : inline
 }
 
 delimitedsymbol,
 context|div.delimitedsymbol {
-    display : inline
+	display : inline
 }
 
 delimitedblock,
 context|div.delimitedblock {
-    display : block
+	display : block
 }
 
 subsentence:before,
@@ -841,17 +841,17 @@ context|div.subsentence:after {
 
 subsentence,
 context|div.subsentence {
-    display : inline
+	display : inline
 }
 
 subsentencecontent,
 context|div.subsentencecontent {
-    display : inline
+	display : inline
 }
 
 subsentencesymbol,
 context|div.subsentencesymbol {
-    display : inline
+	display : inline
 }
 
 /* label  : mixed   */

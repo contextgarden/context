@@ -107,6 +107,14 @@
 \unexpanded\def\definetransparency      {\dodoubleargument\colo_basics_define_transpancy}
 \unexpanded\def\defineglobaltransparency{\dodoubleargument\colo_basics_define_transpancy_global}
 
+\unexpanded\def\loadfoundcolorsetfile#1#2% name foundname / not a user command
+  {\startreadingfile
+   \startcolorset[#1]%
+   \input{#2}%
+   \stopcolorset
+   \showmessage\m!colors4{#1}%
+   \stopreadingfile}
+
 %D \macros
 %D   {startcolor,stopcolor,color,graycolor}
 %D

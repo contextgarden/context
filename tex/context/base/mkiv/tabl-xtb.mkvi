@@ -498,9 +498,16 @@
 \unexpanded\def\stopxcell
   {\tabl_x_stop_cell}
 
+% \unexpanded\def\dummyxcell
+%   {\tabl_x_start_cell_nop
+%    \tabl_x_stop_cell}
+
 \unexpanded\def\dummyxcell
-  {\tabl_x_start_cell_nop
-   \tabl_x_stop_cell}
+  {\begingroup
+   \let\inheritedxtableframed\relax
+   \tabl_x_start_cell_nop
+   \tabl_x_stop_cell
+   \endgroup}
 
 % \unexpanded\def\tabl_x_begin_of_cell
 %   {%\inhibitblank % already in framed

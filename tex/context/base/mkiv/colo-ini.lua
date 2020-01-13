@@ -1078,6 +1078,7 @@ colors.defineintermediatecolor = defineintermediatecolor
 -- for the moment downward compatible
 
 local patterns = {
+    CONTEXTLMTXMODE > 0 and "colo-imp-%s.mkxl" or "",
     "colo-imp-%s.mkiv",
     "colo-imp-%s.tex",
     -- obsolete:
@@ -1086,13 +1087,7 @@ local patterns = {
 }
 
 local function action(name,foundname)
-    -- could be one command
-    context.startreadingfile()
-    context.startcolorset { name }
-    context.input(foundname)
-    context.showmessage("colors",4,name)
-    context.stopcolorset()
-    context.stopreadingfile()
+    context.loadfoundcolorsetfile(name,foundname)
 end
 
 local function failure(name)

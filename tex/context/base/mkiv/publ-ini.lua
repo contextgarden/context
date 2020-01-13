@@ -1615,6 +1615,8 @@ end
 do
 
     local patterns = {
+        CONTEXTLMTXMODE > 0 and "symb-imp-%s.mklx" or "",
+        CONTEXTLMTXMODE > 0 and "symb-imp-%s.mkxl" or "",
         "publ-imp-%s.mkvi",
         "publ-imp-%s.mkiv",
         "publ-imp-%s.tex",
@@ -1625,7 +1627,7 @@ do
     end
 
     local function action(name,foundname)
-        context.input(foundname)
+        context.loadfoundpublicationfile(name,foundname)
     end
 
     function publications.loaddefinitionfile(name) -- a more specific name

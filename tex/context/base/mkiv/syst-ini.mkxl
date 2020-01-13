@@ -679,6 +679,8 @@
 % \chardef\definedifcode  = 18
 % \chardef\csnameifcode   = 19
 % \chardef\fontcharifcode = 20
+%
+% % there are some more in luametatex
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.

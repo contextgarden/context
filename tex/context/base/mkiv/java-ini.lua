@@ -199,6 +199,7 @@ function javascripts.flushpreambles()
 end
 
 local patterns = {
+    CONTEXTLMTXMODE > 0 and "java-imp-%s.mkxl" or "",
     "java-imp-%s.mkiv",
     "java-imp-%s.tex",
     -- obsolete:
@@ -207,12 +208,8 @@ local patterns = {
 }
 
 local function action(name,foundname)
-    context.startnointerference()
-    context.startreadingfile()
-    context.input(foundname)
+    commands.loadlibrary(name,foundname,true)
     status_javascripts("loaded: library %a",name)
-    context.stopreadingfile()
-    context.stopnointerference()
 end
 
 local function failure(name)

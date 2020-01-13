@@ -1169,6 +1169,10 @@ return {
             no = "leser inn symbolsett %a",
             ro = "se incarca setul de simboluri %a",
         },
+        ["symbols:2"] = {
+            en = "symbolset %a is unknown",
+            nl = "symboolset %a is onbekend",
+        },
         ["system:1"] = {
             cs = "nacteni pomocneho souboru odlozeno (typemode)",
             de = "Laden der Hilfsdatei aufgeschoben (Eingabe-Modus)",

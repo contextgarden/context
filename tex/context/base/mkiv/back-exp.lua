@@ -305,7 +305,7 @@ document,
 %namespace%div.document {
     font-size  : %size% !important ;
     max-width  : %width% !important ;
-    text-width : %align% !important ;
+    text-align : %align% !important ;
     hyphens    : %hyphens% !important ;
 }]]
 
@@ -334,7 +334,7 @@ local styletemplate = [[
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or cssnamespacenop,
             cssnamespaceurl = cssnamespaceurl,
-        }) }
+        },false,true) }
         --
         local bodyfont = finetuning.bodyfont
         local width    = finetuning.width
@@ -438,7 +438,7 @@ local imagetemplate = [[
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
             cssnamespaceurl = cssnamespaceurl,
-        }) }
+        },false,true) }
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
                 local name = data.name
@@ -3487,7 +3487,7 @@ local htmltemplate = [[
             namespace       = contextns,
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
             cssnamespaceurl = cssnamespaceurl,
-        }) }
+        },false,true) }
         for element, details in sortedhash(used) do
             if namespaces[element] then
                 -- skip math

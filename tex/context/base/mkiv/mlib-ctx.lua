@@ -89,10 +89,8 @@ local patterns = {
 }
 
 local function action(name,foundname)
+    commands.loadlibrary(name,foundname,false)
     status_metapost("library %a is loaded",name)
-    context.startreadingfile()
-    context.input(foundname)
-    context.stopreadingfile()
 end
 
 local function failure(name)

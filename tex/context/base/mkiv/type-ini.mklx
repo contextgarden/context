@@ -165,11 +165,11 @@
    \clf_loadtypescriptfile{#1}%
    \pop_macro_typescriptstate}
 
-\unexpanded\def\loadfoundtypescriptfile#1%
+\unexpanded\def\loadfoundtypescriptfile#1#2% name foundname / not a user command
   {\startreadingfile
    \unprotect
    \pushendofline
-   \input{#1}%
+   \input{#2}%
    \popendofline
    \protect
    \stopreadingfile}

@@ -1,0 +1,155 @@
+% language=us
+
+\startcomponent evenmore-whattex
+
+\environment evenmore-style
+
+\startchapter[title={Is \LUAMETATEX\ still \TEX ?}]
+
+\startsection[title={Introduction}]
+
+Is \LUAMETATEX\ really a \TEX\ (compatible) engine? The answer to that depends on
+how you define \TEX. If you think of the program with the same name, the answer
+is definitely \quotation {no}, simply because a program that is not exactly
+behaving like \quotation {\TEX\ The Program} cannot be called \TEX. This is why
+derived programs have \type {tex} in their name but also some addition that
+indicates that it isn't the original: \type {e}, \type {pdf}, \type {lua}. Don't
+confuse that with macro package names that have \type {tex} in their name. If you
+find such binaries that they are likely some stub to an engine (binary) that
+preloads a format file (a memory dump) with the same name.
+
+When you mean \quotation {\TEX\ The Macro Language} the answer is a bit more
+nuanced especially when the results are pretty close to identical. In the next
+sections I will discuss this in more detail from the perspective of how \CONTEXT\
+evolved and what engines it has used.
+
+\stopsection
+
+\startsection[title={Multiple engines}]
+
+When we started with \CONTEXT\ there was not that much choice in engines.
+Basically one just used original \TEX, but although we used the version that came
+with the book, pretty soon we switched to em\TEX, a version that gave more
+memory; later a real huge version showed up. The fonts used were bitmaps and the
+viewer was a \DVI\ bitmap viewer. However, when our new printer could not be set
+up properly we decided to move on to \POSTSCRIPT\ fonts. That also meant using a
+different backend driver (\DVIPSONE). And then of course we also started using a
+previewer that could handle outline fonts. Once you start along that route
+graphics come into play, color shows up and hyperlinks become an option. A couple
+of years later the \PDF\ document rendering format was introduced. This paragraph
+already mentions a lot of different programs and adaptations, but we're still
+talking good old \TEX\ here and \CONTEXT\ was set up in such a way that it
+adapted itself to whatever ecosystem made sense. When looking at \TEX\ one has to
+consider the front as well as the backend, and both have related primitives and
+features. Extensions to the frontend have been driven by the demands of macro
+packages (beyond the original ideas) and those of the backend relate to what the
+evolving rendering demands impose.
+
+A couple of decades ago the \ETEX\ project started. It's objective was to extend
+stable \TEX\ with a couple of more primitives and features: it is a superset and
+therefore still \TEX, but as it really is an extension the name was extended too
+(with the bit unusual character $\varepsilon$). At that point the main reason for
+\CONTEXT\ was convenience because the new features were already kind of present
+in the code base (think of emulated behavior). Again the macro package adapted
+itself at runtime.
+
+Then \PDFTEX\ came around which had some impact. It introduced the concept of a
+built|-|in backend that avoided additional programs. The \ETEX\ extensions were
+merged into this program so that basically meant that it replaced its
+predecessors. For a user \PDFTEX\ was just \TEX. For some reason the narrative
+became that \CONTEXT\ depended on \PDFTEX, probably because it was always quick
+in using its features, a side effect of being close to the development.
+
+The \CONTEXT\ package was an early adopter of \METAPOST\ and that graphic
+subsystem, although still external, was integrated in such a way that users could
+think of it being embedded. This was made possible by the fact that right from
+the start \CONTEXT\ came with an infrastructure that handled processing including
+subruns as needed for \METAPOST. This is why, years later, adding a \METAPOST\
+library to \LUATEX\ was a logical step. As \CONTEXT\ came with a lot of scripts
+(for all kind of tasks related to typesetting and managing a \TEX\ ecosystem)
+adding a scripting language (like \LUA) was not that strange either.
+
+In parallel to \PDFTEX\ the experimental \OMEGA\ program was on its way and
+although at some point a stable \ALEPH\ variant was there, it never was robust
+enough for production. Its main contribution (that survived) was the introduction
+if directional typesetting. There were \CONTEXT\ users using it but for very
+specific applications. It's also why the bidirectional model of \OMEGA\ inspired
+\LUATEX\ more than the simpler model that \ETEX\ used.
+
+\stopsection
+
+\startsection[title={The merge}]
+
+We now move forward to \LUATEX\ and more precisely \LUAMETATEX\ because that is
+for \CONTEXT\ the engine of choice now. To what extend is it \TEX\ or not? The
+naive answer is \quotation {no} because some primitives are not present and|/|or
+are implemented using \LUA. However, these primitives fall into categories. Some
+relate to the backend and in \LUAMETATEX\ the backend is not built|-|in and as a
+consequence a macro package has to provide the primitives as part of its
+implementation of a backend. This is no big deal because the backend related
+primitives in \TEX\ The Program are actually examples of extensions and
+implemented as such. Handling them happens in kind of isolated code. Take \type
+{\special}: it is basically a no|-|op when the \DVI\ driver doesn't interpret
+what is passed to the \DVI\ file. \footnote {\CONTEXT\ \MKII\ has a bunch of
+backend drivers, \TEX\ code, that targets specific postprocessors and they hook
+into primitives like \type {\special} or the additional \type {\pdf...} ones in
+\PDFTEX.} \footnote {We need to keep in mind that by the time \PDFTEX\ and later
+\LUATEX\ were developed memory constraints were lifted so these engines didn't
+have to work around the limitations that for instance \ETEX\ and \OMEGA\ had to
+cope with.}
+
+A more drastic change is the lack of font loaders and that no fonts can be stored
+in the format. Again this relates to the simple fact that todays fonts are more
+demanding so we need to extend the machinery and as we do that via \LUA\
+extensions we can as well do all that way. Less drastic, but it could have side
+effects, is that the machinery has to be able to deal with \OPENTYPE\ math. And
+of course all is \UNICODE\ aware so additional primitives cope with that. But in
+principle the old stuff should still work. Hyphenation is also expanded: patterns
+are loaded runtime and the hyphenation, ligature building and kerning stages are
+split, which actually it a good thing.
+
+The \LUAMETATEX\ code base is a follow up on \LUATEX, that combines good old
+\TEX\ (but adapted with respect to fonts, languages and math as mentioned), parts
+of \ETEX\ (so it provides more primitives), bits of \PDFTEX\ (like protrusion and
+expansion, although adapted), and rudiments of \OMEGA\ (\ALEPH). And of course
+there's a lot of new stuff too, primitives as well as ways to plug in \LUA\ code
+plus some helpers at the \LUA\ end.
+
+As an example of progression, by now the \ETEX\ extensions that we kept are
+integrated more naturally in existing subsystems. A nice detail is that there are
+no longer any version numbers that relate to \ETEX; for a while they were kept
+but suddenly I realized that it makes no sense to waste (four) command codes on
+something that is of not much use: there has never been a real \ETEX\ follow up
+after its stable release so testing for a version makes no sense. No backend
+means no \PDFTEX\ version info too and \OMEGA\ version numbers serve no purpose
+either. If a macro package needs to know what functionality is there, testing for
+the \LUATEX\ version number, revision and maybe functionality level makes enough
+sense. By the way, one reason for a clean up related to \ETEX\ was that where
+\ETEX\ uses change files to replace or extend good old \TEX\ code, \LUATEX\ has
+one integrated code base.
+
+\stopsection
+
+\startsection[title={The verdict}]
+
+So in the end the answer is that \LUAMETATEX\ is mostly \TEX\ but that due to
+developments like for instance \UNICODE, \OPENTYPE\ fonts and math, as well as
+the wish to use images, color, runtime graphics, directionality, features beyond
+what the engine has built, etc.\ in the end it hopefully meets the demands to
+today. In its core the same code is still there although extensions and hooks got
+mixed in more naturally. When in documents (or talks) I speak of \TEX\ I
+basically refer to a concept (materialized in the set of core primitives and
+related functionality) but once extensions come into play I try to talk of
+\LUATEX\ or \LUAMETATEX. This happens kind of automatic because I know what got
+added but I can imagine that users who entered the game later don't always see
+what was added (and when).
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% Written on the day I heard Neal Peart had passed away so mixed with watching
+% Rush dvd's which made me realize that times flies. They day before I was at a
+% Jan Akkerman show ... timeless quality too.

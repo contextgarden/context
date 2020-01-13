@@ -93,3 +93,25 @@ function resolvers.uselibrary(specification) -- todo: reporter
         end
     end
 end
+
+-- We keep these in the commands namespace even if it's not that logical
+-- but this way we are compatible.
+
+function commands.loadlibrary(name,foundname,nointerference)
+    if not foundname then
+        foundname = name
+    end
+    if foundname and foundname ~= "" then
+        if nointerference then
+            context.startnointerference()
+        end
+        context.startreadingfile()
+        context.input(foundname)
+        context.stopreadingfile()
+        if nointerference then
+            context.stopnointerference()
+        end
+    end
+end
+
+commands.uselibrary = resolvers.uselibrary

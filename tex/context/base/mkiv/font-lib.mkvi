@@ -53,7 +53,9 @@
 
 \ifcase\contextlmtxmode
     \ifnum\luatexversion>111
-        \registerctxluafile{font-ocm}{} % mkiv new
+        \doifelsefileexists{font-ocm.lua}
+            {\registerctxluafile{font-ocm}{}} % mkiv new
+            {\registerctxluafile{font-ocl}{}}
     \else
         \registerctxluafile{font-ocl}{} % generic (will become luatex-fonts-ocl)
     \fi

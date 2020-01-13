@@ -25,14 +25,7 @@ local p_strip    = Cs((P("type-") * (P("imp-")^0))^0/"" * P(1)^0)
 local report     = logs.reporter("fonts","typescripts")
 
 local function action(name,foundname)
- -- context.startreadingfile()
- -- context.unprotect()
- -- context.pushendofline()
- -- context.input(foundname)
- -- context.popendofline()
- -- context.protect()
- -- context.stopreadingfile()
-    context.loadfoundtypescriptfile(foundname)
+    context.loadfoundtypescriptfile(name,foundname)
 end
 
 local patterns = {

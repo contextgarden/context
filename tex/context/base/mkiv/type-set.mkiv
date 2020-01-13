@@ -25,11 +25,13 @@
 
     % but ... let's make sure that newlines are gone
 
-    \loadfoundtypescriptfile{type-def.mkiv}
-    \loadfoundtypescriptfile{type-lua.mkiv}
-    \loadfoundtypescriptfile{type-siz.mkiv}
-    \loadfoundtypescriptfile{type-fbk.mkiv}
-    \loadfoundtypescriptfile{type-imp-latinmodern.mkiv}
+    % beware: these are low level calls, so not user commands !
+
+    \loadfoundtypescriptfile\empty{type-def.mkiv}
+    \loadfoundtypescriptfile\empty{type-lua.mkiv}
+    \loadfoundtypescriptfile\empty{type-siz.mkiv}
+    \loadfoundtypescriptfile\empty{type-fbk.mkiv}
+    \loadfoundtypescriptfile\empty{type-imp-latinmodern.mkiv}
 
     % and not:
 
