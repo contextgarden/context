@@ -1796,7 +1796,6 @@ local sqrt, sin, cos = math.sqrt, math.sin, math.cos
 local f_fill_rgb = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
 local f_draw_rgb = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
 local f_mesh_rgb = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N) ;"]
-
 local f_fill_cmy = formatters["F (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]
 local f_draw_cmy = formatters["D (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor %.3F ;"]
 local f_mesh_cmy = formatters["U (%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--C withcolor (%.3N,%.3N,%.3N,0) ;"]

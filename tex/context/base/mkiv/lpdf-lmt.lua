@@ -175,13 +175,8 @@ end
 
 -- helpers
 
-local f_cm = formatters["%.6F %.6F %.6F %.6F %.6F %.6F cm"]
-local f_tm = formatters["%.6F %.6F %.6F %.6F %.6F %.6F Tm"]
-
-directives.register("pdf.stripzeros",function()
-    f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-    f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
-end)
+local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+local f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
 
 local saved_text_pos_v = 0
 local saved_text_pos_h = 0
@@ -451,17 +446,12 @@ local flushcharacter  do
  --     end
  -- end
 
-    local f_width = formatters["%.6F w"]
+    local f_width = formatters["%.6N w"]
     local f_mode  = formatters["%i Tr"]        -- can be hash
-    local f_font  = formatters["/F%i %.6F Tf"] -- can be hash
+    local f_font  = formatters["/F%i %.6N Tf"] -- can be hash
 
     local s_width <const> = "0 w"
     local s_mode  <const> = "0 Tr"
-
-    directives.register("pdf.stripzeros",function()
-        f_width = formatters["%.6N w"]
-        f_font  = formatters["/F%i %.6N Tf"]
-    end)
 
     local function set_font()
      -- if need_width and need_width ~= 0 then
@@ -874,20 +864,12 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
     local s_b <const> = "q"
     local s_e <const> = "Q"
 
-    local f_v = formatters["[] 0 d 0 J %.6F w 0 0 m %.6F 0 l S"]
-    local f_h = formatters["[] 0 d 0 J %.6F w 0 0 m 0 %.6F l S"]
+    local f_v = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
+    local f_h = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
-    local f_f = formatters["0 0 %.6F %.6F re f"]
-    local f_o = formatters["[] 0 d 0 J 0 0 %.6F %.6F re S"]
-    local f_w = formatters["[] 0 d 0 J %.6F w 0 0 %.6F %.6F re S"]
-
-    directives.register("pdf.stripzeros",function()
-        f_v = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
-        f_h = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
-        f_f = formatters["0 0 %.6N %.6N re f"]
-        f_o = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
-        f_w = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
-    end)
+    local f_f = formatters["0 0 %.6N %.6N re f"]
+    local f_o = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
+    local f_w = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
 
     -- Historically the index is an object which is kind of bad.
 

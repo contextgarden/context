@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 01/13/20 14:52:02
+-- merge date  : 01/15/20 19:09:43
 
 do -- begin closure to overcome local limits and interference
 
@@ -3655,7 +3655,7 @@ local format_N  if environment.FORMAT then
   n=n+1
   if not f or f=="" then
    return format("FORMAT(a%s,'%%.9f')",n)
-  elseif f==".6" then
+  elseif f==".6" or f=="0.6" then
    return format("FORMAT(a%s)",n)
   else
    return format("FORMAT(a%s,'%%%sf')",n,f)

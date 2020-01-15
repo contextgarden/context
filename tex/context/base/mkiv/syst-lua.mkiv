@@ -81,4 +81,41 @@
 
 \let\syst_write_execute\clf_execute % always {...}
 
+%D There is a probably rather useless \type {\expression} command that can mix \LUA\ numeric
+%D expressions with \TEX\ commands (for as far that makes sense) that works like this:
+%D
+%D \starttyping
+%D \mathchardef\foooo   1234
+%D \def        \mymacro {123.45}
+%D \scratchdimen 123pt
+%D \scratchskip  123pt
+%D \scratchtoks  {34}
+%D
+%D \testfeatureonce{10000}{\edef\foo{\expression
+%D     round(
+%D         12.3 * \scratchdimen
+%D       - (12.3 * \scratchskip) / 2
+%D       + 2 ^ 3
+%D       * (
+%D           - sqrt(12)
+%D           - 10pt
+%D           - \foooo
+%D           + \luatexversion
+%D           - \mymacro
+%D           + \scratchtoks
+%D           + \the\scratchcounter
+%D           + \number\scratchcounter
+%D         )
+%D     )
+%D \relax}}
+%D
+%D \expression string.format("\letterpercent f",\elapsedtime/50000) \relax
+%D \stoptyping
+%D
+%D The final \type {\relax} is mandate because we also accept spaces. Of course we
+%D could have avoided it by using outer parenthesis but this is cleaner anyway.
+%D
+%D The \MKIV\ version is a bit more limited than the \LMTX\ version because it only
+%D supports the standard math functions.
+
 \protect \endinput

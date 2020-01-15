@@ -41,11 +41,7 @@ local embedimage  = images.embed
 
 local basepoints  = number.dimenfactors.bp
 
-local f_image     = formatters["%.6F 0 0 %.6F 0 0 cm /%s Do"]
-
-directives.register("pdf.stripzeros",function()
-    f_image = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
-end)
+local f_image     = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
 
 local function package(image) -- see lpdf-u3d **
     local boundingbox = image.bbox

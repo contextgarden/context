@@ -262,14 +262,9 @@ end
 
 -- experimental (q Q is not really needed)
 
-local f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6F %.6F re f Q"]
-
-directives.register("pdf.stripzeros",function()
-    f_pattern = formatters["q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q"]
-end)
-
-local saveboxresource  = tex.boxresources.save
-local nofpatterns      = 0
+local saveboxresource = tex.boxresources.save
+local nofpatterns     = 0
+local f_pattern       = formatters["q /Pattern cs /%s scn 0 0 %.6N %.6N re f Q"]
 
 function lpdf.registerpattern(specification)
     nofpatterns = nofpatterns + 1

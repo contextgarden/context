@@ -94,27 +94,17 @@ end
 
 -- todo: get this from the lpdf module
 
-local f_f     = formatters["%F"]
-local f_f3    = formatters["%.3F"]
-local f_gray  = formatters["%.3F g %.3F G"]
-local f_rgb   = formatters["%.3F %.3F %.3F rg %.3F %.3F %.3F RG"]
-local f_cmyk  = formatters["%.3F %.3F %.3F %.3F k %.3F %.3F %.3F %.3F K"]
-local f_cm_b  = formatters["q %.6F %.6F %.6F %.6F %.6F %.6F cm"]
-local f_scn   = formatters["%.3F"]
+local f_f     = formatters["%.6N"]
+local f_f3    = formatters["%.3N"]
+local f_gray  = formatters["%.3N g %.3N G"]
+local f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
+local f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+local f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
+local f_scn   = formatters["%.3N"]
 
 local f_shade = formatters["MpSh%s"]
 local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 local s_cm_e  = "Q"
-
-directives.register("metapost.stripzeros",function()
-    f_f     = formatters["%N"]
-    f_f3    = formatters["%.3N"]
-    f_gray  = formatters["%.3N g %.3N G"]
-    f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
-    f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
-    f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
-    f_scn   = formatters["%.3N"]
-end)
 
 local function checked_color_pair(color,...)
     if not color then
@@ -801,21 +791,12 @@ local tx_reset, tx_process  do
     ----- pat = tsplitat(":")
     local pat = lpeg.tsplitter(":",tonumber) -- so that %F can do its work
 
-    local f_gray_yes = formatters["s=%.3F,a=%i,t=%.3F"]
-    local f_gray_nop = formatters["s=%.3F"]
-    local f_rgb_yes  = formatters["r=%.3F,g=%.3F,b=%.3F,a=%.3F,t=%.3F"]
-    local f_rgb_nop  = formatters["r=%.3F,g=%.3F,b=%.3F"]
-    local f_cmyk_yes = formatters["c=%.3F,m=%.3F,y=%.3F,k=%.3F,a=%.3F,t=%.3F"]
-    local f_cmyk_nop = formatters["c=%.3F,m=%.3F,y=%.3F,k=%.3F"]
-
-    directives.register("metapost.stripzeros",function()
-        f_gray_yes = formatters["s=%.3N,a=%i,t=%.3N"]
-        f_gray_nop = formatters["s=%.3N"]
-        f_rgb_yes  = formatters["r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N"]
-        f_rgb_nop  = formatters["r=%.3N,g=%.3N,b=%.3N"]
-        f_cmyk_yes = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N"]
-        f_cmyk_nop = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N"]
-    end)
+    local f_gray_yes = formatters["s=%.3N,a=%i,t=%.3N"]
+    local f_gray_nop = formatters["s=%.3N"]
+    local f_rgb_yes  = formatters["r=%.3N,g=%.3N,b=%.3N,a=%.3N,t=%.3N"]
+    local f_rgb_nop  = formatters["r=%.3N,g=%.3N,b=%.3N"]
+    local f_cmyk_yes = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N,a=%.3N,t=%.3N"]
+    local f_cmyk_nop = formatters["c=%.3N,m=%.3N,y=%.3N,k=%.3N"]
 
     local ctx_MPLIBsetNtext = context.MPLIBsetNtextX
     local ctx_MPLIBsetCtext = context.MPLIBsetCtextX

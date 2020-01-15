@@ -142,11 +142,7 @@ end
 local sxsy = metapost.sxsy
 local cm   = metapost.cm
 
-local f_f  = formatters["%.6F"]
-
-directives.register("pdf.stripzeros",function()
-    f_f = formatters["%.6N"]
-end)
+local f_f  = formatters["%.6N"]
 
 local function injectblob(object,blob)
     local sx, rx, ry, sy, tx, ty = cm(object)

@@ -1546,14 +1546,14 @@ do
         local f_char       = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
         local f_width      = formatters["%.6N 0 d0"]
         local f_index      = formatters["I%d"]
-        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.3N %.3N cm /%s Do"]
+        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.6N %.6N cm /%s Do"]
         local f_image_c    = formatters["/%s Do"]
-        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.3N %.3N cm /%s Do"]
+        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.6N %.6N cm /%s Do"]
         local f_image_w    = formatters["%.6N 0 d0 %s"]
-        local f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm /%s Do"]
+        local f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm /%s Do"]
         local f_stream     = formatters["%.6N 0 d0 %s"]
         local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"]
-        local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.3N cm %s"]
+        local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm %s"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to

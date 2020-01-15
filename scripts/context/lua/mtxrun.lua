@@ -6530,7 +6530,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 45058, stripped down to: 22617
+-- original size: 45072, stripped down to: 22629
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7107,7 +7107,7 @@ local format_N  if environment.FORMAT then
   n=n+1
   if not f or f=="" then
    return format("FORMAT(a%s,'%%.9f')",n)
-  elseif f==".6" then
+  elseif f==".6" or f=="0.6" then
    return format("FORMAT(a%s)",n)
   else
    return format("FORMAT(a%s,'%%%sf')",n,f)
@@ -24623,7 +24623,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tre"] = package.loaded["data-tre"] or true
 
--- original size: 9444, stripped down to: 5650
+-- original size: 10802, stripped down to: 6619
 
 if not modules then modules={} end modules ['data-tre']={
  version=1.001,
@@ -24632,8 +24632,9 @@ if not modules then modules={} end modules ['data-tre']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
+local type=type
 local find,gsub,lower=string.find,string.gsub,string.lower
-local basename,dirname,joinname=file.basename,file.dirname,file   .join
+local basename,dirname,joinname=file.basename,file.dirname,file.join
 local globdir,isdir,isfile=dir.glob,lfs.isdir,lfs.isfile
 local P,lpegmatch=lpeg.P,lpeg.match
 local trace_locating=false  trackers.register("resolvers.locating",function(v) trace_locating=v end)
@@ -24836,6 +24837,49 @@ do
  loaders.dirlist=fileloader
  openers.dirfile=fileopener
  loaders.dirfile=fileloader
+end
+do
+ local hashfile="dirhash.lua"
+ local kind="HASH256"
+ local version=1.0
+ local loadtable=table.load
+ local savetable=table.save
+ local loaddata=io.loaddata
+ function resolvers.dirstatus(patterns)
+  local t=type(patterns)
+  if t=="string" then
+   patterns={ patterns }
+  elseif t~="table" then
+   return false
+  end
+  local status=loadtable(hashfile)
+  if not status or status.version~=version or status.kind~=kind then
+   status={
+    version=1.0,
+    kind=kind,
+    hashes={},
+   }
+  end
+  local hashes=status.hashes
+  local changed={}
+  local action=sha2[kind]
+  local update={}
+  for i=1,#patterns do
+   local pattern=patterns[i]
+   local files=globdir(pattern)
+   for i=1,#files do
+    local name=files[i]
+    local hash=action(loaddata(name))
+    if hashes[name]~=hash then
+     changed[#changed+1]=name
+    end
+    update[name]=hash
+   end
+  end
+  status.hashes=update
+  savetable(hashfile,status)
+  return #changed>0 and changed or false
+ end
 end
 
 
@@ -26145,8 +26189,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua util-lib.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1045763
--- stripped bytes    : 416478
+-- original bytes    : 1047135
+-- stripped bytes    : 416869
 
 -- end library merge
 

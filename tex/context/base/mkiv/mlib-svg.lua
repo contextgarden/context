@@ -392,13 +392,13 @@ local rgbcomponents, withcolor, thecolor  do
         whitesmoke      = 0xF5F5F5, yellow            = 0xFFFF00, yellowgreen           = 0x9ACD32,
     }
 
-    local f_rgb      = formatters['withcolor svgcolor(%N,%N,%N)']
-    local f_gray     = formatters['withcolor svggray(%N)']
-    local f_rgba     = formatters['withcolor svgcolor(%N,%N,%N) withtransparency (1,%N)']
-    local f_graya    = formatters['withcolor svggray(%N) withtransparency (1,%N)']
+    local f_rgb      = formatters['withcolor svgcolor(%.3N,%.3N,%.3N)']
+    local f_gray     = formatters['withcolor svggray(%.3N)']
+    local f_rgba     = formatters['withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (1,%.3N)']
+    local f_graya    = formatters['withcolor svggray(%.3N) withtransparency (1,%.3N)']
     local f_name     = formatters['withcolor "%s"']
-    local f_svgcolor = formatters['svgcolor(%N,%N,%N)']
-    local f_svggray  = formatters['svggray(%N)']
+    local f_svgcolor = formatters['svgcolor(%.3N,%.3N,%.3N)']
+    local f_svggray  = formatters['svggray(%.3N)']
     local f_svgname  = formatters['"%s"']
 
     local triplets = setmetatableindex(function(t,k)
@@ -506,7 +506,7 @@ end
 
 local grabpath, grablist  do
 
-    local f_moveto    = formatters['(%N,%n)']
+    local f_moveto    = formatters['(%N,%N)']
     local f_curveto_z = formatters['controls(%N,%N)and(%N,%N)..(%N,%N)']
     local f_curveto_n = formatters['..controls(%N,%N)and(%N,%N)..(%N,%N)']
     local f_lineto_z  = formatters['(%N,%N)']
@@ -2333,9 +2333,9 @@ do
         do
 
             local f_styled  = formatters["\\svgstyled{%s}{%s}{%s}{%s}"]
-            local f_colored = formatters["\\svgcolored{%N}{%N}{%N}{"]
-            local f_placed  = formatters["\\svgplaced{%N}{%N}{}{"]
-            local f_poschar = formatters["\\svgposchar{%N}{%N}{%s}"]
+            local f_colored = formatters["\\svgcolored{%.3N}{%.3N}{%.3N}{"]
+            local f_placed  = formatters["\\svgplaced{%.3N}{%.3N}{}{"]
+            local f_poschar = formatters["\\svgposchar{%.3N}{%.3N}{%s}"]
             local f_char    = formatters["\\svgchar{%s}"]
 
             local f_scaled  = formatters["\\svgscaled{%N}{%s}{%s}{%s}"]
@@ -2908,10 +2908,6 @@ do
             report_svg("processing %i svg containers",nofshapes)
             statistics.starttiming(pdfpages)
         end
-        --
-        -- can be option:
-        --
-        n = n + 1 ; t[n] = "\\enabledirectives[pdf.stripzeros,metapost.stripzeros]"
         --
         -- can be option:
         --

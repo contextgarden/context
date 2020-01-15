@@ -45,29 +45,16 @@ local experiment      = true -- uses context(node) that already does delayed nod
 local savedliterals   = nil  -- needs checking
 local mpsliteral      = nodes.pool.originliteral
 
-local f_f  = formatters["%.6F"]
-local f_m  = formatters["%.6F %.6F m"]
-local f_c  = formatters["%.6F %.6F %.6F %.6F %.6F %.6F c"]
-local f_l  = formatters["%.6F %.6F l"]
-local f_cm = formatters["%.6F %.6F %.6F %.6F %.6F %.6F cm"]
-local f_M  = formatters["%.6F M"]
+local f_f  = formatters["%.6N"]
+local f_m  = formatters["%.6N %.6N m"]
+local f_c  = formatters["%.6N %.6N %.6N %.6N %.6N %.6N c"]
+local f_l  = formatters["%.6N %.6N l"]
+local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+local f_M  = formatters["%.6N M"]
 local f_j  = formatters["%i j"]
 local f_J  = formatters["%i J"]
-local f_d  = formatters["[%s] %.6F d"]
-local f_w  = formatters["%.3F w"]
-
-directives.register("metapost.stripzeros",function()
-    f_f  = formatters["%.6N"]
-    f_m  = formatters["%.6N %.6N m"]
-    f_c  = formatters["%.6N %.6N %.6N %.6N %.6N %.6N c"]
-    f_l  = formatters["%.6N %.6N l"]
-    f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-    f_M  = formatters["%.6N M"]
-    f_j  = formatters["%i j"]
-    f_J  = formatters["%i J"]
-    f_d  = formatters["[%s] %.6N d"]
-    f_w  = formatters["%.3N w"]
-end)
+local f_d  = formatters["[%s] %.6N d"]
+local f_w  = formatters["%.6N w"]
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then

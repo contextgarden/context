@@ -232,13 +232,8 @@ drivers.enable("default")
 -- helpers
 
 local s_matrix_0 = "1 0 0 1"
-local f_matrix_2 = formatters["%.6F 0 0 %.6F"]
-local f_matrix_4 = formatters["%.6F %.6F %.6F %.6F"]
-
-directives.register("pdf.stripzeros",function()
-    f_matrix_2 = formatters["%.6N 0 0 %.6N"]
-    f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
-end)
+local f_matrix_2 = formatters["%.6N 0 0 %.6N"]
+local f_matrix_4 = formatters["%.6N %.6N %.6N %.6N"]
 
 function helpers.tomatrix(rx,sx,sy,ry,tx,ty) -- todo: tx ty
     if type(rx) == "string" then

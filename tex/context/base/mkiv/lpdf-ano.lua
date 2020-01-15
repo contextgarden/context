@@ -364,25 +364,14 @@ lpdf.registerdocumentfinalizer(pdfdestinationspecification,"collect destinations
 
 local destinations = { }
 
-local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6F %.6F null ] >>"]
+local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
 local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
 local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
-local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6F ] >>"]
-local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6F ] >>"]
-local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6F ] >>"]
-local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6F ] >>"]
-local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6F %.6F %.6F %.6F ] >>"]
-
-directives.register("pdf.stripzeros",function()
-    f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
-    f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
-    f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
-    f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
-    f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
-    f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
-    f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
-    f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
-end)
+local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
+local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
+local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
+local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
+local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
 
 local v_standard  = variables.standard
 local v_frame     = variables.frame
@@ -760,13 +749,8 @@ local nofused    = 0
 local nofspecial = 0
 local share      = true
 
-local f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
-local f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6F %0.6F %0.6F %0.6F ] >>"]
-
-directives.register("pdf.stripzeros",function()
-    f_annot = formatters["<< /Type /Annot %s /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
-    f_quadp = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %0.6N %0.6N %0.6N %0.6N ] >>"]
-end)
+local f_annot    = formatters["<< /Type /Annot %s /Rect [ %.6N %.6N %.6N %.6N ] >>"]
+local f_quadp    = formatters["<< /Type /Annot %s /QuadPoints [ %s ] /Rect [ %.6N %.6N %.6N %.6N ] >>"]
 
 directives.register("references.sharelinks", function(v)
     share = v

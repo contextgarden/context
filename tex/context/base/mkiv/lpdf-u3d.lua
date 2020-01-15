@@ -348,11 +348,7 @@ end
 
 local stored_js, stored_3d, stored_pr, streams = { }, { }, { }, { }
 
-local f_image = formatters["q /GS gs %.6F 0 0 %.6F 0 0 cm /IM Do Q"]
-
-directives.register("pdf.stripzeros",function()
-    f_image = formatters["q /GS gs %.6N 0 0 %.6N 0 0 cm /IM Do Q"]
-end)
+local f_image = formatters["q /GS gs %.6N 0 0 %.6N 0 0 cm /IM Do Q"]
 
 local function insert3d(spec) -- width, height, factor, display, controls, label, foundname
 

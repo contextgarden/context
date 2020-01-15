@@ -379,15 +379,9 @@ otf.loadstreamdata  = loadstreamdata  -- not public
 otf.loadshapes      = loadshapes
 otf.getstreamhash   = getstreamhash   -- not public, might move to other namespace
 
-local f_c = formatters["%F %F %F %F %F %F c"]
-local f_l = formatters["%F %F l"]
-local f_m = formatters["%F %F m"]
-
-directives.register("pdf.stripzeros",function()
-    f_c = formatters["%N %N %N %N %N %N c"]
-    f_l = formatters["%N %N l"]
-    f_m = formatters["%N %N m"]
-end)
+local f_c = formatters["%.6N %.6N %.6N %.6N %.6N %.6N c"]
+local f_l = formatters["%.6N %.6N l"]
+local f_m = formatters["%.6N %.6N m"]
 
 local function segmentstopdf(segments,factor,bt,et)
     local t = { }

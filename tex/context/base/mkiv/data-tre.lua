@@ -23,8 +23,9 @@ if not modules then modules = { } end modules ['data-tre'] = {
 -- dirlist://///storage-2/resources/mb-mp/**/drawing.jpg
 -- dirlist://e:/**/drawing.jpg
 
+local type = type
 local find, gsub, lower = string.find, string.gsub, string.lower
-local basename, dirname, joinname = file.basename, file.dirname, file   .join
+local basename, dirname, joinname = file.basename, file.dirname, file.join
 local globdir, isdir, isfile = dir.glob, lfs.isdir, lfs.isfile
 local P, lpegmatch = lpeg.P, lpeg.match
 
@@ -281,3 +282,52 @@ end
 -- print(resolvers.findtexfile("tree://e:/temporary/mb-mp/**/VB_wmf_03_vw_01d_ant.jpg"))
 -- print(resolvers.findtexfile("tree://t:/**/tufte.tex"))
 -- print(resolvers.findtexfile("dirlist://e:/temporary/mb-mp/**/VB_wmf_03_vw_01d_ant.jpg"))
+
+
+do
+
+    local hashfile = "dirhash.lua"
+    local kind     = "HASH256"
+    local version  = 1.0
+
+    local loadtable = table.load
+    local savetable = table.save
+    local loaddata  = io.loaddata
+
+    function resolvers.dirstatus(patterns)
+        local t = type(patterns)
+        if t == "string" then
+            patterns = { patterns }
+        elseif t ~= "table" then
+            return false
+        end
+        local status = loadtable(hashfile)
+        if not status or status.version ~= version or status.kind ~= kind then
+            status = {
+                version = 1.0,
+                kind    = kind,
+                hashes  = { },
+            }
+        end
+        local hashes  = status.hashes
+        local changed = { }
+        local action  = sha2[kind]
+        local update  = { }
+        for i=1,#patterns do
+            local pattern = patterns[i]
+            local files   = globdir(pattern)
+            for i=1,#files do
+                local name = files[i]
+                local hash = action(loaddata(name))
+                if hashes[name] ~= hash then
+                    changed[#changed+1] = name
+                end
+                update[name] = hash
+            end
+        end
+        status.hashes = update
+        savetable(hashfile,status)
+        return #changed > 0 and changed or false
+    end
+
+end

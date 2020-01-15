@@ -22,9 +22,9 @@ fonts               = fonts or { }
 local metapost      = fonts.metapost or { }
 fonts.metapost      = metapost
 
-local f_moveto      = formatters["(%.6F,%.6F)"]
-local f_lineto      = formatters["--(%.6F,%.6F)"]
-local f_curveto     = formatters["..controls(%.6F,%.6F)and(%.6F,%.6F)..(%.6F,%.6F)"]
+local f_moveto      = formatters["(%N,%N)"]
+local f_lineto      = formatters["--(%N,%N)"]
+local f_curveto     = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
 local s_cycle       = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
@@ -33,19 +33,8 @@ local f_dofill      = formatters["fill %s;"]
 local f_draw_trace  = formatters["drawpathonly %s;"]
 local f_draw        = formatters["draw %s;"]
 
-local f_boundingbox = formatters["((%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--(%.6F,%.6F)--cycle)"]
-local f_vertical    = formatters["((%.6F,%.6F)--(%.6F,%.6F))"]
-
-directives.register("metapost.stripzeros", function()
-
-    f_moveto      = formatters["(%.6N,%.6N)"]
-    f_lineto      = formatters["--(%.6N,%.6N)"]
-    f_curveto     = formatters["..controls(%.6N,%.6N)and(%.6N,%.6N)..(%.6N,%.6N)"]
-
-    f_boundingbox = formatters["((%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--(%.6N,%.6N)--cycle)"]
-    f_vertical    = formatters["((%.6N,%.6N)--(%.6N,%.6N))"]
-
-end)
+local f_boundingbox = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
+local f_vertical    = formatters["((%N,%N)--(%N,%N))"]
 
 function metapost.boundingbox(d,factor)
     local bounds = d.boundingbox
@@ -297,19 +286,13 @@ local parameters      = fonts.hashes.parameters
 local shapes          = fonts.hashes.shapes
 local topaths         = metapost.paths
 
-local f_code          = formatters["mfun_do_outline_text_flush(%q,%i,%.6F,%.6F,%q)(%,t);"]
-local f_rule          = formatters["mfun_do_outline_rule_flush(%q,%.6F,%.6F,%.6F,%.6F);"]
-local f_bounds        = formatters["checkbounds(%.6F,%.6F,%.6F,%.6F);"]
+local f_code          = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
+local f_rule          = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
+local f_bounds        = formatters["checkbounds(%N,%N,%N,%N);"]
 local s_nothing       = "(origin scaled 10)"
 
-directives.register("metapost.stripzeros", function()
-    f_code   = formatters["mfun_do_outline_text_flush(%q,%i,%.6N,%.6N,%q)(%,t);"]
-    f_rule   = formatters["mfun_do_outline_rule_flush(%q,%.6N,%.6N,%.6N,%.6N);"]
-    f_bounds = formatters["checkbounds(%.6N,%.6N,%.6N,%.6N);"]
-end)
-
-local sc             = 10
-local fc             = number.dimenfactors.bp * sc / 10
+local sc              = 10
+local fc              = number.dimenfactors.bp * sc / sc
 
 -- todo: make the next more efficient:
 

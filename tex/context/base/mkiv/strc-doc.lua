@@ -885,7 +885,7 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
     if sectiondata and sectiondata.hidenumber ~= true then -- can be nil
         local quit = what == v_previous or what == v_next
         if what == v_first or what == v_previous then
-            for i=index,1,-1 do
+            for i=index-1,1,-1 do
                 local s = collected[i]
                 if s then
                     local n = s.numbers
@@ -900,7 +900,7 @@ function sections.findnumber(depth,what) -- needs checking (looks wrong and slow
                 end
             end
         elseif what == v_last or what == v_next then
-            for i=index,#collected do
+            for i=index+1,#collected do
                 local s = collected[i]
                 if s then
                     local n = s.numbers
