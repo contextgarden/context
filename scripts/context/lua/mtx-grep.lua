@@ -173,15 +173,17 @@ function scripts.grep.find(pattern, files, offset)
                 local globbed = dir.glob(files[i])
                 for i=1,#globbed do
                     name = globbed[i]
-                    local data = io.loaddata(name)
-                    if data then
-                        n, m, noffiles = 0, 0, noffiles + 1
-                        lpegmatch(capture,data)
-                        if count and m > 0 then
-                            nofmatches = nofmatches + m
-                            nofmatchedfiles = nofmatchedfiles + 1
-                            write_nl(format("%5i  %s",m,name))
-                            io.flush()
+                    if not find(name,"/%.") then
+                        local data = io.loaddata(name)
+                        if data then
+                            n, m, noffiles = 0, 0, noffiles + 1
+                            lpegmatch(capture,data)
+                            if count and m > 0 then
+                                nofmatches = nofmatches + m
+                                nofmatchedfiles = nofmatchedfiles + 1
+                                write_nl(format("%5i  %s",m,name))
+                                io.flush()
+                            end
                         end
                     end
                 end

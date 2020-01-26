@@ -80,6 +80,10 @@ local m_y0        = m.y0        registerscript("m_y0",        function() return 
 local m_y1        = m.y1        registerscript("m_y1",        function() return m_y1       (scannumeric()) end)
 local m_yn        = m.yn        registerscript("m_yn",        function() return m_yn       (scanpair   ()) end)
 
+if not (c and c.sin) then
+    return
+end
+
 local c_topair = c.topair
 local c_new    = c.new
 

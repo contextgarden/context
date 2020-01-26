@@ -188,6 +188,14 @@ local function pickup(head,tail,str)
     end
 end
 
+local function found(str)
+    local list = texgetnest()
+    if list then
+        local tail = list.tail
+        return tail and tail[a_marked] == marked[str]
+    end
+end
+
 local actions = {
     remove = function(specification)
         local list = texgetnest()
@@ -251,6 +259,12 @@ interfaces.implement {
 interfaces.implement {
     name      = "markcontent",
     actions   = markcontent,
+    arguments = "string",
+}
+
+interfaces.implement {
+    name      = "doifelsemarkedcontent",
+    actions   = function(str) ctx_doifelse(found(str)) end,
     arguments = "string",
 }
 

@@ -65,7 +65,7 @@
    \c!inbetween={\blank[\v!big]},
   %\c!style,
   %\c!color,
-   \c!page=\v!yes]
+   \c!page=\v!left]
 
 \appendtoks
     \ifx\currentfacingfloatparent\empty
@@ -74,8 +74,8 @@
     \fi
 \to \everydefinefacingfloat
 
-\newcount\c_strc_floats_saved
-\newcount\c_strc_floats_flushed
+\newcount\c_strc_floats_facing_saved
+\newcount\c_strc_floats_facing_flushed
 
 \newbox\b_strc_floats_facing_l
 \newbox\b_strc_floats_facing_r
@@ -83,12 +83,24 @@
 \let\m_strc_floats_state\relax
 
 \def\strc_floats_facing_flush
-  {\ifnum\c_strc_floats_flushed<\c_strc_floats_saved
-     \strc_floats_facing_flush_indeed % less tracing
+  {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
+     \ifodd\c_strc_floats_facing_flushed
+       \ifodd\realpageno
+         \strc_floats_facing_flush_indeed
+         \doifelsependingpagecontent\relax{\null\page}%
+       \else
+       \fi
+     \else
+       \ifodd\realpageno
+       \else
+         \strc_floats_facing_flush_indeed
+         \doifelsependingpagecontent\relax{\null\page}%
+       \fi
+     \fi
    \fi}
 
 \def\strc_floats_facing_flush_indeed
-  {\global\advance\c_strc_floats_flushed\plusone
+  {\global\advance\c_strc_floats_facing_flushed\plusone
    \floatingpenalty\zerocount
    \insert\namedinsertionnumber\s!topfloat\bgroup
      \forgetall
@@ -100,12 +112,12 @@
          \prevdepth\maxdimen
        \fi
      \fi
-     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_flushed}%
+     \directboxfromcache{\currentfacingfloat}{\number\c_strc_floats_facing_flushed}%
      \vkern\s_page_one_between_top_insert
    \egroup
-   \ifnum\c_strc_floats_saved=\c_strc_floats_flushed
-     \global\c_strc_floats_saved  \zerocount
-     \global\c_strc_floats_flushed\zerocount
+   \ifnum\c_strc_floats_facing_saved=\c_strc_floats_facing_flushed
+     \global\c_strc_floats_facing_saved  \zerocount
+     \global\c_strc_floats_facing_flushed\zerocount
      \resetboxesincache{\currentfacingfloat}%
    \fi}
 
@@ -145,34 +157,34 @@
    \fi\fi}
 
 \unexpanded\def\strc_floats_facing_handle
-  {\strc_floats_facing_collect
-   \doifnextbgroupelse
+  {\doifnextbgroupelse
      \strc_floats_facing_handle_indeed
-     \strc_floats_wrap_up}
+     \strc_floats_facing_wrap_up}
 
 \unexpanded\def\strc_floats_facing_handle_indeed
   {\dowithnextboxcontent
      \strc_floats_facing_setup
-     \strc_floats_facing_handle
+     {\strc_floats_facing_collect\strc_floats_facing_handle}
      \vbox}
 
 \unexpanded\def\startfacingfloat[#1]%
   {\begingroup
    % todo: \usepageparameter
-   \edef\p_page{\facingfloatparameter\c!page}%
-   \ifx\p_page\empty
-     \page[\p_page]%
-   \fi
+%    \edef\p_page{\facingfloatparameter\c!page}%
+%    \ifx\p_page\empty\else
+%      \page[\p_page]%
+%    \fi
    %
    \let\startcontent\bgroup
    \let\stopcontent\egroup
    \def\currentfacingfloat{#1}%
+   \let\m_strc_floats_state\v!left
    \strc_floats_facing_handle}
 
 \unexpanded\def\stopfacingfloat
   {\endgroup}
 
-\unexpanded\def\strc_floats_wrap_up
+\unexpanded\def\strc_floats_facing_wrap_up
   {\edef\p_spaceinbetween{\facingfloatparameter\c!spaceinbetween}%
    \ifx\p_spaceinbetween\empty
      \scratchdimen\zeropoint
@@ -208,13 +220,9 @@
      \else
         \setbox\scratchbox\vbox to \textheight{\box\scratchbox\vss}%
      \fi
-     \global\advance\c_strc_floats_saved\plusone
-     \putboxincache{\currentfacingfloat}{\number\c_strc_floats_saved}\scratchbox
+     \global\advance\c_strc_floats_facing_saved\plusone
+     \putboxincache{\currentfacingfloat}{\number\c_strc_floats_facing_saved}\scratchbox
      \endgroup
    \fi}
-
-\appendtoks
-    \strc_floats_facing_flush
-\to \everyafteroutput
 
 \protect \endinput

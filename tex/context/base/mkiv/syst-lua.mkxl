@@ -95,4 +95,6 @@
 %D The \LMTX\ version supports te \type {xmath} and \type {xcomplex} functions and
 %D therefore one can have expressions that don't work in \MKIV.
 
+% maybe: \let\texexpr\expression
+
 \protect \endinput

@@ -680,6 +680,9 @@
      \endgroup
    \fi}
 
+\unexpanded\def\page_one_command_flush_facing_floats
+  {\strc_floats_facing_flush}
+
 \defineoutputroutine
   [\s!singlecolumn]
   [\s!page_otr_command_routine                =\page_one_command_routine,
@@ -703,8 +706,9 @@
    \s!page_otr_command_flush_saved_floats     =\page_one_command_flush_saved_floats,
    \s!page_otr_command_flush_all_floats       =\page_one_command_flush_all_floats,
    \s!page_otr_command_flush_margin_blocks    =\page_one_command_flush_margin_blocks,
-   \s!page_otr_command_test_column            =\page_one_command_test_page
-  ]
+   \s!page_otr_command_test_column            =\page_one_command_test_page,
+   \s!page_otr_command_flush_facing_floats    =\page_one_command_flush_facing_floats
+]
 
 % \setupoutputroutine
 %   [\s!singlecolumn]

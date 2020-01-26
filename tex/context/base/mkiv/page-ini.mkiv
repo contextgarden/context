@@ -162,6 +162,7 @@
    \strc_pagenumbers_increment_counters % should hook into an every
    \page_adapts_synchronize
    \page_otr_check_for_pending_inserts
+   \page_otr_command_flush_facing_floats
    \page_floats_flush_page_floats % before postponed blocks
    \page_spread_flush % defined later
    \ifnum#3=\plusone
@@ -374,5 +375,9 @@
 %
 % \unexpanded\def\forcestrutdepth
 %   {\par\ifvmode\ifinner\else\doforcestrutdepth\fi\fi}
+
+% Also experimental:
+
+\unexpanded\def\doifelsependingpagecontent{\clf_doifelsependingpagecontent}
 
 \protect \endinput

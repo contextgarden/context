@@ -559,8 +559,7 @@ local function cleanup(nofboxes) -- todo
     return nr, nl, nofboxes -- can be nil
 end
 
-
-local function usage()
+local usage = CONTEXTLMTXMODE > 0 and node.inuse or function()
     local t = { }
     for n, tag in gmatch(status.node_mem_usage,"(%d+) ([a-z_]+)") do
         t[tag] = tonumber(n) or 0
@@ -581,9 +580,13 @@ statistics.register("cleaned up reserved nodes", function()
 end) -- \topofboxstack
 
 statistics.register("node memory usage", function() -- comes after cleanup !
-    local usage = status.node_mem_usage
-    if usage ~= "" then
-        return usage
+    local used = usage()
+    if next(used) then
+        local t, n = { }, 0
+        for k, v in table.sortedhash(used) do
+            n = n + 1 ; t[n] = format("%s %s",v,k)
+        end
+        return table.concat(t,", ")
     end
 end)
 

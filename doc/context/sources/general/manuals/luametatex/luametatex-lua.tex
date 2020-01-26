@@ -50,7 +50,7 @@ path as the binary itself
 When the \LUAMETATEX\ executable starts, it looks for the \type {--lua} command line
 option. If there is no \type {--lua} option, the command line is interpreted in a
 similar fashion as the other \TEX\ engines. All options are accepted but only some
-have are understood by \LUAMETATEX\ itself:
+are understood by \LUAMETATEX\ itself:
 
 \starttabulate[|l|p|]
 \DB commandline argument    \BC explanation \NC \NR
@@ -149,7 +149,7 @@ normally with some delay. Therefore the user needs to keep an eye on (subtle)
 differences in successive versions of the language. Here is an example of one
 aspect.
 
-\LUA s \type {tostring} function (and \type {string.format} may return values in
+\LUA s \type {tostring} function (and \type {string.format}) may return values in
 scientific notation, thereby confusing the \TEX\ end of things when it is used as
 the right|-|hand side of an assignment to a \prm {dimen} or \prm {count}. The
 output of these serializers also depend on the \LUA\ version, so in \LUA\ 5.3 you
@@ -187,7 +187,7 @@ language specific conversions needed at the \TEX\ end.
 Of course the regular \LUA\ modules are present. In addition we provide the \type
 {lpeg} library by Roberto Ierusalimschy, This library is not \UNICODE|-|aware,
 but interprets strings on a byte|-|per|-|byte basis. This mainly means that \type
-{lpeg.S} cannot be used with \UTF8 characters encoded in more than two bytes, and
+{lpeg.S} cannot be used with \UTF8 characters that need more than one byte, and
 thus \type {lpeg.S} will look for one of those two bytes when matching, not the
 combination of the two. The same is true for \type {lpeg.R}, although the latter
 will display an error message if used with multibyte characters. Therefore \type

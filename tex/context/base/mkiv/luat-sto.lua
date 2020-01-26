@@ -72,7 +72,7 @@ if environment.initex then
             end
             local dumped = serialize(original,target)
             if trace_storage then
-                report_storage('saving %a in slot %a, size %s',message,max,#dumped)
+                report_storage("saving %a in slot %a, size %s",message,max,#dumped)
             end
             -- we don't need tracing in such tables
             dumped = concat({ definition, comment, dumped },"\n")

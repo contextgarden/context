@@ -31,12 +31,11 @@ texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
-texconfig.properties_size = 262144  -- nuts are actually kind of pointers (so we jump by size)
+texconfig.properties_size =  10000
 texconfig.fix_mem_init    = 750000
 
 -- registering bytecode chunks
 
------ bytecode    = lua.bytecode or { } -- we use functions
 local bytedata    = lua.bytedata or { }
 local bytedone    = lua.bytedone or { }
 

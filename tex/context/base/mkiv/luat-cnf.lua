@@ -31,7 +31,7 @@ texconfig.param_size      =  25000
 texconfig.save_size       = 100000
 texconfig.stack_size      =  10000
 texconfig.function_size   =  32768
-texconfig.properties_size = 262144 -- after that, we're a hash
+texconfig.properties_size =  10000
 texconfig.fix_mem_init    = 750000
 
 local stub = [[
@@ -145,7 +145,7 @@ function texconfig.init()
     local getbytecode  = lua.getbytecode
     local callbytecode = lua.callbytecode or function(i)
         local b = getbytecode(i)
-        if b then
+        if type(b) == "function" then
             b()
             return true
         else
@@ -160,7 +160,7 @@ function texconfig.init()
          -- local b = callbytecode(i)
             local e, b = pcall(callbytecode,i)
             if not e then
-                print("\nfatal error : unable to load bytecode, maybe wipe the cache first\n")
+                print(string.format("\nfatal error : unable to load bytecode register %%i, maybe wipe the cache first\n",i))
                 os.exit()
             end
             if b then

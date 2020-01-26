@@ -78,6 +78,9 @@
 \def\typo_marked_remove[#1]%
   {\clf_pickupmarkedcontent action{remove}mark{#1}\relax}
 
+\unexpanded\def\doifelsemarkedcontent#1%
+  {\clf_doifelsemarkedcontent{#1}}
+
 %D A few helpers (put here for convenience):
 %D
 %D \starttyping

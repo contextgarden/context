@@ -1656,7 +1656,10 @@ primitives \quote{\tex{ }}, \quote{\tex {/}} and \quote{\type {-}} are defined.
 
 \startluacode
 function document.showprimitives(tag)
-    for k, v in table.sortedpairs(tex.extraprimitives(tag)) do
+    local t = tex.extraprimitives(tag)
+    table.sort(t)
+    for i=1,#t do
+        local v = t[i]
         if v ~= ' ' and v ~= "/" and v ~= "-" then
             context.type(v)
             context.space()
@@ -1666,12 +1669,12 @@ end
 \stopluacode
 
 \starttabulate[|l|pl|]
-\DB name    \BC values \NC \NR
+\DB name   \BC values \NC \NR
 \TB
-\NC tex     \NC \ctxlua{document.showprimitives('tex')    } \NC \NR
-\NC core    \NC \ctxlua{document.showprimitives('core')   } \NC \NR
-\NC etex    \NC \ctxlua{document.showprimitives('etex')   } \NC \NR
-\NC luatex  \NC \ctxlua{document.showprimitives('luatex') } \NC \NR
+\NC tex    \NC \ctxlua{document.showprimitives('tex')    } \NC \NR
+\NC core   \NC \ctxlua{document.showprimitives('core')   } \NC \NR
+\NC etex   \NC \ctxlua{document.showprimitives('etex')   } \NC \NR
+\NC luatex \NC \ctxlua{document.showprimitives('luatex') } \NC \NR
 \LL
 \stoptabulate
 

@@ -744,7 +744,7 @@ variable = function(name)
 end
 
 expansion = function(name)
-    local expansions =instance.expansions
+    local expansions = instance.expansions
     local name   = name and lpegmatch(dollarstripper,name)
     local result = name and expansions[name]
     return result ~= nil and result or ""

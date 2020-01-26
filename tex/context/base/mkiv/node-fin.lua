@@ -12,10 +12,12 @@ if not modules then modules = { } end modules ['node-fin'] = {
 -- leaders are also triggers ... see colo-ext for an example (negate a box)
 
 local next, type, format = next, type, string.format
+local setmetatableindex = table.setmetatableindex
 
 local attributes, nodes, node = attributes, nodes, node
 
 local nuts               = nodes.nuts
+local tonut              = nodes.tonut
 
 local getnext            = nuts.getnext
 local getid              = nuts.getid
@@ -26,6 +28,7 @@ local getwidth           = nuts.getwidth
 local getwhd             = nuts.getwhd
 local getorientation     = nuts.getorientation
 local has_dimensions     = nuts.has_dimensions
+local getbox             = nuts.getbox
 
 local setlist            = nuts.setlist
 local setleader          = nuts.setleader
@@ -39,16 +42,9 @@ local nextnode           = nuts.traversers.node
 local nodecodes          = nodes.nodecodes
 local rulecodes          = nodes.rulecodes
 
------ normalrule_code    = rulecodes.normal
 local boxrule_code       = rulecodes.box
 local imagerule_code     = rulecodes.image
 local emptyrule_code     = rulecodes.empty
------ userrule_code      = rulecodes.user
------ overrule_code      = rulecodes.over
------ underrule_code     = rulecodes.under
------ fractionrule_code  = rulecodes.fraction
------ radicalrule_code   = rulecodes.radical
------ outlinerule_code   = rulecodes.outline
 
 local glyph_code         = nodecodes.glyph
 local disc_code          = nodecodes.disc
@@ -56,6 +52,9 @@ local glue_code          = nodecodes.glue
 local rule_code          = nodecodes.rule
 local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
+
+local texlists           = tex.lists
+local texgetnest         = tex.getnest
 
 local states             = attributes.states
 local numbers            = attributes.numbers
@@ -635,3 +634,100 @@ end
 statistics.register("attribute processing time", function()
     return statistics.elapsedseconds(attributes,"front- and backend")
 end)
+
+-- -- --
+
+do
+
+    local cleaners = { }
+    local trace    = true -- false
+
+    function attributes.cleanup()
+        if next(cleaners) then
+            local values = setmetatableindex("table")
+
+            if trace then
+                starttiming(values)
+            end
+
+            local function check(l)
+                for n, id in nextnode, l do
+                    if id == hlist_code or id == vlist_code or id == glue_code then
+                        local l = getlist(n)
+                        if l then
+                            check(l)
+                        end
+                    end
+                    for a in next, cleaners do
+                        local v = getattr(n,a)
+                        if v then
+                         -- values[a] = values[a] + 1
+                            values[a][v] = true
+                        end
+                    end
+                end
+            end
+
+            local top = texgetnest("ptr")
+            for i=1,top do
+                local l = texgetnest(i)
+                if l then
+                    check(tonut(l.head))
+                end
+            end
+
+            do local l
+                l = tonut(texlists.page_ins_head)       if l then check(l) end
+                l = tonut(texlists.contrib_head)        if l then check(l) end
+                l = tonut(texlists.page_discards_head)  if l then check(l) end
+                l = tonut(texlists.split_discards_head) if l then check(l) end
+                l = tonut(texlists.page_head)           if l then check(l) end
+            end
+
+            -- todo: traverseboxes
+
+            for i=0,65535 do
+                local b = getbox(i)
+                if b then
+                    local l = getlist(b)
+                    if l then
+                        check(l)
+                    end
+                end
+            end
+
+            for a, t in next, values do
+                cleaners[a](a,t)
+            end
+
+            if trace then
+                stoptiming(values)
+                local a = table.sortedkeys(values)
+                local t = statistics.elapsedtime(values)
+                local r = tex.getcount("realpageno")
+                if #a == 0 then
+                    logs.report("attributes","cleaning up at page %i took %s seconds, no attributes",r,t)
+                else
+                    logs.report("attributes","cleaning up at page %i took %s seconds, attributes: % t",r,t,a)
+                end
+            end
+        end
+    end
+
+    -- not yet used but when we do ... delay a call till we enable it (attr-ini.mkiv)
+
+    -- local function show(a,t) for k, v in next, t do print(a,k) end end
+    --
+    -- attributes.registercleaner(  1, show)
+    -- attributes.registercleaner(  2, show)
+
+    function attributes.registercleaner(a,f)
+        cleaners[a] = f
+    end
+
+    implement {
+        name    = "cleanupattributes",
+        actions = attributes.cleanup,
+    }
+
+end

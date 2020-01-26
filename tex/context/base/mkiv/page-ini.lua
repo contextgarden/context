@@ -16,6 +16,8 @@ local texgetcount  = tex.getcount
 local context      = context
 local ctx_doifelse = commands.doifelse
 
+local implement    = interfaces.implement
+
 local data         = table.setmetatableindex("table")
 local last         = 0
 local pages        = structures.pages
@@ -177,19 +179,19 @@ luatex.registerpageactions(function()
     end
 end)
 
-interfaces.implement {
+implement {
     name      = "markpage",
     arguments = "2 strings",
     actions   = pages.mark
 }
 
-interfaces.implement {
+implement {
     name      = "doifelsemarkedpage",
     arguments = "string",
     actions   = { marked, ctx_doifelse }
 }
 
-interfaces.implement {
+implement {
     name      = "markedpages",
     arguments = "string",
     actions   = function(name)
@@ -200,7 +202,7 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "startmarkpages",
     arguments = "string",
     actions   = function(name)
@@ -208,7 +210,7 @@ interfaces.implement {
     end
 }
 
-interfaces.implement {
+implement {
     name      = "stopmarkpages",
     arguments = "string",
     actions   = function(name)
@@ -216,4 +218,24 @@ interfaces.implement {
             remove(autolist)
         end
     end
+}
+
+local tonut    = nodes.tonut
+local nextlist = nodes.nuts.traversers.list
+local texlists = tex.lists
+
+implement {
+    name    = "doifelsependingpagecontent",
+    actions = function()
+        local h = texlists.contrib_head
+     -- local t = texlists.contrib_tail
+        local p = false
+        if h then
+            for n in nextlist, tonut(h) do
+                p = true
+                break
+            end
+        end
+        ctx_doifelse(p)
+    end,
 }

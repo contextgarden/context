@@ -198,7 +198,7 @@ local function expandedhome()
     return usedhomedir
 end
 
-local dohome  = ((P("~")+P("$HOME")+P("%HOME%"))/expandedhome)^0
+local dohome  = ((P("~") + P("$HOME") + P("%HOME%")) / expandedhome)^0
 local cleanup = Cs(donegation * dohome * doslashes)
 
 resolvers.cleanpath = function(str)

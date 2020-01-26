@@ -51,8 +51,6 @@ local pdfreserveobject     = lpdf.reserveobject
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 
-local fontstreams          = fonts.hashes.streams
-
 local report_fonts         = logs.reporter("backend","fonts")
 
 local trace_fonts          = false

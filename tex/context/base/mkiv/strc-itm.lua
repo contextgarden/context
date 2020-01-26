@@ -36,8 +36,8 @@ local function analyzeitemgroup(name,level)
     local stamp = f_stamp(name,n)
     local n = getvariable(stamp,level,1,0)
     local w = getvariable(stamp,level,2,0)
-    texsetcount("local","c_strc_itemgroups_max_items",n)
-    texsetdimen("local","d_strc_itemgroups_max_width",w)
+    texsetcount("c_strc_itemgroups_max_items",n)
+    texsetdimen("d_strc_itemgroups_max_width",w)
 end
 
 local function registeritemgroup(name,level,nofitems,maxwidth)
