@@ -448,32 +448,6 @@ id in the range 0 to 255; the returned \type {w} is in AFM units.
 <number> d = char_depth(mp,<string> fontname, <number> char)
 \stopfunctioncall
 
-These are rather useless and might become obsolete.
-
-\subsection{\type {get_[boolean|numeric|string|path]}}
-
-\libindex{get_boolean}
-\libindex{get_numeric}
-\libindex{get_path}
-\libindex{get_string}
-
-When a script call brings you from the \METAPOST\ run (temporarily) back to
-\LUA\ you can access variables, but only if they are known (so for instance
-anonymous capsules like loop variables are not accessible).
-
-\startfunctioncall
-<boolean> w = get_boolean(mp,<string> name)
-<number>  n = get_numeric(mp,<string> name)
-<string>  s = get_string (mp,<string> name)
-<table>   p = get_path   (mp,<string> name)
-\stopfunctioncall
-
-The path is returned a a table with subtables that have six numbers: the
-coordinates of the point, pre- and postcontrol. A \type {cycle} fields indicates
-if a path is cyclic.
-
-\stopsection
-
 \stopchapter
 
 \stopcomponent

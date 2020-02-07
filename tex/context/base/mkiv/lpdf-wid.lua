@@ -252,19 +252,24 @@ job.register('job.fileobjreferences.collected', tobesavedobjrefs, initializer)
 local function flushembeddedfiles()
     if enabled and next(filestreams) then
         local e = pdfarray()
+        local f = pdfarray()
         for tag, reference in sortedhash(filestreams) do
             if not reference then
                 report_attachment("unreferenced file, tag %a",tag)
---             elseif referenced[tag] == "hidden" then
-            elseif referenced[tag] ~= "hidden" then
+            elseif referenced[tag] == "hidden" then
                 e[#e+1] = pdfstring(tag)
                 e[#e+1] = reference -- already a reference
+                f[#f+1] = reference -- collect all file description references
             else
-         --     -- messy spec ... when annot not in named else twice in menu list acrobat
+             -- -- messy spec ... when annot not in named else twice in menu list acrobat
+                f[#f+1] = reference
             end
         end
         if #e > 0 then
             lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
+        end
+        if #f > 0 then -- all associated files must have a relationship to the PDF document (global or part)
+            lpdf.addtocatalog("AF", pdfreference(pdfflushobject(f))) -- global (Catalog)
         end
     end
 end

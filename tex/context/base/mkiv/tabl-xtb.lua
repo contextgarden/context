@@ -478,35 +478,49 @@ end
 function xtables.initialize_construct()
     local r = data.currentrow
     local c = data.currentcolumn + 1
+    local settings = data.settings
     local rows = data.rows
     local row = rows[r]
     while row[c].span do -- can also be previous row ones
         c = c + 1
     end
     data.currentcolumn = c
-    local widths  = data.widths
-    local heights = data.heights
-    local depths  = data.depths
+    local widths    = data.widths
+    local heights   = data.heights
+    local depths    = data.depths
+    local distances = data.distances
     --
     local drc = row[c]
     local wd  = drc.wd
     local ht  = drc.ht
     local dp  = drc.dp
+    local nx  = drc.nx - 1
+    local ny  = drc.ny - 1
     --
     local width  = widths[c]
     local height = heights[r]
     local depth  = depths[r] -- problem: can be the depth of a one liner
     --
-    for x=1,drc.nx-1 do
-        width = width + widths[c+x]
+    local total  = height + depth
+    --
+    if nx > 0 then
+        for x=1,nx do
+            width = width + widths[c+x] + distances[c+x-1]
+        end
+        local distance = settings.columndistance
+        if distance ~= 0 then
+            width = width + nx * distance
+        end
     end
     --
-    local total = height + depth
-    local ny = drc.ny
-    if ny > 1 then
-        for y=1,ny-1 do
+    if ny > 0 then
+        for y=1,ny do
             local nxt = r + y
             total = total + heights[nxt] + depths[nxt]
+        end
+        local distance = settings.rowdistance
+        if distance ~= 0 then
+            total = total + ny * distance
         end
     end
     --

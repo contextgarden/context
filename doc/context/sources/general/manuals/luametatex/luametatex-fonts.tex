@@ -9,7 +9,7 @@
 \startsection[title={Introduction}]
 
 Only traditional font support is built in, anything more needs to be implemented
-in \LUA. This is conform the \LUATEX\ philosophy. When you pass a font to the
+in \LUA. This conforms to the \LUATEX\ philosophy. When you pass a font to the
 frontend only the dimensions matter, as these are used in typesetting, and
 optionally ligatures and kerns when you rely on the built|-|in font handler. For
 math some extra data is needed, like information about extensibles and next in
@@ -79,37 +79,14 @@ The names and their internal remapping are:
 \LL
 \stoptabulate
 
-The \type {characters} table is a list of character hashes indexed by an integer
-number. The number is the \quote {internal code} \TEX\ knows this character by.
-For proper paragraph building and math rendering the following fields can be
-present in en entry in the \type {characters} table. You can of course add all
-kind of extra fields. The engine only uses those that it needs for typesetting
-a paragraph or formula.
-
-Each character hash itself is a hash. For example, here is the character \quote
-{f} (decimal 102) in the font \type {cmr10 at 10pt}. The numbers that represent
-dimensions are in scaled points.
-
-\starttyping
-[102] = {
-    ["width"]  = 200250,
-    ["height"] = 455111,
-    ["depth"]  = 0,
-    ["italic"] = 50973,
-    ["kerns"]  = {
-        [63] = 50973,
-        [93] = 50973,
-        [39] = 50973,
-        [33] = 50973,
-        [41] = 50973
-    },
-    ["ligatures"] = {
-        [102] = { ["char"] = 11, ["type"] = 0 },
-        [108] = { ["char"] = 13, ["type"] = 0 },
-        [105] = { ["char"] = 12, ["type"] = 0 }
-    }
-}
-\stoptyping
+The \type {characters} table is a \LUA\ hash table where the keys are integers.
+When a character in the input is turned into a glyph node, it gets a character
+code that normally refers to an entry in that table. For proper paragraph
+building and math rendering the following fields can be present in an entry in
+the \type {characters} table. You can of course add all kind of extra fields. The
+engine only uses those that it needs for typesetting a paragraph or formula. The
+subtables that define ligatures and kerns are also hashes with integer keys, and
+these indices should point to entries in the main characters table.
 
 Providing ligatures and kerns this way permits \TEX\ to construct ligatures and
 add inter|-|character kerning. However, normally you will use an \OPENTYPE\ font
@@ -138,6 +115,31 @@ has no ligatures and kerns and is normally not processed at all.
 \NC \type {mathkern}         \NC table   \NC math cut-in specifications \NC\NR
 \LL
 \stoptabulate
+
+For example, here is the character \quote {f} (decimal 102) in the font \type
+{cmr10 at 10pt}. The numbers that represent dimensions are in scaled points.
+
+\starttyping
+[102] = {
+    ["width"]  = 200250,
+    ["height"] = 455111,
+    ["depth"]  = 0,
+    ["italic"] = 50973,
+    ["kerns"]  = {
+        [63] = 50973,
+        [93] = 50973,
+        [39] = 50973,
+        [33] = 50973,
+        [41] = 50973
+    },
+    ["ligatures"] = {
+        [102] = { ["char"] = 11, ["type"] = 0 },
+        [108] = { ["char"] = 13, ["type"] = 0 },
+        [105] = { ["char"] = 12, ["type"] = 0 }
+    }
+}
+\stoptyping
+
 
 Two very special string indexes can be used also: \type {left_boundary} is a
 virtual character whose ligatures and kerns are used to handle word boundary
@@ -235,7 +237,7 @@ indicates the final insertion point.
 % \topicindex {fonts+virtual}
 
 Virtual fonts have been introduced to overcome limitations of good old \TEX. They
-were mostly use for providing a direct mapping from for instance accented
+were mostly used for providing a direct mapping from for instance accented
 characters onto a glyph. The backend was responsible for turning a reference to a
 character slot into a real glyph, possibly constructed from other glyphs. In our
 case there is no backend so there is also no need to pass this information
@@ -247,12 +249,11 @@ A virtual character can itself point to virtual characters but be careful with
 nesting as you can create loops and overflow the stack (which often indicates an
 error anyway).
 
-At the font level there can be a \type {fonts} an (indexed) \LUA\ table. The
-values are one- or two|-|key hashes themselves, each entry indicating one of the
-base fonts in a virtual font. In case your font is referring to itself in for
-instance a virtual font, you can use the \type {slot} command with a zero font
-reference, which indicates that the font itself is used. So, a table looks like
-this:
+At the font level there can be a an (indexed) \type {fonts} table. The values are
+one- or two|-|key hashes themselves, each entry indicating one of the base fonts
+in a virtual font. In case your font is referring to itself in for instance a
+virtual font, you can use the \type {slot} command with a zero font reference,
+which indicates that the font itself is used. So, a table looks like this:
 
 \starttyping
 fonts = {

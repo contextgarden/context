@@ -16,11 +16,11 @@
 
 \TEX's nodes are represented in \LUA\ as userdata objects with a variable set of
 fields or by a numeric identifier when requested. When you print a node userdata
-object you will see these numbers. In the following syntax tables, such as the
-type of such a userdata object is represented as \syntax {<node>}.
+object you will see these numbers. In the following syntax tables the type of
+such a userdata object is represented as \syntax {<node>}.
 
 \blank
-\dontleavehmode {\bf The return values of \type {node.types()} are:} \showtypes
+\dontleavehmode {\bf The return values of \type {node.types} are:} \showtypes
 \blank
 
 In \ETEX\ the \prm {lastnodetype} primitive has been introduced. With this
@@ -41,7 +41,7 @@ also reported with this helper, but they are backend specific.
 \def\ShowValues#1{
     \blank
     \dontleavehmode
-    {\bf The return values of \type {node.values("#1"} are:}
+    {\bf The return values of \type {node.values("#1")} are:}
     \showvalues{#1}
     \blank
 }
@@ -489,7 +489,7 @@ bits for the \type {subtype} field are:
 \stoptabulate
 
 The \type {expansion_factor} has been introduced as part of the separation
-between font- and backend. It is the result of extensive experiments with a more
+between front- and backend. It is the result of extensive experiments with a more
 efficient implementation of expansion. Early versions of \LUATEX\ already
 replaced multiple instances of fonts in the backend by scaling but contrary to
 \PDFTEX\ in \LUATEX\ we now also got rid of font copies in the frontend and
@@ -1011,7 +1011,7 @@ providing an overview of the possible top|-|level \type {id} types.
 <table> t = node.types()
 \stopfunctioncall
 
-when we issue this command, we get a table. The currently visible types are
+When we issue this command, we get a table. The currently visible types are
 \inlineluavalue { node.types() } where the numbers are the internal identifiers.
 Only those nodes are reported that make sense to users so there can be gaps in
 the range of numbers.
@@ -1031,7 +1031,7 @@ This converts a single type name to its internal numeric representation.
 
 The \type {node.id("glyph")} command returns the number \inlineluavalue { node.id
 ("glyph") } and \type {node.id("hlist")} returns \inlineluavalue { node.id
-("hlist") } where the number don't relate to importance or some ordering; they
+("hlist") } where the numbers don't relate to importance or some ordering; they
 just appear in the order that is handy for the engine. Commands like this are
 rather optimized so performance should be ok but you can of course always store
 the id in a \LUA\ number.
@@ -1056,8 +1056,8 @@ there is no node with that id.
 \libindex {fields}
 \libindex {has_field}
 
-This function returns an indexed table with valid field names for a particular type of
-node.
+This function returns an indexed table with valid field names for a particular
+type of node.
 
 \startfunctioncall
 <table> t = node.fields(<number|string> id)
@@ -1185,9 +1185,9 @@ affect all the nodes that share that list.
 node.write(<node> n)
 \stopfunctioncall
 
-This function that will append a node list to \TEX's \quote {current list}. The
-node list is not deep|-|copied! There is no error checking either! You mignt need
-to enforce horizontal mode in order for this to work as expected.
+This function will append a node list to \TEX's \quote {current list}. The node
+list is not deep|-|copied! There is no error checking either! You might need to
+enforce horizontal mode in order for this to work as expected.
 
 \stopsubsubsection
 
@@ -1199,7 +1199,7 @@ to enforce horizontal mode in order for this to work as expected.
 
 \libindex {slide}
 
-This helper makes sure that the node lists is double linked and returns the found
+This helper makes sure that the node list is double linked and returns the found
 tail node.
 
 \startfunctioncall
@@ -1445,8 +1445,8 @@ experimental) convenience.
 This helper returns the location of the first match at or after node \type {n}:
 
 \startfunctioncall
-<node> n = node.traverse_list(<node> n, <integer> subtype)
-<node> n, subtype = node.traverse_list(<node> n)
+<node> n = node.find_node(<node> n, <integer> subtype)
+<node> n, subtype = node.find_node(<node> n)
 \stopfunctioncall
 
 \stopsubsubsection

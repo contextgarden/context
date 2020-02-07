@@ -351,4 +351,15 @@ return {
           <path d="M0,5 h-3 M0,7 h3 M0,9 h-1" stroke="rgba(255,0,0,.5)" />
         </svg>
     ]],
+    [[
+        svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60,15 L60,110 M30,40 L90,40 M30,75 L90,75 M30,110 L90,110" stroke="grey" />
+          <text text-anchor="start" x="60" y="40">A</text>
+          <text text-anchor="middle" x="60" y="75">A</text>
+          <text text-anchor="end" x="60" y="110">A</text>
+          <circle cx="60" cy="40" r="3" fill="red" />
+          <circle cx="60" cy="75" r="3" fill="red" />
+          <circle cx="60" cy="110" r="3" fill="red" />
+        </svg>
+    ]],
 }

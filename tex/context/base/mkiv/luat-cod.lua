@@ -139,8 +139,7 @@ end
 if LUATEXVERSION == nil then
     LUATEXVERSION = status.luatex_revision
     LUATEXVERSION = status.luatex_version/100
-               -- + tonumber(LUATEXVERSION)/1000
-                  + (tonumber(LUATEXVERSION) or (string.byte(LUATEXVERSION)-string.byte("a")+10))/1000
+                  + tonumber(LUATEXVERSION)/10000
 end
 
 if CONTEXTLMTXMODE == nil then

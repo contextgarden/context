@@ -381,6 +381,7 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
             factor = 0
         end
     end
+
     if pos_r == righttoleft_code then
         pos_h = pos_h - width
     end
@@ -390,6 +391,7 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
     if vfcommands then
         flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommands) -- also f ?
     else
+        -- kind of messy that we do orientation here and offsets elsewhere
         local orientation = data.orientation
         if orientation and (orientation == 1 or orientation == 3) then
             local x = data.xoffset
@@ -401,10 +403,10 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
                 pos_v = pos_v + y
             end
             pushorientation(orientation,pos_h,pos_v)
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
             poporientation(orientation,pos_h,pos_v)
         else
-            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
+            flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
         end
     end
     return width, height, depth

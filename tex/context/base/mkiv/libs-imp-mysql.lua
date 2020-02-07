@@ -192,5 +192,7 @@ methods.mysql = {
     celltemplate = celltemplate,
 }
 
-package.loaded["util-sql-imp-mysql"] = methods.mysql
-package.loaded[libname]              = methods.mysql
+package.loaded["util-sql-imp-ffi"]     = methods.mysql
+package.loaded["util-sql-imp-mysql"]   = methods.mysql
+package.loaded["util-sql-imp-library"] = methods.mysql
+package.loaded[libname]                = methods.mysql

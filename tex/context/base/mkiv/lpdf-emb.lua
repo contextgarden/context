@@ -1732,21 +1732,27 @@ do
                 local nofglyphs  = 0
                 local scale      = 10 * parameters.size/parameters.designsize
                 local factor     = bpfactor / scale
-                local units      = parameters.units / 1000
+             -- local units      = parameters.units -- / 1000
+                local units      = 1000
                 local function pngtopdf(glyph,data)
                  -- local width   = data.width
                     local info    = graphics.identifiers.png(glyph.data,"string")
                     info.enforcecmyk = pngshapes.enforcecmyk
                     local image   = lpdf.injectors.png(info,"string")
-                    embedimage(image)
-                    nofglyphs     = nofglyphs + 1
                     local width   = (data.width or 0) * factor
-                    local xoffset = (glyph.x or 0) / units
-                    local yoffset = (glyph.y or 0) / units
-                    local name    = f_glyph(nofglyphs)
-                    xforms[name]  = pdfreference(image.objnum)
-                    local pdf     = f_image_xy(width,xoffset,yoffset,name)
-                    return pdf, width
+                    local pdfdata
+                    if image then
+                        embedimage(image)
+                        nofglyphs     = nofglyphs + 1
+                        local xoffset = (glyph.x or 0) / units
+                        local yoffset = (glyph.y or 0) / units
+                        local name    = f_glyph(nofglyphs)
+                        xforms[name]  = pdfreference(image.objnum)
+                        pdfdata       = f_image_xy(width,xoffset,yoffset,name)
+                    else
+                        pdfdata = f_stream(width) -- todo: make placeholder
+                    end
+                    return pdfdata, width
                 end
                 local function closepng()
                     pngshapes = nil

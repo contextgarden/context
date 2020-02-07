@@ -273,7 +273,7 @@ on the actual \TEX\ values. As a result, most of the \LUA\ table operators (like
 \type {pairs} and \type {#}) do not work on such items.
 
 At the moment, it is possible to access almost every parameter that you can use
-after \prm {the}, is a single tokens or is sort of special in \TEX. This excludes
+after \prm {the}, is a single token or is sort of special in \TEX. This excludes
 parameters that need extra arguments, like \type {\the\scriptfont}. The subset
 comprising simple integer and dimension registers are writable as well as
 readable (like \prm {tracingcommands} and \prm {parindent}).
@@ -1132,6 +1132,11 @@ The known fields are:
 \NC \type{mathstyle}   \NC number  \NC mmode \NC the current \lpr {mathstyle} \NC \NR
 \LL
 \stoptabulate
+
+When a second string argument is given to the \type {getnest}, the value with
+that name is returned. Of course the level must be valid. When \type {setnest}
+gets a third argument that value is assigned to the field given as second
+argument.
 
 \stopsubsection
 
@@ -2171,7 +2176,7 @@ a bit but for passing strings conversion to and from tokens has to be done anywa
 
 \stopsubsection
 
-\startsubsection[title= {Picking up one token}]
+\startsubsection[title={Picking up one token}]
 
 \libindex {get_next}
 \libindex {scan_token}

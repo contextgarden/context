@@ -26304,7 +26304,7 @@ local ownlibs = { -- order can be made better
     'data-tmf.lua',
     'data-lst.lua',
 
-    'util-lib.lua', -- swiglib
+    optional and 'libs-ini.lua' or 'util-lib.lua',
 
     'luat-sta.lua',
     'luat-fmt.lua',

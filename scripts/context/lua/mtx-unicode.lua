@@ -699,9 +699,12 @@ do
 
         local hash = { }
 
+        local crap = lpeg.P("e") * lpeg.R("09","..","09")^1 * lpeg.P(" ")^1
+
         local replace = lpeg.replacer {
-            ["#"] = "hash",
-            ["*"] = "asterisk"
+            [crap] = "",
+            ["#"]  = "hash",
+            ["*"]  = "asterisk",
         }
 
         for i=1,#t do

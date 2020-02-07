@@ -74,6 +74,7 @@ local pdf_form             = pdfconstant("Form")
 
 local fonthashes           = fonts.hashes
 local characters           = fonthashes.characters
+local descriptions         = fonthashes.descriptions
 local parameters           = fonthashes.parameters
 local properties           = fonthashes.properties
 
@@ -146,6 +147,7 @@ end
 -- fonts
 
 local fontcharacters
+local fontdescriptions
 local fontparameters
 local fontproperties
 local usedcharacters = setmetatableindex("table")
@@ -161,6 +163,7 @@ lpdf.usedcharacters = usedcharacters
 
 local function updatefontstate(font)
     fontcharacters   = characters[font]
+    fontdescriptions = descriptions[font]
     fontparameters   = parameters[font]
     fontproperties   = properties[font]
     local size       = fontparameters.size -- or bad news
@@ -373,6 +376,32 @@ local flushcharacter  do
     -- as fontparameters already has checked / set it we can also have a variable
     -- for it so
 
+    local naturalwidth = nil
+
+    local naturalwidths = setmetatableindex(function(t,font)
+        local d = descriptions[font]
+        local c = characters[font]
+        local f = parameters[font].hfactor
+        local v = setmetatableindex(function(t,char)
+            local e = d and d[char]
+            local w = 0
+            if e then
+                w = e.width
+                if w then
+                    w =  w * f
+                end
+            end
+            e = c[char]
+            if e then
+                w = e.width or 0
+            end
+            t[char] = w
+            return w
+        end)
+        t[font] = v
+        return v
+    end)
+
     local function setup_fontparameters(font,factor,f,e)
         local slant   = fontparameters.slantfactor   or 0
         local extend  = fontparameters.extendfactor  or 1
@@ -401,6 +430,8 @@ local flushcharacter  do
         if format == "opentype" or format == "type1" then
             fs = fs * 1000 / fontparameters.units -- can we avoid this ?
         end
+        --
+        naturalwidth = naturalwidths[font]
     end
 
     -- This only saves a little on hz because there we switch a lot of
@@ -512,7 +543,7 @@ local flushcharacter  do
 
     local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
 
-    flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,naturalwidth,factor,width,f,e)
+    flushcharacter = function(current,pos_h,pos_v,pos_r,font,char,data,f,e,factor) -- ,naturalwidth,width)
         if need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur or mode == "page" then
             pdf_goto_textmode()
             setup_fontparameters(font,factor,f,e)
@@ -523,12 +554,12 @@ local flushcharacter  do
         end
         local move = calc_pdfpos(pos_h,pos_v)
 
-        if trace_threshold then
-            report(
-                "font %i, char %C, factor %i, width %p, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                font,char,factor,width,naturalwidth,move,need_tm,pos_h,tj_delta,threshold,cw
-            )
-        end
+     -- if trace_threshold then
+     --        report(
+     --            "font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
+     --            font,char,factor,naturalwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
+     --        )
+     -- end
 
         if move or need_tm then
             if not need_tm then
@@ -569,7 +600,8 @@ local flushcharacter  do
         end
 
     --  cw = cw + naturalwidth
-        cw = cw + width
+    --  cw = cw + width
+        cw = cw + naturalwidth[char]
 
         local index = data.index or char
 
@@ -2407,67 +2439,69 @@ updaters.register("backend.update.pdf",function()
     end
 
     local function embedimage(specification)
-        lastindex = lastindex + 1
-        index     = lastindex
-        specification.index = index
-        local xobject = pdfdictionary { }
-        if not specification.notype then
-            xobject.Type     = pdf_xobject
-            xobject.Subtype  = pdf_form
-            xobject.FormType = 1
-        end
-        local bbox = specification.bbox
-        if bbox and not specification.nobbox then
-            xobject.BBox = pdfarray {
-                bbox[1] * bpfactor,
-                bbox[2] * bpfactor,
-                bbox[3] * bpfactor,
-                bbox[4] * bpfactor,
-            }
-        end
-        xobject = xobject + specification.attr
-        if bbox and not specification.width then
-            specification.width = bbox[3]
-        end
-        if bbox and not specification.height then
-            specification.height = bbox[4]
-        end
-        local dict = xobject()
-        --
-        nofobjects     = nofobjects + 1
-        local objnum   = nofobjects
-        local nolength = specification.nolength
-        local stream   = specification.stream or specification.string
-        --
-        -- We cannot set type in native img so we need this hack or
-        -- otherwise we need to patch too much. Better that i write
-        -- a wrapper then. Anyway, it has to be done better: a key that
-        -- tells either or not to scale by xsize/ysize when flushing.
-        --
-        if not specification.type then
-            local kind = specification.kind
-            if kind then
-                -- take that one
-            elseif attr and find(attr,"BBox") then
-                kind = img_stream
-            else
-                -- hack: a bitmap
-                kind = img_none
+        if specification then
+            lastindex = lastindex + 1
+            index     = lastindex
+            specification.index = index
+            local xobject = pdfdictionary { }
+            if not specification.notype then
+                xobject.Type     = pdf_xobject
+                xobject.Subtype  = pdf_form
+                xobject.FormType = 1
             end
-            specification.type = kind
-            specification.kind = kind
+            local bbox = specification.bbox
+            if bbox and not specification.nobbox then
+                xobject.BBox = pdfarray {
+                    bbox[1] * bpfactor,
+                    bbox[2] * bpfactor,
+                    bbox[3] * bpfactor,
+                    bbox[4] * bpfactor,
+                }
+            end
+            xobject = xobject + specification.attr
+            if bbox and not specification.width then
+                specification.width = bbox[3]
+            end
+            if bbox and not specification.height then
+                specification.height = bbox[4]
+            end
+            local dict = xobject()
+            --
+            nofobjects     = nofobjects + 1
+            local objnum   = nofobjects
+            local nolength = specification.nolength
+            local stream   = specification.stream or specification.string
+            --
+            -- We cannot set type in native img so we need this hack or
+            -- otherwise we need to patch too much. Better that i write
+            -- a wrapper then. Anyway, it has to be done better: a key that
+            -- tells either or not to scale by xsize/ysize when flushing.
+            --
+            if not specification.type then
+                local kind = specification.kind
+                if kind then
+                    -- take that one
+                elseif attr and find(attr,"BBox") then
+                    kind = img_stream
+                else
+                    -- hack: a bitmap
+                    kind = img_none
+                end
+                specification.type = kind
+                specification.kind = kind
+            end
+            local compress = compresslevel and compresslevel > 0 or nil
+            flushstreamobj(stream,objnum,dict,compress,nolength)
+            specification.objnum      = objnum
+            specification.rotation    = specification.rotation or 0
+            specification.orientation = specification.orientation or 0
+            specification.transform   = specification.transform or 0
+            specification.stream      = nil
+            specification.attr        = nil
+            specification.type        = specification.kind or specification.type or img_none
+            indices[index]            = specification -- better create a real specification
+            return specification
         end
-        local compress = compresslevel and compresslevel > 0 or nil
-        flushstreamobj(stream,objnum,dict,compress,nolength)
-        specification.objnum      = objnum
-        specification.rotation    = specification.rotation or 0
-        specification.orientation = specification.orientation or 0
-        specification.transform   = specification.transform or 0
-        specification.stream      = nil
-        specification.attr        = nil
-        specification.type        = specification.kind or specification.type or img_none
-        indices[index]            = specification -- better create a real specification
-        return specification
     end
 
     codeinjections.embedimage = embedimage

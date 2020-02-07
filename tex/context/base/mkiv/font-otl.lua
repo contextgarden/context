@@ -534,6 +534,9 @@ local converters = {
     }
 }
 
+-- We can get differences between daylight saving etc ... but it makes no sense to
+-- mess with trickery .. so be it when you use a different binary.
+
 local function checkconversion(specification)
     local filename  = specification.filename
     local converter = converters[lower(file.suffix(filename))]

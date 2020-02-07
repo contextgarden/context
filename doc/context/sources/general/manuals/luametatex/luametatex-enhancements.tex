@@ -14,7 +14,7 @@ From day one, \LUATEX\ has offered extra features compared to the superset of
 \PDFTEX, which includes \ETEX, and \ALEPH. This has not been limited to the
 possibility to execute \LUA\ code via \prm {directlua}, but \LUATEX\ also adds
 functionality via new \TEX|-|side primitives or extensions to existing ones. The
-same is true fir \LUAMETATEX. Some primitives have \type {luatex} in their name
+same is true for \LUAMETATEX. Some primitives have \type {luatex} in their name
 and there will be no \type {luametatex} variants. This is because we consider
 \LUAMETATEX\ to be \LUATEX 2\high{+}.
 
@@ -40,14 +40,10 @@ it may be needed to put these assignments before the above line:
 \stoptyping
 
 More fine|-|grained primitives control is possible and you can look up the
-details in \in {section} [luaprimitives]. For simplicity's sake, this manual
-assumes that you have executed the \prm {directlua} command as given above.
-
-The startup behaviour documented above is considered stable in the sense that
-there will not be backward|-|incompatible changes any more. We have promoted some
-rather generic \PDFTEX\ primitives to core \LUATEX\ ones, and a few that we
-inherited from \ALEPH\ (\OMEGA) are also promoted. Effectively this means that we
-now only have the \type {tex}, \type {etex} and \type {luatex} sets left.
+details in \in {section} [luaprimitives]. There are only three kinds of
+primitives: \type {tex}, \type {etex} and \type {luatex} but a future version
+might drop this and no longer make that distinction as it no longer serves
+a purpose.
 
 \stopsubsection
 
@@ -225,7 +221,7 @@ commands are:
 
 Fonts are loaded via \LUA\ and a minimal amount of information is kept at the
 \TEX\ end. Sharing resources is up to the loaders. The engine doesn't really care
-about what a character (or glyph) number represents (an \UNICODE\ or index) as it
+about what a character (or glyph) number represents (a \UNICODE\ or index) as it
 only is interested in dimensions.
 
 \stopsubsection
@@ -246,7 +242,7 @@ nodes that have for instance a \type {font} and \type {char} property and \typ
 {\kern 10pt} becomes a \nod {kern} node with a \type {width} property. Spaces are
 alien to \TEX\ as they are turned into \nod {glue} nodes. So, a simple paragraph
 is mostly a mix of sequences of \nod {glyph} nodes (words) and \nod {glue} nodes
-(spaces). A node can have a subtype to that it can be recognized as for instance
+(spaces). A node can have a subtype so that it can be recognized as for instance
 a space related glue.
 
 The sequences of characters at some point are extended with \nod {disc} nodes
@@ -271,7 +267,7 @@ and carry only the minimal amount of information needed. In traditional \TEX\ a
 character node only held the font and slot number, in \LUATEX\ we also store some
 language related information, the expansion factor, etc. Now that we have access
 to these nodes from \LUA\ it makes sense to be able to carry more information
-with an node and this is where attributes kick in.
+with a node and this is where attributes kick in.
 
 \stopsubsection
 
@@ -379,7 +375,7 @@ code:
 Later we will see that you can access properties of a node. The boxes here are so
 called \nod {hlist} nodes that have a field \type {list} that points to the
 content. Because the attributes are a list themselves you can access them by
-indexing the node (here we do that with \type {[a]}. Running this snippet gives:
+indexing the node (here we do that with \type {[a]}). Running this snippet gives:
 
 \start
     \getbuffer[tex]
@@ -597,7 +593,7 @@ function calls is that they are stored in the format (but without upvalues).
 
 Catcode tables are a new feature that allows you to switch to a predefined
 catcode regime in a single statement. You can have lots of different tables, but
-if you need a dozen you might wonder what you're doing. . This subsystem is
+if you need a dozen you might wonder what you're doing. This subsystem is
 backward compatible: if you never use the following commands, your document will
 not notice any difference in behaviour compared to traditional \TEX. The contents
 of each catcode table is independent from any other catcode table, and its
@@ -795,10 +791,10 @@ but faster (only measurable with millions of calls) and probably more convenient
 
 \topicindex {expansion}
 
-The \lpr {expanded} primitive takes a token list and expands it content which can
+The \lpr {expanded} primitive takes a token list and expands its content which can
 come in handy: it avoids a tricky mix of \prm {expandafter} and \prm {noexpand}.
 You can compare it with what happens inside the body of an \prm {edef}. But this
-kind of expansion it still doesn't expand some primitive operations.
+kind of expansion still doesn't expand some primitive operations.
 
 \startbuffer
 \newcount\NumberOfCalls
@@ -890,14 +886,14 @@ so called prefixed commands (except box assignments).
 
 \startsubsection[title={\lpr {ignorepars}}]
 
-This primitives is like \prm {ignorespaces} but also skips paragraph ending
+This primitive is like \prm {ignorespaces} but also skips paragraph ending
 commands (normally \prm {par} and empty lines).
 
 \stopsubsection
 
 \startsubsection[title={\lpr {futureexpand}, \lpr {futureexpandis}, \lpr {futureexpandisap}}]
 
-These commands are use as:
+These commands are used as:
 
 \starttyping
 \futureexpand\sometoken\whenfound\whennotfound
@@ -1152,7 +1148,7 @@ measurable when you runs tens of millions of complex tests and in that case it i
 very likely to drown in the real action. It's a convenience mechanism, in the
 sense that it can make your code look a bit easier to follow.
 
-There is an nice side effect of this mechanism. When you define:
+There is a nice side effect of this mechanism. When you define:
 
 \starttyping
 \def\quitcondition{\orelse\iffalse}
@@ -1244,7 +1240,7 @@ the backend to include an image. The wrapping is needed because a special itself
 is a whatsit and as such has no dimensions.
 
 In \PDFTEX\ a special whatsit for images was introduced and that one {\em has}
-dimensions. As a consequence, in several places where the engine to deal with the
+dimensions. As a consequence, in several places where the engine deals with the
 dimensions of nodes, it now has to check the details of whatsits. By inheriting
 code from \PDFTEX, the \LUATEX\ engine also had that property. However, at some
 point this approach was abandoned and a more natural trick was used: images (and
@@ -1254,7 +1250,7 @@ dimensions, the code could be simplified.
 When direction nodes and localpar nodes also became first class nodes, whatsits
 again became just that: nodes representing whatever you want, but without
 dimensions, and therefore they could again be ignored when dimensions mattered.
-And, because images were disguised as rules, as mentioned ,their dimensions
+And, because images were disguised as rules, as mentioned, their dimensions
 automatically were taken into account. This seperation between front and backend
 cleaned up the code base already quite a bit.
 
@@ -1263,7 +1259,7 @@ engine never looks at subtypes of rules. That was up to the backend. This means
 that image support is not present in \LUAMETATEX. When an image specification was
 parsed the special properties, like the filename, or additional attributes, were
 stored in the backend and all that \LUATEX\ does is registering a reference to an
-image s specification in the rule node. But, having no backend means nothing is
+image's specification in the rule node. But, having no backend means nothing is
 stored, which in turn would make the image inclusion primitives kind of weird.
 
 Therefore you need to realize that contrary to \LUATEX, {\em in \LUAMETATEX\
@@ -1286,7 +1282,7 @@ of course be implemented in \LUA.
 \LL
 \stoptabulate
 
-An implementation probably should accepts the usual optional dimension parameters
+An implementation probably should accept the usual optional dimension parameters
 for \type {\use...resource} in the same format as for rules. With images, these
 dimensions are then used instead of the ones given to \lpr {useimageresource} but
 the original dimensions are not overwritten, so that a \lpr {useimageresource}
@@ -1494,7 +1490,7 @@ The approach is that we try to make node lists balanced but also try to avoid
 some side effects. What happens is quite intuitive if we forget about spaces
 (turned into glue) but even there what happens makes sense if you look at it in
 detail. However that logic makes in|-|group switching kind of useless when no
-proper nested grouping is used: switching from right to left several times
+properly nested grouping is used: switching from right to left several times
 nested, results in spacing ending up after each other due to nested mirroring. Of
 course a sane macro package will manage this for the user but here we are
 discussing the low level injection of directional information.

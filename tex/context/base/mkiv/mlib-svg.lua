@@ -75,23 +75,20 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
 -- One can run into pretty crazy images, like lines that are fills being clipped
 -- to some width. That's the danger of hiding yourself behind an interface I guess.
 
-local rawget, type, tonumber, tostring, next, setmetatable = rawget, type, tonumber, tostring, next, setmetatable
+local rawget, rawset, type, tonumber, tostring, next, setmetatable = rawget, rawset, type, tonumber, tostring, next, setmetatable
 
-local P, S, R, C, Ct, Cs, Cc, Cp, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Carg
+local P, S, R, C, Ct, Cs, Cc, Cp, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cg, lpeg.Cf, lpeg.Carg
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local pi, sin, cos, asin, sind, cosd, tan, abs, sqrt = math.pi, math.sin, math.cos, math.asin, math.sind, math.cosd, math.tan, math.abs, math.sqrt
+local sqrt = math.sqrt
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
 local gmatch, gsub, find, match, rep = string.gmatch, string.gsub, string.find, string.match, string.rep
 local formatters, fullstrip = string.formatters, string.fullstrip
-local extract = bit32.extract
 local utfsplit, utfbyte = utf.split, utf.byte
 
 local xmlconvert, xmlcollected, xmlcount, xmlfirst, xmlroot = xml.convert, xml.collected, xml.count, xml.first, xml.root
 local xmltext, xmltextonly = xml.text, xml.textonly
 local css = xml.css or { } -- testing
-
-local bpfactor = number.dimenfactors.bp
 
 local function xmlinheritattributes(c,pa)
     local at = c.at
@@ -134,6 +131,47 @@ local pathtracer = {
     ["fill-opacity"]   = ".75",
 }
 
+-- This is just an experiment. Todo: reset hash etc. Also implement
+-- an option handler.
+
+local svghash = false  do
+
+    local svglast = 0
+    local svglist = false
+
+    local function checkhash(t,k)
+        local n = svglast + 1
+        svglast = n
+        svglist[n] = k
+        t[k] = n
+        return n
+    end
+
+    function metapost.startsvghashing()
+        svglast = 0
+        svglist = { }
+        svghash = setmetatableindex(checkhash)
+    end
+
+    function metapost.stopsvghashing()
+        svglast = 0
+        svglist = false
+        svghash = false
+    end
+
+    interfaces.implement {
+        name      = "svghashed",
+        arguments = "integer",
+        actions   = function(n)
+            local t = svglist and svglist[n]
+            if t then
+                context(t)
+            end
+        end
+    }
+
+end
+
 -- We have quite some closures because otherwise we run into the local variable
 -- limitations. It doesn't always look pretty now, sorry. I'll clean up this mess
 -- some day (the usual nth iteration of code).
@@ -148,6 +186,8 @@ local pathtracer = {
 -- https://github.com/adobe-webplatform/Snap.svg/blob/b242f49e6798ac297a3dad0dfb03c0893e394464/src/path.js
 
 local a2c  do
+
+    local pi, sin, cos, tan, asin, abs = math.pi, math.sin, math.cos, math.tan, math.asin, math.abs
 
     local d120 = (pi * 120) / 180
     local pi2  = 2 * pi
@@ -400,6 +440,8 @@ local rgbcomponents, withcolor, thecolor  do
     local f_svgcolor = formatters['svgcolor(%.3N,%.3N,%.3N)']
     local f_svggray  = formatters['svggray(%.3N)']
     local f_svgname  = formatters['"%s"']
+
+    local extract = bit32.extract
 
     local triplets = setmetatableindex(function(t,k)
         -- we delay building all these strings
@@ -971,6 +1013,8 @@ local f_wrapped_stop  = formatters[") shifted (0,%N) scaled %N ;"]
 
 local handletransform, handleviewbox  do
 
+    local sind = math.sind
+
     --todo: better lpeg
 
     local f_rotatedaround   = formatters[" rotatedaround((%N,%N),%N)"]
@@ -1017,7 +1061,7 @@ local handletransform, handleviewbox  do
 
     local function skewx(x)
         if x then
-            return f_slanted_x(math.sind(-x))
+            return f_slanted_x(sind(-x))
         else
             return ""
         end
@@ -1025,7 +1069,7 @@ local handletransform, handleviewbox  do
 
     local function skewy(y)
         if y then
-            return f_slanted_y(math.sind(-y))
+            return f_slanted_y(sind(-y))
         else
             return ""
         end
@@ -1035,24 +1079,34 @@ local handletransform, handleviewbox  do
         return f_matrix(rx or 1, sx or 0, sy or 0, ry or 1, tx or 0, - (ty or 0))
     end
 
-    -- how to deal with units here?
+    -- How to deal with units here? Anyway, order seems to matter.
 
-    local p_transform = Cs ( (
-        P("translate") * p_numbers / translate       -- maybe xy
-      + P("scale")     * p_numbers / scale
-      + P("rotate")    * p_numbers / rotate
-      + P("matrix")    * p_numbers / matrix
-      + P("skewX")     * p_numbers / skewx
-      + P("skewY")     * p_numbers / skewy
-   -- + p_separator
-      + P(1)/""
-    )^1)
+    local p_transform = Cf ( Ct("") * (
+        lpegpatterns.whitespace^0 * Cg(
+            C("translate") * (p_numbers / translate)       -- maybe xy
+          + C("scale")     * (p_numbers / scale)
+          + C("rotate")    * (p_numbers / rotate)
+          + C("matrix")    * (p_numbers / matrix)
+          + C("skewX")     * (p_numbers / skewx)
+          + C("skewY")     * (p_numbers / skewy)
+        )
+    )^1, rawset)
 
     handletransform = function(at)
         local t = at.transform
         if t then
             local e = lpegmatch(p_transform,t)
-            return s_transform_start, f_transform_stop(e), t
+            if e then
+                e = concat({
+                    e.rotate    or "",
+                    e.skewX     or "",
+                    e.skewY     or "",
+                    e.scale     or "",
+                    e.translate or "",
+                    e.matrix    or "",
+                }, " ")
+                return s_transform_start, f_transform_stop(e), t
+            end
         end
     end
 
@@ -2340,6 +2394,7 @@ do
 
             local f_scaled  = formatters["\\svgscaled{%N}{%s}{%s}{%s}"]
             local f_normal  = formatters["\\svgnormal{%s}{%s}{%s}"]
+            local f_hashed  = formatters["\\svghashed{%s}"]
 
             -- We move to the outer (x,y) and when we have an inner offset we
             -- (need to) compensate for that outer offset.
@@ -2348,8 +2403,14 @@ do
          -- local f_text_normal_svg = formatters['(svgtext("%s") shifted (%N,%N))']
          -- local f_text_simple_svg = formatters['svgtext("%s")']
 
-            local f_text_normal_svg   = formatters['(textext.drt("%s") shifted (%N,%N))']
-            local f_text_simple_svg   = formatters['textext.drt("%s")']
+            local anchors = {
+                ["start"]  = "drt",
+                ["end"]    = "dflt",
+                ["middle"] = "d",
+            }
+
+            local f_text_normal_svg   = formatters['(textext.%s("%s") shifted (%N,%N))']
+            local f_text_simple_svg   = formatters['textext.%s("%s")']
 
             -- or just maptext
 
@@ -2480,7 +2541,9 @@ do
                             di = gsub(di,"%s+$","")
                         end
                         local chars = utfsplit(di)
-                        if tx then
+                        if svghash then
+                            di = f_hashed(svghash[di])
+                        elseif tx then
                             for i=1,#chars do
                                 chars[i] = f_poschar(
                                     (tx[i] or 0) - x,
@@ -2540,6 +2603,7 @@ do
                         v_fill = "black"
                     end
                     local color, opacity, invisible = fillproperties(v_fill,at)
+                    local anchor = anchors[at["text-anchor"] or "start"] or "drt"
                     local r = metapost.remappedtext(only)
                     if r then
                         if x == 0 and y == 0 then
@@ -2567,9 +2631,9 @@ do
                         result[#result+1] = s_stoplayer
                         result = concat(result)
                         if x == 0 and y == 0 then
-                            result = f_text_simple_svg(result)
+                            result = f_text_simple_svg(anchor,result)
                         else
-                            result = f_text_normal_svg(result,x,y)
+                            result = f_text_normal_svg(anchor,result,x,y)
                         end
                         flushobject(result,at,color,opacity)
                         if trace_text then
@@ -2777,101 +2841,107 @@ end
 -- a bit more efficient, because we now go to mp and back which is kind of redundant,
 -- but for now it will do.
 
-function metapost.includesvgfile(filename,offset) -- offset in sp
-    if lfs.isfile(filename) then
+do
+
+    local bpfactor = number.dimenfactors.bp
+
+    function metapost.includesvgfile(filename,offset) -- offset in sp
+        if lfs.isfile(filename) then
+            context.startMPcode("doublefun")
+                context('draw lmt_svg [ filename = "%s", offset = %N ] ;',filename,(offset or 0)*bpfactor)
+            context.stopMPcode()
+        end
+    end
+
+    function metapost.includesvgbuffer(name,offset) -- offset in sp
         context.startMPcode("doublefun")
-            context('draw lmt_svg [ filename = "%s", offset = %N ] ;',filename,(offset or 0)*bpfactor)
+            context('draw lmt_svg [ buffer = "%s", offset = %N ] ;',name or "",(offset or 0)*bpfactor)
         context.stopMPcode()
     end
-end
 
-function metapost.includesvgbuffer(name,offset) -- offset in sp
-    context.startMPcode("doublefun")
-        context('draw lmt_svg [ buffer = "%s", offset = %N ] ;',name or "",(offset or 0)*bpfactor)
-    context.stopMPcode()
-end
+    interfaces.implement {
+        name      = "includesvgfile",
+        actions   = metapost.includesvgfile,
+        arguments = { "string", "dimension" },
+    }
 
-interfaces.implement {
-    name      = "includesvgfile",
-    actions   = metapost.includesvgfile,
-    arguments = { "string", "dimension" },
-}
+    interfaces.implement {
+        name      = "includesvgbuffer",
+        actions   = metapost.includesvgbuffer,
+        arguments = { "string", "dimension" },
+    }
 
-interfaces.implement {
-    name      = "includesvgbuffer",
-    actions   = metapost.includesvgbuffer,
-    arguments = { "string", "dimension" },
-}
-
-function metapost.showsvgpage(data)
-    local dd = data.data
-    if not dd then
-        local fn = data.filename
-        dd = fn and table.load(fn)
-    end
-    if type(dd) == "table" then
-        local comment = data.comment
-        local offset  = data.pageoffset
-        local index   = data.index
-        local first   = math.max(index or 1,1)
-        local last    = math.min(index or #dd,#dd)
-        for i=first,last do
-            local d = setmetatableindex( {
-                data       = dd[i],
-                comment    = comment and i or false,
-                pageoffset = offset or nil,
-            }, data)
-            metapost.showsvgpage(d)
+    function metapost.showsvgpage(data)
+        local dd = data.data
+        if not dd then
+            local fn = data.filename
+            dd = fn and table.load(fn)
         end
-    elseif data.method == "code" then
-        context.startMPcode(doublefun)
-            context(metapost.svgtomp(data))
-        context.stopMPcode()
-    else
-        context.startMPpage { instance = "doublefun", offset = data.pageoffset or nil }
-            context(metapost.svgtomp(data))
+        if type(dd) == "table" then
             local comment = data.comment
-            if comment then
-                context("draw boundingbox currentpicture withcolor .6red ;")
-                context('draw textext.bot("\\strut\\tttf %s") ysized (10pt) shifted center bottomboundary currentpicture ;',comment)
+            local offset  = data.pageoffset
+            local index   = data.index
+            local first   = math.max(index or 1,1)
+            local last    = math.min(index or #dd,#dd)
+            for i=first,last do
+                local d = setmetatableindex( {
+                    data       = dd[i],
+                    comment    = comment and i or false,
+                    pageoffset = offset or nil,
+                }, data)
+                metapost.showsvgpage(d)
             end
-        context.stopMPpage()
-    end
-end
-
-function metapost.typesvgpage(data)
-    local dd = data.data
-    if not dd then
-        local fn = data.filename
-        dd = fn and table.load(fn)
-    end
-    if type(dd) == "table" then
-        local index = data.index
-        if index and index > 0 and index <= #dd then
-            data = dd[index]
+        elseif data.method == "code" then
+            context.startMPcode(doublefun)
+                context(metapost.svgtomp(data))
+            context.stopMPcode()
         else
-            data = nil
+            context.startMPpage { instance = "doublefun", offset = data.pageoffset or nil }
+                context(metapost.svgtomp(data))
+                local comment = data.comment
+                if comment then
+                    context("draw boundingbox currentpicture withcolor .6red ;")
+                    context('draw textext.bot("\\strut\\tttf %s") ysized (10pt) shifted center bottomboundary currentpicture ;',comment)
+                end
+            context.stopMPpage()
         end
     end
-    if type(data) == "string" and data ~= "" then
-        buffers.assign("svgpage",data)
-        context.typebuffer ({ "svgpage" }, { option = "XML", strip = "yes" })
-    end
-end
 
-function metapost.svgtopdf(data,...)
-    local mps = metapost.svgtomp(data,...)
-    if mps then
-        -- todo: special instance, only basics needed
-        local pdf = metapost.simple("metafun",mps,true,false,"svg")
-        if pdf then
-            return pdf
+    function metapost.typesvgpage(data)
+        local dd = data.data
+        if not dd then
+            local fn = data.filename
+            dd = fn and table.load(fn)
+        end
+        if type(dd) == "table" then
+            local index = data.index
+            if index and index > 0 and index <= #dd then
+                data = dd[index]
+            else
+                data = nil
+            end
+        end
+        if type(data) == "string" and data ~= "" then
+            buffers.assign("svgpage",data)
+            context.typebuffer ({ "svgpage" }, { option = "XML", strip = "yes" })
+        end
+    end
+
+    function metapost.svgtopdf(data,...)
+        local mps = metapost.svgtomp(data,...)
+        if mps then
+            -- todo: special instance, only basics needed
+            local pdf = metapost.simple("metafun",mps,true,false,"svg")
+            if pdf then
+                return pdf
+            else
+                -- message
+            end
         else
             -- message
         end
-    else
-        -- message
     end
+
 end
 
 do

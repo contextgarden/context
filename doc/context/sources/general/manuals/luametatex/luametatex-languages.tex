@@ -85,17 +85,6 @@ time (in case of a single|-|glyph word).
     \startitem
         \type {ligature}, for constructed ligatures bit 1 is set.
     \stopitem
-    \startitem
-        \type {ghost}, for so called \quote {ghost objects} bit 2 is set.
-    \stopitem
-    \startitem
-        \type {left}, for ligatures created from a left word boundary and for
-        ghosts created from \lpr {leftghost} bit 3 gets set.
-    \stopitem
-    \startitem
-        \type {right}, for ligatures created from a right word boundary and
-        for ghosts created from \lpr {rightghost} bit 4 is set.
-    \stopitem
 \stopitemize
 
 The \nod {glyph} nodes also contain language data, split into four items that
@@ -142,8 +131,8 @@ initialized you start out with nothing, otherwise you already have a set.
 
 When a \lpr {hjcode} is greater than 0 but less than 32 is indicates the
 to be used length. In the following example we map a character (\type {x}) onto
-another one in the patterns and tell the engine that \type {œ} counts as one
-character. Because traditionally zero itself is reserved for inhibiting
+another one in the patterns and tell the engine that \type {œ} counts as two
+characters. Because traditionally zero itself is reserved for inhibiting
 hyphenation, a value of 32 counts as zero.
 
 Here are some examples (we assume that French patterns are used):
@@ -369,7 +358,7 @@ before---after \par
 \stopcombination
 \stopbuffer
 
-\startplacefigure[locationreference=automatichyphenmode:1,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with a \prm {hsize}
+\startplacefigure[reference=automatichyphenmode:1,title={The automatic modes \type {0} (default), \type {1} and \type {2}, with a \prm {hsize}
 of 6em and 2pt (which triggers a linebreak).}]
     \dontcomplain \tt \getbuffer[demo]
 \stopplacefigure
@@ -432,13 +421,6 @@ there are a few exceptions.
     All the results of processing in math mode eventually become nodes with
     \quote {glyph} subtypes. In fact, the result of processing math is just
     a regular list of glyphs, kerns, glue, penalties, boxes etc.
-\stopitem
-
-\startitem
-    The \ALEPH|-|derived commands \lpr {leftghost} and \lpr {rightghost}
-    create nodes of a third subtype: \quote {ghost}. These nodes are ignored
-    completely by all further processing until the stage where inter|-|glyph
-    kerning is added.
 \stopitem
 
 \startitem
@@ -511,7 +493,7 @@ have been added:
 \stoptyping
 
 The first parameter has the following consequences for automatic discs (the ones
-resulting from an \prm {exhyphenchar}:
+resulting from an \prm {exhyphenchar}):
 
 \starttabulate[|c|l|l|]
 \DB mode     \BC automatic disc \type {-}      \BC explicit disc \prm{-}         \NC \NR
@@ -609,7 +591,7 @@ actual explicit hyphen character if needed). For example, this matches the word
 The motivation behind the \ETEX\ extension \prm {savinghyphcodes} was that
 hyphenation heavily depended on font encodings. This is no longer true in
 \LUATEX, and the corresponding primitive is basically ignored. Because we now
-have \lpr {hjcode}, the case relate codes can be used exclusively for \prm
+have \lpr {hjcode}, the case related codes can be used exclusively for \prm
 {uppercase} and \prm {lowercase}.
 
 The three curly brace pair pattern in an exception can be somewhat unexpected so
@@ -777,8 +759,8 @@ boundary items after it is done with them, and it does the same for \quote
 {ghost} nodes. Finally, at the end of the kerning stage, all remaining \quote
 {character} nodes are converted to \quote {glyph} nodes.
 
-This word separation is worth mentioning because, if you overrule from \LUA\ only
-one of the two callbacks related to font handling, then you have to make sure you
+This separation is worth mentioning because, if you overrule from \LUA\ only one
+of the two callbacks related to font handling, then you have to make sure you
 perform the tasks normally done by \LUATEX\ itself in order to make sure that the
 other, non|-|overruled, routine continues to function properly.
 
@@ -826,7 +808,7 @@ Here is that nested solution again, in a different representation:
 \starttabulate[|l|c|c|c|c|c|c|]
 \DB         \BC pre           \BC     \BC post      \BC       \BC replace       \BC       \NC \NR
 \TB
-\NC topdisc \NC \type {f-}    \NC (1) \NC           \NC sub 1 \NC               \NC sub 2 \NC \NR
+\NC topdisc \NC \type {f-}    \NC (1) \NC sub 1     \NC       \NC sub 2         \NC       \NC \NR
 \NC sub 1   \NC \type {f-}    \NC (2) \NC \type {i} \NC (3)   \NC \type {<fi>}  \NC (4)   \NC \NR
 \NC sub 2   \NC \type {<ff>-} \NC (5) \NC \type {i} \NC (6)   \NC \type {<ffi>} \NC (7)   \NC \NR
 \LL
@@ -907,13 +889,13 @@ approach.
 \topicindex {paragraphs}
 \topicindex {discretionaries}
 
-This code is almost unchanged, but because of the above|-|mentioned changes
-with respect to discretionaries and ligatures, line breaking will potentially be
+This code is almost unchanged, but because of the above|-|mentioned changes with
+respect to discretionaries and ligatures, line breaking will potentially be
 different from traditional \TEX. The actual line breaking code is still based on
-the \TEX82 algorithms, and it does not expect there to be discretionaries inside
-of discretionaries. But, as patterns evolve and font handling can influence
-discretionaries, you need to be aware of the fact that long term consistency is not
-an engine matter only.
+the \TEX82 algorithms, and there can be no discretionaries inside of
+discretionaries. But, as patterns evolve and font handling can influence
+discretionaries, you need to be aware of the fact that long term consistency is
+not an engine matter only.
 
 But that situation is now fairly common in \LUATEX, due to the changes to the
 ligaturing mechanism. And also, the \LUATEX\ discretionary nodes are implemented

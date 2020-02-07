@@ -13,6 +13,7 @@
 \libindex{register}
 \libindex{list}
 \libindex{find}
+\libindex{known}
 
 This library has functions that register, find and list callbacks. Callbacks are
 \LUA\ functions that are called in well defined places. There are two kind of
@@ -28,18 +29,14 @@ but in the end might not give the user the expected outcome.
 The first thing you need to do is registering a callback:
 
 \startfunctioncall
-id, error =
-    callback.register(<string> callback_name, <function> func)
-id, error =
-    callback.register(<string> callback_name, nil)
-id, error =
-    callback.register(<string> callback_name, false)
+id = callback.register(<string> callback_name, <function> func)
+id = callback.register(<string> callback_name, nil)
+id = callback.register(<string> callback_name, false)
 \stopfunctioncall
 
 Here the \syntax {callback_name} is a predefined callback name, see below. The
 function returns the internal \type {id} of the callback or \type {nil}, if the
-callback could not be registered. In the latter case, \type {error} contains an
-error message, otherwise it is \type {nil}.
+callback could not be registered.
 
 \LUATEX\ internalizes the callback function in such a way that it does not matter
 if you redefine a function accidentally.
@@ -65,7 +62,12 @@ The keys in the table are the known callback names, the value is a boolean where
 <function> f = callback.find(callback_name)
 \stopfunctioncall
 
-If the callback is not set, \type {find} returns \type {nil}.
+If the callback is not set, \type {find} returns \type {nil}. The \type {known}
+function can be used to check if a callback is supported.
+
+\startfunctioncall
+if callback.known("foo") then ... end
+\stopfunctioncall
 
 \stopsection
 

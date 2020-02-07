@@ -116,12 +116,12 @@ if optional then
         library   = "mysql",
         swiglib   = "mysql",
         postgress = "postgress",
-        sqlite    = "sqlite"
-        sqlite3   = "sqlite"
+        sqlite    = "sqlite",
+        sqlite3   = "sqlite",
     }
 
     setmetatableindex(sql.methods,function(t,k)
-        local m = methods[k
+        local m = methods[k]
         if m then
             report_state("start loading method %a as %a",k,m)
             require("libs-imp-" .. m)

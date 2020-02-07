@@ -593,10 +593,12 @@ with zero being the default behaviour.
 
 \start
 
+\def\MathHack#1{\mathsurroundmode#1\relax\inlinebuffer}
+
 \def\OneLiner#1#2%
   {\NC \type{#1}
-   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt   x$x$x}
-   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\mathsurroundmode#1\relax\hsize 100pt x $x$ x}
+   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\hsize 100pt  x$\MathHack{#1}x$x}
+   \NC \dontleavehmode\inframed[align=normal,offset=0pt,frame=off]{\hsize 100pt x $\MathHack{#1}x$ x}
    \NC #2
    \NC \NR}
 
@@ -605,7 +607,7 @@ with zero being the default behaviour.
 \mathsurroundskip20pt
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer
 
 \starttabulate[|c|c|c|pl|]
 \DB mode \BC x\$x\$x \BC x \$x\$ x \BC effect \NC \NR

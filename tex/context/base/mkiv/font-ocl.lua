@@ -401,7 +401,7 @@ local function pdftovirtual(tfmdata,pdfshapes,kind) -- kind = png|svg
                 -- The down and right will change too (we can move that elsewhere). We have
                 -- a different treatment in lmtx but the next kind of works. These images are
                 -- a mess anyway as in svg the bbox can be messed up absent). A png image
-                -- needs the x/y. I might normalize this once we moev to lmtx exlusively.
+                -- needs the x/y. I might normalize this once we move to lmtx exlusively.
                 character.commands = {
                     not unicode and actualb or { "pdf", "page", (getactualtext(unicode)) },
                     -- lmtx (when we deal with depth in vfimage, currently disabled):
