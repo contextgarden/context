@@ -26,7 +26,7 @@ if not global then
 end
 
 LUATEXVERSION       = status.luatex_version/100
-                    + tonumber(status.luatex_revision)/1000
+                    + tonumber(status.luatex_revision)/10000
 
 LUATEXENGINE        = status.luatex_engine and string.lower(status.luatex_engine)
                    or (string.find(status.banner,"LuajitTeX",1,true) and "luajittex" or "luatex")

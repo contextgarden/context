@@ -10,6 +10,7 @@ if not modules then modules = { } end modules ['util-pck'] = {
 
 local next, tostring, type = next, tostring, type
 local sort, concat = table.sort, table.concat
+local format = string.format
 local sortedhashkeys, sortedkeys, tohash = table.sortedhashkeys, table.sortedkeys, table.tohash
 
 utilities         = utilities         or { }
@@ -17,14 +18,17 @@ utilities.packers = utilities.packers or { }
 local packers     = utilities.packers
 packers.version   = 1.01
 
+local fmt_kv = JITSUPPORTED and "%s=%s"   or "%s=%q"
+local fmt_kt = JITSUPPORTED and "%s={%s}" or "%s={%q}"
+
 local function hashed(t)
     local s, ns = { }, 0
     for k, v in next, t do
         ns = ns + 1
         if type(v) == "table" then
-            s[ns] = k .. "={" .. hashed(v) .. "}"
+            s[ns] = format(fmt_kt,k,hashed(v))
         else
-            s[ns] = k .. "=" .. tostring(v)
+            s[ns] = format(fmt_kv,k,v)
         end
     end
     sort(s)
@@ -35,7 +39,7 @@ local function simplehashed(t)
     local s, ns = { }, 0
     for k, v in next, t do
         ns = ns + 1
-        s[ns] = k .. "=" .. v
+        s[ns] = format(fmt_kv,k,v)
     end
     sort(s)
     return concat(s,",")

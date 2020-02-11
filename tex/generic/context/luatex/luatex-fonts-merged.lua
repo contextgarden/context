@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 02/07/20 16:39:04
+-- merge date  : 2020-02-11 16:36
 
 do -- begin closure to overcome local limits and interference
 
@@ -1383,13 +1383,13 @@ function table.fromhash(t)
  end
  return hsh
 end
-local noquotes,hexify,handle,compact,inline,functions,metacheck
+local noquotes,hexify,handle,compact,inline,functions,metacheck,accurate
 local reserved=table.tohash { 
  'and','break','do','else','elseif','end','false','for','function','if',
  'in','local','nil','not','or','repeat','return','then','true','until','while',
- 'NaN','goto',
+ 'NaN','goto','const',
 }
-local function is_simple_table(t,hexify) 
+local function is_simple_table(t,hexify,accurate) 
  local nt=#t
  if nt>0 then
   local n=0
@@ -1408,6 +1408,8 @@ local function is_simple_table(t,hexify)
     if tv=="number" then
      if hexify then
       tt[i]=format("0x%X",v)
+     elseif accurate then
+      tt[i]=format("%q",v)
      else
       tt[i]=v 
      end
@@ -1428,6 +1430,8 @@ local function is_simple_table(t,hexify)
     if tv=="number" then
      if hexify then
       tt[i+1]=format("0x%X",v)
+     elseif accurate then
+      tt[i+1]=format("%q",v)
      else
       tt[i+1]=v 
      end
@@ -1499,6 +1503,8 @@ local function do_serialize(root,name,depth,level,indexed)
     if tv=="number" then
      if hexify then
       handle(format("%s 0x%X,",depth,v))
+     elseif accurate then
+      handle(format("%s %q,",depth,v))
      else
       handle(format("%s %s,",depth,v)) 
      end
@@ -1508,7 +1514,7 @@ local function do_serialize(root,name,depth,level,indexed)
      if next(v)==nil then
       handle(format("%s {},",depth))
      elseif inline then 
-      local st=is_simple_table(v,hexify)
+      local st=is_simple_table(v,hexify,accurate)
       if st then
        handle(format("%s { %s },",depth,concat(st,", ")))
       else
@@ -1536,12 +1542,16 @@ local function do_serialize(root,name,depth,level,indexed)
     if tk=="number" then
      if hexify then
       handle(format("%s [0x%X]=0x%X,",depth,k,v))
+     elseif accurate then
+      handle(format("%s [%s]=%q,",depth,k,v))
      else
       handle(format("%s [%s]=%s,",depth,k,v)) 
      end
     elseif tk=="boolean" then
      if hexify then
       handle(format("%s [%s]=0x%X,",depth,k and "true" or "false",v))
+     elseif accurate then
+      handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
      else
       handle(format("%s [%s]=%s,",depth,k and "true" or "false",v)) 
      end
@@ -1549,12 +1559,16 @@ local function do_serialize(root,name,depth,level,indexed)
     elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
      if hexify then
       handle(format("%s %s=0x%X,",depth,k,v))
+     elseif accurate then
+      handle(format("%s %s=%q,",depth,k,v))
      else
       handle(format("%s %s=%s,",depth,k,v)) 
      end
     else
      if hexify then
       handle(format("%s [%q]=0x%X,",depth,k,v))
+     elseif accurate then
+      handle(format("%s [%q]=%q,",depth,k,v))
      else
       handle(format("%s [%q]=%s,",depth,k,v)) 
      end
@@ -1563,6 +1577,8 @@ local function do_serialize(root,name,depth,level,indexed)
     if tk=="number" then
      if hexify then
       handle(format("%s [0x%X]=%q,",depth,k,v))
+     elseif accurate then
+      handle(format("%s [%q]=%q,",depth,k,v))
      else
       handle(format("%s [%s]=%q,",depth,k,v))
      end
@@ -1579,6 +1595,8 @@ local function do_serialize(root,name,depth,level,indexed)
      if tk=="number" then
       if hexify then
        handle(format("%s [0x%X]={},",depth,k))
+      elseif accurate then
+       handle(format("%s [%q]={},",depth,k))
       else
        handle(format("%s [%s]={},",depth,k))
       end
@@ -1591,11 +1609,13 @@ local function do_serialize(root,name,depth,level,indexed)
       handle(format("%s [%q]={},",depth,k))
      end
     elseif inline then
-     local st=is_simple_table(v,hexify)
+     local st=is_simple_table(v,hexify,accurate)
      if st then
       if tk=="number" then
        if hexify then
         handle(format("%s [0x%X]={ %s },",depth,k,concat(st,", ")))
+       elseif accurate then
+        handle(format("%s [%q]={ %s },",depth,k,concat(st,", ")))
        else
         handle(format("%s [%s]={ %s },",depth,k,concat(st,", ")))
        end
@@ -1617,6 +1637,8 @@ local function do_serialize(root,name,depth,level,indexed)
     if tk=="number" then
      if hexify then
       handle(format("%s [0x%X]=%s,",depth,k,v and "true" or "false"))
+     elseif accurate then
+      handle(format("%s [%q]=%s,",depth,k,v and "true" or "false"))
      else
       handle(format("%s [%s]=%s,",depth,k,v and "true" or "false"))
      end
@@ -1636,6 +1658,8 @@ local function do_serialize(root,name,depth,level,indexed)
       if tk=="number" then
        if hexify then
         handle(format("%s [0x%X]=load(%q),",depth,k,f))
+       elseif accurate then
+        handle(format("%s [%q]=load(%q),",depth,k,f))
        else
         handle(format("%s [%s]=load(%q),",depth,k,f))
        end
@@ -1653,6 +1677,8 @@ local function do_serialize(root,name,depth,level,indexed)
     if tk=="number" then
      if hexify then
       handle(format("%s [0x%X]=%q,",depth,k,tostring(v)))
+     elseif accurate then
+      handle(format("%s [%q]=%q,",depth,k,tostring(v)))
      else
       handle(format("%s [%s]=%q,",depth,k,tostring(v)))
      end
@@ -1676,6 +1702,7 @@ local function serialize(_handle,root,name,specification)
  if type(specification)=="table" then
   noquotes=specification.noquotes
   hexify=specification.hexify
+  accurate=specification.accurate
   handle=_handle or specification.handle or print
   functions=specification.functions
   compact=specification.compact
@@ -3493,9 +3520,12 @@ local format_left=function(f)
   return format("a%s..utfpadding(a%s,%i)",n,n,-f)
  end
 end
-local format_q=function()
+local format_q=JITSUPPORTED and function()
  n=n+1
  return format("(a%s ~= nil and format('%%q',tostring(a%s)) or '')",n,n)
+end or function()
+ n=n+1
+ return format("(a%s ~= nil and format('%%q',a%s) or '')",n,n)
 end
 local format_Q=function() 
  n=n+1
@@ -9634,6 +9664,7 @@ hashmethods.normal=function(list)
      m=m+1
      t[m]=k..'='..tostring(v)
     end
+    sort(t)
     s[n]=k..'={'..concat(t,",").."}"
    else
     s[n]=k..'='..tostring(v)
@@ -20032,6 +20063,7 @@ function readers.sbix(f,fontdata,specification)
    end
   end)
   local glyphs={}
+  local delayed=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 or fonts.handlers.typethree
   for i=1,nofstrikes do
    local strike=strikes[i]
    local strikeppem=strike.ppem
@@ -20048,13 +20080,25 @@ function readers.sbix(f,fontdata,specification)
      local datasize=nextoffset-glyphoffset
      if datasize>0 then
       setposition(f,strikeoffset+glyphoffset)
+      local x=readshort(f)
+      local y=readshort(f)
+      local tag=readtag(f) 
+      local size=datasize-8
+      local data=nil
+      local offset=nil
+      if delayed then
+       offset=getposition(f)
+       data=nil
+      else
+       data=readstring(f,size)
+       size=nil
+      end
       shapes[i]={
-       x=readshort(f),
-       y=readshort(f),
-       tag=readtag(f),
-       data=readstring(f,datasize-8),
-       ppem=strikeppem,
-       ppi=strikeppi,
+       x=x,
+       y=y,
+       o=offset,
+       s=size,
+       data=data,
       }
       done=done+1
       if done==nofglyphs then
@@ -20233,29 +20277,46 @@ do
    end
    local default={ width=0,height=0 }
    local glyphs=fontdata.glyphs
+   local delayed=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 or fonts.handlers.typethree
    for index,subtable in sortedhash(shapes) do
     if type(subtable)=="table" then
      local data=nil
+     local size=nil
      local metrics=default
      local format=subtable.format
      local offset=subtable.offsets[index]
      setposition(f,offset)
      if format==17 then
       metrics=getsmallmetrics(f)
-      data=readstring(f,readulong(f))
+      size=true
      elseif format==18 then
       metrics=getbigmetrics(f)
-      data=readstring(f,readulong(f))
+      size=true
      elseif format==19 then
       metrics=subtable.metrics
-      data=readstring(f,readulong(f))
+      size=true
      else
+     end
+     if size then
+      size=readulong(f)
+      if delayed then
+       offset=getposition(f)
+       data=nil
+      else
+       offset=nil
+       data=readstring(f,size)
+       size=nil
+      end
+     else
+      offset=nil
      end
      local x=metrics.width
      local y=metrics.height
      shapes[index]={
       x=x,
       y=y,
+      o=offset,
+      s=size,
       data=data,
      }
      local glyph=glyphs[index]
@@ -23251,7 +23312,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.110 
+otf.version=3.111 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

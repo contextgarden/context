@@ -364,7 +364,7 @@ function caches.is_writable(filepath,filename)
     return is_writable(tmaname)
 end
 
-local saveoptions = { compact = true }
+local saveoptions = { compact = true, accurate = not JITSUPPORTED }
 
 function caches.savedata(filepath,filename,data,fast)
     local tmaname, tmcname = setluanames(filepath,filename)

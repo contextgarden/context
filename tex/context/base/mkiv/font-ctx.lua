@@ -887,23 +887,6 @@ specifiers.definecontext   = definecontext
 
 -- we extend the hasher:
 
--- constructors.hashmethods.virtual = function(list)
---     local s = { }
---     local n = 0
---     for k, v in next, list do
---         n = n + 1
---         s[n] = k -- no checking on k
---     end
---     if n > 0 then
---         sort(s)
---         for i=1,n do
---             local k = s[i]
---             s[i] = k .. '=' .. tostring(list[k])
---         end
---         return concat(s,"+")
---     end
--- end
-
 constructors.hashmethods.virtual = function(list)
     local s = { }
     local n = 0
@@ -922,6 +905,54 @@ constructors.hashmethods.virtual = function(list)
         sort(s)
         return concat(s,"+")
     end
+end
+
+if not JITSUPPORTED then
+
+    constructors.hashmethods.normal = function(list)
+        local s = { }
+        local n = 0
+        for k, v in next, list do
+            if not k then
+                -- no need to add to hash
+            elseif k == "number" or k == "features" then
+                -- no need to add to hash (maybe we need a skip list)
+            else
+                n = n + 1
+                if type(v) == "table" then
+                    -- table.sequenced
+                    local t = { }
+                    local m = 0
+                    for k, v in next, v do
+                        m = m + 1
+                        t[m] = format("%q=%q",k,v)
+                    end
+                    sort(t)
+                    s[n] = format("%q={%s}",k,concat(t,","))
+                else
+                    s[n] = format("%q=%q",k,v)
+                end
+            end
+        end
+        if n > 0 then
+            sort(s)
+            return concat(s,"+")
+        end
+    end
+
+    constructors.hashmethods.virtual = function(list)
+        local s = { }
+        local n = 0
+        for k, v in next, list do
+            n = n + 1
+            s[n] = format("%q=%q",k,v)
+        end
+        if n > 0 then
+            sort(s)
+            return concat(s,"+")
+        end
+    end
+
 end
 
 -- end of redefine

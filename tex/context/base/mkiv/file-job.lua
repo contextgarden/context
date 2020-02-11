@@ -326,6 +326,8 @@ end
 local suffixes = {
     mkvi = usetexfile,
     mkiv = usetexfile,
+    mklx = usetexfile,
+    mkxl = usetexfile,
     tex  = usetexfile,
     luc  = useluafile,
     lua  = useluafile,

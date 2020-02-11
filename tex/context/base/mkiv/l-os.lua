@@ -637,6 +637,14 @@ function os.validdate(year,month,day)
     return year, month, day
 end
 
+function os.date(fmt,...)
+    if not fmt then
+        -- otherwise differences between unix, mingw and msvc
+        fmt = "%Y-%m-%d %H:%M"
+    end
+    return date(fmt,...)
+end
+
 local osexit   = os.exit
 local exitcode = nil
 

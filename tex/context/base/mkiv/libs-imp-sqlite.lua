@@ -119,13 +119,13 @@ local function execute(specification)
                     result[nofrows] = convert(values)
                 end
             else
-                local column = { }
                 callback = function(nofcolumns,values,fields)
+                    local column = { }
                     for i=1,nofcolumns do
                         local field
                         if fields then
                             field = fields[i]
-                            keys[i+1] = field
+                            keys[i] = field
                         else
                             field = keys[i]
                         end

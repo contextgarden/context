@@ -1,0 +1,420 @@
+% language=us
+
+% author    : Hans Hagen
+% copyright : PRAGMA ADE & ConTeXt Development Team
+% license   : Creative Commons Attribution ShareAlike 4.0 International
+% reference : pragma-ade.nl | contextgarden.net | texlive (related) distributions
+% origin    : the ConTeXt distribution
+%
+% comment   : Because this manual is distributed with TeX distributions it comes with a rather
+%             liberal license. We try to adapt these documents to upgrades in the (sub)systems
+%             that they describe. Using parts of the content otherwise can therefore conflict
+%             with existing functionality and we cannot be held responsible for that. Many of
+%             the manuals contain characteristic graphics and personal notes or examples that
+%             make no sense when used out-of-context.
+%
+% comment   : Some chapters might have been published in TugBoat, the NTG Maps, the ConTeXt
+%             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
+%             to users for testing, feedback and corrections.
+
+% for now:
+
+\usemodule[article-basic]
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
+\usemodule[ecmascript]
+
+\definecolor
+  [maincolor]
+  [r=.4]
+
+\definecolor
+  [extracolor]
+  [g=.4]
+
+\setupbodyfont
+  [11pt]
+
+\setuptype
+  [color=maincolor]
+
+% \setuptyping
+%   [color=maincolor]
+
+\definefontsynonym
+  [TitlePageMono]
+  [file:lmmonoproplt10-bold*default]
+
+\setuphead
+  [color=maincolor]
+
+\usesymbols
+  [cc]
+
+\setupinteraction
+  [hidden]
+
+\loadfontgoodies[lm]
+
+\startdocument
+  [metadata:author=Hans Hagen,
+   metadata:title=ecmascript in context lmtx,
+   author=Hans Hagen,
+   affiliation=PRAGMA ADE,
+   location=Hasselt NL,
+   title=\ECNASCRIPT\ in \CONTEXT\ \LMTX,
+   support=www.contextgarden.net,
+   website=www.pragma-ade.nl]
+
+\starttext
+
+\startMPpage
+    StartPage;
+
+        fill Page withcolor "darkgreen";
+
+        draw textext.lrt("\tttf ECMA")
+            xsized .75PaperWidth
+            shifted ulcorner (Page enlarged -15mm )
+            withcolor "white" ;
+
+        draw textext.llft("\tttf SCRIPT")
+            xsized .50PaperWidth
+            shifted urcorner (Page enlarged -15mm topenlarged -70mm)
+            withcolor "white" ;
+
+        draw textext.llft("\tttf in context lmtx")
+            xsized .50PaperWidth
+            shifted urcorner (Page enlarged -15mm topenlarged -110mm)
+            withcolor "white" ;
+
+        draw textext.llft("\tttf using the optional mujs library")
+            xsized .50PaperWidth
+            shifted lrcorner (Page enlarged -15mm bottomenlarged -10mm)
+            withcolor "white" ;
+
+    StopPage;
+\stopMPpage
+
+\dontcomplain
+
+% \startsubject[title=Contents]
+%
+% \placelist[section][alternative=a]
+%
+% \stopsubject
+
+\startsection[title=Introduction]
+
+When you use \CONTEXT\ there is no way around noticing that the \LUA\ scripting
+language is an important component. When we progressed from \LUATEX\ to
+\LUAMETATEX\ did didn't change. I like that language a lot! Among the reasons are
+that it reminds me of \PASCAL, that it's clean, fast and well maintained. There
+is no huge infrastructure involved, nor lots of libraries and therefore
+dependencies.
+
+So why bother about another scripting language? One can argue that because of the
+World Wide Web one should use \JAVASCRIPT\ instead. It might make sense from a
+commercial point of view, or for some promotional reason. But that all makes
+little sense in the perspective of \CONTEXT. But, when I was playing with
+optional libraries in \LUAMETATEX,
+
+On and off I wonder if I should spend some time on adding \LUA\ annotation
+support to the open source mupdf viewer. After all, it has some basic
+\JAVASCRIPT\ support (but currently not enough, for instance it lacks control
+over widgets and layers and such.) However, then I noticed that the related
+\JAVASCRIPT\ code was actually an independent library and looking at the header
+files it looked quite a bit like the \LUA\ interface. So, just for the fun of it I
+gave it a try, and when doing so, I realized that having support for \JAVASCRIPT,
+or actually \ECMASCRIPT, because that is what it is, could make users who are
+afraid of \LUA\ willing to play with simple scripting in \CONTEXT. Of course,
+after a while they will figure out that \LUA\ is the real deal.
+
+Therefore, instead of sticking to an experiment, I decided to make support for
+the \type {mujs} library an option. After all, every now and they we need
+something new to play with. But be warned: it's an optional thing. The
+interpreter is not embedded in the binary and is loaded on demand (when present).
+In spite of that performance is quite okay.
+
+\stopsection
+
+\startsection[title=A few examples]
+
+Because the provided interface is pretty limited, a few simple examples will do.
+There are plenty of tutorials on the Internet. The main thing to keep in mind is
+that an \ECMASCRIPT\ interpreter is normally pretty limited when it comes to
+communicating with its environment. For instance, the main application provides
+way to print something (to a console) or read from files. So, commands that
+relate to this are specific for \LUAMETATEX. Before anything can be done you need
+to load the (\type {mujs}) library, which is done with:
+
+\starttyping
+\usemodule[ecmascript]
+\stoptyping
+
+You can write a message to the log (or an output pane or console) with the \type
+{console} function, one that normally is present in a \JAVASCRIPT\ (\ECMASCRIPT)
+environment:
+
+\starttyping
+\ecmacode {console("Example Three!")}
+\stoptyping
+
+Printing something to the \TEX\ engine is done with this command:
+
+\startbuffer
+\ecmacode {texprint("Just a {\\bf short} sentence.")}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This produces:
+
+\getbuffer
+
+and is comparable with the \type {tex.print} (which prints lines) function at the
+\LUA\ end. This means that there is also \type {texsprint} (which accumulates
+parts into lines). In practice one will probably always use that one.
+
+When there are two arguments, the first argument has to be a number and sets the
+so called catcode table to be used.
+
+\startbuffer
+\ecmacode {texprint(catcodes.vrb,"Just a {\\bf short} sentence.")}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This results in a verbatim print: {\tttf \inlinebuffer} The backslash is just that,
+a backslash and not a trigger for a \TEX\ command.
+
+You can do pretty much everything with these print commands. Take for instance the
+following example:
+
+\startbuffer
+\startecmacode
+  console("We're doing some MetaPost!");
+  texsprint(
+      "\\startMPcode "
+    + 'fill fullsquare xyscaled (6cm,1cm) withcolor "darkred";'
+    + 'fill fullsquare xyscaled (4cm,1cm) withcolor "darkgreen";'
+    + 'fill fullsquare xyscaled (2cm,1cm) withcolor "darkblue";'
+    + "\\stopMPcode "
+  );
+\stopecmacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This produces:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+in \LUA\ we can do this:
+
+\startbuffer
+\startluacode
+  context.startMPcode()
+    context('fill fullsquare xyscaled (6cm,1cm) withcolor "middlecyan";')
+    context('fill fullsquare xyscaled (4cm,1cm) withcolor "middlemagenta";')
+    context('fill fullsquare xyscaled (2cm,1cm) withcolor "middleyellow";')
+  context.stopMPcode()
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The result is the same but the code to produce it looks more like \CONTEXT, if
+only because way more built in features are provided. It makes no sense to do
+the same with another scripting language.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+As mentioned, reading from files is to be provided by the main program and indeed
+we do have some basic interface. Actually we delegate all to the \LUA\ end by
+using a callback mechanism but users won't see these details. It suffices to know
+that file lookups are done the same way as in the main program because we use the
+same resolvers. One can (in the spirit of \ECMASCRIPT) open a file by creating a
+new file object. After that one can read from the file and, when done, close it.
+
+\startbuffer
+\startecmacode
+  var f = File("ecmascript-mkiv.tex","r");
+  var l = f.read("*a");
+  f.close();
+  texprint(
+      "This file has "
+    + l.length // or: l.length.toString()
+    + " bytes!"
+  )
+\stopecmacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Which reports that: \quotation {\inlinebuffer} The arguments to the \type {read}
+method are the same as in \LUA, so for instance \type {*a} reads the whole file,
+\type {*l} a single line, and a number will read that many bytes. There is
+currently no support for writing as I see no need for it (yet).
+
+You can load an external file too.
+
+\startluacode
+io.savedata("ecmascript-demo-001.js",[[
+function filesize(name) {
+    var f = File(name,"r");
+    if (f != undefined) {
+        var l = f.read("*a");
+        f.close();
+        return l.length;
+    } else {
+        return 0;
+    }
+}
+]])
+\stopluacode
+
+\startbuffer
+\ecmafile{ecmascript-demo-001.js}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This file defines a function:
+
+\typefile{ecmascript-demo-001.js}
+
+We use this as follows:
+
+\startbuffer
+\startecmacode
+  texsprint(
+      "This file has "
+    + filesize("ecmascript-mkiv.tex")
+    + " bytes!"
+  )
+\stopecmacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The result is the same as before: \quotation {\inlinebuffer} but by using a
+predefined function we save ourselves some typing. Actually, a more efficient
+variant is this:
+
+\starttyping
+function filesize(name) {
+    var f = File(name,"r");
+    if (f != undefined) {
+        var l = f.seek("end");
+        f.close();
+        return l;
+    } else {
+        return 0;
+    }
+}
+\stoptyping
+
+As with the \type {read} method, the \type {seek} method behaves the same as
+its \LUA\ counterpart, which is a good reason to have a look at the \LUA\
+manual.
+
+If you want you want also access the \ECMASCRIPT\ interpreter from the \LUA\ end,
+not that it makes much sense, but maybe you have a lot of complex code that you
+don't want to rewrite. Here is an example:
+
+\startbuffer
+\startluacode
+  optional.loaded.mujs.execute [[
+    var MyMax = 10; // an example of persistence
+  ]]
+
+  optional.loaded.mujs.execute [[
+    texsprint("\\startpacked");
+    for (var i = 1; i <= MyMax; i++) {
+      texprint(
+        "Here is some rather dumb math test: "
+      + Math.sqrt(i/MyMax)
+      + "!\\par"
+      );
+    }
+    texsprint("\\stoppacked");
+  ]]
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This assumes that you have loaded the module \type {ecmascript} which does the
+necessary preparations. Watch the different ways to add comment and also watch
+how we need to escape the \CONTEXT\ commands. Of course the syntax of both
+languages is different too.
+
+\getbuffer
+
+For now there is not much more to tell. I might add a few features (and more
+examples). And the low level optional interface is not yet declared stable but as
+we wrap it in higher level commands no one will notice changes at that end.
+
+\stopsection
+
+\startsection[title=Extensions]
+
+To summarize, for printing to \TEX\ we have:
+
+\starttyping
+texsprint([catcodetableid,]string|number)
+\stoptyping
+
+and
+
+\starttyping
+texprint(catcodetableid,]string|number)
+\stoptyping
+
+and for printing to the console:
+
+\starttyping
+console(string|number)
+\stoptyping
+
+A file is opened with:
+
+\starttyping
+var f = File.new(filename[,mode])
+\stoptyping
+
+and the returned file object has the methods:
+
+\starttyping
+var str = f:read([string|number])
+var pos = f:seek(whence[,offset])
+\stoptyping
+
+There is a predefined table \type {catcodes} with sybolic entries
+for:
+
+\starttabulate
+\NC \type {tex} \NC regular \TEX\ catcode regime       \NC \NR
+\NC \type {ctx} \NC standard \CONTEXT\ catcode regime  \NC \NR
+\NC \type {vrb} \NC verbatim catcode regime            \NC \NR
+\NC \type {prt} \NC protected \CONTEXT\ catcode regime \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Colofon]
+
+\starttabulate[|B|p|]
+\NC author  \NC \getvariable{document}{author}, \getvariable{document}{affiliation}, \getvariable{document}{location} \NC \NR
+\NC version \NC \currentdate \NC \NR
+\NC website \NC \getvariable{document}{website} \endash\ \getvariable{document}{support} \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopdocument

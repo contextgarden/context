@@ -261,14 +261,14 @@ local function flushembeddedfiles()
                 e[#e+1] = reference -- already a reference
                 f[#f+1] = reference -- collect all file description references
             else
-             -- -- messy spec ... when annot not in named else twice in menu list acrobat
+                -- messy spec ... when annot not in named else twice in menu list acrobat
                 f[#f+1] = reference
             end
         end
         if #e > 0 then
             lpdf.addtonames("EmbeddedFiles",pdfreference(pdfflushobject(pdfdictionary{ Names = e })))
         end
-        if #f > 0 then -- all associated files must have a relationship to the PDF document (global or part)
+        if #f > 0 then -- PDF/A-2|3: all associated files must have a relationship to the PDF document (global or part)
             lpdf.addtocatalog("AF", pdfreference(pdfflushobject(f))) -- global (Catalog)
         end
     end
@@ -435,6 +435,7 @@ function nodeinjections.attachfile(specification)
         else
             referenced[hash] = "annotation"
             local name, appearance = analyzesymbol(specification.symbol,attachment_symbols)
+            local flags = specification.flags or 0 -- to keep it expandable
             local d = pdfdictionary {
                 Subtype  = pdfconstant("FileAttachment"),
                 FS       = aref,
@@ -447,7 +448,8 @@ function nodeinjections.attachfile(specification)
                 CA       = analyzetransparency(specification.transparencyvalue),
                 AP       = appearance,
                 OC       = analyzelayer(specification.layer),
-                F        = pdfnull(), -- another rediculous need to satisfy validation
+             -- F        = pdfnull(), -- another rediculous need to satisfy validation
+                F        = (flags | 4) & (1023-1-2-32-256), -- set 3, clear 1,2,6,9; PDF 32000-1, p385
             }
             local width  = specification.width  or 0
             local height = specification.height or 0
@@ -539,7 +541,6 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
         Name      = name,
         NM        = pdfstring("comment:"..nofcomments),
         AP        = appearance,
-        F         = pdfnull(), -- another rediculous need to satisfy validation
     }
     local width  = specification.width  or 0
     local height = specification.height or 0

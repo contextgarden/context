@@ -78,7 +78,7 @@ local shown   = false
 
 ----- f_rectangle = string.formatters["%sofill unitsquare xysized (%N,%N) shifted (%N,%N);"]
 
-function zint.execute(specification)
+local function execute(specification)
     if okay() then
         local code = specification.code
         local text = specification.text
@@ -146,3 +146,16 @@ function zint.execute(specification)
         end
     end
 end
+
+optional.loaded.zint = { execute = execute }
+
+interfaces.implement {
+    name      = "zint",
+    actions   = execute,
+    arguments = {
+        {
+            { "code" },
+            { "text" },
+        }
+    }
+}

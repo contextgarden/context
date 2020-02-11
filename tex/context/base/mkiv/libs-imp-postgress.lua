@@ -114,13 +114,13 @@ local function execute_once(specification,retry)
                     result[nofrows] = convert(values)
                 end
             else
-                local column = { }
                 callback = function(nofcolumns,values,fields)
+                    local column = { }
                     for i=1,nofcolumns do
                         local field
                         if fields then
                             field = fields[i]
-                            keys[i+1] = field
+                            keys[i] = field
                         else
                             field = keys[i]
                         end
@@ -135,7 +135,7 @@ local function execute_once(specification,retry)
             for i=1,#query do
                 local okay = postgress_execute(db,query[i],callback)
                 if not okay then
-                    if id and option == "retry" and i == 1 then
+                    if id and retry and i == 1 then
                         report("error: %s, retrying to connect",postgress_getmessage(db))
                         postgress_close(db)
                         cache[id] = nil

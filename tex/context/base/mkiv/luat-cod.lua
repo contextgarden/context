@@ -137,9 +137,8 @@ if LUATEXENGINE == nil then
 end
 
 if LUATEXVERSION == nil then
-    LUATEXVERSION = status.luatex_revision
     LUATEXVERSION = status.luatex_version/100
-                  + tonumber(LUATEXVERSION)/10000
+                  + tonumber(status.luatex_revision)/10000
 end
 
 if CONTEXTLMTXMODE == nil then

@@ -61,7 +61,7 @@
    support=www.contextgarden.net,
    website=www.pragma-ade.nl]
 
-\startluasetups[swiglib]
+\startluasetups[libraries]
     context.nohyphens()
     for i=1,640 do
         context.definedfont { string.formatters["TitlePageMono at %p"](65536*(10+math.random(5))) }
@@ -76,7 +76,7 @@ StartPage ;
 
     fill Page enlarged 1cm withcolor \MPcolor{extracolor} ;
 
-    draw textext("\framed[loffset=2pt,roffset=2pt,frame=off,width=\paperwidth,align={normal,paragraph,verytolerant,stretch}]{\luasetup{swiglib}}")
+    draw textext("\framed[loffset=2pt,roffset=2pt,frame=off,width=\paperwidth,align={normal,paragraph,verytolerant,stretch}]{\luasetup{libraries}}")
         xysized (PaperWidth,PaperHeight)
         shifted center Page
         withcolor .8white ;
@@ -247,6 +247,7 @@ There are some optional libraries present, like:
 \NC libs-imp-sqlite         \NC sqlite         \NC sqlite3     \NC sqlite3        \NC \NR
 %NC libs-imp-postgress      \NC libpg          \NC libpg       \NC libpg          \NC \NR % untested
 \NC libs-imp-zint           \NC libzint        \NC libzint     \NC libzint        \NC \NR
+\NC libs-imp-mujs           \NC libmujs        \NC libmujs     \NC libmujs        \NC \NR
 \NC libs-imp-ghostscript    \NC ghostscript    \NC gswin64     \NC libgs          \NC \NR
 \NC libs-imp-graphicsmagick \NC graphicsmagick \NC several     \NC unknown        \NC \NR
 %NC font-phb-imp-internal   \NC hb             \NC libharfbuzz \NC libharfbuzz    \NC \NR % maybe, for idris, testing uniscribe

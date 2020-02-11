@@ -1,0 +1,121 @@
+%D \module
+%D   [       file=libs-imp-mujs,
+%D        version=2020.02.08,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=MuJS interpreter,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Just an experiment:
+%D
+%D \starttyping
+%D http://mujs.com
+%D \stoptyping
+
+\ifdefined\ecmacode
+    \expandafter \endinput
+\fi
+
+\registerctxluafile{libs-imp-mujs}{}
+
+\unprotect
+
+% todo: environment
+
+\let\stopecmacode\relax
+
+\normalprotected\def\startecmacode % \stopecmacode
+  {\begingroup
+   \obeylualines
+   \obeyluatokens
+   \luat_start_ecma_code_indeed}
+
+\def\luat_start_ecma_code_indeed#1\stopecmacode
+  {\normalexpanded{\endgroup\noexpand\ecmacode{#1}}}
+
+\protect
+
+\continueifinputfile{libs-imp-mujs.mkxl}
+
+\usemodule[article-basic,abbreviations-logos]
+
+\starttext
+
+\startbuffer
+\startluacode
+    local mujs = require("libs-imp-mujs")
+
+    mujs.execute [[
+        var MyMax = 1000;
+    ]]
+
+    mujs.execute [[
+        console("Example One!");
+        texsprint("\\startpacked");
+        for (var i = 1; i <= MyMax; i = i + 1) {
+            texprint(
+                "This is a buildbot compilation challenge for Mojca: "
+                .concat(Math.sqrt(i/MyMax))
+                .concat("!\\par")
+            );
+        }
+        texsprint("\\stoppacked");
+    ]]
+
+ -- mujs.execute [[
+ --     something very bad: an error
+ -- ]]
+\stopluacode
+
+\startecmacode
+    console("Example Two!");
+    for (var i = 1; i <= MyMax; i = i + 1) {
+        texsprint(
+            "And an opportunity for Alan to attract highschool students to \\TeX: "
+            .concat(i)
+            .concat("! ")
+        );
+    }
+\stopecmacode
+
+\ecmacode {
+    console("Example Three!");
+    texprint("And otherwise a way to prototype \\JAVASCRIPT\\ code in \\PDF.")
+}
+
+\startecmacode
+    var f = File("libs-imp-mujs.mkxl","r");
+    console(f);
+ // var l = f.read(400);
+    var l = f.read("*a");
+    console(l);
+    f.close();
+\stopecmacode
+
+\startecmacode
+    console("Example Four!");
+    texsprint("\\startMPcode "
+      .concat('  fill fullcircle scaled 6cm withcolor "darkred";')
+      .concat('  fill fullcircle scaled 4cm withcolor "darkgreen";')
+      .concat('  fill fullcircle scaled 2cm withcolor "darkblue";')
+      .concat("\\stopMPcode ")
+    );
+\stopecmacode
+
+\startluacode
+    context.startMPcode()
+        context('fill fullcircle scaled 6cm withcolor "middlecyan";')
+        context('fill fullcircle scaled 4cm withcolor "middlemagenta";')
+        context('fill fullcircle scaled 2cm withcolor "middleyellow";')
+    context.stopMPcode()
+\stopluacode
+\stopbuffer
+
+\typebuffer \page \getbuffer
+
+\stoptext

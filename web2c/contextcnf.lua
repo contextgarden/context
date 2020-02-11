@@ -103,7 +103,7 @@ return {
             PYTHONINPUTS    = ".;$TEXMF/scripts/context/python",
             RUBYINPUTS      = ".;$TEXMF/scripts/context/ruby",
             LUAINPUTS       = ".;$TEXINPUTS;$TEXMF/scripts/context/lua//;$TEXMF",
-            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/{context,$engine,luatex}/lua//",
+            CLUAINPUTS      = ".;$SELFAUTOLOC/lib/$engine//",
 
             -- texmf-local/tex/generic/example/foo :
             --

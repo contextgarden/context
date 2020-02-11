@@ -106,6 +106,8 @@ resolvers.libraries = libraries
 
 local report        = logs.reporter("optional")
 
+if optional then optional.loaded = { } end
+
 function libraries.validoptional(name)
     local thelib = optional and optional[name]
     if not thelib then
@@ -150,6 +152,21 @@ function libraries.optionalloaded(name,libnames)
             end
         end
     end
+end
+
+if FFISUPPORTED and ffi and ffi.load then
+
+    local ffiload = ffi.load
+
+    function ffi.load(name)
+        local full = name and foundlibraries[name]
+        if full then
+            return ffiload(full)
+        else
+            return ffiload(name)
+        end
+    end
+
 end
 
 -- local patterns = {

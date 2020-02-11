@@ -2805,7 +2805,7 @@ do
                 definitions = { }
                 tagstyles   = { }
                 classstyles = { }
-                for s in xmlcollected(c,"/style") do
+                for s in xmlcollected(c,"style") do -- can also be in a def, so let's play safe
                     handlestyle(c)
                 end
                 handlechains(c)

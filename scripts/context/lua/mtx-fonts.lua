@@ -16,7 +16,7 @@ local lower = string.lower
 local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
-local otlversion  = 3.110
+local otlversion  = 3.111
 
 local helpinfo = [[
 <?xml version="1.0"?>

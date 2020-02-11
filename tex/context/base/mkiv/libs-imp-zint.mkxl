@@ -35,7 +35,10 @@
      [\c!alternative=,\c!text=,#1]%
    \scale
      [#1]%
-     {\ctxlua{utilities.zint.execute{code="\dummyparameter\c!alternative",text=\!!bs\dummyparameter\c!text\!!es}}}%
+     {\clf_zint
+         code {\dummyparameter\c!alternative}
+         text {\dummyparameter\c!text}
+      \relax}
    \egroup}
 
 \protect
