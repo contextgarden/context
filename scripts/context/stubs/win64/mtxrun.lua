@@ -8562,7 +8562,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 12898, stripped down to: 9275
+-- original size: 12946, stripped down to: 9507
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
@@ -8790,9 +8790,9 @@ function streams.readfixed2(f)
  f[2]=j+1
  local a,b=byte(f[1],i,j)
  if a>=0x80 then
-  tonumber((a-0x100).."."..b)
+  return tonumber((a-0x100).."."..b) or 0
  else
-  tonumber((a  ).."."..b)
+  return tonumber((a  ).."."..b) or 0
  end
 end
 function streams.readfixed4(f)
@@ -8801,9 +8801,9 @@ function streams.readfixed4(f)
  f[2]=j+1
  local a,b,c,d=byte(f[1],i,j)
  if a>=0x80 then
-  tonumber((0x100*a+b-0x10000).."."..(0x100*c+d))
+  return tonumber((0x100*a+b-0x10000).."."..(0x100*c+d)) or 0
  else
-  tonumber((0x100*a+b    ).."."..(0x100*c+d))
+  return tonumber((0x100*a+b    ).."."..(0x100*c+d)) or 0
  end
 end
 if bit32 then
@@ -8882,6 +8882,16 @@ if sio and sio.readcardinal2 then
   local i=f[2]
   f[2]=i+4
   return readinteger4(f[1],i)
+ end
+ function streams.readfixed2(f) 
+  local i=f[2]
+  f[2]=i+2
+  return readfixed2(f[1],i)
+ end
+ function streams.readfixed4(f) 
+  local i=f[2]
+  f[2]=i+4
+  return readfixed4(f[1],i)
  end
  function streams.read2dot4(f)
   local i=f[2]
@@ -13951,7 +13961,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-inf"] = package.loaded["trac-inf"] or true
 
--- original size: 9904, stripped down to: 6712
+-- original size: 9973, stripped down to: 7492
 
 if not modules then modules={} end modules ['trac-inf']={
  version=1.001,
@@ -13985,6 +13995,36 @@ local function resettiming(instance)
 end
 local ticks=clock
 local seconds=function(n) return n or 0 end
+if lua.getpreciseticks then
+ ticks=lua.getpreciseticks
+ seconds=lua.getpreciseseconds
+elseif FFISUPPORTED and ffi and os.type=="windows" then
+ local okay,kernel=pcall(ffi.load,"kernel32")
+ if kernel then
+  local tonumber=ffi.number or tonumber
+  ffi.cdef[[
+            int QueryPerformanceFrequency(int64_t *lpFrequency);
+            int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+        ]]
+  local target=ffi.new("__int64[1]")
+  ticks=function()
+   if kernel.QueryPerformanceCounter(target)==1 then
+    return tonumber(target[0])
+   else
+    return 0
+   end
+  end
+  local target=ffi.new("__int64[1]")
+  seconds=function(ticks)
+   if kernel.QueryPerformanceFrequency(target)==1 then
+    return ticks/tonumber(target[0])
+   else
+    return 0
+   end
+  end
+ end
+else
+end
 local function starttiming(instance,reset)
  local timer=timers[instance or "notimer"]
  local it=timer.timing
@@ -26077,8 +26117,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1038128
--- stripped bytes    : 410736
+-- original bytes    : 1038245
+-- stripped bytes    : 409841
 
 -- end library merge
 

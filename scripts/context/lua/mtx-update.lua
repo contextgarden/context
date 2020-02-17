@@ -98,13 +98,6 @@ update.repositories = {
     "experimental"
 }
 
--- more options than just these two are available (no idea why this is here)
-
-update.versions = {
-    "current",
-    "latest"
-}
-
 -- list of basic folders that are needed to make a functional distribution
 
 update.base = {
@@ -684,7 +677,7 @@ if scripts.savestate then
 
     local valid = table.tohash(update.repositories)
     for r in gmatch(environment.argument("repository") or "current","([^, ]+)") do
-        if valid[r] then states.set("repositories." .. r, true) end
+        if valid[r] then states.set("   ." .. r, true) end
     end
 
     local valid = update.engines

@@ -194,6 +194,8 @@ end
 
 function install.update()
 
+    local hashdata = sha2 and sha2.HASH256 or md5.hex
+
     local function validdir(d)
         local ok = isdir(d)
         if not ok then
@@ -203,7 +205,7 @@ function install.update()
         return ok
     end
 
-    local function download(what,url,target,total,done)
+    local function download(what,url,target,total,done,oldhash)
         local data = fetch(url .. "/" .. target)
         if data then
             if total and done then
@@ -211,11 +213,15 @@ function install.update()
             else
                 report("%-8s : %8i : %s",what,#data,target)
             end
-            if validdir(dirname(target)) then
-                savedata(target,data)
+            if oldhash and oldhash ~= hashdata(data) then
+                return "different hash value"
+            elseif not validdir(dirname(target)) then
+                return "wrong target directory"
             else
-                -- message
+                savedata(target,data)
             end
+        else
+            return "unable to download"
         end
     end
 
@@ -364,7 +370,12 @@ function install.update()
                     if action then
                         local size = newhash[2]
                         total = total + size
-                        todo[#todo+1] = { action, target, size }
+                        todo[#todo+1] = {
+                            action = action,
+                            target = target,
+                            size   = size,
+                            hash   = newhash[3],
+                        }
                     end
                 else
                     report("skipping %s",target)
@@ -375,8 +386,22 @@ function install.update()
 
             for i=1,count do
                 local entry = todo[i]
-                download(entry[1],url,entry[2],total,done)
-                done = done + entry[3]
+                for i=1,5 do
+                    local target  = entry.target
+                    local message = download(entry.action,url,target,total,done,entry.hash)
+                    if message then
+                        if i == 5 then
+                            report("%s, try again later: %s",target)
+                            os.exit()
+                        else
+                            report("%s, trying again: %s",target)
+                            os.sleep(2)
+                        end
+                    else
+                        break
+                    end
+                end
+                done = done + entry.size
             end
 
             for oldname, oldhash in sortedhash(hold) do

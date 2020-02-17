@@ -347,13 +347,12 @@ function codeinjections.embedfile(specification)
             f = pdfflushstreamobject(data,a)
             specification.data = true -- signal that still data but already flushed
         else
+            local attributes   = lfs.attributes(foundname)
             local modification = modificationtime(foundname)
-            if attributes then
-                a.Params = {
-                    Size    = attributes.size,
-                    ModDate = lpdf.pdftimestamp(modification),
-                }
-            end
+            a.Params = {
+                Size    = attributes.size,
+                ModDate = lpdf.pdftimestamp(modification),
+            }
             f = pdfflushstreamfileobject(foundname,a,compress)
         end
         local d = pdfdictionary {
@@ -449,7 +448,7 @@ function nodeinjections.attachfile(specification)
                 AP       = appearance,
                 OC       = analyzelayer(specification.layer),
              -- F        = pdfnull(), -- another rediculous need to satisfy validation
-                F        = (flags | 4) & (1023-1-2-32-256), -- set 3, clear 1,2,6,9; PDF 32000-1, p385
+                F        = bit32.band(bit32.bor(flags,4),(1023-1-2-32-256)), -- set 3, clear 1,2,6,9; PDF 32000-1, p385
             }
             local width  = specification.width  or 0
             local height = specification.height or 0

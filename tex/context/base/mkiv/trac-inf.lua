@@ -45,42 +45,52 @@ end
 local ticks   = clock
 local seconds = function(n) return n or 0 end
 
--- if FFISUPPORTED and ffi and os.type == "windows" then
---
---     local okay, kernel = pcall(ffi.load,"kernel32")
---
---     if kernel then
---
---         local tonumber = ffi.number or tonumber
---
---         ffi.cdef[[
---             int QueryPerformanceFrequency(int64_t *lpFrequency);
---             int QueryPerformanceCounter(int64_t *lpPerformanceCount);
---         ]]
---
---         local target = ffi.new("__int64[1]")
---
---         ticks = function()
---             if kernel.QueryPerformanceCounter(target) == 1 then
---                 return tonumber(target[0])
---             else
---                 return 0
---             end
---         end
---
---         local target = ffi.new("__int64[1]")
---
---         seconds = function(ticks)
---             if kernel.QueryPerformanceFrequency(target) == 1 then
---                 return ticks / tonumber(target[0])
---             else
---                 return 0
---             end
---         end
---
---     end
---
--- end
+if lua.getpreciseticks then
+
+    ticks   = lua.getpreciseticks
+    seconds = lua.getpreciseseconds
+
+elseif FFISUPPORTED and ffi and os.type == "windows" then
+
+    local okay, kernel = pcall(ffi.load,"kernel32")
+
+    if kernel then
+
+        local tonumber = ffi.number or tonumber
+
+        ffi.cdef[[
+            int QueryPerformanceFrequency(int64_t *lpFrequency);
+            int QueryPerformanceCounter(int64_t *lpPerformanceCount);
+        ]]
+
+        local target = ffi.new("__int64[1]")
+
+        ticks = function()
+            if kernel.QueryPerformanceCounter(target) == 1 then
+                return tonumber(target[0])
+            else
+                return 0
+            end
+        end
+
+        local target = ffi.new("__int64[1]")
+
+        seconds = function(ticks)
+            if kernel.QueryPerformanceFrequency(target) == 1 then
+                return ticks / tonumber(target[0])
+            else
+                return 0
+            end
+        end
+
+    end
+
+else
+
+    -- excessive timing costs some 1-2 percent runtime
+
+end
+
 
 local function starttiming(instance,reset)
     local timer = timers[instance or "notimer"]

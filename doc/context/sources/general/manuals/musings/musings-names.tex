@@ -1,0 +1,325 @@
+% language=uk
+
+\startcomponent musings-names
+
+\environment musings-style
+
+\startchapter[title={What's in a name}]
+
+\startlines \setupalign[flushright]
+Hans Hagen
+Hasselt NL
+May 2019
+\stoplines
+
+\startsection[title=\TEX]
+
+I sometimes wonder how much the fact that English is the language mostly used in
+programming environments influences the way one looks at a program. For instance,
+translating the names of an operating system \quote {windows}, an image
+manipulation program \quote {photoshop} or a text editing program \quote
+{wordperfect} to Dutch makes them sound kind of silly to me. The name can
+influence what you buy or are willing to use. These are examples of commercial
+programs but there are plenty examples of such naming in the open source universe
+too. I write this in my own bad English so that other non|-|English speakers can
+try to do a similar exercise.
+
+So, when I was reading an article about \CPU\ technology called \quote
+{thread|-|ripper} and after a while also saw the usual talk of yet another bunch
+of technologies marked as \quote {stack} and translated that to Dutch it again
+made me feel somewhat puzzled about such names. From there it was a small step to
+wondering about programming languages, and especially the ones I use: \TEX,
+\METAPOST, and \LUA.
+
+One can even wonder to what extent the quality of programming is influenced by
+the names of commands and keywords. A language name \quote {\BASIC} sounds less
+serious than \quote {C}. A meaningless \quote {\LUA} sounds different than \quote
+{\PYTHON}. Does using your native tongue make a difference? In Dutch and German
+words tend to get long. When I look at my French dictionary it is rather thin,
+but we might need accented characters. Words in a language like Polish can differ
+per usage. What if German or Spanish had been chosen as the language for what is
+now the United States? How would we perceive programming and what would look
+natural to us?
+
+\stopsection
+
+\startsection[title=\TEX]
+
+The \TEX\ language comes with a lot of so called primitives built in. Many of
+these relate to concepts in the program. For instance, a movement in horizontal
+or vertical direction that can stretch or shrink depending on what the boundary
+conditions demand, is called \quote {glue}. When discussing this in Dutch the
+word \quote {lijm} can be used and after seeing it a few times it might sound ok.
+We can probably use \quote {elastiek} (\quote {elastic}).
+
+This internal concept is actually represented to the user via the interface name
+\quote {skip}, take: \type {\abovedisplayskip} and \type {\belowdisplayskip}.
+Here the word \quote {display} refers to math that gets vertical space around it
+and is normally typeset in a somewhat larger way compared to \quote {inline}. The
+word \quote {skip} can be translated to \quote {sprong} (translated back we could
+as well get \quote {jump}). But how to translate \quote {display}? An internet
+translation can be \quote {tentoonspreiding} but apart from it being a long word
+it sounds pretty weird for something math. The combined translation of such a
+command will not work well I think so probably complete different words has to be
+made up to describe these quantities. Taco suggested that {\en \typ
+{\bovenuitstallingkortesprong}} might work for \type {\abovedisplayshortskip} but
+luckily no ordinary \TEX\ user will not set such parameters in a document source.
+
+In \CONTEXT\ we use the somewhat typographical term \type {wit} or \type
+{witruimte} for vertical spacing. Some parameters like \type {\baselineskip} can
+be translated directly to the Dutch \type {\regelafstand} which is a proper
+typographical term (\TEX\ has no concept of line height). Okay, it can become
+messy when we translate \type {\lineskip} by \typ {\interlinespace} as that
+could be seen as the baseline skip too (\quote {interlinie} comes to mind). Quite
+a mess. In many cases we probably would not handle the \type {skip} part in
+parameter: \type {leftskip} could become \type {\linkermarge} and \type
+{\parfillskip} can become \typ {\paragraafuitvulling}.
+
+Another concept is that of \quote {penalty}, or in Dutch \type {boete}. It's
+probably harder to get the combinations right, simply because they have no
+typographical meanings, they're more process controllers. I fear that most
+translations would sound pretty weird to me. So, how do they sound to a native
+English speaker? Words like \quote {club} or \quote {widow} can be translated to
+their Dutch gender neutral counterparts \quote {wees} and \quote {weduw} but how
+strange does {\nl \typ {weduwboete}} sound?
+
+The counter variables are easier. When they end on \type {char} that can become
+\type {karakter}. However, translating \type {\escapechar} with \type
+{\ontsnappingskarakter} might look a bit weird, but as that one is used very
+seldom, a weird one doesn't matter much. Operators like \type {\advance} and
+\type {\multiply} can become \type {\verhoog} and \type {\vermenigvuldig} which
+doesn't sound that strange in this context.
+
+There are \quote {rule}s and \quote {box}es. The first one can be translated to
+\quote {lijn} which sounds quite good. But what to do with the second one. We can
+use \quote {blok} (which translates back to \quote {block}) which is good when we
+start stacking things, but also with \quote {doos} which is more literal but
+sounds to me somewhat silly: \typ {\hdoos {whatever}}. I'm not so sure if I would
+have seen that in a book about \TEX, I'd looked further into the language. The
+optional keywords \quote {width} etc. can be translated well into \quote
+{breedte} etc., so no problem there.
+
+There are all kinds of very peculiar aspects that need a translation. For instance
+the (for new users intimidating) primitive \type {\futurelet}. The \quote {future}
+part is no problem as \quote {toekomst} isn't that weird but the \quote {let}
+will for sure become something very long in Dutch, so we end up with {\nl \typ
+{\toekomstigetoekenning}}, but seeing that long one, we can consider {\nl \type
+{kijkvooruit}} as reasonable alternative. It definitely leads to more verbose
+programming.
+
+Expansion is a tricky one. I have no clue what would make nice translations of
+the primitives \type {\noexpand} and \type {\expandafter}. The Dutch \quote
+{uitbreiden} simply is not sounding good here. Taco Hoekwater came up with a good
+alternative \quote {uitvouwen} for \quote {expand} and I like that one because
+we then can let bookmaker (a somewhat dubious term in itself) Willi Egger organize
+a workshop in unfolding (instead of folding).
+
+Talking of \quote {macros} is less a problem because there is no Dutch word for
+it. There are more words with no real translations: \type {\kern} for instance
+probably would need some thinking but there might be a typographical equivalent
+that can be used.
+
+The \ETEX\ and \LUATEX\ extensions introduce new names, like \type {\detokenize},
+\type {\boundary} and \type {\attribute}. The first one is hard to translate
+because again it relates to an internal concept: \type {tokens}. I get the
+feeling that translating each occurrence of \type {token} by \type {teken} kind
+of makes everything look less serious. To strip something from its special
+meaning, which is actually what \type {\detokenize} does can give weird
+translations: {\nl \typ {\onttekenen}} is not really a Dutch word so a complete
+different one has to be found that describes what happens, like \type
+{\ontwaarderen}. On the other hand, \type {\boundary} and \type {\attribute} can
+translate directly into \type {\grens} and \type {\attribuut} where the last one
+sounds mostly okay.
+
+Just to get you thinking: how would you translate \type {\looseness} (\type
+{losheid}, related to linebreaking), \type {\deadcycles} (\type {\zinlozelus}, in
+the perspective of building pages), \type {\pretolerance} (again line break
+related, here we can use something \type {tolerantie}) and \type {\prevgraf}
+(which is actually even in English a weird one but hardly used anyway, so Taco
+likes {\nl \typ {voorloopregels}})? The easy ones are \type {\omit}, \type {\meaning},
+\type {\number}, maybe even \type {\mark}. The for users often difficult to grasp
+\quote {catcode} can be simplified to \quote {code} which is proper Dutch.
+Concepts like \quote {align} translate well to \quote {uitlijnen}. Short ones
+like \type {\wd} could be a problem but any two letter combination can look bad,
+so \type {\br} could do. In the same fashion \type {\def} is ok as it is also the
+start of the Dutch \quote {definitie}. Mathematical terms like \quote {text},
+\quote {script} and \quote {scriptscript} can be confusing: \quote {tekst} will
+do but \quote {schrift} is strange.
+
+Conditionals are not the hardest part: \type {\if} becomes \type {\als}, \type
+{\else} becomes \type {\anders} and \type {\or} is \type {\of}. However, turning
+\type {\ifcase} into \type {\inhetgevaldat} can be over the top. The \type
+{\every...} register variables can also be translated quite well, by using the
+\type {\elk} or \type {\elke} prefix. They are seldom seen at the user level so
+no real problem there.
+
+The \quote {group} related commands are easy as \quote {groep} is a good Dutch
+equivalent. Even \quote {global} operations translate well (\type {globaal}). A
+dubious one is \type {\font} because we can use {\nl \typ {\lettertype}} but it's
+not really a translation. The internet translations tend towards \quote
+{fountain} kind of things.
+
+The concept of \quote {discretionary} again needs a decent typographical
+translation although \type {\hyphenation} can become \type {\afbreking},
+translating \type {\discretionary} needs some imagination. The concept of \quote
+{leaders} is again something that can best be bound to something more
+typographical because \type {\leaders} turned {\nl \typ {\leidinggevende}} is not
+an option nor is \type {\leiders}.
+
+The prefix \type {\un} as used in \type {\unhbox} can become \type {\ont} so that
+we get \type {\ontdoos} but I get the feeling that this one can be source of
+jokes. The more verbose {\nl \typ {\pakdoosuit}} (equivalent to \typ
+{\unpackbox}) would do better. To translate \type {\unvcopy} into the gibberish
+{\nl \typ {\ontdoosdecopie}} is simply ridiculous and {\nl \typ
+{\copieeruitgepaktedoos}} is a bit long. The \type {\lower} and \type {\raise} on
+the other hand translate well to \type {\verlaag} and \type {\verhoog}. Keeping
+\type {\relax} untranslated sounds ok to me, because \type {\ontspan} really
+makes a language silly.
+
+\stopsection
+
+\startsection[title=\METAPOST]
+
+The \TEX\ language is driving a macro system while \LUA\ is a procedural
+language. The \METAPOST\ language sits somewhere in between. It is still
+expanding all along but it looks a bit more like a programming language with its
+loops, assignments, conditionals, expressions and (sort of) functions. As a
+consequence some of what I mentioned in the previous section applies here.
+
+Translation of for instance \type {truecorners} into \type {echtehoeken} can give
+the language a bit less serious image. Words like \type {linejoin}, \type
+{linecap} and \type {miterlimit} relate directly to the \POSTSCRIPT\ language so
+translating them also relates to translated \POSTSCRIPT.
+
+The \type {primary}, \type {secundary} keywords can be nicely translated into
+serious counterparts \type {primaire} and \type {secundaire} which are words that
+are not really of Dutch origin anyway. The \type {precontrol} and \type
+{postcontrol} words relate to concepts but even there the verbose \type
+{controlepuntvoor} and \type {controlepuntachter} could do. However \type {punt}
+as translation for \type {point} can be confusing because we also use that for
+\type {period}. Translating \type {controls} and \type {curl} needs some
+imagination. Words like \type {tension} becoming \type {spanning} is still
+acceptable soundwise. However:
+
+\starttyping
+voor i=1 stap 2 tot 10:
+   .....
+eindvanvoor; % or: eindvoor
+\stoptyping
+
+Kind of interesting is translating \type {if} into \type {als} because \type {fi}
+then becomes \type {sla} which is \quote {lettuce} or, when see as verb, \quote
+{hit}. The \type {true} and \type {false} keywords becoming \type {goed} and
+\type {fout} is no problem.
+
+Turning \type {atleast} into \type {opzijnminst} at first sight looks strange but
+actually I can appreciate that one. And {\nl \typ {tussendoortje}} as translation
+of \type {interim}, I can live with that one too as it sounds funny. Concepts
+like \quote {suffixes} need thinking but {\nl \typ {uitdr(ukking)}} or more
+literal {\nl \typ {expr(essie)}} for {\nl \typ {expr(ession)}} are okay. The {\nl
+\typ {expandafter}}, {\nl \typ {scantokens}} and similar keywords share the
+problem with \TEX\ that they relate to concepts that are hard to translate.
+
+The \type {redpart} and similar keywords could be translated into \type
+{rooddeel} but {\nl \typ {roodkanaal}} (meaning \type {redchannel}) might be
+better or maybe {\nl \typ {rodecomponent}}. As with \TEX\ grouping related
+keywords are no problem.
+
+A \type {pencircle} becomes \type {pencirkel}, \type {odd} becomes \type
+{oneven}, \type {reverse} becomes {\nl \typ {omgekeerd}} (or {\nl \typ
+{andersom}} or {\nl \typ {tegengesteld}}). For \type {length} we use \type
+{lengte}, and so on. All these sound professional enough, just like \quote
+{corner} related keywords becoming \quote {hoek}, although there a clash with
+\quote {angle} is possible. I'm less sure about \type {clipped} becoming {\nl
+\typ {afgeknepen}} or {\nl \typ {begrensd}} but \type {bounded} then needs some
+thinking as these all are more or less the same. The concept of \quote {stroke}
+maps onto \quote {tekenen} or \quote {vegen} but lucky us that one is not really
+used, contrary to \type {draw} that can map onto \type {teken}, while \type
+{fill} and \type {vul} match well too I guess.
+
+The transformations are no problem but I'd use a directive instead: \type
+{rotated} or \type {roteer}, \type {slanted} or \type {schuin}, \type {scaled} or
+\type {schaal}, and \type {transform} or {\nl \typ {transformeer}}. As you can
+see, these have a reasonable word length too.
+
+The concept of a \type {picture} is known in Dutch as \type {plaatje} or \type
+{tekening}: not an easy choice. Using \type {kleur} for \type {color} is no
+problem at all. A coordinate \type {pair} becomes a \type {paar}: close enough
+not to give subjective side effects. The \type {inner} and \type {outer} keywords
+translate well to \type {binnen} and \type {buiten} but in code it might look a
+bit strange.
+
+So, in general, the translated commands are not that weird but still a graphic
+defined in Dutch keywords instead of English to me might look less serious.
+
+\stopsection
+
+\startsection[title=\LUA]
+
+We now arrived at a more traditional programming language. The \LUA\ language
+only has a few keywords. I suppose that it's just a matter of time before one
+gets accustomed to \typ {als ... dan ... anders ... eind} instead of \typ {if ...
+then ... else ... end}. The loops also translate rather well: \typ {zolang ...
+doe}, \typ {herhaal .. totdat}, \typ {voor ... in ... doe ... einde} are all not
+that verbose. Also, with proper syntax highlighting they stand out and become
+abstract words. But because examples for kids are normally in Dutch, using a
+Dutch programming language might give a toy language feeling.
+
+The \type {local} directive is a bit of a problem because it should be \typ
+{lokale variabele} in order to sound ok in a sentence. The \type {goto} should
+become \type {ganaar} which is also two words with no space in between. The \type
+{function} keyword can become \type {functie}. A \type {coroutine} is a challenge
+(also conceptually); we do have \type {routine} but how about the \type {co}
+part?
+
+Because \LUA\ is such a clean language it doesn't really end up bad. In \CCODE\
+there are some more issues due to the abbreviated \type {struct}, \type {int},
+\type {char}, \type {enum} and \type {typedef}. A literal translation of \type
+{void} to \type {leegte} to me sounds a bit strange. What to do with \type
+{unsigned}? Coming up with something (short) Dutch for \type {return} is not easy
+either. Translating \type {switch} into \type {schakelaar} looks like a bad idea
+but after consulting Taco using \type {keuze} came up. The \type {break} then can
+be \type {klaar} which roundtrips to \quote {finished} and \type {default} can be
+\type {anders} which roundtrips to \quote {otherwise} which is indeed what some
+languages provide.. But, there are programming languages out there that have
+plenty keywords and that are more challenging. But as I'm a happy \LUA\ user I
+don't have to worry about them.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+Looking at a program source in Dutch the general feeling probably will be
+different. A low level bit of \TEX\ is the worst. For \METAPOST\ it's bearable
+and for \LUA\ it is kind of okay. But in all cases, I'm not convinced that it
+would give me the same feeling. The abstraction of the language due to it not
+being my native tongue makes a difference. This problem is not much different
+than what we have with popular music and songs: for non|-|native speakers it's
+basically sounds, but for a native speaker it is more clear when nonsense is
+sung. The same can happen to me with movies, where watching some scandinavian
+series is different from watching a Dutch one. In the last case one picks up
+different nuances, not necessarily for the best. But it can be worse: post
+synchronized (audio) translations can be pretty unbearable and might compare well
+to programs translated to for instance Dutch. So let's not discuss the way
+Germans would deal with this.
+
+\stopsection
+
+\startsection[title=Side notes]
+
+We now see monospaced fonts showing up that provide ligatures for e.g.\ \type
+{<=} and I've seen examples where ligatures kicked in for \type {fi}. One can
+wonder about that but ligatures are definitely something to keep in mind when
+translating.
+
+The \CONTEXT\ macro package is normally used with the English user interface. But
+the design is such that one can provide different ones too; after all it started
+out Dutch. It is beyond the scope of this musing to discuss the problems with
+translating typographical concepts between languages, especially when there are
+no distinctive words. But it can (and has) been done.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

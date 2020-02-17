@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-02-11 16:36
+-- merge date  : 2020-02-17 12:06
 
 do -- begin closure to overcome local limits and interference
 
@@ -14179,6 +14179,14 @@ local cffreaders={
  readuint,
  readulong,
 }
+directives.register("fonts.streamreader",function()
+ cffreaders={
+  readbyte,
+  readushort,
+  readuint,
+  readulong,
+ }
+end)
 local function readheader(f)
  local offset=getposition(f)
  local major=readbyte(f)

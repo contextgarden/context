@@ -86,10 +86,10 @@ Note that the new version of \MPLIB\ no longer uses binary mem files, so the way
 to preload a set of macros is simply to start off with an \type {input} command
 in the first \type {execute} call.
 
-When you are processing a snippet of text starting with \type {btex} and
-ending with either \type {etex} or \type {verbatimtex}, the \METAPOST\
-\type {texscriptmode} parameter controls how spaces and newlines get honoured.
-The default value is~1. Possible values are:
+When you are processing a snippet of text starting with \type {btex} or \type
+{verbatimtex} and ending with \type {etex}, the \METAPOST\ \type {texscriptmode}
+parameter controls how spaces and newlines get honoured. The default value is~1.
+Possible values are:
 
 \starttabulate[|l|p|]
 \DB name      \BC meaning \NC \NR
@@ -353,8 +353,8 @@ represents a knot.
 \stoptabulate
 
 There is one special case: pens that are (possibly transformed) ellipses have an
-extra string-valued key \type {type} with value \type {elliptical} besides the
-array part containing the knot list.
+extra key \type {type} with value \type {elliptical} besides the array part
+containing the knot list.
 
 \subsection{Colors}
 
