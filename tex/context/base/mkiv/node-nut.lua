@@ -829,6 +829,34 @@ nuts.theprop = function(n)
     return p
 end
 
+local getstate = direct.getstate
+local setstate = direct.setstate
+
+if not setstate or not getstate then
+    setstate = function(n,v)
+        local p = propertydata[n]
+        if p then
+            p.state = v
+        else
+            propertydata[n] = { state = v }
+        end
+    end
+    getstate = function(n,v)
+        local p = propertydata[n]
+        if p then
+            if v then
+                return p.state == v
+            else
+                return p.state
+            end
+        else
+            return nil
+        end
+    end
+    nuts.setstate = setstate
+    nuts.getstate = getstate
+end
+
 nuts.isdone = function(n,k)
     local p = propertydata[n]
     if not p then

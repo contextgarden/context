@@ -176,8 +176,15 @@ if CONTEXTLMTXMODE == 0 then
     setfield(user_node,"type",usercodes.number)
 end
 
-local left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
-local right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
+local left_margin_kern, right_margin_kern
+
+if CONTEXTLMTXMODE > 0 then
+    left_margin_kern  = register_nut(new_nut(kern_code,kerncodes.leftmargincode))
+    right_margin_kern = register_nut(new_nut(kern_code,kerncodes.rightmargincode))
+else
+    left_margin_kern  = register_nut(new_nut(nodecodes.marginkern,0))
+    right_margin_kern = register_nut(new_nut(nodecodes.marginkern,1))
+end
 
 local lineskip          = register_nut(new_nut(glue_code,gluecodes.lineskip))
 local baselineskip      = register_nut(new_nut(glue_code,gluecodes.baselineskip))

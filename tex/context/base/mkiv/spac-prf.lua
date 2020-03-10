@@ -244,6 +244,7 @@ local function getprofile(line,step)
                 dp = 0
                 progress()
             elseif id == marginkern_code then
+                -- not in lmtx
                 wd = getwidth(current)
                 ht = 0
                 dp = 0

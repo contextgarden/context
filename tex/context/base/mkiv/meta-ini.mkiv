@@ -494,6 +494,8 @@
 %D Currently the inheritance of backgrounds does not work and we might drop it
 %D anyway (too messy)
 
+%D This will be cleaned up in \LMTX: we can delay a lot of this.
+
 \newbox\b_meta_variable_box
 
 \let \currentmpvariableclass          \empty
@@ -592,6 +594,8 @@
       \else
         \endgroup\meta_prepare_variable_dimension
       \fi}}
+
+% One of these says we need to enable this!
 
 % \def\meta_prepare_variable_yes
 %   {\expandafter\edef\csname\m_meta_current_variable_template\endcsname

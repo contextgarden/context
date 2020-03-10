@@ -148,7 +148,7 @@ The other two root dictionaries are accessed with:
 \libindex {getbox}
 
 A specific page can conveniently be reached with the next command, which
-returns a dictionary. The first argument is to be a page dictionary.
+returns a dictionary.
 
 \starttyping
 <pdfe dictionary> = pdfe.getpage(<pdfe document>,pagenumber)
@@ -185,7 +185,7 @@ n = getname   (<pdfe array|dictionary>,index|key)
 
 \stopsubsection
 
-\startsubsection[title={\type {get[from][dictionary|array|stream]}}]
+\startsubsection[title={\type {get[dictionary|array|stream]}}]
 
 \libindex {getdictionary} \libindex {getfromdictionary}
 \libindex {getarray}      \libindex {getfromarray}
@@ -333,7 +333,7 @@ query.
 
 \libindex {new}
 
-The \type {pdfe.new} that takes three arguments:
+The \type {pdfe.new} function takes three arguments:
 
 \starttabulate
 \DB value           \BC explanation      \NC \NR
@@ -343,12 +343,11 @@ The \type {pdfe.new} that takes three arguments:
 \NC \type {length}  \NC this is the length of the stream in bytes (the stream can
                         have embedded zeros) \NC \NR
 \NC \type {name}    \NC optional, this is a unique identifier that is used for
-                        hashing the stream, so that multiple doesn't use more
-                        memory \NC \NR
+                        hashing the stream \NC \NR
 \LL
 \stoptabulate
 
-The third argument is optional. When it is not given the function will return an
+The third argument is optional. When it is not given the function will return a
 \type {pdfe} document object as with a regular file, otherwise it will return a
 filename that can be used elsewhere (e.g.\ in the image library) to reference the
 stream as pseudo file.
@@ -357,7 +356,7 @@ Instead of a light userdata stream (which is actually fragile but handy when you
 come from a library) you can also pass a \LUA\ string, in which case the given
 length is (at most) the string length.
 
-The function returns an \type {pdfe} object and a string. The string can be used in
+The function returns a \type {pdfe} object and a string. The string can be used in
 the \type {img} library instead of a filename. You need to prevent garbage
 collection of the object when you use it as image (for instance by storing it
 somewhere).

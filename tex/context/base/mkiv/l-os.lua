@@ -459,7 +459,7 @@ end
 local d
 
 function os.timezone(delta)
-    d = d or tonumber(tonumber(date("%H")-date("!%H")))
+    d = d or ((tonumber(date("%H")) or 0) - (tonumber(date("!%H")) or 0))
     if delta then
         if d > 0 then
             return format("+%02i:00",d)

@@ -34,6 +34,8 @@ local ctxcore       = context.core
 local variables     = interfaces.variables
 
 local ctx_flushnode = context.nuts.flush
+local ctx_sprint    = context.sprint
+local txtcatcodes   = tex.txtcatcodes
 
 local nuts          = nodes.nuts
 local tonode        = nuts.tonode
@@ -46,6 +48,8 @@ local setattrlist   = nuts.setattrlist
 
 local texgetcount   = tex.getcount
 local texsetcount   = tex.setcount
+
+local is_letter     = characters.is_letter
 
 -- a set of basic fast ones
 
@@ -69,6 +73,14 @@ function context.char(k) -- used as escape too, so don't change to utf
         if type(k) == "number" then
             context([[\char%s\relax]],k)
         end
+    end
+end
+
+function context.safechar(c)
+    if characters.is_letter[c] then -- not yet loaded
+        ctx_sprint(c)
+    else
+        ctx_sprint(txtcatcodes,c)
     end
 end
 

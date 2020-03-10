@@ -2178,7 +2178,7 @@ do
         local n = 0
         for k, v in next, a do
             n = n + 1
-            r[n] = f_attribute(k,v) -- lpegmatch(p_escaped,v)
+            r[n] = f_attribute(k,tostring(v)) -- tostring because of %q
         end
         sort(r)
         return concat(r,"")
@@ -2189,7 +2189,7 @@ do
         local n = 0
         for k, v in next, a do
             n = n + 1
-            r[n] = f_property(exportproperties,k,v)
+            r[n] = f_property(exportproperties,k,tostring(v)) -- tostring because of %q
         end
         sort(r)
         return concat(r,"")

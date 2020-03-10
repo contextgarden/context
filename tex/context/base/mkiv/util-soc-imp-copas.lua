@@ -1,5 +1,10 @@
 -- original file : copas.lua
--- for more into : see util-soc.lua
+-- for more info : see util-soc.lua
+-- copyright     : see below
+-- comment       : this version is a it cleaned up and adapted
+
+-- there is an official update but i'll wait till it is stable before i check
+-- it out (after all what we have now seems to work ok)
 
 local socket = socket or require("socket")
 local ssl    = ssl or nil -- only loaded upon demand

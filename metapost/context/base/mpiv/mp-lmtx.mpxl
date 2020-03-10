@@ -2066,12 +2066,16 @@ enddef ;
 
 newinternal svgforcecmyk ; svgforcecmyk := 0 ;
 
-vardef svgcolor(expr r,g,b) =
+vardef svgcolor(expr r, g, b) =
     if svgforcecmyk > 0 :
         (1-r,1-g,1-b,0) % simple: no black component, kind of ok for emoji
     else :
         (r,g,b)
     fi
+enddef ;
+
+vardef svgcmyk(expr c, m, y, k) =
+    (c,m,y,k)
 enddef ;
 
 vardef svggray(expr s) =
@@ -2081,6 +2085,7 @@ enddef ;
 presetparameters "svg" [
     filename = "",
     fontname = "",
+    colormap = "",
   % unicode  = 0,
     width    = 0,
     height   = 0,

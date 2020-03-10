@@ -1,0 +1,73 @@
+{
+ "name" : "context",
+ "tasks" : [
+  {
+   "command" : "context     --autogenerate --autopdf ${file}",
+   "group" : "build",
+   "label" : "process tex file",
+   "presentation" : {
+    "clear" : true,
+    "echo" : true,
+    "focus" : false,
+    "panel" : "shared",
+    "reveal" : "always",
+    "showReuseMessage" : false
+   },
+   "type" : "shell",
+   "windows" : {
+    "command" : "chcp 65001 ; context.exe --autogenerate --autopdf ${file}"
+   }
+  },
+  {
+   "command" : "mtxrun     --autogenerate --script check ${file}",
+   "group" : "build",
+   "label" : "check tex file",
+   "presentation" : {
+    "clear" : true,
+    "echo" : true,
+    "focus" : false,
+    "panel" : "shared",
+    "reveal" : "always",
+    "showReuseMessage" : false
+   },
+   "type" : "shell",
+   "windows" : {
+    "command" : "chcp 65001 ; mtxrun.exe --autogenerate --script check ${file}"
+   }
+  },
+  {
+   "command" : "mtxrun     --script fonts --reload --force",
+   "group" : "build",
+   "label" : "identify fonts",
+   "presentation" : {
+    "clear" : true,
+    "echo" : true,
+    "focus" : false,
+    "panel" : "shared",
+    "reveal" : "always",
+    "showReuseMessage" : false
+   },
+   "type" : "shell",
+   "windows" : {
+    "command" : "chcp 65001 ; mtxrun.exe --script fonts --reload --force"
+   }
+  },
+  {
+   "command" : "mtxrun     --script ${file}",
+   "group" : "build",
+   "label" : "process lua file",
+   "presentation" : {
+    "clear" : true,
+    "echo" : true,
+    "focus" : false,
+    "panel" : "shared",
+    "reveal" : "always",
+    "showReuseMessage" : false
+   },
+   "type" : "shell",
+   "windows" : {
+    "command" : "chcp 65001 ; mtxrun.exe --script ${file}"
+   }
+  }
+ ]
+}

@@ -11,9 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D The macros described here used to be part of the \type
-%D {core-con} module. I decided to move them here when
-%D symbolsets saw the light. Let their light shine.
+%D The macros described here used to be part of the \type {core-con} module. I
+%D decided to move them here when symbolsets saw the light. Let their light shine.
 
 \writestatus{loading}{ConTeXt Symbol Libraries / Initialization}
 
@@ -24,19 +23,17 @@
 %D \macros
 %D   {definesymbol, symbol}
 %D
-%D Converting numbers or levels into a character, romannumeral,
-%D symbol or something else, is supported by many \CONTEXT\
-%D commands. Therefore we need a mechanism for linking such
-%D numbers to their counterparts.
+%D Converting numbers or levels into a character, romannumeral, symbol or something
+%D else, is supported by many \CONTEXT\ commands. Therefore we need a mechanism for
+%D linking such numbers to their counterparts.
 %D
-%D First we take care of symbols. These are for instance used
-%D in enumerations and itemizations. We have:
+%D First we take care of symbols. These are for instance used in enumerations and
+%D itemizations. We have:
 %D
 %D \showsetup{definesymbol}
 %D \showsetup{symbol}
 %D
-%D Symbols are simply linked to a tag. Such tags can be numbers
-%D or strings.
+%D Symbols are simply linked to a tag. Such tags can be numbers or strings.
 %D
 %D \starttyping
 %D \definesymbol [1]       [$\bullet$]
@@ -72,8 +69,8 @@
 
 \newtoks\everysymbol
 
-%D We don't use the commandhandler as symbols have their own
-%D subsystem for resolving values.
+%D We don't use the commandhandler as symbols have their own subsystem for resolving
+%D values.
 
 \unexpanded\def\definesymbol
   {\dotripleempty\symb_define}
@@ -100,9 +97,8 @@
 
 \def\symbolset#1{\begincsname\??symbolset#1\endcsname} % no [#1], to be used in commalists etc
 
-%D Since symbols are used frequently in interactive
-%D documents, we speed up this one. Well, that was history,
-%D since now we simplified things a bit, because the low
+%D Since symbols are used frequently in interactive documents, we speed up this one.
+%D Well, that was history, since now we simplified things a bit, because the low
 %D level macros have been sped up every now and then.
 
 % We support both:
@@ -241,8 +237,8 @@
 %D
 %D \showsetup{definefiguresymbol}
 %D
-%D By default, such symbols scale along the current bodyfont
-%D size or running font size (which is better).
+%D By default, such symbols scale along the current bodyfont size or running font
+%D size (which is better).
 
 \def\defaultsymbolfactor{10}
 \def\defaultsymbolheight{1.25ex}
@@ -306,8 +302,8 @@
 %D \macros
 %D   {setupsymbolset,startsymbolset}
 %D
-%D From these macro definitions one can deduce that symbols can
-%D be grouped in symbol sets:
+%D From these macro definitions one can deduce that symbols can be grouped in
+%D symbol sets:
 %D
 %D \starttyping
 %D \startsymbolset [navigation 1]
@@ -388,9 +384,8 @@
 
 \unexpanded\def\usesymbols[#1]{\clf_usesymbols{#1}}
 
-%D As longs as symbols are linked to levels or numbers, we can
-%D also use the conversion mechanism, but in for instance the
-%D itemization macros, we prefer symbols because they can more
-%D easier be (partially) redefined.
+%D As longs as symbols are linked to levels or numbers, we can also use the
+%D conversion mechanism, but in for instance the itemization macros, we prefer
+%D symbols because they can more easier be (partially) redefined.
 
 \protect \endinput

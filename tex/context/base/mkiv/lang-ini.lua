@@ -22,7 +22,7 @@ local type, tonumber, next = type, tonumber, next
 local utfbyte = utf.byte
 local format, gsub, gmatch, find = string.format, string.gsub, string.gmatch, string.find
 local concat, sortedkeys, sortedpairs, keys, insert = table.concat, table.sortedkeys, table.sortedpairs, table.keys, table.insert
-local utfbytes, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
+local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
 local commands  = commands
@@ -194,7 +194,7 @@ local function sethjcodes(instance,loaded,what,factor)
                 setcode(utfbyte(l))
             end
         else
-            for l in utfbytes(c) do
+            for l in utfvalues(c) do
                 setcode(l)
             end
         end

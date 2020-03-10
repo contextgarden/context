@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-02-17 12:06
+-- merge date  : 2020-03-10 14:44
 
 do -- begin closure to overcome local limits and interference
 
@@ -4923,7 +4923,6 @@ nuts.tonut=tonut
 nuts.getattr=direct.get_attribute
 nuts.getboth=direct.getboth
 nuts.getchar=direct.getchar
-nuts.getcomponents=direct.getcomponents
 nuts.getdirection=direct.getdirection
 nuts.getdisc=direct.getdisc
 nuts.getreplace=direct.getreplace
@@ -4961,7 +4960,6 @@ nuts.isglyph=direct.is_glyph
 nuts.copy=direct.copy
 nuts.copy_list=direct.copy_list
 nuts.copy_node=direct.copy
-nuts.delete=direct.delete
 nuts.end_of_math=direct.end_of_math
 nuts.flush=direct.flush
 nuts.flush_list=direct.flush_list
@@ -5009,45 +5007,72 @@ local getnext=nuts.getnext
 local setlink=nuts.setlink
 local getfield=nuts.getfield
 local setfield=nuts.setfield
-local getcomponents=nuts.getcomponents
-local setcomponents=nuts.setcomponents
+local getsubtype=nuts.getsubtype
+local isglyph=nuts.isglyph
 local find_tail=nuts.tail
 local flush_list=nuts.flush_list
 local flush_node=nuts.flush_node
 local traverse_id=nuts.traverse_id
 local copy_node=nuts.copy_node
 local glyph_code=nodes.nodecodes.glyph
-function nuts.copy_no_components(g,copyinjection)
- local components=getcomponents(g)
- if components then
-  setcomponents(g)
-  local n=copy_node(g)
-  if copyinjection then
-   copyinjection(n,g)
-  end
-  setcomponents(g,components)
-  return n
- else
-  local n=copy_node(g)
-  if copyinjection then
-   copyinjection(n,g)
-  end
-  return n
- end
-end
-function nuts.copy_only_glyphs(current)
- local head=nil
- local previous=nil
- for n in traverse_id(glyph_code,current) do
-  n=copy_node(n)
-  if head then
-   setlink(previous,n)
+local ligature_code=nodes.glyphcodes.ligature
+do
+ local get_components=node.direct.getcomponents
+ local set_components=node.direct.setcomponents
+ local function copy_no_components(g,copyinjection)
+  local components=get_components(g)
+  if components then
+   set_components(g)
+   local n=copy_node(g)
+   if copyinjection then
+    copyinjection(n,g)
+   end
+   set_components(g,components)
+   return n
   else
-   head=n
+   local n=copy_node(g)
+   if copyinjection then
+    copyinjection(n,g)
+   end
+   return n
   end
-  previous=n
  end
- return head
+ local function copy_only_glyphs(current)
+  local head=nil
+  local previous=nil
+  for n in traverse_id(glyph_code,current) do
+   n=copy_node(n)
+   if head then
+    setlink(previous,n)
+   else
+    head=n
+   end
+   previous=n
+  end
+  return head
+ end
+ local function count_components(start,marks)
+  local char=isglyph(start)
+  if char then
+   if getsubtype(start)==ligature_code then
+    local n=0
+    local components=get_components(start)
+    while components do
+     n=n+count_components(components,marks)
+     components=getnext(components)
+    end
+    return n
+   elseif not marks[char] then
+    return 1
+   end
+  end
+  return 0
+ end
+ nuts.set_components=set_components
+ nuts.get_components=get_components
+ nuts.copy_only_glyphs=copy_only_glyphs
+ nuts.copy_no_components=copy_no_components
+ nuts.count_components=count_components
 end
 nuts.uses_font=direct.uses_font
 do
@@ -10354,7 +10379,7 @@ local match,format,find,concat,gsub,lower=string.match,string.format,string.find
 local P,R,S,C,Ct,Cc,lpegmatch=lpeg.P,lpeg.R,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.match
 local formatters=string.formatters
 local sortedhash,sortedkeys=table.sortedhash,table.sortedkeys
-local rshift=bit32.rshift
+local idiv=number.idiv
 local trace_loading=false  trackers.register("fonts.loading",function(v) trace_loading=v end)
 local trace_mapping=false  trackers.register("fonts.mapping",function(v) trace_mapping=v end)
 local report_fonts=logs.reporter("fonts","loading")
@@ -10387,12 +10412,21 @@ local function makenameparser(str)
 end
 local f_single=formatters["%04X"]
 local f_double=formatters["%04X%04X"]
+local s_unknown="FFFD"
 local function tounicode16(unicode)
  if unicode<0xD7FF or (unicode>0xDFFF and unicode<=0xFFFF) then
   return f_single(unicode)
+ elseif unicode>=0x00E000 and unicode<=0x00F8FF then
+  return s_unknown
+ elseif unicode>=0x0F0000 and unicode<=0x0FFFFF then
+  return s_unknown
+ elseif unicode>=0x100000 and unicode<=0x10FFFF then
+  return s_unknown
+ elseif unicode>=0x00D800 and unicode<=0x00DFFF then
+  return s_unknown
  else
   unicode=unicode-0x10000
-  return f_double(rshift(unicode,10)+0xD800,unicode%1024+0xDC00)
+  return f_double(idiv(k,0x400)+0xD800,unicode%0x400+0xDC00)
  end
 end
 local function tounicode16sequence(unicodes)
@@ -10401,14 +10435,21 @@ local function tounicode16sequence(unicodes)
   local u=unicodes[l]
   if u<0xD7FF or (u>0xDFFF and u<=0xFFFF) then
    t[l]=f_single(u)
+  elseif unicode>=0x00E000 and unicode<=0x00F8FF then
+   t[l]=s_unknown
+  elseif unicode>=0x0F0000 and unicode<=0x0FFFFF then
+   t[l]=s_unknown
+  elseif unicode>=0x100000 and unicode<=0x10FFFF then
+   t[l]=s_unknown
+  elseif unicode>=0x00D7FF and unicode<=0x00DFFF then
+   t[l]=s_unknown
   else
    u=u-0x10000
-   t[l]=f_double(rshift(u,10)+0xD800,u%1024+0xDC00)
+   t[l]=f_double(idiv(k,0x400)+0xD800,u%0x400+0xDC00)
   end
  end
  return concat(t)
 end
-local unknown=f_single(0xFFFD)
 local hash={}
 local conc={}
 table.setmetatableindex(hash,function(t,k)
@@ -10416,7 +10457,7 @@ table.setmetatableindex(hash,function(t,k)
   v=f_single(k)
  else
   local k=k-0x10000
-  v=f_double(rshift(k,10)+0xD800,k%1024+0xDC00)
+  v=f_double(idiv(k,0x400)+0xD800,k%0x400+0xDC00)
  end
  t[k]=v
  return v
@@ -10429,11 +10470,13 @@ local function tounicode(k)
   end
   return concat(conc,"",1,n)
  elseif k>=0x00E000 and k<=0x00F8FF then
-  return unknown
+  return s_unknown
  elseif k>=0x0F0000 and k<=0x0FFFFF then
-  return unknown
+  return s_unknown
  elseif k>=0x100000 and k<=0x10FFFF then
-  return unknown
+  return s_unknown
+ elseif k>=0x00D7FF and k<=0x00DFFF then
+  return s_unknown
  else
   return hash[k]
  end
@@ -25929,7 +25972,6 @@ local initializers=allocate()
 local methods=allocate()
 analyzers.initializers=initializers
 analyzers.methods=methods
-local a_state=attributes.private('state')
 local nuts=nodes.nuts
 local tonut=nuts.tonut
 local getnext=nuts.getnext
@@ -25949,6 +25991,23 @@ local categories=characters and characters.categories or {}
 local chardata=characters and characters.data
 local otffeatures=fonts.constructors.features.otf
 local registerotffeature=otffeatures.register
+local setstate=nuts.setstate
+local getstate=nuts.getstate
+if not setstate or not getstate then
+ setstate=function(n,v)
+  setprop(n,"state",v)
+ end
+ getstate=function(n,v)
+  local s=getprop(n,"state")
+  if v then
+   return s==v
+  else
+   return s
+  end
+ end
+ nuts.setstate=setstate
+ nuts.getstate=getstate
+end
 local s_init=1 local s_rphf=7
 local s_medi=2 local s_half=8
 local s_fina=3 local s_pref=9
@@ -25996,49 +26055,49 @@ function analyzers.setstate(head,font)
  current=tonut(current)
  while current do
   local char,id=ischar(current,font)
-  if char and not getprop(current,a_state) then
+  if char and not getstate(current) then
    done=true
    local d=descriptions[char]
    if d then
     if d.class=="mark" then
      done=true
-     setprop(current,a_state,s_mark)
+     setstate(current,s_mark)
     elseif useunicodemarks and categories[char]=="mn" then
      done=true
-     setprop(current,a_state,s_mark)
+     setstate(current,s_mark)
     elseif n==0 then
      first,last,n=current,current,1
-     setprop(current,a_state,s_init)
+     setstate(current,s_init)
     else
      last,n=current,n+1
-     setprop(current,a_state,s_medi)
+     setstate(current,s_medi)
     end
    else 
     if first and first==last then
-     setprop(last,a_state,s_isol)
+     setstate(last,s_isol)
     elseif last then
-     setprop(last,a_state,s_fina)
+     setstate(last,s_fina)
     end
     first,last,n=nil,nil,0
    end
   elseif char==false then
    if first and first==last then
-    setprop(last,a_state,s_isol)
+    setstate(last,s_isol)
    elseif last then
-    setprop(last,a_state,s_fina)
+    setstate(last,s_fina)
    end
    first,last,n=nil,nil,0
    if id==math_code then
     current=end_of_math(current)
    end
   elseif id==disc_code then
-   setprop(current,a_state,s_medi)
+   setstate(current,s_medi)
    last=current
   else 
    if first and first==last then
-    setprop(last,a_state,s_isol)
+    setstate(last,s_isol)
    elseif last then
-    setprop(last,a_state,s_fina)
+    setstate(last,s_fina)
    end
    first,last,n=nil,nil,0
    if id==math_code then
@@ -26048,9 +26107,9 @@ function analyzers.setstate(head,font)
   current=getnext(current)
  end
  if first and first==last then
-  setprop(last,a_state,s_isol)
+  setstate(last,s_isol)
  elseif last then
-  setprop(last,a_state,s_fina)
+  setstate(last,s_fina)
  end
  return head,done
 end
@@ -26154,87 +26213,87 @@ function methods.arab(head,font,attr)
  current=tonut(current)
  while current do
   local char,id=ischar(current,font)
-  if char and not getprop(current,a_state) then
+  if char and not getstate(current) then
    done=true
    local classifier=classifiers[char]
    if not classifier then
     if last then
      if c_last==s_medi or c_last==s_fina then
-      setprop(last,a_state,s_fina)
+      setstate(last,s_fina)
      else
       warning(last,"fina")
-      setprop(last,a_state,s_error)
+      setstate(last,s_error)
      end
      first,last=nil,nil
     elseif first then
      if c_first==s_medi or c_first==s_fina then
-      setprop(first,a_state,s_isol)
+      setstate(first,s_isol)
      else
       warning(first,"isol")
-      setprop(first,a_state,s_error)
+      setstate(first,s_error)
      end
      first=nil
     end
    elseif classifier==s_mark then
-    setprop(current,a_state,s_mark)
+    setstate(current,s_mark)
    elseif classifier==s_isol then
     if last then
      if c_last==s_medi or c_last==s_fina then
-      setprop(last,a_state,s_fina)
+      setstate(last,s_fina)
      else
       warning(last,"fina")
-      setprop(last,a_state,s_error)
+      setstate(last,s_error)
      end
      first,last=nil,nil
     elseif first then
      if c_first==s_medi or c_first==s_fina then
-      setprop(first,a_state,s_isol)
+      setstate(first,s_isol)
      else
       warning(first,"isol")
-      setprop(first,a_state,s_error)
+      setstate(first,s_error)
      end
      first=nil
     end
-    setprop(current,a_state,s_isol)
+    setstate(current,s_isol)
    elseif classifier==s_medi then
     if first then
      last=current
      c_last=classifier
-     setprop(current,a_state,s_medi)
+     setstate(current,s_medi)
     else
-     setprop(current,a_state,s_init)
+     setstate(current,s_init)
      first=current
      c_first=classifier
     end
    elseif classifier==s_fina then
     if last then
-     if getprop(last,a_state)~=s_init then
-      setprop(last,a_state,s_medi)
+     if getstate(last)~=s_init then
+      setstate(last,s_medi)
      end
-     setprop(current,a_state,s_fina)
+     setstate(current,s_fina)
      first,last=nil,nil
     elseif first then
-     setprop(current,a_state,s_fina)
+     setstate(current,s_fina)
      first=nil
     else
-     setprop(current,a_state,s_isol)
+     setstate(current,s_isol)
     end
    else 
-    setprop(current,a_state,s_rest)
+    setstate(current,s_rest)
     if last then
      if c_last==s_medi or c_last==s_fina then
-      setprop(last,a_state,s_fina)
+      setstate(last,s_fina)
      else
       warning(last,"fina")
-      setprop(last,a_state,s_error)
+      setstate(last,s_error)
      end
      first,last=nil,nil
     elseif first then
      if c_first==s_medi or c_first==s_fina then
-      setprop(first,a_state,s_isol)
+      setstate(first,s_isol)
      else
       warning(first,"isol")
-      setprop(first,a_state,s_error)
+      setstate(first,s_error)
      end
      first=nil
     end
@@ -26242,18 +26301,18 @@ function methods.arab(head,font,attr)
   else
    if last then
     if c_last==s_medi or c_last==s_fina then
-     setprop(last,a_state,s_fina)
+     setstate(last,s_fina)
     else
      warning(last,"fina")
-     setprop(last,a_state,s_error)
+     setstate(last,s_error)
     end
     first,last=nil,nil
    elseif first then
     if c_first==s_medi or c_first==s_fina then
-     setprop(first,a_state,s_isol)
+     setstate(first,s_isol)
     else
      warning(first,"isol")
-     setprop(first,a_state,s_error)
+     setstate(first,s_error)
     end
     first=nil
    end
@@ -26265,17 +26324,17 @@ function methods.arab(head,font,attr)
  end
  if last then
   if c_last==s_medi or c_last==s_fina then
-   setprop(last,a_state,s_fina)
+   setstate(last,s_fina)
   else
    warning(last,"fina")
-   setprop(last,a_state,s_error)
+   setstate(last,s_error)
   end
  elseif first then
   if c_first==s_medi or c_first==s_fina then
-   setprop(first,a_state,s_isol)
+   setstate(first,s_isol)
   else
    warning(first,"isol")
-   setprop(first,a_state,s_error)
+   setstate(first,s_error)
   end
  end
  return head,done
@@ -26355,8 +26414,7 @@ local setprev=nuts.setprev
 local getboth=nuts.getboth
 local setboth=nuts.setboth
 local getid=nuts.getid
-local getprop=nuts.getprop
-local setprop=nuts.setprop
+local getstate=nuts.getstate
 local getsubtype=nuts.getsubtype
 local setsubtype=nuts.setsubtype
 local getchar=nuts.getchar
@@ -26365,13 +26423,15 @@ local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local getreplace=nuts.getreplace
 local setlink=nuts.setlink
-local getcomponents=nuts.getcomponents 
-local setcomponents=nuts.setcomponents 
 local getwidth=nuts.getwidth
 local getattr=nuts.getattr
 local getglyphdata=nuts.getglyphdata
+local copy_no_components=nuts.copy_no_components
+local copy_only_glyphs=nuts.copy_only_glyphs
+local count_components=nuts.count_components
+local set_components=nuts.set_components
+local get_components=nuts.get_components
 local ischar=nuts.ischar
-local isglyph=nuts.isglyph
 local usesfont=nuts.uses_font
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
@@ -26396,7 +26456,6 @@ local dir_code=nodecodes.dir
 local localpar_code=nodecodes.localpar
 local discretionarydisc_code=disccodes.discretionary
 local ligatureglyph_code=glyphcodes.ligature
-local a_state=attributes.private('state')
 local a_noligature=attributes.private("noligature")
 local injections=nodes.injections
 local setmark=injections.setmark
@@ -26557,27 +26616,6 @@ local function appenddisc(disc,list)
  end
  setdisc(disc,pre,post,replace)
 end
-local copy_no_components=nuts.copy_no_components
-local copy_only_glyphs=nuts.copy_only_glyphs
-local set_components=setcomponents
-local take_components=getcomponents
-local function count_components(start,marks)
- local char=isglyph(start)
- if char then
-  if getsubtype(start)==ligatureglyph_code then
-   local i=0
-   local components=getcomponents(start)
-   while components do
-    i=i+count_components(components,marks)
-    components=getnext(components)
-   end
-   return i
-  elseif not marks[char] then
-   return 1
-  end
- end
- return 0
-end
 local function markstoligature(head,start,stop,char)
  if start==stop and getchar(start)==char then
   return head,start
@@ -26623,7 +26661,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
  setlink(prev,base,next)
  if not discfound then
   local deletemarks=not skiphash or hasmarks
-  local components=start
+  local components=start 
   local baseindex=0
   local componentindex=0
   local head=base
@@ -26669,17 +26707,16 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
    local pre,post,replace,pretail,posttail,replacetail=getdisc(discfound,true)
    if not replace then
     local prev=getprev(base)
-    local comp=take_components(base)
     local copied=copy_only_glyphs(comp)
     if pre then
      setlink(discprev,pre)
     else
      setnext(discprev) 
     end
-    pre=comp
+    pre=comp 
     if post then
      setlink(posttail,discnext)
-     setprev(post)
+     setprev(post) 
     else
      post=discnext
      setprev(discnext) 
@@ -28863,7 +28900,7 @@ local function testrun(disc,t_run,c_run,...)
  end
  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
  local renewed=false
- if (post or replace) then 
+ if post or replace then 
   if post then
    setlink(posttail,next)
   else
@@ -29056,7 +29093,7 @@ local function t_run_single(start,stop,font,attr,lookupcache)
           ss=nil
          end
         end
-lookupmatch=lg
+        lookupmatch=lg
        else
         break
        end
@@ -29091,7 +29128,7 @@ local function k_run_single(sub,injection,last,font,attr,lookupcache,step,datase
    if n==last then
     break
    end
-   local char=ischar(n)
+   local char=ischar(n,font)
    if char then
     local lookupmatch=lookupcache[char]
     if lookupmatch then
@@ -29210,7 +29247,7 @@ local function t_run_multiple(start,stop,font,attr,steps,nofsteps)
            ss=nil
           end
          end
-lookupmatch=lg
+         lookupmatch=lg
         else
          break
         end
@@ -29433,10 +29470,10 @@ do
         if lookupmatch then
          local a 
          if attr then
-          if getglyphdata(start)==attr and (not attribute or getprop(start,a_state)==attribute) then
+          if getglyphdata(start)==attr and (not attribute or getstate(start,attribute)) then
            a=true
           end
-         elseif not attribute or getprop(start,a_state)==attribute then
+         elseif not attribute or getstate(start,attribute) then
           a=true
          end
          if a then
@@ -29489,10 +29526,10 @@ do
         if m then
          local a 
          if attr then
-          if getglyphdata(start)==attr and (not attribute or getprop(start,a_state)==attribute) then
+          if getglyphdata(start)==attr and (not attribute or getstate(start,attribute)) then
            a=true
           end
-         elseif not attribute or getprop(start,a_state)==attribute then
+         elseif not attribute or getstate(start,attribute) then
           a=true
          end
          if a then
@@ -29935,6 +29972,8 @@ local setprev=nuts.setprev
 local setchar=nuts.setchar
 local getprop=nuts.getprop
 local setprop=nuts.setprop
+local getstate=nuts.getstate
+local setstate=nuts.setstate
 local ischar=nuts.ischar
 local insert_node_after=nuts.insert_after
 local copy_node=nuts.copy
@@ -29944,7 +29983,6 @@ local flush_node=nuts.flush_node
 local copyinjection=nodes.injections.copy 
 local unsetvalue=attributes.unsetvalue
 local fontdata=fonts.hashes.identifiers
-local a_state=attributes.private('state')
 local a_syllabe=attributes.private('syllabe')
 local dotted_circle=0x25CC
 local c_nbsp=0x00A0
@@ -30677,7 +30715,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
    current=start
   else
    current=getnext(n)
-   setprop(start,a_state,s_rphf)
+   setstate(start,s_rphf)
   end
  end
  if getchar(current)==c_nbsp then
@@ -30710,9 +30748,9 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
       local nextcurrent=copy_node(current)
       copyinjection(nextcurrent,current) 
       setlink(tempcurrent,nextcurrent)
-      setprop(tempcurrent,a_state,s_blwf)
+      setstate(tempcurrent,s_blwf)
       tempcurrent=processcharacters(tempcurrent,font)
-      setprop(tempcurrent,a_state,unsetvalue)
+      setstate(tempcurrent,unsetvalue)
       if getchar(next)==getchar(tempcurrent) then
        flush_list(tempcurrent)
        if show_syntax_errors then
@@ -30736,7 +30774,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
  while not basefound do
   local char=getchar(current)
   if consonant[char] then
-   setprop(current,a_state,s_half)
+   setstate(current,s_half)
    if not firstcons then
     firstcons=current
    end
@@ -30744,9 +30782,9 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
    if not base then
     base=current
    elseif blwfcache[char] then
-    setprop(current,a_state,s_blwf)
+    setstate(current,s_blwf)
    elseif pstfcache[char] then
-    setprop(current,a_state,s_pstf)
+    setstate(current,s_pstf)
    else
     base=current
    end
@@ -30811,14 +30849,14 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
  while current~=stop do
   local next=getnext(current)
   if next~=stop and halant[getchar(next)] and getchar(getnext(next))==c_zwnj then
-   setprop(current,a_state,unsetvalue)
+   setstate(current,unsetvalue)
   end
   current=next
  end
- if base~=stop and getprop(base,a_state) then 
+ if base~=stop and getstate(base) then 
   local next=getnext(base)
   if halant[getchar(next)] and not (next~=stop and getchar(getnext(next))==c_zwj) then
-   setprop(base,a_state,unsetvalue)
+   setstate(base,unsetvalue)
   end
  end
  local current,allreordered,moved=start,false,{ [base]=true }
@@ -30955,7 +30993,7 @@ local function reorder_one(head,start,stop,font,attr,nbspaces)
      end
      bn=next
     end
-    if getprop(current,a_state)==s_rphf then
+    if getstate(current,s_rphf) then
      if b~=current then
       if current==start then
        if head==start then
@@ -31106,7 +31144,7 @@ function handlers.devanagari_reorder_reph(head,start)
    while current do
     local char=ischar(current,startfont)
     if char and getprop(current,a_syllabe)==startattr then
-     if consonant[char] and not getprop(current,a_state)==s_pref then
+     if consonant[char] and not getstate(current,s_pref) then
       startnext=getnext(start)
       head=remove_node(head,start)
       setlink(current,start)
@@ -31130,7 +31168,7 @@ function handlers.devanagari_reorder_reph(head,start)
    while current do
     local char=ischar(current,startfont)
     if char and getprop(current,a_syllabe)==startattr then
-     if getprop(current,a_state)==s_pstf then 
+     if getstate(current,s_pstf) then 
       startnext=getnext(start)
       head=remove_node(head,start)
       setlink(getprev(current),start)
@@ -31163,7 +31201,7 @@ function handlers.devanagari_reorder_reph(head,start)
   while current do
    local char=ischar(current,startfont)
    if char and getprop(current,a_syllabe)==startattr then
-    local state=getprop(current,a_state)
+    local state=getstate(current)
     if before_subscript[rephbase] and (state==s_blwf or state==s_pstf) then
      c=current
     elseif after_subscript[rephbase] and (state==s_pstf) then
@@ -31243,7 +31281,7 @@ function handlers.devanagari_reorder_pre_base_reordering_consonants(head,start)
  local current=getprev(start)
  while current and getprop(current,a_syllabe)==startattr do
   local char=ischar(current)
-  if (not dependent_vowel[char] and not getprop(current,a_state) or getprop(current,a_state)==s_init) then
+  if (not dependent_vowel[char] and (not getstate(current) or getstate(current,s_init))) then
    startnext=getnext(start)
    head=remove_node(head,start)
    if current==head then
@@ -31323,7 +31361,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
        if afternext and zw_char[getchar(afternext)] then 
         current=afternext 
        elseif current==start then
-        setprop(current,a_state,s_rphf)
+        setstate(current,s_rphf)
         current=next
        else
         current=next
@@ -31343,9 +31381,9 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      if found then 
       local next=getnext(current)
       if found[getchar(next)] or contextchain(found,next) then
-       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
-        setprop(current,a_state,s_pref)
-        setprop(next,a_state,s_pref)
+       if (not getstate(current) and not getstate(next)) then	
+        setstate(current,s_pref)
+        setstate(next,s_pref)
         current=next
        end
       end
@@ -31365,8 +31403,8 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
       if found[getchar(next)] or contextchain(found,next) then
        if next~=stop and getchar(getnext(next))==c_zwnj then 
         current=next
-       elseif (not getprop(current,a_state)) then	
-        setprop(current,a_state,s_half)
+       elseif (not getstate(current)) then	
+        setstate(current,s_half)
         if not halfpos then
          halfpos=current
         end
@@ -31387,9 +31425,9 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      if found then
       local next=getnext(current)
       if found[getchar(next)] or contextchain(found,next) then
-       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
-        setprop(current,a_state,s_blwf)
-        setprop(next,a_state,s_blwf)
+       if (not getstate(current) and not getstate(next)) then 
+        setstate(current,s_blwf)
+        setstate(next,s_blwf)
         current=next
         subpos=current
        end
@@ -31408,9 +31446,9 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      if found then
       local next=getnext(current)
       if found[getchar(next)] or contextchain(found,next) then
-       if (not getprop(current,a_state) and not getprop(next,a_state)) then	
-        setprop(current,a_state,s_pstf)
-        setprop(next,a_state,s_pstf)
+       if (not getstate(current) and not getstate(next)) then 
+        setstate(current,s_pstf)
+        setstate(next,s_pstf)
         current=next
         postpos=current
        end
@@ -31422,7 +31460,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   end
  end
  local current,base,firstcons=start,nil,nil
- if getprop(start,a_state)==s_rphf then
+ if getstate(start,s_rphf) then
   current=getnext(getnext(start))
  end
  if current~=getnext(stop) and getchar(current)==c_nbsp then
@@ -31449,13 +31487,13 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
       local tmp=getnext(next)
       local changestop=next==stop
       setnext(next)
-      setprop(current,a_state,s_pref)
+      setstate(current,s_pref)
       current=processcharacters(current,font)
-      setprop(current,a_state,s_blwf)
+      setstate(current,s_blwf)
       current=processcharacters(current,font)
-      setprop(current,a_state,s_pstf)
+      setstate(current,s_pstf)
       current=processcharacters(current,font)
-      setprop(current,a_state,unsetvalue)
+      setstate(current,unsetvalue)
       if halant[getchar(current)] then
        setnext(getnext(current),tmp)
        if show_syntax_errors then
@@ -31480,7 +31518,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      if not firstcons then
       firstcons=current
      end
-     local a=getprop(current,a_state)
+     local a=getstate(current)
      if not (a==s_blwf or a==s_pstf or (a~=s_rphf and a~=s_blwf and ra[getchar(current)])) then
       base=current
      end
@@ -31493,13 +31531,13 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   end
  end
  if not base then
-  if getprop(start,a_state)==s_rphf then
-   setprop(start,a_state,unsetvalue)
+  if getstate(start,s_rphf) then
+   setstate(start,unsetvalue)
   end
   return head,stop,nbspaces
  else
-  if getprop(base,a_state) then 
-   setprop(base,a_state,unsetvalue)
+  if getstate(base) then 
+   setstate(base,unsetvalue)
   end
   basepos=base
  end
@@ -31545,7 +31583,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
     end
     local ppos=getprev(pos) 
     while ppos and getprop(ppos,a_syllabe)==getprop(pos,a_syllabe) do
-     if getprop(ppos,a_state)==s_pref then
+     if getstate(ppos,s_pref) then
       pos=ppos
      end
      ppos=getprev(ppos)
@@ -31617,7 +31655,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
  while current~=last do
   local char=getchar(current)
   local cn=getnext(current)
-  if halant[char] and ra[ischar(cn)] and getprop(cn,a_state)~=s_rphf and getprop(cn,a_state)~=s_blwf then
+  if halant[char] and ra[ischar(cn)] and (not getstate(cn,s_rphf)) and (not getstate(cn,s_blwf)) then
    if after_main[ischar(cn)] then
     local prev=getprev(current)
     local next=getnext(cn)
@@ -32217,8 +32255,8 @@ local function method_one(head,font,attr)
  while current do
   local char=ischar(current,font)
   if char then
-			if n==0 and not getprop(current,a_state) then
-				setprop(current,a_state,s_init)
+			if n==0 and not getstate(current) then
+				setstate(current,s_init)
 			end
 			n=n+1
 		else
@@ -32294,7 +32332,7 @@ local function method_two(head,font,attr)
   end
   if not syllableend and show_syntax_errors then
    local char=ischar(current,font)
-   if char and not getprop(current,a_state) then 
+   if char and not getstate(current) then 
     local mark=mark_four[char]
     if mark then
      head,current=inject_syntax_error(head,current,char)
@@ -32312,8 +32350,8 @@ local function method_two(head,font,attr)
  while current do
   local char=ischar(current,font)
   if char then
-			if n==0 and not getprop(current,a_state) then	
-				setprop(current,a_state,s_init)
+			if n==0 and not getstate(current) then 
+				setstate(current,s_init)
 			end
 			n=n+1
 		else

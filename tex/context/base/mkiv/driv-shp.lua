@@ -87,7 +87,6 @@ local dir_code                <const> = nodecodes.dir
 local disc_code               <const> = nodecodes.disc
 local math_code               <const> = nodecodes.math
 local rule_code               <const> = nodecodes.rule
-local marginkern_code         <const> = nodecodes.marginkern
 local whatsit_code            <const> = nodecodes.whatsit
 ----- penalty_code            <const> = nodecodes.penalty
 ----- boundary_code           <const> = nodecodes.boundary
@@ -317,7 +316,8 @@ local function flush_vf_packet(pos_h,pos_v,pos_r,font,char,data,factor,vfcommand
                 code(font,char,pos_h,pos_v)
             end
         elseif command == "node" then
-            hlist_out(packet[2])
+            local h = packet[2]
+            hlist_out(h,getlist(h))
         elseif command == "image" then
             -- doesn't work because intercepted by engine so we use a different
             -- mechanism (for now)
@@ -364,7 +364,7 @@ flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r
 
     local width, height, depth, naturalwidth
     if current then
-        naturalwidth, height, depth, factor = getwhd(current,true)
+        naturalwidth, height, depth, factor = getwhd(current,true) -- also get corrected width
         if factor == 0 then
             width = naturalwidth
         else
@@ -549,12 +549,12 @@ local hlist_out, vlist_out  do
               boxheight,
               boxdepth   = getwhd(this_box)
 
-        local cur_h      = 0
-        local cur_v      = 0
+        local cur_h = 0
+        local cur_v = 0
 
-        if not current then
-            current = getlist(this_box)
-        end
+     -- if not current then
+     --     current = getlist(this_box)
+     -- end
 
         -- we can encounter localpar, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
@@ -572,7 +572,6 @@ local hlist_out, vlist_out  do
                     pos_v = ref_v - (cur_v - y_offset)
                     -- synced
                 end
-             -- local wd, ht, dp = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
                 local wd = flush_character(current,font,char,false,true,pos_h,pos_v,pos_r)
                 cur_h = cur_h + wd
             elseif id == glue_code then
@@ -653,9 +652,9 @@ local hlist_out, vlist_out  do
                                     outer_doing_leaders = doing_leaders
                                     doing_leaders       = true
                                     if getid(leader) == vlist_code then
-                                        vlist_out(leader)
+                                        vlist_out(leader,getlist(leader))
                                     else
-                                        hlist_out(leader)
+                                        hlist_out(leader,getlist(leader))
                                     end
                                     doing_leaders = outer_doing_leaders
                                     cur_h = cur_h + width + lx
@@ -758,7 +757,7 @@ local hlist_out, vlist_out  do
             elseif id == kern_code then
                 local kern, factor = getkern(current,true)
                 if kern ~= 0 then
-                    if factor and factor ~= 0 then
+                    if factor ~= 0 then
                         cur_h = cur_h + (1.0 + factor/1000000.0) * kern
                     else
                         cur_h = cur_h + kern
@@ -866,8 +865,6 @@ local hlist_out, vlist_out  do
                 elseif subtype == openwhatsit_code then
                     flushopenout(current)
                 end
-            elseif id == marginkern_code then
-                cur_h = cur_h + getkern(current)
          -- elseif id == localpar_code and start_of_par(current) then
          --     local pardir = getdirection(current) or lefttoright_code
          --     if pardir == righttoleft_code then
@@ -901,10 +898,9 @@ local hlist_out, vlist_out  do
               boxheight,
               boxdepth   = getwhd(this_box)
 
-        local cur_h      = 0
-        local cur_v      = - boxheight
-
-        local top_edge   = cur_v
+        local cur_h    = 0
+        local cur_v    = - boxheight
+        local top_edge = cur_v
 
         if pos_r == righttoleft_code then
             pos_h = ref_h - cur_h
@@ -914,9 +910,9 @@ local hlist_out, vlist_out  do
         pos_v = ref_v - cur_v
         -- synced
 
-        if not current then
-            current = getlist(this_box)
-        end
+     -- if not current then
+     --     current = getlist(this_box)
+     -- end
 
      -- while current do
      --     local id = getid(current)
@@ -984,9 +980,9 @@ local hlist_out, vlist_out  do
                                     outer_doing_leaders = doing_leaders
                                     doing_leaders = true
                                     if getid(leader) == vlist_code then
-                                        vlist_out(leader)
+                                        vlist_out(leader,getlist(leader))
                                     else
-                                        hlist_out(leader)
+                                        hlist_out(leader,getlist(leader))
                                     end
                                     doing_leaders = outer_doing_leaders
                                     cur_v = cur_v + total + ly
@@ -1272,9 +1268,9 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     lastfont = nil -- this forces a sync each page / object
 
     if getid(box) == vlist_code then
-        vlist_out(box)
+        vlist_out(box,getlist(box))
     else
-        hlist_out(box)
+        hlist_out(box,getlist(box))
     end
 
     ::DONE::

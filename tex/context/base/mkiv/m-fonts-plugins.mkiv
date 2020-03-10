@@ -11,18 +11,19 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D See source code for comments. I wrote this a follow up on a presentation by
-%D Kai Eigner, left it for a while, and sort of finalized it the last quarter of
-%D 2016. As I don't use this module, apart from maybe testing something, it is
-%D not guaranteed to work. Also, plugins can interfere with other functionality
-%D in \CONTEXT\ so don't expect too much support. The two modules mentioned
-%D below should work in the generic loader too. It's anyhow an illustration of
-%D how \type {ffi} can work be used in a practical application.
+%D See source code for comments. I wrote this a follow up on a presentation by Kai
+%D Eigner at an NTG meeting, then left it for a while, and sort of finalized it the
+%D last quarter of 2016. As I don't use this module, apart from maybe testing
+%D something, it is not guaranteed to work (but fixing should be a no real problem
+%D as I expect apis to be stable). Plugins liek this can interfere with other
+%D functionality in \CONTEXT\ so don't expect too much support. The two modules
+%D mentioned below should work in the generic loader too. It's anyhow an
+%D illustration of how \type {ffi} be used in a practical application.
 
 % \enabletrackers[resolvers.ffilib]
 
 \registerctxluafile{font-txt}{} % generic text handler
-\registerctxluafile{font-phb}{} % harfbuzz plugin
+\registerctxluafile{font-phb}{} % harfbuzz plugin: binary or library (ffi/optional)
 
 \startluacode
 

@@ -142,7 +142,7 @@ if CONTEXTLMTXMODE > 0 then
 
     function mp.lmt_svg_include()
         local labelfile = metapost.getparameter { "labelfile" }
-        if labelfile then
+        if labelfile and labelfile ~= "" then
             local labels = table.load(labelfile) -- todo: same path as svg file
             if type(labels) == "table" then
                 for i=1,#labels do
@@ -160,28 +160,35 @@ if CONTEXTLMTXMODE > 0 then
             end
             return
         end
+        local colorfile = metapost.getparameter { "colormap" }
+        local colormap  = false
+        if colorfile and colorfile ~= "" then
+            colormap = metapost.svgcolorremapper(colorfile)
+        end
         local filename = metapost.getparameter { "filename" }
         if filename and filename ~= "" then
             mpdirect ( metapost.svgtomp {
-                data  = io.loaddata(filename),
-                remap = true,
+                data     = io.loaddata(filename),
+                remap    = true,
+                colormap = colormap,
             } )
-            return
-        end
-        local buffer = metapost.getparameter { "buffer" }
-        if buffer then
-            mpdirect ( metapost.svgtomp {
-                data  = buffers.getcontent(buffer),
-             -- remap = true,
-            } )
-            return
-        end
-        local code = metapost.getparameter { "code" }
-        if code then
-            mpdirect ( metapost.svgtomp {
-                data = code,
-            } )
-            return
+        else
+            local buffer = metapost.getparameter { "buffer" }
+            if buffer then
+                mpdirect ( metapost.svgtomp {
+                    data     = buffers.getcontent(buffer),
+                 -- remap    = true,
+                    colormap = colormap,
+                } )
+            else
+                local code = metapost.getparameter { "code" }
+                if code then
+                    mpdirect ( metapost.svgtomp {
+                        data     = code,
+                        colormap = colormap,
+                    } )
+                end
+            end
         end
     end
 
@@ -213,3 +220,5 @@ if CONTEXTLMTXMODE > 0 then
     end
 
 end
+
+todecimal = xdecimal and xdecimal.new or tonumber -- bonus

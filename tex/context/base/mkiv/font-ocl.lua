@@ -49,6 +49,10 @@ if context then
 
 else
 
+    -- Actually we don't need a generic branch at all because (according the the
+    -- internet) other macro packages rely on hb for emoji etc and never used this
+    -- feature of the font loader. So maybe I should just remove this from generic.
+
     local tounicode = fonts.mappings.tounicode16
 
     function otf.getactualtext(s)

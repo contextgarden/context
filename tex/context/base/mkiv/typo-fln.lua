@@ -180,6 +180,8 @@ actions[v_line] = function(head,setting)
          --        nodes.handlers.protectglyphs(temp)  -- not needed as we discard
          -- temp = typesetters.spacings.handler(temp)  -- maybe when enabled
          -- temp = typesetters.kerns.handler(temp)     -- maybe when enabled
+-- temp = typesetters.cases.handler(temp)     -- maybe when enabled
+flush_node_list(temp);
             local width = getdimensions(temp)
             return width
         end

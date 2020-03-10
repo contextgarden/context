@@ -45,7 +45,7 @@ local getkern             = nuts.getkern
 local getheight           = nuts.getheight
 
 local insert_node_after   = nuts.insert_after
-local delete_node         = nuts.delete
+local remove_node         = nuts.remove
 local end_of_math         = nuts.end_of_math
 
 local texgetattribute     = tex.getattribute
@@ -315,7 +315,7 @@ local function texthandler(head)
                     if trace_italics then
                         report_italics("deleting last correction before %s %C",char,"glyph")
                     end
-                    delete_node(prevhead,previnserted)
+                    remove_node(prevhead,previnserted,true)
                 else
                     --
                     if replaceitalic ~= 0 then
@@ -327,7 +327,7 @@ local function texthandler(head)
                         if trace_italics then
                             report_italics("deleting last correction before %s %C","replace",char)
                         end
-                        delete_node(replacehead,replaceinserted)
+                        remove_node(replacehead,replaceinserted,true)
                     end
                     --
                     if postitalic ~= 0 then
@@ -339,7 +339,7 @@ local function texthandler(head)
                         if trace_italics then
                             report_italics("deleting last correction before %s %C","post",char)
                         end
-                        delete_node(posthead,postinserted)
+                        remove_node(posthead,postinserted,true)
                     end
                 end
                 --

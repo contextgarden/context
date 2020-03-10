@@ -25,7 +25,7 @@ educational purposes.</p>
 local next, type = next, type
 local gsub, find = string.gsub, string.find
 local concat, sortedhash, keys, sort = table.concat, table.sortedhash, table.keys, table.sort
-local utfchar, utfbyte, utfcharacters, utfvalues = utf.char, utf.byte, utf.characters, utf.values
+local utfchar, utfbyte, utfcharacters = utf.char, utf.byte, utf.characters
 local P, Cs, Cmt, Ct = lpeg.P, lpeg.Cs, lpeg.Cmt, lpeg.Ct
 
 if not characters        then require("char-def") end

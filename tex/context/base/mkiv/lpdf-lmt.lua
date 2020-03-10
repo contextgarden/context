@@ -102,12 +102,12 @@ end
 
 local function reset_variables(specification)
     pdf_h, pdf_v  = 0, 0
-    cmrx, cmry    = 1, 1
-    cmsx, cmsy    = 0, 0
-    cmtx, cmty    = 0, 0
-    tmrx, tmry    = 1, 1
-    tmsx, tmsy    = 0, 0
-    tmtx, tmty    = 0, 0
+    cmrx, cmry    = 1.0, 1.0
+    cmsx, cmsy    = 0.0, 0.0
+    cmtx, cmty    = 0.0, 0.0
+    tmrx, tmry    = 1.0, 1.0
+    tmsx, tmsy    = 0.0, 0.0
+    tmtx, tmty    = 0.0, 0.0
     need_tm       = false
     need_tf       = false
     need_width    = 0
@@ -117,17 +117,17 @@ local function reset_variables(specification)
     mode          = "page"
     shippingmode  = specification.shippingmode
     objectnumber  = specification.objectnumber
-    cur_tmrx      = 0
+    cur_tmrx      = 0.0
     f_cur         = 0
     f_pdf_cur     = 0 -- nullfont
     f_pdf         = 0 -- nullfont
     fs_cur        = 0
     fs            = 0
-    tj_delta      = 0
     cur_factor    = 0
     cur_f         = false
     cur_e         = false
-    cw            = 0
+    tj_delta      = 0.0
+    cw            = 0.0
     usedfonts     = setmetatableindex(usefont)
     usedxforms    = { }
     usedximages   = { }
@@ -137,7 +137,7 @@ end
 
 -- buffer
 
-local buffer = { }
+local buffer = lua.newtable(1024,0) -- { }
 local b      = 0
 
 local function reset_buffer()
@@ -384,16 +384,21 @@ local flushcharacter  do
         local f = parameters[font].hfactor
         local v = setmetatableindex(function(t,char)
             local e = d and d[char]
-            local w = 0
+            local w
             if e then
                 w = e.width
                 if w then
                     w =  w * f
                 end
             end
-            e = c[char]
-            if e then
-                w = e.width or 0
+            if not w then
+                e = c[char]
+                if e then
+                    w = e.width or 0
+                end
+            end
+            if not w then
+                w = 0
             end
             t[char] = w
             return w
@@ -599,9 +604,7 @@ local flushcharacter  do
             begin_charmode()
         end
 
-    --  cw = cw + naturalwidth
-    --  cw = cw + width
-        cw = cw + naturalwidth[char]
+        cw = cw + naturalwidth[char] * tmrx
 
         local index = data.index or char
 

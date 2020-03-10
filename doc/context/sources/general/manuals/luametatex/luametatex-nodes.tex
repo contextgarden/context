@@ -459,7 +459,7 @@ fields: \showfields {glyph}.
 \NC \type{left}             \NC number  \NC the frozen \type {\lefthyphenmnin} value \NC \NR
 \NC \type{right}            \NC number  \NC the frozen \type {\righthyphenmnin} value \NC \NR
 \NC \type{uchyph}           \NC boolean \NC the frozen \prm {uchyph} value \NC \NR
-\NC \type{components}       \NC node    \NC pointer to ligature components \NC \NR
+\NC \type{state}            \NC number  \NC a user field (replaces the component list) \NC \NR
 \NC \type{xoffset}          \NC number  \NC a virtual displacement in horizontal direction \NC \NR
 \NC \type{yoffset}          \NC number  \NC a virtual displacement in vertical direction \NC \NR
 \NC \type{width}            \NC number  \NC the (original) width of the character \NC \NR
@@ -472,10 +472,7 @@ fields: \showfields {glyph}.
 
 The \type {width}, \type {height} and \type {depth} values are read|-|only. The
 \type {expansion_factor} is assigned in the par builder and used in the backend.
-
-A warning: never assign a node list to the components field unless you are sure
-its internal link structure is correct, otherwise an error may be result. Valid
-bits for the \type {subtype} field are:
+Valid bits for the \type {subtype} field are:
 
 \starttabulate[|c|l|]
 \DB bit \BC meaning   \NC \NR
@@ -580,26 +577,6 @@ just have \showfields {dir}.
 There are only two directions: left|-|to|-|right (\type {0}) and
 right|-|to|-|left (\type {1}). This is different from \LUATEX\ that has four
 directions.
-
-\stopsubsection
-
-\startsubsection[title={\nod {marginkern} nodes}]
-
-\topicindex {nodes+paragraphs}
-\topicindex {paragraphs}
-\topicindex {protrusion}
-
-Margin kerns result from protrusion and have: \showfields {margin_kern}.
-
-\starttabulate[|l|l|p|]
-\DB field          \BC type   \BC explanation \NC \NR
-\TB
-\NC \type{subtype} \NC number \NC \showsubtypes{marginkern} \NC \NR
-\NC \type{attr}    \NC node   \NC list of attributes \NC \NR
-\NC \type{width}   \NC number \NC the advance of the kern \NC \NR
-\NC \type{glyph}   \NC node   \NC the glyph to be used \NC \NR
-\LL
-\stoptabulate
 
 \stopsubsection
 
@@ -950,8 +927,7 @@ positives. The general approach to a node related callback is as follows:
 
 \startitem
     When you remove a node, make sure that when this is permanent, you also free
-    the node or list. When you free a node its components are checked and when
-    they are nodes themselves they are also freed.
+    the node or list.
 \stopitem
 
 \startitem
@@ -2149,7 +2125,6 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 %supported {find_node}               \nop \yes \relax
 \supported {first_glyph}             \nop \yes \yes
 \supported {flatten_discretionaries} \nop \yes \yes
-%supported {flush_components}        \nop \yes \relax
 \supported {flush_list}              \yes \yes \relax
 \supported {flush_node}              \yes \yes \relax
 \supported {free}                    \yes \yes \relax
@@ -2160,7 +2135,7 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {getboth}                 \nop \yes \relax
 \supported {getbox}                  \nop \yes \relax
 \supported {getchar}                 \nop \yes \relax
-\supported {getcomponents}           \nop \yes \relax
+\supported {getstate}                \nop \yes \relax
 \supported {getdata}                 \nop \yes \relax
 \supported {getdepth}                \nop \yes \relax
 \supported {getdirection}            \nop \yes \relax
@@ -2228,7 +2203,7 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {setboth}                 \nop \yes \relax
 \supported {setbox}                  \nop \yes \relax
 \supported {setchar}                 \nop \yes \relax
-\supported {setcomponents}           \nop \yes \relax
+\supported {setstate}                \nop \yes \relax
 \supported {setdata}                 \nop \yes \relax
 \supported {setdepth}                \nop \yes \relax
 \supported {setdirection}            \nop \yes \relax
@@ -2291,7 +2266,7 @@ sections that describe node properties.
 
 Some of the getters and setters handle multiple node types, given that the field
 is relevant. In that case, some field names are considered similar (like \type
-{kern} and \type {width}, or \type {data} and \type {value}. In retrospect we
+{kern} and \type {width}, or \type {data} and \type {value}). In retrospect we
 could have normalized field names better but we decided to stick to the original
 (internal) names as much as possible. After all, at the \LUA\ end one can easily
 create synonyms.
@@ -2372,10 +2347,10 @@ This is experimental code and might take a while to become frozen.
 \libindex{set_properties_mode}
 
 Attributes are a convenient way to relate extra information to a node. You can
-assign them at the \TEX\ end as well as at the \LUA\ end and and consult them at
-the \LUA\ end. One big advantage is that they obey grouping. They are linked
-lists and normally checking for them is pretty efficient, even if you use a lot
-of them. A macro package has to provide some way to manage these attributes at the
+assign them at the \TEX\ end as well as at the \LUA\ end and consult them at the
+\LUA\ end. One big advantage is that they obey grouping. They are linked lists
+and normally checking for them is pretty efficient, even if you use a lot of
+them. A macro package has to provide some way to manage these attributes at the
 \TEX\ end because otherwise clashes in their usage can occur.
 
 Each node also can have a properties table and you can assign values to this
@@ -2502,7 +2477,7 @@ as property, the new node will share that table. If the second argument of \typ
 copy gets its own table with the original table as metatable. If you use the
 generic font loader the mode is enabled that way.
 
-A few more xperiments were done. For instance: copy attributes to the properties
+A few more experiments were done. For instance: copy attributes to the properties
 so that we have fast access at the \LUA\ end. In the end the overhead is not
 compensated by speed and convenience, in fact, attributes are not that slow when
 it comes to accessing them. So this was rejected.

@@ -365,7 +365,7 @@ Now we get:
 
 In \LUATEX, the font dimension parameters that \TEX\ used in math typesetting are
 now accessible via primitive commands. In fact, refactoring of the math engine
-has resulted in many more parameters than were not accessible before.
+has resulted in turning some hard codes properties into parameters.
 
 \starttabulate
 \DB primitive name                   \BC description \NC \NR
@@ -392,7 +392,7 @@ has resulted in many more parameters than were not accessible before.
                                        expressed in \type {percents}, so 60\% is expressed as the
                                        integer $60$ \NC \NR
 \NC \lpr {Umathstackvgap}          \NC vertical clearance between the two
-                                       elements in a \prm {atop} stack \NC \NR
+                                       elements in an \prm {atop} stack \NC \NR
 \NC \lpr {Umathstacknumup}         \NC numerator shift upward in \prm {atop} stack \NC \NR
 \NC \lpr {Umathstackdenomdown}     \NC denominator shift downward in \prm {atop} stack \NC \NR
 \NC \lpr {Umathfractionrule}       \NC the width of the rule in a \prm {over} \NC \NR
@@ -625,18 +625,15 @@ with zero being the default behaviour.
 
 \stop
 
-Method six omits the surround glue when there is (x)spacing glue present while
-method seven does the opposite, the glue is only applied when there is (x)space
-glue present too. Anything more fancy, like checking the begining or end of a
-paragraph (or edges of a box) would not be robust anyway. If you want that you
-can write a callback that runs over a list and analyzes a paragraph. Actually, in
-that case you could also inject glue (or set the properties of a math node)
-explicitly. So, these modes are in practice mostly useful for special purposes
-and experiments (they originate in a tracker item). Keep in mind that this glue
-is part of the math node and not always treated as normal glue: it travels with
-the begin and end math nodes. Also, method 6 and 7 will zero the skip related
-fields in a node when applicable in the first occasion that checks them
-(linebreaking or packaging).
+Anything more fancy, like checking the beginning or end of a paragraph (or edges
+of a box) would not be robust anyway. If you want that you can write a callback
+that runs over a list and analyzes a paragraph. Actually, in that case you could
+also inject glue (or set the properties of a math node) explicitly. So, these
+modes are in practice mostly useful for special purposes and experiments (they
+originate in a tracker item). Keep in mind that this glue is part of the math
+node and not always treated as normal glue: it travels with the begin and end
+math nodes. Also, method 6 and 7 will zero the skip related fields in a node when
+applicable in the first occasion that checks them (linebreaking or packaging).
 
 \subsection{Pairwise spacing and \lpr {Umath...spacing} commands}
 
@@ -726,7 +723,7 @@ like this:
 They are all initialized by \type {initex} to the values mentioned in the table
 in Chapter~18 of the \TEX book.
 
-Note 1: for ease of use as well as for backward compatibility, \prm {thinmuskip},
+Note 1: For ease of use as well as for backward compatibility, \prm {thinmuskip},
 \prm {medmuskip} and \prm {thickmuskip} are treated specially. In their case a
 pointer to the corresponding internal parameter is saved, not the actual \prm
 {muskip} value. This means that any later changes to one of these three
@@ -771,9 +768,9 @@ $
 The \type {\frozen} prefix does the magic: it injects information in the
 math list about the set parameter.
 
-In \LUATEX\ 1.10 the last setting, the \type {10pt} drop wins, but in
+In \LUATEX\ 1.10+ the last setting, the \type {10pt} drop wins, but in
 \LUAMETATEX\ you will see each local setting taking effect. The implementation
-uses a new node type, parameters nodes, so you you might encounter these in an
+uses a new node type, parameters nodes, so you might encounter these in an
 unprocessed math list. The result looks as follows:
 
 \blank \getbuffer \blank
@@ -896,7 +893,7 @@ math is bound to fuzzy rules. So, control is the solution.
 If you want to typeset text in math macro packages often provide something \type
 {\text} which obeys the script sizes. As the definition can be anything there is
 a good chance that the kerning doesn't come out well when used in a script. Given
-that the first glyph ends up in a \prm {hbox} we have some control over this.
+that the first glyph ends up in an \prm {hbox} we have some control over this.
 And, as a bonus we also added control over the normal sublist kerning. The \lpr
 {mathscriptboxmode} parameter defaults to~1.
 
@@ -906,7 +903,7 @@ And, as a bonus we also added control over the normal sublist kerning. The \lpr
 \NC \type {0} \NC forget about kerning \NC \NR
 \NC \type {1} \NC kern math sub lists with a valid glyph \NC \NR
 \NC \type {2} \NC also kern math sub boxes that have a valid glyph \NC \NR
-\NC \type {2} \NC only kern math sub boxes with a boundary node present\NC \NR
+\NC \type {3} \NC only kern math sub boxes with a boundary node present\NC \NR
 \LL
 \stoptabulate
 
@@ -1259,7 +1256,7 @@ The vertical placements are controlled by \lpr {Umathunderdelimiterbgap}, \lpr
 The superscript in \lpr {Uoverdelimiter} is typeset in a suitable scripted style,
 the subscript in \lpr {Uunderdelimiter} is cramped as well.
 
-These primitives accepts an option \type {width} specification. When used the
+These primitives accepts an optional \type {width} specification. When used the
 also optional keywords \type {left}, \type {middle} and \type {right} will
 determine what happens when a requested size can't be met (which can happen when
 we step to successive larger variants).
@@ -1360,11 +1357,11 @@ For Latin Modern the result looks as follows:
 Normally you will force delimiters to certain sizes by putting an empty box or
 rule next to it. The resulting delimiter will either be a character from the
 stepwise size range or an extensible. The latter can be quite differently
-positioned than the characters as it depends on the fit as well as the fact if
-the used characters in the font have depth or height. Commands like (plain \TEX
-s) \type {\big} need use this feature. In \LUATEX\ we provide a bit more control
-by three variants that support optional parameters \type {height}, \type {depth}
-and \type {axis}. The following example uses this:
+positioned than the characters as it depends on the fit as well as the fact
+whether the used characters in the font have depth or height. Commands like
+(plain \TEX s) \type {\big} need to use this feature. In \LUATEX\ we provide a bit
+more control by three variants that support optional parameters \type {height},
+\type {depth} and \type {axis}. The following example uses this:
 
 \startbuffer
 \Uleft   height 30pt depth 10pt      \Udelimiter "0 "0 "000028
@@ -1429,7 +1426,7 @@ will return:
 [2] [3] [4]
 \stoptyping
 
-These commands are provides as convenience. Before they come available you could
+These commands are provided as convenience. Before they come available you could
 do the following:
 
 \starttyping
@@ -1511,7 +1508,7 @@ $
 $
 \stopbuffer
 
-\typebuffer
+\typebuffer[script]
 
 results in \inlinebuffer[script].
 
@@ -1534,7 +1531,7 @@ requested math family is used.
 \topicindex {math+flattening}
 
 The \TEX\ math engine collapses \type {ord} noads without sub- and superscripts
-and a character as nucleus. and which has the side effect that in \OPENTYPE\ mode
+and a character as nucleus, which has the side effect that in \OPENTYPE\ mode
 italic corrections are applied (given that they are enabled).
 
 \startbuffer[sample]

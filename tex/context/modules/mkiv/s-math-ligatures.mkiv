@@ -31,20 +31,21 @@
 
 \continueifinputfile{s-math-ligatures.mkiv}
 
-\setupbodyfont[dejavu,10pt]
-
-\setuplayout
-  [width=middle,
-   height=middle,
-   topspace=15mm,
-   backspace=15mm,
-   bottomspace=15mm,
-   header=1cm,
-   headerdistance=0.5cm,
-   footer=0pt]
+\usemodule[article-basics] \setuplayout[tight] \setupbodyfont[10pt]
 
 \starttext
 
-    \showmathligatures
+\showmathligatures
+
+\blank[2*big]
+
+\starttyping
+sp = special
+ml = mathlist
+
+\setupmathematics[collapsing=1] : special
+\setupmathematics[collapsing=2] : special  mathlist
+\setupmathematics[collapsing=3] : mathlist special
+\stoptyping
 
 \stoptext

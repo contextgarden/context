@@ -373,8 +373,8 @@ following:
 For quite a while we shipped so called \CONTEXT\ minimals. These zip files
 contained only the resources and programs that made sense for running \CONTEXT.
 Nowadays the minimals are installed and synchronized via internet. \footnote
-{This project was triggered by Mojca Miklavec who is also charge of this bit of
-the \CONTEXT\ infrastructure. More information can be found at \type
+{This project was triggered by Mojca Miklavec who is also in charge of this bit
+of the \CONTEXT\ infrastructure. More information can be found at \type
 {contextgarden.net}.} You can just run the installer again and no additional
 commands are needed. In the console you will see several calls to \sMTXRUN\ and
 \sLUATOOLS\ fly by.
@@ -415,7 +415,7 @@ run.
 
 \typefile[ntyping]{tools-mkiv-help.tmp}
 
-There are few exert options too:
+There are few expert options too:
 
 \ctxlua{os.execute("context --expert > tools-mkiv-help.tmp")}
 
@@ -451,7 +451,7 @@ a similar was as \TEX\ files.
 
 \startsection[title={Stubs}]
 
-As the tools are written in the \LUA\ language we need a \LUA\ interpreter and or
+As the tools are written in the \LUA\ language we need a \LUA\ interpreter and of
 course we use \LUATEX\ itself. On \UNIX\ we can copy \sLUATOOLS\ and \sMTXRUN\ to
 files in the binary path with the same name but without suffix. Starting them in
 another way is a waste of time, especially when \sKPSEWHICH\ is used to find
@@ -498,12 +498,11 @@ mtxrun.exe
 You can copy \type {mtxrun.exe} to for instance \type {context.exe} and it will
 still use \sMTXRUN\ for locating the right script. It also takes care of mapping
 \sTEXMFSTART\ to \sMTXRUN. So we've removed the intermediate \type {cmd} step,
-can not run the script as any program, and most of all, we're as efficient as can
-be. Of course this program is only meaningful for the \CONTEXT\ approach to
-tools.
+can run the script as any program, and most of all, we're as efficient as can be.
+Of course this program is only meaningful for the \CONTEXT\ approach to tools.
 
 It may all sound more complex than it is but once it works users will not notice
-those details. Als, in practice not that much has changed in running the tools
+those details. Also, in practice not that much has changed in running the tools
 between \MKII\ and \MKIV\ as we've seen no reason to change the methods.
 
 \stopsection
@@ -562,11 +561,10 @@ Much of the code inside \MKIV\ can alter its behaviour based on either \quote
 alternate behaviour). Since this also affects the \LUA\ code within \sMTXRUN\
 itself, it makes sense to list these options first.
 
-Getting information on trackers, directives and experiments. Trackers enable more
-extensive status messages on the console or in \CONTEXT\ additional visual clues.
-Directives change behaviour that are not part of the official interface and have
-no corresponding commands. Experiments are like directives but not official
-(yet).
+Trackers enable more extensive status messages on the console or in \CONTEXT\
+additional visual clues. Directives change behaviour that is not part of the
+official interface and have no corresponding commands. Experiments are like
+directives but not official (yet).
 
 \startoptions
     \option
@@ -615,7 +613,7 @@ a challenge. Explaining the details of all the directives is outside of the scop
 of this article, but you can look them up in the \CONTEXT\ source by searching
 for \typ {directives.register} and \typ {trackers.register}.
 
-In verbose mode, \sMTXRUN\ itself gives more messages, and it also \typ
+In verbose mode, \sMTXRUN\ itself gives more messages, and it also enables \typ
 {resolvers.locating}, which is a tracker itself:
 
 \startoptions
@@ -671,11 +669,13 @@ and:
         {use given texmf tree (default file: \type {setuptex.tmf})}
 \stopoptions
 
+We don't provide such a \type {.tmf} file in the distribution.
+
 \stopsubsection
 
 \startsubsection[title=Options for finding files and reporting configurations]
 
-Once the configuration setup is done, it makes sense to have a bunch or options
+Once the configuration setup is done, it makes sense to have a bunch of options
 to use and|/|or query the configuration.
 
 \startoptions
@@ -808,7 +808,7 @@ scripts, and \type {<name>.lua} is just a last-ditch effort if nothing else
 works. Scripts are looked for in the local path, and in whatever directories the
 configuration variable \type {LUAINPUTS} points to.
 
-The \type {--execute} options exists mostly for the non||\LUA\ {\MKII} scripts
+The \type {--execute} option exists mostly for the non||\LUA\ {\MKII} scripts
 that still exist in the distribution. It will try to find a matching interpreter
 for non||\LUA\ scripts, and it is aware of a number of distribution||supplied
 scripts so that if you specify \type {--execute texexec}, it knows that what you
@@ -1211,7 +1211,7 @@ function scripts.envtest.runtest()
 end
 \stoptyping
 
-An finally, identify the current script, followed by handling the provided
+And finally, identify the current script, followed by handling the provided
 options (usually with an \type {if}||\type {else} statement).
 
 \starttyping
@@ -1229,11 +1229,11 @@ end
 \startsubsection[title=Script environment]
 
 \sMTXRUN\ includes lots of the internal \LUA\ helper libraries from \CONTEXT. We
-actually maintains a version of the script without all those libraries included,
+actually maintain a version of the script without all those libraries included,
 and before every (beta) \CONTEXT\ release, an amalgamated version of \sMTXRUN\ is
-added to the distribution. In the merging process, most all comments are stripped
-from the embedded libraries, so if you want to know details, it is better to look
-in the original \LUA\ source file.
+added to the distribution. In the merging process, all comments are stripped from
+the embedded libraries, so if you want to know details, it is better to look in
+the original \LUA\ source file.
 
 Inside \sMTXRUN, the full list of embedded libraries can be queried via the array
 \type {own.libs}:
@@ -1259,8 +1259,8 @@ embedded libraries (\type {own.list}), which is used by the \type {--selfmerge}
 option and also allows the non||amalgamated version to run (since otherwise \type
 {--selfmerge} could not be bootstrapped).
 
-\sMTXRUN\ offers a programming environment that makes it easy to write \LUA\ a
-scripts. The most important element of that environment is a \LUA\ table that is
+\sMTXRUN\ offers a programming environment that makes it easy to write \LUA\
+script. The most important element of that environment is a \LUA\ table that is
 conveniently called \type {environment} (\type {util-env} does the actual work of
 setting that up).
 
@@ -1379,7 +1379,7 @@ As well as some functions:
     {Locates and compiles a \LUA\ file, returning its contents as data.}
 \mtxrunenv
     {make_format(name,arguments)}
-    {Creates a format file and stores in in the \CONTEXT\ cache, used by \type
+    {Creates a format file and stores it in the \CONTEXT\ cache, used by \type
      {mtxrun --make}.}
 \mtxrunenv
     {relativepath(path,root)}

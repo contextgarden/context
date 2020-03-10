@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['font-hsh'] = {
 local rawget = rawget
 
 local setmetatableindex = table.setmetatableindex
-local currentfont       = font.current
+local currentfont       = font and font.current -- used in the web service
 local allocate          = utilities.storage.allocate
 
 local fonts         = fonts
@@ -103,7 +103,7 @@ setmetatableindex(identifiers, function(t,k)
     return k == true and identifiers[currentfont()] or nulldata
 end)
 
-do
+if font then
 
     -- to be used
 
@@ -370,8 +370,12 @@ setmetatableindex(variants, function(t,k)
     end
 end)
 
-function font.getfont(id)
-    return identifiers[id]
+if font then
+
+    function font.getfont(id)
+        return identifiers[id]
+    end
+
 end
 
 -- font.setfont = currentfont -- bah, no native 'setfont' as name

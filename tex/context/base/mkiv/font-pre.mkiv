@@ -855,6 +855,15 @@
 %    \endgroup}
 
 %D \macros
+%D   {uppercasing, lowercasing}
+
+\definefontfeature[lowercasing][lowercasing=yes]
+\definefontfeature[uppercasing][uppercasing=yes]
+
+\unexpanded\def\uppercasing{\addff{uppercasing}}
+\unexpanded\def\lowercasing{\addff{lowercasing}}
+
+%D \macros
 %D   {tinyfont}
 %D
 %D By default we load the Computer Modern Roman fonts (but

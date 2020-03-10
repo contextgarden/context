@@ -64,7 +64,8 @@ and finally it adjusts all the subtype identifiers so that the records are \quot
 {character} and a \quote {font} field, and they lived in the same memory as
 tokens did. The latter also contained a list of components, and a subtype
 indicating whether this ligature was the result of a word boundary, and it was
-stored in the same place as other nodes like boxes and kerns and glues.
+stored in the same place as other nodes like boxes and kerns and glues. In
+\LUAMETATEX\ we no longer keep the list of components with the glyph node.
 
 In \LUATEX, these two types are merged into one, somewhat larger structure called
 a \nod {glyph} node. Besides having the old character, font, and component

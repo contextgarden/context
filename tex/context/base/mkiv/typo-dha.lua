@@ -59,6 +59,7 @@ local getdirection       = nuts.getdirection
 local isglyph            = nuts.isglyph -- or ischar
 
 local setprop            = nuts.setprop
+local setstate           = nuts.setstate
 local setchar            = nuts.setchar
 
 local insert_node_before = nuts.insert_before
@@ -100,7 +101,6 @@ local directions         = typesetters.directions
 local setcolor           = directions.setcolor
 local getglobal          = directions.getglobal
 
-local a_state            = attributes.private('state')
 local a_directions       = attributes.private('directions')
 
 local strip              = false
@@ -191,7 +191,7 @@ local function process(start)
                             end
                         elseif lro or override < 0 then
                             if direction == "r" or direction == "al" then
-                                setprop(current,a_state,s_isol) -- hm
+                                setstate(current,s_isol) -- hm
                                 direction = "l"
                                 reversed  = true
                             end

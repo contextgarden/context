@@ -24,7 +24,7 @@ This library contains two read|-|only items:
 <string> s = lua.startupfile
 \stoptyping
 
-This returns the \LUA\ version identifier string. The value is currently
+This returns the \LUA\ version identifier string. The value currently is
 \directlua {tex.print(lua.version)}.
 
 \stopsubsection
@@ -120,7 +120,7 @@ If you want to unset a \LUA\ name, you can assign \type {nil} to it. The functio
 accessors are:
 
 \startfunctioncall
-lua.setluaname(<string> s,<number> n])
+lua.setluaname(<string> s,<number> n)
 <string> s = lua.getluaname(<number> n)
 \stopfunctioncall
 
@@ -305,9 +305,7 @@ is a \nod {glue_spec} node but when you pass \type {false} as last argument to
 \type {tex.get} you get the width of the glue and when you pass \type {true} you
 get all five values. Otherwise you get a node which is a copy of the internal
 value so you are responsible for its freeing at the \LUA\ end. When you set a
-glue quantity you can either pass a \nod {glue_spec} or upto five numbers. If
-you pass \type {true} to \type {get} you get 5 values returned for a glue and
-when you pass \type {false} you only get the width returned.
+glue quantity you can either pass a \nod {glue_spec} or upto five numbers.
 
 \subsubsection{Integer parameters}
 
@@ -738,10 +736,10 @@ nodes, and toks by strings.
 Again the glue variants are not using the \nod {glue-spec} userdata nodes. The
 \type {setglue} function accepts upto 5 arguments: width, stretch, shrink,
 stretch order and shrink order and the \type {getglue} function reports them,
-unless the second argument is \type {false} in which care only the width is
+unless the second argument is \type {false} in which case only the width is
 returned.
 
-Here is an example usign a threesome:
+Here is an example using a threesome:
 
 \startfunctioncall
 local d = tex.getdimen("foo")
@@ -1207,7 +1205,7 @@ makes it suitable for use as a partial line input mechanism:
     from eating spaces as result of interpreting the line. For example, in
 
     \starttyping
-    before\directlua{tex.sprint("\\relax")tex.sprint(" inbetween")}after
+    before\directlua{tex.sprint("\\relax")tex.sprint(" in between")}after
     \stoptyping
 
     the space before \type {in between} will be gobbled as a result of the \quote
@@ -1426,7 +1424,7 @@ which can be shortcut to:
 tex.setlinenumber(10,true)
 \stopfunctioncall
 
-This might be handy when you have a callback that read numbers from a file and
+This might be handy when you have a callback that reads numbers from a file and
 combines them in one line (in which case an error message probably has to refer
 to the original line). Interference with \TEX's internal handling of numbers is
 of course possible.
@@ -1470,7 +1468,7 @@ currently associated with it.
 \libindex{setinteraction}
 \libindex{getinteraction}
 
-The engine can in one of four modes:
+The engine can be in one of four modes:
 
 \starttabulate[|lT|l|pl|]
 \DB value \NC mode      \BC meaning \NC \NR
@@ -1862,7 +1860,7 @@ debugging and the (relative state) numbers can change with the implementation.
 For practical reasons \LUATEX\ has its own random number generator. The original
 \LUA\ random function is available as \typ {tex.lua_math_random}. You can
 initialize with a new seed with \type {init_rand} (\typ {lua_math_randomseed} is
-equivalent to this one.
+equivalent to this one).
 
 There are three generators: \type {normal_rand} (no argument is used), \type
 {uniform_rand} (takes a number that will get rounded before being used) and \type
@@ -1989,7 +1987,7 @@ texio.write_nl(<string> target, <string> s, ...)
 texio.write_nl(<string> s, ...)
 \stopfunctioncall
 
-This function behaves like \type {texio.write}, but make sure that the given
+This function behaves like \type {texio.write}, but makes sure that the given
 strings will appear at the beginning of a new line. You can pass a single empty
 string if you only want to move to the next line.
 
@@ -2008,11 +2006,11 @@ zero.
 
 \libindex{closeinput}
 
-This function that should be used with care. It acts as \prm {endinput} but at
-the \LUA\ end. You can use it to (sort of) force a jump back to \TEX. Normally a
-\LUA\ will just collect prints and at the end bump an input level and flush these
-prints. This function can help you stay at the current level but you need to know
-what you're doing (or more precise: what \TEX\ is doing with input).
+This function should be used with care. It acts as \prm {endinput} but at the
+\LUA\ end. You can use it to (sort of) force a jump back to \TEX. Normally a
+\LUA\ call will just collect prints and at the end bump an input level and flush
+these prints. This function can help you stay at the current level but you need
+to know what you're doing (or more precise: what \TEX\ is doing with input).
 
 \stopsubsection
 
@@ -2043,7 +2041,7 @@ what you're doing (or more precise: what \TEX\ is doing with input).
 The token library provides means to intercept the input and deal with it at the
 \LUA\ level. The library provides a basic scanner infrastructure that can be used
 to write macros that accept a wide range of arguments. This interface is on
-purpose kept general and as performance is quite ok. One can build additional
+purpose kept general and as performance is quite okay so one can build additional
 parsers without too much overhead. It's up to macro package writers to see how
 they can benefit from this as the main principle behind \LUATEX\ is to provide a
 minimal set of tools and no solutions. The scanner functions are probably the
@@ -2060,9 +2058,9 @@ most intriguing.
 \NC \type{scan_int}       \NC                    \NC returns an integer \NC \NR
 \NC \type{scan_real}      \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1} with optional collapsed signs \NC \NR
 \NC \type{scan_float}     \NC                    \NC returns a number from e.g.\ \type {1},  \type {1.1}, \type {.1}, \type {1.1E10}, , \type {.1e-10} with optional collapsed signs \NC \NR
-\NC \type{scan_dimen}     \NC infinity, mu-units \NC returns a number representing a dimension and or two numbers being the filler and order \NC \NR
+\NC \type{scan_dimen}     \NC infinity, mu-units \NC returns a number representing a dimension or two numbers being the filler and order \NC \NR
 \NC \type{scan_glue}      \NC mu-units           \NC returns a glue spec node \NC \NR
-\NC \type{scan_toks}      \NC definer, expand    \NC returns a table of tokens tokens \NC \NR
+\NC \type{scan_toks}      \NC definer, expand    \NC returns a table of tokens \NC \NR
 \NC \type{scan_code}      \NC bitset             \NC returns a character if its category is in the given bitset (representing catcodes) \NC \NR
 \NC \type{scan_string}    \NC                    \NC returns a string given between \type {{}}, as \type {\macro} or as sequence of characters with catcode 11 or 12 \NC \NR
 \NC \type{scan_argument}  \NC                    \NC this one is simular to \type {scanstring} but also accepts a \type {\cs}
@@ -2074,7 +2072,7 @@ most intriguing.
 \stoptabulate
 
 The scanners can be considered stable apart from the one scanning for a token.
-The \type {scan_code} function takes an optional number, the \type {keyword}
+The \type {scan_code} function takes an optional number, the \type {scan_keyword}
 function a normal \LUA\ string. The \type {infinity} boolean signals that we also
 permit \type {fill} as dimension and the \type {mu-units} flags the scanner that
 we expect math units. When scanning tokens we can indicate that we are defining a
@@ -2236,7 +2234,7 @@ primitive. The possible properties of tokens are:
 \NC \type {command}    \NC a number representing the internal command number \NC \NR
 \NC \type {cmdname}    \NC the type of the command (for instance the catcode in case of a
                            character or the classifier that determines the internal
-                           treatment \NC \NR
+                           treatment) \NC \NR
 \NC \type {csname}     \NC the associated control sequence (if applicable) \NC \NR
 \NC \type {id}         \NC the unique id of the token \NC \NR
 \NC \type {tok}        \NC the full token number as stored in \TEX \NC \NR
@@ -2378,9 +2376,31 @@ token.put_next { t1, t2 }
 token.put_next ( t3, t4 )
 \stoptyping
 
-When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a table
-with tokens or a list of tokens. The \type {token.expand} function will trigger
-expansion but what happens really depends on what you're doing where.
+When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a
+table with tokens or a list of tokens. The \type {token.expand} function will
+trigger expansion but what happens really depends on what you're doing where.
+
+This putter is actually a bit more flexible because the following input also
+works out okay:
+
+\startbuffer
+\def\foo#1{[#1]}
+
+\directlua {
+    local list = { 101, 102, 103, token.create("foo"), "{abracadabra}" }
+    token.put_next("(the)")
+    token.put_next(list)
+    token.put_next("(order)")
+    token.put_next(unpack(list))
+    token.put_next("(is reversed)")
+}
+\stopbuffer
+
+\typebuffer
+
+We get this: \blank {\tt \inlinebuffer} \blank So, strings get converted to
+individual tokens according to the current catcode regime and numbers become
+characters also according to this regime.
 
 \stopsubsection
 
@@ -2389,6 +2409,8 @@ expansion but what happens really depends on what you're doing where.
 When scanning for the next token you need to keep in mind that we're not scanning
 like \TEX\ does: expanding, changing modes and doing things as it goes. When we
 scan with \LUA\ we just pick up tokens. Say that we have:
+
+\pushmacro\bar \let\bar\undefined
 
 \starttyping
 \bar
@@ -2471,6 +2493,8 @@ This was generated with:
 So, we do get a unique token because after all we need some kind of \LUA\ object
 that can be used and garbage collected, but it is basically the same one,
 representing an undefined control sequence.
+
+\popmacro\bar
 
 \stopsubsection
 

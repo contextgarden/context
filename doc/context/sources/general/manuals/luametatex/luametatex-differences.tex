@@ -119,6 +119,11 @@ principle \DVI\ and \PDF\ unaware. There are only generic whatsit nodes that can
 be used for some management related tasks. For instance you can use them to
 implement user nodes.
 
+The margin kern nodes are gone and we now use regular kern nodes for them. As a
+consequence there are two extra subtypes indicating the injected left or right
+kern. The glyph field served no real purpose so there was no reason for a special
+kind of node.
+
 The \KPSE\ library is no longer built|-|in. Because there is no backend, quite
 some file related callbacks could go away. The following file related callbacks
 remained (till now):

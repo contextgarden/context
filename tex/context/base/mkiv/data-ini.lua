@@ -217,12 +217,6 @@ end
 
 environment.texroot = file.collapsepath(texroot)
 
--- if type(profiler) == "table" and not jit then
---     directives.register("system.profile",function()
---         profiler.start("luatex-profile.log")
---     end)
--- end
-
 -- a forward definition
 
 -- Because we use resolvers.resolve a lot later on, we will implement the basics here and

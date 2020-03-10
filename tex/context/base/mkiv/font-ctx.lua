@@ -83,8 +83,7 @@ local nextchar            = nuts.traversers.char
 
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
-local getprop             = nuts.getprop
-local setprop             = nuts.setprop
+local getstate            = nuts.getstate
 local setsubtype          = nuts.setsubtype
 
 local texgetdimen         = tex.getdimen
@@ -109,6 +108,7 @@ local parameters          = hashes.parameters
 local designsizefilename  = fontgoodies.designsizes.filename
 
 local ctx_char            = context.char
+local ctx_safechar        = context.safechar
 local ctx_getvalue        = context.getvalue
 
 local otffeatures         = otf.features
@@ -320,6 +320,7 @@ function definers.resetnullfont()
     parameters.x_height      = 0 -- 5
     parameters.quad          = 0 -- 6
     parameters.extra_space   = 0 -- 7
+    parameters.designsize    = 655360
     --
     constructors.enhanceparameters(parameters) -- official copies for us
     --
@@ -2105,7 +2106,7 @@ do -- else too many locals
 
     implement {
         name      = "tochar",
-        actions   = { tochar, context },
+        actions   = { tochar, ctx_safechar },
         arguments = "string",
     }
 
@@ -2651,7 +2652,6 @@ do
 
     local a_color         = attributes.private('color')
     local a_colormodel    = attributes.private('colormodel')
-    local a_state         = attributes.private('state')
     local m_color         = attributes.list[a_color] or { }
 
     local glyph_code      = nodes.nodecodes.glyph
@@ -2680,7 +2680,7 @@ do
             head = tonut(head)
             local model = getattr(head,a_colormodel) or 1
             for glyph in nextchar, head do
-                local a = getprop(glyph,a_state)
+                local a = getstate(glyph)
                 if a then
                     local name = colornames[a]
                     if name then

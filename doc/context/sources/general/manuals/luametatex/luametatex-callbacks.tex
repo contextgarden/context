@@ -16,7 +16,7 @@
 \libindex{known}
 
 This library has functions that register, find and list callbacks. Callbacks are
-\LUA\ functions that are called in well defined places. There are two kind of
+\LUA\ functions that are called in well defined places. There are two kinds of
 callbacks: those that mix with existing functionality, and those that (when
 enabled) replace functionality. In mosty cases the second category is expected to
 behave similar to the built in functionality because in a next step specific
@@ -408,7 +408,7 @@ If you return something that is not a \type {<node>}, \LUATEX\ will apply the
 internal linebreak algorithm on the list that starts at \type {<head>}.
 Otherwise, the \type {<node>} you return is supposed to be the head of a list of
 nodes that are all allowed in vertical mode, and at least one of those has to
-represent a hbox. Failure to do so will result in a fatal error.
+represent an \prm {hbox}. Failure to do so will result in a fatal error.
 
 Setting this callback to \type {false} is possible, but dangerous, because it is
 possible you will end up in an unfixable \quote {deadcycles loop}.
@@ -417,19 +417,20 @@ possible you will end up in an unfixable \quote {deadcycles loop}.
 
 \topicindex{callbacks+contributions}
 
-This callback is called whenever \LUATEX\ adds a box to a vertical list:
+This callback is called whenever \LUATEX\ adds a box to a vertical list (the
+\type {mirrored} argument is obsolete):
 
 \startfunctioncall
-function(<node> box, <string> locationcode, <number prevdepth>,
-    <boolean> mirrored)
-    return list, prevdepth
+function(<node> box, <string> locationcode, <number> prevdepth)
+    return list [, prevdepth [, checkdepth ] ]
 end
 \stopfunctioncall
 
-It is ok to return nothing in which case you also need to flush the box or deal
-with it yourself. The prevdepth is also optional. Locations are \type {box},
-\type {alignment}, \type {equation}, \type {equation_number} and \type
-{post_linebreak}.
+It is ok to return nothing or \type {nil} in which case you also need to flush
+the box or deal with it yourself. The prevdepth is also optional. Locations are
+\type {box}, \type {alignment}, \type {equation}, \type {equation_number} and
+\type {post_linebreak}. When the third argument returned is \type {true} the
+normal prevdepth correction will be applied, based on the first node.
 
 \subsection{\cbk {post_linebreak_filter}}
 
@@ -739,7 +740,7 @@ function(category,filename)
 end
 \stopfunctioncall
 
-This callback replaces the code that prints \LUATEX's when a file is opened like
+This callback replaces the code that \LUATEX\ prints when a file is opened like
 \type {(filename} for regular files. The category is a number:
 
 \starttabulate[|c|l|]
@@ -762,7 +763,7 @@ function(category)
 end
 \stopfunctioncall
 
-This callback replaces the code that prints \LUATEX's when a file is closed like
+This callback replaces the code that \LUATEX\ prints when a file is closed like
 the \type {)} for regular files.
 
 \subsection{\cbk {wrapup_run}}

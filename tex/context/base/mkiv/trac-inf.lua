@@ -45,12 +45,19 @@ end
 local ticks   = clock
 local seconds = function(n) return n or 0 end
 
-if lua.getpreciseticks then
+if os.type ~= "windows" then
+
+    -- doesn't work well yet on unix (system time vs process time so a mtxrun
+    -- timing with nested call gives the wrong result)
+
+elseif lua.getpreciseticks then
 
     ticks   = lua.getpreciseticks
     seconds = lua.getpreciseseconds
 
-elseif FFISUPPORTED and ffi and os.type == "windows" then
+elseif FFISUPPORTED then
+
+    -- Do we really care when not in luametatex? For now we do, so:
 
     local okay, kernel = pcall(ffi.load,"kernel32")
 
@@ -221,12 +228,12 @@ function statistics.show()
      -- end)
         if LUATEXENGINE == "luametatex" then
             register("used engine", function()
-                return format("%s version %s, functionality level %s, format id %s",
-                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, LUATEXFORMATID)
+                return format("%s version: %s, functionality level: %s, format id: %s, compiler: %s",
+                    LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, LUATEXFORMATID, status.used_compiler)
             end)
         else
             register("used engine", function()
-                return format("%s version %s with functionality level %s, banner: %s",
+                return format("%s version: %s, functionality level: %s, banner: %s",
                     LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
             end)
         end
@@ -234,7 +241,7 @@ function statistics.show()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)
         register("callbacks", statistics.callbacks)
-        if TEXENGINE == "luajittex" and JITSUPPORTED then
+        if JITSUPPORTED then
             local jitstatus = jit.status
             if jitstatus then
                 local jitstatus = { jitstatus() }
@@ -272,7 +279,7 @@ end
 
 function statistics.memused() -- no math.round yet -)
     local round = math.round or math.floor
-    return format("%s MB, ctx: %s MB, max: %s MB)",
+    return format("%s MB, ctx: %s MB, max: %s MB",
         round(collectgarbage("count")/1000),
         round(status.luastate_bytes/1000000),
         status.luastate_bytes_max and round(status.luastate_bytes_max/1000000) or "unknown"

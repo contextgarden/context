@@ -86,8 +86,8 @@ There are three primitives to test the version of \LUATEX\ (and \LUAMETATEX):
                           \NC the banner reported on the command line \NC \NR
 \NC \lpr {luatexversion}  \NC \the\luatexversion
                           \NC a combination of major and minor number \NC \NR
-\NC \lpr {luatexrevision} \NC \luatexrevision
-                          \NC the revision number, the current value is \NC \NR
+\NC \lpr {luatexrevision} \NC \the\luatexrevision
+                          \NC the revision number \NC \NR
 \LL
 \stoptabulate
 
@@ -97,24 +97,29 @@ A version is defined as follows:
 \startitem
     The major version is the integer result of \lpr {luatexversion} divided by
     100. The primitive is an \quote {internal variable}, so you may need to prefix
-    its use with \prm {the} depending on the context.
+    its use with \prm {the} or \prm {number} depending on the context.
 \stopitem
 \startitem
-    The minor version is the two|-|digit result of \lpr {luatexversion} modulo 100.
+    The minor version is a number running from 0 upto 99.
 \stopitem
 \startitem
-    The revision is reported by \lpr {luatexrevision}. This primitive expands to
-    a positive integer.
+    The revision is reported by \lpr {luatexrevision}. Contrary to other engines
+    in \LUAMETATEX\ is also a number so one needs to prefix it with \prm {the} or
+    \prm {number}. \footnote {In the past it always was good to prefix the
+    revision with \prm {number} anyway, just to play safe, although there have
+    for instance been times that \PDFTEX\ had funny revision indicators that at
+    some point ended up as letters due to the internal conversions.}
 \stopitem
 \startitem
-    The full version number consists of the major version, minor version and
-    revision, separated by dots.
+    The full version number consists of the major version (\type {X}), minor
+    version (\type {YY}) and revision (\type {ZZ}), separated by dots, so \type
+    {X.YY.ZZ}.
 \stopitem
 \stopitemize
 
 \stopsubsubsection
 
-The \LUAMETATEX\ version number starts at 2 in order to prevent a clash with
+The \LUAMETATEX\ version number starts at~2 in order to prevent a clash with
 \LUATEX, and the version commands are the same. This is a way to indicate that
 these projects are related.
 

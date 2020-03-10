@@ -28,7 +28,7 @@ local isglyph         = nuts.isglyph
 
 local getattr         = nuts.getattr
 
-local delete_node     = nuts.delete
+local remove_node     = nuts.remove
 local replace_node    = nuts.replace
 local copy_node       = nuts.copy
 
@@ -62,7 +62,7 @@ local function process(what,head,current,char)
         if trace_stripping then
             report_stripping("deleting %C from text",char)
         end
-        head, current = delete_node(head,current)
+        head, current = remove_node(head,current,true)
     elseif type(what) == "function" then
         head, current = what(head,current)
         current = getnext(current)

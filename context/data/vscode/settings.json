@@ -23,7 +23,7 @@
     "workbench.colorTheme": "ConTeXt",
  // "[context.pdf]": { "files.encoding": "cp1252"},
     "terminal.integrated.fontSize": 10,
-    "terminal.integrated.rendererType": "dom",
+    "terminal.integrated.rendererType": "canvas",
     "workbench.colorCustomizations": {
         "terminal.ansiBlack":         "#000000",
         "terminal.ansiWhite":         "#FFFFFF",

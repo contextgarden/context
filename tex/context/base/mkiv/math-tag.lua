@@ -31,7 +31,7 @@ local getsubtype        = nuts.getsubtype
 local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
-local getcomponents     = nuts.getcomponents -- not really needed
+----- getcomponents     = nuts.getcomponents -- not really needed
 local getwidth          = nuts.getwidth
 
 local getnucleus        = nuts.getnucleus
@@ -346,10 +346,10 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                             runner(getlist(n),depth+1)
                                         elseif id == glyph_code then
                                             -- this should not be needed
-                                            local components = getcomponents(n) -- unlikely set
-                                            if components then
-                                                runner(getcomponent,depth+1)
-                                            end
+                                         -- local components = getcomponents(n) -- unlikely set
+                                         -- if components then
+                                         --     runner(getcomponent,depth+1)
+                                         -- end
                                         elseif id == disc_code then
                                             -- this should not be needed
                                             local pre, post, replace = getdisc(n)

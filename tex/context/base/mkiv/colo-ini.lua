@@ -449,7 +449,8 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
             local r = settings.r
             local g = settings.g
             local b = settings.b
-            if r or g or b then
+            local w = settings.w
+            if r or g or (b and not w) then
                 -- we can consider a combined rgb cmyk s definition
                 definecolor(name, register_color(name,'rgb', tonumber(r) or 0, tonumber(g) or 0, tonumber(b) or 0), global)
             else
@@ -467,16 +468,21 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
                         r, g, b = colors.hsvtorgb(tonumber(h) or 0, tonumber(s) or 1, tonumber(v) or 1) -- maybe later native
                         definecolor(name, register_color(name,'rgb',r,g,b), global)
                     else
-                        local x = settings.x or h
-                        if x then
-                            r, g, b = lpegmatch(hexpattern,x) -- can be inlined
-                            if r and g and b then
-                                definecolor(name, register_color(name,'rgb',r,g,b), global)
-                            else
-                                definecolor(name, register_color(name,'gray',r or 0), global)
-                            end
+                        if w then
+                            r, g, b = colors.hwbtorgb(tonumber(h) or 0, tonumber(b) or 1, tonumber(w) or 1) -- maybe later native
+                            definecolor(name, register_color(name,'rgb',r,g,b), global)
                         else
-                            definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
+                            local x = settings.x or h
+                            if x then
+                                r, g, b = lpegmatch(hexpattern,x) -- can be inlined
+                                if r and g and b then
+                                    definecolor(name, register_color(name,'rgb',r,g,b), global)
+                                else
+                                    definecolor(name, register_color(name,'gray',r or 0), global)
+                                end
+                            else
+                                definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
+                            end
                         end
                     end
                 end
@@ -520,7 +526,8 @@ local function defineprocesscolordirect(settings)
             local r = settings.r
             local g = settings.g
             local b = settings.b
-            if r or g or b then
+            local w = settings.w
+            if r or g or (b and not w) then
                 -- we can consider a combined rgb cmyk s definition
                 register_color(name,'rgb', r or 0, g or 0, b or 0)
             else
@@ -538,16 +545,21 @@ local function defineprocesscolordirect(settings)
                         r, g, b = colors.hsvtorgb(h or 0, s or 1, v or 1) -- maybe later native
                         register_color(name,'rgb',r,g,b)
                     else
-                        local x = settings.x or h
-                        if x then
-                            r, g, b = lpegmatch(hexpattern,x) -- can be inlined
-                            if r and g and b then
-                                register_color(name,'rgb',r,g,b)
-                            else
-                                register_color(name,'gray',r or 0)
-                            end
+                        if w then
+                            r, g, b = colors.hwbtorgb((tonumber(h) or 0) / 360, tonumber(b) or 1, tonumber(w) or 1) -- maybe later native
+                            register_color(name,'rgb',r,g,b)
                         else
-                            register_color(name,'gray',s or 0)
+                            local x = settings.x or h
+                            if x then
+                                r, g, b = lpegmatch(hexpattern,x) -- can be inlined
+                                if r and g and b then
+                                    register_color(name,'rgb',r,g,b)
+                                else
+                                    register_color(name,'gray',r or 0)
+                                end
+                            else
+                                register_color(name,'gray',s or 0)
+                            end
                         end
                     end
                 end

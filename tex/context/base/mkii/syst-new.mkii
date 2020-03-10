@@ -315,17 +315,25 @@
 
 % awaiting the definitive implementation
 
+\let\normalelapsedtime\elapsedtime
+
 \ifx\resettimer\undefined
   \let\resettimer \relax
   \newcount\elapsedtime
 \fi
 
 \newcount\featuretest
+\newcount\noffeaturetest
+\newcount\featuretesttime
 
-\def\testfeature#1#2%
-  {\def\dotestfeature
-     {\advance\featuretest \plusone
-      \ifnum\featuretest>#1\else#2\expandafter\dotestfeature\fi}%
+\def\testfeature#1#2% brought in sync with mkiv
+  {\noffeaturetest#1\relax
+   \def\dotestfeature
+     {\advance\featuretest\plusone
+      \ifnum\featuretest>\noffeaturetest\else#2\expandafter\dotestfeature\fi}%
+   \def\notestfeature
+     {\advance\featuretest\plusone
+      \ifnum\featuretest>\noffeaturetest\else\expandafter\notestfeature\fi}%
    \retestfeature}
 
 \def\retestfeature % timer support is new per 10/5/2005
@@ -333,12 +341,22 @@
    \ifcase\interactionmode\let\wait\relax\fi
    \writestatus\m!systems{starting feature test}\wait
    \resettimer
+   \bgroup
+   \featuretest\zerocount \notestfeature
+   \global\featuretesttime\normalelapsedtime
+   \egroup
+   \resettimer
+   \bgroup
    \featuretest\zerocount \dotestfeature
-   \writestatus\m!systems{feature test done (\elapsedseconds s)}%
+   \egroup
+   \global\featuretesttime\numexpr\normalelapsedtime-\featuretesttime\relax
+   \writestatus\m!systems{feature test done (used: \elapsedseconds s)}%
    \wait
    \egroup}
 
-\def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\elapsedtime sp\relax}
+\def\elapsedseconds{\expandafter\withoutpt\the\dimexpr\featuretesttime sp\relax}
+
+\let\elapsedtime\elapsedseconds
 
 \def\showtimer#1%
   {\writestatus{runtime}{\elapsedseconds\space s / #1}}

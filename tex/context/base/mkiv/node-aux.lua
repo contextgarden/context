@@ -22,6 +22,7 @@ local hlist_code         = nodecodes.hlist
 local vlist_code         = nodecodes.vlist
 local attributelist_code = nodecodes.attributelist -- temporary
 local localpar_code      = nodecodes.localpar
+local ligatureglyph_code = nodes.glyphcodes.ligature
 
 local nuts               = nodes.nuts
 local tonut              = nuts.tonut
@@ -36,7 +37,6 @@ local getlist            = nuts.getlist
 local getattr            = nuts.getattr
 local getboth            = nuts.getboth
 local getprev            = nuts.getprev
-local getcomponents      = nuts.getcomponents
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getboxglue         = nuts.getboxglue
@@ -64,6 +64,7 @@ local copy_node          = nuts.copy
 local find_tail          = nuts.tail
 local getbox             = nuts.getbox
 local count              = nuts.count
+local isglyph            = nuts.isglyph
 
 local nodepool           = nuts.pool
 local new_glue           = nodepool.glue
@@ -381,88 +382,161 @@ function nodes.rehpack(n,...)
     rehpack(tonut(n),...)
 end
 
--- nodemode helper: the next and prev pointers are untouched
+if CONTEXTLMTXMODE > 0 then
 
-function nuts.copy_no_components(g,copyinjection)
-    local components = getcomponents(g)
-    if components then
-        setcomponents(g)
-        local n = copy_node(g)
-        if copyinjection then
-            copyinjection(n,g)
+    local fastcopy = table.fastcopy
+    local getprop  = nuts.getprop
+    local setprop  = nuts.setprop
+
+    local function set_components(base,list)
+        local t = { }
+        local n = 0
+        while list do
+            local char = isglyph(list)
+            if char then
+                n = n + 1
+                t[n] = char
+            end
+            list = getnext(list)
         end
-        setcomponents(g,components)
-        -- maybe also upgrade the subtype but we don't use it anyway
-        return n
-    else
-        local n = copy_node(g)
-        if copyinjection then
-            copyinjection(n,g)
+        setprop(base,"components",n > 0 and t or false)
+    end
+
+    local function get_components(base)
+        return getprop(base,"components")
+    end
+
+    local function copy_no_components(base)
+        local copy = copy_node(base)
+        setprop(copy,"components",false) -- no metatable lookup!
+        return copy
+    end
+
+    local function copy_only_glyphs(base)
+        local t = getprop(base,"components") -- also metatable
+        if t then
+            return fastcopy(t)
+        end
+    end
+
+    local function do_count(t,marks)
+        local n = 0
+        if t then
+            for i=1,#t do
+                local c = t[i]
+                if type(c) == "table" then
+                    n = n + do_count(t,marks)
+                elseif not marks[c] then
+                    n = n + 1
+                else
+                    --marks don't count
+                end
+            end
         end
         return n
     end
-end
 
-function nuts.copy_only_glyphs(current)
-    local head     = nil
-    local previous = nil
-    for n in nextglyph, current do
-        n = copy_node(n)
-        if head then
-            setlink(previous,n)
+    -- start is a mark and we need to keep that one
+
+    local done = false
+
+    local function count_components(base,marks)
+        local char = isglyph(base)
+        if char then
+            if getsubtype(base) == ligatureglyph_code then
+                if not done then
+                    logs.report("fonts","!")
+                    logs.report("fonts","! check count_components with mkiv !")
+                    logs.report("fonts","!")
+                    done = true
+                end
+                local t = getprop(base,"components")
+                if t then
+                    return do_count(t,marks)
+                end
+            elseif not marks[char] then
+                return 1
+            end
+        end
+        return 0
+    end
+
+    nuts.set_components     = set_components
+    nuts.get_components     = get_components
+    nuts.copy_only_glyphs   = copy_only_glyphs
+    nuts.copy_no_components = copy_no_components
+    nuts.count_components   = count_components
+
+else
+
+    local get_components = node.direct.getcomponents
+    local set_components = node.direct.setcomponents
+
+    local function copy_no_components(g,copyinjection)
+        local components = get_components(g)
+        if components then
+            set_components(g)
+            local n = copy_node(g)
+            if copyinjection then
+                copyinjection(n,g)
+            end
+            set_components(g,components)
+            -- maybe also upgrade the subtype but we don't use it anyway
+            return n
         else
-            head = n
+            local n = copy_node(g)
+            if copyinjection then
+                copyinjection(n,g)
+            end
+            return n
         end
-        previous = n
     end
-    return head
+
+    local function copy_only_glyphs(current)
+        local head     = nil
+        local previous = nil
+        for n in nextglyph, current do
+            n = copy_node(n)
+            if head then
+                setlink(previous,n)
+            else
+                head = n
+            end
+            previous = n
+        end
+        return head
+    end
+
+    -- start is a mark and we need to keep that one
+
+    local function count_components(start,marks)
+        local char = isglyph(start)
+        if char then
+            if getsubtype(start) == ligatureglyph_code then
+                local n = 0
+                local components = get_components(start)
+                while components do
+                    n = n + count_components(components,marks)
+                    components = getnext(components)
+                end
+                return n
+            elseif not marks[char] then
+                return 1
+            end
+        end
+        return 0
+    end
+
+    nuts.set_components     = set_components
+    nuts.get_components     = get_components
+    nuts.copy_only_glyphs   = copy_only_glyphs
+    nuts.copy_no_components = copy_no_components
+    nuts.count_components   = count_components
+
 end
 
--- node- and basemode helper
-
-function nuts.use_components(head,current)
-    local components = getcomponents(current)
-    if not components then
-        return head, current, current
-    end
-    local prev, next = getboth(current)
-    local first = current
-    local last  = next
-    while components do
-        local gone = current
-        local tail = find_tail(components)
-        if prev then
-            setlink(prev,components)
-        end
-        if next then
-            setlink(tail,next)
-        end
-        if first == current then
-            first = components
-        end
-        if head == current then
-            head = components
-        end
-        current = components
-        setcomponents(gone)
-        flush_node(gone)
-        while true do
-            components = getcomponents(current)
-            if components then
-                next = getnext(current)
-                break -- current is composed
-            end
-            if next == last then
-                last = current
-                break -- components is false
-            end
-            prev    = current
-            current = next
-            next    = getnext(current)
-        end
-    end
-    return head, first, last
-end
+nuts.setcomponents = function() report_error("unsupported: %a","setcomponents") end
+nuts.getcomponents = function() report_error("unsupported: %a","getcomponents") end
 
 do
 
@@ -543,8 +617,8 @@ do
 
     nuts.find_node = find_node
 
-    nodes.getnormalizeline = nodes.getnormalizeline or function() return 0 end
-    nodes.setnormalizeline = nodes.setnormalizeline or function()          end
+    nodes.getnormalizeline = node.getnormalizeline or function() return 0 end
+    nodes.setnormalizeline = node.setnormalizeline or function()          end
 
     nuts.getnormalizedline = direct.getnormalizedline or function(h)
         if getid(h) == hlist_code and getsubtype(h) == line_code then

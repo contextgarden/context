@@ -154,7 +154,7 @@ if LUATEXFORMATID == nil then
 end
 
 if JITSUPPORTED == nil then
-    JITSUPPORTED = LUATEXENGINE == "luajittex" or jit
+    JITSUPPORTED = LUATEXENGINE == "luajittex" or jit -- "or jit" can go
 end
 
 if INITEXMODE == nil then

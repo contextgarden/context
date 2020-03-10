@@ -390,7 +390,45 @@ local p_path        = Ct ( (
 -- local function hexcolor (c) return hexhash [c] end -- directly do hexhash [c]
 -- local function hexcolor3(c) return hexhash3[c] end -- directly do hexhash3[c]
 
-local rgbcomponents, withcolor, thecolor  do
+local colormap  = false
+
+local function prepared(t)
+    if type(t) == "table" then
+        local mapping = t.mapping or { }
+        local mapper  = t.mapper
+        local colormap = setmetatableindex(mapping)
+        if mapper then
+            setmetatableindex(colormap,function(t,k)
+                local v = mapper(k)
+                t[k] = v or k
+                return v
+            end)
+        end
+        return colormap
+    else
+        return false
+    end
+end
+
+local colormaps = setmetatableindex(function(t,k)
+    local v = false
+    if type(k) == "string" then
+        v = prepared(table.load(k)) -- todo: same path as svg file
+    elseif type(k) == "table" then
+        v = prepared(k)
+        k = k.name or k
+    end
+    t[k] = v
+    return v
+end)
+
+function metapost.svgcolorremapper(colormap)
+    return colormaps[colormap]
+end
+
+-- todo: cache colors per image / remapper
+
+local colorcomponents, withcolor, thecolor  do
 
     local svgcolors = {
         aliceblue       = 0xF0F8FF, antiquewhite      = 0xFAEBD7, aqua                  = 0x00FFFF, aquamarine       = 0x7FFFD4,
@@ -433,11 +471,13 @@ local rgbcomponents, withcolor, thecolor  do
     }
 
     local f_rgb      = formatters['withcolor svgcolor(%.3N,%.3N,%.3N)']
+    local f_cmyk     = formatters['withcolor svgcmyk(%.3N,%.3N,%.3N,%.3N)']
     local f_gray     = formatters['withcolor svggray(%.3N)']
     local f_rgba     = formatters['withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (1,%.3N)']
     local f_graya    = formatters['withcolor svggray(%.3N) withtransparency (1,%.3N)']
     local f_name     = formatters['withcolor "%s"']
     local f_svgcolor = formatters['svgcolor(%.3N,%.3N,%.3N)']
+    local f_svgcmyk  = formatters['svgcmyk(%.3N,%.3N,%.3N,%.3N)']
     local f_svggray  = formatters['svggray(%.3N)']
     local f_svgname  = formatters['"%s"']
 
@@ -455,88 +495,192 @@ local rgbcomponents, withcolor, thecolor  do
         return v
     end)
 
-    local p_fraction  = C(p_number) * C("%")^-1 / function(a,b)
-        a = tonumber(a) return a / (b and 100 or 255)
-    end
-    local p_hexcolor  = P("#") * C(p_hexdigit*p_hexdigit)^1 / function(r,g,b)
-        return r and tonumber(r,16)/255 or nil, g and tonumber(g,16)/255 or nil, b and tonumber(b,16)/255 or nil
-    end
-    local p_rgbacolor = P("rgb") * (P("a")^-1) * P("(") * (p_fraction  + p_separator)^1 * P(")")
+    local p_fraction  = C(p_number) * C("%")^-1  / function(a,b) return tonumber(a) / (b and 100 or 255) end
+    local p_angle     = C(p_number) * P("deg")^0 / function(a)   return tonumber(a) end
+    local p_percent   = C(p_number) * P("%")     / function(a)   return tonumber(a) / 100 end
+    local p_absolute  = C(p_number)              / tonumber
 
-    rgbcomponents = function(color)
-        local h = lpegmatch(p_hexcolor,color)
-        if h then
-            return h
-        end
-        local r, g, b, a = lpegmatch(p_rgbacolor,color)
-        if r then
-            return r, g or r, b or r
-        end
-        local t = triplets[color]
-        return t[1], t[2], t[3]
+    local p_left      = P("(")
+    local p_right     = P(")")
+    local p_a         = P("a")^-1
+    local p_h_a_color = p_left
+                      * p_angle
+                      * p_separator   * p_percent
+                      * p_separator   * p_percent
+                      * p_separator^0 * p_absolute^0
+                      * p_right
 
+	local colors      = attributes.colors
+    local colorvalues = colors.values
+    local colorindex  = attributes.list[attributes.private('color')]
+    local hsvtorgb    = colors.hsvtorgb
+    local hwbtorgb    = colors.hwbtorgb
+    local forcedmodel = colors.forcedmodel
+
+    local p_splitcolor =
+        P("#") * C(p_hexdigit*p_hexdigit)^1 / function(r,g,b)
+            return "rgb",
+                tonumber(r or 0, 16) / 255 or 0,
+                tonumber(g or 0, 16) / 255 or 0,
+                tonumber(b or 0, 16) / 255 or 0
+        end
+        +
+        P("rgb") * p_a
+      * p_left * (p_fraction + p_separator)^-3 * (p_absolute  + p_separator)^0 * p_right / function(r,g,b,a)
+            return "rgb", r or 0, g or 0, b or 0, a or false
+        end
+      + P("cmyk")
+      * p_left * (p_absolute + p_separator)^0  * p_right / function(c,m,y,k)
+            return "cmyk", c or 0, m or 0, y or 0, k or 0
+        end
+      + P("hsl") * p_a
+      * p_h_a_color / function(h,s,l,a)
+            local r, g, b = hsvtorgb(h,s,l,a)
+            return "rgb", r or 0, g or 0, b or 0, a or false
+        end
+      + P("hwb") * p_a
+      * p_h_a_color / function(h,w,b,a)
+            local r, g, b = hwbtorgb(h,w,b)
+            return "rgb", r or 0, g or 0, b or 0, a or false
+        end
+
+    function metapost.svgsplitcolor(color)
+        if type(color) == "string" then
+            local what, s1, s2, s3, s4 = lpegmatch(p_splitcolor,color)
+            if not what then
+                local t = triplets[color]
+                if t then
+                    what, s1, s2, s3 = "rgb", t[1], t[2], t[3]
+                end
+            end
+            return what, s1, s2, s3, s4
+        else
+            return "gray", 0, false
+        end
+    end
+
+
+    local function registeredcolor(name)
+        local color = colorindex[name]
+        if color then
+            local v = colorvalues[color]
+            local t = forcedmodel(v[1])
+            if t == 2 then
+                return "gray", v[2]
+            elseif t == 3 then
+                return "rgb", v[3], v[4], v[5]
+            elseif t == 4 then
+                return "cmyk", v[6], v[7], v[8], v[9]
+            else
+                --
+            end
+        end
+    end
+
+    -- we can have a fast check for #000000
+
+    local function validcolor(color)
+        if colormap then
+            local c = colormap[color]
+            local t = type(c)
+            if t == "table" then
+                local what = t[1]
+                if what == "rgb" then
+                    return
+                        what,
+                        tonumber(t[2]) or 0,
+                        tonumber(t[3]) or 0,
+                        tonumber(t[4]) or 0,
+                        tonumber(t[4]) or false
+                elseif what == "cmyk" then
+                    return
+                        what,
+                        tonumber(t[2]) or 0,
+                        tonumber(t[3]) or 0,
+                        tonumber(t[4]) or 0,
+                        tonumber(t[5]) or 0
+                elseif what == "gray" then
+                    return
+                        what,
+                        tonumber(t[2]) or 0,
+                        tonumber(t[3]) or false
+                end
+            elseif t == "string" then
+                color = c
+            end
+        end
+        local what, s1, s2, s3, s4 = registeredcolor(color)
+        if what then
+            return what, s1, s2, s3, s4
+        end
+        what, s1, s2, s3, s4 = lpegmatch(p_splitcolor,color)
+        if not what then
+            local t = triplets[color]
+            if t then
+                s1, s3, s3 = t[1], t[2], t[3]
+                what = "rgb"
+            end
+        end
+        return what, s1, s2, s3, s4
+    end
+
+    colorcomponents = function(color)
+        local what, s1, s2, s3, s4 = validcolor(color)
+        return s1, s2, s3, s4 -- so 4 means cmyk
     end
 
     withcolor = function(color)
-        local r, g, b = lpegmatch(p_hexcolor,color)
-        if b and not (r == g and g == b) then
-            return f_rgb(r,g,b)
-        elseif r then
-            return f_gray(r)
-        end
-        local r, g, b, a = lpegmatch(p_rgbacolor,color)
-        if a then
-            if a == 1 then
-                if r == g and g == b then
-                    return f_gray(r)
+        local what, s1, s2, s3, s4 = validcolor(color)
+     -- print(color,what, s1, s2, s3, s4)
+        if what == "rgb" then
+            if s4 then
+                if s1 == s2 and s1 == s3 then
+                    return f_graya(s1,s4)
                 else
-                    return f_rgb(r,g,b)
+                    return f_rgba(s1,s2,s3,s4)
                 end
             else
-                if r == g and g == b then
-                    return f_graya(r,a)
+                if s1 == s2 and s1 == s3 then
+                    return f_gray(s1)
                 else
-                    return f_rgba(r,g,b,a)
+                    return f_rgb(s1,s2,s3)
                 end
             end
-        end
-        if not r then
-            local t = triplets[color]
-            if t then
-                r, g, b = t[1], t[2], t[3]
-            end
-        end
-        if r then
-            if r == g and g == b then
-                return f_gray(r)
-            elseif g and b then
-                return f_rgb(r,g,b)
+        elseif what == "cmyk" then
+            return f_cmyk(s1,s2,s3,s4)
+        elseif what == "gray" then
+            if s2 then
+                return f_graya(s1,s2)
             else
-                return f_gray(r)
+                return f_gray(s1)
             end
         end
         return f_name(color)
     end
 
     thecolor = function(color)
-        local h = lpegmatch(p_hexcolor,color)
-        if h then
-            return h
-        end
-        local r, g, b, a = lpegmatch(p_rgbacolor,color)
-        if not r then
-            local t = triplets[color]
-            if t then
-                r, g, b = t[1], t[2], t[3]
-            end
-        end
-        if r then
-            if r == g and g == b then
-                return f_svggray(r)
-            elseif g and b then
-                return f_svgcolor(r,g,b)
+        local what, s1, s2, s3, s4 = validcolor(color)
+        if what == "rgb" then
+            if s4 then
+                if s1 == s2 and s1 == s3 then
+                    return f_svggraya(s1,s4)
+                else
+                    return f_svgrgba(s1,s2,s3,s4)
+                end
             else
-                return f_svggray(r)
+                if s1 == s2 and s1 == s3 then
+                    return f_svggray(s1)
+                else
+                    return f_svgrgb(s1,s2,s3)
+                end
+            end
+        elseif what == "cmyk" then
+            return f_cmyk(s1,s2,s3,s4)
+        elseif what == "gray" then
+            if s2 then
+                return f_svggraya(s1,s2)
+            else
+                return f_svggray(s1)
             end
         end
         return f_svgname(color)
@@ -2517,8 +2661,8 @@ do
                 --
                 local ecolored = v_fill and v_fill ~= "" or false
                 if ecolored then
-                    -- todo
-                    local r, g, b = rgbcomponents(v_fill)
+                    -- todo cmyk
+                    local r, g, b = colorcomponents(v_fill)
                     if r and g and b then
                         t[#t+1] = f_colored(r,g,b)
                     else
@@ -2677,7 +2821,7 @@ do
 
         end
 
-        function handlers.svg(c,x,y,w,h,noclip,notransform,normalize,usetextindex)
+        function handlers.svg(c,x,y,w,h,noclip,notransform,normalize)
             local at      = c.at
 
             local wrapupviewport
@@ -2739,7 +2883,6 @@ do
             if boffset then
                 r = r + 1 result[r] = boffset
             end
-            textindex    = usetextindex and 0 or false
 
             at["transform"] = false
             at["viewBox"]   = false
@@ -2805,6 +2948,7 @@ do
                 definitions = { }
                 tagstyles   = { }
                 classstyles = { }
+                colormap    = specification.colormap
                 for s in xmlcollected(c,"style") do -- can also be in a def, so let's play safe
                     handlestyle(c)
                 end
@@ -2824,8 +2968,14 @@ do
                 if trace_result then
                     report("result graphic:\n    %\n    t",result)
                 end
-                mps = concat(result," ")
-                root, result, r, definitions, styles = false, false, false, false, false
+                mps         = concat(result," ")
+                root        = false
+                result      = false
+                r           = false
+                definitions = false
+                tagstyles   = false
+                classstyles = false
+                colormap    = false
             else
                 report("missing svg root element")
             end

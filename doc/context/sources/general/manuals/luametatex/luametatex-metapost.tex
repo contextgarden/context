@@ -30,8 +30,8 @@ To create a new \METAPOST\ instance, call
 <mpinstance> mp = mplib.new({...})
 \stopfunctioncall
 
-This creates the \type {mp} instance object. The argument hash can have a number
-of different fields, as follows:
+This creates the \type {mp} instance object. The argument is a hash table that
+can have a number of different fields, as follows:
 
 \starttabulate[|l|l|pl|pl|]
 \DB name               \BC type     \BC description              \BC default           \NC \NR
@@ -236,10 +236,10 @@ object!
 When the boundingbox represents a \quote {negated rectangle}, i.e.\ when the
 first set of coordinates is larger than the second set, the picture is empty.
 
-Graphical objects come in various types that each has a different list of
-accessible values. The types are: \type {fill}, \type {outline}, \type {text},
-\type {start_clip}, \type {stop_clip}, \type {start_bounds}, \type {stop_bounds},
-\type {special}.
+Graphical objects come in various types: \type {fill}, \type {outline}, \type
+{text}, \type {start_clip}, \type {stop_clip}, \type {start_bounds}, \type
+{stop_bounds}, \type {special}. Each type has a different list of accessible
+values.
 
 There is a helper function (\type {mplib.fields(obj)}) to get the list of
 accessible values for a particular object, but you can just as easily use the
@@ -395,9 +395,9 @@ ordering in \POSTSCRIPT, where the translation comes last.
 
 \subsection{Dashes}
 
-Each \type {dash} is two-item hash, using the same model as \POSTSCRIPT\ for the
-representation of the dashlist. \type {dashes} is an array of \quote {on} and
-\quote {off}, values, and \type {offset} is the phase of the pattern.
+Each \type {dash} is a hash with two items. We use the same model as \POSTSCRIPT\
+for the representation of the dashlist. \type {dashes} is an array of \quote {on}
+and \quote {off}, values, and \type {offset} is the phase of the pattern.
 
 \starttabulate[|l|l|p|]
 \DB field  \BC type \BC explanation \NC \NR

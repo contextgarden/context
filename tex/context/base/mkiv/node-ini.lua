@@ -83,7 +83,7 @@ local fillcodes     = mark(getsubtypes("fill"))
 local boundarycodes = mark(getsubtypes("boundary"))
 local penaltycodes  = mark(getsubtypes("penalty"))
 local kerncodes     = mark(getsubtypes("kern"))
-local margincodes   = mark(getsubtypes("marginkern"))
+local margincodes   = CONTEXTLMTXMODE == 0 and mark(getsubtypes("marginkern")) or { }
 local mathcodes     = mark(getsubtypes("math"))
 local noadcodes     = mark(getsubtypes("noad"))
 local radicalcodes  = mark(getsubtypes("radical"))
@@ -246,7 +246,7 @@ nodes.subtypes = allocate {
     [nodecodes.hlist]      = listcodes,
     [nodecodes.kern]       = kerncodes,
     [nodecodes.localpar]   = localparcodes,
-    [nodecodes.marginkern] = margincodes,
+ -- [nodecodes.marginkern] = margincodes,
     [nodecodes.math]       = mathcodes,
     [nodecodes.noad]       = noadcodes,
     [nodecodes.penalty]    = penaltycodes,
@@ -256,6 +256,10 @@ nodes.subtypes = allocate {
     [nodecodes.vlist]      = listcodes,
     [nodecodes.whatsit]    = whatcodes,
 }
+
+if CONTEXTLMTXMODE == 0 then
+    nodes.subtypes[nodecodes.marginkern] = margincodes
+end
 
 table.setmetatableindex(nodes.subtypes,function(t,k)
     local v = { }

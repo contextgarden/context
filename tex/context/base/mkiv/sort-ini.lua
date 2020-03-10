@@ -51,7 +51,7 @@ have language etc properties that then can be used.</p>
 ]]--
 
 local gsub, find, rep, sub, sort, concat, tohash, format = string.gsub, string.find, string.rep, string.sub, table.sort, table.concat, table.tohash, string.format
-local utfbyte, utfchar, utfcharacters, utfvalues = utf.byte, utf.char, utf.characters, utf.values
+local utfbyte, utfchar, utfcharacters = utf.byte, utf.char, utf.characters
 local next, type, tonumber, rawget, rawset = next, type, tonumber, rawget, rawset
 local P, Cs, R, S, lpegmatch, lpegpatterns = lpeg.P, lpeg.Cs, lpeg.R, lpeg.S, lpeg.match, lpeg.patterns
 

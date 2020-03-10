@@ -9,7 +9,7 @@
 \startsection[title=Introduction]
 
 The libraries can be grouped in categories like fonts, languages, \TEX,
-\METAPOST, \PDF, etc. There are however also some that are more general puspose
+\METAPOST, \PDF, etc. There are however also some that are more general purpose
 and these are discussed here.
 
 \stopsection
@@ -33,9 +33,9 @@ work on normal \LUA\ file handles.
 \NC readinteger3      \NC (f)      \NC a 3 byte signed integer \NC \NR
 \NC readinteger4      \NC (f)      \NC a 4 byte signed integer \NC \NR
 \NC readintegertable  \NC (f,n,b)  \NC \type {n} integers of \type {b} bytes \NC \NR
-\NC readfixed2        \NC (f)      \NC a 2 byte float (used in font files) \NC \NR
-\NC readfixed4        \NC (f)      \NC a 4 byte float (used in font files) \NC \NR
-\NC read2dot14        \NC (f)      \NC a 2 byte float (used in font files) \NC \NR
+\NC readfixed2        \NC (f)      \NC a float made from a 2 byte fixed format \NC \NR
+\NC readfixed4        \NC (f)      \NC a float made from a 4 byte fixed format \NC \NR
+\NC read2dot14        \NC (f)      \NC a float made from a 2 byte in 2dot4 format \NC \NR
 \NC setposition       \NC (f,p)    \NC goto position \type {p} \NC \NR
 \NC getposition       \NC (f)      \NC get the current position \NC \NR
 \NC skipposition      \NC (f,n)    \NC skip \type {n} positions \NC \NR
@@ -45,7 +45,8 @@ work on normal \LUA\ file handles.
 \stoptabulate
 
 When relevant there are also variants that end with \type {le} that do it the
-little endian way.
+little endian way. The fixed and dot floating points formats are found in font
+files and return \LUA\ doubles.
 
 A similar set of function as in the \type {fio} library is available in the \type
 {sio} library: \libidx {sio} {readcardinal1}, \libidx {sio} {readcardinal2},
@@ -268,6 +269,44 @@ These are accompanied by \type {libcerf} functions:
 
 \stopsection
 
+\startsection[title=\type{xdecimal}]
+
+As an experiment \LUAMETATEX\ provides an interface to the \type {decNumber}
+library that we have on board for \METAPOST\ anyway. Apart from the usual
+support for operators there are some functions.
+
+\starttabulate[|Tw(12em)|T|T|]
+\DB name         \BC arguments  \BC results \NC \NR
+\TB
+\NC abs          \NC (a)        \NC \NC \NR
+\NC new          \NC ([n or s]) \NC \NC \NR
+\NC copy         \NC (a)        \NC \NC \NR
+\NC trim         \NC (a)        \NC \NC \NR
+\NC tostring     \NC (a)        \NC \NC \NR
+\NC tonumber     \NC (a)        \NC \NC \NR
+\NC setprecision \NC (n)        \NC \NC \NR
+\NC getprecision \NC ()         \NC \NC \NR
+\NC conj         \NC (a)        \NC \NC \NR
+\NC abs          \NC (a)        \NC \NC \NR
+\NC pow          \NC (a,b)      \NC \NC \NR
+\NC sqrt         \NC (a)        \NC \NC \NR
+\NC ln           \NC (a)        \NC \NC \NR
+\NC log          \NC (a)        \NC \NC \NR
+\NC exp          \NC (a)        \NC \NC \NR
+\NC bor          \NC (a,b)      \NC \NC \NR
+\NC bxor         \NC (a,b)      \NC \NC \NR
+\NC band         \NC (a,b)      \NC \NC \NR
+\NC shift        \NC (a,b)      \NC \NC \NR
+\NC rotate       \NC (a,b)      \NC \NC \NR
+\NC minus        \NC (a)        \NC \NC \NR
+\NC plus         \NC (a)        \NC \NC \NR
+\NC min          \NC (a,b)      \NC \NC \NR
+\NC max          \NC (a,b)      \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
 \startsection[title=\type{lfs}]
 
 The original \type {lfs} module has been adapted a bit to our needs but for
@@ -385,7 +424,7 @@ piecemeal: \libidx {string} {utfvalues}, \libidx {string} {utfcharacters},
     \type {string.utfcharacters(s)}: a string with a single \UTF-8 token in it
 \stopitem
 \startitem
-    \type {string.cWharacters(s)}: a string containing one byte
+    \type {string.characters(s)}: a string containing one byte
 \stopitem
 \startitem
     \type {string.characterpairs(s)}: two strings each containing one byte or an
@@ -483,7 +522,7 @@ the \type {lua} namespace.
 \startitem
     \type {os.gettimeofday} returns the current \quote {\UNIX\ time}, but as a
     float. Keep in mind that there might be platforms where this function is
-    available.
+    not available.
 \stopitem
 
 \startitem
@@ -524,7 +563,7 @@ the \type {lua} namespace.
 
 \startsection[title={The \type {lua} library functions}]
 
-The \type {lua} library provide some general helpers.
+The \type {lua} library provides some general helpers.
 
 \startitemize
 

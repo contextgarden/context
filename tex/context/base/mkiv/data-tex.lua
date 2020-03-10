@@ -84,6 +84,19 @@ local function splitlines(str)
     return lpegmatch(linesplitter,str)
 end
 
+-- not really a bottleneck, but it might become:
+--
+-- local splitlines = string.splitlines or function(str)
+--     return lpegmatch(linesplitter,str)
+-- end
+--
+-- directives.register("system.linesplitmethod",function(v)
+--     linesplitter = linesplitters[tonumber(v) or 1] or linesplitters[1]
+--     splitlines = function(str)
+--         return lpegmatch(linesplitter,str)
+--     end
+-- end)
+
 -----------------------------------------
 
 local wideutfcoding = {

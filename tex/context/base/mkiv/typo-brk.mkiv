@@ -59,11 +59,12 @@
    \endgroup}
 
 \unexpanded\def\setbreakpoints[#1]%
-  {\exhyphenchar\minusone % we use a different order tha   n base tex, so we really need this
+  {\exhyphenchar\minusone % we use a different order than base tex, so we really need this
    \clf_setbreakpoints{#1}}
 
 \unexpanded\def\resetbreakpoints
-  {\attribute\breakpointattribute\attributeunsetvalue}
+  {\exhyphenchar\hyphenasciicode % 2020.03.05
+   \attribute\breakpointattribute\attributeunsetvalue}
 
 \definebreakpoints[compound]
 

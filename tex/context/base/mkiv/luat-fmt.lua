@@ -21,9 +21,6 @@ local function primaryflags(arguments)
     if arguments.silent then
         flags[#flags+1] = "--interaction=batchmode"
     end
- -- if arguments.jit then
- --     flags[#flags+1] = "--jiton"
- -- end
     return concat(flags," ")
 end
 
@@ -42,9 +39,6 @@ local function secondaryflags(arguments)
     end
     if arguments.errors then
         flags[#flags+1] = "--c:errors"
-    end
-    if arguments.jit then
-        flags[#flags+1] = "--c:jiton"
     end
     if arguments.ansi then
         flags[#flags+1] = "--c:ansi"
@@ -248,9 +242,9 @@ function environment.make_format(formatname)
     if silent then
         specification.redirect = "> temp.log"
     end
-    statistics.starttiming()
+    statistics.starttiming("format")
     local result  = runner(specification)
-    local runtime = statistics.stoptiming()
+    statistics.stoptiming("format")
     if silent then
         os.remove("temp.log")
     end
@@ -269,7 +263,7 @@ function environment.make_format(formatname)
     report_format("secondary flags  : %s",secondaryflags)
   end
     report_format("context file     : %s",fulltexsourcename)
-    report_format("run time         : %.3f seconds",runtime)
+    report_format("run time         : %.3f seconds",statistics.elapsed("format"))
     report_format("return value     : %s",result == 0 and "okay" or "error")
     report_format()
     -- last we go back to the home base

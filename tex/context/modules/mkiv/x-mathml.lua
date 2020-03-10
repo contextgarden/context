@@ -15,7 +15,7 @@ local strip = string.strip
 local xmlsprint, xmlcprint, xmltext, xmlcontent, xmlempty = xml.sprint, xml.cprint, xml.text, xml.content, xml.empty
 local lxmlcollected, lxmlfilter = lxml.collected, lxml.filter
 local getid = lxml.getid
-local utfchar, utfcharacters, utfvalues, utfsplit, utflen = utf.char, utf.characters, utf.values, utf.split, utf.len
+local utfchar, utfcharacters, utfsplit, utflen = utf.char, utf.characters, utf.split, utf.len
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, Cs = lpeg.P, lpeg.Cs
 

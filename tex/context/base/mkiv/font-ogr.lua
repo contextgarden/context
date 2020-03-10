@@ -83,6 +83,8 @@ do
         return slot, droppedin, d_tfmdata, d_properties
     end
 
+    -- todo: delay this, in which case we can be leaner and meaner
+
     function dropins.clone(method,tfmdata,shapes,...) -- by index
         if method and shapes then
             local characters   = tfmdata.characters
@@ -456,7 +458,7 @@ local initializeoverlay  do
                 local idx  = 255
                 local slot = 0
                 --
-                -- todo: delay
+                -- maybe delay in which case we have less fonts as we can be sparse
                 --
                 for k, v in next, characters do
                     local index = v.index

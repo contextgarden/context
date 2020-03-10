@@ -133,7 +133,7 @@
 %D anyway because there are differences (no backend, to mention one).
 
 \directlua {
-    local primitives = tex.extraprimitives()  % "core","tex","etex","luatex"
+    local primitives = tex.extraprimitives()  % "tex","etex","luatex"
     tex.enableprimitives("normal",primitives) % could default to everything
     function tex.enableprimitives() end       % so we kind of protect what's there
 }
@@ -1107,5 +1107,10 @@
 %D Also better here:
 
 \def\wildcardsymbol{*}
+
+%D For a while we will keep these useless numbers as for instance tikz checks for them:
+
+\chardef\eTeXversion   2
+\def    \eTeXrevision {2}
 
 \protect \endinput

@@ -347,7 +347,7 @@ local new_temp                = nodepool.temp
 local new_rule                = nodepool.rule
 local new_hlist               = nodepool.hlist
 
-local getnormalizeline        = nuts.getnormalizeline
+local getnormalizeline        = nodes.getnormalizeline
 
 -- helpers --
 
@@ -3120,7 +3120,8 @@ do
                 elseif id == dir_code then
                     -- no need to deal with directions here (as we only support two)
                 elseif id == marginkern_code then
-                     natural = natural + getwidth(current)
+                    -- not in lmtx
+                    natural = natural + getwidth(current)
                 end
                 current = getnext(current)
             end
