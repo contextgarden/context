@@ -1003,17 +1003,17 @@ function nodeinjections.typesetfield(name,specification)
     end
 end
 
-local function save_parent(field,specification,d,hasopt)
+local function save_parent(field,specification,d)
     local kidsnum = pdfreserveobject()
     d.Kids        = pdfreference(kidsnum)
     field.kidsnum = kidsnum
     field.kids    = pdfarray()
-    if hasopt then
-        local optnum = pdfreserveobject()
-        d.Opt        = pdfreference(optnum)
-        field.optnum = optnum
-        field.opt    = pdfarray()
-    end
+--     if d.Opt then
+--         local optnum = pdfreserveobject()
+--         d.Opt        = pdfreference(optnum)
+--         field.optnum = optnum
+--         field.opt    = pdfarray()
+--     end
     local pnum = pdfflushobject(d)
     field.pobj = pnum
     collected[#collected+1] = pdfreference(pnum)
@@ -1022,12 +1022,12 @@ end
 local function save_kid(field,specification,d,optname)
     local kn = pdfreserveobject()
     field.kids[#field.kids+1] = pdfreference(kn)
-    if optname then
-        local opt = field.opt
-        if opt then
-            opt[#opt+1] = optname
-        end
-    end
+--     if optname then
+--         local opt = field.opt
+--         if opt then
+--             opt[#opt+1] = optname
+--         end
+--     end
     local width  = specification.width  or 0
     local height = specification.height or 0
     local depth  = specification.depth  or 0
@@ -1243,7 +1243,7 @@ local function makecheckparent(field,specification)
         FT = pdf_btn,
         V  = fielddefault(field,default),
     }
-    save_parent(field,specification,d,true)
+    save_parent(field,specification,d)
 end
 
 local function makecheckchild(name,specification)
@@ -1371,7 +1371,7 @@ local function makeradioparent(field,specification)
      -- H  = pdf_n,
         V  = fielddefault(field),
     }
-    save_parent(field,specification,d,true)
+    save_parent(field,specification,d)
 end
 
 -- local function makeradiochild(name,specification)

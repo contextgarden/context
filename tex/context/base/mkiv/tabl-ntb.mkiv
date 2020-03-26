@@ -243,11 +243,17 @@
 
 \tabl_ntb_next_level % go to level 1
 
+%D This is for the special cases where for instance a table is in a header or footer
+%D line and we have a split table in progress. (See mail to list from Taco.)
+
 \installcorenamespace{naturaltable}      % was tbl
 \installcorenamespace{naturaltablelocal} % was tbltbl
 
 \installdirectcommandhandler       \??naturaltable      {naturaltable}      % \??naturaltable
 \installsimpleframedcommandhandler \??naturaltablelocal {naturaltablelocal} \??naturaltablelocal
+
+\unexpanded\def\bTABLEnested{\tabl_ntb_next_level\bTABLE}
+\unexpanded\def\eTABLEnested{\eTABLE\tabl_ntb_prev_level}
 
 \installcorenamespace{naturaltabletal}
 \installcorenamespace{naturaltablegal}

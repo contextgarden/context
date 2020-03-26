@@ -171,6 +171,7 @@ if CONTEXTLMTXMODE > 0 then
                 data     = io.loaddata(filename),
                 remap    = true,
                 colormap = colormap,
+                id       = filename,
             } )
         else
             local buffer = metapost.getparameter { "buffer" }
@@ -179,6 +180,7 @@ if CONTEXTLMTXMODE > 0 then
                     data     = buffers.getcontent(buffer),
                  -- remap    = true,
                     colormap = colormap,
+                    id       = buffer or "buffer",
                 } )
             else
                 local code = metapost.getparameter { "code" }
@@ -186,6 +188,7 @@ if CONTEXTLMTXMODE > 0 then
                     mpdirect ( metapost.svgtomp {
                         data     = code,
                         colormap = colormap,
+                        id       = "code",
                     } )
                 end
             end

@@ -1,0 +1,577 @@
+%D \module
+%D   [       file=m-examn,
+%D        version=2000.01.29,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Testing and Examination,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a pretty old style, written in 2000 so after 20 years it's time to check
+%D if it works with \MKIV. The original version looks mostly the same as below and
+%D runs ok with \MKII. The differences are in not using percent sign triggered
+%D comments in the \JAVASCRIPT\ section (that was dropped), using \type {Yes}
+%D instead of \type {On} as field value (because in those decades the \type {On}
+%D value has proven to be fragile (maybe because of some hard coded \type {Yes}
+%D checking). The macros lost \type {\long}, became \type {\unexpanded} and were
+%D reformatted.
+%D
+%D If there is really demand for this I'll do a more major update. I see no reason
+%D to change the 2000 \MKII\ logic now.
+
+% n         number of permitted answers
+% answer  (set of) right answer(s) (one or list)
+% weight    weight of the answer(s) (one or list)
+% method    calculation method, for the moment 1
+
+% hidden = true -> display = display.hidden
+
+% disguise methods, numbers and meaning secret
+% randomizing answers
+% allert will be a properly typeset message
+% all checkfields instead of radio, gives more control
+
+\unprotect
+
+\def\c!answer  {answer}
+\def\c!question{question}
+\def\c!weight  {weight}
+
+\startJSpreamble {mpc} used now
+
+    var RealTimeMode    = false ;
+    var FeedBackMode    = false ;
+    var CurrentFeedback = -1 ;
+
+    var MPCnames   = new Array() ;
+    var MPCanswers = new Array() ;
+    var MPCnumbers = new Array() ;
+    var MPCweights = new Array() ;
+    var MPCmethods = new Array() ;
+    var MPCerrors  = new Array() ;
+
+    function Warning (str) {
+        app.alert("warning: " + str)
+    }
+
+    function FieldYN (name,n) {
+        return this.getField(name + ":" + n + ":yn")
+    }
+
+    function FieldRW (name,n) {
+        return this.getField(name + ":" + n + ":rw")
+    }
+
+    function NOfFields (name) {
+        var nof = 1 ;
+        while (FieldYN(name,nof)) {
+            ++nof
+        }
+        return --nof
+    }
+
+    function SetScore (score,total) {
+        mpcs = this.getField("mpc-score") ;
+        mpct = this.getField("mpc-total") ;
+        mpcp = this.getField("mpc-percent") ;
+        if (RealTimeMode) {
+            var percent = 0 ;
+            if (Number(total) > 0) {
+                percent = Math.round(100.0 * (Number(score) / Number(total)))
+            }
+            if (mpcs) {
+                mpcs.value = score
+            }
+            if (mpct) {
+                mpct.value = total
+            }
+            if (mpcp) {
+                mpcp.value = percent
+            }
+        } else {
+            if (mpcs) {
+                mpcs.value = ""
+            }
+            if (mpct) {
+                mpct.value = ""
+            }
+            if (mpcp) {
+                mpcp.value = ""
+            }
+        }
+        this.dirty = false
+    }
+
+    function CheckMPCmode () {
+        mpcr = this.getField("mpc-realtime") ;
+        if (mpcr) {
+            RealTimeMode = (mpcr.value == "Yes")
+        }
+        CheckScore() ;
+        this.dirty = false
+    }
+
+    function DefineMPC (name, answer, number, weight, method) {
+        SetScore(0,0) ;
+        MPCnames[MPCnames.length] = name ;
+        if (answer=="") {
+            MPCanswers[name] = "0"
+        } else {
+            MPCanswers[name] = answer
+        }
+        if (number=="") {
+            MPCnumbers[name] = "0"
+        } else {
+            MPCnumbers[name] = number
+        }
+        if (weight=="") {
+            MPCweights[name] = "0"
+        } else {
+            MPCweights[name] = weight
+        }
+        if (method=="") {
+            MPCmethods[name] = "0"
+        } else {
+            MPCmethods[name] = method
+        }
+    }
+
+    function CheckScore () {
+        var score = 0 ;
+        var total = 0 ;
+        var ok = false ;
+        for (var i=0;i<MPCnames.length;i++) {
+            var name = MPCnames[i] ;
+            var answer = MPCanswers[name] ;
+            var number = Number(MPCnumbers[name]) ;
+            var weight = MPCweights[name] ;
+            var method = MPCmethods[name] ;
+            var fields = Number(NOfFields(name)) ;
+            var answers = answer.split(",") ;
+            var weights = weight.split(",") ;
+            var sorted = weight.split(",") ;
+            sorted = sorted.sort() ;
+            sorted = sorted.reverse() ;
+            for (var k = 0; k < number; k++) {
+                if (weights.length < answers.length) {
+                    total += Number(weight)
+                } else {
+                    total += Number(sorted[k])
+                }
+            }
+            for (var j = 1; j <= fields; j++) {
+                if (FeedBackMode) {
+                    ok = (! FieldRW(name,j).hidden && (FieldRW(name,j).value == "Yes"))
+                } else {
+                    ok = (FieldYN(name,j).value == "Yes")
+                }
+                if (ok) {
+                    for (var k = 0; k < answers.length; k++) {
+                        if (Number(answers[k]) == j) {
+                            if (weights.length < answers.length) {
+                                score += Number(weight)
+                            } else {
+                                score += Number(weights[k])
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        CurrentFeedback = -1 ;
+        SetScore(score,total)
+    }
+
+    function CalculateItems () {
+        CheckScore() ;
+        for (var i = 0;i < MPCnames.length; i++) {
+            var name = MPCnames[i] ;
+            var answer = MPCanswers[name] ;
+            var fields = Number(NOfFields(name)) ;
+            var answers = answer.split(",") ;
+            for (var j = 1; j <= fields; j++) {
+                FieldRW(name,j).hidden = true ;
+                FieldRW(name,j).readonly = true ;
+                FieldRW(name,j).value = "Off" ;
+                FieldYN(name,j).readonly = true ;
+                if (FieldYN(name,j).value=="Off") {
+                    for (var k = 0; k < answers.length; k++) {
+                        if (Number(answers[k]) == j) {
+                            FieldYN(name,j).value = "Yes"
+                        }
+                    }
+                } else {
+                    FieldRW(name,j).hidden = false ;
+                    for (var k = 0; k < answers.length; k++) {
+                        if (Number(answers[k]) == j) {
+                            FieldRW(name,j).value = "Yes"
+                        }
+                    }
+                }
+            }
+            var SomeW = false ;
+            var SomeRW = false ;
+            for (var j = 1; j <= fields; j++) {
+                if (! FieldRW(name,j).hidden) {
+                    SomeRW = true ;
+                    if (FieldRW(name,j).value == "Off") {
+                        SomeW = true
+                    }
+                }
+            }
+            MPCerrors[name] = (SomeW || (! SomeRW)) ;
+        }
+        CurrentFeedback = -1 ;
+        FeedBackMode = true ;
+        this.dirty = false
+    }
+
+    function ResetItems () {
+        for (var i = 0; i < MPCnames.length; i++) {
+            var name = MPCnames[i] ;
+            var fields = Number(NOfFields(name)) ;
+            for (var j = 1; j <= fields; j++) {
+                FieldRW(name,j).hidden = true ;
+                FieldYN(name,j).hidden = false ;
+                FieldYN(name,j).readonly = false ;
+                FieldYN(name,j).value = "Off" ;
+                SetScore(0,0)
+            }
+        }
+        CurrentFeedback = -1 ;
+        FeedBackMode = false ;
+        this.dirty = false
+    }
+
+    function CheckMPCone (name, number) {
+        nofitems = Number(NOfFields(name)) ;
+        for (var i = 1; i <= nofitems; i++) {
+            if (i != Number(number)) {
+                FieldYN(name,i).value = "Off"
+            }
+        }
+    }
+
+    function CheckMPCmore (name, number) {
+        var nofitems = Number(NOfFields(name)) ;
+        var currentnumber = 0 ;
+        for (var i = 1; i <= nofitems; i++) {
+            if (FieldYN(name,i).value == "Yes") {
+                ++currentnumber
+            }
+        }
+        if (currentnumber>Number(MPCnumbers[name])) {
+            Warning("only " + MPCnumbers[name] + " choices permitted") ;
+            var v = FieldYN(name,number) ;
+            if (v.value == "Yes") {
+                v.value = "Off"
+            }
+        }
+    }
+
+    function CheckMPC (name, number) {
+        if (! FeedBackMode) {
+            if (MPCnumbers[name] == 1) {
+                CheckMPCone(name,number)
+            } else {
+                CheckMPCmore(name,number)
+            }
+            if (RealTimeMode) {
+                CheckScore()
+            } else {
+                SetScore(0,0)
+            }
+        } else {
+            SetScore(0,0)
+        }
+    }
+
+    function GoneToFeedback () {
+        var name = MPCnames[CurrentFeedback] ;
+        if (MPCerrors[name]) {
+            console.println("feedback:" + name) ;
+            this.gotoNamedDest("feedback:" + name) ;
+            return true
+        } else {
+            return false
+        }
+    }
+
+    function NextFeedback () {
+        ++CurrentFeedback ;
+        while (CurrentFeedback < MPCnames.length) {
+            if (GoneToFeedback()) {
+                return
+            } else {
+                ++CurrentFeedback
+            }
+        }
+        CurrentFeedback = 0 ;
+        while (CurrentFeedback < MPCnames.length) {
+            if (GoneToFeedback()) {
+                return
+            } else {
+                ++CurrentFeedback
+            }
+        }
+        CurrentFeedback = -1
+    }
+
+    function PreviousFeedback () {
+        --CurrentFeedback ;
+        while (CurrentFeedback >= 0) {
+            if (GoneToFeedback()) {
+                return
+            } else {
+                --CurrentFeedback
+            }
+        }
+        CurrentFeedback = MPCnames.length ;
+        while (CurrentFeedback >= 0)  {
+            if (GoneToFeedback()) {
+                return
+            } else {
+                --CurrentFeedback
+            }
+        }
+        CurrentFeedback = MPCnames.length + 1
+    }
+
+\stopJSpreamble
+
+\definecolor[clickMPCcolor][blue]
+\definecolor[rightMPCcolor][green]
+\definecolor[wrongMPCcolor][red]
+
+\definecolor[MPCcolor][clickMPCcolor]
+
+\appendtoks
+    \definesymbol [mpc-y] [\mathematics{\color[clickMPCcolor]{\star}}] % yes
+    \definesymbol [mpc-n] [\hphantom{\symbol[mpc-y]}]                  % no
+    \definesymbol [mpc-r] [\mathematics{\color[rightMPCcolor]{\star}}] % right
+    \definesymbol [mpc-w] [\mathematics{\color[wrongMPCcolor]{\star}}] % wrong
+\to \everystarttext
+
+\definereference [ResetItems]       [JS(ResetItems)]
+\definereference [CalculateItems]   [JS(CalculateItems)]
+\definereference [PreviousFeedback] [JS(PreviousFeedback)]
+\definereference [NextFeedback]     [JS(NextFeedback)]
+
+\setupfield
+  [mpc-field-yn]
+  [%\c!frame=\v!off,
+   \c!height=.8em,
+   \c!width=.8em,
+   \c!background=\v!color,
+   \c!backgroundcolor=gray]
+
+\setupfield
+  [mpc-field-rw]
+  [%\c!frame=\v!off,
+   \c!height=.8em,
+   \c!width=.8em,
+   \c!background=\v!color,
+   \c!background=gray]
+
+\setupfield
+  [mpc-data]
+  [%\c!frame=\v!off,
+   \c!height=3ex,
+   \c!location=\v!low,
+   \c!align=\v!middle,
+   \c!color=MPCcolor,
+   \c!background=\v!color,
+   \c!background=gray,
+   \c!option=\v!readonly]
+
+\setupfield
+  [mpc-mode]
+  [%\c!frame=\v!off,
+   \c!height=3ex,
+   \c!width=3ex,
+   \c!location=\v!low,
+   \c!color=MPCcolor,
+   \c!background=\v!color,
+   \c!background=gray,
+   \c!clickout=JS(CheckMPCmode)]
+
+\appendtoks
+    \definemainfield[mpc-score]   [line] [mpc-data][][]
+    \definemainfield[mpc-total]   [line] [mpc-data][][]
+    \definemainfield[mpc-percent] [line] [mpc-data][][]
+    \definemainfield[mpc-realtime][check][mpc-mode][mpc-y,mpc-n][mpc-n]
+\to \everystarttext
+
+\newif\iftraceitems % \traceitemstrue
+
+\unexpanded\def\startMPCitems
+  {\dotripleempty\dostartMPCitems}
+
+\let\stopMPCitems\relax
+\let\startMPCitem\relax
+\let\stopMPCitem \relax
+
+\unexpanded\def\dostartMPCitems[#1][#2][#3]#4\stopMPCitems
+  {\bgroup
+   \getgparameters
+     [mpc:#1:]
+     [\c!answer=1,
+      \c!n=1,
+      \c!weight=1,
+      \c!method=1,
+      #2]%
+   \doglobal\newcounter\MPCitems
+   \unexpanded\def\startMPCitem##1\stopMPCitem
+     {\doglobal\increment\MPCitems
+      \edef\MPCitem{MPC:\MPCitems}%
+      \expandafter\setvalue\expandafter\MPCitem\expandafter
+        {\expandafter\handleMPCitem\expandafter{\MPCitems}{##1}}}
+   #4\relax
+   \unexpanded\def\handleMPCitem##1##2%
+     {\setJSpreamble{mpc:#1}
+        {DefineMPC
+           ("mpc:#1",%
+            "\getvalue{mpc:#1:\c!answer}",%
+            "\getvalue{mpc:#1:\c!n}",%
+            "\getvalue{mpc:#1:\c!weight}",%
+            "\getvalue{mpc:#1:\c!method}");}%
+      \definefield[mpc:#1:##1:rw][check][mpc-field-rw][mpc-r,mpc-w][mpc-r]
+      \definefield[mpc:#1:##1:yn][check][mpc-field-yn][mpc-y,mpc-n][mpc-n]
+      \setupfield[mpc-field-rw][\c!option={\v!readonly,\v!hidden}]
+      \setupfield[mpc-field-yn][\c!clickout=JS(CheckMPC{mpc:#1,##1})]
+      \mar{\iftraceitems{\txx##1}\hskip.5em\fi
+          %\fitfield[mpc:#1:##1:rw]\hskip.25em
+          %\fitfield[mpc:#1:##1:yn]}
+           \field[mpc:#1:##1:rw]\hskip.25em
+           \field[mpc:#1:##1:yn]}
+      ##2\par}%
+  \global\let\MPCdone\MPCitems
+  \global\unexpanded\def\fetchMPCitems
+    {\getrandomnumber\MPCitem{1}{\MPCitems}%
+     \doifdefined{MPC:\MPCitem}
+       {\getvalue{MPC:\MPCitem}
+        \doglobal\decrement\MPCdone
+        \global\letbeundefined{MPC:\MPCitem}}%
+     \ifcase\MPCdone\else
+       \expandafter\fetchMPCitems
+     \fi}
+  \startitemize[#3]
+    \fetchMPCitems
+  \stopitemize
+  \egroup}
+
+% \setupsystem
+%   [\c!random=\v!small]
+
+\protect
+
+\continueifinputfile{m-examn.mkiv}
+
+% \nopdfcompression
+
+\setupbodyfont[pagella,10pt]
+
+% \usemodule[m][examn]
+
+\setupinteraction
+  [state=start,
+   color=MPCcolor,
+   menu=on]
+
+\setupinteractionmenu
+  [right]
+  [state=start]
+
+\setupinteractionscreen
+  [option=max]
+
+\setuppapersize
+  [S6][S6]
+
+\setuplayout
+  [topspace=15pt,
+   backspace=40pt,
+   header=0pt,
+   footer=0pt,
+   height=middle,
+   rightmargin=0pt,
+   leftmargin=20pt,
+   leftmargindistance=5pt,
+   rightedge=100pt,
+   rightedgedistance=15pt,
+   width=430pt]
+
+\setupbackgrounds
+  [text][rightedge]
+  [frame=on,
+   frameoffset=5pt,
+   framecolor=MPCcolor]
+
+\startinteractionmenu[right]
+    \startalignment[middle]
+        \dontleavehmode \gotobox{\strut example test} [examplepage]                      \blank
+        \dontleavehmode \gotobox{\strut next feedback}[NextFeedback]                     \blank
+        \dontleavehmode \gotobox{\strut prev feedback}[PreviousFeedback]                 \blank
+        \dontleavehmode \gotobox{\strut submit}       [SubmitForm{mailto:pragma@wxs.nl}] \blank
+        \dontleavehmode \gotobox{\strut reset}        [ResetItems]                       \blank
+        \dontleavehmode \gotobox{\strut calculate}    [CalculateItems]                   \blank
+        \vfill
+        score      \blank[small] \dontleavehmode \field[mpc-score]    \blank
+        max score  \blank[small] \dontleavehmode \field[mpc-total]    \blank
+        percentage \blank[small] \dontleavehmode \field[mpc-percent]  \blank
+        realtime   \blank[small] \dontleavehmode \field[mpc-realtime] \blank
+        \kern0pt
+    \stopalignment
+\stopinteractionmenu
+
+\starttext
+
+\title [examplepage] {A simple MPC demo (toggle mode)}
+
+\startMPCitems[mpc-1][answer=3][a,packed]
+
+    \startMPCitem this is alpha \stopMPCitem
+    \startMPCitem and this is beta \stopMPCitem
+    \startMPCitem but how about gamma (ok) \stopMPCitem
+
+\stopMPCitems
+
+\startMPCitems[mpc-5][answer={2,3,4},n=2][n,packed]
+
+    \startMPCitem this is alpha \stopMPCitem
+    \startMPCitem and this is beta (ok, 2 ok's permitted) \stopMPCitem
+    \startMPCitem but how about gamma (ok, 2 ok's permitted) \stopMPCitem
+    \startMPCitem or delta (ok, 2 ok's permitted) \stopMPCitem
+    \startMPCitem or epsilon \stopMPCitem
+
+\stopMPCitems
+
+\startMPCitems[mpc-6][answer={2,3,4},weight={2,1,3},n=2][g,packed]
+
+    \startMPCitem this is alpha \stopMPCitem
+    \startMPCitem and this is beta (ok, 2 ok's permitted, weight is 2) \stopMPCitem
+    \startMPCitem but how about gamma (ok, 2 ok's permitted, weight is 1) \stopMPCitem
+    \startMPCitem or delta (ok, 2 ok's permitted, weight is 3) \stopMPCitem
+    \startMPCitem or epsilon \stopMPCitem
+
+\stopMPCitems
+
+\startMPCitems[mpc-8][answer=1,weight=2][packed]
+
+    \startMPCitem this is alpha (ok, weight is 2) \stopMPCitem
+    \startMPCitem and this is beta \stopMPCitem
+    \startMPCitem but how about gamma \stopMPCitem
+    \startMPCitem or delta \stopMPCitem
+
+\stopMPCitems
+
+\title [feedback:mpc:mpc-1] {Feedback on MPC 1}  whatever
+\title [feedback:mpc:mpc-5] {Feedback on MPC 5}  whatever
+\title [feedback:mpc:mpc-6] {Feedback on MPC 6}  whatever
+\title [feedback:mpc:mpc-8] {Feedback on MPC 8}  whatever
+
+\stoptext

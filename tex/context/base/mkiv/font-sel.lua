@@ -96,7 +96,7 @@ extras["features"] = function(data,alternative,features)
     local e = gsub(gsub(features,"*",d),"{(.*)}","%1")
     local f = data.features
     if trace_features then
-        report_features("Alternative '%s': Saving features '%s'",alternative,e)
+        report_features("alternative '%s': saving features '%s'",alternative,e)
     end
     if not f then
         f = { }
@@ -109,7 +109,7 @@ extras["goodies"] = function(data,alternative,goodies)
     local e = gsub(goodies,"{(.*)}","%1")
     local g = data.goodies
     if trace_goodies then
-        report_goodies("Alternative '%s': Saving goodies '%s'",alternative,e)
+        report_goodies("alternative '%s': saving goodies '%s'",alternative,e)
     end
     if not g then
         g = { }
@@ -137,7 +137,7 @@ local function selectfont_savefile(data,alternative,bodyfontsize,size,file)
     end
     a[bodyfontsize] = { size, n }
     if trace_files then
-        report_files("Alternative '%s': Saving file '%s' for size '%s'",alternative,n,size)
+        report_files("alternative '%s': saving file '%s' for size '%s'",alternative,n,size)
     end
 end
 
@@ -145,7 +145,7 @@ methods["name"] = function(data,alternative,name)
     local family   = data.metadata.family
     local filename = cleanname(gsub(name,"*",family))
     if trace_alternatives then
-        report_selectfont("Alternative '%s': Using method 'name' with argument '%s'",alternative,filename)
+        report_selectfont("alternative '%s': using method 'name' with argument '%s'",alternative,filename)
     end
     local fontname = getlookups{ fontname = filename }
     local fullname = getlookups{ fullname = filename }
@@ -155,7 +155,7 @@ methods["name"] = function(data,alternative,name)
         selectfont_savefile(data,alternative,0,"default",fullname[1])
     else
         if trace_alternatives then
-            report_selectfont("Alternative '%s': No font was found for the requested name '%s'",alternative,filename)
+            report_selectfont("alternative '%s': no font was found for the requested name '%s'",alternative,filename)
         end
     end
 end
@@ -164,14 +164,14 @@ methods["file"] = function(data,alternative,file)
     local family   = data.metadata.family
     local filename = cleanname(gsub(removesuffix(file),"*",family))
     if trace_alternatives then
-        report_selectfont("Alternative '%s': Using method 'file' with argument '%s'",alternative,filename)
+        report_selectfont("alternative '%s': using method 'file' with argument '%s'",alternative,filename)
     end
     local filename = getlookups{ cleanfilename = cleanname(filename) }
     if #filename > 0 then
         selectfont_savefile(data,alternative,0,"default",filename[1])
     else
         if trace_alternatives then
-            report_selectfont("Alternative '%s': No font was found for the requested file '%s'",alternative,cleanname(gsub(removesuffix(file),"*",family)))
+            report_selectfont("alternative '%s': no font was found for the requested file '%s'",alternative,cleanname(gsub(removesuffix(file),"*",family)))
         end
     end
 end
@@ -243,7 +243,7 @@ local function m_style_family(family)
         return family
     elseif #fontname > 0 then
         local fontfamily = fontname[1]["familyname"]
-        report_selectfont("The name '%s' is not a proper family name, use '%s' instead.",askedname,fontfamily)
+        report_selectfont("the name '%s' is not a proper family name, use '%s' instead.",askedname,fontfamily)
         return nil
     else
         return nil
@@ -353,7 +353,7 @@ local function m_style_size(data,alternative,entries)
                 end
             else
                 if trace_alternatives then
-                    report_selectfont("Alternative '%s': Multiple files are available for the requested style '%s' from '%s'",alternative,style,family)
+                    report_selectfont("alternative '%s': multiple files are available for the requested style '%s' from '%s'",alternative,style,family)
                 end
             end
         end
@@ -386,7 +386,7 @@ methods["style"] = function(data,alternative,style)
         m_style_size(data,alternative,entries)
     else
         if trace_alternatives then
-            report_selectfont("Alternative '%s': No font was found for the requested style '%s' from '%s'",alternative,style,family)
+            report_selectfont("alternative '%s': no font was found for the requested style '%s' from '%s'",alternative,style,family)
         end
     end
 end
@@ -394,21 +394,21 @@ end
 methods[v_default] = function(data,alternative)
     local family = data.metadata.family
     if trace_alternatives then
-        report_selectfont("Alternative '%s': Using method 'default'",alternative)
+        report_selectfont("alternative '%s': using method 'default'",alternative)
     end
     local result = getlookups{ familyname = cleanname(family) }
     if #result == 1 and alternative == "tf" then
         if trace_alternatives then
-            report_selectfont("Alternative '%s': The family '%s' contains only one font",alternative,family)
+            report_selectfont("alternative '%s': the family '%s' contains only one font",alternative,family)
         end
         selectfont_savefile(data,alternative,0,"default",result[1])
      -- if trace_alternatives then
-     --     report_selectfont("Alternative '%s': Changing method 'default' to method 'style'",alternative)
+     --     report_selectfont("alternative '%s': changing method 'default' to method 'style'",alternative)
      -- end
      -- methods["file"](data,alternative,result[1]["filename"])
     else
         if trace_alternatives then
-            report_selectfont("Alternative '%s': Changing method 'default' to method 'style'",alternative)
+            report_selectfont("alternative '%s': changing method 'default' to method 'style'",alternative)
         end
         methods["style"](data,alternative,alternative)
     end
@@ -478,7 +478,7 @@ function selectfont.registerfontalternative(alternative)
     local a = alternatives[alternative]
     if not a then
         if trace_register then
-            report_selectfont("Register alternative '%s'",alternative)
+            report_selectfont("register alternative '%s'",alternative)
         end
         a = true
         alternatives[alternative] = a
@@ -598,23 +598,23 @@ function selectfont.fontsynonym(data,class,style,alternative,index)
     local fontfallback = formatters["fallback-%s-%s-%s"](fontclass,style,alternative)
     for _, fontsize in next, fontsizes do
      -- if trace_typescript then
-     --     report_typescript("Synonym: '%s', Size: '%s', File: '%s'",fontfile,fontfiles[fontsize][1],fontfiles[fontsize][2])
+     --     report_typescript("synonym: '%s', size: '%s', file: '%s'",fontfile,fontfiles[fontsize][1],fontfiles[fontsize][2])
      -- end
         registerdesignsizes(fontfile,fontfiles[fontsize][1],fontfiles[fontsize][2])
     end
     if fallback then
      -- if trace_typescript then
-     --     report_typescript("Synonym: '%s', File: '%s', Features: '%s'",fontsynonym,fontfile,fontfeature)
+     --     report_typescript("synonym: '%s', file: '%s', features: '%s'",fontsynonym,fontfile,fontfeature)
      -- end
         ctx_definefontsynonym( { fontsynonym }, { fontfile }, { features = fontfeature } )
     else
      -- if trace_typescript then
-     --     report_typescript("Synonym: '%s', File: '%s', Features: '%s', Goodies: '%s', Fallbacks: '%s'",fontsynonym,fontfile,fontfeature,fontgoodie,fontfallback)
+     --     report_typescript("synonym: '%s', file: '%s', features: '%s', goodies: '%s', fallbacks: '%s'",fontsynonym,fontfile,fontfeature,fontgoodie,fontfallback)
      -- end
         ctx_definefontsynonym( { fontsynonym }, { fontfile }, { features = fontfeature, goodies = fontgoodie, fallbacks = fontfallback } )
         if synonym then
          -- if trace_typescript then
-         --     report_typescript("Synonym: '%s', File: '%s'",synonym,fontsynonym)
+         --     report_typescript("synonym: '%s', file: '%s'",synonym,fontsynonym)
          -- end
             ctx_definefontsynonym( { synonym }, { fontsynonym } )
         end
@@ -628,13 +628,13 @@ function selectfont.fontfallback(data,class,style,alternative,index)
     local force        = data.options.force  ~= "" and data.options.force  or ""
     local fontfeature  = data.features and data.features[alternative] or data.options.features
     local fontclass    = lower(class)
-    local fontsynonym  = formatters ["synonym-%s-%s-%s-%s"](fontclass,style,alternative,index)
-    local fontfallback = formatters["fallback-%s-%s-%s"]   (fontclass,style,alternative)
+    local fontsynonym  = formatters["synonym-%s-%s-%s-%s"](fontclass,style,alternative,index)
+    local fontfallback = formatters["fallback-%s-%s-%s"]  (fontclass,style,alternative)
     if index == 1 then
         ctx_resetfontfallback( { fontfallback } )
     end
  -- if trace_typescript then
- --     report_typescript("Fallback: '%s', Synonym: '%s', Range: '%s', Scale: '%s', Check: '%s', Force: '%s'",fontfallback,fontsynonym,range,scale,check,force)
+ --     report_typescript("fallback: '%s', synonym: '%s', range: '%s', scale: '%s', check: '%s', force: '%s'",fontfallback,fontsynonym,range,scale,check,force)
  -- end
     ctx_definefontfallback( { fontfallback }, { fontsynonym }, { range }, { rscale = scale, check = check, force = force } )
 end
@@ -653,7 +653,7 @@ function selectfont.filefallback(data,class,style,alternative,index)
         ctx_resetfontfallback( { fontfallback } )
     end
  -- if trace_typescript then
- --     report_typescript("Fallback: '%s', File: '%s', Features: '%s', Range: '%s', Scale: '%s', Check: '%s', Force: '%s', Offset: '%s'",fontfallback,fontfile[2],fontfeature,range,scale,check,force,offset)
+ --     report_typescript("fallback: '%s', file: '%s', features: '%s', range: '%s', scale: '%s', check: '%s', force: '%s', offset: '%s'",fontfallback,fontfile[2],fontfeature,range,scale,check,force,offset)
  -- end
     ctx_definefontfallback( { fontfallback }, { formatters["file:%s*%s"](fontfile[2],fontfeature) }, { range }, { rscale = scale, check = check, force = force, offset = offset } )
 end
@@ -737,7 +737,7 @@ function selectfont.bodyfont(data)
         fontsynonym           = formatters["synonym-%s-%s-%s"](fontclass,fontstyle,alternative)
         fontlist[#fontlist+1] = formatters["%s=%s sa 1"]      (alternative,fontsynonym)
      -- if trace_typescript then
-     --     report_typescript("Alternative '%s': Synonym '%s'",alternative,fontsynonym)
+     --     report_typescript("alternative '%s': synonym '%s'",alternative,fontsynonym)
      -- end
     end
     fontlist = concat(fontlist,",")
@@ -760,7 +760,7 @@ function selectfont.typeface(data)
     local size      = data.options.designsize ~= "" and data.options.designsize or "default"
     local scale     = data.options.rscale     ~= "" and data.options.rscale     or 1
  -- if trace_typescript then
- --     report_typescript("Class: '%s', Style: '%s', Size: '%s', Scale: '%s'",fontclass,fontstyle,size,scale)
+ --     report_typescript("class: '%s', style: '%s', size: '%s', scale: '%s'",fontclass,fontstyle,size,scale)
  -- end
     ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "" }, { "default" }, { designsize = size, rscale = scale } )
 end
@@ -770,7 +770,7 @@ function selectfont.default(data)
     local fontclass = data.metadata.typeface
     local fontstyle = data.metadata.style
     local style     = m_style[fontstyle]
-    report_selectfont("The requested font '%s' has no files for the 'tf' alternative, Latin Modern is used instead.",family)
+    report_selectfont("the requested font '%s' has no files for the 'tf' alternative, Latin Modern is used instead.",family)
     ctx_definetypeface( { fontclass }, { fontstyle }, { style }, { "modern" }, { "default" } )
 end
 
@@ -799,7 +799,7 @@ function selectfont.definefallbackfamily(index)
     if fontfiles then
         selectfont.registerfallback(index)
     else
-        report_selectfont("The requested fallback font '%s' for typeface '%s' style '%s' was ignored because no files where found.",family,fontclass,fontstyle)
+        report_selectfont("the requested fallback font '%s' for typeface '%s' style '%s' was ignored because no files where found.",family,fontclass,fontstyle)
     end
 end
 

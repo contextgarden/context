@@ -80,7 +80,7 @@ local rawget, rawset, type, tonumber, tostring, next, setmetatable = rawget, raw
 local P, S, R, C, Ct, Cs, Cc, Cp, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cg, lpeg.Cf, lpeg.Carg
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
-local sqrt = math.sqrt
+local sqrt, abs = math.sqrt, math.abs
 local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
 local gmatch, gsub, find, match, rep = string.gmatch, string.gsub, string.find, string.match, string.rep
 local formatters, fullstrip = string.formatters, string.fullstrip
@@ -122,6 +122,7 @@ local trace        = false  trackers.register("metapost.svg",        function(v)
 local trace_text   = false  trackers.register("metapost.svg.text",   function(v) trace_text   = v end)
 local trace_path   = false  trackers.register("metapost.svg.path",   function(v) trace_path   = v end)
 local trace_result = false  trackers.register("metapost.svg.result", function(v) trace_result = v end)
+local trace_colors = false  trackers.register("metapost.svg.colors", function(v) trace_colors = v end)
 
 local pathtracer = {
     ["stroke"]         = "darkred",
@@ -428,7 +429,7 @@ end
 
 -- todo: cache colors per image / remapper
 
-local colorcomponents, withcolor, thecolor  do
+local colorcomponents, withcolor, thecolor, usedcolors  do
 
     local svgcolors = {
         aliceblue       = 0xF0F8FF, antiquewhite      = 0xFAEBD7, aqua                  = 0x00FFFF, aquamarine       = 0x7FFFD4,
@@ -476,7 +477,7 @@ local colorcomponents, withcolor, thecolor  do
     local f_rgba     = formatters['withcolor svgcolor(%.3N,%.3N,%.3N) withtransparency (1,%.3N)']
     local f_graya    = formatters['withcolor svggray(%.3N) withtransparency (1,%.3N)']
     local f_name     = formatters['withcolor "%s"']
-    local f_svgcolor = formatters['svgcolor(%.3N,%.3N,%.3N)']
+    local f_svgrgb   = formatters['svgcolor(%.3N,%.3N,%.3N)']
     local f_svgcmyk  = formatters['svgcmyk(%.3N,%.3N,%.3N,%.3N)']
     local f_svggray  = formatters['svggray(%.3N)']
     local f_svgname  = formatters['"%s"']
@@ -510,7 +511,7 @@ local colorcomponents, withcolor, thecolor  do
                       * p_separator^0 * p_absolute^0
                       * p_right
 
-	local colors      = attributes.colors
+    local colors      = attributes.colors
     local colorvalues = colors.values
     local colorindex  = attributes.list[attributes.private('color')]
     local hsvtorgb    = colors.hsvtorgb
@@ -559,7 +560,6 @@ local colorcomponents, withcolor, thecolor  do
         end
     end
 
-
     local function registeredcolor(name)
         local color = colorindex[name]
         if color then
@@ -580,6 +580,9 @@ local colorcomponents, withcolor, thecolor  do
     -- we can have a fast check for #000000
 
     local function validcolor(color)
+        if usedcolors then
+            usedcolors[color] = usedcolors[color] + 1
+        end
         if colormap then
             local c = colormap[color]
             local t = type(c)
@@ -1920,7 +1923,7 @@ do
         --
         -- todo: combine more (offset+scale+rotation)
 
-        local function makemarker(where,c,x1,y1,x2,y2,x3,y3)
+        local function makemarker(where,c,x1,y1,x2,y2,x3,y3,parentat)
             local at     = c.at
             local refx   = rawget(at,"refX")
             local refy   = rawget(at,"refY")
@@ -1929,8 +1932,8 @@ do
             local view   = rawget(at,"viewBox")
             local orient = rawget(at,"orient")
          -- local ratio  = rawget(at,"preserveAspectRatio")
-            local units  = at["markerUnits"]
-            local height = at["markerHeight"]
+            local units  = asnumber(at["markerUnits"] or parentat["stroke-width"]) or 1
+
             local angx   = 0
             local angy   = 0
             local angle  = 0
@@ -1938,38 +1941,33 @@ do
             if where == "beg" then
                 if orient == "auto" then -- unchecked
                     -- no angle
-                    angx = x2 - x3
-                    angy = y2 - y3
+                    angx = abs(x2 - x3)
+                    angy = abs(y2 - y3)
                 elseif orient == "auto-start-reverse" then -- checked
                     -- points to start
-                    angx = x3 - x2
-                    angy = y3 - y2
+                    angx = -abs(x2 - x3)
+                    angy = -abs(y2 - y3)
                 elseif orient then -- unchecked
                     angle = asnumber_r(orient)
                 end
             elseif where == "end" then
-                if orient == "auto" then -- unchecked
-                    -- no angle ?
-                    angx = x1 - x2
-                    angy = y1 - y2
-                elseif orient == "auto-start-reverse" then -- unchecked
-                    -- points to end
-                    angx = x2 - x1
-                    angy = y2 - y1
+                -- funny standard .. bug turned feature?
+                if orient == "auto" or orient == "auto-start-reverse" then
+                    angx = abs(x1 - x2)
+                    angy = abs(y1 - y2)
                 elseif orient then -- unchecked
                     angle = asnumber_r(orient)
                 end
             elseif orient then -- unchecked
                 angle = asnumber_r(orient)
             end
-
             -- what wins: viewbox or w/h
 
             refx = asnumber_x(refx)
             refy = asnumber_y(refy)
 
-            width  = width  and asnumber_x(width)  or 3 -- defaults
-            height = height and asnumber_y(height) or 3 -- defaults
+            width  = (width  and asnumber_x(width)  or 3) * units
+            height = (height and asnumber_y(height) or 3) * units
 
             local x = 0
             local y = 0
@@ -2058,27 +2056,29 @@ do
 
         end
 
-        local function addmarkers(list,begmarker,midmarker,endmarker)
+        -- do we need to metatable the attributes here?
+
+        local function addmarkers(list,begmarker,midmarker,endmarker,at)
             local n = #list
             if n > 3 then
                 if begmarker then
                     local m = locate(begmarker)
                     if m then
-                        makemarker("beg",m,false,false,list[1],list[2],list[3],list[4])
+                        makemarker("beg",m,false,false,list[1],list[2],list[3],list[4],at)
                     end
                 end
                 if midmarker then
                     local m = locate(midmarker)
                     if m then
                         for i=3,n-2,2 do
-                            makemarker("mid",m,list[i-2],list[i-1],list[i],list[i+1],list[i+2],list[i+3])
+                            makemarker("mid",m,list[i-2],list[i-1],list[i],list[i+1],list[i+2],list[i+3],at)
                         end
                     end
                 end
                 if endmarker then
                     local m = locate(endmarker)
                     if m then
-                        makemarker("end",m,list[n-3],list[n-2],list[n-1],list[n],false,false)
+                        makemarker("end",m,list[n-3],list[n-2],list[n-1],list[n],false,false,at)
                     end
                 end
             else
@@ -2148,7 +2148,7 @@ do
                 r = r + 1 ; result[r] = etransform or ";"
                 --
                 if list then
-                    addmarkers(list,begmarker,midmarker,endmarker)
+                    addmarkers(list,begmarker,midmarker,endmarker,at)
                 end
                 --
                 if wrapup then
@@ -2285,7 +2285,6 @@ do
 
                 local btransform, etransform = handletransform(at)
                 local cpath = handleclippath(at)
-
                 if cpath then
                     r = r + 1 ; result[r] = s_clip_start
                 end
@@ -2380,7 +2379,7 @@ do
                             r = r + 1 ; result[r] = ";"
                         end
                         if list then
-                            addmarkers(list,begmarker,midmarker,endmarker)
+                            addmarkers(list,begmarker,midmarker,endmarker,at)
                         end
                         r = r + 1 ; result[r] = etransform or ") ;"
                     end
@@ -2949,6 +2948,7 @@ do
                 tagstyles   = { }
                 classstyles = { }
                 colormap    = specification.colormap
+                usedcolors  = trace_colors and setmetatableindex("number") or false
                 for s in xmlcollected(c,"style") do -- can also be in a def, so let's play safe
                     handlestyle(c)
                 end
@@ -2967,6 +2967,9 @@ do
                 )
                 if trace_result then
                     report("result graphic:\n    %\n    t",result)
+                end
+                if usedcolors and next(usedcolors) then
+                    report("graphic %a uses colors: %s",specification.id or "unknown",table.sequenced(usedcolors))
                 end
                 mps         = concat(result," ")
                 root        = false

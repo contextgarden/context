@@ -45,13 +45,12 @@ local nuts              = nodes.nuts
 
 local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
-local getdisc           = nuts.getdisc
+local getreplace        = nuts.getreplace
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getboth           = nuts.getboth
 local getdata           = nuts.getdata
 local getglyphdata      = nuts.getglyphdata
------ getdisc           = nuts.getdisc
 
 local setchar           = nuts.setchar
 local setlink           = nuts.setlink
@@ -142,33 +141,10 @@ fonts.hashes.processes   = fontprocesses
 -- we need to deal with the basemode fonts here and can only run over ranges as we
 -- otherwise get luatex craches due to all kind of asserts in the disc/lig builder
 
+-- there is no gain in merging used (dynamic 0) and dynamics apart from a bit less code
+
 local ligaturing = nuts.ligaturing
 local kerning    = nuts.kerning
-
--- -- -- this will go away
---
--- local disccodes          = nodes.disccodes
--- local explicitdisc_code  = disccodes.explicit
--- local automaticdisc_code = disccodes.automatic
--- local expanders          = nil
---
--- function fonts.setdiscexpansion(v)
---     if v == nil or v == true then
---         expanders = languages and languages.expanders
---     elseif type(v) == "table" then
---         expanders = v
---     else
---         expanders = false
---     end
--- end
---
--- function fonts.getdiscexpansion()
---     return expanders and true or false
--- end
---
--- fonts.setdiscexpansion(true)
---
--- -- -- till here
 
 local function start_trace(head)
     run = run + 1
@@ -193,18 +169,14 @@ local function start_trace(head)
     end
 end
 
-local function stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
+local function stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant)
     report_fonts()
     report_fonts("statics : %s",u > 0 and concat(keys(usedfonts)," ") or "none")
     report_fonts("dynamics: %s",a > 0 and concat(keys(attrfonts)," ") or "none")
     report_fonts("built-in: %s",b > 0 and b or "none")
     report_fonts("removed : %s",r > 0 and r or "none")
- -- if expanders then
- --     report_fonts("expanded: %s",e > 0 and e or "none")
- -- end
     report_fonts()
 end
-
 
 do
 
@@ -221,7 +193,7 @@ do
     local lastproc
     local lastnone
 
-    local a, u, b, r, e
+    local a, u, b, r
 
     local function protectnone()
         protect_glyphs(firstnone,lastnone)
@@ -307,7 +279,7 @@ do
         lastproc  = nil
         lastnone  = nil
 
-        a, u, b, r, e = 0, 0, 0, 0, 0
+        a, u, b, r = 0, 0, 0, 0
 
         if trace_fontrun then
             start_trace(head)
@@ -425,7 +397,6 @@ do
         end
 
         if force_discrun then
-
             -- basefont is not supported in disc only runs ... it would mean a lot of
             -- ranges .. we could try to run basemode as a separate processor run but
             -- not for now (we can consider it when the new node code is tested
@@ -433,7 +404,7 @@ do
                 -- we could use first_glyph, only doing replace is good enough because
                 -- pre and post are normally used for hyphens and these come from fonts
                 -- that part of the hyphenated word
-                local _, _, r = getdisc(d)
+                local r = getreplace(d)
                 if r then
                     local prevfont = nil
                     local prevattr = nil
@@ -465,19 +436,13 @@ do
                     if firstnone then
                         protectnone()
                     end
-             -- elseif expanders then
-             --     local subtype = getsubtype(d)
-             --     if subtype == automaticdisc_code or subtype == explicitdisc_code then
-             --         expanders[subtype](d)
-             --         e = e + 1
-             --     end
                 end
             end
 
         end
 
         if trace_fontrun then
-            stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant,e,expanders)
+            stop_trace(u,usedfonts,a,attrfonts,b,basefonts,r,redundant)
         end
 
         -- in context we always have at least 2 processors

@@ -317,7 +317,7 @@ moduledata.scite = scite
 \definetyping[MPS] [option=mps]
 \definetyping[MP]  [option=mp]
 \definetyping[PDF] [option=pdf]
-\definetyping[CPP] [option=web]
+\definetyping[CPP] [option=cpp]    % Which is kind of like the web one.
 \definetyping[WEB] [option=web]
 \definetyping[TXT] [option=txt]
 \definetyping[BNF] [option=bnf]    % I might use this in the metafun manual.
@@ -397,6 +397,14 @@ moduledata.scite = scite
   {\scitebuffer[\ifx\currentscitelexer\empty tex\else\currentscitelexer\fi][@scite@]%
    \endgroup}
 
+\definelines
+  [scitelines]
+
+\setuplines
+  [scitelines]
+  [\c!before=,
+   \c!after=]
+
 \unexpanded\def\scitefile
   {\dosingleargument\module_scite_file}
 
@@ -410,9 +418,9 @@ moduledata.scite = scite
    \dontcomplain
    \raggedright
    \startcontextcode
-   \startlines
+   \startscitelines
    \getbuffer[lex]
-   \stoplines
+   \stopscitelines
    \stopcontextcode
    \endgroup}
 
@@ -432,9 +440,9 @@ moduledata.scite = scite
    \module_scite_inherit_typing
    \dontcomplain
    \raggedright
-   \startlines
+   \startscitelines
    \getbuffer[lex]
-   \stoplines
+   \stopscitelines
    \endgroup}
 
 \unexpanded\def\sciteinlinebuffer
@@ -476,14 +484,14 @@ moduledata.scite = scite
    \tt
    \installscitecommandsdisplay
    \dontcomplain
-\buff_verbatim_initialize_typing_one
-\buff_verbatim_set_line_margin
+   \buff_verbatim_initialize_typing_one
+   \buff_verbatim_set_line_margin
    \raggedright
-   \startlines
+   \startscitelines
    \clf_getbuffer{lex}}
 
 \unexpanded\def\stopDisplayScite
-  {\stoplines
+  {\stopscitelines
    \endgroup}
 
 \unexpanded\def\slxbreak

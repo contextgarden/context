@@ -1174,4 +1174,10 @@
 \let\eTeXglueshrinkorder \undefined
 \let\eTeXgluestretchorder\undefined
 
+%D Experiment:
+
+\ifdefined\glyphdimensionsmode \else \newcount\glyphdimensionsmode \fi
+
+\glyphdimensionsmode\plusone
+
 \protect \endinput

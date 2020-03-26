@@ -1317,6 +1317,8 @@ end
 --     return false
 -- end
 
+-- could be a hashed hash
+
 expressions.oneof = function(s,...)
     for i=1,select("#",...) do
         if s == select(i,...) then

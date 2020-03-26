@@ -130,8 +130,10 @@
 %definecolor[othercolor][r=.5,g=.5]
 
 \definecolor[maincolor] [b=.5]
+\definecolor[mooncolor] [b=.5]
 \definecolor[keptcolor] [b=.5]
-\definecolor[othercolor][s=.5]
+%\efinecolor[othercolor][s=.5]
+\definecolor[othercolor][r=.5,g=.5]
 
 \writestatus{luametatex manual}{}
 \writestatus{luametatex manual}{defining lucodaot} \usebodyfont  [lucidaot]
@@ -195,10 +197,11 @@
 
 \startMPdefinitions
 
-    color   luaplanetcolor ; luaplanetcolor := \MPcolor{maincolor} ;
-    color   luaholecolor   ; luaholecolor   := white ;
+    string  luaplanetcolor ; luaplanetcolor := "maincolor" ;
+    string  luamooncolor   ; luaplanetcolor := "mooncolor" ;
+    string  luaholecolor   ; luaholecolor   := "white" ;
+    string  luaorbitcolor  ; luaorbitcolor  := "darkgray" ;
     numeric luaextraangle  ; luaextraangle  := 0 ;
-    numeric luaorbitfactor ; luaorbitfactor := .25 ;
 
     vardef lualogo = image (
 
@@ -213,10 +216,10 @@
         draw fullcircle rotated 40.5 scaled (1+r)
             dashed evenly scaled p
             withpen pencircle scaled (p/2)
-            withcolor (luaorbitfactor * luaholecolor) ;
+            withcolor luaorbitcolor ;
         fill fullcircle scaled r shifted (d+1/8,d+1/8)
             rotated - luaextraangle
-            withcolor luaplanetcolor ;
+            withcolor luamooncolor ;
         fill fullcircle scaled r shifted (d-1/8,d-1/8)
             withcolor luaholecolor   ;
         luaorbitfactor := .25 ;
@@ -229,7 +232,8 @@
 
         fill Page withcolor \MPcolor{othercolor} ;
 
-        luaorbitfactor := 1 ;
+        luaorbitcolor := "white" ;
+        luamooncolor  := "maincolor" ;
 
         picture p ; p := lualogo ysized (5*\measure{paperheight}/10) ;
         draw p
@@ -251,9 +255,11 @@
 % \stoptexdefinition
 
 \startuseMPgraphic{luanumber}
-  % luaextraangle  := \luaextraangle;
-    luaextraangle  := if (LastPageNumber < 10) : 10 else : (RealPageNumber / LastPageNumber) * 360  fi;
-    luaorbitfactor := 0.25 ;
+  % luaextraangle := \luaextraangle;
+    luaextraangle := if (LastPageNumber < 10) : 10 else : (RealPageNumber / LastPageNumber) * 360  fi;
+    luaorbitcolor := "darkgray" ;
+    luamooncolor  := "othercolor" ;
+  % luamooncolor  := "maincolor" ;
     picture p ; p := lualogo ;
     setbounds p to boundingbox fullcircle ;
     draw p ysized 1cm ;

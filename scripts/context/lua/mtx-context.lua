@@ -95,7 +95,9 @@ scripts.context = scripts.context or { }
 if jit then -- already luajittex
     setargument("engine","luajittex")
     setargument("jit",nil)
-elseif getargument("jit") then -- relaunch luajittex
+elseif getargument("luatex") then -- relaunch luajittex
+    setargument("engine","luatex")
+elseif getargument("jit") or getargument("luajittex") then -- relaunch luajittex
     -- bonus shortcut, we assume that --jit also indicates the engine
     -- although --jit and --engine=luajittex are independent
     setargument("engine","luajittex")
@@ -105,10 +107,11 @@ end
 -- -- the platforms to use a similar approach to this.
 
 local engine_new = file.nameonly(getargument("engine") or directives.value("system.engine"))
-local engine_old = file.nameonly(environment.ownbin)
+local engine_old = file.nameonly(environment.ownmain) or file.nameonly(environment.ownbin)
 
 local function restart(engine_old,engine_new)
-    local command = format("%s --luaonly %q %s --redirected",engine_new,environment.ownname,environment.reconstructcommandline())
+    local ownname = file.join(file.dirname(environment.ownname),"mtxrun.lua")
+    local command = format("%s --luaonly %q %s --redirected",engine_new,ownname,environment.reconstructcommandline())
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
     os.exit(result == 0 and 0 or 1)
@@ -123,6 +126,10 @@ end
 -- else
 --     setargument("engine",engine_new) -- later on we need this
 -- end
+
+if environment.validengines[engine_new] and engine_new ~= environment.basicengines[engine_old] then
+    restart(engine_old,engine_new)
+end
 
 -- so far
 

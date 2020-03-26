@@ -16530,7 +16530,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 61191, stripped down to: 35864
+-- original size: 61549, stripped down to: 36097
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -17523,12 +17523,25 @@ local function xmlconvert(data,settings)
  end
 end
 xml.convert=xmlconvert
-function xml.inheritedconvert(data,xmldata) 
+function xml.inheritedconvert(data,xmldata,cleanup) 
  local settings=xmldata.settings
  if settings then
   settings.parent_root=xmldata 
  end
- local xc=xmlconvert(data,settings)
+ local xc=xmlconvert(data,settings) 
+ if cleanup then
+  local x=xc.dt
+  if x then
+   x=x[1]
+   if x and x.tg=="@pi@" then
+    local dt=x.dt
+    local pi=dt and dt[1]
+    if type(pi)=="string" and find(pi,"^xml") then
+     remove(dt,1)
+    end
+   end
+  end
+ end
  return xc
 end
 function xml.is_valid(root)
@@ -17992,7 +18005,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 54626, stripped down to: 31255
+-- original size: 54653, stripped down to: 31255
 
 if not modules then modules={} end modules ['lxml-lpt']={
  version=1.001,
@@ -19312,7 +19325,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 30771, stripped down to: 19680
+-- original size: 31730, stripped down to: 19950
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -19461,7 +19474,7 @@ local function xmltoelement(whatever,root)
  end
  local element
  if type(whatever)=="string" then
-  element=xmlinheritedconvert(whatever,root) 
+  element=xmlinheritedconvert(whatever,root,true) 
  else
   element=whatever 
  end
@@ -19690,10 +19703,10 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
      elseif ekat["parse"]=="text" then
       epdt[ek.ni]=xml.escaped(data) 
      else
-local settings=xmldata.settings
-local savedresource=settings.currentresource
-settings.currentresource=name
-      local xi=xmlinheritedconvert(data,xmldata)
+      local settings=xmldata.settings
+      local savedresource=settings.currentresource
+      settings.currentresource=name
+      local xi=xmlinheritedconvert(data,xmldata,true)
       if not xi then
        epdt[ek.ni]="" 
       else
@@ -19703,7 +19716,7 @@ settings.currentresource=name
        local child=xml.body(xi) 
        child.__p__=ekrt
        child.__f__=name 
-child.cf=name
+       child.cf=name
        epdt[ek.ni]=child
        local settings=xmldata.settings
        local inclusions=settings and settings.inclusions
@@ -19842,6 +19855,19 @@ function xml.strip(root,pattern,nolines,anywhere)
   end
  end
 end
+local function compactelement(e)
+ local edt=e.dt
+ if edt then
+  for e=1,#edt do
+   local str=edt[e]
+   if type(str)=="string" and not find(str,"%S") then
+    edt[e]=""
+   end
+  end
+ end
+ return e 
+end
+xml.compactelement=compactelement
 local function renamespace(root,oldspace,newspace) 
  local ndt=#root.dt
  for i=1,ndt or 0 do
@@ -26115,8 +26141,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1038373
--- stripped bytes    : 409980
+-- original bytes    : 1039717
+-- stripped bytes    : 410821
 
 -- end library merge
 

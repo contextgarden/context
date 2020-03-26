@@ -1113,4 +1113,10 @@
 \chardef\eTeXversion   2
 \def    \eTeXrevision {2}
 
+%D Experiment:
+
+\ifdefined\glyphdimensionsmode \else \newcount\glyphdimensionsmode \fi
+
+\glyphdimensionsmode\plusone
+
 \protect \endinput

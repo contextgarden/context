@@ -176,7 +176,7 @@ local function xmltoelement(whatever,root)
     end
     local element
     if type(whatever) == "string" then
-        element = xmlinheritedconvert(whatever,root) -- beware, not really a root
+        element = xmlinheritedconvert(whatever,root,true) -- beware, not really a root
     else
         element = whatever -- we assume a table
     end
@@ -430,10 +430,10 @@ local function include(xmldata,pattern,attribute,recursive,loaddata,level)
                         -- for the moment hard coded
                         epdt[ek.ni] = xml.escaped(data) -- d[k] = xml.escaped(data)
                     else
-local settings = xmldata.settings
-local savedresource = settings.currentresource
-settings.currentresource = name
-                        local xi = xmlinheritedconvert(data,xmldata)
+                        local settings = xmldata.settings
+                        local savedresource = settings.currentresource
+                        settings.currentresource = name
+                        local xi = xmlinheritedconvert(data,xmldata,true)
                         if not xi then
                             epdt[ek.ni] = "" -- xml.empty(d,k)
                         else
@@ -443,7 +443,7 @@ settings.currentresource = name
                             local child = xml.body(xi) -- xml.assign(d,k,xi)
                             child.__p__ = ekrt
                             child.__f__ = name -- handy for tracing
-child.cf = name
+                            child.cf = name
                             epdt[ek.ni] = child
                             local settings   = xmldata.settings
                             local inclusions = settings and settings.inclusions
@@ -591,7 +591,43 @@ function xml.strip(root,pattern,nolines,anywhere) -- strips all leading and trai
             stripelement(collected[i],nolines,anywhere)
         end
     end
+--  return root
 end
+
+-- local function compactelement(e)
+--     local edt = e.dt
+--     if edt then
+--         local t = { }
+--         local m = 0
+--         for e=1,#edt do
+--             local str = edt[e]
+--             if type(str) ~= "string" then
+--                 m = m + 1
+--                 t[m] = str
+--             elseif str ~= "" and find(str,"%S") then
+--                 m = m + 1
+--                 t[m] = str
+--             end
+--         end
+--         e.dt = t
+--     end
+--     return e -- convenient
+-- end
+
+local function compactelement(e)
+    local edt = e.dt
+    if edt then
+        for e=1,#edt do
+            local str = edt[e]
+            if type(str) == "string" and not find(str,"%S") then
+                edt[e] = ""
+            end
+        end
+    end
+    return e -- convenient
+end
+
+xml.compactelement = compactelement
 
 local function renamespace(root, oldspace, newspace) -- fast variant
     local ndt = #root.dt

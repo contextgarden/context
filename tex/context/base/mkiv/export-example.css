@@ -405,7 +405,7 @@ context|div.item {
 }
 
 itemtag,
-context|div.item {
+context|div.itemtag {
 	display: none ;
 }
 
@@ -546,42 +546,59 @@ context|div.registerlocation:after {
 /* tablerow  : display */
 /* tablecell : mixed   */
 
+/* we have a few bonus mappings here */
+
 table,
 context|div.table {
 	display : table ;
 }
 
-tablerow,
-context|div.tablerow {
+tablerow, tr
+context|div.tablerow, context|div.tr {
 	display : table-row ;
 }
 
-tablecell[align="middle"],
+tablecell[align="middle"], td[align="middle"],
 context|div.tablecell.align-middle {
 	display    : table-cell ;
 	text-align : center ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushleft"],
+tablecell[align="flushleft"], td[align="flushleft"],
 context|div.tablecell.align-flushleft {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
 }
 
-tablecell[align="flushright"],
+tablecell[align="flushright"], td[align="flushright"],
 context|div.tablecell.align-flushright {
 	display    : table-cell ;
 	text-align : right ;
 	padding    : .1em ;
 }
 
-tablecell,
-context|div.tablecell {
+tablecell, td
+context|div.tablecell, context|div.td {
 	display    : table-cell ;
 	text-align : left ;
 	padding    : .1em ;
+}
+
+tablehead,
+div.thead, div.tableheader {
+	display : table-header-group ;
+}
+
+tablefoot,
+div.tfoot, div.tablefooter {
+	display : table-footer-group ;
+}
+
+tablebody,
+div.tbody, div.tablebody {
+	display : table-body-group ;
 }
 
 /* tabulate     : display */
@@ -648,6 +665,13 @@ context|div.tabulatecell.kind-equals:before {
 	content      : ":" ;
 }
 
+/*
+
+	A combination needs some processing because it is not a table yet. So, the next
+	mapping is just one row! The tags are a bit confusing now.
+
+*/
+
 /* combination        : display */
 /* combinationpair    : display */
 /* combinationcontent : mixed   */
@@ -660,8 +684,8 @@ context|div.combination {
 	margin-bottom : 0em ;
 }
 
-combinationpair,
-context|div.combinationpair {
+combinationpair, combinationtext,
+context|div.combinationpair, context|div.combinationtext {
 	display       : table-cell ;
 	padding-right : 1em ;
 }
@@ -727,7 +751,7 @@ context|div.listitem.subsection context|div.listtag {
 */
 
 listitem[detail="chapter"]>listtag,
-context|div.listitem.chapter context|div.listtag {
+context|div.listitem.chapter > context|div.listtag {
 	display     : inline-block ;
 	margin-left : -5em ;
 	float       : left ;
@@ -735,7 +759,7 @@ context|div.listitem.chapter context|div.listtag {
 }
 
 listitem[detail="section"]>listtag,
-context|div.listitem.section context|div.listtag {
+context|div.listitem.section > context|div.listtag {
 	display     : inline-block ;
 	margin-left : -5em ;
 	float       : left ;
@@ -743,7 +767,7 @@ context|div.listitem.section context|div.listtag {
 }
 
 listitem[detail="subsection"]>listtag,
-context|div.listitem.subsection context|div.listtag {
+context|div.listitem.subsection > context|div.listtag {
 	display      : inline-block ;
 	margin-left : -5em ;
 	float        : left ;

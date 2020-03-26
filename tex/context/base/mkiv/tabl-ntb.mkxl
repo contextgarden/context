@@ -247,6 +247,9 @@
 \installdirectcommandhandler       \??naturaltable      {naturaltable}      % \??naturaltable
 \installsimpleframedcommandhandler \??naturaltablelocal {naturaltablelocal} \??naturaltablelocal
 
+\unexpanded\def\bTABLEnested{\tabl_ntb_next_level\bTABLE}
+\unexpanded\def\eTABLEnested{\eTABLE\tabl_ntb_prev_level}
+
 \installcorenamespace{naturaltabletal}
 \installcorenamespace{naturaltablegal}
 \installcorenamespace{naturaltablenob}
