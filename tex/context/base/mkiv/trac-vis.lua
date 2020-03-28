@@ -1248,6 +1248,7 @@ do
         while current do
             local id = getid(current)
             local a = forced or getattr(current,a_visual) or unsetvalue
+            local subtype
             if a ~= attr then
                 prev_trace_fontkern   = trace_fontkern
                 prev_trace_italic     = trace_italic
@@ -1276,7 +1277,11 @@ do
                     trace_space         = false
                     trace_depth         = false
                     trace_marginkern    = false
-                    goto list
+                    if id == kern_code then
+                        goto kern
+                    else
+                        goto list
+                    end
                 else -- dead slow:
                  -- cache[a]()
                     trace_hbox          = band(a,0x000001) ~= 0
@@ -1329,31 +1334,7 @@ do
                 end
                 setdisc(current,pre,post,replace)
             elseif id == kern_code then
-                local subtype = getsubtype(current)
-                if subtype == fontkern_code then
-                    if trace_fontkern or prev_trace_fontkern then
-                        head, current = fontkern(head,current)
-                    end
-                    if trace_expansion or prev_trace_expansion then
-                        head, current = kernexpansion(head,current)
-                    end
-                elseif subtype == italickern_code then
-                    if trace_italic or prev_trace_italic then
-                        head, current = italickern(head,current)
-                    elseif trace_kern then
-                        head, current = ruleditalic(head,current)
-                    end
-                elseif subtype == leftmarginkern_code or subtype == rightmarginkern_code then
-                    if trace_marginkern or prev_trace_marginkern then
-                        head, current = marginkern(head,current)
-                    elseif trace_kern then
-                        head, current = ruledmarginkern(head,current)
-                    end
-                else
-                    if trace_kern then
-                        head, current = ruledkern(head,current,vertical)
-                    end
-                end
+                goto kern
             elseif id == glue_code then
                 local content = getleader(current)
                 if content then
@@ -1387,6 +1368,33 @@ do
                 end
             end
             goto next
+            ::kern::
+            subtype = getsubtype(current)
+            if subtype == fontkern_code then
+                if trace_fontkern or prev_trace_fontkern then
+                    head, current = fontkern(head,current)
+                end
+                if trace_expansion or prev_trace_expansion then
+                    head, current = kernexpansion(head,current)
+                end
+            elseif subtype == italickern_code then
+                if trace_italic or prev_trace_italic then
+                    head, current = italickern(head,current)
+                elseif trace_kern then
+                    head, current = ruleditalic(head,current)
+                end
+            elseif subtype == leftmarginkern_code or subtype == rightmarginkern_code then
+                if trace_marginkern or prev_trace_marginkern then
+                    head, current = marginkern(head,current)
+                elseif trace_kern then
+                    head, current = ruledmarginkern(head,current)
+                end
+            else
+                if trace_kern then
+                    head, current = ruledkern(head,current,vertical)
+                end
+            end
+            goto next;
             ::list::
             if id == hlist_code then
                 local content = getlist(current)

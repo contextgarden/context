@@ -734,10 +734,10 @@ We have similar setters for \type {count}, \type {dimen}, \type {muskip}, and
 nodes, and toks by strings.
 
 Again the glue variants are not using the \nod {glue-spec} userdata nodes. The
-\type {setglue} function accepts upto 5 arguments: width, stretch, shrink,
-stretch order and shrink order and the \type {getglue} function reports them,
-unless the second argument is \type {false} in which case only the width is
-returned.
+\type {setglue} function accepts upto five arguments: width, stretch, shrink,
+stretch order and shrink order. Non|-|numeric values set the property to zero.
+The \type {getglue} function reports all five properties, unless the second
+argument is \type {false} in which case only the width is returned.
 
 Here is an example using a threesome:
 
