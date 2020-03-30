@@ -13,6 +13,13 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="doifrightpageelse" level="system" file="spac-pag.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="rightpageorder" level="system" file="spac-pag.mkiv"/>
 
     <cd:command name="definepagestate" level="system" file="core-dat.mkiv">

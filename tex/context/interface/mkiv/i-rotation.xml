@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="mirror" level="document" category="graphics" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuprotate" level="style" category="graphics" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="location">
+                    <cd:constant type="fit"/>
+                    <cd:constant type="broad"/>
+                    <cd:constant type="depth"/>
+                    <cd:constant type="high"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="default"/>
+                    <cd:constant type="normal"/>
+                </cd:parameter>
+                <cd:parameter name="rotation">
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="inner"/>
+                    <cd:constant type="outer"/>
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rotate" level="document" category="graphics" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuprotate"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dorotatebox" level="system" category="graphics" file="grph-trf.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

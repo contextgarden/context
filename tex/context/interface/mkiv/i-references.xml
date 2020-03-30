@@ -264,7 +264,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="docheckedpagestate" level="system" category="references" file="strc-ref.mkvi">
+    <cd:command name="doifcheckedpagestate" level="system" category="references" file="strc-ref.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-reference"/>
             <cd:resolve name="argument-command"/>
@@ -562,5 +562,19 @@
             </cd:assignments>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="referencepagestate" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="referencepagedetail" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="referencerealpage" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="referencecolumnnumber" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="tracedpagestate" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="markreferencepage" level="style" category="references" file="strc-ref.mkvi"/>
+
+    <cd:command name="referencesymbol" level="style" category="references" file="strc-ref.mkvi"/>
 
 </cd:interface>

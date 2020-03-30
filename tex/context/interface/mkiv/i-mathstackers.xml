@@ -105,6 +105,18 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="lt">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rt">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="lb">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rb">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

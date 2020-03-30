@@ -73,6 +73,9 @@
                 <cd:parameter name="v">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="w">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="x">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>

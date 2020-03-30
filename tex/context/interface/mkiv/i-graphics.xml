@@ -490,6 +490,15 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="typesetbufferonly" level="document" category="graphics buffer" file="grph-fig.mkiv">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="*"/>
+                <cd:constant type="cd:buffer"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="definetypesetting" level="style" category="graphics structure" file="grph-fig.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>

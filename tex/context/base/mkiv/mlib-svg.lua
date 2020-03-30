@@ -520,13 +520,18 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
 
     local p_splitcolor =
         P("#") * C(p_hexdigit*p_hexdigit)^1 / function(r,g,b)
-            return "rgb",
-                tonumber(r or 0, 16) / 255 or 0,
-                tonumber(g or 0, 16) / 255 or 0,
-                tonumber(b or 0, 16) / 255 or 0
+            if not r then
+                return "gray", 0
+            elseif not (g and b) then
+                return "gray", tonumber(r or "0", 16) / 255 or 0
+            else
+                return "rgb",
+                    tonumber(r or "0", 16) / 255 or 0,
+                    tonumber(g or "0", 16) / 255 or 0,
+                    tonumber(b or "0", 16) / 255 or 0
+            end
         end
-        +
-        P("rgb") * p_a
+      + P("rgb") * p_a
       * p_left * (p_fraction + p_separator)^-3 * (p_absolute  + p_separator)^0 * p_right / function(r,g,b,a)
             return "rgb", r or 0, g or 0, b or 0, a or false
         end

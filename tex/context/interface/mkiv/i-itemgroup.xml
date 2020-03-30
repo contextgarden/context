@@ -194,7 +194,7 @@
             <cd:parameter name="packcriterium">
                 <cd:constant type="cd:number"/>
             </cd:parameter>
-             <cd:inherit name="setupcounter"/>
+            <cd:inherit name="setupcounter"/>
         </cd:assignments>
     </cd:define>
 
@@ -254,6 +254,7 @@
                 <cd:constant type="inmargin"/>
                 <cd:constant type="atmargin"/>
                 <cd:constant type="intext"/>
+                <cd:constant type="headintext"/>
                 <cd:constant type="loose"/>
                 <cd:constant type="fit"/>
                 <cd:constant type="nofit"/>
@@ -380,7 +381,10 @@
             <cd:parameter name="grid">
                 <cd:inherit name="definegridsnapping"/>
             </cd:parameter>
-             <cd:inherit name="setupcounter"/>
+            <cd:parameter name="packcriterium">
+                <cd:constant type="cd:number"/>
+            </cd:parameter>
+            <cd:inherit name="setupcounter"/>
         </cd:assignments>
     </cd:define>
 

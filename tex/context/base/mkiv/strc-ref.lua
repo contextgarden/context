@@ -2615,6 +2615,17 @@ implement {
 -- }
 
 implement {
+    name    = "askedreference",
+    public  = true,
+    actions = function()
+        local actions = references.currentset
+        if actions then
+            context("[p=%s,r=%s]",actions.prefix or "",actions.reference)
+        end
+    end
+}
+
+implement {
     name    = "referencerealpage",
     actions = function()
         local actions = references.currentset

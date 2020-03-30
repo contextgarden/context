@@ -225,6 +225,15 @@
                         <cd:constant type="cd:color"/>
                     </cd:parameter>
                 -->
+                <cd:parameter name="anchoring">
+                    <cd:resolve name="value-orientation"/>
+                </cd:parameter>
+                <cd:parameter name="xanchor">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="yanchor">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

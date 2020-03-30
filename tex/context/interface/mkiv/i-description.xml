@@ -139,18 +139,14 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupdescriptions" level="style" category="structure" file="strc-des.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupdescription"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
+    <cd:command name="setupdescriptions" level="style" category="structure" file="strc-des.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupdescription"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
     <cd:command name="description" type="environment" generated="yes" variant="example" level="document" category="structure" file="strc-des.mkvi">
         <cd:sequence>

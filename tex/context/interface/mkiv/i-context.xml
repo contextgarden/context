@@ -147,6 +147,7 @@
     <cd:interfacefile filename="i-object.xml"/>
     <cd:interfacefile filename="i-offset.xml"/>
     <cd:interfacefile filename="i-opposite.xml"/>
+    <cd:interfacefile filename="i-orientation.xml"/>
     <cd:interfacefile filename="i-ornament.xml"/>
     <cd:interfacefile filename="i-output.xml"/>
     <cd:interfacefile filename="i-overlay.xml"/>
@@ -187,7 +188,7 @@
     <cd:interfacefile filename="i-register.xml"/>
     <cd:interfacefile filename="i-renderingwindow.xml"/>
     <cd:interfacefile filename="i-replacement.xml"/>
-    <cd:interfacefile filename="i-rotatation.xml"/>
+    <cd:interfacefile filename="i-rotation.xml"/>
     <cd:interfacefile filename="i-ruby.xml"/>
     <cd:interfacefile filename="i-scale.xml"/>
     <cd:interfacefile filename="i-script.xml"/>

@@ -554,4 +554,15 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *      -->
+    <!-- \... {...}    -->
+    <!--               -->
+    <!-- * ORIENTATION -->
+
+    <cd:define name="argument-orientation">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-orientation"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

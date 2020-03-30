@@ -11,7 +11,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="invokepageheandler" level="system" category="layout" file="page-imp.mkiv">
+    <cd:command name="invokepagehandler" level="system" category="layout" file="page-imp.mkiv">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="normal"/>

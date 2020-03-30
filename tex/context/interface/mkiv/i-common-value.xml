@@ -781,6 +781,8 @@
         <cd:constant type="cd:name"/>
     </cd:define>
 
+    <!-- leftfence -->
+
     <cd:define name="value-leftfence">
         <!--
             <cd:constant type="||"/>
@@ -839,6 +841,8 @@
         <cd:constant type="cd:character"/>
     </cd:define>
 
+    <!-- rightfence -->
+
     <cd:define name="value-rightfence">
         <!--
             <cd:constant type="||"/>
@@ -895,6 +899,19 @@
         <cd:constant type="\>"/>
         <cd:constant type="\|"/>
         <cd:constant type="cd:character"/>
+    </cd:define>
+
+    <!-- orientation -->
+
+    <cd:define name="value-orientation">
+        <cd:constant type="normal"/>
+        <cd:constant type="up"/>
+        <cd:constant type="down"/>
+        <cd:constant type="left"/>
+        <cd:constant type="right"/>
+        <cd:constant type="top"/>
+        <cd:constant type="bottom"/>
+        <cd:constant type="cd:name"/>
     </cd:define>
 
 </cd:interface>

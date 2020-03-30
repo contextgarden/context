@@ -364,6 +364,7 @@
                 <cd:constant type="nc"/>
                 <cd:constant type="sp"/>
                 <cd:constant type="in"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

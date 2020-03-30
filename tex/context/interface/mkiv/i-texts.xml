@@ -43,13 +43,28 @@
             <cd:parameter name="after">
                 <cd:constant type="cd:command"/>
             </cd:parameter>
+            <cd:parameter name="lefttext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="middletext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="righttext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
             <cd:parameter name="leftstyle">
+                <cd:resolve name="value-style"/>
+            </cd:parameter>
+            <cd:parameter name="middlestyle">
                 <cd:resolve name="value-style"/>
             </cd:parameter>
             <cd:parameter name="rightstyle">
                 <cd:resolve name="value-style"/>
             </cd:parameter>
             <cd:parameter name="leftcolor">
+                <cd:constant type="cd:color"/>
+            </cd:parameter>
+            <cd:parameter name="middlecolor">
                 <cd:constant type="cd:color"/>
             </cd:parameter>
             <cd:parameter name="rightcolor">
@@ -59,6 +74,9 @@
                 <cd:constant type="cd:dimension"/>
             </cd:parameter>
             <cd:parameter name="leftwidth">
+                <cd:constant type="cd:dimension"/>
+            </cd:parameter>
+            <cd:parameter name="middlewidth">
                 <cd:constant type="cd:dimension"/>
             </cd:parameter>
             <cd:parameter name="rightwidth">

@@ -8602,6 +8602,18 @@ return {
   ["labeloffset"]={
    ["en"]="labeloffset",
   },
+  ["labelalternative"]={
+    ["en"]="labelalternative",
+    ["nl"]="labelvariant",
+  },
+  ["labelstyle"]={
+    ["en"]="labelstyle",
+    ["nl"]="labelletter",
+  },
+  ["labelcolor"]={
+    ["en"]="labelcolor",
+    ["nl"]="labelkleur",
+  },
   ["language"]={
    ["en"]="language",
   },

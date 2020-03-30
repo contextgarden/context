@@ -737,6 +737,29 @@
 \def\dummyreference{{\tttf ??}}
 \def\emptyreference{{\tttf !!}}
 
+\installtextracker
+  {structures.referencing.show}
+  {\let\strc_references_dummy\strc_references_dummy_yes}
+  {\let\strc_references_dummy\strc_references_dummy_nop}
+
+\def\strc_references_dummy_nop
+  {\dummyreference}
+
+\def\strc_references_dummy_yes
+  {\dummyreference
+   \margindata
+     [\referencingparameter\c!labelalternative]% alternative?
+     [\c!style=\referencingparameter\c!labelstyle,
+      \c!color=\referencingparameter\c!labelcolor]
+     {\askedreference}}
+
+\let\strc_references_dummy\strc_references_dummy_nop
+
+\setupreferencing
+  [\c!labelalternative=\v!inleft,
+         \c!labelcolor=darkred,
+         \c!labelstyle=\smallinfofont]
+
 %D To prevent repetitive messages concerning a reference being defined, we set such
 %D an unknown reference to an empty one after the first encounter.
 %D
@@ -971,9 +994,9 @@
 
 \def\strc_references_get_reference[#key][#label]% #key = number page title text default realpage ...
   {\ifsecondargument
-     \doifelsereferencefound{#label}{\clf_filterreference{#key}}\dummyreference
+     \doifelsereferencefound{#label}{\clf_filterreference{#key}}\strc_references_dummy
    \else
-     \dummyreference
+     \strc_references_dummy
    \fi}
 
 \let\ref\getreference
@@ -1143,12 +1166,12 @@
 
 \unexpanded\def\atpage[#label]% todo
   {\doifcheckedpagestate{#label}%
-     {\goto{\labeltext \v!precedingpage      }[#label]}%
-     {\goto{\labeltext \v!hencefore          }[#label]}%
+     {\goto{\labeltext\v!precedingpage}[#label]}%
+     {\goto{\labeltext\v!hencefore}[#label]}%
      {\ignorespaces}%
-     {\goto{\labeltext \v!hereafter          }[#label]}%
-     {\goto{\labeltext \v!followingpage      }[#label]}%
-     {\goto{\labeltexts\v!page\dummyreference}[#label]}}
+     {\goto{\labeltext\v!hereafter}[#label]}%
+     {\goto{\labeltext\v!followingpage}[#label]}%
+     {\goto{\labeltexts\v!page\strc_references_dummy}[#label]}}
 
 % Someone requested this but in retrospect didn't need it so we keep it as example.
 % Beware: a node is injected which is why we add ignorespaces!
@@ -1262,7 +1285,7 @@
    % inefficient: double resolve
    \doifelsereferencefound{#label} % we need to resolve the text
      {\goto{\referencesequence}[#label]}
-     {\let\currentreferencecontent\dummyreference
+     {\let\currentreferencecontent\strc_references_dummy
       \goto{\referencesequence}[#label]}%
    \strc_references_stop_goto}
 

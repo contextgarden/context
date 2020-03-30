@@ -1190,6 +1190,10 @@
      <cd:parameter name="right">
       <cd:constant type="cd:text"/>
      </cd:parameter>
+     <cd:parameter name="repeat">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -1467,13 +1471,7 @@
       <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="align">
-      <cd:constant type="left"/>
-      <cd:constant type="right"/>
-      <cd:constant type="middle"/>
-      <cd:constant type="flushleft"/>
-      <cd:constant type="flushright"/>
-      <cd:constant type="inner"/>
-      <cd:constant type="outer"/>
+      <cd:inherit name="setupalign"/>
      </cd:parameter>
      <cd:parameter name="style">
       <cd:constant type="cd:style"/>
@@ -4668,6 +4666,9 @@
      <cd:parameter name="v">
       <cd:constant type="cd:number"/>
      </cd:parameter>
+     <cd:parameter name="w">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
      <cd:parameter name="x">
       <cd:constant type="cd:number"/>
      </cd:parameter>
@@ -7731,6 +7732,16 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command category="structure" file="strc-des.mkvi" level="style" name="setupdescriptions">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:inherit name="setupdescription"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="structure" file="strc-des.mkvi" generated="yes" level="document" name="description" type="environment" variant="example">
    <cd:sequence>
     <cd:variable value="description"/>
@@ -10484,9 +10495,6 @@
      <cd:parameter name="headseparator">
       <cd:constant type="cd:text"/>
      </cd:parameter>
-     <cd:parameter name="headcommand">
-      <cd:constant type="cd:command"/>
-     </cd:parameter>
      <cd:parameter name="inbetween">
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -10537,6 +10545,10 @@
      </cd:parameter>
      <cd:parameter name="maxwidth">
       <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="hang">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
      </cd:parameter>
      <cd:inherit name="setupcounter"/>
      <cd:inherit name="setupframed"/>
@@ -11739,6 +11751,7 @@
      </cd:parameter>
      <cd:parameter name="dimensions">
       <cd:constant type="cd:number"/>
+      <cd:constant type="strut"/>
      </cd:parameter>
      <cd:parameter name="boundingbox">
       <cd:constant type="yes"/>
@@ -12363,6 +12376,20 @@
      <cd:parameter name="*">
       <cd:constant type="cd:number"/>
      </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="font-ini.mkvi" level="style" name="setupbodyfontenvironment">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords>
+     <cd:constant type="default"/>
+     <cd:constant type="cd:dimension"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="definebodyfontenvironment"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -14154,6 +14181,22 @@
      <cd:parameter name="orientation">
       <cd:constant type="cd:number"/>
      </cd:parameter>
+     <cd:parameter name="anchoring">
+      <cd:constant type="normal"/>
+      <cd:constant type="up"/>
+      <cd:constant type="down"/>
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="top"/>
+      <cd:constant type="bottom"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="xanchor">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="yanchor">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -15110,6 +15153,14 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command category="graphics buffer" file="grph-fig.mkiv" level="document" name="typesetbufferonly">
+   <cd:arguments>
+    <cd:keywords optional="yes">
+     <cd:constant type="*"/>
+     <cd:constant type="cd:buffer"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="graphics structure" file="grph-fig.mkiv" level="style" name="definetypesetting">
    <cd:arguments>
     <cd:keywords>
@@ -16063,7 +16114,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="layout" file="page-imp.mkiv" level="system" name="invokepageheandler">
+  <cd:command category="layout" file="page-imp.mkiv" level="system" name="invokepagehandler">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="normal"/>
@@ -17918,6 +17969,7 @@
       <cd:constant type="inmargin"/>
       <cd:constant type="atmargin"/>
       <cd:constant type="intext"/>
+      <cd:constant type="headintext"/>
       <cd:constant type="loose"/>
       <cd:constant type="fit"/>
       <cd:constant type="nofit"/>
@@ -18070,6 +18122,9 @@
      </cd:parameter>
      <cd:parameter name="grid">
       <cd:inherit name="definegridsnapping"/>
+     </cd:parameter>
+     <cd:parameter name="packcriterium">
+      <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:inherit name="setupcounter"/>
     </cd:assignments>
@@ -18136,6 +18191,7 @@
       <cd:constant type="inmargin"/>
       <cd:constant type="atmargin"/>
       <cd:constant type="intext"/>
+      <cd:constant type="headintext"/>
       <cd:constant type="loose"/>
       <cd:constant type="fit"/>
       <cd:constant type="nofit"/>
@@ -18288,6 +18344,9 @@
      </cd:parameter>
      <cd:parameter name="grid">
       <cd:inherit name="definegridsnapping"/>
+     </cd:parameter>
+     <cd:parameter name="packcriterium">
+      <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:inherit name="setupcounter"/>
     </cd:assignments>
@@ -20327,6 +20386,7 @@
      <cd:constant type="nc"/>
      <cd:constant type="sp"/>
      <cd:constant type="in"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24264,6 +24324,18 @@
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
      </cd:parameter>
+     <cd:parameter name="lt">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rt">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="lb">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="rb">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -25804,7 +25876,7 @@
   </cd:command>
  </cd:interface>
  <cd:interface file="i-naturaltable.xml">
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="style" name="setupTABLE">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="style" name="setupTABLE">
    <cd:arguments>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="r"/>
@@ -25924,14 +25996,21 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TABLE" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLE" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TD" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLEnested" type="environment">
+   <cd:arguments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupTABLE"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TD" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:parameter name="nx">
@@ -25959,77 +26038,77 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TR" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TR" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TC" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TC" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="bTD"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TX" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TX" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="bTD"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TY" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TY" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TH" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TH" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="bTD"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TN" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TN" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="bTD"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TABLEhead" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLEhead" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TABLEnext" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLEnext" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TABLEbody" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLEbody" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TABLEfoot" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TABLEfoot" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="style" name="defineTABLEsetup">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="style" name="defineTABLEsetup">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -26039,49 +26118,49 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TDs" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TDs" type="environment">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkiv" level="document" name="TRs" type="environment">
+  <cd:command begin="b" category="tables" end="e" file="tabl-ntb.mkxl" level="document" name="TRs" type="environment">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="document" name="TABLE" type="environment">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="document" name="TABLE" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="document" name="TABLEhead" type="environment">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="document" name="TABLEhead" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="document" name="TABLEnext" type="environment">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="document" name="TABLEnext" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="document" name="TABLEbody" type="environment">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="document" name="TABLEbody" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-ntb.mkiv" level="document" name="TABLEfoot" type="environment">
+  <cd:command category="tables" file="tabl-ntb.mkxl" level="document" name="TABLEfoot" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
      <cd:inherit name="setupTABLE"/>
@@ -27157,6 +27236,102 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="layout" file="page-fac.mkiv" level="document" name="opposite" type="environment"/>
+ </cd:interface>
+ <cd:interface file="i-orientation.xml">
+  <cd:command category="alignment" file="pack-ori.mkxl" level="style" name="defineorientation">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setuporientation"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="pack-ori.mkxl" level="style" name="setuporientation">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="orientation">
+      <cd:constant type="up"/>
+      <cd:constant type="down"/>
+      <cd:constant type="left"/>
+      <cd:constant type="right"/>
+      <cd:constant type="top"/>
+      <cd:constant type="bottom"/>
+      <cd:constant default="yes" type="normal"/>
+     </cd:parameter>
+     <cd:parameter name="horizontal">
+      <cd:constant type="left"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="right"/>
+      <cd:constant type="flushleft"/>
+      <cd:constant type="flushright"/>
+      <cd:constant default="yes" type="normal"/>
+     </cd:parameter>
+     <cd:parameter name="vertical">
+      <cd:constant type="line"/>
+      <cd:constant type="top"/>
+      <cd:constant type="middle"/>
+      <cd:constant type="bottom"/>
+      <cd:constant default="yes" type="normal"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="pack-ori.mkxl" level="system" name="theorientation">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="normal"/>
+     <cd:constant type="up"/>
+     <cd:constant type="down"/>
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="top"/>
+     <cd:constant type="bottom"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="alignment" file="pack-ori.mkxl" level="system" name="autoorientation">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="normal"/>
+     <cd:constant type="up"/>
+     <cd:constant type="down"/>
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="top"/>
+     <cd:constant type="bottom"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="conditional" file="pack-ori.mkxl" level="system" name="doifelseorientation">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="normal"/>
+     <cd:constant type="up"/>
+     <cd:constant type="down"/>
+     <cd:constant type="left"/>
+     <cd:constant type="right"/>
+     <cd:constant type="top"/>
+     <cd:constant type="bottom"/>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-ornament.xml">
   <cd:command category="background fonts colors" file="pack-box.mkiv" level="document" name="ornamenttext" variant="collector">
@@ -28453,6 +28628,16 @@
  <cd:interface file="i-pagestate.xml">
   <cd:command file="spac-pag.mkiv" level="system" name="signalrightpage"/>
   <cd:command file="spac-pag.mkiv" level="system" name="doifelserightpage">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command file="spac-pag.mkiv" level="system" name="doifrightpageelse">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:true"/>
@@ -33942,7 +34127,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="references" file="strc-ref.mkvi" level="system" name="docheckedpagestate">
+  <cd:command category="references" file="strc-ref.mkvi" level="system" name="doifcheckedpagestate">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:reference"/>
@@ -34357,6 +34542,13 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="referencepagestate"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="referencepagedetail"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="referencerealpage"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="referencecolumnnumber"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="tracedpagestate"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="markreferencepage"/>
+  <cd:command category="references" file="strc-ref.mkvi" level="style" name="referencesymbol"/>
  </cd:interface>
  <cd:interface file="i-regime.xml">
   <cd:command category="language" file="regi-ini.mkiv" level="system" name="currentregime"/>
@@ -36014,7 +36206,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="language" file="lang-rep.mkiv" level="style" name="setreplacement">
+  <cd:command category="language" file="lang-rep.mkiv" level="style" name="setreplacements">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="reset"/>
@@ -36022,9 +36214,9 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="language" file="lang-rep.mkiv" level="style" name="resetreplacement"/>
+  <cd:command category="language" file="lang-rep.mkiv" level="style" name="resetreplacements"/>
  </cd:interface>
- <cd:interface file="i-rotatation.xml">
+ <cd:interface file="i-rotation.xml">
   <cd:command category="graphics" file="grph-trf.mkiv" level="document" name="mirror">
    <cd:arguments>
     <cd:content/>
@@ -37982,6 +38174,12 @@
      <cd:parameter name="synonymcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -38374,7 +38572,7 @@
   <cd:command file="supp-box.mkiv" level="system" name="strutwd"/>
   <cd:command file="supp-box.mkiv" level="system" name="struthtdp"/>
   <cd:command file="supp-box.mkiv" level="system" name="strutgap"/>
-  <cd:command file="spac-ver.mkiv" level="style" name="setupstruts">
+  <cd:command file="spac-ver.mkiv" level="style" name="setupstrut">
    <cd:arguments>
     <cd:keywords optional="yes">
      <cd:constant type="yes"/>
@@ -38774,6 +38972,21 @@
      </cd:parameter>
      <cd:parameter name="synonymcolor">
       <cd:constant type="cd:color"/>
+     </cd:parameter>
+     <cd:parameter name="left">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="right">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="before">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="after">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="inbetween">
+      <cd:constant type="cd:command"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -43762,6 +43975,15 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command file="core-sys.mkiv" level="style" name="setupsystem">
+   <cd:arguments>
+    <cd:assignments list="yes">
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-systemlog.xml">
   <cd:command file="core-sys.mkiv" level="system" name="systemlog">
@@ -43866,7 +44088,7 @@
   <cd:command category="tables" file="tabl-tab.mkiv" level="style" name="setuptables">
    <cd:arguments>
     <cd:assignments list="yes">
-     <cd:parameter name="text">
+     <cd:parameter name="textwidth">
       <cd:constant type="cd:dimension"/>
       <cd:constant type="max"/>
      </cd:parameter>
@@ -44665,7 +44887,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44676,6 +44911,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -44683,6 +44921,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -44729,7 +44970,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44740,6 +44994,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -44747,6 +45004,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -44793,7 +45053,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44804,6 +45077,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -44811,6 +45087,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -44857,7 +45136,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44868,6 +45160,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -44875,6 +45170,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -44921,7 +45219,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44932,6 +45243,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -44939,6 +45253,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -44985,7 +45302,20 @@
      <cd:parameter name="after">
       <cd:constant type="cd:command"/>
      </cd:parameter>
+     <cd:parameter name="lefttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="middletext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="righttext">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
      <cd:parameter name="leftstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="middlestyle">
       <cd:constant type="cd:style"/>
       <cd:constant type="cd:command"/>
      </cd:parameter>
@@ -44996,6 +45326,9 @@
      <cd:parameter name="leftcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="middlecolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
      <cd:parameter name="rightcolor">
       <cd:constant type="cd:color"/>
      </cd:parameter>
@@ -45003,6 +45336,9 @@
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="leftwidth">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="middlewidth">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
      <cd:parameter name="rightwidth">
@@ -49086,6 +49422,10 @@
      <cd:parameter name="compress">
       <cd:constant type="yes"/>
       <cd:constant type="no"/>
+     </cd:parameter>
+     <cd:parameter name="entities">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>

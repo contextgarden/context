@@ -247,7 +247,7 @@
      \s!depth \d_framed_target_dp
    \relax}
 
-\def\ntg-context@ntg.nllled_box_radius
+\def\pack_framed_filled_box_radius
   {\edef\p_framed_backgroundradius{\framedparameter\c!backgroundradius}%
    \ifzeropt\dimexpr\p_framed_backgroundradius\relax % just in case of .x\bodyfontsize
      \pack_framed_filled_box_normal

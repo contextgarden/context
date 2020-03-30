@@ -76,6 +76,21 @@
                 <cd:parameter name="synonymcolor">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="inbetween">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

@@ -649,8 +649,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="actualyear"  level="style" category="system" file="core-con.mkiv" />
-    <cd:command name="actualmonth" level="style" category="system" file="core-con.mkiv" />
-    <cd:command name="actualday"   level="style" category="system" file="core-con.mkiv" />
+    <cd:command name="actualyear" level="style" category="system" file="core-con.mkiv"/>
+
+    <cd:command name="actualmonth" level="style" category="system" file="core-con.mkiv"/>
+
+    <cd:command name="actualday" level="style" category="system" file="core-con.mkiv"/>
 
 </cd:interface>

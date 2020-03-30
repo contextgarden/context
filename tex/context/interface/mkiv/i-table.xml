@@ -58,7 +58,7 @@
     <cd:command name="setuptables" level="style" category="tables" file="tabl-tab.mkiv">
         <cd:arguments>
             <cd:assignments list="yes">
-                <cd:parameter name="text">
+                <cd:parameter name="textwidth">
                     <cd:constant type="cd:dimension"/>
                     <cd:constant type="max"/>
                 </cd:parameter>

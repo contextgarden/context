@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setreplacement" level="style" category="language" file="lang-rep.mkiv">
+    <cd:command name="setreplacements" level="style" category="language" file="lang-rep.mkiv">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset"/>
@@ -21,6 +21,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetreplacement" level="style" category="language" file="lang-rep.mkiv"/>
+    <cd:command name="resetreplacements" level="style" category="language" file="lang-rep.mkiv"/>
 
 </cd:interface>

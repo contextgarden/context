@@ -210,6 +210,7 @@
                 </cd:parameter>
                 <cd:parameter name="dimensions">
                     <cd:constant type="cd:number"/>
+                    <cd:constant type="strut"/>
                 </cd:parameter>
                 <cd:parameter name="boundingbox">
                     <cd:constant type="yes"/>
@@ -745,22 +746,18 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupbodyfontenvironment" level="style" category="fonts" file="font-ini.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-optional"/>
-                <cd:keywords>
-                    <cd:constant type="default"/>
-                    <cd:constant type="cd:dimension"/>
-                </cd:keywords>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="definebodyfontenvironment"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
+    <cd:command name="setupbodyfontenvironment" level="style" category="fonts" file="font-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:keywords>
+                <cd:constant type="default"/>
+                <cd:constant type="cd:dimension"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="definebodyfontenvironment"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
     <cd:command name="processbodyfontenvironmentlist" level="system" category="fonts" file="font-fil.mkvi">
         <cd:arguments>

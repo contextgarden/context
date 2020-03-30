@@ -921,6 +921,10 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="entities">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
