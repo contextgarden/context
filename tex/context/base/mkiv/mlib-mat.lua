@@ -7,13 +7,15 @@ if not modules then modules = { } end modules ['mlib-mat'] = {
 }
 
 local scanners       = mp.scan
-local registerscript = metapost.registerscript
+local injectors      = mp.inject
 
 local scannumeric    = scanners.numeric
 local scanpair       = scanners.pair
 local scancolor      = scanners.color
 
-local mppair         = mp.pair
+local mppair         = injectors.pair or mp.pair
+
+local registerscript = metapost.registerscript
 
 local m = xmath
 local c = xcomplex

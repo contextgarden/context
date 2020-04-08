@@ -28,13 +28,14 @@ local trace_luarun   = false  trackers.register("metapost.lua",function(v) trace
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
-local get, set, aux, scan = { }, { }, { }, { }
+local get, set, aux, scan, inject = { }, { }, { }, { }, { }
 
 mp = mp or {  -- system namespace
-    set  = set,
-    get  = get,
-    aux  = aux,
-    scan = scan,
+    set    = set,
+    get    = get,
+    aux    = aux,
+    scan   = scan,
+    inject = inject,
 }
 
 MP = MP or { -- user namespace
@@ -82,7 +83,6 @@ do
         scan.token      = function(k)   return scan_token     (currentmpx,k)   end
         scan.symbol     = function(k,e) return scan_symbol    (currentmpx,k,e) end
         scan.numeric    = function()    return scan_numeric   (currentmpx)     end
-        scan.number     = function()    return scan_numeric   (currentmpx)     end
         scan.integer    = function()    return scan_integer   (currentmpx)     end
         scan.boolean    = function()    return scan_boolean   (currentmpx)     end
         scan.string     = function()    return scan_string    (currentmpx)     end
@@ -92,6 +92,61 @@ do
         scan.transform  = function(t)   return scan_transform (currentmpx,t)   end
         scan.path       = function(t)   return scan_path      (currentmpx,t)   end
         scan.pen        = function(t)   return scan_pen       (currentmpx,t)   end
+
+        local inject_path      = mplib.inject_path
+        local inject_numeric   = mplib.inject_numeric
+        local inject_pair      = mplib.inject_pair
+        local inject_boolean   = mplib.inject_boolean
+        local inject_integer   = mplib.inject_integer
+        local inject_string    = mplib.inject_string
+        local inject_color     = mplib.inject_color
+        local inject_cmykcolor = mplib.inject_cmykcolor
+        local inject_transform = mplib.inject_transform
+        local inject_whatever  = mplib.inject_whatever
+
+        inject.path      = function(t,cycle,curled)  return inject_path     (currentmpx,t,cycle,curled)  end
+        inject.numeric   = function(n)               return inject_numeric  (currentmpx,n)               end
+        inject.pair      = function(x,y)             return inject_pair     (currentmpx,x,y)             end
+        inject.boolean   = function(b)               return inject_boolean  (currentmpx,b)               end
+        inject.integer   = function(i)               return inject_integer  (currentmpx,i)               end
+        inject.string    = function(s)               return inject_string   (currentmpx,s)               end
+        inject.color     = function(r,g,b)           return inject_color    (currentmpx,r,g,b)           end
+        inject.cmykcolor = function(c,m,y,k)         return inject_cmykcolor(currentmpx,c,m,y,k)         end
+        inject.transform = function(x,y,xx,xy,yx,yy) return inject_transform(currentmpx,x,y,xx,xy,yx,yy) end
+        inject.whatever  = function(...)             return inject_whatever (currentmpx,...)             end
+
+        -- bonus:
+
+        scan  .number    = scan  .numeric
+        inject.number    = inject.numeric
+
+        table.setmetatablecall(inject,function(t,...)
+            inject_whatever(currentmpx,...)
+        end)
+
+        -- experiment
+
+        function mp.autoinject(m)
+            local t = type(m)
+            if t == "table" then
+                local n = #t
+                if n == 2 then
+                    inject_pair(currentmpx,m)
+                elseif n == 3 then
+                    inject_color(currentmpx,m)
+                elseif n == 4 then
+                    inject_cmykcolor(currentmpx,m)
+                elseif n == 6 then
+                    inject_transform(currentmpx,m)
+                end
+            elseif t == "number" then
+                inject_numeric(currentmpx,m)
+            elseif t == "string" then
+                inject_string(currentmpx,m)
+            elseif t == "boolean" then
+                inject_boolean(currentmpx,m)
+            end
+        end
 
     else
 
@@ -133,7 +188,12 @@ do
 
 end
 
+-- unless we adapt the old mp library too, in the end we will have two
+-- variants
+
 do
+
+    local lmtxmode       = CONTEXTLMTXMODE > 0
 
     -- serializers
 
@@ -284,21 +344,34 @@ do
             end
 
             result = f()
-
             if result then
                 local t = type(result)
-                if t == "number" then
-                    result = f_numeric(result)
-                elseif t == "table" then
-                    result = concat(result) -- no spaces here
+                if lmtxmode then
+                    -- we can consider to use the injector for tables but then we need to
+                    -- check of concatination is expected so best keep this!
+                    if t == "number" or t == "boolean" then
+                        -- native types
+                    elseif t == "string" or t == "table" then
+                        -- (concatenated) passed to scantokens
+                    else
+                        -- scantokens
+                        result = tostring(result)
+                    end
                 else
-                    result = tostring(result)
+                    if t == "number" then
+                        result = f_numeric(result)
+                    elseif t == "table" then
+                        result = concat(result) -- no spaces here
+                    else
+                        result = tostring(result)
+                    end
                 end
                 if trace_luarun then
                     report_luarun("%i: %s result: %s",nesting,t,result)
                 end
             elseif n == 0 then
-                result = ""
+--                 result = ""
+result = nil -- no scantokens done then
                 if trace_luarun then
                     report_luarun("%i: no buffered result",nesting)
                 end
@@ -310,12 +383,14 @@ do
             else
                 -- the space is why we sometimes have collectors
                 if nesting == 1 then
+                    -- if we had no space we could pass result directly in lmtx
                     result = concat(buffer," ",1,n)
                     if n > 500 or #result > 10000 then
                         gbuffer = { } -- newtable(20,0)
                         lbuffer = gbuffer
                     end
                 else
+                    -- if we had no space we could pass result directly in lmtx
                     result = concat(buffer," ")
                 end
                 if trace_luarun then
@@ -791,9 +866,11 @@ do
         mpprint(mpnamedcolor(str))
     end
 
+    -- todo: we can inject but currently we always get a string back so then
+    -- we need to deal with it upstream in the color module ... not now
+
     metapost.registerscript("namedcolor",function()
         mpprint(mpnamedcolor(scanstring()))
--- test: return mpnamedcolor(scanstring())
     end)
 
 end

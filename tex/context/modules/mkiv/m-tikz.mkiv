@@ -1,0 +1,29 @@
+%D A fixed variant if the t-tikz module distributed with tikz.
+
+\unprotect
+
+    \ifcase\contextlmtxmode \else
+        \unexpanded\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
+        \unexpanded\def\pdflastypos{\numexpr\clf_lastypos\relax}
+    \fi
+
+\protect
+
+\pushcatcodetable
+
+    \setcatcodetable\texcatcodes
+
+    \catcode`\@=11
+    \catcode`\|=12
+    \catcode`\!=12
+
+    \input t-pgf.tex
+    \input t-pgffor.tex
+    \input tikz.code.tex
+
+\popcatcodetable
+
+\let\starttikzpicture\tikzpicture
+\let\stoptikzpicture \endtikzpicture
+
+\stopmodule

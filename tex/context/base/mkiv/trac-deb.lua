@@ -281,6 +281,10 @@ function tracers.printerror(specification)
                     report_nl()
                     tex.show_context()
                 end
+                if lastluaerror and lastluaerror ~= "" then
+                    print("\nlua error:\n\n",lastluaerror,"\n")
+                    quitonerror = true
+                end
             end
             report_nl()
             report_str(tracers.showlines(filename,linenumber,offset,tonumber(luaerrorline)))

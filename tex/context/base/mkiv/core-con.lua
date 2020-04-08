@@ -1227,14 +1227,23 @@ local monthmnems = { -- not variables
     -- virtual table
 }
 
-setmetatableindex(months,     function(t,k) return "unknown" end)
+local daymnems = { -- not variables
+    -- virtual table
+}
+
 setmetatableindex(days,       function(t,k) return "unknown" end)
+setmetatableindex(daymnems,   function(t,k) return days[k] .. ":mnem" end)
+setmetatableindex(months,     function(t,k) return "unknown" end)
 setmetatableindex(monthmnems, function(t,k) return months[k] .. ":mnem" end)
 
 do
 
     local function dayname(n)
         ctx_labeltext(days[n])
+    end
+
+    local function daymnem(n)
+        ctx_labeltext(daymnems[n])
     end
 
     local function weekdayname(day,month,year)
@@ -1256,6 +1265,12 @@ do
     }
 
     implement {
+        name      = "daymnem",
+        actions   = daymnem,
+        arguments = { "integer" }
+    }
+
+    implement {
         name      = "weekdayname",
         actions   = weekdayname,
         arguments = { "integer", "integer", "integer" }
@@ -1273,13 +1288,19 @@ do
         arguments = { "integer" }
     }
 
+    -- todo : short week days
+
     local f_monthlong    = formatters["\\monthlong{%s}"]
     local f_monthshort   = formatters["\\monthshort{%s}"]
+    local f_daylong      = formatters["\\daylong{%s}"]
+    local f_dayshort     = formatters["\\dayshort{%s}"]
     local f_weekday      = formatters["\\weekday{%s}"]
     local f_dayoftheweek = formatters["\\dayoftheweek{%s}{%s}{%s}"]
 
     local function tomonthlong (m) return f_monthlong (tonumber(m) or 1) end
     local function tomonthshort(m) return f_monthshort(tonumber(m) or 1) end
+    local function todaylong   (d) return f_daylong   (tonumber(d) or 1) end
+    local function todayshort  (d) return f_dayshort  (tonumber(d) or 1) end
     local function toweekday   (d) return f_weekday   (tonumber(d) or 1) end
 
     local function todayoftheweek(d,m,y)
@@ -1288,6 +1309,8 @@ do
 
     addformatter(formatters,"monthlong",   [[tomonthlong(%s)]],         { tomonthlong    = tomonthlong    })
     addformatter(formatters,"monthshort",  [[tomonthshort(%s)]],        { tomonthshort   = tomonthshort   })
+    addformatter(formatters,"daylong",     [[todaylong(%s)]],           { todaylong      = todaylong      })
+    addformatter(formatters,"dayshort",    [[todayshort(%s)]],          { todayshort     = todayshort     })
     addformatter(formatters,"weekday",     [[toweekday(%s)]],           { toweekday      = toweekday      })
     addformatter(formatters,"dayoftheweek",[[todayoftheweek(%s,%s,%s)]],{ todayoftheweek = todayoftheweek })
 
@@ -1307,6 +1330,14 @@ do
         return f_monthshort(tonumber(osdate("%m",tonumber(e))))
     end
 
+    local function toedaylong(e)
+        return f_datlong(tonumber(osdate("%w",tonumber(e))))
+    end
+
+    local function toedayshort(e)
+        return f_dayshort(tonumber(osdate("%w",tonumber(e))))
+    end
+
     local function toeweek(e) -- we run from 1-7 not 0-6
         return tostring(tonumber(osdate("%w",tonumber(e)))+1)
     end
@@ -1319,18 +1350,20 @@ do
         return osdate(format,tonumber(e))
     end
 
-    addformatter(formatters,"eyear",        [[toeyear(%s)]],        { toeyear         = toeyear         })
-    addformatter(formatters,"emonth",       [[toemonth(%s)]],       { toemonth        = toemonth        })
-    addformatter(formatters,"eday",         [[toeday(%s)]],         { toeday          = toeday          })
-    addformatter(formatters,"eweek",        [[toeweek(%s)]],        { toeweek         = toeweek         })
-    addformatter(formatters,"eminute",      [[toeminute(%s)]],      { toeminute       = toeminute       })
-    addformatter(formatters,"esecond",      [[toesecond(%s)]],      { toesecond       = toesecond       })
+    addformatter(formatters,"eyear",        [[toeyear(%s)]],        { toeyear         = toeyear       })
+    addformatter(formatters,"emonth",       [[toemonth(%s)]],       { toemonth        = toemonth      })
+    addformatter(formatters,"eday",         [[toeday(%s)]],         { toeday          = toeday        })
+    addformatter(formatters,"eweek",        [[toeweek(%s)]],        { toeweek         = toeweek       })
+    addformatter(formatters,"eminute",      [[toeminute(%s)]],      { toeminute       = toeminute     })
+    addformatter(formatters,"esecond",      [[toesecond(%s)]],      { toesecond       = toesecond     })
 
-    addformatter(formatters,"emonthlong",   [[toemonthlong(%s)]],   { toemonthlong    = toemonthlong    })
-    addformatter(formatters,"emonthshort",  [[toemonthshort(%s)]],  { toemonthshort   = toemonthshort   })
-    addformatter(formatters,"eweekday",     [[toeweekday(%s)]],     { toeweekday      = toeweekday      })
+    addformatter(formatters,"emonthlong",   [[toemonthlong(%s)]],   { toemonthlong    = toemonthlong  })
+    addformatter(formatters,"emonthshort",  [[toemonthshort(%s)]],  { toemonthshort   = toemonthshort })
+    addformatter(formatters,"edaylong",     [[toedaylong(%s)]],     { toedaylong      = toedaylong    })
+    addformatter(formatters,"edayshort",    [[toedayshort(%s)]],    { toedayshort     = toedayshort   })
+    addformatter(formatters,"eweekday",     [[toeweekday(%s)]],     { toeweekday      = toeweekday    })
 
-    addformatter(formatters,"edate",        [[toedate(%s,%s)]],     { toedate         = toedate         })
+    addformatter(formatters,"edate",        [[toedate(%s,%s)]],     { toedate         = toedate       })
 
 end
 
@@ -1346,7 +1379,6 @@ local spaced = {
     [v_day]     = true,
     [v_weekday] = true,
     [v_WEEKDAY] = true,
-    [v_day]     = true,
 }
 
 local dateconverters = {
@@ -1355,8 +1387,14 @@ local dateconverters = {
 }
 
 local variants = {
-    mnem   = monthmnems,
-    jalali = setmetatableindex(function(t,k) return months[k] .. ":jalali" end),
+    mnem   = {
+        month = monthmnems,
+        day   = daymnems,
+    },
+    jalali = {
+        month = setmetatableindex(function(t,k) return months[k] .. ":jalali" end),
+        day   = setmetatableindex(function(t,k) return days  [k] .. ":jalali" end),
+    },
 }
 
 do
@@ -1386,9 +1424,7 @@ do
                 elseif plus == "++" or plus == "highord" then
                     ordinal = true
                     highordinal = true
-             -- elseif plus == "mnem" then
-             --     mnemonic = true
-                elseif plus then -- elseif plus == "mnem" then
+                elseif plus then -- mnem MNEM etc
                     mnemonic = variants[plus]
                 end
                 if not auto and spaced[tag] then
@@ -1402,18 +1438,28 @@ do
                 elseif tag == v_month or tag == "m" then
                     if currentlanguage == false then
                         context(Word(months[month]))
-                    elseif mnemonic then
-                        ctx_labeltext(variables[mnemonic[month]])
                     else
-                        ctx_labeltext(variables[months[month]])
+                        if type(mnemonic) == "table" then
+                            mnemonic = mnemonic.month
+                        end
+                        if mnemonic then
+                            ctx_labeltext(variables[mnemonic[month]])
+                        else
+                            ctx_labeltext(variables[months[month]])
+                        end
                     end
                 elseif tag == v_MONTH then
                     if currentlanguage == false then
                         context(Word(variables[months[month]]))
-                    elseif mnemonic then
-                        ctx_LABELTEXT(variables[mnemonic[month]])
                     else
-                        ctx_LABELTEXT(variables[months[month]])
+                        if type(mnemonic) == "table" then
+                            mnemonic = mnemonic.month
+                        end
+                        if mnemonic then
+                            ctx_LABELTEXT(variables[mnemonic[month]])
+                        else
+                            ctx_LABELTEXT(variables[months[month]])
+                        end
                     end
                 elseif tag == "mm" then
                     context("%02i",month)
@@ -1437,14 +1483,28 @@ do
                     if currentlanguage == false then
                         context(Word(days[wd]))
                     else
-                        ctx_labeltext(variables[days[wd]])
+                        if type(mnemonic) == "table" then
+                            mnemonic = mnemonic.day
+                        end
+                        if mnemonic then
+                            ctx_labeltext(variables[mnemonic[wd]])
+                        else
+                            ctx_labeltext(variables[days[wd]])
+                        end
                     end
                 elseif tag == v_WEEKDAY then
                     local wd = weekday(day,month,year)
                     if currentlanguage == false then
                         context(Word(days[wd]))
                     else
-                        ctx_LABELTEXT(variables[days[wd]])
+                        if type(mnemonic) == "table" then
+                            mnemonic = mnemonic.day
+                        end
+                        if mnemonic then
+                            ctx_LABELTEXT(variables[mnemonic[wd]])
+                        else
+                            ctx_LABELTEXT(variables[days[wd]])
+                        end
                     end
                 elseif tag == "W" then
                     context(weekday(day,month,year))

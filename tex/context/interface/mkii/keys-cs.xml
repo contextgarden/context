@@ -913,7 +913,10 @@
 		<cd:constant name='keys' value='keys'/>
 		<cd:constant name='keyword' value='keyword'/>
 		<cd:constant name='label' value='popisek'/>
+		<cd:constant name='labelalternative' value='labelalternative'/>
+		<cd:constant name='labelcolor' value='labelcolor'/>
 		<cd:constant name='labeloffset' value='labeloffset'/>
+		<cd:constant name='labelstyle' value='labelstyle'/>
 		<cd:constant name='language' value='language'/>
 		<cd:constant name='last' value='last'/>
 		<cd:constant name='lastnamesep' value='lastnamesep'/>

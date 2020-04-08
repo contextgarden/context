@@ -427,10 +427,6 @@ a bunch of vital characteristics of the used pen (all values are floats):
 \LL
 \stoptabulate
 
-\stopsection
-
-\startsection[title=Acessors]
-
 \subsection[title={Character size information}]
 
 \libindex{char_width}
@@ -441,12 +437,108 @@ These functions find the size of a glyph in a defined font. The \type {fontname}
 is the same name as the argument to \type {infont}; the \type {char} is a glyph
 id in the range 0 to 255; the returned \type {w} is in AFM units.
 
-
 \startfunctioncall
 <number> w = char_width(mp,<string> fontname, <number> char)
 <number> h = char_height(mp,<string> fontname, <number> char)
 <number> d = char_depth(mp,<string> fontname, <number> char)
 \stopfunctioncall
+
+\stopsection
+
+\startsection[title=Scanners]
+
+After a relative long period of testing the scanners are now part of the
+interface. That doesn't mean that there will be no changes: depending on the
+needs and experiences details might evolve. The summary below is there
+still preliminary and mostly provided as reminder.
+
+\starttabulate[|l|l|p|]
+\DB scanner \BC argument \BC returns \NC \NR
+\TB
+\NC \type{scan_next}       \NC instance, keep         \NC token, mode, type \NC \NR
+\NC \type{scan_expression} \NC instance, keep         \NC type \NC \NR
+\NC \type{scan_token}      \NC instance, keep         \NC token, mode, kind \NC \NR
+\NC \type{scan_symbol}     \NC instance, keep, expand \NC string \NC \NR
+\NC \type{scan_numeric}    \NC instance, type         \NC number \NC \NR
+\NC \type{scan_integer}    \NC instance, type         \NC integer \NC \NR
+\NC \type{scan_boolean}    \NC instance, type         \NC boolean \NC \NR
+\NC \type{scan_string}     \NC instance, type         \NC string \NC \NR
+\NC \type{scan_pair}       \NC instance, hashed, type \NC table or two numbers \NC \NR
+\NC \type{scan_color}      \NC instance, hashed, type \NC table or three numbers \NC \NR
+\NC \type{scan_cmykcolor}  \NC instance, hashed, type \NC table or four numbers \NC \NR
+\NC \type{scan_transform}  \NC instance, hashed, type \NC table or six numbers \NC \NR
+\NC \type{scan_path}       \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
+\NC \type{scan_pen}        \NC instance, hashed, type \NC table with hashes or arrays \NC \NR
+\LL
+\stoptabulate
+
+The types and token codes are numbers but they actually depend on the
+implementation (although changes are unlikely). The types of data structures can
+be queried with \type {mplib.types()}:
+
+\dontleavehmode \startluacode
+    local t = mplib.types()
+    for i=0,#t do
+        if i > 0 then
+            context(", ")
+        end
+        context("%i: %s",i,t[i])
+    end
+\stopluacode .
+
+The command codes are available with \type {mplib.codes()}:
+
+\dontleavehmode \startluacode
+    local t = mplib.codes()
+    for i=0,#t do
+        if i > 0 then
+            context(", ")
+        end
+        context("%i: %s",i,t[i])
+    end
+\stopluacode .
+
+Now, if you really want to use these, keep in mind that the internals of
+\METAPOST\ are not trivial, especially because expression scanning can be
+complex. So you need to experiment a bit. In \CONTEXT\ all is (and will be)
+hidden below an abstraction layer so users are not bothered by all these
+look|-|ahead and push|-|back issues that originate in the way \METAPOST\ scans
+its input.
+
+\stopsection
+
+\startsection[title=Injectors]
+
+It is important to know that piping code into the library is pretty fast and
+efficient. Most processing time relates to memory management, calculations and
+generation of output can not be neglected either. Out of curiousity I added some
+functions that directly push data into the library but the gain is not that
+large. \footnote {The main motivation was checking of huge paths could be
+optimized. The other data structures were then added for completeness.}
+
+\starttabulate[|l|l|]
+\DB scanner \BC argument \NC \NR
+\TB
+\NC \type{inject_numeric}   \NC instance, number \NC \NR
+\NC \type{inject_integer}   \NC instance, number \NC \NR
+\NC \type{inject_boolean}   \NC instance, boolean \NC \NR
+\NC \type{inject_string}    \NC instance, string \NC \NR
+\NC \type{inject_pair}      \NC instance, (table with) two numbers \NC \NR
+\NC \type{inject_color}     \NC instance, (table with) three numbers \NC \NR
+\NC \type{inject_cmykcolor} \NC instance, (table with) four numbers \NC \NR
+\NC \type{inject_transform} \NC instance, (table with) six numbers \NC \NR
+\NC \type{inject_path}      \NC instance, table with hashes or arrays, cycle, variant \NC \NR
+\LL
+\stoptabulate
+
+The path injector takes a table with subtables that are either hashed (like the
+path solver) or arrays with two, four or six entries. When the third argument has
+the value \type {true} the path is closed. When the fourth argument is \type
+{true} the path is constructed out of straight lines (as with \type {--}) by
+setting the \type {curl} values to~1 automatically. \footnote {This is all
+experimental so future versions might provide more control.}
+
+\stopsection
 
 \stopchapter
 

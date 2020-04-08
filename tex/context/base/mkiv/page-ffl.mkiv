@@ -23,6 +23,8 @@
 %D \setupfacingfloat
 %D   [whatever]
 %D   [style=bold,
+%D    width=frame,
+%D    offset=10pt,
 %D    color=white]
 %D
 %D \setupfacingfloat
@@ -56,6 +58,12 @@
 
 \unprotect
 
+% width:
+%
+% -- fit       : do nothing
+% -- dimension : use that
+% -- frame     : use hsize minus frame offsets (based on preroll)
+
 \installcorenamespace {facingfloat}
 
 \installframedcommandhandler \??facingfloat {facingfloat} \??facingfloat
@@ -63,6 +71,7 @@
 \setupfacingfloat
   [\c!spaceinbetween=\v!big,
    \c!inbetween={\blank[\v!big]},
+   \c!width=\v!fit,
   %\c!style,
   %\c!color,
    \c!page=\v!left]
@@ -82,7 +91,7 @@
 
 \let\m_strc_floats_state\relax
 
-\def\strc_floats_facing_flush
+\unexpanded\def\strc_floats_facing_flush
   {\ifnum\c_strc_floats_facing_flushed<\c_strc_floats_facing_saved
      \ifodd\c_strc_floats_facing_flushed
        \ifodd\realpageno
@@ -120,6 +129,8 @@
      \global\c_strc_floats_facing_flushed\zerocount
      \resetboxesincache{\currentfacingfloat}%
    \fi}
+
+\let\flushfacingfloats\strc_floats_facing_flush
 
 \unexpanded\def\strc_floats_facing_setup
   {\edef\currentfacingfloat{\currentfacingfloat:\m_strc_floats_state}%
@@ -175,9 +186,19 @@
 %      \page[\p_page]%
 %    \fi
    %
+   \edef\currentfacingfloat{#1}%
+   \edef\p_width{\facingfloatparameter\c!width}%
+   \letfacingfloatparameter\c!width\v!fit
+   \ifx\p_width\v!frame
+      \setbox\scratchbox\hpack{\inheritedfacingfloatframed{}}%
+      \advance\hsize-\wd\scratchbox
+   \else\ifx\p_width\v!fit
+      % whatever
+   \else
+      \hsize\p_width
+   \fi\fi
    \let\startcontent\bgroup
    \let\stopcontent\egroup
-   \def\currentfacingfloat{#1}%
    \let\m_strc_floats_state\v!left
    \strc_floats_facing_handle}
 

@@ -438,7 +438,7 @@ omit the kern and ligature tables, which has the same effect as the above.
 
 \stopsubsection
 
-\startsubsection[title={\type{\nospaces}}]
+\startsubsection[title={\lpr{nospaces}}]
 
 \topicindex {spaces+suppress}
 
@@ -461,7 +461,7 @@ space.
 
 \stopsubsection
 
-\startsubsection[title={\type{\protrusionboundary}}]
+\startsubsection[title={\lpr{protrusionboundary}}]
 
 \topicindex {protrusion}
 \topicindex {boundaries}
@@ -494,6 +494,29 @@ instance content moved into the margin:
 \starttyping
 \protrusionboundary1\llap{!\quad}«Who needs protrusion?»
 \stoptyping
+
+\stopsubsection
+
+\startsubsection[title={\lpr{glyphdimensionsmode}}]
+
+Already in the early days of \LUATEX\ the decision was made to calculate the
+effective height and depth of glyphs in a way that reflected the applied vertical
+offset. The height got that offset added, the depth only when the offset was
+larger than zero. We can now control this in more detail with this mode
+parameter. An offset is added to the height and|/|or subtracted from the depth.
+The effective values are never negative. The zero mode is the default.
+
+\starttabulate[|l|pl|]
+\DB value     \BC effect \NC\NR
+\TB
+\NC \type {0} \NC the old behaviour: add the offset to the height and only subtract
+                  the offset only from the depth when it is positive \NC \NR
+\NC \type {1} \NC add the offset to the height and subtract it from the depth \NC \NR
+\NC \type {2} \NC add the offset to the height and subtract it from the depth but
+                  keep the maxima of the current and previous results \NC \NR
+\NC \type {3} \NC use the height and depth of the glyph, so no offset is applied \NC \NR
+\LL
+\stoptabulate
 
 \stopsubsection
 
@@ -587,29 +610,6 @@ font.current(<number> i)
 % some room left in the glyphs data structure). It's basically an single attribute.
 %
 % \stopsubsection
-
-\startsubsection[title={\type{\glyphdimensionsmode}}]
-
-Already in the early days of \LUATEX\ the decision was made to calculate the
-effective height and depth of glyphs in a way that reflected the applied vertical
-offset. The height got that offset added, the depth only when the offset was
-larger than zero. We can now control this in more detail with this mode
-parameter. An offset is added to the height and|/|or subtracted from the depth.
-The effective values are never negative. The zero mode is the default.
-
-\starttabulate[|l|pl|]
-\DB value     \BC effect \NC\NR
-\TB
-\NC \type {0} \NC the old behavior: add the offset to the height and only subtract
-                  the offset only from the depth when it is positive \NC \NR
-\NC \type {1} \NC add the offset to the height and subtract it from the depth \NC \NR
-\NC \type {2} \NC add the offset to the height and subtract it from the depth but
-                  keep the maxima of the current and previous results \NC \NR
-\NC \type {3} \NC use the height and depth of the glyph, so no offset is applied \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
 
 \stopsection
 

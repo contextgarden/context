@@ -183,6 +183,16 @@ b = getboolean(<pdfe array|dictionary>,index|key)
 n = getname   (<pdfe array|dictionary>,index|key)
 \stoptyping
 
+The \type {getstring} function has two extra variants:
+
+\starttyping
+s, h = getstring (<pdfe array|dictionary>,index|key,false)
+s    = getstring (<pdfe array|dictionary>,index|key,true)
+\stoptyping
+
+The first call returns the original string plus a boolean indicating if the
+string is hex encoded. The second call returns the unencoded string.
+
 \stopsubsection
 
 \startsubsection[title={\type {get[dictionary|array|stream]}}]

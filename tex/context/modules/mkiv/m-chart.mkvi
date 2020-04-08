@@ -322,12 +322,16 @@
   [n=0,
    x=1,
    y=1,
+   realx=1,
+   realy=1,
    text=,
    align=,
    set=\setups{flowcell:text:place}]
 
-\def\FLOWx{\getvariable{flowcell:text}{x}} % compatibility (for Willi)
-\def\FLOWy{\getvariable{flowcell:text}{y}} % compatibility (for Willi)
+\def\FLOWx    {\getvariable{flowcell:text}{x}}     % compatibility (for Willi)
+\def\FLOWy    {\getvariable{flowcell:text}{y}}     % compatibility (for Willi)
+\def\FLOWrealx{\getvariable{flowcell:text}{realx}} % compatibility (for Willi)
+\def\FLOWrealy{\getvariable{flowcell:text}{realy}} % compatibility (for Willi)
 
 \defineoverlay
   [flowcell:figure]
@@ -380,10 +384,12 @@
     \endgroup
 \stopsetups
 
-\unexpanded\def\doFLOWlabel#1#2#3%
+\unexpanded\def\doFLOWlabel#1#2#3#4#5%
   {\begingroup
    \def\FLOWx{#1}%
    \def\FLOWy{#2}%
+   \def\FLOWrealx{#4}%
+   \def\FLOWrealy{#5}%
    \strut
    \getFLOWtext{#3}%
    \endgroup}

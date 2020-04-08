@@ -38,6 +38,8 @@ if CONTEXTLMTXMODE > 0 then
 
     local t = os.date("*t") -- maybe this should be a very early on global
 
+    local mpnumeric = mp.inject.numeric
+
     registerscript("year",   function() return t.year  end)
     registerscript("month",  function() return t.month end)
     registerscript("day",    function() return t.day   end)

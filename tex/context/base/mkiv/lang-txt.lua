@@ -36,7 +36,7 @@ if not modules then modules = { } end modules ['lang-txt'] = {
 -- kr    Korean         Jeong Dalyoung
 -- la    Latin          ...
 -- lt    Lithuanian     Marius Aleknevičius
--- mk    Macedonian     Jakub Loula, Tomáš Hála (2019), Stojan Trajanovski 
+-- mk    Macedonian     Jakub Loula, Tomáš Hála (2019), Stojan Trajanovski
 -- nb    Norwegian      Hans Fredrik Nordhaug, ...
 -- nn    Norwegian      Hans Fredrik Nordhaug, ...
 -- nl    Dutch          Hans Hagen
@@ -829,7 +829,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="dub.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Apr.",
     ["en"]="apr",
     ["es"]="abr.",
     ["et"]="apr",
@@ -950,7 +950,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="srp.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Aug.",
     ["en"]="aug",
     ["es"]="ago.",
     ["et"]="aug",
@@ -1120,7 +1120,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="pros.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Dez.",
     ["en"]="dec",
     ["es"]="dic.",
     ["et"]="dets",
@@ -1203,7 +1203,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="ún.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Feb.",
     ["en"]="feb",
     ["es"]="feb.",
     ["et"]="veebr",
@@ -1529,7 +1529,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="led.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Jan.",
     ["en"]="jan",
     ["es"]="ene.",
     ["et"]="jaan",
@@ -1613,7 +1613,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="čce",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Jul.",
     ["en"]="jul",
     ["es"]="jul.",
     ["et"]="juuli",
@@ -1696,7 +1696,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="čer.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Jun.",
     ["en"]="jun",
     ["es"]="jun.",
     ["et"]="juuni",
@@ -1858,7 +1858,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="břez.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Mrz.",
     ["en"]="mar",
     ["es"]="mar.",
     ["et"]="märts",
@@ -1942,7 +1942,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="květ.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Mai",
     ["en"]="may",
     ["es"]="may.",
     ["et"]="mai",
@@ -1969,6 +1969,48 @@ data.labels={
     ["tr"]="",
     ["ua"]="",
     ["vi"]="",
+   },
+  },
+  ["monday:mnem"]={
+   ["labels"]={
+    ["en"]="mon",
+    ["de"]="Mo.",
+   },
+  },
+  ["tuesday:mnem"]={
+   ["labels"]={
+    ["en"]="tue",
+    ["de"]="Di.",
+   },
+  },
+  ["wednesday:mnem"]={
+   ["labels"]={
+    ["en"]="wed",
+    ["de"]="Mi.",
+   },
+  },
+  ["thursday:mnem"]={
+   ["labels"]={
+    ["en"]="thu",
+    ["de"]="Do.",
+   },
+  },
+  ["friday:mnem"]={
+   ["labels"]={
+    ["en"]="fri",
+    ["de"]="Fr.",
+   },
+  },
+  ["saturday:mnem"]={
+   ["labels"]={
+    ["en"]="sat",
+    ["de"]="Sa.",
+   },
+  },
+  ["sunday:mnem"]={
+   ["labels"]={
+    ["en"]="sun",
+    ["de"]="So.",
    },
   },
   ["monday"]={
@@ -2075,7 +2117,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="list.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Nov.",
     ["en"]="nov",
     ["es"]="nov.",
     ["et"]="nov",
@@ -2157,7 +2199,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="říj.",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Okt.",
     ["en"]="oct",
     ["es"]="oct.",
     ["et"]="okt",
@@ -2446,7 +2488,7 @@ data.labels={
     ["ca"]="",
     ["cs"]="září",
     ["da"]="",
-    ["de"]="",
+    ["de"]="Sep.",
     ["en"]="sep",
     ["es"]="sep.",
     ["et"]="sept",

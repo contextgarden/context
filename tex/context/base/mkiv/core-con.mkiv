@@ -210,6 +210,8 @@
 
 \unexpanded\def\monthlong #1{\clf_monthname\numexpr#1\relax}
 \unexpanded\def\monthshort#1{\clf_monthmnem\numexpr#1\relax}
+\unexpanded\def\daylong   #1{\clf_dayname\numexpr#1\relax}
+\unexpanded\def\dayshort  #1{\clf_daymnem\numexpr#1\relax}
 
 \let\convertmonth\monthlong % for old times sake
 
@@ -220,9 +222,9 @@
 
 \let\month\monthlong
 
-\unexpanded\def\MONTH     #1{\WORD{\month     {#1}}}
-\unexpanded\def\MONTHLONG #1{\WORD{\monthlong {#1}}}
-\unexpanded\def\MONTHSHORT#1{\WORD{\monthshort{#1}}}
+\unexpanded\def\MONTH     #1{\WORD{\clf_monthname\numexpr#1\relax}}
+\unexpanded\def\MONTHLONG #1{\WORD{\clf_monthname\numexpr#1\relax}}
+\unexpanded\def\MONTHSHORT#1{\WORD{\clf_monthmnem\numexpr#1\relax}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed out that it would be
 %D handy to convert to the day of the week. In doing so, we have to calculate the
@@ -242,8 +244,10 @@
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
 
-\unexpanded\def\weekday#1{\clf_dayname\numexpr#1\relax}
-\unexpanded\def\WEEKDAY#1{\WORD{\clf_dayname\numexpr#1\relax}}
+\unexpanded\def\weekday #1{\clf_dayname\numexpr#1\relax}
+\unexpanded\def\WEEKDAY #1{\WORD{\clf_dayname\numexpr#1\relax}}
+\unexpanded\def\DAYLONG #1{\WORD{\clf_dayname\numexpr#1\relax}}
+\unexpanded\def\DAYSHORT#1{\WORD{\clf_daymnem\numexpr#1\relax}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}

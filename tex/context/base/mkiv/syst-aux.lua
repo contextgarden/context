@@ -404,6 +404,15 @@ implement {
     end
 }
 
+implement {
+    name      = "elapsedsteptime",
+    arguments = "integer",
+    actions   = function(n)
+        statistics.stoptiming("whatever")
+        context("%0.9f",statistics.elapsed("whatever")/(n > 0 and n or 1))
+    end
+}
+
 local accuracy = table.setmetatableindex(function(t,k)
     local v = formatters["%0." ..k .. "f"]
     t[k] = v

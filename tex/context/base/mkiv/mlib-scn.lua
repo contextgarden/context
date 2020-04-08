@@ -45,6 +45,7 @@ metapost.types = types
 local setmetatableindex   = table.setmetatableindex
 
 local scanners            = mp.scan
+local injectors           = mp.inject
 
 local scannext            = scanners.next
 local scanexpression      = scanners.expression
@@ -63,16 +64,13 @@ local scanpath            = scanners.path
 local scanpen             = scanners.pen
 
 local mpprint             = mp.print
-local mpnumeric           = mp.numeric
-local mpstring            = mp.string
-local mpquoted            = mp.quoted
-local mpboolean           = mp.boolean
-local mppair              = mp.pair
-local mppath              = mp.path
-local mptriplet           = mp.triplet
-local mpquadruple         = mp.quadruple
-local mptransform         = mp.transform
-local mpvalue             = mp.value
+local injectnumeric       = injectors.numeric
+local injectstring        = injectors.string
+local injectboolean       = injectors.boolean
+local injectpair          = injectors.pair
+local injecttriplet       = injectors.color
+local injectquadruple     = injectors.cmykcolor
+local injecttransform     = injectors.transform
 
 local report              = logs.reporter("metapost")
 
@@ -97,6 +95,26 @@ local typescanners   = nil
 local tokenscanners  = nil
 local scanset        = nil
 local scanparameters = nil
+
+local injectpath = mp.path
+
+do -- todo: this will become an overload
+
+    local flush  = mp.path
+    local inject = injectors.path -- work in progress
+
+    injectpath = function(p,connector,close)
+        if #p > 1 then
+            if connector == true or connector == ".." then
+                return inject(p,false,close or p.close)
+            elseif connector == "--" then
+                return inject(p,true,close or p.close)
+            end
+        end
+        return flush(p,connector,close)
+    end
+
+end
 
 scanset = function() -- can be optimized, we now read twice
     scantoken()
@@ -328,26 +346,26 @@ end
 local function get(v)
     local t = type(v)
     if t == "number" then
-        return mpnumeric(v)
+        return injectnumeric(v)
     elseif t == "boolean" then
-        return mpboolean(v)
+        return injectboolean(v)
     elseif t == "string" then
-        return mpquoted(v)
+        return injectstring(v)
     elseif t == "table" then
         local n = #v
         if type(v[1]) == "table" then
-            return mppath(v) -- cycle ?
+            return injectpath(v) -- cycle ?
         elseif n == 2 then
-            return mppair(v)
+            return injectpair(v)
         elseif n == 3 then
-            return mptriplet(v)
+            return injecttriplet(v)
         elseif n == 4 then
-            return mpquadruple(v)
+            return injectquadruple(v)
         elseif n == 6 then
-            return mptransform(v)
+            return injecttransform(v)
         end
     end
-    return mpnumeric(0)
+    return injectnumeric(0)
 end
 
 local stack = { }
@@ -386,16 +404,16 @@ local function getparameter()
             if type(l) == "number" then
                 vl = v[1]
                 if vl == nil then
-                    return mpnumeric(0)
+                    return injectnumeric(0)
                 end
             else
-                return mpnumeric(0)
+                return injectnumeric(0)
             end
         end
         v = vl
     end
     if v == nil then
-        return mpnumeric(0)
+        return injectnumeric(0)
     else
         return get(v)
     end
@@ -411,18 +429,18 @@ local function hasparameter()
             if type(l) == "number" then
                 vl = rawget(v,1)
                 if vl == nil then
-                    return mpboolean(false)
+                    return injectboolean(false)
                 end
             else
-                return mpboolean(false)
+                return injectboolean(false)
             end
         end
         v = vl
     end
     if v == nil then
-        return mpboolean(false)
+        return injectboolean(false)
     else
-        return mpboolean(true)
+        return injectboolean(true)
     end
 end
 
@@ -435,7 +453,7 @@ local function hasoption()
                 local l = list[i]
                 local vl = v[l]
                 if vl == nil then
-                    return mpboolean(false)
+                    return injectboolean(false)
                 end
                 v = vl
             end
@@ -446,18 +464,18 @@ local function hasoption()
             -- no caching .. slow anyway
             local o = list[n]
             if v == o then
-                return mpboolean(true)
+                return injectboolean(true)
             end
             for vv in gmatch(v,"[^%s,]+") do
                 for oo in gmatch(o,"[^%s,]+") do
                     if vv == oo then
-                        return mpboolean(true)
+                        return injectboolean(true)
                     end
                 end
             end
         end
     end
-    return mpboolean(false)
+    return injectboolean(false)
 end
 
 local function getparameterdefault()
@@ -474,7 +492,7 @@ local function getparameterdefault()
             end
         end
         if vl == nil then
-            return mpnumeric(0)
+            return injectnumeric(0)
         else
             return get(vl)
         end
@@ -502,17 +520,17 @@ local function getparameterdefault()
                                 local l = list[i]
                                 local vl = v[l]
                                 if vl == nil then
-                                    return mpnumeric(0)
+                                    return injectnumeric(0)
                                 end
                                 v = vl
                             end
                             if v == nil then
-                                return mpnumeric(0)
+                                return injectnumeric(0)
                             else
                                 return get(v)
                             end
                         end
-                        return mpnumeric(0)
+                        return injectnumeric(0)
                     else
                         return get(last)
                     end
@@ -537,7 +555,7 @@ local function getparametercount()
             break
         end
     end
-    return mpnumeric(type(v) == "table" and #v or 0)
+    return injectnumeric(type(v) == "table" and #v or 0)
 end
 
 local function getmaxparametercount()
@@ -568,7 +586,7 @@ local function getmaxparametercount()
         end
 
     end
-    return mpnumeric(n)
+    return injectnumeric(n)
 end
 
 local validconnectors = {
@@ -599,9 +617,9 @@ local function getparameterpath()
         end
     end
     if type(v) == "table" then
-        return mppath(v,connector,close)
+        return injectpath(v,connector,close)
     else
-        return mppair(0,0)
+        return injectpair(0,0)
     end
 end
 
@@ -615,9 +633,9 @@ local function getparameterpen()
         end
     end
     if type(v) == "table" then
-        return mppath(v,"..",true)
+        return injectpath(v,"..",true)
     else
-        return mppair(0,0)
+        return injectpair(0,0)
     end
 end
 
@@ -637,9 +655,9 @@ local function getparametertext()
         end
     end
     if type(v) == "string" then
-        return mpquoted("\\strut " .. v)
+        return injectstring("\\strut " .. v)
     else
-        return mpquoted("")
+        return injectstring("")
     end
 end
 

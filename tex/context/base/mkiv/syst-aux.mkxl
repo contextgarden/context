@@ -6221,7 +6221,12 @@
 
 \let\resettimer    \clf_resettimer
 \let\elapsedtime   \clf_elapsedtime
-\let\elapsedseconds \elapsedtime
+\let\elapsedseconds\elapsedtime
+
+\let\elapsedsteps\!!zerocount
+
+\unexpanded\def\elapsedsteptime % unexpanded ! a bit useless but who knows ...
+  {\clf_elapsedsteptime\elapsedsteps\relax}
 
 \newcount\c_syst_helpers_test_feature_n
 \newcount\c_syst_helpers_test_feature_m
@@ -6230,6 +6235,7 @@
 
 \unexpanded\def\testfeature#1#2%
   {\c_syst_helpers_test_feature_m#1\relax
+   \xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
    \def\syst_helpers_test_feature_yes
      {\advance\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else

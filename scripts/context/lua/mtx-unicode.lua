@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mtx-unicode'] = {
+    if not modules then modules = { } end modules ['mtx-unicode'] = {
     version   = 1.002,
     comment   = "companion to mtxrun.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

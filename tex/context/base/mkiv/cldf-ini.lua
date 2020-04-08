@@ -917,7 +917,12 @@ local function writer(parent,command,...) -- already optimized before call
                     flush(currentcatcodes,s_cldl_argument_b,storenode(ti),s_cldl_argument_e)
                 end
             else
-                report_context("error: %a gets a weird argument %a",command,ti)
+                local s = tostring(ti)
+                if s then
+                    flushdirect(currentcatcodes,s)
+                else
+                    report_context("error: %a gets a weird argument %a",command,ti)
+                end
             end
 --             else
 --                 local n = isnode(ti)
@@ -1155,7 +1160,12 @@ local caller = function(parent,f,a,...)
                 flush(currentcatcodes,s_cldl_option_s,storenode(f)," ")
             end
         else
-            report_context("error: %a gets a weird argument %a","context",f)
+            local s = tostring(f)
+            if s then
+                flushdirect(currentcatcodes,s)
+            else
+                report_context("error: %a gets a weird argument %a","context",f)
+            end
         end
 --         else
 --             local n = isnode(f)

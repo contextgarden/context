@@ -290,6 +290,13 @@
 \installpagebreakmethod \v!start {\global\settrue \c_otr_shipout_enabled}
 \installpagebreakmethod \v!stop  {\global\setfalse\c_otr_shipout_enabled}
 
+\installpagebreakmethod{xy}% for Mojca
+  {\page_breaks_handle_direct\v!yes
+   \scratchcounterone  \numexpr\rootlayouttargetparameter\c!nx*\rootlayouttargetparameter\c!ny\relax
+   \scratchcountertwo  \luaexpr{math.mod(\the\realpageno-1,\the\scratchcounterone)}\relax
+   \scratchcounterthree\numexpr\scratchcounterone-\scratchcountertwo\relax
+   \dorecurse\scratchcounterthree{\page_breaks_handle_direct\v!empty}}
+
 % Column breaks.
 
 \installcorenamespace{columnbreakmethod}
