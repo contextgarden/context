@@ -34,26 +34,28 @@ This creates the \type {mp} instance object. The argument is a hash table that
 can have a number of different fields, as follows:
 
 \starttabulate[|l|l|pl|pl|]
-\DB name               \BC type     \BC description              \BC default           \NC \NR
+\DB name               \BC type     \BC description                \BC default           \NC \NR
 \TB
-\NC \type{error_line}  \NC number   \NC error line width         \NC 79                \NC \NR
-\NC \type{print_line}  \NC number   \NC line length in ps output \NC 100               \NC \NR
-\NC \type{random_seed} \NC number   \NC the initial random seed  \NC variable          \NC \NR
+\NC \type{error_line}  \NC number   \NC error line width           \NC 79                \NC \NR
+\NC \type{print_line}  \NC number   \NC line length in ps output   \NC 100               \NC \NR
+\NC \type{random_seed} \NC number   \NC the initial random seed    \NC variable          \NC \NR
 \NC \type{math_mode}   \NC string   \NC the number system to use:
                                         \type {scaled},
                                         \type {double} or
                                       % \type {binary} or
-                                        \type {decimal}          \NC \type {scaled}    \NC \NR
+                                        \type {decimal}            \NC \type {scaled}    \NC \NR
 \NC \type{interaction} \NC string   \NC the interaction mode:
                                         \type {batch},
                                         \type {nonstop},
                                         \type {scroll} or
-                                        \type {errorstop}        \NC \type {errorstop} \NC \NR
-\NC \type{job_name}    \NC string   \NC a compatibility value    \NC \type {mpout}     \NC \NR
-\NC \type{find_file}   \NC function \NC a function to find files \NC only local files  \NC \NR
-\NC \type{utf8}        \NC boolean  \NC permit characters in the
+                                        \type {errorstop}          \NC \type {errorstop} \NC \NR
+\NC \type{job_name}    \NC string   \NC a compatibility value      \NC \type {mpout}     \NC \NR
+\NC \type{find_file}   \NC function \NC a function to find files   \NC only local files  \NC \NR
+\NC \type{utf8_mode}   \NC boolean  \NC permit characters in the
                                         range 128 upto 255 to be
-                                        part of names            \NC \type {false}     \NC \NR
+                                        part of names              \NC \type {false}     \NC \NR
+\NC \type{text_mode}   \NC boolean  \NC permit characters 2 and 3
+                                        as fencing string literals \NC \type {false}     \NC \NR
 \LL
 \stoptabulate
 

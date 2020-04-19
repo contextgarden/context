@@ -367,6 +367,17 @@
 \unexpanded\def\savedlisttitle         #1#2{\clf_savedlisttitle         {#1}\numexpr#2\relax}
 \unexpanded\def\savedlistprefixednumber#1#2{\clf_savedlistprefixednumber{#1}\numexpr#2\relax}
 
+\newconditional\c_lists_show_realpage
+
+\installcorenamespace {listpagenumber}
+
+\setvalue{\??listpagenumber\v!always  }{\settrue\c_lists_show_page\settrue\c_lists_has_page}
+\setvalue{\??listpagenumber\v!yes     }{\settrue\c_lists_show_page}
+\setvalue{\??listpagenumber\s!realpage}{\settrue\c_lists_show_page\settrue\c_lists_show_realpage}
+
+\def\strc_lists_process_pagenumber#1%
+  {\begincsname\??listpagenumber#1\endcsname}
+
 \def\structurelistlocation
   {\clf_listlocation\numexpr\currentlistindex\relax}
 
@@ -375,23 +386,27 @@
 
 \unexpanded\def\structurelistpagenumber
   {\dostarttagged\t!listpage\empty
-   \clf_listprefixedpage
-     {\currentlist}%
-     \currentlistindex
-     {
-       separatorset  {\listparameter\c!pageprefixseparatorset}
-       conversionset {\listparameter\c!pageprefixconversionset}
-       set           {\listparameter\c!pageprefixset}
-       segments      {\listparameter\c!pageprefixsegments}
-       connector     {\listparameter\c!pageprefixconnector}
-     }%
-     {
-       prefix        {\listparameter\c!pageprefix}
-       conversionset {\listparameter\c!pageconversionset}
-       starter       {\listparameter\c!pagestarter}
-       stopper       {\listparameter\c!pagestopper}
-     }%
-   \relax
+   \ifconditional\c_lists_show_realpage
+     \clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax
+   \else
+     \clf_listprefixedpage
+       {\currentlist}%
+       \currentlistindex
+       {
+         separatorset  {\listparameter\c!pageprefixseparatorset}
+         conversionset {\listparameter\c!pageprefixconversionset}
+         set           {\listparameter\c!pageprefixset}
+         segments      {\listparameter\c!pageprefixsegments}
+         connector     {\listparameter\c!pageprefixconnector}
+       }%
+       {
+         prefix        {\listparameter\c!pageprefix}
+         conversionset {\listparameter\c!pageconversionset}
+         starter       {\listparameter\c!pagestarter}
+         stopper       {\listparameter\c!pagestopper}
+       }%
+     \relax
+   \fi
    \dostoptagged}
 
 \unexpanded\def\structurelistuservariable#name%
@@ -891,17 +906,22 @@
     % because these tests happen often and because we're dealing with
     % rather complex composed data we have special conditionals; keep
     % in mind that testing for empty fails do to tagging being applied
-    \edef\p_pagenumber{\listparameter\c!pagenumber}%
-    \ifx\p_pagenumber\v!always
-      \settrue\c_lists_has_page
-      \settrue\c_lists_show_page
-    \else
+%   \edef\p_pagenumber{\listparameter\c!pagenumber}%
+%   \ifx\p_pagenumber\v!always
+%     \settrue\c_lists_has_page
+%     \settrue\c_lists_show_page
+%   \else
+%     \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
+%     \ifx\p_pagenumber\v!yes
+%       \settrue\c_lists_show_page
+%     \else
+%       \setfalse\c_lists_show_page
+%     \fi
+%   \fi
+    \setfalse\c_lists_show_page % necessary?
+    \processcommacommand[\listparameter\c!pagenumber]\strc_lists_process_pagenumber
+    \ifconditional\c_lists_has_page \else
       \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
-      \ifx\p_pagenumber\v!yes
-        \settrue\c_lists_show_page
-      \else
-        \setfalse\c_lists_show_page
-      \fi
     \fi
     % always forces number placement (in bib we use a forced number)
     \edef\p_headnumber{\listparameter\c!headnumber}%
@@ -933,6 +953,7 @@
    \setfalse\c_lists_has_page
    \setfalse\c_lists_has_number
    \setfalse\c_lists_show_page
+   \setfalse\c_lists_show_realpage
    \setfalse\c_lists_show_number
 \to \t_lists_every_renderingcleanup
 

@@ -2226,7 +2226,7 @@ vardef rawmaptext(expr s) =
     mfun_tt_c := nullpicture ;
     mfun_tt_o := nullpicture ;
     addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-    mfun_tt_r := lua.mp.mf_map_text(mfun_tt_n,s) ;
+    mfun_tt_r := lua.mp.mf_map_text(mfun_tt_n,s,catcoderegime) ;
     mfun_tt_s := lua.mp.mf_map_move(mfun_tt_n) ;
     addto mfun_tt_c doublepath unitsquare
         xscaled wdpart mfun_tt_r

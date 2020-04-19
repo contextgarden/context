@@ -131,6 +131,10 @@ return {
         "join_radius",
         "charscale", -- actually a mult-fun one
         --
+        "inicatcoderegime", "texcatcoderegime", "luacatcoderegime", "notcatcoderegime",
+        "vrbcatcoderegime", "prtcatcoderegime", "ctxcatcoderegime", "txtcatcoderegime",
+        "catcoderegime",
+        --
         "ditto", "EOF", -- maybe also down etc
         --
         "pen_lft", "pen_rt", "pen_top", "pen_bot", -- "pen_count_",

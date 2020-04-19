@@ -22,7 +22,7 @@ local xmlapplylpath = xml.applylpath
 
 local type, next, setmetatable, getmetatable = type, next, setmetatable, getmetatable
 local insert, remove, fastcopy, concat = table.insert, table.remove, table.fastcopy, table.concat
-local gmatch, gsub, format, find, strip = string.gmatch, string.gsub, string.format, string.find, string.strip
+local gmatch, gsub, format, find, strip, match = string.gmatch, string.gsub, string.format, string.find, string.strip, string.match
 local utfbyte = utf.byte
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local striplinepatterns = utilities.strings.striplinepatterns
@@ -240,6 +240,33 @@ function xml.delete(root,pattern)
                         end
                     else
                         -- disturbing
+                    end
+                end
+            end
+        end
+    end
+end
+
+function xml.wipe(root,pattern) -- not yet in manual
+    local collected = xmlapplylpath(root,pattern)
+    if collected then
+        for c=1,#collected do
+            local e = collected[c]
+            local p = e.__p__
+            if p then
+                local d  = p.dt
+                local ni = e.ni
+                if ni <= #d then
+                    local dt = e.dt
+                    if #dt == 1 then
+                        local d1 = dt[1]
+                        if type(d1) == "string" and match(d1,"^%s*$") then
+                            if trace_manipulations then
+                                report('wiping',pattern,c,e)
+                            end
+                            remove(d,ni)
+                            redo_ni(d) -- can be made faster and inlined
+                        end
                     end
                 end
             end

@@ -263,8 +263,6 @@ enddef ;
 vardef lmt_do_overlap =
     image (
 
-        lmt_load_mlib_cnt ;
-
         pushparameters "overlap" ;
 
             save p, q, r, s, qq, a, b, c, d, t, n, gap, subgap, steps, astep, start, stop, first, last ;

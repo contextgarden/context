@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.04.08 14:34}
+\edef\contextversion{2020.04.19 19:20}
 \edef\contextkind   {beta}
 
 %D Kind of special:

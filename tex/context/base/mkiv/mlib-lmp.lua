@@ -6,15 +6,15 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
     license   = "see context related readme files",
 }
 
+-- path relates stuff ... todo: use a stack (or numeric index to list)
+
+
 local type = type
 
 local aux       = mp.aux
 local mpnumeric = aux.numeric
 local mppair    = aux.pair
 local mpquoted  = aux.quoted
-local mpdirect  = aux.direct
-
--- todo: use a stack?
 
 do
 
@@ -121,107 +121,3 @@ do
     end
 
 end
-
-do
-
-    -- if needed we can optimize the sub (cache last split)
-
-    local utflen, utfsub = utf.len, utf.sub
-
-    function mp.utflen(s)
-        mpnumeric(utflen(s))
-    end
-
-    function mp.utfsub(s,f,t)
-        mpquoted(utfsub(s,f,t or f))
-    end
-
-end
-
-if CONTEXTLMTXMODE > 0 then
-
-    function mp.lmt_svg_include()
-        local labelfile = metapost.getparameter { "labelfile" }
-        if labelfile and labelfile ~= "" then
-            local labels = table.load(labelfile) -- todo: same path as svg file
-            if type(labels) == "table" then
-                for i=1,#labels do
-                    metapost.remaptext(labels[i])
-                end
-            end
-        end
-        local fontname = metapost.getparameter { "fontname" }
-        if fontname and fontname ~= "" then
-            local unicode = metapost.getparameter { "unicode" }
-            if unicode then
-                mpdirect (
-                    metapost.svgglyphtomp(fontname,math.round(unicode))
-                )
-            end
-            return
-        end
-        local colorfile = metapost.getparameter { "colormap" }
-        local colormap  = false
-        if colorfile and colorfile ~= "" then
-            colormap = metapost.svgcolorremapper(colorfile)
-        end
-        local filename = metapost.getparameter { "filename" }
-        if filename and filename ~= "" then
-            mpdirect ( metapost.svgtomp {
-                data     = io.loaddata(filename),
-                remap    = true,
-                colormap = colormap,
-                id       = filename,
-            } )
-        else
-            local buffer = metapost.getparameter { "buffer" }
-            if buffer then
-                mpdirect ( metapost.svgtomp {
-                    data     = buffers.getcontent(buffer),
-                 -- remap    = true,
-                    colormap = colormap,
-                    id       = buffer or "buffer",
-                } )
-            else
-                local code = metapost.getparameter { "code" }
-                if code then
-                    mpdirect ( metapost.svgtomp {
-                        data     = code,
-                        colormap = colormap,
-                        id       = "code",
-                    } )
-                end
-            end
-        end
-    end
-
-end
-
-if CONTEXTLMTXMODE > 0 then
-
-    function mp.lmt_do_remaptext()
-        local parameters = metapost.scanparameters()
-        if parameters and parameters.label then
-            metapost.remaptext(parameters)
-        end
-    end
-
-end
-
-if CONTEXTLMTXMODE > 0 then
-
-    local dropins        = fonts.dropins
-    local registerglyphs = dropins.registerglyphs
-    local registerglyph  = dropins.registerglyph
-
-    function mp.lmt_register_glyph()
-        registerglyph(metapost.getparameterset("mpsglyph"))
-    end
-
-    function mp.lmt_register_glyphs()
-        registerglyphs(metapost.getparameterset("mpsglyphs"))
-    end
-
-end
-
-todecimal = xdecimal and xdecimal.new or tonumber -- bonus

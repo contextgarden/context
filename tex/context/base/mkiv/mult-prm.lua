@@ -368,6 +368,7 @@ return {
   "tracingfonts",
   "unletfrozen",
   "unletprotected",
+  "vcentermode",
   "vpack",
   "wordboundary",
   "xtoksapp",

@@ -3287,6 +3287,7 @@ local nesting = 0
 local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
     local done  = false
     local sweep = sweephead[head]
+    local start
     if sweep then
         start = sweep
      -- sweephead[head] = nil
@@ -3448,6 +3449,7 @@ end
 local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
     local done  = false
     local sweep = sweephead[head]
+    local start
     if sweep then
         start = sweep
      -- sweephead[head] = nil

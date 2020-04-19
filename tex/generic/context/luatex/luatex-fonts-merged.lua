@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-04-08 14:34
+-- merge date  : 2020-04-19 19:20
 
 do -- begin closure to overcome local limits and interference
 
@@ -29037,6 +29037,7 @@ local nesting=0
 local function c_run_single(head,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
  local done=false
  local sweep=sweephead[head]
+ local start
  if sweep then
   start=sweep
   sweephead[head]=false
@@ -29181,6 +29182,7 @@ end
 local function c_run_multiple(head,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
  local done=false
  local sweep=sweephead[head]
+ local start
  if sweep then
   start=sweep
   sweephead[head]=false

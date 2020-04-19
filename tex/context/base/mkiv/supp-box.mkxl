@@ -2657,24 +2657,6 @@
 
 \let\naturalvcenter\normalvtop % will go away
 
-%D \macros
-%D   {vcenter}
-%D
-%D Also new: tex mode \type {\vcenter}.
-
-\unexpanded\def\vcenter
-  {\vbox\bgroup
-   \dowithnextboxcs\syst_boxes_vcenter_finish\vbox}
-
-\def\syst_boxes_vcenter_finish
-  {\hpack{\normalstartimath\vcenter{\box\nextbox}\normalstopimath}%
-   \egroup}
-
-% could be \everymathematics
-
-\prependtoks \let\vcenter\normalvcenter \to \everymath
-\prependtoks \let\vcenter\normalvcenter \to \everydisplay
-
 % \appendtoks \let\vcenter\normalvcenter \to \everymathematics
 
 %D \macros

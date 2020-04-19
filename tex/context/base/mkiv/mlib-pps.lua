@@ -25,6 +25,7 @@ local setmacro             = interfaces.setmacro
 
 local texsetbox            = tex.setbox
 local textakebox           = tex.takebox -- or: nodes.takebox
+local texruntoks           = tex.runtoks
 local copy_list            = node.copy_list
 local flush_list           = node.flush_list
 local setmetatableindex    = table.setmetatableindex
@@ -250,6 +251,7 @@ local function startjob(plugmode,kind,mpx)
     top = {
         textexts   = { },                          -- all boxes, optionally with a different color
         texstrings = { },
+        texregimes = { },
         mapstrings = { },
         mapindices = { },
         mapmoves   = { },
@@ -811,7 +813,13 @@ local tx_reset, tx_process  do
     local mp_t      = nil
 
     local function processtext()
-        local mp_text = top.texstrings[mp_index]
+        local mp_text   = top.texstrings[mp_index]
+        local mp_regime = top.texregimes[mp_index]
+        if mp_regime and tonumber(mp_regime) >= 0 then
+            mp_text = function()
+                context.sprint(mp_regime,top.texstrings[mp_index] or "")
+            end
+        end
         if not mp_text then
             report_textexts("missing text for index %a",mp_index)
         elseif not mp_c then
@@ -842,14 +850,15 @@ local tx_reset, tx_process  do
 
     local madetext = nil
 
-    function mp.mf_some_text(index,str)
+    function mp.mf_some_text(index,str,regime)
         mp_target = index
         mp_index  = index
         mp_c      = nil
         mp_a      = nil
         mp_t      = nil
         top.texstrings[mp_index] = str
-        tex.runtoks("mptexttoks")
+        top.texregimes[mp_index] = regime or -1
+        texruntoks("mptexttoks")
         local box = textakebox("mptextbox")
         top.textexts[mp_target] = box
         mp.triplet(bp*box.width,bp*box.height,bp*box.depth)
@@ -857,7 +866,7 @@ local tx_reset, tx_process  do
     end
 
     function mp.mf_made_text(index)
-        mp.mf_some_text(index,madetext)
+        mp.mf_some_text(index,madetext,catcodes.numbers.ctxcatcodes) -- btex/etex ..
     end
 
     -- a label can be anything, also something mp doesn't like in strings
@@ -899,7 +908,7 @@ local tx_reset, tx_process  do
         mp.triplet(top.mapmoves[index])
     end
 
-    function mp.mf_map_text(index,str)
+    function mp.mf_map_text(index,str,regime)
         local map = top.mapindices[tonumber(str)]
         if type(map) == "table" then
             local text     = map.text
@@ -912,14 +921,16 @@ local tx_reset, tx_process  do
             -- the image text
             if overload then
                 top.texstrings[mp_index] = map.template or map.label or "error"
-                tex.runtoks("mptexttoks")
+                top.texregimes[mp_index] = regime or -1
+                texruntoks("mptexttoks")
                 local box = textakebox("mptextbox") or new_hlist()
                 width = bp * box.width
                 where = overload.where
             end
             -- the real text
             top.texstrings[mp_index] = overload and overload.text or text or "error"
-            tex.runtoks("mptexttoks")
+            top.texregimes[mp_index] = regime or -1
+            texruntoks("mptexttoks")
             local box = textakebox("mptextbox") or new_hlist()
             local twd = bp * box.width
             local tht = bp * box.height
@@ -1036,7 +1047,7 @@ local tx_reset, tx_process  do
             local mp_hash = prescript.tx_cache
             local box
             if mp_hash == "no" then
-                tex.runtoks("mptexttoks")
+                texruntoks("mptexttoks")
                 box = textakebox("mptextbox")
             else
                 local cache = data.texhash
@@ -1069,7 +1080,7 @@ local tx_reset, tx_process  do
                 if box then
                     box = copy_list(box)
                 else
-                    tex.runtoks("mptexttoks")
+                    texruntoks("mptexttoks")
                     box = textakebox("mptextbox")
                     cache[mp_hash] = box
                 end
@@ -1152,7 +1163,7 @@ local gt_reset, gt_process do
         if not graphics[index] then
             mp_index = index
             mp_str   = str
-            tex.runtoks("mpgraphictexttoks")
+            texruntoks("mpgraphictexttoks")
         end
     end
 
@@ -1573,7 +1584,7 @@ local ot_reset, ot_process do
             mp_index = index
             mp_kind  = kind
             mp_str   = str
-            tex.runtoks("mpoutlinetoks")
+            texruntoks("mpoutlinetoks")
         end
     end
 

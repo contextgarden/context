@@ -19325,7 +19325,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 31730, stripped down to: 19950
+-- original size: 32655, stripped down to: 20486
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -19343,7 +19343,7 @@ local xmlinheritedconvert=xml.inheritedconvert
 local xmlapplylpath=xml.applylpath
 local type,next,setmetatable,getmetatable=type,next,setmetatable,getmetatable
 local insert,remove,fastcopy,concat=table.insert,table.remove,table.fastcopy,table.concat
-local gmatch,gsub,format,find,strip=string.gmatch,string.gsub,string.format,string.find,string.strip
+local gmatch,gsub,format,find,strip,match=string.gmatch,string.gsub,string.format,string.find,string.strip,string.match
 local utfbyte=utf.byte
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local striplinepatterns=utilities.strings.striplinepatterns
@@ -19528,6 +19528,32 @@ function xml.delete(root,pattern)
        redo_ni(d) 
       end
      else
+     end
+    end
+   end
+  end
+ end
+end
+function xml.wipe(root,pattern) 
+ local collected=xmlapplylpath(root,pattern)
+ if collected then
+  for c=1,#collected do
+   local e=collected[c]
+   local p=e.__p__
+   if p then
+    local d=p.dt
+    local ni=e.ni
+    if ni<=#d then
+     local dt=e.dt
+     if #dt==1 then
+      local d1=dt[1]
+      if type(d1)=="string" and match(d1,"^%s*$") then
+       if trace_manipulations then
+        report('wiping',pattern,c,e)
+       end
+       remove(d,ni)
+       redo_ni(d) 
+      end
      end
     end
    end
@@ -26141,8 +26167,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1039717
--- stripped bytes    : 410821
+-- original bytes    : 1040642
+-- stripped bytes    : 411210
 
 -- end library merge
 

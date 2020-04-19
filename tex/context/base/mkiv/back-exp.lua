@@ -3691,6 +3691,31 @@ local htmltemplate = [[
         end
     end
 
+    -- Some elements are not supported (well) in css so we need to retain them. For
+    -- instance, tablecells have no colspan so basically that renders css table div
+    -- elements quite useless. A side effect is that we nwo can have conflicts when
+    -- we mix in with other html (as there is no reset). Of course, when it eventually
+    -- gets added, there is a change then that those not using the div abstraction
+    -- will be rediculed.
+    --
+    -- a table tr td th thead tbody tfoot
+    --
+
+    local crappycss = {
+        table     = "table", tabulate      = "table",
+        tablehead = "thead", tabulatehead  = "thead",
+        tablebody = "tbody", tabulatebody  = "tbody",
+        tablefoot = "tfoot", tabulatefoot  = "tfoot",
+        tablerow  = "tr",    tabulaterow   = "tr",
+        tablecell = "td",    tabulatecell  = "td",
+    }
+
+    local cssmapping = false
+
+    directives.register("export.nativetags", function(v)
+        cssmapping = v and crappycss or false
+    end)
+
     local function remap(specification,source,target)
         local comment = nil -- share comments
         for c in xmlcollected(source,"*") do
@@ -3762,11 +3787,11 @@ local htmltemplate = [[
                             }
                         end
                     end
-                    c.tg = "div"
                     c.at = attr
                     if label then
                         attr.label = label
                     end
+                    c.tg = cssmapping and cssmapping[tg] or "div"
                 end
             end
         end
@@ -4054,27 +4079,29 @@ local htmltemplate = [[
         local metadata  = structures.tags.getmetadata()
 
         local specification = {
-            name        = usedname,
-            identifier  = os.uuid(),
-            images      = wrapups.uniqueusedimages(),
-            imagefile   = joinfile("styles",imagefilebase),
-            imagepath   = "images",
-            stylepath   = "styles",
-            xmlfiles    = { xmlfilebase },
-            xhtmlfiles  = { xhtmlfilebase },
-            htmlfiles   = { htmlfilebase },
-            styles      = cssfiles,
-            htmlroot    = htmlfilebase,
-            language    = languagenames[texgetcount("mainlanguagenumber")],
-            title       = validstring(finetuning.title) or validstring(identity.title),
-            subtitle    = validstring(finetuning.subtitle) or validstring(identity.subtitle),
-            author      = validstring(finetuning.author) or validstring(identity.author),
-            firstpage   = validstring(finetuning.firstpage),
-            lastpage    = validstring(finetuning.lastpage),
-            metadata    = metadata,
+            name       = usedname,
+            identifier = os.uuid(),
+            images     = wrapups.uniqueusedimages(),
+            imagefile  = joinfile("styles",imagefilebase),
+            imagepath  = "images",
+            stylepath  = "styles",
+            xmlfiles   = { xmlfilebase },
+            xhtmlfiles = { xhtmlfilebase },
+            htmlfiles  = { htmlfilebase },
+            styles     = cssfiles,
+            htmlroot   = htmlfilebase,
+            language   = languagenames[texgetcount("mainlanguagenumber")],
+            title      = validstring(finetuning.title) or validstring(identity.title),
+            subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
+            author     = validstring(finetuning.author) or validstring(identity.author),
+            firstpage  = validstring(finetuning.firstpage),
+            lastpage   = validstring(finetuning.lastpage),
+            metadata   = metadata,
         }
 
         report_export("saving specification in %a",specificationfilename,specificationfilename)
+
+        xml.wipe(xmltree,"metadata") -- maybe optional
 
         io.savedata(specificationfilename,table.serialize(specification,true))
 

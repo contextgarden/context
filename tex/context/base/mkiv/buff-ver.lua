@@ -800,7 +800,7 @@ end
 -- needed in e.g. tabulate (manuals)
 
 local fences    = S([[[{]])
-local symbols   = S([[!#"$%&'*()+,-./:;<=>?@[]^_`{|}~]])
+local symbols   = S([[!#"$%&'*()+,-./:;<=>?@[]^_`{|}~0123456789]]) -- digits added but maybe split it
 local space     = S([[ ]])
 local backslash = S([[\]])
 local nospace   = space^1/""
@@ -808,7 +808,7 @@ local endstring = P(-1)
 
 local compactors = {
     [v_all]      = Cs((backslash * (1-backslash-space)^1 * nospace * (endstring+fences) + 1)^0),
-    [v_absolute] = Cs((backslash * (1-symbols  -space)^1 * nospace * (symbols +backslash) + 1) ^0),
+    [v_absolute] = Cs((backslash * (1-symbols  -space)^1 * nospace * (symbols+backslash) + 1)^0),
     [v_last]     = Cs((space^1   * endstring/"" + 1)^0),
 }
 

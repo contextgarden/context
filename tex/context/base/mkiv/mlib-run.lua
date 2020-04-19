@@ -414,6 +414,7 @@ function metapost.load(name,method)
         extensions   = 1,
      -- random_seed  = seed,
         utf8_mode    = true,
+        text_mode    = true,
     }
     report_metapost("initializing number mode %a",method)
     local result

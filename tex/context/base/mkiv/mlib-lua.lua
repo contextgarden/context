@@ -1118,9 +1118,9 @@ end
 
 do
 
-    local mprint       = mp.print
-    local fprint       = mp.fprint
-    local qprint       = mp.quoted
+    local mpprint      = mp.print
+    local mpfprint     = mp.fprint
+    local mpquoted     = mp.quoted
     local jobpositions = job.positions
     local getwhd       = jobpositions.whd
     local getxy        = jobpositions.xy
@@ -1132,72 +1132,72 @@ do
     function mp.positionpath(name)
         local w, h, d = getwhd(name)
         if w then
-            fprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",0,-d,w,-d,w,h,0,h)
+            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",0,-d,w,-d,w,h,0,h)
         else
-            mprint("(origin--cycle)")
+            mpprint("(origin--cycle)")
         end
     end
 
     function mp.positioncurve(name)
         local w, h, d = getwhd(name)
         if w then
-            fprint("((%p,%p)..(%p,%p)..(%p,%p)..(%p,%p)..cycle)",0,-d,w,-d,w,h,0,h)
+            mpfprint("((%p,%p)..(%p,%p)..(%p,%p)..(%p,%p)..cycle)",0,-d,w,-d,w,h,0,h)
         else
-            mprint("(origin--cycle)")
+            mpprint("(origin--cycle)")
         end
     end
 
     function mp.positionbox(name)
         local p, x, y, w, h, d = getposition(name)
         if p then
-            fprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
+            mpfprint("((%p,%p)--(%p,%p)--(%p,%p)--(%p,%p)--cycle)",x,y-d,x+w,y-d,x+w,y+h,x,y+h)
         else
-            mprint("(%p,%p)",x,y)
+            mpprint("(%p,%p)",x,y)
         end
     end
 
     function mp.positionxy(name)
         local x, y = getxy(name)
         if x then
-            fprint("(%p,%p)",x,y)
+            mpfprint("(%p,%p)",x,y)
         else
-            mprint("origin")
+            mpprint("origin")
         end
     end
 
     function mp.positionpage(name)
-        fprint("%i",getpage(name) or 0)
+        mpfprint("%i",getpage(name) or 0)
     end
 
     function mp.positionregion(name)
         local r = getregion(name)
         if r then
-            qprint(r)
+            mpquoted(r)
         else
-            qprint("unknown")
+            mpquoted("unknown")
         end
     end
 
     function mp.positionwhd(name)
         local w, h, d = getwhd(name)
         if w then
-            fprint("(%p,%p,%p)",w,h,d)
+            mpfprint("(%p,%p,%p)",w,h,d)
         else
-            mprint("(0,0,0)")
+            mpprint("(0,0,0)")
         end
     end
 
     function mp.positionpxy(name)
         local p, x, y = getposition(name)
         if p then
-            fprint("(%p,%p,%p)",p,x,y)
+            mpfprint("(%p,%p,%p)",p,x,y)
         else
-            mprint("(0,0,0)")
+            mpprint("(0,0,0)")
         end
     end
 
     function mp.positionanchor()
-        qprint(getmacro("MPanchorid"))
+        mpquoted(getmacro("MPanchorid"))
     end
 
 end
@@ -1219,16 +1219,16 @@ end
 
 do
 
-    local mprint   = mp.print
-    local qprint   = mp.quoted
+    local mpprint  = mp.print
+    local mpquoted = mp.quoted
     local getmacro = tokens.getters.macro
 
     function mp.texvar(name)
-        mprint(getmacro(metapost.namespace .. name))
+        mpprint(getmacro(metapost.namespace .. name))
     end
 
     function mp.texstr(name)
-        qprint(getmacro(metapost.namespace .. name))
+        mpquoted(getmacro(metapost.namespace .. name))
     end
 
 end
@@ -1381,6 +1381,23 @@ function mp.flatten(t)
     if m == 2 then
         t[3] = t[1]
         t[4] = t[2]
+    end
+
+end
+
+do
+
+    -- if needed we can optimize the sub (cache last split)
+
+    local utflen = utf.len
+    local utfsub = utf.sub
+
+    function mp.utflen(s)
+        mpnumeric(utflen(s))
+    end
+
+    function mp.utfsub(s,f,t)
+        mpquoted(utfsub(s,f,t or f))
     end
 
 end

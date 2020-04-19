@@ -50,9 +50,10 @@
 %D We only provide box visualizers as they can come in handy for testing
 %D macros. In due time we will move some of the m-visual code here too.
 
-\let\syst_visualizers_hbox\hbox
-\let\syst_visualizers_vbox\vbox
-\let\syst_visualizers_vtop\vtop
+\let\syst_visualizers_hbox   \hbox
+\let\syst_visualizers_vbox   \vbox
+\let\syst_visualizers_vtop   \vtop
+\let\syst_visualizers_vcenter\vcenter
 
 \let\syst_visualizers_hpack\hpack
 \let\syst_visualizers_vpack\vpack
@@ -68,6 +69,27 @@
 \unexpanded\def\ruledtpack{\syst_visualizers_tpack attr \visualattribute \clf_getvisual{simplevtop} } % special case
 
 \unexpanded\def\ruledmbox#1{\ruledhbox{\startimath#1\stopimath}}
+
+\ifcase\contextlmtxmode
+
+    \unexpanded\def\sys_ruled_vcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual {simplevbox}}
+
+    \unexpanded\def\ruledvcenter
+      {\ruledvbox\bgroup
+       \dowithnextboxcs\syst_boxes_ruled_vcenter_finish\ruledvbox}
+
+    \def\syst_boxes_ruled_vcenter_finish
+      {\ruledhpack{\normalstartimath\ruledvcenter{\box\nextbox}\normalstopimath}%
+       \egroup}
+
+    \prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everymath
+    \prependtoks \let\ruledvcenter\sys_ruled_vcenter \to \everydisplay
+
+\else
+
+    \unexpanded\def\ruledvcenter{\syst_visualizers_vcenter attr \visualattribute \clf_getvisual {simplevbox}}
+
+\fi
 
 \appendtoks
     \ifcase\c_syst_visualizers_state\else

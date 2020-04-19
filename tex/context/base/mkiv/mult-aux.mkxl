@@ -224,8 +224,8 @@
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname #2parameter\endcsname
-        \expandafter\noexpand\csname do#2parameter\endcsname           % or : #2_parameter
-        \expandafter\noexpand\csname do#2parentparameter\endcsname     % or : #2_parent_parameter
+        \expandafter\noexpand\csname do#2parameter\endcsname        % or: #2_parameter
+        \expandafter\noexpand\csname do#2parentparameter\endcsname  % or: #2_parent_parameter
         \expandafter\noexpand\csname named#2parameter\endcsname
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
         \expandafter\noexpand\csname direct#2parameter\endcsname

@@ -320,6 +320,7 @@ experimental.
 
 \topicindex {attributes}
 \topicindex {boxes}
+\topicindex {vcentering}
 
 Nodes typically receive the list of attributes that is in effect when they are
 created. This moment can be quite asynchronous. For example: in paragraph
@@ -343,7 +344,7 @@ already boxed material will have no effect. Keep in mind that this
 incompatibility is mostly due to the fact that separate specials and literals are
 a more unnatural approach to colors than attributes.
 
-It is possible to fine-tune the list of attributes that are applied to a \type
+It is possible to fine|-|tune the list of attributes that are applied to a \type
 {hbox}, \type {vbox} or \type {vtop} by the use of the keyword \type {attr}. The
 \type {attr} keyword(s) should come before a \type {to} or \type {spread}, if
 that is also specified. An example is:
@@ -391,6 +392,13 @@ indexing the node (here we do that with \type {[a]}). Running this snippet gives
 
 Because some values are not set we need to apply the \type {tostring} function
 here so that we get the word \type {nil}.
+
+A special kind of box is \prm {vcenter}. This one also can have attributes. When
+one or more are set these plus the currently set attributes are bound to the
+resulting box. In regular \TEX\ these centered boxes are only permitted in math
+mode, but in \LUAMETATEX\ there is no error message and the box the height and
+depth are equally divided. Of course in text mode there is no math axis related
+offset applied.
 
 \stopsubsection
 
@@ -1651,7 +1659,7 @@ difference. Watch your spaces.
 
 \stopsubsection
 
-\startsubsection[title={Controling parshapes with \lpr {shapemode}}]
+\startsubsection[title={Controlling parshapes with \lpr {shapemode}}]
 
 Another adaptation to the \ALEPH\ directional model is control over shapes driven
 by \prm {hangindent} and \prm {parshape}. This is controlled by a new parameter

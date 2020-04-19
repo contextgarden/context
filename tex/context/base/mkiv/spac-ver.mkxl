@@ -877,12 +877,14 @@
      \else
        \strutheightfactor\dimexpr\normallineheight
      \fi
+   \relax
    \strutdp\dimexpr
      \ifdim\minimumstrutdepth>\zeropoint
        \minimumstrutdepth
      \else
        \normallineheight-\strutht
      \fi
+   \relax
    \dosetstrut}
 
 \unexpanded\def\setstrutgridnop
@@ -892,12 +894,14 @@
      \else
        \strutheightfactor\dimexpr\normallineheight
      \fi
+   \relax
    \strutdp\spacingfactor\dimexpr
      \ifdim\minimumstrutdepth>\zeropoint
        \minimumstrutdepth
      \else
        \strutdepthfactor\dimexpr\normallineheight
      \fi
+   \relax
    \dosetstrut}
 
 \unexpanded\def\setcharstrut#1%

@@ -127,13 +127,27 @@ let transparency = pair ;
 % withtransparency (1,.5)
 % withtransparency ("normal",.5)
 
-def withtransparency (expr t) (text rest) =
+% def withtransparency (expr t) (text rest) =
+%     if pair t :
+%         withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
+%         withprescript "tr_transparency=" & decimal ypart t
+%     else :
+%         mfun_with_transparency (transparency_alternative_to_number(t))
+%     fi rest
+% enddef ;
+%
+% def mfun_with_transparency (expr a) expr t =
+%     withprescript "tr_alternative="  & decimal a
+%     withprescript "tr_transparency=" & decimal t
+% enddef ;
+
+def withtransparency expr t =
     if pair t :
         withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
         withprescript "tr_transparency=" & decimal ypart t
     else :
         mfun_with_transparency (transparency_alternative_to_number(t))
-    fi rest
+    fi
 enddef ;
 
 def mfun_with_transparency (expr a) expr t =
@@ -198,6 +212,17 @@ enddef ;
 
 rgbcolor mfun_tt_r ;
 
+newinternal inicatcoderegime ; inicatcoderegime := runscript("return catcodes.numbers.ctxcatcodes") ;
+newinternal texcatcoderegime ; texcatcoderegime := runscript("return catcodes.numbers.texcatcodes") ;
+newinternal luacatcoderegime ; luacatcoderegime := runscript("return catcodes.numbers.luacatcodes") ;
+newinternal notcatcoderegime ; notcatcoderegime := runscript("return catcodes.numbers.notcatcodes") ;
+newinternal vrbcatcoderegime ; vrbcatcoderegime := runscript("return catcodes.numbers.vrbcatcodes") ;
+newinternal prtcatcoderegime ; prtcatcoderegime := runscript("return catcodes.numbers.prtcatcodes") ;
+newinternal ctxcatcoderegime ; ctxcatcoderegime := runscript("return catcodes.numbers.ctxcatcodes") ;
+newinternal txtcatcoderegime ; txtcatcoderegime := runscript("return catcodes.numbers.txtcatcodes") ;
+
+newinternal catcoderegime    ; catcoderegime    := ctxcatcoderegime ;
+
 vardef rawtextext(expr s) =
     if s = "" :
         nullpicture
@@ -206,7 +231,7 @@ vardef rawtextext(expr s) =
         mfun_tt_c := nullpicture ;
         mfun_tt_o := nullpicture ;
         addto mfun_tt_o doublepath origin _op_ ; % save drawoptions
-        mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s) ;
+        mfun_tt_r := lua.mp.mf_some_text(mfun_tt_n,s,catcoderegime) ;
         addto mfun_tt_c doublepath unitsquare
             xscaled wdpart mfun_tt_r
             yscaled (htpart mfun_tt_r + dppart mfun_tt_r)
