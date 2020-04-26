@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
     license   = "see context related readme files"
 }
 
-local node, nodes, attributes, fonts, tex = node, nodes, attributes, fonts, tex
+local node, nodes, attributes, tex = node, nodes, attributes, tex
 local type, tonumber, next, rawget = type, tonumber, next, rawget
 local gmatch = string.gmatch
 local formatters = string.formatters
@@ -34,7 +34,6 @@ local nuts                = nodes.nuts
 local tonut               = nuts.tonut
 local tonode              = nuts.tonode
 
------ setfield            = nuts.setfield
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
 local setdisc             = nuts.setdisc
@@ -166,10 +165,11 @@ local modes = {
     space         = 0x040000,
     depth         = 0x080000,
     marginkern    = 0x100000,
+    mathlistkern  = 0x200000,
 }
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathlistkern, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth
 
 local enabled = false
 local layers  = { }
@@ -178,7 +178,8 @@ local preset_boxes  = modes.hbox + modes.vbox + modes.origin
 local preset_makeup = preset_boxes
                     + modes.kern + modes.glue + modes.penalty
 local preset_all    = preset_makeup
-                    + modes.fontkern + modes.marginkern + modes.whatsit + modes.glyph + modes.user + modes.math
+                    + modes.fontkern + modes.marginkern + modes.mathlistkern
+                    + modes.whatsit + modes.glyph + modes.user + modes.math
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -223,6 +224,7 @@ local function initialize()
     l_math          = layers.math
     l_italic        = layers.italic
     l_marginkern    = layers.marginkern
+    l_mathlistkern  = layers.mathlistkern
     l_origin        = layers.origin
     l_discretionary = layers.discretionary
     l_expansion     = layers.expansion
@@ -366,10 +368,6 @@ for mode, value in next, modes do
     trackers.register(formatters["visualizers.%s"](mode), function(v) set(mode,v) end)
 end
 
-local raisepenalties = false
-
-directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
-
 local fraction = 10
 
 trackers  .register("visualizers.reset",    function(v) set("reset", v) end)
@@ -463,11 +461,12 @@ end
 
 local caches = setmetatableindex("table")
 
-local fontkern, italickern, marginkern do
+local fontkern, italickern, marginkern, mathlistkern do
 
     local f_cache = caches["fontkern"]
     local i_cache = caches["italickern"]
     local m_cache = caches["marginkern"]
+    local l_cache = caches["mathlistkern"]
 
     local function somekern(head,current,cache,color,layer)
         local width = getkern(current)
@@ -507,6 +506,10 @@ local fontkern, italickern, marginkern do
 
     marginkern = function(head,current)
         return somekern(head,current,m_cache,c_glyph_d,l_marginkern)
+    end
+
+    mathlistkern = function(head,current)
+        return somekern(head,current,l_cache,c_glyph_d,l_mathlistkern)
     end
 
 end
@@ -1084,6 +1087,31 @@ local ruledmarginkern do
 
 end
 
+local ruledmathlistkern do
+
+    local l_cache = caches["mathlistkern"]
+
+    ruledmathlistkern = function(head,current)
+        local kern = getkern(current)
+        local info = l_cache[kern]
+        if not info then
+            local amount = formatters["%s:%0.3f"]("LK",kern*pt_factor)
+            if kern > 0 then
+                info = sometext(amount,l_mathlistkern,c_positive)
+            elseif kern < 0 then
+                info = sometext(amount,l_mathlistkern,c_negative)
+            else
+                info = sometext(amount,l_mathlistkern,c_zero)
+            end
+            l_cache[kern] = info
+        end
+        info = copy_list(info)
+        head, current = insert_node_before(head,current,info)
+        return head, getnext(current)
+    end
+
+end
+
 local ruleddiscretionary do
 
     local d_cache = caches["discretionary"]
@@ -1110,6 +1138,10 @@ local ruledpenalty do
 
     local p_cache_v = caches["vpenalty"]
     local p_cache_h = caches["hpenalty"]
+
+    local raisepenalties = false
+
+    directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
     ruledpenalty = function(head,current,vertical)
         local penalty = getpenalty(current)
@@ -1141,23 +1173,25 @@ end
 
 do
 
-    local disc_code       = nodecodes.disc
-    local kern_code       = nodecodes.kern
-    local glyph_code      = nodecodes.glyph
-    local glue_code       = nodecodes.glue
-    local penalty_code    = nodecodes.penalty
-    local whatsit_code    = nodecodes.whatsit
-    local user_code       = nodecodes.user
-    local math_code       = nodecodes.math
-    local hlist_code      = nodecodes.hlist
-    local vlist_code      = nodecodes.vlist
-    local marginkern_code = nodecodes.marginkern
+    local disc_code         = nodecodes.disc
+    local kern_code         = nodecodes.kern
+    local glyph_code        = nodecodes.glyph
+    local glue_code         = nodecodes.glue
+    local penalty_code      = nodecodes.penalty
+    local whatsit_code      = nodecodes.whatsit
+    local user_code         = nodecodes.user
+    local math_code         = nodecodes.math
+    local hlist_code        = nodecodes.hlist
+    local vlist_code        = nodecodes.vlist
+    local marginkern_code   = nodecodes.marginkern
+    local mathlistkern_code = nodecodes.mathlistkern
 
     local kerncodes            = nodes.kerncodes
     local fontkern_code        = kerncodes.fontkern
     local italickern_code      = kerncodes.italiccorrection
     local leftmarginkern_code  = kerncodes.leftmarginkern
     local rightmarginkern_code = kerncodes.rightmarginkern
+    local mathlistkern_code    = kerncodes.mathlistkern
     ----- userkern_code        = kerncodes.userkern
 
     local listcodes       = nodes.listcodes
@@ -1190,70 +1224,21 @@ do
         local previous              = nil
         local attr                  = unsetvalue
         local prev_trace_fontkern   = nil
-        local prev_trace_marginkern = nil
         local prev_trace_italic     = nil
+        local prev_trace_marginkern = nil
+--         local prev_trace_mathlist   = nil
         local prev_trace_expansion  = nil
-
-     -- local function setthem(t,k)
-     --     local v_trace_hbox          = band(k,     1) ~= 0
-     --     local v_trace_vbox          = band(k,     2) ~= 0
-     --     local v_trace_vtop          = band(k,     4) ~= 0
-     --     local v_trace_kern          = band(k,     8) ~= 0
-     --     local v_trace_glue          = band(k,    16) ~= 0
-     --     local v_trace_penalty       = band(k,    32) ~= 0
-     --     local v_trace_fontkern      = band(k,    64) ~= 0
-     --     local v_trace_strut         = band(k,   128) ~= 0
-     --     local v_trace_whatsit       = band(k,   256) ~= 0
-     --     local v_trace_glyph         = band(k,   512) ~= 0
-     --     local v_trace_simple        = band(k,  1024) ~= 0
-     --     local v_trace_user          = band(k,  2048) ~= 0
-     --     local v_trace_math          = band(k,  4096) ~= 0
-     --     local v_trace_italic        = band(k,  8192) ~= 0
-     --     local v_trace_origin        = band(k, 16384) ~= 0
-     --     local v_trace_discretionary = band(k, 32768) ~= 0
-     --     local v_trace_expansion     = band(k, 65536) ~= 0
-     --     local v_trace_line          = band(k,131072) ~= 0
-     --     local v_trace_space         = band(k,262144) ~= 0
-     --     local v_trace_depth         = band(k,524288) ~= 0
-     --     local v = function()
-     --         trace_hbox          = v_trace_hbox
-     --         trace_vbox          = v_trace_vbox
-     --         trace_vtop          = v_trace_vtop
-     --         trace_kern          = v_trace_kern
-     --         trace_glue          = v_trace_glue
-     --         trace_penalty       = v_trace_penalty
-     --         trace_fontkern      = v_trace_fontkern
-     --         trace_strut         = v_trace_strut
-     --         trace_whatsit       = v_trace_whatsit
-     --         trace_glyph         = v_trace_glyph
-     --         trace_simple        = v_trace_simple
-     --         trace_user          = v_trace_user
-     --         trace_math          = v_trace_math
-     --         trace_italic        = v_trace_italic
-     --         trace_origin        = v_trace_origin
-     --         trace_discretionary = v_trace_discretionary
-     --         trace_expansion     = v_trace_expansion
-     --         trace_line          = v_trace_line
-     --         trace_space         = v_trace_space
-     --         trace_depth         = v_trace_depth
-     --     end
-     --     t[k] = v
-     --     return v
-     -- end
-     --
-     -- if not cache then
-     --     cache = setmetatableindex(setthem)
-     -- end
 
         while current do
             local id = getid(current)
             local a = forced or getattr(current,a_visual) or unsetvalue
             local subtype
             if a ~= attr then
-                prev_trace_fontkern   = trace_fontkern
-                prev_trace_italic     = trace_italic
-                prev_trace_marginkern = trace_marginkern
-                prev_trace_expansion  = trace_expansion
+                prev_trace_fontkern     = trace_fontkern
+                prev_trace_italic       = trace_italic
+                prev_trace_marginkern   = trace_marginkern
+--                 prev_trace_mathlistkern = trace_mathlistkern
+                prev_trace_expansion    = trace_expansion
                 attr = a
                 if a == unsetvalue then
                     trace_hbox          = false
@@ -1277,6 +1262,7 @@ do
                     trace_space         = false
                     trace_depth         = false
                     trace_marginkern    = false
+                    trace_mathlistkern  = false
                     if id == kern_code then
                         goto kern
                     else
@@ -1305,6 +1291,7 @@ do
                     trace_space         = band(a,0x040000) ~= 0
                     trace_depth         = band(a,0x080000) ~= 0
                     trace_marginkern    = band(a,0x100000) ~= 0
+                    trace_mathlistkern  = band(a,0x200000) ~= 0
                 end
             elseif a == unsetvalue then
                 goto list
@@ -1389,6 +1376,12 @@ do
                 elseif trace_kern then
                     head, current = ruledmarginkern(head,current)
                 end
+            elseif subtype == mathlistkern_code then
+                if trace_mathlist then -- or prev_trace_mathlist then
+                    head, current = mathlistkern(head,current)
+                elseif trace_kern then
+                    head, current = ruledmathlistkern(head,current)
+                end
             else
                 if trace_kern then
                     head, current = ruledkern(head,current,vertical)
@@ -1438,7 +1431,9 @@ do
         end
     end
 
-    local function handler(head)
+    luatex.registerstopactions(cleanup)
+
+    function visualizers.handler(head)
         if usedfont then
             starttiming(visualizers)
             head = visualize(head,true)
@@ -1448,10 +1443,6 @@ do
             return head, false
         end
     end
-
-    visualizers.handler = handler
-
-    luatex.registerstopactions(cleanup)
 
     function visualizers.box(n)
         if usedfont then

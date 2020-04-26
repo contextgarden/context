@@ -1357,6 +1357,13 @@
 \newtoks\everyinsidenoteinsert
 \newtoks\everyafternoteinsert
 
+\unexpanded\def\doifelseinnote
+  {\ifconditional\processingnote
+     \expandafter\firstoftwoarguments
+   \else
+     \expandafter\secondoftwoarguments
+   \fi}
+
 \appendtoks
    \let\flushnotes\relax
    \let\postponenotes\relax

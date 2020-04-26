@@ -346,7 +346,7 @@ local function getstreamhash(fontid)
     local fontdata = identifiers[fontid]
     if fontdata then
         local properties = fontdata.properties
-        return makehash(properties.filename,fontdata.subindex,properties.instance)
+        return makehash(properties.filename,properties.subfont,properties.instance)
     end
 end
 

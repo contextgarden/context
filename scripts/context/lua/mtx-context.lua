@@ -1688,3 +1688,13 @@ elseif getargument("purgeall") then
 else
     application.help("basic")
 end
+
+-- we can wipe a signal file when done
+
+do
+
+    if getargument("wipebusy") then
+        os.remove("context-is-busy.tmp")
+    end
+
+end

@@ -378,23 +378,52 @@ local flushcharacter  do
 
     local naturalwidth = nil
 
+ -- local naturalwidths = setmetatableindex(function(t,font)
+ --     local d = descriptions[font]
+ --     local c = characters[font]
+ --     local f = parameters[font].hfactor
+ --     local v = setmetatableindex(function(t,char)
+ --         local w
+ --         local e = d and d[char]
+ --         if e then
+ --             w = e.width
+ --             if w then
+ --                 w =  w * f
+ --             end
+ --         end
+ --         if not w then
+ --             e = c[char]
+ --             if e then
+ --                 w = e.width or 0
+ --             end
+ --         end
+ --         if not w then
+ --             w = 0
+ --         end
+ --         t[char] = w
+ --         return w
+ --     end)
+ --     t[font] = v
+ --     return v
+ -- end)
+
     local naturalwidths = setmetatableindex(function(t,font)
         local d = descriptions[font]
         local c = characters[font]
         local f = parameters[font].hfactor
         local v = setmetatableindex(function(t,char)
-            local e = d and d[char]
             local w
+            local e = c[char]
             if e then
-                w = e.width
-                if w then
-                    w =  w * f
-                end
+                w = e.width or 0
             end
             if not w then
-                e = c[char]
+                e = d and d[char]
                 if e then
-                    w = e.width or 0
+                    w = e.width
+                    if w then
+                        w =  w * f
+                    end
                 end
             end
             if not w then

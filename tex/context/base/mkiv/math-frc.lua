@@ -55,3 +55,40 @@ interfaces.implement {
     actions   = mathfraction,
     arguments = { "string", "number", "number", "dimen" }
 }
+
+-- experimental code in lmtx
+
+if CONTEXTLMTXMODE > 0 then
+
+    local ctx_normalUatop = context.normalUatop
+    local ctx_normalUover = context.normalUover
+
+    local function umathfraction(how,left,right,width)
+        if how == v_no then
+            if left == 0x002E and right == 0x002E then
+                ctx_normalUatop()
+            else
+                context("\\Uatopwithdelims%s%s",resolved[left],resolved[right])
+            end
+        elseif how == v_yes then
+            if left == 0x002E and right == 0x002E then
+                context("\\normalUabove%ssp",width)
+            else
+                context("\\Uabovewithdelims%s%s%ssp",resolved[left],resolved[right],width)
+            end
+        else -- v_auto
+            if left == 0x002E and right == 0x002E then
+                ctx_normalUover()
+            else
+                context("\\Uoverwithdelims%s%s",resolved[left],resolved[right])
+            end
+        end
+    end
+
+    interfaces.implement {
+        name      = "umathfraction",
+        actions   = umathfraction,
+        arguments = { "string", "number", "number", "dimen" }
+    }
+
+end

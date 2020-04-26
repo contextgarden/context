@@ -74,7 +74,7 @@ return {
         --
         "bottomlevelgroupcode", "simplegroupcode", "hboxgroupcode", "adjustedhboxgroupcode", "vboxgroupcode",
         "vtopgroupcode", "aligngroupcode", "noaligngroupcode", "outputgroupcode", "mathgroupcode",
-        "discretionarygroupcode", "insertgroupcode", "vcentergroupcode", "mathchoicegroupcode",
+        "discretionarygroupcode", "insertgroupcode", "vcentergroupcode", "mathabovegroupcode", "mathchoicegroupcode",
         "semisimplegroupcode", "mathshiftgroupcode", "mathleftgroupcode", "vadjustgroupcode",
         --
         "charnodecode", "hlistnodecode", "vlistnodecode", "rulenodecode", "insertnodecode", "marknodecode",

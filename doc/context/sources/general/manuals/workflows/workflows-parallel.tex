@@ -1,0 +1,123 @@
+% language=us
+
+\startcomponent workflows-parallel
+
+\environment workflows-style
+
+\startchapter[title={Parallel processing}]
+
+% \startsection[title={Introduction}]
+
+% \stopsection
+
+This is just a small intermezzo. Mid April 2020 Mojca asked on the mailing list how
+to best compile 5000 files, based on a template. The answer depends on the workflow
+and circumstances but one can easily come up with some factors that play a role.
+
+\startitemize
+    \startitem
+        How complex is the document? How many pages are generated, how many fonts
+        get used? Do we need multiple runs per document? Are images involved and
+        if so, what format are they in? When processing relative small files we
+        normally need seconds, not minutes.
+    \stopitem
+    \startitem
+        What machine is used? How powerful is the \CPU, how many cores are
+        available and how much memory do we have? Is the filesystem on a local
+        \SSD\ or on a remote file system? How well does file caching work? Again,
+        we're talking seconds here.
+    \stopitem
+    \startitem
+        What engine is used? Assuming that \MKIV\ is used, we can choose for
+        \LUATEX\ or \LUAMETATEX. The former has faster backend code, the later a
+        faster frontend. What is more efficient depends on the document. The
+        later has some advantages that we will not mention here.
+    \stopitem
+\stopitemize
+
+The tests mentioned below are run with a simple \LUA\ script that manages the
+parallel runs. More about that later. As sample document we use this:
+
+\starttyping
+\setupbodyfont[dejavu]
+
+\starttext
+    \dorecurse{\getdocumentargument{noffiles}}{\input tufte\par}
+\stoptext
+\stoptyping
+
+We start with 100 runs of 10 inclusions. We permit 8 runs in parallel. A \LUATEX\
+run of 100 takes 32 seconds, a \LUAJITTEX\ run uses 26 seconds, and \LUAMETATEX\
+does it in 25 seconds. \footnote {I used a mingw cross compiled 64 bit binary;
+the GCC9 version seems somewhat slower than the previous compiler version.} An
+interesting observation is memory consumption: \LUAJITTEX, which has a different
+virtual machine and a limited memory model, peaks at 0.8GB for the eight parallel
+runs. The \LUAMETATEX\ engine has the same demands. However, \LUATEX\ needs
+1.2GB. Bumping to 20 inclusions increased the runtime a few seconds for each
+engine.
+
+The differences can be explained by a faster startup time of \LUAMETATEX; for
+instance we don't use a compressed format (dump), but there are some other
+optimizations too, and even when they're close to unmeasurable, they might add
+up. The \LUAJITTEX\ engine speeds up \LUA\ interpretation which is reflected in
+runtime because \CONTEXT\ spends half its time in \LUA.
+
+As a next test I decided to run the test file 5000 times: Mojca's scenario.
+Including 10 sample files (per run) for those 5000 files took 1320 seconds. When
+we cache the included file we gain some 5~percent.
+
+Does it matter how many jobs we run in parallel? The 2013 laptop I used for
+testing has four real cores that hyperthread to eight cores. \footnote {The
+machine has an Intel i7-3840QM \CPU, 16GB of memory and a 512 GB Samsung Pro
+\SSD.} On 1000 jobs we need 320 seconds for 1000 files (10 inclusions) when we
+use four cores. With six cores we need 270 seconds, which is much better. With
+eight cores we go down to 260 seconds and ten cores, which is two more than there
+are, we get about the same runtime. \footnote {On a more modern system, let alone
+a desktop computer, I expect these numbers to be much lower.} A \TEX\ program is
+a single core process and it makes no sense to use more cores than the \CPU\
+provides.
+
+\starttyping
+\setupbodyfont[dejavu]
+
+\starttext
+    \dorecurse{\getdocumentargument{noffiles}}{\samplefile{tufte}\par}
+\stoptext
+\stoptyping
+
+Again, caching the input file as above saves a little bit: 10 seconds, so we get
+250 seconds. When you run these tests on the machine that you normally work on,
+waiting for that many jobs to finish is no fun, so what if we (as I then normally
+do) watch some music video? With a fullscreen high resolution video shown in the
+foreground the runtime didn't change: still 250 seconds for 1000 jobs with eight
+parallel runs. On the other hand, a test with Firefox, which is quite demanding,
+running a video in the background, made the runtime going up by 30 seconds to
+280. So, when doing some networking, decompression, all kinds of unknown tracking
+using \JAVASCRIPT, etc.\ and therefore its own demands on cores and memory you
+might want to limit the number of parallel runs. These tests are probably not
+that meaningful but a good distraction when in lock down.
+
+I'm still not sure if I should come up with a script for managing these parallel
+runs. But one thing I have added to the \type {context} runner is the (for now
+undocumented) option
+
+\starttyping
+--wipebusy
+\stoptyping
+
+which, after a run removes the file
+
+\starttyping
+context-is-busy.tmp
+\stoptyping
+
+This permits a management script to check if a run is done. Before starting a run
+(in a separate process) the script can write that file and by just checking if it
+is still there, the management script can decide when a next run can be started.
+
+\stopchapter
+
+\stopcomponent
+
+% downloaded video : Jojo Mayer's 2019 TED talk: https://www.youtube.com/watch?v=Npq-bhz1ll0}
+% realtime video   : Andrew Cuomo's daily press conference on dealing with Covid 19

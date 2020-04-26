@@ -1378,6 +1378,52 @@ For Latin Modern the result looks as follows:
     \stoptabulate
 \stop
 
+The \type {\over} and related primitives have the form:
+
+\starttyping
+{{top}\over{bottom}}
+\stoptyping
+
+For convenience, which also avoids some of the trickery that makes this
+\quote {looking back} possible, the \LUAMETATEX\ also provides this variant:
+
+\starttyping
+\Uover{top}{bottom}
+\stoptyping
+
+The optional arguments are also supported but we have one extra option: \type
+{style}. The style is applied to the numerator and denominator.
+
+\starttyping
+\Uover style \scriptstyle {top} {bottom}
+\stoptyping
+
+The complete list of these commands is: \lpr {Uabove}, \lpr {Uatop}, \lpr
+{Uover}, \lpr {Uabovewithdelims}, \lpr {Uatopwithdelims}, \lpr {Uoverwithdelims},
+\lpr {UUskewed}, \lpr {UUskewedwithdelims}. As with other extensions we use a
+leading \type {U} and because we already had extra skew related primitives we end
+up with a \type {UU} there. This obscurity is not that big an issue because
+normally such primitives are wrapped in a macro. Here are a few examples:
+
+\startbuffer
+$\Uover {                   1234} {                   5678} $\quad
+$\Uover {\textstyle         1234} {\textstyle         5678} $\quad
+$\Uover {\scriptstyle       1234} {\scriptstyle       5678} $\quad
+$\Uover {\scriptscriptstyle 1234} {\scriptscriptstyle 5678} $\blank
+
+$\Uover                          {1234} {5678} $\quad
+$\Uover style \textstyle         {1234} {5678} $\quad
+$\Uover style \scriptstyle       {1234} {5678} $\quad
+$\Uover style \scriptscriptstyle {1234} {5678} $\blank
+\stopbuffer
+
+\typebuffer
+
+These render as: \getbuffer
+
+Instead of a style value you can also use \type {\relax} which is equivalent to
+no \type {style} option.
+
 \subsection {Delimiters: \type{\Uleft}, \prm {Umiddle} and \prm {Uright}}
 
 \topicindex {math+delimiters}

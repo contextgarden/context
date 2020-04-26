@@ -790,8 +790,8 @@ local hlist_out, vlist_out  do
                         pos_v = pos_v - depth
                         flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype)
                     end
-                    cur_h = cur_h + width
                 end
+                cur_h = cur_h + width
             elseif id == math_code then
              -- local kern = getkern(current)
              -- if kern ~= 0 then
@@ -1091,8 +1091,8 @@ local hlist_out, vlist_out  do
                         end
                         flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype)
                     end
-                    cur_v = cur_v + total
                 end
+                cur_v = cur_v + total
             elseif id == whatsit_code then
                 if subtype == literalwhatsit_code then
                     flushliteral(current,pos_h,pos_v)

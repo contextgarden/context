@@ -630,10 +630,11 @@
 \chardef\discretionarygroupcode = 10
 \chardef\insertgroupcode        = 11
 \chardef\vcentergroupcode       = 12
-\chardef\mathchoicegroupcode    = 13
-\chardef\semisimplegroupcode    = 14
-\chardef\mathshiftgroupcode     = 15
-\chardef\mathleftgroupcode      = 16
+\chardef\mathabovegroupcode     = 13
+\chardef\mathchoicegroupcode    = 14
+\chardef\semisimplegroupcode    = 15
+\chardef\mathshiftgroupcode     = 16
+\chardef\mathleftgroupcode      = 17
 \chardef\vadjustgroupcode       = \insertgroupcode
 
 %D Constants to be used with \type {\interactionmode}.
