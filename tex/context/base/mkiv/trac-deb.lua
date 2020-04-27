@@ -281,7 +281,7 @@ function tracers.printerror(specification)
                     report_nl()
                     tex.show_context()
                 end
-                if lastluaerror and lastluaerror ~= "" then
+                if lastluaerror and not match(lastluaerror,"^%s*[%?]*%s*$") then
                     print("\nlua error:\n\n",lastluaerror,"\n")
                     quitonerror = true
                 end

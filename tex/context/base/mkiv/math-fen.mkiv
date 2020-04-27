@@ -65,8 +65,38 @@
 
 % we need the direct use of \Udelimiter because of { etc
 
+%D So we can do:
+%D
+%D \starttyping
+%D $ a + \fenced[bar][size=1]   {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=2]   {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=3]   {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=4]   {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=big] {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=Big] {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=bigg]{\frac {b} {c}} + d $
+%D $ a + \fenced[bar][size=Bigg]{\frac {b} {c}} + d $
+%D $ a + \fenced[bar][factor=1] {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][factor=2] {\frac {b} {c}} + d $
+%D $ a + \fenced[bar][factor=4] {\frac {b} {c}} + d $
+%D $ a + \fenced[bar]           {\frac {b} {c}} + d $
+%D \stoptyping
+
 \newconditional\c_math_fenced_mirror \settrue \c_math_fenced_mirror
 \newconditional\c_math_fenced_sized  \setfalse\c_math_fenced_sized
+
+\installcorenamespace {mathfencesize}
+
+\setvalue{\??mathfencesize  big}{1}
+\setvalue{\??mathfencesize  Big}{2}
+\setvalue{\??mathfencesize bigg}{3}
+\setvalue{\??mathfencesize Bigg}{4}
+
+\def\math_fenced_force_size#1#2%
+  {\attribute\mathsizeattribute\numexpr
+     #1*\plushundred
+    +\ifcsname\??mathfencesize#2\endcsname\lastnamedcs\else#2\fi
+   \relax}
 
 \unexpanded\def\math_fenced_inject#1#2#3#4%
   {\ifx#1\empty
@@ -199,9 +229,6 @@
    \begingroup
    \edef\currentmathfence{#1}%
    \dosingleempty\math_fenced_fenced_indeed}
-
-\def\math_fenced_force_size#1#2%
-  {\attribute\mathsizeattribute\numexpr#1*\plushundred+#2\relax}
 
 % \unexpanded\def\math_fenced_fenced_indeed[#1]#2%
 %   {\iffirstargument\setupcurrentmathfence[#1]\fi
@@ -635,6 +662,11 @@
 
 \installcorenamespace{mathbig}
 
+\setvalue{\??mathbig1}{0.85}
+\setvalue{\??mathbig2}{1.15}
+\setvalue{\??mathbig3}{1.45}
+\setvalue{\??mathbig4}{1.75}
+
 \unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
   {{\naturalhbox\bgroup
       \startimath
@@ -644,12 +676,31 @@
           \math_fenced_force_size\bigmathdelimitervariant{#1}\relax
           \math_fenced_step#2\relax
         \else
-          \math_fenced_step#2{\vpack to\csname\??mathbig\number#1\endcsname\bodyfontsize{}}%
+          \math_fenced_step#2{\vpack to\csname\??mathbig#1\endcsname\bodyfontsize{}}%
         \fi
         \nulldelimiterspace\zeropoint\relax
         \mathsurround\zeropoint
       \stopimath
     \egroup}}
+
+% needs testing:
+%
+% \unexpanded\def\choosemathbig#1#2% so we accept \big{||} as well
+%   {{\naturalhbox\bgroup
+%       \startimath
+%         \ifcase\bigmathdelimitermethod
+%           \Uvextensible#2\relax
+%         \or
+%           \math_fenced_force_size\bigmathdelimitervariant{#1}\relax
+%           \Uvextensible#2\relax
+%         \else
+%           \scratchdimen.5\dimexpr\csname\??mathbig\number#1\endcsname\bodyfontsize+1.1\exheight\relax
+%           \Uvextensible\s!axis \s!depth \scratchdimen \s!height \scratchdimen #2\relax
+%         \fi
+%         \nulldelimiterspace\zeropoint\relax
+%         \mathsurround\zeropoint
+%       \stopimath
+%     \egroup}}
 
 \def\math_fenced_step#1#2%
   {\setfalse\c_math_fenced_unknown
@@ -675,15 +726,10 @@
    \math_fenced_step#2\relax
    \endgroup}
 
-\setvalue{\??mathbig1}{0.85}
-\setvalue{\??mathbig2}{1.15}
-\setvalue{\??mathbig3}{1.45}
-\setvalue{\??mathbig4}{1.75}
-
-\definemathcommand [big]  {\choosemathbig\plusone  }
-\definemathcommand [Big]  {\choosemathbig\plustwo  }
-\definemathcommand [bigg] {\choosemathbig\plusthree}
-\definemathcommand [Bigg] {\choosemathbig\plusfour }
+\definemathcommand [big]  {\choosemathbig1}
+\definemathcommand [Big]  {\choosemathbig2}
+\definemathcommand [bigg] {\choosemathbig3}
+\definemathcommand [Bigg] {\choosemathbig4}
 
 \definemathcommand [bigl]  [open]  [one] {\big}
 \definemathcommand [bigm]  [rel]   [one] {\big}
