@@ -2095,6 +2095,16 @@ consistency. You can of course always define additional accessors using \type
 {getfield} and \type {setfield} with little overhead. When the second argument of
 \type {setattributelist} is \type {true} the current attribute list is assumed.
 
+The \type {reverse} function reverses a given list. The \type {exchange} function
+swaps two nodes; it takes upto three arguments: a head node, and one or two to be
+swapped nodes. When there is no third argument, it will assume that the node
+following node is to be used. So we have:
+
+\starttyping
+head = node.direct.reverse(head)
+head = node.direct.exchange(head,first,[second])
+\stoptyping
+
 In \CONTEXT\ some of the not performance|-|critical userdata variants are
 emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 
@@ -2235,6 +2245,8 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {setwhd}                  \nop \yes \relax
 \supported {setwidth}                \nop \yes \relax
 \supported {slide}                   \nop \yes \yes
+\supported {reverse}                 \nop \yes \relax
+\supported {exchange}                \nop \yes \relax
 \supported {start_of_par}            \nop \yes \relax
 \supported {subtype}                 \nop \nop \relax
 \supported {tail}                    \yes \yes \relax

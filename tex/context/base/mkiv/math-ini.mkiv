@@ -1828,18 +1828,32 @@
     \crampedscriptscriptstyle \fi     % 6 -> 7
     #1}}
 
-\def\triggermathstyle#1% #1 is number
-  {\ifcase\numexpr#1\relax
-     \displaystyle             \or % 0
-     \crampeddisplaystyle      \or % 1
-     \textstyle                \or % 2
-     \crampedtextstyle         \or % 3
-     \scriptstyle              \or % 4
-     \crampedscriptstyle       \or % 5
-     \scriptscriptstyle        \or % 6
-     \crampedscriptscriptstyle \else
-     % error
-   \fi}
+\ifcase  \contextlmtxmode
+
+    \def\triggermathstyle#1% #1 is number
+      {\ifcase\numexpr#1\relax
+         \displaystyle             \or % 0
+         \crampeddisplaystyle      \or % 1
+         \textstyle                \or % 2
+         \crampedtextstyle         \or % 3
+         \scriptstyle              \or % 4
+         \crampedscriptstyle       \or % 5
+         \scriptscriptstyle        \or % 6
+         \crampedscriptscriptstyle \else
+         % error
+       \fi}
+
+    \let\mathstyletrigger\triggermathstyle
+
+\else
+
+    % mostly because it gives less tracing noise:
+
+    \def\triggermathstyle#1{\Ustyle\numexpr#1\relax}
+    %def\mathstyletrigger#1{\numexpr#1\relax}
+    \let\mathstyletrigger   \firstofoneargument
+
+\fi
 
 \def\triggeredmathstyleparameter#1% to bypass the relax
   {\ifcase\numexpr\normalmathstyle\relax

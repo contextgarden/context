@@ -533,19 +533,19 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
             if not marks[char] then
                 baseindex = baseindex + componentindex
                 componentindex = count_components(start,marks)
-            -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
-            -- and such:
+             -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
+             -- and such:
             elseif not deletemarks then
                 -- we can get a loop when the font expects otherwise (i.e. unexpected deletemarks)
                 setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then
-                    logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+                    logwarning("%s: keep ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
                 end
                 local n = copy_node(start)
                 copyinjection(n,start) -- is this ok ? we position later anyway
                 head, current = insert_node_after(head,current,n) -- unlikely that mark has components
             elseif trace_marks then
-                logwarning("%s: delete mark %s",pref(dataset,sequence),gref(char))
+                logwarning("%s: delete ligature mark %s",pref(dataset,sequence),gref(char))
             end
             start = getnext(start)
         end
@@ -558,7 +558,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 if marks[char] then
                     setligaindex(start,baseindex + getligaindex(start,componentindex))
                     if trace_marks then
-                        logwarning("%s: set mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+                        logwarning("%s: set ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
                     end
                     start = getnext(start)
                 else

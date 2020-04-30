@@ -326,6 +326,8 @@ nuts.setfam           = direct.setfam
 nuts.getboth          = direct.getboth
 nuts.setboth          = direct.setboth
 nuts.setlink          = direct.setlink
+nuts.exchange         = direct.exchange
+nuts.reverse          = direct.reverse
 nuts.setsplit         = direct.setsplit
 
 nuts.getlist          = direct.getlist -- only hlist and vlist !
@@ -415,6 +417,31 @@ if not nuts.start_of_par then
     function nuts.start_of_par(n)
         local s = getsubtype(n)
         return s == hmodepar_code or s == vmodepar_code
+    end
+
+end
+
+-- for now
+
+if not nuts.exchange then
+
+    local d_getprev = direct.getprev
+    local d_getnext = direct.getnext
+    local d_setlink = direct.setlink
+
+    function nuts.exchange(head,first,second)
+        if first then
+            if not second then
+                second = d_getnext(first)
+            end
+            if second then
+                d_setlink(d_getprev(first),second,first,d_getnext(second))
+                if first == head then
+                    return second
+                end
+            end
+        end
+        return head
     end
 
 end

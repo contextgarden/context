@@ -47,6 +47,8 @@ local function initialize(tfmdata,key,value)
             newdepth  = gettexdimen("strutdp")
         elseif value == "mono" then
             newwidth  = emwidth
+        elseif value == "halfmono" then
+            newwidth  = emwidth / 2
         else
             -- there are fonts out there with no x_height ...
             local spec = settings_to_array(value)

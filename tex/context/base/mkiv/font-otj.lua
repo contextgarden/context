@@ -1554,7 +1554,7 @@ local function inject_everything(head,where)
     end
     --
     if keepregisteredcounts then
-        keepregisteredcounts  = false
+        keepregisteredcounts = false
     else
         nofregisteredkerns     = 0
         nofregisteredpositions = 0

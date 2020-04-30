@@ -414,7 +414,9 @@ return {
         "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
         "superscript", "subscript", "nosuperscript", "nosubscript",
         --
-        "uncramped", "cramped", "triggermathstyle", "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
+        "uncramped", "cramped",
+        "mathstyletrigger", "triggermathstyle",
+        "mathstylefont", "mathsmallstylefont", "mathstyleface", "mathsmallstyleface", "mathstylecommand", "mathpalette",
         "mathstylehbox", "mathstylevbox", "mathstylevcenter", "mathstylevcenteredhbox", "mathstylevcenteredvbox",
         "mathtext", "setmathsmalltextbox", "setmathtextbox",
         "pushmathstyle", "popmathstyle",

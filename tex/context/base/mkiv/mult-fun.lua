@@ -89,7 +89,7 @@ return {
         "verbatim",
         "thelabel", "label",
         "autoalign",
-        "transparent", "withtransparency",
+        "transparent", "withtransparency", "withopacity",
         "property", "properties", "withproperties",
         "asgroup",
         "infont", -- redefined using textext

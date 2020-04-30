@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-04-27 22:21
+-- merge date  : 2020-04-30 11:10
 
 do -- begin closure to overcome local limits and interference
 
@@ -26711,13 +26711,13 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
    elseif not deletemarks then
     setligaindex(start,baseindex+getligaindex(start,componentindex))
     if trace_marks then
-     logwarning("%s: keep mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+     logwarning("%s: keep ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
     end
     local n=copy_node(start)
     copyinjection(n,start) 
     head,current=insert_node_after(head,current,n) 
    elseif trace_marks then
-    logwarning("%s: delete mark %s",pref(dataset,sequence),gref(char))
+    logwarning("%s: delete ligature mark %s",pref(dataset,sequence),gref(char))
    end
    start=getnext(start)
   end
@@ -26728,7 +26728,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
     if marks[char] then
      setligaindex(start,baseindex+getligaindex(start,componentindex))
      if trace_marks then
-      logwarning("%s: set mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
+      logwarning("%s: set ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))
      end
      start=getnext(start)
     else

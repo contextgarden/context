@@ -361,10 +361,12 @@
 
 \unexpanded\def\xfrac#1#2{\normalxfrac{\let\xfrac\xxfrac#1}{\let\xfrac\xxfrac#2}}
 
-%D Spacing:
+%D Spacing (sensitive for definition of \triggermathstyle:
 
-\unexpanded\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \triggermathstyle\mathstyle}} % maybe collect settings
-\unexpanded\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\triggermathstyle\mathstyle}} % maybe collect settings
+% \ifcase\contextlmtxmode
+
+\unexpanded\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \mathstyletrigger\mathstyle}} % maybe collect settings
+\unexpanded\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\mathstyletrigger\mathstyle}} % maybe collect settings
 
 \unexpanded\def\math_no_fraction_gaps#1%
   {\Umathfractionnumup    #1\zeropoint
@@ -376,6 +378,21 @@
    %Umathfractionrule     #1\zeropoint
    \Umathfractiondenomvgap#1\zeropoint
    \Umathfractiondenomdown#1\zeropoint}
+
+% \else
+
+% \unexpanded\def\math_no_fraction_gaps
+%   {\Umathfractionnumup    \mathstyle\zeropoint
+%    \Umathfractiondenomdown\mathstyle\zeropoint}
+%
+% \unexpanded\def\math_overlay_fraction_gaps
+%   {\Umathfractionnumup    \mathstyle\zeropoint
+%    \Umathfractionnumvgap  \mathstyle\zeropoint
+%    %Umathfractionrule     \mathstyle\zeropoint
+%    \Umathfractiondenomvgap\mathstyle\zeropoint
+%    \Umathfractiondenomdown\mathstyle\zeropoint}
+
+% \fi
 
 \installcorenamespace{mathfractiondistance}
 

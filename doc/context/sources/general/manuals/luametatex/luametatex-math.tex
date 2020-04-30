@@ -1421,10 +1421,34 @@ $\Uover style \scriptscriptstyle {1234} {5678} $\blank
 
 These render as: \getbuffer
 
-Instead of a style value you can also use \type {\relax} which is equivalent to
-no \type {style} option.
+\subsection {Math styles: \lpr {Ustyle}}
 
-\subsection {Delimiters: \type{\Uleft}, \prm {Umiddle} and \prm {Uright}}
+This primitive accepts a style identifier:
+
+\starttyping
+\Ustyle \displaystyle
+\stoptyping
+
+This in itself is not spectacular because it is equivalent to
+
+\starttyping
+\displaystyle
+\stoptyping
+
+Both commands inject a style node and change the current style. However, as in other
+places where \LUAMETATEX\ expects a style you can also pass a number in the range
+zero upto seven (like the ones reported by the primitive \lpr {mathstyle}). So, the
+next few lines give identical results:
+
+\startbuffer
+$\Ustyle0             \mathstyle \Ustyle7                         \mathstyle$
+$\Ustyle\displaystyle \mathstyle \Ustyle\crampedscriptscriptstyle \mathstyle$
+$       \displaystyle \mathstyle        \crampedscriptscriptstyle \mathstyle$
+\stopbuffer
+
+Like: \inlinebuffer . Values outside the valid range are ignored.
+
+\subsection {Delimiters: \type{\Uleft}, \lpr {Umiddle} and \lpr {Uright}}
 
 \topicindex {math+delimiters}
 

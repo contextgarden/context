@@ -112,12 +112,14 @@ def transparent(expr a, t)(text c) = % use withtransparency instead
     withcolor c
 enddef ;
 
-% def withtransparency(expr a, t) =
-%     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
-%     withprescript "tr_transparency=" & decimal t
-% enddef ;
+def withtransparency(expr a, t) =
+    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
+    withprescript "tr_transparency=" & decimal t
+enddef ;
 
-let transparency = pair ;
+% no, not compatible ... maybe only mpiv .. maybe withopacity
+
+% let opacity = pair ;
 
 % def withtransparency expr t =
 %     withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
@@ -126,36 +128,28 @@ let transparency = pair ;
 %
 % withtransparency (1,.5)
 % withtransparency ("normal",.5)
-
-% def withtransparency (expr t) (text rest) =
-%     if pair t :
-%         withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
-%         withprescript "tr_transparency=" & decimal ypart t
-%     else :
-%         mfun_with_transparency (transparency_alternative_to_number(t))
-%     fi rest
-% enddef ;
 %
-% def mfun_with_transparency (expr a) expr t =
-%     withprescript "tr_alternative="  & decimal a
-%     withprescript "tr_transparency=" & decimal t
-% enddef ;
+% withopacity      (1,.5)
+% withopacity      (normaltransparency,.5)
+% withopacity      .5
 
-def withtransparency expr t =
+def withopacity expr t =
     if pair t :
         withprescript "tr_alternative="  & decimal transparency_alternative_to_number(xpart t)
         withprescript "tr_transparency=" & decimal ypart t
     else :
-        mfun_with_transparency (transparency_alternative_to_number(t))
+        mfun_with_opacity (transparency_alternative_to_number(t))
     fi
 enddef ;
 
-def mfun_with_transparency (expr a) expr t =
+def mfun_with_opacity (expr a) expr t =
     withprescript "tr_alternative="  & decimal a
     withprescript "tr_transparency=" & decimal t
 enddef ;
 
-def cmyk(expr c, m, y, k) = % provided for downward compability
+% Provided for downward compability:
+
+def cmyk(expr c, m, y, k) =
     (c,m,y,k)
 enddef ;
 

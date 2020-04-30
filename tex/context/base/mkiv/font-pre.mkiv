@@ -174,9 +174,14 @@
   [fin2=yes,fin3=yes,med2=yes]
 
 \definefontfeature
+  [reordercombining]
+  [reordercombining=yes]
+
+\definefontfeature
   [hebrew]
   [semitic-complete]
-  [script=hebr]
+  [script=hebr,
+   reordercombining=yes] % seems to work best with reasonable fonts
 
 \definefontfeature
   [simplearabic]
