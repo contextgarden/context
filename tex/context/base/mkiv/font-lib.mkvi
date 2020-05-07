@@ -50,12 +50,12 @@
 %registerctxluafile{font-osm}{}
 
 \ifcase\contextlmtxmode
-    \ifnum\luatexversion>111
-        \doifelsefileexists{font-ocm.lua}
-            {\registerctxluafile{font-ocm}{}} % mkiv new
-            {\registerctxluafile{font-ocl}{}}
+    \ifcase\directlua{tex.print(callback.list()["provide_charproc_data"] == false and 1 or 0)}\relax
+        % this is the generic variant that will become luatex-fonts-ocl once we have
+        % more recent versions of luatex 1.13/1.14 on the garden
+        \registerctxluafile{font-ocl}{}
     \else
-        \registerctxluafile{font-ocl}{} % generic (will become luatex-fonts-ocl)
+        \registerctxluafile{font-ocm}{}
     \fi
 \else
     \registerctxluafile{font-ogr}{} % lmtx

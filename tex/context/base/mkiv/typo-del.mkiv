@@ -524,6 +524,7 @@
    \begingroup
    \usedelimitedtextstyleandcolor\c!style\c!color
    %
+   \begingroup
    \edef\p_delimited_left     {\delimitedtextparameter{\c!left}}%
    \edef\p_delimited_right    {\delimitedtextparameter{\c!right}}%
    \edef\p_delimited_nextleft {\delimitedtextparameter{\c!nextleft}}%
@@ -539,7 +540,10 @@
 \def\typo_delimited_stop_par
   {\typo_delimited_stop_content
    \rightdelimitedtextmark
-   \carryoverpar\endgroup % new per 2013-01-21 ... please left floats
+   \rightdelimitedtextmark
+   \carryoverpar\endgroup
+   \endgraf
+   \endgroup
    \pop_macro_checkindentation
    \typo_delimited_stop_par_indeed
    \delimitedtextparameter\c!after

@@ -75,6 +75,7 @@ end
 
 do
 
+    local oldhome = osgetenv('HOME')
     local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or ''
 
     if not homedir or homedir == "" then
@@ -86,6 +87,7 @@ do
     ossetenv("HOME",       homedir) -- can be used in unix cnf files
     ossetenv("USERPROFILE",homedir) -- can be used in windows cnf files
 
+    environment.oldhome = oldhome
     environment.homedir = homedir
 
 end

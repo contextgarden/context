@@ -143,7 +143,8 @@ It is possible to discover the math style that will be used for a formula in an
 expandable fashion (while the math list is still being read). To make this
 possible, \LUATEX\ adds the new primitive: \lpr {mathstyle}. This is a \quote
 {convert command} like e.g. \prm {romannumeral}: its value can only be read,
-not set.
+not set. Beware that contrary to \LUATEX\ this is now a proper number so you need
+to use \type {\number} o r\type {\the} in order to serialize it.
 
 The returned value is between 0 and 7 (in math mode), or $-1$ (all other modes).
 For easy testing, the eight math style commands have been altered so that they can
@@ -178,55 +179,55 @@ differ from the used style (second pass). In the case of a math choice used
 ungrouped, the chosen style is used after the choice too, unless you group.
 
 \startbuffer[1]
-    [a:\mathstyle]\quad
+    [a:\number\mathstyle]\quad
     \bgroup
     \mathchoice
-        {\bf \scriptstyle       (x:d :\mathstyle)}
-        {\bf \scriptscriptstyle (x:t :\mathstyle)}
-        {\bf \scriptscriptstyle (x:s :\mathstyle)}
-        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+        {\bf \scriptstyle       (x:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\number\mathstyle)}
     \egroup
-    \quad[b:\mathstyle]\quad
+    \quad[b:\number\mathstyle]\quad
     \mathchoice
-        {\bf \scriptstyle       (y:d :\mathstyle)}
-        {\bf \scriptscriptstyle (y:t :\mathstyle)}
-        {\bf \scriptscriptstyle (y:s :\mathstyle)}
-        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
-    \quad[c:\mathstyle]\quad
+        {\bf \scriptstyle       (y:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\number\mathstyle)}
+    \quad[c:\number\mathstyle]\quad
     \bgroup
     \mathchoice
-        {\bf \scriptstyle       (z:d :\mathstyle)}
-        {\bf \scriptscriptstyle (z:t :\mathstyle)}
-        {\bf \scriptscriptstyle (z:s :\mathstyle)}
-        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+        {\bf \scriptstyle       (z:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\number\mathstyle)}
     \egroup
-    \quad[d:\mathstyle]
+    \quad[d:\number\mathstyle]
 \stopbuffer
 
 \startbuffer[2]
-    [a:\mathstyle]\quad
+    [a:\number\mathstyle]\quad
     \begingroup
     \mathchoice
-        {\bf \scriptstyle       (x:d :\mathstyle)}
-        {\bf \scriptscriptstyle (x:t :\mathstyle)}
-        {\bf \scriptscriptstyle (x:s :\mathstyle)}
-        {\bf \scriptscriptstyle (x:ss:\mathstyle)}
+        {\bf \scriptstyle       (x:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (x:ss:\number\mathstyle)}
     \endgroup
-    \quad[b:\mathstyle]\quad
+    \quad[b:\number\mathstyle]\quad
     \mathchoice
-        {\bf \scriptstyle       (y:d :\mathstyle)}
-        {\bf \scriptscriptstyle (y:t :\mathstyle)}
-        {\bf \scriptscriptstyle (y:s :\mathstyle)}
-        {\bf \scriptscriptstyle (y:ss:\mathstyle)}
-    \quad[c:\mathstyle]\quad
+        {\bf \scriptstyle       (y:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (y:ss:\number\mathstyle)}
+    \quad[c:\number\mathstyle]\quad
     \begingroup
     \mathchoice
-        {\bf \scriptstyle       (z:d :\mathstyle)}
-        {\bf \scriptscriptstyle (z:t :\mathstyle)}
-        {\bf \scriptscriptstyle (z:s :\mathstyle)}
-        {\bf \scriptscriptstyle (z:ss:\mathstyle)}
+        {\bf \scriptstyle       (z:d :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:t :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:s :\number\mathstyle)}
+        {\bf \scriptscriptstyle (z:ss:\number\mathstyle)}
     \endgroup
-    \quad[d:\mathstyle]
+    \quad[d:\number\mathstyle]
 \stopbuffer
 
 \typebuffer[1]
@@ -734,7 +735,7 @@ marked \type {*} in the \TEX book. These will not actually be used as those
 combinations of atoms cannot actually happen, but it seemed better not to break
 orthogonality. They are initialized to zero.
 
-\subsection{Local settings}
+\subsection{Local \lpr {frozen} settings with}
 
 Math is processed in two passes. The first pass is needed to intercept for
 instance \type {\over}, one of the few \TEX\ commands that actually has a
@@ -775,7 +776,25 @@ unprocessed math list. The result looks as follows:
 
 \blank \getbuffer \blank
 
+\subsection{Checking a state with \lpr {Umathparameter}}
 
+When you adapt math parameters it might make sense to see if they are set at
+all. When a parameter is unset its value has the maximum dimension value and
+you might for instance mistakenly multiply that value to open up things a bit,
+which gives unexpected side effects. For that reason there is a convenient
+checker: \lpr {Umathparameter}. When followed by a valid parameter it expands
+to a state number:
+
+: 0=zero, 1=set, 2=unset (les stracing clutter this way)
+
+\starttabulate[|c|l|]
+\DB value \BC meaning \NC \NR
+\TB
+\NC 0 \NC the parameter value is zero \NC \NR
+\NC 1 \NC the parameter is set \NC \NR
+\NC 2 \NC the parameter is unset \NC \NR
+\LL
+\stoptabulate
 
 \subsection{Skips around display math and \lpr {mathdisplayskipmode}}
 
@@ -788,7 +807,7 @@ to fully control spacing. Therefore \LUATEX\ comes with a new directive: \lpr
 {mathdisplayskipmode}. The following values apply:
 
 \starttabulate[|c|l|]
-\DB value  \BC meaning \NC \NR
+\DB value \BC meaning \NC \NR
 \TB
 \NC 0 \NC normal \TEX\ behaviour \NC \NR
 \NC 1 \NC always (same as 0) \NC \NR
@@ -1441,9 +1460,9 @@ zero upto seven (like the ones reported by the primitive \lpr {mathstyle}). So, 
 next few lines give identical results:
 
 \startbuffer
-$\Ustyle0             \mathstyle \Ustyle7                         \mathstyle$
-$\Ustyle\displaystyle \mathstyle \Ustyle\crampedscriptscriptstyle \mathstyle$
-$       \displaystyle \mathstyle        \crampedscriptscriptstyle \mathstyle$
+$\Ustyle0             \number\mathstyle \Ustyle7                         \number\mathstyle$
+$\Ustyle\displaystyle \number\mathstyle \Ustyle\crampedscriptscriptstyle \number\mathstyle$
+$       \displaystyle \number\mathstyle        \crampedscriptscriptstyle \number\mathstyle$
 \stopbuffer
 
 Like: \inlinebuffer . Values outside the valid range are ignored.
@@ -1528,9 +1547,15 @@ These commands are provided as convenience. Before they come available you could
 do the following:
 
 \starttyping
-\def\Umathcharclass{\directlua{tex.print(tex.getmathcode(token.scan_int())[1])}}
-\def\Umathcharfam  {\directlua{tex.print(tex.getmathcode(token.scan_int())[2])}}
-\def\Umathcharslot {\directlua{tex.print(tex.getmathcode(token.scan_int())[3])}}
+\def\Umathcharclass{\numexpr
+    \directlua{tex.print(tex.getmathcode(token.scan_int())[1])}
+\relax}
+\def\Umathcharfam{\numexpr
+    \directlua{tex.print(tex.getmathcode(token.scan_int())[2])}
+\relax}
+\def\Umathcharslot{\numexpr
+    \directlua{tex.print(tex.getmathcode(token.scan_int())[3])}
+\relax}
 \stoptyping
 
 \subsection {Last lines and \lpr{predisplaygapfactor}}

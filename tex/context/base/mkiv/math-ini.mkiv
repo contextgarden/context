@@ -103,9 +103,9 @@
 \def\Umathaccents  {\Umathaccent \s!both   }
 
 \ifdefined\Umathcharclass \else
-    \def\Umathcharclass{\cldcontext{tex.getmathcode(token.scan_int())[1]}}
-    \def\Umathcharfam  {\cldcontext{tex.getmathcode(token.scan_int())[2]}}
-    \def\Umathcharslot {\cldcontext{tex.getmathcode(token.scan_int())[3]}}
+    \def\Umathcharclass{\numexpr\cldcontext{tex.getmathcode(token.scan_int())[1]}\relax}
+    \def\Umathcharfam  {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[2]}\relax}
+    \def\Umathcharslot {\numexpr\cldcontext{tex.getmathcode(token.scan_int())[3]}\relax}
 \fi
 
 %D The attributes that we will use (todo: pack some into one but uglier code):
@@ -2923,6 +2923,71 @@
     \let\stackscripts  \math_scripts_stack
     \let\unstackscripts\math_scripts_unstack
 \to \everymathematics
+
+%D Expensive (tracing and inject) but a primitive (using factors) is tricky as we
+%D want this frozen support.
+
+\ifcase\contextlmtxmode
+
+    \def\math_openup_parameter#1#2%
+      {\ifzeropt#1\displaystyle            \else\ifdim#1\displaystyle            =\maxdimen\else\frozen#1\displaystyle            #2#1\displaystyle            \fi\fi
+       \ifzeropt#1\crampeddisplaystyle     \else\ifdim#1\crampeddisplaystyle     =\maxdimen\else\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi\fi
+       \ifzeropt#1\textstyle               \else\ifdim#1\textstyle               =\maxdimen\else\frozen#1\textstyle               #2#1\textstyle               \fi\fi
+       \ifzeropt#1\crampedtextstyle        \else\ifdim#1\crampedtextstyle        =\maxdimen\else\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi\fi
+       \ifzeropt#1\scriptstyle             \else\ifdim#1\scriptstyle             =\maxdimen\else\frozen#1\scriptstyle             #2#1\scriptstyle             \fi\fi
+       \ifzeropt#1\crampedscriptstyle      \else\ifdim#1\crampedscriptstyle      =\maxdimen\else\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi\fi
+       \ifzeropt#1\scriptscriptstyle       \else\ifdim#1\scriptscriptstyle       =\maxdimen\else\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi\fi
+       \ifzeropt#1\crampedscriptscriptstyle\else\ifdim#1\crampedscriptscriptstyle=\maxdimen\else\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi\fi}
+
+\else
+
+  % \def\math_openup_parameter#1#2%
+  %   {\ifzeropt#1\displaystyle            \orelse\ifdim#1\displaystyle            =\maxdimen\else\frozen#1\displaystyle            #2#1\displaystyle            \fi
+  %    \ifzeropt#1\crampeddisplaystyle     \orelse\ifdim#1\crampeddisplaystyle     =\maxdimen\else\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
+  %    \ifzeropt#1\textstyle               \orelse\ifdim#1\textstyle               =\maxdimen\else\frozen#1\textstyle               #2#1\textstyle               \fi
+  %    \ifzeropt#1\crampedtextstyle        \orelse\ifdim#1\crampedtextstyle        =\maxdimen\else\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
+  %    \ifzeropt#1\scriptstyle             \orelse\ifdim#1\scriptstyle             =\maxdimen\else\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
+  %    \ifzeropt#1\crampedscriptstyle      \orelse\ifdim#1\crampedscriptstyle      =\maxdimen\else\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
+  %    \ifzeropt#1\scriptscriptstyle       \orelse\ifdim#1\scriptscriptstyle       =\maxdimen\else\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
+  %    \ifzeropt#1\crampedscriptscriptstyle\orelse\ifdim#1\crampedscriptscriptstyle=\maxdimen\else\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
+
+  % \def\mdim#1#2%
+  %   {\ifcase\ifzeropt#1#2\plusone\orelse\ifdim#1#2=\maxdimen\plusone\else\zerocount\fi}
+  %
+  % \def\mdim
+  %   {\afterassignment\mmdim\scratchdimen}
+  %
+  % \def\mmdim
+  %   {\ifcase\ifzeropt\scratchdimen\plusone\orelse\ifdim\scratchdimen=\maxdimen\plusone\else\zerocount\fi}
+  %
+  % \def\math_openup_parameter#1#2%
+  %   {\ifcondition\mdim#1\displaystyle            \frozen#1\displaystyle            #2\dimexpr#1\displaystyle            \relax\fi
+  %    \ifcondition\mdim#1\crampeddisplaystyle     \frozen#1\crampeddisplaystyle     #2\dimexpr#1\crampeddisplaystyle     \relax\fi
+  %    \ifcondition\mdim#1\textstyle               \frozen#1\textstyle               #2\dimexpr#1\textstyle               \relax\fi
+  %    \ifcondition\mdim#1\crampedtextstyle        \frozen#1\crampedtextstyle        #2\dimexpr#1\crampedtextstyle        \relax\fi
+  %    \ifcondition\mdim#1\scriptstyle             \frozen#1\scriptstyle             #2\dimexpr#1\scriptstyle             \relax\fi
+  %    \ifcondition\mdim#1\crampedscriptstyle      \frozen#1\crampedscriptstyle      #2\dimexpr#1\crampedscriptstyle      \relax\fi
+  %    \ifcondition\mdim#1\scriptscriptstyle       \frozen#1\scriptscriptstyle       #2\dimexpr#1\scriptscriptstyle       \relax\fi
+  %    \ifcondition\mdim#1\crampedscriptscriptstyle\frozen#1\crampedscriptscriptstyle#2\dimexpr#1\crampedscriptscriptstyle\relax\fi}
+
+  % \Umathparameter : 0=zero, 1=set, 2=unset (les stracing clutter this way)
+
+    \def\math_openup_parameter#1#2%
+      {\ifcase\Umathparameter#1\displaystyle            \or\frozen#1\displaystyle            #2#1\displaystyle            \fi
+       \ifcase\Umathparameter#1\crampeddisplaystyle     \or\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
+       \ifcase\Umathparameter#1\textstyle               \or\frozen#1\textstyle               #2#1\textstyle               \fi
+       \ifcase\Umathparameter#1\crampedtextstyle        \or\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
+       \ifcase\Umathparameter#1\scriptstyle             \or\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
+       \ifcase\Umathparameter#1\crampedscriptstyle      \or\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
+       \ifcase\Umathparameter#1\scriptscriptstyle       \or\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
+       \ifcase\Umathparameter#1\crampedscriptscriptstyle\or\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
+
+\fi
+
+\unexpanded\def\mathopenupparameter#1#2%
+  {\ifdim#2\points=\zeropoint\else
+     \math_openup_parameter#1{#2}%
+   \fi}
 
 \protect \endinput
 

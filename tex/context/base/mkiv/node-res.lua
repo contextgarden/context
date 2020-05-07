@@ -36,6 +36,7 @@ local glyph_code     = nodecodes.glyph
 local rule_code      = nodecodes.rule
 local kern_code      = nodecodes.kern
 local glue_code      = nodecodes.glue
+local gluespec_code  = nodecodes.gluespec
 local whatsit_code   = nodecodes.whatsit
 
 local currentfont    = font.current
@@ -163,6 +164,7 @@ local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
 local italickern        = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
 local penalty           = register_nut(new_nut(nodecodes.penalty))
 local glue              = register_nut(new_nut(glue_code))
+local gluespec          = register_nut(new_nut(gluespec_code))
 local glyph             = register_nut(new_nut(glyph_code,0))
 
 local textdir           = register_nut(new_nut(nodecodes.dir))
@@ -279,6 +281,14 @@ function nutpool.italickern(k)
     local n = copy_nut(italickern)
     if k and k ~= 0 then
         setkern(n,k)
+    end
+    return n
+end
+
+function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
+    local n = copy_nut(gluespec)
+    if width or stretch or shrink or stretch_order or shrink_order then
+        setglue(n,width,stretch,shrink,stretch_order,shrink_order)
     end
     return n
 end

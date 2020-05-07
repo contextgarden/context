@@ -18,6 +18,7 @@
 \registerctxluafile{mlib-lua}{}
 \registerctxluafile{mlib-scn}{}
 \registerctxluafile{mlib-mat}{}
+\registerctxluafile{mlib-ran}{}
 \registerctxluafile{mlib-lmp}{}
 \registerctxluafile{mlib-int}{}
 \registerctxluafile{mlib-lmt}{}

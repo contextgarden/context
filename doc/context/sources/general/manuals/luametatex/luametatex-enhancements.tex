@@ -565,6 +565,53 @@ tokens and assume that the function is available when that token expands. On the
 other hand, as we have tested this functionality in relative complex situations
 normal usage should not give problems.
 
+There are another three (still experimental) primitives that behave like \lpr
+{luafunction} but they expect the function to return an integer, dimension (also
+an integer) or a gluespec node. The return values gets injected into the input.
+
+\starttyping
+\luacountfunction 997 123
+\luadimenfunction 998 123pt
+\luaskipfunction  999 123pt plus 10pt minus 20pt
+\stoptyping
+
+Examples of function 997 in the above lines are:
+
+\starttyping
+function() return token.scan_int() end
+function() return 1234 end
+\stoptyping
+
+This itself is not spectacular so there is more. These functions can be called in
+two modes: either \TEX\ is expecting a value, or it is not and just expanding the
+call.
+
+\starttyping
+local n = 0
+function(slot,scanning)
+    if scanning then
+        return n
+    else
+        n = token.scan_int()
+    end
+end
+\stoptyping
+
+So, assuming that the function is in slot 997, you can do this:
+
+\starttyping
+\luacountfunction 997 123
+\count100=\luacountfunction 997
+\stoptyping
+
+After which \type {\count 100} has the value \type {123}.
+
+% Also experimental (I need to play with this a bit more when I have time):
+%
+% The \type {token.set_lua} function already accepts some strings as optional
+% arguments (\type {protected} and \type {global}) and now also handles \type
+% {count}, \type {dimen} and \type {skip}.
+
 \stopsubsection
 
 \startsubsection[title={\lpr {luabytecode} and \lpr {luabytecodecall}}]

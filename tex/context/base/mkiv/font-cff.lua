@@ -612,6 +612,9 @@ do
     parsedictionaries = function(data,dictionaries,what)
         stack   = { }
         strings = data.strings
+        if trace_charstrings then
+            report("charstring format %a",what)
+        end
         for i=1,#dictionaries do
             top    = 0
             result = what == "cff" and {
@@ -1517,7 +1520,7 @@ do
                 end
             end
         else
-            -- error
+            top = top - nofregions * n
         end
     end
 

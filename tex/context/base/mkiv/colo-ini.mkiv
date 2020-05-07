@@ -1380,7 +1380,11 @@
 
 % \normal added else fails in metafun manual (leaders do a hard scan)
 
-\unexpanded\def\forcecolorhack{\leaders\hrule\hskip\zeropoint\relax} % relax is needed !
+% \unexpanded\def\forcecolorhack{\leaders\hrule\hskip\zeropoint\relax} % relax is needed !
+%
+% I really need to sort this out!
+
+\unexpanded\def\forcecolorhack{\leaders\hrule height\zeropoint depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
 
 %D We default to the colors defined in \type {colo-imp-rgb} and
 %D support both \RGB\ and \CMYK\ output. Transparencies are defined

@@ -2256,3 +2256,26 @@ vardef svgtext(expr t) =
 enddef ;
 
 vardef svg expr c = lmt_svg [ code = c ] enddef ;
+
+% Fun stuff:
+
+presetparameters "poisson" [
+    width     = 50,
+    height    = 50,
+    initialx  =  0,
+    initialy  =  0,
+    distance  =  1,
+    count     = 20,
+    macro     = "draw",
+    arguments = 2
+] ;
+
+def lmt_poisson = applyparameters "poisson" "lmt_do_poisson" enddef ;
+
+vardef lmt_do_poisson =
+    image (
+        pushparameters "poisson" ;
+            lua.mp.lmt_poisson_generate();
+        popparameters ;
+    )
+enddef ;

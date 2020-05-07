@@ -2228,20 +2228,22 @@ local openfile, closefile  do
     closefile = function(abort)
         if abort then
             f:close()
-            f = io.open(abort,"wb")
-            if f then
-                local name = resolvers.findfile("context-lmtx-error.pdf")
-                if name then
-                    local data = io.loaddata(name)
-                    if data then
-                        f:write(data)
-                        f:close()
-                        return
+            if not environment.arguments.nodummy then
+                f = io.open(abort,"wb")
+                if f then
+                    local name = resolvers.findfile("context-lmtx-error.pdf")
+                    if name then
+                        local data = io.loaddata(name)
+                        if data then
+                            f:write(data)
+                            f:close()
+                            return
+                        end
                     end
+                    f:close()
                 end
-                f:close()
-                removefile(abort)
             end
+            removefile(abort)
         else
             local xrefoffset = offset
             local lastfree   = 0

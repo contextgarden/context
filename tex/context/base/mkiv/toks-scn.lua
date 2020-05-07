@@ -262,6 +262,7 @@ local f_any_all_c= formatters["  local key = scanword() if key then data[key] = 
 
 local f_table    = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
 local f_sequence = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
+local f_singular = formatters["%\nt\n%\nt\n\nreturn function(%s)\n    return %s\nend\n"]
 local f_simple   = formatters["%\nt\nreturn function()\n    return %s\nend\n"]
 local f_string   = formatters["%q"]
 local f_action_f = formatters["action%s(%s)"]
@@ -331,6 +332,7 @@ function tokens.compile(specification)
         a = { a }
     end
     local code
+    local args
     local function compile(t,nested)
         local done = s_done
         local r = { }
@@ -437,6 +439,23 @@ function tokens.compile(specification)
         else
             return scanners[ti]
         end
+    elseif #t == 0 then
+        if specification.valuetype then
+            code = "b"
+            args = "_,b"
+        else
+            code = ""
+            args = ""
+        end
+        if a then
+            tokens._action = a
+            for i=1,#a do
+                code = f_action_f(i,code)
+                n    = n + 1
+                f[n] = f_action_s(i,i)
+            end
+        end
+        code = f_singular(c,f,args,code)
     else
         local r = { }
         local p = { }

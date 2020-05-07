@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['grph-con'] = {
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
 local tonumber          = tonumber
+local find              = string.find
 local longtostring      = string.longtostring
 local formatters        = string.formatters
 local expandfilename    = dir.expandname
@@ -194,6 +195,22 @@ do -- svg
     -- arguments change again? Ok, it's weirder, with -A then it's a name only when
     -- not . (current)
 
+    -- Beware: the order of printed output lines is a bit random depending on the
+    -- method of calling (bin or pipe) because part of the message prints to stdout
+    -- and part to stderr. Also, on Windows, a second call to the old binaries
+    -- doesn't return anything at all, so that is also a signal of it being old.
+    -- This test will be dropped in 2021 anyway.
+
+    local new = nil
+
+    local function inkscapeformat(suffix)
+        if new == nil then
+            new = os.resultof("inkscape --version") or ""
+            new = new == "" or not find(new,"Inkscape%s*0")
+        end
+        return new and "filename" or suffix
+    end
+
     local runner = sandbox.registerrunner {
         name     = "svg to something",
         program  = "inkscape",
@@ -209,7 +226,7 @@ do -- svg
             resolution = "string",
         },
         defaults = {
-            format     = "pdf",
+            format     = format,
             resolution = "600",
         }
     }
@@ -220,7 +237,7 @@ do -- svg
 
     function svgconverter.pdf(oldname,newname)
         runner {
-            format     = "pdf",
+            format     = inkscapeformat("pdf"),
             resolution = "600",
             newname    = expandfilename(newname),
             oldname    = expandfilename(oldname),
@@ -229,7 +246,7 @@ do -- svg
 
     function svgconverter.png(oldname,newname)
         runner {
-            format     = "png",
+            format     = inkscapeformat("png"),
             resolution = "600",
             newname    = expandfilename(newname),
             oldname    = expandfilename(oldname),

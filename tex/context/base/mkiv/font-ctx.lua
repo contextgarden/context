@@ -173,6 +173,7 @@ if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
 end
 
 constructors.sharefonts        = true -- experimental
+constructors.nofsharedfonts    = 0
 constructors.nofsharedhashes   = 0
 constructors.nofsharedvectors  = 0
 constructors.noffontsloaded    = 0
@@ -201,6 +202,7 @@ do
 
     local shares = { }
     local hashes = { }
+
 
     local nofinstances = 0
     local instances    = setmetatableindex(function(t,k)
@@ -240,7 +242,7 @@ do
                         end
                         if psname then
                             -- this one is used for the funny prefix in font names in pdf
-                            -- so it has ot be kind of unique in order to avoid subset prefix
+                            -- so it has to be kind of unique in order to avoid subset prefix
                             -- clashes being reported
                             psname = psname   .. ":" .. instances[instance]
                             target.psname = psname

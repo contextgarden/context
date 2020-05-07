@@ -390,6 +390,10 @@ These are read|-|only:
 tex.deadcycles
 tex.insertpenalties
 tex.parshape
+tex.interlinepenalties
+tex.clubpenalties
+tex.widowpenalties
+tex.displaywidowpenalties
 tex.prevgraf
 tex.spacefactor
 \stoptyping
@@ -2070,6 +2074,9 @@ most intriguing.
 \NC \type{scan_list}      \NC                    \NC picks up a box specification and returns a \type {[h|v]list} node \NC \NR
 \LL
 \stoptabulate
+
+The integer, dimension and glue scanners take an extra optional argument that
+signals that en optional equal is permitted.
 
 The scanners can be considered stable apart from the one scanning for a token.
 The \type {scan_code} function takes an optional number, the \type {scan_keyword}

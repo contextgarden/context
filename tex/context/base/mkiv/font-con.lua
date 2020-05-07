@@ -210,59 +210,44 @@ end
 -- we default to false, so a macro package has to enable it explicitly. In
 -- LuaTeX the fullname is used to identify a font as being unique.
 
-constructors.sharefonts     = false
-constructors.nofsharedfonts = 0
-local sharednames           = { }
+local nofinstances = 0
+local instances    = setmetatableindex(function(t,k)
+    nofinstances = nofinstances + 1
+    t[k] = nofinstances
+    return nofinstances
+end)
 
 function constructors.trytosharefont(target,tfmdata)
-    if constructors.sharefonts then -- not robust !
-        local characters = target.characters
-        local n = 1
-        local t = { target.psname }
-        local u = sortedkeys(characters)
-        for i=1,#u do
-            local k = u[i]
-            n = n + 1 ; t[n] = k
-            n = n + 1 ; t[n] = characters[k].index or k
-        end
-        local h = md5.HEX(concat(t," "))
-        local s = sharednames[h]
-        if s then
-            if trace_defining then
-                report_defining("font %a uses backend resources of font %a",target.fullname,s)
-            end
-            target.fullname = s
-            constructors.nofsharedfonts = constructors.nofsharedfonts + 1
-            target.properties.sharedwith = s
+    local properties = target.properties
+    local instance   = properties.instance
+    if instance then
+        local fullname = target.fullname
+        local fontname = target.fontname
+        local psname   = target.psname
+        local format   = tfmdata.properties.format
+        if format == "opentype" then
+            target.streamprovider = 1
+        elseif format == "truetype" then
+            target.streamprovider = 2
         else
-            sharednames[h] = target.fullname
+            target.streamprovider = 0
+        end
+        if target.streamprovider > 0 then
+            if fullname then
+                fullname = fullname .. ":" .. instances[instance]
+                target.fullname = fullname
+            end
+            if fontname then
+                fontname = fontname .. ":" .. instances[instance]
+                target.fontname = fontname
+            end
+            if psname then
+                psname = psname   .. ":" .. instances[instance]
+                target.psname = psname
+            end
         end
     end
 end
-
--- function constructors.enhanceparameters(parameters)
---     local xheight = parameters.x_height
---     local quad    = parameters.quad
---     local space   = parameters.space
---     local stretch = parameters.space_stretch
---     local shrink  = parameters.space_shrink
---     local extra   = parameters.extra_space
---     local slant   = parameters.slant
---     -- synonyms
---     parameters.xheight       = xheight
---     parameters.spacestretch  = stretch
---     parameters.spaceshrink   = shrink
---     parameters.extraspace    = extra
---     parameters.em            = quad
---     parameters.ex            = xheight
---     parameters.slantperpoint = slant
---     parameters.spacing = {
---         width   = space,
---         stretch = stretch,
---         shrink  = shrink,
---         extra   = extra,
---     }
--- end
 
 local synonyms = {
     exheight      = "x_height",

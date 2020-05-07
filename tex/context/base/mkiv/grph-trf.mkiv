@@ -24,6 +24,8 @@
 %D We could move the calculations to \LUA\ and clean up this lot anyway. On the
 %D other hand, there is some danger of messing up so it has a real low priority.
 
+\registerctxluafile{grph-trf}{}
+
 % local:
 
 \newdimen\d_grph_scale_x_size
@@ -794,6 +796,8 @@
 \installcorenamespace {rotatelocation}
 \installcorenamespace {rotatepreset}
 
+% todo: scratchcounters
+
 \newdimen\d_grph_rotate_x_size
 \newdimen\d_grph_rotate_y_size
 \newdimen\d_grph_rotate_x_offset
@@ -810,6 +814,10 @@
 \let\d_grph_rotate_saved_width \!!widthb
 \let\d_grph_rotate_saved_height\!!heightb
 \let\d_grph_rotate_saved_depth \!!depthb
+
+\let\d_grph_rotate_new_width \!!widthc
+\let\d_grph_rotate_new_height\!!heightc
+\let\d_grph_rotate_new_depth \!!depthc
 
 \newconditional\c_grph_rotate_obey_depth
 \newconditional\c_grph_rotate_not_fit
@@ -948,111 +956,30 @@
      \d_grph_rotate_saved_width \wd\nextbox
      \d_grph_rotate_saved_height\ht\nextbox
      \d_grph_rotate_saved_depth \dp\nextbox
-     \setbox\nextbox\naturalvpack{\vskip.5\ht\nextbox\hskip-.5\wd\nextbox\box\nextbox}%
+     \setbox\nextbox\naturalhpack{\hskip-.5\wd\nextbox\lower.5\ht\nextbox\box\nextbox}%
      \smashbox\nextbox
    \fi
+   %
    \d_grph_rotate_width \wd\nextbox
    \d_grph_rotate_height\ht\nextbox
    \d_grph_rotate_depth \dp\nextbox
-   \setbox\nextbox\naturalvpack{\naturalhpack{\raise\dp\nextbox\box\nextbox}}%
-   \d_grph_rotate_used_height \ht\nextbox
-   % much of the next happens in lua (all the sin and cos) so we can do that in
-   % one go if needed
-   \setcalculatedcos\cos\p_rotation_rotation
-   \setcalculatedsin\sin\p_rotation_rotation
-   \ifdim\sin\points>\zeropoint
-     \ifdim\cos\points>\zeropoint
-       \grph_rotate_calculate_a
-       \grph_rotate_apply
-     \else
-       \grph_rotate_calculate_b
-       \grph_rotate_apply
-       \wd\nextbox\ifconditional\c_grph_rotate_not_fit\sin\d_grph_rotate_depth\else\d_grph_rotate_x_size\fi
-     \fi
-   \else
-     \ifdim\cos\points<\zeropoint
-       \grph_rotate_calculate_c
-       \grph_rotate_apply
-       \wd\nextbox\ifconditional\c_grph_rotate_not_fit\negated\sin\d_grph_rotate_height\else\d_grph_rotate_x_size\fi
-     \else\ifdim\sin\points=\zeropoint
-       \grph_rotate_calculate_d
-       \grph_rotate_apply
-       % no wd ?
-     \else
-       \grph_rotate_calculate_e
-       \grph_rotate_apply
-       \wd\nextbox\ifconditional\c_grph_rotate_not_fit\negated\sin\d_grph_rotate_height\else\d_grph_rotate_x_size\fi
-     \fi\fi
-   \fi
-   \ifconditional\c_grph_rotate_center
-     \setbox\nextbox\naturalvpack{\vskip-.5\d_grph_rotate_saved_height\hskip.5\d_grph_rotate_saved_height\box\nextbox}%
-     \wd\nextbox\d_grph_rotate_saved_width
-     \ht\nextbox\d_grph_rotate_saved_height
-     \dp\nextbox\d_grph_rotate_saved_depth
-   \fi
-   \boxcursor\box\nextbox}
-
-\def\grph_rotate_calculate_a
-  {\d_grph_rotate_x_size\dimexpr\cos\d_grph_rotate_width+\sin\d_grph_rotate_used_height\relax
-   \d_grph_rotate_y_size\dimexpr\sin\d_grph_rotate_width+\cos\d_grph_rotate_used_height\relax
-   \d_grph_rotate_x_position\zeropoint
-   \d_grph_rotate_y_position\cos\d_grph_rotate_used_height
-   \ifconditional\c_grph_rotate_not_fit
-     \d_grph_rotate_x_offset\dimexpr\negated\sin\d_grph_rotate_used_height+\sin\d_grph_rotate_depth\relax
-   \fi
-   \ifconditional\c_grph_rotate_obey_depth
-     \d_grph_rotate_y_offset\cos\d_grph_rotate_depth
-   \fi}
-
-\def\grph_rotate_calculate_b
-  {\d_grph_rotate_x_size\dimexpr\negated\cos\d_grph_rotate_width+\sin\d_grph_rotate_used_height\relax
-   \d_grph_rotate_y_size\dimexpr\sin\d_grph_rotate_width+\negated\cos\d_grph_rotate_used_height\relax
-   \d_grph_rotate_x_position\negated\cos\d_grph_rotate_width
-   \d_grph_rotate_y_position\zeropoint
-   \ifconditional\c_grph_rotate_not_fit
-     \d_grph_rotate_x_offset\dimexpr-\d_grph_rotate_x_size+\sin\d_grph_rotate_depth\relax
-   \fi
-   \ifconditional\c_grph_rotate_obey_depth
-     \d_grph_rotate_y_offset\negated\cos\d_grph_rotate_height
-   \fi}
-
-\def\grph_rotate_calculate_c
-  {\d_grph_rotate_x_size\dimexpr\negated\cos\d_grph_rotate_width+\negated\sin\d_grph_rotate_used_height\relax
-   \d_grph_rotate_y_size\dimexpr\negated\sin\d_grph_rotate_width+\negated\cos\d_grph_rotate_used_height\relax
-   \d_grph_rotate_x_position\d_grph_rotate_x_size
-   \d_grph_rotate_y_position\negated\sin\d_grph_rotate_width
-   \ifconditional\c_grph_rotate_not_fit
-     \d_grph_rotate_x_offset\dimexpr-\d_grph_rotate_x_size+\negated\sin\d_grph_rotate_height\relax
-   \fi
-   \ifconditional\c_grph_rotate_obey_depth
-     \d_grph_rotate_y_offset\dimexpr\d_grph_rotate_y_size+\cos\d_grph_rotate_depth\relax
-   \fi}
-
-\def\grph_rotate_calculate_d
-  {\d_grph_rotate_x_size\dimexpr\cos\d_grph_rotate_width+\negated\sin\d_grph_rotate_used_height\relax
-   \d_grph_rotate_y_size\dimexpr\negated\sin\d_grph_rotate_width+\cos\d_grph_rotate_used_height\relax
-   \d_grph_rotate_x_position\zeropoint
-   \d_grph_rotate_y_position\d_grph_rotate_y_size
-   \d_grph_rotate_x_offset\zeropoint
-   \ifconditional\c_grph_rotate_obey_depth
-     \d_grph_rotate_y_offset\d_grph_rotate_depth
-   \fi}
-
-\def\grph_rotate_calculate_e
-  {\d_grph_rotate_x_size\dimexpr\cos\d_grph_rotate_width+\negated\sin\d_grph_rotate_used_height\relax
-   \d_grph_rotate_y_size\dimexpr\negated\sin\d_grph_rotate_width+\cos\d_grph_rotate_used_height\relax
-   \d_grph_rotate_x_position\negated\sin\d_grph_rotate_used_height
-   \d_grph_rotate_y_position\d_grph_rotate_y_size
-   \ifconditional\c_grph_rotate_not_fit
-     \d_grph_rotate_x_offset\dimexpr-\d_grph_rotate_x_size+\negated\sin\d_grph_rotate_height\relax
-   \fi
-   \ifconditional\c_grph_rotate_obey_depth
-     \d_grph_rotate_y_offset\negated\sin\d_grph_rotate_depth
-   \fi}
-
-\def\grph_rotate_apply
-  {\setbox\nextbox\naturalvpack to \d_grph_rotate_y_size
-     {\vfill
+   %
+   \setbox\nextbox\naturalvpack{\naturalhpack{\raise\dp\nextbox\box\nextbox}}% can we do without
+   %
+   \d_grph_rotate_used_height\ht\nextbox
+   %
+   \clf_analyzerotate % rather accurate
+     \numexpr\p_rotation_rotation\relax
+     \d_grph_rotate_width
+     \d_grph_rotate_height
+     \d_grph_rotate_depth
+     \d_grph_rotate_used_height
+     \c_grph_rotate_not_fit
+     \c_grph_rotate_obey_depth
+   \relax
+   %
+   \setbox\nextbox\naturalvpack to \d_grph_rotate_y_size
+     {\vfilll
       \naturalhpack to \d_grph_rotate_x_size
         {\dostartrotation\p_rotation_rotation
            \wd\nextbox\zeropoint
@@ -1061,9 +988,24 @@
          \dostoprotation
          \hfill}%
       \kern\d_grph_rotate_y_position}%
+   %
    \setbox\nextbox\naturalhpack
      {\kern\dimexpr\d_grph_rotate_x_position+\d_grph_rotate_x_offset\relax
-      \lower\d_grph_rotate_y_offset\box\nextbox}}
+      \lower\d_grph_rotate_y_offset
+      \box\nextbox}%
+   %
+   \ifconditional\c_grph_rotate_center
+     \setbox\nextbox\naturalhpack{\hskip.5\d_grph_rotate_saved_width\lower-.5\d_grph_rotate_saved_height\box\nextbox}%
+     \wd\nextbox\d_grph_rotate_saved_width
+     \ht\nextbox\d_grph_rotate_saved_height
+     \dp\nextbox\d_grph_rotate_saved_depth
+   \else
+     \wd\nextbox\d_grph_rotate_new_width
+     \ht\nextbox\d_grph_rotate_new_height
+     \dp\nextbox\d_grph_rotate_new_depth
+   \fi
+   %
+   \boxcursor\box\nextbox}
 
 % \dostepwiserecurse{0}{360}{10}
 %   {\startlinecorrection[blank]
@@ -1076,5 +1018,24 @@
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=normal]{\ruledhbox{\bfb (normal)}}}}%
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=high]  {\ruledhbox{\bfb   (high)}}}}}
 %    \stoplinecorrection}
+
+% \def\Test{\ruledhbox{%
+%     \def\DemoX{\vl\kern.5\emwidth\vl}%
+%     \kern\emwidth\ruledhpack{\green\rotate[rotation=20]  {\ruledhpack{\DemoX}}}%
+%     \kern\emwidth\ruledhpack{\blue \rotate[rotation=0]   {\ruledhpack{\DemoX}}}%
+%     \kern\emwidth\ruledhpack{\red  \rotate[rotation=-20] {\ruledhpack{\DemoX}}}%
+%     \kern\emwidth\ruledhpack{\green\rotate[rotation=200] {\ruledhpack{\DemoX}}}%
+%     \kern\emwidth\ruledhpack{\blue \rotate[rotation=180] {\ruledhpack{\DemoX}}}%
+%     \kern\emwidth\ruledhpack{\red  \rotate[rotation=-200]{\ruledhpack{\DemoX}}}%
+%     \kern\emwidth}}
+
+% \startTEXpage[offset=10pt,align=middle]
+%     \setuprotate[location=fit]     \Test \par {\infofont\setstrut\strut fit}     \par
+%     \setuprotate[location=depth]   \Test \par {\infofont\setstrut\strut depth}   \par
+%     \setuprotate[location=broad]   \Test \par {\infofont\setstrut\strut broad}   \par
+%     \setuprotate[location=high]    \Test \par {\infofont\setstrut\strut high}    \par
+%     \setuprotate[location=middle]  \Test \par {\infofont\setstrut\strut middle}  \par
+%     \setuprotate[location=default] \Test \par {\infofont\setstrut\strut default} \par
+% \stopTEXpage
 
 \protect \endinput

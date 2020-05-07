@@ -15,13 +15,19 @@
 
 \unprotect
 
-%D The dreadful sequence \type {\bgroup} \unknown\
-%D \type {\carryoverpar} \unknown\ \type {\egroup} is needed
-%D when for instance sidefloats are used in combination with
-%D something that starts with a group. This is because
-%D otherwise the indentation as set (by the output routine)
-%D inside the group are forgotten afterwards. (I must
-%D not forget its existence).
+%D The dreadful sequence \type {\bgroup} \unknown\ \type {\carryoverpar} \unknown\
+%D \type {\egroup} is needed when for instance sidefloats are used in combination
+%D with something that starts with a group. This is because otherwise the
+%D indentation as set (by the output routine) inside the group are forgotten
+%D afterwards. (I must not forget its existence).
+
+% Todo (maybe):
+%
+% \parshape             \getparshape\relax
+% \interlinepenalties   \getinterlinepenalties\relax
+% \clubpenalties        \getclubpenalties\relax
+% \widowpenalties       \getwidowpenalties\relax
+% \displaywidowpenalties\getdisplaywidowpenalties\relax
 
 \def\carryoverpar#1% #1 can be \endgroup or \egroup or ... expandable !
   {\normalexpanded
@@ -43,8 +49,8 @@
 \unexpanded\def\flushparagraphproperties
   {\popmacro\currentparagraphproperties}
 
-% Beware, changing this will break some code (like pos/backgrounds) but
-% it has been changed anyway so let's see where things go wrong.
+%D Beware, changing this will break some code (like pos/backgrounds) but it has been
+%D changed anyway so let's see where things go wrong.
 
 \installcorenamespace{paragraphintro}
 
@@ -133,11 +139,11 @@
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\insertparagraphintro\spac_paragraphs_flush_intro}
 
-%D Here comes the flusher (we misuse the one level expansion of token
-%D registers to feed a nice stream into the paragraph.)
+%D Here comes the flusher (we misuse the one level expansion of token registers to
+%D feed a nice stream into the paragraph.)
 
-\unexpanded\def\spac_paragraphs_flush_intro % we make sure that the token lists expand directly after another
-  {\normalexpanded{%                            % so the first code is there twice
+\unexpanded\def\spac_paragraphs_flush_intro % we make sure that the token lists expand directly
+  {\normalexpanded{%                        % after another so the first code is there twice
      \ifconditional\c_spac_paragraphs_intro_each
        \ifconditional\c_spac_paragraphs_intro_next
          \glet\insertparagraphintro\spac_paragraphs_flush_intro_next
@@ -180,8 +186,8 @@
 %D \macros
 %D   {flushatnextpar}
 %D
-%D This macro collects data that will be flushed at the next paragraph.
-%D By using this macro you can avoid interfering nodes (writes, etc).
+%D This macro collects data that will be flushed at the next paragraph. By using
+%D this macro you can avoid interfering nodes (writes, etc).
 
 \let\flushpostponednodedata\relax % hook into everypar
 

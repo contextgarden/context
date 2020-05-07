@@ -132,6 +132,8 @@ utilities.randomizer = {
     reuseseed   = reuserandomseed,
     popseed     = poprandomseed,
     get         = getrandom,
+    -- the original, only for testing
+ -- mathrandom  = random,
 }
 
 -- todo: also open up in utilities.randomizer.*

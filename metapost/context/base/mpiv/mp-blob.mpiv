@@ -91,7 +91,10 @@ vardef followtext(expr pth, txt) =
             at := arctime   pos of pat ;
             ap := point     at  of pat ;
             ad := direction at  of pat ;
-            pic[i] := pic[i] shifted (-wid/2,0) rotated(angle(ad)) shifted ap ;
+            pic[i] := pic[i]
+                shifted (-wid/2,0)
+                if ad <> origin : rotated(angle(ad)) fi
+                shifted ap ;
             draw pic[i] ;
             if tracingfollowtext = 1 :
                 draw boundingbox pic[i] withpen pencircle scaled .25pt withcolor red ;

@@ -273,9 +273,12 @@ implement { name = "pdffeedback",  actions = pdffeedback }
 
 -- for the moment (tikz)
 
-implement { name = "pdfliteral", actions = pdfliteral }
-implement { name = "pdfobj",     actions = pdfobj }
-implement { name = "pdflastobj", actions = pdflastobj }
-implement { name = "pdfrefobj",  actions = pdfrefobj }
---------- { name = "pdfannot",   actions = pdfannot }
---------- { name = "pdfdest",    actions = pdfdest }
+implement { name = "pdfliteral",    actions = pdfliteral }
+implement { name = "pdfobj",        actions = pdfobj }
+implement { name = "pdflastobj",    actions = pdflastobj }
+implement { name = "pdfrefobj",     actions = pdfrefobj }
+--------- { name = "pdfannot",      actions = pdfannot }
+--------- { name = "pdfdest",       actions = pdfdest }
+--------- { name = "pdfsave",       actions = pdfsave }
+--------- { name = "pdfrestore",    actions = pdfrestore }
+--------- { name = "pdfsetmatrix",  actions = pdfsetmatrix }

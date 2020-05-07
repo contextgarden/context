@@ -77,6 +77,9 @@ generate html error page instead (optional: =scite)
 .B --noconsole
 disable logging to the console (logfile only)
 .TP
+.B --nodummy
+don't create a dummy file (can confuse pdf viewers that keep file in view)
+.TP
 .B --purgeresult
 purge result file before run
 .TP

@@ -65,11 +65,11 @@
 \unexpanded\def\pdfliteral  {\clf_pdfliteral}
 \unexpanded\def\pdfobj      {\clf_pdfobj}%
 \unexpanded\def\pdflastobj  {\numexpr\clf_pdflastobj\relax}
-\unexpanded\def\pdfrefobj   {\clf_pdfrefobj }
+\unexpanded\def\pdfrefobj   {\clf_pdfrefobj}
 
-\unexpanded\def\pdfrestore  {\clf_restore}
-\unexpanded\def\pdfsave     {\clf_save}
-\unexpanded\def\pdfsetmatrix{\clf_setmatrix}
+\unexpanded\def\pdfrestore  {\pdfextension restore}
+\unexpanded\def\pdfsave     {\pdfextension save}
+\unexpanded\def\pdfsetmatrix{\pdfextension setmatrix}
 
            \let\pdfxform     \saveboxresource
            \let\pdflastxform \lastsavedboxresourceindex

@@ -82,6 +82,9 @@
                 <flag name="noconsole">
                     <short>disable logging to the console (logfile only)</short>
                 </flag>
+                <flag name="nodummy">
+                    <short>don't create a dummy file (can confuse pdf viewers that keep file in view)</short>
+                </flag>
                 <flag name="purgeresult">
                     <short>purge result file before run</short>
                 </flag>

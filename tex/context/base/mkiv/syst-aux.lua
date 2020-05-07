@@ -11,20 +11,20 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 -- utfmatch(str,"(.?)(.*)$")
 -- utf.sub(str,1,1)
 
-local tonumber, next = tonumber, next
+local tonumber, next, type = tonumber, next, type
 local utfsub = utf.sub
 local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
 local next = next
-local find  = string.find
+local find, formatters = string.find, string.formatters
 
 local context           = context
 local implement         = interfaces.implement
-local formatters        = string.formatters
+local setmacro          = interfaces.setmacro
 local setcatcode        = tex.setcatcode
+local texget            = tex.get
 local utf8character     = lpeg.patterns.utf8character
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_set   = utilities.parsers.settings_to_set
-local setmacro          = interfaces.setmacro
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
 
@@ -780,15 +780,58 @@ implement {
 
 local bp = number.dimenfactors.bp
 
-interfaces.implement {
+implement {
     name      = "tobigpoints",
     actions   = function(d) context("%.5F",bp * d) end,
     arguments = "dimension",
 }
 
-interfaces.implement {
+implement {
     name      = "towholebigpoints",
     actions   = function(d) context("%r",bp * d) end,
     arguments = "dimension",
 }
 
+-- for now here:
+
+local function getshape(s)
+    local t = texget(s)
+    local n = t and #t or 0
+    context(n)
+    if n > 0 then
+        for i=1,n do
+            local ti = t[i]
+            if type(ti) == "table" then
+                context(" %isp %isp",ti[1],ti[2])
+            else
+                context(" %i",ti)
+            end
+        end
+    end
+end
+
+implement {
+    name    = "getparshape",
+    public  = true,
+    actions = function() getshape("parshape") end,
+}
+implement {
+    name    = "getclubpenalties",
+    public  = true,
+    actions = function() getshape("clubpenalties") end,
+}
+implement {
+    name    = "getinterlinepenalties",
+    public  = true,
+    actions = function() getshape("interlinepenalties") end,
+    }
+implement {
+    name    = "getdisplaywidowpenalties",
+    public  = true,
+    actions = function() getshape("displaywidowpenalties") end,
+}
+implement {
+    name    = "getwidowpenalties",
+    public  = true,
+    actions = function() getshape("widowpenalties") end,
+}

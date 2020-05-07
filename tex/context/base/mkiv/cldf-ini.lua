@@ -392,7 +392,7 @@ local interfacescanners = setmetatablenewindex(function(t,k,v)
  -- rawset(t,k,v)
 end)
 
-function interfaces.registerscanner(name,action,protected,public,call)
+function interfaces.registerscanner(name,action,protected,public,valuetype)
     rawset(interfacescanners,name,action)
     if storedscanners[name] then
      -- report_cld("warning: scanner %a is already set (mode 2a)",name)
@@ -405,7 +405,7 @@ function interfaces.registerscanner(name,action,protected,public,call)
         local n = registerfunction("interfaces.scanners."..name,true)
         storedscanners[name] = n
         local name = public and name or ("clf_" .. name)
-        setluatoken(name,n,"global",protected and "protected" or "")
+        setluatoken(name,n,"global",protected and "protected" or "",valuetype or "")
     else
         storedscanners[name] = true
      -- report_cld("installing interface scanner: %s (mode 2c)",name)

@@ -43,8 +43,36 @@
 % \let\normalsurd\surd % \Uradical "0 "221A
 % \unexpanded\def\surd{\normalsurd{}}
 
-
-%D The real thing:
+%D The real thing. If needed one can control matters with one of the many
+%D \type {\Umath...} parameters.
+%D
+%D \starttyping
+%D \def\R {\Umathradicaldegreeafter\textstyle0pt}
+%D \def\RR{\Umathradicaldegreeafter\textstyle\dimexpr
+%D    \Umathradicaldegreeafter\textstyle+.1em\relax}
+%D \def\RRR{\frozen\Umathradicaldegreeafter\textstyle\dimexpr
+%D    \Umathradicaldegreeafter\textstyle+.2em\relax}
+%D
+%D $    \sqrt[3]{5}   \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $    \sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D $ \RR\sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D
+%D \def\R  {\Umathradicaldegreeafter\textstyle
+%D            0pt}
+%D \def\RR {\Umathradicaldegreeafter\textstyle
+%D            0.95\Umathradicaldegreeafter\textstyle}
+%D \def\RRR{\frozen\Umathradicaldegreeafter\textstyle
+%D            0.9\Umathradicaldegreeafter\textstyle}
+%D
+%D $    \sqrt[3]{5}   \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $    \sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D $ \RR\sqrt[3]{5} {\RRR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D
+%D \def\RR {\mathopenupparameter\Umathradicaldegreeafter{.1}}
+%D
+%D $ \sqrt[3]{5}  \RR\sqrt[3]{5}  \sqrt[3]{5} $\par
+%D $ \sqrt[3]{5} {\RR\sqrt[3]{5}} \sqrt[3]{5} $\par
+%D \stoptyping
 
 \installcorenamespace{mathradical}
 \installcorenamespace{mathradicalalternative}

@@ -1,0 +1,159 @@
+% language=us
+
+\environment luametafun-style
+
+\startcomponent luametafun-poisson
+
+\startchapter[title={Poisson}]
+
+
+When, after a post on the \CONTEXT\ mailing list, Aditya pointed me to an article
+on mazes I ended up at poisson distributions which to me looks nicer than what I
+normally do, fill a grid and then randomize the resulting positions. With some
+hooks this can be used for interesting patterns too. The algorithm is based on
+the discussion at:
+
+\starttyping
+http://devmag.org.za/2009/05/03/poisson-disk-sampling
+\stoptyping
+
+Other websites mention some variants on that but I saw no reason to look into
+those in detail. I can imagine more random related variants in this domain so
+consider this an appetizer. The user is rather simple because some macro is
+assumed to deal with the rendering of the distributed points. We just show some
+examples (because the interface might evolve).
+
+\startbuffer
+\startMPcode
+    draw lmt_poisson [
+        width    = 40,
+        height   = 40,
+        distance =  1,
+        count    = 20,
+        macro    = "draw"
+    ] xsized 4cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode
+    vardef tst (expr x, y, i, n) =
+        fill fullcircle scaled (10+10*(i/n)) shifted (10x,10y)
+            withcolor "darkblue" withtransparency (1,.5) ;
+    enddef ;
+
+    draw lmt_poisson [
+        width     = 50,
+        height    = 50,
+        distance  =  1,
+        count     = 20,
+        macro     = "tst",
+        arguments =  4
+    ] xsized 6cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode
+    vardef tst (expr x, y, i, n) =
+        fill fulldiamond scaled (5+5*(i/n)) randomized 2 shifted (10x,10y)
+            withcolor "darkgreen" ;
+    enddef ;
+
+    draw lmt_poisson [
+        width     = 50,
+        height    = 50,
+        distance  =  1,
+        count     = 20,
+        macro     = "tst",
+        initialx  = 10,
+        initialy  = 10,
+        arguments =  4
+    ] xsized 6cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode{doublefun}
+    vardef tst (expr x, y, i, n) =
+        fill fulldiamond randomized (.2*i/n) shifted (x,y);
+    enddef ;
+
+    draw lmt_poisson [
+        width     = 150,
+        height    = 150,
+        distance  =   1,
+        count     =  20,
+        macro     = "tst",
+        arguments =   4
+    ] xsized 6cm withcolor "darkmagenta" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode
+    vardef tst (expr x, y, i, n) =
+        draw externalfigure "cow.pdf" ysized (10+5*i/n) shifted (10x,10y);
+    enddef ;
+    draw lmt_poisson [
+        width     = 20,
+        height    = 20,
+        distance  =  1,
+        count     = 20,
+        macro     = "tst"
+        arguments = 4,
+    ] xsized 6cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+The supported parameters are:
+
+\starttabulate[|T|T|T|p|]
+\FL
+\BC name      \BC type    \BC default \BC comment \NC \NR
+\ML
+\NC width     \NC numeric \NC 50      \NC \NC \NR
+\NC height    \NC numeric \NC 50      \NC \NC \NR
+\NC distance  \NC numeric \NC  1      \NC \NC \NR
+\NC count     \NC numeric \NC 20      \NC \NC \NR
+\NC macro     \NC string  \NC "draw"  \NC \NC \NR
+\NC initialx  \NC numeric \NC 10      \NC \NC \NR
+\NC initialy  \NC numeric \NC 10      \NC \NC \NR
+\NC arguments \NC numeric \NC  4      \NC \NC \NR
+\LL
+\stoptabulate
+
+\stopchapter
+
+\stopcomponent
+

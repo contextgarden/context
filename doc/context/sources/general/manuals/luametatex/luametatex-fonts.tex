@@ -391,17 +391,19 @@ expansion takes place inside the argument.
 \fontid\font
 \stopsyntax
 
-This primitive expands into a number. It is not a register so there is no need to
-prefix with \prm {number} (and using \prm {the} gives an error). The currently
-used font id is \fontid\font. Here are some more:
+This primitive expands into a number. The currently used font id is
+\number\fontid\font. Here are some more: \footnote {Contrary to \LUATEX\ this is
+now a number so you need to use \type {\number} or \type {\the}. The same is true
+for some other numbers and dimensions that for some reason ended up in the
+serializer that produced a sequence of tokens.}
 
 \starttabulate[|l|c|c|]
 \DB style \BC command \BC font id \NC \NR
 \TB
-\NC normal      \NC \type {\tf} \NC \tf \fontid\font \NC \NR
-\NC bold        \NC \type {\bf} \NC \bf \fontid\font \NC \NR
-\NC italic      \NC \type {\it} \NC \it \fontid\font \NC \NR
-\NC bold italic \NC \type {\bi} \NC \bi \fontid\font \NC \NR
+\NC normal      \NC \type {\tf} \NC \tf \number\fontid\font \NC \NR
+\NC bold        \NC \type {\bf} \NC \bf \number\fontid\font \NC \NR
+\NC italic      \NC \type {\it} \NC \it \number\fontid\font \NC \NR
+\NC bold italic \NC \type {\bi} \NC \bi \number\fontid\font \NC \NR
 \LL
 \stoptabulate
 

@@ -70,7 +70,8 @@ class InkScape
 
         if directpdf then
             report("converting #{inpfilename} to #{outfilename}")
-            resultpipe = "--without-gui --export-pdf=\"#{outfilename}\" 2>#{logfile}"
+          # resultpipe = "--without-gui --export-pdf=\"#{outfilename}\" 2>#{logfile}"
+            resultpipe = "--without-gui --export-filename=\"#{outfilename}\" 2>#{logfile}"
         else
             report("converting #{inpfilename} to #{tmpfilename}")
             resultpipe = "--without-gui --print=\">#{tmpfilename}\" 2>#{logfile}"
