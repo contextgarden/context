@@ -1692,6 +1692,7 @@ mode parameter. The default value is~1.
 \LL
 \stoptabulate
 
+
 \subsection {Less Tracing}
 
 \topicindex {math+tracing}
@@ -1699,6 +1700,75 @@ mode parameter. The default value is~1.
 Because there are quite some math related parameters and values, it is possible
 to limit tracing. Only when \type {tracingassigns} and|/|or \type
 {tracingrestores} are set to~2 or more they will be traced.
+
+\stopsection
+
+\startsection[title={Experiments}]
+
+There are a couple of experimental features. They will stay but details might
+change, for instance more control over spacing. We just show some examples and
+let your imagination work it out. First we have prescripts:
+
+\subsection {Prescripts with \lpr {Usuperprescript} and {Usubprescript}}
+
+\startbuffer
+\hbox{$
+    {\tf X}^1_2^^3__4 \quad
+    {\tf X}^1  ^^3    \quad
+    {\tf X}  _1   __4 \quad
+    {\tf X}    ^^3    \quad
+    {\tf X}       __4 \quad
+    {\tf X}^^3    __4
+$}
+\stopbuffer
+
+\typebuffer
+
+The question is: are these double super and subscript triggers the way to go?
+
+\blank \getbuffer \blank
+
+The more explicit commands are:
+
+\startbuffer
+\hbox{$
+{\tf X}\Usuperscript{1}                                                  \quad
+{\tf X}                \Usubscript{2}                                    \quad
+{\tf X}\Usuperscript{1}\Usubscript{2}                                    \quad
+{\tf X}\Usuperscript{1}              \Usuperprescript{3}                 \quad
+{\tf X}                \Usubscript{2}                   \Usubprescript{4}\quad
+{\tf X}\Usuperscript{1}\Usubscript{2}\Usuperprescript{3}\Usubprescript{4}\quad
+{\tf X}                              \Usuperprescript{3}                 \quad
+{\tf X}                                                 \Usubprescript{4}\quad
+{\tf X}                              \Usuperprescript{3}\Usubprescript{4}
+$}
+\stopbuffer
+
+\typebuffer
+
+These more verbose triggers can be used to build interfaces:
+
+\blank \getbuffer \blank
+
+\subsection {Prescripts with \lpr {Usuperprescript} and {Usubprescript}}
+
+You can change the class of a math character on the fly:
+
+\startbuffer
+$x\mathopen   {!}+123+\mathclose  {!}x$
+$x\Umathclass4 ! +123+\Umathclass5 ! x$
+$x             ! +123+             ! x$
+$x\mathclose  {!}+123+\mathopen   {!}x$
+$x\Umathclass5 ! +123+\Umathclass4 ! x$
+\stopbuffer
+
+\typebuffer
+
+Watch how the spacing changes:
+
+\startlines
+\getbuffer
+\stoplines
 
 \stopsection
 

@@ -293,11 +293,11 @@
    \egroup
    \ifdim\ht\scratchbox>\strutht
      \math_inline_openup_start_yes
-   \else\ifdim\dp\scratchbox>\strutdp
+   \orelse\ifdim\dp\scratchbox>\strutdp
      \math_inline_openup_start_yes
    \else
      \math_inline_openup_start_nop
-   \fi\fi
+   \fi
    \unhbox\scratchbox % \normalstartimath#1\normalstopimath
    \math_inline_openup_stop
    \endgroup}
@@ -429,10 +429,10 @@
   {\ifcsname\??mathstylealternative\fontclass:#1\endcsname
     %\expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
-   \else\ifcsname\??mathstylealternative#1\endcsname
+   \orelse\ifcsname\??mathstylealternative#1\endcsname
     %\expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
-   \fi\fi}
+   \fi}
 
 \unexpanded\def\setupmathrendering % the name might change
   {\dodoubleargument\math_setup_rendering}
@@ -690,16 +690,16 @@
      \edef\nofmathcommandarguments{#3}%
      \ifx\nofmathcommandarguments\v!one
        \setuvalue{\??mathcommand#1}##1{\mathcodecommand{#2}{#4{##1}}}%
-     \else\ifx\nofmathcommandarguments\v!two
+     \orelse\ifx\nofmathcommandarguments\v!two
        \setuvalue{\??mathcommand#1}##1##2{\mathcodecommand{#2}{#4{##1}{##2}}}%
      \else
        \setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
-     \fi\fi
-   \else\ifsecondargument
+     \fi
+   \orelse\ifsecondargument
      \setuvalue{\??mathcommand#1}{\mathcodecommand{#2}{#4}}%
    \else
      \setuvalue{\??mathcommand#1}{\mathcodecommand{nothing}{#4}}%
-   \fi\fi
+   \fi
    \letcsnamecsname\csname#1\endcsname\csname\??mathcommand#1\endcsname}
 
 \unexpanded\def\mathcommand#1%
@@ -831,11 +831,11 @@
    \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
    \ifx\p_functionstyle\empty
      \expandafter\math_mfunction_styled_none
-   \else\ifcsname\??alternativestyle\p_functionstyle\endcsname
+   \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
      \doubleexpandafter\math_mfunction_styled_text
    \else
      \doubleexpandafter\math_mfunction_styled_math
-   \fi\fi}
+   \fi}
 
 \unexpanded\def\math_mfunction_styled_text#1%
  %{\mathoptext{\csname\??alternativestyle\p_functionstyle\endcsname#1}%
@@ -1828,20 +1828,9 @@
     \crampedscriptscriptstyle \fi     % 6 -> 7
     #1}}
 
-\def\triggermathstyle#1% #1 is number
-  {\ifcase\numexpr#1\relax
-     \displaystyle             \or % 0
-     \crampeddisplaystyle      \or % 1
-     \textstyle                \or % 2
-     \crampedtextstyle         \or % 3
-     \scriptstyle              \or % 4
-     \crampedscriptstyle       \or % 5
-     \scriptscriptstyle        \or % 6
-     \crampedscriptscriptstyle \else
-     % error
-   \fi}
-
-\let\mathstyletrigger\triggermathstyle
+\def\triggermathstyle#1{\Ustyle\numexpr#1\relax}
+%def\mathstyletrigger#1{\numexpr#1\relax}
+\let\mathstyletrigger   \firstofoneargument
 
 \def\triggeredmathstyleparameter#1% to bypass the relax
   {\ifcase\numexpr\normalmathstyle\relax
@@ -2752,11 +2741,11 @@
   {\setbox\scratchbox\mathstylehbox{#1}%
    \ifdim\ht\scratchbox>\strutht
      \math_inline_openup_start_yes
-   \else\ifdim\dp\scratchbox>\strutdp
+   \orelse\ifdim\dp\scratchbox>\strutdp
      \math_inline_openup_start_yes
    \else
      \math_inline_openup_start_nop
-   \fi\fi
+   \fi
    #1%
    \math_inline_openup_stop
    \endgroup}
@@ -2765,11 +2754,11 @@
   {\setbox\scratchbox\hbox{\startimath#1\stopimath}%
    \ifdim\ht\scratchbox>\strutht
      \math_inline_openup_start_yes
-   \else\ifdim\dp\scratchbox>\strutdp
+   \orelse\ifdim\dp\scratchbox>\strutdp
      \math_inline_openup_start_yes
    \else
      \math_inline_openup_start_nop
-   \fi\fi
+   \fi
    \startimath
    #1%
    \stopimath
@@ -2781,7 +2770,7 @@
 % 0x002B=plus 0x2212=minus 0x2013=endash
 
 \unexpanded\def\mathplus {+}
-\unexpanded\def\mathminus{\ifmmode –\else\iffontchar\font`−−\else –\fi\fi}
+\unexpanded\def\mathminus{\ifmmode –\orelse\iffontchar\font`−−\else –\fi}
 
 %D The \type {\displaywidth} is only known inside a display formula, so we need to catch
 %D it when still zero.
@@ -2799,11 +2788,11 @@
   {\dimexpr
      \ifzeropt\displaywidth
        \hsize
-     \else\ifdim\displaywidth>\hsize
+     \orelse\ifdim\displaywidth>\hsize
         \hsize
      \else
        \displaywidth
-     \fi\fi
+     \fi
    \relax}
 
 %D Experiment: (todo: same switch as italic, using \type {\everyswitchmathematics}).
@@ -2915,20 +2904,81 @@
 %D Expensive (tracing and inject) but a primitive (using factors) is tricky as we
 %D want this frozen support.
 
+% \def\math_openup_parameter#1#2%
+%   {\ifzeropt#1\displaystyle            \orelse\ifdim#1\displaystyle            =\maxdimen\else\frozen#1\displaystyle            #2#1\displaystyle            \fi
+%    \ifzeropt#1\crampeddisplaystyle     \orelse\ifdim#1\crampeddisplaystyle     =\maxdimen\else\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
+%    \ifzeropt#1\textstyle               \orelse\ifdim#1\textstyle               =\maxdimen\else\frozen#1\textstyle               #2#1\textstyle               \fi
+%    \ifzeropt#1\crampedtextstyle        \orelse\ifdim#1\crampedtextstyle        =\maxdimen\else\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
+%    \ifzeropt#1\scriptstyle             \orelse\ifdim#1\scriptstyle             =\maxdimen\else\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
+%    \ifzeropt#1\crampedscriptstyle      \orelse\ifdim#1\crampedscriptstyle      =\maxdimen\else\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
+%    \ifzeropt#1\scriptscriptstyle       \orelse\ifdim#1\scriptscriptstyle       =\maxdimen\else\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
+%    \ifzeropt#1\crampedscriptscriptstyle\orelse\ifdim#1\crampedscriptscriptstyle=\maxdimen\else\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
+
+% \def\mdim#1#2%
+%   {\ifcase\ifzeropt#1#2\plusone\orelse\ifdim#1#2=\maxdimen\plusone\else\zerocount\fi}
+%
+% \def\mdim
+%   {\afterassignment\mmdim\scratchdimen}
+%
+% \def\mmdim
+%   {\ifcase\ifzeropt\scratchdimen\plusone\orelse\ifdim\scratchdimen=\maxdimen\plusone\else\zerocount\fi}
+%
+% \def\math_openup_parameter#1#2%
+%   {\ifcondition\mdim#1\displaystyle            \frozen#1\displaystyle            #2\dimexpr#1\displaystyle            \relax\fi
+%    \ifcondition\mdim#1\crampeddisplaystyle     \frozen#1\crampeddisplaystyle     #2\dimexpr#1\crampeddisplaystyle     \relax\fi
+%    \ifcondition\mdim#1\textstyle               \frozen#1\textstyle               #2\dimexpr#1\textstyle               \relax\fi
+%    \ifcondition\mdim#1\crampedtextstyle        \frozen#1\crampedtextstyle        #2\dimexpr#1\crampedtextstyle        \relax\fi
+%    \ifcondition\mdim#1\scriptstyle             \frozen#1\scriptstyle             #2\dimexpr#1\scriptstyle             \relax\fi
+%    \ifcondition\mdim#1\crampedscriptstyle      \frozen#1\crampedscriptstyle      #2\dimexpr#1\crampedscriptstyle      \relax\fi
+%    \ifcondition\mdim#1\scriptscriptstyle       \frozen#1\scriptscriptstyle       #2\dimexpr#1\scriptscriptstyle       \relax\fi
+%    \ifcondition\mdim#1\crampedscriptscriptstyle\frozen#1\crampedscriptscriptstyle#2\dimexpr#1\crampedscriptscriptstyle\relax\fi}
+
+% \Umathparameter : 0=zero, 1=set, 2=unset (les stracing clutter this way)
+
+%D New stuff:
+%D
+%D \starttyping
+%D $\mathopenupparameter\Umathradicalvgap{10.5}\sqrt[3]{x}$
+%D \stoptyping
+
 \def\math_openup_parameter#1#2%
-  {\ifzeropt#1\displaystyle            \else\ifdim#1\displaystyle            =\maxdimen\else\frozen#1\displaystyle            #2#1\displaystyle            \fi\fi
-   \ifzeropt#1\crampeddisplaystyle     \else\ifdim#1\crampeddisplaystyle     =\maxdimen\else\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi\fi
-   \ifzeropt#1\textstyle               \else\ifdim#1\textstyle               =\maxdimen\else\frozen#1\textstyle               #2#1\textstyle               \fi\fi
-   \ifzeropt#1\crampedtextstyle        \else\ifdim#1\crampedtextstyle        =\maxdimen\else\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi\fi
-   \ifzeropt#1\scriptstyle             \else\ifdim#1\scriptstyle             =\maxdimen\else\frozen#1\scriptstyle             #2#1\scriptstyle             \fi\fi
-   \ifzeropt#1\crampedscriptstyle      \else\ifdim#1\crampedscriptstyle      =\maxdimen\else\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi\fi
-   \ifzeropt#1\scriptscriptstyle       \else\ifdim#1\scriptscriptstyle       =\maxdimen\else\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi\fi
-   \ifzeropt#1\crampedscriptscriptstyle\else\ifdim#1\crampedscriptscriptstyle=\maxdimen\else\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi\fi}
+  {\ifcase\Umathparameter#1\displaystyle            \or\frozen#1\displaystyle            #2#1\displaystyle            \fi
+   \ifcase\Umathparameter#1\crampeddisplaystyle     \or\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
+   \ifcase\Umathparameter#1\textstyle               \or\frozen#1\textstyle               #2#1\textstyle               \fi
+   \ifcase\Umathparameter#1\crampedtextstyle        \or\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
+   \ifcase\Umathparameter#1\scriptstyle             \or\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
+   \ifcase\Umathparameter#1\crampedscriptstyle      \or\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
+   \ifcase\Umathparameter#1\scriptscriptstyle       \or\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
+   \ifcase\Umathparameter#1\crampedscriptscriptstyle\or\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
 
 \unexpanded\def\mathopenupparameter#1#2%
   {\ifdim#2\points=\zeropoint\else
      \math_openup_parameter#1{#2}%
    \fi}
+
+%D New stuff:
+%D
+%D \startbuffer
+%D $x\mathopen   {!}+123+\mathclose  {!}x$
+%D $x\tomathopen  ! +123+\tomathclose ! x$
+%D $x\mathclose  {!}+123+\mathopen   {!}x$
+%D $x\tomathclose ! +123+\tomathopen  ! x$
+%D $x             ! +123+             ! x$
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\unexpanded\def\tomathord  {\Umathclass\zerocount}
+\unexpanded\def\tomathop   {\Umathclass\plusone  } % \mathinfix
+\unexpanded\def\tomathbin  {\Umathclass\plustwo  }
+\unexpanded\def\tomathrel  {\Umathclass\plusthree}
+\unexpanded\def\tomathopen {\Umathclass\plusfour } % \mathprefix
+\unexpanded\def\tomathclose{\Umathclass\plusfive } % \mathsuffix
+\unexpanded\def\tomathpunct{\Umathclass\plussix  }
 
 \protect \endinput
 

@@ -124,10 +124,14 @@ local getdepth           = nuts.getdepth
 local getnucleus         = nuts.getnucleus
 local getsub             = nuts.getsub
 local getsup             = nuts.getsup
+local getsubpre          = nuts.getsubpre
+local getsuppre          = nuts.getsuppre
 
 local setnucleus         = nuts.setnucleus
 local setsub             = nuts.setsub
 local setsup             = nuts.setsup
+local setsubpre          = nuts.setsubpre
+local setsuppre          = nuts.setsuppre
 
 local flush_node         = nuts.flush
 local copy_node          = nuts.copy
@@ -273,6 +277,10 @@ local function process(start,what,n,parent)
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
+                if getsubpre then
+                  noad = getsuppre (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsubpre (start)              if noad then process(noad,what,n,start) end -- list
+                end
         elseif id == mathchar_code or id == mathtextchar_code or id == delim_code then
             break
         elseif id == subbox_code or id == submlist_code then
@@ -293,12 +301,20 @@ local function process(start,what,n,parent)
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
+                if getsubpre then
+                  noad = getsuppre (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsubpre (start)              if noad then process(noad,what,n,start) end -- list
+                end
                   noad = getfield(start,"left")         if noad then process(noad,what,n,start) end -- delimiter
                   noad = getfield(start,"degree")       if noad then process(noad,what,n,start) end -- list
         elseif id == accent_code then
             local noad = getnucleus(start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsup    (start)              if noad then process(noad,what,n,start) end -- list
                   noad = getsub    (start)              if noad then process(noad,what,n,start) end -- list
+                if getsubpre then
+                  noad = getsuppre (start)              if noad then process(noad,what,n,start) end -- list
+                  noad = getsubpre (start)              if noad then process(noad,what,n,start) end -- list
+                end
                   noad = getfield(start,"accent")       if noad then process(noad,what,n,start) end -- list
                   noad = getfield(start,"bot_accent")   if noad then process(noad,what,n,start) end -- list
      -- elseif id == style_code then
@@ -322,6 +338,10 @@ local function processnested(current,what,n)
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,what,n,current) end -- list
+      end
     elseif id == subbox_code or id == submlist_code then
         noad = getlist(current)                 if noad then process(noad,what,n,current) end -- list (not getlist !)
     elseif id == fraction_code then
@@ -340,12 +360,20 @@ local function processnested(current,what,n)
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,what,n,current) end -- list
+      end
         noad = getfield(current,"left")         if noad then process(noad,what,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,what,n,current) end -- list
     elseif id == accent_code then
         noad = getnucleus(current)              if noad then process(noad,what,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,what,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,what,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,what,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,what,n,current) end -- list
+      end
         noad = getfield(current,"accent")       if noad then process(noad,what,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,what,n,current) end -- list
     end
@@ -358,6 +386,10 @@ local function processstep(current,process,n,id)
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,n,current) end -- list
+      end
     elseif id == subbox_code or id == submlist_code then
         noad = getlist(current)                 if noad then process(noad,n,current) end -- list (not getlist !)
     elseif id == fraction_code then
@@ -376,12 +408,20 @@ local function processstep(current,process,n,id)
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,n,current) end -- list
+      end
         noad = getfield(current,"left")         if noad then process(noad,n,current) end -- delimiter
         noad = getfield(current,"degree")       if noad then process(noad,n,current) end -- list
     elseif id == accent_code then
         noad = getnucleus(current)              if noad then process(noad,n,current) end -- list
         noad = getsup    (current)              if noad then process(noad,n,current) end -- list
         noad = getsub    (current)              if noad then process(noad,n,current) end -- list
+      if getsubpre then
+        noad = getsuppre (current)              if noad then process(noad,n,current) end -- list
+        noad = getsubpre (current)              if noad then process(noad,n,current) end -- list
+      end
         noad = getfield(current,"accent")       if noad then process(noad,n,current) end -- list
         noad = getfield(current,"bot_accent")   if noad then process(noad,n,current) end -- list
     end

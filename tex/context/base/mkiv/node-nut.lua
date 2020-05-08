@@ -315,6 +315,10 @@ nuts.getsup           = direct.getsup
 nuts.setsup           = direct.setsup
 nuts.getsub           = direct.getsub
 nuts.setsub           = direct.setsub
+nuts.getsuppre        = direct.getsuppre
+nuts.setsuppre        = direct.setsuppre
+nuts.getsubpre        = direct.getsubpre
+nuts.setsubpre        = direct.setsubpre
 
 nuts.getchar          = direct.getchar
 nuts.setchar          = direct.setchar

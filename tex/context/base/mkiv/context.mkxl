@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.05.07 10:57}
+\edef\contextversion{2020.05.08 13:24}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -479,7 +479,7 @@
 \loadmarkfile{anch-bar}
 %loadmarkfile{anch-snc} % when needed this one will be redone
 
-\loadmarkfile{math-ini} % way after font-pre !
+\loadmkxlfile{math-ini} % way after font-pre !
 \loadmarkfile{math-pln}
 \loadmarkfile{math-for}
 \loadmarkfile{math-def} % also saves some meanings
