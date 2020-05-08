@@ -1957,37 +1957,8 @@
 
 %D Some dimension fun:
 
-\def\mathexheight
-  {\fontdimen
-     \plusfive
-     \ifcase\numexpr\normalmathstyle\relax
-       \textfont         \or % 0
-       \textfont         \or % 1
-       \textfont         \or % 2
-       \textfont         \or % 3
-       \scriptfont       \or % 4
-       \scriptfont       \or % 5
-       \scriptscriptfont \or % 6
-       \scriptscriptfont \else
-       \textfont
-     \fi
-     \zeropoint}
-
-\def\mathemwidth
-  {\fontdimen
-     \plussix
-     \ifcase\numexpr\normalmathstyle\relax
-       \textfont         \or % 0
-       \textfont         \or % 1
-       \textfont         \or % 2
-       \textfont         \or % 3
-       \scriptfont       \or % 4
-       \scriptfont       \or % 5
-       \scriptscriptfont \or % 6
-       \scriptscriptfont \else
-       \textfont
-     \fi
-     \zeropoint}
+\let\mathexheight \exheight                   % also in math-ini.mkiv
+\def\mathemwidth {\Umathquad\normalmathstyle} % also in math-ini.mkiv
 
 %D A plain inheritance:
 
@@ -2941,7 +2912,7 @@
 %D $\mathopenupparameter\Umathradicalvgap{10.5}\sqrt[3]{x}$
 %D \stoptyping
 
-\def\math_openup_parameter#1#2%
+\unexpanded\def\mathopenupparameter#1#2%
   {\ifcase\Umathparameter#1\displaystyle            \or\frozen#1\displaystyle            #2#1\displaystyle            \fi
    \ifcase\Umathparameter#1\crampeddisplaystyle     \or\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
    \ifcase\Umathparameter#1\textstyle               \or\frozen#1\textstyle               #2#1\textstyle               \fi
@@ -2950,11 +2921,6 @@
    \ifcase\Umathparameter#1\crampedscriptstyle      \or\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
    \ifcase\Umathparameter#1\scriptscriptstyle       \or\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
    \ifcase\Umathparameter#1\crampedscriptscriptstyle\or\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
-
-\unexpanded\def\mathopenupparameter#1#2%
-  {\ifdim#2\points=\zeropoint\else
-     \math_openup_parameter#1{#2}%
-   \fi}
 
 %D New stuff:
 %D
@@ -2979,6 +2945,19 @@
 \unexpanded\def\tomathopen {\Umathclass\plusfour } % \mathprefix
 \unexpanded\def\tomathclose{\Umathclass\plusfive } % \mathsuffix
 \unexpanded\def\tomathpunct{\Umathclass\plussix  }
+
+%D Prescripts. These work in \CONTEXT\ because we have the super- and subscript
+%D triggers enabled as active characters but when we would have
+%D
+%D \starttyping
+%D \catcode\underscoreasciicode\subscriptcatcode
+%D \catcode\circumflexasciicode\superscriptcatcode
+%D \stoptyping
+%D
+%D we also need the next line to disable character escaping via \type {^} in
+%D math mode:
+
+\normalsupmarkmode\plusone % 2 also disable ^[^+] in text mode
 
 \protect \endinput
 

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-05-08 13:24
+-- merge date  : 2020-05-08 20:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -8915,6 +8915,9 @@ function constructors.assignmathparameters(target,original)
   end
   if not mathparameters.FractionDelimiterDisplayStyleSize then
    targetmathparameters.FractionDelimiterDisplayStyleSize=2.40*targetparameters.size
+  end
+  if not targetmathparameters.SpaceBeforeScript then
+   targetmathparameters.SpaceBeforeScript=targetmathparameters.SpaceAfterScript
   end
   target.mathparameters=targetmathparameters
  end

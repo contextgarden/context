@@ -55,7 +55,11 @@ end
 function mathematics.initializeparameters(target,original)
     local mathparameters = original.mathparameters
     if mathparameters and next(mathparameters) then
-        target.mathparameters = mathematics.dimensions(mathparameters)
+        mathparameters = mathematics.dimensions(mathparameters)
+        if not mathparameters.SpaceBeforeScript then
+            mathparameters.SpaceBeforeScript = mathparameters.SpaceAfterScript
+        end
+        target.mathparameters = mathparameters
     end
 end
 

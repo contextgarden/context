@@ -191,6 +191,9 @@ function constructors.assignmathparameters(target,original) -- simple variant, n
         if not mathparameters.FractionDelimiterDisplayStyleSize then
             targetmathparameters.FractionDelimiterDisplayStyleSize = 2.40 * targetparameters.size
         end
+        if not targetmathparameters.SpaceBeforeScript then
+            targetmathparameters.SpaceBeforeScript = targetmathparameters.SpaceAfterScript
+        end
         target.mathparameters = targetmathparameters
     end
 end

@@ -62,6 +62,7 @@ local defaults = {
     radical_vgap          = { default                     = { "RadicalVerticalGap",                       "default_rule_thickness+(abs(default_rule_thickness)/4)" },
                               display_style               = { "RadicalDisplayStyleVerticalGap",           "default_rule_thickness+(abs(math_x_height)/4)" }, },
     space_after_script    = { default                     = { "SpaceAfterScript",                         "script_space" }, },
+    space_before_script   = { default                     = { "SpaceAfterScript",                         "script_space" }, },
     stack_denom_down      = { default                     = { "StackBottomShiftDown",                     "denom2" },
                               cramped_display_style       = { "StackBottomDisplayStyleShiftDown",         "denom1" },
                               display_style               = { "StackBottomDisplayStyleShiftDown",         "denom1" }, },

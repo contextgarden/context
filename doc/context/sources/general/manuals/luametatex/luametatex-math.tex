@@ -424,6 +424,7 @@ has resulted in turning some hard codes properties into parameters.
 \NC \lpr {Umathsupsubbottommax}    \NC the bottom of the superscript of a combined super- and subscript
                                        be at least as high as this above the baseline \NC \NR
 \NC \lpr {Umathsubsupvgap}         \NC vertical clearance between super- and subscript \NC \NR
+\NC \lpr {Umathspacebeforescript}  \NC additional space added before a super- or subprescript (bonus setting) \NC \NR
 \NC \lpr {Umathspaceafterscript}   \NC additional space added after a super- or subscript \NC \NR
 \NC \lpr {Umathconnectoroverlapmin}\NC minimum overlap between parts in an extensible recipe \NC \NR
 \LL
@@ -1725,6 +1726,10 @@ $}
 \typebuffer
 
 The question is: are these double super and subscript triggers the way to go?
+Anyway, you need to have them either being active (which in \CONTEXT\ then boils
+down to them being other characters), or say \type {\supmarkmode = 1} to disable
+the normal multiple \type {^} treatment (a value larger than 1 will also disable
+that in text mode).
 
 \blank \getbuffer \blank
 
