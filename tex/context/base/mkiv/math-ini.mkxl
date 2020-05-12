@@ -2740,8 +2740,9 @@
 %
 % 0x002B=plus 0x2212=minus 0x2013=endash
 
-\unexpanded\def\mathplus {+}
-\unexpanded\def\mathminus{\ifmmode –\orelse\iffontchar\font`−−\else –\fi}
+\unexpanded\def\mathplus     {+}
+\unexpanded\def\mathminus    {\ifmmode –\else\iffontchar\font`−−\else –\fi\fi}
+\unexpanded\def\mathplusminus{±}
 
 %D The \type {\displaywidth} is only known inside a display formula, so we need to catch
 %D it when still zero.
@@ -2956,6 +2957,27 @@
 %D
 %D we also need the next line to disable character escaping via \type {^} in
 %D math mode:
+%D
+%D \startbuffer
+%D \blank \hbox{
+%D     \ruledhbox{${\tf X} ^1 _2 ^^3 __4$}
+%D     \ruledhbox{${\tf X} ^1           $}
+%D     \ruledhbox{${\tf X}    _2        $}
+%D     \ruledhbox{${\tf X}       ^^3    $}
+%D     \ruledhbox{${\tf X}           __4$}
+%D     \ruledhbox{${\tf X} ^1 _2        $}
+%D     \ruledhbox{${\tf X} ^1    ^^3    $}
+%D     \ruledhbox{${\tf X} ^1        __4$}
+%D     \ruledhbox{${\tf X}    _2 ^^3    $}
+%D     \ruledhbox{${\tf X}    _2     __4$}
+%D     \ruledhbox{${\tf X} ^1 _2 ^^3    $}
+%D     \ruledhbox{${\tf X} ^1 _2     __4$}
+%D     \ruledhbox{${\tf X}    _2 ^^3    $}
+%D     \ruledhbox{${\tf X}    _2 ^^3 __4$}
+%D     \ruledhbox{${\tf X}       ^^3 __4$}
+%D } \blank
+%D
+%D \typebuffer \getbuffer
 
 \normalsupmarkmode\plusone % 2 also disable ^[^+] in text mode
 

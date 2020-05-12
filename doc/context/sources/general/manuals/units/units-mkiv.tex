@@ -508,6 +508,40 @@ Which gives:
 
 \stopsection
 
+\startsection[title={Goodies}]
+
+Here are some goodies:
+
+\startbuffer
+\type{1 } : \unit  {30^2            meter per second}
+\type{2a} : \unit  {30    ± 10      meter per second}
+\type{2b} : \unit  {30    – 10      meter per second}
+\type{3a} : \unit  {30^2  ± 10^2    meter per second}
+\type{3b} : \unit  {30^2  – 10^2    meter per second}
+\type{4 } : \unit  {30   (10)       meter per second}
+\type{5a} : \unit  {30   (± 10)     meter per second}
+\type{5b} : \unit  {30^2 (± 10^2)   meter per second}
+\type{6a} : \unit {(30    ± 10)     meter per second}
+\type{6b} : \unit {(30^2  ± 10^2)   meter per second}
+\type{6c} : \unit {(30^2  – 10^2)   meter per second}
+\type{7a} : \unit {(30    ± 10)^2   meter per second}
+\type{7b} : \unit {(30    – 10)^2   meter per second}
+\type{7c} : \unit {(30^2  – 10^3)^5 meter per second}
+\stopbuffer
+
+Instead of \type {±} one can use \type {pm} and \type {to} can be used instead of
+\type {–}.
+
+\typebuffer
+
+Their rendering explains their intention:
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopsection
+
 \startsection[title={Built in keywords}]
 
 A given sequence of keywords is translated in an list of internal
@@ -540,6 +574,8 @@ Some symbols get a special treatment:
 These are also special:
 
 \showunits[packaged]
+
+\stopsection
 
 \startsection[title={Colofon}]
 

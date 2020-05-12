@@ -73,41 +73,41 @@ local dircodes          = nodes.dircodes
 local dirvalues         = nodes.dirvalues
 local subtypes          = nodes.subtypes
 
-local normaldir_code          <const> = dircodes.normal
+local normaldir_code          = dircodes.normal
 
-local lefttoright_code        <const> = dirvalues.lefttoright
-local righttoleft_code        <const> = dirvalues.righttoleft
+local lefttoright_code        = dirvalues.lefttoright
+local righttoleft_code        = dirvalues.righttoleft
 
-local glyph_code              <const> = nodecodes.glyph
-local kern_code               <const> = nodecodes.kern
-local glue_code               <const> = nodecodes.glue
-local hlist_code              <const> = nodecodes.hlist
-local vlist_code              <const> = nodecodes.vlist
-local dir_code                <const> = nodecodes.dir
-local disc_code               <const> = nodecodes.disc
-local math_code               <const> = nodecodes.math
-local rule_code               <const> = nodecodes.rule
-local whatsit_code            <const> = nodecodes.whatsit
------ penalty_code            <const> = nodecodes.penalty
------ boundary_code           <const> = nodecodes.boundary
+local glyph_code              = nodecodes.glyph
+local kern_code               = nodecodes.kern
+local glue_code               = nodecodes.glue
+local hlist_code              = nodecodes.hlist
+local vlist_code              = nodecodes.vlist
+local dir_code                = nodecodes.dir
+local disc_code               = nodecodes.disc
+local math_code               = nodecodes.math
+local rule_code               = nodecodes.rule
+local whatsit_code            = nodecodes.whatsit
+----- penalty_code            = nodecodes.penalty
+----- boundary_code           = nodecodes.boundary
 
-local leaders_code            <const> = leadercodes.leaders
-local cleaders_code           <const> = leadercodes.cleaders
-local xleaders_code           <const> = leadercodes.xleaders
-local gleaders_code           <const> = leadercodes.gleaders
+local leaders_code            = leadercodes.leaders
+local cleaders_code           = leadercodes.cleaders
+local xleaders_code           = leadercodes.xleaders
+local gleaders_code           = leadercodes.gleaders
 
-local spaceskip_code          <const> = gluecodes.spaceskip
+local spaceskip_code          = gluecodes.spaceskip
 
-local saveposwhatsit_code     <const> = whatsitcodes.savepos
-local userdefinedwhatsit_code <const> = whatsitcodes.userdefined
-local openwhatsit_code        <const> = whatsitcodes.open
-local writewhatsit_code       <const> = whatsitcodes.write
-local closewhatsit_code       <const> = whatsitcodes.close
-local lateluawhatsit_code     <const> = whatsitcodes.latelua
-local literalwhatsit_code     <const> = whatsitcodes.literal
-local setmatrixwhatsit_code   <const> = whatsitcodes.setmatrix
-local savewhatsit_code        <const> = whatsitcodes.save
-local restorewhatsit_code     <const> = whatsitcodes.restore
+local saveposwhatsit_code     = whatsitcodes.savepos
+local userdefinedwhatsit_code = whatsitcodes.userdefined
+local openwhatsit_code        = whatsitcodes.open
+local writewhatsit_code       = whatsitcodes.write
+local closewhatsit_code       = whatsitcodes.close
+local lateluawhatsit_code     = whatsitcodes.latelua
+local literalwhatsit_code     = whatsitcodes.literal
+local setmatrixwhatsit_code   = whatsitcodes.setmatrix
+local savewhatsit_code        = whatsitcodes.save
+local restorewhatsit_code     = whatsitcodes.restore
 
 local getpagedimensions  getpagedimensions = function()
     getpagedimensions = backends.codeinjections.getpagedimensions

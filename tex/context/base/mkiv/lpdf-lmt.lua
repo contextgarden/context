@@ -39,7 +39,7 @@ local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
 
-local bpfactor     <const> = number.dimenfactors.bp
+local bpfactor             = number.dimenfactors.bp
 
 local md5HEX               = md5.HEX
 local osuuid               = os.uuid
@@ -153,11 +153,11 @@ local fontproperties
 local usedcharacters = setmetatableindex("table")
 local pdfcharacters
 
-local horizontalmode   = true
------ widefontmode     = true
-local scalefactor      = 1
-local threshold        = 655360
-local tjfactor <const> = 100 / 65536
+local horizontalmode = true
+----- widefontmode   = true
+local scalefactor    = 1
+local threshold      = 655360
+local tjfactor       = 100 / 65536
 
 lpdf.usedcharacters = usedcharacters
 
@@ -515,8 +515,8 @@ local flushcharacter  do
     local f_mode  = formatters["%i Tr"]        -- can be hash
     local f_font  = formatters["/F%i %.6N Tf"] -- can be hash
 
-    local s_width <const> = "0 w"
-    local s_mode  <const> = "0 Tr"
+    local s_width = "0 w"
+    local s_mode  = "0 Tr"
 
     local function set_font()
      -- if need_width and need_width ~= 0 then
@@ -660,15 +660,15 @@ end
 
 local flushliteral  do
 
-    local nodeproperties      <const> = nodes.properties.data
-    local literalvalues       <const> = nodes.literalvalues
+    local nodeproperties      = nodes.properties.data
+    local literalvalues       = nodes.literalvalues
 
-    local originliteral_code  <const> = literalvalues.origin
-    local pageliteral_code    <const> = literalvalues.page
-    local alwaysliteral_code  <const> = literalvalues.always
-    local rawliteral_code     <const> = literalvalues.raw
-    local textliteral_code    <const> = literalvalues.text
-    local fontliteral_code    <const> = literalvalues.font
+    local originliteral_code  = literalvalues.origin
+    local pageliteral_code    = literalvalues.page
+    local alwaysliteral_code  = literalvalues.always
+    local rawliteral_code     = literalvalues.raw
+    local textliteral_code    = literalvalues.text
+    local fontliteral_code    = literalvalues.font
 
     flushliteral = function(current,pos_h,pos_v,mode,str)
         if mode then
@@ -908,16 +908,16 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
     local setprop   = nuts.setprop
     local getprop   = nuts.getprop
 
-    local normalrule_code   <const> = rulecodes.normal
-    local boxrule_code      <const> = rulecodes.box
-    local imagerule_code    <const> = rulecodes.image
-    local emptyrule_code    <const> = rulecodes.empty
-    local userrule_code     <const> = rulecodes.user
-    local overrule_code     <const> = rulecodes.over
-    local underrule_code    <const> = rulecodes.under
-    local fractionrule_code <const> = rulecodes.fraction
-    local radicalrule_code  <const> = rulecodes.radical
-    local outlinerule_code  <const> = rulecodes.outline
+    local normalrule_code   = rulecodes.normal
+    local boxrule_code      = rulecodes.box
+    local imagerule_code    = rulecodes.image
+    local emptyrule_code    = rulecodes.empty
+    local userrule_code     = rulecodes.user
+    local overrule_code     = rulecodes.over
+    local underrule_code    = rulecodes.under
+    local fractionrule_code = rulecodes.fraction
+    local radicalrule_code  = rulecodes.radical
+    local outlinerule_code  = rulecodes.outline
 
     local rule_callback = callbacks.functions.process_rule
 
@@ -925,8 +925,8 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
     local f_im = formatters["/Im%d Do"]
     local f_gr = formatters["/Gp%d Do"]
 
-    local s_b <const> = "q"
-    local s_e <const> = "Q"
+    local s_b = "q"
+    local s_e = "Q"
 
     local f_v = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
     local f_h = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
@@ -1071,7 +1071,7 @@ local flushrule, flushsimplerule, flushimage, flushgroup  do
     local img_stream     = imagetypes.stream
     local img_memstream  = imagetypes.memstream
 
-    local one_bp <const> = 65536 * bpfactor
+    local one_bp = 65536 * bpfactor
 
     local imageresources, n = { }, 0
 
@@ -1820,8 +1820,8 @@ local f_stream_b_d_u = formatters["%i 0 obj\010<< %s /Length %i >>\010stream\010
 local f_stream_b_d_c = formatters["%i 0 obj\010<< %s /Filter /FlateDecode /Length %i >>\010stream\010"]
 local f_stream_b_d_r = formatters["%i 0 obj\010<< %s >>\010stream\010"]
 
------ s_object_e <const> = "\010endobj\010"
-local s_stream_e <const> = "\010endstream\010endobj\010"
+----- s_object_e     = "\010endobj\010"
+local s_stream_e     = "\010endstream\010endobj\010"
 
 do
 
@@ -1874,8 +1874,8 @@ local addtocache, flushcache, cache do
     local coffset  = 0
     local indices  = { }
 
-    local maxsize  <const> = 32 * 1024 -- uncompressed
-    local maxcount <const> = 0xFF
+    local maxsize  = 32 * 1024 -- uncompressed
+    local maxcount = 0xFF
 
     addtocache = function(n,str)
         local size = #str
@@ -2457,8 +2457,8 @@ updaters.register("backend.update.pdf",function()
     local lastindex      = 0
     local indices        = { }
 
-    local bpfactor       <const> = number.dimenfactors.bp
-    local imagerule_code <const> = rulecodes.image
+    local bpfactor       = number.dimenfactors.bp
+    local imagerule_code = rulecodes.image
 
     function codeinjections.newimage(specification)
         return specification

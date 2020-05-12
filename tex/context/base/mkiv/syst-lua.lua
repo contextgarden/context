@@ -288,23 +288,23 @@ local function expression()
     end
 end
 
--- local letter_code              <const> = cmd.letter
--- local other_char_code          <const> = cmd.other_char
--- local spacer_code              <const> = cmd.spacer
--- local other_char_code          <const> = cmd.other_char
--- local relax_code               <const> = cmd.relax
--- local assign_int_code          <const> = cmd.assign_int
--- local assign_dimen_code        <const> = cmd.assign_dimen
--- local assign_glue_code         <const> = cmd.assign_glue
--- local assign_toks_code         <const> = cmd.assign_toks
--- local char_given_code          <const> = cmd.char_given
--- local math_given_code          <const> = cmd.math_given
--- local xmath_given_code         <const> = cmd.xmath_given
--- local last_item_code           <const> = cmd.last_item
--- local call_code                <const> = cmd.call
--- local the_code                 <const> = cmd.the
--- local convert_code             <const> = cmd.convert
--- local lua_expandable_call_code <const> = cmd.lua_expandable_call
+-- local letter_code              = cmd.letter
+-- local other_char_code          = cmd.other_char
+-- local spacer_code              = cmd.spacer
+-- local other_char_code          = cmd.other_char
+-- local relax_code               = cmd.relax
+-- local assign_int_code          = cmd.assign_int
+-- local assign_dimen_code        = cmd.assign_dimen
+-- local assign_glue_code         = cmd.assign_glue
+-- local assign_toks_code         = cmd.assign_toks
+-- local char_given_code          = cmd.char_given
+-- local math_given_code          = cmd.math_given
+-- local xmath_given_code         = cmd.xmath_given
+-- local last_item_code           = cmd.last_item
+-- local call_code                = cmd.call
+-- local the_code                 = cmd.the
+-- local convert_code             = cmd.convert
+-- local lua_expandable_call_code = cmd.lua_expandable_call
 --
 -- local function unexpected(c)
 --     report("unexpected token %a",c)

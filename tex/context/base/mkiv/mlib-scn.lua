@@ -74,22 +74,22 @@ local injecttransform     = injectors.transform
 
 local report              = logs.reporter("metapost")
 
-local semicolon_code      <const> = codes.semicolon
-local equals_code         <const> = codes.equals
-local comma_code          <const> = codes.comma
-local colon_code          <const> = codes.colon
-local leftbrace_code      <const> = codes.leftbrace
-local rightbrace_code     <const> = codes.rightbrace
-local leftbracket_code    <const> = codes.leftbracket
-local rightbracket_code   <const> = codes.rightbracket
-local leftdelimiter_code  <const> = codes.leftdelimiter
-local rightdelimiter_code <const> = codes.rightdelimiter
-local numeric_code        <const> = codes.numeric
-local string_code         <const> = codes.string
-local capsule_code        <const> = codes.capsule
-local nullary_code        <const> = codes.nullary
-local tag_code            <const> = codes.tag
-local definedmacro_code   <const> = codes.definedmacro
+local semicolon_code      = codes.semicolon
+local equals_code         = codes.equals
+local comma_code          = codes.comma
+local colon_code          = codes.colon
+local leftbrace_code      = codes.leftbrace
+local rightbrace_code     = codes.rightbrace
+local leftbracket_code    = codes.leftbracket
+local rightbracket_code   = codes.rightbracket
+local leftdelimiter_code  = codes.leftdelimiter
+local rightdelimiter_code = codes.rightdelimiter
+local numeric_code        = codes.numeric
+local string_code         = codes.string
+local capsule_code        = codes.capsule
+local nullary_code        = codes.nullary
+local tag_code            = codes.tag
+local definedmacro_code   = codes.definedmacro
 
 local typescanners   = nil
 local tokenscanners  = nil
@@ -750,9 +750,9 @@ local scandimension = scanners.dimension
 
 local definitions   = { }
 
-local bpfactor      <const> = number.dimenfactors.bp
-local comma         <const> = byte(",")
-local close         <const> = byte("]")
+local bpfactor      = number.dimenfactors.bp
+local comma         = byte(",")
+local close         = byte("]")
 
 local scanrest      = function() return scanvalue(comma,close) or "" end
 local scandimension = function() return scandimension() * bpfactor end

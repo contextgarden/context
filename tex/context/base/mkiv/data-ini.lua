@@ -73,7 +73,7 @@ end
 -- Next comes the user's home path. We need this as later on we have
 -- to replace ~ with its value.
 
-do
+if not environment.homedir then
 
     local oldhome = osgetenv('HOME')
     local homedir = osgetenv(ostype == "windows" and 'USERPROFILE' or 'HOME') or ''

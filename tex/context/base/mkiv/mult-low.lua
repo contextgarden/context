@@ -413,6 +413,7 @@ return {
         "startdmath", "stopdmath", "normalstartdmath", "normalstopdmath",
         "normalsuperscript", "normalsubscript", "normalnosuperscript", "normalnosubscript",
         "superscript", "subscript", "nosuperscript", "nosubscript",
+        "superprescript", "subprescript", "nosuperprescript", "nosubsprecript",
         --
         "uncramped", "cramped",
         "mathstyletrigger", "triggermathstyle",

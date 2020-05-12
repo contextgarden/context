@@ -68,7 +68,10 @@ local math_one       = Cs((P("$")    /"") * (1-P("$"))^1 * (P("$")/"")) / contex
 local math_two       = Cs((P("\\m {")/"") * (1-P("}"))^1 * (P("}")/"")) / context.m -- watch the space after \m
 
 local digit          = R("09")
-local sign           = S("+-")
+local plus           = P("+")
+local minus          = P("-")
+local plusminus      = P("±")
+local sign           = plus + minus
 local power          = S("^e")
 local digitspace     = S("~@_")
 local comma          = P(",")
@@ -80,8 +83,6 @@ local positive       = P("++") -- was p
 local negative       = P("--") -- was n
 local highspace      = P("//") -- was s
 local padding        = P("=")
-local plus           = P("+")
-local minus          = P("-")
 local space          = P(" ")
 local lparent        = P("(")
 local rparent        = P(")")
@@ -111,6 +112,7 @@ local dnegative      = negative    / "" / context.digitsnegative
 local dhighspace     = highspace   / "" / context.digitshighspace
 local dsomesign      = plus        / "" / context.digitsplus
                      + minus       / "" / context.digitsminus
+                     + plusminus   / "" / context.digitsplusminus
 local dpower         = power       / "" * ( powerdigits + lbrace * powerdigits * rbrace )
 
 local dpadding       = padding     / "" / context.digitszeropadding -- todo
@@ -152,7 +154,8 @@ local c_p = (ddigitspace^1 * dskipcomma)^0                    -- ___,
           * (ddigitspace^0 * ddigit * dintercomma)^0          -- _00, 000,
           * ddigitspace^0  * ddigit^0                         -- _00 000
           * (
-             dfinalperiod * ddigit * (dintercomma * ddigit)^0 -- .00
+             dfinalperiod * ddigit^1 * dpadding^1             -- .0=
+           + dfinalperiod * ddigit * (dintercomma * ddigit)^0 -- .00
            + dskipperiod  * dpadding^1                        -- .==
            + dsemiperiod  * ddigit * (dintercomma * ddigit)^0 -- :00
            + dsemiperiod  * dpadding^1                        -- :==
@@ -163,7 +166,8 @@ local p_c = (ddigitspace^1 * dskipperiod)^0                   -- ___.
           * (ddigitspace^0 * ddigit * dinterperiod)^0         -- _00. 000.
           * ddigitspace^0  * ddigit^0                         -- _00 000
           * (
-             dfinalcomma * ddigit * (dinterperiod * ddigit)^0 -- 00
+             dfinalcomma * ddigit^1 * dpadding^1              -- ,0=
+           + dfinalcomma * ddigit * (dinterperiod * ddigit)^0 -- 00
            + dskipcomma  * dpadding^1                         -- ,==
            + dsemicomma  * ddigit * (dinterperiod * ddigit)^0 -- :00
            + dsemicomma  * dpadding^1                         -- :==
@@ -531,9 +535,14 @@ local ctx_unitsO      = context.unitsO
 local ctx_unitsN      = context.unitsN
 local ctx_unitsC      = context.unitsC
 local ctx_unitsQ      = context.unitsQ
+local ctx_unitsRPM    = context.unitsRPM
+local ctx_unitsRTO    = context.unitsRTO
+local ctx_unitsRabout = context.unitsRabout
 local ctx_unitsNstart = context.unitsNstart
 local ctx_unitsNstop  = context.unitsNstop
 local ctx_unitsNspace = context.unitsNspace
+local ctx_unitsPopen  = context.unitsPopen
+local ctx_unitsPclose = context.unitsPclose
 
 local labels = languages.data.labels
 
@@ -856,35 +865,58 @@ local function update_parsers() -- todo: don't remap utf sequences
                         )^1,
     }
 
+    -- todo: avoid \ctx_unitsNstart\ctx_unitsNstop (weird that it can happen .. now catched at tex end)
 
  -- local number = lpeg.patterns.number
-
     local number = Cs( P("$")     * (1-P("$"))^1 * P("$")
                      + P([[\m{]]) * (1-P("}"))^1 * P("}")
                      + (1-R("az","AZ")-P(" "))^1 -- todo: catch { } -- not ok
                    ) / ctx_unitsN
 
-    local start  = Cc(nil) / ctx_unitsNstart
-    local stop   = Cc(nil) / ctx_unitsNstop
-    local space  = Cc(nil) / ctx_unitsNspace
+    local start   = Cc(nil) / ctx_unitsNstart
+    local stop    = Cc(nil) / ctx_unitsNstop
+    local space   = P(" ") * Cc(nil) / ctx_unitsNspace
+    local open    = P("(") * Cc(nil) / ctx_unitsPopen
+    local close   = P(")") * Cc(nil) / ctx_unitsPclose
 
-    -- todo: avoid \ctx_unitsNstart\ctx_unitsNstop (weird that it can happen .. now catched at tex end)
+    local range   = somespace
+                  * ( (P("±") + P("pm")) / "" / ctx_unitsRPM
+                    + (P("–") + P("to")) / "" / ctx_unitsRTO )
+                  * somespace
 
-    local p_c_combinedparser  = P { "start",
-        number = start * dleader * (p_c_dparser + number) * stop,
-        rule   = V("number")^-1 * unitparser,
-        space  = space,
-        start  = V("rule") * (V("space") * V("rule"))^0 + V("number")
-    }
+    local about   = (P("±") + P("pm")) / "" / ctx_unitsRabout
+                  * somespace
 
-    local c_p_combinedparser  = P { "start",
-        number = start * dleader * (c_p_dparser + number) * stop,
-        rule   = V("number")^-1 * unitparser,
-        space  = space,
-        start  = V("rule") * (V("space") * V("rule"))^0 + V("number")
-    }
+    -- todo: start / stop
 
-    return p_c_combinedparser, c_p_combinedparser
+    local function combine(parser)
+        return P { "start",
+            number  = start * dleader * (parser + number) * stop,
+            anumber = space
+                    * open
+                    * V("about")^-1
+                    * V("number")
+                    * close,
+            rule    = V("number")^-1
+                    * (V("range") * V("number") + V("anumber"))^-1,
+            unit    = unitparser,
+            about   = about,
+            range   = range,
+            space   = space,
+            start   = V("rule")
+                    * V("unit")
+                    * (V("space") * V("rule") * V("unit"))^0
+                    + open
+                    * V("number")
+                    * (V("range") * V("number"))^-1
+                    * close
+                    * dtrailer^-1
+                    * V("unit")
+                    + V("number")
+        }
+    end
+
+    return combine(p_c_dparser), combine(c_p_dparser)
 end
 
 local p_c_parser = nil

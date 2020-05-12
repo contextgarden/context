@@ -1,0 +1,365 @@
+% language=us
+
+\startcomponent evenmore-numbers
+
+\environment evenmore-style
+
+\startchapter[title={Numbers}]
+
+% \startsection[title={Introduction}]
+
+A few decades of programming in the \TEX\ language can make one wish for certain
+features. It will therefore be no surprise that in \LUATEX\ (and even more in
+\LUAMETATEX) we have some additional functionality. However, I have to admit that
+some of these are not used that much in \CONTEXT\ \MKIV\ and \LMTX. The reason is
+that some wishes date from \MKII\ times and because we now have \LUA\ we actually
+don't need that many new fancy features. Also, it makes no sense to rewrite
+mechanisms that are already working well. However, in order to fully exploit the
+possibilities that \LUA\ gives, there are some additions that relate to the way
+this language can communicate with \TEX. Of course there's also the issue of a
+potentially enhanced performance, but there is not much to gain in that
+department.
+
+A side effect of adding features, of which some are just there to complete the
+picture, or, as mentioned, because they were supposed to make sense, is that I
+make examples. Here I show the result of one of these experiments. I have no clue
+how useful this is, but I've learned not to underestimate users in their demands
+and creativity.
+
+Internally, \TEX\ does all in 32 bit integers. When you say:
+
+\starttyping
+\scratchcounter 123
+\scratchdimen   123pt
+\stoptyping
+
+the \type {123} gets assigned to a count register and the \type {123pt} is
+assigned to a dimen register but actually that is then also an integer: the
+internal unit of a dimen is a scaled point (sp) and only when its value is shown
+to the user, a real number can show up, followed by the \type {pt} unit. The
+precision is limited, so you can expect about four decimal positions precision
+here. There is no concept of a floating point number in \TEX, and the only case
+where a float gets used is in the final calculations of glue and even that only
+comes into play in the backend.
+
+So, although I don't really have an application for it in \CONTEXT\ (otherwise
+I'd already added a float data type to the engine), it sounded like a good idea
+to see if we could emulate float support. In the following examples the numbers
+are managed in \LUA\ and therefore they are global. I could make a local variant
+but why complicate matters. These macros start with \type {\lua} to make clear
+that they are not managed by \TEX.
+
+\startbuffer
+\luacardinal bar  123
+\luainteger  bar -456
+\luafloat    bar  123.456E-3
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We define \type {bar} three times. Each type gets its own hash, so from the
+perspective of \LUA\ its nature is kept: integer or double.
+
+\startbuffer
+\the\luacardinal bar \quad
+\the\luainteger  bar \quad
+\the\luafloat    bar
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Instead of decimal values, you can also use hexadecimal values (watch the \type
+{p} for exponents):
+
+\startbuffer
+\luacardinal bar  0x123
+\luainteger  bar -0x456
+\luafloat    bar  0x123.456p-3
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So, now we get:
+
+\startbuffer
+\the\luacardinal bar \quad
+\the\luainteger  bar \quad
+\the\luafloat    bar
+\stopbuffer
+
+\getbuffer
+
+From these examples you see two kind of usage: setting a value, and using it. It
+is that property that makes them special. Because the macros are implemented
+using \LUA\ calls it means that at the \LUA\ end we know what usage is expected.
+And it is that dualistic property that I wanted to explore but that in the end
+only makes sense it a very few cases, but sometimes those few are important. We
+could of course two macros, a setter and a getter, but using one kind of its in.
+
+The setters accept an optional equal sign, as in:
+
+\startbuffer
+\luainteger gnu=  123456   \luafloat gnu=  123.456e12
+\luainteger gnu = 123456   \luafloat gnu = 123.456e12
+\luainteger gnu  =123456   \luafloat gnu  =123.456e12
+\stopbuffer
+
+\typebuffer
+
+Although \LUA\ is involved in picking up the value, storing it someplace, and
+retrieving it on demand, performance is pretty good. You probably won't notice
+the overhead anyway.
+
+The values that \type{\the} returns are serialized numbers. However, sometimes
+you want what \TEX\ sees as a numeric token, For that we have these variants
+
+\startbuffer
+\luadimen test 100pt
+\scratchdimen = .25 \luadimen test
+\the\scratchdimen
+\stopbuffer
+
+\typebuffer
+
+Which produces the expected value: {\tttf \inlinebuffer}, something that depends
+on the fact that the dimension is not a serialized. Talking of serialization,
+there are several ways that \LUA\ can do that so let's give some examples. We
+start with some definitions. Beware, floats and cardinals are stored
+independently!
+
+\startbuffer
+\luacardinal x = -123
+\luacardinal y =  456
+
+\luafloat    x =  123.123
+\luafloat    y = -456.456
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We have a macro \type {\luaexpression} (not to be confused with \type {\luaexpr}) that
+takes an optional keyword:
+
+\startbuffer
+- : \luaexpression          {n.x + 2*n.y}
+f : \luaexpression float    {n.x + 2*n.y}
+i : \luaexpression integer  {n.x + 2*n.y}
+c : \luaexpression cardinal {n.x + 2*n.y}
+b : \luaexpression boolean  {n.x + 2*n.y}
+l : \luaexpression lua      {n.x + 2*n.y}
+\stopbuffer
+
+\typebuffer
+
+The serialization can be different for these cases:
+
+\startlines
+\tt \getbuffer
+\stoplines
+
+The \type {numbers} namespace resolves to a float, integer or cardinal (in that
+order) and calculations take place as in \LUA. If you only use integers then
+normally \LUA\ will also serialize them as such.
+
+Here is another teaser. Say that we set the \type {scratchdimen} register to
+a value:
+
+\startbuffer
+\scratchdimen 123.456pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We now introduce the \type {\nodimen} macro, that can be used this way:
+
+\startbuffer
+[\the\scratchdimen] [\the\nodimen\scratchdimen]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+which is not that spectacular. Nor is this:
+
+\startbuffer
+\nodimen\scratchdimen = 654.321pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+But how about this:
+
+\starttabulate[|T|T|]
+\NC \type {\the\nodimen bp \scratchdimen} \NC \the\nodimen bp \scratchdimen \NC \NR
+\NC \type {\the\nodimen cc \scratchdimen} \NC \the\nodimen cc \scratchdimen \NC \NR
+\NC \type {\the\nodimen cm \scratchdimen} \NC \the\nodimen cm \scratchdimen \NC \NR
+\NC \type {\the\nodimen dd \scratchdimen} \NC \the\nodimen dd \scratchdimen \NC \NR
+\NC \type {\the\nodimen in \scratchdimen} \NC \the\nodimen in \scratchdimen \NC \NR
+\NC \type {\the\nodimen mm \scratchdimen} \NC \the\nodimen mm \scratchdimen \NC \NR
+\NC \type {\the\nodimen nc \scratchdimen} \NC \the\nodimen nc \scratchdimen \NC \NR
+\NC \type {\the\nodimen nd \scratchdimen} \NC \the\nodimen nd \scratchdimen \NC \NR
+\NC \type {\the\nodimen pt \scratchdimen} \NC \the\nodimen pt \scratchdimen \NC \NR
+\NC \type {\the\nodimen sp \scratchdimen} \NC \the\nodimen sp \scratchdimen \NC \NR
+\stoptabulate
+
+So here we have a curious mix of setter and getter. The setting part is not that
+interesting but we just provide it as convenience (and demo). Of course we can
+have 10 specific macros instead. Keep in mind that this is a low level macro, so
+it doesn't use the normal \CONTEXT\ user interface.
+
+A bit more complex are one or two dimensional arrays. Again this is an example
+implementation where users can come up with more ideas.
+
+\startbuffer
+\newarray name integers   type integer   nx 2 ny 2
+\newarray name booleans   type boolean   nx 2 ny 2
+\newarray name floats     type float     nx 2 ny 2
+\newarray name dimensions type dimension nx 4
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here we define three two|-|dimensional assays and one one|-|dimensional
+array. The type determines the initialization as well as the scanner and
+serializer.  Values can be set as follows:
+
+\startbuffer
+\arrayvalue integers   1 2 4        \arrayvalue integers   2 1 8
+\arrayvalue booleans   1 2 true     \arrayvalue booleans   2 1 true
+\arrayvalue floats     1 2 12.34    \arrayvalue floats     2 1 34.12
+\arrayvalue dimensions 1   12.34pt  \arrayvalue dimensions 3   34.12pt
+\stopbuffer
+
+\typebuffer \getbuffer
+
+If you want to check an array on the console, you can say:
+
+\starttyping
+\showarray integers
+\stoptyping
+
+We now access some values. Apart from the float these are (sort of) native data
+types.
+
+\startbuffer
+[\the\arrayvalue integers   1 2]
+[\the\arrayvalue booleans   1 2]
+[\the\arrayvalue floats     1 2]
+[\the\arrayvalue dimensions 1  ]\crlf
+[\the\arrayvalue integers   2 1]
+[\the\arrayvalue booleans   2 1]
+[\the\arrayvalue floats     2 1]
+[\the\arrayvalue dimensions   3]
+\stopbuffer
+
+\typebuffer
+
+This produces:
+
+\getbuffer
+
+You can of course use these values in many ways:
+
+\startbuffer
+\dostepwiserecurse{1}{4}{1}{
+    [\the\arrayvalue dimensions #1 :
+     \luaexpression dimen {math.sind(30) * a.dimensions[#1]}]
+}
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+\getbuffer
+
+In addition to the already seen integer and dimension variables fed back into
+\TEX, we also have booleans. These are just integers with the value zero or one.
+In order to make their use easier there is a new \type {\ifboolean} primitive
+that takes such a bit:
+
+\startbuffer
+slot 1 is \ifboolean\arrayequals dimensions 1 0pt zero \else not zero \fi
+slot 2 is \ifboolean\arrayequals dimensions 2 0pt zero \else not zero \fi
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlines
+\getbuffer
+\stoplines
+
+A variant is a comparison macro. Of course we can use the dimen comparison
+conditional instead:
+
+\startbuffer
+slot 1: \ifcase\arraycompare dimensions 1 3pt lt \or eq \else gt \fi zero
+slot 2: \ifcase\arraycompare dimensions 2 3pt lt \or eq \else gt \fi zero
+slot 3: \ifcase\arraycompare dimensions 3 3pt lt \or eq \else gt \fi zero
+slot 4: \ifcase\arraycompare dimensions 4 3pt lt \or eq \else gt \fi zero
+
+slot 1: \ifcmpdim\arrayvalue dimensions 1 3pt lt \or eq \else gt \fi zero
+slot 2: \ifcmpdim\arrayvalue dimensions 2 3pt lt \or eq \else gt \fi zero
+slot 3: \ifcmpdim\arrayvalue dimensions 3 3pt lt \or eq \else gt \fi zero
+slot 4: \ifcmpdim\arrayvalue dimensions 4 3pt lt \or eq \else gt \fi zero
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlines
+\getbuffer
+\stoplines
+
+Anyway, the question is: do we need this kind of trickery, and if so, what more
+is needed? But beware: we do have \LUA\ anyway, so there is no need for a complex
+user interface at the \TEX\ end just for the sake of it looking more \TEX. The
+above shows a bit what is possible.
+
+It is too soon to discuss the low level interface because it still evolves. After
+some initial experiments, I decided to follow a slightly different route, and
+often the third implementation starts to look what I like more.
+
+% \newarray name whatever type integer nx 100 ny 100
+%
+% \testfeatureonce{1}{
+%     \dorecurse {100} {
+%         \dorecurse {100} {
+%             \scratchcounter \arrayvalue whatever ##1 ####1 \relax
+%         }
+%     }
+% } \elapsedtime
+
+% \startluacode
+% local whatever = { foo = true, bar = true }
+%
+% interfaces.implement {
+%     name      = "MyMatch",
+%     public    = true,
+%     value     = true,
+%     actions   = function(b)
+%         -- we gobble spaces
+%         return
+%             tokens.functionvalues.boolean,
+%             whatever[tokens.scanners.word(true)] or false
+%     end,
+% }
+% \stopluacode
+%
+% [\ifboolean\MyMatch foo YES\else NOP\fi]
+% [\ifboolean\MyMatch rab YES\else NOP\fi]
+% [\ifboolean\MyMatch bar YES\else NOP\fi]
+% [\ifboolean\MyMatch oof YES\else NOP\fi]
+%
+% \def\Matched#1{\ifboolean\MyMatch #1 }
+%
+% [\ifcondition\Matched{oof}YES\else NOP\fi]
+% [\ifcondition\Matched{foo}YES\else NOP\fi]
+
+% \stopsection
+
+\stopchapter
+
+\stopcomponent

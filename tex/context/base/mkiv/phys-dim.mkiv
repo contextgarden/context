@@ -86,7 +86,6 @@
 %D the grouped call.
 %D
 %D \starttabulate[|l|l|l|]
-%D \starttabulate[|l|l|l|]
 %D \NC \type{.}  \NC , .           \NC comma or period     \NC \NR
 %D \NC \type{,}  \NC , .           \NC comma or period     \NC \NR
 %D \NC \type{:}  \NC               \NC invisible period    \NC \NR
@@ -99,7 +98,6 @@
 %D \NC \type{--} \NC $\negative$   \NC high minus sign     \NC \NR
 %D \NC \type{++} \NC $\positive$   \NC high plus sign      \NC \NR
 %D \NC \type{=}  \NC $\zeroamount$ \NC zero padding        \NC \NR
-%D \stoptabulate
 %D \stoptabulate
 %D
 %D These triggers are used in the following examples.
@@ -172,10 +170,12 @@
 % \definesymbol[units][times][\ifmmode\cdot\else\kern.2\emwidth\cdot\kern.2\emwidth\fi]
 
 \unexpanded\def\digitstextbinop#1% assumes preceding
-  {\fourperemspace\nobreak\times\fourperemspace}
+  {\ifmmode#1\else\fourperemspace\nobreak#1\fourperemspace\fi}
 
 %def\digitstimessymbol{\ifmmode\cdot\else\digitstextbinop\cdot\fi}
-\def\digitstimessymbol{\ifmmode\times\else\digitstextbinop\times\fi}
+\def\digitstimessymbol{\digitstextbinop\times}
+
+\unexpanded\def\mathplusminus{±} % will be in math-ini
 
 \unexpanded\def\digitszeropadding   {\hphantom{0}}
 \unexpanded\def\digitsnegative      {\phys_digits_normalized{0}{\phys_digits_raised{\textminus}}}
@@ -185,7 +185,8 @@
 %unexpanded\def\digitsminus         {\phys_digits_normalized{0}{\mathematics{-}}}
 %unexpanded\def\digitsplus          {\phys_digits_normalized{0}{\mathematics{+}}}
 \unexpanded\def\digitsminus         {\phys_digits_normalized{0}{\mathminus}}
-\unexpanded\def\digitsplus          {\phys_digits_normalized{0}{\mathplus }}
+\unexpanded\def\digitsplus          {\phys_digits_normalized{0}{\mathplus}}
+\unexpanded\def\digitsplusminus     {\phys_digits_normalized{0}{\mathplusminus}}
 \unexpanded\def\digitsspace         {\hphantom{0}}
 \unexpanded\def\digitsseparatorspace{\hphantom{.}}
 \unexpanded\def\digitssignspace     {\hphantom{\digitsminus}}
@@ -522,6 +523,9 @@
   {\edef\p_order{\unitparameter\c!order}%
    \ifx\p_order\v!reverse\expandafter\clf_unit_reverse\else\expandafter\clf_unit_normal\fi{\detokenize{#1}}}
 
+\unexpanded\def\digitstextbinnop#1%
+  {\ifmmode#1\else#1\fourperemspace\fi}
+
 \unexpanded\def\unitsPUS#1#2#3{\phys_units_next\prefixtext{#1}\unittext{#2}\unitsraise{\suffixtext{#3}}\c_phys_units_state\plusone} % suffix
 \unexpanded\def\unitsPU   #1#2{\phys_units_next\prefixtext{#1}\unittext{#2}\c_phys_units_state\plusthree}                           % unit
 \unexpanded\def\unitsPS   #1#2{\phys_units_next\prefixtext{#1}\unitsraise{\suffixtext{#2}}\c_phys_units_state\plusone}              % suffix
@@ -531,8 +535,28 @@
 \unexpanded\def\unitsS      #1{\phys_units_start{}\unitsraise{\suffixtext{#1}}\c_phys_units_state\plusone}                          % suffix
 \unexpanded\def\unitsO      #1{\phys_units_start\operatortext{#1}\c_phys_units_state\plustwo}                                       % operator
 \unexpanded\def\unitsN      #1{\phys_units_start#1\c_phys_units_state\plusfive}                                                     % number
-\unexpanded\def\unitsC      #1{\removeunwantedspaces\unittext{#1}\c_phys_units_state\plussix}                                  % connected
-\unexpanded\def\unitsQ      #1{\removeunwantedspaces\unitslower{#1}\c_phys_units_state\zerocount}                             %
+\unexpanded\def\unitsC      #1{\removeunwantedspaces\unittext{#1}\c_phys_units_state\plussix}                                       % connected
+\unexpanded\def\unitsQ      #1{\removeunwantedspaces\unitslower{#1}\c_phys_units_state\zerocount}
+\unexpanded\def\unitsR    #1#2{% todo: tagging
+                               \ifmmode
+                                 #2%
+                               \else\ifnum#1=\plusone
+                                 \digitstextbinop{#2}% before and after
+                               \else
+                                 \digitstextbinnop{#2}% after
+                               \fi\fi
+                               \c_phys_units_state\zerocount
+                               \setfalse\c_phys_units_dospace
+                               \setfalse\c_phys_units_number
+                               \setfalse\c_phys_units_quantity}
+
+\unexpanded\def\unitsRPM    {\unitsR\plusone  {±}} % todo: symbols
+\unexpanded\def\unitsRTO    {\unitsR\plusone  {–}} % todo: symbols
+\unexpanded\def\unitsRabout {\unitsR\zerocount{±}} % todo: symbols
+\unexpanded\def\unitsPopen  {(}
+\unexpanded\def\unitsPclose {)}
+
+\unexpanded\def\unitrange#1{}
 
 % Fonts can have a celsius and lack a fahrenheit symbol and as we want
 % to be consistent so we check for the counterparts as well. It's slow

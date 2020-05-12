@@ -1091,6 +1091,18 @@ or more than zero.
 
 \stopsubsection
 
+\startsubsection[title={\lpr {ifboolean}}]
+
+This primitive tests for non|-|zero, so the next variants are similar
+
+\starttyping
+       \ifcase   <integer>.F.\else .T.\fi
+\unless\ifcase   <integer>.T.\else .F.\fi
+       \ifboolean<integer>.T.\else .F.\fi
+\stoptyping
+
+\stopsubsection
+
 \startsubsection[title={\lpr {iftok} and \lpr {ifcstok}}]
 
 \topicindex {conditions+tokens}
@@ -1113,8 +1125,8 @@ provided in \LUAMETATEX:
 
 \typebuffer \startpacked[blank] {\tt\nospacing\getbuffer} \stoppacked
 
-You can check if a macro is is defined as protected with \type {\ifprotected}
-while frozen macros can be tested with \type {\iffrozen}. A provisional \type
+You can check if a macro is defined as protected with \type {\ifprotected} while
+frozen macros can be tested with \type {\iffrozen}. A provisional \type
 {\ifusercmd} tests will check if a command is defined at the user level (and this
 one might evolve).
 

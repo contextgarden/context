@@ -115,7 +115,8 @@ local function scantable(t,data)
     end
     local wrapped = scanopen()
     while true do
-        local key = scanword()
+--         local key = scanword()
+        local key = scanword(true)
         if key then
             local get = t[key]
             if get then
@@ -253,12 +254,12 @@ local f_scan_c   = formatters["%s(scan%s())"]
 ----- f_if_c     = formatters["  local key = scanword() if key == '' then break elseif key == '%s' then data['%s'] = %s(scan%s())"]
 ----- f_elseif_c = formatters["  elseif k == '%s' then data['%s'] = %s(scan%s())"]
 
-local f_any      = formatters["  else local key = scanword() if key then data[key] = scan%s() else break end end"]
-local f_any_c    = formatters["  else local key = scanword() if key then data[key] = %s(scan%s()) else break end end"]
+local f_any      = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
+local f_any_c    = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]
 local s_done     = "  else break end"
 
-local f_any_all  = formatters["  local key = scanword() if key then data[key] = scan%s() else break end"]
-local f_any_all_c= formatters["  local key = scanword() if key then data[key] = %s(scan%s()) else break end"]
+local f_any_all  = formatters["  local key = scanword(true) if key then data[key] = scan%s() else break end"]
+local f_any_all_c= formatters["  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"]
 
 local f_table    = formatters["%\nt\nreturn function()\n  local data = { }\n%s\n  return %s\nend\n"]
 local f_sequence = formatters["%\nt\n%\nt\n%\nt\nreturn function()\n    return %s\nend\n"]
@@ -440,7 +441,7 @@ function tokens.compile(specification)
             return scanners[ti]
         end
     elseif #t == 0 then
-        if specification.valuetype then
+        if specification.value then
             code = "b"
             args = "_,b"
         else

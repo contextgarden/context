@@ -50,7 +50,7 @@
 %D We can omit the tex.ctxcatcodes here as nowadays we seldom change the regime at
 %D the \TEX\ end:
 
-%def\luaexpr#1{\ctxlua{context  (tostring(#1))}}   % more efficient:
+%def\luaexpr#1{\ctxlua{context  (tostring(#1))}} % more efficient:
 \def\luaexpr#1{\ctxlua{tex.print(tostring(#1))}} % no use is shortcutting has to be compiled
 
 %D But as we only use write 16 we could as well do all in \LUA\ and ignore the rest.

@@ -2115,7 +2115,9 @@ expanded definition (\prm {edef}'d). In the case of the braced variant one can o
 course use the \prm {detokenize} and \prm {unexpanded} primitives since there we
 do expand.
 
-The \type {scan_word} scanner can be used to implement for instance a number scanner:
+The \type {scan_word} scanner can be used to implement for instance a number
+scanner. An optional boolean argument can signal that a trailing space or \type
+{\relax} should be gobbled:
 
 \starttyping
 function token.scan_number(base)

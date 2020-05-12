@@ -77,7 +77,7 @@ function interfaces.implement(specification)
     if scanners[name] and not specification.overload then
         report("warning: 'scanners.%s' is redefined",name)
     end
-    register(name,scanner,specification.protected,specification.public,specification.valuetype)
+    register(name,scanner,specification.protected,specification.public,specification.value)
     if private then
         return
     end

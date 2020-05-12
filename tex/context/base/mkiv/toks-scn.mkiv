@@ -19,4 +19,8 @@
 \registerctxluafile{cldf-scn}{}
 \registerctxluafile{cldf-stp}{}
 
+\ifcase \contextlmtxmode \else
+    \registerctxluafile{cldf-lmt}{}
+\fi
+
 \protect \endinput

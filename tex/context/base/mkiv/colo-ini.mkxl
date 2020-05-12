@@ -229,7 +229,7 @@
 \unexpanded\def\directcolored[#1]%
   {\colo_basics_defined_and_activated{#1}}
 
-\unexpanded\def\fastcolor  [#1]#2%
+\unexpanded\def\fastcolor[#1]#2%
   {\begingroup % is this command still needed?
    \edef\currentcolorname{#1}%
    \ifx\currentcolorprefix\empty
@@ -760,9 +760,11 @@
 \def\colo_helpers_activate#1% two-step is not that much faster but less tracing
   {\edef\currentcolorname{#1}%
    \ifx\currentcolorprefix\empty
-     \expandafter\colo_helpers_activate_nop
+    %\expandafter
+     \colo_helpers_activate_nop
    \else
-     \expandafter\colo_helpers_activate_yes
+    %\expandafter
+     \colo_helpers_activate_yes
    \fi}
 
 \def\colo_helpers_activate_yes
