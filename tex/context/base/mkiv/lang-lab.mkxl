@@ -223,8 +223,8 @@
 % \def\lang_labels_text_prefix_assign_yes#1[#2,#3,#4]%
 %   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
 %    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
-%    \ifx\m_lang_labels_right\empty
-%      \ifx\m_lang_labels_left\empty
+%    \ifempty\m_lang_labels_right
+%      \ifempty\m_lang_labels_left
 %        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{\empty\empty}%
 %      \else
 %        \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1\endcsname{{#2}\empty}%
@@ -239,8 +239,8 @@
   {\def\m_lang_labels_left {#2}% no longer an edef ... else \Word undefined expansion issues
    \def\m_lang_labels_right{#3}% no longer an edef ... else \Word undefined expansion issues
    \expandafter\def\csname\??label\currenttextprefixclass:\currenttextprefixtag:#1%
-     \ifx\m_lang_labels_right\empty
-       \ifx\m_lang_labels_left\empty
+     \ifempty\m_lang_labels_right
+       \ifempty\m_lang_labels_left
          \endcsname{\empty\empty}%
        \else
          \endcsname{{#2}\empty}%

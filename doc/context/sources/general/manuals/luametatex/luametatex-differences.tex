@@ -212,6 +212,60 @@ functionality. These are described in following chapters but there might be
 hidden treasures in the binary. If you locate them, don't automatically assume
 them to stay, some might be part of experiments!
 
+\startluacode
+
+local luametatex = tex.primitives()
+local luatex     = table.load("luatex-primitives.lua")
+
+if not luatex then
+    local tex = "\\starttext \\ctxlua {table.save(tex.jobname .. '.lua',tex.primitives())} \\stoptext"
+
+    io.savedata("luatex-primitives.tex",    tex)
+
+    os.execute("context --luatex --once luatex-primitives")
+
+    luatex = table.load("luatex-primitives.lua")
+end
+
+
+if luatex and luametatex then
+
+    luatex     = table.tohash(luatex)
+    luametatex = table.tohash(luametatex)
+
+    context.page()
+
+    context("The following primitives are available in \\LUATEX\\ but not in \\LUAMETATEX.")
+    context("Some of these are emulated in \\CONTEXT.")
+
+    context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(luatex) do
+            if not luametatex[k] then
+                context.type(k)
+                context.crlf()
+            end
+        end
+    context.stopcolumns()
+
+
+    context.page()
+
+    context("The following primitives are available in \\LUAMETATEX\\ only.")
+    context("At some point in time some might be added to \\LUATEX.")
+
+    context.startcolumns { n = 2 }
+        for k, v in table.sortedhash(luametatex) do
+            if not luatex[k] then
+                context.type(k)
+                context.crlf()
+            end
+        end
+    context.stopcolumns()
+
+end
+
+\stopluacode
+
 \stopchapter
 
 \stopcomponent

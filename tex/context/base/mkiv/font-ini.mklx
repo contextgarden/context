@@ -756,7 +756,7 @@
    \font_helpers_update_font_class_parameters
   %\writestatus{fonts}{low level define: #csname/\somefontfile/\number\d_font_scaled_font_size/\fontface/\number\d_font_scaled_text_face}%
    \clf_definefont_two
-      \ifx\fontclass\empty\s!false\else\s!true\fi
+      \ifempty\fontclass\s!false\else\s!true\fi
       {#csname}%
       {\somefontfile}%
       \d_font_scaled_font_size
@@ -1440,7 +1440,7 @@
    \processcommalist[#assignments]\font_basics_define_body_font_defs}
 
 \unexpanded\def\font_basics_define_body_font_defs
-  {\ifx\fontclass\empty
+  {\ifempty\fontclass
      \expandafter\font_basics_define_body_font_defs_nop
    \else
      \expandafter\font_basics_define_body_font_defs_yes
@@ -1670,7 +1670,7 @@
 
 \def\font_helpers_set_font#method#specification%
   {\edef\m_font_specification{#specification}%
-   \ifx\m_font_specification\empty \else
+   \ifempty\m_font_specification \else
      \ifx\m_font_specification\v!global % we can have all kind of presets
        \restoreglobalbodyfont
      \else
@@ -1680,7 +1680,7 @@
          \font_preloads_at_definition
          \font_basics_switch_points\normalizedbodyfontsize
          \font_basics_switch_style\fontstyle
-         \ifx\defaultfontclass\empty
+         \ifempty\defaultfontclass
            \let\defaultfontclass\fontclass
          \fi
        \fi
@@ -1829,7 +1829,7 @@
    \font_helpers_synchronize_font}
 
 \unexpanded\def\font_helpers_synchronize_font % we can have dups i.e. no need to let fontstrategy
-  {\ifx\fontclass\empty
+  {\ifempty\fontclass
      \applyfontstrategies
    \else
      \applyfontclassstrategies
@@ -2227,7 +2227,7 @@
 
 \unexpanded\def\font_basics_switchtobodyfont#specification%
   {\edef\m_font_step{\font_bodyfontvariable{#specification}}%
-   \ifx\m_font_step\empty
+   \ifempty\m_font_step
      \font_helpers_set_font\zerocount{#specification}%
    \else
      \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
@@ -2240,7 +2240,7 @@
 
 \unexpanded\def\usebodyfontparameter#1%
   {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%
-   \ifx\m_font_bodyfont_asked\empty\else
+   \ifempty\m_font_bodyfont_asked\else
      \font_basics_switchtobodyfont\m_font_bodyfont_asked
    \fi}
 
@@ -2285,7 +2285,7 @@
 %D \stoptyping
 
 \unexpanded\def\usebodyfont[#1]%
-  {\ifx\fontclass\empty
+  {\ifempty\fontclass
      \setupbodyfont[#1]%
    \else
      \switchtobodyfont[#1]%

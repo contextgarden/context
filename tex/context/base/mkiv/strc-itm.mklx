@@ -248,12 +248,12 @@
 % todo: \dodosetreference -> \strc_counters_register_component (to be checked)
 
 \def\strc_itemgroups_insert_reference % we will make a decent number helper
-  {\iftrialtypesetting \orelse \ifx\currentitemreference \empty \else
+  {\iftrialtypesetting \orelse \ifempty\currentitemreference \else
      \strc_itemgroups_insert_reference_indeed
    \fi}
 
 \def\strc_itemgroups_insert_extra_reference
-  {\iftrialtypesetting \orelse \ifx\currentitemreference \empty \else
+  {\iftrialtypesetting \orelse \ifempty\currentitemreference \else
      \normalexpanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
    \fi}
 
@@ -396,9 +396,9 @@
 
 \def\strc_itemgroups_process_option#option%
   {\edef\itemgroupconstantvalue{#option}%
-   \ifx\itemgroupconstantvalue\empty\else
+   \ifempty\itemgroupconstantvalue\else
      \splitatasterisk\itemgroupconstantvalue\itemgroupfirst\itemgroupsecond
-     \ifx\itemgroupsecond\empty
+     \ifempty\itemgroupsecond
         \let\itemgroupsecond\itemgroupfirst
         \let\itemgroupfirst\!!plusone
      \fi
@@ -424,7 +424,7 @@
 \setvalue{\??itemgroupkeyword\v!unpacked   }{\strc_itemgroups_process_set_option_unpack}
 \setvalue{\??itemgroupkeyword\v!intro      }{\settrue\c_strc_itemgroups_intro} % here? not set to false
 \setvalue{\??itemgroupkeyword\v!autointro  }{\settrue\c_strc_itemgroups_auto_intro}
-\setvalue{\??itemgroupkeyword\v!broad      }{\ifx\itemgroupfirst\empty
+\setvalue{\??itemgroupkeyword\v!broad      }{\ifempty\itemgroupfirst
                                                \let\itemgroupfirst\!!plusone
                                              \fi
                                              \letitemgroupparameter\c!factor\itemgroupfirst}
@@ -450,7 +450,7 @@
 \setvalue{\??itemgroupkeyword\v!joinedup   }{\settrue\c_strc_itemgroups_joined
                                              \strc_itemgroups_process_set_option_pack}
 \setvalue{\??itemgroupkeyword\v!notjoinedup}{\setfalse\c_strc_itemgroups_joined}
-\setvalue{\??itemgroupkeyword\v!serried    }{\edef\itemgroupfirst{-\ifx\itemgroupfirst\empty1\else\itemgroupfirst\fi}%
+\setvalue{\??itemgroupkeyword\v!serried    }{\edef\itemgroupfirst{-\ifempty\itemgroupfirst1\else\itemgroupfirst\fi}%
                                              \letitemgroupparameter\c!factor\itemgroupfirst}
 \setvalue{\??itemgroupkeyword\v!stopper    }{\letitemgroupparameter\c!placestopper\v!yes} % keep {}
 \setvalue{\??itemgroupkeyword\v!nostopper  }{\letitemgroupparameter\c!placestopper\v!no} % keep {}
@@ -658,7 +658,7 @@
 
 \def\strc_itemgroups_increment_item_counter
   {\ifconditional\c_strc_itemgroups_sub \else
-     \ifconditional\c_strc_itemgroups_symbol \else % \ifx\strc_itemgroups_extra_symbol\empty
+     \ifconditional\c_strc_itemgroups_symbol \else % \ifempty\strc_itemgroups_extra_symbol
        \strc_counters_increment_sub\v_strc_itemgroups_counter\currentitemlevel
      \fi
    \fi}
@@ -733,7 +733,7 @@
 
 \def\strc_itemgroups_set_symbol#symbol%
   {\edef\strc_itemgroups_tmp_symbol{#symbol}%
-   \ifx\strc_itemgroups_tmp_symbol\empty \else
+   \ifempty\strc_itemgroups_tmp_symbol \else
      \doifelsesymboldefined\strc_itemgroups_tmp_symbol
         \strc_itemgroups_set_symbol_symbol
         {\doifelseconversiondefined\strc_itemgroups_tmp_symbol
@@ -813,9 +813,9 @@
 \def\strc_itemgroups_start_indeed[#options][#settings]%
   {\edef\itemgroupoptions{\itemgroupparameter\c!option}%
    \edef\itemgroupextraoptions{#options}%
-   \ifx\itemgroupoptions\empty
+   \ifempty\itemgroupoptions
      \let\itemgroupoptions\itemgroupextraoptions
-   \orelse\ifx\itemgroupextraoptions\empty
+   \orelse\ifempty\itemgroupextraoptions
      % ok
    \else
      \edef\itemgroupoptions{\itemgroupoptions,\itemgroupextraoptions}%
@@ -844,7 +844,7 @@
    \fi
    \c_strc_itemgroups_n_of_items\zerocount
    \strc_itemgroups_check_n_of_items
-   \ifx\itemgroupoptions\empty
+   \ifempty\itemgroupoptions
      \strc_itemgroups_setup_symbol_default
      \strc_itemgroups_reset_continue_state
      \setupcurrentitemgroup[#settings]%
@@ -896,9 +896,9 @@
        \strc_counters_restart_sub\v_strc_itemgroups_counter\currentitemlevel{\numexpr\itemgroupparameter\c!start-\plusone\relax}%
      \fi
    \fi
-   \ifx\strc_itemgroups_used_symbol\empty
+   \ifempty\strc_itemgroups_used_symbol
      \strc_itemgroups_set_symbol\strc_itemgroups_asked_symbol % ** default value
-     \ifx\strc_itemgroups_used_symbol\empty
+     \ifempty\strc_itemgroups_used_symbol
        \let\currentitemgroupsymbol\currentitemlevel % ** fall back
      \fi
    \fi
@@ -932,7 +932,7 @@
        \advance\leftskip\d_strc_itemgroups_list_width\relax
      \fi
    \fi
-   \ifx\m_strc_itemgroups_repeat_start\empty
+   \ifempty\m_strc_itemgroups_repeat_start
      \let\currentitemgroupconversionset \currentitemgroupsymbol
      \edef\currentitemgroupsegments     {\currentitemlevel}%
    \else
@@ -1453,13 +1453,13 @@
         {\box\b_strc_itemgroups\hskip\itemgroupparameter\c!distance}}}
 
 \def\strc_itemgroups_make_destination_box
-  {\iftrialtypesetting \orelse \ifx\m_strc_itemgroups_destination\empty \else
+  {\iftrialtypesetting \orelse \ifempty\m_strc_itemgroups_destination \else
      \setbox\b_strc_itemgroups\hbox{\directgotobox{\box\b_strc_itemgroups}[\m_strc_itemgroups_destination]}%
    \fi}
 
 \def\strc_itemgroups_check_indenting
   {\setfalse\c_strc_itemgroups_indented_first
-   \ifx\m_strc_itemgroups_indenting\empty \else
+   \ifempty\m_strc_itemgroups_indenting \else
      \normalexpanded{\setupindenting[\v!reset,\v!yes,\m_strc_itemgroups_indenting]}%
      \ifconditional\c_spac_indentation_indent_first % better is to have a mode
        \doifnot{\itemgroupparameter\c!alignsymbol}\v!yes
@@ -1469,7 +1469,7 @@
 
 \def\strc_itemgroups_check_for_repeated
   {\ifconditional\c_strc_itemgroups_repeat
-     \ifx\m_strc_itemgroups_repeat_start\empty
+     \ifempty\m_strc_itemgroups_repeat_start
        \edef\m_strc_itemgroups_repeat_start{\currentitemlevel}%
      \fi
    \else
@@ -1546,7 +1546,7 @@
 
 \unexpanded\def\strc_itemgroups_set_text_item_distance
   {\edef\m_strc_itemgroups_text_distance{\itemgroupparameter\c!textdistance}%
-   \ifx\m_strc_itemgroups_text_distance\empty
+   \ifempty\m_strc_itemgroups_text_distance
      %
    \orelse\ifcsname\??itemgroupdistance\m_strc_itemgroups_text_distance\endcsname
      \lastnamedcs

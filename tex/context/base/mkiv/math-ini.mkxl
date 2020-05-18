@@ -446,7 +446,7 @@
 
 \appendtoks
     \edef\p_stylealternative{\mathematicsparameter\c!stylealternative}%
-    \ifx\p_stylealternative\empty\else
+    \ifempty\p_stylealternative\else
         \clf_presetmathalternate\defaultmathfamily{\p_stylealternative}%
     \fi
 \to \everymathematics
@@ -829,7 +829,7 @@
   {\begingroup
    \usemathematicscolorparameter\c!functioncolor
    \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
-   \ifx\p_functionstyle\empty
+   \ifempty\p_functionstyle
      \expandafter\math_mfunction_styled_none
    \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
      \doubleexpandafter\math_mfunction_styled_text
@@ -1308,7 +1308,7 @@
      \enabledirectives\disabledirectives[math.virtual.optional]}
 
 \appendtoks
-    \ifx\currentmathematics\empty
+    \ifempty\currentmathematics
         \math_basics_check_compact % less tracing
     \fi
 \to \everysetupmathematics
@@ -1813,7 +1813,7 @@
 % 7 = crampedscriptscript
 
 \def\uncramped#1%
-  {{\ifcase\normalmathstyle
+  {{\ifmathstyle
     \or \displaystyle      \or
     \or \textstyle         \or
     \or \scriptstyle       \or
@@ -1821,7 +1821,7 @@
     #1}}
 
 \def\cramped#1%
-  {{\ifcase\normalmathstyle
+  {{\ifmathstyle
     \crampeddisplaystyle      \or \or % 0 -> 1
     \crampedtextstyle         \or \or % 2 -> 3
     \crampedscriptstyle       \or \or % 4 -> 5
@@ -2040,7 +2040,7 @@
 %D \stoptabulate
 
 \def\triggerdisplaystyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \displaystyle        \or
      \crampeddisplaystyle \or
      \displaystyle        \or
@@ -2052,7 +2052,7 @@
    \fi}
 
 \def\triggertextstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \textstyle        \or
      \crampedtextstyle \or
      \textstyle        \or
@@ -2064,7 +2064,7 @@
    \fi}
 
 \def\triggerscriptstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \scriptstyle        \or
      \crampedscriptstyle \or
      \scriptstyle        \or
@@ -2076,7 +2076,7 @@
    \fi}
 
 \def\triggerscriptscriptstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \scriptscriptstyle        \or
      \crampedscriptscriptstyle \or
      \scriptscriptstyle        \or
@@ -2088,21 +2088,21 @@
    \fi}
 
 \def\triggeruncrampedstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
     \or \displaystyle      \or
     \or \textstyle         \or
     \or \scriptstyle       \or
     \or \scriptscriptstyle \fi}
 
 \def\triggercrampedstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
    \crampeddisplaystyle      \or \or
    \crampedtextstyle         \or \or
    \crampedscriptstyle       \or \or
    \crampedscriptscriptstyle \fi}
 
 \def\triggersmallstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \scriptstyle              \or
      \crampedscriptstyle       \or
      \scriptstyle              \or
@@ -2114,7 +2114,7 @@
     \fi}
 
 \def\triggeruncrampedsmallstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \scriptstyle       \or
      \scriptstyle       \or
      \scriptstyle       \or
@@ -2126,7 +2126,7 @@
     \fi}
 
 \def\triggercrampedsmallstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \crampedscriptstyle       \or
      \crampedscriptstyle       \or
      \crampedscriptstyle       \or
@@ -2138,7 +2138,7 @@
     \fi}
 
 \def\triggerbigstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \displaystyle        \or
      \crampeddisplaystyle \or
      \textstyle           \or
@@ -2150,7 +2150,7 @@
     \fi}
 
 \def\triggeruncrampedbigstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \displaystyle \or
      \displaystyle \or
      \textstyle    \or
@@ -2162,7 +2162,7 @@
     \fi}
 
 \def\triggercrampedbigstyle
-  {\ifcase\normalmathstyle\relax
+  {\ifmathstyle
      \crampeddisplaystyle \or
      \crampeddisplaystyle \or
      \crampedtextstyle    \or
@@ -2265,7 +2265,7 @@
 
 \unexpanded\def\math_style_set#1%
   {\edef\m_math_style_asked{#1}%
-   \ifx\m_math_style_asked\empty \else
+   \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
 
@@ -2294,13 +2294,13 @@
 
 \unexpanded\def\setupmathstyle[#1]%
   {\edef\m_math_style_asked{#1}%
-   \ifx\m_math_style_asked\empty \else
+   \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
 
 \unexpanded\def\usemathstyleparameter#1% faster local variant
   {\edef\m_math_style_asked{#1\c!mathstyle}%
-   \ifx\m_math_style_asked\empty \else
+   \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
 
@@ -2385,7 +2385,7 @@
 
 \unexpanded\def\startmathstyle[#1]%
   {\edef\m_math_style_asked{#1}%
-   \ifx\m_math_style_asked\empty
+   \ifempty\m_math_style_asked
      \let\stopmathstyle\relax
    \else
      \bgroup
@@ -2397,7 +2397,7 @@
 
 \unexpanded\def\startusemathstyleparameter#1%
   {\edef\m_math_style_asked{#1\c!mathstyle}%
-   \ifx\m_math_style_asked\empty
+   \ifempty\m_math_style_asked
      \let\stopusemathstyleparameter\relax
    \else
      \bgroup
@@ -2587,7 +2587,7 @@
 
 \appendtoks
     \edef\p_setups{\mathematicsparameter\c!setups}%
-    \ifx\p_setups\empty\else
+    \ifempty\p_setups\else
         \directsetup\p_setups
     \fi
 \to \everyswitchmathematics
@@ -2779,7 +2779,7 @@
 
 \appendtoks
     \edef\p_domain{\mathematicsparameter\c!domain}%
-    \ifx\p_domain\empty
+    \ifempty\p_domain
         \c_math_domain_attribute\attributeunsetvalue
     \else
         \c_math_domain_attribute\clf_getmathdomain\p_domain\relax
@@ -2905,7 +2905,7 @@
 %    \ifcondition\mdim#1\scriptscriptstyle       \frozen#1\scriptscriptstyle       #2\dimexpr#1\scriptscriptstyle       \relax\fi
 %    \ifcondition\mdim#1\crampedscriptscriptstyle\frozen#1\crampedscriptscriptstyle#2\dimexpr#1\crampedscriptscriptstyle\relax\fi}
 
-% \Umathparameter : 0=zero, 1=set, 2=unset (les stracing clutter this way)
+% \ifmathparameter : 0=zero, 1=set, 2=unset (les stracing clutter this way)
 
 %D New stuff:
 %D
@@ -2914,14 +2914,14 @@
 %D \stoptyping
 
 \unexpanded\def\mathopenupparameter#1#2%
-  {\ifcase\Umathparameter#1\displaystyle            \or\frozen#1\displaystyle            #2#1\displaystyle            \fi
-   \ifcase\Umathparameter#1\crampeddisplaystyle     \or\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
-   \ifcase\Umathparameter#1\textstyle               \or\frozen#1\textstyle               #2#1\textstyle               \fi
-   \ifcase\Umathparameter#1\crampedtextstyle        \or\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
-   \ifcase\Umathparameter#1\scriptstyle             \or\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
-   \ifcase\Umathparameter#1\crampedscriptstyle      \or\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
-   \ifcase\Umathparameter#1\scriptscriptstyle       \or\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
-   \ifcase\Umathparameter#1\crampedscriptscriptstyle\or\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
+  {\ifmathparameter#1\displaystyle            \or\frozen#1\displaystyle            #2#1\displaystyle            \fi
+   \ifmathparameter#1\crampeddisplaystyle     \or\frozen#1\crampeddisplaystyle     #2#1\crampeddisplaystyle     \fi
+   \ifmathparameter#1\textstyle               \or\frozen#1\textstyle               #2#1\textstyle               \fi
+   \ifmathparameter#1\crampedtextstyle        \or\frozen#1\crampedtextstyle        #2#1\crampedtextstyle        \fi
+   \ifmathparameter#1\scriptstyle             \or\frozen#1\scriptstyle             #2#1\scriptstyle             \fi
+   \ifmathparameter#1\crampedscriptstyle      \or\frozen#1\crampedscriptstyle      #2#1\crampedscriptstyle      \fi
+   \ifmathparameter#1\scriptscriptstyle       \or\frozen#1\scriptscriptstyle       #2#1\scriptscriptstyle       \fi
+   \ifmathparameter#1\crampedscriptscriptstyle\or\frozen#1\crampedscriptscriptstyle#2#1\crampedscriptscriptstyle\fi}
 
 %D New stuff:
 %D

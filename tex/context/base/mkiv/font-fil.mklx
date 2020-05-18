@@ -78,7 +78,7 @@
 \unexpanded\def\definefontsynonym[#name]#crap[#file]%
   {\edef\m_font_name{#name}%
    \edef\m_font_file{#file}%
-   \ifx\fontclass\empty
+   \ifempty\fontclass
       \expandafter\font_basics_define_font_synonym_nop
    \else
       \expandafter\font_basics_define_font_synonym_yes
@@ -95,7 +95,7 @@
 \unexpanded\def\edefinefontsynonym[#name]#crap[#file]%
   {\edef\m_font_name{#name}%
    \edef\m_font_file{#file}%
-   \ifx\fontclass\empty
+   \ifempty\fontclass
       \expandafter\font_basics_define_font_synonym_nop_expanded
    \else
       \expandafter\font_basics_define_font_synonym_yes_expanded
@@ -207,7 +207,7 @@
 
 \def\font_helpers_true_fontname#name*#first#rest*#crap\relax
   {\ifcsname\??fontfile\fontclass#name\endcsname
-     \ifx#first\empty
+     \ifempty#first%
       %\expandafter\truefontname\csname\??fontfile\fontclass#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
@@ -215,7 +215,7 @@
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-     \ifx#first\empty
+     \ifempty#first%
       %\expandafter\truefontname\csname\??fontfile\defaultfontclass#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
@@ -223,7 +223,7 @@
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile#name\endcsname
-     \ifx#first\empty
+     \ifempty#first%
       %\expandafter\truefontname\csname\??fontfile#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
@@ -231,7 +231,7 @@
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \else
-     #name\ifx#first\empty\else*#first#rest\fi
+     #name\ifempty#first\else*#first#rest\fi
    \fi}
 
 \def\font_helpers_true_fontname_check#name%
@@ -401,7 +401,7 @@
    \font_helpers_set_designsize_nop\somefontname}
 
 \def\font_helpers_update_font_parameters
- {\ifx\fontclass\empty\font_helpers_update_font_parameters_nop\else\font_helpers_update_font_parameters_yes\fi}
+ {\ifempty\fontclass\font_helpers_update_font_parameters_nop\else\font_helpers_update_font_parameters_yes\fi}
 
 \installcorenamespace{fontclass}
 

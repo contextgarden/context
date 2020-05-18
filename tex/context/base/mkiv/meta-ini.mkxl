@@ -93,7 +93,7 @@
 \def\meta_start_definitions#1#2\stopMPdefinitions
   {\let\m_meta_saved_instance\currentMPinstance
    \edef\currentMPinstance{#1}%
-   \ifx\currentMPinstance\empty
+   \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \gtoksapp\t_meta_definitions{#2}%
@@ -124,7 +124,7 @@
 \def\meta_start_inclusions_indeed#1#2\stopMPinclusions
   {\let\m_meta_saved_instance\currentMPinstance
    \edef\currentMPinstance{#1}%
-   \ifx\currentMPinstance\empty
+   \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \ifx\m_meta_option\!!plustoken \else
@@ -145,7 +145,7 @@
 \def\meta_inclusions_indeed#1#2%
   {\let\m_meta_saved_instance\currentMPinstance
    \edef\currentMPinstance{#1}%
-   \ifx\currentMPinstance\empty
+   \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \ifx\m_meta_option\!!plustoken \else
@@ -194,7 +194,7 @@
 
 \unexpanded\def\meta_analyze_graphicname_indeed[#1::#2::#3]% instance ::
   {\edef\currentMPgraphicname{#2}%
-   \ifx\currentMPgraphicname\empty
+   \ifempty\currentMPgraphicname
      \edef\currentMPgraphicname{#1}%
      \let\currentMPinstance\defaultMPinstance
    \orelse\ifcsname\??mpdefinitions#1\endcsname
@@ -262,7 +262,7 @@
      \setfalse\c_meta_include_initializations
    \fi
    \edef\p_setups{\MPinstanceparameter\c!setups}%
-   \ifx\p_setups\empty \else
+   \ifempty\p_setups \else
      \setups[\p_setups]%
    \fi
    \useMPinstancestyleparameter\c!textstyle}
@@ -289,7 +289,7 @@
 
 \unexpanded\def\meta_process_graphic_instance#1%
   {\edef\currentMPinstance{#1}%
-   \ifx\currentMPinstance\empty
+   \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
    \edef\currentMPformat{\MPinstanceparameter\s!format}%
@@ -539,7 +539,7 @@
      {\??graphicvariable\currentmpvariableclass:#1}%
    \edef\m_meta_current_variable
      {\begincsname\m_meta_current_variable_template\endcsname}%
-   \ifx\m_meta_current_variable\empty
+   \ifempty\m_meta_current_variable
      \expandafter\meta_prepare_variable_nop
    \else
      \expandafter\meta_prepare_variable_yes
@@ -557,7 +557,7 @@
       \else
          \begincsname\??graphicvariable\currentMPgraphicname:#1\endcsname
       \fi}%
-   \ifx\m_meta_current_variable\empty
+   \ifempty\m_meta_current_variable
      \expandafter\meta_prepare_variable_nop
    \else
      \expandafter\meta_prepare_variable_yes
@@ -712,7 +712,7 @@
   {\begingroup
    \edef\currentmpvariableclass{#1}%
    \edef\m_meta_instance_variables{#2}%
-   \ifx\m_meta_instance_variables\empty \else
+   \ifempty\m_meta_instance_variables \else
      \meta_prepare_instance_variables
    \fi
    \meta_enable_include % redundant
@@ -745,7 +745,7 @@
   {\begingroup
    \edef\currentmpvariableclass{#1}%
    \edef\m_meta_instance_variables{#2}%
-   \ifx\m_meta_instance_variables\empty \else
+   \ifempty\m_meta_instance_variables \else
      \meta_prepare_instance_variables
    \fi
    \meta_enable_include % redundant
@@ -778,7 +778,7 @@
    \else
      \let\usedMPgraphicname\empty
    \fi
-   \ifx\usedMPgraphicname\empty
+   \ifempty\usedMPgraphicname
      % message
    \else
      \doifsomething{#2}{\setupMPvariables[\usedMPgraphicname][#2]}%
@@ -1072,8 +1072,8 @@
 %D that fails with spot colors.
 
 \startMPinitializations
-    def OverlayLineColor=\ifx\overlaylinecolor\empty black \else\MPcolor{\overlaylinecolor} \fi enddef;
-    def OverlayColor    =\ifx\overlaycolor    \empty black \else\MPcolor{\overlaycolor}     \fi enddef;
+    def OverlayLineColor=\ifempty\overlaylinecolor black \else\MPcolor{\overlaylinecolor} \fi enddef;
+    def OverlayColor    =\ifempty\overlaycolor     black \else\MPcolor{\overlaycolor}     \fi enddef;
 \stopMPinitializations
 
 % \newcount\c_overlay_colormodel
@@ -1448,7 +1448,7 @@
 
 \appendtoks
     \edef\p_mpy{\directMPgraphicsparameter{mpy}}%
-    \ifx\p_mpy\empty \else
+    \ifempty\p_mpy \else
       \let\MPdataMPYfile\p_mpy
       \clf_registermpyfile{\p_mpy}%
     \fi

@@ -148,7 +148,7 @@
 
 \unexpanded\def\doconvertfont#specification% takes second argument / this command is obsolete
   {\edef\m_current_convert_font{#specification}%
-   \ifx\m_current_convert_font\empty
+   \ifempty\m_current_convert_font
     %\expandafter\firstofoneargument
    \else
      \expandafter\font_helpers_do_convert_font
@@ -183,7 +183,7 @@
 
 \unexpanded\def\dousestyleparameter#value%
   {\edef\currentstyleparameter{#value}%
-   \ifx\currentstyleparameter\empty\else
+   \ifempty\currentstyleparameter\else
      \expandafter\dousecurrentstyleparameter
    \fi}
 

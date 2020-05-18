@@ -167,7 +167,7 @@
 \unexpanded\def\coloronly[#1]%
   {\bgroup
    \edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop_only
    \else
      \colo_helpers_activate_yes_only
@@ -177,7 +177,7 @@
 \unexpanded\def\startcoloronly[#1]%$
   {\begingroup
    \edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop_only
    \else
      \colo_helpers_activate_yes_only
@@ -191,7 +191,7 @@
 \unexpanded\def\color[#1]%
   {\bgroup
    \edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
      \colo_helpers_activate_yes
@@ -206,7 +206,7 @@
 \unexpanded\def\startcolor[#1]%$
   {\begingroup
    \edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
      \colo_helpers_activate_yes
@@ -232,7 +232,7 @@
 \unexpanded\def\fastcolor[#1]#2%
   {\begingroup % is this command still needed?
    \edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
      \colo_helpers_activate_yes
@@ -242,7 +242,7 @@
 
 \unexpanded\def\directcolor[#1]%
   {\edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
      \colo_helpers_activate_nop
    \else
      \colo_helpers_activate_yes
@@ -250,7 +250,7 @@
 
 %D The following command is obsolete:
 
-\unexpanded\def\startcolorpage   {\startcolor[\ifx\maintextcolor\empty\defaulttextcolor\else\maintextcolor\fi]}
+\unexpanded\def\startcolorpage   {\startcolor[\ifempty\maintextcolor\defaulttextcolor\else\maintextcolor\fi]}
 \unexpanded\def\stopcolorpage    {\stopcolor}
 
 \unexpanded\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
@@ -546,7 +546,7 @@
 
 \def\colo_palets_setup[#1]%
   {\edef\currentcolorpalet{#1}%
-   \ifx\currentcolorpalet\empty
+   \ifempty\currentcolorpalet
      % seems to be a reset
      \let\currentcolorprefix\empty
     %\t_colo_prefix\emptytoks
@@ -728,7 +728,7 @@
 % new: expandable (see tbl)
 
 \def\colo_helpers_fast_activate
-  {\ifx\currentcolorprefix\empty
+  {\ifempty\currentcolorprefix
      \expandafter\colo_helpers_fast_activate_nop
    \else
      \expandafter\colo_helpers_fast_activate_yes
@@ -759,7 +759,7 @@
 
 \def\colo_helpers_activate#1% two-step is not that much faster but less tracing
   {\edef\currentcolorname{#1}%
-   \ifx\currentcolorprefix\empty
+   \ifempty\currentcolorprefix
     %\expandafter
      \colo_helpers_activate_nop
    \else
@@ -1097,10 +1097,10 @@
 \def\s!themaintextcolor{themaintextcolor}
 
 \unexpanded\def\inheritmaintextcolor
-  {\ifx\maintextcolor\empty\else\colo_helpers_activate\maintextcolor\fi}
+  {\ifempty\maintextcolor\else\colo_helpers_activate\maintextcolor\fi}
 
 \unexpanded\def\onlyinheritmaintextcolor
-  {\ifx\maintextcolor\empty
+  {\ifempty\maintextcolor
      \deactivatecolor
    \else
      \colo_helpers_activate\maintextcolor
@@ -1127,7 +1127,7 @@
 
 \def\colo_helpers_initialize_maintextcolor
   {\edef\p_colo_textcolor{\directcolorsparameter\c!textcolor}%
-   \ifx\p_colo_textcolor\empty
+   \ifempty\p_colo_textcolor
      \colo_helpers_switch_to_maintextcolor\defaulttextcolor
    \else
      \colo_helpers_switch_to_maintextcolor\p_colo_textcolor

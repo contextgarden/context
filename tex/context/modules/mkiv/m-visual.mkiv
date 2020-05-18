@@ -56,9 +56,7 @@
 \unexpanded\def\fakelines#1#2% min max / 3 10
   {\fakeparindent
    \scratchdimen\hsize
-   \ifindentation
-     \advance\scratchdimen -\parindent
-   \fi
+   \advance\scratchdimen -\parindent
    \fakerule\scratchdimen\break
    \getrandomcount\scratchcounter{\ifcase0#1 3\else#1\fi}{\ifcase0#2 10\else#2\fi}%
    \dorecurse\scratchcounter{\fakerule\hsize}%
@@ -128,7 +126,7 @@
 
 \unexpanded\def\fakeparindent
   {\noindent
-   \ifindentation
+   \ifzeropt\parindent\else
      \ifx\dofakedroppedcaps\relax
        {\fakeparindentcolor
         \vrule

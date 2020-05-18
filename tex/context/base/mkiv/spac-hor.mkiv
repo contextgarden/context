@@ -210,12 +210,12 @@
 
 %D Here come the handlers (still rather messy ... we need states).
 
-\newif\ifindentation \indentationtrue  % will become a mode
+%newif\ifindentation \indentationtrue  % will become a mode
 
 \let\checkindentation\relax
 
 \installmacrostack\checkindentation
-\installmacrostack\ifindentation
+%installmacrostack\ifindentation
 
 \def\spac_indentation_remove
   {\ifzeropt\parindent \else
@@ -225,20 +225,20 @@
    \fi}
 
 \def\spac_indentation_kill_indeed
-  {\global\indentationfalse
+  {%\global\indentationfalse
    \spac_indentation_remove}
 
 \def\spac_indentation_do_toggle_indeed
-  {\global\indentationfalse
+  {%\global\indentationfalse
    \glet\checkindentation\spac_indentation_no_toggle_indeed
    \spac_indentation_remove}
 
 \def\spac_indentation_no_toggle_indeed
-  {\global\indentationtrue
+  {%\global\indentationtrue
    \glet\checkindentation\spac_indentation_do_toggle_indeed}
 
 \def\spac_indentation_do_indeed
-  {\global\indentationtrue}
+  {}%\global\indentationtrue}
 
 \def\spac_indentation_do_toggle
   {\glet\checkindentation\spac_indentation_do_toggle_indeed}
@@ -264,13 +264,13 @@
 
 \def\spac_indentation_variant_no % made global
   {\ifinpagebody \else
-     \global\indentationfalse
+     %\global\indentationfalse
      \glet\checkindentation\spac_indentation_no_next_check
    \fi}
 
 \def\nonoindentation % bv bij floats
   {\ifinpagebody \else
-     \global\indentationtrue
+     %\global\indentationtrue
      \glet\checkindentation\spac_indentation_do_indeed
    \fi}
 

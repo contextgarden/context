@@ -78,7 +78,7 @@
    \edef\p_buff_option{\typeparameter\c!option}%
    \ifx\p_buff_option\v!none
      \usetypestyleandcolor\c!style\c!color
-   \orelse\ifx\p_buff_option\empty
+   \orelse\ifempty\p_buff_option
      \usetypestyleandcolor\c!style\c!color
    \else
      \usetypestyleparameter\c!style % no color
@@ -120,7 +120,7 @@
    \edef\p_buff_option{\typingparameter\c!option}%
    \ifx\p_buff_option\v!none
      \usetypingstyleandcolor\c!style\c!color
-   \orelse\ifx\p_buff_option\empty
+   \orelse\ifempty\p_buff_option
      \usetypingstyleandcolor\c!style\c!color
    \else
      \usetypingstyleparameter\c!style % no color !
@@ -177,7 +177,7 @@
 \appendtoks
     \setuevalue{\e!start\currenttyping}{\buff_verbatim_typing_start{\currenttyping}}%
     \setuevalue{\e!stop \currenttyping}{\buff_verbatim_typing_stop {\currenttyping}}%
-    \ifx\currenttypingparent\empty
+    \ifempty\currenttypingparent
       \normalexpanded{\definelinenumbering[\currenttyping]}%
     \else
       \normalexpanded{\definelinenumbering[\currenttyping][\currenttypingparent]}%
@@ -610,10 +610,10 @@
 
 \unexpanded\def\doifelsetypingfile#1%
   {\edef\askedtypingfile{\locfilename{#1}}%
-   \ifx\askedtypingfile\empty
+   \ifempty\askedtypingfile
      \edef\askedtypingfile{\locfilename{#1.tex}}% downward compatible
    \fi
-   \ifx\askedtypingfile\empty
+   \ifempty\askedtypingfile
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments

@@ -297,7 +297,9 @@
 % 1 = RC column raw    RQ equal column raw
 % 2 = HC column hook   HQ equal column hook
 
-% handy helper
+% handy helper (problem: we have an extra group when we nest; playing with en engine
+% solution turned out to be too messy due to states; an ignoreendgroup trick also is
+% messy and interferes).
 
 \def\tabulatenoalign % public ?
   {\noalign
@@ -364,7 +366,7 @@
 
 \unexpanded\def\tabl_tabulate_check_local_color_second#1#2%
   {\relax
-   \ifx\m_tabl_tabulate_color_local\empty
+   \ifempty\m_tabl_tabulate_color_local
      \xdef\m_tabl_tabulate_color{#1}%
    \else
      \glet\m_tabl_tabulate_color\m_tabl_tabulate_color_local
@@ -391,7 +393,7 @@
 
 \unexpanded\def\tabl_tabulate_check_local_vrule_color_second#1%
   {\relax
-   \ifx\m_tabl_tabulate_vrule_color_local\empty
+   \ifempty\m_tabl_tabulate_vrule_color_local
      \xdef\m_tabl_tabulate_vrule_color{#1}%
    \else
      \glet\m_tabl_tabulate_vrule_color\m_tabl_tabulate_vrule_color_local
@@ -475,7 +477,7 @@
             \bgroup % we cannot combine the if because a cell may have only one ##
                 \tabl_tabulate_hook_b
                 \c_tabl_tabulate_align\constantnumber\c_tabl_tabulate_align % needed in tag passing
-                \ifx\m_tabl_tabulate_alignment\empty \else
+                \ifempty\m_tabl_tabulate_alignment \else
                     \spac_align_use_now{\m_tabl_tabulate_alignment}%
                 \fi
                 \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
@@ -490,7 +492,7 @@
                     \the\t_tabl_tabulate_font
                     \the\t_tabl_tabulate_settings
                     \the\t_tabl_tabulate_before
-                    \ifx\m_tabl_tabulate_text_color\empty
+                    \ifempty\m_tabl_tabulate_text_color
                         \expandafter\gobbleoneargument
                     \else
                         \expandafter\dofastcoloractivation
@@ -818,7 +820,7 @@
    \global\advance\c_tabl_tabulate_columns\plusone
    \expandafter\let\csname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
    \edef\currenttabulationtrulespec{#1}%
-   \ifx\currenttabulationtrulespec\empty
+   \ifempty\currenttabulationtrulespec
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -839,7 +841,7 @@
   {\glet\m_tabl_tabulate_color\empty
    \glet\m_tabl_tabulate_vrule_color\empty
    \edef\currenttabulationtrulespec{#1}%
-   \ifx\currenttabulationtrulespec\empty
+   \ifempty\currenttabulationtrulespec
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -1099,8 +1101,8 @@
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
-    %\expandafter\ifx\csname\??tabulatehead\currenttabulation\endcsname\empty
-     \expandafter\ifx\lastnamedcs\empty
+    %\expandafter\ifempty\csname\??tabulatehead\currenttabulation\endcsname
+     \expandafter\ifempty\lastnamedcs
        \let\tabl_tabulate_insert_head\empty
      \else
        \let\tabl_tabulate_insert_head\tabl_tabulate_insert_head_content
@@ -1109,8 +1111,8 @@
      \let\tabl_tabulate_insert_head\empty
    \fi
    \ifcsname\??tabulatefoot\currenttabulation\endcsname
-     \expandafter\ifx\csname\??tabulatefoot\currenttabulation\endcsname\empty
-    %\expandafter\ifx\lastnamedcs\empty
+     \expandafter\ifempty\csname\??tabulatefoot\currenttabulation\endcsname
+    %\expandafter\ifempty\lastnamedcs
        \let\tabl_tabulate_insert_foot\empty
      \else
        \let\tabl_tabulate_insert_foot\tabl_tabulate_insert_foot_content
@@ -1213,7 +1215,7 @@
      \setupcurrenttabulation[#1]%
    \else
      \def\p_format{#1}%
-     \ifx\p_format\empty
+     \ifempty\p_format
        \def\p_format{|l|p|}%
      \fi
      \lettabulationparameter\c!format\p_format
@@ -1222,7 +1224,7 @@
 
 \def\tabl_start_regular_two[#1][#2]%
   {\def\p_format{#1}%
-   \ifx\p_format\empty
+   \ifempty\p_format
      \let\p_format\tabl_default_format
    \fi
    \lettabulationparameter\c!format\p_format
@@ -1368,7 +1370,7 @@
    \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
    \d_tabl_tabulate_vrulethickness_default\p_rulethickness
    \d_tabl_tabulate_hrulethickness_default\p_rulethickness
-   \ifx\p_bodyfont\empty\else
+   \ifempty\p_bodyfont\else
      \switchtobodyfont[\p_bodyfont]%
    \fi
    \postponenotes % new, to be tested / will be configurable
@@ -1379,7 +1381,7 @@
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
    \processcontent
-     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifx\currenttabulationparent\empty\v!tabulate\else\currenttabulationparent\fi\fi}
+     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifempty\currenttabulationparent\v!tabulate\else\currenttabulationparent\fi\fi}
      \tabl_tabulate_insert_body
      \tabl_tabulate_process}
 
@@ -1421,13 +1423,13 @@
 \to \t_tabl_tabulate_every_row
 
 \unexpanded\def\tabl_tabulate_color_side_right_second
-  {\ifx\m_tabl_tabulate_color_previous\empty \else
+  {\ifempty\m_tabl_tabulate_color_previous \else
      \tabl_tabulate_color_set\m_tabl_tabulate_color_previous
      \glet\m_tabl_tabulate_color_previous\empty
    \fi}
 
 \unexpanded\def\tabl_tabulate_color_side_left_second
-  {\ifx\m_tabl_tabulate_color\empty \else
+  {\ifempty\m_tabl_tabulate_color \else
      \ifcase\c_tabl_tabulate_colorspan
      \or
        \tabl_tabulate_color_set\m_tabl_tabulate_color
@@ -1437,7 +1439,7 @@
    \fi}
 
 \unexpanded\def\tabl_tabulate_color_side_both_second
-  {\ifx\m_tabl_tabulate_color\empty \else
+  {\ifempty\m_tabl_tabulate_color \else
      \tabl_tabulate_color_set\m_tabl_tabulate_color
      \ifcase\c_tabl_tabulate_colorspan
        %\glet\m_tabl_tabulate_color_previous\empty
@@ -1572,7 +1574,7 @@
 
 \unexpanded\def\tabl_tabulate_column_vrule_inject_second
   {\ifcase\d_tabl_tabulate_vrulethickness\else
-     \ifx\m_tabl_tabulate_vrule_color\empty
+     \ifempty\m_tabl_tabulate_vrule_color
        \tabl_tabulate_column_vruled_normal
      \else
        \tabl_tabulate_column_vruled_colored
@@ -1622,7 +1624,7 @@
 \def\tabl_tabulate_column_rule_separator_inject % can be sped up (will do when used frequently)
   {\bgroup
    \s_tabl_tabulate_separator\strutdp
-   \ifx\p_distance\empty\else
+   \ifempty\p_distance\else
      \let\m_tabl_tabulate_separator_factor\plusone
      \processcommacommand[\p_distance]\tabl_tabulate_column_rule_separator_step
      \s_tabl_tabulate_separator\m_tabl_tabulate_separator_factor\s_tabl_tabulate_separator
@@ -1671,7 +1673,7 @@
 
 \unexpanded\def\tabl_tabulate_hrule_inject_second
   {\ifcase\d_tabl_tabulate_hrulethickness_local\else
-     \ifx\currenttabulationlocalhrulecolor\empty
+     \ifempty\currenttabulationlocalhrulecolor
        \tabl_tabulate_hrule_inject_normal
      \else
        \tabl_tabulate_hrule_inject_colored
@@ -2005,7 +2007,7 @@
 
 \unexpanded\def\tabl_tabulate_bbskip_second_split_yes
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
-     \ifx\tabl_tabulate_flush_collected_indeed\empty\else
+     \ifempty\tabl_tabulate_flush_collected_indeed\else
        \setbox0\hbox
      \fi
   \fi}
@@ -2501,7 +2503,7 @@
 \def\tabl_tabulate_TB_indeed[#1]%
   {\iffirstargument
      \blank[#1]
-   \orelse\ifx\m_tabl_tabulate_blank_default\empty
+   \orelse\ifempty\m_tabl_tabulate_blank_default
      \blank
    \else
      \blank[\m_tabl_tabulate_blank_default]%
@@ -2820,8 +2822,8 @@
 
 \unexpanded\def\tabl_synchronize_row_background
   {\iftrialtypesetting\else
-     \ifx\m_table_current_row_background_filler\empty
-       \ifx\m_table_current_row_background\empty
+     \ifempty\m_table_current_row_background_filler
+       \ifempty\m_table_current_row_background
          % nothing
          \tabl_synchronize_row_background_dummy
        \else
@@ -2952,8 +2954,8 @@
 \unexpanded\def\tabl_tabulate_BC_first % overloaded
   {\tabl_tabulate_column_normal\plusone\zerocount
    \let\fontstyle\globalfontstyle
-   \ifx\m_table_current_row_background\empty
-     \ifx\m_table_current_row_background_filler\empty
+   \ifempty\m_table_current_row_background
+     \ifempty\m_table_current_row_background_filler
        \usetabulationstyleandcolor\c!headstyle\c!headcolor
      \else
        \usetabulationstyleandcolor\c!foregroundstyle\c!foregroundcolor
@@ -2965,11 +2967,11 @@
 \unexpanded\def\tabl_tabulate_A_first
   {\global\advance\c_tabl_tabulate_autocolor\plusone
    \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
-   \ifx\m_table_current_row_background_auto\empty
+   \ifempty\m_table_current_row_background_auto
      \global\c_tabl_tabulate_autocolor\plusone
      \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
    \fi
-   \ifx\m_table_current_row_background_auto\empty
+   \ifempty\m_table_current_row_background_auto
      \let\m_table_current_row_background_auto\empty % \m_table_current_row_background_default
    \fi
    \tabl_register_row_background{\m_table_current_row_background_auto}}

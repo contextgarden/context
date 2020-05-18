@@ -194,22 +194,38 @@
 %D The next set of macros just do nothing, except that they get rid of a number of
 %D arguments.
 
-\def\gobbleoneargument   #1{}
-\def\gobbletwoarguments  #1#2{}
-\def\gobblethreearguments#1#2#3{}
-\def\gobblefourarguments #1#2#3#4{}
-\def\gobblefivearguments #1#2#3#4#5{}
-\def\gobblesixarguments  #1#2#3#4#5#6{}
-\def\gobblesevenarguments#1#2#3#4#5#6#7{}
-\def\gobbleeightarguments#1#2#3#4#5#6#7#8{}
-\def\gobbleninearguments #1#2#3#4#5#6#7#8#9{}
-\def\gobbletenarguments  #1{\gobbleninearguments}
+% \def\gobbleoneargument   #1{}
+% \def\gobbletwoarguments  #1#2{}
+% \def\gobblethreearguments#1#2#3{}
+% \def\gobblefourarguments #1#2#3#4{}
+% \def\gobblefivearguments #1#2#3#4#5{}
+% \def\gobblesixarguments  #1#2#3#4#5#6{}
+% \def\gobblesevenarguments#1#2#3#4#5#6#7{}
+% \def\gobbleeightarguments#1#2#3#4#5#6#7#8{}
+% \def\gobbleninearguments #1#2#3#4#5#6#7#8#9{}
+% \def\gobbletenarguments  #1{\gobbleninearguments}
 
-\def\gobbleoneoptional   [#1]{}
-\def\gobbletwooptionals  [#1][#2]{}
-\def\gobblethreeoptionals[#1][#2][#3]{}
-\def\gobblefouroptionals [#1][#2][#3][#4]{}
-\def\gobblefiveoptionals [#1][#2][#3][#4][#5]{}
+% \def\gobbleoneoptional   [#1]{}
+% \def\gobbletwooptionals  [#1][#2]{}
+% \def\gobblethreeoptionals[#1][#2][#3]{}
+% \def\gobblefouroptionals [#1][#2][#3][#4]{}
+% \def\gobblefiveoptionals [#1][#2][#3][#4][#5]{}
+
+\def\gobbleoneargument               #0{}
+\def\gobbletwoarguments            #0#0{}
+\def\gobblethreearguments        #0#0#0{}
+\def\gobblefourarguments       #0#0#0#0{}
+\def\gobblefivearguments       #0#0#0#0{}
+\def\gobblesixarguments        #0#0#0#0{}
+\def\gobblesevenarguments    #0#0#0#0#0{}
+\def\gobbleeightarguments  #0#0#0#0#0#0{}
+\def\gobbleninearguments #0#0#0#0#0#0#0{}
+
+\def\gobbleoneoptional   [#0]{}
+\def\gobbletwooptionals  [#0][#0]{}
+\def\gobblethreeoptionals[#0][#0][#0]{}
+\def\gobblefouroptionals [#0][#0][#0][#0]{}
+\def\gobblefiveoptionals [#0][#0][#0][#0][#0]{}
 
 %D Reserved macros for tests:
 
@@ -667,7 +683,7 @@
 
 \unexpanded\def\doifelseempty#1%
   {\def\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -677,7 +693,7 @@
 
 \unexpanded\def\doifempty#1%
   {\def\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
@@ -685,7 +701,7 @@
 
 \unexpanded\def\doifnotempty#1%
   {\def\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -1017,7 +1033,7 @@
 
 \unexpanded\def\processaction[#1]#2[%
   {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \let\syst_helpers_do_compare_process_action\syst_helpers_do_compare_process_action_a
    \else
      \let\syst_helpers_do_compare_process_action\syst_helpers_do_compare_process_action_b
@@ -1042,7 +1058,7 @@
 
 \unexpanded\def\processfirstactioninset[#1]%
   {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\processaction
    \else
      \expandafter\syst_helpers_process_first_action_in_set_indeed
@@ -1077,7 +1093,7 @@
 
 \unexpanded\def\processallactionsinset[#1]%
   {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\processaction
    \else
      \expandafter\syst_helpers_process_all_actions_in_set_indeed
@@ -1140,7 +1156,7 @@
 
 \unexpanded\def\doifelseinstring#1%
   {\edef\m_syst_sub_string{#1}% expand #1 here
-   \ifx\m_syst_sub_string\empty
+   \ifempty\m_syst_sub_string
      \expandafter\thirdofthreearguments
    \else
      \expandafter\syst_helpers_do_if_in_string_else_indeed
@@ -1157,7 +1173,7 @@
 
 \unexpanded\def\doifinstring#1%%
   {\edef\m_syst_sub_string{#1}% expand #1 here
-   \ifx\m_syst_sub_string\empty
+   \ifempty\m_syst_sub_string
      \expandafter\gobbletwoarguments
    \else
      \expandafter\syst_helpers_do_if_in_string_indeed
@@ -1172,7 +1188,7 @@
 
 \unexpanded\def\doifnotinstring#1%%
   {\edef\m_syst_sub_string{#1}% expand #1 here
-   \ifx\m_syst_sub_string\empty
+   \ifempty\m_syst_sub_string
      \expandafter\gobbletwoarguments
    \else
      \expandafter\syst_helpers_do_if_not_in_string_indeed
@@ -1296,7 +1312,7 @@
 
 \unexpanded\def\makerawcommalist[#1]#2% use \processnext ... here
   {\def\syst_helpers_do_make_raw_comma_list##1% we don't expand ##1
-     {\ifx#2\empty
+     {\ifempty#2%
         \def#2{##1}%
       \else
         \expandafter\def\expandafter#2\expandafter{#2,##1}%
@@ -1385,7 +1401,7 @@
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{undefined}% better \!!undefined
    \let\m_syst_helpers_process_action\m_syst_string_two
-   \ifx\m_syst_string_one\empty
+   \ifempty\m_syst_string_one
      \expandafter\syst_helpers_do_raw_process_action\expandafter[\s!default][#3]%
    \else
       \expandafter\syst_helpers_do_raw_process_action\expandafter[\m_syst_string_one][#3]%
@@ -2607,41 +2623,77 @@
 %D The next six macros (dedicated to Taco) can conveniently used to select
 %D arguments. Their names explain their functionality.
 
+% \def\firstofoneargument            #1{#1}
+%
+% \def\firstoftwoarguments         #1#2{#1}
+% \def\secondoftwoarguments        #1#2{#2}
+%
+% \def\firstofthreearguments     #1#2#3{#1}
+% \def\secondofthreearguments    #1#2#3{#2}
+% \def\thirdofthreearguments     #1#2#3{#3}
+%
+% \def\firstoffourarguments    #1#2#3#4{#1}
+% \def\secondoffourarguments   #1#2#3#4{#2}
+% \def\thirdoffourarguments    #1#2#3#4{#3}
+% \def\fourthoffourarguments   #1#2#3#4{#4}
+%
+% \def\firstoffivearguments  #1#2#3#4#5{#1}
+% \def\secondoffivearguments #1#2#3#4#5{#2}
+% \def\thirdoffivearguments  #1#2#3#4#5{#3}
+% \def\fourthoffivearguments #1#2#3#4#5{#4}
+% \def\fifthoffivearguments  #1#2#3#4#5{#5}
+%
+% \def\firstofsixarguments #1#2#3#4#5#6{#1}
+% \def\secondofsixarguments#1#2#3#4#5#6{#2}
+% \def\thirdofsixarguments #1#2#3#4#5#6{#3}
+% \def\fourthofsixarguments#1#2#3#4#5#6{#4}
+% \def\fifthofsixarguments #1#2#3#4#5#6{#5}
+% \def\sixthofsixarguments #1#2#3#4#5#6{#6}
+
 \def\firstofoneargument            #1{#1}
 
-\def\firstoftwoarguments         #1#2{#1}
-\def\secondoftwoarguments        #1#2{#2}
+\def\firstoftwoarguments         #1#0{#1}
+\def\secondoftwoarguments        #0#2{#2}
 
-\def\firstofthreearguments     #1#2#3{#1}
-\def\secondofthreearguments    #1#2#3{#2}
-\def\thirdofthreearguments     #1#2#3{#3}
+\def\firstofthreearguments     #1#0#0{#1}
+\def\secondofthreearguments    #0#2#0{#2}
+\def\thirdofthreearguments     #0#0#3{#3}
 
-\def\firstoffourarguments    #1#2#3#4{#1}
-\def\secondoffourarguments   #1#2#3#4{#2}
-\def\thirdoffourarguments    #1#2#3#4{#3}
-\def\fourthoffourarguments   #1#2#3#4{#4}
+\def\firstoffourarguments    #1#0#0#0{#1}
+\def\secondoffourarguments   #0#2#0#0{#2}
+\def\thirdoffourarguments    #0#0#3#0{#3}
+\def\fourthoffourarguments   #0#0#0#4{#4}
 
-\def\firstoffivearguments  #1#2#3#4#5{#1}
-\def\secondoffivearguments #1#2#3#4#5{#2}
-\def\thirdoffivearguments  #1#2#3#4#5{#3}
-\def\fourthoffivearguments #1#2#3#4#5{#4}
-\def\fifthoffivearguments  #1#2#3#4#5{#5}
+\def\firstoffivearguments  #1#0#0#0#0{#1}
+\def\secondoffivearguments #0#2#0#0#0{#2}
+\def\thirdoffivearguments  #0#0#3#0#0{#3}
+\def\fourthoffivearguments #0#0#0#4#0{#4}
+\def\fifthoffivearguments  #0#0#0#0#5{#5}
 
-\def\firstofsixarguments #1#2#3#4#5#6{#1}
-\def\secondofsixarguments#1#2#3#4#5#6{#2}
-\def\thirdofsixarguments #1#2#3#4#5#6{#3}
-\def\fourthofsixarguments#1#2#3#4#5#6{#4}
-\def\fifthofsixarguments #1#2#3#4#5#6{#5}
-\def\sixthofsixarguments #1#2#3#4#5#6{#6}
+\def\firstofsixarguments #1#0#0#0#0#0{#1}
+\def\secondofsixarguments#0#2#0#0#0#0{#2}
+\def\thirdofsixarguments #0#0#3#0#0#0{#3}
+\def\fourthofsixarguments#0#0#0#4#0#0{#4}
+\def\fifthofsixarguments #0#0#0#0#5#0{#5}
+\def\sixthofsixarguments #0#0#0#0#0#6{#6}
+
+% \unexpanded\def\firstofoneunexpanded       #1{#1}
+%
+% \unexpanded\def\firstoftwounexpanded     #1#2{#1}
+% \unexpanded\def\secondoftwounexpanded    #1#2{#2}
+%
+% \unexpanded\def\firstofthreeunexpanded #1#2#3{#1}
+% \unexpanded\def\secondofthreeunexpanded#1#2#3{#2}
+% \unexpanded\def\thirdofthreeunexpanded #1#2#3{#3}
 
 \unexpanded\def\firstofoneunexpanded       #1{#1}
 
-\unexpanded\def\firstoftwounexpanded     #1#2{#1}
-\unexpanded\def\secondoftwounexpanded    #1#2{#2}
+\unexpanded\def\firstoftwounexpanded     #1#0{#1}
+\unexpanded\def\secondoftwounexpanded    #0#2{#2}
 
-\unexpanded\def\firstofthreeunexpanded #1#2#3{#1}
-\unexpanded\def\secondofthreeunexpanded#1#2#3{#2}
-\unexpanded\def\thirdofthreeunexpanded #1#2#3{#3}
+\unexpanded\def\firstofthreeunexpanded #1#0#0{#1}
+\unexpanded\def\secondofthreeunexpanded#0#2#0{#2}
+\unexpanded\def\thirdofthreeunexpanded #0#0#3{#3}
 
 %D \macros
 %D   {globalletempty,letempty,
@@ -4414,7 +4466,7 @@
 \unexpanded\def\removetoks#1\from#2%
   {\def\syst_helpers_remove_toks##1#1##2\empty\empty\empty##3^^^^0004%
      {\def\m_syst_string_one{##3}%
-      \ifx\m_syst_string_one\empty#2{##1}\else#2{##1##2}\fi}%
+      \ifempty\m_syst_string_one#2{##1}\else#2{##1##2}\fi}%
    \expandafter\syst_helpers_remove_toks\the#2\empty\empty\empty#1\empty\empty\empty^^^^0004}
 
 %D Also:
@@ -4481,7 +4533,7 @@
   {\def\syst_helpers_split_string##1#2##2\empty\empty\empty##3\\%
      {\def#3{##1}%
       \def\syst_helpers_split_string{##3}%
-      \ifx\syst_helpers_split_string\empty
+      \ifempty\syst_helpers_split_string
         \let#4\empty
       \else
         \def#4{##2}%
@@ -4495,7 +4547,7 @@
    \let#4\empty
    \doloop
      {\expandafter\splitstring\asciib\at#2\to\asciia\and\asciib
-      \ifx\asciib\empty
+      \ifempty\asciib
         \exitloop
       \else
         % not \edef#3{\ifx#3\empty\else#3#2\fi\asciia} else
@@ -4503,7 +4555,7 @@
         \edef#3{\ifcase\recurselevel\or\else#3#2\fi\asciia}%
         \let#4\asciib
       \fi}%
-  \ifx#3\empty\let#3\asciic\fi}
+  \ifempty#3\let#3\asciic\fi}
 
 %D \macros
 %D   {beforetestandsplitstring,
@@ -4512,17 +4564,17 @@
 
 \unexpanded\def\beforetestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##2#2##3##4\\%
-     {\ifx##3\empty\let#3\empty\else\def#3{##1}\fi}%
+     {\ifempty##3\let#3\empty\else\def#3{##1}\fi}%
    \expandafter\syst_helpers_split_string#1#2#2\empty\\}
 
 \unexpanded\def\aftertestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string ##1#2##2@@@##3##4\\%
-     {\ifx##3\empty\let#3\empty\else\def#3{##2}\fi}%
+     {\ifempty##3\let#3\empty\else\def#3{##2}\fi}%
    \expandafter\syst_helpers_split_string #1@@@#2@@@\empty\\}
 
 \def\testandsplitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2#2##3##4\\%
-     {\ifx##3\empty\let#3\empty\let#4\empty\else\def#3{##1}\def#4{##2}\fi}%
+     {\ifempty##3\let#3\empty\let#4\empty\else\def#3{##1}\def#4{##2}\fi}%
    \expandafter\syst_helpers_split_string#1#2#2\empty\\}
 
 %D \macros
@@ -4613,18 +4665,18 @@
 %D The faster alternatives are:
 
 \unexpanded\def\appendtocommalist#1#2%
-  {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}
+  {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}
 
 \unexpanded\def\prependtocommalist#1#2%
-  {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}
+  {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}
 
 \unexpanded\def\addtocommalist#1#2% {item} \cs
   {\rawdoifelseinset{#1}#2\resetglobal
-     {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
+     {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}}
 
 \unexpanded\def\pretocommalist#1#2% {item} \cs
   {\rawdoifelseinset{#1}#2\resetglobal
-     {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
+     {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
 \unexpanded\def\robustdoifelseinset#1#2%
   {\edef\m_syst_string_one{\detokenize\expandafter{\normalexpanded{#1}}}%
@@ -4635,11 +4687,11 @@
 
 \unexpanded\def\robustaddtocommalist#1#2% {item} \cs
   {\robustdoifelseinset{#1}#2\resetglobal
-     {\dodoglobal\edef#2{\ifx#2\empty\else#2,\fi#1}}}
+     {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}}
 
 \unexpanded\def\robustpretocommalist#1#2% {item} \cs
   {\robustdoifelseinset{#1}#2\resetglobal
-     {\dodoglobal\edef#2{#1\ifx#2\empty\else,#2\fi}}}
+     {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
 \unexpanded\def\xsplitstring#1#2% \cs {str}
   {\def\syst_helpers_split_string##1,#2,##2,#2,##3\\%
@@ -4655,10 +4707,10 @@
   {\rawdoifelseinset{#1}#2%
      {\normalexpanded{\xsplitstring\noexpand#2{#1}}%
       \dodoglobal\edef#2%
-        {\ifx\m_syst_string_one\empty
+        {\ifempty\m_syst_string_one
            \m_syst_string_two
          \else
-           \m_syst_string_one\ifx\m_syst_string_two\empty\else,\m_syst_string_two\fi
+           \m_syst_string_one\ifempty\m_syst_string_two\else,\m_syst_string_two\fi
          \fi}}
      \resetglobal}
 
@@ -4674,11 +4726,11 @@
 \def\syst_helpers_substitute_in_comma_list_step#1%
   {\edef\m_syst_string_three{#1}%
    \ifx\m_syst_string_one\m_syst_string_three
-     \ifx\m_syst_string_two\empty \else
-       \edef\m_syst_string_four{\ifx\m_syst_string_four\empty\else\m_syst_string_four,\fi\m_syst_string_two}%
+     \ifempty\m_syst_string_two \else
+       \edef\m_syst_string_four{\ifempty\m_syst_string_four\else\m_syst_string_four,\fi\m_syst_string_two}%
      \fi
    \else
-     \edef\m_syst_string_four{\ifx\m_syst_string_four\empty\else\m_syst_string_four,\fi#1}%
+     \edef\m_syst_string_four{\ifempty\m_syst_string_four\else\m_syst_string_four,\fi#1}%
    \fi}
 
 \unexpanded\def\substituteincommalist#1#2#3% old, new, list (slooow)
@@ -4717,8 +4769,8 @@
 
 \def\syst_helpers_replace_in_comma_list_step#1%
   {\ifnum\commalistcounter=\c_syst_helpers_comma_list_index\relax
-     \ifx\newcommalistelement\empty\else
-       \ifx\m_syst_helpers_comma_list_target\empty
+     \ifempty\newcommalistelement\else
+       \ifempty\m_syst_helpers_comma_list_target
          \let\m_syst_helpers_comma_list_target\newcommalistelement
        \else
          \expandafter\expandafter\expandafter\def\expandafter\expandafter\expandafter
@@ -4728,7 +4780,7 @@
      \fi
      \def\commalistelement{#1}%
    \else
-     \ifx\m_syst_helpers_comma_list_target\empty
+     \ifempty\m_syst_helpers_comma_list_target
        \ifx\nexttoken\bgroup % is known -)
          \def\m_syst_helpers_comma_list_target{{#1}}%
        \else
@@ -4845,50 +4897,50 @@
 %D
 %D Beware: global!
 
-\installsystemnamespace{localpushedmacro}
-\installsystemnamespace{globalpushedmacro}
-
-\let\m_syst_helpers_push_macro\empty
-
-\newcount\c_syst_helpers_pop_count
-
-\def\syst_helpers_push_macro_new_global
-  {\expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
-   \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
-
-\def\syst_helpers_push_macro_new_local
-  {\expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
-   \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
-
-\unexpanded\def\globalpushmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \ifcsname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
-     \global\advance\lastnamedcs\plusone
-   \else
-     \syst_helpers_push_macro_new_global
-   \fi
-   \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
-
-\unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
-  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \ifcsname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
-     \global\advance\lastnamedcs\plusone
-   \else
-     \syst_helpers_push_macro_new_local
-   \fi
-   \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
-
-\unexpanded\def\globalpopmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \c_syst_helpers_pop_count\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
-   \global\advance\lastnamedcs \minusone
-   \expandafter\glet\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
-
-\unexpanded\def\localpopmacro#1%
-  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \c_syst_helpers_pop_count\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
-   \global\advance\lastnamedcs \minusone
-   \expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
+% \installsystemnamespace{localpushedmacro}
+% \installsystemnamespace{globalpushedmacro}
+%
+% \let\m_syst_helpers_push_macro\empty
+%
+% \newcount\c_syst_helpers_pop_count
+%
+% \def\syst_helpers_push_macro_new_global
+%   {\expandafter\newcount\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \global\advance\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
+%
+% \def\syst_helpers_push_macro_new_local
+%   {\expandafter\newcount\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \global\advance\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname\plusone}
+%
+% \unexpanded\def\globalpushmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+%    \ifcsname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+%      \global\advance\lastnamedcs\plusone
+%    \else
+%      \syst_helpers_push_macro_new_global
+%    \fi
+%    \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
+%
+% \unexpanded\def\localpushmacro#1% this one can be used to push a value over an \egroup
+%   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+%    \ifcsname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+%      \global\advance\lastnamedcs\plusone
+%    \else
+%      \syst_helpers_push_macro_new_local
+%    \fi
+%    \expandafter\glet\csname\the\lastnamedcs\m_syst_helpers_push_macro\endcsname#1}
+%
+% \unexpanded\def\globalpopmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+%    \c_syst_helpers_pop_count\csname\??globalpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \global\advance\lastnamedcs \minusone
+%    \expandafter\glet\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
+%
+% \unexpanded\def\localpopmacro#1%
+%   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+%    \c_syst_helpers_pop_count\csname\??localpushedmacro\m_syst_helpers_push_macro\endcsname
+%    \global\advance\lastnamedcs \minusone
+%    \expandafter\let\expandafter#1\csname\the\c_syst_helpers_pop_count\m_syst_helpers_push_macro\endcsname}
 
 \let\pushmacro\localpushmacro
 \let\popmacro \localpopmacro
@@ -5028,7 +5080,7 @@
 %D Also handy:
 
 \def\doifelseemptyvalue#1%
-  {\expandafter\ifx\csname#1\endcsname\empty
+  {\expandafter\ifempty\csname#1\endcsname
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -5037,14 +5089,14 @@
 \let\doifemptyvalueelse\doifelseemptyvalue
 
 \def\doifemptyvalue#1%
-  {\expandafter\ifx\csname#1\endcsname\empty
+  {\expandafter\ifempty\csname#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \def\doifnotemptyvalue#1%
-  {\expandafter\ifx\csname#1\endcsname\empty
+  {\expandafter\ifempty\csname#1\endcsname
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
@@ -6125,7 +6177,7 @@
 \unexpanded\def\syst_helpers_if_has_space_else#1 #2#3\relax % \space\empty\relax
   {\ifx\m_syst_string_one\space
      \expandafter\firstoftwoarguments
-   \orelse\ifx#2\empty
+   \orelse\ifempty#2%
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
@@ -6255,11 +6307,16 @@
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_nop
    \clf_benchmarktimer
-   \writestatus\m!system{starting feature test (n=\number\c_syst_helpers_test_feature_m)}\wait
+   \writestatus\m!system
+     {starting feature test: %
+      \number\c_syst_helpers_test_feature_m\space steps}%
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_yes
-   \writestatus\m!system{\number\c_syst_helpers_test_feature_m\space feature tests done (\elapsedseconds s)}%
-   \wait
+   \writestatus\m!system
+     {feature test done: %
+      \number\c_syst_helpers_test_feature_m\space steps, %
+      \clf_elapsedtime\space seconds, %
+      \clf_elapsedsteptime\elapsedsteps\space\space per step}%
    \egroup}
 
 \unexpanded\def\showtimer#1%
@@ -6327,7 +6384,7 @@
 
 \def\syst_helpers_with_range#1%
   {\splitstring#1\at:\to\m_syst_helpers_range_from\and\m_syst_helpers_range_to
-   \ifx\m_syst_helpers_range_to\empty\let\m_syst_helpers_range_to\m_syst_helpers_range_from\fi
+   \ifempty\m_syst_helpers_range_to\let\m_syst_helpers_range_to\m_syst_helpers_range_from\fi
    \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_helpers_range_action{##1}}}%
 
 \unexpanded\def\processranges[#1]#2% #1= n:m,p,q:r
@@ -6480,7 +6537,7 @@
    \fi}
 
 \def\constantemptyargument#1%
-  {\ifx#1\empty
+  {\ifempty#1%
      \noexpand\empty
    \else
      {#1}%
@@ -6588,6 +6645,6 @@
 
 \unexpanded\def\emptyargumentcondition#1%
   {\edef\m_syst_string_one{#1}%
-   \ifx\m_syst_string_one\empty}
+   \ifempty\m_syst_string_one}
 
 \protect \endinput

@@ -752,7 +752,7 @@ front.
 
 \startbuffer
 $
-                                            x \Usubscript  {-}
+                                               x \Usubscript  {-}
      \frozen\Umathsubshiftdown\textstyle  0pt  x \Usubscript  {0}
     {\frozen\Umathsubshiftdown\textstyle  5pt  x \Usubscript  {5}}
                                                x \Usubscript  {0}
@@ -777,16 +777,13 @@ unprocessed math list. The result looks as follows:
 
 \blank \getbuffer \blank
 
-\subsection{Checking a state with \lpr {Umathparameter}}
+\subsection{Checking a state with \lpr {ifmathparameter}}
 
-When you adapt math parameters it might make sense to see if they are set at
-all. When a parameter is unset its value has the maximum dimension value and
-you might for instance mistakenly multiply that value to open up things a bit,
-which gives unexpected side effects. For that reason there is a convenient
-checker: \lpr {Umathparameter}. When followed by a valid parameter it expands
-to a state number:
-
-: 0=zero, 1=set, 2=unset (les stracing clutter this way)
+When you adapt math parameters it might make sense to see if they are set at all.
+When a parameter is unset its value has the maximum dimension value and you might
+for instance mistakenly multiply that value to open up things a bit, which gives
+unexpected side effects. For that reason there is a convenient checker: \lpr
+{ifmathparameter}. This test primitive behaves like an \prm {ifcase}, with:
 
 \starttabulate[|c|l|]
 \DB value \BC meaning \NC \NR

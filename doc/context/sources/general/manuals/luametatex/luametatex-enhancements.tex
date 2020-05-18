@@ -1091,6 +1091,35 @@ or more than zero.
 
 \stopsubsection
 
+\startsubsection[title={\lpr {ifmathstyle} and \lpr {ifmathparameter}}]
+
+These two are variants on \prm {ifcase} where the first one operates with values
+in ranging from zero (display style) to seven (cramped script script style) and
+the second one can have three values: a parameter is zero, has a value or is
+unset. The \type {\ifmathparameter} primitive takes a proper parameter name and a
+valid style identifier (a primitive identifier or number). The \type
+{\ifmathstyle} primitive is equivalent to \type {\ifcase \mathstyle}.
+
+\stopsubsection
+
+\stopsubsection
+
+\startsubsection[title={\lpr {ifempty}}]
+
+This primitive tests for the following token (control sequence) having no
+content. Assuming that \type {\empty} is indeed empty, the following two are
+equivalent:
+
+\starttyping
+\ifempty\whatever
+\ifx\whatever\empty
+\stoptyping
+
+There is no real performance gain here, it's more one of these extensions that
+lead to less clutter in tracing.
+
+\stopsubsection
+
 \startsubsection[title={\lpr {ifboolean}}]
 
 This primitive tests for non|-|zero, so the next variants are similar

@@ -711,12 +711,12 @@
    \edef\m_tabl_ntb_n{\naturaltableparameter\c!n}%
    \edef\m_tabl_ntb_m{\naturaltableparameter\c!m}%
    %
-   \ifx\m_tabl_ntb_n\empty
+   \ifempty\m_tabl_ntb_n
      \global\advance\c_tabl_ntb_spn\c_tabl_ntb_nx\relax
    \orelse\ifnum\m_tabl_ntb_n=\c_tabl_ntb_running_col\else
      \tabl_ntb_td_pass_n{#1}%
    \fi
-   \ifx\m_tabl_ntb_m\empty \else
+   \ifempty\m_tabl_ntb_m \else
      \ifnum\m_tabl_ntb_m=\c_tabl_ntb_running_col\else
        \tabl_ntb_td_pass_m{#1}%
      \fi
@@ -1351,7 +1351,7 @@
    \ifnum\scratchcounter>\c_tabl_ntb_n_of_hdnx_lines\relax
      \ifnum\scratchcounter<\c_tabl_ntb_maximum_row\relax
        \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
-       \ifx\p_spaceinbetween\empty\else
+       \ifempty\p_spaceinbetween\else
          \blank[\p_spaceinbetween]%
        \fi
      \fi
@@ -1515,7 +1515,7 @@
    \fi
    \dp\scratchbox\zeropoint
    \edef\!!stringa{\tabl_ntb_get_ref{#1}{#2}}%
-   \ifx\!!stringa\empty
+   \ifempty\!!stringa
      \box\scratchbox
    \else
      \normalexpanded{\noexpand\directgotobox{\box\scratchbox}[\!!stringa]}% to be checked
@@ -1534,7 +1534,7 @@
       % nothing
    \orelse\ifx\localwidth\v!broad
       % nothing
-   \orelse\ifx\localwidth\empty
+   \orelse\ifempty\localwidth
       % nothing (safeguard)
    \else
      \tabl_ntb_cell_finalize_indeed
@@ -1729,7 +1729,7 @@
         \setbox\tsplitnext\vbox{\unvcopy\tsplitnext\unvcopy\scratchbox}}% \vpack ?
    \fi
    \edef\p_spaceinbetween{\naturaltablelocalparameter\c!spaceinbetween}%
-   \ifx\p_spaceinbetween\empty\else
+   \ifempty\p_spaceinbetween\else
      \blank[\p_spaceinbetween]%
    \fi
    \def\postprocesstsplit{\postprocessTABLEsplitbox{\box\tsplitresult}}%
@@ -2057,7 +2057,7 @@
       \fi
       \ifcase\c_anch_backgrounds_text_count\else
         \edef\p_region{\naturaltablelocalparameter\c!region}%
-        \ifx\p_region\empty\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
+        \ifempty\p_region\ifnum\tabl_ntb_get_bck{#1}{#2}>\zerocount
           \letnaturaltablelocalparameter\c!region\v!yes
         \fi\fi
       \fi

@@ -2316,6 +2316,8 @@ need to know that boundary condition.
 \libindex{set_char}
 \libindex{set_lua}
 \libindex{get_functions_table}
+\libindex{push_macro}
+\libindex{pop_macro}
 
 The \type {set_macro} function can get upto 4 arguments:
 
@@ -2364,6 +2366,11 @@ This creates a token that refers to a \LUA\ function with an entry in the table
 that you can access with \type {lua.get_functions_table}. It is the companion
 to \lpr {luadef}. When the first (and only) argument is true the size will preset
 to the value of \type {texconfig.function_size}.
+
+The \type {push_macro} and \type {pop_macro} function are very experimental and
+can be used to get and set an existing macro. The push call returns a user data
+object and the pop takes such a userdata object. These object have no accessors
+and are to be seen as abstractions.
 
 \stopsubsection
 

@@ -803,7 +803,7 @@ local flushsave, flushrestore, flushsetmatrix  do
                 rx, sx, sy, ry = tonumber(rx), tonumber(sx), tonumber(sy), tonumber(ry)
                 local tx = pos_h * (1 - rx) - pos_v * sy
                 local ty = pos_v * (1 - ry) - pos_h * sx
-                if nofmatrices > 1 then
+                if nofmatrices > 0 then
                     local t = matrices[nofmatrices]
                     local r_x, s_x, s_y, r_y, te, tf = t[1], t[2], t[3], t[4], t[5], t[6]
                     rx, sx = rx * r_x + sx * s_y, rx * s_x + sx * r_y

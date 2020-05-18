@@ -46,7 +46,7 @@
      #slanted%
    \orelse\ifx\m_font_emphasized_typeface\v!italic
      #italic%
-   \orelse\ifx\m_font_emphasized_typeface\empty
+   \orelse\ifempty\m_font_emphasized_typeface
      #slanted%
    \else
      \csname\m_font_emphasized_typeface\endcsname

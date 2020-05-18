@@ -345,7 +345,7 @@
 
 \def\pack_framed_background_box_color
   {\edef\p_framed_backgroundcolor{\framedparameter\c!backgroundcolor}%
-   \ifx\p_framed_backgroundcolor\empty \else
+   \ifempty\p_framed_backgroundcolor \else
      \doifcolor\p_framed_backgroundcolor\pack_framed_background_box_color_indeed
    \fi}
 
@@ -605,7 +605,7 @@
       \d_framed_target_ht\dimexpr\framedbackgroundheight+ \framedbackgroundoffset\relax
       \d_framed_target_dp\dimexpr\framedbackgrounddepth + \framedbackgroundoffset+\framedparameter\c!backgrounddepth\relax
       \let\pack_framed_overlay_initialize\pack_framed_overlay_initialize_indeed
-      \ifx\p_framed_component\empty
+      \ifempty\p_framed_component
         \resetlayoutcomponentattribute
       \else
         \setlayoutcomponentattribute{\v!background:\p_framed_component}%
@@ -663,7 +663,7 @@
       \setbox\b_framed_extra\hpack
         {\kern-\d_framed_frameoffset
          \raise\scratchdimen
-         \hpack{\ifx\overlaylinecolor\empty\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
+         \hpack{\ifempty\overlaylinecolor\else\dousecolorparameter\overlaylinecolor\fi\pack_framed_stroked_box}}%
       \wd\b_framed_extra\wd\b_framed_normal
       \ht\b_framed_extra\ht\b_framed_normal
       \dp\b_framed_extra\dp\b_framed_normal
@@ -920,7 +920,7 @@
    \setbox\b_framed_normal\hbox{#4}%
    \iftrialtypesetting \else
      \edef\m_overlay_region{\framedparameter\c!region}%
-     \ifx\m_overlay_region\empty\else
+     \ifempty\m_overlay_region\else
        \pack_framed_set_region
      \fi
    \fi
@@ -932,12 +932,12 @@
    % not here, in calling macro: setups
    \pack_framed_remove_depth
    \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
-     \ifx\p_framed_rulethickness\empty\else
+     \ifempty\p_framed_rulethickness\else
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
    \fi
-   \ifx\p_framed_background\empty \else
+   \ifempty\p_framed_background \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
        \ifx\p_framed_backgroundoffset\v!frame
@@ -949,7 +949,7 @@
      \pack_framed_add_background
    \fi
    \pack_framed_restore_depth
-   \iftrialtypesetting\orelse\ifx\m_overlay_region\empty\else
+   \iftrialtypesetting\orelse\ifempty\m_overlay_region\else
      \pack_framed_add_region
    \fi
    \box\b_framed_normal
@@ -961,7 +961,7 @@
 \unexpanded\def\pack_framed_process_box_indeed#1#2% component box (assumes parameters set and grouped usage)
   {\setbox\b_framed_normal\box#2% could actually be \let\b_framed_normal#2
    \edef\m_overlay_region{\framedparameter\c!region}%
-   \ifx\m_overlay_region\empty\else
+   \ifempty\m_overlay_region\else
      \pack_framed_set_region
    \fi
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
@@ -969,12 +969,12 @@
    \edef\p_framed_frame{\framedparameter\c!frame}%
    \edef\p_framed_background{\framedparameter\c!background}%
    \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
-     \ifx\p_framed_rulethickness\empty \else
+     \ifempty\p_framed_rulethickness \else
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
      \pack_framed_add_outline % real or invisible frame
    \fi
-   \ifx\p_framed_background\empty \else
+   \ifempty\p_framed_background \else
      \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
      \d_framed_backgroundoffset
        \ifx\p_framed_backgroundoffset\v!frame
@@ -985,7 +985,7 @@
      \edef\p_framed_component{#1}%
      \pack_framed_add_background
    \fi
-   \ifx\m_overlay_region\empty\else
+   \ifempty\m_overlay_region\else
      \pack_framed_add_region
    \fi
    \box\b_framed_normal
@@ -1073,7 +1073,7 @@
    \framedparameter\c!extras
    % to get the right spacing
    \edef\p_framed_foregroundstyle{\framedparameter\c!foregroundstyle}%
-   \ifx\p_framed_foregroundstyle\empty\else\dousestyleparameter\p_framed_foregroundstyle\fi
+   \ifempty\p_framed_foregroundstyle\else\dousestyleparameter\p_framed_foregroundstyle\fi
    % beware, both the frame and background offset can be overruled
    %
    \edef\p_framed_setups{\framedparameter\c!setups}%
@@ -1103,7 +1103,7 @@
    \fi
    \ifconditional\c_framed_has_frame
      \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}%
-     \ifx\p_framed_rulethickness\empty\else
+     \ifempty\p_framed_rulethickness\else
         \d_framed_linewidth\p_framed_rulethickness\relax
      \fi
    \else
@@ -1116,7 +1116,7 @@
    %
    \forgetall % should happen after \localwidth but before align
    %
-   \ifx\localformat\empty
+   \ifempty\localformat
      \setfalse\c_framed_has_format
    \else
      \settrue\c_framed_has_format
@@ -1143,7 +1143,7 @@
      % obey user set height, also downward compatible
    \else
      \edef\p_framed_lines{\framedparameter\c!lines}%
-     \ifx\p_framed_lines\empty
+     \ifempty\p_framed_lines
      \orelse\ifcase\p_framed_lines
      \else
        \d_framed_height\p_framed_lines\lineheight
@@ -1226,7 +1226,7 @@
    \fi
    \pack_framed_check_extra_offsets
    \edef\p_framed_background{\framedparameter\c!background}%
-%    \ifx\p_framed_background\empty
+%    \ifempty\p_framed_background
 %      \let\pack_framed_forgetall\forgetall
 %    \else
 %      \let\pack_framed_forgetall\relax
@@ -1235,7 +1235,7 @@
    \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint         \d_framed_width \else\zeropoint\fi}% public
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
    \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
-   \ifx\p_framed_orientation\empty
+   \ifempty\p_framed_orientation
      \let\pack_framed_stop_orientation\relax
    \else
      \pack_framed_start_orientation
@@ -1419,7 +1419,7 @@
 \def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
   {\edef\checkedframeoffset{#2}%
    #1%
-     \ifx\checkedframeoffset\empty    \zeropoint\orelse
+     \ifempty\checkedframeoffset      \zeropoint\orelse
      \ifx\checkedframeoffset\v!overlay\zeropoint\orelse
      \ifx\checkedframeoffset\v!none   \zeropoint\orelse
      \ifx\checkedframeoffset\v!frame  \zeropoint\orelse
@@ -1493,7 +1493,7 @@
    \ifconditional\c_framed_has_format
     %\ifconditional\c_framed_has_height \else
     %  \edef\p_profile{\framedparameter\c!profile}%
-    %  \ifx\p_profile\empty\else
+    %  \ifempty\p_profile\else
     %    \pack_framed_profile_box
     %  \fi
     %\fi
@@ -1512,7 +1512,7 @@
      \fi
      \ifconditional\c_framed_has_height \else
        \edef\p_profile{\framedparameter\c!profile}%
-       \ifx\p_profile\empty\else
+       \ifempty\p_profile\else
          \pack_framed_profile_box
        \fi
      \fi
@@ -1530,7 +1530,7 @@
      \ht\b_framed_normal\d_framed_height
    \else
      \edef\p_framed_minheight{\framedparameter\c!minheight}%
-     \ifx\p_framed_minheight\empty \else
+     \ifempty\p_framed_minheight \else
        \ifdim\ht\b_framed_normal<\p_framed_minheight
          \ht\b_framed_normal\p_framed_minheight
        \fi
@@ -1540,13 +1540,13 @@
    \ifx\p_framed_empty\v!yes
      \pack_framed_fake_box
    \fi
-   \ifx\p_framed_anchoring\empty\else
+   \ifempty\p_framed_anchoring\else
      \pack_framed_handle_anchoring
    \fi
    \pack_framed_stop_orientation % moved here at 2014-05-25
    \iftrialtypesetting \else
      \edef\m_overlay_region{\framedparameter\c!region}%
-     \ifx\m_overlay_region\empty\else
+     \ifempty\m_overlay_region\else
        \pack_framed_set_region
      \fi
    \fi
@@ -1579,14 +1579,14 @@
      \ifconditional\c_framed_has_frame % real or invisible frame
        \pack_framed_add_outline
      \fi
-     \ifx\p_framed_background\empty \else
+     \ifempty\p_framed_background \else
        \edef\p_framed_component{\framedparameter\c!component}%
        \pack_framed_add_background
      \fi
    \fi
    \pack_framed_locator_after\p_framed_location
    \iftrialtypesetting \else
-     \ifx\m_overlay_region\empty\else
+     \ifempty\m_overlay_region\else
        \pack_framed_add_region
      \fi
    \fi
@@ -1630,8 +1630,8 @@
       % using the keyword approachs works ok, don't mess with orientation
       % directly here using \boxorientation ... it doesn't work that well
       \s!orientation\scratchcounter
-      \ifx\p_xanchor\empty\else \s!xoffset \p_xanchor\fi
-      \ifx\p_yanchor\empty\else \s!yoffset \p_yanchor\fi
+      \ifempty\p_xanchor\else \s!xoffset \p_xanchor\fi
+      \ifempty\p_yanchor\else \s!yoffset \p_yanchor\fi
      {\box\b_framed_normal}}}
 
 \installcorenamespace{framedlocatorbefore}
@@ -2172,10 +2172,10 @@
 
 \def\pack_framed_set_foregroundcolor
   {\edef\p_framed_foregroundcolor{\framedparameter\c!foregroundcolor}%
-   \ifx\p_framed_foregroundcolor\empty\else\dousecolorparameter\p_framed_foregroundcolor\fi}
+   \ifempty\p_framed_foregroundcolor\else\dousecolorparameter\p_framed_foregroundcolor\fi}
 
 \def\pack_framed_do_setups
-  {\ifx\p_framed_setups\empty \else
+  {\ifempty\p_framed_setups \else
      \setups[\p_framed_setups]% \texsetup (or only one!)
    % \fastsetup\p_framed_setup % singular would have been better
    \fi}
@@ -2197,6 +2197,7 @@
        \bgroup
        \synchronizeinlinedirection
        \localbegstrut
+      %\aftergrouped{\localendstrut\pack_framed_do_bottom\egroup}%
        \aftergroup\localendstrut
        \aftergroup\pack_framed_do_bottom
        \aftergroup\egroup
@@ -3083,7 +3084,7 @@
      \immediateassignment\edef\tempstring{#1\c!bottomframe}\ifx\tempstring\v!on      +\plusone\fi
      \immediateassignment\edef\tempstring{#1\c!leftframe  }\ifx\tempstring\v!on      +\plusone\fi
      \immediateassignment\edef\tempstring{#1\c!rightframe }\ifx\tempstring\v!on      +\plusone\fi
-     \immediateassignment\edef\tempstring{#1\c!background }\ifx\tempstring\empty\else+\plusone\fi
+     \immediateassignment\edef\tempstring{#1\c!background }\ifempty\tempstring\else+\plusone\fi
    \relax\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
 
 \protect \endinput

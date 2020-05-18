@@ -337,7 +337,7 @@
 \def\font_typescripts_check#asked#target#followup[#value]% script use value next
   {\donefalse
    \edef\m_font_typescripts_check{#value}%
-   \ifx\m_font_typescripts_check\empty % no longer needed / met
+   \ifempty\m_font_typescripts_check % no longer needed / met
      \ifcase\typescriptmethod\or\donetrue\fi
    \orelse\ifx#asked\s!all
      \donetrue
@@ -504,7 +504,7 @@
    \the\everybeforedefinetypeface}
 
 \def\tsvar#key#default% undocumented and unofficial
-  {\expandafter\ifx\csname\??ts#key\endcsname\empty
+  {\expandafter\ifempty\csname\??ts#key\endcsname
      #default%
    \else
      \csname\??ts#key\endcsname
@@ -532,7 +532,7 @@
    \let\globalfontclass\fontclass
    \ifsecondargument
      \setupbodyfont[#settings]%
-   \orelse\ifx\fontclass\empty
+   \orelse\ifempty\fontclass
      \setupbodyfont[\s!rm]%
    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
     %\setupbodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
@@ -547,7 +547,7 @@
    \let\globalfontclass\globalfontclass
    \ifsecondargument
      \switchtobodyfont[#settings]%
-   \orelse\ifx\fontclass\empty
+   \orelse\ifempty\fontclass
      \switchtobodyfont[\s!rm]%
    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
     %\switchtobodyfont[\csname\??typescriptdefaultstyles\fontclass\endcsname]%
@@ -606,7 +606,7 @@
                                                                               \s!Serif \fi\fi\fi}
 
 \unexpanded\def\font_helpers_set_fontstyle_of_fontclass
-  {\ifx\fontclass\empty
+  {\ifempty\fontclass
      \let\fontstyle\s!rm
    \orelse\ifcsname\??typescriptdefaultstyles\fontclass\endcsname
     %\edef\fontstyle{\csname\??typescriptdefaultstyles\fontclass\endcsname}%

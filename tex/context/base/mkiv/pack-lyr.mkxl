@@ -342,7 +342,7 @@
      \let\p_pack_layers_height  \zeropoint
      \let\p_pack_layers_position\v!yes
    \fi
-   \ifx\p_pack_layers_rotation\empty \else
+   \ifempty\p_pack_layers_rotation \else
      % use direct call
      \setbox\nextbox\hpack
        {\rotate[\c!location=\v!high,\c!rotation=\layerparameter\c!rotation]{\box\nextbox}}%
@@ -359,7 +359,7 @@
      \pack_layers_set_last_position_nop
    \fi
    %
-   \ifx\m_pack_layers_page\empty \else % is expanded
+   \ifempty\m_pack_layers_page \else % is expanded
      \edef\m_pack_layers_page{:\m_pack_layers_page}%
      \ifcsname\??layerbox\m_pack_layers_target\currentlayer\m_pack_layers_page\endcsname \else
        \expandafter\newbox\csname\??layerbox\m_pack_layers_target\currentlayer\m_pack_layers_page\endcsname
@@ -670,8 +670,7 @@
    % \edef\p_pack_layers_position{\layerparameter\c!position}% local
    \ifx\p_pack_layers_position\v!yes
      \edef\p_pack_layers_region{\layerparameter\c!region}%
-     \ifx\p_pack_layers_region\empty
-     \else
+     \ifempty\p_pack_layers_region\else
        \anch_mark_tagged_box\nextbox\p_pack_layers_region % was \layeranchor
      \fi
    \fi

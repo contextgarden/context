@@ -88,7 +88,7 @@
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
    \iflocalinterlinespace \else
      \edef\m_spac_normallineheight{\bodyfontinterlinespace}%
-     \ifx\m_spac_normallineheight\empty \else
+     \ifempty\m_spac_normallineheight \else
        \let\normallineheight\m_spac_normallineheight
      \fi
    \fi}
@@ -144,7 +144,7 @@
    \fi}
 
 \def\spac_linespacing_set_relative_interlinespace
-  {\ifx\currentrelativeinterlinespace\empty\else
+  {\ifempty\currentrelativeinterlinespace\else
      \spacing\currentrelativeinterlinespace
    \fi}
 
@@ -158,7 +158,7 @@
 
 \unexpanded\def\useinterlinespaceparameter#1% see footnotes
   {\edef\m_spac_interlinespace{#1\c!interlinespace}%
-   \ifx\m_spac_interlinespace\empty \else
+   \ifempty\m_spac_interlinespace \else
      \spac_linespacing_setup_use
    \fi}
 
@@ -210,7 +210,7 @@
 
 \unexpanded\def\dosetupcheckedinterlinespace#1% often a chain
   {\edef\p_spac_checked_interlinespace{#1}%
-   \ifx\p_spac_checked_interlinespace\empty
+   \ifempty\p_spac_checked_interlinespace
      \spac_linespacing_synchronize_local
    \orelse\ifcsname\namedinterlinespacehash\p_spac_checked_interlinespace\s!parent\endcsname % we could have a \s!check
      \push_macro_currentinterlinespace
@@ -373,7 +373,7 @@
 
 \def\spac_whitespace_setup_yes[#1]%
   {\edef\m_spac_whitespace_asked{#1}%
-   \ifx\m_spac_whitespace_asked\empty
+   \ifempty\m_spac_whitespace_asked
      \spac_whitespace_setup_nop
    \else
      \let\v_spac_whitespace_current\m_spac_whitespace_asked
@@ -1524,7 +1524,7 @@
 
 \def\spac_grids_expand_snapper#1%
   {\edef\m_spac_snapper
-     {\ifx\m_spac_snapper\empty\else\m_spac_snapper,\fi
+     {\ifempty\m_spac_snapper\else\m_spac_snapper,\fi
       \ifcsname\??gridsnappersets#1\endcsname
         \lastnamedcs\else#1%
       \fi}}
@@ -1546,7 +1546,7 @@
 
 \unexpanded\def\usegridparameter#1% no checking here
   {\edef\m_spac_grid_asked{#1\c!grid}%
-   \ifx\m_spac_grid_asked\empty
+   \ifempty\m_spac_grid_asked
      \attribute \snapvboxattribute\attributeunsetvalue
    \else
      \spac_grids_snap_value_set\m_spac_grid_asked
@@ -1742,7 +1742,7 @@
      \spac_grids_check_nop
    \orelse\ifx\askedgridmode\v!off % for taco and luigi
      \spac_grids_check_nop
-   \orelse\ifx\askedgridmode\empty % to be sure
+   \orelse\ifempty\askedgridmode % to be sure
      \spac_grids_check_nop
    \else
      \spac_grids_check_yes
@@ -1753,12 +1753,12 @@
 
 \unexpanded\def\checkgridmethod#1%
   {\edef\p_grid{#1}%
-   \ifx\p_grid\empty
+   \ifempty\p_grid
      \let\checkedgridmethod\empty
      \let\checkedgridscope \v!local
    \else
      \splitatcolon\p_grid\checkedgridscope\checkedgridmethod
-     \ifx\checkedgridmethod\empty
+     \ifempty\checkedgridmethod
        \ifx\checkedgridscope\v!local\orelse\ifx\checkedgridscope\v!global\else
          \let\checkedgridmethod\checkedgridscope
          \let\checkedgridscope \v!local
@@ -1769,7 +1769,7 @@
 \unexpanded\def\applygridmethod#1#2#3% content localsettings (used in head rendering)
    {\checkgridmethod{#1}%
     \ifx\checkedgridscope\v!global
-      \ifx\checkedgridmethod\empty \else
+      \ifempty\checkedgridmethod \else
         % we assume that the call is grouped because grouping here has the side
         % effect that the eventually constructed line will get the value outside
         % the group
@@ -1784,7 +1784,7 @@
       % we really need that in this case (compatibility etc etc) so here we don't
       % het an already done hit (otherwise we would not snap)
       \hbox\bgroup
-        \ifx\checkedgridmethod\empty\orelse\ifconditional\headisdisplay
+        \ifempty\checkedgridmethod\orelse\ifconditional\headisdisplay
           #2%
         \fi
         \snaptogrid[\checkedgridmethod]\hbox{#3}%
@@ -2165,7 +2165,7 @@
 
 \unexpanded\def\useblankparameter#1% faster local variant
   {\edef\m_spac_blank_asked{#1\c!blank}%
-   \ifx\m_spac_blank_asked\empty\else
+   \ifempty\m_spac_blank_asked\else
      \directvspacing\m_spac_blank_asked
    \fi}
 
@@ -2200,7 +2200,7 @@
   }
 
 \def\setupvspacing_nop
-  {\ifx\empty\currentvspacing % mistakenly had an \else
+  {\ifempty\currentvspacing % mistakenly had an \else
      \let\currentvspacing\s!default
    \fi
    \spac_whitespace_setup_nop}
@@ -2426,7 +2426,7 @@
      {\let\m_spac_hanging_location\empty
       \setupcurrenthanging[#1]}%
      {\edef\m_spac_hanging_location{#1}}%
-   \ifx\m_spac_hanging_location\empty
+   \ifempty\m_spac_hanging_location
      \edef\m_spac_hanging_location{\directhangingparameter\c!location}%
    \fi
    \dowithnextboxcs\spac_hanging_finish\hbox}
@@ -2552,7 +2552,7 @@
 
 \unexpanded\def\checkedblank[#1]%
   {\edef\p_blank{#1}%
-   \ifx\p_blank\empty
+   \ifempty\p_blank
      % ignore
    \orelse\ifx\p_blank\v!none
      % ignore
@@ -2569,7 +2569,7 @@
 \unexpanded\def\prerollblank[#1]%
   {\begingroup
    \edef\p_blank{#1}%
-   \ifx\p_blank\empty
+   \ifempty\p_blank
      \global\prerolledblank\zeropoint
    \orelse\ifx\p_blank\v!none
      \global\prerolledblank\zeropoint

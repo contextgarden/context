@@ -121,7 +121,7 @@
 
 \unexpanded\def\setusedlanguage#1%
   {\edef\currentusedlanguage{\reallanguagetag{#1}}%
-   \ifx\currentusedlanguage\empty
+   \ifempty\currentusedlanguage
      \let\currentusedlanguage  \currentlanguage
      \let\usedlanguageparameter\languageparameter
    \orelse\ifx\currentusedlanguage\v!global
@@ -139,14 +139,14 @@
 
 \unexpanded\def\setcurrentlanguage#1#2% sets modes: **id (currentmain) *id (current)
   {\edef\xaskedlanguage{#1}% otherwise clash with \askedlanguage
-   \ifx\xaskedlanguage\empty \else
-     \ifx\currentmainlanguage\empty\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
+   \ifempty\xaskedlanguage \else
+     \ifempty\currentmainlanguage\else\resetsystemmode{\systemmodeprefix\currentmainlanguage}\fi
      \let\currentmainlanguage\xaskedlanguage
      \setsystemmode{\systemmodeprefix\currentmainlanguage}%
    \fi
    \edef\xaskedlanguage{#2}%
-   \ifx\xaskedlanguage\empty \else
-     \ifx\currentlanguage\empty\else\resetsystemmode\currentlanguage\fi
+   \ifempty\xaskedlanguage \else
+     \ifempty\currentlanguage\else\resetsystemmode\currentlanguage\fi
      \let\currentlanguage\xaskedlanguage
      \setsystemmode\currentlanguage
    \fi}
@@ -454,7 +454,7 @@
 
 \appendtoks
     \edef\currentlanguagesetups{\languageparameter\c!setups}%
-    \ifx\currentlanguagesetups\empty \else
+    \ifempty\currentlanguagesetups \else
         \setups[\currentlanguagesetups]%
     \fi
 \to \everylanguage
@@ -492,7 +492,7 @@
 
 \appendtoks
     \edef\p_language_font{\languageparameter\s!font}%
-    \ifx\p_language_font\empty
+    \ifempty\p_language_font
     \orelse\ifx\p_language_font\v!auto
       \doaddfeature\currentlanguage
     \else
@@ -513,15 +513,15 @@
 
 \unexpanded\def\uselanguageparameter#1%
   {\edef\askedlanguage{#1\c!language}%
-   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+   \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\douselanguageparameter#1% fast setter
   {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+   \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\lang_basics_set_current[#1]%
   {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty\else\lang_basics_switch_asked\fi}
+   \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
 \unexpanded\def\language
   {\doifelsenextoptionalcs\lang_basics_set_current\normallanguage}
@@ -542,7 +542,7 @@
 
 \unexpanded\def\mainlanguage[#1]%
   {\edef\askedlanguage{#1}%
-   \ifx\askedlanguage\empty
+   \ifempty\askedlanguage
    \orelse\ifcsname\??languagelinked\askedlanguage\endcsname
     %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
      \edef\askedlanguage{\lastnamedcs}%
@@ -699,7 +699,7 @@
 \def\lang_basics_start_exceptions[#1]#2\stopexceptions % multilingual or not?
   {\begingroup
    \edef\askedlanguage{\reallanguagetag{#1}}%
-   \ifx\askedlanguage\empty
+   \ifempty\askedlanguage
      \let\askedlanguage\currentlanguage
    \fi
    \clf_setlanguageexceptions{\askedlanguage}{#2}%

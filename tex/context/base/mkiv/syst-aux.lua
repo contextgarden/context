@@ -409,7 +409,12 @@ implement {
     arguments = "integer",
     actions   = function(n)
         statistics.stoptiming("whatever")
-        context("%0.9f",statistics.elapsed("whatever")/(n > 0 and n or 1))
+        local t = statistics.elapsed("whatever")/(n > 0 and n or 1)
+        if t > 0 then
+            context("%0.9f",t)
+        else
+            context(0)
+        end
     end
 }
 
@@ -835,3 +840,99 @@ implement {
     public  = true,
     actions = function() getshape("widowpenalties") end,
 }
+
+if CONTEXTLMTXMODE > 0 then
+
+    -- This is kind of tricky and might not work for all csnames but as long as we use
+    -- it in a controlled way, we're okay. The engine implementation might be changed
+    -- a bit (no need to go through strings, but fetching a cs index and passing that
+    -- back also takes time).
+
+    -- Another approach is to have the predefined stack operate use private stacks and
+    -- then the pop doesn't need the cs. But ... we then also need to store stuff in
+    -- the format so that complicates maters more than I'm willing to do.
+
+    local insert, remove = table.insert, table.remove
+
+    local push_macro  = token.push_macro
+    local pop_macro   = token.pop_macro
+    local scan_csname = token.scan_csname
+
+    local stack = table.setmetatableindex("table")
+
+    local report = logs.reporter("system","macrostack")
+
+    local function pushmacro(name,global)
+        local s = push_macro(name,global)
+        if s then
+            insert(stack[name],s)
+        else
+            report("no macro %a",name)
+            insert(stack[name],false)
+        end
+    end
+
+    local function popmacro(name)
+        local s = remove(stack[name])
+        if s then
+            pop_macro(s)
+        else
+            -- error
+        end
+    end
+
+    tokens.pushmacro = pushmacro
+    tokens.popmacro  = popmacro
+
+    interfaces.implement {
+        name      = "localpushmacro",
+        public    = true,
+        protected = true,
+        actions   = function()
+            pushmacro(scan_csname())
+        end
+    }
+
+    interfaces.implement {
+        name      = "globalpushmacro",
+        public    = true,
+        protected = true,
+        actions   = function()
+            pushmacro(scan_csname(),true)
+        end
+    }
+
+    interfaces.implement {
+        name      = "localpopmacro",
+        public    = true,
+        protected = true,
+        actions   = function()
+            popmacro(scan_csname())
+        end
+    }
+
+    interfaces.implement {
+        name      = "globalpopmacro",
+        public    = true,
+        protected = true,
+        actions   = function()
+            popmacro(scan_csname())
+        end
+    }
+
+   interfaces.implement {
+        name      = "showmacrostack",
+        public    = true,
+        protected = true,
+        actions   = function()
+            local n = scan_csname()
+            local s = stack[n]
+            local m = #s
+            report("%s : %i stack slots used",n,m)
+            for i=1,m do
+                report("% 3i %S",i,s[i])
+            end
+        end
+    }
+
+end

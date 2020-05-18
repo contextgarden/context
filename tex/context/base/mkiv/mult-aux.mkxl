@@ -112,7 +112,18 @@
 \def\mult_interfaces_get_parameters_error_indeed#1#2%
   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
 
-\def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+% \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+%   {\ifx\empty#1\empty
+%      \expandafter\mult_interfaces_get_parameters_error
+%    \orelse\ifx#3\empty
+%      \expandafter\mult_interfaces_get_parameters_error
+%    \else
+%      \expandafter\mult_interfaces_adef % assignment def
+%    \fi
+%    \m_mult_interfaces_namespace{#1}{#2}%
+%    \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+\def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
   {\ifx\empty#1\empty
      \expandafter\mult_interfaces_get_parameters_error
    \orelse\ifx#3\empty
@@ -129,13 +140,29 @@
 
     \let\mult_interfaces_get_parameters_error\undefined
 
-    \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#4%
+%     \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#4%
+%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
+
+%     \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
+%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
+
+%     \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+%       {\ifx\empty#1\empty
+%          \mult_interfaces_get_parameters_error_one
+%        \orelse\ifx#3\empty
+%          \mult_interfaces_get_parameters_error_two
+%        \else
+%          \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%        \fi
+%        \doubleexpandafter\mult_interfaces_get_parameters_item}
+
+    \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#0%
       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
 
-    \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
+    \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#0%
       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
 
-    \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
+    \def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
       {\ifx\empty#1\empty
          \mult_interfaces_get_parameters_error_one
        \orelse\ifx#3\empty
@@ -149,10 +176,16 @@
 
 \newif\ifassignment
 
-\def\mult_check_for_assignment_indeed#1=#2#3^^^^0004%
+% \def\mult_check_for_assignment_indeed#1=#2#3^^^^0004%
+%   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+
+% \def\mult_check_for_assignment_indeed_begin_#1=#2#3^^^^0004%
+%   {\if#2^^^^0003}
+
+\def\mult_check_for_assignment_indeed#0=#2#0^^^^0004%
   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
 
-\def\mult_check_for_assignment_indeed_begin_#1=#2#3^^^^0004%
+\def\mult_check_for_assignment_indeed_begin_#0=#2#0^^^^0004%
   {\if#2^^^^0003}
 
 \def\mult_check_for_assignment#1%
@@ -250,7 +283,8 @@
    \def#5##1##2{\ifx##1\relax\else#4##1{##2}\fi}%
    \def#6{#1#2:}%
    \def#7##1{#1##1:}%
-   \def#8{\ifx#2\empty\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
+  %\def#8{\ifx#2\empty\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
+   \def#8{\ifempty#2\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
    \unexpanded\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
 
 \unexpanded\def\installparameterhashhandler#1#2%
@@ -306,15 +340,19 @@
 \unexpanded\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
   {\unexpanded\def#2##1##2% style color
      {\edef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)
-      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
+     %\ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
+      \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi
       \edef\currentcolorparameter{#1{##2}}% this name is public (so we do this after the style switch)
-      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
+     %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
+      \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}%
    \unexpanded\def#3##1% style
      {\edef\currentstyleparameter{#1{##1}}% this name is public
-      \ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi}%
+     %\ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi}%
+      \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi}%
    \unexpanded\def#4##1% color
      {\edef\currentcolorparameter{#1{##1}}% this name is public
-      \ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
+     %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
+      \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}}
 
 \unexpanded\def\installstyleandcolorhandler#1#2%
   {\normalexpanded
@@ -1044,7 +1082,8 @@
 
 \unexpanded\def\mult_interfaces_install_parent_injector#1#2#3#4%
   {\unexpanded\def#4##1%
-     {\ifx#3\empty
+    %{\ifx#3\empty
+     {\ifempty#3%
         \expandafter\def\csname#1#2:\s!parent\endcsname{#1##1}%
       \fi}}
 
@@ -1058,24 +1097,40 @@
 % Faster but not used that much to make a dent in performance. But, because it's
 % cleaner anyway and also gives less tracing, we apply it a few times.
 
-\unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
-  {\xdef\m_syst_helpers_push_macro{\csstring#1}%
-   \ifcsname#3\m_syst_helpers_push_macro\endcsname\else
-     \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
-     \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
-       {\noexpand\expandafter\glet
-           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
-           \noexpand#1%
-         \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
-     \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
-       {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
-        \noexpand\expandafter#2%
-           \noexpand\expandafter\noexpand#1%
-           \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}%
-   \fi}
+% \unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
+%   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
+%    \ifcsname#3\m_syst_helpers_push_macro\endcsname\else
+%      \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
+%      \expandafter\edef\csname push_macro_\m_syst_helpers_push_macro\endcsname
+%        {\noexpand\expandafter\glet
+%            \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname
+%            \noexpand#1%
+%          \global\advance\csname#3\m_syst_helpers_push_macro\endcsname\plusone}%
+%      \expandafter\edef\csname pop_macro_\m_syst_helpers_push_macro\endcsname
+%        {\global\advance\csname#3\m_syst_helpers_push_macro\endcsname\minusone
+%         \noexpand\expandafter#2%
+%            \noexpand\expandafter\noexpand#1%
+%            \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}%
+%    \fi}
+%
+% \unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
+% \unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
 
-\unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
-\unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
+% The \LUA\ based variant is twice as fast as the above but as said, we don't use
+% this one that often. It's more about less tracing than speed here.
+
+\unexpanded\def\installmacrostack#1%
+  {\ifdefined#1\else\let#1\empty\fi
+   \unexpanded\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
+   \unexpanded\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
+
+
+\unexpanded\def\installglobalmacrostack#1%
+  {\ifdefined#1\else\glet#1\empty\fi
+   \unexpanded\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
+   \unexpanded\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
+
+% \showmacrostack can be used to see if there are different entries
 
 %  \unprotect
 %

@@ -88,7 +88,7 @@
    \fi}
 
 \appendtoks
-    \ifx\currentlayoutelement\empty\else
+    \ifempty\currentlayoutelement\else
         \page_layouts_synchronize_element\currentlayoutelement % brr, can be vertical:horizontal
     \fi
 \to \everysetuplayoutelement
@@ -251,7 +251,7 @@
    \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ignorecrlf
    \edef\currentlayoutelementwidth{\layoutelementparameter#width}%
-   \ifx\currentlayoutelementwidth\empty\else
+   \ifempty\currentlayoutelementwidth\else
      \expandafter\page_layouts_process_element_limited
    \fi\p_text
    \endgroup}
@@ -500,7 +500,7 @@
 
 \def\page_layouts_left_edge_element_indeed#text#style#color#width%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty
+   \ifempty\p_text
      \kern\leftedgewidth
    \else
       \hbox to \leftedgewidth\bgroup
@@ -517,7 +517,7 @@
 
 \def\page_layouts_right_edge_element_indeed#text#style#color#width%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty
+   \ifempty\p_text
      \kern\rightedgewidth
    \else
       \hbox to \rightedgewidth\bgroup
@@ -536,7 +536,7 @@
 
 \def\page_layouts_left_margin_element_indeed#text#style#color#width#margintoo%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty
+   \ifempty\p_text
      \kern\leftmarginwidth
    \else
      \hbox to \leftmarginwidth\bgroup
@@ -546,7 +546,7 @@
    \fi
    \ifcase#margintoo\or
      \letfromlayoutelementparameter\p_text\c!margintext
-     \ifx\p_text\empty\else
+     \ifempty\p_text\else
        \kern-\leftmarginwidth
        \hbox to \leftmarginwidth\bgroup
          \hss
@@ -563,7 +563,7 @@
 
 \def\page_layouts_right_margin_element_indeed#text#style#color#width#margintoo%
   {\letfromlayoutelementparameter\p_text#text%
-   \ifx\p_text\empty
+   \ifempty\p_text
      \kern\rightmarginwidth
    \else
      \hbox to \rightmarginwidth\bgroup
@@ -573,7 +573,7 @@
    \fi
    \ifcase#margintoo\or
      \letfromlayoutelementparameter\p_text\c!margintext
-     \ifx\p_text\empty\else
+     \ifempty\p_text\else
        \kern-\rightmarginwidth
        \hbox to \rightmarginwidth\bgroup
          \p_text % ? styling
@@ -590,8 +590,8 @@
 
 \def\page_layouts_text_body_element_indeed_l_m_r_e
   {\letfromlayoutelementparameter\p_text\c!lefttext
-   \ifx\p_text\empty
-     \ifx\page_layouts_place_extra_text_left\empty\else
+   \ifempty\p_text
+     \ifempty\page_layouts_place_extra_text_left\else
        \hbox to \makeupwidth\bgroup
          \page_layouts_place_extra_text_left
          \hss
@@ -607,7 +607,7 @@
      \kern-\makeupwidth
    \fi
    \letfromlayoutelementparameter\p_text\c!middletext
-   \ifx\p_text\empty\else
+   \ifempty\p_text\else
      \hbox to \makeupwidth\bgroup
        \hss
        \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
@@ -616,7 +616,7 @@
      \kern-\makeupwidth
    \fi
    \letfromlayoutelementparameter\p_text\c!righttext
-   \ifx\p_text\empty
+   \ifempty\p_text
      \kern\makeupwidth
    \else
      \hbox to \makeupwidth\bgroup
@@ -627,7 +627,7 @@
 
 \def\page_layouts_text_body_element_indeed_e_r_m_l
   {\letfromlayoutelementparameter\p_text\c!righttext
-   \ifx\p_text\empty\else
+   \ifempty\p_text\else
      \hbox to \makeupwidth\bgroup
        \page_layouts_process_element_indeed\c!rightstyle\c!rightcolor\c!rightwidth
        \hss
@@ -635,7 +635,7 @@
      \kern-\makeupwidth
    \fi
    \letfromlayoutelementparameter\p_text\c!middletext
-   \ifx\p_text\empty\else
+   \ifempty\p_text\else
      \hbox to \makeupwidth\bgroup
        \hss
        \page_layouts_process_element_indeed\c!middlestyle\c!middlecolor\c!middlewidth
@@ -644,8 +644,8 @@
      \kern-\makeupwidth
    \fi
    \letfromlayoutelementparameter\p_text\c!lefttext
-   \ifx\p_text\empty
-     \ifx\page_layouts_place_extra_text_right\empty
+   \ifempty\p_text
+     \ifempty\page_layouts_place_extra_text_right
        \kern\makeupwidth
      \else
        \hbox to \makeupwidth\bgroup
@@ -824,7 +824,7 @@
    \else
      \let\m_page_layouts_page_number_location\p_strc_pagenumbers_location
      \page_layouts_reset_page_number_location
-     \ifx\p_strc_pagenumbers_location\empty
+     \ifempty\p_strc_pagenumbers_location
        % set otherwise
      \orelse\ifx\p_strc_pagenumbers_location\v!none
        % set otherwise
@@ -839,7 +839,7 @@
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
-     \ifx\p_strc_pagenumbers_width\empty
+     \ifempty\p_strc_pagenumbers_width
        \box\scratchbox\tfskip
      \else
        \hpack to \p_strc_pagenumbers_width{\box\scratchbox\hss}%
@@ -852,7 +852,7 @@
    \setbox\scratchbox\hbox{\ignorespaces\layoutelementparameter\c!marginedgetext\removeunwantedspaces}%
    \ifzeropt\wd\scratchbox\else
      \edef\p_strc_pagenumbers_width{\directpagenumberingparameter\c!width}%
-     \ifx\p_strc_pagenumbers_width\empty
+     \ifempty\p_strc_pagenumbers_width
        \tfskip\box\scratchbox
      \else
        \hpack to \p_strc_pagenumbers_width{\hss\box\scratchbox}%
