@@ -220,6 +220,7 @@ local special_runfiles = {
 }
 
 local extra_runfiles = {
+    "^m_k_i_v_.-%.pdf$",
     "^l_m_t_x_.-%.pdf$",
 }
 
@@ -739,6 +740,9 @@ function scripts.context.run(ctxdata,filename)
             if formatfile and scriptfile then
                 local suffix     = validstring(getargument("suffix"))
                 local resultname = validstring(getargument("result"))
+                if not resultname or resultname == "" then
+                    resultname = validstring(analysis.result)
+                end
                 local resultpath = file.pathpart(resultname)
                 if resultpath ~= "" then
                     resultname  = nil

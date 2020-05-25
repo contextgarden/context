@@ -122,7 +122,7 @@
    \edef\p_typo_items_n{\itemsparameter\c!n}%
    \ifx\p_typo_items_n\empty
      \getcommalistsize[#2]%
-     \c_typo_items_n\commalistsize\relax
+     \c_typo_items_n\commalistsize\relax % \commalistcounter
    \else
      \c_typo_items_n\p_typo_items_n\relax
    \fi

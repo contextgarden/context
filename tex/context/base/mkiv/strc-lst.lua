@@ -835,14 +835,18 @@ function lists.getresult(r)
 end
 
 function lists.process(specification)
-    lists.result = filtercollected(specification)
-    local specials = settings_to_set(specification.extras or "")
-    specials = next(specials) and specials or nil
-    for i=1,#lists.result do
-        local r = lists.result[i]
-        local m = r.metadata
-        local s = specials and r.numberdata and specials[zerostrippedconcat(r.numberdata.numbers,".")] or ""
-        context.strclistsentryprocess(m.name,m.kind,i,s)
+    local result = filtercollected(specification)
+    local total  = #result
+    lists.result = result
+    if total > 0 then
+        local specials = settings_to_set(specification.extras or "")
+              specials = next(specials) and specials or nil
+        for i=1,total do
+            local r = result[i]
+            local m = r.metadata
+            local s = specials and r.numberdata and specials[zerostrippedconcat(r.numberdata.numbers,".")] or ""
+            context.strclistsentryprocess(m.name,m.kind,i,s)
+        end
     end
 end
 

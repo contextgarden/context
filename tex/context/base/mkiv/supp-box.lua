@@ -825,3 +825,27 @@ implement {
         context(limitate(t))
     end,
 }
+
+if CONTEXTLMTXMODE > 0 then
+
+
+    interfaces.implement {
+        name      = "widthuptohere",
+        public    = true,
+        protected = true,
+        value     = true,
+        actions   = function()
+            local n = tex.getnest()
+            local w = 0
+            if n.mode == tex.modelevels.horizontal then
+                local h = nodes.hpack(n.head.next)
+                w = h.width
+                h.list = nil
+                nodes.free(h)
+            end
+            return tokens.values.dimension, w
+        end,
+    }
+
+
+end

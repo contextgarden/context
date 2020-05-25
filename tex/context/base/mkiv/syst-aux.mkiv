@@ -1465,7 +1465,8 @@
 \unexpanded\def\doifnotinstring#1%%
   {\edef\m_syst_sub_string{#1}% expand #1 here
    \ifx\m_syst_sub_string\empty
-     \expandafter\gobbletwoarguments
+    %\expandafter\gobbletwoarguments
+     \expandafter\secondoftwoarguments
    \else
      \expandafter\syst_helpers_do_if_not_in_string_indeed
    \fi}
@@ -1640,7 +1641,7 @@
      \expandafter\syst_helpers_raw_do_if_in_set_else
    \fi}
 
-\let\rawdoifinsetelse\rawdoifinsetelse
+\let\rawdoifinsetelse\rawdoifelseinset
 
 \unexpanded\def\syst_helpers_raw_do_if_in_set_else#1%
   {\syst_helpers_do_if_in_string_else\m_syst_sub_string{,#1,}%
@@ -4423,6 +4424,8 @@
        \ifnum#2<#1x\else d\fi
      \else\ifnum#3<\zerocount
        \ifnum#1<#2x\else r\fi
+     \else
+       x%
      \fi\fi
    \expandafter\endcsname\normalexpanded{{\number#1}{\number#2}{\number#3}}}
  % \expandafter\endcsname\expandafter{\number#1\expandafter}\expandafter{\number#2\expandafter}\expandafter{\number#3}}
@@ -4892,7 +4895,7 @@
 %D We don't explicitly test if the macro is defined.
 
 \unexpanded\def\assignifempty#1#2% can be sped up
-  {\doifsomething{#1}{\def#1{#2}}} % {\doifnot{#1}{}{\def#1{#2}}}
+  {\doifnothing{#1}{\def#1{#2}}}
 
 %D \macros
 %D   {gobbleuntil,grabuntil,gobbleuntilrelax,

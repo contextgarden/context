@@ -35,7 +35,7 @@
 
 \doifdocumentargument {paperoffset} {
     \definepapersize
-      [offset=\getdocumentargument{paperoffset}]
+      [offset=\getdocumentargumentdefault{paperoffset}{0pt}]
 }
 
 \doifdocumentargumentelse {noduplex} {

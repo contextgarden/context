@@ -2875,6 +2875,19 @@
       \egroup}
      \hbox}
 
+
+%D \macros
+%D   {widthuptohere}
+%D
+%D Implemented at the \LUA\ end:
+%D
+%D \startbuffer
+%D widthuptohere:\the\widthuptohere\crlf
+%D widthuptohere : \the\widthuptohere (space without stretch or shrink!)
+%D \stopbuffer
+%D
+%D \typebuffer \blank \getbuffer \blank
+
 \protect \endinput
 
 % a bit of test code:

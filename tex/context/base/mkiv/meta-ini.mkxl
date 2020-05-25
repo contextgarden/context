@@ -1300,7 +1300,8 @@
 
 %D Goody for preventing overflows:
 
-\def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+%def\MPdivten[#1]{\withoutpt\the\dimexpr#1pt/10\relax}
+\def\MPdivten[#1]{\thewithoutunit\dimexpr#1pt/10\relax}
 
 %D There is no way to distinguish the black color that you get when you issue a
 %D \type {draw} without color specification from a color that has an explicit black

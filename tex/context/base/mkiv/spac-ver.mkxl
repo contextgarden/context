@@ -793,8 +793,10 @@
    \else
      \edef\spacingfactor{#1}%
    \fi
-   \edef\systemtopskipfactor {\withoutpt\the\dimexpr#1\dimexpr\topskipfactor \points}%
-   \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
+ % \edef\systemtopskipfactor {\withoutpt\the\dimexpr#1\dimexpr\topskipfactor \points}%
+ % \edef\systemmaxdepthfactor{\withoutpt\the\dimexpr#1\dimexpr\maxdepthfactor\points}%
+   \edef\systemtopskipfactor {\thewithoutunit\dimexpr#1\dimexpr\topskipfactor \points}%
+   \edef\systemmaxdepthfactor{\thewithoutunit\dimexpr#1\dimexpr\maxdepthfactor\points}%
    \setnormalbaselines
    \setstrut}
 

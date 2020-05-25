@@ -1957,3 +1957,16 @@ end
 -- function context.template(template,variables)
 --     context(replace(template,variables))
 -- end
+
+do
+
+    -- not the best namespace -- some day maybe texs a la nodes and tokens .. also,
+    -- we already have tex.modes so we need a different name
+
+    local modelevels = tex.getmodevalues()
+    local t          = table.keys(modelevels)
+    tex.modelevels   = table.swapped(modelevels,modelevels)
+
+    for i=1,#t do local k = t[i] modelevels[-k] = modelevels[k] end
+
+end

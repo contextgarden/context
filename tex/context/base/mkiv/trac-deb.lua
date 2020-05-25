@@ -218,6 +218,7 @@ end
 
 if fatalerror then
     callback.register("terminal_input",function(what)
+        processerror()
         if what == "*" then
             fatalerror("some kind of input expected, file ends too soon, quitting now")
         else

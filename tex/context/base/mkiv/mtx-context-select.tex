@@ -31,11 +31,11 @@
 \input mtx-context-common.tex
 
 \setuppapersize
-  [\getdocumentargumentdefault{paperformat_from}{A4}]
-  [\getdocumentargumentdefault{paperformat_to}{A4}]
+  [\getdocumentargumentdefault{paperformat_paper}{A4}]
+  [\getdocumentargumentdefault{paperformat_print}{A4}]
 
 \setuppaper
-  [offset=\getdocumentargumentdefault{paperformat_to}{0pt}]
+  [offset=\getdocumentargumentdefault{paperoffset}{0pt}]
 
 \setuplayout
   [width=middle,

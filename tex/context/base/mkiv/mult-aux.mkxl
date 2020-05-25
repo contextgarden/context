@@ -82,6 +82,92 @@
 % \testfeatureonce{100000}{\mult_interfaces_get_parameters{bla} [a=111,b=222,c=333]}% 1.529s
 % \testfeatureonce{100000}{\def\m_mult_interfaces_namespace{bla}\mult_interfaces_get_parameters_indeed[a=111,b=222,c=333]}% 1.466s
 
+% KEEP THIS:
+%
+% \let\m_mult_interfaces_namespace\empty
+%
+% \def\mult_interfaces_get_parameters#1[#2%
+%   {\if\noexpand#2]%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \def\m_mult_interfaces_namespace{#1}%
+%      \expandafter\mult_interfaces_get_parameters_indeed
+%    \fi#2}
+%
+% \def\mult_interfaces_get_parameters_indeed#1]% namespace already set
+%   {\mult_interfaces_get_parameters_item#1,],^^^^0004}
+%
+% \def\mult_interfaces_get_parameters_item#1,#2% #2 takes space before ,
+%   {\if,#1,% dirty trick for testing #1=empty
+%      \expandafter\mult_interfaces_get_parameters_item
+%    \orelse\if]#1%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \mult_interfaces_get_parameters_assign#1==\empty^^^^0004%
+%    % \expandafter\mult_interfaces_get_parameters_item % saves skipping when at end
+%    \fi#2}
+%
+% \def\mult_interfaces_get_parameters_error#1#2% #3%
+%   {\mult_interfaces_get_parameters_error_indeed{#1}{#2}%
+%    \gobbleoneargument}
+%
+% \def\mult_interfaces_get_parameters_error_indeed#1#2%
+%   {\showassignerror{#2}{\the\inputlineno\space(#1)}}
+%
+% \def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
+%   {\ifx\empty#1\empty
+%      \expandafter\mult_interfaces_get_parameters_error
+%    \orelse\ifx#3\empty
+%      \expandafter\mult_interfaces_get_parameters_error
+%    \else
+%      \expandafter\mult_interfaces_adef % assignment def
+%    \fi
+%    \m_mult_interfaces_namespace{#1}{#2}%
+%    \doubleexpandafter\mult_interfaces_get_parameters_item}
+%
+% \startinterface english
+%
+%     % some 10% faster
+%
+%     \let\mult_interfaces_get_parameters_error\undefined
+%
+%     \def\mult_interfaces_get_parameters_error_one#0\csname#2#3\endcsname#0%
+%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
+%
+%     \def\mult_interfaces_get_parameters_error_two#0\csname#2#3\endcsname#0%
+%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
+%
+%     \def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
+%       {\ifx\empty#1\empty
+%          \mult_interfaces_get_parameters_error_one
+%        \orelse\ifx#3\empty
+%          \mult_interfaces_get_parameters_error_two
+%        \else
+%          \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%        \fi
+%        \doubleexpandafter\mult_interfaces_get_parameters_item}
+%
+% \stopinterface
+%
+% \newif\ifassignment
+%
+% \def\mult_check_for_assignment_indeed#0=#2#0^^^^0004%
+%   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+%
+% \def\mult_check_for_assignment_indeed_begin_#0=#2#0^^^^0004%
+%   {\if#2^^^^0003}
+%
+% \def\mult_check_for_assignment#1%
+%   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
+%
+% % End of experimental code.
+
+%D We keep the above as reference, btu from now on experiment with the following
+%D implementation. In principle this one is faster, but because normally we don't
+%D have that many assignments it doesn't get noticed. For instance, the \LUAMETATEX\
+%D manual does less than 6000 assignments and the payoff starts around a tenfold of
+%D that. But \unknown\ it's less tracing, so that's another benefit.
+
 \let\m_mult_interfaces_namespace\empty
 
 \def\mult_interfaces_get_parameters#1[#2%
@@ -93,94 +179,48 @@
    \fi#2}
 
 \def\mult_interfaces_get_parameters_indeed#1]% namespace already set
-  {\mult_interfaces_get_parameters_item#1,],^^^^0004}
+  {\mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
 
-\def\mult_interfaces_get_parameters_item#1,#2% #2 takes space before ,
-  {\if,#1,% dirty trick for testing #1=empty
-     \expandafter\mult_interfaces_get_parameters_item
-   \orelse\if]#1%
-     \expandafter\gobbleoneargument
+\def\mult_interfaces_get_parameters_item_next
+  {\expandafterspaces\mult_interfaces_get_parameters_item}
+
+\def\mult_interfaces_get_parameters_item#1,%
+  {\ifarguments
+     % done
    \else
-     \mult_interfaces_get_parameters_assign#1==\empty^^^^0004%
-   % \expandafter\mult_interfaces_get_parameters_item % saves skipping when at end
-   \fi#2}
+     \mult_interfaces_get_parameters_item_okay#1,\ignorearguments
+     \expandafter\mult_interfaces_get_parameters_item_next
+   \fi}
 
-\def\mult_interfaces_get_parameters_error#1#2% #3%
-  {\mult_interfaces_get_parameters_error_indeed{#1}{#2}%
-   \gobbleoneargument}
-
-\def\mult_interfaces_get_parameters_error_indeed#1#2%
-  {\showassignerror{#2}{\the\inputlineno\space(#1)}}
-
-% \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
-%   {\ifx\empty#1\empty
-%      \expandafter\mult_interfaces_get_parameters_error
-%    \orelse\ifx#3\empty
-%      \expandafter\mult_interfaces_get_parameters_error
-%    \else
-%      \expandafter\mult_interfaces_adef % assignment def
-%    \fi
-%    \m_mult_interfaces_namespace{#1}{#2}%
-%    \doubleexpandafter\mult_interfaces_get_parameters_item}
-
-\def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
-  {\ifx\empty#1\empty
-     \expandafter\mult_interfaces_get_parameters_error
-   \orelse\ifx#3\empty
-     \expandafter\mult_interfaces_get_parameters_error
+\def\mult_interfaces_get_parameters_item_okay#1=#2,%
+  {\ifarguments
+     % done
+   \or
+     \mult_interfaces_get_parameters_item_error
    \else
-     \expandafter\mult_interfaces_adef % assignment def
-   \fi
-   \m_mult_interfaces_namespace{#1}{#2}%
-   \doubleexpandafter\mult_interfaces_get_parameters_item}
+     \mult_interfaces_adef\m_mult_interfaces_namespace{#1}{#2}%
+   \fi}
+
+\def\mult_interfaces_get_parameters_item_error#0#0#0#4#5%
+  {\mult_interfaces_get_parameters_error_indeed{#4}{#5}}
 
 \startinterface english
 
-    % some 10% faster
-
-    \let\mult_interfaces_get_parameters_error\undefined
-
-%     \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#4%
-%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
-
-%     \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#4%
-%       {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
-
-%     \def\mult_interfaces_get_parameters_assign#1=#2=#3#4^^^^0004%
-%       {\ifx\empty#1\empty
-%          \mult_interfaces_get_parameters_error_one
-%        \orelse\ifx#3\empty
-%          \mult_interfaces_get_parameters_error_two
-%        \else
-%          \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
-%        \fi
-%        \doubleexpandafter\mult_interfaces_get_parameters_item}
-
-    \def\mult_interfaces_get_parameters_error_one#1\csname#2#3\endcsname#0%
-      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}\iftrue}
-
-    \def\mult_interfaces_get_parameters_error_two#1\csname#2#3\endcsname#0%
-      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
-
-    \def\mult_interfaces_get_parameters_assign#1=#2=#3#0^^^^0004%
-      {\ifx\empty#1\empty
-         \mult_interfaces_get_parameters_error_one
-       \orelse\ifx#3\empty
-         \mult_interfaces_get_parameters_error_two
+    \def\mult_interfaces_get_parameters_item_okay#1=#2,%
+      {\ifarguments
+         % done
+       \or
+         \mult_interfaces_get_parameters_item_error
        \else
          \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
-       \fi
-       \doubleexpandafter\mult_interfaces_get_parameters_item}
+       \fi}
+
+    \def\mult_interfaces_get_parameters_item_error#0\csname#2#3\endcsname#0%
+      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
 
 \stopinterface
 
-\newif\ifassignment
-
-% \def\mult_check_for_assignment_indeed#1=#2#3^^^^0004%
-%   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
-
-% \def\mult_check_for_assignment_indeed_begin_#1=#2#3^^^^0004%
-%   {\if#2^^^^0003}
+%D Used?
 
 \def\mult_check_for_assignment_indeed#0=#2#0^^^^0004%
   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
@@ -191,7 +231,10 @@
 \def\mult_check_for_assignment#1%
   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}
 
-% End of experimental code.
+%D Beware, zero arguments is an assignment!
+
+\def\mult_aux_no_assignment_indeed#1=#2]{\ifcase\ifarguments\plusone\or\zerocount\else\plusone\fi}
+\def\mult_aux_no_assignment#1]{\mult_aux_no_assignment_indeed#1\ignorearguments\relax}
 
 %D This can give wrong results when we pass e.g. \type{\c!format}, so either we need
 %D to use the \type {\k!} ones, but these are not defined in the english interface
@@ -245,7 +288,8 @@
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
   %\def#5##1##2{\ifx##1\relax\??empty\else#4{##1}{##2}\fi}% is {} needed around ##1 ?
   %\def#5##1##2{\ifx##1\relax\??empty\else#4##1{##2}\fi}% is {} needed around ##1 ?
-   \def#5##1##2{\ifx##1\relax^^^^0019\else#4##1{##2}\fi}% is {} needed around ##1 ?
+  %\def#5##1##2{\ifx##1\relax^^^^0019\else#4##1{##2}\fi}% is {} needed around ##1 ?
+   \edef#5##1##2{\noexpand\ifx##1\relax\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
    \def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
    \def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \def#8##1{\begincsname#1#2:##1\endcsname}
@@ -401,16 +445,34 @@
         \mult_interfaces_get_parameters{#1#4:}[##3]%
       \orelse\ifsecondargument
         \the#6% predefine
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=^^^^0003^^^^0003^^^^0004%
-          \edef#8{##2}%
-          \mult_check_for_parent{#1}{#3}#4#8%
-          \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
-          \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
-        \else
+        \relax
+       %\ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##2}=^^^^0003^^^^0003^^^^0004%
+%         \ifcondition\mult_aux_no_assignment_indeed##2\ignorearguments
+%           \edef#8{##2}%
+%           \mult_check_for_parent{#1}{#3}#4#8%
+%           \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+%           \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+%         \else
+%           \let#8\empty
+%           \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+%           \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+%           \mult_interfaces_get_parameters{#1#4:}[##2]%
+%         \fi
+        \ifhastok={##2}%
           \let#8\empty
           \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
           \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
           \mult_interfaces_get_parameters{#1#4:}[##2]%
+        \else
+          \edef#8{##2}%
+          \ifempty#8%
+            \expandafter\edef\csname#1#4:\s!chain\endcsname{##1}%
+            \expandafter\edef\csname#1#4:\s!parent\endcsname{#3}%
+          \else
+            \mult_check_for_parent{#1}{#3}#4#8%
+            \expandafter\edef\csname#1#4:\s!chain\endcsname{\mult_interfaces_chain#1{##2}##1}%
+            \expandafter\edef\csname#1#4:\s!parent\endcsname{#1##2}%
+          \fi
         \fi
       \else
         \the#6% predefine
@@ -497,15 +559,26 @@
         \ifx#3#6\the#8\fi % only switchsetups if previous == current
         \let#3#7%
       \orelse\iffirstargument
-        % \mult_check_for_assignment{##1}%
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
-          % \setuplayout[whatever]
-          \let#6#3%   % previous becomes current
-          \edef#3{##1}% this will catch reset so one needs to test for it
-          #2\doingrootsetnamed
-          \the#5%     % we can check for previous vs current
-          \the#8% switchsetups
-        \else
+        %\ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
+%         \ifcondition\mult_aux_no_assignment_indeed##1\ignorearguments
+%           % \setuplayout[whatever]
+%           \let#6#3%   % previous becomes current
+%           \edef#3{##1}% this will catch reset so one needs to test for it
+%           #2\doingrootsetnamed
+%           \the#5%     % we can check for previous vs current
+%           \the#8% switchsetups
+%         \else
+%           % \setuplayout[key=value]
+%           \let#7#3%
+%           \let#6#3%
+%           \let#3\empty
+%           #2\doingrootsetuproot
+%           \mult_interfaces_get_parameters{#1:}[##1]%
+%           \the#5%
+%           \the#8% switchsetups
+%           \let#3#7%
+%         \fi
+        \ifhastok={##1}%
           % \setuplayout[key=value]
           \let#7#3%
           \let#6#3%
@@ -515,6 +588,21 @@
           \the#5%
           \the#8% switchsetups
           \let#3#7%
+        \else
+          % \setuplayout[whatever]
+          \let#6#3%   % previous becomes current
+          \edef#3{##1}% this will catch reset so one needs to test for it
+          \ifempty#3%
+            \let#7#6%
+            #2\doingrootsetuproot
+            \the#5%
+            \the#8% switchsetups
+            \let#3#7%
+          \else
+            #2\doingrootsetnamed
+            \the#5%     % we can check for previous vs current
+            \the#8% switchsetups
+          \fi
         \fi
       \else
         % \setuplayout
@@ -768,11 +856,18 @@
         \edef#2{##1}%
         #3[##2]%
       \orelse\iffirstargument
-        \ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
-          \edef#2{##1}%
-        \else
+       %\ifcondition\expandafter\mult_check_for_assignment_indeed_begin_\detokenize{##1}=^^^^0003^^^^0003^^^^0004%
+%         \ifcondition\mult_aux_no_assignment_indeed##1\ignorearguments
+%           \edef#2{##1}%
+%         \else
+%           \let#2\empty
+%           #3[##1]%
+%         \fi
+        \ifhastok={##1}%
           \let#2\empty
           #3[##1]%
+        \else
+          \edef#2{##1}%
         \fi
       \else
         \let#2\empty
