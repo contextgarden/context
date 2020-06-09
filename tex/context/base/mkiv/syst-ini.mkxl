@@ -58,7 +58,9 @@
 \chardef\primeasciicode           39 % '
 \chardef\leftparentasciicode      40
 \chardef\rightparentasciicode     41
+\chardef\commaasciicode           44
 \chardef\hyphenasciicode          45
+\chardef\periodasciicode          46
 \chardef\forwardslashasciicode    47 % /
 \chardef\colonasciicode           58
 \chardef\lessthanasciicode        60 % < used as alternative verbatim {

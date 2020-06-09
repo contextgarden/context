@@ -386,25 +386,13 @@
      \font_helpers_synchronize_math_family_mr
    \fi}
 
-\ifdefined \fontid % we need to keep this test for a while
-    \appendtoks
-        \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
-            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
-        \else
-            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
-        \fi
-    \to \t_font_math_strategies
-\else
-    \appendtoks
-        \edef\currentmathfontmr{\fontname\textfont\zerocount}%
-        \edef\currentmathfontmb{\fontname\textfont\plusthree}%
-        \ifx\currentmathfontmr\currentmathfontmb
-            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
-        \else
-            \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
-        \fi
-    \to \t_font_math_strategies
-\fi
+\appendtoks
+    \ifnum\fontid\textfont\zerocount=\fontid\textfont\plusthree
+        \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_partial_bold_strategy
+    \else
+        \letvalue{\??fontmathstoredstrategy\fontclass}\font_helpers_set_math_full_bold_strategy
+    \fi
+\to \t_font_math_strategies
 
 %def\font_helpers_synchronize_math_bold_strategy{\csname\??fontmathstoredstrategy\fontclass\endcsname}
 \def\font_helpers_synchronize_math_bold_strategy{\begincsname\??fontmathstoredstrategy\fontclass\endcsname}

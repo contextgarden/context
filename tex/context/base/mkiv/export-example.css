@@ -479,8 +479,9 @@ context|div.verbatim {
 	font-family : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
-/* lines : display */
-/* line  : mixed   */
+/* lines      : display */
+/* line       : mixed   */
+/* linenumber : inline  */
 
 lines,
 context|div.lines {
@@ -499,6 +500,15 @@ line,
 context|div.line {
 	display     : block ;
 	white-space : pre-wrap ;
+}
+
+linenumber,
+context|div.linenumber {
+	display      : inline-block ;
+	margin-right : 1em ;
+	width        : 3em ;
+	text-align   : left ;
+	font-family  : "DejaVu Sans Mono", "Lucida Console", monospace ;
 }
 
 /* synonym : inline  */

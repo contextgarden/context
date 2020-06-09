@@ -251,11 +251,11 @@ function scripts.scite.tree()
     local source  = environment.argument("source")
     local target  = environment.argument("target")
     local numbers = environment.argument("numbers")
-    if not lfs.isdir(source) then
+    if not source or not lfs.isdir(source) then
         report("you need to pass a valid source path with --source")
         return
     end
-    if not lfs.isdir(target) then
+    if not target or not lfs.isdir(target) then
         report("you need to pass a valid target path with --target")
         return
     end

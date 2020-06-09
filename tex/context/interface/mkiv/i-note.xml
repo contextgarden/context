@@ -636,6 +636,9 @@
                 <cd:parameter name="compressdistance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="compressstopper">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
                 <cd:inherit name="setupnote"/>
             </cd:assignments>
         </cd:arguments>

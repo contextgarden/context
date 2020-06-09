@@ -521,6 +521,30 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="placefloatcaption" level="style" category="structure fonts counter" file="strc-flt.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="title">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="bookmark">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="marking">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="list">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="reference">
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+            </cd:assignments>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
     <!--
 
         <cd:command name="definefloatframed" level="style" category="structure background" file="strc-flt.mkvi">
@@ -999,6 +1023,11 @@
                 </cd:parameter>
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="fit" default="yes"/>
+                    <cd:constant type="frame"/>
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>

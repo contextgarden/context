@@ -167,4 +167,26 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="interwordspacebefore" level="system" category="whitespace" file="spac/hor.mkiv"/>
+
+    <cd:command name="interwordspaceafter" level="system" category="whitespace" file="spac/hor.mkiv"/>
+
+    <cd:command name="interwordspacesbefore" level="system" category="whitespace" file="spac/hor.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+        
+    <cd:command name="interwordspacesafter" level="system" category="whitespace" file="spac/hor.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="interwordspaces" level="system" category="whitespace" file="spac/hor.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

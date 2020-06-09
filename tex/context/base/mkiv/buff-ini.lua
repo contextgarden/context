@@ -42,6 +42,10 @@ local scantokencode     = scanners.tokencode
 local getters           = tokens.getters
 local gettoken          = getters.token
 
+local getcommand        = token.get_command
+local getcsname         = token.get_csname
+local getnextchar       = token.get_next_char
+
 local scanners          = interfaces.scanners
 
 local variables         = interfaces.variables
@@ -375,7 +379,7 @@ local tochar = {
 local experiment = false
 local experiment = scantokencode and true
 
-function tokens.pickup(start,stop)
+local function pickup(start,stop)
     local stoplist     = split[stop] -- totable(stop)
     local stoplength   = #stoplist
     local stoplast     = stoplist[stoplength]
@@ -439,11 +443,11 @@ function tokens.pickup(start,stop)
                 -- we're skipping leading stuff, like obeyedlines and relaxes
                 if experiment and size > 0 then
                     -- we're probably in a macro
-                    local char = tochar[token.get_command(t)] -- could also be char(token.get_mode(t))
+                    local char = tochar[getcommand(t)]
                     if char then
                         size = size + 1 ; list[size] = char
                     else
-                        local csname = token.get_csname(t)
+                        local csname = getcsname(t)
                         if csname == stop then
                             stoplength = 0
                             break
@@ -494,6 +498,118 @@ function tokens.pickup(start,stop)
     end
 end
 
+-- -- lmtx:
+--
+-- local function pickup(start,stop)
+--     local stoplist     = split[stop] -- totable(stop)
+--     local stoplength   = #stoplist
+--     local stoplast     = stoplist[stoplength]
+--     local startlist    = split[start] -- totable(start)
+--     local startlength  = #startlist
+--     local startlast    = startlist[startlength]
+--     local list         = { }
+--     local size         = 0
+--     local depth        = 0
+--     getnextchar() -- we start with a \relax
+--     while true do -- or use depth
+--         local char = getnextchar()
+--         if char then
+--             size = size + 1
+--             list[size] = char
+--             if char == stoplast and size >= stoplength then
+--                 local done = true
+--                 local last = size
+--                 for i=stoplength,1,-1 do
+--                     if stoplist[i] ~= list[last] then
+--                         done = false
+--                         break
+--                     end
+--                     last = last - 1
+--                 end
+--                 if done then
+--                     if depth > 0 then
+--                         depth = depth - 1
+--                     else
+--                         break
+--                     end
+--                     char = false -- trick: let's skip the next (start) test
+--                 end
+--             end
+--             if char == startlast and size >= startlength then
+--                 local done = true
+--                 local last = size
+--                 for i=startlength,1,-1 do
+--                     if startlist[i] ~= list[last] then
+--                         done = false
+--                         break
+--                     end
+--                     last = last - 1
+--                 end
+--                 if done then
+--                     depth = depth + 1
+--                 end
+--             end
+--         else
+--             local t = gettoken()
+--             if t then
+--                 -- we're skipping leading stuff, like obeyedlines and relaxes
+--                 if experiment and size > 0 then
+--                     -- we're probably in a macro
+--                     local char = tochar[getcommand(t)]
+--                     if char then
+--                         size = size + 1 ; list[size] = char
+--                     else
+--                         local csname = getcsname(t)
+--                         if csname == stop then
+--                             stoplength = 0
+--                             break
+--                         else
+--                             size = size + 1 ; list[size] = "\\"
+--                             size = size + 1 ; list[size] = csname
+--                             size = size + 1 ; list[size] = " "
+--                         end
+--                     end
+--                 else
+--                     -- ignore and hope for the best
+--                 end
+--             else
+--                 break
+--             end
+--         end
+--     end
+--     local start = 1
+--     local stop  = size - stoplength - 1
+--     -- not good enough: only empty lines, but even then we miss the leading
+--     -- for verbatim
+--     --
+--     -- the next is not yet adapted to the new scanner ... we don't need lpeg here
+--     --
+--     for i=start,stop do
+--         local li = list[i]
+--         if lpegmatch(blackspace,li) then
+--             -- keep going
+--         elseif lpegmatch(eol,li) then
+--             -- okay
+--             start = i + 1
+--         else
+--             break
+--         end
+--     end
+--     for i=stop,start,-1 do
+--         if lpegmatch(whitespace,list[i]) then
+--             stop = i - 1
+--         else
+--             break
+--         end
+--     end
+--     --
+--     if start <= stop then
+--         return concat(list,"",start,stop)
+--     else
+--         return ""
+--     end
+-- end
+
 -- function buffers.pickup(name,start,stop,finish,catcodes,doundent)
 --     local data = tokens.pickup(start,stop)
 --     if doundent or (autoundent and doundent == nil) then
@@ -505,6 +621,8 @@ end
 
 -- commands.pickupbuffer = buffers.pickup
 
+tokens.pickup = pickup
+
 scanners.pickupbuffer = function()
     local name     = scanstring()
     local start    = scanstring()
@@ -512,7 +630,7 @@ scanners.pickupbuffer = function()
     local finish   = scanstring()
     local catcodes = scaninteger()
     local doundent = scanboolean()
-    local data = tokens.pickup(start,stop)
+    local data     = pickup(start,stop)
     if doundent or (autoundent and doundent == nil) then
         data = undent(data)
     end

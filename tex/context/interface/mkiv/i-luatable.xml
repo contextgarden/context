@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="newluatable" level="system" category="lua" file="cldf-int.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="useluatable" level="system" category="lua" file="cldf-int.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="disposeluatable" level="system" category="lua" file="cldf-lmt.lua">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="inspectluatable" level="system" category="lua" file="cldf-lmt.lua">
+        <cd:arguments>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="showluatables" level="system" category="lua" file="cldf-lmt.lua"/>
+
+    <cd:command name="setluatable" level="system" category="lua" file="cldf-lmt.lua">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getfromluatable" level="system" category="lua" file="cldf-lmt.lua">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:key"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="idxfromluatable" level="system" category="lua" file="cldf-lmt.lua">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:resolve name="string-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setdatavalue" level="system" category="lua" file="cldf-int.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getdatavalue" level="system" category="lua" file="cldf-int.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="thedatavalue" level="system" category="lua" file="cldf-int.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

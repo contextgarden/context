@@ -56,6 +56,9 @@
     <cd:interfacefile filename="i-combination.xml"/>
     <cd:interfacefile filename="i-commandhandler.xml"/>
     <cd:interfacefile filename="i-comment.xml"/>
+    <!--
+        <cd:interfacefile filename="i-contextname.xml"/>
+    -->
     <cd:interfacefile filename="i-conversion.xml"/>
     <cd:interfacefile filename="i-counter.xml"/>
     <cd:interfacefile filename="i-dataset.xml"/>
@@ -124,6 +127,7 @@
     <cd:interfacefile filename="i-logo.xml"/>
     <cd:interfacefile filename="i-lohi.xml"/>
     <cd:interfacefile filename="i-lua.xml"/>
+    <cd:interfacefile filename="i-luatable.xml"/>
     <cd:interfacefile filename="i-makeup.xml"/>
     <cd:interfacefile filename="i-marginblock.xml"/>
     <cd:interfacefile filename="i-margindata.xml"/>
@@ -134,6 +138,9 @@
     <cd:interfacefile filename="i-mathcases.xml"/>
     <cd:interfacefile filename="i-mathfence.xml"/>
     <cd:interfacefile filename="i-mathmatrix.xml"/>
+    <!--
+        <cd:interfacefile filename="i-mathname.xml"/>
+    -->
     <cd:interfacefile filename="i-mathornament.xml"/>
     <cd:interfacefile filename="i-mathradical.xml"/>
     <cd:interfacefile filename="i-mathstackers.xml"/>
@@ -215,6 +222,9 @@
     <cd:interfacefile filename="i-table.xml"/>
     <cd:interfacefile filename="i-tabulation.xml"/>
     <cd:interfacefile filename="i-tagging.xml"/>
+    <!--
+        <cd:interfacefile filename="i-tex.xml"/>
+    -->
     <cd:interfacefile filename="i-textbackground.xml"/>
     <cd:interfacefile filename="i-textflow.xml"/>
     <cd:interfacefile filename="i-textrule.xml"/>

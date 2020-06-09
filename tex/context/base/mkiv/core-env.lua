@@ -47,12 +47,13 @@ local cache = tokens.cache
 
 local iftrue        = cache["iftrue"].mode
 
-local dimencode     = cache["scratchdimen"]    .command
-local countcode     = cache["scratchcounter"]  .command
-local tokencode     = cache["scratchtoken"]    .command
-local skipcode      = cache["scratchskip"]     .command
-local muskipcode    = cache["scratchmuskip"]   .command
------ attributecode = cache["scratchattribute"].command
+local dimencode     = cache["scratchdimen"]    .command -- tokens.commands.assign_dimen
+local countcode     = cache["scratchcounter"]  .command -- tokens.commands.assign_int
+local tokencode     = cache["scratchtoken"]    .command -- tokens.commands.assign_toks
+local skipcode      = cache["scratchskip"]     .command -- tokens.commands.assign_glue
+local muskipcode    = cache["scratchmuskip"]   .command -- tokens.commands.assign_mu_glue
+----- attributecode = cache["scratchattribute"].command -- tokens.commands.assign_attr
+local conditioncode = cache["iftrue"]          .command -- tokens.commands.if_test
 
 local types = {
     [dimencode]     = "dimen",
@@ -61,6 +62,7 @@ local types = {
     [skipcode]      = "skip",
     [muskipcode]    = "muskip",
  -- [attributecode] = "attribute",
+    [conditioncode] = "condition"
 }
 
 setmetatableindex(texmodes, function(t,k)
@@ -122,6 +124,30 @@ end)
 setmetatablenewindex(texifs, function(t,k)
     -- just ignore
 end)
+
+if CONTEXTLMTXMODE > 0 then
+
+    iftrue = cache["iftrue"].index
+
+    -- if we really need performance we can have a dedicated cache for each
+    -- kind of variable
+
+    setmetatableindex(texconstants, function(t,k)
+        return cache[k].command == countcode and texgetcount(k) or 0
+    end)
+
+    setmetatableindex(texconditionals, function(t,k) -- 0 == true
+        return cache[k].command == countcode and texgetcount(k) == 0
+    end)
+
+    table.setmetatableindex(texifs, function(t,k)
+        local c = cache[k]
+        print(k)
+        inspect(c)
+        return c.command == conditioncode and c.index == iftrue
+    end)
+
+end
 
 tex.isdefined = isdefined
 

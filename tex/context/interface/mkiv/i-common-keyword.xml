@@ -809,4 +809,26 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * TRACKER  -->
+
+    <cd:define name="keyword-tracker-list">
+        <cd:keywords list="yes">
+            <cd:resolve name="value-tracker"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * DIRECTIVE  -->
+
+    <cd:define name="keyword-directive-list">
+        <cd:keywords list="yes">
+            <cd:resolve name="value-directive"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

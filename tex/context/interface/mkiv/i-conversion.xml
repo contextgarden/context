@@ -214,6 +214,12 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="month" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="monthlong" level="style" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
@@ -227,12 +233,6 @@
     </cd:command>
 
     <cd:command name="convertmonth" level="style" category="counter" file="core-con.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-number"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="month" level="style" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
@@ -263,6 +263,30 @@
     </cd:command>
 
     <cd:command name="WEEKDAY" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="daylong" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="dayshort" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="DAYLONG" level="style" category="counter" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="DAYSHORT" level="style" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
@@ -318,40 +342,52 @@
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="year"/>
-                <cd:constant type="month"/>
-                <cd:constant type="day"/>
-                <cd:constant type="weekday"/>
                 <cd:constant type="y"/>
                 <cd:constant type="yy"/>
                 <cd:constant type="Y"/>
+                <cd:constant type="YY"/>
+                <cd:constant type="month"/>
+                <cd:constant type="month:mnem"/>
+                <cd:constant type="month:jalali"/>
                 <cd:constant type="m"/>
+                <cd:constant type="m:mnem"/>
+                <cd:constant type="m:jalali"/>
+                <cd:constant type="MONTH"/>
+                <cd:constant type="MONTH:mnem"/>
+                <cd:constant type="MONTH:jalali"/>
                 <cd:constant type="mm"/>
                 <cd:constant type="M"/>
+                <cd:constant type="day"/>
+                <cd:constant type="day:+"/>
+                <cd:constant type="day:ord"/>
+                <cd:constant type="day:++"/>
+                <cd:constant type="day:highord"/>
                 <cd:constant type="d"/>
+                <cd:constant type="d:+"/>
+                <cd:constant type="d:ord"/>
+                <cd:constant type="d:++"/>
+                <cd:constant type="d:highord"/>
                 <cd:constant type="dd"/>
+                <cd:constant type="dd:+"/>
+                <cd:constant type="dd:ord"/>
+                <cd:constant type="dd:++"/>
+                <cd:constant type="dd:highord"/>
                 <cd:constant type="D"/>
+                <cd:constant type="D:+"/>
+                <cd:constant type="D:ord"/>
+                <cd:constant type="D:++"/>
+                <cd:constant type="D:highord"/>
+                <cd:constant type="weekday"/>
+                <cd:constant type="weekday:mnem"/>
                 <cd:constant type="w"/>
+                <cd:constant type="w:mnem"/>
+                <cd:constant type="WEEKDAY"/>
+                <cd:constant type="WEEKDAY:mnem"/>
                 <cd:constant type="W"/>
+                <cd:constant type="referral"/>
                 <cd:constant type="space"/>
                 <cd:constant type="\␣"/>
-                <cd:constant type="month:mnem"/>
-                <cd:constant type="m:mnem"/>
-                <cd:constant type="d:ord"/>
-                <cd:constant type="day:ord"/>
-                <cd:constant type="dd:ord"/>
-                <cd:constant type="D:ord"/>
                 <cd:constant type="cd:text"/>
-                <cd:constant type="referral"/>
-                <cd:constant type="day:+"/>
-                <cd:constant type="day:++"/>
-                <cd:constant type="d:+"/>
-                <cd:constant type="d:++"/>
-                <cd:constant type="dd:+"/>
-                <cd:constant type="dd:++"/>
-                <cd:constant type="D:+"/>
-                <cd:constant type="D:++"/>
-                <cd:constant type="month:jalali"/>
-                <cd:constant type="m:jalali"/>
                 <cd:constant type="jalali:to"/>
                 <cd:constant type="jalali:from"/>
             </cd:keywords>
@@ -496,6 +532,8 @@
                 <cd:constant type="slovenianNumerals"/>
                 <cd:constant type="spanishnumerals"/>
                 <cd:constant type="spanishNumerals"/>
+                <cd:constant type="russiannumerals"/>
+                <cd:constant type="russianNumerals"/>
                 <cd:constant type="mathgreek"/>
                 <cd:constant type="set␣0"/>
                 <cd:constant type="set␣1"/>
@@ -631,6 +669,18 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="russiannumerals" level="style" category="counter language" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="russianNumerals" level="style" category="counter language" file="core-con.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="unihex" level="style" category="counter" file="core-con.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
@@ -649,10 +699,58 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="actualyear" level="style" category="system" file="core-con.mkiv"/>
+    <cd:command name="actualyear" level="style" category="system" file="core-con.lua"/>
 
-    <cd:command name="actualmonth" level="style" category="system" file="core-con.mkiv"/>
+    <cd:command name="actualmonth" level="style" category="system" file="core-con.lua"/>
 
-    <cd:command name="actualday" level="style" category="system" file="core-con.mkiv"/>
+    <cd:command name="actualday" level="style" category="system" file="core-con.lua"/>
+
+    <cd:command name="lchexnumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="uchexnumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="lchexnumbers" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="uchexnumbers" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hexnumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="octnumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="hexstringtonumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="octstringtonumber" level="style" category="counter" file="syst-con.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>

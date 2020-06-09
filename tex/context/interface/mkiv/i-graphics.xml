@@ -85,6 +85,11 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="cmyk">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
                 <cd:parameter name="arguments">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
@@ -250,18 +255,14 @@
         </cd:arguments>
     </cd:command>
 
-    <!--
-
-        <cd:command name="setupexternalfigures" level="style" category="graphics" file="grph-inc.mkvi">
-            <cd:arguments>
-                <cd:resolve name="keyword-name-list-optional"/>
-                <cd:assignments list="yes">
-                    <cd:inherit name="setupexternalfigure"/>
-                </cd:assignments>
-            </cd:arguments>
-        </cd:command>
-
-    -->
+    <cd:command name="setupexternalfigures" level="style" category="graphics" file="grph-inc.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupexternalfigure"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
 
     <cd:command name="useexternalfigure" level="style" category="graphics" file="grph-inc.mkiv">
         <cd:arguments>
@@ -552,6 +553,28 @@
     <cd:command name="clippedoverlayimage" level="style" category="graphics" file="pack-box.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="includesvgfile" level="document" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-file"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="includesvgbuffer" level="document" category="graphics" file="grph-inc.mkiv">
+        <cd:arguments>
+            <cd:resolve name="keyword-buffer"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
         </cd:arguments>
     </cd:command>
 

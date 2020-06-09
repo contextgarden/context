@@ -16,6 +16,9 @@
 %
 % to be redone (was experiment) .. can be hooked into margin code
 % reshuffle arguments
+%
+% this is early luatex code, 2007 or even before that, and it shows ... we
+% have better tricks now
 
 \writestatus{loading}{ConTeXt Core Macros / Line Numbering}
 
@@ -348,6 +351,7 @@
 
 \def\page_lines_add_numbers_to_box#box#column#max#nesting%
   {\bgroup
+   \strc_tags_enable_indeed
    \b_page_lines_number     #box\relax
    \c_page_lines_column     #column\relax
    \c_page_lines_last_column#max\relax
@@ -459,24 +463,34 @@
 % \def\dodollap{\hbox to \zeropoint{\normalhss\box\nextbox}\endgroup}
 
 \def\page_line_handle_left#align#width#distance%
-  {\llap
+  {\dostarttagged\t!linenumber\empty
+   \llap
      {\page_lines_number_inject#align#width%
+      \dostarttagged\t!ignore\empty
       \kern\dimexpr
         #distance+\d_page_lines_distance
         \ifconditional\c_page_lines_dir_left_to_right\else+\d_page_lines_line_width\fi
       \relax
       \the\everylinenumber
-      \hss}}
+      \hss
+      \dostoptagged}%
+   \dostoptagged}
 
 \def\page_line_handle_right#align#width#distance%
-  {\rlap
-     {\kern\dimexpr
+  {\dostarttagged\t!linenumber\empty
+   \rlap
+     {\dostarttagged\t!ignore\empty
+      \kern\dimexpr
         #distance+\d_page_lines_distance
         \ifconditional\c_page_lines_dir_left_to_right+\d_page_lines_line_width\fi
       \relax
+      \dostoptagged
       \page_lines_number_inject#align#width%
+      \dostarttagged\t!ignore\empty
       \the\everylinenumber
-      \hss}}
+      \hss
+      \dostoptagged}%
+   \dostoptagged}
 
 \setuvalue{\??linenumberinghandler\v!left}%
   {\page_line_handle_left\p_align\leftmarginwidth\leftmargindistance}

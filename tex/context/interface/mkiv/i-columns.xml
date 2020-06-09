@@ -81,9 +81,40 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setsimplecolumnshsize" level="system" category="columns" file="page-mul.mkiv">
+    <!--
+
+        <cd:command name="setsimplecolumnshsize" level="system" category="columns" file="page-mul.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes">
+                    <cd:parameter name="n">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                    <cd:parameter name="width">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="lines">
+                        <cd:constant type="cd:number"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="simplecolumns" type="environment" level="system" category="columns" file="page-mul.mkiv">
+            <cd:arguments>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setsimplecolumnshsize"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="simplecolumns" type="environment" level="system" category="columns" file="page-mul.mkiv">
         <cd:arguments>
-            <cd:assignments list="yes">
+            <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="n">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
@@ -96,14 +127,6 @@
                 <cd:parameter name="lines">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="simplecolumns" type="environment" level="system" category="columns" file="page-mul.mkiv">
-        <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setsimplecolumnshsize"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

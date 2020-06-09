@@ -13,14 +13,11 @@
 
 \writestatus{loading}{ConTeXt System Macros / Primitives}
 
-%D This is offered temporarily because in the end we don't expect u sers to use the
-%D low level direction directives directly.
-
 \registerctxluafile{core-lmt}{}
 
 \unprotect
 
-% nothing yet
+% nothing here
 
 \protect \endinput
 

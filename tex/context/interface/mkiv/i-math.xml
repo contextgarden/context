@@ -111,9 +111,9 @@
                     <cd:constant type="normal"/>
                 </cd:parameter>
                 <cd:parameter name="collapsing">
-                    <cd:constant type="1"/>
+                    <cd:constant type="1" default="yes"/>
                     <cd:constant type="2"/>
-                    <cd:constant type="3" default="yes"/>
+                    <cd:constant type="3"/>
                     <cd:constant type="none"/>
                     <cd:constant type="reset"/>
                 </cd:parameter>

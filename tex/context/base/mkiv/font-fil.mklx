@@ -92,7 +92,7 @@
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \doifelsenextoptionalcs\font_basics_define_font_synonym_yes_opt\font_basics_define_font_synonym_yes_nil}
 
-\unexpanded\def\edefinefontsynonym[#name]#crap[#file]%
+\unexpanded\def\edefinefontsynonym[#name]#ignore[#file]%
   {\edef\m_font_name{#name}%
    \edef\m_font_file{#file}%
    \ifempty\fontclass
@@ -101,33 +101,66 @@
       \expandafter\font_basics_define_font_synonym_yes_expanded
    \fi}
 
-\unexpanded\def\font_basics_define_font_synonym_nop_expanded#crap[#spec]%
+\unexpanded\def\font_basics_define_font_synonym_nop_expanded#ignore[#spec]%
   {\expandafter\let\csname\??fontfile\m_font_name\endcsname\m_font_file
-   \normalexpanded{\font_basics_define_font_synonym_nop_opt[#1]}}
+   \normalexpanded{\font_basics_define_font_synonym_nop_opt[#spec]}}
 
-\unexpanded\def\font_basics_define_font_synonym_yes_expanded#crap[#spec]%
+\unexpanded\def\font_basics_define_font_synonym_yes_expanded#ignore[#spec]%
   {\expandafter\let\csname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
    \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
+
+% \unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
+%   {\let\p_features  \undefined
+%    \let\p_fallbacks \undefined
+%    \let\p_goodies   \undefined
+%    \let\p_designsize\undefined
+%    \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
+%
+% \unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
+%   {\let\p_features  \undefined
+%    \let\p_fallbacks \undefined
+%    \let\p_goodies   \undefined
+%    \let\p_designsize\undefined
+%    \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
+%
+% % todo: check if we can use \edef but then we need to protect \mathsizesuffix .. in fact that
+% % can be default then: \let\mathsizesuffix\relax .. i need to play with it first
+%
+% \def\font_basics_get_font_parameter_nop#key=#value,%
+%   {\if]#key%
+%      \font_basics_get_font_parameter_nop_finish
+%    \else
+%      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+%      \expandafter\font_basics_get_font_parameter_nop
+%    \fi}
+%
+% \def\font_basics_get_font_parameter_yes#key=#value,%
+%   {\if]#key%
+%      \font_basics_get_font_parameter_yes_finish
+%    \else
+%      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
+%      \expandafter\font_basics_get_font_parameter_yes
+%    \fi}
 
 \unexpanded\def\font_basics_define_font_synonym_nop_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined
    \let\p_designsize\undefined
-   \expandafter\font_basics_get_font_parameter_nop#specification,]=,}
+   \expandafter\font_basics_get_font_parameter_nop#specification,\ignorearguments}
 
 \unexpanded\def\font_basics_define_font_synonym_yes_opt[#specification]%
   {\let\p_features  \undefined
    \let\p_fallbacks \undefined
    \let\p_goodies   \undefined
    \let\p_designsize\undefined
-   \expandafter\font_basics_get_font_parameter_yes#specification,]=,}
+   \expandafter\font_basics_get_font_parameter_yes#specification,\ignorearguments}
 
 % todo: check if we can use \edef but then we need to protect \mathsizesuffix .. in fact that
 % can be default then: \let\mathsizesuffix\relax .. i need to play with it first
 
 \def\font_basics_get_font_parameter_nop#key=#value,%
-  {\if]#key%
+  {\ifarguments
      \font_basics_get_font_parameter_nop_finish
    \else
      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
@@ -135,7 +168,7 @@
    \fi}
 
 \def\font_basics_get_font_parameter_yes#key=#value,%
-  {\if]#key%
+  {\ifarguments
      \font_basics_get_font_parameter_yes_finish
    \else
      \expandafter\normaldef\csname p_#key\endcsname{#value}%  % no edef as we need to keep \mathsizesuffix
@@ -202,32 +235,66 @@
 
 % todo: replace * by ... less messy with features
 
+% \def\truefontname#name%
+%   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
+%
+% \def\font_helpers_true_fontname#name*#first#rest*#crap\relax
+%   {\ifcsname\??fontfile\fontclass#name\endcsname
+%      \ifempty#first%
+%        \expandafter\truefontname\lastnamedcs
+%      \else
+%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+%      \fi
+%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+%      \ifempty#first%
+%        \expandafter\truefontname\lastnamedcs
+%      \else
+%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+%      \fi
+%    \orelse\ifcsname\??fontfile#name\endcsname
+%      \ifempty#first%
+%        \expandafter\truefontname\lastnamedcs
+%      \else
+%        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
+%      \fi
+%    \else
+%      #name\ifempty#first\else*#first#rest\fi
+%    \fi}
+%
+% \def\font_helpers_true_fontname_check#name%
+%   {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
+%
+% \def\font_helpers_true_fontname_check_indeed#name*#crap\relax
+%   {\ifcsname\??fontfile\fontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
+%    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
+%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
+%    \orelse\ifcsname\??fontfile#name\endcsname
+%      \expandafter\font_helpers_true_fontname_check\lastnamedcs
+%    \else
+%      #name%
+%    \fi}
+
 \def\truefontname#name%
   {\expandafter\font_helpers_true_fontname#name*\empty*\relax}
 
-\def\font_helpers_true_fontname#name*#first#rest*#crap\relax
+\def\font_helpers_true_fontname#name*#first#rest*#ignore\relax
   {\ifcsname\??fontfile\fontclass#name\endcsname
      \ifempty#first%
-      %\expandafter\truefontname\csname\??fontfile\fontclass#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
-      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname*#first#rest%
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
      \ifempty#first%
-      %\expandafter\truefontname\csname\??fontfile\defaultfontclass#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
-      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname*#first#rest%
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \orelse\ifcsname\??fontfile#name\endcsname
      \ifempty#first%
-      %\expandafter\truefontname\csname\??fontfile#name\endcsname
        \expandafter\truefontname\lastnamedcs
      \else
-      %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname*#first#rest%
        \expandafter\font_helpers_true_fontname_check\lastnamedcs*#first#rest%
      \fi
    \else
@@ -237,15 +304,12 @@
 \def\font_helpers_true_fontname_check#name%
   {\expandafter\font_helpers_true_fontname_check_indeed#name*\relax}
 
-\def\font_helpers_true_fontname_check_indeed#name*#crap\relax
+\def\font_helpers_true_fontname_check_indeed#name*#ignore\relax
   {\ifcsname\??fontfile\fontclass#name\endcsname
-    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\fontclass#name\endcsname
      \expandafter\font_helpers_true_fontname_check\lastnamedcs
    \orelse\ifcsname\??fontfile\defaultfontclass#name\endcsname
-    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile\defaultfontclass#name\endcsname
      \expandafter\font_helpers_true_fontname_check\lastnamedcs
    \orelse\ifcsname\??fontfile#name\endcsname
-    %\expandafter\font_helpers_true_fontname_check\csname\??fontfile#name\endcsname
      \expandafter\font_helpers_true_fontname_check\lastnamedcs
    \else
      #name%
@@ -271,10 +335,8 @@
 
 \def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname
-    %\expandafter\normaldef\expandafter#command\expandafter{\csname\??fontfile\fontclass#name\endcsname}%
      \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \orelse\ifcsname\??fontfile\defaultfontclass#2\endcsname
-    %\expandafter\normaldef\expandafter#command\expandafter{\csname\??fontfile\defaultfontclass#name\endcsname}%
      \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \fi}
 

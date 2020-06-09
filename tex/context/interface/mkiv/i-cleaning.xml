@@ -35,6 +35,14 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="doifelsemarkedcontent" level="system" category="conditional" file="typo-chr.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="setcharactercleaning" level="system" file="typo-cln.mkiv">
         <cd:arguments>
             <cd:keywords>

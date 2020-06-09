@@ -2225,6 +2225,8 @@ the internal expand related function.
 \libindex{get_mode}
 \libindex{get_index}
 \libindex{get_tok}
+\libindex{get_frozen}
+\libindex{get_user}
 
 \libindex{get_next}
 
@@ -2250,6 +2252,8 @@ primitive. The possible properties of tokens are:
 \NC \type {active}     \NC a boolean indicating the active state of the token \NC \NR
 \NC \type {expandable} \NC a boolean indicating if the token (macro) is expandable \NC \NR
 \NC \type {protected}  \NC a boolean indicating if the token (macro) is protected \NC \NR
+\NC \type {frozen}     \NC a boolean indicating if the token is a frozen command \NC \NR
+\NC \type {user}       \NC a boolean indicating if the token is a user defined command \NC \NR
 \NC \type {mode}       \NC a number either representing a character or another entity \NC \NR
 \NC \type {index}      \NC a number running from 0x0000 upto 0xFFFF indicating a \TEX\ register index \NC \NR
 \LL

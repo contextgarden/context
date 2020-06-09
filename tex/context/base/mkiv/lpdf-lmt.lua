@@ -2713,7 +2713,8 @@ do
          --     pdf.setforcefile(false) -- default anyway
          -- end
             --
-            pdfname = file.addsuffix(tex.jobname,"pdf")
+         -- pdfname = file.addsuffix(tex.jobname,"pdf")
+            pdfname = tex.jobname .. ".pdf"
             openfile(pdfname)
             --
             luatex.registerstopactions(1,function()

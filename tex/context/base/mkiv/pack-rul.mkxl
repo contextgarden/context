@@ -1949,7 +1949,7 @@
   {\iffirstargument
       \setupcurrentmathframed[#1]%
    \fi
-   \c_framed_mstyle\mathstyle
+   \c_framed_mstyle\normalmathstyle
    \edef\m_framed_location{\mathframedparameter\c!location}%
    \ifx\m_framed_location\v!mathematics
      \let\normalstrut\pack_framed_math_pos

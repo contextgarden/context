@@ -48,6 +48,7 @@ local abs = math.abs
 local concat, swapped, sortedhash, sortedkeys = table.concat, table.swapped, table.sortedhash, table.sortedkeys
 local utfchar = string.char
 local setmetatableindex = table.setmetatableindex
+local ioopen = io.open
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs, lpeg.Cf, lpeg.Cg
@@ -67,6 +68,7 @@ local lpdf_epdf         = { }
       lpdf.epdf         = lpdf_epdf
 
 local pdfopen           = pdfe.open
+local pdfopenfile       = pdfe.openfile
 local pdfnew            = pdfe.new
 local pdfclose          = pdfe.close
 
@@ -440,8 +442,11 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
     if not document then
         statistics.starttiming(lpdf_epdf)
         local __data__
+        local __file__
         if fromstring then
             __data__ = pdfnew(filename,#filename)
+        elseif pdfopenfile then
+            __data__ = pdfopenfile(ioopen(filename,"rb"))
         else
             __data__ = pdfopen(filename)
         end

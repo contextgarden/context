@@ -86,4 +86,19 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="setupoutput" file="back-ini.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="default"/>
+                <cd:constant type="pdf"/>
+                <cd:constant type="lua"/>
+                <cd:constant type="json"/>
+                <cd:constant type="js"/>
+                <cd:constant type="mps"/>
+                <cd:constant type="none"/>
+                <cd:constant type="empty"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

@@ -931,6 +931,20 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command file="back-ini.mkxl" name="setupoutput">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="default"/>
+     <cd:constant type="pdf"/>
+     <cd:constant type="lua"/>
+     <cd:constant type="json"/>
+     <cd:constant type="js"/>
+     <cd:constant type="mps"/>
+     <cd:constant type="none"/>
+     <cd:constant type="empty"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-background.xml">
   <cd:command category="background" file="pack-bck.mkvi" level="style" name="definebackground">
@@ -1368,6 +1382,8 @@
      <cd:constant method="none" prefix="type␣" type="cd:text"/>
      <cd:constant method="none" prefix="data␣" type="cd:text"/>
      <cd:constant method="none" prefix="name␣" type="cd:text"/>
+     <cd:constant method="none" prefix="radius␣" type="cd:dimension"/>
+     <cd:constant method="none" prefix="corner␣" type="cd:text"/>
     </cd:keywords>
     <cd:delimiter name="relax"/>
    </cd:arguments>
@@ -4383,6 +4399,19 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="conditional" file="typo-chr.mkiv" level="system" name="doifelsemarkedcontent">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:true"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:false"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command file="typo-cln.mkiv" level="system" name="setcharactercleaning">
    <cd:arguments>
     <cd:keywords>
@@ -6206,6 +6235,13 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="month">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="counter" file="core-con.mkiv" level="style" name="monthlong">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -6221,13 +6257,6 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="counter" file="core-con.mkiv" level="style" name="convertmonth">
-   <cd:arguments>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:number"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="counter" file="core-con.mkiv" level="style" name="month">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
@@ -6263,6 +6292,34 @@
    </cd:arguments>
   </cd:command>
   <cd:command category="counter" file="core-con.mkiv" level="style" name="WEEKDAY">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="daylong">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="dayshort">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="DAYLONG">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="core-con.mkiv" level="style" name="DAYSHORT">
    <cd:arguments>
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:number"/>
@@ -6345,40 +6402,52 @@
    <cd:arguments>
     <cd:keywords list="yes" optional="yes">
      <cd:constant type="year"/>
-     <cd:constant type="month"/>
-     <cd:constant type="day"/>
-     <cd:constant type="weekday"/>
      <cd:constant type="y"/>
      <cd:constant type="yy"/>
      <cd:constant type="Y"/>
+     <cd:constant type="YY"/>
+     <cd:constant type="month"/>
+     <cd:constant type="month:mnem"/>
+     <cd:constant type="month:jalali"/>
      <cd:constant type="m"/>
+     <cd:constant type="m:mnem"/>
+     <cd:constant type="m:jalali"/>
+     <cd:constant type="MONTH"/>
+     <cd:constant type="MONTH:mnem"/>
+     <cd:constant type="MONTH:jalali"/>
      <cd:constant type="mm"/>
      <cd:constant type="M"/>
+     <cd:constant type="day"/>
+     <cd:constant type="day:+"/>
+     <cd:constant type="day:ord"/>
+     <cd:constant type="day:++"/>
+     <cd:constant type="day:highord"/>
      <cd:constant type="d"/>
+     <cd:constant type="d:+"/>
+     <cd:constant type="d:ord"/>
+     <cd:constant type="d:++"/>
+     <cd:constant type="d:highord"/>
      <cd:constant type="dd"/>
+     <cd:constant type="dd:+"/>
+     <cd:constant type="dd:ord"/>
+     <cd:constant type="dd:++"/>
+     <cd:constant type="dd:highord"/>
      <cd:constant type="D"/>
+     <cd:constant type="D:+"/>
+     <cd:constant type="D:ord"/>
+     <cd:constant type="D:++"/>
+     <cd:constant type="D:highord"/>
+     <cd:constant type="weekday"/>
+     <cd:constant type="weekday:mnem"/>
      <cd:constant type="w"/>
+     <cd:constant type="w:mnem"/>
+     <cd:constant type="WEEKDAY"/>
+     <cd:constant type="WEEKDAY:mnem"/>
      <cd:constant type="W"/>
+     <cd:constant type="referral"/>
      <cd:constant type="space"/>
      <cd:constant type="\\\\\\\\␣"/>
-     <cd:constant type="month:mnem"/>
-     <cd:constant type="m:mnem"/>
-     <cd:constant type="d:ord"/>
-     <cd:constant type="day:ord"/>
-     <cd:constant type="dd:ord"/>
-     <cd:constant type="D:ord"/>
      <cd:constant type="cd:text"/>
-     <cd:constant type="referral"/>
-     <cd:constant type="day:+"/>
-     <cd:constant type="day:++"/>
-     <cd:constant type="d:+"/>
-     <cd:constant type="d:++"/>
-     <cd:constant type="dd:+"/>
-     <cd:constant type="dd:++"/>
-     <cd:constant type="D:+"/>
-     <cd:constant type="D:++"/>
-     <cd:constant type="month:jalali"/>
-     <cd:constant type="m:jalali"/>
      <cd:constant type="jalali:to"/>
      <cd:constant type="jalali:from"/>
     </cd:keywords>
@@ -6537,6 +6606,8 @@
      <cd:constant type="slovenianNumerals"/>
      <cd:constant type="spanishnumerals"/>
      <cd:constant type="spanishNumerals"/>
+     <cd:constant type="russiannumerals"/>
+     <cd:constant type="russianNumerals"/>
      <cd:constant type="mathgreek"/>
      <cd:constant type="set␣0"/>
      <cd:constant type="set␣1"/>
@@ -6710,6 +6781,20 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="counter language" file="core-con.mkiv" level="style" name="russiannumerals">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter language" file="core-con.mkiv" level="style" name="russianNumerals">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="counter" file="core-con.mkiv" level="style" name="unihex">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -6731,9 +6816,65 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="system" file="core-con.mkiv" level="style" name="actualyear"/>
-  <cd:command category="system" file="core-con.mkiv" level="style" name="actualmonth"/>
-  <cd:command category="system" file="core-con.mkiv" level="style" name="actualday"/>
+  <cd:command category="system" file="core-con.lua" level="style" name="actualyear"/>
+  <cd:command category="system" file="core-con.lua" level="style" name="actualmonth"/>
+  <cd:command category="system" file="core-con.lua" level="style" name="actualday"/>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="lchexnumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="uchexnumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="lchexnumbers">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="uchexnumbers">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="hexnumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="octnumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="hexstringtonumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="counter" file="syst-con.mkxl" level="style" name="octstringtonumber">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-counter.xml">
   <cd:command category="counter" file="strc-num.mkiv" level="system" name="definecounter">
@@ -10565,6 +10706,35 @@
     </cd:assignments>
    </cd:arguments>
   </cd:command>
+  <cd:command category="structure fonts counter" file="strc-flt.mkvi" level="style" name="placefloatcaption">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:parameter name="title">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="bookmark">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="marking">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="list">
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="reference">
+      <cd:constant type="cd:reference"/>
+     </cd:parameter>
+    </cd:assignments>
+    <cd:assignments list="yes" optional="yes">
+     <cd:parameter name="cd:key">
+      <cd:constant type="cd:value"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
   <cd:command category="structure background" file="strc-flt.mkvi" level="style" name="setupfloatframed">
    <cd:arguments>
     <cd:keywords list="yes" optional="yes">
@@ -11336,6 +11506,11 @@
      <cd:parameter name="color">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant default="yes" type="fit"/>
+      <cd:constant type="frame"/>
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
      <cd:inherit name="setupframed"/>
     </cd:assignments>
    </cd:arguments>
@@ -11833,7 +12008,11 @@
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
      </cd:parameter>
-     <cd:parameter name="cd:name">
+     <cd:parameter name="uppercasing">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="lowercasing">
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
      </cd:parameter>
@@ -11841,6 +12020,13 @@
       <cd:constant type="cd:number"/>
      </cd:parameter>
      <cd:parameter name="blockligatures">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+     </cd:parameter>
+     <cd:parameter name="metapost">
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="cd:name">
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
      </cd:parameter>
@@ -12749,6 +12935,9 @@
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="setoldstyle"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="settabular"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="setsuperiors"/>
+  <cd:command category="fonts" file="font-pre.mkiv" level="style" name="setfractions"/>
+  <cd:command category="fonts" file="font-pre.mkiv" level="style" name="uppercasing"/>
+  <cd:command category="fonts" file="font-pre.mkiv" level="style" name="lowercasing"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="tinyfont"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="infofont"/>
   <cd:command category="fonts" file="font-pre.mkiv" level="style" name="infofontbold"/>
@@ -13416,6 +13605,44 @@
    <cd:arguments>
     <cd:keywords list="yes">
      <cd:constant type="cd:path"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="hand-ini.mkx" level="style" name="defineexpansion">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:inherit name="setupexpansion"/>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="hand-ini.mkx" level="style" name="setupexpansion">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:parameter name="step">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="stretch">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="shrink">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="fonts" file="font-ini.mkvi" level="style" name="setexpansion">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -14740,6 +14967,11 @@
      <cd:parameter name="color">
       <cd:constant type="cd:color"/>
      </cd:parameter>
+     <cd:parameter name="cmyk">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="auto"/>
+     </cd:parameter>
      <cd:parameter name="arguments">
       <cd:constant type="cd:text"/>
      </cd:parameter>
@@ -14895,6 +15127,16 @@
      <cd:parameter name="ownerpassword">
       <cd:constant type="cd:text"/>
      </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="graphics" file="grph-inc.mkvi" level="style" name="setupexternalfigures">
+   <cd:arguments>
+    <cd:keywords list="yes" optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:assignments list="yes">
+     <cd:inherit name="setupexternalfigure"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -15233,6 +15475,30 @@
     <cd:keywords delimiters="braces">
      <cd:constant type="cd:file"/>
     </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="graphics" file="grph-inc.mkiv" level="document" name="includesvgfile">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:file"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:parameter name="offset">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+    </cd:assignments>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="graphics" file="grph-inc.mkiv" level="document" name="includesvgbuffer">
+   <cd:arguments>
+    <cd:keywords>
+     <cd:constant type="cd:buffer"/>
+    </cd:keywords>
+    <cd:assignments list="yes" optional="yes">
+     <cd:parameter name="offset">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+    </cd:assignments>
    </cd:arguments>
   </cd:command>
  </cd:interface>
@@ -15826,6 +16092,29 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
+  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacebefore"/>
+  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspaceafter"/>
+  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacesbefore">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspacesafter">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="whitespace" file="spac/hor.mkiv" level="system" name="interwordspaces">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
  </cd:interface>
  <cd:interface file="i-hyphenation.xml">
   <cd:command category="language" file="lang-hyp.mkiv" level="style" name="setuphyphenation">
@@ -15856,7 +16145,7 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="language" file="lang-hyp.mkiv" level="style" name="definehypenationfeatures">
+  <cd:command category="language" file="lang-hyp.mkiv" level="style" name="definehyphenationfeatures">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -21048,10 +21337,11 @@
      <cd:parameter name="pagecommand">
       <cd:constant type="cd:oneargument"/>
      </cd:parameter>
-     <cd:parameter name="pagenumber">
+     <cd:parameter list="yes" name="pagenumber">
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
       <cd:constant type="always"/>
+      <cd:constant type="realpage"/>
      </cd:parameter>
      <cd:parameter name="headnumber">
       <cd:constant default="yes" type="yes"/>
@@ -21625,11 +21915,15 @@
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKII"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKIV"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKVI"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKXL"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKLX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKIX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MKXI"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPII"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPIV"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPVI"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPXL"/>
+  <cd:command category="symbols" file="cont-log.mkiv" level="document" name="MPLX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PPCHTeX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PPCHTEX"/>
   <cd:command category="symbols" file="cont-log.mkiv" level="document" name="PRAGMA"/>
@@ -22103,6 +22397,76 @@
    <cd:sequence>
     <cd:variable value="ctxfunction"/>
    </cd:sequence>
+  </cd:command>
+ </cd:interface>
+ <cd:interface file="i-luatable.xml">
+  <cd:command category="lua" file="cldf-int.mkxl" level="system" name="newluatable">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-int.mkxl" level="system" name="useluatable">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="disposeluatable">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="inspectluatable">
+   <cd:arguments>
+    <cd:csname/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="showluatables"/>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="setluatable">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:content/>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="getfromluatable">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:key"/>
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-lmt.lua" level="system" name="idxfromluatable">
+   <cd:arguments>
+    <cd:csname/>
+    <cd:keywords delimiters="none">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-int.mkxl" level="system" name="setdatavalue">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:number"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-int.mkxl" level="system" name="getdatavalue">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
+  </cd:command>
+  <cd:command category="lua" file="cldf-int.mkxl" level="system" name="thedatavalue">
+   <cd:arguments>
+    <cd:keywords delimiters="braces">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+   </cd:arguments>
   </cd:command>
  </cd:interface>
  <cd:interface file="i-makeup.xml">
@@ -22643,6 +23007,7 @@
     <cd:keywords optional="yes">
      <cd:constant default="yes" type="page"/>
      <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:keywords optional="yes">
      <cd:constant type="first"/>
@@ -22736,6 +23101,7 @@
     <cd:keywords>
      <cd:constant type="page"/>
      <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:keywords>
      <cd:constant type="first"/>
@@ -22765,6 +23131,7 @@
     <cd:keywords>
      <cd:constant type="page"/>
      <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
     <cd:keywords>
      <cd:constant type="first"/>
@@ -22794,6 +23161,7 @@
     <cd:keywords>
      <cd:constant type="page"/>
      <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -22805,6 +23173,7 @@
     <cd:keywords>
      <cd:constant type="page"/>
      <cd:constant type="cd:name"/>
+     <cd:constant type="cd:number"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -22924,9 +23293,9 @@
       <cd:constant type="normal"/>
      </cd:parameter>
      <cd:parameter name="collapsing">
-      <cd:constant type="1"/>
+      <cd:constant default="yes" type="1"/>
       <cd:constant type="2"/>
-      <cd:constant default="yes" type="3"/>
+      <cd:constant type="3"/>
       <cd:constant type="none"/>
       <cd:constant type="reset"/>
      </cd:parameter>
@@ -24769,14 +25138,40 @@
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="style" name="MPdefinitions" type="environment">
    <cd:arguments>
     <cd:keywords delimiters="braces" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="style" name="MPextensions" type="environment">
    <cd:arguments>
     <cd:keywords delimiters="braces" list="yes" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24787,7 +25182,20 @@
      <cd:constant type="+"/>
     </cd:keywords>
     <cd:keywords delimiters="braces" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -24797,7 +25205,20 @@
      <cd:constant type="+"/>
     </cd:keywords>
     <cd:keywords delimiters="braces" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
     <cd:content/>
    </cd:arguments>
@@ -24823,6 +25244,7 @@
     <cd:assignments list="yes">
      <cd:parameter name="format">
       <cd:constant default="yes" type="metafun"/>
+      <cd:constant type="minifun"/>
       <cd:constant type="mpost"/>
      </cd:parameter>
      <cd:parameter name="initializations">
@@ -25110,14 +25532,40 @@
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="document" name="MPcode" type="environment">
    <cd:arguments>
     <cd:keywords delimiters="braces" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
   <cd:command category="graphics metapost" file="meta-ini.mkiv" level="document" name="MPcode">
    <cd:arguments>
     <cd:keywords delimiters="braces" optional="yes">
-     <cd:constant type="cd:name"/>
+     <cd:constant type="metafun"/>
+     <cd:constant type="minifun"/>
+     <cd:constant type="extrafun"/>
+     <cd:constant type="lessfun"/>
+     <cd:constant type="doublefun"/>
+     <cd:constant type="binaryfun"/>
+     <cd:constant type="decimalfun"/>
+     <cd:constant type="mprun"/>
+     <cd:constant type="metapost"/>
+     <cd:constant type="nofun"/>
+     <cd:constant type="doublepost"/>
+     <cd:constant type="binarypost"/>
+     <cd:constant type="decimalpost"/>
+     <cd:constant type="simplefun"/>
     </cd:keywords>
     <cd:content/>
    </cd:arguments>
@@ -26848,6 +27296,9 @@
      <cd:parameter name="compressdistance">
       <cd:constant type="cd:dimension"/>
      </cd:parameter>
+     <cd:parameter name="compressstopper">
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
      <cd:inherit name="setupnote"/>
     </cd:assignments>
    </cd:arguments>
@@ -27571,6 +28022,7 @@
      <cd:constant type="lastpage"/>
      <cd:constant type="start"/>
      <cd:constant type="stop"/>
+     <cd:constant type="xy"/>
     </cd:keywords>
    </cd:arguments>
   </cd:command>
@@ -27602,6 +28054,7 @@
      <cd:constant type="lastpage"/>
      <cd:constant type="start"/>
      <cd:constant type="stop"/>
+     <cd:constant type="xy"/>
      <cd:constant type="cd:name"/>
     </cd:keywords>
    </cd:arguments>
@@ -33840,6 +34293,33 @@
       <cd:constant type="-"/>
       <cd:constant type="cd:text"/>
      </cd:parameter>
+     <cd:parameter name="labelalternative">
+      <cd:constant type="inleftmargin"/>
+      <cd:constant type="inrightmargin"/>
+      <cd:constant type="inoutermargin"/>
+      <cd:constant type="ininnermargin"/>
+      <cd:constant type="inleftedge"/>
+      <cd:constant type="inrightedge"/>
+      <cd:constant type="inouteredge"/>
+      <cd:constant type="ininneredge"/>
+      <cd:constant type="atleftmargin"/>
+      <cd:constant type="atrightmargin"/>
+      <cd:constant type="inleft"/>
+      <cd:constant type="inright"/>
+      <cd:constant type="inouter"/>
+      <cd:constant type="ininner"/>
+      <cd:constant type="inmargin"/>
+      <cd:constant type="inother"/>
+      <cd:constant type="margintext"/>
+      <cd:constant type="cd:name"/>
+     </cd:parameter>
+     <cd:parameter name="labelstyle">
+      <cd:constant type="cd:style"/>
+      <cd:constant type="cd:command"/>
+     </cd:parameter>
+     <cd:parameter name="labelcolor">
+      <cd:constant type="cd:color"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -37987,7 +38467,18 @@
   <cd:command category="structure layout" file="page-smp.mkiv" level="system" name="simplecolumns" type="environment">
    <cd:arguments>
     <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setsimplecolumnshsize"/>
+     <cd:parameter name="n">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="width">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="distance">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="lines">
+      <cd:constant type="cd:number"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -43654,6 +44145,7 @@
   <cd:command file="syst-aux.mkiv" level="system" name="resettimer"/>
   <cd:command file="syst-aux.mkiv" level="system" name="elapsedtime"/>
   <cd:command file="syst-aux.mkiv" level="system" name="elapsedseconds"/>
+  <cd:command file="syst-aux.mkiv" level="system" name="elapsedsteptime"/>
   <cd:command file="syst-aux.mkiv" level="system" name="currentfeaturetest"/>
   <cd:command file="syst-aux.mkiv" level="system" name="testfeature">
    <cd:arguments>
@@ -43663,6 +44155,7 @@
     <cd:content/>
    </cd:arguments>
   </cd:command>
+  <cd:command file="syst-aux.mkiv" level="system" name="retestfeature"/>
   <cd:command file="syst-aux.mkiv" level="system" name="showtimer">
    <cd:arguments>
     <cd:keywords delimiters="braces">
@@ -44155,7 +44648,7 @@
   </cd:command>
  </cd:interface>
  <cd:interface file="i-tabulation.xml">
-  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="definetabulation">
+  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="definetabulate">
    <cd:arguments>
     <cd:keywords>
      <cd:constant type="cd:name"/>
@@ -44163,14 +44656,15 @@
     <cd:keywords optional="yes">
      <cd:constant type="cd:name"/>
     </cd:keywords>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setuptabulation"/>
-    </cd:assignments>
+    <cd:template optional="yes"/>
    </cd:arguments>
   </cd:command>
-  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="setuptabulation">
+  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="setuptabulate">
    <cd:arguments>
-    <cd:keywords list="yes" optional="yes">
+    <cd:keywords optional="yes">
+     <cd:constant type="cd:name"/>
+    </cd:keywords>
+    <cd:keywords optional="yes">
      <cd:constant type="cd:name"/>
     </cd:keywords>
     <cd:assignments list="yes">
@@ -44319,43 +44813,6 @@
       <cd:constant default="yes" type="yes"/>
       <cd:constant type="no"/>
      </cd:parameter>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="tables" file="tabl-tbl.mkiv" generated="yes" level="document" name="tabulation" type="environment" variant="example">
-   <cd:sequence>
-    <cd:variable value="tabulation"/>
-   </cd:sequence>
-   <cd:arguments>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes" optional="yes">
-     <cd:inherit name="setuptabulation"/>
-    </cd:assignments>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="definetabulate">
-   <cd:arguments>
-    <cd:keywords>
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:template optional="yes"/>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="tables" file="tabl-tbl.mkiv" level="style" name="setuptabulate">
-   <cd:arguments>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:keywords optional="yes">
-     <cd:constant type="cd:name"/>
-    </cd:keywords>
-    <cd:assignments list="yes">
-     <cd:inherit name="setuptabulation"/>
     </cd:assignments>
    </cd:arguments>
   </cd:command>

@@ -144,6 +144,7 @@ local treeroot          = tree
 local treehash          = { }
 local extras            = { }
 local checks            = { }
+local fixes             = { }
 local finalizers        = { }
 local nofbreaks         = 0
 local used              = { }
@@ -699,6 +700,35 @@ do
             local kind = hash.kind
             if kind and kind ~= "" then
                 setattribute(di,"kind",kind)
+            end
+        end
+    end
+
+end
+
+do
+
+    function fixes.linenumber(di,data,i)
+        local ni = data[i+1]
+        if ni and ni.data then
+            while true do
+                local d = ni.data[1]
+                if d then
+                    local e = d.element
+                    if e then
+                        if e == "line" or e == "verbatimline" then
+                            table.insert(d.data,1,di)
+                            data[i] = false
+                            return
+                        else
+                            ni = d
+                        end
+                    else
+                        return
+                    end
+                else
+                    return
+                end
             end
         end
     end
@@ -2305,8 +2335,10 @@ do
                 if not p then
                     -- skip
                 elseif exportproperties == v_yes then
+                    n = n + 1
                     r[n] = attributes(p)
                 else
+                    n = n + 1
                     r[n] = properties(p)
                 end
             end
@@ -2574,9 +2606,12 @@ do
     -- also tabulaterow reconstruction .. maybe better as a checker
     -- i.e cell attribute
 
-    local function collapsetree()
-        for tag, trees in next, treehash do
+    local function collapsetree(tree)
+        for tag, trees in sortedhash(treehash) do
+--         for tag, trees in next, treehash do
             local d = trees[1].data
+-- print("!!!!!!!!",tag)
+-- inspect(trees)
             if d then
                 local nd = #d
                 if nd > 0 then
@@ -2630,10 +2665,22 @@ do
         end
     end
 
+ -- local function showtree(data,when,where)
+ --     if data then
+ --         for i=1,#data do
+ --             local d = data[i]
+ --             if type(d) == "table" and d.element then
+ --                 print(when,where,i,d.element,d.parnumber or 0)
+ --             end
+ --         end
+ --     end
+ -- end
+
     local function indextree(tree)
         local data = tree.data
         if data then
             local n, new = 0, { }
+         -- showtree(data,"before","index")
             for i=1,#data do
                 local d = data[i]
                 if not d then
@@ -2650,22 +2697,43 @@ do
                 end
             end
             tree.data = new
+         -- showtree(new,"after","index")
         end
     end
 
     local function checktree(tree)
         local data = tree.data
         if data then
+         -- showtree(data,"before","check")
             for i=1,#data do
                 local d = data[i]
                 if type(d) == "table" then
                     local check = checks[d.tg]
                     if check then
-                        check(d)
+                        check(d,data,i)
                     end
                     checktree(d) -- so parts can pass twice
                 end
             end
+         -- showtree(data,"after","check")
+        end
+    end
+
+    local function fixtree(tree)
+        local data = tree.data
+        if data then
+         -- showtree(data,"before","fix")
+            for i=1,#data do
+                local d = data[i]
+                if type(d) == "table" then
+                    local fix = fixes[d.tg]
+                    if fix then
+                        fix(d,data,i)
+                    end
+                    fixtree(d) -- so parts can pass twice
+                end
+            end
+         -- showtree(data,"after","fix")
         end
     end
 
@@ -2675,6 +2743,7 @@ do
     wrapups.finalizetree = finalizetree
     wrapups.indextree    = indextree
     wrapups.checktree    = checktree
+    wrapups.fixtree      = fixtree
 
 end
 
@@ -3828,6 +3897,7 @@ local htmltemplate = [[
         end
         report_export("")
         --
+        wrapups.fixtree(tree)
         wrapups.collapsetree(tree)
         wrapups.indextree(tree)
         wrapups.checktree(tree)

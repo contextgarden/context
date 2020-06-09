@@ -427,10 +427,8 @@
 
 \unexpanded\def\math_set_font_style_alternate#1%
   {\ifcsname\??mathstylealternative\fontclass:#1\endcsname
-    %\expandafter\math_set_font_alternate\csname\??mathstylealternate\fontclass:#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
    \orelse\ifcsname\??mathstylealternative#1\endcsname
-    %\expandafter\math_set_font_alternate\csname\??mathstylealternate#1\endcsname
      \expandafter\math_set_font_alternate\lastnamedcs
    \fi}
 
@@ -719,15 +717,15 @@
 
 \unexpanded\def\math_strut_normal
   {\vrule
-      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
       \s!width \zeropoint
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
    \relax}
 
 \unexpanded\def\math_strut_visual
   {\hskip-.01\emwidth
    \vrule
-      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
       \s!width .02\emwidth
+      \normalexpanded{\math_strut_htdp{\mathstylefont\normalmathstyle}}%
    \relax
    \hskip-.01\emwidth}
 

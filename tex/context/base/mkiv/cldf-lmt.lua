@@ -6,45 +6,52 @@ if not modules then modules = { } end modules ['cldf-lmt'] = {
     license   = "see context related readme files"
 }
 
-local random       = math.random
-local randomseed   = math.randomseed
-local round        = math.round
-local abs          = math.abs
+local next, load = next, load
 
-local scanners     = tokens.scanners
-local scanword     = scanners.word
-local scanstring   = scanners.string
-local scanboolean  = scanners.boolean
-local scandimen    = scanners.dimen
-local scanfloat    = scanners.float
-local scancount    = scanners.integer
-local scaninteger  = scanners.luainteger
-local scancardinal = scanners.luacardinal
-local scannumber   = scanners.luanumber
-local scanargument = scanners.argument
-local scantoken    = scanners.token
-local getindex     = token.get_index
-local texsetdimen  = tex.setdimen
+local setmetatableindex = table.setmetatableindex
+local serialize         = table.serialize
 
-local values         = tokens.values
-local none_code      = values.none
-local integer_code   = values.integer
-local cardinal_code  = values.cardinal
-local dimension_code = values.dimension
-local skip_code      = values.skip
-local boolean_code   = values.boolean
-local float_code     = values.float
+local random            = math.random
+local randomseed        = math.randomseed
+local round             = math.round
+local abs               = math.abs
 
-local context      = context
+local implement         = interfaces.implement
+
+local scanners          = tokens.scanners
+local scanword          = scanners.word
+local scanstring        = scanners.string
+local scanboolean       = scanners.boolean
+local scandimen         = scanners.dimen
+local scanfloat         = scanners.float
+local scancount         = scanners.integer
+local scaninteger       = scanners.luainteger
+local scancardinal      = scanners.luacardinal
+local scannumber        = scanners.luanumber
+local scanargument      = scanners.argument
+local scantoken         = scanners.token
+local getindex          = token.get_index
+local texsetdimen       = tex.setdimen
+
+local values            = tokens.values
+local none_code         = values.none
+local integer_code      = values.integer
+local cardinal_code     = values.cardinal
+local dimension_code    = values.dimension
+local skip_code         = values.skip
+local boolean_code      = values.boolean
+local float_code        = values.float
+
+local context           = context
+
+-- variables --
 
 local floats    = { }
 local integers  = { }
 local cardinals = { }
 local numbers   = { }
 
--- variables --
-
-interfaces.implement {
+implement {
     name      = "luafloat",
     public    = true,
     value     = true,
@@ -59,7 +66,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luainteger",
     public    = true,
     value     = true,
@@ -73,7 +80,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luacount",
     public    = true,
     value     = true,
@@ -87,7 +94,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luadimen",
     public    = true,
     value     = true,
@@ -101,7 +108,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luacardinal",
     public    = true,
     value     = true,
@@ -115,7 +122,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luanumber",
     public    = true,
     value     = true,
@@ -130,7 +137,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "luarandom",
     public    = true,
     value     = true,
@@ -159,7 +166,7 @@ interfaces.arrays = arrays
 
 local newindex = lua.newindex
 
-interfaces.implement {
+implement {
     name      = "newarray",
     public    = true,
     protected = true,
@@ -220,7 +227,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "arrayvalue",
     public    = true,
     value     = true,
@@ -252,7 +259,7 @@ interfaces.implement {
 }
 
 
-interfaces.implement {
+implement {
     name      = "arrayequals",
     public    = true,
     value     = true,
@@ -276,7 +283,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "arraycompare",
     public    = true,
     value     = true,
@@ -308,7 +315,7 @@ interfaces.implement {
     end,
 }
 
-interfaces.implement {
+implement {
     name      = "showarray",
     public    = true,
     protected = true,
@@ -334,7 +341,7 @@ end)
 
 table.makeweak(cache)
 
-interfaces.implement {
+implement {
     name    = "luaexpression",
     public  = true,
     actions = function()
@@ -367,7 +374,7 @@ interfaces.implement {
 
 local dimenfactors = number.dimenfactors
 
-interfaces.implement {
+implement {
     name      = "nodimen",
     public    = true,
     value     = true,
@@ -396,4 +403,207 @@ interfaces.implement {
             end
         end
     end,
+}
+
+-- experimental:
+
+local grouped    = { }
+local slots      = { }
+local nofslots   = 0
+local nofgrouped = 0
+
+local getdata = tokens.getdata
+local setdata = tokens.setdata
+
+local report = logs.reporter("lua table")
+
+----- ctxsprint = context.sprint
+
+-- we could have an extra one that collects all end of grouped actions
+-- so that we dispose more in one go but it doesn's pay off
+
+local function newluatable(name,mt,dispose)
+    local g = { }
+    local t = slots[nofslots]
+    slots[nofslots] = false
+    nofslots = nofslots - 1
+    if not t then
+        nofgrouped = nofgrouped + 1
+        t = nofgrouped
+    end
+    if mt then
+        mt = getdata(name)
+        if mt then
+            mt = grouped[mt]
+            if mt then
+                setmetatableindex(g,mt)
+            end
+        end
+    end
+    grouped[t] = g
+    setdata(name,t)
+    -- This is the slow part. Doing this at the TeX end saved 10% runtime. I'll
+    -- think of something that we can set it at the Lua end.
+    if dispose then
+        ctxsprint("\\atendofgrouped{\\disposeluatable\\" .. name .. "}")
+    end
+end
+
+local function disposeluatable(name)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g then
+        grouped[t] = false
+        nofslots = nofslots + 1
+        slots[nofslots] = t
+    end
+end
+
+local function setluatable(name,kv)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g and kv then
+        for k, v in next, kv do
+            g[k] = v
+        end
+    end
+end
+
+local function getfromluatable(name,k)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g then
+        local v = g[k]
+        if v then
+            context(v)
+        else
+            local n = tonumber(k)
+            if n then
+                local v = g[n]
+                if v then
+                    context(v)
+                end
+            end
+        end
+    end
+end
+
+local function idxfromluatable(name,k)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g then
+        local v = g[k]
+        if v then
+            context(v)
+        end
+    end
+end
+
+local function getluatable(name,k)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g then
+        return g
+    end
+end
+
+local function inspectluatable(name)
+    local t = getdata(name)
+    local g = grouped[t]
+    if g then
+        report("%s", serialize(g,'[grouped slot ' .. t .. ']'))
+    end
+end
+
+local function showluatables()
+    report("nofgrouped %i, nofslots %i",nofgrouped,nofslots)
+    for t=1,nofgrouped do
+        local g = grouped[t]
+        if g then
+            report("%s", serialize(g,'[grouped slot ' .. t .. ']'))
+        end
+    end
+end
+
+implement {
+    name      = "newluatable",
+    protected = true,
+ -- public    = true,
+    arguments = { "csname" },
+    actions   = newluatable,
+}
+
+implement {
+    name      = "useluatable",
+    protected = true,
+ -- public    = true,
+    arguments = { "csname", true },
+    actions   = newluatable,
+}
+
+implement {
+    name      = "disposeluatable",
+    protected = true,
+    public    = true,
+    arguments = { "csname" },
+    actions   = disposeluatable,
+}
+
+implement {
+    name      = "inspectluatable",
+    protected = true,
+    public    = true,
+    arguments = { "csname" },
+    actions   = inspectluatable,
+}
+
+implement {
+    name      = "showluatables",
+    protected = true,
+    public    = true,
+    actions   = showluatables,
+}
+
+implement {
+    name      = "setluatable",
+    protected = true,
+    public    = true,
+    arguments = { "csname", "argument" },
+    actions   = function(name,data)
+        data = load("return {" .. data .. "}")
+        if data then
+            data = data()
+            if data then
+                setluatable(name,data)
+            end
+        end
+    end
+}
+
+implement {
+    name      = "getfromluatable",
+    protected = false,
+    public    = true,
+    arguments = { "csname", "argument" },
+    actions   = getfromluatable,
+}
+
+implement {
+    name      = "idxfromluatable",
+    protected = false,
+    public    = true,
+    arguments = { "csname", "integer" },
+    actions   = idxfromluatable,
+}
+
+context.luatables = {
+    new     = function(name) newluatable(name,false,true) end,
+    use     = function(name) useluatable(name,true, true) end,
+    dispose = disposeluatable,
+    set     = setluatable,
+    get     = getluatable,
+    getfrom = getfromluatable,
+    idxfrom = idxfromluatable,
+    inspect = inspectluatable,
+    show    = showluatables,
 }

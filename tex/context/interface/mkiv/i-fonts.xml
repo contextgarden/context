@@ -292,7 +292,11 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
-                <cd:parameter name="cd:name">
+                <cd:parameter name="uppercasing">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="lowercasing">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
@@ -300,6 +304,13 @@
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="blockligatures">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="metapost">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="cd:name">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
@@ -1116,6 +1127,12 @@
 
     <cd:command name="setsuperiors" level="style" category="fonts" file="font-pre.mkiv"/>
 
+    <cd:command name="setfractions" level="style" category="fonts" file="font-pre.mkiv"/>
+
+    <cd:command name="uppercasing" level="style" category="fonts" file="font-pre.mkiv"/>
+
+    <cd:command name="lowercasing" level="style" category="fonts" file="font-pre.mkiv"/>
+
     <cd:command name="tinyfont" level="style" category="fonts" file="font-pre.mkiv"/>
 
     <cd:command name="infofont" level="style" category="fonts" file="font-pre.mkiv"/>
@@ -1750,6 +1767,39 @@
     <cd:command name="addfontpath" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-path-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineexpansion" level="style" category="fonts" file="hand-ini.mkx">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupexpansion"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+            
+    <cd:command name="setupexpansion" level="style" category="fonts" file="hand-ini.mkx">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="step">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="shrink">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setexpansion" level="style" category="fonts" file="font-ini.mkvi">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 

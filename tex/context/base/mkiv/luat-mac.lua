@@ -30,36 +30,89 @@ local report_macros = logs.reporter("interface","macros")
 
 local stack, top, n, hashes = { }, nil, 0, { }
 
+-- local function set(s)
+--     if top then
+--         n = n + 1
+--         if n > 9 then
+--             report_macros("number of arguments > 9, ignoring %s",s)
+--         else
+--             local ns = #stack
+--             local h = hashes[ns]
+--             if not h then
+--                 h = rep("#",2^(ns-1))
+--                 hashes[ns] = h
+--             end
+--             if s == "ignore" then
+--                 top[s] = ""
+--                 return h .. "0"
+--             else
+--                 local m = h .. n
+--                 top[s] = m
+--                 return m
+--             end
+--         end
+--     end
+-- end
+
+-- local function get(s)
+--     if s == "ignore" then
+--         return ""
+--     else
+--         if not top then
+--             report_macros("keeping #%s, no stack",s)
+--             return "#" .. s -- can be lua
+--         end
+--         local m = top[s]
+--         if m then
+--             return m
+--         else
+--             report_macros("keeping #%s, not on stack",s)
+--             return "#" .. s -- quite likely an error
+--         end
+--     end
+-- end
+
 local function set(s)
     if top then
-        n = n + 1
-        if n > 9 then
-            report_macros("number of arguments > 9, ignoring %s",s)
+        local ns = #stack
+        local h = hashes[ns]
+        if not h then
+            h = rep("#",2^(ns-1))
+            hashes[ns] = h
+        end
+        if s == "ignore" then
+            return h .. "-"
         else
-            local ns = #stack
-            local h = hashes[ns]
-            if not h then
-                h = rep("#",2^(ns-1))
-                hashes[ns] = h
+            n = n + 1
+            if n > 9 then
+                report_macros("number of arguments > 9, ignoring %s",s)
+            elseif s == "discard" then
+                top[s] = ""
+                return h .. "0"
+            else
+                local m = h .. n
+                top[s] = m
+                return m
             end
-            local m = h .. n
-            top[s] = m
-            return m
         end
     end
 end
 
 local function get(s)
-    if not top then
-        report_macros("keeping #%s, no stack",s)
-        return "#" .. s -- can be lua
-    end
-    local m = top[s]
-    if m then
-        return m
+    if s == "ignore" or s == "discard" then
+        return ""
     else
-        report_macros("keeping #%s, not on stack",s)
-        return "#" .. s -- quite likely an error
+        if not top then
+            report_macros("keeping #%s, no stack",s)
+            return "#" .. s -- can be lua
+        end
+        local m = top[s]
+        if m then
+            return m
+        else
+            report_macros("keeping #%s, not on stack",s)
+            return "#" .. s -- quite likely an error
+        end
     end
 end
 
@@ -336,6 +389,8 @@ end
 -- ]]))
 
 -- print(macros.preprocessed([[\checked \def \bla #bla{bla#{bla}}]]))
+-- print(macros.preprocessed([[\checked \def \bla #bla#discard#foo{bla#{bla}+#ignore+bla#foo}]]))
+-- print(macros.preprocessed([[\checked \def \bla #bla#ignore#foo{bla#{bla}+#ignore+bla#foo}]]))
 -- print(macros.preprocessed([[\def\bla#bla{#{bla}bla}]]))
 -- print(macros.preprocessed([[\def\blä#{blá}{blà:#{blá}}]]))
 -- print(macros.preprocessed([[\def\blä#bla{blà:#bla}]]))

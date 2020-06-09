@@ -168,6 +168,10 @@
 %D manual does less than 6000 assignments and the payoff starts around a tenfold of
 %D that. But \unknown\ it's less tracing, so that's another benefit.
 
+%D Watch out: we accept that a \[k=v,,k=v] will generate a case where a key can become
+%D a comma and trigger a warning but we intercept that elsewhere. The alternative is
+%D to skip to the comma first which takes more time.
+
 \let\m_mult_interfaces_namespace\empty
 
 \def\mult_interfaces_get_parameters#1[#2%
@@ -201,8 +205,11 @@
      \mult_interfaces_adef\m_mult_interfaces_namespace{#1}{#2}%
    \fi}
 
-\def\mult_interfaces_get_parameters_item_error#0#0#0#4#5%
-  {\mult_interfaces_get_parameters_error_indeed{#4}{#5}}
+% \def\mult_interfaces_get_parameters_item_error#0#0#0#4#5%
+%   {\if,#5\else\mult_interfaces_get_parameters_error_indeed{#4}{#5}\fi}
+
+\def\mult_interfaces_get_parameters_item_error#-#-#-#1#2%
+  {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
 
 \startinterface english
 
@@ -215,18 +222,27 @@
          \expandafter\def\csname\m_mult_interfaces_namespace#1\endcsname{#2}%
        \fi}
 
-    \def\mult_interfaces_get_parameters_item_error#0\csname#2#3\endcsname#0%
-      {\mult_interfaces_get_parameters_error_indeed{#2}{#3}}
+%     \def\mult_interfaces_get_parameters_item_error#0\csname#2#3\endcsname#0%
+%       {\if,#3\else\mult_interfaces_get_parameters_error_indeed{#2}{#3}\fi}
+
+    \def\mult_interfaces_get_parameters_item_error#-\csname#1#2\endcsname#-%
+      {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
 
 \stopinterface
 
 %D Used?
 
-\def\mult_check_for_assignment_indeed#0=#2#0^^^^0004%
-  {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+% \def\mult_check_for_assignment_indeed#0=#2#0^^^^0004%
+%   {\if#2^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+%
+% \def\mult_check_for_assignment_indeed_begin_#0=#2#0^^^^0004%
+%   {\if#2^^^^0003}
 
-\def\mult_check_for_assignment_indeed_begin_#0=#2#0^^^^0004%
-  {\if#2^^^^0003}
+\def\mult_check_for_assignment_indeed#-=#1#-^^^^0004%
+  {\if#1^^^^0003\assignmentfalse\else\assignmenttrue\fi}
+
+\def\mult_check_for_assignment_indeed_begin_#-=#1#-^^^^0004%
+  {\if#1^^^^0003}
 
 \def\mult_check_for_assignment#1%
   {\expandafter\mult_check_for_assignment_indeed\detokenize{#1}=^^^^0003^^^^0003^^^^0004}

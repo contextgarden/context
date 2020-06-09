@@ -565,4 +565,33 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
+    <!-- * INSTANCE -->
+
+    <cd:define name="argument-instance">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-instance"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-instance-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:resolve name="value-instance"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-instance-list">
+        <cd:keywords delimiters="braces" list="yes">
+            <cd:resolve name="value-instance"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-instance-list-optional">
+        <cd:keywords delimiters="braces" list="yes" optional="yes">
+            <cd:resolve name="value-instance"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

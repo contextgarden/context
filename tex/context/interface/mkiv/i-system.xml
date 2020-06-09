@@ -3425,6 +3425,8 @@
 
     <cd:command name="elapsedseconds" level="system" file="syst-aux.mkiv"/>
 
+    <cd:command name="elapsedsteptime" level="system" file="syst-aux.mkiv"/>
+
     <cd:command name="currentfeaturetest" level="system" file="syst-aux.mkiv"/>
 
     <cd:command name="testfeature" level="system" file="syst-aux.mkiv">
@@ -3433,6 +3435,8 @@
             <cd:content/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="retestfeature" level="system" file="syst-aux.mkiv"/>
 
     <cd:command name="showtimer" level="system" file="syst-aux.mkiv">
         <cd:arguments>

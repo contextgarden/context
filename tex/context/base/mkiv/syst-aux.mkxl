@@ -201,21 +201,37 @@
 %D is more efficient but it probably won't be noticed. It's anyway cheaper on memory
 %D access.
 
-\def\gobbleoneargument               #0{}
-\def\gobbletwoarguments            #0#0{}
-\def\gobblethreearguments        #0#0#0{}
-\def\gobblefourarguments       #0#0#0#0{}
-\def\gobblefivearguments       #0#0#0#0{}
-\def\gobblesixarguments        #0#0#0#0{}
-\def\gobblesevenarguments    #0#0#0#0#0{}
-\def\gobbleeightarguments  #0#0#0#0#0#0{}
-\def\gobbleninearguments #0#0#0#0#0#0#0{}
+% \def\gobbleoneargument               #0{}
+% \def\gobbletwoarguments            #0#0{}
+% \def\gobblethreearguments        #0#0#0{}
+% \def\gobblefourarguments       #0#0#0#0{}
+% \def\gobblefivearguments       #0#0#0#0{}
+% \def\gobblesixarguments        #0#0#0#0{}
+% \def\gobblesevenarguments    #0#0#0#0#0{}
+% \def\gobbleeightarguments  #0#0#0#0#0#0{}
+% \def\gobbleninearguments #0#0#0#0#0#0#0{}
+%
+% \def\gobbleoneoptional   [#0]{}
+% \def\gobbletwooptionals  [#0][#0]{}
+% \def\gobblethreeoptionals[#0][#0][#0]{}
+% \def\gobblefouroptionals [#0][#0][#0][#0]{}
+% \def\gobblefiveoptionals [#0][#0][#0][#0][#0]{}
 
-\def\gobbleoneoptional   [#0]{}
-\def\gobbletwooptionals  [#0][#0]{}
-\def\gobblethreeoptionals[#0][#0][#0]{}
-\def\gobblefouroptionals [#0][#0][#0][#0]{}
-\def\gobblefiveoptionals [#0][#0][#0][#0][#0]{}
+\def\gobbleoneargument               #-{}
+\def\gobbletwoarguments            #-#-{}
+\def\gobblethreearguments        #-#-#-{}
+\def\gobblefourarguments       #-#-#-#-{}
+\def\gobblefivearguments       #-#-#-#-{}
+\def\gobblesixarguments        #-#-#-#-{}
+\def\gobblesevenarguments    #-#-#-#-#-{}
+\def\gobbleeightarguments  #-#-#-#-#-#-{}
+\def\gobbleninearguments #-#-#-#-#-#-#-{}
+
+\def\gobbleoneoptional   [#-]{}
+\def\gobbletwooptionals  [#-][#-]{}
+\def\gobblethreeoptionals[#-][#-][#-]{}
+\def\gobblefouroptionals [#-][#-][#-][#-]{}
+\def\gobblefiveoptionals [#-][#-][#-][#-][#-]{}
 
 %D Reserved macros for tests:
 
@@ -621,31 +637,65 @@
 %D These are normally only used for keywords, i.e.\ strings so we can delegate
 %D the work to \LUA:
 
-% \unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
-% \unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
-% \unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
+\unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
+\unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
+\unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
 %          % \let\firstinset        \clf_firstinset
 
-\unexpanded\def\doifelseinset#1#2%
-  {\ifhasxtoks{,#1,}{,#2,}%
-    \expandafter\firstoftwoarguments
-   \else
-     \expandafter\secondoftwoarguments
-   \fi}
+% These don't accept spaces after commas:
+%
+% \unexpanded\def\doifelseinset#1#2%
+%   {\ifhasxtoks{,#1,}{,#2,}%
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\secondoftwoarguments
+%    \fi}
 
-\unexpanded\def\doifinset#1#2%
-  {\ifhasxtoks{,#1,}{,#2,}%
-     \expandafter\firstofoneargument
-   \else
-     \expandafter\gobbleoneargument
-   \fi}
+% \unexpanded\def\doifinset#1#2%
+%   {\ifhasxtoks{,#1,}{,#2,}%
+%      \expandafter\firstofoneargument
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi}
 
-\unexpanded\def\doifnotinset#1#2%
-  {\ifhasxtoks{,#1,}{,#2,}%
-     \expandafter\gobbleoneargument
-   \else
-     \expandafter\firstofoneargument
-   \fi}
+% \unexpanded\def\doifnotinset#1#2%
+%   {\ifhasxtoks{,#1,}{,#2,}%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \expandafter\firstofoneargument
+%    \fi}
+
+% But these do:
+
+\edef\a!comma{\expandtoken \ignorecatcode \commaasciicode}
+\edef\a!space{\expandtoken \ignorecatcode \spaceasciicode}
+
+\normalexpanded {
+
+    \unexpanded \def \noexpand \doifelseinset#1#2%
+      {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
+         \noexpand\expandafter\noexpand\firstoftwoarguments
+       \noexpand\else
+         \noexpand\expandafter\noexpand\secondoftwoarguments
+       \noexpand\fi}
+
+    \unexpanded \def \noexpand \doifinset#1#2%
+      {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
+         \noexpand\expandafter\noexpand\firstofoneargument
+       \noexpand\else
+         \noexpand\expandafter\noexpand\gobbleoneargument
+       \noexpand\fi}
+
+    \unexpanded \def \noexpand \doifnotinset#1#2%
+      {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
+         \noexpand\expandafter\noexpand\gobbleoneargument
+       \noexpand\else
+         \noexpand\expandafter\noexpand\firstofoneargument
+       \noexpand\fi}
+
+}
+
+%D Done.
 
 \let\doifinsetelse\doifelseinset
 
@@ -769,10 +819,15 @@
    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
    \popmacro\commalistcommand}
 
+% \let\syst_helpers_process_comma_item_next_a                                                            \syst_helpers_process_comma_item_next
+% \def\syst_helpers_process_comma_item_next_b#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
+% \def\syst_helpers_process_comma_item_next_c#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
+% \def\syst_helpers_process_comma_item_gobble#0\ignorearguments{}
+
 \let\syst_helpers_process_comma_item_next_a                                                            \syst_helpers_process_comma_item_next
-\def\syst_helpers_process_comma_item_next_b#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
-\def\syst_helpers_process_comma_item_next_c#0\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
-\def\syst_helpers_process_comma_item_gobble#0\ignorearguments{}
+\def\syst_helpers_process_comma_item_next_b#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_a}
+\def\syst_helpers_process_comma_item_next_c#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
+\def\syst_helpers_process_comma_item_gobble#-\ignorearguments{}
 
 \unexpanded\def\quitcommalist    {\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
 \unexpanded\def\quitprevcommalist{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_c}
@@ -1298,7 +1353,10 @@
      \fi
    \fi}
 
-\def\syst_helpers_raw_process_action_gobble#0\ignorearguments
+% \def\syst_helpers_raw_process_action_gobble#0\ignorearguments
+%   {}
+
+\def\syst_helpers_raw_process_action_gobble#-\ignorearguments
   {}
 
 \def\syst_helpers_raw_process_action_next
@@ -1483,10 +1541,16 @@
 \def\syst_helpers_grab_parameter_next
   {\expandafterspaces\syst_helpers_grab_parameter}
 
-\unexpanded\def\dogetparameters#1[#2]#0[#4]%
+% \unexpanded\def\dogetparameters#1[#2]#0[#4]%
+%   {\def\m_syst_parameter_n{#2}%
+%    \let\m_syst_parameter_s#1%
+%    \expandafterspaces\syst_helpers_grab_parameter#4\ignorearguments\ignorearguments}
+
+\unexpanded\def\dogetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
    \let\m_syst_parameter_s#1%
-   \expandafterspaces\syst_helpers_grab_parameter#4\ignorearguments\ignorearguments}
+   \expandafterspaces\syst_helpers_grab_parameter#3\ignorearguments\ignorearguments}
+
 
 %D \macros
 %D   {getemptyparameters}
@@ -1634,7 +1698,7 @@
 
 \def\commalistsize{0}
 
-\def\syst_helpers_get_comma_list_size#0,%
+\def\syst_helpers_get_comma_list_size#0,% no #- as we need to count
   {\ifarguments\or
      \advance\commalistcounter\plusone
      \expandafter\syst_helpers_get_comma_list_size
@@ -1665,7 +1729,9 @@
 
 %D Filters:
 
-\def\syst_helpers_gobble_comma_list#0\ignorearguments{}
+% \def\syst_helpers_gobble_comma_list#0\ignorearguments{}
+
+\def\syst_helpers_gobble_comma_list#-\ignorearguments{}
 
 \def\syst_helpers_get_from_comma_list#1,%
   {\ifarguments \or
@@ -2505,32 +2571,59 @@
 % \def\fifthofsixarguments #1#2#3#4#5#6{#5}
 % \def\sixthofsixarguments #1#2#3#4#5#6{#6}
 
+% \def\firstofoneargument            #1{#1}
+%
+% \def\firstoftwoarguments         #1#0{#1}
+% \def\secondoftwoarguments        #0#2{#2}
+%
+% \def\firstofthreearguments     #1#0#0{#1}
+% \def\secondofthreearguments    #0#2#0{#2}
+% \def\thirdofthreearguments     #0#0#3{#3}
+%
+% \def\firstoffourarguments    #1#0#0#0{#1}
+% \def\secondoffourarguments   #0#2#0#0{#2}
+% \def\thirdoffourarguments    #0#0#3#0{#3}
+% \def\fourthoffourarguments   #0#0#0#4{#4}
+%
+% \def\firstoffivearguments  #1#0#0#0#0{#1}
+% \def\secondoffivearguments #0#2#0#0#0{#2}
+% \def\thirdoffivearguments  #0#0#3#0#0{#3}
+% \def\fourthoffivearguments #0#0#0#4#0{#4}
+% \def\fifthoffivearguments  #0#0#0#0#5{#5}
+%
+% \def\firstofsixarguments #1#0#0#0#0#0{#1}
+% \def\secondofsixarguments#0#2#0#0#0#0{#2}
+% \def\thirdofsixarguments #0#0#3#0#0#0{#3}
+% \def\fourthofsixarguments#0#0#0#4#0#0{#4}
+% \def\fifthofsixarguments #0#0#0#0#5#0{#5}
+% \def\sixthofsixarguments #0#0#0#0#0#6{#6}
+
 \def\firstofoneargument            #1{#1}
 
-\def\firstoftwoarguments         #1#0{#1}
-\def\secondoftwoarguments        #0#2{#2}
+\def\firstoftwoarguments         #1#-{#1}
+\def\secondoftwoarguments        #-#1{#1}
 
-\def\firstofthreearguments     #1#0#0{#1}
-\def\secondofthreearguments    #0#2#0{#2}
-\def\thirdofthreearguments     #0#0#3{#3}
+\def\firstofthreearguments     #1#-#-{#1}
+\def\secondofthreearguments    #-#1#-{#1}
+\def\thirdofthreearguments     #-#-#1{#1}
 
-\def\firstoffourarguments    #1#0#0#0{#1}
-\def\secondoffourarguments   #0#2#0#0{#2}
-\def\thirdoffourarguments    #0#0#3#0{#3}
-\def\fourthoffourarguments   #0#0#0#4{#4}
+\def\firstoffourarguments    #1#-#-#-{#1}
+\def\secondoffourarguments   #-#1#-#-{#1}
+\def\thirdoffourarguments    #-#-#1#-{#1}
+\def\fourthoffourarguments   #-#-#-#1{#1}
 
-\def\firstoffivearguments  #1#0#0#0#0{#1}
-\def\secondoffivearguments #0#2#0#0#0{#2}
-\def\thirdoffivearguments  #0#0#3#0#0{#3}
-\def\fourthoffivearguments #0#0#0#4#0{#4}
-\def\fifthoffivearguments  #0#0#0#0#5{#5}
+\def\firstoffivearguments  #1#-#-#-#-{#1}
+\def\secondoffivearguments #-#1#-#-#-{#1}
+\def\thirdoffivearguments  #-#-#1#-#-{#1}
+\def\fourthoffivearguments #-#-#-#1#-{#1}
+\def\fifthoffivearguments  #-#-#-#-#1{#1}
 
-\def\firstofsixarguments #1#0#0#0#0#0{#1}
-\def\secondofsixarguments#0#2#0#0#0#0{#2}
-\def\thirdofsixarguments #0#0#3#0#0#0{#3}
-\def\fourthofsixarguments#0#0#0#4#0#0{#4}
-\def\fifthofsixarguments #0#0#0#0#5#0{#5}
-\def\sixthofsixarguments #0#0#0#0#0#6{#6}
+\def\firstofsixarguments #1#-#-#-#-#-{#1}
+\def\secondofsixarguments#-#1#-#-#-#-{#1}
+\def\thirdofsixarguments #-#-#1#-#-#-{#1}
+\def\fourthofsixarguments#-#-#-#1#-#-{#1}
+\def\fifthofsixarguments #-#-#-#-#1#-{#1}
+\def\sixthofsixarguments #-#-#-#-#-#1{#1}
 
 % \unexpanded\def\firstofoneunexpanded       #1{#1}
 %
@@ -2541,14 +2634,23 @@
 % \unexpanded\def\secondofthreeunexpanded#1#2#3{#2}
 % \unexpanded\def\thirdofthreeunexpanded #1#2#3{#3}
 
+% \unexpanded\def\firstofoneunexpanded       #1{#1}
+%
+% \unexpanded\def\firstoftwounexpanded     #1#0{#1}
+% \unexpanded\def\secondoftwounexpanded    #0#2{#2}
+%
+% \unexpanded\def\firstofthreeunexpanded #1#0#0{#1}
+% \unexpanded\def\secondofthreeunexpanded#0#2#0{#2}
+% \unexpanded\def\thirdofthreeunexpanded #0#0#3{#3}
+
 \unexpanded\def\firstofoneunexpanded       #1{#1}
 
-\unexpanded\def\firstoftwounexpanded     #1#0{#1}
-\unexpanded\def\secondoftwounexpanded    #0#2{#2}
+\unexpanded\def\firstoftwounexpanded     #1#-{#1}
+\unexpanded\def\secondoftwounexpanded    #-#1{#1}
 
-\unexpanded\def\firstofthreeunexpanded #1#0#0{#1}
-\unexpanded\def\secondofthreeunexpanded#0#2#0{#2}
-\unexpanded\def\thirdofthreeunexpanded #0#0#3{#3}
+\unexpanded\def\firstofthreeunexpanded #1#-#-{#1}
+\unexpanded\def\secondofthreeunexpanded#-#1#-{#1}
+\unexpanded\def\thirdofthreeunexpanded #-#-#1{#1}
 
 %D \macros
 %D   {globalletempty,letempty,
@@ -2643,10 +2745,15 @@
 \def\syst_helpers_grab_raw_parameter_next
   {\expandafterspaces\syst_helpers_grab_raw_parameter}
 
-\unexpanded\def\rawgetparameters#1[#2]#0[#4]%
+% \unexpanded\def\rawgetparameters#1[#2]#0[#4]%
+%   {\def\m_syst_parameter_n{#2}%
+%   %\expandafterspaces\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
+%    \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
+
+\unexpanded\def\rawgetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
-  %\expandafterspaces\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
-   \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
+  %\expandafterspaces\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
+   \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
 
 %D \macros
 %D   {doglobal,
@@ -3082,10 +3189,7 @@
    \globalpushmacro\recurseaction
    \unexpanded\gdef\recurseaction##1##2{#1}%
    \let\endofloop\syst_helpers_loop
-   \syst_helpers_loop1% no \plusone else \recurselevel wrong
-   \globalpopmacro\recurselevel
-   \globalpopmacro\recurseaction
-   \global\advance\outerrecurse\minusone}
+   \syst_helpers_loop1}% no \plusone else \recurselevel wrong
 
 \unexpanded\def\syst_helpers_loop#1%
   {\def\recurselevel{#1}%
@@ -3095,13 +3199,16 @@
   {\syst_helpers_recurse_content
    \endofloop}
 
-\unexpanded\def\syst_helpers_loop_nop#1%
-  {}
+\unexpanded\def\syst_helpers_loop_nop#0%
+  {\let\endofloop\syst_helpers_loop
+   \globalpopmacro\recurselevel
+   \globalpopmacro\recurseaction
+   \global\advance\outerrecurse\minusone}
 
 \unexpanded\def\exitloop                % \exitloop quits at end
   {\let\endofloop\syst_helpers_loop_nop}
 
-\unexpanded\def\exitloopnow#1\endofloop % \exitloopnow quits directly
+\unexpanded\def\exitloopnow#0\endofloop % \exitloopnow quits directly
   {\syst_helpers_loop_nop}
 
 %D The loop is executed at least once, so beware of situations like:
@@ -3689,9 +3796,9 @@
 %   {}
 
 \unexpanded\def\gobbleuntil#1%
-  {\def\syst_helpers_gobble_indeed##0#1{}\syst_helpers_gobble_indeed}
+  {\def\syst_helpers_gobble_indeed##-#1{}\syst_helpers_gobble_indeed}
 
-\unexpanded\def\gobbleuntilrelax#0\relax
+\unexpanded\def\gobbleuntilrelax#-\relax
   {}
 
 %D The next one simply expands the pickup up tokens.
@@ -4316,7 +4423,7 @@
 \let\syst_helpers_split_string\relax
 
 \unexpanded\def\beforesplitstring#1\at#2\to#3%
-  {\def\syst_helpers_split_string##1#2##0^^^^0004%
+  {\def\syst_helpers_split_string##1#2##0^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
       \or
@@ -4327,7 +4434,7 @@
    \expandafter\syst_helpers_split_string#1^^^^0004\ignorearguments\ignorearguments}
 
 \unexpanded\def\aftersplitstring#1\at#2\to#3%
-  {\def\syst_helpers_split_string##0#2##2^^^^0004%
+  {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
       \or
@@ -4387,7 +4494,7 @@
 \let\beforetestandsplitstring\beforesplitstring
 
 \unexpanded\def\aftertestandsplitstring#1\at#2\to#3%
-  {\def\syst_helpers_split_string##0#2##2^^^^0004%
+  {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
       \or
@@ -4418,11 +4525,17 @@
 %D    splitatcolon,
 %D    splitatcolons}
 
-\unexpanded\def\syst_helpers_splitatperiod    #1.#2.#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-\unexpanded\def\syst_helpers_splitatcomma     #1,#2,#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-\unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-\unexpanded\def\syst_helpers_splitatcolon     #1:#2:#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-\unexpanded\def\syst_helpers_splitatcolons  #1::#2::#0^^^^0004#4#5{\edef#4{#1}\edef#5{#2}}
+% \unexpanded\def\syst_helpers_splitatperiod    #1.#2.#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \unexpanded\def\syst_helpers_splitatcomma     #1,#2,#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \unexpanded\def\syst_helpers_splitatcolon     #1:#2:#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \unexpanded\def\syst_helpers_splitatcolons  #1::#2::#0^^^^0004#4#5{\edef#4{#1}\edef#5{#2}}
+
+\unexpanded\def\syst_helpers_splitatperiod    #1.#2.#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\unexpanded\def\syst_helpers_splitatcomma     #1,#2,#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\unexpanded\def\syst_helpers_splitatcolon     #1:#2:#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\unexpanded\def\syst_helpers_splitatcolons  #1::#2::#-^^^^0004#3#4{\edef#3{#1}\edef#4{#2}}
 
 \unexpanded\def\splitatperiod  #1{\normalexpanded{\syst_helpers_splitatperiod  #1}..^^^^0004}
 \unexpanded\def\splitatcomma   #1{\normalexpanded{\syst_helpers_splitatcomma   #1},,^^^^0004}    % not at ", "
@@ -4528,14 +4641,16 @@
      {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
 \unexpanded\def\xsplitstring#1#2% \cs {str}
-  {\def\syst_helpers_split_string##1,#2,##2,#2,##3\\%
+ %{\def\syst_helpers_split_string##1,#2,##2,#2,##3\\%
+  {\def\syst_helpers_split_string##1,#2,##2,#2,##-\\%
      {\edef\m_syst_string_one{\bcleanedupcommalist##1\empty\empty\relax}%
       \edef\m_syst_string_two{\acleanedupcommalist##2,,\relax}}%
    \expandafter\syst_helpers_split_string\expandafter,#1,,#2,,#2,\\}
 
 \def\bcleanedupcommalist#1#2#3\relax{\if#1,\else#1\fi\if#2,\else#2\fi#3}
 \def\bcleanedupcommalist#1#2\relax{\if#1,\else#1\fi#2}
-\def\acleanedupcommalist#1,,#2\relax{#1}
+%def\acleanedupcommalist#1,,#2\relax{#1}
+\def\acleanedupcommalist#1,,#-\relax{#1}
 
 \unexpanded\def\removefromcommalist#1#2% to be sped up
   {\rawdoifelseinset{#1}#2%
@@ -4694,8 +4809,7 @@
 % \def\PtToCm#1%
 %   {\withoutpt\the\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
 
-\def\PtToCm#1%
-  {\thewithoutunit\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
+\def\PtToCm#1{\thewithoutunit\dimexpr0.0351459804\dimexpr#1\relax\relax cm}
 
 %D We also support:
 %D
@@ -5228,9 +5342,16 @@
 %D This command can be integrated in \type {\getparameters}, but we decided best not
 %D to do so.
 
+% \unexpanded\def\processassignlist#1[#2]#3%
+%   {\def\syst_helpers_process_assign_list_assign[##1=##2=##3]%
+%      {\doif{##3}\relax{#3{##1}}}%
+%    \def\syst_helpers_process_assign_list_step##1%
+%      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
+%    \processcommalist[#2]\syst_helpers_process_assign_list_step}
+
 \unexpanded\def\processassignlist#1[#2]#3%
-  {\def\syst_helpers_process_assign_list_assign[##1=##2=##3]%
-     {\doif{##3}\relax{#3{##1}}}%
+  {\def\syst_helpers_process_assign_list_assign[##1=##-=##2]%
+     {\doif{##2}\relax{#3{##1}}}%
    \def\syst_helpers_process_assign_list_step##1%
      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
    \processcommalist[#2]\syst_helpers_process_assign_list_step}
@@ -6293,7 +6414,10 @@
 \def\docheckedpair#1%
   {\syst_helpers_checked_pair#1,,\_o_e_p_}
 
-\def\syst_helpers_checked_pair#1,#2,#0\_o_e_p_
+% \def\syst_helpers_checked_pair#1,#2,#0\_o_e_p_
+%   {#1,#2}
+
+\def\syst_helpers_checked_pair#1,#2,#-\_o_e_p_
   {#1,#2}
 
 %D Here are some nasty helpers. They can be used to fill often expanded token

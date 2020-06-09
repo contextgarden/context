@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.05.25 23:36}
+\edef\contextversion{2020.06.09 18:53}
 \edef\contextkind   {beta}
 
 %D Kind of special:
@@ -142,7 +142,7 @@
 \loadmarkfile{mult-chk}
 \loadmkvifile{mult-dim}
 
-\loadmarkfile{cldf-int} % interface
+\loadmkxlfile{cldf-int} % interface
 
 \loadmarkfile{trac-ctx} % maybe move up
 

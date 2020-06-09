@@ -277,7 +277,7 @@
      \expandafter\font_typescripts_start_gobble
    \fi}
 
-\def\font_typescripts_start_gobble#definitions\stoptypescript{}
+\def\font_typescripts_start_gobble#ignore\stoptypescript{}
 
 \def\font_typescripts_start_document#definitions\stoptypescript
   {\toksapp\c_font_typescripts_document{\starttypescript#definitions\stoptypescript}}

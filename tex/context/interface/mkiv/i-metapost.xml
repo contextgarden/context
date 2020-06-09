@@ -6,13 +6,13 @@
 
     <cd:command name="MPdefinitions" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-name-optional"/>
+            <cd:resolve name="argument-instance-optional"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="MPextensions" type="environment" level="style" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-name-list-optional"/>
+            <cd:resolve name="argument-instance-list-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -23,7 +23,7 @@
             <cd:keywords optional="yes">
                 <cd:constant type="+"/>
             </cd:keywords>
-            <cd:resolve name="argument-name-optional"/>
+            <cd:resolve name="argument-instance-optional"/>
         </cd:arguments>
     </cd:command>
 
@@ -32,7 +32,7 @@
             <cd:keywords optional="yes">
                 <cd:constant type="+"/>
             </cd:keywords>
-            <cd:resolve name="argument-name-optional"/>
+            <cd:resolve name="argument-instance-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
@@ -53,6 +53,7 @@
             <cd:assignments list="yes">
                 <cd:parameter name="format">
                     <cd:constant type="metafun" default="yes"/>
+                    <cd:constant type="minifun"/>
                     <cd:constant type="mpost"/>
                 </cd:parameter>
                 <cd:parameter name="initializations">
@@ -296,13 +297,13 @@
 
     <cd:command name="MPcode" type="environment" level="document" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-name-optional"/>
+            <cd:resolve name="argument-instance-optional"/>
         </cd:arguments>
     </cd:command>
 
     <cd:command name="MPcode" level="document" category="graphics metapost" file="meta-ini.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-name-optional"/>
+            <cd:resolve name="argument-instance-optional"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>

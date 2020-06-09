@@ -101,10 +101,11 @@
                 <cd:parameter name="pagecommand">
                     <cd:constant type="cd:oneargument"/>
                 </cd:parameter>
-                <cd:parameter name="pagenumber">
+                <cd:parameter name="pagenumber" list="yes">
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                     <cd:constant type="always"/>
+                    <cd:constant type="realpage"/>
                 </cd:parameter>
                 <cd:parameter name="headnumber">
                     <cd:constant type="yes" default="yes"/>

@@ -4,19 +4,164 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetabulation" level="style" category="tables" file="tabl-tbl.mkiv">
+    <!--
+
+            <cd:command name="definetabulation" level="style" category="tables" file="tabl-tbl.mkiv">
+                <cd:arguments>
+                    <cd:resolve name="keyword-name"/>
+                    <cd:resolve name="keyword-name-optional"/>
+                    <cd:assignments list="yes" optional="yes">
+                        <cd:inherit name="setuptabulation"/>
+                    </cd:assignments>
+                </cd:arguments>
+            </cd:command>
+
+        <cd:command name="setuptabulation" level="style" category="tables" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:parameter name="format">
+                        <cd:constant type="cd:template"/>
+                        <cd:constant type="none"/>
+                    </cd:parameter>
+                    <cd:parameter name="before">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="after">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="distance">
+                        <cd:constant type="small"/>
+                        <cd:constant type="medium" default="yes"/>
+                        <cd:constant type="big"/>
+                        <cd:constant type="none"/>
+                        <cd:constant type="blank"/>
+                        <cd:constant type="depth" default="yes"/>
+                        <cd:constant type="grid"/>
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="blank">
+                        <cd:resolve name="value-blank"/>
+                    </cd:parameter>
+                    <cd:parameter name="headstyle">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="headcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="background">
+                        <cd:constant type="cd:name"/>
+                    </cd:parameter>
+                    <cd:parameter name="backgroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="foregroundstyle">
+                        <cd:resolve name="value-style"/>
+                    </cd:parameter>
+                    <cd:parameter name="foregroundcolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="align">
+                        <cd:constant type="left"/>
+                        <cd:constant type="middle"/>
+                        <cd:constant type="right"/>
+                        <cd:constant type="dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="rule">
+                        <cd:constant type="line"/>
+                        <cd:constant type="normal" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulecolor">
+                        <cd:constant type="cd:color"/>
+                    </cd:parameter>
+                    <cd:parameter name="rulethickness">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="bodyfont">
+                        <cd:inherit name="setupbodyfont"/>
+                    </cd:parameter>
+                    <cd:parameter name="indenting">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="split">
+                        <cd:constant type="yes"/>
+                        <cd:constant type="no"/>
+                        <cd:constant type="repeat"/>
+                        <cd:constant type="auto" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="unit">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="margin">
+                        <cd:constant type="cd:dimension"/>
+                    </cd:parameter>
+                    <cd:parameter name="inner">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="EQ">
+                        <cd:constant type="cd:command"/>
+                    </cd:parameter>
+                    <cd:parameter name="header">
+                        <cd:constant type="yes" default="yes"/>
+                        <cd:constant type="repeat"/>
+                        <cd:constant type="text"/>
+                    </cd:parameter>
+                    <cd:parameter name="frame">
+                        <cd:constant type="on"/>
+                        <cd:constant type="off" default="yes"/>
+                    </cd:parameter>
+                    <cd:parameter name="title">
+                        <cd:constant type="cd:text"/>
+                    </cd:parameter>
+                    <cd:parameter name="keeptogether">
+                        <cd:constant type="yes" default="yes"/>
+                        <cd:constant type="no"/>
+                    </cd:parameter>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+        <cd:command name="tabulation" type="environment" generated="yes" variant="example" level="document" category="tables" file="tabl-tbl.mkiv">
+            <cd:sequence>
+                <cd:variable value="tabulation"/>
+            </cd:sequence>
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes" optional="yes">
+                    <cd:inherit name="setuptabulation"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="definetabulate" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptabulation"/>
-            </cd:assignments>
+            <cd:template optional="yes"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptabulation" level="style" category="tables" file="tabl-tbl.mkiv">
+    <!--
+
+        <cd:command name="setuptabulate" level="style" category="tables" file="tabl-tbl.mkiv">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:resolve name="keyword-name-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setuptabulation"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setuptabulate" level="style" category="tables" file="tabl-tbl.mkiv">
         <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="format">
                     <cd:constant type="cd:template"/>
@@ -116,36 +261,6 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tabulation" type="environment" generated="yes" variant="example" level="document" category="tables" file="tabl-tbl.mkiv">
-        <cd:sequence>
-            <cd:variable value="tabulation"/>
-        </cd:sequence>
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setuptabulation"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="definetabulate" level="style" category="tables" file="tabl-tbl.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name"/>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:template optional="yes"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="setuptabulate" level="style" category="tables" file="tabl-tbl.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:resolve name="keyword-name-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setuptabulation"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

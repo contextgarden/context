@@ -110,6 +110,8 @@
                 <cd:constant type="cd:text" prefix="type␣" method="none"/>
                 <cd:constant type="cd:text" prefix="data␣" method="none"/>
                 <cd:constant type="cd:text" prefix="name␣" method="none"/>
+                <cd:constant type="cd:dimension" prefix="radius␣" method="none"/>
+                <cd:constant type="cd:text" prefix="corner␣" method="none"/>
             </cd:keywords>
             <cd:delimiter name="relax"/>
         </cd:arguments>

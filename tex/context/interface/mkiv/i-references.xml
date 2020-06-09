@@ -49,6 +49,16 @@
                 <cd:parameter name="prefix">
                     <cd:resolve name="value-referenceprefix"/>
                 </cd:parameter>
+                <!-- all margindata locations are possible -->
+                <cd:parameter name="labelalternative">
+                    <cd:resolve name="value-margindata"/>
+                </cd:parameter>
+                <cd:parameter name="labelstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="labelcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

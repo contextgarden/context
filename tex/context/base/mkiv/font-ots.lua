@@ -2056,6 +2056,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
     local sweepnode     = sweepnode
     local sweeptype     = sweeptype
     local sweepoverflow = false
+    local checkdisc     = getprev(head)
     local keepdisc      = not sweepnode
     local lookaheaddisc = nil
     local backtrackdisc = nil
@@ -2089,6 +2090,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                     sweepnode     = current
                     current       = getnext(current)
                 else
+                    -- we can use an iterator
                     while replace and i <= l do
                         if getid(replace) == glyph_code then
                             i = i + 1
@@ -2189,7 +2191,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         local current = prev
         local i       = f
         local t       = sweeptype == "pre" or sweeptype == "replace"
-        if not current and t and current == checkdisk then
+        if not current and t and current == checkdisc then
             current = getprev(sweepnode)
         end
         while current and i > 1 do -- missing getprev added / moved outside
@@ -2218,7 +2220,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                 end
             end
             current = getprev(current)
-            if t and current == checkdisk then
+            if t and current == checkdisc then
                 current = getprev(sweepnode)
             end
         end
@@ -2443,6 +2445,10 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
         local current = start
         local last    = start
 
+        if s == 1 then
+            goto next
+        end
+
         -- current match
 
         if l > f then
@@ -2512,10 +2518,9 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                     break
                                 end
                             end
-                            -- commented, for Kai to check
-                         -- if n <= l then
-                         --     notmatchpre[last] = true
-                         -- end
+                            if n <= l then
+                                notmatchpre[last] = true
+                            end
                         else
                             notmatchpre[last] = true
                         end

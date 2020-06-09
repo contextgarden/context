@@ -67,7 +67,7 @@ local scan_luainteger  = token.scan_luainteger  or scan_int   -- only lmtx
 local scan_luacardinal = token.scan_luacardinal or scan_int   -- only lmtx
 
 local get_next         = token.get_next
-local get_next_token   = token.get_next_token
+----- get_next_token   = token.get_next_token
 local skip_next        = token.skip_next
 local peek_next_char   = token.peek_next_char
 local is_next_char     = token.is_next_char
@@ -89,6 +89,9 @@ tokens.create          = create_token
 tokens.istoken         = is_token
 tokens.isdefined       = is_defined
 tokens.defined         = is_defined
+
+tokens.getdata         = token.get_data -- only lmtx
+tokens.setdata         = token.set_data -- only lmtx
 
 local bits = {
     escape      = 0x00000001, -- 2^00
@@ -278,6 +281,7 @@ if setinspector then
                     frozen     = t.frozen,
                     mode       = t.mode,
                     index      = t.index,
+                    user       = t.user,
                     cmdname    = cmdname,
                 }
             end
@@ -298,3 +302,18 @@ tokens.cache = table.setmetatableindex(function(t,k)
     t[k] = v
     return v
 end)
+
+if LUATEXVERSION < 114 and CONTEXTLMTXMODE == 0 then
+
+    local d = tokens.defined
+    local c = tokens.create
+
+    function tokens.defined(s,b)
+        if b then
+            return d(s)
+        else
+            return c(s).cmd_name == "undefined_cmd"
+        end
+    end
+
+end

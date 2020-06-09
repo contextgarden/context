@@ -7,6 +7,11 @@
     <cd:command name="TeX" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="TEX" level="document" category="symbols" file="cont-log.mkiv"/>
 
+    <!--
+        <cd:command name="TeXprefix" level="document" category="symbols" file="cont-log.mkiv"/>
+        <cd:command name="TeXsuffix" level="document" category="symbols" file="cont-log.mkiv"/>
+    -->
+
     <cd:command name="Context" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="ConTeXt" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="CONTEXT" level="document" category="symbols" file="cont-log.mkiv"/>
@@ -23,12 +28,16 @@
     <cd:command name="MKII" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MKIV" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MKVI" level="document" category="symbols" file="cont-log.mkiv"/>
+    <cd:command name="MKXL" level="document" category="symbols" file="cont-log.mkiv"/>
+    <cd:command name="MKLX" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MKIX" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MKXI" level="document" category="symbols" file="cont-log.mkiv"/>
 
     <cd:command name="MPII" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MPIV" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="MPVI" level="document" category="symbols" file="cont-log.mkiv"/>
+    <cd:command name="MPXL" level="document" category="symbols" file="cont-log.mkiv"/>
+    <cd:command name="MPLX" level="document" category="symbols" file="cont-log.mkiv"/>
 
     <cd:command name="PPCHTeX" level="document" category="symbols" file="cont-log.mkiv"/>
     <cd:command name="PPCHTEX" level="document" category="symbols" file="cont-log.mkiv"/>

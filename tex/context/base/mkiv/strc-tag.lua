@@ -104,6 +104,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
 
     lines                 = { pdf = "Code",       nature = "display" },
     line                  = { pdf = "Code",       nature = "mixed"   },
+    linenumber            = { pdf = "Span",       nature = "inline"   },
 
     synonym               = { pdf = "Span",       nature = "inline"  },
     sorting               = { pdf = "Span",       nature = "inline"  },
@@ -362,7 +363,9 @@ function tags.start(tag,specification)
             metadata = nil
         end
         local userdata = specification.userdata
-        if userdata ~= "" and type(userdata) == "string"  then
+        if userdata == "" then
+            specification.userdata = nil
+        elseif type(userdata) == "string"  then
             specification.userdata = settings_to_hash(userdata)
         end
         local detail = specification.detail

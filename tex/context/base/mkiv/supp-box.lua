@@ -28,6 +28,11 @@ local vlist_code    = nodecodes.vlist
 local glue_code     = nodecodes.glue
 local penalty_code  = nodecodes.penalty
 local glyph_code    = nodecodes.glyph
+local localpar_code = nodecodes.localpar
+
+local indent_code   = nodes.listcodes.indent
+
+local hmode_code    = tex.modelevels.horizontal
 
 local nuts          = nodes.nuts
 local tonut         = nuts.tonut
@@ -39,6 +44,7 @@ local getprev       = nuts.getprev
 local getboth       = nuts.getboth
 local getdisc       = nuts.getdisc
 local getid         = nuts.getid
+local getsubtype    = nuts.getsubtype
 local getlist       = nuts.getlist
 local getattribute  = nuts.getattribute
 local getbox        = nuts.getbox
@@ -89,6 +95,7 @@ local setlistcolor  = nodes.tracers.colors.setlist
 local texget        = tex.get
 local texgetbox     = tex.getbox
 local texsetdimen   = tex.setdimen
+local texgetnest    = tex.getnest
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -828,24 +835,50 @@ implement {
 
 if CONTEXTLMTXMODE > 0 then
 
-
     interfaces.implement {
         name      = "widthuptohere",
         public    = true,
         protected = true,
         value     = true,
         actions   = function()
-            local n = tex.getnest()
+            local n = texgetnest()
             local w = 0
-            if n.mode == tex.modelevels.horizontal then
-                local h = nodes.hpack(n.head.next)
-                w = h.width
-                h.list = nil
-                nodes.free(h)
+            if n.mode == hmode_code then
+                local h = hpack(getnext(tonut(n.head)))
+                w = getwidth(h)
+                setlist(h)
+                free(h)
             end
             return tokens.values.dimension, w
         end,
     }
 
-
 end
+
+interfaces.implement {
+    name      = "doifelseindented",
+    public    = true,
+    protected = true,
+    actions   = function()
+        local n = texgetnest()
+        local b = false
+        if n.mode == hmode_code then
+            n = tonut(n.head)
+            while n do
+                n = getnext(n)
+                if n then
+                    local id = getid(n)
+                    if id == hlist_code then
+                        if getsubtype(n) == indent_code then
+                            b = getwidth(n) > 0
+                            break
+                        end
+                    elseif id ~= localpar_code then
+                        break
+                    end
+                end
+            end
+        end
+        commands.doifelse(b)
+    end,
+}

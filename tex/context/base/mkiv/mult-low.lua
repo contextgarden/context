@@ -57,7 +57,8 @@ return {
         "spacecatcode", "lettercatcode", "othercatcode", "activecatcode", "commentcatcode", "invalidcatcode",
         --
         "tabasciicode", "newlineasciicode", "formfeedasciicode", "endoflineasciicode", "endoffileasciicode",
-        "spaceasciicode", "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
+        "commaasciicode", "spaceasciicode", "periodasciicode",
+        "hashasciicode", "dollarasciicode", "commentasciicode", "ampersandasciicode",
         "colonasciicode", "backslashasciicode", "circumflexasciicode", "underscoreasciicode",
         "leftbraceasciicode", "barasciicode", "rightbraceasciicode", "tildeasciicode", "delasciicode",
         "leftparentasciicode", "rightparentasciicode",

@@ -454,16 +454,18 @@ implement {
 
 
 local function showassignerror(namespace,key,line)
-    local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
-    if ns then
-        namespace = corenamespaces[tonumber(ns)] or ns
-    end
-    -- injected in the stream for timing:
-    if instance and instance ~= "" then
-        context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
-    else
-        context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
-    end
+ -- if key and key ~= "" and key ~= "," then
+        local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
+        if ns then
+            namespace = corenamespaces[tonumber(ns)] or ns
+        end
+        -- injected in the stream for timing:
+        if instance and instance ~= "" then
+            context.writestatus("setup",formatters["error in line %a, namespace %a, instance %a, key %a"](line,namespace,instance,key))
+        else
+            context.writestatus("setup",formatters["error in line %a, namespace %a, key %a"](line,namespace,key))
+        end
+ -- end
 end
 
 implement {

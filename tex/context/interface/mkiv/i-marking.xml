@@ -88,6 +88,7 @@
             <cd:keywords optional="yes">
                 <cd:constant type="page" default="yes"/>
                 <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-markposition"/>
@@ -131,6 +132,7 @@
             <cd:keywords>
                 <cd:constant type="page"/>
                 <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
             <cd:keywords>
                 <cd:resolve name="value-markposition"/>
@@ -144,6 +146,7 @@
             <cd:keywords>
                 <cd:constant type="page"/>
                 <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
             <cd:keywords>
                 <cd:resolve name="value-markposition"/>
@@ -157,6 +160,7 @@
             <cd:keywords>
                 <cd:constant type="page"/>
                 <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
@@ -167,6 +171,7 @@
             <cd:keywords>
                 <cd:constant type="page"/>
                 <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>
