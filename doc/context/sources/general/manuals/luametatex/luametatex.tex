@@ -1,0 +1,95 @@
+% ------------------------   ------------------------
+% 2019-12-17  32bit  64bit   2020-01-10  32bit  64bit
+% ------------------------   ------------------------
+% freebsd     2270k  2662k   freebsd     2186k  2558k
+% openbsd6.6  2569k  2824k   openbsd6.6  2472k  2722k
+% linux-armhf 2134k          linux-armhf 2063k
+% linux       2927k  2728k   linux       2804k  2613k
+% osx                2821k   osx                2732k
+% mswin       2562k  2555k   mswin       2481k  2471k
+% ------------------------   ------------------------
+
+% experiment (if this becomes default we need to check visualizers and disable it when needed):
+
+\startluacode
+nodes.handlers.cleanuppage = nodes.nuts.flatten_discretionaries
+nodes.tasks.prependaction("shipouts", "normalizers", "nodes.handlers.cleanuppage", nil, "nut", "enabled")
+\stopluacode
+
+% 20200509 : 258 pages
+%
+% my 2013 i7 laptop with windows : 11.8 sec mingw64
+% raspberry pi 64 bit with ssd   : 39.5 sec gcc 9.2
+% idem with native bin           : 38.5 sec
+% idem overclocked f=2000/v=6    : 31.5 sec
+%
+% 20200526 : 258 pages
+% mingw all in: 10.9 / rpi: 33.1
+
+% 20200610 : 258 pages
+% mingw all in: 10.6
+
+% But speed can differ a bit per compilation (upto .5 seconds maybe due
+% to how compiled code is organized which might influence caching. Who
+% knows ... (or cares). For instance at 20200407 I measured 10.9 seconds
+% after some new low level metapost magic was added but who knows if that
+% was the reason, because mp processing is already fast. A week later,
+% at 20200415, a by then 254 page file took 10.5 seconds, that is, we
+% were at exactly 24 pages per second but after switching to gcc9 it
+% dropped again.
+
+% msvc           1899k (2% slower than mingw)
+% msvc /GL       2297k (similar to mingw)
+% msvc /GL /Ob3  2847k (not faster than /GL)
+% msvc /Ob3      2052k (slower than /Ob2)
+% msvc /Ob1      1763k (slower than /Ob2)
+% clang          2460k (15% slower than mingw)
+
+% Thanks to sebastian.miele@gmail.com for close reading the manual and
+% sending fixes.
+
+% \enabletrackers[*]
+
+\environment luametatex-style
+\environment luametatex-private
+
+\startdocument
+  [manual=LuaMeta\TeX,
+ % status=experimental,
+   version=\cldcontext{status.luatex_verbose}]
+
+\component luametatex-titlepage
+\component luametatex-firstpage
+
+\startfrontmatter
+    \component luametatex-contents
+    \component luametatex-introduction
+\stopfrontmatter
+
+\startbodymatter
+    \component luametatex-preamble
+    \component luametatex-differences
+    \component luametatex-modifications
+    \component luametatex-lua
+    \component luametatex-enhancements
+    \component luametatex-fonts
+    \component luametatex-languages
+    \component luametatex-math
+    \component luametatex-nodes
+    \component luametatex-callbacks
+    \component luametatex-tex
+    \component luametatex-metapost
+    \component luametatex-pdf
+    \component luametatex-libraries
+    \component luametatex-primitives
+\stopbodymatter
+
+\startbackmatter
+  % \component luametatex-rejected % local file
+    \component luametatex-registers
+    \component luametatex-differences
+    \component luametatex-statistics
+\stopbackmatter
+
+\stopdocument
+

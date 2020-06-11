@@ -237,7 +237,7 @@ function statistics.show()
                     LUATEXENGINE, LUATEXVERSION, LUATEXFUNCTIONALITY, lower(status.banner))
             end)
         end
-        register("control sequences", function()
+        register("used hash slots", function()
             return format("%s of %s + %s", status.cs_count, status.hash_size,status.hash_extra)
         end)
         register("callbacks", statistics.callbacks)

@@ -20,8 +20,8 @@
 %D \macros
 %D   {showbodyfont}
 %D
-%D One can call for a rather simple overview of a bodyfont and the
-%D relations between its alternative fonts.
+%D One can call for a rather simple overview of a bodyfont and the relations between
+%D its alternative fonts.
 %D
 %D \showsetup{showbodyfont}
 %D
@@ -37,9 +37,8 @@
 %D \macros
 %D   {showfontstrip, testminimalbaseline, showminimalbaseline}
 %D
-%D The next command can come in handy when combining
-%D different fonts into a collection (typeface) and
-%D determining optimal baseline distances.
+%D The next command can come in handy when combining different fonts into a
+%D collection (typeface) and determining optimal baseline distances.
 %D
 %D \showfontstrip \blank \showminimalbaseline
 
@@ -109,10 +108,8 @@
 \unexpanded\def\stopotfcollecting {\ctxlua{nodes.tracers.steppers.stop()}}
 \unexpanded\def\resetotfcollecting{\ctxlua{nodes.tracers.steppers.reset()}}
 
-% Rather experimental:
-%
 % \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{الضَّرَّ} \page
-% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{لِلّٰهِ}   \page
+% \page \showotfcomposition{arabtype*arab-default at 48pt}{-1}{لِلّٰهِ} \page
 
 \unexpanded\def\showotfstepglyphs#1%
   {\ctxlua{nodes.tracers.steppers.glyphs(\number\otfcollector,#1)}%
