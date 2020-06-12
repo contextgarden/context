@@ -503,13 +503,16 @@
 %D \determinenoflines{\definedfont[Sans at 40pt]test\\test}
 %D \stoptyping
 
-\def\syst_boxes_determine_noflines % can be mkiv'd
-  {\beginofshapebox
-     \unvbox\nextbox
-   \endofshapebox
-   \globalscratchcounter\zerocount
-   \reshapebox{\global\advance\globalscratchcounter\plusone}%
-   \expandafter\egroup\expandafter\noflines\the\globalscratchcounter\relax}
+% \def\syst_boxes_determine_noflines % can be mkiv'd
+%   {\beginofshapebox
+%      \unvbox\nextbox
+%    \endofshapebox
+%    \globalscratchcounter\zerocount
+%    \reshapebox{\global\advance\globalscratchcounter\plusone}%
+%    \expandafter\egroup\expandafter\noflines\the\globalscratchcounter\relax}
+
+\def\syst_boxes_determine_noflines
+  {\expandafter\egroup\expandafter\noflines\noflinesinbox\nextbox\relax}
 
 \unexpanded\def\determinenoflines
   {\bgroup

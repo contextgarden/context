@@ -221,8 +221,8 @@
      {\csname\??constructionstophandler \v!construction\endcsname\endgroup}}
 
 \unexpanded\setvalue{\??constructionstarthandler\v!description}%
-  {\BeforePar{\csname\??constructionstarthandler\v!construction\endcsname}%
-   \GotoPar}
+  {\dogotopar
+     {\csname\??constructionstarthandler\v!construction\endcsname}}
 
 \unexpanded\setvalue{\??constructionstophandler\v!description}%
   {\csname\??constructionstophandler\v!construction\endcsname

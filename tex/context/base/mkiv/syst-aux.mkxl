@@ -50,10 +50,11 @@
 
 \let\startlmtxmode\relax
 \let\stoplmtxmode \relax
-\def\startmkivmode#1\stopmkivmode{}
+\def\startmkivmode#-\stopmkivmode{}
 \let\stopmkivmode \relax
 
-%D As we don't have namespace definers yet, we use a special one:
+%D As we don't have namespace definers yet, we use a special one. Later we will
+%D do a better job.
 
 \ifdefined\c_syst_helpers_n_of_namespaces
 
@@ -79,7 +80,7 @@
 %D \macros
 %D   {normalspace}
 %D
-%D There is already \type{\space} but just to be sure we also provide:
+%D There is already \type{\space} but just to be sure we also provide this one:
 
 \def\normalspace{ }
 
@@ -88,7 +89,8 @@
 %D    !!width, !!height, !!depth, !!string, !!done}
 %D
 %D We define some more \COUNTERS\ and \DIMENSIONS. We also define some shortcuts to
-%D the local scatchregisters~0, 2, 4, 6 and~8.
+%D the local scatchregisters~0, 2, 4, 6 and~8. These are kind of obsolete and
+%D eventually they might get dropped!
 
 \newcount\!!counta \newtoks\!!toksa \newdimen\!!dimena \newbox\!!boxa
 \newcount\!!countb \newtoks\!!toksb \newdimen\!!dimenb \newbox\!!boxb
@@ -137,7 +139,8 @@
 %D
 %D To save memory, we use constants (sometimes called variables). Redefining these
 %D constants can have disastrous results. Of course, expanding them costs time, so
-%D that's the price to pay.
+%D that's the price to pay. More are defined elsewhere. Of course we later pay a
+%D price when they need to be expanded.
 
 \def\v!prefix! {v!}
 \def\c!prefix! {c!}
@@ -158,9 +161,8 @@
 
 \def\s!empty   {empty}
 
-%D Sometimes we pass macros as arguments to commands that don't expand them
-%D before interpretation. Such commands can be enclosed with \type {\expanded},
-%D like:
+%D Sometimes we pass macros as arguments to commands that don't expand them before
+%D interpretation. Such commands can be enclosed with \type {\expanded}, like:
 %D
 %D \starttyping
 %D \expanded{\setupsomething[\alfa]}
@@ -183,7 +185,9 @@
 \let\stopexpanded\relax
 
 %D Recent \TEX\ engines have a primitive \type {\expanded} and we will use that when
-%D possible. After all, we can make not expandable macros now.
+%D possible. After all, we can make not expandable macros now. The name clash is an
+%D unfortunate fact and in retrospect I should nto have agreed to a primitive having
+%D that same name.
 
 % We cannot use the next variant as first we need to adapt \type {##}'s in callers:
 %
@@ -199,23 +203,7 @@
 %D The next set of macros just do nothing, except that they get rid of a number of
 %D arguments. These zero references prevent intermediate storage. In principle that
 %D is more efficient but it probably won't be noticed. It's anyway cheaper on memory
-%D access.
-
-% \def\gobbleoneargument               #0{}
-% \def\gobbletwoarguments            #0#0{}
-% \def\gobblethreearguments        #0#0#0{}
-% \def\gobblefourarguments       #0#0#0#0{}
-% \def\gobblefivearguments       #0#0#0#0{}
-% \def\gobblesixarguments        #0#0#0#0{}
-% \def\gobblesevenarguments    #0#0#0#0#0{}
-% \def\gobbleeightarguments  #0#0#0#0#0#0{}
-% \def\gobbleninearguments #0#0#0#0#0#0#0{}
-%
-% \def\gobbleoneoptional   [#0]{}
-% \def\gobbletwooptionals  [#0][#0]{}
-% \def\gobblethreeoptionals[#0][#0][#0]{}
-% \def\gobblefouroptionals [#0][#0][#0][#0]{}
-% \def\gobblefiveoptionals [#0][#0][#0][#0][#0]{}
+%D access. We use versions that don't even store the arguments.
 
 \def\gobbleoneargument               #-{}
 \def\gobbletwoarguments            #-#-{}
@@ -253,8 +241,8 @@
 %D use more code and can be find in the \MKIV\ and \MKII\ files.
 
 \let\next          \relax
-\let\nextnext      \relax
-\let\nextnextnext  \relax
+\let\nextnext      \relax % kind of obsolete
+\let\nextnextnext  \relax % kind of obsolete
 \let\nexttoken     \relax
 
 \let\m_syst_action_yes\relax
@@ -274,7 +262,11 @@
 %D Because we will mostly use this macro for testing if the next character is \type
 %D {[}, we also make a slightly faster variant as it is not uncommon to have tens of
 %D thousands of calls to this test in a run. Of course it also is more convenient to
-%D read a trace then.
+%D read a trace then. Here we use a lookahead primitive that ignores (blank) spaces
+%D which makes for less tracing clutter than the original definition. It's also
+%D faster bit that will probably go unnoticed. Of course, hard||core \TEX ies whose
+%D reputations depends on understanding obscure macro definitions will love the more
+%D low level variants.
 
 \unexpanded\def\doifelsenextoptional#1#2%
   {\def\m_syst_action_yes{#1}%
@@ -345,20 +337,24 @@
 %D \egroup
 %D \stoptyping
 %D
-%D The original kind of clumsy but working version is now replaced by a
-%D simple macro. It's probably never really used anyway. And it can be
-%D even less code in \LUAMETATEX:
+%D The original kind of clumsy but working version is now replaced by a simple
+%D macro. And it can be even less code in \LUAMETATEX:
 
-%unexpanded\def\assumelongusagecs#1{\futureexpandisap\relax#1#1}
 \let\assumelongusagecs\expandafterpars
+
+%D It's used to skip over empty lines in some constructs that we like to set up
+%D spacy. We already permit par tokens (and equivalents) in math and some other
+%D places visa engine features. And, \type {\long} stuff has been dropped for a long
+%D time already (it is still optional in \lUATEX). But the \quote  {long} in the
+%D name kind of stuck.
 
 %D \macros
 %D   {blankspace}
 %D
-%D Here is how this works. The \type {\let} primitive first picks up the to be
-%D let name. Then it scans for an optional equal and when that is found it will
-%D skip the next space, which is why we need an extra one to achieve our goal.
-%D Such a \type {\blankspace} has the meaning \typ {blank space}.
+%D Here is how this works. The \type {\let} primitive first picks up the to be let
+%D name. Then it scans for an optional equal and when that is found it will skip the
+%D next space, which is why we need an extra one to achieve our goal. Such a \type
+%D {\blankspace} has the meaning \typ {blank space}. A typical \TEX ie definition:
 
 \normalexpanded{\let\noexpand\blankspace=\space\space}
 
@@ -447,7 +443,8 @@
 %D things that I remember being discussed in the perspective of \ETEX\ but it was
 %D rejected because it was not considered useful. Well, in \LUATEX\ we can surpress
 %D it and that is what we do in \MKIV. We're probably the only macro package that
-%D needs it. That kind of configuration happens elsewhere.
+%D needs it. That kind of configuration happens elsewhere. These macros are (mostly
+%D for historic reasons) fully expandable.
 
 \def\doifelseundefined#1%
   {\ifcsname#1\endcsname
@@ -480,7 +477,7 @@
 %D {\undefined}! In \ETEX\ we have \type {\ifcsname} and that way of testing on
 %D existance is not the same as the one described here. Therefore we introduce:
 
-\unexpanded\def\letbeundefined#1% potential stack buildup when used \global
+\unexpanded\def\letbeundefined#1%
   {\expandafter\let\csname#1\endcsname\undefined} % or use \undefinevalue to match \setvalue
 
 \unexpanded\def\localundefine#1% conditional
@@ -566,8 +563,8 @@
 %D \doifemptyelse {string} {then ...} {else ...}
 %D \stoptyping
 %D
-%D This time, the string is not expanded, but we use the dedicated empty
-%D checker here.
+%D This time, the string is not expanded, but we use the dedicated empty checker
+%D here.
 
 \unexpanded\def\doifelseempty#1%
   {\def\m_syst_string_one{#1}%
@@ -794,7 +791,10 @@
 %D \stoptyping
 %D
 %D Commands that are part of the list are expanded, so the use of this macro has its
-%D limits.
+%D limits. We use a new \LUAMETATEX\ feature that intercepts invalid macro arguments
+%D by quitting when \type {\ignorearguments} is seen. That's why we act on the
+%D arguments state. Again it permits leaner and meaner macro definitions with a bit
+%D less clutter in tracing.
 
 \unexpanded\def\syst_helpers_process_comma_item#1,%
   {\ifarguments
@@ -933,7 +933,8 @@
 %D In the meantime we follow a different approach, often somewhat more heavy on the
 %D number of control sequences used, but that is no lomger a real issue. The code
 %D has been simplified and nwo uses the macro stack mechanism. If needed I can make
-%D this more hip and a bit faster now but \unknown\ it's seldom used.
+%D this more hip and a bit faster now but \unknown\ it's seldom used nowadays as we
+%D have better ways now.
 
 \unexpanded\def\syst_helpers_do_compare_process_action_a[#1=>#2][#3]%
   {\edef\m_syst_string_two{#1}%
@@ -1201,7 +1202,11 @@
 %D   {doifnumberelse,doifnumber,doifnotnumber}
 %D
 %D The next macro executes a command depending of the outcome of a test on numerals.
-%D We now use a \LUATEX\ feature but you might want to take a look at the originals
+%D We now use a \LUATEX\ feature that permits a more robust checking, but you might
+%D want to take a look at the originals. It's typically one of these new features
+%D that probably only \CONTEXT\ will use, which is probably true for more such
+%D features that no one ever asked for (but they are pretty generic in nature
+%D anyway).
 
 \def\doifelsenumber#1%
   {\ifchknum#1\or
@@ -1266,7 +1271,7 @@
 %D
 %D Spaces embedded in the list, for instance after commas, spoil the search process.
 %D The gain in speed depends on the length of the argument (the longer the argument,
-%D the less we gain).
+%D the less we gain). The question is: do we still need these raw variants?
 
 \unexpanded\def\makerawcommalist[#1]#2% use \processnext ... here
   {\scratchtoks\emptytoks
@@ -1352,9 +1357,6 @@
        \expandafter\expandafter\expandafter\syst_helpers_raw_process_action_next
      \fi
    \fi}
-
-% \def\syst_helpers_raw_process_action_gobble#0\ignorearguments
-%   {}
 
 \def\syst_helpers_raw_process_action_gobble#-\ignorearguments
   {}
@@ -1541,11 +1543,6 @@
 \def\syst_helpers_grab_parameter_next
   {\expandafterspaces\syst_helpers_grab_parameter}
 
-% \unexpanded\def\dogetparameters#1[#2]#0[#4]%
-%   {\def\m_syst_parameter_n{#2}%
-%    \let\m_syst_parameter_s#1%
-%    \expandafterspaces\syst_helpers_grab_parameter#4\ignorearguments\ignorearguments}
-
 \unexpanded\def\dogetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
    \let\m_syst_parameter_s#1%
@@ -1602,7 +1599,8 @@
   {\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \normalexpanded{\processassignmentlist[#1]}\currentassignmentlistcommand}
 
-%D \macros{currentvalue}
+%D \macros
+%D   {currentvalue}
 %D
 %D Just in case a \type{\getparameter} argument itself ends up inside a \type
 %D {\write} or other expandable location, our new macro needs a default value.
@@ -1644,10 +1642,10 @@
 %D By using \type {\docopyvalue} we've prepared this command for use in a
 %D multi||lingual environment.
 
-\unexpanded\def\copyparameters[#1]#2[#3]#4[#5]%
-  {\doifnot{#1}{#3}
-     {\def\syst_helpers_copy_parameter{\docopyvalue{#1}{#3}}% ##1
-      \processcommalist[#5]\syst_helpers_copy_parameter}}
+\unexpanded\def\copyparameters[#1]#-[#2]#-[#3]%
+  {\doifnot{#1}{#2}
+     {\def\syst_helpers_copy_parameter{\docopyvalue{#1}{#2}}% ##1
+      \processcommalist[#3]\syst_helpers_copy_parameter}}
 
 %D \macros
 %D   {ifparameters,checkparameters}
@@ -1706,14 +1704,6 @@
 
 \unexpanded\def\getcommalistsize[%
   {\futureexpand]\syst_helpers_get_comma_list_size_nop\syst_helpers_get_comma_list_size_yes}
-
-% \def\syst_helpers_get_comma_list_size_yes
-%   {\syst_helpers_get_comma_list_size_yes_indeed\relax}
-%
-% \def\syst_helpers_get_comma_list_size_yes_indeed#1]%
-%   {\commalistcounter\zerocount
-%    \syst_helpers_get_comma_list_size #1,\ignorearguments\ignorearguments
-%    \edef\commalistsize{\the\commalistcounter}}
 
 \def\syst_helpers_get_comma_list_size_yes#+]%
   {\commalistcounter\zerocount
@@ -1890,6 +1880,8 @@
 %D Depending of the generousity of the user. Afterwards one can use the \type
 %D {\if...argument} boolean. For novice: watch the stepwise doubling of \type {#}'s.
 
+%D NB : experimental versions in cont-exp.mkiv
+
 %D Common:
 
 \newtoks\t_syst_aux
@@ -1905,8 +1897,7 @@
 %D Single:
 
 \unexpanded\def\dosingleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_single_empty_one_yes\syst_helpers_single_empty_one_nop}
 
 \def\syst_helpers_single_empty_one_nop
@@ -1916,8 +1907,7 @@
 %D Double
 
 \unexpanded\def\dodoubleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_double_empty_one_yes\syst_helpers_double_empty_one_nop}
 
 \def\syst_helpers_double_empty_one_yes[#1]%
@@ -1937,8 +1927,7 @@
 % Triple
 
 \unexpanded\def\dotripleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_triple_empty_one_yes\syst_helpers_triple_empty_one_nop}
 
 \def\syst_helpers_triple_empty_one_yes[#1]%
@@ -1969,8 +1958,7 @@
 %D Quadruple:
 
 \unexpanded\def\doquadrupleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_quadruple_empty_one_yes\syst_helpers_quadruple_empty_one_nop}
 
 \def\syst_helpers_quadruple_empty_one_yes[#1]%
@@ -2013,8 +2001,7 @@
 %D Quintuple:
 
 \unexpanded\def\doquintupleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_quintuple_empty_one_yes\syst_helpers_quintuple_empty_one_nop}
 
 \def\syst_helpers_quintuple_empty_one_yes[#1]%
@@ -2070,8 +2057,7 @@
 %D Sixtuple:
 
 \unexpanded\def\dosixtupleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_sixtuple_empty_one_yes\syst_helpers_sixtuple_empty_one_nop}
 
 \def\syst_helpers_sixtuple_empty_one_yes[#1]%
@@ -2141,8 +2127,7 @@
 %D Seventuple:
 
 \unexpanded\def\doseventupleempty#1%
-  {%syst_helpers_argument_reset
-   \t_syst_aux{#1}%
+  {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_seventuple_empty_one_yes\syst_helpers_seventuple_empty_one_nop}
 
 \def\syst_helpers_seventuple_empty_one_yes[#1]%
@@ -2245,9 +2230,6 @@
 %D
 %D This expands to \type{\ifsomething}.
 
-% \def\strippedcsname
-%   {\expandafter\gobbleoneargument\string}
-
 \let\strippedcsname\csstring
 
 %D \macros
@@ -2290,14 +2272,12 @@
 %D versatile (more object oriented) ones using the \type {\get..argument} commands.
 
 \unexpanded\def\complexorsimple#1%
-  {% \relax % prevents lookahead, brrr
-   \doifelsenextoptional
+  {\doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
      {\firstargumentfalse\csname\s!simple \csstring#1\endcsname}}
 
 \unexpanded\def\complexorsimpleempty#1%
-  {% \relax % prevents lookahead, brrr
-   \doifelsenextoptional
+  {\doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
      {\firstargumentfalse\csname\s!complex\csstring#1\endcsname[]}}
 
@@ -2366,6 +2346,8 @@
 %D pieces so that we have no nested \type {\nextarguments} potentially being an
 %D \type {conditional} token. Okay, these macros are not called that often but it
 %D saves crap when tracing.
+
+%D NB: experimental code in cont-exp.mkiv
 
 \unexpanded\def\dosinglegroupempty#1%
   {\t_syst_aux{#1}%
@@ -2544,60 +2526,6 @@
 %D The next six macros (dedicated to Taco) can conveniently used to select
 %D arguments. Their names explain their functionality.
 
-% \def\firstofoneargument            #1{#1}
-%
-% \def\firstoftwoarguments         #1#2{#1}
-% \def\secondoftwoarguments        #1#2{#2}
-%
-% \def\firstofthreearguments     #1#2#3{#1}
-% \def\secondofthreearguments    #1#2#3{#2}
-% \def\thirdofthreearguments     #1#2#3{#3}
-%
-% \def\firstoffourarguments    #1#2#3#4{#1}
-% \def\secondoffourarguments   #1#2#3#4{#2}
-% \def\thirdoffourarguments    #1#2#3#4{#3}
-% \def\fourthoffourarguments   #1#2#3#4{#4}
-%
-% \def\firstoffivearguments  #1#2#3#4#5{#1}
-% \def\secondoffivearguments #1#2#3#4#5{#2}
-% \def\thirdoffivearguments  #1#2#3#4#5{#3}
-% \def\fourthoffivearguments #1#2#3#4#5{#4}
-% \def\fifthoffivearguments  #1#2#3#4#5{#5}
-%
-% \def\firstofsixarguments #1#2#3#4#5#6{#1}
-% \def\secondofsixarguments#1#2#3#4#5#6{#2}
-% \def\thirdofsixarguments #1#2#3#4#5#6{#3}
-% \def\fourthofsixarguments#1#2#3#4#5#6{#4}
-% \def\fifthofsixarguments #1#2#3#4#5#6{#5}
-% \def\sixthofsixarguments #1#2#3#4#5#6{#6}
-
-% \def\firstofoneargument            #1{#1}
-%
-% \def\firstoftwoarguments         #1#0{#1}
-% \def\secondoftwoarguments        #0#2{#2}
-%
-% \def\firstofthreearguments     #1#0#0{#1}
-% \def\secondofthreearguments    #0#2#0{#2}
-% \def\thirdofthreearguments     #0#0#3{#3}
-%
-% \def\firstoffourarguments    #1#0#0#0{#1}
-% \def\secondoffourarguments   #0#2#0#0{#2}
-% \def\thirdoffourarguments    #0#0#3#0{#3}
-% \def\fourthoffourarguments   #0#0#0#4{#4}
-%
-% \def\firstoffivearguments  #1#0#0#0#0{#1}
-% \def\secondoffivearguments #0#2#0#0#0{#2}
-% \def\thirdoffivearguments  #0#0#3#0#0{#3}
-% \def\fourthoffivearguments #0#0#0#4#0{#4}
-% \def\fifthoffivearguments  #0#0#0#0#5{#5}
-%
-% \def\firstofsixarguments #1#0#0#0#0#0{#1}
-% \def\secondofsixarguments#0#2#0#0#0#0{#2}
-% \def\thirdofsixarguments #0#0#3#0#0#0{#3}
-% \def\fourthofsixarguments#0#0#0#4#0#0{#4}
-% \def\fifthofsixarguments #0#0#0#0#5#0{#5}
-% \def\sixthofsixarguments #0#0#0#0#0#6{#6}
-
 \def\firstofoneargument            #1{#1}
 
 \def\firstoftwoarguments         #1#-{#1}
@@ -2624,24 +2552,6 @@
 \def\fourthofsixarguments#-#-#-#1#-#-{#1}
 \def\fifthofsixarguments #-#-#-#-#1#-{#1}
 \def\sixthofsixarguments #-#-#-#-#-#1{#1}
-
-% \unexpanded\def\firstofoneunexpanded       #1{#1}
-%
-% \unexpanded\def\firstoftwounexpanded     #1#2{#1}
-% \unexpanded\def\secondoftwounexpanded    #1#2{#2}
-%
-% \unexpanded\def\firstofthreeunexpanded #1#2#3{#1}
-% \unexpanded\def\secondofthreeunexpanded#1#2#3{#2}
-% \unexpanded\def\thirdofthreeunexpanded #1#2#3{#3}
-
-% \unexpanded\def\firstofoneunexpanded       #1{#1}
-%
-% \unexpanded\def\firstoftwounexpanded     #1#0{#1}
-% \unexpanded\def\secondoftwounexpanded    #0#2{#2}
-%
-% \unexpanded\def\firstofthreeunexpanded #1#0#0{#1}
-% \unexpanded\def\secondofthreeunexpanded#0#2#0{#2}
-% \unexpanded\def\thirdofthreeunexpanded #0#0#3{#3}
 
 \unexpanded\def\firstofoneunexpanded       #1{#1}
 
@@ -2744,11 +2654,6 @@
 
 \def\syst_helpers_grab_raw_parameter_next
   {\expandafterspaces\syst_helpers_grab_raw_parameter}
-
-% \unexpanded\def\rawgetparameters#1[#2]#0[#4]%
-%   {\def\m_syst_parameter_n{#2}%
-%   %\expandafterspaces\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
-%    \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#4\ignorearguments\ignorearguments}
 
 \unexpanded\def\rawgetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
@@ -4078,26 +3983,28 @@
 %D \type {\GotoPar}. This one leaves \type {\par} unchanged and is therefore more
 %D robust. On the other hand, \type {\AfterPar} is not supported.
 
+\let\syst_helpers_par_before\relax
+\let\syst_helpers_par_around\relax
+
+\unexpanded\def\dowithpar#1#2%
+  {\globalpushmacro\syst_helpers_par_around
+   \def\syst_helpers_par_around##1\par{#1##1#2\globalpopmacro\syst_helpers_par_around}%
+   \expandafter\syst_helpers_par_around\ignorepars}
+
+\unexpanded\def\dogotopar#1%
+  {\globalpushmacro\syst_helpers_par_before
+   \def\syst_helpers_par_before{#1\globalpopmacro\syst_helpers_par_before}%
+   \expandafter\syst_helpers_par_before\ignorepars}
+
+\let\dogotoparcs\dogotopar
+
+\unexpanded\def\dogotoparstart
+  {\ignorepars}
+
+%D This is old and kind of obsolete:
+
 \newtoks\BeforePar
 \newtoks\AfterPar
-
-\def\redowithpar\par
-  {\doifelsenextchar\par\redowithpar\dodowithpar}%
-
-\def\dowithpar#1#2%
-  {\def\dodowithpar##1\par{#1##1#2}%
-   \redowithpar\par}
-
-\def\redogotopar\par
-  {\doifelsenextchar\par\redogotopar\dodogotopar}%
-
-\def\dogotopar#1%
-  {\def\dodogotopar{#1}%
-   \redogotopar\par}
-
-\def\dogotoparcs#1%
-  {\let\dodogotopar#1%
-   \redogotopar\par}
 
 \unexpanded\def\GetPar
   {\expanded

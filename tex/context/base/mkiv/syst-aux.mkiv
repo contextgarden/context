@@ -5347,23 +5347,27 @@
 \newtoks\BeforePar
 \newtoks\AfterPar
 
-\def\redowithpar\par
+\unexpanded\def\redowithpar\par
   {\doifelsenextchar\par\redowithpar\dodowithpar}%
 
-\def\dowithpar#1#2%
+\unexpanded\def\dowithpar#1#2%
   {\def\dodowithpar##1\par{#1##1#2}%
    \redowithpar\par}
 
-\def\redogotopar\par
+\unexpanded\def\redogotopar\par
   {\doifelsenextchar\par\redogotopar\dodogotopar}%
 
-\def\dogotopar#1%
+\unexpanded\def\dogotopar#1%
   {\def\dodogotopar{#1}%
    \redogotopar\par}
 
-\def\dogotoparcs#1%
+\unexpanded\def\dogotoparcs#1%
   {\let\dodogotopar#1%
    \redogotopar\par}
+
+\ifdefined \ignorepars \else
+    \unexpanded\def\ignorepars{\dogotoparcs\relax}
+\fi
 
 \unexpanded\def\GetPar
   {\expanded

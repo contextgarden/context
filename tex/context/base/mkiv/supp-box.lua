@@ -76,6 +76,7 @@ local getdimensions = nuts.dimensions
 local hpack         = nuts.hpack
 local vpack         = nuts.vpack
 local traverse_id   = nuts.traverse_id
+local traverse      = nuts.traverse
 local free          = nuts.free
 local findtail      = nuts.tail
 
@@ -835,7 +836,7 @@ implement {
 
 if CONTEXTLMTXMODE > 0 then
 
-    interfaces.implement {
+    implement {
         name      = "widthuptohere",
         public    = true,
         protected = true,
@@ -855,7 +856,7 @@ if CONTEXTLMTXMODE > 0 then
 
 end
 
-interfaces.implement {
+implement {
     name      = "doifelseindented",
     public    = true,
     protected = true,
@@ -880,5 +881,27 @@ interfaces.implement {
             end
         end
         commands.doifelse(b)
+    end,
+}
+
+implement {
+    name      = "noflinesinbox",
+    public    = true,
+    protected = false,
+    arguments = "integer",
+    actions   = function(n)
+        local c = 0
+        local b = getbox(n)
+        if b then
+            b = getlist(b)
+            if b then
+                for n, id in traverse(b) do
+                    if id == hlist_code or id == vlist_code then
+                        c = c + 1
+                    end
+                end
+            end
+        end
+        context(c)
     end,
 }

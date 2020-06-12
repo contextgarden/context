@@ -114,7 +114,8 @@ interfaces.implement {
     name      = "analyzerotate",
     actions   = analyzerotate,
     arguments = {
-        "integer",
+--         "integer",
+        "number",
         "dimension",
         "dimension",
         "dimension",

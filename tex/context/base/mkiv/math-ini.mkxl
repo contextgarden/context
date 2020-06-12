@@ -1652,6 +1652,8 @@
 \setnewconstant\c_math_semicolon"003B
 \setnewconstant\c_math_special  "8000
 
+% todo: use \Umathclass\c_math_comma\mathpunctcode etc for temporary switching
+
 \def\math_set_o_comma    {\Umathcode\c_math_comma    \mathordcode  \zerocount\c_math_comma}
 \def\math_set_p_comma    {\Umathcode\c_math_comma    \mathpunctcode\zerocount\c_math_comma}
 \def\math_set_o_period   {\Umathcode\c_math_period   \mathordcode  \zerocount\c_math_period}
@@ -1665,6 +1667,8 @@
 \unexpanded\def\math_punctuation_nop_comma    {\begingroup\math_set_p_comma    ,\endgroup}
 \unexpanded\def\math_punctuation_nop_period   {\begingroup\math_set_o_period   .\endgroup}
 \unexpanded\def\math_punctuation_nop_semicolon{\begingroup\math_set_p_semicolon;\endgroup}
+
+% todo: use new lookahead stuff
 
 \unexpanded\def\math_punctuation_all_comma    {\futurelet\nexttoken\math_punctuation_comma_next}
 \unexpanded\def\math_punctuation_all_period   {\futurelet\nexttoken\math_punctuation_period_next}

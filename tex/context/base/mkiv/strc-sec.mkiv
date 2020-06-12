@@ -998,9 +998,9 @@
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
    \ifconditional\headisdisplay
-     \ignorespaces
+     \expandafter\ignorespaces
    \else
-     \expandafter\GotoPar
+     \expandafter\ignorepars
    \fi}
 
 % typesetting (the getters are public)
