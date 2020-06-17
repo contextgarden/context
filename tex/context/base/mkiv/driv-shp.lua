@@ -547,7 +547,7 @@ local hlist_out, vlist_out  do
               pos_r = getdirection(this_box)
         local boxwidth,
               boxheight,
-              boxdepth   = getwhd(this_box)
+              boxdepth = getwhd(this_box)
 
         local cur_h = 0
         local cur_v = 0
@@ -675,10 +675,10 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
-                local boxdir = getdirection(current) or lefttoright_code
                 local width, height, depth = getwhd(current)
                 local list = getlist(current)
                 if list then
+                    local boxdir = getdirection(current) or lefttoright_code
                     local shift, orientation = getshift(current)
                     if not orientation then
                         local basepoint_h = boxdir ~= pos_r and width or 0
@@ -896,7 +896,7 @@ local hlist_out, vlist_out  do
 
         local boxwidth,
               boxheight,
-              boxdepth   = getwhd(this_box)
+              boxdepth = getwhd(this_box)
 
         local cur_h    = 0
         local cur_v    = - boxheight
@@ -997,10 +997,10 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
-                local boxdir = getdirection(current) or lefttoright_code
                 local width, height, depth = getwhd(current)
                 local list = getlist(current)
                 if list then
+                    local boxdir = getdirection(current) or lefttoright_code
                     local shift, orientation = getshift(current)
                     if not orientation then
                      -- local basepoint_h = shift

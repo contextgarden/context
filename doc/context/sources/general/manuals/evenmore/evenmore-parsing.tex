@@ -1,0 +1,425 @@
+% language=us
+
+\environment evenmore-style
+
+\startcomponent evenmore-parsing
+
+\startchapter[title=Parsing]
+
+The macro mechanism is \TEX\ is quite powerful and once you understand the
+concept of mixing parameters and delimiters you can do a lot with it. I assume
+that you know what we're talking about, otherwise quit reading. When grabbing
+arguments, there are a few catches.
+
+\startitemize
+\startitem
+    When they are used, delimiters are mandate: \TEX\ will go on reading an
+    argument till the (current) delimiter condition is met. This means that when
+    you forget one you end up with way more in the argument than expected or even
+    run out of input.
+\stopitem
+\startitem
+    Because specified arguments and delimiters are mandate, when you want to
+    parse input, you often need multi|-|step macros that first pick up the to be
+    parsed input, and then piecewise fetch snippets. Bogus delimiters have to be
+    appended to the original in order to catch a run away argument and checking
+    has to be done to get rid of them when all is ok.
+\stopitem
+\stopitemize
+
+The first item can be illustrated as follows:
+
+\starttyping[option=TEX]
+\def\foo[#1]{...}
+\stoptyping
+
+When \type {\foo} gets expanded \TEX\ first looks for a \type{[} and then starts
+collecting tokens for parameter \type {#1}. It stops doing that when aa \type {]}
+is seen. So,
+
+\starttyping[option=TEX]
+\starttext
+    \foo[whatever
+\stoptext
+\stoptyping
+
+will for sure give an error. When collecting tokens, \TEX\ doesn't expand them so
+the \type {\stoptext} is just turned into a token that gets appended.
+
+The second item is harder to explain (or grasp):
+
+\starttyping[option=TEX]
+\def\foo[#1=#2]{(#1/#2)}
+\stoptyping
+
+Here we expect a key and a value, so these will work:
+
+\starttyping[option=TEX]
+\foo[key=value]
+\foo[key=]
+\stoptyping
+
+while these will fail:
+
+\starttyping[option=TEX]
+\foo[key]
+\foo[]
+\stoptyping
+
+unless we have:
+
+\starttyping[option=TEX]
+\foo[key]=]
+\foo[]=]
+\stoptyping
+
+But, when processing the result, we then need to analyze the found arguments and
+correct for them being wrong. For instance, argument \type {#1} can become \type
+{]} or here \type {key]}. When indeed a valid key|/|value combination is given we
+need to get rid of the two \quote {fixup} tokens \type{=]}. Normally we will have
+multiple key|/|value pairs separated by a comma, and in practice we only need to
+catch the missing equal because we can ignore empty cases. There are plenty of
+examples (rather old old code but also more modern variants) in the \CONTEXT\
+code base.
+
+I will now show some new magic that is available in \LUAMETATEX\ as experimental
+code. It will be tested in \LMTX\ for a while and might evolve in the process.
+
+\startbuffer
+\def\foo#1=#2,{(#1/#2)}
+
+\foo 1=2,\ignorearguments
+\foo 1=2\ignorearguments
+\foo 1\ignorearguments
+\foo \ignorearguments
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here we pick up a key and value separated by an equal sign. We end the input with
+a special signal command: \type {\ignorearguments}. This tells the parser to quit
+scanning. So, we get this, without any warning with respect to a missing
+delimiter of running away:
+
+\getbuffer
+
+The implementation is actually fairly simple and adds not much overhead.
+Alternatives (and I pondered a few) are just too messy, would remind me too much
+of those awful expression syntaxes, and definitely impact performance of macro
+expansion, therefore: a no|-|go.
+
+Using this new feature, we can implement a key value parser that does a sequence.
+The prototypes used to get here made only use of this one new feature and
+therefore still had to do some testing of the results. But, after looking at the
+code, I decided that a few more helpers could make better looking code. So this
+is what I ended up with:
+
+\startbuffer
+\def\grabparameter#1=#2,%
+  {\ifarguments\or\or
+     % (\whatever/#1/#2)\par%
+     \expandafter\def\csname\namespace#1\endcsname{#2}%
+     \expandafter\grabnextparameter
+   \fi}
+
+\def\grabnextparameter
+  {\expandafterspaces\grabparameter}
+
+\def\grabparameters[#1]#2[#3]%
+  {\def\namespace{#1}%
+   \expandafterspaces\grabparameter#3\ignorearguments\ignorearguments}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Now, this one actually does what the \CONTEXT\ \type {\getparameters} command
+does: setting variables in a namespace. Being a parameter driven macro package
+this kind of macros have been part of \CONTEXT\ since the beginning. There are
+some variants and we also need to deal with the multilingual interface. Actually,
+\MKIV\ (and therefore \LMTX) do things a bit different, but the same principles
+apply.
+
+The \type {\ignorearguments} quits the scanning. Here we need two because we
+actually quit twice. The \type {\expandafterspaces} can be implemented in
+traditional \TEX\ macros but I though it is nice to have it this way; the fact
+that I only now added it has more to do with cosmetics. One could use the already
+somewhat older extension \type {\futureexpandis} (which expands the second or
+third token depending seeing the first, in this variant ignoring spaces) or a
+bunch of good old primitives to do the same. The new conditional \type
+{\ifarguments} can be used to act upon the number of arguments given. It reflects
+the most recently expanded macro. There is also a \type {\lastarguments}
+primitive (that provides the number of arguments.
+
+So, what are the benefits? You might think that it is about performance, but in
+practice there are not that many parameter settings going on. When I process the
+\LUAMETATEX\ manual, only some 5000 times one or more parameters are set. And
+even in a way more complex document that I asked my colleague to run I was a bit
+disappointed that only some 30.000 cases were reported. I know of users who have
+documents with hundreds of thousands of cases, but compared to the rest of
+processing this is not where the performance bottleneck is. \footnote {Think of
+thousands of pages of tables with cell settings applied.} This means that a
+change in implementation like the above is not paying off in significantly better
+runtime: all these low level mechanisms in \CONTEXT\ have been very well
+optimized over the years. And faster machines made old bottlenecks go away
+anyway. Take this use case:
+
+\starttyping[option=TEX]
+\grabparameters
+  [foo]
+  [key0=value0,
+   key1=value1,
+   key2=value2,
+   key3=value3]
+\stoptyping
+
+After this, parameters can be accessed with:
+
+\starttyping[option=TEX]
+\def\getvalue#1#2{\csname#1#2\endcsname}
+\stoptyping
+
+used as:
+
+\starttyping[option=TEX]
+\getvalue{foo}{key2}
+\stoptyping
+
+which takes care of characters normally not permitted in macro names, like the
+digits in this example. Of course some namespace protection can be added, like
+adding a colon between the namespace and the key, but let's take just this one.
+
+Some 10.000 expansions of the grabber take on my machine 0.045 seconds while the
+original \type {\getparameters} takes 0.090 so although for this case we're twice
+as fast, the 0.045 difference will not be noticed on a real run. After all, when
+these parameters are set some action will take place. Also, we don't actually use
+this macro for collecting settings with the \type {\setupsomething} commands, so
+the additional overhead that is involved adds a baseline to performance that can
+turn any gain into noise. But some users might notice some gain. Of course this
+observation might change once we apply this trickery in more places than
+parameter parsing, because I have to admit that there might be other places in
+the support macros where we can benefit: less code, double performance, but these
+are all support macros that made sense in \MKII\ and not that much in \MKIV\ or
+\LMTX\ and are kept just for convenience and backward compatibility. Think of
+some list processing macros. So, as a kind of nostalgic trip I decided to rewrite
+some low level macros anyway, if only to see what is no longer used and|/|or to
+make the code base somewhat (c)leaner.
+
+Elsewhere I introduce the \type {#0} argument indicator. That one will just
+gobbles the argument and does not store a token list on the stack. It saves some
+memory access and token recycling when arguments are not used. Another special
+indicator is \type {#+}. That one will flag an argument to be passed as|-|is. The
+\type {#-} variant will simply discard an argument and move on. The following
+examples demonstrate this:
+
+\startbuffer
+\def\foo    [#1]{\detokenize{#1}}
+\def\ofo    [#0]{\detokenize{#1}}
+\def\oof    [#+]{\detokenize{#1}}
+\def\fof[#1#-#2]{\detokenize{#1#2}}
+\def\fff[#1#0#3]{\detokenize{#1#3}}
+
+\meaning\foo\ : <\foo[{123}]> \crlf
+\meaning\ofo\ : <\ofo[{123}]> \crlf
+\meaning\oof\ : <\oof[{123}]> \crlf
+\meaning\fof\ : <\fof[123]>   \crlf
+\meaning\fff\ : <\fof[123]>   \crlf
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This gives:
+
+{\tttf \getbuffer}
+
+% \getcommalistsize[a,b,c]   \commalistsize\par
+% \getcommalistsize[{a,b,c}] \commalistsize\par
+
+When playing with new features like the one described here, it makes sense to use
+them in existing macros so that they get well tested. Some of the low level
+system files come in different versions: for \MKII, \MKIV\ and \LMTX. The \MKII\
+files often also have the older implementations, so they are also good for
+looking at the history. The \LMTX\ files can be leaner and meaner than the \MKIV\
+files because they use the latest features. \footnote {Some 70 primitives present
+in \LUATEX\ are not in \LUAMETATEX. On the other hand there are also about 70 new
+primitives. Of those gone, most concerned the backend, fonts or no longer
+relevant features from other engines. Of those new, some are really new
+primitives (conditionals, expansion magic), some control previously hardwired
+behaviour, some give access to properties of for instance boxes, and some are
+just variants of existing ones but with options for control.}
+
+When I was rewriting some of these low level \MKIV\ macros using the newer features,
+at some point I wondered why I still had to jump through some hoops. Why not just
+add some more primitives to deal with that? After all, \LUATEX\ and \LUAMETATEX\
+already have more primitives that are helpful in parsing, so a few dozen more lines
+don't hurt. As long as these primitives are generic and not that specific. In this
+particular case we talk about two new conditionals (in addition to the already
+present comparison primitives):
+
+\starttyping[option=TEX]
+\ifhastok    <token>       {<token list>}
+\ifhastoks  {<token list>} {<token list>}
+\ifhasxtoks {<token list>} {<token list>}
+\stoptyping
+
+You can probably guess what they do from their names. The last one is the
+expandable variant of the second one. The first one is the fast one. When playing
+with these I decided to redo the set checker. In \MKII\ that one is done in good
+old \TEX, in \MKIV\ we use \LUA. So, how about going back to \TEX ?
+
+\starttyping[option=TEX]
+\ifhasxtoks {cd} {abcdef}
+\stoptyping
+
+This check is true. But that doesn't work well with a comma separated list, but
+there is a way out:
+
+\starttyping[option=TEX]
+\ifhasxtoks {,cd,} {,ab,cd,ef,}
+\stoptyping
+
+However, when I applied that a user reported that it didn't handle optional
+spaces before commas. So how do we deal with such optional characters tokens?
+
+\startbuffer
+\def\setcontains#1#2{\ifhasxtoks{,#1,}{,#2,}}
+
+\ifcondition\setcontains{cd}{ab,cd,ef}YES \else NO \fi
+\ifcondition\setcontains{cd}{ab, cd, ef}YES \else NO \fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get:
+
+\getbuffer
+
+The \type {\ifcondition} is an old one. When nested in a condition it will be
+seen as an \type {\if...} by the fast skipping scanner, but when expanded it will
+go on and a following macro has to expand to a proper condition. That said, we
+can take care of the optional space by entering some new territory. Look at this:
+
+\startbuffer
+\def\setcontains#1#2{\ifhasxtoks{,\expandtoken 9 "20 #1,}{,#2,}}
+
+\ifcondition\setcontains{cd}{ab,cd,ef}YES \else NO \fi
+\ifcondition\setcontains{cd}{ab, cd, ef}YES \else NO \fi
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get:
+
+\getbuffer
+
+So how does that work? The \type {\expandtoken} injects a space token with
+catcode~9 which means that it is in the to be ignored category. When a to be
+ignored token is seen, and the to be checked token is a character (letter, other,
+space or ignored) then the character code will be compared. When they match, we
+move on, otherwise we just skip over the ignored token (here the space).
+
+In the \CONTEXT\ code base there are already files that are specific for \MKIV\
+and \LMTX. The most visible difference is that we use the \type {\orelse}
+primitive to construct nicer test trees, and we also use some of the additional
+\type {\future...} and \type {\expandafter...} features. The extensions discussed
+here make for the most recent differences (we're talking end May 2020).
+
+After implementing this trick I decided to look at the macro definition mechanism
+one more time and see if I could also use this there. Before I demonstrate
+another next feature, I will again show the argument extensions, this time with
+a fourth variant:
+
+\startbuffer[definitions]
+\def\TestA#1#2#3{{(#1)(#2)(#3)}}
+\def\TestB#1#0#3{(#1)(#2)(#3)}
+\def\TestC#1#+#3{(#1)(#2)(#3)}
+\def\TestD#1#-#2{(#1)(#2)}
+\stopbuffer
+
+\typebuffer[definitions][option=TEX] \getbuffer[definitions]
+
+The last one specifies a to be thrashed argument: \type {#-}. It goes further
+than the second one (\type {#0}) which still keeps a reference. This is why in
+this last case the third argument gets number \type {2}. The meanings of these
+four are:
+
+\startlines \tttf
+\meaning\TestA
+\meaning\TestB
+\meaning\TestC
+\meaning\TestD
+\stoplines
+
+There are some subtle differences between these variants, as you can see from
+the following examples:
+
+\startbuffer[usage]
+\TestA1{\red 2}3
+\TestB1{\red 2}3
+\TestC1{\red 2}3
+\TestD1{\red 2}3
+\stopbuffer
+
+\typebuffer[usage][option=TEX]
+
+Here you also see the side effect of keeping the braces. The zero argument (\type
+{#0}) is ignored, and the thrashed argument (\type {#-}) can't even be accessed.
+
+\startlines \tttf \getbuffer[usage] \stoplines
+
+In the next example we see two delimiters being used, a comma and a space, but
+they have catcode~9 which flags them as ignored. This is a signal for the parser
+that both the comma and the space can be skipped. The zero arguments are still on
+the parameter stack, but the thrashed ones result in a smaller stack, not that
+the later matters much on today's machines.
+
+\startbuffer
+\normalexpanded {
+    \def\noexpand\foo
+    \expandtoken 9 "2C % comma
+    \expandtoken 9 "20 % space
+    #1=#2]%
+}{(#1)(#2)}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+This means that the next tree expansions won't bark:
+
+\startbuffer
+\foo,key=value]
+\foo, key=value]
+\foo  key=value]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+or expanded:
+
+\startlines \tttf \getbuffer \stoplines
+
+Now, why didn't I add these primitives long ago already? After all, I already
+added dozens of new primitives over the years. To quote Andrew Cuomo, what
+follows now are opinions, not facts.
+
+Decades ago, when \TEX\ showed up, there was no Internet. I remember that I got
+my first copy on floppy disks. Computers were slow and memory was limited. The
+\TEX book was the main resource and writing macros was a kind of art. One could
+not look up solutions, so trial and error was a valid way to go. Figuring out
+what was efficient in terms of memory consumption and runtime was often needed
+too. I remember meetings where one was not taken serious when not talking in the
+right \quote {token}, \quote {node}, \quote {stomach} and \quote {mouth} speak.
+Suggesting extensions could end up in being told that there was no need because
+all could be done in macros or even arguments of the \quotation {who needs that}.
+I must admit that nowadays I wonder to what extend that was related to extensions
+taking away some of the craftmanship and showing off. In a way it is no surprise
+that (even trivial to implement) extensions never surfaced. Of course then the
+question is: will extensions that once were considered not of importance be used
+today? We'll see.
+
+Let's end by saying that, as with other experiments, I might port some of the new
+features in \LUAMETATEX\ to \LUATEX, but only after they have become stable and
+have been tested in \LMTX\ for quite a while.
+
+\stopchapter
+
+\stopcomponent

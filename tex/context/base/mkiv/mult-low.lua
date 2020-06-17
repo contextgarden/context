@@ -90,7 +90,7 @@ return {
         "fontexheight", "fontemwidth", "fontextraspace", "slantperpoint",
         "mathexheight", "mathemwidth",
         "interwordspace", "interwordstretch", "interwordshrink", "exheight", "emwidth", "extraspace",
-        "mathsupdisplay", "mathsupnormal", "mathsupcramped", "mathsubnormal", "mathsubcombined",  "mathaxisheight",
+        "mathaxisheight",
         "muquad",
         --
         -- maybe a different class

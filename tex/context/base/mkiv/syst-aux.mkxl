@@ -2979,6 +2979,9 @@
 \def\recursedepth{\the\outerrecurse}
 \def\recurselevel{0}
 
+\let\recurseaction\relax
+\let\recursestring\empty
+
 \let\syst_helpers_stepwise_next\relax
 
 \unexpanded\def\syst_helpers_stepwise_recurse#1#2#3% from to step
@@ -3087,6 +3090,7 @@
 %D When needed, one can call for \type {\looplevel} and \type {\loopdepth}.
 
 \let\endofloop\donothing % maybe \syst_helpers_loop_end
+
 
 \unexpanded\def\doloop#1%
   {\global\advance\outerrecurse \plusone

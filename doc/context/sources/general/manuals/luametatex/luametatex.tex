@@ -9,13 +9,6 @@
 % mswin       2562k  2555k   mswin       2481k  2471k
 % ------------------------   ------------------------
 
-% experiment (if this becomes default we need to check visualizers and disable it when needed):
-
-\startluacode
-nodes.handlers.cleanuppage = nodes.nuts.flatten_discretionaries
-nodes.tasks.prependaction("shipouts", "normalizers", "nodes.handlers.cleanuppage", nil, "nut", "enabled")
-\stopluacode
-
 % 20200509 : 258 pages
 %
 % my 2013 i7 laptop with windows : 11.8 sec mingw64

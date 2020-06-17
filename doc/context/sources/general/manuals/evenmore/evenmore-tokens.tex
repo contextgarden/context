@@ -1,0 +1,460 @@
+% language=us
+
+% TODO: copy_node_list : return tail
+% TODO: grabnested
+
+\environment evenmore-style
+
+\startcomponent evenmore-tokens
+
+\startchapter[title=Tokens]
+
+\usemodule[article-basic,abbreviations-logos]
+
+\starttext
+
+{\em This is mostly a wrapup of some developments, and definitely not a tutorial.}
+
+Talking deep down \TEX\ is talking about tokens and nodes. Roughly spoken, from
+the perspective of the user, tokens are what goes in and stays in (as macro,
+token list of whatever) and nodes is what get produced and eventually results in
+output. A character in the input becomes one token (before expansion) and a
+control sequence like \type {\foo} also is turned into a token. Tokens can be
+linked into lists. This actually means that in the engine we can talk of tokens
+in two ways: the single item with properties that trigger actions, or as compound
+item with that item and a pointer to the next token (called link). In \LUA\ speak
+token memory can be seen as:
+
+\starttyping
+fixmem = {
+    { info, link },
+    { info, link },
+    { info, link },
+    { info, link },
+    ....
+}
+\stoptyping
+
+Both are 32 bit integers. The \type {info} is a combination of a command code (an
+operator) and a so called chr code (operand) and these determine its behaviour.
+For instance the command code can indicate an integer register and the chr code
+then indicates the number of that register. So, like:
+
+\starttyping
+fixmem = {
+    { { cmd, chr}, index_into_fixmem },
+    { { cmd, chr}, index_into_fixmem },
+    { { cmd, chr}, index_into_fixmem },
+    { { cmd, chr}, index_into_fixmem },
+    ....
+}
+\stoptyping
+
+
+In the following line the characters that make three words are tokens (letters),
+so are the space (spacer), the curly braces (begin- and endgroup token) and the
+bold face switch (which becomes one token which resolves to a token list of
+tokens that trigger actions (in this case switching to a bolder font).
+
+\starttyping
+foo {\bf bar} foo
+\stoptyping
+
+When \TEX\ reads a line of input tokens are expanded immediately but a sequence
+can also become part fo a macro body or token list. Here we have $3_{\type{foo}}
++ 1 + 1_{\type+{+} + 1_{\type{\bf}} + 3_{\type{bar}} + 1_{\type+}+} + 1 +
+3_{\type{foo}} = 14$ tokens.
+
+A control sequence normally starts with a backslash. Some are built in, these are
+called primitives, and others are defined by the macro package or the user. There
+is a lookup table that relates the tokenized control sequence to some action. For
+instance:
+
+\starttyping
+\def\foo{foo}
+\stoptyping
+
+creates an entry that leads (directly or following a hash chain) to the three
+letter token list. Every time the input sees \type {\foo} it gets resolved to
+that list via a hash lookup. However, once internalized and part of a token list,
+it is a direct reference. On the other hand,
+
+\starttyping
+\the\count0
+\stoptyping
+
+triggers the \type {\the} action that relates to this control sequence, which
+then reads a next token and operates on that. That next token itself expects a
+number as follow up. In the end the value of \type {\count0} is found and that
+one is also in the so called equivalent lookup table, in what \TEX\ calls
+specific regions.
+
+\starttyping
+equivalents = {
+    { level, type, value },
+    { level, type, value },
+    { level, type, value },
+    ...
+}
+\stoptyping
+
+The value is in most cases similar to the info (cmd & chr) field in fixmem, but
+one difference is that counters, dimensions etc directly store their value, which
+is why we sometimes need the type separately, for instance in order to reclaim
+memory for glue or node specifications. It sound complicated and it is, but as
+long as you get a rough idea we can continue. Just keep in mind that tokens
+sometimes get expanded on the fly, and sometimes just get stored.
+
+There are a lot of primitives and each has a unique info. The same is true for
+characters (each category has its own command code, so regular letters can be
+distinguished from other tokens, comment signs, math triggers etc). All important
+basic bits are in table of equivalents: macros as well as registers although the
+meaning of a macro and content of token lists lives in the fixmem table and
+the content of boxes in so called node lists (nodes have their own memory).
+
+In traditional \TEX\ the lookup table for primitives, registers and macros is as
+compact as can be: it is an array of so called 32 bit memory words. These can be
+divided into halfs and quarters, so in the source you find terms like \type
+{halfword} and \type {quarterword}. The lookup table is a hybrid:
+
+\starttyping
+[level 8] [type 8] [value 16] | [equivalent 32]
+[level 8] [type 8] [value 16] | [equivalent 32]
+[level 8] [type 8] [value 16] | [equivalent 32]
+...
+\stoptyping
+
+The mentioned counters and such are directly encoded in an equivalent and the
+rest is a combination of level, type and value. The level is used for the
+grouping, and in for instance \PDFTEX\ there can therefore be at most 255 levels.
+In \LUATEX\ we use a wider model. There we have 64 bit memory words which means
+that we have way more levels and don't need to have this dual nature:
+
+\starttyping
+[level 16] [type 16] [value 32]
+[level 16] [type 16] [value 32]
+[level 16] [type 16] [value 32]
+...
+\stoptyping
+
+We already showed a \LUA\ representation. The type in this table is what a
+command code is in an \quote {info} field. In such a token the integer encodes
+the command as well as a value (called chr). In the lookup table the type is the
+command code. When \TEX\ is dealing with a control sequences it looks at the
+type, otherwise it filters the command from the token integer. This means that a
+token cannot store an integer (or dimension), but the lookup table actually can
+do that. However, commands can limit the range, for instance characters are bound
+by what \UNICODE\ permits.
+
+Internally, \LUATEX\ still uses these ranges of fast accessible registers, like
+counters, dimensions and attributes. However, we saw that in \LUATEX\ they don't
+overlap with the level and type. In \LUATEX, at least till version 1.13 we still
+have the shadow array for levels but in \LUAMETATEX\ we just use those in the
+equivalents lookup table. If you look in the \PASCAL\ source you will notice that
+arrays run from \type {[somemin ... somemax]} which in the \CCODE\ source would
+mean using offsets. Actually, the shadow array starts at zero so we waste the
+part that doesn't need shadowing. It is good to remind ourselves that traditional
+\TEX\ is 8 bit character based.
+
+The equivalents lookup table has all kind of special ranges (combined into
+regions of similar nature, in \TEX\ speak), like those for lowercase mapping,
+specific catcode mappings, etc.\ but we're still talking of $n \times 256$
+entries. In \LUATEX\ all these mappings are in dedicated sparse hash tables
+because we need to support the full \UNICODE\ repertoire. This means that, while
+on the one hand \LUATEX\ uses more memory for the lookup table the number of
+slots can be less. But still there was the waste of the shadow level table: I
+didn't calculate the exact saving of ditching that one, but I bet it came close
+to what was available as total memory for programs and data on the first machines
+that I used for running \TEX. But \unknown\ after more than a decade of \LUATEX\
+we now reclaimed that space in \LUAMETATEX. \footnote {Don't expect a gain in
+performance, although using less memory might pay back on a virtual machine or
+when \TEX\ has to share the \CPU\ cache.}
+
+Now, in case you're interested (and actually I just write it down because I don't
+want to forget it myself) the lookup table in \LUAMETATEX\ is layout as follows
+
+\starttabulate
+\NC the hash table                    \NC \NC \NR
+\NC some frozen primitives            \NC \NC \NR
+\NC current and defined fonts         \NC one slot + many pointers \NC \NR
+\NC undefined control sequence        \NC one slot \NC \NR
+\NC internal and register glue        \NC pointer to node \NC \NR
+\NC internal and register muglue      \NC pointer to node \NC \NR
+\NC internal and register toks        \NC pointer to token list \NC \NR
+\NC internal and register boxes       \NC pointer to node list \NC \NR
+\NC internal and register counts      \NC value in token \NC \NR
+\NC internal and register attributes  \NC value in token \NC \NR
+\NC internal and register dimens      \NC value in token \NC \NR
+\NC some special data structures      \NC pointer to node list \NC  \NC \NR
+\NC the (runtime) extended hash table \NC  \NC \NR
+\stoptabulate
+
+Normally a user doesn't need to know anything about these specific properties of
+the engine and it might comfort you to know that for a long time I could stay
+away from these details. One difference with the other engines is that we have
+internal variables and registers split more explicitly. The special data
+structures have their own slots and are not just put somewhere (semi random). The
+initialization is bit more granular in that we properly set the types (cmd codes)
+for registers which in turn is possible because for instance we're able to
+distinguish glue types. This is all part of coming up with a bit more consistent
+interface to tokens from the \LUA\ end. It also permits diagnostics.
+
+Anyway, we now are ready for some more details about tokens. You don't need to
+understand all of it in order to define decent macros. But when you are using
+\LUATEX\ and do want to mess around here is some insight. Assume we have defined
+these macros:
+
+\startluacode
+    local alsoraw = false
+    function documentdata.StartShowTokens(rawtoo)
+        context.starttabulate { "|T|rT|lT|rT|rT|rT|" .. (rawtoo and "rT|" or "") }
+        context.BC()
+        context.BC() context("cmd")
+        context.BC() context("name")
+        context.BC() context("chr")
+        context.BC() context("cs")
+        if rawtoo then
+            context.BC() context("rawchr")
+        end
+        context.BC() context.NR()
+        context.SL()
+        alsoraw = rawtoo
+    end
+    function documentdata.StopShowTokens()
+        context.stoptabulate()
+    end
+    function documentdata.ShowToken(name)
+        local cmd, chr, cs = token.get_cmdchrcs(name)
+        local _,   raw, _  = token.get_cmdchrcs(name,true)
+        context.NC() context("\\string\\"..name)
+        context.NC() context(cmd)
+        context.NC() context(tokens.commands[cmd])
+        context.NC() context(chr)
+        context.NC() context(cs)
+        if alsoraw and chr ~= raw then
+            context.NC() context(raw)
+        end
+        context.NC() context.NR()
+    end
+\stopluacode
+
+\startbuffer
+\def\MacroA{a} \def\MacroB{b}
+\def\macroa{a} \def\macrob{b}
+\def\MACROa{a} \def\MACROb{b}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+How does that end up internally?
+
+\startluacode
+    documentdata.StartShowTokens(true)
+    documentdata.ShowToken("scratchcounterone")
+    documentdata.ShowToken("scratchcountertwo")
+    documentdata.ShowToken("scratchdimen")
+    documentdata.ShowToken("scratchtoks")
+    documentdata.ShowToken("scratchcounter")
+    documentdata.ShowToken("letterpercent")
+    documentdata.ShowToken("everypar")
+    documentdata.ShowToken("%")
+    documentdata.ShowToken("pagegoal")
+    documentdata.ShowToken("pagetotal")
+    documentdata.ShowToken("hangindent")
+    documentdata.ShowToken("hangafter")
+    documentdata.ShowToken("dimdim")
+    documentdata.ShowToken("relax")
+    documentdata.ShowToken("dimen")
+    documentdata.ShowToken("stoptext")
+    documentdata.ShowToken("MacroA")
+    documentdata.ShowToken("MacroB")
+    documentdata.ShowToken("MacroC")
+    documentdata.ShowToken("macroa")
+    documentdata.ShowToken("macrob")
+    documentdata.ShowToken("macroc")
+    documentdata.ShowToken("MACROa")
+    documentdata.ShowToken("MACROb")
+    documentdata.ShowToken("MACROc")
+    documentdata.StopShowTokens()
+\stopluacode
+
+We show the raw chr value but in the \LUA\ interface these are normalized to for
+instance proper register indices. This is because the raw numbers can for
+instance be indices into memory or some \UNICODE\ reference with catcode specific
+bits set. But, while these indices are real and stable, these offsets can
+actually change when the implementation changes. For that reason, in \LUAMETATEX\
+we can better talk of command codes as main indicator and:
+
+\starttabulate
+\NC subcommand       \NC for tokens that have variants, like \type {\ifnum} \NC \NR
+\NC register indices \NC for the 64K register banks, like \type {\count0} \NC \NR
+\NC internal indices \NC for internal variables like \type {\parindent} \NC \NR
+\NC characters       \NC specific \UNICODE\ slots combined with catcode \NC \NR
+\NC pointers         \NC to token lists, macros, \LUA\ functions, nodes \NC \NR
+\stoptabulate
+
+This so called \type {cs} number is a pointer into the table of equivalents. That
+number results comes from the hash table. A macro name, when scanned the first
+time, is still a sequence of bytes. This sequence is used to compute a hash
+number, which is a pointer to a slot in the lower part of the hash (lookup)
+table. That slot points to a string and a next hash entry in the higher end. A
+lookup goes as follows:
+
+\startitemize[n,packed]
+    \startitem
+        compute the index into the hash table from the string
+    \stopitem
+    \startitem
+        goto the slot with that index and compare the \type {string} field
+    \stopitem
+    \startitem
+        when there is no match goto the slot indicated by the \type {next} field
+    \stopitem
+    \startitem
+        compare again and keep following \type {next} fields till there is no
+        follow up
+    \stopitem
+    \startitem
+        optionally create a new entry
+    \stopitem
+    \startitem
+        use the index of that entry as index in the table of equivalents
+    \stopitem
+\stopitemize
+
+So, in \LUA\ speak, we have:
+
+\starttyping
+hashtable = {
+    -- lower part, accessed via the calculated hash number
+    { stringpointer, nextindex },
+    { stringpointer, nextindex },
+    ...
+    -- higher part, accessed by following nextindex
+    { stringpointer, nextindex },
+    { stringpointer, nextindex },
+    ...
+}
+\stoptyping
+
+Eventually, after following a lookup chain in the hash tabl;e, we end up at
+pointer to the equivalents lookup table that we already discussed. From then on
+we're talking tokens. When you're lucky, the list is small and you have a quick
+match. The maximum initial hash index is not that large, around 64K (double that
+in \LUAMETATEX), so in practice there will often be some indirect
+(multi|-|compare) match but increasing the lower end of the hash table might
+result in less string comparisons later on, but also increases the time to
+calculate the initial hash needed for accessing the lower part. Here you can sort
+of see that:
+
+\startbuffer
+\dostepwiserecurse{`a}{`z}{1}{
+    \expandafter\def\csname whatever\Uchar#1\endcsname
+      {}
+}
+\dostepwiserecurse{`a}{`z}{1}{
+    \expandafter\let\csname somemore\Uchar#1\expandafter\endcsname
+        \csname whatever\Uchar#1\endcsname
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startluacode
+    documentdata.StartShowTokens(true)
+    for i=utf.byte("a"),utf.byte("z") do
+        documentdata.ShowToken("whatever"..utf.char(i))
+        documentdata.ShowToken("somemore"..utf.char(i))
+    end
+    documentdata.StopShowTokens()
+\stopluacode
+
+The command code indicates a macro and the action related to it is an expandable
+call. We have no sub command \footnote {We cheat a little here because chr
+actually is an index into token memory but we don't show them as such.} so that
+column shows zeros. The fifth column is the hash entry which can bring us back to
+the verbose name as needed in reporting while the last column is the index to
+into token memory (watch the duplicates for \type {\let} macros: a ref count is
+kept in order to be able to manage such shared references). When you look a the
+cs column you will notice that some numbers are close which (I think) in this
+case indicates some closeness in the calculated hash name and followed chain.
+
+It will be clear that it is best to not make any assumptions with respect to the
+numbers which is why, in \LUAMETATEX\ we sort of normalize them when accessing
+properties.
+
+\starttabulate
+\NC field      \NC meaning \NC \NR
+\FL
+\NC command    \NC operator \NC \NR
+\NC cmdname    \NC internal name of operator \NC \NR
+\NC index      \NC sanitized operand \NC \NR
+\NC mode       \NC original operand  \NC \NR
+\NC csname     \NC associated name   \NC \NR
+\NC id         \NC the index in token memory (a virtual address) \NC \NR
+\NC tok        \NC the integer representation \NC \NR
+\ML
+\NC active     \NC true when an active character \NC \NR
+\NC expandable \NC true when expandable command \NC \NR
+\NC protected  \NC true when a protected command \NC \NR
+\NC frozen     \NC true when a frozen command \NC \NR
+\NC user       \NC true when a user defined command \NC \NR
+\LL
+\stoptabulate
+
+When a control sequence is an alias to an existing primitive, for instance
+made by \type {\let}, the operand (chr) picked up from its meaning. Take this:
+
+\startbuffer
+\newif\ifmyconditionone
+\newif\ifmyconditiontwo
+
+                    \meaning\ifmyconditionone    \crlf
+                    \meaning\ifmyconditiontwo    \crlf
+                    \meaning\myconditiononetrue  \crlf
+                    \meaning\myconditiontwofalse \crlf
+\myconditiononetrue \meaning\ifmyconditionone    \crlf
+\myconditiontwofalse\meaning\ifmyconditiontwo    \crlf
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Internally this is:
+
+\startluacode
+    documentdata.StartShowTokens(false)
+    documentdata.ShowToken("ifmyconditionone")
+    documentdata.ShowToken("ifmyconditiontwo")
+    documentdata.ShowToken("iftrue")
+    documentdata.ShowToken("iffalse")
+    documentdata.StopShowTokens()
+\stopluacode
+
+The whole list of available commands is given below. Once they are stable the \LUAMETATEX\ manual
+will document the accessors. In this chapter we use:
+
+\starttyping
+kind, min, max, fixedvalue token.get_range("primitive")
+cmd, chr, cs  = token.get_cmdchrcs("primitive")
+\stoptyping
+
+The kind of command is given in the first column, which can have the following values:
+
+\starttabulate[|l|l|p|]
+\NC 0 \NC no        \NC not accessible \NC \NR
+\NC 1 \NC regular   \NC possibly with subcommand \NC \NR
+\NC 2 \NC character \NC the \UNICODE\ slot is encodes in the the token \NC \NR
+\NC 3 \NC register  \NC this is an indexed register (zero upto 64K) \NC \NR
+\NC 4 \NC internal  \NC this is an internal register (range given) \NC \NR
+\NC 5 \NC reference \NC this is a reference to a node, \LUA\ function, etc. \NC \NR
+\NC 6 \NC data      \NC a general data entry (kind of private) \NC \NR
+\NC 7 \NC token     \NC a token reference (that can have a followup) \NC \NR
+\stoptabulate
+
+\usemodule[system-tokens]
+
+\start \switchtobodyfont[7pt] \showsystemtokens \stop
+
+\stopchapter
+
+\stopcomponent

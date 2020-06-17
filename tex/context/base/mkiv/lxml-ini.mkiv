@@ -34,7 +34,7 @@
 
 \def\ctxlxml                #1{\ctxlua{lxml.#1}}
 
-% for now indirect
+% for now indirect .. this will change when we have updated luatex (scan_argument)
 
 \def\xmlconcat          #1#2#3{\clf_xmlconcat     {#1}{#2}{\detokenize{#3}}}
 \def\xmlconcatrange #1#2#3#4#5{\clf_xmlconcatrange{#1}{#2}{#3}{#4}{\detokenize{#5}}}
@@ -49,85 +49,86 @@
 
 % aliased
 
-\let\xmlall                    \clf_xmlall
-\let\xmlatt                    \clf_xmlatt
-\let\xmlattdef                 \clf_xmlattdef
-\let\xmlattribute              \clf_xmlattribute
-\let\xmlattributedef           \clf_xmlattributedef
-\let\xmlbadinclusions          \clf_xmlbadinclusions
-\let\xmlchainatt               \clf_xmlchainatt
-\let\xmlchainattdef            \clf_xmlchainattdef
-\let\xmlchecknamespace         \clf_xmlchecknamespace
-\let\xmlcommand                \clf_xmlcommand
-\let\xmlcontext                \clf_xmlcontext
-\let\xmlcount                  \clf_xmlcount
-\let\xmldelete                 \clf_xmldelete
-\let\xmldirect                 \clf_xmldirect             % in loops, not dt but root
-\let\xmldirectives             \clf_xmldirectives
-\let\xmldirectivesafter        \clf_xmldirectivesafter
-\let\xmldirectivesbefore       \clf_xmldirectivesbefore
-\let\xmldisplayverbatim        \clf_xmldisplayverbatim
-\let\xmlelement                \clf_xmlelement
-\let\xmlfilter                 \clf_xmlfilter
-\let\xmlfilterlist             \clf_xmlfilterlist
-\let\xmlfirst                  \clf_xmlfirst
-\let\xmlflush                  \clf_xmlflush
-\let\xmlflushcontext           \clf_xmlflushcontext
-\let\xmlflushlinewise          \clf_xmlflushlinewise
-\let\xmlflushpure              \clf_xmlflushpure
-\let\xmlflushspacewise         \clf_xmlflushspacewise
-\let\xmlflushtext              \clf_xmlflushtext
-\let\xmlfunction               \clf_xmlfunction
-\let\xmlinclude                \clf_xmlinclude
-\let\xmlincludeoptions         \clf_xmlincludeoptions
-\let\xmlinclusion              \clf_xmlinclusion
-\let\xmlinclusionbase          \clf_xmlinclusionbase
-\let\xmlinclusions             \clf_xmlinclusions
-\let\xmlindex                  \clf_xmlindex
-\let\xmlinlineverbatim         \clf_xmlinlineverbatim
-\let\xmllast                   \clf_xmllast
-\let\xmllastatt                \clf_xmllastatt
-\let\xmllastmatch              \clf_xmllastmatch
-\let\xmllastpar                \clf_xmllastpar
-\let\xmlloaddirectives         \clf_xmlloaddirectives
-\let\xmlmain                   \clf_xmlmain
-\let\xmlmatch                  \clf_xmlmatch
-\let\xmlname                   \clf_xmlname
-\let\xmlnamespace              \clf_xmlnamespace
-\let\xmlnonspace               \clf_xmlnonspace
-\let\xmlpar                    \clf_xmlpar
-\let\xmlparam                  \clf_xmlparam
-\let\xmlpath                   \clf_xmlpath
-\let\xmlpopmatch               \clf_xmlpopmatch
-\let\xmlpos                    \clf_xmlpos
-\let\xmlposition               \clf_xmlindex
-\let\xmlpure                   \clf_xmlpure
-\let\xmlpushmatch              \clf_xmlpushmatch
-\let\xmlraw                    \clf_xmlraw
-\let\xmlrefatt                 \clf_xmlrefatt
-\let\xmlregisterns             \clf_xmlregisterns         % document
-\let\xmlremapname              \clf_xmlremapname          % element
-\let\xmlremapnamespace         \clf_xmlremapnamespace     % document
-\let\xmlsave                   \clf_xmlsave
-\let\xmlsetatt                 \clf_xmlsetatt
-\let\xmlsetattribute           \clf_xmlsetattribute
-\let\xmlsetpar                 \clf_xmlsetpar
-\let\xmlsetparam               \clf_xmlsetparam
-\let\xmlsetsetup               \clf_xmlsetsetup
-\let\xmlsnippet                \clf_xmlsnippet
-\let\xmlstrip                  \clf_xmlstrip
-\let\xmlstripanywhere          \clf_xmlstripanywhere
-\let\xmlstripnolines           \clf_xmlstripnolines
-\let\xmlstripped               \clf_xmlstripped
-\let\xmlstrippednolines        \clf_xmlstrippednolines
-\let\xmltag                    \clf_xmltag
-\let\xmltext                   \clf_xmltext
-\let\xmltobuffer               \clf_xmltobuffer           % id pattern name
-\let\xmltobuffertextonly       \clf_xmltobuffertextonly   % id pattern name
-\let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
-\let\xmltofile                 \clf_xmltofile             % id pattern filename
-\let\xmltoparameters           \clf_xmltoparameters
-\let\xmlverbatim               \clf_xmlverbatim
+%let\xmlall                    \clf_xmlall
+%let\xmlatt                    \clf_xmlatt
+%let\xmlattdef                 \clf_xmlattdef
+%let\xmlattribute              \clf_xmlattribute
+%let\xmlattributedef           \clf_xmlattributedef
+%let\xmlbadinclusions          \clf_xmlbadinclusions
+%let\xmlchainatt               \clf_xmlchainatt
+%let\xmlchainattdef            \clf_xmlchainattdef
+%let\xmlchecknamespace         \clf_xmlchecknamespace
+%let\xmlcommand                \clf_xmlcommand
+%let\xmlcontext                \clf_xmlcontext
+%let\xmlcount                  \clf_xmlcount
+%let\xmldelete                 \clf_xmldelete
+%let\xmldirect                 \clf_xmldirect             % in loops, not dt but root
+%let\xmldirectives             \clf_xmldirectives
+%let\xmldirectivesafter        \clf_xmldirectivesafter
+%let\xmldirectivesbefore       \clf_xmldirectivesbefore
+%let\xmldisplayverbatim        \clf_xmldisplayverbatim
+%let\xmlelement                \clf_xmlelement
+%let\xmlfilter                 \clf_xmlfilter
+%let\xmlfilterlist             \clf_xmlfilterlist
+%let\xmlfirst                  \clf_xmlfirst
+%let\xmlflush                  \clf_xmlflush
+%let\xmlflushcontext           \clf_xmlflushcontext
+%let\xmlflushlinewise          \clf_xmlflushlinewise
+%let\xmlflushpure              \clf_xmlflushpure
+%let\xmlflushspacewise         \clf_xmlflushspacewise
+%let\xmlflushtext              \clf_xmlflushtext
+%let\xmlfunction               \clf_xmlfunction
+%let\xmlinclude                \clf_xmlinclude
+%let\xmlincludeoptions         \clf_xmlincludeoptions
+%let\xmlinclusion              \clf_xmlinclusion
+%let\xmlinclusionbase          \clf_xmlinclusionbase
+%let\xmlinclusions             \clf_xmlinclusions
+%let\xmlindex                  \clf_xmlindex
+%let\xmlinlineverbatim         \clf_xmlinlineverbatim
+%let\xmllast                   \clf_xmllast
+%let\xmllastatt                \clf_xmllastatt
+%let\xmllastmatch              \clf_xmllastmatch
+%let\xmllastpar                \clf_xmllastpar
+%let\xmlloaddirectives         \clf_xmlloaddirectives
+%let\xmlmain                   \clf_xmlmain
+%let\xmlmatch                  \clf_xmlmatch
+%let\xmlname                   \clf_xmlname
+%let\xmlnamespace              \clf_xmlnamespace
+%let\xmlnonspace               \clf_xmlnonspace
+%let\xmlpar                    \clf_xmlpar
+%let\xmlparam                  \clf_xmlparam
+%let\xmlpath                   \clf_xmlpath
+%let\xmlpopmatch               \clf_xmlpopmatch
+%let\xmlpos                    \clf_xmlpos
+%let\xmlpure                   \clf_xmlpure
+%let\xmlpushmatch              \clf_xmlpushmatch
+%let\xmlraw                    \clf_xmlraw
+%let\xmlrefatt                 \clf_xmlrefatt
+%let\xmlregisterns             \clf_xmlregisterns         % document
+%let\xmlremapname              \clf_xmlremapname          % element
+%let\xmlremapnamespace         \clf_xmlremapnamespace     % document
+%let\xmlsave                   \clf_xmlsave
+%let\xmlsetatt                 \clf_xmlsetatt
+%let\xmlsetattribute           \clf_xmlsetattribute
+%let\xmlsetpar                 \clf_xmlsetpar
+%let\xmlsetparam               \clf_xmlsetparam
+%let\xmlsetsetup               \clf_xmlsetsetup
+%let\xmlsnippet                \clf_xmlsnippet
+%let\xmlstrip                  \clf_xmlstrip
+%let\xmlstripanywhere          \clf_xmlstripanywhere
+%let\xmlstripnolines           \clf_xmlstripnolines
+%let\xmlstripped               \clf_xmlstripped
+%let\xmlstrippednolines        \clf_xmlstrippednolines
+%let\xmltag                    \clf_xmltag
+%let\xmltext                   \clf_xmltext
+%let\xmltobuffer               \clf_xmltobuffer           % id pattern name
+%let\xmltobuffertextonly       \clf_xmltobuffertextonly   % id pattern name
+%let\xmltobufferverbose        \clf_xmltobufferverbose    % id pattern name
+%let\xmltofile                 \clf_xmltofile             % id pattern filename
+%let\xmltoparameters           \clf_xmltoparameters
+%let\xmlverbatim               \clf_xmlverbatim
+
+\let\xmlposition               \xmlindex
 
 \unexpanded\def\xmlinfo#1{\hbox{\ttxx[\clf_xmlname{#1}]}}
 \unexpanded\def\xmlshow#1{\startpacked\ttx\xmlverbatim{#1}\stoppacked}
@@ -135,7 +136,7 @@
 % the next one is handy for mode runs because it enforces a consistent
 % #1 indexing (needed when using \xmltext{main:123}{...} like calls
 
-\let\xmladdindex               \clf_xmladdindex
+%let\xmladdindex               \clf_xmladdindex
 
 % we need to pass the last argument as function, so
 
@@ -185,23 +186,23 @@
 
 % these are expandable! todo: \xmldoifelseattribute
 
-\let\xmldoif              \clf_xmldoif
-\let\xmldoifnot           \clf_xmldoifnot
-\let\xmldoifelse          \clf_xmldoifelse
-\let\xmldoiftext          \clf_xmldoiftext
-\let\xmldoifnottext       \clf_xmldoifnottext
-\let\xmldoifelsetext      \clf_xmldoifelsetext
+%let\xmldoif              \clf_xmldoif
+%let\xmldoifnot           \clf_xmldoifnot
+%let\xmldoifelse          \clf_xmldoifelse
+%let\xmldoiftext          \clf_xmldoiftext
+%let\xmldoifnottext       \clf_xmldoifnottext
+%let\xmldoifelsetext      \clf_xmldoifelsetext
 
-\let\xmldoifatt           \clf_xmldoifatt
-\let\xmldoifnotatt        \clf_xmldoifnotatt
-\let\xmldoifelseatt       \clf_xmldoifelseatt
+%let\xmldoifatt           \clf_xmldoifatt
+%let\xmldoifnotatt        \clf_xmldoifnotatt
+%let\xmldoifelseatt       \clf_xmldoifelseatt
 
-\let\xmldoifempty         \clf_xmldoifempty
-\let\xmldoifnotempty      \clf_xmldoifnotempty
-\let\xmldoifelseempty     \clf_xmldoifelseempty
-\let\xmldoifselfempty     \clf_xmldoifselfempty
-\let\xmldoifnotselfempty  \clf_xmldoifnotselfempty
-\let\xmldoifelseselfempty \clf_xmldoifelseselfempty
+%let\xmldoifempty         \clf_xmldoifempty
+%let\xmldoifnotempty      \clf_xmldoifnotempty
+%let\xmldoifelseempty     \clf_xmldoifelseempty
+%let\xmldoifselfempty     \clf_xmldoifselfempty
+%let\xmldoifnotselfempty  \clf_xmldoifnotselfempty
+%let\xmldoifelseselfempty \clf_xmldoifelseselfempty
 
 \let\xmldoiftextelse      \xmldoifelsetext
 \let\xmldoifemptyelse     \xmldoifelseempty

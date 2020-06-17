@@ -90,6 +90,13 @@
 \installmacrostack\typescriptmethod
 \installmacrostack\typescriptstate
 
+%D When these are loaded it is possible to get spaces but the whole idea is to do
+%D that loading in vertical mode. Adding \type {\pushendofline} and \type
+%D {\popendofline} is an option but not watertight as it can still interfere, for
+%D instance work comments and leading spaces. Also, in horizontal mode it is likely
+%D that one is also grouped and loading bodyfonts grouped is a real bad idea.
+%D Ignoring all spaces is also not a solution. So, our verdict is: no catch.
+
 \unexpanded\def\starttypescriptcollection
   {\dosingleempty\font_typescripts_collection_start}
 

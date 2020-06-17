@@ -874,6 +874,7 @@ local ruledglue do
     local userskip_code       = gluecodes.userskip
     local spaceskip_code      = gluecodes.spaceskip
     local xspaceskip_code     = gluecodes.xspaceskip
+    local zerospaceskip_code  = gluecodes.zerospaceskip or gluecodes.userskip
     local leftskip_code       = gluecodes.leftskip
     local rightskip_code      = gluecodes.rightskip
     local parfillskip_code    = gluecodes.parfillskip
@@ -914,6 +915,7 @@ local ruledglue do
         [rightskip_code]                  = "RS",
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
+        [zerospaceskip_code]              = "ZS",
         [parfillskip_code]                = "PF",
         [indentskip_code]                 = "IN",
         [correctionskip_code]             = "CS",
@@ -929,7 +931,7 @@ local ruledglue do
         if info then
             -- print("glue hit")
         else
-            if subtype == spaceskip_code or subtype == xspaceskip_code then
+            if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
                 info = sometext(amount,l_glue,c_space)
             elseif subtype == leftskip_code or subtype == rightskip_code then
                 info = sometext(amount,l_glue,c_skip_a)
@@ -958,7 +960,7 @@ local ruledglue do
 
  -- ruledspace = function(head,current,parent)
  --     local subtype = getsubtype(current)
- --     if subtype == spaceskip_code or subtype == xspaceskip_code then
+ --     if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
  --         local width  = effectiveglue(current,parent)
  --         local amount = formatters["%s:%0.3f"](tags[subtype] or "HS",width*pt_factor)
  --         local info   = g_cache_h[amount]
@@ -981,7 +983,7 @@ local ruledglue do
 
     ruledspace = function(head,current,parent)
         local subtype = getsubtype(current)
-        if subtype == spaceskip_code or subtype == xspaceskip_code then -- not yet all space
+        if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then -- not yet all space
             local width = effectiveglue(current,parent)
             local info
             if subtype == spaceskip_code then

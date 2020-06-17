@@ -1012,12 +1012,12 @@
 \let\mathmatrixleft \empty % experimental hook
 \let\mathmatrixright\empty % experimental hook
 
-\setvalue{\??mathmatrixalignlocation\v!top   }{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\textfont\zerocount\relax}
+\setvalue{\??mathmatrixalignlocation\v!top   }{\raise\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
 \setvalue{\??mathmatrixalignlocation\v!high  }{\raise\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 \setvalue{\??mathmatrixalignlocation\v!center}{\relax}
 \setvalue{\??mathmatrixalignlocation\v!lohi}  {\relax}
 \setvalue{\??mathmatrixalignlocation\v!normal}{\relax}
-\setvalue{\??mathmatrixalignlocation\v!bottom}{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\textfont\zerocount\relax}
+\setvalue{\??mathmatrixalignlocation\v!bottom}{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
 \setvalue{\??mathmatrixalignlocation\v!low   }{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 
 \def\math_matrix_finish_nextbox

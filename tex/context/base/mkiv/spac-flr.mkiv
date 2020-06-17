@@ -168,6 +168,23 @@
   [\c!alternative=\v!space,
    \c!distance=3\emwidth]
 
+% bonus:
+
+\definefiller
+  [dotfill]
+  [\c!symbol=\textperiod,
+   \c!style=\v!normal,
+   \c!method=\v!middle,
+   \c!width=.5\emwidth,
+   \c!leftmargin=.2\emwidth,
+   \c!rightmargin=.2\emwidth]
+
+\let\mathdotfill\dotfill
+
+\unexpanded\def\textdotfill{\filler[dotfill]}
+
+\unexpanded\def\dotfill{\mathortext\mathdotfill\textdotfill}
+
 % maybe box -> symbol
 
 \protect \endinput

@@ -4492,7 +4492,9 @@
 
 \unexpanded\def\resetrecurselevel{\let\recurselevel\!!zerocount}
 
-\let\recurselevel\!!zerocount
+\let\recurselevel \!!zerocount
+\let\recurseaction\relax
+\let\recursestring\empty
 
 % \appendtoks \resetrecurselevel \to \everydump
 
