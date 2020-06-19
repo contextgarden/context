@@ -61,33 +61,6 @@
 
 % here public means 'visible' so it's not to be confused with 'public' at the lua end
 
-% \def\attr_basics_define_indeed#1[#2][#3]%
-%   {\ifcsname\??attributecount#2\endcsname\else
-%      \scratchcounter\clf_defineattribute{#2}{#1}\relax
-%     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-%      \expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
-%      \expandafter\newconstant \csname\??attributeid#2\endcsname
-%      \csname\??attributeid#2\endcsname\scratchcounter
-%      % some attributes are always global
-%      \doifelseinset\s!global{#3}%
-%        {\etoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%        {\etoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%      \doifinset\s!nomath{#3}%
-%        {\etoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-%      \doifinset\s!public{#3}%
-%        {\expandafter\let\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
-%      \doifinset\s!pickup{#3}%
-%        {\expandafter\newconstant\csname\??attributepickup#2\endcsname
-%         \csname\??attributepickup#2\endcsname\attributeunsetvalue
-%         \etoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
-%         \ifcsname#2\s!attribute\endcsname
-%           \expandafter\edef\csname\s!pickup#2\s!attribute\endcsname
-%             {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
-%           \expandafter\edef\csname\s!forget#2\s!attribute\endcsname
-%             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
-%         \fi}%
-%    \fi}
-
 \def\attr_basics_define_indeed#1[#2][#3]%
   {\ifcsname\??attributecount#2\endcsname\else
      \scratchcounter\clf_defineattribute{#2}{#1}\relax
@@ -145,8 +118,8 @@
     \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\attribute\zerocount\zerocount}
     \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \attribute\zerocount\zerocount}
 \else
-    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield     \zerocount}
-    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield     \zerocount}
+    \unexpanded\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield\zerocount\glyphscriptfield\zerocount}
+    \unexpanded\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield\zerocount\glyphscriptfield\zerocount}
 \fi
 
 \let\resetallattributes\resetlocalattributes

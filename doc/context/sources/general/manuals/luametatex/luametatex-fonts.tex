@@ -605,13 +605,19 @@ font.current(<number> i)
 
 \stopsubsection
 
-% \startsubsection[title={Glyph data: \lpr {glyphdata}]
-%
-% This primitive can be used to set an additional glyph property. Of course it's very
-% macro package dependant what is done with that. Consider it an experiment (we had
-% some room left in the glyphs data structure). It's basically an single attribute.
-%
-% \stopsubsection
+\startsubsection[title={Glyph data: \lpr {glyphdata}, \lpr {glyphscript}, \lpr {glyphstate}}]
+
+These primitives can be used to set an additional glyph properties. Of course
+it's very macro package dependant what is done with that. It started with just
+the first one as experiment, simply because we had some room left in the glyph
+data structure. It's basically an single attribute. Then, when we got rid of the
+ligature pointer we could either drop it or use that extra field for some more,
+and because \CONTEXT\ already used the data field, that is what happened. The
+script and state fields are shorts, that is, they run from zero to \type {0xFFFF}
+where we assume that zero means \quote {unset}. Although they can be used for
+whatever purpose their use in \CONTEXT\ is fixed.
+
+\stopsubsection
 
 \stopsection
 

@@ -56,6 +56,7 @@ implement { name = "xmlconcatrange",                      actions = lxml.concatr
 --------- { name = "xmlconcatrange",                      actions = lxml.concatrange,       arguments = { "string", "string", "string", "string", "verbatim" } }
 implement { name = "xmlcontext",           public = true, actions = lxml.context,           arguments = "2 strings" }
 implement { name = "xmlcount",             public = true, actions = lxml.count,             arguments = "2 strings" }
+implement { name = "xmldepth",             public = true, actions = lxml.depth,             arguments = "string" }
 implement { name = "xmldelete",            public = true, actions = lxml.delete,            arguments = "2 strings" }
 implement { name = "xmldirect",            public = true, actions = lxml.direct,            arguments = "string" }
 implement { name = "xmldirectives",        public = true, actions = lxml.directives.setup,  arguments = "string" }

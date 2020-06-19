@@ -11,10 +11,9 @@ if not modules then modules = { } end modules ['sort-lan'] = {
 -- to finish in winter.
 -- todo: U+1E9E (german SS)
 
--- Many vectors were supplied by Wolfgang Schuster and Philipp
--- Gesang. However this is a quite adapted and reformatted variant
--- so it needs some checking. Other users provides tables and
--- corrections as well.
+-- Many vectors were supplied by Wolfgang Schuster and Philipp Gesang. However this is
+-- a quite adapted and reformatted variant so it needs some checking. Other users
+-- provides tables and corrections as well.
 
 local utfchar, utfbyte  = utf.char, utf.byte
 local sorters           = sorters
@@ -972,4 +971,43 @@ definitions["jp"] = {
         "ま", "み", "む", "め", "も", "や", "ゆ", "よ",
         "ら", "り", "る", "れ", "ろ", "わ", "ゐ", "ゑ", "を", "ん",
     }
+}
+
+-- Hebrew and Jiddish (Marc Trius)
+
+definitions['he'] = {
+    entries = {
+        ['א'] = 'א', ['ב'] = 'ב', ['ג'] = 'ג', ['ד'] = 'ד', ['ה'] = 'ה',
+        ['ו'] = 'ו', ['ז'] = 'ז', ['ח'] = 'ח', ['ט'] = 'ט', ['י'] = 'י',
+        ['כ'] = 'כ', ['ל'] = 'ל', ['מ'] = 'מ', ['נ'] = 'נ', ['ס'] = 'ס',
+        ['ע'] = 'ע', ['פ'] = 'פ', ['צ'] = 'צ', ['ק'] = 'ק', ['ר'] = 'ר',
+        ['ש'] = 'ש', ['ת'] = 'ת',
+    },
+    orders = {
+        "א", "ב", "ג", "ד", "ה", "ו", "ז", "ח", "ט", "י", "כ",
+        "ל", "מ", "נ", "ס", "ע", "פ", "צ", "ק", "ר", "ש", "ת",
+    }
+}
+
+definitions["yi"] = {
+    parent = "he",
+    entries = {
+        ['א'] = 'א', ['ב'] = 'ב', ['בֿ'] = 'בֿ', ['ג'] = 'ג', ['ד'] = 'ד',
+        ['ה'] = 'ה', ['ו'] = 'ו', ['ז'] = 'ז', ['ח'] = 'ח', ['ט'] = 'ט',
+        ['י'] = 'י', ['כּ'] = 'כּ', ['כ'] = 'כ', ['ל'] = 'ל', ['מ'] = 'מ',
+        ['נ'] = 'נ', ['ס'] = 'ס', ['ע'] = 'ע', ['פ'] = 'פ', ['פֿ'] = 'פֿ',
+        ['צ'] = 'צ', ['ק'] = 'ק', ['ר'] = 'ר', ['ש'] = 'ש', ['שׂ'] = 'שׂ',
+        ['תּ'] = 'תּ', ['ת'] = 'ת',
+    },
+    orders = {
+        "א", "ב", "בֿ", "ג", "ד", "ה", "ו", "ז", "ח", "ט", "י", "כּ", "כ", "ל",
+        "מ", "נ", "ס", "ע", "פּ", "פֿ", "צ", "ק", "ר", "ש", "שׂ", "תּ", "ת",
+    },
+    replacements = {
+        { "אַ", "א" }, { "אָ", "א" }, { "בּ", "ב" }, { "בֿ", "בֿ" }, { "וּ", "ו" },
+        { "װ", "וו" }, { "ױ", "וי" }, { "יִ", "י" }, { "ײ", "יי" }, { "ײַ", "יי" },
+        { "כּ", "כּ" }, { "ך", "כ" }, { "ם", "מ" }, { "ן", "נ" }, { "פּ", "פּ" },
+        { "פ", "פּ" }, { "פֿ", "פֿ" }, { "ף", "פֿ" }, { "ץ", "צ" }, { "שׁ", "ש" },
+        { "שׂ", "שׂ" }, { "תּ", "תּ" },
+    },
 }

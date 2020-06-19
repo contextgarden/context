@@ -18,10 +18,10 @@ local getattr            = nuts.getattr
 local nodecodes          = nodes.nodecodes
 local glyph_code         = nodecodes.glyph
 
-local a_scriptstatus     = attributes.private('scriptstatus')
+local getscriptstatus    = scripts.getstatus
 
-local numbertocategory   = scripts.numbertocategory
 local inserters          = scripts.inserters
+local colors             = scripts.colors
 
 -- syllable [zerowidthspace] syllable
 -- syllable [zerowidthspace] word
@@ -32,7 +32,6 @@ local inserters          = scripts.inserters
 -- sentence [nobreakspace]   syllable
 -- sentence [space]          word
 -- sentence [space]          sentence
-
 
 local injectors = { -- [previous] [current]
     ethiopic_syllable = {
@@ -52,6 +51,10 @@ local injectors = { -- [previous] [current]
     },
 }
 
+colors.ethiopic_syllable = "trace:1"
+colors.ethiopic_word     = "trace:2"
+colors.ethiopic_sentence = "trace:3"
+
 local function process(head,first,last)
     if first ~= last then
         local injector = false
@@ -59,8 +62,7 @@ local function process(head,first,last)
         while current do
             local char, id = ischar(current)
             if char then
-                local scriptstatus = getattr(current,a_scriptstatus)
-                local category     = numbertocategory[scriptstatus]
+                local category = getscriptstatus(current)
                 if injector then
                     local action = injector[category]
                     if action then

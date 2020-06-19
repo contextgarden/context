@@ -260,7 +260,7 @@
 \to \t_tabl_tabulate_initializers_second
 
 \prependtoks
-   \global\advance\c_tabl_tabulate_nofrealrows\plusone
+    \global\advance\c_tabl_tabulate_nofrealrows\plusone
 \to \t_tabl_tabulate_every_real_row
 
 \def\b_tabl_tabulate_current#1%

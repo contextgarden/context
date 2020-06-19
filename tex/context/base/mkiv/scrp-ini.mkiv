@@ -11,7 +11,30 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% here we collect code from other places (was organized differently)
+%D The script handler has been upgraded mid June 2020 so there might be issues as I
+%D didn't test everything (yet). It should all be a bit more efficient now in
+%D \LUAMETATEX, although not spectacular. We use no attributes in \LUAMETATEX\ and
+%D only one in \LUATEX\ now.
+%D
+%D A glyph can have (an dget) all kind of properties. Except from the state, these
+%D are assigned within \TEX's grouping model!
+%D
+%D \startitemize
+%D \startitem font \stopitem
+%D \startitem character \stopitem
+%D \startitem language (4 properties packed in an unsigned integer) \stopitem
+%D \startitem data (used for dynamics) \stopitem
+%D \startitem script (used for special script processing) \stopitem
+%D \startitem state (used for analyzing, related to font features) \stopitem
+%D \stopitemize
+%D
+%D Additional properties are set via node list handlers. The state is stored in the
+%D glyph, but additional properties are stored in a node's property table. In the
+%D future the state might get used for something else, in which case we will stire
+%D the state in the property table too. On the other hand, we can now (if we want)
+%D influence the state at the\TEX\ end (not that we do that yet).
+
+%D Todo: as in bidi mode we need a way to globally keep the setting.
 
 \registerctxluafile{scrp-ini}{}
 \registerctxluafile{scrp-cjk}{}
@@ -19,13 +42,12 @@
 \registerctxluafile{scrp-tha}{}
 \registerctxluafile{scrp-tib}{}
 
-\definesystemattribute[scriptinjection][public,pickup]
-\definesystemattribute[scriptsplitting][public,pickup]
-\definesystemattribute[scriptstatus]   [public,pickup]
+\ifcase \contextlmtxmode
+    \definesystemattribute[script][public,pickup]
+\fi
 
-%D Since scripts need specific \LUA\ code we use hard coded attribute
-%D values, but we might have more tricks at some time, so we use a
-%D proper define macro too.
+%D Since scripts need specific \LUA\ code we use hard coded attribute values, but we
+%D might have more tricks at some time, so we use a proper define macro too.
 
 \unprotect
 
@@ -44,16 +66,10 @@
 \unexpanded\def\scripts_basics_set
   {\clf_setscript{\currentscript}{\scriptparameter\c!method}{\scriptparameter\c!preset}}
 
-% \unexpanded\def\setscript[#1]%
-%   {\edef\currentscript{#1}%
-%    \scripts_basics_set}
-
 \unexpanded\def\setglobalscript[#1]%
   {\edef\currentscript{#1}%
    \scripts_basics_set
-   \pickupscriptinjectionattribute
-   \pickupscriptsplittingattribute
-   \pickupscriptstatusattribute}
+   \pickupscriptattribute}
 
 \unexpanded\def\setlocalscript[#1]%
   {\edef\currentscript{#1}%

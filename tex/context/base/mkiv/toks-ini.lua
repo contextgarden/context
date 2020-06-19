@@ -260,33 +260,65 @@ if setinspector then
 
     local simple = { letter = "letter", other_char = "other" }
 
-    local function astable(t)
-        if t and is_token(t) then
-            local cmdname = t.cmdname
-            local simple  = simple[cmdname]
-            if simple then
-                return {
-                    category   = simple,
-                    character  = utfchar(t.mode) or nil,
-                }
-            else
-                return {
-                    command    = t.command,
-                    id         = t.id,
-                    tok        = t.tok,
-                    csname     = t.csname,
-                    active     = t.active,
-                    expandable = t.expandable,
-                    protected  = t.protected,
-                    frozen     = t.frozen,
-                    mode       = t.mode,
-                    index      = t.index,
-                    user       = t.user,
-                    cmdname    = cmdname,
-                }
+    local astable = CONTEXTLMTXMODE == 0 and
+
+        function(t)
+            if t and is_token(t) then
+                local cmdname = t.cmdname
+                local simple  = simple[cmdname]
+                if simple then
+                    return {
+                        id         = t.id,
+                        category   = simple,
+                        character  = utfchar(t.mode) or nil,
+                    }
+                else
+                    return {
+                        command    = t.command,
+                        id         = t.id,
+                        tok        = t.tok,
+                        csname     = t.csname,
+                        active     = t.active,
+                        expandable = t.expandable,
+                        protected  = t.protected,
+                        frozen     = t.frozen,
+                        mode       = t.mode,
+                        index      = t.index,
+                        user       = t.user,
+                        cmdname    = cmdname,
+                    }
+                end
             end
         end
-    end
+
+    or
+
+        function(t)
+            if t and is_token(t) then
+                local cmdname = t.cmdname
+                local simple  = simple[cmdname]
+                if simple then
+                    return {
+                        id         = t.id,
+                        category   = simple,
+                        character  = utfchar(t.index) or nil,
+                    }
+                else
+                    return {
+                        id         = t.id,
+                        command    = t.command,
+                        index      = t.index,
+                        csname     = t.csname,
+                        cmdname    = cmdname,
+                        active     = t.active,
+                        expandable = t.expandable,
+                        protected  = t.protected,
+                        frozen     = t.frozen,
+                        user       = t.user,
+                    }
+                end
+            end
+        end
 
     tokens.astable = astable
 

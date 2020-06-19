@@ -30,7 +30,6 @@ local getprev            = nuts.getprev
 local getfont            = nuts.getfont
 local getchar            = nuts.getchar
 local getid              = nuts.getid
-local getattr            = nuts.getattr
 local getsubtype         = nuts.getsubtype
 local getwidth           = nuts.getwidth
 
@@ -51,13 +50,11 @@ local userskip_code      = gluecodes.userskip
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
 
-local a_scriptstatus     = attributes.private('scriptstatus')
-local a_scriptinjection  = attributes.private('scriptinjection')
-
-local categorytonumber   = scripts.categorytonumber
-local numbertocategory   = scripts.numbertocategory
 local hash               = scripts.hash
-local numbertodataset    = scripts.numbertodataset
+
+local getscriptstatus    = scripts.getstatus
+local getscriptdata      = scripts.getdata
+local scriptcolors       = scripts.colors
 
 local fonthashes         = fonts.hashes
 local quaddata           = fonthashes.quads
@@ -440,6 +437,21 @@ local injectors = { -- [previous] [current]
     half_width_close = korean_5,
 }
 
+scriptcolors.korean            = "trace:0"
+scriptcolors.chinese           = "trace:0"
+scriptcolors.katakana          = "trace:0"
+scriptcolors.hiragana          = "trace:0"
+scriptcolors.full_width_open   = "trace:1"
+scriptcolors.full_width_close  = "trace:2"
+scriptcolors.half_width_open   = "trace:3"
+scriptcolors.half_width_close  = "trace:4"
+scriptcolors.full_width_punct  = "trace:5"
+------------.hyphen            = "trace:5"
+scriptcolors.non_starter       = "trace:6"
+scriptcolors.jamo_initial      = "trace:7"
+scriptcolors.jamo_medial       = "trace:8"
+scriptcolors.jamo_final        = "trace:9"
+
 local function process(head,first,last)
     if first ~= last then
         local lastfont = nil
@@ -449,8 +461,7 @@ local function process(head,first,last)
             local upcoming = getnext(first)
             local id       = getid(first)
             if id == glyph_code then
-                local a       = getattr(first,a_scriptstatus)
-                local current = numbertocategory[a]
+                local current = getscriptstatus(first)
                 local action  = injectors[previous]
                 if action then
                     action = action[current]
@@ -458,7 +469,7 @@ local function process(head,first,last)
                         local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
+                            set_parameters(font,getscriptdata(first))
                         end
                         action(head,first)
                     end
@@ -471,10 +482,8 @@ local function process(head,first,last)
                     local pid = getid(p)
                     local nid = getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa = getattr(p,a_scriptstatus)
-                        local na = getattr(n,a_scriptstatus)
-                        local pcjk = pa and numbertocategory[pa]
-                        local ncjk = na and numbertocategory[na]
+                        local pcjk = getscriptstatus(p)
+                        local ncjk = getscriptstatus(n)
                         if not pcjk                 or not ncjk
                             or pcjk == "korean"     or ncjk == "korean"
                             or pcjk == "other"      or ncjk == "other"
@@ -711,8 +720,7 @@ local function process(head,first,last)
             local upcoming = getnext(first)
             local id       = getid(first)
             if id == glyph_code then
-                local a       = getattr(first,a_scriptstatus)
-                local current = numbertocategory[a]
+                local current = getscriptstatus(first)
                 local action  = injectors[previous]
                 if action then
                     action = action[current]
@@ -720,7 +728,7 @@ local function process(head,first,last)
                         local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
+                            set_parameters(font,getscriptdata(first))
                         end
                         action(head,first)
                     end
@@ -733,10 +741,8 @@ local function process(head,first,last)
                     local pid = getid(p)
                     local nid = getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa = getattr(p,a_scriptstatus)
-                        local na = getattr(n,a_scriptstatus)
-                        local pcjk = pa and numbertocategory[pa]
-                        local ncjk = na and numbertocategory[na]
+                        local pcjk = getscriptstatus(p)
+                        local ncjk = getscriptstatus(n)
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
                             or pcjk == "other"            or ncjk == "other"
@@ -940,8 +946,7 @@ local function process(head,first,last)
             local upcoming = getnext(first)
             local id       = getid(first)
             if id == glyph_code then
-                local a       = getattr(first,a_scriptstatus)
-                local current = numbertocategory[a]
+                local current = getscriptstatus(first)
                 local action  = injectors[previous]
                 if action then
                     action = action[current]
@@ -949,7 +954,7 @@ local function process(head,first,last)
                         local font = getfont(first)
                         if font ~= lastfont then
                             lastfont = font
-                            set_parameters(font,numbertodataset[getattr(first,a_scriptinjection)])
+                            set_parameters(font,getscriptdata(first))
                         end
                         action(head,first)
                     end
@@ -965,10 +970,8 @@ local function process(head,first,last)
                     local pid = getid(p)
                     local nid = getid(n)
                     if pid == glyph_code and nid == glyph_code then
-                        local pa = getattr(p,a_scriptstatus)
-                        local na = getattr(n,a_scriptstatus)
-                        local pcjk = pa and numbertocategory[pa]
-                        local ncjk = na and numbertocategory[na]
+                        local pcjk = getscriptstatus(p)
+                        local ncjk = getscriptstatus(n)
                         if not pcjk                       or not ncjk
                             or pcjk == "korean"           or ncjk == "korean"
                             or pcjk == "other"            or ncjk == "other"

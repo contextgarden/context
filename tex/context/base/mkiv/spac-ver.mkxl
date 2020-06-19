@@ -150,8 +150,8 @@
 
 \unexpanded\def\spac_linespacing_setup_use
   {\ifcsname\namedinterlinespacehash\m_spac_interlinespace\s!parent\endcsname
-      \let\currentinterlinespace\m_spac_interlinespace
-      \spac_linespacing_setup_specified_interline_space
+     \let\currentinterlinespace\m_spac_interlinespace
+     \spac_linespacing_setup_specified_interline_space
  % \else
      % we only support named interlinespaces
    \fi}

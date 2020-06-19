@@ -12,25 +12,17 @@ local getnext            = nuts.getnext
 local getattr            = nuts.getattr
 local ischar             = nuts.ischar
 
-local a_scriptstatus     = attributes.private('scriptstatus')
+local getscriptstatus    = scripts.getstatus
 
-local numbertocategory   = scripts.numbertocategory
 local inserters          = scripts.inserters
+local colors             = scripts.colors
 
 local injectors = {
-    breaking_tsheg = inserters.space_after,
+    breaking_tsheg = inserters.space_after
 }
 
--- more efficient is to check directly
---
--- local b_tsheg = 0x0F0B -- breaking
--- local n_tsheg = 0x0F0C -- nonbreaking
---
--- if char == b_tsheg then
---     head, current = insert_space_after(head,current)
--- end
---
--- but this is more general
+colors.breaking_tsheg    = "trace:1"
+colors.nonbreaking_tsheg = "trace:2"
 
 local function process(head,first,last)
     if first ~= last then
@@ -38,14 +30,11 @@ local function process(head,first,last)
         while current do
             local char, id = ischar(current)
             if char then
-                local scriptstatus = getattr(current,a_scriptstatus)
-                if scriptstatus and scriptstatus > 0 then
-                    local category = numbertocategory[scriptstatus]
-                    if category then
-                        local injector = injectors[category]
-                        if injector then
-                            head, current = injector(head,current)
-                        end
+                local category = getscriptstatus(current)
+                if category then
+                    local injector = injectors[category]
+                    if injector then
+                        head, current = injector(head,current)
                     end
                 end
             end

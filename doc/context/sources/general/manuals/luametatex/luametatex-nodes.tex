@@ -2155,7 +2155,9 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {getfield}                \yes \yes \relax
 \supported {getfont}                 \nop \yes \relax
 \supported {getglue}                 \nop \yes \yes
-%supported {getglyphdata}            \nop \yes \relax % experiment
+\supported {getglyphdata}            \nop \yes \relax % old experiment
+\supported {getglyphstate}           \nop \yes \relax % new experiment
+\supported {getglyphscript}          \nop \yes \relax % new experiment
 \supported {getheight}               \nop \yes \relax
 \supported {getid}                   \nop \yes \relax
 \supported {getkern}                 \nop \yes \relax
@@ -2223,7 +2225,9 @@ emulated in \LUA\ and not in the engine, so we retain downward compatibility.
 \supported {setfield}                \yes \yes \relax
 \supported {setfont}                 \nop \yes \relax
 \supported {setglue}                 \yes \yes \relax
-%supported {setglyphdata}            \nop \yes \relax % experiment
+\supported {setglyphdata}            \nop \yes \relax % old experiment
+\supported {setglyphstate}           \nop \yes \relax % new experiment
+\supported {setglyphscript}          \nop \yes \relax % new experiment
 \supported {setheight}               \nop \yes \relax
 \supported {setkern}                 \nop \yes \relax
 \supported {setlang}                 \nop \yes \relax

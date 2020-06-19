@@ -864,6 +864,17 @@ local getstate = direct.getstate
 local setstate = direct.setstate
 
 if not setstate or not getstate then
+ -- setstate = function(n,v)
+ --     setprop(n,"state",v)
+ -- end
+ -- getstate = function(n,v)
+ --     local s = getprop(n,"state")
+ --     if v then
+ --         return s == v
+ --     else
+ --         return s
+ --     end
+ -- end
     setstate = function(n,v)
         local p = propertydata[n]
         if p then
@@ -884,9 +895,16 @@ if not setstate or not getstate then
             return nil
         end
     end
-    nuts.setstate = setstate
-    nuts.getstate = getstate
 end
+
+nuts.setstate = setstate
+nuts.getstate = getstate
+
+local getscript = direct.getscript or function(n,v) end -- elsewhere
+local setscript = direct.setscript or function(n,v) end -- elsewhere
+
+nuts.setscript = getscript
+nuts.getscript = setscript
 
 nuts.isdone = function(n,k)
     local p = propertydata[n]
