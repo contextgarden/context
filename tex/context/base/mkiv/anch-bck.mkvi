@@ -265,9 +265,9 @@
 % maybe we should have a resetter for such compensation struts
 
 \def\anch_backgrounds_reset_attributes
-  {\scratchcounter\attribute\snapmethodattribute
-   \resetallattributes % \attribute\linenumberattribute \attributeunsetvalue
-   \attribute\snapmethodattribute\scratchcounter}
+  {\scratchcounter\c_attr_snapmethod
+   \resetallattributes % \c_attr_linenumber\attributeunsetvalue
+   \c_attr_snapmethod\scratchcounter}
 
 \def\anch_backgrounds_text_start_par % beware .. background shapes
   {\endgraf % new
@@ -364,14 +364,14 @@
 
 \def\anch_backgrounds_bpos
   {\ifconditional\c_anch_backgrounds_pos_no_shape
-     \attribute\textbackgroundattribute\attributeunsetvalue
+     \c_attr_textbackground\attributeunsetvalue
      \bposkind\v_anch_backgrounds_text_current\plusthree
    \else\ifnum\c_anch_backgrounds_pos_state=\plusone
      \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
      \clf_registerbackground{\v_anch_backgrounds_text_current}%
    \else
      \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
-     \attribute\textbackgroundattribute\attributeunsetvalue
+     \c_attr_textbackground\attributeunsetvalue
    \fi\fi}
 
 % plugs into other code

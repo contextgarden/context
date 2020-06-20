@@ -76,6 +76,9 @@
 \def\abjadnodotnumerals#1{\clf_abjadnodotnumerals\numexpr#1\relax}
 \def\abjadnaivenumerals#1{\clf_alphabetic        \numexpr#1\relax{arabic}} % okay?
 
+\def\hebrewnumerals    #1{\clf_hebrewnumerals\numexpr#1\relax}
+\let\yiddishnumerals      \hebrewnumerals
+
 \def\languagecharacters#1{\clf_alphabetic\numexpr#1\relax{\currentlanguage}} % new
 \def\languageCharacters#1{\clf_Alphabetic\numexpr#1\relax{\currentlanguage}} % new
 
@@ -708,6 +711,12 @@
 \defineconversion [abjadnumerals]        [\abjadnumerals]
 \defineconversion [abjadnodotnumerals]   [\abjadnodotnumerals]
 \defineconversion [abjadnaivenumerals]   [\abjadnaivenumerals]
+
+\defineconversion [hebrewnumerals]       [\hebrewnumerals]
+\defineconversion [yiddishnumerals]      [\yiddishnumerals]
+
+% users can do: \defineconversion [he] [\hebrewnumerals]
+% users can do: \defineconversion [yi] [\hebrewnumerals]
 
 \defineconversion [thainumerals]         [\thainumerals]
 \defineconversion [devanagarinumerals]   [\devanagarinumerals]

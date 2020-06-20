@@ -498,16 +498,19 @@ function install.update()
     local binpath = joinfile(targetroot,"tex",texmfplatform,"bin")
 
     local luametatex = "luametatex"
+    local luatex     = "luatex"
     local mtxrun     = "mtxrun"
     local context    = "context"
 
     if ostype == "windows" then
         luametatex = addsuffix(luametatex,"exe")
+        luatex     = addsuffix(luatex,"exe")
         mtxrun     = addsuffix(mtxrun,"exe")
         context    = addsuffix(context,"exe")
     end
 
     local luametatexbin = joinfile(binpath,luametatex)
+    local luatexbin     = joinfile(binpath,luatex)
     local mtxrunbin     = joinfile(binpath,mtxrun)
     local contextbin    = joinfile(binpath,context)
 
@@ -552,6 +555,11 @@ function install.update()
     else
      -- report("xbit bad : %s",luametatexbin)
     end
+    if lfs.setexecutable(luatexbin) then
+        report("xbit set : %s",luatexbin)
+    else
+     -- report("xbit bad : %s",luatexbin)
+    end
     if lfs.setexecutable(mtxrunbin) then
         report("xbit set : %s",mtxrunbin)
     else
@@ -569,7 +577,6 @@ function install.update()
         run("%s --generate",mtxrunbin)
     end
     run("%s --make en", contextbin)
-
 
     -- in calling script: update mtxrun.exe and mtxrun.lua
 

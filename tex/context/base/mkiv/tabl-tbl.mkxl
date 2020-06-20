@@ -2114,7 +2114,7 @@
    \stoptabulatenoalign}
 
 \def\spac_vspacing_no_topskip % use grouped
-  {\attribute\skipcategoryattribute\plusten}
+  {\c_attr_skipcategory\plusten}
 
 \unexpanded\def\tabl_tabulate_ML_second_indeed
   {\tabl_tabulate_break_no

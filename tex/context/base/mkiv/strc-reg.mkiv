@@ -311,7 +311,7 @@
    % needs thinking ... bla\index{bla}. will break before the . but adding a
    % penalty is also no solution
    \dostarttagged\t!registerlocation\currentregister
-   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \c_attr_destination\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
    \dotagregisterlocation
    \dostoptagged
    \endgroup}
@@ -344,7 +344,7 @@
    \xdef\currentregistersynchronize{\clf_deferredenhanceregister{\currentregister}\number\currentregisternumber}%
    \currentregistersynchronize % here?
    \dostarttagged\t!registerlocation\currentregister
-   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \c_attr_destination\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
    \dotagregisterlocation
    \dostoptagged
    \endgroup}
@@ -564,7 +564,7 @@
       view     {\interactionparameter\c!focus}%
    \relax % this will change
    \dostarttagged\t!registerlocation\currentregister
-   \attribute\destinationattribute\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
+   \c_attr_destination\lastdestinationattribute \signalcharacter % no \strut as it will be removed during cleanup
    \dotagregisterlocation
    \dostoptagged
    \endgroup}

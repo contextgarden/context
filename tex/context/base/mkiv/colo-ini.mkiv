@@ -144,7 +144,7 @@
    \edef\currenttransparencyname{#1}%
    % the \relax catches a non existent csname
    \ifx\currenttransparencyname\v!reset
-     \attribute\transparencyattribute\attributeunsetvalue
+     \c_attr_transparency\attributeunsetvalue
    \else
      \begincsname\??transparencysetter\currenttransparencyname\endcsname\relax
    \fi
@@ -154,7 +154,7 @@
   {\begingroup
    \edef\currenttransparencyname{#1}%
    \ifx\currenttransparencyname\v!reset
-     \attribute\transparencyattribute\attributeunsetvalue
+     \c_attr_transparency\attributeunsetvalue
    \else
      \begincsname\??transparencysetter\currenttransparencyname\endcsname\relax
    \fi}
@@ -257,7 +257,7 @@
   {\begingroup
    \colo_helpers_activate{#1}%
    \normalexpanded{\endgroup\edef\noexpand#2%
-     {\ifnum\attribute\colorattribute=\attributeunsetvalue\else\number\attribute\colorattribute\fi}}}
+     {\ifnum\c_attr_color=\attributeunsetvalue\else\number\c_attr_color\fi}}}
 
 \let\grey\graycolor % these macros are only used in tracing
 
@@ -354,9 +354,9 @@
 \unexpanded\def\pushcolor[#1]%
   {\global\advance\c_colo_nesting\plusone
    \expandafter\edef\csname\??colorstack\number\c_colo_nesting\endcsname
-     {\attribute\colormodelattribute  \the\attribute\colormodelattribute
-      \attribute\colorattribute       \the\attribute\colorattribute
-      \attribute\transparencyattribute\the\attribute\transparencyattribute
+     {\c_attr_colormodel  \the\c_attr_colormodel
+      \c_attr_color       \the\c_attr_color
+      \c_attr_transparency\the\c_attr_transparency
       \relax}% stack
    \colo_helpers_activate{#1}}
 
@@ -370,12 +370,12 @@
 \newcount\c_colo_saved_attribute_transparency
 
 \unexpanded\def\savecolor
-  {\c_colo_saved_attribute_color       \attribute\colorattribute
-   \c_colo_saved_attribute_transparency\attribute\transparencyattribute}
+  {\c_colo_saved_attribute_color       \c_attr_color
+   \c_colo_saved_attribute_transparency\c_attr_transparency}
 
 \unexpanded\def\restorecolor
-  {\attribute\colorattribute       \c_colo_saved_attribute_color
-   \attribute\transparencyattribute\c_colo_saved_attribute_transparency}
+  {\c_attr_color       \c_colo_saved_attribute_color
+   \c_attr_transparency\c_colo_saved_attribute_transparency}
 
 %D In this documentation we will not go into too much details on palets. Curious
 %D users can find more information on this topic in \from[use of color].
@@ -491,15 +491,6 @@
      \expandafter\colo_palets_define_a
    \fi}
 
-% \unexpanded\def\colo_palets_define_a[#1][#2][#3]%
-%   {\colo_palet_prepare{#1}%
-%    \doifelseassignment{#2}
-%      {\setevalue{\??colorpaletspecification#1}{#2}%
-%       \processcommalist[#2]{\colo_palets_define_one{#1}}}
-%      {\ifcsname\??colorpaletspecification#2\endcsname
-%         \normalexpanded{\colo_palets_define[#1][\lastnamedcs]}%
-%       \fi}}
-
 \unexpanded\def\colo_palets_define_a[#1][#2][#3]%
   {\colo_palet_prepare{#1}%
    \ifcondition\validassignment{#2}%
@@ -516,11 +507,6 @@
    \setevalue{\??colorpaletspecification#1}{#2}%
    \colo_palet_extend{#2}%
    \colo_palets_define_assign{#1}{#2}{#3}}
-
-% \def\colo_palets_define_one#1#2% get rid of { }
-%   {\doifelseassignment{#2} % catch empty entries
-%      {\colo_palets_define_two{#1}[#2]}
-%      {\colo_palets_define_three{#1}{#2}}}
 
 \def\colo_palets_define_one#1#2% get rid of { }
   {\ifcondition\validassignment{#2}% catch empty entries
@@ -557,21 +543,6 @@
 
 \unexpanded\def\setuppalet
   {\dosingleempty\colo_palets_setup}
-
-% \def\colo_palets_setup[#1]%
-%   {\edef\currentcolorpalet{#1}%
-%    \ifx\currentcolorpalet\empty
-%      % seems to be a reset
-%      \let\currentcolorprefix\empty
-%    \else\ifcsname\??paletlist\currentcolorpalet\endcsname
-%      \edef\currentcolorprefix{#1:}%
-%    \else
-%      \colo_helpers_show_message\m!colors7\currentcolorpalet
-%      \let\currentcolorpalet\empty
-%      \let\currentcolorprefix\empty
-%    \fi\fi
-%    \the\everysetuppalet
-%    \colo_helpers_initialize_maintextcolor}
 
 % \newtoks\t_colo_prefix % used in mp interface
 
@@ -859,15 +830,15 @@
 
 \unexpanded\def\deactivatecolor % sort of public but a bad name
   {\let\currentcolorname\s!black
-   \attribute\colorattribute\attributeunsetvalue
-   \attribute\transparencyattribute\attributeunsetvalue}
+   \c_attr_color       \attributeunsetvalue
+   \c_attr_transparency\attributeunsetvalue}
 
 % todo: check if color is overloading a non-color command
 
 % \let\colo_basics_synchronize\gobbleoneargument  % used in mp interface
 % \let\colo_basics_inherit    \gobbletwoarguments % used in mp interface
 
-\def\colo_basics_allocate#1% todo: use a chardef instead
+\def\colo_basics_allocate#1%
   {\expandafter\newcount\csname\??colornumber#1\endcsname
    \clf_synccolorcount{#1}\c_syst_last_allocated_count}
 
@@ -1208,18 +1179,6 @@
    \fi
 \to \everysetupcolors
 
-% \def\colo_palets_define_set#1#2#3%
-%   {\doifelseassignment{#3}% \definepalet[test][xx={y=.4}]
-%      {\colo_palets_define_assign}%
-%      {\ifcsname\??colorsetter#3\endcsname
-%         % \definepalet[test][xx=green]
-%         \expandafter\colo_palets_define_inherit
-%       \else
-%         % not entered when making format
-%         \expandafter\colo_palets_define_undefine
-%       \fi}%
-%    {#1}{#2}{#3}}
-
 \def\colo_palets_define_set#1#2#3%
   {\ifcondition\validassignment{#3}% \definepalet[test][xx={y=.4}]
      \expandafter\colo_palets_define_assign
@@ -1252,8 +1211,8 @@
    \colo_helpers_set_value{\??transparencysetter   #1:#2}{\colo_helpers_inherited_direct_ts{\??colorpalet#1:#2}}%
    \colo_helpers_set_value{\??transparencyattribute#1:#2}{\colo_helpers_inherited_direct_ta{\??colorpalet#1:#2}}}
 
-\setvalue{\??colorattribute        currentcolor}{\the\attribute\colorattribute}        % for mpcolor
-\setvalue{\??transparencyattribute currentcolor}{\the\attribute\transparencyattribute} % for mpcolor
+\setvalue{\??colorattribute        currentcolor}{\the\c_attr_color}        % for mpcolor
+\setvalue{\??transparencyattribute currentcolor}{\the\c_attr_transparency} % for mpcolor
 
 %def\colo_helpers_inherited_current_ca#1{\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
 %def\colo_helpers_inherited_current_cs#1{\csname\??colorsetter          \ifcsname\??colorsetter          \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorsetter          #1\endcsname#1\fi\fi\endcsname}
@@ -1267,10 +1226,10 @@
 
 %D Low level defs:
 
-\unexpanded\def\colordefalc#1#2{\setevalue{\??colorattribute       #1}{#2}\setvalue {\??colorsetter       #1}{\attribute\colorattribute       #2 }}
-\unexpanded\def\colordefagc#1#2{\setxvalue{\??colorattribute       #1}{#2}\setgvalue{\??colorsetter       #1}{\attribute\colorattribute       #2 }} % was not g
-\unexpanded\def\colordefalt#1#2{\setevalue{\??transparencyattribute#1}{#2}\setvalue {\??transparencysetter#1}{\attribute\transparencyattribute#2 }}
-\unexpanded\def\colordefagt#1#2{\setxvalue{\??transparencyattribute#1}{#2}\setgvalue{\??transparencysetter#1}{\attribute\transparencyattribute#2 }}
+\unexpanded\def\colordefalc#1#2{\setevalue{\??colorattribute       #1}{#2}\setvalue {\??colorsetter       #1}{\c_attr_color       #2 }}
+\unexpanded\def\colordefagc#1#2{\setxvalue{\??colorattribute       #1}{#2}\setgvalue{\??colorsetter       #1}{\c_attr_color       #2 }} % was not g
+\unexpanded\def\colordefalt#1#2{\setevalue{\??transparencyattribute#1}{#2}\setvalue {\??transparencysetter#1}{\c_attr_transparency#2 }}
+\unexpanded\def\colordefagt#1#2{\setxvalue{\??transparencyattribute#1}{#2}\setgvalue{\??transparencysetter#1}{\c_attr_transparency#2 }}
 
 \unexpanded\def\colordefflc#1#2{\setvalue {\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
 \unexpanded\def\colordeffgc#1#2{\setgvalue{\??colorattribute       #1}{\colo_helpers_inherited_current_ca{#2}}\setvalue {\??colorsetter       #1}{\colo_helpers_inherited_current_cs{#2}}}
@@ -1308,13 +1267,13 @@
 
 \def\MPcolor#1%
   {\clf_mpcolor
-     \attribute\colormodelattribute
+     \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
 \def\MPcoloronly#1%
   {\clf_mpcolor
-     \attribute\colormodelattribute
+     \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \zerocount}
 
@@ -1326,11 +1285,11 @@
 
 \def\MPoptions#1%
   {\clf_mpoptions
-     \attribute\colormodelattribute
+     \c_attr_colormodel
      \colo_helpers_inherited_current_ca{#1} %
      \colo_helpers_inherited_current_ta{#1} }
 
-\def\thecolormodelattribute    {\the\attribute\colormodelattribute}
+\def\thecolormodelattribute    {\the\c_attr_colormodel}
 
 %def\thecolorattribute       #1{\number\csname\??colorattribute       \ifcsname\??colorattribute       \currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??colorattribute       #1\endcsname#1\fi\fi\endcsname}
 %def\thetransparencyattribute#1{\number\csname\??transparencyattribute\ifcsname\??transparencyattribute\currentcolorprefix#1\endcsname\currentcolorprefix#1\else\ifcsname\??transparencyattribute#1\endcsname#1\fi\fi\endcsname}

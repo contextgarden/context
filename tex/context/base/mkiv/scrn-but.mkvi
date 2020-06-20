@@ -155,7 +155,7 @@
 
 \def\scrn_button_make#currentparameter#inheritedframed#letparameter#setparameter#text#action%
   {\begingroup
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \global\setfalse\c_scrn_button_skipped
    \chardef\locationboxpagestate\csname\??buttonlocation#currentparameter\c!samepage\endcsname % ?? bt: todo
    \doifelsereferencefound{#action}\scrn_button_make_yes\scrn_button_make_nop

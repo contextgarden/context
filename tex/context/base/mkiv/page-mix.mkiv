@@ -1029,7 +1029,7 @@
    \begingroup
    \scratchdimen\dimexpr#1\lineheight\ifsecondargument+#2\fi\relax
    \ifdim\scratchdimen>\zeropoint
-     \attribute\checkedbreakattribute\number\scratchdimen
+     \c_attr_checkedbreak\number\scratchdimen % why \number
      \penalty\c_page_mix_break_forced\relax
    \fi
    \endgroup}

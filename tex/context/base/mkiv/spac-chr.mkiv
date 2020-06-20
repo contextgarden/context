@@ -29,7 +29,7 @@
 %D them in a string. So this needs thinking. Not that we can compare the
 %D nobreakspace now anyway.
 
-% \unexpanded\def\specialspacecharacter#1{\begingroup\attribute\charactersattribute#1\ \endgroup}
+% \unexpanded\def\specialspacecharacter#1{\begingroup\c_attr_characters#1\ \endgroup}
 %
 % \unexpanded\edef\nobreakspace            {\specialspacecharacter{"00A0}} % 1 = left
 % \unexpanded\edef\ideographicspace        {\specialspacecharacter{"2000}}

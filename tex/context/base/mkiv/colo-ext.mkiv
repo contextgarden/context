@@ -47,7 +47,7 @@
 \installcorenamespace{colorintent}
 
 \unexpanded\def\registercolorintent#1#2% \relax is needed !
-  {\setevalue{\??colorintent#1}{\attribute\colorintentattribute\clf_registercolorintent{#2}\relax}}
+  {\setevalue{\??colorintent#1}{\c_attr_colorintent\clf_registercolorintent{#2}\relax}}
 
 \unexpanded\def\colo_intents_set
   {\clf_enablecolorintents
@@ -59,7 +59,7 @@
 
 \installattributestack\colorintentattribute
 
-\setevalue{\??colorintent\v!none}{\attribute\colorintentattribute\attributeunsetvalue} % or reset? used at all?
+\setevalue{\??colorintent\v!none}{\c_attr_colorintent\attributeunsetvalue} % or reset? used at all?
 
 \unexpanded\def\startcolorintent[#1]%
   {\pushattribute\colorintentattribute

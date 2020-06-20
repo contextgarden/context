@@ -55,7 +55,7 @@
   {\ifcsname\??overloads#1\endcsname\else
       \typo_overloads_define{#1}%
    \fi
-   \attribute\overloadsattribute\csname\??overloads#1\endcsname}
+   \c_attr_overloads\csname\??overloads#1\endcsname}
 
 \unexpanded\def\registeroverloads[#1]%
   {\ifcsname\??overloads#1\endcsname\else
@@ -63,7 +63,7 @@
    \fi}
 
 \unexpanded\def\resetoverloads
-  {\overloadsattribute\attributeunsetvalue}
+  {\c_attr_overloads\attributeunsetvalue}
 
 %D We hook this into the replacement module, probably the only place where it makes
 %D sense. Here is an adapted version of an example:

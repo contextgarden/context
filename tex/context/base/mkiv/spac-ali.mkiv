@@ -33,11 +33,11 @@
 \definesystemattribute[alignstate][public] % will make a single attributes for several states
 
 \appendtoks
-    \attribute\realignattribute   \attributeunsetvalue
-    \attribute\alignstateattribute\attributeunsetvalue
+    \c_attr_realign   \attributeunsetvalue
+    \c_attr_alignstate\attributeunsetvalue
 \to \everyforgetall
 
-\unexpanded\def\resetrealignsignal{\attribute\realignattribute\attributeunsetvalue}
+\unexpanded\def\resetrealignsignal{\c_attr_realign\attributeunsetvalue}
 \unexpanded\def\signalinnerrealign{\clf_setrealign\plustwo}
 \unexpanded\def\signalouterrealign{\clf_setrealign\plusone}
 
@@ -293,7 +293,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
   {\raggedstatus\zerocount
-   \attribute\alignstateattribute\attributeunsetvalue
+   \c_attr_alignstate\attributeunsetvalue
    \leftskip   \plusone\leftskip
    \rightskip  \plusone\rightskip
    \spaceskip  \zeropoint
@@ -305,7 +305,7 @@
 \unexpanded\def\spac_align_set_horizontal_left
   {\setraggedness\spac_align_set_raggedness_left
    \raggedstatus\plusone
-   \attribute\alignstateattribute\plusone
+   \c_attr_alignstate\plusone
    \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_left
    \rightskip  \plusone\rightskip\s!plus\zeropoint
    \spaceskip  \v_spac_align_space_amount
@@ -317,7 +317,7 @@
 \unexpanded\def\spac_align_set_horizontal_center
   {\setraggedness\spac_align_set_raggedness_middle
    \raggedstatus\plustwo
-   \attribute\alignstateattribute\plustwo
+   \c_attr_alignstate\plustwo
    \leftskip   \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
    \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
    \spaceskip  \v_spac_align_space_amount
@@ -329,7 +329,7 @@
 \unexpanded\def\spac_align_set_horizontal_right
   {\setraggedness\spac_align_set_raggedness_right
    \raggedstatus\plusthree
-   \attribute\alignstateattribute\plusthree
+   \c_attr_alignstate\plusthree
    \leftskip   \plusone\leftskip \s!plus\zeropoint
    \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right
    \spaceskip  \v_spac_align_space_amount
@@ -340,7 +340,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_very_left
   {\raggedstatus\plusone
-   \attribute\alignstateattribute\plusone
+   \c_attr_alignstate\plusone
    \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
    \rightskip  \plusone\rightskip\s!plus\zeropoint
    \spaceskip  \v_spac_align_space_amount
@@ -351,7 +351,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_very_center
   {\raggedstatus\plustwo
-   \attribute\alignstateattribute\plustwo
+   \c_attr_alignstate\plustwo
    \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount
    \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip  \v_spac_align_space_amount
@@ -362,7 +362,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_very_right
   {\raggedstatus\plusthree
-   \attribute\alignstateattribute\plusthree
+   \c_attr_alignstate\plusthree
    \leftskip   \plusone\leftskip \s!plus\zeropoint
    \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip  \v_spac_align_space_amount
@@ -374,7 +374,7 @@
 \unexpanded\def\spac_align_set_horizontal_wide_center
   {\setraggedness\spac_align_set_raggedness_middle
    \raggedstatus\plustwo
-   \attribute\alignstateattribute\plustwo
+   \c_attr_alignstate\plustwo
    \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
    \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
    \spaceskip  \v_spac_align_space_amount
@@ -385,7 +385,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_centered_last_line
   {\raggedstatus\zerocount
-   \attribute\alignstateattribute\attributeunsetvalue
+   \c_attr_alignstate\attributeunsetvalue
    \leftskip   \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip  \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
    \spaceskip  \zeropoint\relax
@@ -396,7 +396,7 @@
 
 \unexpanded\def\spac_align_set_horizontal_flushedright_last_line
   {\raggedstatus\zerocount
-   \attribute\alignstateattribute\attributeunsetvalue
+   \c_attr_alignstate\attributeunsetvalue
    \leftskip       \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip      \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
    \spaceskip      \zeropoint\relax
@@ -410,7 +410,7 @@
 \unexpanded\def\spac_align_set_horizontal_right_tt % a plain command
   {\tttf % brrr
    \raggedstatus\plusthree
-   \attribute\alignstateattribute\plusthree
+   \c_attr_alignstate\plusthree
    \leftskip   \plusone\leftskip \s!plus\zeropoint\relax
    \rightskip  \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
    \spaceskip  \zeropoint\relax
@@ -882,7 +882,7 @@
    \xspaceskip                   #5\relax
    \parfillskip \zeropoint\s!plus#6\relax
    \parindent                    #7\relax
-   \attribute\alignstateattribute\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
+   \c_attr_alignstate\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
 
 % older (context) names:
 

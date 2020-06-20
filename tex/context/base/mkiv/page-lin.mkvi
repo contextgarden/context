@@ -46,11 +46,11 @@
 \definesystemattribute[linereference][public]
 
 \appendtoksonce
-    \attribute\linenumberattribute\attributeunsetvalue
+    \c_attr_linenumber\attributeunsetvalue
 \to \everyforgetall
 
 \appendtoks
-    \attribute\linenumberattribute \attributeunsetvalue
+    \c_attr_linenumber\attributeunsetvalue
 \to \everyinsidefloat
 
 \newcount   \linenumber % not used
@@ -130,7 +130,7 @@
 \unexpanded\def\page_lines_some_reference#1#2#3%
   {\dontleavehmode\begingroup
    \global\advance\c_page_lines_reference\plusone
-   \attribute\linereferenceattribute\c_page_lines_reference
+   \c_attr_linereference\c_page_lines_reference
    #3% todo: #3{#1} as there is no need to pass #1 as part of #3
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
    \c_strc_references_bind_state\zerocount % we don't want the prewordbreak and manage it here
@@ -315,11 +315,11 @@
    \or
      \page_lines_start_define % only when assignment
    \fi
-   \attribute\linenumberattribute\csname\??linenumberinginstance\currentlinenumbering\endcsname\relax}
+   \c_attr_linenumber\csname\??linenumberinginstance\currentlinenumbering\endcsname\relax}
 
 \unexpanded\def\stoplinenumbering
   {\ifconditional\c_pages_lines_nesting=\plusone
-     \attribute\linenumberattribute\attributeunsetvalue
+     \c_attr_linenumber\attributeunsetvalue
      \the\aftereverylinenumbering
      \ifconditional\c_page_lines_auto_narrow\par\fi
    \fi

@@ -93,7 +93,7 @@
 \setvalue{\??mathfencesize Bigg}{4}
 
 \def\math_fenced_force_size#1#2%
-  {\attribute\mathsizeattribute\numexpr
+  {\c_attr_mathsize\numexpr
      #1*\plushundred
     +\ifcsname\??mathfencesize#2\endcsname\lastnamedcs\else#2\fi
    \relax}
@@ -835,10 +835,10 @@
 \let\math_fences_normal_middle\middle
 \let\math_fences_normal_both  \leftorright
 
-\unexpanded\def\math_fences_auto_left  #1{\attribute\mathautofenceattribute\plusone  #1\attribute\mathautofenceattribute\attributeunsetvalue}
-\unexpanded\def\math_fences_auto_right #1{\attribute\mathautofenceattribute\plustwo  #1\attribute\mathautofenceattribute\attributeunsetvalue}
-\unexpanded\def\math_fences_auto_middle#1{\attribute\mathautofenceattribute\plusthree#1\attribute\mathautofenceattribute\attributeunsetvalue}
-\unexpanded\def\math_fences_auto_both  #1{\attribute\mathautofenceattribute\plusfour #1\attribute\mathautofenceattribute\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_left  #1{\c_attr_mathautofence\plusone  #1\c_attr_mathautofence\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_right #1{\c_attr_mathautofence\plustwo  #1\c_attr_mathautofence\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_middle#1{\c_attr_mathautofence\plusthree#1\c_attr_mathautofence\attributeunsetvalue}
+\unexpanded\def\math_fences_auto_both  #1{\c_attr_mathautofence\plusfour #1\c_attr_mathautofence\attributeunsetvalue}
 
 \let\autofenceopen  \math_fences_auto_left    % for testing
 \let\autofenceclose \math_fences_auto_right   % for testing

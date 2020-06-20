@@ -344,7 +344,7 @@
 \to \everymathematics
 
 \unexpanded\def\font_helpers_synchronize_math_family_mr
-  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+  {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
      \ifconditional\c_math_right_to_left
        \plustwo
      \else
@@ -355,7 +355,7 @@
    \fi}
 
 \unexpanded\def\font_helpers_synchronize_math_family_mb
-  {\attribute\mathfamilyattribute\ifconditional\c_font_bidirectional_mathstrategy
+  {\c_attr_mathfamily\ifconditional\c_font_bidirectional_mathstrategy
      \ifconditional\c_math_right_to_left
        \ifconditional\c_font_pseudo_bold_math_state\pluseight\else\plusfive\fi
      \else

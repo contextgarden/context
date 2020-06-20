@@ -226,7 +226,7 @@
   {\begingroup
      \iftrialtypesetting \else
        \currentconstructionsynchronize
-       \attribute\destinationattribute\currentconstructionattribute\relax
+       \c_attr_destination\currentconstructionattribute\relax
      \fi
      #1%
    \endgroup}
@@ -235,7 +235,7 @@
   {\begingroup
      \iftrialtypesetting \else
        \currentconstructionsynchronize
-       \attribute\destinationattribute\currentconstructionattribute\relax
+       \c_attr_destination\currentconstructionattribute\relax
      \fi
      \currentconstructiontext
    \endgroup}
@@ -244,7 +244,7 @@
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize % reinstated
-     \attribute\destinationattribute\currentconstructionattribute\relax % todo, whole text
+     \c_attr_destination\currentconstructionattribute\relax % todo, whole text
      \signalcharacter
      \endgroup
    \fi#1}

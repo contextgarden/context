@@ -1110,7 +1110,7 @@
 % \newcount\c_overlay_linetransparency
 
 % \appendtoks
-%     \c_overlay_colormodel      \attribute\colormodelattribute
+%     \c_overlay_colormodel      \c_attr_colormodel
 %     \c_overlay_color           \colo_helpers_inherited_current_ca\overlaycolor
 %     \c_overlay_transparency    \colo_helpers_inherited_current_ta\overlaycolor
 %     \c_overlay_linecolor       \colo_helpers_inherited_current_ca\overlaylinecolor
@@ -1368,8 +1368,8 @@
 \appendtoks
     \clf_mpsetoutercolor
         \MPcolormethod\space
-        \attribute\colormodelattribute\space
-        \attribute\colorattribute\space
+        \c_attr_colormodel\space
+        \c_attr_color\space
         \dogetattribute{transparency}\relax
 \to \everyMPgraphic
 

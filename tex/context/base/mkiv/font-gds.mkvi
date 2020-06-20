@@ -50,11 +50,11 @@
 
 \unexpanded\def\setfontcolorscheme % will move to the lua end
   {\clf_enablefontcolorschemes
-   \unexpanded\xdef\setfontcolorscheme[##1]{\attribute\colorschemeattribute##1\relax}%
+   \unexpanded\xdef\setfontcolorscheme[##1]{\c_attr_colorscheme##1\relax}%
    \setfontcolorscheme}
 
 \unexpanded\def\resetfontcolorscheme
-  {\attribute\colorschemeattribute\attributeunsetvalue}
+  {\c_attr_colorscheme\attributeunsetvalue}
 
 \protect \endinput
 

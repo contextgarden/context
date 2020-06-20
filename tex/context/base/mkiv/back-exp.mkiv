@@ -117,7 +117,7 @@
          \clf_settagconstruct
            {\currentstartstop}%
            {\startstopparameter\c!style}%
-           \attribute\colorattribute
+           \c_attr_color
            \ifvmode\plusone\else\zerocount\fi
            \relax
        \fi}%
@@ -129,7 +129,7 @@
          \clf_settaghighlight
            {\currenthighlight}%
            {\highlightparameter\c!style}
-           \attribute\colorattribute
+           \c_attr_color
            \ifvmode\plusone\else\zerocount\fi
            \relax
        \fi}%
@@ -159,9 +159,9 @@
 
 \appendtoks
     \unexpanded\def\dotagsetparcounter
-      {\global\advance\tagparcounter\plusone\attribute\taggedparattribute\tagparcounter}%
+      {\global\advance\tagparcounter\plusone\c_attr_taggedpar\tagparcounter}%
     \unexpanded\def\doresetparcounter
-      {\attribute\taggedparattribute\attributeunsetvalue}%
+      {\c_attr_taggedpar\attributeunsetvalue}%
 \to \everyenableelements
 
 \appendtoks

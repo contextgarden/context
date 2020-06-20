@@ -167,7 +167,7 @@
 
 \def\strc_references_placeholder
   {\ifx\dotaggedplaceholder\empty\else
-     \attribute\destinationattribute\lastdestinationattribute
+     \c_attr_destination\lastdestinationattribute
      \dotaggedplaceholder
    \fi}
 
@@ -373,7 +373,7 @@
 \unexpanded\def\vboxreference[#1]{\boxreference[#1]\vbox}
 
 % \ifx\currentdestinationattribute\empty
-%   \begingroup\attribute\destinationattribute\currentdestinationattribute\emptyhbox\endgroup % todo
+%   \begingroup\c_attr_destination\currentdestinationattribute\emptyhbox\endgroup % todo
 % \fi
 
 \def\defaultreferencepage#text{[[[#text]]]}
@@ -1475,12 +1475,12 @@
 \newbox\referencebox
 
 \def\revivesavedreferenceattribute % sometimes handy as no test etc needed
-  {\attribute\referenceattribute\lastsavedreferenceattribute}
+  {\c_attr_reference\lastsavedreferenceattribute}
 
 \def\strc_references_direct_goto#content[#label]% no test for valid references
   {\dontleavehmode
    \begingroup
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \global\lastsavedreferenceattribute\attributeunsetvalue
    \iflocation
      \clf_injectreference
@@ -1495,7 +1495,7 @@
      \setlocationattributes
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     \attribute\referenceattribute\lastreferenceattribute
+     \c_attr_reference\lastreferenceattribute
      \dostarttagged\t!link\empty % not here
      #content%
      \dostoptagged
@@ -1508,7 +1508,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_injectreference
         {\referenceprefix}%
@@ -1520,7 +1520,7 @@
         }%
      \relax
      \setlocationattributes
-     \attribute\referenceattribute\lastreferenceattribute
+     \c_attr_reference\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \dostarttagged\t!link\empty
      #content%
@@ -1535,7 +1535,7 @@
    \begingroup
   %\setbox\referencebox\hbox\bgroup % experiment, might change again to non \par support
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
@@ -1546,7 +1546,7 @@
         \setlocationattributes
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \attribute\referenceattribute\lastreferenceattribute
+        \c_attr_reference\lastreferenceattribute
         \dostarttagged\t!link\empty
         #content%
         \dostoptagged}%
@@ -1561,12 +1561,12 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \setstrut % can be option
      \strc_references_get_simple_reference{#internal}%
      \global\lastsavedreferenceattribute\currentreferenceattribute
-     \attribute\referenceattribute\currentreferenceattribute
+     \c_attr_reference\currentreferenceattribute
      \setlocationattributes
      \dostarttagged\t!link\empty
      #content%
@@ -1602,7 +1602,7 @@
    \setlocationattributes
    \setstrut % can be option
    \global\lastsavedreferenceattribute\lastreferenceattribute
-   \attribute\referenceattribute\lastreferenceattribute
+   \c_attr_reference\lastreferenceattribute
    \dostarttagged\t!link\empty
    \let\stopgoto\strc_references_stop_goto_yes}
 
@@ -1614,7 +1614,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
@@ -1624,7 +1624,7 @@
         \relax
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \attribute\referenceattribute\lastreferenceattribute
+        \c_attr_reference\lastreferenceattribute
         \dostarttagged\t!link\empty
         #content%
         \dostoptagged}%
@@ -1638,7 +1638,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_injectreference
        {\referenceprefix}%
@@ -1659,7 +1659,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_injectreference
        {\referenceprefix}%
@@ -1680,7 +1680,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_injectreference
        {\referenceprefix}%
@@ -1700,7 +1700,7 @@
   {\dontleavehmode
    \begingroup
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\expandtexincurrentreference
@@ -1723,7 +1723,7 @@
    \wd\scratchbox#width%
    \ht\scratchbox#height%
    \global\lastsavedreferenceattribute\attributeunsetvalue
-   \attribute\referenceattribute\attributeunsetvalue
+   \c_attr_reference\attributeunsetvalue
    \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
      {\clf_injectcurrentreference
       \global\lastsavedreferenceattribute\lastreferenceattribute

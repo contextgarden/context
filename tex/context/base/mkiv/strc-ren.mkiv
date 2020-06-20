@@ -90,9 +90,9 @@
 
 \def\setinlineheadreferenceattributes
   {\ifconditional\headisdisplay \else \iflocation
-     \attribute\destinationattribute\currentstructureattribute
-     \attribute\referenceattribute  \currentstructurereferenceattribute
-   % \attribute\internalattribute   \locationcount
+     \c_attr_destination\currentstructureattribute
+     \c_attr_reference  \currentstructurereferenceattribute
+   % \c_attr_internal   \locationcount
    \fi \fi}
 
 \def\docheckheadreference

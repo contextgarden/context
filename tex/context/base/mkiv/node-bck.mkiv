@@ -34,12 +34,12 @@
    \fi\fi}
 
 \def\node_backgrounds_thecolorattr#1%
-  {attr \colormodelattribute   \attribute\colormodelattribute
+  {attr \colormodelattribute   \c_attr_colormodel
    attr \colorattribute        \lastnamedcs
    attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
 
 \def\thecolorattr#1%
-  {attr \colormodelattribute   \attribute\colormodelattribute
+  {attr \colormodelattribute   \c_attr_colormodel
    attr \colorattribute        \csname\??colorattribute#1\endcsname
    attr \transparencyattribute \thetransparencyattribute{#1} } % can be optimized
 
@@ -52,19 +52,19 @@
 
 \def\thebackgroundcolorattr#1%
   {attr \backgroundattribute      \plusone
-   attr \colormodelattribute      \attribute\colormodelattribute
+   attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \csname\??colorattribute#1\endcsname
    attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
 
 \def\node_backgrounds_thebackgroundcolorattr#1%
   {attr \backgroundattribute      \plusone
-   attr \colormodelattribute      \attribute\colormodelattribute
+   attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \lastnamedcs
    attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
 
 \def\thealignbackgroundcolorattr#1%
   {attr \alignbackgroundattribute \plusone
-   attr \colormodelattribute      \attribute\colormodelattribute
+   attr \colormodelattribute      \c_attr_colormodel
    attr \colorattribute           \csname\??colorattribute#1\endcsname
    attr \transparencyattribute    \thetransparencyattribute{#1} } % can be optimized
 
@@ -81,9 +81,9 @@
 %    \dousecolorparameter{#2}%
 %    \normalexpanded{\endgroup#1
 %      attr \backgroundattribute   \plusone
-%      attr \colormodelattribute   \the\attribute\colormodelattribute
-%      attr \colorattribute        \the\attribute\colorattribute
-%      attr \transparencyattribute \the\attribute\transparencyattribute}}
+%      attr \colormodelattribute   \the\c_attr_colormodel
+%      attr \colorattribute        \the\c_attr_color
+%      attr \transparencyattribute \the\c_attr_transparency}}
 %
 % more efficient:
 

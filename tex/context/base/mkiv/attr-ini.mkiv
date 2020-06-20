@@ -61,28 +61,31 @@
 
 % here public means 'visible' so it's not to be confused with 'public' at the lua end
 
+% \let\attr_prefix\??attributecount
+\def\attr_prefix{c_attr_}
+
 \def\attr_basics_define_indeed#1[#2][#3]%
-  {\ifcsname\??attributecount#2\endcsname\else
+  {\ifcsname\attr_prefix#2\endcsname\else
      \scratchcounter\clf_defineattribute{#2}{#1}\relax
     %\writestatus\m!system{defining #1 attribute #2 with number \number\scratchcounter}%
-     \global\expandafter\attributedef\csname\??attributecount#2\endcsname\scratchcounter
+     \global\expandafter\attributedef\csname\attr_prefix#2\endcsname\scratchcounter
      \global\expandafter\newconstant \csname\??attributeid#2\endcsname
      \global\csname\??attributeid#2\endcsname\scratchcounter
      % some attributes are always global
      \doifelseinset\s!global{#3}%
-       {\xtoksapp\t_attr_list_global{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
-       {\xtoksapp\t_attr_list_local {\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_global{\csname\attr_prefix#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_local {\csname\attr_prefix#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!nomath{#3}%
-       {\xtoksapp\t_attr_list_nomath{\csname\??attributecount#2\endcsname\attributeunsetvalue}}%
+       {\xtoksapp\t_attr_list_nomath{\csname\attr_prefix#2\endcsname\attributeunsetvalue}}%
      \doifinset\s!public{#3}%
        {\expandafter\glet\csname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}%
      \doifinset\s!pickup{#3}%
        {\global\expandafter\newconstant\csname\??attributepickup#2\endcsname
         \global\csname\??attributepickup#2\endcsname\attributeunsetvalue
-        \xtoksapp\t_attr_list_pickup{\csname\??attributecount#2\endcsname\csname\??attributepickup#2\endcsname}%
+        \xtoksapp\t_attr_list_pickup{\csname\attr_prefix#2\endcsname\csname\??attributepickup#2\endcsname}%
         \ifcsname#2\s!attribute\endcsname
           \expandafter\xdef\csname\s!pickup#2\s!attribute\endcsname
-            {\csname\??attributepickup#2\endcsname\csname\??attributecount#2\endcsname}%
+            {\csname\??attributepickup#2\endcsname\csname\attr_prefix#2\endcsname}%
           \expandafter\xdef\csname\s!forget#2\s!attribute\endcsname
             {\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
         \fi}%
@@ -92,10 +95,10 @@
   {\the\t_attr_list_pickup\relax}
 
 % \unexpanded\def\pickupattribute#1%
-%   {\csname\??attributecount#1\endcsname\csname\??attributepickup#1\endcsname}
+%   {\csname\attr_prefix#1\endcsname\csname\??attributepickup#1\endcsname}
 
 % \unexpanded\def\pickupattributelater#1%
-%   {\csname\??attributepickup#1\endcsname\csname\??attributecount#1\endcsname}
+%   {\csname\??attributepickup#1\endcsname\csname\attr_prefix#1\endcsname}
 
 % \unexpanded\def\newattribute#1%
 %   {\attr_basics_define_indeed\s!public[\csstring#1][]%
@@ -107,9 +110,9 @@
 
 % expandable so we can \edef them for speed
 
-\def\dosetattribute#1#2{\csname\??attributecount#1\endcsname#2\relax}
-\def\doresetattribute#1{\csname\??attributecount#1\endcsname\attributeunsetvalue}
-\def\dogetattribute  #1{\number\csname\??attributecount#1\endcsname}
+\def\dosetattribute#1#2{\csname\attr_prefix#1\endcsname#2\relax}
+\def\doresetattribute#1{\csname\attr_prefix#1\endcsname\attributeunsetvalue}
+\def\dogetattribute  #1{\number\csname\attr_prefix#1\endcsname}
 \def\dogetattributeid#1{\number\csname\??attributeid#1\endcsname}
 
 \let\dompattribute\gobbletwoarguments

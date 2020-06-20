@@ -35,7 +35,7 @@
 \fi
 
 \unexpanded\def\italiccorrection
-  {\ifnum\attribute\italicsattribute<\plusone\normalitaliccorrection\fi}
+  {\ifnum\c_attr_italics<\plusone\normalitaliccorrection\fi}
 
 \let\/\italiccorrection
 
@@ -57,7 +57,7 @@
   {\clf_setupitaliccorrection{#settings}}
 
 \appendtoks
-    \attribute\italicsattribute\attributeunsetvalue
+    \c_attr_italics\attributeunsetvalue
 \to \everymathematics
 
 \protect \endinput

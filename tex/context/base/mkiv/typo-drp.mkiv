@@ -22,7 +22,7 @@
 \definesystemattribute[initial][public]
 
 \appendtoks
-    \attribute\initialattribute\attributeunsetvalue
+    \c_attr_initial\attributeunsetvalue
 \to \everyforgetall
 
 %D For the moment here: dropped caps redone. In addition to the
@@ -105,13 +105,13 @@
         distance  \dimexpr\initialparameter\c!distance\relax
         hoffset   \dimexpr\initialparameter\c!hoffset\relax
         voffset   \scratchvoffset
-        ma        \attribute\colormodelattribute
-        ca        \attribute\colorattribute
-        ta        \attribute\transparencyattribute
+        ma        \c_attr_colormodel
+        ca        \c_attr_color
+        ta        \c_attr_transparency
         font      \fontid\font
         dynamic   \font_dynamic_value % it's a bit over the top to support this here
    \relax
-   \attribute\initialattribute\plusone
+   \c_attr_initial\plusone
    \initialparameter\c!text
    \endgroup
    \glet\typo_initial_handle\relax}

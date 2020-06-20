@@ -16,7 +16,9 @@ slower but look nicer this way.</p>
 <p>Some code may move to a module in the language namespace.</p>
 --ldx]]--
 
-local floor, osdate, ostime, concat = math.floor, os.date, os.time, table.concat
+local floor = math.floor
+local osdate, ostime = os.date, os.time
+local concat, insert, reverse = table.concat, table.insert, table.reverse
 local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
@@ -444,6 +446,94 @@ implement {
     actions   = { toabjad, context },
     arguments = { "integer", true }
 }
+
+-- -- - hebrew and jiddish -- -- --
+
+local trace_hebrew  trackers.register("converters.hebrew", function(v)
+    trace_hebrew = v
+end)
+
+local list = {
+    { 400, "ת" }, { 300, "ש" }, { 200, "ר" }, { 100, "ק" },
+    {  90, "צ" }, { 80, "פ" }, { 70, "ע" }, { 60, "ס "}, { 50, "נ" }, { 40, "מ" }, { 30, "ל" }, { 20, "כ" }, { 10, "י" },
+    {   9, "ט" }, { 8, "ח" }, { 7, "ז", }, { 6, "ו", }, { 5, "ה" }, { 4, "ד" }, { 3, "ג" }, { 2, "ב" }, { 1, "א" },
+}
+
+local special = {
+    [15] = "ט״ו", -- exception: avoid mixup with God יה
+    [16] = "ט״ז", -- exception: avoid mixup with God יו
+}
+
+local function tohebrew(n,gershayim,geresh)
+    local split = { }
+    local size  = 0
+    while n > 1000 do
+        size = size + 1
+        split[size] = n % 1000
+        n = floor(n/1000)
+    end
+    size = size + 1
+    split[size] = n
+    for i=1,size do
+        local t = { }
+        local n = 0
+        local s = split[i]
+        while s > 0 do
+            for i=1,#list do
+              ::again::
+                local li = list[i]
+                local l1 = li[1]
+                local s1 = special[l1]
+                if s1 then
+                    s = s - l1
+                    n = n + 1
+                    t[n] = s1
+                    goto again
+                elseif s >= l1 then
+                    s = s - l1
+                    n = n + 1
+                    t[n] = li[2]
+                    goto again
+                end
+            end
+        end
+        ::done::
+        split[i] = t
+    end
+    if gershayim then
+        for i=1,size do
+            local si = split[i]
+            local ni = #si
+            if ni >= 2 then
+                local s = "״"
+                insert(split[i],ni,trace_hebrew and ("{\\red "..s.."}") or s)
+            end
+        end
+    end
+    if geresh then
+        for i=2,#split do
+            local s = rep("׳",i-1)
+            insert(split[i],trace_hebrew and ("{\\blue "..s.."}") or s)
+        end
+    end
+    for i=1,size do
+        split[i] = concat(split[i])
+    end
+    return concat(reverse(split))
+end
+
+converters.tohebrew       = tohebrew
+converters.hebrewnumerals = converters.tohebrew
+
+-- converters['alphabetic:hb'] = converters.hebrewnumerals
+
+interfaces.implement {
+    name      = "hebrewnumerals",
+    actions   = { tohebrew, context },
+    arguments = { "integer", true, true }
+}
+
+-- -- --
 
 local vector = {
     normal = {

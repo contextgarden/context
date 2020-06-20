@@ -1544,14 +1544,14 @@
 
 \def\strc_lists_set_reference_attribute_indeed#element%
   {\ifx#element\p_interaction_forward
-     \attribute\referenceattribute\a_strc_lists_reference
+     \c_attr_reference\a_strc_lists_reference
    \fi}
 
 \def\strc_lists_get_destination_attribute_indeed
   {attr \destinationattribute\number\a_strc_lists_destination}
 
 \def\strc_lists_set_destination_attribute_indeed
-  {\attribute\destinationattribute\a_strc_lists_destination}
+  {\c_attr_destination\a_strc_lists_destination}
 
 \unexpanded\def\strc_lists_set_style_color_normal#style#color#element%
   {\useliststyleandcolor#style#color}

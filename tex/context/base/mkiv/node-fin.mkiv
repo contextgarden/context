@@ -36,8 +36,8 @@
 
 \newcount\c_syst_attr_trigger
 
-\edef\startinheritattributes{\attribute\triggerattribute\plusone}
-\edef\stopinheritattributes {\attribute\triggerattribute\attributeunsetvalue}
+\edef\startinheritattributes{\c_attr_trigger\plusone}
+\edef\stopinheritattributes {\c_attr_trigger\attributeunsetvalue}
 
 \def\syst_attr_trigger_copy_yes{\afterassignment\syst_attr_trigger_copy_indeed\c_syst_attr_trigger}
 \def\syst_attr_trigger_dump_yes{\afterassignment\syst_attr_trigger_dump_indeed\c_syst_attr_trigger}

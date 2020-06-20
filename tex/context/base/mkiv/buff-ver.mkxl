@@ -24,7 +24,7 @@
 \definesystemattribute[verbatimline][public]
 
 \appendtoksonce
-    \attribute\verbatimlineattribute\attributeunsetvalue
+    \c_attr_verbatimline\attributeunsetvalue
 \to \everyforgetall
 
 %D Initializations.
@@ -908,7 +908,7 @@
 \unexpanded\def\buff_verbatim_begin_of_line
   {\ifconditional\verbatimnumberinglines
      \global\advance\nofverbatimlines\plusone
-     \attribute\verbatimlineattribute\nofverbatimlines
+     \c_attr_verbatimline\nofverbatimlines
    \fi
    \noindent
    \buff_verbatim_set_line_margin
@@ -922,7 +922,7 @@
    \obeyedline % still needed?
    \par
    \ifconditional\verbatimnumberinglines
-     \attribute\verbatimlineattribute\attributeunsetvalue
+     \c_attr_verbatimline\attributeunsetvalue
    \fi}
 
 \unexpanded\def\buff_verbatim_empty_line

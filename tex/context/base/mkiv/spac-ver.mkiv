@@ -1500,14 +1500,14 @@
 \newdimen \globalbodyfontstrutheight
 \newdimen \globalbodyfontstrutdepth
 
-\def\snappedvboxattribute{\ifgridsnapping attr       \snapvboxattribute \attribute\snapmethodattribute\fi}
-\def\setlocalgridsnapping{\ifgridsnapping \attribute \snapvboxattribute \attribute\snapmethodattribute\fi}
+\def\snappedvboxattribute{\ifgridsnapping    attr\snapvboxattribute\c_attr_snapmethod\fi}
+\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox         \c_attr_snapmethod\fi}
 
 \def\spac_grids_set_local_snapping#1%
   {\ifgridsnapping
      \doifsomething{#1}%
        {\spac_grids_snap_value_set{#1}%
-        \attribute \snapvboxattribute \attribute\snapmethodattribute}%
+        \c_attr_snapvbox\c_attr_snapmethod}%
    \fi}
 
 % \unexpanded\def\installsnapvalues#1#2% todo: a proper define
@@ -1515,7 +1515,7 @@
 %    \ifcsname\??gridsnapperattributes\currentsnapper\endcsname \else
 %      \setevalue{\??gridsnapperattributes\currentsnapper}{\clf_definesnapmethod{#1}{#2}}%
 %    \fi
-%    \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
+%    \setevalue{\??gridsnappers#1}{\c_attr_snapmethod\csname\??gridsnapperattributes\currentsnapper\endcsname\space}}
 
 \def\spac_grids_expand_snapper#1%
   {\edef\m_spac_snapper
@@ -1534,7 +1534,7 @@
      \scratchcounter\clf_definesnapmethod{#1}{\m_spac_snapper}%
      \setevalue{\??gridsnapperattributes\currentsnapper}{\the\scratchcounter}%
    \fi
-   \setevalue{\??gridsnappers#1}{\attribute\snapmethodattribute\the\scratchcounter\relax}%
+   \setevalue{\??gridsnappers#1}{\c_attr_snapmethod\the\scratchcounter\relax}%
    \letvalue{\??gridsnappersets#1}\m_spac_snapper}
 
 \def\theexpandedsnapperset#1{\begincsname\??gridsnappersets#1\endcsname} % only for manuals
@@ -1542,10 +1542,10 @@
 \unexpanded\def\usegridparameter#1% no checking here
   {\edef\m_spac_grid_asked{#1\c!grid}%
    \ifx\m_spac_grid_asked\empty
-     \attribute \snapvboxattribute\attributeunsetvalue
+     \c_attr_snapvbox\attributeunsetvalue
    \else
      \spac_grids_snap_value_set\m_spac_grid_asked
-     \attribute \snapvboxattribute\attribute\snapmethodattribute
+     \c_attr_snapvbox\c_attr_snapmethod
    \fi}
 
 \unexpanded\def\definegridsnapping
@@ -1556,7 +1556,7 @@
 
 \edef\spac_grids_snap_value_reset
   {%\gridsnappingfalse
-   \attribute\snapmethodattribute\attributeunsetvalue}
+   \c_attr_snapmethod\attributeunsetvalue}
 
 \def\spac_grids_snap_value_set#1%
   {%\gridsnappingtrue
@@ -1605,9 +1605,9 @@
 
 %D We're not downward compatible with \MKII ! Not yet in interface file:
 
-\definegridsnapping[\v!normal]         [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!standard]       [\v!maxheight,\v!maxdepth,\v!strut]
-\definegridsnapping[\v!yes]            [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!normal]           [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!standard]         [\v!maxheight,\v!maxdepth,\v!strut]
+\definegridsnapping[\v!yes]              [\v!maxheight,\v!maxdepth,\v!strut]
 
 \definegridsnapping[\v!strict]           [\v!maxdepth:0.8,\v!maxheight:0.8,\v!strut]
 \definegridsnapping[\v!tolerant]         [\v!maxdepth:1.2,\v!maxheight:1.2,\v!strut]
@@ -1717,7 +1717,7 @@
      \clf_vspacingcollapse\nextbox\relax % isn't that already done?
    \fi
    \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
-   \clf_vspacingsnap\nextbox\attribute\snapmethodattribute\relax
+   \clf_vspacingsnap\nextbox\c_attr_snapmethod\relax
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% no pack (?), we snap
    \egroup}
 
@@ -1948,7 +1948,7 @@
    \clf_vspacingsetamount{#1}}
 
 \def\spac_vspacing_no_topskip % use grouped
-  {\attribute\skipcategoryattribute\plusten}
+  {\c_attr_skipcategory\plusten}
 
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}
@@ -1979,9 +1979,9 @@
 
 \appendtoks
     \s_spac_vspacing_temp\zeropoint
-    \attribute\skipcategoryattribute\plusone
-    \attribute\skippenaltyattribute \attributeunsetvalue
-    \attribute\skiporderattribute   \attributeunsetvalue
+    \c_attr_skipcategory\plusone
+    \c_attr_skippenalty \attributeunsetvalue
+    \c_attr_skiporder   \attributeunsetvalue
     \ifgridsnapping
         \settrue\c_space_vspacing_fixed
     \else
@@ -2003,10 +2003,10 @@
 
 \unexpanded\def\setblankcategory#1%
   {\settrue\c_space_vspacing_done
-   \attribute\skipcategoryattribute#1\relax}
+   \c_attr_skipcategory#1\relax}
 
 \unexpanded\def\setblankorder#1%
-  {\attribute\skiporderattribute#1\relax}
+  {\c_attr_skiporder#1\relax}
 
 \unexpanded\def\fixedblankskip
   {\settrue\c_space_vspacing_fixed}
@@ -2021,8 +2021,8 @@
 \unexpanded\def\setblankpenalty#1%
   {\flushblankhandling
    \settrue\c_space_vspacing_done
-   \attribute\skipcategoryattribute \plusthree
-   \attribute\skippenaltyattribute #1\relax
+   \c_attr_skipcategory\plusthree
+   \c_attr_skippenalty #1\relax
    \flushblankhandling}
 
 \unexpanded\def\startblankhandling % move this to \vspacing
@@ -2181,17 +2181,17 @@
 
 \unexpanded\def\directvpenalty#1%
   {\begingroup
-   \attribute\skipcategoryattribute \plusthree
-   \attribute\skippenaltyattribute  #1\relax
-   \attribute\skiporderattribute    \attributeunsetvalue
+   \c_attr_skipcategory\plusthree
+   \c_attr_skippenalty #1\relax
+   \c_attr_skiporder   \attributeunsetvalue
    \vskip\zeropoint
    \endgroup}
 
 \unexpanded\def\directvskip#1%
   {\begingroup
-   \attribute\skipcategoryattribute \plusone
-   \attribute\skippenaltyattribute  \attributeunsetvalue
-   \attribute\skiporderattribute    \attributeunsetvalue
+   \c_attr_skipcategory\plusone
+   \c_attr_skippenalty \attributeunsetvalue
+   \c_attr_skiporder   \attributeunsetvalue
    \vskip#1\relax
    \endgroup}
 
@@ -2343,7 +2343,7 @@
 \unexpanded\def\inhibitblank
   {\ifvmode
      \begingroup
-     \attribute\skipcategoryattribute\plusfive
+     \c_attr_skipcategory\plusfive
      \vskip\zeropoint
      \endgroup
    \fi}

@@ -437,7 +437,7 @@
   {\iftrialtypesetting \else
      \begingroup
      \currentconstructionsynchronize
-     \attribute\destinationattribute\currentconstructionattribute\relax % todo, whole text
+     \c_attr_destination\currentconstructionattribute\relax % todo, whole text
      \signalcharacter
      \endgroup
    \fi#following}
@@ -582,20 +582,20 @@
 % \def\strc_references_prepare_display_references_yes_number
 %   {\let\strc_notes_set_reference_attribute_text\donothing
 %    \strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
-%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
 %    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
 
 % \def\strc_references_prepare_display_references_yes_text
 %   {\strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
-%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
 %    \let\strc_notes_set_reference_attribute_number\donothing
 %    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
 
 % \def\strc_references_prepare_display_references_yes_all
 %   {\strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
-%    \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+%    \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
 %    \strc_references_get_simple_reference{symb:\currentnote:\currentnotenumber}% reference
-%    \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+%    \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
 %    \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes}
 
 \def\strc_references_prepare_display_references_yes_number
@@ -605,7 +605,7 @@
    \else
      \let\strc_notes_set_reference_attribute_text\donothing
      \strc_references_get_simple_reference{*\currentnoteinternal}% reference
-     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 
@@ -615,7 +615,7 @@
      \strc_references_prepare_display_references_nop
    \else
      \strc_references_get_simple_reference{*\currentnoteinternal}% reference
-     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_reference_attribute_number\donothing
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
@@ -626,9 +626,9 @@
      \strc_references_prepare_display_references_nop
    \else
      \strc_references_get_simple_reference{*\currentnoteinternal}% reference
-     \edef\strc_notes_set_reference_attribute_text{\attribute\referenceattribute\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
      \strc_references_get_simple_reference{*\currentnoteinternal}% reference
-     \edef\strc_notes_set_reference_attribute_number{\attribute\referenceattribute\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 

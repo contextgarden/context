@@ -315,7 +315,7 @@
 
 \def\theformuladestinationattribute#1%
   {\iflocation\ifx#1\relax\else\ifx#1\empty\else
-     \attribute\destinationattribute#1%
+     \c_attr_destination#1%
      \glet#1\relax
    \fi\fi\fi}
 

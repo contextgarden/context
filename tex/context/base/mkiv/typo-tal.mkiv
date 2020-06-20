@@ -56,10 +56,10 @@
 % D
 % D \typebuffer \blank \getbuffer \blank
 
-\unexpanded\def\signalcharacteralign       #1#2{\attribute\characteralignattribute\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
+\unexpanded\def\signalcharacteralign       #1#2{\c_attr_characteralign\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
 \unexpanded\def\setcharacteralign          #1#2{\clf_setcharacteralign#1{#2}}
 \unexpanded\def\resetcharacteralign            {\clf_resetcharacteralign}
-\unexpanded\def\nocharacteralign               {\attribute\characteralignattribute\attributeunsetvalue}
+\unexpanded\def\nocharacteralign               {\c_attr_characteralign\attributeunsetvalue}
 \unexpanded\def\setcharacteraligndetail#1#2#3#4{\clf_setcharacteraligndetail#1{#2}#3#4\relax}
 
 %D Mostly downward compatible:

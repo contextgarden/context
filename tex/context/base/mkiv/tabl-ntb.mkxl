@@ -1501,7 +1501,7 @@
         \advance\scratchcounter\plusone}%
    \fi
    % cell
-   \setbox\scratchbox\hbox attr \taggedattribute \attribute\taggedattribute \bgroup
+   \setbox\scratchbox\hbox attr \taggedattribute \c_attr_tagged \bgroup
       \dotagTABLEsignal % maybe we need to add some packaging in this case
       \tabl_ntb_get_txt{#1}{#2}%
    \egroup

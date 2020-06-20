@@ -162,14 +162,14 @@
    \expandafter\let\expandafter\c_node_rules_index\csname\??barindex#1\endcsname
    \advance\c_node_rules_index\plusone
    \clf_enablerules % will be relaxed
-   \attribute\ruledattribute\numexpr
+   \c_attr_ruled\numexpr
       \plusthousand*\c_node_rules_index
       % optimizing this one needs testing
      +\csname\??barattribute#1\ifcsname\??bar#1:\number\c_node_rules_index\s!parent\endcsname:\number\c_node_rules_index\fi\endcsname
    \relax}
 
 \unexpanded\def\resetbar
-  {\attribute\ruledattribute\attributeunsetvalue}
+  {\c_attr_ruled\attributeunsetvalue}
 
 \unexpanded\def\nobar
   {\groupedcommand
@@ -198,7 +198,7 @@
 
 \unexpanded\def\pushbar[#1]%
   {\global\advance\c_node_rules_nesting\plusone
-   \expandafter\edef\csname\??barstack\number\c_node_rules_nesting\endcsname{\attribute\ruledattribute\the\attribute\ruledattribute}%
+   \expandafter\edef\csname\??barstack\number\c_node_rules_nesting\endcsname{\c_attr_ruled\the\c_attr_ruled}%
    \node_rules_set{#1}}
 
 \unexpanded\def\popbar
@@ -405,7 +405,7 @@
    \expandafter\let\expandafter\c_node_shifts_index\csname\??shiftindex#1\endcsname
    \advance\c_node_shifts_index\plusone
    \clf_enableshifts % will be relaxed
-   \attribute\shiftedattribute\numexpr
+   \c_attr_shifted\numexpr
       \plusthousand*\c_node_shifts_index
      +\csname\??shiftattribute#1\ifcsname\??shift#1:\number\c_node_shifts_index\s!parent\endcsname:\number\c_node_shifts_index\fi\endcsname
    \relax
@@ -525,7 +525,7 @@
    \expandafter\let\expandafter\c_node_linefiller_index\csname\??linefillerindex#1\endcsname
    \advance\c_node_linefiller_index\plusone
    \clf_enablelinefillers
-   \attribute\linefillerattribute\numexpr
+   \c_attr_linefiller\numexpr
       \plusthousand*\c_node_linefiller_index
      +\csname\??linefillerattribute#1\ifcsname\??linefiller#1:\number\c_node_linefiller_index\s!parent\endcsname:\number\c_node_linefiller_index\fi\endcsname
    \relax}
@@ -601,7 +601,7 @@
      \node_linefiller_set{#3}% already sets the attribute
      #1%
         attr \backgroundattribute \plusone
-      % attr \linefillerattribute \the\attribute\linefillerattribute
+      % attr \linefillerattribute \the\c_attr_linefiller
        {\box\nextbox}%
      \egroup}%
    #2}

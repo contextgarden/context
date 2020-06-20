@@ -2712,10 +2712,10 @@
 
 \unexpanded\def\saverunningstyleandcolor
   {\unexpanded\edef\restorerunningstyleandcolor
-     {\setfontid                      \number\fontid\font
-      \attribute\colormodelattribute  \the\attribute\colormodelattribute
-      \attribute\colorattribute       \the\attribute\colorattribute
-      \attribute\transparencyattribute\the\attribute\transparencyattribute
+     {\setfontid          \number\fontid\font
+      \c_attr_colormodel  \the\c_attr_colormodel
+      \c_attr_color       \the\c_attr_color
+      \c_attr_transparency\the\c_attr_transparency
       \relax}}
 
 \let\restorerunningstyleandcolor\relax
