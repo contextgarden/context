@@ -246,18 +246,16 @@ function environment.useluamodule(list)
     end
 end
 
-local strings = interfaces.strings
-
 implement {
     name      = "usemodules",
     actions   = environment.usemodules,
-    arguments = strings[2]
+    arguments = "2 strings",
 }
 
 implement {
     name      = "doifelseolderversion",
     actions   = function(one,two) commands.doifelse(comparedversion(one,two) >= 0) end,
-    arguments = strings[2]
+    arguments = "2 strings"
 }
 
 implement {

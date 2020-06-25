@@ -25,7 +25,6 @@ local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
 
 local implement         = interfaces.implement
-local two_strings       = interfaces.strings[2]
 
 local context           = context
 
@@ -1553,16 +1552,16 @@ end
 -- interface
 
 implement { name = "lpdf_collectedresources",                             actions = { lpdf.collectedresources, context } }
-implement { name = "lpdf_addtocatalog",          arguments = two_strings, actions = lpdf.addtocatalog }
-implement { name = "lpdf_addtoinfo",             arguments = two_strings, actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
-implement { name = "lpdf_addtonames",            arguments = two_strings, actions = lpdf.addtonames }
-implement { name = "lpdf_addtopageattributes",   arguments = two_strings, actions = lpdf.addtopageattributes }
-implement { name = "lpdf_addtopagesattributes",  arguments = two_strings, actions = lpdf.addtopagesattributes }
-implement { name = "lpdf_addtopageresources",    arguments = two_strings, actions = lpdf.addtopageresources }
-implement { name = "lpdf_adddocumentextgstate",  arguments = two_strings, actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentcolorspace", arguments = two_strings, actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentpattern",    arguments = two_strings, actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
-implement { name = "lpdf_adddocumentshade",      arguments = two_strings, actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
+implement { name = "lpdf_addtocatalog",          arguments = "2 strings", actions = lpdf.addtocatalog }
+implement { name = "lpdf_addtoinfo",             arguments = "2 strings", actions = function(a,b,c) lpdf.addtoinfo(a,b,c) end } -- gets adapted
+implement { name = "lpdf_addtonames",            arguments = "2 strings", actions = lpdf.addtonames }
+implement { name = "lpdf_addtopageattributes",   arguments = "2 strings", actions = lpdf.addtopageattributes }
+implement { name = "lpdf_addtopagesattributes",  arguments = "2 strings", actions = lpdf.addtopagesattributes }
+implement { name = "lpdf_addtopageresources",    arguments = "2 strings", actions = lpdf.addtopageresources }
+implement { name = "lpdf_adddocumentextgstate",  arguments = "2 strings", actions = function(a,b) lpdf.adddocumentextgstate (a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentcolorspace", arguments = "2 strings", actions = function(a,b) lpdf.adddocumentcolorspace(a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentpattern",    arguments = "2 strings", actions = function(a,b) lpdf.adddocumentpattern   (a,pdfverbose(b)) end }
+implement { name = "lpdf_adddocumentshade",      arguments = "2 strings", actions = function(a,b) lpdf.adddocumentshade     (a,pdfverbose(b)) end }
 
 -- more helpers: copy from lepd to lpdf
 

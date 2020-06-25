@@ -313,18 +313,22 @@ else
 end
 
 function interfaces.tolist(t)
-    local r = { }
-    for i=1,#t do
-        r[i] = t[i]
-    end
-    local n = #r
-    for k,v in table.sortedhash(t) do
-        if type(k) ~= "number" then
-            n = n + 1
-            r[n] = k .. "=" .. v
+    if t then
+        local r = { }
+        for i=1,#t do
+            r[i] = t[i]
         end
+        local n = #r
+        for k,v in table.sortedhash(t) do
+            if type(k) ~= "number" then
+                n = n + 1
+                r[n] = k .. "=" .. v
+            end
+        end
+        return concat(r,", ")
+    else
+        return ""
     end
-    return concat(r,", ")
 end
 
 -- \startluacode
@@ -358,9 +362,9 @@ end
 --     context.startnarrower()
 -- end
 --
--- local function stopmore(opt_1)
+-- local function stopmore()
 --     context.stopnarrower()
---     context("stop more, options: %s",interfaces.tolist(opt_1))
+--     context("stop more")
 --     context.stopnarrower()
 -- end
 --

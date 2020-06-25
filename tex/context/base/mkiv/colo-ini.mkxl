@@ -250,8 +250,8 @@
 
 %D The following command is obsolete:
 
-\unexpanded\def\startcolorpage   {\startcolor[\ifempty\maintextcolor\defaulttextcolor\else\maintextcolor\fi]}
-\unexpanded\def\stopcolorpage    {\stopcolor}
+\unexpanded\def\startcolorpage{\startcolor[\ifempty\maintextcolor\defaulttextcolor\else\maintextcolor\fi]}
+\unexpanded\def\stopcolorpage {\stopcolor}
 
 \unexpanded\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup

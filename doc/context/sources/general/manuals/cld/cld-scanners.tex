@@ -1,0 +1,1046 @@
+% language=uk
+
+\startcomponent cld-ctxscanners
+
+\environment cld-environment
+
+\startchapter[title={Scanners}]
+
+\startsection[title={Introduction}]
+
+\index {implementors}
+\index {scanners}
+
+Here we discuss methods to define macros that directly interface with the \LUA\
+side. It involves all kind of scanners. There are actually more than we discuss
+here but some are meant for low level usage. What is describe here has been used
+for ages and works quite well.
+
+{\em We don't discuss some of the more obscure options here. Some are there just
+because we need them as part of bootstrapping or initializing code and are of no
+real use to users.}
+
+\stopsection
+
+\startsection[title={A teaser first}]
+
+Most of this chapter is examples and you learn \TEX\ (and \LUA) best by just
+playing around. The nice thing about \TEX\ is that it's all about visual output,
+so that's why in the next examples we just typeset some of what we just scanned.
+Of course in practice the \type {actions} will be more complex.
+
+\unexpanded\def\showmeaning#1%
+  {\begingroup
+   \dontleavehmode
+   \ttbf\string #1\space
+   \tttf\meaning#1%
+   \endgroup}
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroA",
+        public    = true,
+        arguments = "string",
+        actions   = function(s)
+            context("(%s)",s)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\startbuffer[usage]
+\MyMacroA{123}
+\MyMacroA{abc}
+\edef\temp{\MyMacroA{abc}}
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+By default a macro gets defined in the \type {\clf_} namespace but the \type
+{public} option makes it visible. This default indicates that it is actually a
+low level mechanism in origin. More often than not these interfaces are used like
+this:
+
+\starttyping
+\def\MyMacro#1{... \clf_MyMacroA{#1} ...}
+\stoptyping
+
+When we look at the meaning of \type {\MyMacroA} we get:
+
+\blank \showmeaning\MyMacroA \blank
+
+And when we apply this macro as:
+
+\typebuffer[usage]
+
+We get
+
+\blank \getbuffer[usage] \blank
+
+The meaning of \type {\temp} is:
+
+\blank \showmeaning\temp \blank
+
+We can also define the macro to be protected (\type {\unexpanded}) in \CONTEXT\
+speak). We can overload existing scanners but unless we specify the \type
+{overload} option, we get a warning on the console.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroA",
+        public    = true,
+--      overload  = true,
+        protected = true,
+        arguments = "string",
+        actions   = function(s)
+            context("[%s]",s)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+This time we get:
+
+\getbuffer[usage]
+
+The meaning of \type {\temp} is:
+
+\blank \showmeaning\temp \blank
+
+\stopsection
+
+\startsection[title={Basic data types}]
+
+\index {implementors+arguments}
+
+It is actually possible to write very advanced scanners but unless you're in for
+obscurity the limited subset discussed here is normally enough. The \CONTEXT\
+user interface is rather predictable, unless you want to show off with weird
+additional interfaces, for instance by using delimiters other than curly braces
+and brackets, or by using separators other than commas.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroB",
+        public    = true,
+        arguments = { "string", "integer", "boolean", "dimen" },
+        actions   = function(s,i,b,d)
+            context("<%s> <%i> <%l> <%p>",s,i,b,d)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+This time we grab four arguments, each of a different type:
+
+\startbuffer[usage]
+\MyMacroB{foo} 123 true 45.67pt
+
+\def\temp       {oof}
+\scratchcounter 321
+\scratchdimen   76.54pt
+
+\MyMacroB\temp \scratchcounter false \scratchdimen
+\stopbuffer
+
+\typebuffer[usage]
+
+The above usage gives:
+
+\getbuffer[usage]
+
+As you can see, registers can be used as well, and the \type {\temp} macro is
+also accepted as argument. The integer and dimen arguments scan standard \TEX\
+values. If you want a \LUA\ number you can specify that as well. As our first
+example showed, when there is one argument you don't need an array to specify
+it.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroC",
+        public    = true,
+        arguments = "number",
+        actions   = function(f)
+            context("<%.2f>",f)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroC 1.23
+\MyMacroC 1.23E4
+\MyMacroC -1.23E4
+\MyMacroC 0x1234
+\stopbuffer
+
+As you can see, hexadecimal numbers are also accepted:
+
+\typebuffer[usage]
+
+The above usage gives:
+
+\getbuffer[usage]
+
+\stopsection
+
+\startsection[title={Tables}]
+
+\index {implementors+tables}
+
+A list can be grabbed too. The individual items are separated by spaces and
+items can be bound by braces.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroD",
+        public    = true,
+        arguments = "list",
+        actions   = function(t)
+            context("< % + t >",t)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroD { 1 2 3 4 {5 6} }
+\stopbuffer
+
+The macro call:
+
+\typebuffer[usage]
+
+results in:
+
+\getbuffer[usage]
+
+Often in \LUA\ scripts tables are uses all over the place. Picking up a table is
+also supported by the implementer.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroE",
+        public    = true,
+        arguments = {
+            {
+                { "bar", "integer" },
+                { "foo", "dimen" },
+            }
+        },
+        actions   = function(t)
+            context("<foo : %p> <bar : %i>",t.foo,t.bar)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroE {
+    foo 12pt
+    bar 34
+}
+\stopbuffer
+
+Watch out, we don't use equal signs and commas here:
+
+\typebuffer[usage]
+
+We get:
+
+\getbuffer[usage]
+
+All the above can be combined:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroF",
+        public    = true,
+        arguments = {
+            "string",
+            {
+                { "bar", "integer" },
+                { "foo", "dimen" },
+            },
+            {
+                { "one", "string" },
+                { "two", "string" },
+            },
+        },
+        actions   = function(s,t1,t2)
+            context("<%s> <%p> <%i> <%s> <%s>",s,t1.foo,t1.bar,t2.one,t2.two)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroF
+    {oeps}
+    { foo 12pt bar 34 }
+    { one {x} two {y} }
+\stopbuffer
+
+The following call:
+
+\typebuffer[usage]
+
+Results in one string and two table arguments.
+
+\getbuffer[usage]
+
+You can nest tables, as in:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroG",
+        public    = true,
+        arguments = {
+            "string",
+            "string",
+            {
+                { "data", "string" },
+                { "tab", "string" },
+                { "method", "string" },
+                { "foo", {
+                    { "method", "integer" },
+                    { "compact", "number" },
+                    { "nature" },
+                    { "*" }, -- any key
+                } },
+                { "compact", "string", "tonumber" },
+                { "nature", "boolean" },
+                { "escape" },
+            },
+            "boolean",
+        },
+        actions   = function(s1, s2, t, b)
+            context("<%s> <%s>",s1,s2)
+            context("<%s> <%s> <%s>",t.data,t.tab,t.compact)
+            context("<%i> <%s> <%s>",t.foo.method,t.foo.nature,t.foo.whatever)
+            context("<%l>",b)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroG
+    {s1}
+    {s2}
+    {
+        data    {d}
+        tab     {t}
+        compact {12.34}
+        foo     { method 1 nature {n} whatever {w} }
+    }
+    true
+\relax
+\stopbuffer
+
+Although the \type {\relax} is not really needed in the next calls, I often use
+it to indicate that we're done:
+
+\typebuffer[usage]
+
+This typesets:
+
+\getbuffer[usage]
+
+\stopsection
+
+\startsection[title=Expansion]
+
+\index {implementors+expansion}
+
+When working with scanners it is important to realize that we have to do with an
+expansion engine. When \TEX\ picks up a token, it can be done as-is, that is the
+raw token, but it can also expand that token first (which can be recursive) and
+then pick up the first token that results from that. Sometimes you want that
+expansion, for instance when you pick up keywords, sometimes you don't.
+
+Expansion effects are most noticeable when we pickup a \quote {string} kind of
+value. In the implementor we have two methods for that: \type {string} and \type
+{argument}. The argument method has an expandable form (the default) and one
+that doesn't expand. Take this:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroH",
+        public    = true,
+        arguments = {
+            "string",
+            "argument",
+            "argumentasis",
+        },
+        actions   = function(a,b,c)
+            context.type(a or "-") context.quad()
+            context.type(b or "-") context.quad()
+            context.type(c or "-") context.crlf()
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+Now take this input:
+
+\startbuffer[usage]
+\def\a{A} \def\b{B} \def\c{C}
+\MyMacroH{a}{b}{c}
+\MyMacroH{a\a}{b\b}{c\c}
+\MyMacroH\a\b\c\relax
+\MyMacroH\a xx\relax
+\stopbuffer
+
+\typebuffer[usage]
+
+We we use the string method we need a \type {\relax} (or some spacer) to end
+scanning of the string when we don't use curly braces. The last line is
+actually kind of tricky because the macro expects two arguments after
+scanning the first string.
+
+\blank {\getbuffer[usage]} \blank
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroI",
+        public    = true,
+        arguments = {
+            "argument",
+            "argumentasis",
+        },
+        actions   = function(a,b,c)
+            context.type(a or "-") context.quad()
+            context.type(b or "-") context.quad()
+            context.type(c or "-") context.crlf()
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+Here is a variant:
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\def\a{A} \def\b{B}
+\MyMacroI{a}{b}
+\MyMacroI{a\a}{b\b}
+\MyMacroI\a\b\relax
+\stopbuffer
+
+With:
+
+\typebuffer[usage]
+
+we get:
+
+\blank {\getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title=Boxes]
+
+\index {implementors+boxes}
+
+You can pick up a box too. The value returned is a list node:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroJ",
+        public    = true,
+        arguments = "box",
+        actions   = function(b)
+            context(b)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+The usual box specifiers are supported:
+
+\startbuffer[usage]
+\MyMacroJ \hbox        {\strut Test 1}
+\MyMacroJ \hbox to 4cm {\strut Test 2}
+\stopbuffer
+
+So, with:
+
+\typebuffer[usage]
+
+we get:
+
+\blank {\forgetall\dontcomplain\getbuffer[usage]} \blank
+
+There are three variants that don't need the box operator \type {hbox}, \type
+{vbox} and \type {vtop}:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroL",
+        public    = true,
+        arguments = {
+            "hbox",
+            "vbox",
+        },
+        actions   = function(h,v)
+            context(h)
+            context(v)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+Again, the usual box specifiers are supported:
+
+\startbuffer[usage]
+\MyMacroL            {\strut Test 1h} to 10mm {\vfill Test 1v\vfill}
+\MyMacroL spread 1cm {\strut Test 2h} to 15mm {\vfill Test 2v\vfill}
+\stopbuffer
+
+This:
+
+\typebuffer[usage]
+
+gives:
+
+\blank {\forgetall\dontcomplain\showboxes \getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title=Like \CONTEXT]
+
+\index {implementors+hashes}
+\index {implementors+arrays}
+
+The previously discussed scanners don't use equal signs and commas as separators,
+but you can enforce that regime in the following way:
+
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroN",
+        public    = true,
+        arguments = {
+            "hash",
+            "array",
+        },
+        actions   = function(h, a)
+            context.totable(h)
+            context.quad()
+            context.totable(a)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroN
+    [ a = 1,  b = 2 ]
+    [ 3, 4, 5, {6 7} ]
+\stopbuffer
+
+This:
+
+\typebuffer[usage]
+
+gives:
+
+\blank {\getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title=Verbatim]
+
+\index {implementors+verbatim}
+
+There are a couple of rarely used scanners (there are more of course but these
+are pretty low level and not really used directly using implementors).
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroO",
+        public    = true,
+        arguments = "verbatim",
+        actions   = function(v)
+            context.type(v)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroO{this is \something verbatim}
+\stopbuffer
+
+There is no expansion applied in:
+
+\typebuffer[usage]
+
+so we get what we input:
+
+\blank {\getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title=Macros]
+
+\index {implementors+macros}
+
+We can pick up a control sequence without bothering what it actually
+represents:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroP",
+        public    = true,
+        arguments = "csname",
+        actions   = function(c)
+            context("{\\ttbf name:} {\\tttf %s}",c)
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroP\framed
+\stopbuffer
+
+The next control sequence is picked up and its name without the leading
+escape character is returned:
+
+\typebuffer[usage]
+
+So here we get:
+
+\blank {\getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title={Token lists}]
+
+\index {implementors+token lists}
+
+If you have no clue what tokens are in the perspective of \TEX, you can skip this
+section. We can grab a token list in two ways. The most \LUA ish way is to grab
+it as a table:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroQ",
+        public    = true,
+        arguments = "toks",
+        actions   = function(t)
+            context("%S : ",t)
+            context.sprint(t)
+            context.crlf()
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroQ{this is a {\bf token} list}
+\MyMacroQ{this is a \inframed{token} list}
+\stopbuffer
+
+\typebuffer[usage]
+
+The above sample code gives us:
+
+\blank {\getbuffer[usage]} \blank
+
+An alternative is to keep the list a user data object:
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroR",
+        public    = true,
+        arguments = "tokenlist",
+        actions   = function(t)
+            context("%S : ",t)
+            context.sprint(t)
+            context.crlf()
+        end,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroR{this is a {\bf token} list}
+\MyMacroR{this is a \inframed{token} list}
+\stopbuffer
+
+\typebuffer[usage]
+
+Now we get:
+
+\blank {\getbuffer[usage]} \blank
+
+\stopsection
+
+\startsection[title={Actions}]
+
+\index {implementors+actions}
+
+The plural \type {actions} suggests that there can be more than one and indeed
+that is the case. The next example shows a sequence of actions that are applied.
+The first one gets the arguments passes.
+
+\startbuffer[definition]
+\startluacode
+    interfaces.implement {
+        name      = "MyMacroS",
+        public    = true,
+        arguments = "string",
+        actions   = { characters.upper, context },
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+\startbuffer[usage]
+\MyMacroS{uppercase}
+\stopbuffer
+
+\typebuffer[usage]
+
+Gives: \inlinebuffer[usage]
+
+You can pass default arguments too. That way you can have multiple macros using
+the same action. Here's how to do that:
+
+\startbuffer[definition]
+\startluacode
+    local function MyMacro(a,b,sign)
+        if sign then
+            context("$%i + %i = %i$",a,b,a+b)
+        else
+            context("$%i - %i = %i$",a,b,a-b)
+        end
+    end
+
+    interfaces.implement {
+        name      = "MyMacroPlus",
+        public    = true,
+        arguments = { "integer", "integer", true },
+        actions   = MyMacro,
+    }
+
+    interfaces.implement {
+        name      = "MyMacroMinus",
+        public    = true,
+        arguments = { "integer", "integer", false },
+        actions   = MyMacro,
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[definition] \getbuffer[definition]
+
+So,
+
+\startbuffer[usage]
+\MyMacroPlus  654 321 \crlf
+\MyMacroMinus 654 321 \crlf
+\stopbuffer
+
+\typebuffer[usage]
+
+Gives:
+
+\getbuffer[usage]
+
+
+\stopsection
+
+\startsection[title={Embedded \LUA\ code}]
+
+When you mix \TEX\ and \LUA, you can put the \LUA\ code in a \TEX\ file, for
+instance a style. In the previous sections we used this approach:
+
+\starttyping
+\startluacode
+    -- lua code
+\stopluacode
+\stoptyping
+
+This method is both reliable and efficient but you need to keep into mind that
+macros get expanded. In the next code, the second line will give an error when
+you have not defined \type {\foo} as expandable macro. When it is unexpandable it
+will get passed as it is and \LUA\ will see a \type {\f} as an escaped character.
+So, when you want a macro be passes as macro, you need to do it as in the third
+line. The fact that there is a comment trigger (\type {--}) doesn't help here.
+
+\starttyping
+\startluacode
+    context("foo")
+ -- context("\foo")
+    context("\\bar")
+\stopluacode
+\stoptyping
+
+When you use \type {\ctxlua} the same is true but there you also need to keep an
+eye on special characters. For instance a percent sign is then interpreted in the
+\TEX\ way and because all becomes one line, a \type {--} somewhere in the middle
+will make the rest of the line comment:
+
+\starttyping
+\ctxlua {
+    context("foo")
+ %  context("\foo")
+ -- context("\\bar")
+}
+\stoptyping
+
+Here, the second line goes away (\TEX\ comment) and the third line obscures all
+that follows. You can use \type {\letterpercent} to smuggle a percent sign in a
+\type {\ctxlua} call. Special characters like a hash symbol also need to be
+passed by name. Normally curly braces are no problem because \LUA\ also likes
+them properly nested.
+
+When things become too messy and complex you can always put the code in an
+external file and load that one (e.g. with \type {require}.
+
+In the examples in this chapter we put the function in the table, but for long
+ones you might want to do this:
+
+\starttyping
+\startluacode
+    local function MyMacro(s)
+        -- lots of code
+    end
+
+    interfaces.implement {
+        name      = "MyMacro",
+        public    = true,
+        arguments = "string",
+        actions   = MyMacro,
+    }
+\stopluacode
+\stoptyping
+
+It is a common mistake not to define variables and functions as local. If you
+define them global for sure there will become a time when this bites you.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% conditional   : true|false|0=true|!0=false : too weird for users
+% bracketed     : maybe, but first I need a use case
+% bracketedasis : maybe, but first I need a use case
+% optional      : maybe, but first I need a use case
+
+\startluacode
+
+    local function Grabbed(t)
+        context(t)
+    end
+
+    interfaces.implement {
+        name      = "GrabC",
+        public    = true,
+        actions   = Grabbed,
+        arguments = "bracketed",
+    }
+    interfaces.implement {
+        name      = "GrabD",
+        public    = true,
+        actions   = Grabbed,
+        arguments = "bracketedasis",
+    }
+    interfaces.implement {
+        name      = "GrabE",
+        public    = true,
+        actions   = Grabbed,
+        arguments = "optional",
+    }
+\stopluacode
+
+\GrabC [foo {\red okay C} bar] \par
+\GrabC                         \par
+\GrabD [foo {\red okay D} bar] \par
+\GrabE [foo {\red okay E} bar] \par
+\GrabE                         \par
+
+% once stable:
+
+\startluacode
+    local random       = math.random
+    local randomseed   = math.randomseed
+
+    local scan_word    = tokens.scanners.word
+    local scan_integer = tokens.scanners.integer
+    local scan_dimen   = tokens.scanners.dimen
+    local scan_number  = tokens.scanners.float
+
+    local scan_integer  = tokens.scanners.luainteger
+    local scan_cardinal = tokens.scanners.luacardinal
+    local scan_number   = tokens.scanners.luanumber
+
+    local I = 0
+    local D = 0
+    local F = 0
+
+    interfaces.implement {
+        name      = "TestInteger",
+        public    = true,
+        actions   = function(b) if b then return I else I = scan_integer() end end,
+        valuetype = "count",
+    }
+
+    interfaces.implement {
+        name      = "TestDimension",
+        public    = true,
+        actions   = function(b) if b then return D else D = scan_dimen() end end,
+        valuetype = "dimen",
+    }
+
+    interfaces.implement {
+        name      = "TestFloat",
+        public    = true,
+        actions   = function(b)
+            if b then
+                context("%q",F)
+            else
+                F = scan_number()
+            end
+        end,
+        valuetype = "none",
+    }
+
+    interfaces.implement {
+        name      = "TestThis",
+        public    = true,
+        actions   = function(b)
+            if b then
+                return random(scan_integer(),scan_integer())
+            else
+                randomseed(scan_integer(true))
+            end
+        end,
+        valuetype = "count",
+    }
+
+\stopluacode
+
+{\tttf [set:\TestInteger           808714][get: \the\TestInteger  ]}\par % [get: \number\TestInteger  ]}\par
+{\tttf [set:\TestDimension        12.34pt][get: \the\TestDimension]}\par % [get: \number\TestDimension]}\par
+{\tttf [set:\TestFloat     12.34567890e99][get: \the\TestFloat    ]}\par % [get: \number\TestFloat    ]}\par
+
+{\tttf \TestThis 123 \dorecurse{10}{\the \TestThis 1 10 \space}}\par
+{\tttf \TestThis 123 \dorecurse{10}{\the \TestThis 1 10 \space}}\par
+{\tttf \TestThis 456 \dorecurse{10}{\the \TestThis 1 10 \space}}\par
+{\tttf               \dorecurse{10}{\the \TestThis 1 10 \space}}\par
+
+\TestFloat  .1e20\relax
+\TestFloat  -0x1.693d8e8943f17p+332\relax
+\TestFloat   0x1.693d8e8943f17p+332\relax
+
+\TestFloat  123.345E67\relax
+
+{\tttf [\the\TestFloat]}
+
+% maybe some day:
+
+% \startluacode
+%     local t1 = token.get_next()
+%     local t2 = token.get_next()
+%     local t3 = token.get_next()
+%     local t4 = token.get_next()
+%     -- watch out, we flush in sequence
+%     token.put_next { t1, t2 }
+%     -- but this one gets pushed in front
+%     token.put_next ( t3, t4 )
+% \stopluacode
+% abcd
+
+% \ctxlua{whatever = { } whatever.bf = token.get_next()}\bf
+
+\startluacode
+    local t_bf = whatever and whatever.bf or token.create("bf")
+    local put  = token.put_next
+
+    interfaces.implement {
+        name    = "whateverbfone",
+        public  = true,
+        actions = function()
+            put(t_bf)
+        end
+    }
+
+    local ctx_whateverbfxxx = context.whateverbfxxx
+
+    interfaces.implement {
+        name    = "whateverbftwo",
+        public  = true,
+        actions = function()
+            ctx_whateverbfxxx(false)
+        end
+    }
+
+    interfaces.implement {
+        name    = "whateverbfthree",
+        public  = true,
+        actions = context.core.cs.whateverbfxxx
+    }
+
+\stopluacode
+
+\let\whateverbfxxx\bf
+
+\dontleavehmode{xxx: \whateverbfxxx     xxx}\quad
+\dontleavehmode{one: \whateverbfone     one}\quad
+\dontleavehmode{two: \whateverbftwo     two}\quad
+\dontleavehmode{two: \whateverbfthree three}\par

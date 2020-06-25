@@ -2306,20 +2306,22 @@ one provided by \LUATEX\ as it is more precise:
 os.gettimeofday()
 \stoptyping
 
-There is also a more extensive variant:
-
-\starttyping
-os.times()
-\stoptyping
-
-This one is platform dependent and returns a table with \type {utime} (use time),
-\type {stime} (system time), \type {cutime} (children user time), and \type
-{cstime} (children system time).
+% % This one is gone in luametatex:
+%
+% There is also a more extensive variant:
+%
+% \starttyping
+% os.times()
+% \stoptyping
+%
+% This one is platform dependent and returns a table with \type {utime} (use time),
+% \type {stime} (system time), \type {cutime} (children user time), and \type
+% {cstime} (children system time).
 
 \stopsummary
 
 \ShowLuaExampleThree {os} {gettimeofday} {}
-\ShowLuaExampleTwo   {os} {times}        {}
+%ShowLuaExampleTwo   {os} {times}        {}
 
 \startsummary[title={runtime}]
 

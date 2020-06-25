@@ -13,16 +13,19 @@ more efficient.</p>
 --ldx]]--
 
 -- plus (extra) is obsolete but we will keep it for a while
-
+--
 -- maybe replace texsp by our own converter (stay at the lua end)
 -- eventually mp will have large numbers so we can use sp there too
-
--- this is one of the first modules using scanners and we need to replace
--- it by implement and friends
-
+--
+-- this is one of the first modules using scanners and we need to replace it by
+-- implement and friends
+--
 -- we could have namespaces, like p, page, region, columnarea, textarea but then
 -- we need virtual table accessors as well as have tag/id accessors ... we don't
 -- save much here (at least not now)
+--
+-- This was the last module that got rid of directly setting scanners, with a little
+-- performance degradation but not that noticeable.
 
 local tostring, next, setmetatable, tonumber = tostring, next, setmetatable, tonumber
 local sort = table.sort
@@ -38,8 +41,7 @@ local scanstring        = scanners.string
 local scaninteger       = scanners.integer
 local scandimen         = scanners.dimen
 
-local compilescanner    = tokens.compile
-local scanners          = interfaces.scanners
+local implement         = interfaces.implement
 
 local commands          = commands
 local context           = context
@@ -124,9 +126,9 @@ local nofregular  = 0
 local nofspecial  = 0
 local splitter    = lpeg.splitat(":",true)
 
-local pagedata   = { }
-local columndata = setmetatableindex("table") -- per page
-local freedata   = setmetatableindex("table") -- per page
+local pagedata    = { }
+local columndata  = setmetatableindex("table") -- per page
+local freedata    = setmetatableindex("table") -- per page
 
 local function initializer()
     tobesaved = jobpositions.tobesaved
@@ -376,19 +378,22 @@ jobpositions.set     = set
 jobpositions.setspec = setspec
 jobpositions.get     = get
 
-scanners.dosaveposition = compilescanner {
+implement {
+    name      = "dosaveposition",
+    arguments = { "string", "integer", "dimen", "dimen" },
     actions   = setall, -- name p x y
-    arguments = { "string", "integer", "dimen", "dimen" }
 }
 
-scanners.dosavepositionwhd = compilescanner { -- somehow fails
+implement {
+    name      = "dosavepositionwhd",
+    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen" },
     actions   = setall, -- name p x y w h d
-    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen" }
 }
 
-scanners.dosavepositionplus = compilescanner {
+implement {
+    name     = "dosavepositionplus",
+    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen", "string" },
     actions   = setall,  -- name p x y w h d extra
-    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen", "string" }
 }
 
 -- will become private table (could also become attribute driven but too nasty
@@ -424,29 +429,41 @@ end
 jobpositions.b_column = b_column
 jobpositions.e_column = e_column
 
-scanners.bposcolumn = function() -- tag
-    local tag = scanstring()
-    insert(columns,tag)
-    column = tag
-end
+implement {
+    name      = "bposcolumn",
+    arguments = "string",
+    actions   = function(tag)
+        insert(columns,tag)
+        column = tag
+    end
+}
 
-scanners.bposcolumnregistered = function() -- tag
-    local tag = scanstring()
-    insert(columns,tag)
-    column = tag
-    ctx_latelua { action = b_column, tag = tag }
-end
+implement {
+    name      = "bposcolumnregistered",
+    arguments = "string",
+    actions   = function(tag)
+        insert(columns,tag)
+        column = tag
+        ctx_latelua { action = b_column, tag = tag }
+    end
+}
 
-scanners.eposcolumn = function()
-    remove(columns)
-    column = columns[#columns]
-end
+implement {
+    name    = "eposcolumn",
+    actions = function()
+        remove(columns)
+        column = columns[#columns]
+    end
+}
 
-scanners.eposcolumnregistered = function()
-    ctx_latelua { action = e_column }
-    remove(columns)
-    column = columns[#columns]
-end
+implement {
+    name    = "eposcolumnregistered",
+    actions = function()
+        ctx_latelua { action = e_column }
+        remove(columns)
+        column = columns[#columns]
+    end
+}
 
 -- regions
 
@@ -551,167 +568,181 @@ end
 
 local nofparagraphs = 0
 
-scanners.parpos = function()
-    nofparagraphs = nofparagraphs + 1
-    texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
-    local box = getbox("strutbox")
-    local w, h, d = getwhd(box)
-    local t = {
-        p  = true,
-        c  = true,
-        r  = true,
-        x  = true,
-        y  = true,
-        h  = h,
-        d  = d,
-        hs = texget("hsize"),             -- never 0
-    }
-    local leftskip   = texget("leftskip",false)
-    local rightskip  = texget("rightskip",false)
-    local hangindent = texget("hangindent")
-    local hangafter  = texget("hangafter")
-    local parindent  = texget("parindent")
-    local parshape   = texget("parshape")
-    if leftskip ~= 0 then
-        t.ls = leftskip
+implement {
+    name    = "parpos",
+    actions = function()
+        nofparagraphs = nofparagraphs + 1
+        texsetcount("global","c_anch_positions_paragraph",nofparagraphs)
+        local box = getbox("strutbox")
+        local w, h, d = getwhd(box)
+        local t = {
+            p  = true,
+            c  = true,
+            r  = true,
+            x  = true,
+            y  = true,
+            h  = h,
+            d  = d,
+            hs = texget("hsize"), -- never 0
+        }
+        local leftskip   = texget("leftskip",false)
+        local rightskip  = texget("rightskip",false)
+        local hangindent = texget("hangindent")
+        local hangafter  = texget("hangafter")
+        local parindent  = texget("parindent")
+        local parshape   = texget("parshape")
+        if leftskip ~= 0 then
+            t.ls = leftskip
+        end
+        if rightskip ~= 0 then
+            t.rs = rightskip
+        end
+        if hangindent ~= 0 then
+            t.hi = hangindent
+        end
+        if hangafter ~= 1 and hangafter ~= 0 then -- can not be zero .. so it needs to be 1 if zero
+            t.ha = hangafter
+        end
+        if parindent ~= 0 then
+            t.pi = parindent
+        end
+        if parshape and #parshape > 0 then
+            t.ps = parshape
+        end
+        local name = f_p_tag(nofparagraphs)
+        tobesaved[name] = t
+        ctx_latelua { action = enhance, specification = t }
     end
-    if rightskip ~= 0 then
-        t.rs = rightskip
+}
+
+implement {
+    name      = "dosetposition",
+    arguments = "string",
+    actions   = function(name)
+        local spec = {
+            p   = true,
+            c   = column,
+            r   = true,
+            x   = true,
+            y   = true,
+            n   = nofparagraphs > 0 and nofparagraphs or nil,
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
     end
-    if hangindent ~= 0 then
-        t.hi = hangindent
+}
+
+implement {
+    name      = "dosetpositionwhd",
+    arguments = { "string", "dimen", "dimen", "dimen" },
+    actions   = function(name,w,h,d)
+        local spec = {
+            p   = true,
+            c   = column,
+            r   = true,
+            x   = true,
+            y   = true,
+            w   = w ~= 0 and w or nil,
+            h   = h ~= 0 and h or nil,
+            d   = d ~= 0 and d or nil,
+            n   = nofparagraphs > 0 and nofparagraphs or nil,
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
     end
-    if hangafter ~= 1 and hangafter ~= 0 then -- can not be zero .. so it needs to be 1 if zero
-        t.ha = hangafter
+}
+
+implement {
+    name      = "dosetpositionbox",
+    arguments = { "string", "integer" },
+    actions   = function(name,n)
+        local box  = getbox(n)
+        local w, h, d = getwhd(box)
+        local spec = {
+            p = true,
+            c = column,
+            r = true,
+            x = true,
+            y = true,
+            w = w ~= 0 and w or nil,
+            h = h ~= 0 and h or nil,
+            d = d ~= 0 and d or nil,
+            n = nofparagraphs > 0 and nofparagraphs or nil,
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
     end
-    if parindent ~= 0 then
-        t.pi = parindent
+}
+
+implement {
+    name      = "dosetpositionplus",
+    arguments = { "string", "dimen", "dimen", "dimen" },
+    actions   = function(name,w,h,d)
+        local spec = {
+            p   = true,
+            c   = column,
+            r   = true,
+            x   = true,
+            y   = true,
+            w   = w ~= 0 and w or nil,
+            h   = h ~= 0 and h or nil,
+            d   = d ~= 0 and d or nil,
+            n   = nofparagraphs > 0 and nofparagraphs or nil,
+            e   = scanstring(),
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
     end
-    if parshape and #parshape > 0 then
-        t.ps = parshape
+}
+
+implement {
+    name      = "dosetpositionstrut",
+    arguments = "string",
+    actions   = function(name)
+        local box = getbox("strutbox")
+        local w, h, d = getwhd(box)
+        local spec = {
+            p   = true,
+            c   = column,
+            r   = true,
+            x   = true,
+            y   = true,
+            h   = h ~= 0 and h or nil,
+            d   = d ~= 0 and d or nil,
+            n   = nofparagraphs > 0 and nofparagraphs or nil,
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
     end
-    local name = f_p_tag(nofparagraphs)
-    tobesaved[name] = t
-    ctx_latelua { action = enhance, specification = t }
-end
+}
 
-scanners.dosetposition = function() -- name
-    local name = scanstring()
-    local spec = {
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
-
-scanners.dosetpositionwhd = function() -- name w h d extra
-    local name = scanstring()
-    local w    = scandimen()
-    local h    = scandimen()
-    local d    = scandimen()
-    local spec = {
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
-
-scanners.dosetpositionbox = function() -- name box
-    local name = scanstring()
-    local box  = getbox(scaninteger())
-    local w, h, d = getwhd(box)
-    local spec = {
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
-
-scanners.dosetpositionplus = function() -- name w h d extra
-    local name = scanstring()
-    local w    = scandimen()
-    local h    = scandimen()
-    local d    = scandimen()
-    local spec = {
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        w = w ~= 0 and w or nil,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        e = scanstring(),
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
-
-scanners.dosetpositionstrut = function() -- name
-    local name = scanstring()
-    local box  = getbox("strutbox")
-    local w, h, d = getwhd(box)
-    local spec = {
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
-
-scanners.dosetpositionstrutkind = function() -- name
-    local name = scanstring()
-    local kind = scaninteger()
-    local box  = getbox("strutbox")
-    local w, h, d = getwhd(box)
-    local spec = {
-        k = kind,
-        p = true,
-        c = column,
-        r = true,
-        x = true,
-        y = true,
-        h = h ~= 0 and h or nil,
-        d = d ~= 0 and d or nil,
-        n = nofparagraphs > 0 and nofparagraphs or nil,
-        r2l = texgetcount("inlinelefttoright") == 1 or nil,
-    }
-    tobesaved[name] = spec
-    ctx_latelua { action = enhance, specification = spec }
-end
+implement {
+    name      = "dosetpositionstrutkind",
+    arguments = { "string", "integer" },
+    actions   = function(name,kind)
+        local box = getbox("strutbox")
+        local w, h, d = getwhd(box)
+        local spec = {
+            k   = kind,
+            p   = true,
+            c   = column,
+            r   = true,
+            x   = true,
+            y   = true,
+            h   = h ~= 0 and h or nil,
+            d   = d ~= 0 and d or nil,
+            n   = nofparagraphs > 0 and nofparagraphs or nil,
+            r2l = texgetcount("inlinelefttoright") == 1 or nil,
+        }
+        tobesaved[name] = spec
+        ctx_latelua { action = enhance, specification = spec }
+    end
+}
 
 function jobpositions.getreserved(tag,n)
     if tag == v_column then
@@ -990,166 +1021,222 @@ jobpositions.columnofpos = columnofpos
 
 -- interface
 
-scanners.replacepospxywhd = function() -- name page x y w h d
-    collected[scanstring()] = {
-        p = scaninteger(),
-        x = scandimen(),
-        y = scandimen(),
-        w = scandimen(),
-        h = scandimen(),
-        d = scandimen(),
-    }
-end
+implement {
+    name      = "replacepospxywhd",
+    arguments = { "string", "integer", "dimen", "dimen", "dimen", "dimen", "dimen" },
+    actions   = function(name,page,x,y,w,h,d)
+        collected[name] = {
+            p = page,
+            x = x,
+            y = y,
+            w = w,
+            h = h,
+            d = d,
+        }
+    end
+}
 
-scanners.copyposition = function() -- target source
-    collected[scanstring()] = collected[scanstring()]
-end
+implement {
+    name      = "copyposition",
+    arguments = "2 strings",
+    actions   = function(target,source)
+        collected[target] = collected[source]
+    end
+}
 
-scanners.MPp = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local p = jpi.p
-        if p and p ~= true then
-            context(p)
-            return
+implement {
+    name      = "MPp",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local p = jpi.p
+            if p and p ~= true then
+                context(p)
+                return
+            end
+        end
+        context('0')
+    end
+}
+
+implement {
+    name      = "MPx",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local x = jpi.x
+            if x and x ~= true and x ~= 0 then
+                context("%.5Fpt",x*pt)
+                return
+            end
+        end
+        context('0pt')
+    end
+}
+
+implement {
+    name      = "MPy",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local y = jpi.y
+            if y and y ~= true and y ~= 0 then
+                context("%.5Fpt",y*pt)
+                return
+            end
+        end
+        context('0pt')
+    end
+}
+
+implement {
+    name      = "MPw",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local w = jpi.w
+            if w and w ~= 0 then
+                context("%.5Fpt",w*pt)
+                return
+            end
+        end
+        context('0pt')
+    end
+}
+
+implement {
+    name      = "MPh",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local h = jpi.h
+            if h and h ~= 0 then
+                context("%.5Fpt",h*pt)
+                return
+            end
+        end
+        context('0pt')
+    end
+}
+
+implement {
+    name      = "MPd",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local d = jpi.d
+            if d and d ~= 0 then
+                context("%.5Fpt",d*pt)
+                return
+            end
+        end
+        context('0pt')
+    end
+}
+
+implement {
+    name      = "MPxy",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context('(%.5Fpt,%.5Fpt)',
+                jpi.x*pt,
+                jpi.y*pt
+            )
+        else
+            context('(0,0)')
         end
     end
-    context('0')
-end
+}
 
-scanners.MPx = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local x = jpi.x
-        if x and x ~= true and x ~= 0 then
-            context("%.5Fpt",x*pt)
-            return
+implement {
+    name      = "MPwhd",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local w = jpi.w or 0
+            local h = jpi.h or 0
+            local d = jpi.d or 0
+            if w ~= 0 or h ~= 0 or d ~= 0 then
+                context("%.5Fpt,%.5Fpt,%.5Fpt",w*pt,h*pt,d*pt)
+                return
+            end
+        end
+        context('0pt,0pt,0pt')
+    end
+}
+
+implement {
+    name      = "MPll",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context('(%.5Fpt,%.5Fpt)',
+                 jpi.x       *pt,
+                (jpi.y-jpi.d)*pt
+            )
+        else
+            context('(0,0)') -- for mp only
         end
     end
-    context('0pt')
-end
+}
 
-scanners.MPy = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local y = jpi.y
-        if y and y ~= true and y ~= 0 then
-            context("%.5Fpt",y*pt)
-            return
+implement {
+    name      = "MPlr",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context('(%.5Fpt,%.5Fpt)',
+                (jpi.x + jpi.w)*pt,
+                (jpi.y - jpi.d)*pt
+            )
+        else
+            context('(0,0)') -- for mp only
         end
     end
-    context('0pt')
-end
+}
 
-scanners.MPw = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local w = jpi.w
-        if w and w ~= 0 then
-            context("%.5Fpt",w*pt)
-            return
+implement {
+    name      = "MPur",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context('(%.5Fpt,%.5Fpt)',
+                (jpi.x + jpi.w)*pt,
+                (jpi.y + jpi.h)*pt
+            )
+        else
+            context('(0,0)') -- for mp only
         end
     end
-    context('0pt')
-end
+}
 
-scanners.MPh = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local h = jpi.h
-        if h and h ~= 0 then
-            context("%.5Fpt",h*pt)
-            return
+implement {
+    name      = "MPul",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context('(%.5Fpt,%.5Fpt)',
+                 jpi.x         *pt,
+                (jpi.y + jpi.h)*pt
+            )
+        else
+            context('(0,0)') -- for mp only
         end
     end
-    context('0pt')
-end
-
-scanners.MPd = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local d = jpi.d
-        if d and d ~= 0 then
-            context("%.5Fpt",d*pt)
-            return
-        end
-    end
-    context('0pt')
-end
-
-scanners.MPxy = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context('(%.5Fpt,%.5Fpt)',
-            jpi.x*pt,
-            jpi.y*pt
-        )
-    else
-        context('(0,0)')
-    end
-end
-
-scanners.MPwhd = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local w = jpi.w or 0
-        local h = jpi.h or 0
-        local d = jpi.d or 0
-        if w ~= 0 or h ~= 0 or d ~= 0 then
-            context("%.5Fpt,%.5Fpt,%.5Fpt",w*pt,h*pt,d*pt)
-            return
-        end
-    end
-    context('0pt,0pt,0pt')
-end
-
-scanners.MPll = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context('(%.5Fpt,%.5Fpt)',
-             jpi.x       *pt,
-            (jpi.y-jpi.d)*pt
-        )
-    else
-        context('(0,0)') -- for mp only
-    end
-end
-
-scanners.MPlr = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context('(%.5Fpt,%.5Fpt)',
-            (jpi.x + jpi.w)*pt,
-            (jpi.y - jpi.d)*pt
-        )
-    else
-        context('(0,0)') -- for mp only
-    end
-end
-
-scanners.MPur = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context('(%.5Fpt,%.5Fpt)',
-            (jpi.x + jpi.w)*pt,
-            (jpi.y + jpi.h)*pt
-        )
-    else
-        context('(0,0)') -- for mp only
-    end
-end
-
-scanners.MPul = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context('(%.5Fpt,%.5Fpt)',
-             jpi.x         *pt,
-            (jpi.y + jpi.h)*pt
-        )
-    else
-        context('(0,0)') -- for mp only
-    end
-end
+}
 
 local function MPpos(id)
     local jpi = collected[id]
@@ -1170,53 +1257,67 @@ local function MPpos(id)
     context('0,0,0,0,0,0') -- for mp only
 end
 
-scanners.MPpos = function() -- name
-    MPpos(scanstring())
-end
+implement {
+    name      = "MPpos",
+    arguments = "string",
+    actions   = MPpos
+}
 
-scanners.MPn = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local n = jpi.n
-        if n then
-            context(n)
-            return
+implement {
+    name      = "MPn",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local n = jpi.n
+            if n then
+                context(n)
+                return
+            end
+        end
+        context(0)
+    end
+}
+
+implement {
+    name      = "MPc",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local c = jpi.c
+            if c and c ~= true  then
+                context(c)
+                return
+            end
+        end
+        context('0') -- okay ?
+    end
+}
+
+implement {
+    name      = "MPr",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            local r = jpi.r
+            if r and r ~= true  then
+                context(r)
+                return
+            end
+            local p = jpi.p
+            if p then
+                context("page:" .. p)
+            end
         end
     end
-    context(0)
-end
+}
 
-scanners.MPc = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local c = jpi.c
-        if c and c ~= true  then
-            context(c)
-            return
-        end
-    end
-    context('0') -- okay ?
-end
-
-scanners.MPr = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        local r = jpi.r
-        if r and r ~= true  then
-            context(r)
-            return
-        end
-        local p = jpi.p
-        if p then
-            context("page:" .. p)
-        end
-    end
-end
-
-local function MPpardata(n)
-    local t = collected[n]
+local function MPpardata(id)
+    local t = collected[id]
     if not t then
-        local tag = f_p_tag(n)
+        local tag = f_p_tag(id)
         t = collected[tag]
     end
     if t then
@@ -1233,157 +1334,213 @@ local function MPpardata(n)
     end
 end
 
-scanners.MPpardata = function() -- name
-    MPpardata(scanstring())
-end
+implement {
+    name      = "MPpardata",
+    arguments = "string",
+    actions   = MPpardata
+}
 
-scanners.MPposset = function() -- name (special helper, used in backgrounds)
-    local name = scanstring()
-    local b = f_b_tag(name)
-    local e = f_e_tag(name)
-    local w = f_w_tag(name)
-    local p = f_p_tag(getparagraph(b))
-    MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
-end
-
-scanners.MPls = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context("%.5Fpt",jpi.ls*pt)
-    else
-        context("0pt")
+implement {
+    name      = "MPposset",
+    arguments = "string",
+    actions   = function(name)
+        local b = f_b_tag(name)
+        local e = f_e_tag(name)
+        local w = f_w_tag(name)
+        local p = f_p_tag(getparagraph(b))
+        MPpos(b) context(",") MPpos(e) context(",") MPpos(w) context(",") MPpos(p) context(",") MPpardata(p)
     end
-end
+}
 
-scanners.MPrs = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context("%.5Fpt",jpi.rs*pt)
-    else
-        context("0pt")
+implement {
+    name      = "MPls",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context("%.5Fpt",jpi.ls*pt)
+        else
+            context("0pt")
+        end
     end
-end
+}
+
+implement {
+    name      = "MPrs",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context("%.5Fpt",jpi.rs*pt)
+        else
+            context("0pt")
+        end
+    end
+}
 
 local splitter = lpeg.tsplitat(",")
 
-scanners.MPplus = function() -- name n default
-    local jpi     = collected[scanstring()]
-    local n       = scaninteger()
-    local default = scanstring()
-    if jpi then
-        local e = jpi.e
-        if e then
-            local split = jpi.split
-            if not split then
-                split = lpegmatch(splitter,jpi.e)
-                jpi.split = split
+implement {
+    name      = "MPplus",
+    arguments = { "string", "integer", "string" },
+    actions   = function(name,n,default)
+        local jpi = collected[name]
+        if jpi then
+            local e = jpi.e
+            if e then
+                local split = jpi.split
+                if not split then
+                    split = lpegmatch(splitter,jpi.e)
+                    jpi.split = split
+                end
+                context(split[n] or default)
+                return
             end
-            context(split[n] or default)
-            return
+        end
+        context(default)
+    end
+}
+
+implement {
+    name      = "MPrest",
+    arguments = { "string", "string" },
+    actions   = function(name,default)
+        local jpi = collected[name]
+        context(jpi and jpi.e or default)
+    end
+}
+
+implement {
+    name      = "MPxywhd",
+    arguments = "string",
+    actions   = function(name)
+        local jpi = collected[name]
+        if jpi then
+            context("%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt",
+                jpi.x*pt,
+                jpi.y*pt,
+                jpi.w*pt,
+                jpi.h*pt,
+                jpi.d*pt
+            )
+        else
+            context("0,0,0,0,0") -- for mp only
         end
     end
-    context(default)
-end
-
-scanners.MPrest = function() -- name default
-    local jpi     = collected[scanstring()]
-    local default = scanstring()
-    context(jpi and jpi.e or default)
-end
-
-scanners.MPxywhd = function() -- name
-    local jpi = collected[scanstring()]
-    if jpi then
-        context("%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt,%.5Fpt",
-            jpi.x*pt,
-            jpi.y*pt,
-            jpi.w*pt,
-            jpi.h*pt,
-            jpi.d*pt
-        )
-    else
-        context("0,0,0,0,0") -- for mp only
-    end
-end
+}
 
 local doif     = commands.doif
 local doifelse = commands.doifelse
 
-scanners.doifelseposition = function() -- name
-    doifelse(collected[scanstring()])
-end
+implement {
+    name      = "doifelseposition",
+    arguments = "string",
+    actions   = function(name)
+        doifelse(collected[name])
+    end
+}
 
-scanners.doifposition = function() -- name
-    doif(collected[scanstring()])
-end
+implement {
+    name      = "doifposition",
+    arguments = "string",
+    actions   = function(name)
+        doif(collected[name])
+    end
+}
 
--- local ctx_iftrue  = context.protected.cs.iftrue
--- local ctx_iffalse = context.protected.cs.iffalse
---
--- scanners.ifknownposition = function() -- name
---     (collected[scanstring()] and ctx_iftrue or ctx_iffalse)()
--- end
+implement {
+    name      = "doifelsepositiononpage",
+    arguments = { "string", "integer" },
+    actions   = function(name,p)
+        local c = collected[name]
+        doifelse(c and c.p == p)
+    end
+}
 
-scanners.doifelsepositiononpage = function() -- name page -- probably always realpageno
-    local c = collected[scanstring()]
-    local p = scaninteger()
-    doifelse(c and c.p == p)
-end
+implement {
+    name      = "doifelseoverlapping",
+    arguments = { "string", "string" },
+    actions   = function(one,two)
+        doifelse(overlapping(one,two))
+    end
+}
 
-scanners.doifelseoverlapping = function() -- one two
-    doifelse(overlapping(scanstring(),scanstring()))
-end
+implement {
+    name      = "doifelsepositionsonsamepage",
+    arguments = "string",
+    actions   = function(list)
+        doifelse(onsamepage(list))
+    end
+}
 
-scanners.doifelsepositionsonsamepage = function() -- list
-    doifelse(onsamepage(scanstring()))
-end
+implement {
+    name      = "doifelsepositionsonthispage",
+    arguments = "string",
+    actions   = function(list)
+        doifelse(onsamepage(list,tostring(texgetcount("realpageno"))))
+    end
+}
 
-scanners.doifelsepositionsonthispage = function() -- list
-    doifelse(onsamepage(scanstring(),tostring(texgetcount("realpageno"))))
-end
+implement {
+    name      = "doifelsepositionsused",
+    actions   = function()
+        doifelse(next(collected))
+    end
+}
 
--- scanners.columnofpos = function()
---     context(columnofpos(scaninteger(),scandimen())
--- end
+implement {
+    name      = "markregionbox",
+    arguments = "integer",
+    actions   = markregionbox
+}
 
-scanners.doifelsepositionsused = function()
-    doifelse(next(collected))
-end
+implement {
+    name      = "setregionbox",
+    arguments = "integer",
+    actions   = setregionbox
+}
 
-scanners.markregionbox = function() -- box
-    markregionbox(scaninteger())
-end
+implement {
+    name      = "markregionboxtagged",
+    arguments = { "integer", "string" },
+    actions   = markregionbox
+}
 
-scanners.setregionbox = function() -- box
-    setregionbox(scaninteger())
-end
+implement {
+    name      = "markregionboxtaggedn",
+    arguments = { "integer", "string", "integer" },
+    actions   = function(box,tag,n)
+        markregionbox(box,tag,nil,nil,nil,nil,nil,nil,n)
+    end
+}
 
-scanners.markregionboxtagged = function() -- box tag
-    markregionbox(scaninteger(),scanstring())
-end
+implement {
+    name      = "setregionboxtagged",
+    arguments = { "integer", "string" },
+    actions   = setregionbox
+}
 
-scanners.markregionboxtaggedn = function() -- box tag n
-    markregionbox(scaninteger(),scanstring(),nil,
-        nil,nil,nil,nil,nil,scaninteger())
-end
+implement {
+    name      = "markregionboxcorrected",
+    arguments = { "integer", "string", true },
+    actions   = markregionbox
+}
 
-scanners.setregionboxtagged = function() -- box tag
-    setregionbox(scaninteger(),scanstring())
-end
+implement {
+    name      = "markregionboxtaggedkind",
+    arguments = { "integer", "string", "integer", "dimen", "dimen", "dimen", "dimen" },
+    actions   = function(box,tag,n,d1,d2,d3,d4)
+        markregionbox(box,tag,nil,n,d1,d2,d3,d4)
+    end
+}
 
-scanners.markregionboxcorrected = function() -- box tag
-    markregionbox(scaninteger(),scanstring(),true)
-end
-
-scanners.markregionboxtaggedkind = function() -- box tag kind
-    markregionbox(scaninteger(),scanstring(),nil,
-        scaninteger(),scandimen(),scandimen(),scandimen(),scandimen())
-end
-
-scanners.reservedautoregiontag = function()
-    nofregions = nofregions + 1
-    context(f_region(nofregions))
-end
+implement {
+    name    = "reservedautoregiontag",
+    actions = function()
+        nofregions = nofregions + 1
+        context(f_region(nofregions))
+    end
+}
 
 -- statistics (at least for the moment, when testing)
 
@@ -1409,7 +1566,6 @@ end)
 -- We support the low level positional commands too:
 
 local newsavepos = nodes.pool.savepos
-local implement  = interfaces.implement
 
 implement { name = "savepos",  actions = function() context(newsavepos()) end }
 implement { name = "lastxpos", actions = function() context(gethpos()) end }

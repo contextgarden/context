@@ -588,7 +588,7 @@ end
 local function realign(lines,strip) -- "yes", <number>
     local n
     if strip == v_yes then
-        n = math.huge
+        n = 0xFFFF
         for i=1, #lines do
             local spaces = find(lines[i],"%S") -- can be lpeg
             if not spaces then

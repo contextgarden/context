@@ -8,32 +8,35 @@ if not modules then modules = { } end modules ['cldf-scn'] = {
 
 local load, type, tostring  = load, type, tostring
 
-local formatters  = string.formatters
-local char        = string.char
-local concat      = table.concat
+local formatters   = string.formatters
+local char         = string.char
+local concat       = table.concat
 
-local lpegmatch   = lpeg.match
-local p_unquoted  = lpeg.Cs(lpeg.patterns.unquoted)
+local lpegmatch    = lpeg.match
+local p_unquoted   = lpeg.Cs(lpeg.patterns.unquoted)
 
-local f_action_f  = formatters["action%s(%s)"]
-local f_action_s  = formatters["local action%s = action[%s]"]
-local f_command   = formatters["local action = tokens._action\n%\nt\nreturn function(%s) return %s end"]
+local f_action_f   = formatters["action%s(%s)"]
+local f_action_s   = formatters["local action%s = action[%s]"]
+local f_command    = formatters["local action = tokens._action\n%\nt\nreturn function(%s) return %s end"]
 
-local interfaces  = interfaces
-local commands    = commands
-local scanners    = interfaces.scanners
-local register    = interfaces.registerscanner
+local interfaces   = interfaces
+local commands     = commands
+local register     = interfaces.registerscanner
+local knownscanner = interfaces.knownscanner
 
-local compile     = tokens.compile or function() end
-local presets     = tokens.presets
+local compile      = tokens.compile or function() end
+local presets      = tokens.presets
 
-local dummy       = function() end
+local dummy        = function() end
 
-local report      = logs.reporter("interfaces","implementor")
+local report       = logs.reporter("interfaces","implementor")
 
 function interfaces.implement(specification)
+    local name = specification.name
+    if name == "" then
+        name = nil
+    end
     local actions   = specification.actions
-    local name      = specification.name
     local arguments = specification.arguments
     local private   = specification.scope == "private"
     local onlyonce  = specification.onlyonce
@@ -44,9 +47,6 @@ function interfaces.implement(specification)
             report("error: no actions and no name")
         end
         return
-    end
-    if name == "" then
-        name = nil
     end
     local p = arguments and presets[arguments]
     if p then
@@ -74,8 +74,8 @@ function interfaces.implement(specification)
     if not name then
         return scanner
     end
-    if scanners[name] and not specification.overload then
-        report("warning: 'scanners.%s' is redefined",name)
+    if knownscanner(name) and not specification.overload then
+        report("warning: interface scanner %a is overloaded",name)
     end
     register(name,scanner,specification.protected,specification.public,specification.value)
     if private then
@@ -160,12 +160,3 @@ interfaces.defined  = tokens.defined
 interfaces.setmacro = tokens.setters.macro
 interfaces.setcount = tokens.setters.count
 interfaces.setdimen = tokens.setters.dimen
-
-interfaces.strings = table.setmetatableindex(function(t,k)
-    local v = { }
-    for i=1,k do
-        v[i] = "string"
-    end
-    t[k] = v
-    return v
-end)

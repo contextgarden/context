@@ -1,0 +1,340 @@
+% language=uk
+
+\startcomponent cld-variables
+
+\environment cld-environment
+
+\startchapter[title={Variables}]
+
+\startsection[title={Introduction}]
+
+\index {variables}
+
+Sometimes a bit of experimenting and exploring the boundaries of the \TEX|-|\LUA\
+interfaces results in new mechanisms. To what extent they are really useful is
+hard to say but we just keep them around. Some are described here. This is, at
+least for the moment, a \LMTX\ specific chapter.
+
+\stopsection
+
+\startsection[title={Simple tables}]
+
+\index {variables+grouped tables}
+
+The basic \TEX\ data types are counters (integers), dimensions (kind of floating
+point variables with typographic dimensions), token lists, node lists (boxes),
+fonts, and so on, but no data organized in tables. The first mechanism that we
+discuss is one that obeys grouping. In that respect is behaves like regular
+registers.
+
+\startbuffer
+\newhashedtable\somehashtable
+
+\somehashtable{ foo = 123, bar = "foo" }
+[123 = \the\somehashtable{foo}]
+[foo = \the\somehashtable{bar}]
+
+\bgroup
+\somehashtable{ foo = 456, bar = "oof" }
+[456 = \the\somehashtable{foo}]
+[oof = \the\somehashtable{bar}]
+\egroup
+
+[123 = \the\somehashtable{foo}]
+[foo = \the\somehashtable{bar}]
+
+\bgroup
+\global\somehashtable{ foo = 456 }
+       \somehashtable{ bar = "oof" }
+[456 = \the\somehashtable{foo}]
+[oof = \the\somehashtable{bar}]
+\egroup
+
+[456 = \the\somehashtable{foo}]
+[foo = \the\somehashtable{bar}]
+\stopbuffer
+
+\typebuffer
+
+We define a hashed table, one with keys and values. The definition is global.
+We can then assign values to this table where the assignments themselves are
+hash tables. The above code generates:
+
+\getbuffer
+
+As you can see, the \type {\global} prefix makes the value persistent outside the
+group. You can mix local and global assignments.
+
+Instead of a hashed table, you can have an indexed table. This time the keys are
+numbers.
+
+\startbuffer
+\newindexedtable\someindextable
+
+\someindextable{ 123, "foo" }
+[123 = \the\someindextable 1]
+[foo = \the\someindextable 2]
+
+\bgroup
+\someindextable{ 456, "oof" }
+[456 = \the\someindextable 1]
+[oof = \the\someindextable 2]
+\egroup
+
+[123 = \the\someindextable 1]
+[foo = \the\someindextable 2]
+
+\bgroup
+\global\someindextable{ [1] = 456 }
+       \someindextable{ [2] = "oof" }
+[456 = \the\someindextable 1]
+[oof = \the\someindextable 2]
+\egroup
+
+[456 = \the\someindextable 1]
+[foo = \the\someindextable 2]
+\stopbuffer
+
+\typebuffer
+
+The outcome is the same as before:
+
+\getbuffer
+
+At the \LUA\ end you can access these tables too:
+
+\startbuffer
+\startluacode
+context("[hashed : bar = %s]",context.hashedtables.somehashtable.bar)
+context("[indexed : 2 = %s]", context.indexedtables.someindextable[2])
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Indeed we get:
+
+\getbuffer
+
+\stopsection
+
+\startsection[title={Data tables}]
+
+\index {variables+data tables}
+
+In \LUA, tables can be more complex than in the previous section. When you need
+more complex tables, it is likely that your grouping needs are also different,
+which is why we have another mechanism. This mechanism is build on top of another
+model: data values. There are 64K integer registers in any modern \TEX\ engine
+and normally that is more than enough. However, in addition in \LUAMETATEX\ we
+have a variant integer storage unit, one that is lightweight and where the amount
+is limited by the size of the hash table. It was added as part of the low level
+cleanup up of the \LUA\ token interface (a bit more abstraction). Here is an
+example of its usage:
+
+\startbuffer
+\dorecurse {100} {
+    \setdatavalue{#1}{#1}
+}
+
+\start \tttf \darkred \raggedright \dorecurse {100} {
+    #1=\scratchcounter\getdatavalue{#1}\the\scratchcounter
+} \par \stop \blank
+
+\start \tttf \darkgreen \raggedright \dorecurse {100} {
+    #1=\thedatavalue{#1}%
+} \par \stop \blank
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We define hundred values which are a simple numeric macros. Here we use two
+auxiliary macros because we prefer to use a dedicated namespace for these
+variables. However, there are also primitives that deal with these data values:
+
+\startbuffer[usage]
+\setdatavalue{my-data}{12345}%
+\letdatacode  \MyData  67890
+\thedatavalue{my-data} \the\MyData
+\stopbuffer
+
+\typebuffer[usage]
+
+gives: \inlinebuffer[usage]
+
+But, when more is needed than simple integers, tables come into view. This interface
+is different from the simple one and involves more commands. The next examples show
+about all:
+
+\startbuffer
+\newluatable\testtable
+\setluatable\testtable{ foo = 123, bar = "456", oof = "rab" }
+% \inspectluatable\testtable
+\darkcyan
+foo = \getfromluatable\testtable{foo}\par
+bar = \getfromluatable\testtable{bar}\par
+oof = \getfromluatable\testtable{oof}\par
+\bgroup
+    \useluatable\testtable
+    \setluatable\testtable{ foo = 123123, bar = "456456" }
+  % \inspectluatable\testtable
+    \darkmagenta
+    foo = \getfromluatable\testtable{foo}\par
+    bar = \getfromluatable\testtable{bar}\par
+    oof = \getfromluatable\testtable{oof}\par
+    \startluacode
+        local t = context.luatables.get("testtable")
+        context("<%s %s %s>",t.foo,t.bar,t.oof)
+    \stopluacode \par
+\egroup
+\darkyellow
+foo = \getfromluatable\testtable{foo}\par
+bar = \getfromluatable\testtable{bar}\par
+oof = \getfromluatable\testtable{oof}\par
+\startluacode
+    local t = context.luatables.get("testtable")
+    context("<%s %s %s>",t.foo,t.bar,t.oof)
+\stopluacode \par
+% \inspectluatable\testtable
+\stopbuffer
+
+\typebuffer
+
+The tables are semi|-|local: \type {\newluatable} creates a table and \type
+{\useluatable} will create a local copy that is discarded when the group ends.
+
+\startpacked
+\tttf \getbuffer
+\stoppacked
+
+Hashed and indexed tables can be used mixed, but there are additional accessors
+for indexed tables because there we expect numbers.
+
+\startbuffer
+\newluatable\moretable
+\setluatable\moretable{ 1, "foo" }
+\darkcyan
+[1] = \getfromluatable\moretable{1}\par
+[2] = \idxfromluatable\moretable 2 \par
+\bgroup
+    \useluatable\moretable
+    \setluatable\moretable{ foo = 123123, bar = "456456" }
+    \darkmagenta
+    [1] = \getfromluatable\moretable{1}\par
+    [2] = \idxfromluatable\moretable 2 \par
+    \startluacode
+        local t = context.luatables.get("moretable")
+        context("<%s %s>",t[1],t[2])
+    \stopluacode \par
+\egroup
+\darkyellow
+[1] = \getfromluatable\moretable{1}\par
+[2] = \idxfromluatable\moretable 2 \par
+\startluacode
+    local t = context.luatables.get("moretable")
+    context("<%s %s>",t[1],t[2])
+\stopluacode \par
+\stopbuffer
+
+\typebuffer
+
+\startpacked
+\tttf \getbuffer
+\stoppacked
+
+You can create more complex (nested) tables that you can handle at the \LUA\
+end in the usual way. Basically any \LUA\ that makes a table can go between
+the curly braces.
+
+\stopsection
+
+\startsection[title=Named variables]
+
+\index {variables+named}
+\index {variables+integers}
+\index {variables+cardinals}
+\index {variables+floats}
+\index {integers}
+\index {cardinals}
+\index {floats}
+
+Just because it can be done, and maybe it even has it use, we offer additional
+numbers, stored and accessible by name. The different types all live in their
+own namespace:
+
+\startbuffer[definition]
+\luainteger bar 123456
+\luafloat   bar 123.456e12
+\luainteger gnu = 0xFFFF
+\stopbuffer
+
+\startbuffer[usage]
+{\darkcyan   \the\luainteger bar}
+{\darkmagenta\the\luafloat   bar}
+{\darkyellow \the\luainteger gnu}
+\stopbuffer
+
+\typebuffer[definition,usage] \getbuffer[definition]
+
+These serialize like: \getbuffer[usage]\removeunwantedspaces , and when not set they
+default to zero. There is an extra type, cardinal:
+
+\startbuffer
+\luainteger  a  0x7FFFFFFFFFFFFFFF
+\luainteger  b -0x7FFFFFFFFFFFFFFF
+\luacardinal c  0xFFFFFFFFFFFFFFFF
+\stopbuffer
+
+\typebuffer \getbuffer
+
+We cheat a bit behind the screens because it is actually a double but we scan
+it as positive integer and serialize it as such.
+
+\startbuffer
+[\the \luainteger  a\relax]\par
+[\the \luainteger  b\relax]\par
+[\the \luacardinal c\relax]\par
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You have access to the numbers at the \LUA\ end, as in:
+
+\startbuffer
+\luainteger one 123 \luafloat two 456.678
+\luaexpr{interfaces.numbers.one/1000 + interfaces.numbers.two/10000}
+\stopbuffer
+
+\typebuffer
+
+There are \type {integers}, \type {cardinals} and \type {floats} but the \type
+{numbers} one is the most generic as it tries to resolve it from one of these
+namespaces, so we get: [\inlinebuffer\space\space]. There is also a related
+expression command:
+
+\startbuffer
+(?: \luaexpression          {n.one/1000 + n.two/10000})
+(f: \luaexpression float    {n.one/1000 + n.two/10000})
+(i: \luaexpression integer  {n.one/1000 + n.two/10000})
+(c: \luaexpression cardinal {n.one/1000 + n.two/10000})
+(l: \luaexpression lua      {n.one/1000 + n.two/10000})
+\stopbuffer
+
+\typebuffer
+
+It typesets this (watch the \type {lua} variant, which is a precise
+roundtrip serialization method):
+
+\startlines
+\tttf \getbuffer
+\stoplines
+
+The \type {n} table is just a shortcut to \type {interfaces.numbers}.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

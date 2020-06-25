@@ -127,9 +127,9 @@ function checkers.pdf(data)
     return genericchecker(data)
 end
 
-local function wrappedidentify(identify,filename)
+local function wrappedidentify(identify,filename,filetype)
     local wrapup    = function() report_inclusion("fatal error reading %a",filename) end
-    local _, result = xpcall(identify,wrapup,filename)
+    local _, result = xpcall(identify,wrapup,filename,filetype)
     if result then
         local xsize = result.xsize or 0
         local ysize = result.ysize or 0
@@ -166,7 +166,7 @@ function checkers.jpg(data)
         local inject   = lpdf.injectors.jpg
         local found    = false
         request.scanimage = function(t)
-            local result = wrappedidentify(identify,t.filename)
+            local result = wrappedidentify(identify,t.filename,"jpg")
             found = not result.error
             return {
                 filename    = result.filename,
@@ -202,7 +202,7 @@ function checkers.jp2(data) -- idem as jpg
         local inject   = lpdf.injectors.jp2
         local found    = false
         request.scanimage = function(t)
-            local result = wrappedidentify(identify,t.filename)
+            local result = wrappedidentify(identify,t.filename,"jp2")
             found = not result.error
             return {
                 filename    = result.filename,
@@ -238,7 +238,7 @@ function checkers.png(data) -- same as jpg (for now)
         local inject   = lpdf.injectors.png -- currently pdf specific
         local found    = false
         request.scanimage = function(t)
-            local result = wrappedidentify(identify,t.filename)
+            local result = wrappedidentify(identify,t.filename,"png")
             found = not result.error
             return {
                 filename    = result.filename,

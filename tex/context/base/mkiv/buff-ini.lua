@@ -46,8 +46,6 @@ local getcommand        = token.get_command
 local getcsname         = token.get_csname
 local getnextchar       = token.get_next_char
 
-local scanners          = interfaces.scanners
-
 local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters        = string.formatters
@@ -623,21 +621,26 @@ end
 
 tokens.pickup = pickup
 
-scanners.pickupbuffer = function()
-    local name     = scanstring()
-    local start    = scanstring()
-    local stop     = scanstring()
-    local finish   = scanstring()
-    local catcodes = scaninteger()
-    local doundent = scanboolean()
-    local data     = pickup(start,stop)
-    if doundent or (autoundent and doundent == nil) then
-        data = undent(data)
+implement {
+    name    = "pickupbuffer",
+    actions = function()
+        -- let's pickup all here (no arguments)
+        local name     = scanstring()
+        local start    = scanstring()
+        local stop     = scanstring()
+        local finish   = scanstring()
+        local catcodes = scaninteger()
+        local doundent = scanboolean()
+        -- could be a scanner:
+        local data     = pickup(start,stop)
+        if doundent or (autoundent and doundent == nil) then
+            data = undent(data)
+        end
+        buffers.assign(name,data,catcodes)
+     -- context[finish]()
+        context(finish)
     end
-    buffers.assign(name,data,catcodes)
- -- context[finish]()
-    context(finish)
-end
+}
 
 local function savebuffer(list,name,prefix) -- name is optional
     if not list or list == "" then

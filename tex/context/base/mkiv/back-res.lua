@@ -19,7 +19,6 @@ local scandimension = scanners.dimension
 local scanword      = scanners.word
 local scanwhd       = scanners.whd
 
-local scanners      = interfaces.scanners
 local implement     = interfaces.implement
 local constants     = interfaces.constants
 local variables     = interfaces.variables

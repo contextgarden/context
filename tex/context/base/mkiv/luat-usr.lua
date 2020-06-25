@@ -102,23 +102,6 @@ interfaces.implement {
     arguments = "2 strings",
 }
 
--- local scanners = interfaces.scanners
---
--- local function ctxscanner(name)
---     local scanner = scanners[name]
---     if scanner then
---         scanner()
---     else
---         report("unknown scanner: %s",name)
---     end
--- end
---
--- interfaces.implement {
---     name      = "clfscanner",
---     actions   = ctxscanner,
---     arguments = "string",
--- }
-
 local function registername(name,message)
     if not name or name == "" then
         report_instance("no valid name given")

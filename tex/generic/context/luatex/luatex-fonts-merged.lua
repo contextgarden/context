@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2020-06-20 13:33
+-- merge date  : 2020-06-25 10:55
 
 do -- begin closure to overcome local limits and interference
 
@@ -3761,33 +3761,36 @@ local format_extension=function(extensions,f,name)
  local extension=extensions[name] or "tostring(%s)"
  local f=tonumber(f) or 1
  local w=find(extension,"%.%.%.")
- if w then
-  if f==0 then
+ if f==0 then
+  if w then
+   extension=gsub(extension,"%.%.%.","")
+  end
+  return extension
+ elseif f==1 then
+  if w then
+   extension=gsub(extension,"%.%.%.","%%s")
+  end
+  n=n+1
+  local a="a"..n
+  return format(extension,a,a) 
+ elseif f<0 then
+  if w then
    extension=gsub(extension,"%.%.%.","")
    return extension
-  elseif f==1 then
-   extension=gsub(extension,"%.%.%.","%%s")
-   n=n+1
-   local a="a"..n
-   return format(extension,a,a) 
-  elseif f<0 then
+  else
    local a="a"..(n+f+1)
    return format(extension,a,a)
-  else
-   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
-   local t={}
-   for i=1,f do
-    n=n+1
-    t[i]="a"..n
-   end
-   return format(extension,unpack(t))
   end
  else
-  extension=gsub(extension,"%%s",function()
+  if w then
+   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
+  end
+  local t={}
+  for i=1,f do
    n=n+1
-   return "a"..n
-  end)
-  return extension
+   t[i]="a"..n
+  end
+  return format(extension,unpack(t))
  end
 end
 local builder=Cs { "start",

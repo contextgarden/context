@@ -8,8 +8,9 @@ if not modules then modules = { } end modules ['cldf-lmt'] = {
 
 local next, load = next, load
 
-local setmetatableindex = table.setmetatableindex
-local serialize         = table.serialize
+local setmetatableindex    = table.setmetatableindex
+local setmetatablenewindex = table.setmetatablenewindex
+local serialize            = table.serialize
 
 local random            = math.random
 local randomseed        = math.randomseed
@@ -30,8 +31,12 @@ local scancardinal      = scanners.luacardinal
 local scannumber        = scanners.luanumber
 local scanargument      = scanners.argument
 local scantoken         = scanners.token
+local scancsname        = scanners.csname
+
 local getindex          = token.get_index
+
 local texsetdimen       = tex.setdimen
+local texget            = tex.get
 
 local values            = tokens.values
 local none_code         = values.none
@@ -57,7 +62,7 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
+        if b == "value" then
             context("%.99g",floats[n] or 0)
         else
             floats[n] = scannumber(true)
@@ -72,7 +77,7 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
+        if b == "value" then
             context("%i",integers[n] or 0)
         else
             integers[n] = scaninteger(true)
@@ -86,7 +91,7 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
+        if b == "value" then
             return integer_code, integers[n] or 0
         else
             integers[n] = scancount(true)
@@ -100,7 +105,7 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
+        if b == "value" then
             return dimension_code, integers[n] or 0
         else
             integers[n] = scandimen(false,false,true)
@@ -114,8 +119,8 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
-            context("%d",cardinals[n] or 0)
+        if b == "value" then
+            context("%1.0f",cardinals[n] or 0)
         else
             cardinals[n] = scancardinal(true)
         end
@@ -128,8 +133,8 @@ implement {
     value     = true,
     actions   = function(b)
         local n = scanword()
-        if b then
-            context("%d",floats[n] or integers[n] or cardinals[n] or 0)
+        if b == "value" then
+            context("%N",floats[n] or integers[n] or cardinals[n] or 0) -- maybe %N
         else
          -- floats[n] = scanfloat(true)
             floats[n] = scannumber(true)
@@ -142,7 +147,7 @@ implement {
     public    = true,
     value     = true,
     actions   = function(b)
-        if b then
+        if b == "value" then
             return integer_code, random(scaninteger(),scaninteger())
         else
             randomseed(scaninteger(true))
@@ -243,7 +248,7 @@ implement {
                     d = d[scaninteger()]
                 end
                 local x = scaninteger()
-                if b then
+                if b == "value" then
                     local code = a.code
                     if code == float_code then
                         context("%.99g",d[x])
@@ -257,7 +262,6 @@ implement {
         end
     end,
 }
-
 
 implement {
     name      = "arrayequals",
@@ -275,7 +279,7 @@ implement {
                     d = d[scaninteger()]
                 end
                 local x = scaninteger()
-                if b then
+                if b == "value" then
                     return boolean_code, a.scanner() == d[x]
                 end
             end
@@ -299,7 +303,7 @@ implement {
                     d = d[scaninteger()]
                 end
                 local x = scaninteger()
-                if b then
+                if b == "value" then
                     local v = a.scanner()
                     local d = d[x]
                     if d < v then
@@ -379,7 +383,7 @@ implement {
     public    = true,
     value     = true,
     actions   = function(b)
-        if b then
+        if b == "value" then
             local how  = scanword()
             local what = scandimen()
             if how then
@@ -417,7 +421,7 @@ local setdata = tokens.setdata
 
 local report = logs.reporter("lua table")
 
------ ctxsprint = context.sprint
+local ctxsprint = context.sprint
 
 -- we could have an extra one that collects all end of grouped actions
 -- so that we dispose more in one go but it doesn's pay off
@@ -607,3 +611,109 @@ context.luatables = {
     inspect = inspectluatable,
     show    = showluatables,
 }
+
+-- Here's another mechanism ...
+
+local tables = { }
+local stack  = setmetatableindex("table")
+
+interfaces.implement {
+    name      = "droptablegroup",
+    public    = true,
+    actions   = function()
+        local g = texget("currentgrouplevel") -- todo: tex.getgrouplevel()
+        local s = stack[g]
+        if s then
+            for t, data in next, s do
+                for k, v in next, data do
+                    t[k] = v
+                end
+            end
+            stack[g] = { }
+        end
+    end,
+}
+
+local ctx_atendofgroup   = context.core.cs.atendofgroup
+local ctx_droptablegroup = context.core.cs.droptablegroup
+
+local function handletable(t,b,array)
+    if b == "value" then
+        local k = array and scaninteger() or scanargument()
+        local v = t[k]
+        if v then
+            context(v)
+        end
+    else
+        local data = scanargument()
+        data = load("return {" .. data .. "}")
+        if data then
+            data = data()
+            if data then
+                local l = t.level
+                local g = texget("currentgrouplevel") -- todo: tex.getgrouplevel()
+                local s = stack[g]
+                local d = s[t]
+                if not d then
+                    d = { }
+                    s[t] = d
+                    ctx_atendofgroup()
+                    ctx_droptablegroup()
+                end
+                for k, v in next, data do
+                    if not d[k] then
+                        d[k] = t[k]
+                    end
+                    t[k] = v
+                end
+                if b == "global" then
+                    for k, v in next, stack do
+                        local t = s[t]
+                        if t then
+                            for k, v in next, data do
+                                if t[k] then
+                                    t[k] = nil
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local function newtable(array)
+    local name = scancsname(true)
+    if not tables[name] then
+        local t = { }
+        tables[name] = t
+        interfaces.implement {
+            name    = name,
+            public  = true,
+            value   = true,
+            actions = function(b)
+                handletable(t,b,array)
+            end,
+        }
+    else
+        -- already defined
+    end
+end
+
+implement {
+    name      = "newhashedtable",
+    protected = true,
+    public    = true,
+    actions   = newtable,
+}
+
+implement {
+    name      = "newindexedtable",
+    protected = true,
+    public    = true,
+    actions   = function() newtable(true) end,
+}
+
+context.hashedtables  = setmetatableindex(function(t,k) return tables[k] end)
+context.indexedtables = context.hashedtables

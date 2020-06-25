@@ -26,6 +26,67 @@ that is available at the \TEX\ end, or you can use \LUA\ code to do the work, or
 you can use a combination. So, from now on, in \CONTEXT\ you can code your style
 and document source in (a mixture of) \TEX, \XML, \METAPOST\ and in \LUA.
 
+% \CONTEXT\ being a \TEX\ macro package quite some action happens at the \TEX\ end;
+% although we do a lot in \LUA, there is no need to abandon the macro language. If
+% I wanted a typesetting system written in procedural language I'd already come up
+% with one but I have no need for it and \TEX\ is more fun anyway. But the fact
+% that we mix these conceptual different languages means that we need ways to
+% communicate between them. The possibilities to communicate and switch between
+% \TEX, \LUA, and of course \METAPOST\ have evolved over time. It started with just
+% \type {\directlua} but we now can use tokens scanners that permit nice
+% interfaces. So, as a consequence the interfaces in \CONTEXT\ also evolved,
+% although mostly deep down out of sight of users: \CONTEXT\ always tries to offer
+% abstract interfaces that as designed in a way that permits upward compatible
+% upgrades.
+
+% Going from \LUA\ to \TEX\ is mostly done with the \type {context} command. The
+% most low level approach would be to use the \type {tex.print} functions but using
+% the \type {context} interface is often better. Going from \TEX\ to \LUA\ is done
+% with \type {\ctxlua} and friends, btu again, you can decide to go low level with
+% \type {\directlua}. Indeed, there is no need to use these interfaces and quite
+% often we see users use low level calls in combination with macros that pass
+% arguments and there's nothing wrong with that. We see no reason to block or
+% overload them.
+
+% In these internet times it is no problem to find comments on code and coding
+% practices (of course not seldom by people who themselves produce code that
+% deserves a lot of comment but get away with it). The same is true for complaints
+% about bugs that not always are put in the perspective of the total amount of well
+% working code or experiments; on the average \TEX\ systems behave quite well and
+% have not that many bugs, but some low level features they can be confusing. We
+% don't impose a coding style in user files but we do so in the core, but that only
+% hampers ourselves.
+
+% Another issue is complaints about manuals or lack of documentation, again, often
+% by people who themselves never produced something that those who they complain
+% about can use, but, that said, lack of documentation has the benefit that one can
+% learn by playing around. There are plenty of examples to learn from, also in the
+% over ten thousand pages of \CONTEXT\ documentation and articles. And of course
+% there is the test suite which has examples. Some users even like to look into the
+% source code to learn some tricks. Now, the internet is not always the friendly
+% and tolerant environment that its marketing suggests and one can run into
+% patronizing comments on how to do thing, but: we don't (and cannot) enforce best
+% practices.
+
+% However, when you define \LUA\ functions you should {\em not} overload existing
+% functions without knowing what you deal with, simply because the whole \CONTEXT\
+% ecosystem could be affected. Don't expect support when you do so. The same is
+% true for \TEX\ macros and even more so for primitives. Although there is some
+% protection going on we think the system should be as open as possible, so little
+% is hidden for the user. \footnote {In the core code and modules that come with
+% \CONTEXT\ we are rather rigourous. There we have patterns that need to be
+% followed. Hacking around and patching at will is not an option there. In the
+% rather open system that a macro package provides it is no problem to quickly mess
+% up the lot with bad code.}
+
+% The reason for mentioning this is that we do see users come up with (often
+% surprising) solutions and we invite them to keep playing around, even with low
+% level code. When writing a document, playing around can be a nice distraction.
+% But, using a high level interface has some benefits too. It gives a bit of
+% protection against bad interactions with other code. It also often involves less
+% coding. Performance might be better although that is not always a real issue as
+% there are plenty of ways to make a \TEX\ system slow anyway.
+
 In the following chapters I will introduce typesetting in \LUA, but as we rely on
 \CONTEXT\ it is unavoidable that some regular \CONTEXT\ code shows up. The fact
 that you can ignore backslashes does not mean that you can do without knowledge

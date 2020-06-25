@@ -6563,7 +6563,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 45153, stripped down to: 22734
+-- original size: 43947, stripped down to: 22741
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7219,33 +7219,36 @@ local format_extension=function(extensions,f,name)
  local extension=extensions[name] or "tostring(%s)"
  local f=tonumber(f) or 1
  local w=find(extension,"%.%.%.")
- if w then
-  if f==0 then
+ if f==0 then
+  if w then
+   extension=gsub(extension,"%.%.%.","")
+  end
+  return extension
+ elseif f==1 then
+  if w then
+   extension=gsub(extension,"%.%.%.","%%s")
+  end
+  n=n+1
+  local a="a"..n
+  return format(extension,a,a) 
+ elseif f<0 then
+  if w then
    extension=gsub(extension,"%.%.%.","")
    return extension
-  elseif f==1 then
-   extension=gsub(extension,"%.%.%.","%%s")
-   n=n+1
-   local a="a"..n
-   return format(extension,a,a) 
-  elseif f<0 then
+  else
    local a="a"..(n+f+1)
    return format(extension,a,a)
-  else
-   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
-   local t={}
-   for i=1,f do
-    n=n+1
-    t[i]="a"..n
-   end
-   return format(extension,unpack(t))
   end
  else
-  extension=gsub(extension,"%%s",function()
+  if w then
+   extension=gsub(extension,"%.%.%.",rep("%%s,",f-1).."%%s")
+  end
+  local t={}
+  for i=1,f do
    n=n+1
-   return "a"..n
-  end)
-  return extension
+   t[i]="a"..n
+  end
+  return format(extension,unpack(t))
  end
 end
 local builder=Cs { "start",
@@ -26169,8 +26172,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040906
--- stripped bytes    : 411386
+-- original bytes    : 1039700
+-- stripped bytes    : 410173
 
 -- end library merge
 

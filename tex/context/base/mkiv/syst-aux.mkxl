@@ -634,9 +634,9 @@
 %D These are normally only used for keywords, i.e.\ strings so we can delegate
 %D the work to \LUA:
 
-\unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
-\unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
-\unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
+%unexpanded\def\doifelseinset#1#2{\clf_doifelseinset{#1}{#2}}
+%unexpanded\def\doifinset    #1#2{\clf_doifinset    {#1}{#2}}
+%unexpanded\def\doifnotinset #1#2{\clf_doifnotinset {#1}{#2}}
 %          % \let\firstinset        \clf_firstinset
 
 % These don't accept spaces after commas:

@@ -20,11 +20,9 @@ local ctx_secondoftwoarguments = context.secondoftwoarguments
 local ctx_firstofoneargument   = context.firstofoneargument
 local ctx_gobbleoneargument    = context.gobbleoneargument
 
-local two_strings = interfaces.strings[2]
-
 implement { -- will be overloaded later
     name      = "writestatus",
-    arguments = two_strings,
+    arguments = "2 strings",
     actions   = logs.status,
 }
 
@@ -123,7 +121,7 @@ implement {
 
 implement {
     name      = "doifelsesame",
-    arguments = two_strings,
+    arguments = "2 strings",
     actions   = function(a,b)
         if a == b then
             ctx_firstoftwoarguments()
@@ -135,7 +133,7 @@ implement {
 
 implement {
     name      = "doifsame",
-    arguments = two_strings,
+    arguments = "2 strings",
     actions   = function(a,b)
         if a == b then
             ctx_firstofoneargument()
@@ -147,7 +145,7 @@ implement {
 
 implement {
     name      = "doifnotsame",
-    arguments = two_strings,
+    arguments = "2 strings",
     actions   = function(a,b)
         if a == b then
             ctx_gobbleoneargument()

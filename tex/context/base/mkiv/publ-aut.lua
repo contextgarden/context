@@ -530,9 +530,9 @@ implement {
     name      = "btxauthor",
     actions   = btxauthor,
     arguments = {
-        "string",
-        "string",
-        "string",
+        "argument",
+        "argument",
+        "argument",
         {
             { "combiner" },
             { "kind" },

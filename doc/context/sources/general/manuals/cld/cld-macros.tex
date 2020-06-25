@@ -128,9 +128,9 @@ local function startmore(opt_1)
     context.startnarrower()
 end
 
-local function stopmore(opt_1)
+local function stopmore()
     context.stopnarrower()
-    context("stop more, options: %s",interfaces.tolist(opt_1))
+    context("stop more")
     context.stopnarrower()
 end
 
@@ -175,7 +175,7 @@ If needed you can access the body of a macro. Take for instance:
 
 \typebuffer \getbuffer
 
-The following example demonsttaies how we can look inside these macros. You need
+The following example demonstrates how we can look inside these macros. You need
 to be aware of the fact that the whole blob of \LUA\ codes is finished before we
 return to \TEX, so when we pipe the meaning of \type {TestB} back to \TEX\ it
 only gets expanded afterwards. We can use a function to get back to \LUA. It's
