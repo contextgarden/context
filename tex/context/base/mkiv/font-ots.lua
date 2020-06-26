@@ -25,7 +25,7 @@ effect that suddenly fonts behave differently. We don't want to catch all font
 issues.</p>
 
 <p>After a lot of experiments (mostly by Taco, me and Idris) the first implementation
-becaus quite useful. When it did most of what we wanted, a more optimized version
+was already quite useful. When it did most of what we wanted, a more optimized version
 evolved. Of course all errors are mine and of course the code can be improved. There
 are quite some optimizations going on here and processing speed is currently quite
 acceptable and has been improved over time. Many complex scripts are not yet supported

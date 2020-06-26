@@ -1103,9 +1103,9 @@ implement { name = "namedstructureuservariable", actions = sections.userdata,   
 implement { name = "setstructurelevel",          actions = sections.setlevel,        arguments = "2 strings" }
 implement { name = "getstructurelevel",          actions = sections.getcurrentlevel, arguments = "string" }
 implement { name = "setstructurenumber",         actions = sections.setnumber,       arguments = { "integer", "string" } } -- string as we support +-
-implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = { "integer" } }
+implement { name = "getstructurenumber",         actions = sections.getnumber,       arguments = "integer" }
 implement { name = "getsomestructurenumber",     actions = sections.getnumber,       arguments = { "integer", "string" } }
-implement { name = "getfullstructurenumber",     actions = sections.fullnumber,      arguments = { "integer" } }
+implement { name = "getfullstructurenumber",     actions = sections.fullnumber,      arguments = "integer" }
 implement { name = "getsomefullstructurenumber", actions = sections.fullnumber,      arguments = { "integer", "string" } }
 implement { name = "getspecificstructuretitle",  actions = sections.structuredata,   arguments = { "string", "'titledata.title'",false,"string" } }
 

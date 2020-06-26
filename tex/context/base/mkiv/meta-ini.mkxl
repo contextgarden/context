@@ -135,24 +135,33 @@
 
 \let\stopMPinclusions\relax
 
+% The next was broken since we added instances so it will go away!
+
 \unexpanded\def\MPinclusions
   {\dosingleempty\meta_inclusions}
 
 \def\meta_inclusions[#1]%
   {\edef\m_meta_option{#1}%
-   \dosinglegroupempty\meta_inclusions_indeed}
+   \dodoublegroupempty\meta_inclusions_indeed}
 
 \def\meta_inclusions_indeed#1#2%
   {\let\m_meta_saved_instance\currentMPinstance
-   \edef\currentMPinstance{#1}%
-   \ifempty\currentMPinstance
-     \let\currentMPinstance\defaultMPinstance
-   \fi
    \ifx\m_meta_option\!!plustoken \else
      \global\t_meta_inclusions\emptytoks
    \fi
-   \gtoksapp\t_meta_inclusions{#2}%
+   \ifsecondargument
+     \edef\currentMPinstance{#1}%
+     \ifx\currentMPinstance\empty
+       \let\currentMPinstance\defaultMPinstance
+     \fi
+     \gtoksapp\t_meta_inclusions{#2}%
+   \else
+     \let\currentMPinstance\defaultMPinstance
+     \gtoksapp\t_meta_inclusions{#1}%
+   \fi
    \let\currentMPinstance\m_meta_saved_instance}
+
+% so far
 
 \installcommandhandler \??mpinstance {MPinstance} \??mpinstance
 

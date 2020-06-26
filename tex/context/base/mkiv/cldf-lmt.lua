@@ -25,10 +25,11 @@ local scanstring        = scanners.string
 local scanboolean       = scanners.boolean
 local scandimen         = scanners.dimen
 local scanfloat         = scanners.float
-local scancount         = scanners.integer
-local scaninteger       = scanners.luainteger
-local scancardinal      = scanners.luacardinal
+local scaninteger       = scanners.integer
 local scannumber        = scanners.luanumber
+local scanluainteger    = scanners.luainteger
+local scanluacardinal   = scanners.luacardinal
+local scanluanumber     = scanners.luanumber
 local scanargument      = scanners.argument
 local scantoken         = scanners.token
 local scancsname        = scanners.csname
@@ -65,7 +66,7 @@ implement {
         if b == "value" then
             context("%.99g",floats[n] or 0)
         else
-            floats[n] = scannumber(true)
+            floats[n] = scanluanumber(true)
          -- floats[n] = scanfloat(true)
         end
     end,
@@ -80,7 +81,7 @@ implement {
         if b == "value" then
             context("%i",integers[n] or 0)
         else
-            integers[n] = scaninteger(true)
+            integers[n] = scanluainteger(true)
         end
     end,
 }
@@ -94,7 +95,7 @@ implement {
         if b == "value" then
             return integer_code, integers[n] or 0
         else
-            integers[n] = scancount(true)
+            integers[n] = scaninteger(true)
         end
     end,
 }
@@ -122,7 +123,7 @@ implement {
         if b == "value" then
             context("%1.0f",cardinals[n] or 0)
         else
-            cardinals[n] = scancardinal(true)
+            cardinals[n] = scanluacardinal(true)
         end
     end,
 }
@@ -137,7 +138,7 @@ implement {
             context("%N",floats[n] or integers[n] or cardinals[n] or 0) -- maybe %N
         else
          -- floats[n] = scanfloat(true)
-            floats[n] = scannumber(true)
+            floats[n] = scanluanumber(true)
         end
     end,
 }
@@ -148,9 +149,9 @@ implement {
     value     = true,
     actions   = function(b)
         if b == "value" then
-            return integer_code, random(scaninteger(),scaninteger())
+            return integer_code, random(scanluainteger(),scanluainteger())
         else
-            randomseed(scaninteger(true))
+            randomseed(scanluainteger(true))
         end
     end,
 }
@@ -210,7 +211,7 @@ implement {
                 data.ny      = ny
                 data.type    = ty
                 if ty == "integer" then
-                    data.scanner = scancount
+                    data.scanner = scaninteger
                 elseif ty == "boolean" then
                     data.scanner = scanboolean
                 elseif ty == "dimension" then
@@ -533,7 +534,7 @@ implement {
     name      = "newluatable",
     protected = true,
  -- public    = true,
-    arguments = { "csname" },
+    arguments = "csname",
     actions   = newluatable,
 }
 
@@ -549,7 +550,7 @@ implement {
     name      = "disposeluatable",
     protected = true,
     public    = true,
-    arguments = { "csname" },
+    arguments = "csname",
     actions   = disposeluatable,
 }
 
@@ -557,7 +558,7 @@ implement {
     name      = "inspectluatable",
     protected = true,
     public    = true,
-    arguments = { "csname" },
+    arguments = "csname",
     actions   = inspectluatable,
 }
 

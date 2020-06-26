@@ -142,7 +142,7 @@ implement { name = "getrandomnumber",   actions = { getrandomnumber, context }, 
 implement { name = "getrandomdimen",    actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
 implement { name = "getrandomfloat",    actions = { getrandomnumber, context }, arguments = { "number", "number" } }
 --------- { name = "getmprandomnumber", actions = { getmprandomnumber, context } }
-implement { name = "setrandomseed",     actions = { setrandomseed },            arguments = { "integer" } }
+implement { name = "setrandomseed",     actions = { setrandomseed },            arguments = "integer" }
 implement { name = "getrandomseed",     actions = { getrandomseed, context } }
 implement { name = "pushrandomseed",    actions = { pushrandomseed  } }
 implement { name = "poprandomseed",     actions = { poprandomseed } }

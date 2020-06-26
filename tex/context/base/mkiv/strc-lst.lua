@@ -1216,7 +1216,7 @@ implement {
 implement { name = "doifelselisthastitle",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
 implement { name = "doifelselisthaspage",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
 implement { name = "doifelselisthasnumber", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = { "integer" } }
+implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = "integer" }
 
 local function savedlisttitle(name,n,tag)
     local data = cached[tonumber(n)]
@@ -1274,7 +1274,7 @@ implement {
 implement {
     name      = "discardfromlist",
     actions   = lists.discard,
-    arguments = { "integer" }
+    arguments = "integer"
 }
 
 -- new and experimental and therefore off by default

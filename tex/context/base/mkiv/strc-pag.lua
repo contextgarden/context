@@ -440,6 +440,6 @@ implement { -- weird place
 
 interfaces.implement {
     name      = "pageofinternal",
-    arguments = { "integer" },
+    arguments = "integer",
     actions   = helpers.pageofinternal,
 }

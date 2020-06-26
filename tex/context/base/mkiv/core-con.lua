@@ -330,7 +330,7 @@ converters.nofdays    = nofdays
 converters.textime    = textime
 
 implement { name = "weekday",  actions = { weekday,  context }, arguments = { "integer", "integer", "integer" } }
-implement { name = "leapyear", actions = { leapyear, context }, arguments = { "integer" } }
+implement { name = "leapyear", actions = { leapyear, context }, arguments = "integer" }
 implement { name = "nofdays",  actions = { nofdays,  context }, arguments = { "integer", "integer" } }
 
 implement { name = "year",     actions = { osdate,   context }, arguments = "'%Y'" }
@@ -1357,7 +1357,7 @@ do
     implement {
         name      = "daymnem",
         actions   = daymnem,
-        arguments = { "integer" }
+        arguments = "integer",
     }
 
     implement {
@@ -1369,13 +1369,13 @@ do
     implement {
         name      = "monthname",
         actions   = monthname,
-        arguments = { "integer" }
+        arguments = "integer",
     }
 
     implement {
         name      = "monthmnem",
         actions   = monthmnem,
-        arguments = { "integer" }
+        arguments = "integer",
     }
 
     -- todo : short week days

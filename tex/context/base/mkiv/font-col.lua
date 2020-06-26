@@ -478,5 +478,5 @@ implement {
 implement {
     name      = "doifelsecharinfont",
     actions   = { collections.found, commands.doifelse },
-    arguments = { "integer" }
+    arguments = "integer"
 }

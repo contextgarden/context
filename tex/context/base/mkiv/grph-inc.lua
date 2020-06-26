@@ -707,7 +707,7 @@ implement { name = "figurefilepath", actions = { get, file.dirname,  context }, 
 implement { name = "figurefilename", actions = { get, file.nameonly, context }, arguments = { "'used'", "'fullname'" } }
 implement { name = "figurefiletype", actions = { get, file.extname,  context }, arguments = { "'used'", "'fullname'" } }
 
-implement { name = "figuresetdimensions", actions = setdimensions, arguments = { "integer" } }
+implement { name = "figuresetdimensions", actions = setdimensions, arguments = "integer" }
 
 -- todo: local path or cache path
 

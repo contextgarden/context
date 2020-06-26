@@ -485,15 +485,6 @@ function boxed.stage_two(n,m)
             local m  = li[2]
             local ti = t[i]
             if ti then
-             -- local d = getdirection(n)
-             -- local l = getlist(n)
-             -- if d == 1 then
-             --     local w = getwidth(n)
-             --     ti = hpack_nodes(linked_nodes(new_kern(-w),ti,new_kern(w)))
-             -- end
-             -- setnext(ti,l)
-             -- setprev(l,ti)
-             -- setlist(n,ti)
                 addtoline(n,ti)
                 resolve(n,m)
             else

@@ -710,24 +710,26 @@ do
 
     function fixes.linenumber(di,data,i)
         local ni = data[i+1]
-        if ni and ni.data then
-            while true do
-                local d = ni.data[1]
-                if d then
-                    local e = d.element
-                    if e then
-                        if e == "line" or e == "verbatimline" then
-                            table.insert(d.data,1,di)
-                            data[i] = false
-                            return
+        if ni then
+            if ni.data then
+                while true do
+                    local d = ni.data[1]
+                    if d then
+                        local e = d.element
+                        if e then
+                            if e == "line" or e == "verbatimline" then
+                                insert(d.data,1,di)
+                                data[i] = false
+                                return
+                            else
+                                ni = d
+                            end
                         else
-                            ni = d
+                            return
                         end
                     else
                         return
                     end
-                else
-                    return
                 end
             end
         end
@@ -2523,6 +2525,8 @@ do
                     -- skip
                 elseif di.skip == "ignore" then
                     -- skip (new)
+elseif di.tg == "ignore" then
+    -- skip (new)
                 elseif di.content then
                     if di.samepar then
                         prevparnumber = false
@@ -2607,8 +2611,8 @@ do
     -- i.e cell attribute
 
     local function collapsetree(tree)
-        for tag, trees in sortedhash(treehash) do
---         for tag, trees in next, treehash do
+--         for tag, trees in sortedhash(treehash) do
+        for tag, trees in next, treehash do
             local d = trees[1].data
 -- print("!!!!!!!!",tag)
 -- inspect(trees)
@@ -3340,6 +3344,9 @@ local collectresults  do -- too many locals otherwise
             elseif id == kern_code then
                 local kern = getkern(n)
                 if kern > 0 then
+local a = getattr(n,a_tagged) or pat
+local t = taglist[a]
+if not t or t.tagname ~= "ignore" then -- maybe earlier on top)
                     local limit = threshold
                     if p then
                         local c, f = isglyph(p)
@@ -3349,7 +3356,7 @@ local collectresults  do -- too many locals otherwise
                     end
                     if kern > limit then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
-                            local a = getattr(n,a_tagged) or pat
+--                             local a = getattr(n,a_tagged) or pat
                             if a == last then
                                 if not somespace[currentcontent[nofcurrentcontent]] then
                                     if trace_export then
@@ -3370,12 +3377,14 @@ local collectresults  do -- too many locals otherwise
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
-                                currentnesting = taglist[last]
+--                                 currentnesting = taglist[last]
+currentnesting = t
                                 pushentry(currentnesting)
                                 currentattribute = last
                             end
                         end
                     end
+end
                 end
             elseif id == whatsit_code then
                 if subtype == userdefinedwhatsit_code then

@@ -323,7 +323,7 @@ implement {
 
 implement {
     name      = "flow_set_text",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(align,str)
         temp.texts[#temp.texts+1] = {
             align = align,
@@ -358,7 +358,7 @@ implement {
 
 implement {
     name      = "flow_set_label",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(location,text)
         temp.labels[#temp.labels+1] = {
             location = location,
@@ -369,7 +369,7 @@ implement {
 
 implement {
     name      = "flow_set_comment",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(location,text)
         local connections = temp.connections
         if connections then
@@ -389,7 +389,7 @@ implement {
 
 implement {
     name      = "flow_set_exit",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = function(location,text)
         temp.exits[#temp.exits+1] = {
             location = location,
@@ -582,7 +582,7 @@ implement {
 
 implement {
     name      = "flow_set_connection",
-    arguments = { "string", "string", "string" },
+    arguments = "3 strings",
     actions   = function(location,displacement,name)
         local dx, dy = lpegmatch(splitter,displacement)
         dx = tonumber(dx)

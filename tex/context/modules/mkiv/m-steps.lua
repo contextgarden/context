@@ -399,7 +399,7 @@ end
 
 interfaces.implement {
     name      = "step_start_chart",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = step_start_chart,
 }
 

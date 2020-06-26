@@ -123,10 +123,10 @@ local getreserved       = jobpositions.getreserved
 local paragraphs        = { }
 typesetters.paragraphs  = paragraphs
 
-local addskips          = false
+local addskips          = false -- todo: use engine normalizer
 local noflines          = 0
 
--- This is the third version, a mix between immediate (prestice lines) and delayed
+-- This is the third version, a mix between immediate (prestine lines) and delayed
 -- as we don't want anchors that are not used.
 
 -- I will make a better variant once lmtx is stable i.e. less clutter.
