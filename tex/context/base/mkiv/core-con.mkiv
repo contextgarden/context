@@ -414,8 +414,28 @@
 %D \stopbuffer
 %D
 %D \typebuffer \getbuffer
+%D
+%D Some indirectness and abstraction:
+%D
+%D \starttyping
+%D \definedate[crap][year]
+%D \currentdate[crap]
+%D \stoptyping
 
-\newtoks \everycurrentdate
+\installcorenamespace{date}
+
+\unexpanded\def\definedate
+  {\dodoubleargument\syst_converters_define_date}
+
+\def\syst_converters_define_date[#1][#2]%
+  {\setvalue{\??date#1}{#2}}
+
+\def\syst_converters_check_date_specification#1%
+  {\ifcsname\??date#1\endcsname
+     \edef#1{\lastnamedcs}%
+   \fi}
+
+\newtoks\everycurrentdate
 
 \unexpanded\def\currentdate
   {\dosingleempty\syst_converters_current_date}
@@ -424,8 +444,11 @@
   {\dontleavehmode
    \begingroup
    \the\everycurrentdate
+   \edef\forceddatespecification{#1}%
+   \syst_converters_check_date_specification\forceddatespecification
+   \syst_converters_check_date_specification\currentdatespecification
    \clf_currentdate
-     {#1}{\currentdatespecification}{\labellanguage}%
+     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
      \normalyear\normalmonth\normalday
    \endgroup}
 
@@ -448,8 +471,11 @@
    \fi
    \begingroup
    \the\everycurrentdate
+   \edef\forceddatespecification{#2}%
+   \syst_converters_check_date_specification\forceddatespecification
+   \syst_converters_check_date_specification\currentdatespecification
    \clf_currentdate
-     {#2}{\currentdatespecification}{\labellanguage}%
+     {\forceddatespecification}{\currentdatespecification}{\labellanguage}%
      \normalyear\normalmonth\normalday
    \endgroup}
 

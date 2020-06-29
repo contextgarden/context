@@ -469,7 +469,11 @@ local x_hlist  do
     local doaction = doaction_1
 
     x_hlist = function(head,current,t,l,w,h,d)
-        return insert_before(head,current,new_latelua(function() doaction(t,l,w,h,d) end))
+        if filehandle then
+            return insert_before(head,current,new_latelua(function() doaction(t,l,w,h,d) end))
+        else
+            return head
+        end
     end
 
     directives.register("system.synctex.compression", function(v)
@@ -858,3 +862,7 @@ interfaces.implement {
     actions = synctex.popline,
 }
 
+implement {
+    name    = "synctexdisable",
+    actions = synctex.disable,
+}

@@ -24,6 +24,7 @@ local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
 local P, S, R, Cc, Cf, Cg, Ct, Cs, C, V, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C, lpeg.V, lpeg.Carg
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
+local div, mod = math.div, math.mod
 
 local context            = context
 local commands           = commands
@@ -793,115 +794,303 @@ implement {
     arguments = { "string", "integer" }
 }
 
--- Well, since the one asking for this didn't test it the following code is not
--- enabled.
---
--- -- This Lua version is based on a Javascript by Behdad Esfahbod which in turn
--- -- is based on GPL'd code by Roozbeh Pournader of the The FarsiWeb Project
--- -- Group: http://www.farsiweb.info/jalali/jalali.js.
--- --
--- -- We start tables at one, I kept it zero based in order to stay close to
--- -- the original.
--- --
--- -- Conversion by Hans Hagen
+-- hebrew data conversion
 
-local g_days_in_month = { [0] = 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
-local j_days_in_month = { [0] = 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
+local gregorian_to_hebrew  do
 
-local div = math.div
-local mod = math.mod
+    -- The next code is based on the c code at https://github.com/hebcal/hebcal
+    --
+    -- Hebcal     : A Jewish Calendar Generator
+    -- Copyright  : 1994 - 2004 Danny Sadinoff, 2002 Michael J. Radwin
+    -- License    : GPL
+    --
+    -- Because we only need simple dates, we use part of the code. There is more
+    -- at that github place.
+    --
+    -- The number of days elapsed between the Gregorian date 12/31/1 BC and DATE.
+    -- The Gregorian date Sunday, December 31, 1 BC is imaginary.
+    --
+    -- The code is luafied and a little different because we have no assignments
+    -- in loops and such. We could speed up the code but then we divert from the
+    -- original. This is not that critical anyway.
 
-function gregorian_to_jalali(gy,gm,gd)
-    local jy, jm, jd, g_day_no, j_day_no, j_np, i
-    gy, gm, gd = gy - 1600, gm - 1, gd - 1
-    g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
-    i = 0
-    while i < gm do
-        g_day_no = g_day_no + g_days_in_month[i]
-        i = i + 1
-    end
-    if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
-        g_day_no = g_day_no + 1
-    end
-    g_day_no = g_day_no + gd
-    j_day_no = g_day_no - 79
-    j_np = div(j_day_no,12053)
-    j_day_no = mod(j_day_no,12053)
-    jy = 979 + 33*j_np + 4*div(j_day_no,1461)
-    j_day_no = mod(j_day_no,1461)
-    if j_day_no >= 366 then
-        jy = jy + div((j_day_no-1),365)
-        j_day_no = mod((j_day_no-1),365)
-    end
-    i = 0
-    while i < 11 and j_day_no >= j_days_in_month[i] do
-        j_day_no = j_day_no - j_days_in_month[i]
-        i = i + 1
-    end
-    jm = i + 1
-    jd = j_day_no + 1
-    return jy, jm, jd
-end
+    local NISAN    =  1
+    local IYYAR    =  2
+    local SIVAN    =  3
+    local TAMUZ    =  4
+    local AV       =  5
+    local ELUL     =  6
+    local TISHREI  =  7
+    local CHESHVAN =  8
+    local KISLEV   =  9
+    local TEVET    = 10
+    local SHVAT    = 11
+    local ADAR_I   = 12
+    local ADAR_II  = 13
 
-function jalali_to_gregorian(jy,jm,jd)
-    local gy, gm, gd, g_day_no, j_day_no, leap, i
-    jy, jm, jd = jy - 979, jm - 1, jd - 1
-    j_day_no = 365*jy + div(jy,33)*8 + div((mod(jy,33)+3),4)
-    for i=0,jm-1,1 do
-        j_day_no = j_day_no + j_days_in_month[i]
+    local mmap = {
+        KISLEV,
+        TEVET,
+        SHVAT,
+        ADAR_I,
+        NISAN,
+        IYYAR,
+        SIVAN,
+        TAMUZ,
+        TISHREI,
+        TISHREI,
+        TISHREI,
+        CHESHVAN
+    }
+
+    local function greg2abs(year,month,day)
+        local y = year - 1
+        return y * 365 + div(y,4)- div(y,100) + div(y,400) + os.nofdays(year,month,day)
     end
-    j_day_no = j_day_no + jd
-    g_day_no = j_day_no + 79
-    gy = 1600 + 400*div(g_day_no,146097)
-    g_day_no = mod(g_day_no, 146097)
-    leap = 1
-    if g_day_no >= 36525 then
-        g_day_no = g_day_no - 1
-        gy = gy + 100*div(g_day_no,36524)
-        g_day_no = mod(g_day_no, 36524)
-        if g_day_no >= 365 then
-            g_day_no = g_day_no + 1
+
+    local function abs2greg(abs)
+
+        local d0   = abs - 1
+
+        local n400 = div(d0, 146097)
+        local d1   = mod(d0, 146097)
+        local n100 = div(d1,  36524)
+        local d2   = mod(d1,  36524)
+        local n4   = div(d2,   1461)
+        local d3   = mod(d2,   1461)
+        local n1   = div(d3,    365)
+
+        local day  = mod(d3, 365) + 1
+        local year = 400 * n400 + 100 * n100 + 4 * n4 + n1
+
+        if n100 == 4 or n1 == 4 then
+            return year, 12, 31
         else
-            leap = 0
+            year = year + 1
+            month = 1
+            while true do
+                local mlen = os.nofdays(year,month)
+                if mlen < day then
+                    day   = day - mlen
+                    month = month + 1
+                else
+                    break
+                end
+            end
+            return year, month, day
         end
     end
-    gy = gy  + 4*div(g_day_no,1461)
-    g_day_no = mod(g_day_no, 1461)
-    if g_day_no >= 366 then
-        leap = 0
-        g_day_no = g_day_no - 1
-        gy = gy + div(g_day_no, 365)
-        g_day_no = mod(g_day_no, 365)
+
+    local function hebrew_leapyear(year)
+        return mod(1 + year * 7, 19) < 7
     end
-    i = 0
-    while true do
-        local d = g_days_in_month[i] + ((i == 1 and leap) or 0)
-        if g_day_no >= d then
-            g_day_no = g_day_no - d
+
+    local function hebrew_months_in_year(year)
+        return hebrew_leapyear(year) and 13 or 12
+    end
+
+    local function hebrew_elapsed_days(year)
+        local y         = year - 1
+        local m_elapsed = 235 * div(y,19) + 12 * mod(y,19) + div(((mod(y,19) * 7) + 1),19)
+        local p_elapsed = 204 + 793 * mod(m_elapsed,1080)
+        local h_elapsed = 5 + 12 * m_elapsed + 793 * div(m_elapsed,1080) + div(p_elapsed,1080)
+        local parts     = mod(p_elapsed,1080) + 1080 * mod(h_elapsed,24)
+        local day       = 1 + 29 * m_elapsed + div(h_elapsed,24)
+        local d         = mod(day,7)
+        local alt_day   = day
+        if       parts >= 19440
+             or (parts >=  9924 and d == 2 and not (hebrew_leapyear(year)))
+             or (parts >= 16789 and d == 1 and      hebrew_leapyear(y   )) then
+            alt_day = alt_day + 1
+        end
+        d = mod(alt_day,7)
+        if d == 0 or d == 3 or d == 5 then
+            alt_day = alt_day + 1
+        end
+        return alt_day
+    end
+
+    local function days_in_hebrew_year(year)
+        return hebrew_elapsed_days(year + 1) - hebrew_elapsed_days(year)
+    end
+
+    local function long_cheshvan(year)
+        return mod(days_in_hebrew_year(year),10) == 5
+    end
+
+    local function short_kislev(year)
+        return mod(days_in_hebrew_year(year),10) == 3
+    end
+
+    local function max_days_in_heb_month(month,year)
+        if month == IYYAR or month == TAMUZ or month == ELUL or month == TEVET or month == ADAR_II or
+           (month == ADAR_I   and not hebrew_leapyear(year)) or
+           (month == CHESHVAN and not long_cheshvan(year))   or
+           (month == KISLEV   and     short_kislev (year))   then
+            return 29
+        else
+            return 30
+        end
+    end
+
+    local function hebrew2abs(year,month,day)
+        if month < TISHREI then
+            for m=TISHREI, hebrew_months_in_year(year), 1 do
+                day = day + max_days_in_heb_month(m,year)
+            end
+            for m=NISAN, month - 1, 1 do
+                day = day + max_days_in_heb_month(m,year)
+            end
+        else
+            for m=TISHREI, month - 1, 1 do
+                day = day + max_days_in_heb_month(m,year)
+            end
+        end
+        return hebrew_elapsed_days(year) - 1373429 + day
+    end
+
+    local function abs2hebrew(abs)
+        local yy, mm, dd = abs2greg(abs)
+        local day   = 1
+        local month = TISHREI
+        local year  = 3760 + yy
+        while abs >= hebrew2abs(year+1,month,day) do
+            year = year + 1
+        end
+        if year >= 4635 and year < 10666 then
+            month = mmap[mm]
+        end
+        while abs > hebrew2abs(year,month,max_days_in_heb_month(month,year)) do
+            month = mod(month,hebrew_months_in_year(year)) + 1
+        end
+        day = abs - hebrew2abs(year,month,1) + 1
+        return year, month, day
+    end
+
+    -- months = { "ניסן" "אייר" "סיון" "תמוז" "אב" "אלול" "תשרי" "חשון" "כסלו" "טבת" "שבט" }
+
+    gregorian_to_hebrew = function(y,m,d)
+        return abs2hebrew(greg2abs(y,m,d))
+    end
+
+    converters.gregorian_to_hebrew = gregorian_to_hebrew
+
+end
+
+local gregorian_to_jalali, jalali_to_gregorian do
+
+    -- Well, since the one asking for this didn't test it the following code is not
+    -- enabled.
+    --
+    -- -- This Lua version is based on a Javascript by Behdad Esfahbod which in turn
+    -- -- is based on GPL'd code by Roozbeh Pournader of the The FarsiWeb Project
+    -- -- Group: http://www.farsiweb.info/jalali/jalali.js.
+    -- --
+    -- -- We start tables at one, I kept it zero based in order to stay close to
+    -- -- the original.
+    -- --
+    -- -- Conversion by Hans Hagen
+
+    local g_days_in_month = { [0] = 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+    local j_days_in_month = { [0] = 31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29 }
+
+
+    gregorian_to_jalali = function(gy,gm,gd)
+        local jy, jm, jd, g_day_no, j_day_no, j_np, i
+        gy, gm, gd = gy - 1600, gm - 1, gd - 1
+        g_day_no = 365*gy + div((gy+3),4) - div((gy+99),100) + div((gy+399),400)
+        i = 0
+        while i < gm do
+            g_day_no = g_day_no + g_days_in_month[i]
             i = i + 1
-        else
-            break
         end
+        if (gm>1 and ((gy%4==0 and gy%100~=0) or (gy%400==0))) then
+            g_day_no = g_day_no + 1
+        end
+        g_day_no = g_day_no + gd
+        j_day_no = g_day_no - 79
+        j_np = div(j_day_no,12053)
+        j_day_no = mod(j_day_no,12053)
+        jy = 979 + 33*j_np + 4*div(j_day_no,1461)
+        j_day_no = mod(j_day_no,1461)
+        if j_day_no >= 366 then
+            jy = jy + div((j_day_no-1),365)
+            j_day_no = mod((j_day_no-1),365)
+        end
+        i = 0
+        while i < 11 and j_day_no >= j_days_in_month[i] do
+            j_day_no = j_day_no - j_days_in_month[i]
+            i = i + 1
+        end
+        jm = i + 1
+        jd = j_day_no + 1
+        return jy, jm, jd
     end
-    gm = i + 1
-    gd = g_day_no + 1
-    return gy, gm, gd
+
+    jalali_to_gregorian = function(jy,jm,jd)
+        local gy, gm, gd, g_day_no, j_day_no, leap, i
+        jy, jm, jd = jy - 979, jm - 1, jd - 1
+        j_day_no = 365*jy + div(jy,33)*8 + div((mod(jy,33)+3),4)
+        for i=0,jm-1,1 do
+            j_day_no = j_day_no + j_days_in_month[i]
+        end
+        j_day_no = j_day_no + jd
+        g_day_no = j_day_no + 79
+        gy = 1600 + 400*div(g_day_no,146097)
+        g_day_no = mod(g_day_no, 146097)
+        leap = 1
+        if g_day_no >= 36525 then
+            g_day_no = g_day_no - 1
+            gy = gy + 100*div(g_day_no,36524)
+            g_day_no = mod(g_day_no, 36524)
+            if g_day_no >= 365 then
+                g_day_no = g_day_no + 1
+            else
+                leap = 0
+            end
+        end
+        gy = gy  + 4*div(g_day_no,1461)
+        g_day_no = mod(g_day_no, 1461)
+        if g_day_no >= 366 then
+            leap = 0
+            g_day_no = g_day_no - 1
+            gy = gy + div(g_day_no, 365)
+            g_day_no = mod(g_day_no, 365)
+        end
+        i = 0
+        while true do
+            local d = g_days_in_month[i] + ((i == 1 and leap) or 0)
+            if g_day_no >= d then
+                g_day_no = g_day_no - d
+                i = i + 1
+            else
+                break
+            end
+        end
+        gm = i + 1
+        gd = g_day_no + 1
+        return gy, gm, gd
+    end
+
+    -- local function test(yg,mg,dg,yj,mj,dj)
+    --     local y1, m1, d1 = jalali_to_gregorian(yj,mj,dj)
+    --     local y2, m2, d2 = gregorian_to_jalali(yg,mg,dg)
+    --     print(y1 == yg and m1 == mg and d1 == dg, yg,mg,dg, y1,m1,d1)
+    --     print(y2 == yj and m2 == mj and d2 == dj, yj,mj,dj, y2,m2,d2)
+    -- end
+
+    -- test(1953,08,19, 1332,05,28)
+    -- test(1979,02,11, 1357,11,22)
+    -- test(2000,02,28, 1378,12,09)
+    -- test(2000,03,01, 1378,12,11)
+    -- test(2009,02,24, 1387,12,06)
+    -- test(2015,03,21, 1394,01,01)
+    -- test(2016,03,20, 1395,01,01)
+
+    converters.gregorian_to_jalali = gregorian_to_jalali
+    converters.jalali_to_gregorian = jalali_to_gregorian
+
 end
-
--- local function test(yg,mg,dg,yj,mj,dj)
---     local y1, m1, d1 = jalali_to_gregorian(yj,mj,dj)
---     local y2, m2, d2 = gregorian_to_jalali(yg,mg,dg)
---     print(y1 == yg and m1 == mg and d1 == dg, yg,mg,dg, y1,m1,d1)
---     print(y2 == yj and m2 == mj and d2 == dj, yj,mj,dj, y2,m2,d2)
--- end
-
--- test(1953,08,19, 1332,05,28)
--- test(1979,02,11, 1357,11,22)
--- test(2000,02,28, 1378,12,09)
--- test(2000,03,01, 1378,12,11)
--- test(2009,02,24, 1387,12,06)
--- test(2015,03,21, 1394,01,01)
--- test(2016,03,20, 1395,01,01)
 
 -- -- more efficient but needs testing
 
@@ -1472,6 +1661,7 @@ local spaced = {
 }
 
 local dateconverters = {
+    ["hebrew:to"]   = gregorian_to_hebrew,
     ["jalali:to"]   = gregorian_to_jalali,
     ["jalali:from"] = jalali_to_gregorian,
 }
@@ -1480,6 +1670,10 @@ local variants = {
     mnem   = {
         month = monthmnems,
         day   = daymnems,
+    },
+    hebrew = {
+        month = setmetatableindex(function(t,k) return months[k] .. ":hebrew" end),
+        day   = setmetatableindex(function(t,k) return days  [k] .. ":hebrew" end),
     },
     jalali = {
         month = setmetatableindex(function(t,k) return months[k] .. ":jalali" end),
@@ -1522,7 +1716,16 @@ do
                 end
                 auto = false
                 if tag == v_year or tag == "y" or tag == "Y" then
-                    context(year)
+                    if plus then
+                        plus = converters[plus]
+                    end
+                    if plus then
+                        context(plus(year))
+                    elseif currentlanguage == false then
+                        context(year)
+                    else
+                        ctx_convertnumber(v_year,year)
+                    end
                 elseif tag == "yy" or tag == "YY" then
                     context("%02i",year % 100)
                 elseif tag == v_month or tag == "m" then
@@ -1556,10 +1759,15 @@ do
                 elseif tag == "M" then
                     context(month)
                 elseif tag == v_day or tag == "d" then
-                    if currentlanguage == false then
+                    if plus then
+                        plus = converters[plus]
+                    end
+                    if plus then
+                        context(plus(day))
+                    elseif currentlanguage == false then
                         context(day)
                     else
-                        ctx_convertnumber(v_day,day) -- why not direct
+                        ctx_convertnumber(v_day,day)
                     end
                     whatordinal = day
                 elseif tag == "dd" then

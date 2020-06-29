@@ -1002,4 +1002,8 @@
 
 \stopcontextdefinitioncode
 
+%D This is \type {\asciimode} without the double comment hackery:
+
+\unexpanded\def\literalmode{\setcatcodetable\txtcatcodes}
+
 \protect \endinput
