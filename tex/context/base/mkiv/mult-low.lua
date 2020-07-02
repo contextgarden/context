@@ -34,7 +34,7 @@ return {
         --
         "fmtname", "fmtversion", "texengine", "texenginename", "texengineversion", "texenginefunctionality",
         "luatexengine", "pdftexengine", "xetexengine", "unknownengine",
-        "contextformat", "contextversion", "contextkind", "contextlmtxmode", "contextmark", "mksuffix",
+        "contextformat", "contextversion", "contextlmtxmode", "contextmark", "mksuffix",
         --
         "activecatcode",
         --

@@ -79,12 +79,12 @@
 %D See \type {indentation-005.tex}:
 %D
 %D \starttyping
-%D \setuplines[indentnext={0pt,10pt,15pt,20pt}]
+%D \setuplines[indentlist={0pt,10pt,15pt,20pt}]
 %D
 %D \setupindenting[yes,1em]
-%D \setuplines[indentnext={0pt,*,*}]
+%D \setuplines[indentlist={0pt,*,*}]
 %D
-%D \setuplines[indentnext={0pt,1em,*}]
+%D \setuplines[indentlist={0pt,1em,*}]
 %D \starttyping
 
 \newcount\c_spac_lines_indent_cnt
@@ -97,7 +97,7 @@
    \else
      \advance\c_spac_lines_indent_cnt\plusone
    \fi
-   \getfromcommacommand[\m_spac_lines_indentnext][\c_spac_lines_indent_cnt]%
+   \getfromcommacommand[\m_spac_lines_indentlist][\c_spac_lines_indent_cnt]%
    \ifx\commalistelement\wildcardsymbol
      \hskip\d_spac_lines_indent
    \else
@@ -133,12 +133,11 @@
    \setupwhitespace[\v!none]% todo use fast variant
    %\obeylines % move upwards to keep spaces in the first line due to optional argument
    %
-   \edef\m_spac_lines_indentnext{\linesparameter\c!indentnext}%
-   \getcommacommandsize[\m_spac_lines_indentnext]%
+   \edef\m_spac_lines_indentlist{\linesparameter\c!indentlist}%
+   \getcommacommandsize[\m_spac_lines_indentlist]%
    \c_spac_lines_indent_max\commalistsize
    \c_spac_lines_indent_cnt\zerocount
    \ifnum\c_spac_lines_indent_max>\plusone
-     \letlinesparameter\c!indentnext\empty
      \let\spac_lines_indent\spac_lines_indent_indeed
      \d_spac_lines_indent\d_spac_indentation_par
    \else

@@ -45,8 +45,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \edef\contextformat {\jobname}
-\edef\contextversion{2020.07.02 16:03}
-\edef\contextkind   {beta}
+\edef\contextversion{2020.07.02 17:49}
 
 %D Kind of special:
 
@@ -92,7 +91,6 @@
 %D now put it into the environment.
 
 \newtoks\contextversiontoks \contextversiontoks\expandafter{\contextversion}
-\newtoks\contextkindtoks    \contextkindtoks   \expandafter{\contextkind}
 
 % \normaleverypar{\wait} % uncomment for test of funny injections
 
@@ -619,7 +617,7 @@
 % \to \everyjob
 
 \appendtoks
-    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextkind","\contextbanner")}% can become automatic
+    \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkiv","\contextbanner")}% can become automatic
 \to \everydump
 
 \errorstopmode \dump \endinput

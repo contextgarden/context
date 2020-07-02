@@ -15931,7 +15931,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6551, stripped down to: 4315
+-- original size: 6267, stripped down to: 4115
 
  if not modules then modules={} end modules ['luat-env']={
  version=1.001,
@@ -15956,14 +15956,6 @@ local mt={
    if version and version~="" then
     rawset(environment,"version",version)
     return version
-   else
-    return "unknown"
-   end
-  elseif k=="kind" then
-   local kind=texgettoks and texgettoks("contextkindtoks")
-   if kind and kind~="" then
-    rawset(environment,"kind",kind)
-    return kind
    else
     return "unknown"
    end
@@ -24436,7 +24428,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-use"] = package.loaded["data-use"] or true
 
--- original size: 5790, stripped down to: 2910
+-- original size: 5785, stripped down to: 2905
 
 if not modules then modules={} end modules ['data-use']={
  version=1.001,
@@ -24452,7 +24444,7 @@ local resolvers=resolvers
 local findfile=resolvers.findfile
 statistics.register("used config file",function() return caches.configfiles() end)
 statistics.register("used cache path",function() return caches.usedpaths() end)
-function statistics.savefmtstatus(texname,formatbanner,sourcefile,kind,banner) 
+function statistics.savefmtstatus(texname,formatbanner,sourcefile,banner) 
  local enginebanner=status.banner
  if formatbanner and enginebanner and sourcefile then
   local luvname=file.replacesuffix(texname,"luv") 
@@ -26180,8 +26172,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1039903
--- stripped bytes    : 410234
+-- original bytes    : 1039614
+-- stripped bytes    : 410150
 
 -- end library merge
 

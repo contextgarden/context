@@ -99,18 +99,11 @@ end
 local function report_output_log()
 end
 
--- local function show_open()
--- end
-
--- local function show_close()
--- end
-
 local function pre_dump_actions()
     for i=1,#dumpactions do
         dumpactions[i]()
     end
     lua.finalize(trace_lua_dump and report_lua or nil)
- -- statistics.savefmtstatus("\jobname","\contextversion","context.tex")
 end
 
 local function wrapup_synctex()
