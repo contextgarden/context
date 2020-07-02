@@ -66,59 +66,61 @@ local removables   = {
 -- (like marks) is not saving much and removing empty boxes is even
 -- dangerous because we can rely on dimensions (e.g. in references).
 
-local wipedisc = false -- we can use them in the export ... can be option
+-- local wipedisc = false -- we can use them in the export ... can be option
+--
+-- local function cleanup_redundant(head) -- better name is: flatten_page
+--     local start = head
+--     while start do
+--         local id = getid(start)
+--         if id == disc_code then
+--             if getsubtype(start) == discretionarydisc_code then
+--                 local _, _, replace, _, _ tail = getdisc(start,true)
+--                 if replace then
+--                     local prev, next = getboth(start)
+--                     setfield(start,"replace",nil)
+--                     if start == head then
+--                         remove_node(head,start,true)
+--                         head = replace
+--                     else
+--                         remove_node(head,start,true)
+--                     end
+--                     if next then
+--                         setlink(tail,next)
+--                     end
+--                     if prev then
+--                         setlink(prev,replace)
+--                     else
+--                         setprev(replace) -- to be sure
+--                     end
+--                     start = next
+--                 elseif wipedisc then
+--                     -- pre and post can have values
+--                     head, start = remove_node(head,start,true)
+--                 else
+--                     start = getnext(start)
+--                 end
+--             else
+--                 start = getnext(start)
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+--             local sl = getlist(start)
+--             if sl then
+--                 local rl = cleanup_redundant(sl)
+--                 if rl ~= sl then
+--                     setlist(start,rl)
+--                 end
+--             end
+--             start = getnext(start)
+--         else
+--             start = getnext(start)
+--         end
+--     end
+--     return head
+-- end
+--
+-- handlers.cleanuppage = cleanup_redundant -- nut
 
-local function cleanup_redundant(head) -- better name is: flatten_page
-    local start = head
-    while start do
-        local id = getid(start)
-        if id == disc_code then
-            if getsubtype(start) == discretionarydisc_code then
-                local _, _, replace, _, _ tail = getdisc(start,true)
-                if replace then
-                    local prev, next = getboth(start)
-                    setfield(start,"replace",nil)
-                    if start == head then
-                        remove_node(head,start,true)
-                        head = replace
-                    else
-                        remove_node(head,start,true)
-                    end
-                    if next then
-                        setlink(tail,next)
-                    end
-                    if prev then
-                        setlink(prev,replace)
-                    else
-                        setprev(replace) -- to be sure
-                    end
-                    start = next
-                elseif wipedisc then
-                    -- pre and post can have values
-                    head, start = remove_node(head,start,true)
-                else
-                    start = getnext(start)
-                end
-            else
-                start = getnext(start)
-            end
-        elseif id == hlist_code or id == vlist_code then
-            local sl = getlist(start)
-            if sl then
-                local rl = cleanup_redundant(sl)
-                if rl ~= sl then
-                    setlist(start,rl)
-                end
-            end
-            start = getnext(start)
-        else
-            start = getnext(start)
-        end
-    end
-    return head
-end
-
-handlers.cleanuppage = cleanup_redundant -- nut
+handlers.cleanuppage = nuts.flatten_discretionaries
 
 local function cleanup_flushed(head) -- rough
     local start = head

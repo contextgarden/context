@@ -145,6 +145,7 @@
    \xdef\currentstructureshownumber     {\structureparameter\c!number}%
    \xdef\currentstructuresaveinlist     {\structureparameter\c!saveinlist}%
    \xdef\currentstructureincrementnumber{\structureparameter\c!incrementnumber}%
+   \xdef\currentstructureplaceholder    {\structureparameter\c!placeholder}%
    \ifx\currentstructureexpansion\s!xml
      \xmlstartraw
        \xdef\currentstructuretitle   {\structureparameter\c!title}%
@@ -997,11 +998,25 @@
    \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
-   \ifconditional\headisdisplay
-     \expandafter\ignorespaces
+   \ifx\currentstructureplaceholder\empty
+      \ifconditional\headisdisplay
+        \doubleexpandafter\ignorespaces
+      \else
+        \doubleexpandafter\ignorepars
+      \fi
    \else
-     \expandafter\ignorepars
+      \expandafter\strc_sectioning_placeholder
    \fi}
+
+%D \starttyping
+%D \startsubject[placeholder=todo,title=one]
+%D     whatever one
+%D \stopsubject
+%D \stoptyping
+
+\def\strc_sectioning_placeholder
+  {\placeholder[\currentstructureplaceholder]%
+   \gobblenested{\e!start\currenthead}{\e!stop\currenthead}{\e!stop\currenthead}}
 
 % typesetting (the getters are public)
 

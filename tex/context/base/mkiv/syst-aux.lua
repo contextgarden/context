@@ -936,3 +936,25 @@ if CONTEXTLMTXMODE > 0 then
     }
 
 end
+
+-- For the moment here:
+
+if CONTEXTLMTXMODE > 0 then
+
+    local create = token.create
+    local gobble = token.gobble
+
+    implement {
+        name      = "gobblenested",
+        public    = true,
+        protected = true,
+        arguments = "3 strings",
+        actions   = function(start,stop,command)
+            gobble(create(start),create(stop))
+            if command then
+                context[command]()
+            end
+        end
+    }
+
+end

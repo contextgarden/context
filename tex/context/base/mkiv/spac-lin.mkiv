@@ -74,6 +74,42 @@
 
 \let\spac_lines_break            \relax
 \let\spac_after_first_obeyed_line\relax
+\let\spac_lines_indent           \relax
+
+%D See \type {indentation-005.tex}:
+%D
+%D \starttyping
+%D \setuplines[indentnext={0pt,10pt,15pt,20pt}]
+%D
+%D \setupindenting[yes,1em]
+%D \setuplines[indentnext={0pt,*,*}]
+%D
+%D \setuplines[indentnext={0pt,1em,*}]
+%D \starttyping
+
+\newcount\c_spac_lines_indent_cnt
+\newcount\c_spac_lines_indent_max
+\newdimen\d_spac_lines_indent
+
+\def\spac_lines_indent_indeed
+  {\ifnum\c_spac_lines_indent_cnt=\c_spac_lines_indent_max
+     \c_spac_lines_indent_cnt\plusone
+   \else
+     \advance\c_spac_lines_indent_cnt\plusone
+   \fi
+   \getfromcommacommand[\m_spac_lines_indentnext][\c_spac_lines_indent_cnt]%
+   \ifx\commalistelement\wildcardsymbol
+     \hskip\d_spac_lines_indent
+   \else
+     \scratchdimen\dimexpr\commalistelement\relax
+     \hskip\ifdim\scratchdimen=\zeropoint
+       \zeropoint
+     \else
+       \scratchdimen
+       \d_spac_lines_indent\scratchdimen
+     \fi
+   \fi
+   \relax}
 
 \def\spac_lines_start_indeed[#1]% new: optional second argument (WS)
   {\iffirstargument
@@ -96,23 +132,39 @@
    \typesettinglinestrue
    \setupwhitespace[\v!none]% todo use fast variant
    %\obeylines % move upwards to keep spaces in the first line due to optional argument
+   %
+   \edef\m_spac_lines_indentnext{\linesparameter\c!indentnext}%
+   \getcommacommandsize[\m_spac_lines_indentnext]%
+   \c_spac_lines_indent_max\commalistsize
+   \c_spac_lines_indent_cnt\zerocount
+   \ifnum\c_spac_lines_indent_max>\plusone
+     \letlinesparameter\c!indentnext\empty
+     \let\spac_lines_indent\spac_lines_indent_indeed
+     \d_spac_lines_indent\d_spac_indentation_par
+   \else
+     \let\spac_lines_indent\relax
+   \fi
+   %
    \ignorespaces
    \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_a
    \let\obeyedline\spac_lines_obeyed_line
    \activatespacehandler{\linesparameter\c!space}%
    \dostarttagged\t!line\empty
-   \ignorepars} % this will become a nice lowercased helper
+   \ignorepars}
+
 
 % we could have states instead and handle option in there
 
 \def\spac_lines_after_first_obeyed_line_a % tzt two pass, like itemize
   {\linesparameter\c!command
+   \spac_lines_indent
    \linesparameter\c!left
    \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_b}
 
 \def\spac_lines_after_first_obeyed_line_b
   {\spac_lines_break
    \linesparameter\c!command
+   \spac_lines_indent
    \linesparameter\c!left}
 
 \def\spac_lines_obeyed_line

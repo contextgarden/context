@@ -271,6 +271,7 @@ return {
   "etoksapp",
   "etokspre",
   "exceptionpenalty",
+  "expand",
   "expandafterpars",
   "expandafterspaces",
   "expandcstoken",

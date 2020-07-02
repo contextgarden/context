@@ -437,33 +437,41 @@ end
 --     t[k] = v
 --     return v
 -- end
+--
+-- local  dirstack = setmetatableindex(dirstackentry)
+--
+-- local function reset_dir_stack()
+--     dirstack = setmetatableindex(dirstackentry)
+-- end
 
------ dirstack = { }
-local dirstack = setmetatableindex(dirstackentry)
+local dirstack = { }
 
 local function reset_dir_stack()
- -- dirstack = setmetatableindex(dirstackentry)
     dirstack = { }
 end
 
+local leaderlevel = 0
+
 local function flushlatelua(current,h,v)
+    -- Here we assume maganement by the lua function so currently we don't
+    -- check for leaderlevel.
     return backends.latelua(current,h,v)
 end
 
 local function flushwriteout(current)
-    if not doing_leaders then
+    if leaderlevel == 0 then
         backends.writeout(current)
     end
 end
 
 local function flushopenout(current)
-    if not doing_leaders then
+    if leaderlevel == 0 then
         backends.openout(current)
     end
 end
 
 local function flushcloseout(current)
-    if not doing_leaders then
+    if leaderlevel == 0 then
         backends.closeout(current)
     end
 end
@@ -539,8 +547,6 @@ local hlist_out, vlist_out  do
     -- check frequencies of nodes
 
     hlist_out = function(this_box,current)
-        local outer_doing_leaders = false
-
         local ref_h = pos_h
         local ref_v = pos_v
         local ref_r = pos_r
@@ -635,6 +641,7 @@ local hlist_out, vlist_out  do
                                     end
                                 end
                                 local shift = getshift(leader)
+                                leaderlevel = leaderlevel + 1
                                 while cur_h + width <= edge do
                                     local basepoint_h = 0
                                  -- local basepoint_v = shift
@@ -649,16 +656,14 @@ local hlist_out, vlist_out  do
                                     end
                                     pos_v = ref_v - shift
                                     -- synced
-                                    outer_doing_leaders = doing_leaders
-                                    doing_leaders       = true
                                     if getid(leader) == vlist_code then
                                         vlist_out(leader,getlist(leader))
                                     else
                                         hlist_out(leader,getlist(leader))
                                     end
-                                    doing_leaders = outer_doing_leaders
                                     cur_h = cur_h + width + lx
                                 end
+                                leaderlevel = leaderlevel - 1
                                 cur_h = edge - 10
                             else
                                 cur_h = cur_h + gluewidth
@@ -746,14 +751,6 @@ local hlist_out, vlist_out  do
                     end
                 end
                 cur_h = cur_h + width
-            elseif id == disc_code then
-                local replace, tail = getreplace(current)
-                if replace and subtype ~= select_disc then
-                    -- we could flatten .. no gain
-                    setlink(tail,getnext(current))
-                    setlink(current,replace)
-                    setreplace(current)
-                end
             elseif id == kern_code then
                 local kern, factor = getkern(current,true)
                 if kern ~= 0 then
@@ -865,11 +862,22 @@ local hlist_out, vlist_out  do
                 elseif subtype == openwhatsit_code then
                     flushopenout(current)
                 end
+            elseif id == disc_code then
+                local replace, tail = getreplace(current)
+                if replace and subtype ~= select_disc then
+                    -- we could flatten .. no gain
+                    setlink(tail,getnext(current))
+                    setlink(current,replace)
+                    setreplace(current)
+                end
          -- elseif id == localpar_code and start_of_par(current) then
          --     local pardir = getdirection(current) or lefttoright_code
          --     if pardir == righttoleft_code then
          --     end
          -- end
+            else
+                -- penalty, boundary ... no dimensions
+                goto synced
             end
             -- There is no gain in skipping over this when we have zero progression
             -- and such.
@@ -887,8 +895,6 @@ local hlist_out, vlist_out  do
     end
 
     vlist_out = function(this_box,current)
-        local outer_doing_leaders = false
-
         local ref_h = pos_h
         local ref_v = pos_v
         local ref_r = pos_r
@@ -968,6 +974,7 @@ local hlist_out, vlist_out  do
                                     end
                                 end
                                 local shift = getshift(leader)
+                                leaderlevel = leaderlevel + 1
                                 while cur_v + total <= edge do -- todo: <= edge - total
                                     -- synch_pos_with_cur(ref_h, ref_v, getshift(leader), cur_v + height)
                                     if pos_r == righttoleft_code then
@@ -977,16 +984,14 @@ local hlist_out, vlist_out  do
                                     end
                                     pos_v = ref_v - (cur_v + height)
                                     -- synced
-                                    outer_doing_leaders = doing_leaders
-                                    doing_leaders = true
                                     if getid(leader) == vlist_code then
                                         vlist_out(leader,getlist(leader))
                                     else
                                         hlist_out(leader,getlist(leader))
                                     end
-                                    doing_leaders = outer_doing_leaders
                                     cur_v = cur_v + total + ly
                                 end
+                                leaderlevel = leaderlevel - 1
                                 cur_v = edge - 10
                             else
                                 cur_v = cur_v + glueheight
@@ -1005,13 +1010,17 @@ local hlist_out, vlist_out  do
                     if not orientation then
                      -- local basepoint_h = shift
                      -- local basepoint_v = height
-                        if boxdir ~= pos_r then
-                            shift = shift + width
-                        end
-                        if pos_r == righttoleft_code then
-                            pos_h = ref_h - shift
+                        if shift == 0 then
+                            pos_h = ref_h
                         else
-                            pos_h = ref_h + shift
+                            if boxdir ~= pos_r then
+                                shift = shift + width
+                            end
+                            if pos_r == righttoleft_code then
+                                pos_h = ref_h - shift
+                            else
+                                pos_h = ref_h + shift
+                            end
                         end
                         pos_v = ref_v - (cur_v + height)
                         -- synced
@@ -1114,6 +1123,9 @@ local hlist_out, vlist_out  do
                 elseif subtype == openwhatsit_code then
                     flushopenout(current)
                 end
+            else
+                -- penalty
+                goto synced
             end
             if pos_r == righttoleft_code then
                 pos_h = ref_h - cur_h

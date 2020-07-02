@@ -3175,17 +3175,6 @@ local collectresults  do -- too many locals otherwise
                         end
                     end
                 end
-            elseif id == disc_code then -- probably too late
-                local pre, post, replace = getdisc(n)
-                if keephyphens then
-                    if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = hyphen
-                    end
-                end
-                if replace then
-                    collectresults(replace,nil)
-                end
             elseif id == glue_code then
                 -- we need to distinguish between hskips and vskips
                 local ca = getattr(n,a_characters)
@@ -3403,6 +3392,18 @@ end
                 end
             elseif not localparagraph and id == localpar_code and start_of_par(n) then
                 localparagraph = getattr(n,a_taggedpar)
+            elseif id == disc_code then
+                -- very unlikely because we stripped them
+                local pre, post, replace = getdisc(n)
+                if keephyphens then
+                    if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
+                        nofcurrentcontent = nofcurrentcontent + 1
+                        currentcontent[nofcurrentcontent] = hyphen
+                    end
+                end
+                if replace then
+                    collectresults(replace,nil)
+                end
             end
             p   = n
             pid = id

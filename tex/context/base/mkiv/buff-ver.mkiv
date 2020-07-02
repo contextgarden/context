@@ -811,6 +811,7 @@
    \else
      \buff_verbatim_type_buffer_indeed\currenttyping\empty% []
    \fi\fi
+   \useindentnextparameter\typingparameter
    \endgroup
    \dorechecknextindentation}
 
@@ -825,7 +826,9 @@
      \setuptyping[#1][#3]%
    \fi
    \buff_verbatim_type_buffer_indeed{#1}{#2}%
-   \endgroup}
+   \useindentnextparameter\typingparameter
+   \endgroup
+   \dorechecknextindentation}
 
 \unexpanded\def\buff_verbatim_type_buffer_indeed#1#2% category name
   {\edef\currenttyping{#1}%
@@ -851,8 +854,7 @@
    \endofverbatimlines
    \dostoptagged
    \stoppacked
-   \typingparameter\c!after
-   \dorechecknextindentation}
+   \typingparameter\c!after}
 
 \unexpanded\def\typeinlinebuffer
   {\dontleavehmode

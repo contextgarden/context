@@ -1,3 +1,14 @@
+if not modules then modules = { } end modules ['node-cmp'] = {
+    version   = 1.001,
+    comment   = "companion to node-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is a LuaTeX compatibility module. The code below is no longer
+-- present node-met or node-aux. These functions are rarely used.
+
 if node.count then
     return
 end

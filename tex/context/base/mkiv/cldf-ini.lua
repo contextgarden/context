@@ -110,6 +110,10 @@ local newtoken          = token.new
 local createtoken       = token.create
 local setluatoken       = token.set_lua
 
+local isprintable       = tex.isprintable or function(n)
+    return n and (type(n) == "string" or isnode(n) or istoken(n))
+end
+
 local catcodenumbers    = catcodes.numbers
 
 local ctxcatcodes       = catcodenumbers.ctxcatcodes
@@ -803,7 +807,8 @@ local function writer(parent,command,...) -- already optimized before call
                 end
             elseif typ == "thread" then
                 report_context("coroutines not supported as we cannot yield across boundaries")
-            elseif isnode(ti) then -- slow | why {} here ?
+         -- elseif isnode(ti) or istoken(ti) then
+            elseif isprintable(ti) then
                 flush(currentcatcodes,"{",ti,"}")
             else
                 local s = tostring(ti)
@@ -967,7 +972,8 @@ local caller = function(parent,f,a,...)
             end
         elseif typ == "thread" then
             report_context("coroutines not supported as we cannot yield across boundaries")
-        elseif isnode(f) then -- slow
+     -- elseif isnode(f) or istoken(f) then
+        elseif isprintable(f) then
             flush(f)
         else
             local s = tostring(f)
@@ -1062,8 +1068,7 @@ end)
 local function userdata(argument)
     if isnode(argument) then
         return formatters["<< %s node %i>>"](nodes.nodecodes[argument.id],tonut(argument))
-    end
-    if istoken(argument) then
+    elseif istoken(argument) then
         local csname = argument.csname
         if csname then
          -- return formatters["<<\\%s>>"](csname)
@@ -1074,8 +1079,9 @@ local function userdata(argument)
             return "<<function>>" -- argument.mode
         end
         return "<<token>>"
+    else
+        return "<<userdata>>"
     end
-    return "<<userdata>>"
 end
 
 
