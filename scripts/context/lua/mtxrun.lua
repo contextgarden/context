@@ -9226,7 +9226,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 24132, stripped down to: 16210
+-- original size: 24624, stripped down to: 16431
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -9239,7 +9239,7 @@ local lpeg,table,string=lpeg,table,string
 local P,R,V,S,C,Ct,Cs,Carg,Cc,Cg,Cf,Cp=lpeg.P,lpeg.R,lpeg.V,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cs,lpeg.Carg,lpeg.Cc,lpeg.Cg,lpeg.Cf,lpeg.Cp
 local lpegmatch,lpegpatterns=lpeg.match,lpeg.patterns
 local concat,gmatch,find=table.concat,string.gmatch,string.find
-local tostring,type,next,rawset=tostring,type,next,rawset
+local tonumber,tostring,type,next,rawset=tonumber,tostring,type,next,rawset
 local mod,div=math.mod,math.div
 utilities=utilities or {}
 local parsers=utilities.parsers or {}
@@ -9631,13 +9631,15 @@ function parsers.csvsplitter(specification)
  specification=specification and setmetatableindex(specification,defaultspecification) or defaultspecification
  local separator=specification.separator
  local quotechar=specification.quote
+ local numbers=specification.numbers
  local separator=S(separator~="" and separator or ",")
  local whatever=C((1-separator-newline)^0)
  if quotechar and quotechar~="" then
   local quotedata=nil
   for chr in gmatch(quotechar,".") do
    local quotechar=P(chr)
-   local quoteword=quotechar*C((1-quotechar)^0)*quotechar
+   local quoteitem=(1-quotechar)^0
+   local quoteword=quotechar*(numbers and (quoteitem/tonumber) or C(quoteitem))*quotechar
    if quotedata then
     quotedata=quotedata+quoteword
    else
@@ -9653,12 +9655,14 @@ function parsers.csvsplitter(specification)
 end
 function parsers.rfc4180splitter(specification)
  specification=specification and setmetatableindex(specification,defaultspecification) or defaultspecification
+ local numbers=specification.numbers
  local separator=specification.separator 
  local quotechar=P(specification.quote)  
  local dquotechar=quotechar*quotechar   
 /specification.quote
  local separator=S(separator~="" and separator or ",")
- local escaped=quotechar*Cs((dquotechar+(1-quotechar))^0)*quotechar
+ local whatever=(dquotechar+(1-quotechar))^0
+ local escaped=quotechar*(numbers and (whatever/tonumber) or Cs(whatever))*quotechar
  local non_escaped=C((1-quotechar-newline-separator)^1)
  local field=escaped+non_escaped+Cc("")
  local record=Ct(field*(separator*field)^1)
@@ -26172,8 +26176,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1039614
--- stripped bytes    : 410150
+-- original bytes    : 1040106
+-- stripped bytes    : 410421
 
 -- end library merge
 

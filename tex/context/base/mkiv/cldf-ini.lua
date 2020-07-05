@@ -677,7 +677,7 @@ end
 
 local containseol = patterns.containseol
 
-local t_cldl_luafunction             = newtoken("luafunctioncall",0)
+----- t_cldl_luafunction             = newtoken("luafunctioncall",0)
 local lua_expandable_call_token_code = token.command_id and token.command_id("lua_expandable_call")
 
 local sortedhashindeed = false

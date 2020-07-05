@@ -4979,7 +4979,7 @@
 % experimental
 
 \unexpanded\def\gobblenested#1#2#3%
-  {\normalexpanded{\def\next##1\csname#2\endcsname}{\csname#3\endcsname}%
+  {\normalexpanded{\def\noexpand\next##1\csname#2\endcsname}{\csname#3\endcsname}%
    \next}%
 
 %D The next one simply expands the pickup up tokens.

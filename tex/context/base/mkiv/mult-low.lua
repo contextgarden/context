@@ -236,7 +236,7 @@ return {
         "triggergroupedcommand", "triggergroupedcommandcs",
         "simplegroupedcommand", "pickupgroupedcommand",
         --
-        "normalbaselineskip", "normallineskip", "normallineskiplimit",
+        "usedbaselineskip", "usedlineskip", "usedlineskiplimit",
         --
         "availablehsize", "localhsize", "setlocalhsize", "distributedhsize", "hsizefraction",
         --

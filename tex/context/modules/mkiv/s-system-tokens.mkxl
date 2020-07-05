@@ -31,6 +31,30 @@
 \setupbodyfont[8pt]
 
 \starttext
+
     \showsystemtokens
+
+    Some tokens cannot be created yet because they are more complex but eventually the creator will
+    deal with them. The indices are sometimes the same as internal but in most cases nicely start
+    at zero. When they start at another value, then there is an internal token or state that is not
+    user accessible. You always need to use symbolic constants as the numbers can change.
+
+    The first column is a classifier (which is experimental and categories might change when we feel
+    the need).
+
+    \startcolumns[n=5]
+    \starttabulate[|T||]
+    \NC 0 \NC unused    \NC \NR
+    \NC 1 \NC regular   \NC \NR
+    \NC 2 \NC character \NC \NR
+    \NC 3 \NC register  \NC \NR
+    \NC 4 \NC internal  \NC \NR
+    \NC 5 \NC reference \NC \NR
+    \NC 6 \NC data      \NC \NR
+    \NC 7 \NC token     \NC \NR
+    \NC 8 \NC node      \NC \NR
+    \stoptabulate
+    \stopcolumns
+
 \stoptext
 

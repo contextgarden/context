@@ -3185,7 +3185,7 @@
    \globalpushmacro\recurseaction
    \unexpanded\gdef\recurseaction##1##2{#4}%
    \normalexpanded{\ifcmpnum#3\zerocount
-     \ifnum#1<#2\relax
+     \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
        \syst_helpers_stepwise_exit
      \else
        \syst_helpers_stepwise_reverse
@@ -3193,12 +3193,12 @@
    \or
      \syst_helpers_stepwise_exit
    \or
-     \ifnum#2<#1\relax
+     \ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
        \syst_helpers_stepwise_exit
      \else
        \syst_helpers_stepwise_recurse
      \fi
-   \fi{\number#1}{\number#2}{\number#3}}
+   \fi{\number#1}{\number#2}{\number#3}}%
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
