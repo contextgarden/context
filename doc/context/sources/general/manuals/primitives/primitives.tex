@@ -1,0 +1,2346 @@
+% language=us
+
+% The usual time stamp. This written while listening intermized to Fish (just ran
+% into), Lazulli (some yt videos too, looking forward to a next live act) and
+% because this all is boring checking out Sarah Coopers channel for new DT syncs
+% every few hours.
+
+% When you feel unhappy about the lack of detail in this manual, just keep in mind
+% that you cannot really demand anything from volunteers: just hope for more (or
+% pay for it). Friendly comments and corrections are of course always welcome. As
+% we like what we're doing here, it all might eventually evolve to perfection, stay
+% tuned.
+%
+% Hans Hagen | j.hagen @ xs4all . nl | ntg-context @ ntg . nl
+
+\usemodule[article-basic]
+\usemodule[abbreviations-logos]
+\usemodule[scite]
+
+\definecolor[maincolor][darkblue]
+\definecolor[primcolor][darkblue]
+\definecolor[nonecolor][darkgray]
+
+\setuptyping
+  [option=tex]
+
+\setuptype
+  [option=tex]
+
+\setuphead
+  [subject]
+  [color=maincolor]
+
+\definehead
+  [newprimitive]
+  [section]
+  [color=maincolor]
+
+\definehead
+  [oldprimitive]
+  [section]
+  [color=nonecolor]
+
+\setuplist
+  [newprimitive]
+  [textcolor=maincolor]
+
+\setuplist
+  [oldprimitive]
+  [textcolor=nonecolor]
+
+\starttext
+
+\startMPpage
+    fill Page
+        withcolor "darkgray" ;
+    draw textext("\sstf {\white new} primitives")
+        xysized (.9bbwidth(Page),bbheight(Page)-2cm)
+        shifted center Page
+        withcolor "maincolor" ;
+    draw textext.ulft("\sstf in luametatex")
+        xysized (.9bbwidth(Page)/3,(bbheight(Page)-2cm)/6)
+        shifted center lrcorner Page
+        shifted (-.1bbwidth(Page),.05bbwidth(Page))
+        withcolor "white" ;
+    setbounds currentpicture to Page ;
+\stopMPpage
+
+\startsubject[title={Introduction}]
+
+Here I will discuss some of the new primitives in \LUATEX\ and \LUAMETATEX, the
+later being a successor that permits the \CONTEXT\ folks to experiment with new
+features. The order is arbitrary. When you compare \LUATEX\ with \PDFTEX, there
+are actually quite some differences. Some primitives that \PDFTEX\ introduced
+have been dropped in \LUATEX\ because they can be done better in \LUA. Others
+have been promoted to core primitives that no longer have a \type {pdf} prefix.
+Then there are lots of new primitives, some introduce new concepts, some are a
+side effect of for instance new math font technologies, and then there are those
+that are handy extensions to the macro language. The \LUAMETATEX\ engine drops
+quite some primitives, like those related to \PDFTEX\ specific font or backend
+features. It also adds some new primitives, mostly concerning the macro language.
+
+We also discuss the primitives that fit into the macro programming scope that are
+present in traditional \TEX\ and \ETEX\ but there are for sure better of
+descriptions out there already. Primitives that relate to typesetting, like those
+controlling math, fonts, boxes, attributes, directions, catcodes, \LUA\
+(functions) etc are not discussed here.
+
+There are for instance primitives to create aliases to low level registers like
+counters and dimensions, as well as other (semi|-|numeric) quantities like
+characters, but normally these are wrapped into high level macros so that
+definitions can't clash too much. Numbers, dimensions etc can be advanced,
+multiplied and divided and there is a simple expression mechanism to deal with
+them. These are not discussed here.
+
+\startcolumns
+    \placelist
+      [newprimitive,oldprimitive]
+      [alternative=c]
+\stopcolumns
+
+In this document the section titles that discuss the \color [nonecolor] {original
+\TEX\ and \ETEX\ primitives} have a different color those explaining the \color
+[primcolor] {\LUATEX\ and \LUAMETATEX\ primitives}.
+
+\stopsubject
+
+\page
+
+% When writing this manual I also decided to merge some of the condition related
+% code so that it dealt a bit more natural with the newer features. A usual side
+% effects if writing manuals.
+
+% \startoldprimitive[title={\tex {meaning}}]
+% \stopoldprimitive
+%
+% \startoldprimitive[title={\tex {par}}]
+% \stopoldprimitive
+%
+% \startoldprimitive[title={\tex {linepar}}]
+% \stopoldprimitive
+
+\startoldprimitive[title={\tex {afterassignment}}]
+
+The token following \type {\afterassignment}, a traditional \TEX\ primitive, is
+saved and gets injected (and then expanded) after a following assignment took
+place.
+
+\startbuffer
+\afterassignment !\def\MyMacro {}\quad
+\afterassignment !\let\MyMacro ?\quad
+\afterassignment !\scratchcounter 123\quad
+\afterassignment !%
+\afterassignment ?\advance\scratchcounter by 1
+\stopbuffer
+
+\typebuffer
+
+The \type {\afterassignment}s are not accumulated, the last one wins:
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {afterassigned}}]
+
+The \type {\afterassignment} primitive stores a token to be injected (and thereby
+expanded) after an assignment has happened. Unlike \type {\aftergroup}, multiple
+calls are not accumulated, and changing that would be too incompatible. This is
+why we have \type {\afterassigned}, which can be used to inject a bunch of
+tokens. But in order to be consistent this one is also not accumulative.
+
+\startbuffer
+\afterassigned{done}%
+\afterassigned{{\bf done}}%
+\scratchcounter=123
+\stopbuffer
+
+\typebuffer
+
+results in: \inlinebuffer\ being typeset.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {aftergroup}}]
+
+The traditional \TEX\ \type {\aftergroup} primitive stores the next token and
+expands that after the group has been closed.
+
+\startbuffer
+before{ ! \aftergroup a\aftergroup f\aftergroup t\aftergroup e\aftergroup r}
+\stopbuffer
+
+Multiple \type {\aftergroup}s are combined:
+
+\typebuffer
+
+\getbuffer
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {aftergrouped}}]
+
+The in itself powerful \type {\aftergroup} primitives works quite well, even
+if you need to do more than one thing: you can either use it multiple times, or
+you can define a macro that does multiple things and apply that after the group.
+However, you can avoid that by using this primitive which takes a list of tokens.
+
+\startbuffer
+regular
+\bgroup
+\aftergrouped{regular}%
+\bf bold
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Because it happens after the group, we're no longer typesetting in bold.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {atendofgroup}}]
+
+The token provided will be injected just before the group ends. Because
+these tokens are collected, you need to be aware of possible interference
+between them. However, normally this is managed by the macro package.
+
+\startbuffer
+\bgroup
+\atendofgroup\unskip
+\atendofgroup )%
+(but it works okay
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Of course these effects can also be achieved by combining (extra) grouping with
+\type {\aftergroup} calls, so this is more a convenience primitives than a real
+necessity: {\inlinebuffer}, as proven here.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {atendofgrouped}}]
+
+This is the multi token variant of \type {\atendofgroup}. Of course the next
+example is somewhat naive when it comes to spacing and so, but it shows the
+purpose.
+
+\startbuffer
+\bgroup
+\atendofgrouped{\bf QED}%
+\atendofgrouped{ (indeed)}%
+This sometimes looks nicer.
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Multiple invocations are accumulated: {\inlinebuffer}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {toksapp}}]
+
+One way to append something to a token list is the following:
+
+\starttyping
+\scratchtoks\expandafter{\the\scratchtoks more stuff}
+\stoptyping
+
+This works all right, but it involves a copy of what is already in \type
+{\scratchtoks}. This is seldom a real issue unless we have large token lists and
+many appends. This is why \LUATEX\ introduced:
+
+\starttyping
+\toksapp\scratchtoks{more stuff}
+\toksapp\scratchtoksone\scratchtokstwo
+\stoptyping
+
+At some point, when working on \LUAMETATEX, I realized that primitives like this
+one and the next appenders and prependers to be discussed were always on the
+radar of Taco and me. Some were even implemented in what we called \type {eetex}:
+extended \ETEX, and we even found back the prototypes, dating from pre|-|\PDFTEX\
+times.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {etoksapp}}]
+
+A variant of \type {\toksapp} is the following: it expands the to be appended
+content.
+
+\starttyping
+\def\temp{more stuff}
+\etoksapp\scratchtoks{some \temp}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {tokspre}}]
+
+Where appending something is easy because of the possible \type {\expandafter}
+trickery a prepend would involve more work, either using temporary token
+registers and|/|or using a mixture of the (no)expansion added by \ETEX, but all
+are kind of inefficient and cumbersome.
+
+\starttyping
+\tokspre\scratchtoks{less stuff}
+\tokspre\scratchtoksone\scratchtokstwo
+\stoptyping
+
+This prepends the token list that is provided.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {etokspre}}]
+
+A variant of \type {\tokspre} is the following: it expands the to be prepended
+content.
+
+\starttyping
+\def\temp{less stuff}
+\etokspre\scratchtoks{a bit \temp}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {gtoksapp}}]
+
+This is the global variant of \type {\toksapp}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {xtoksapp}}]
+
+This is the global variant of \type {\etoksapp}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {gtokspre}}]
+
+This is the global variant of \type {\tokspre}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {xtokspre}}]
+
+This is the global variant of \type {\etokspre}.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {csname}}]
+
+This original \TEX\ primitive starts the construction of a control sequence
+reference. It does a lookup and when no sequence with than name is found, it will
+create a hash entry and defaults its meaning to \type {\relax}.
+
+\starttyping
+\csname letters and other characters\endcsname
+\stoptyping
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {endcsname}}]
+
+This primitive is used in combination with \type {\csname}, \type {\ifcsname} and
+\type {\begincsname} where its end the scanning for the to be constructed control
+sequence token.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {begincsname}}]
+
+The next code creates a control sequence token from the given serialized tokens:
+
+\starttyping
+\csname mymacro\endcsname
+\stoptyping
+
+When \type {\mymacro} is not defined a control sequence will be created with the
+meaning \type {\relax}. A side effect is that a test for its existence might fail
+because it now exists. The next sequence will {\em not} create an controil
+sequence:
+
+\starttyping
+\begincsname mymacro\endcsname
+\stoptyping
+
+This actually is kind of equivalent to:
+
+\starttyping
+\ifcsname mymacro\endcsname
+    \csname mymacro\endcsname
+\fi
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {lastnamedcs}}]
+
+The example code in the previous section has some redundancy, in the sense that
+there to be looked up control sequence name \type {mymacro} is assembled twice.
+This is no big deal in a traditional eight bit \TEX\ but in a \UNICODE\ engine
+multi|-|byte sequences demand some more processing (although it is unlikely that
+control sequences have many multi|-|byte \UTF8\ characters).
+
+\starttyping
+\ifcsname mymacro\endcsname
+    \csname mymacro\endcsname
+\fi
+\stoptyping
+
+Instead we can say:
+
+\starttyping
+\ifcsname mymacro\endcsname
+    \lastnamedcs
+\fi
+\stoptyping
+
+Although there can be some performance benefits another advantage is that it uses
+less tokens and parsing. It might even look nicer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {futureexpand}}]
+
+This primitive can be used as an alternative to a \type {\futurelet} approach,
+which is where the name comes from. \footnote {In the engine primitives
+that have similar behavior are grouped in commands that are then dealt with
+together, code wise.}
+
+\startbuffer
+\def\variantone<#1>{(#1)}
+\def\varianttwo#1{[#1]}
+\futureexpand<\variantone\varianttwo<one>
+\futureexpand<\variantone\varianttwo{two}
+\stopbuffer
+
+\typebuffer
+
+So, the next token determines which of the two variants is taken:
+
+{\getbuffer}
+
+Because we look ahead there is some magic involved: spaces are ignored but when
+we have no match they are pushed back into the input. The next variant
+demonstrates this:
+
+\startbuffer
+\def\variantone<#1>{(#1)}
+\def\varianttwo{}
+\def\temp{\futureexpand<\variantone\varianttwo}
+[\temp <one>]
+[\temp {two}]
+[\expandafter\temp\space <one>]
+[\expandafter\temp\space {two}]
+\stopbuffer
+
+\typebuffer
+
+This gives us:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {futureexpandis}}]
+
+We assume that the previous section is read. This variant will not push back
+spaces, which permits a consistent approach i.e.\ the user can assume that macro
+always gobbles the spaces.
+
+\startbuffer
+\def\variantone<#1>{(#1)}
+\def\varianttwo{}
+\def\temp{\futureexpandis<\variantone\varianttwo}
+[\temp <one>]
+[\temp {two}]
+[\expandafter\temp\space <one>]
+[\expandafter\temp\space {two}]
+\stopbuffer
+
+\typebuffer
+
+So, here no spaces are pushed back. This \type {is} in the name of this primitive
+means \quote {ignore spaces}, but having that added to the name would have made
+the primitive even more verbose (after all, we also don't have \type
+{\expandeddef} but \type {\edef} and no \type {\globalexpandeddef} but \type
+{\xdef}.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {futureexpandisap}}]
+
+This primitive is like the one in the previous section but also ignores par
+tokens, so \type {isap} means \quote {ignore spaces and paragraphs}.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {expandafter}}]
+
+This original \TEX\ primitive stores the next token, does a one level expansion
+of what follows it, which actually can be an not expandable token, and
+reinjects the stored token in the input. Like:
+
+\starttyping
+\expandafter\let\csname my weird macro name\endcsname{m w m n}
+\stoptyping
+
+Without \type {\expandafter} the \type {\csname} primitive would have been let to
+the left brace (effectively then a begin group). Actually in this particular case
+the control sequence with the weird name is injected and when it didn't yet exist
+it will get the meaning \type {\relax} so we sort of have two assignments in a
+row then.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {expandafterspaces}}]
+
+This is a gobbler: the next token is reinjected after following spaces have been
+read. Here is a simple example:
+
+\startbuffer
+[\expandafterspaces 1 2]
+[\expandafterspaces 3
+4]
+[\expandafterspaces 5
+
+6]
+\stopbuffer
+
+\typebuffer
+
+We get this typeset: \inlinebuffer, because a newline normally is configured to be
+a space (and leading spaces in a line are normally being ingored anyway).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {expandafterpars}}]
+
+Here is another gobbler: the next token is reinjected after following spaces
+and par tokens have been read. So:
+
+\startbuffer
+[\expandafterpars 1 2]
+[\expandafterpars 3
+4]
+[\expandafterpars 5
+
+6]
+\stopbuffer
+
+\typebuffer
+
+gives us: \inlinebuffer, because empty lines are like \type {\par} and therefore
+ignored.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {expandtoken}}]
+
+This primitive creates a token with a specific combination of catcode and
+character code. Because it assumes some knowledge of \TEX\ we can show it
+using some \type {\expandafter} magic:
+
+\startbuffer
+\expandafter\let\expandafter\temp\expandtoken 11 `X \meaning\temp\crlf
+\expandafter\let\expandafter\temp\expandtoken 12 `X \meaning\temp\crlf
+\stopbuffer
+
+\typebuffer
+
+The meanings are:
+
+{\getbuffer}
+
+Using other catcodes is possible but the results of injecting them into the input
+directly (or here by injecting \type {\temp}) can be unexpected because of what
+\TEX\ expects. You can get messages you normally won't get, for instance about
+unexpected alignment interference, which is a side effect of \TEX\ using some
+catcode|/|character combinations as signals and there is no reason to change
+those internals. That said:
+
+\startbuffer
+\edef\tempA{\expandtoken  9 `X} \meaning\tempA\crlf
+\edef\tempB{\expandtoken 10 `X} \meaning\tempB\crlf
+\edef\tempC{\expandtoken 11 `X} \meaning\tempC\crlf
+\edef\tempD{\expandtoken 12 `X} \meaning\tempD
+\stopbuffer
+
+\typebuffer
+
+are all valid and from the meaning you cannot really deduce what's in there:
+
+{\getbuffer}
+
+But you can be assured that:
+
+\startbuffer
+[AB: \ifx\tempA\tempB Y\else N\fi]
+[AC: \ifx\tempA\tempC Y\else N\fi]
+[AD: \ifx\tempA\tempD Y\else N\fi]
+[BC: \ifx\tempB\tempC Y\else N\fi]
+[BD: \ifx\tempB\tempD Y\else N\fi]
+[CD: \ifx\tempC\tempD Y\else N\fi]
+\stopbuffer
+
+\typebuffer
+
+makes clear that they're different: \inlinebuffer, and in case you wonder, the
+characters with catcode 10 are spaces, while those with code 9 are ignored.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {expandcstoken}}]
+
+The rationale behind this primitive is that when we \type {\let} a single token
+like a character it is hard to compare that with something similar, stored in a
+macro. This primitive pushes back a single token alias created by \type {\let}
+into the input.
+
+\startbuffer
+\let\tempA + \meaning\tempA \crlf
+\let\tempB X \meaning\tempB \crlf
+\let\tempC $ \meaning\tempC \par
+
+\edef\temp         {\tempA} \doifelse{\temp}{+}{Y}{N} \meaning\temp \crlf
+\edef\temp         {\tempB} \doifelse{\temp}{X}{Y}{N} \meaning\temp \crlf
+\edef\temp         {\tempC} \doifelse{\temp}{X}{Y}{N} \meaning\temp \par
+
+\edef\temp{\expandcstoken\tempA} \doifelse{\temp}{+}{Y}{N} \meaning\temp \crlf
+\edef\temp{\expandcstoken\tempB} \doifelse{\temp}{X}{Y}{N} \meaning\temp \crlf
+\edef\temp{\expandcstoken\tempC} \doifelse{\temp}{$}{Y}{N} \meaning\temp \par
+
+\doifelse{\expandcstoken\tempA}{+}{Y}{N}
+\doifelse{\expandcstoken\tempB}{X}{Y}{N}
+\doifelse{\expandcstoken\tempC}{$}{Y}{N} \par
+\stopbuffer
+
+\typebuffer
+
+The meaning of the \type {\let} macros shows that we have a shortcut to a
+character with (in this case) catcode letter, other (here \quote {other
+character} gets abbreviated to \quote {character}), math shift etc.
+
+\start \tttf \getbuffer \stop
+
+Here we use the \CONTEXT\ macro \type {\doifelse} which can be implemented in
+different ways, but the only property relevant to the user is that the expanded
+content of the two arguments is compared.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {expand}}]
+
+Normally a protected macro will not be expanded inside for instance an \type
+{\edef} but there is a way out: \footnote {This primitive is dedicated to Hans vd
+Meer who was playing with the unprotected version of \type {\doifelse} and
+wondered about the reason for it not being expandable in the first place.}
+
+\startbuffer
+\edef\temp       {\doifelse{a}{b}{c}{d}} \meaning\temp \crlf
+\edef\temp{\expand\doifelse{a}{b}{c}{d}} \meaning\temp
+\stopbuffer
+
+\typebuffer
+
+In the second case, the \type {\doifelse} command {\em is} expanded, but keep in mind
+that this only makes sense when the body of such a macro is expandable. This is the
+case in \CONTEXT\ \LMTX, but not in \MKIV.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {ignorespaces}}]
+
+This traditional \TEX\ primitive signals the scanner to ignore the following
+spaces, if any. We mention it because we show a companion in the next section.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {ignorepars}}]
+
+This is a variant of \type {\ignorespaces}: following spaces {\em and} \type
+{\par} equivalent tokens are ignored, so for instance:
+
+\startbuffer
+one + \ignorepars
+
+two = \ignorepars \par
+three
+\stopbuffer
+
+\typebuffer
+
+renders as: \inlinebuffer. Traditionally \TEX\ has been sensitive to \type {\par}
+tokens in some of its building blocks. This has to do with the fact that it could
+indicate a runaway argument which in the times of slower machines and terminals
+was best to catch early. In \LUAMETATEX\ we no longer have long macros and the
+mechanisms that are sensitive can be told to accept \type {\par} tokens (and
+\CONTEXT\ set them such that this is the case).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ignorearguments}}]
+
+This primitive will quit argument scanning and start expansion of the body of a
+macro. The number of grabbed arguments can be tested as follows:
+
+\startbuffer
+\def\MyMacro[#1][#2][#3]%
+ {\ifarguments zero\or one\or two\or three \else hm\fi}
+
+\MyMacro          \ignorearguments \quad
+\MyMacro       [1]\ignorearguments \quad
+\MyMacro    [1][2]\ignorearguments \quad
+\MyMacro [1][2][3]\ignorearguments \crlf
+\stopbuffer
+
+\typebuffer
+
+{\getbuffer}
+
+{\em Todo: explain optional delimiters.}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {lastarguments}}]
+
+\startbuffer
+\def\MyMacro    #1{\the\lastarguments (#1) }          \MyMacro{1}       \crlf
+\def\MyMacro  #1#2{\the\lastarguments (#1) (#2)}      \MyMacro{1}{2}    \crlf
+\def\MyMacro#1#2#3{\the\lastarguments (#1) (#2) (#3)} \MyMacro{1}{2}{3} \crlf
+
+\def\MyMacro    #1{(#1)           \the\lastarguments} \MyMacro{1}       \crlf
+\def\MyMacro  #1#2{(#1) (#2)      \the\lastarguments} \MyMacro{1}{2}    \crlf
+\def\MyMacro#1#2#3{(#1) (#2) (#3) \the\lastarguments} \MyMacro{1}{2}{3} \crlf
+\stopbuffer
+
+\typebuffer
+
+The value of \type {\lastarguments} can only be trusted in the expansion until
+another macro is seen and expanded. For instance in these examples, as soon as a
+character (like the left parenthesis) is seen, horizontal mode is entered and
+\type {\everypar} is expanded which in turn can involve macros. You can see that
+in the second block (that is: unless we changed \type {\everypar} in the
+meantime).
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {scantokens}}]
+
+Just forget about this \ETEX\ primnitive, just take the one in the next section.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {scantextokens}}]
+
+This primitive scans the input as if it comes from a file. In the next examples
+the \type {\detokenize} primitive turns tokenized code into verbatim code that is
+similar to what is read from a file.
+
+\startbuffer
+\edef\whatever{\detokenize{This is {\bf bold} and this is not.}}
+\detokenize   {This is {\bf bold} and this is not.}\crlf
+\scantextokens{This is {\bf bold} and this is not.}\crlf
+\scantextokens{\whatever}\crlf
+\scantextokens\expandafter{\whatever}
+\stopbuffer
+
+\typebuffer
+
+This primitive does not have the end|-|of|-|file side effects of its precursor
+\type {\scantokens}.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {number}}]
+
+This \TEX\ primitive serializes the next token into a number, assuming that it
+is indeed a number, like
+
+\starttyping
+\number`A
+\number65
+\number\scratchcounter
+\stoptyping
+
+For counters and such the \type {\the} primitive does the same, but when you're
+not sure if what follows is a verbose number or (for instance) a counter the
+\type {\number} primitive is a safer bet, because \type {\the 65} will not work.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {string}}]
+
+We mention this original primitive because of the one in the next section. It
+expands the next token or control sequence as if it was just entered, so normally
+a control sequence becomes a backslash followed by characters and a space.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {csstring}}]
+
+This primitive returns the name of the control sequence given without the leading
+escape character (normally a backslash). Of course you could strip that character
+with a simple helper but this is more natural.
+
+\startbuffer
+\csstring\mymacro
+\stopbuffer
+
+\typebuffer
+
+We get the name, not the meaning: {\tt \inlinebuffer}.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {unexpanded}}]
+
+This is an \ETEX\ enhancement. The content will not be expanded in a context
+where expansion is happening, like in an \type {\edef}. In \CONTEXT\ you need to
+use \type {\normalunexpanded} because we already had a macro with that name.
+
+\startbuffer
+\def\A{!}
+\def\B{?}
+
+\edef\C{\A\B}                    \meaning\C \crlf
+\edef\C{\normalunexpanded{\A}\B} \meaning\C \crlf
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {detokenize}}]
+
+This \ETEX\ primitive turns the content of the provides list will become
+characters, kind of verbatim.
+
+\startbuffer
+\expandafter\let\expandafter\temp\detokenize{1} \meaning\temp \crlf
+\expandafter\let\expandafter\temp\detokenize{A} \meaning\temp \crlf
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {expanded}}]
+
+This primitive complements the two expansion related primitives mentioned in the
+previous two sections. This time the content will be expanded and then pushed
+back into the input. Protected macros will not be expanded, so you can use this
+primitive to expand the arguments in a call. In \CONTEXT\ you need to use \type
+{\normalexpanded} because we already had a macro with that name. We give some
+examples:
+
+\startbuffer
+\def\A{!}
+                \def\B#1{\string#1}                          \B{\A}  \crlf
+                \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}} \crlf
+\normalprotected\def\B#1{\string#1}                          \B{\A}  \crlf
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {immediateassignment}}]
+
+Assignments are not expandable which means that you cannot define fully
+expandable macros that have assignments. But, there is a way out of this:
+
+\startbuffer
+\scratchcounter = 10
+\edef\whatever{%
+    (\the\scratchcounter)
+    \immediateassignment\scratchcounter\numexpr\scratchcounter+10\relax
+    \immediateassignment\advance\scratchcounter -5
+    (\the\scratchcounter)
+}
+\meaning\whatever
+\stopbuffer
+
+\typebuffer
+
+Don't expect miracles: you can't mix|-|in content or unexpandable tokens as they
+will either show up or quit the scanning.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {immediateassigned}}]
+
+This is the multi|-|token variant of the primitive mentioned in the previous
+section.
+
+\startbuffer
+\scratchcounter = 10
+\edef\whatever{%
+    (\the\scratchcounter)
+    \immediateassigned{
+        \scratchcounter\numexpr\scratchcounter+10\relax
+        \advance\scratchcounter -5
+    }%
+    (\the\scratchcounter)
+}
+\meaning\whatever
+\stopbuffer
+
+\typebuffer
+
+The results are the same as in the previous section:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {if}}]
+
+This traditional \TEX\ conditional checks if two character codes are the same. In
+order to understand unexpanded results it is good to know that internally \TEX\
+groups primitives in a way that serves the implementation. Each primitive has a
+command code and a character code, but only for real characters the name
+character code makes sense. This condition only really tests for character codes
+when we have a character, in all other cases, the result is true.
+
+\startbuffer
+\def\A{A}\def\B{B} \chardef\C=`C \chardef\D=`D \def\AA{AA}
+
+[\if AA   YES \else NOP \fi] [\if AB   YES \else NOP \fi]
+[\if \A\B YES \else NOP \fi] [\if \A\A YES \else NOP \fi]
+[\if \C\D YES \else NOP \fi] [\if \C\C YES \else NOP \fi]
+[\if \count\dimen YES \else NOP \fi] [\if \AA\A YES \else NOP \fi]
+
+\stopbuffer
+
+\typebuffer
+
+The last example demonstrates that the tokens get expanded, which is why
+we get the extra \type {A}:
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifcat}}]
+
+Another traditional \TEX\ primitive: what happens with what gets read in depends
+on the catcode of a character, think of characters marked to start math mode, or
+alphabetic characters (letters) versus other characters (like punctuation).
+
+\startbuffer
+\def\A{A}\def\B{,} \chardef\C=`C \chardef\D=`, \def\AA{AA}
+
+[\ifcat $!   YES \else NOP \fi] [\ifcat ()   YES \else NOP \fi]
+[\ifcat AA   YES \else NOP \fi] [\ifcat AB   YES \else NOP \fi]
+[\ifcat \A\B YES \else NOP \fi] [\ifcat \A\A YES \else NOP \fi]
+[\ifcat \C\D YES \else NOP \fi] [\ifcat \C\C YES \else NOP \fi]
+[\ifcat \count\dimen YES \else NOP \fi] [\ifcat \AA\A YES \else NOP \fi]
+\stopbuffer
+
+\typebuffer
+
+Close reading is needed here:
+
+{\getbuffer}
+
+This traditional \TEX\ condition as a well as the one in the previous section are
+hardly used in \CONTEXT, if only because they expand what follows and we seldom
+need to compare characters.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifnum}}]
+
+This is a frequently used conditional: it compares two numbers where a number is
+anything that can be seen as such.
+
+\startbuffer
+\scratchcounter=65 \chardef\A=65
+
+\ifnum65=`A              YES \else NOP\fi
+\ifnum\scratchcounter=65 YES \else NOP\fi
+\ifnum\scratchcounter=\A YES \else NOP\fi
+\stopbuffer
+
+\typebuffer
+
+Unless a number is an unexpandable token it ends with a space or \type {\relax},
+so when you end up in the true branch, you'd better check if \TEX\ could
+determine where the number ends.
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifdim}}]
+
+Dimensions can be compared with this traditional \TEX\ primitive.
+
+\startbuffer
+\scratchdimen=1pt \scratchcounter=65536
+
+\ifdim\scratchdimen=\scratchcounter sp YES \else NOP\fi
+\ifdim\scratchdimen=1               pt YES \else NOP\fi
+\stopbuffer
+
+\typebuffer
+
+The units are mandate:
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifodd}}]
+
+One reason for this condition to be around is that in a double sided layout we
+need test for being on an odd or even page. It scans for a number the same was
+as other primitives,
+
+\startbuffer
+\ifodd65 YES \else NO\fi &
+\ifodd`B YES \else NO\fi .
+\stopbuffer
+
+\typebuffer
+
+So: {\inlinebuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifvmode}}]
+
+This traditional conditional checks we are in (internal) vertical mode.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifhmode}}]
+
+This traditional conditional checks we are in (restricted) horizontal mode.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifmmode}}]
+
+This traditional conditional checks we are in (inline or display) math mode mode.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifinner}}]
+
+This traditional one can be confusing. It is true when we are in restricted
+horizontal mode (a box), internal vertical mode (a box), or inline math mode.
+
+\startbuffer
+test \ifhmode \ifinner INNER\fi HMODE\fi\crlf
+\hbox{test \ifhmode \ifinner INNER \fi HMODE\fi} \crlf
+
+\ifvmode \ifinner INNER\fi VMODE \fi\crlf
+\vbox{\ifvmode \ifinner INNER \fi VMODE\fi} \crlf
+\vbox{\ifinner INNER \ifvmode VMODE \fi \fi} \crlf
+\stopbuffer
+
+\typebuffer
+
+Watch the last line: because we typeset \type {INNER} we enter horizontal mode:
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifvoid}}]
+
+This traditional conditional checks if a given box register or internal box
+variable has any content.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifhbox}}]
+
+This traditional conditional checks if a given box register or internal box
+variable represents a horizontal box,
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifvbox}}]
+
+This traditional conditional checks if a given box register or internal box
+variable represents a vertical box,
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifx}}]
+
+We use this traditional \TEX\ conditional a lot in \CONTEXT. Contrary to \type {\if}
+the two tokens that are compared are not expanded. This makes it possible to compare
+the meaning of two macros. Depending on the need, these macros can have their content
+expanded or not. A different number of parameters results in false.
+
+Control sequences are identical when they have the same command code and
+character code. Because a \type {\let} macro is just a reference, both let macros
+are the same and equal to \type {\relax}:
+
+\starttyping
+\let\one\relax \let\two\relax
+\stoptyping
+
+The same is true for other definitions that result in the same (primitive) or
+meaning encoded in the character field (think of \type {\chardef}s and so).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifeof}}]
+
+This traditional conditional checks if current pointer into the the file bound to
+the given index is past the end of file. The read and write channels are not
+really used in \CONTEXT: in \MKII\ we only had one file for all multi|-|pass
+data, and in \MKIV\ all file related stuff is dealt with in \LUATEX.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {iftrue}}]
+
+Here we have a traditional \TEX\ conditional that is always true (therefore the
+same is true for any macro that is \type {\let} to this primitive).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {iffalse}}]
+
+Here we have a traditional \TEX\ conditional that is always false (therefore the
+same is true for any macro that is \type {\let} to this primitive).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifcase}}]
+
+This numeric \TEX\ conditional takes a counter (literal, register, shortcut to a
+character, internal quantity) and goes to the branch that matches.
+
+\startbuffer
+\ifcase 3 zero\or one\or two\or three\or four\else five or more\fi
+\stopbuffer
+
+\typebuffer
+
+Indeed: \inlinebuffer\ equals three. In later sections we will see some
+\LUAMETATEX\ primitives that behave like an \type {\ifcase}.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifdefined}}]
+
+In traditional \TEX\ checking for a macro to exist was a bit tricky and therefore
+\ETEX\ introduced a convenient conditional. We can do this:
+
+\starttyping
+\ifx\MyMacro\undefined ... \else ... \fi
+\stoptyping
+
+but that assumes that \type {\undefined} is indeed undefined. Another test often
+seen was this:
+
+\starttyping
+\expandafter\ifx\csname MyMacro\endcsname\relax ... \else ... \fi
+\stoptyping
+
+Instead of comparing with \type {\undefined} we need to check with \type {\relax}
+because the control sequence is defined when not yet present and defaults to
+\type {\relax}. This is not pretty.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {ifcsname}}]
+
+This is an \ETEX\ conditional that complements the one on the previous section:
+
+\starttyping
+\expandafter\ifx\csname MyMacro\endcsname\relax ... \else ... \fi
+            \ifcsname   MyMacro\endcsname       ... \else ... \fi
+\stoptyping
+
+Here the first one has the side effect of defining the macro and defaulting it to
+\type {\relax}, while the second one doesn't do that. Juts think of checking a
+few million different names: the first one will deplete the hash table and
+probably string space too.
+
+In \LUAMETATEX\ the construction stops when there is no letter or other character
+seen (\TEX\ expands on the go so expandable macros are dealt with). Instead of an
+error message, the match is simply false and all tokens till the \type
+{\endcsname} are gobbled.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {iffontchar}}]
+
+This is an \ETEX\ conditional. It takes a font identifier and a character number.
+In modern fonts simply checking could not be enough because complex font features
+can swap in other ones and their index can be anything. Also, a font mechanism
+can provide fallback fonts and characters, so don't rely on this one too much. It
+just reports true when the font passed to the frontend has a slot filled.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {ifincsname}}]
+
+This conditional is sort of obsolete and can be used to check if we're inside a
+\type {\csname} or \type {\ifcsname} construction. It's not used in \CONTEXT.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifabsnum}}]
+
+This test will negate negative numbers before comparison, as in:
+
+\startbuffer
+\def\TestA#1{\ifnum   #1<100 too small\orelse\ifnum   #1>200 too large\else okay\fi}
+\def\TestB#1{\ifabsnum#1<100 too small\orelse\ifabsnum#1>200 too large\else okay\fi}
+
+\TestA {10}\quad\TestA {150}\quad\TestA {210}\crlf
+\TestB {10}\quad\TestB {150}\quad\TestB {210}\crlf
+\TestB{-10}\quad\TestB{-150}\quad\TestB{-210}\crlf
+\stopbuffer
+
+\typebuffer
+
+Here we get the same result each time:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifabsdim}}]
+
+This test will negate negative dimensions before comparison, as in:
+
+\startbuffer
+\def\TestA#1{\ifdim   #1<2pt too small\orelse\ifdim   #1>4pt too large\else okay\fi}
+\def\TestB#1{\ifabsdim#1<2pt too small\orelse\ifabsdim#1>4pt too large\else okay\fi}
+
+\TestA {1pt}\quad\TestA {3pt}\quad\TestA {5pt}\crlf
+\TestB {1pt}\quad\TestB {3pt}\quad\TestB {5pt}\crlf
+\TestB{-1pt}\quad\TestB{-3pt}\quad\TestB{-5pt}\crlf
+\stopbuffer
+
+\typebuffer
+
+So we get this:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifchknum}}]
+
+In \CONTEXT\ there are quite some cases where a variable can have a number or a
+keyword indicating a symbolic name of a number or maybe even some special
+treatment. Checking if a valid number is given is possible to some extend, but a
+native checker makes much sense too. So here is one:
+
+\startbuffer
+\ifchknum oeps\or okay\else error\fi\quad
+\ifchknum 12  \or okay\else error\fi\quad
+\ifchknum 12pt\or okay\else error\fi
+\stopbuffer
+
+\typebuffer
+
+The result is as expected:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifchkdim}}]
+
+A variant on the checker in the previous section is a dimension checker:
+
+\startbuffer
+\ifchkdim oeps\or okay\else error\fi\quad
+\ifchkdim 12  \or okay\else error\fi\quad
+\ifchkdim 12pt\or okay\else error\fi
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifcmpnum}}]
+
+This conditional compares two numbers and the resulting \type {\ifcase} reflects
+their relation:
+
+\startbuffer
+[1 2 : \ifcmpnum 1 2 less\or equal\or more\fi]\quad
+[1 1 : \ifcmpnum 1 1 less\or equal\or more\fi]\quad
+[2 1 : \ifcmpnum 2 1 less\or equal\or more\fi]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifcmpdim}}]
+
+This conditional compares two dimensions and the resulting \type {\ifcase}
+reflects their relation:
+
+\startbuffer
+[1pt 2pt : \ifcmpdim 1pt 2pt less\or equal\or more\fi]\quad
+[1pt 1pt : \ifcmpdim 1pt 1pt less\or equal\or more\fi]\quad
+[2pt 1pt : \ifcmpdim 2pt 1pt less\or equal\or more\fi]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifnumval}}]
+
+This conditional is a variant on \type {\ifchknum}. This time we get
+some more detail about the value:
+
+\startbuffer
+[-12  : \ifnumval  -12\or negative\or zero\or positive\else error\fi]\quad
+[0    : \ifnumval    0\or negative\or zero\or positive\else error\fi]\quad
+[12   : \ifnumval   12\or negative\or zero\or positive\else error\fi]\quad
+[oeps : \ifnumval oeps\or negative\or zero\or positive\else error\fi]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifdimval}}]
+
+This conditional is a variant on \type {\ifchkdim} and provides some more
+detailed information about the value:
+
+\startbuffer
+[-12pt : \ifdimval-12pt\or negative\or zero\or positive\else error\fi]\quad
+[0pt   : \ifdimval  0pt\or negative\or zero\or positive\else error\fi]\quad
+[12pt  : \ifdimval 12pt\or negative\or zero\or positive\else error\fi]\quad
+[oeps  : \ifdimval oeps\or negative\or zero\or positive\else error\fi]
+\stopbuffer
+
+\typebuffer
+
+This gives:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {iftok}}]
+
+When you want to compare two arguments, the usual way to do this is the
+following:
+
+\starttyping
+\edef\tempA{#1}
+\edef\tempb{#2}
+\ifx\tempA\tempB
+    the same
+\else
+    different
+\fi
+\stoptyping
+
+This works quite well but the fact that we need to define two macros can be
+considered a bit of a nuisance. It also makes macros that use this method to be
+not so called \quote {fully expandable}. The next one avoids both issues:
+
+\starttyping
+\iftok{#1}{#2}
+    the same
+\else
+    different
+\fi
+\stoptyping
+
+Instead of direct list you can also pass registers, so given:
+
+\startbuffer[a]
+\scratchtoks{a}%
+\toks0{a}%
+\stopbuffer
+
+\typebuffer[a]
+
+This:
+
+\startbuffer[b]
+\iftok 0 \scratchtoks          Y\else N\fi\space
+\iftok{a}\scratchtoks          Y\else N\fi\space
+\iftok\scratchtoks\scratchtoks Y\else N\fi
+\stopbuffer
+
+\typebuffer[b]
+
+{\getbuffer[a]gives: \inlinebuffer[b].}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifcstok}}]
+
+A variant on the primitive mentioned in the previous section is one that
+operates on lists and macros:
+
+\startbuffer[a]
+\def\a{a} \def\b{b} \def\c{a}
+\stopbuffer
+
+\typebuffer[a]
+
+\startbuffer[b]
+\ifcstok\a\b   Y\else N\fi\space
+\ifcstok\a\c   Y\else N\fi\space
+\ifcstok{\a}\c Y\else N\fi\space
+\ifcstok{a}\c  Y\else N\fi
+\stopbuffer
+
+This:
+
+\typebuffer[b]
+
+{\getbuffer[a]will give us: \inlinebuffer[b].}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifcondition}}]
+
+The conditionals in \TEX\ are hard coded as primitives and although it might
+look like \type {\newif} creates one, it actually just defined three macros.
+
+\startbuffer
+\newif\ifMyTest
+\meaning\MyTesttrue  \crlf
+\meaning\MyTestfalse \crlf
+\meaning\ifMyTest    \crlf \MyTesttrue
+\meaning\ifMyTest    \crlf
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+This means that when you say:
+
+\starttyping
+\ifMytest ... \else ... \fi
+\stoptyping
+
+You actually have one of:
+
+\starttyping
+\iftrue  ... \else ... \fi
+\iffalse ... \else ... \fi
+\stoptyping
+
+and because these are proper conditions nesting them like:
+
+\starttyping
+\ifnum\scratchcounter > 0 \ifMyTest A\else B\fi \fi
+\stoptyping
+
+will work out well too. This is not true for macros, so for instance:
+
+\starttyping
+\scratchcounter = 1
+\unexpanded\def\ifMyTest{\iftrue}
+\ifnum\scratchcounter > 0 \ifMyTest A\else B\fi \fi
+\stoptyping
+
+will make a run fail with an error (or simply loop forever, depending on your
+code). This is where \type {\ifcondition} enters the picture:
+
+\starttyping
+\def\MyTest{\iftrue} \scratchcounter0
+\ifnum\scratchcounter > 0
+    \ifcondition\MyTest A\else B\fi
+\else
+    x
+\fi
+\stoptyping
+
+This primitive is seen as a proper condition when \TEX\ is in \quotation {fast
+skipping unused branches} mode but when it is expanding a branch, it checks if
+the next expanded token is a proper tests and if so, it deals with that test,
+otherwise it fails. The main condition here is that the \type {\MyTest} macro
+expands to a proper true or false test, so, a definition like:
+
+\starttyping
+\def\MyTest{\ifnum\scratchcounter<10 }
+\stoptyping
+
+is also okay. Now, is that neat or not?
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {iffrozen}}]
+
+This conditional checks if a control sequence is frozen:
+
+\starttyping
+is \iffrozen\MyMacro \else not \fi frozen
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifprotected}}]
+
+This conditional checks if a control sequence is protected:
+
+\starttyping
+is \ifprotected\MyMacro \else not \fi protected
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifusercmd}}]
+
+This conditional checks if a control sequence is not one of the primitives:
+
+\starttyping
+is \ifusercmd\MyMacro \else not \fi a primitive
+\stoptyping
+
+It is not always possible to determine this but it should work okay for regular
+macros, register allocations and character definitions.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifempty}}]
+
+This conditional checks if a control sequence is empty:
+
+\starttyping
+is \ifempty\MyMacro \else not \fi empty
+\stoptyping
+
+It is basically a shortcut of:
+
+\starttyping
+is \ifx\MyMacro\empty \else not \fi empty
+\stoptyping
+
+with:
+
+\starttyping
+\def\empty{}
+\stoptyping
+
+Of course this is not empty at all:
+
+\starttyping
+\def\notempty#1{}
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifboolean}}]
+
+This tests a number (register or equivalent) and any nonzero value represents
+\type {true}, which is nicer than using an \type {\unless \ifcase}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifmathparameter}}]
+
+This is an \type {\ifcase} where the value depends on if the given math parameter
+is zero, (\type {0}), set (\type {1}), or unset (\type {2}).
+
+\starttyping
+\ifmathparameter\Umathpunctclosespacing\displaystyle
+    zero    \or
+    nonzero \or
+    unset   \fi
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifmathstyle}}]
+
+This is a variant of \type {\ifcase} were the number is one of the seven possible
+styles: display, text, cramped text, script, cramped script, script script,
+cramped script script.
+
+\starttyping
+\ifmathstyle
+  display
+\or
+  text
+\or
+  cramped text
+\else
+  normally smaller than text
+\fi
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifarguments}}]
+
+This is a variant of \type {\ifcase} were the selector is the number of arguments
+picked up. For example:
+
+\startbuffer
+\def\MyMacro#1#2#3{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}
+\def\MyMacro#1#0#3{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}
+\def\MyMacro#1#-#2{\ifarguments\0\or1\or2\or3\else ?\fi} \MyMacro{A}{B}{C}\crlf
+\stopbuffer
+
+\typebuffer
+
+Watch the non counted, ignored, argument in the last case. Normally this test will
+be used in combination with \type {\ignorearguments}.
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifhastok}}]
+
+This conditional looks for occurrences in token lists where each argument has to
+be a proper list.
+
+\startbuffer
+\def\scratchtoks{x}
+
+\ifhastoks{yz}         {xyz} Y\else N\fi\quad
+\ifhastoks\scratchtoks {xyz} Y\else N\fi
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifhastoks}}]
+
+This test compares two token lists. When a macro is passed it's meaning
+gets used.
+
+\startbuffer
+\def\x  {x}
+\def\xyz{xyz}
+
+(\ifhastoks  {x}  {xyz}Y\else N\fi)\quad
+(\ifhastoks {\x}  {xyz}Y\else N\fi)\quad
+(\ifhastoks  \x   {xyz}Y\else N\fi)\quad
+(\ifhastoks  {y}  {xyz}Y\else N\fi)\quad
+(\ifhastoks {yz}  {xyz}Y\else N\fi)\quad
+(\ifhastoks {yz} {\xyz}Y\else N\fi)
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {ifhasxtoks}}]
+
+This primitive is like the one in the previous section but this time the
+given lists are expanded.
+
+\startbuffer
+\def\x  {x}
+\def\xyz{\x yz}
+
+(\ifhasxtoks  {x}  {xyz}Y\else N\fi)\quad
+(\ifhasxtoks {\x}  {xyz}Y\else N\fi)\quad
+(\ifhastoks   \x   {xyz}Y\else N\fi)\quad
+(\ifhasxtoks  {y}  {xyz}Y\else N\fi)\quad
+(\ifhasxtoks {yz}  {xyz}Y\else N\fi)\quad
+(\ifhasxtoks {yz} {\xyz}Y\else N\fi)
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+This primitive has some special properties.
+
+\startbuffer
+\edef\+{\expandtoken 9 `+}
+
+\ifhasxtoks {xy}   {xyz}Y\else N\fi\quad
+\ifhasxtoks {x\+y} {xyz}Y\else N\fi
+\stopbuffer
+
+\typebuffer
+
+Here the first argument has a token that has category code \quote {ignore} which
+means that such a character will be skipped when seen. So the result is:
+
+{\getbuffer}
+
+This permits checks like these:
+
+\startbuffer
+\edef\,{\expandtoken 9 `,}
+
+\ifhasxtoks{\,x\,} {,x,y,z,}Y\else N\fi\quad
+\ifhasxtoks{\,y\,} {,x,y,z,}Y\else N\fi\quad
+\ifhasxtoks{\,z\,} {,x,y,z,}Y\else N\fi\quad
+\ifhasxtoks{\,x\,}  {,xy,z,}Y\else N\fi
+\stopbuffer
+
+\typebuffer
+
+I admit that it needs a bit of a twisted mind to come up with this, but it works
+ok:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {else}}]
+
+This traditional primitive is part of the condition testing mechanism. When a
+condition matches, \TEX\ will continue till it sees an \type {\else} or \type
+{\or} or \type {\orelse} (to be discussed later). It will then do a fast skipping
+pass till it sees an \type {\fi}.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {or}}]
+
+This traditional primitive is part of the condition testing mechanism and relates
+to an \type {\ifcase} test (or a similar test to be introduced in later
+sections). Depending on the value, \TEX\ will do a fast scanning till the right
+\type {\or} is seen, then it will continue expanding till it sees a \type {\or}
+or \type {\else} or \type {\orelse} (to be discussed later). It will then do a
+fast skipping pass till it sees an \type {\fi}.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {fi}}]
+
+This traditional primitive is part of the condition testing mechanism and ends a
+test. So, we have:
+
+\starttyping
+\ifsomething ... \else ... \fi
+\ifsomething ... \or ... \or ... \else ... \fi
+\ifsomething ... \orelse \ifsometing  ... \else ... \fi
+\ifsomething ... \or ... \orelse \ifsometing  ... \else ... \fi
+\stoptyping
+
+The \type {\orelse} is new in \LUAMETATEX\ and a continuation like we find in
+other programming languages (see later section).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {unless}}]
+
+This \ETEX\ prefix will negate the test (when applicable).
+
+\starttyping
+       \ifx\one\two YES\else NO\fi
+\unless\ifx\one\two NO\else YES\fi
+\stoptyping
+
+This primitive is hardly used in \CONTEXT\ and we probably could get rid of these
+few cases.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {orelse}}]
+
+This primitive provides a convenient way to flatten your conditional tests. So
+instead of
+
+\starttyping
+\ifnum\scratchcounter<-10
+    too small
+\else\ifnum\scratchcounter>10
+    too large
+\else
+    just right
+\fi\fi
+\stoptyping
+
+You can say this:
+
+\starttyping
+\ifnum\scratchcounter<-10
+    too small
+\orelse\ifnum\scratchcounter>10
+    too large
+\else
+    just right
+\fi
+\stoptyping
+
+You can mix tests and even the case variants will work in most cases \footnote {I
+just play safe because there are corner cases that might not work yet.}
+
+\starttyping
+\ifcase\scratchcounter          zero
+\or                             one
+\or                             two
+\orelse\ifnum\scratchcounter<10 less than ten
+\else                           ten or more
+\fi
+\stoptyping
+
+Performance wise there are no real benefits although in principle there is a bit
+less housekeeping involved than with nested checks. However you might like this:
+
+\starttyping
+\ifnum\scratchcounter<-10
+    \expandafter\toosmall
+\orelse\ifnum\scratchcounter>10
+    \expandafter\toolarge
+\else
+    \expandafter\justright
+\fi
+\stoptyping
+
+over:
+
+\starttyping
+\ifnum\scratchcounter<-10
+    \expandafter\toosmall
+\else\ifnum\scratchcounter>10
+    \expandafter\expandafter\expandafter\toolarge
+\else
+    \expandafter\expandafter\expandafter\justright
+\fi\fi
+\stoptyping
+
+or the more \CONTEXT\ specific:
+
+\starttyping
+\ifnum\scratchcounter<-10
+    \expandafter\toosmall
+\else\ifnum\scratchcounter>10
+    \doubleexpandafter\toolarge
+\else
+    \doubleexpandafter\justright
+\fi\fi
+\stoptyping
+
+But then, some \TEX ies like complex and obscure code and throwing away working
+old code that took ages to perfect and get working and also showed that one
+masters \TEX\ might hurt.
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {futurelet}}]
+
+The original \TEX\ primitive \type {\futurelet} can be used to create an alias to a next token,
+push it back into the input and then expand a given token.
+
+\startbuffer
+\let\MySpecialToken[
+\def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
+\futurelet\NextToken\DoWhatever [A]\crlf
+\futurelet\NextToken\DoWhatever (A)
+\stopbuffer
+
+\typebuffer
+
+This is typically the kind of primitive that most users will never use because it
+expects a sane follow up handler (here \type {\DoWhatever}) and therefore is
+related to user interfacing.
+
+{\getbuffer}
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {futuredef}}]
+
+We elaborate on the example of using \type {\futurelet} in the previous section.
+Compare that one with the next:
+
+\startbuffer
+\def\MySpecialToken{[}
+\def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
+\futurelet\NextToken\DoWhatever [A]\crlf
+\futurelet\NextToken\DoWhatever (A)
+\stopbuffer
+
+\typebuffer
+
+This time we get:
+
+{\getbuffer}
+
+It is for that reason that we now also have \type {\futuredef}:
+
+\startbuffer
+\def\MySpecialToken{[}
+\def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
+\futuredef\NextToken\DoWhatever [A]\crlf
+\futuredef\NextToken\DoWhatever (A)
+\stopbuffer
+
+\typebuffer
+
+So we're back to what we want:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {letcharcode}}]
+
+Assigning a meaning to an active character can sometimes be a bit cumbersome;
+think of using some documented uppercase magic that one tends to forget as it's
+used only a few times and then never looked at again. So we have this:
+
+\startbuffer
+{\letcharcode 65 1 \catcode 65 13 A : \meaning A}\crlf
+{\letcharcode 65 2 \catcode 65 13 A : \meaning A}\crlf
+\stopbuffer
+
+\typebuffer
+
+here we define \type {A} as an active charcter with meaning \type {1} in the
+first line and \type {2} in the second.
+
+{\getbuffer}
+
+Normally one will assign a control sequence:
+
+\startbuffer
+{\letcharcode 66 \bf \catcode 66 13 {B bold}: \meaning B}\crlf
+{\letcharcode 73 \it \catcode 73 13 {I italic}: \meaning I}\crlf
+\stopbuffer
+
+\typebuffer
+
+Of course \type {\bf} and \type {\it} are \CONTEXT\ specific commands:
+
+{\getbuffer}
+
+\stopnewprimitive
+
+\startoldprimitive[title={\tex {global}}]
+
+This is one of the original prefixes that can be used when we define a macro of
+change some register.
+
+\starttyping
+\bgroup
+       \def\MyMacroA{a}
+\global\def\MyMacroB{a}
+      \gdef\MyMacroC{a}
+\egroup
+\stoptyping
+
+The macro defined in the first line is forgotten when the groups is left. The
+second and third definition are both global and these definitions are retained.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {long}}]
+
+This original prefix gave the macro being defined the property that it could not
+have \type {\par} (or the often equivalent empty lines) in its arguments. It was
+mostly a protection against a forgotten right curly brace, resulting in a so called
+run|-|away argument. That mattered on a paper terminal or slow system where such a
+situation should be catched early. In \LUATEX\ it was already optional, and in
+\LUAMETATEX\ we dropped this feature completely (so that we could introduce others).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {outer}}]
+
+An outer macro is one that can only be used at the outer level. This property is
+no longer supported. Like \type {\long}, the \type {\outer} prefix is now an
+no|-|op (and we don't expect this to have unfortunate side effects).
+
+\stopoldprimitive
+
+\startoldprimitive[title={\tex {protected}}]
+
+A protected macro is one that doesn't get expanded unless it is time to do so.
+For instance, inside an \type {\edef} it just stays what it is. It often makes
+sense to pass macros as|-|is to (multi|-|pass) file (for tables of contents).
+
+In \CONTEXT\ we use either \type {\normalprotected} or \type {\unexpanded}
+because the later was the command we used to achieve the same results before
+\ETEX\ introduced this protection primitive.
+
+\stopoldprimitive
+
+\startnewprimitive[title={\tex {frozen}}]
+
+You can define a macro as being frozen:
+
+\starttyping
+\frozen\def\MyMacro{...}
+\stoptyping
+
+When you redefine this macro you get an error:
+
+\starttyping
+! You can't redefine a frozen macro.
+\stoptyping
+
+This is a prefix like \type {\global} and it can be combined with other prefixes.
+\footnote {The \type {\outer} and \type {\long} prefixes are no|-|ops in
+\LUAMETATEX\ and \LUATEX\ can be configured to ignore them.}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {letfrozen}}]
+
+You can explicitly freeze an unfrozen macro:
+
+\starttyping
+\def\MyMacro{...}
+\letfrozen\MyMacro
+\stoptyping
+
+A redefinition will now give:
+
+\starttyping
+! You can't redefine a frozen macro.
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {unletfrozen}}]
+
+A frozen macro cannot be redefined: you get an error. But as nothing in \TEX\ is set
+in stone, you can do this:
+
+\starttyping
+\frozen\def\MyMacro{...}
+\unletfrozen\MyMacro
+\stoptyping
+
+and \type {\MyMacro} is no longer protected from overloading. It is still
+undecided to what extend \CONTEXT\ will use this feature.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {letprotected}}]
+
+Say that you have these definitions:
+
+\startbuffer
+                 \def  \MyMacroA{alpha}
+\normalprotected \def  \MyMacroB{beta}
+                 \edef \MyMacroC{\MyMacroA\MyMacroB}
+\letprotected          \MyMacroA
+                 \edef \MyMacroD{\MyMacroA\MyMacroB}
+\meaning               \MyMacroC\crlf
+\meaning               \MyMacroD
+\stopbuffer
+
+\typebuffer
+
+We use \type {\normalprotected} because when the \ETEX\ \type {\protected}
+primitive showed up we already had that name in use. The typeset meaning
+in this example is:
+
+{\tttf \getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {unletprotected}}]
+
+The complementary operation of \type {\letprotected} can be used to unprotect
+a macro, so that it gets expandable.
+
+\startbuffer
+                 \def  \MyMacroA{alpha}
+\normalprotected \def  \MyMacroB{beta}
+                 \edef \MyMacroC{\MyMacroA\MyMacroB}
+\unletprotected        \MyMacroB
+                 \edef \MyMacroD{\MyMacroA\MyMacroB}
+\meaning               \MyMacroC\crlf
+\meaning               \MyMacroD
+\stopbuffer
+
+\typebuffer
+
+Compare this with the example in the previous section:
+
+{\tttf \getbuffer}
+
+\stopnewprimitive
+
+% \startnewprimitive[title={\tex {letdatacode}}]
+%   {\em Todo.}
+% \stopnewprimitive
+
+\startnewprimitive[title={\tex {beginlocalcontrol}}]
+
+Once \TEX\ is initialized it will enter the main loop. In there certain commands
+trigger a function that itself can trigger further scanning and functions. In
+\LUAMETATEX\ we can have local main loops and we can either enter it from the
+\LUA\ end (which we don't discuss here) or at the \TEX\ end using this primitive.
+
+\startbuffer
+\scratchcounter100
+
+\edef\whatever{
+    a
+    \beginlocalcontrol
+        \advance\scratchcounter 10
+        b
+    \endlocalcontrol
+    \beginlocalcontrol
+        c
+    \endlocalcontrol
+    d
+    \advance\scratchcounter 10
+}
+
+\the\scratchcounter
+\whatever
+\the\scratchcounter
+\stopbuffer
+
+\typebuffer
+
+A bit of close reading probably gives an impression of what happens here:
+
+{\getbuffer}
+
+The local loop can actually result in material being injected in the current node
+list. However, where normally assignments are not taking place in an \type
+{\edef}, here they are applied just fine. Basically we have a local \TEX\ job, be
+it that it shares all variables with the parent loop.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {endlocalcontrol}}]
+
+     See previous section.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {alignmark}}]
+
+When you have the \type{#} not set up as macro parameter character cq.\ align
+mark, you can use this primitive instead. The same rules apply with respect to
+multiple such tokens in (nested) macros and alignments.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\tex {aligntab}}]
+
+When you have the \type{&} not set up as align tab, you can use this primitive
+instead. The same rules apply with respect to multiple such tokens in (nested)
+macros and alignments.
+
+\stopnewprimitive
+
+\page
+
+% % It doesn't make sense to typeset this, also because it makes me feel old.
+%
+% \startsubject[title=A few notes on extensions] % ,placeholder=todo]
+%
+% This is a companion to the regular \LUAMETATEX\ reference manual, which is mostly
+% a concise summary of the program and its features. They don't replace each other,
+% and none of them claims completeness. There might be more manuals that discuss
+% specific kind of extensions in the future. First some comments on extensions.
+%
+% The starting point of all \TEX\ engines is \TEX. The first follow up was \TEX\
+% with support for 8 bit and languages. After that it took some time, but then two
+% projects started that extended \TEX: \ETEX\ and \OMEGA. In the end the first
+% brought some extensions to the macro machinery, more registers, a simple right to
+% left typesetting feature, some more tracing, etc. The second was more ambitious
+% and has input translation mechanisms, larger fonts, and multi directional
+% typesetting. By the time \ETEX\ became stable, the \PDFTEX\ engine had showed up
+% and at some point it integrated \ETEX. But \PDFTEX\ itself also extended the
+% several components that make up \TEX. The \NTS\ project was started as follow up
+% on \ETEX\ but although an engine written in \JAVA\ was the result it never was
+% used for extensions; this project was fully funded by the german language user
+% group.
+%
+% The \CONTEXT\ macro package was an early adopter of the \ETEX\ and \PDFTEX\
+% extensions. Probably the most significant effect was that we got more registers
+% (some other features were already kind of present in macro form). In between
+% these engines we played with \type {eetex} (extended \ETEX) because we had some
+% wishes of our own. We also explored extensions to the \DVI\ format but in the end
+% \PDF\ won that race. An example of a new mechanism that we introduced in
+% \CONTEXT\ was position tracking: marking positions that can be saved when the
+% output is created and used in a second run. This started as a \DVI\ postprocessor
+% in \PERL\ written by me, later turned into a \CLANGUAGE\ program by Taco, and
+% eventually integrated in \PDFTEX\ by Thanh (\PDFTEX\ was a phd project). At some
+% point \XETEX\ was developed, funded and driven by an organization that did high
+% end multi lingual typesetting; it was based on \ETEX\ and uses a \DVI\ to \PDF\
+% backend processor. Both \PDFTEX\ and \XETEX\ are supported by \CONTEXT\ \MKII,
+% and both engines are basically stable and frozen.
+%
+% At some point Hartmut and I started playing with \LUA\ in \PDFTEX\ but soon Taco,
+% Hartmut and I decided to start a follow up project. All the work on \LUATEX\ (and
+% later \LUAMETATEX) is done whenever there is time and without financial
+% compensation, so we have a slow but steady development track. Early in the
+% \LUATEX\ development there has been some funding for the initial transition (by
+% Taco) from \PDFTEX\ to what became the early versions of \LUATEX . You can read
+% more about the oriental \TEX\ project in other documents and articles in user
+% group journals. There has been some funded development of a library subsystem
+% (which for some reason never took off) as well as \LUAJIT\ integration (by
+% Luigi). The initial \METAPOST\ library (also done by Taco) was funded by a couple
+% of user groups. Then there are the (ongoing) font projects by GUST that got
+% funded by user groups as these were much needed for the \UNICODE\ engines.
+%
+% After the jump start, most work was and is still done in the usual \TEX\ spirit,
+% on a voluntary basis, by folks from the \CONTEXT\ community, and after a decades
+% we reached the stable version 1.00. It's one of the engines in \TEXLIVE\ and
+% Luigi makes sure it integrates well in there. We did continue and around 1.10 the
+% more of less final version was reached and \LUAMETATEX\ took off. In \LUATEX\
+% only bugs get fixed, occasionally some helpers can get added, and we might port
+% some of \LUAMETATEX\ back to its parent, when it doesn't harm compatibility.
+%
+% Already early in development some primitives were added that enhance the macro
+% language. More were added later. It's these extensions that are discussed in this
+% document. There are several documents in the \CONTEXT\ distribution that discuss
+% the (ongoing) development, right from the start, and these often contain
+% examples. For instance some of the new primitives have been introduced there,
+% complete with a rationale and examples of usage.
+%
+% Just for the record: the \CONTEXT\ group runs the build farm that is used to
+% generate binaries for all sorts of platforms. We make sure that there are always
+% versions that can be used for real production jobs. You can expect regular
+% updates as long as there are developments (of course, eventually we're done).
+%
+% \stopsubject
+
+\startsubject[title=Rationale] % ,placeholder=todo]
+
+Some words about the why and how it came. One of the early adopters of \CONTEXT\
+was Taco Hoekwater and we spent numerous trips to \TEX\ meetings all over the
+globe. He was also the only one I knew who had read the \TEX\ sources. Because
+\CONTEXT\ has always been on the edge of what is possible and at that time we
+both used it for rather advanced rendering, we also ran into the limitations. I'm
+not talking of \TEX\ features here. Naturally old school \TEX\ is not really
+geared for dealing with images of all kind, colors in all kind of color spaces,
+highly interactive documents, input methods like \XML, etc. The nice thing is
+that it offers some escapes, like specials and writes and later execution of
+programs that opened up lots of possibilities, so in practice there were no real
+limitations to what one could do. But coming up with a consistent and extensible
+(multi lingual) user interface was non trivial, because it had an impact in
+memory usage and performance. A lot could be done given some programming, as
+\CONTEXT\ \MKII\ proves, but it was not always pretty under the hood. The move to
+\LUATEX\ and \MKIV\ transferred some action to \LUA, and because \LUATEX\
+effectively was a \CONTEXT\ related project, we could easily keep them in sync.
+
+Our traveling together, meeting several times per year, and eventually email and
+intense \LUATEX\ developments (lots of Skype sessions) for a couple of years,
+gave us enough opportunity to discuss all kind of nice features not present in
+the engine. The previous century we discussed lots of them, rejected some, stayed
+with others, and I admit that forgot about most of the arguments already. Some
+that we did was already explored in \type {eetex}, some of those ended up in
+\LUATEX, and eventually what we have in \LUAMETATEX\ can been seen as the result
+of years of programming in \TEX, improving macros, getting more performance and
+efficiency out of existing \CONTEXT\ code and inspiration that we got out of the
+\CONTEXT\ community, a demanding lot, always willing to experiment with us.
+
+Once I decided to work on \LUAMETATEX\ and bind its source to the \CONTEXT\
+distribution so that we can be sure that it won't get messed up and might
+interfere with the \CONTEXT\ expectations, some more primitives saw their way
+into it. It is very easy to come up with all kind of bells and whistles but it is
+equally easy to hurt performance of an engine and what might go unnoticed in
+simple tests can really affect a macro package that depends on stability. So, what
+I did was mostly looking at the \CONTEXT\ code and wondering how to make some of
+the low level macros look more natural, also because I know that there are users
+who look into these sources. We spend a lot of time making them look consistent
+and nice and the nicer the better. Getting a better performance was seldom an
+argument because much is already as fast as can be so there is not that much to
+gain, but less clutter in tracing was an argument for some new primitives. Also,
+the fact that we soon might need to fall back on our phones to use \TEX\ a
+smaller memory footprint and less byte shuffling also was a consideration. The
+\LUAMETATEX\ memory footprint is somewhat smaller than the \LUATEX\ footprint.
+By binding \LUAMETATEX\ to \CONTEXT\ we can also guarantee that the combinations
+works as expected.
+
+I'm aware of the fact that \CONTEXT\ is in a somewhat unique position. First of
+all it has always been kind of cutting edge so its users are willing to
+experiment. There are users who immediately update and run tests, so bugs can and
+will be fixed fast. Already for a long time the community has an convenient
+infrastructure for updating and the build farm for generating binaries (also for
+other engines) is running smoothly.
+
+Then there is the \CONTEXT\ user interface that is quite consistent and permits
+extensions with staying backward compatible. Sometimes users run into old manuals
+or examples and then complain that \CONTEXT\ is not compatible but that then
+involves obsolete technology: we no longer need font and input encodings and font
+definitions are different for \OPENTYPE\ fonts. We always had an abstract backend
+model, but nowadays \PDF\ is kind of dominant and drives a lot of expectations.
+So, some of the \MKII\ commands are gone and \MKIV\ has some more. Also, as
+\METAPOST\ evolved that department in \CONTEXT\ also evolved. Think of it like
+cars: soon all are electric so one cannot expect a hole to poor in some fluid but
+gets a (often incompatible) plug instead. And buttons became touch panels. There
+is no need to use much force to steer or brake. Navigation is different, as are
+many controls. And do we need to steer ourselves a decade from now?
+
+So, just look at \TEX\ and \CONTEXT\ in the same way. A system from the nineties
+in the previous century differs from one three decades later. Demands differ,
+input differs, resources change, editing and processing moves on, and so on.
+Manuals, although still being written are seldom read from cover to cover because
+online searching replaced them. And who buys books about programming? So
+\LUAMETATEX, while still being \TEX\ also moves on, as do the way we do our low
+level coding. This makes sense because the original \TEX\ ecosystem was not made
+with a huge and complex macro package in mind, that just happened. An author was
+supposed to make a style for each document. An often used argument for using
+another macro package over \CONTEXT\ was that the later evolved and other macro
+packages would work the same forever and not change from the perspective of the
+user. In retrospect those arguments were somewhat strange because the world,
+computers, users etc.\ do change. Standards come and go, as do software politics
+and preferences. In many aspects the \TEX\ community is not different from other
+large software projects, operating system wars, library devotees, programming
+language addicts, paradigm shifts. But, don't worry, if you don't like
+\LUAMETATEX\ and its new primitives, just forget about them. The other engines
+will be there forever and are a safe bet, although \LUATEX\ already stirred up
+the pot I guess. But keep in mind that new features in the latest greatest
+\CONTEXT\ version will more and more rely on \LUAMETATEX\ being used; after all
+that is where it's made for. And this manual might help understand its users why,
+where and how the low level code differs between \MKII, \MKIV\ and \LMTX.
+
+Can we expect more new primitives than the ones introduced here? Given the amount
+of time I spend on experimenting and considering what made sense and what not,
+the answer probably is \quotation {no}, or at least \quotation {not that much}.
+As in the past no user ever requested the kind of primitives that were added, I
+don't expect users to come up with requests in the future either. Of course,
+those more closely related to \CONTEXT\ development look at it from the other
+end. Because it's there where the low level action really is, demands might still
+evolve.
+
+Hans Hagen \crlf Hasselt NL
+
+\stopsubject
+
+\stoptext

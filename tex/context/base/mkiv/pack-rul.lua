@@ -122,6 +122,7 @@ local function doreshapeframedbox(n)
                 if hdone then
                     for h, id, subtype, list in nextlist, list do
                         if list and id == hlist_code then
+                            -- called a lot so maybe a simple case is needed
                             if subtype == boxlist_code or subtype == linelist_code then
                                 -- getdirection is irrelevant here so it will go
                                 -- somehow a parfillskip also can get influenced

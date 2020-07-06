@@ -971,7 +971,11 @@
 \bindprimitive ifabsdim       ifpdfabsdim
 \bindprimitive ifabsnum       ifpdfabsnum
 
-\ifnum\texengine=\xetexengine \else % this test might disappear some day
+\ifnum\texengine=\xetexengine
+
+    \let\normalsetrandomseed \setrandomseed
+    \let\normaluniformdeviate\uniformdeviate
+\else
 
     \pdfminorversion \plusfive
 
