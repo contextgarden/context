@@ -169,7 +169,7 @@ if sandboxing then
     context [[\let\primitive\relax\let\normalprimitive\relax]]
 
     debug = {
-        traceback = traceback,
+        traceback = debug.traceback,
     }
 
     package.loaded.debug = debug
@@ -181,9 +181,9 @@ elseif debugging then
 else
 
     debug = {
-        traceback = traceback,
-        getinfo   = getinfo,
-        sethook   = sethook,
+        traceback = debug.traceback,
+        getinfo   = debug.getinfo,
+        sethook   = debug.sethook,
     }
 
     package.loaded.debug = debug
