@@ -79,13 +79,13 @@
 %D them for convenience and compatibility. Some old engine code
 %D has been removed.
 
-\normalprotected\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
-\normalprotected\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
-\normalprotected\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
-\normalprotected\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
-\normalprotected\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
+\protected\def\uncatcodespecials     {\setcatcodetable\nilcatcodes \uncatcodespacetokens}
+\protected\def\setnaturalcatcodes    {\setcatcodetable\nilcatcodes}
+\protected\def\setnormalcatcodes     {\setcatcodetable\ctxcatcodes} % maybe \texcatcodes
+\protected\def\uncatcodecharacters   {\setcatcodetable\nilcatcodes} % was fast version, gone now
+\protected\def\uncatcodeallcharacters{\setcatcodetable\nilcatcodes} % was slow one, with restore
 
-\normalprotected\def\uncatcodespacetokens
+\protected\def\uncatcodespacetokens
   {\catcode\spaceasciicode    \spacecatcode
    \catcode\tabasciicode      \spacecatcode
    \catcode\formfeedasciicode \endoflinecatcode
@@ -101,10 +101,10 @@
 
 \newtoks\everyverbosechacters
 
-\normalprotected\def\setverbosecscharacter#1%
+\protected\def\setverbosecscharacter#1%
   {\edef#1{\string#1}}
 
-\normalprotected\def\setverbosecscharacters
+\protected\def\setverbosecscharacters
   {\the\everyverbosechacters}
 
 \bgroup

@@ -258,28 +258,28 @@
 %D and that only the high level setup commands are used with language specific
 %D interfaces.
 
-% \unexpanded\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \unexpanded\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
-% \unexpanded\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-% \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \protected\def\mult_interfaces_let #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \protected\def\mult_interfaces_lete#1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+% \protected\def\mult_interfaces_def #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \protected\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \protected\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+% \protected\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
 
 % \startinterface english
-    \unexpanded\def\mult_interfaces_let #1#2{\expandafter \let\csname#1#2\endcsname}
-    \unexpanded\def\mult_interfaces_lete#1#2{\expandafter \let\csname#1#2\endcsname\empty}
-    \unexpanded\def\mult_interfaces_def #1#2{\expandafter \def\csname#1#2\endcsname}
-    \unexpanded\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1#2\endcsname}
-    \unexpanded\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1#2\endcsname}
-    \unexpanded\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_let #1#2{\expandafter \let\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_lete#1#2{\expandafter \let\csname#1#2\endcsname\empty}
+    \protected\def\mult_interfaces_def #1#2{\expandafter \def\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_edef#1#2{\expandafter\edef\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_gdef#1#2{\expandafter\gdef\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_xdef#1#2{\expandafter\xdef\csname#1#2\endcsname}
 % \stopinterface
 
 %D Do, we only interface the assignment definition:
 
-\unexpanded\def\mult_interfaces_adef#1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\mult_interfaces_adef#1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
 
 \startinterface english
-    \unexpanded\def\mult_interfaces_adef#1#2{\expandafter \def\csname#1#2\endcsname}
+    \protected\def\mult_interfaces_adef#1#2{\expandafter \def\csname#1#2\endcsname}
 \stopinterface
 
 % the commented detokenized variant that backtracks ... needs testing usage first
@@ -298,7 +298,7 @@
 
 \def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
-\unexpanded\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
+\protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9% inlining \csname*\endcsname is more efficient (#3 and #6 only)
   {\ifx#2\relax\let#2\empty\fi                                             % it is hardly faster but produces less expansion tracing
    \def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
    \def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
@@ -311,7 +311,7 @@
    \def#8##1{\begincsname#1#2:##1\endcsname}
    \def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
 
-\unexpanded\def\installparameterhandler#1#2%
+\protected\def\installparameterhandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_parameter_handler
         {\noexpand#1}% \??aa
@@ -324,18 +324,18 @@
         \expandafter\noexpand\csname direct#2parameter\endcsname
         \expandafter\noexpand\csname letfrom#2parameter\endcsname}} % strict#2parameter is gone
 
-\unexpanded\def\mult_interfaces_install_root_parameter_handler#1#2#3%
+\protected\def\mult_interfaces_install_root_parameter_handler#1#2#3%
   {\def#2##1{\detokenize\expandafter\expandafter\expandafter{\csname#1:##1\endcsname}}% always root
    \def#3##1{\begincsname#1:##1\endcsname}}
 
-\unexpanded\def\installrootparameterhandler#1#2%
+\protected\def\installrootparameterhandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_root_parameter_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
         \expandafter\noexpand\csname root#2parameter\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_parameter_hash_handler#1#2#3#4#5#6#7#8#9%
+\protected\def\mult_interfaces_install_parameter_hash_handler#1#2#3#4#5#6#7#8#9%
   {\ifx#2\relax\let#2\empty\fi
    \def#3##1{#1#4{#1#2}{##1}:}% leading #1 was missing .. is this one used?
    \def#4##1##2{\ifcsname##1:##2\endcsname##1\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
@@ -345,9 +345,9 @@
    \def#7##1{#1##1:}%
   %\def#8{\ifx#2\empty\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
    \def#8{\ifempty#2\orelse\ifcsname#1#2:\s!parent\endcsname\else\expandafter\let\csname#1#2:\s!parent\endcsname#1\fi}%
-   \unexpanded\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
+   \protected\def#9##1{\expandafter\edef\csname#1##1:\s!parent\endcsname{#1#2}}}
 
-\unexpanded\def\installparameterhashhandler#1#2%
+\protected\def\installparameterhashhandler#1#2%
   {\expandafter\let\csname#2namespace\endcsname#1%
    \normalexpanded
      {\mult_interfaces_install_parameter_hash_handler
@@ -365,23 +365,23 @@
 
 % todo: inline the def/let
 
-% \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
+% \protected\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
 %   {\ifx#2\relax\let#2\empty\fi
-%    \unexpanded\def#3{\mult_interfaces_def {#1#2:}}%  ##1 {##2} (braces are mandate)
-%    \unexpanded\def#4{\mult_interfaces_edef{#1#2:}}%  ##1 {##2} (braces are mandate)
-%    \unexpanded\def#5{\mult_interfaces_let {#1#2:}}%  ##1 ##2
-%    \unexpanded\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
+%    \protected\def#3{\mult_interfaces_def {#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \protected\def#4{\mult_interfaces_edef{#1#2:}}%  ##1 {##2} (braces are mandate)
+%    \protected\def#5{\mult_interfaces_let {#1#2:}}%  ##1 ##2
+%    \protected\def#6{\mult_interfaces_lete{#1#2:}}}% ##1
 %
 % \startinterface english
-    \unexpanded\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
+    \protected\def\mult_interfaces_install_parameter_set_handler#1#2#3#4#5#6%
       {\ifx#2\relax\let#2\empty\fi
-       \unexpanded\def#3##1{\expandafter \def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
-       \unexpanded\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
-       \unexpanded\def#5##1{\expandafter \let\csname#1#2:##1\endcsname}%        ##1 ##2
-       \unexpanded\def#6##1{\expandafter \let\csname#1#2:##1\endcsname\empty}}% ##1
+       \protected\def#3##1{\expandafter \def\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \protected\def#4##1{\expandafter\edef\csname#1#2:##1\endcsname}%        ##1 {##2} (braces are mandate)
+       \protected\def#5##1{\expandafter \let\csname#1#2:##1\endcsname}%        ##1 ##2
+       \protected\def#6##1{\expandafter \let\csname#1#2:##1\endcsname\empty}}% ##1
 % \stopinterface
 
-\unexpanded\def\installparametersethandler#1#2%
+\protected\def\installparametersethandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_parameter_set_handler
         {\noexpand#1}% \??aa
@@ -397,24 +397,24 @@
 \let\currentstyleparameter\empty
 \let\currentcolorparameter\empty
 
-\unexpanded\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
-  {\unexpanded\def#2##1##2% style color
+\protected\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
+  {\protected\def#2##1##2% style color
      {\edef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)
      %\ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi
       \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi
       \edef\currentcolorparameter{#1{##2}}% this name is public (so we do this after the style switch)
      %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}%
       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}%
-   \unexpanded\def#3##1% style
+   \protected\def#3##1% style
      {\edef\currentstyleparameter{#1{##1}}% this name is public
      %\ifx\currentstyleparameter\empty\else\dousecurrentstyleparameter\fi}%
       \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi}%
-   \unexpanded\def#4##1% color
+   \protected\def#4##1% color
      {\edef\currentcolorparameter{#1{##1}}% this name is public
      %\ifx\currentcolorparameter\empty\else\dousecurrentcolorparameter\fi}}
       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}}
 
-\unexpanded\def\installstyleandcolorhandler#1#2%
+\protected\def\installstyleandcolorhandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_style_and_color_handler
         \expandafter\noexpand\csname #2parameter\endcsname
@@ -444,12 +444,12 @@
 \def\getparentchain       #1#2{\begincsname#1#2:\s!chain\endcsname}
 \def\getcurrentparentchain#1#2{\begincsname#1#2:\s!chain\endcsname}
 
-\unexpanded\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
+\protected\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8#9% why is \expanded still needed in clones
   {\ifx#4\relax\let#4\empty\fi                                          % see \defineregister
-   \unexpanded\def#2{\dotripleempty#5}%
+   \protected\def#2{\dotripleempty#5}%
    \newtoks#6%
    \newtoks#7%
-   \unexpanded\def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
+   \protected\def#5[##1][##2][##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
      {\let#9#4%
       \edef#4{##1}%
       \ifthirdargument
@@ -499,7 +499,7 @@
       \the#7%
       \let#4#9}}
 
-\unexpanded\def\installdefinehandler#1#2#3%
+\protected\def\installdefinehandler#1#2#3%
   {\normalexpanded
      {\mult_interfaces_install_define_handler
         {\noexpand#1}% \??aa
@@ -512,13 +512,13 @@
         \expandafter\noexpand\csname current#2parent\endcsname
         \expandafter\noexpand\csname saved_defined_#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8#9%
+\protected\def\mult_interfaces_install_setup_handler#1#2#3#4#5#6#7#8#9%
   {\ifx#3\relax\let#3\empty\fi
-   \unexpanded\def#2{\dodoubleempty#4}%
-   \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
+   \protected\def#2{\dodoubleempty#4}%
+   \protected\def#6{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
    \newtoks#5%
    \newtoks#8%
-   \unexpanded\def#4[##1][##2]% maybe helper
+   \protected\def#4[##1][##2]% maybe helper
      {\let#7#3%
       \ifsecondargument
         \def#9####1% we will have a simple one as well
@@ -534,7 +534,7 @@
       \let#3#7%
       \the#8}}
 
-\unexpanded\def\installsetuphandler#1#2%
+\protected\def\installsetuphandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_setup_handler
         {\noexpand#1}% \??aa
@@ -552,18 +552,18 @@
 \let\doingrootsetnamed  \plusthree  % \setuplayout[name]
 \let\doingrootsetroot   \plusfour   % \setuplayout
 
-\unexpanded\def\mult_interfaces_install_switch_setup_handler_a#1#2#3#4#5%
+\protected\def\mult_interfaces_install_switch_setup_handler_a#1#2#3#4#5%
   {\ifx#3\relax\let#3\empty\fi
-   \unexpanded\def#2{\dodoubleempty#4}%
-   \unexpanded\def#5{\mult_interfaces_get_parameters{#1#3:}}}
+   \protected\def#2{\dodoubleempty#4}%
+   \protected\def#5{\mult_interfaces_get_parameters{#1#3:}}}
 
-\unexpanded\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
+\protected\def\mult_interfaces_install_switch_setup_handler_b#1#2#3#4#5#6#7#8#9%
   {\newtoks#5%
    \newconstant#2%
    \newtoks#8%
    \newtoks#9%
    \ifx#6\relax\let#6\empty\fi
-   \unexpanded\def#4[##1][##2]% maybe helper
+   \protected\def#4[##1][##2]% maybe helper
      {\ifsecondargument % no commalist here
         % \setuplayout[whatever][key=value]
         \let#7#3%
@@ -631,7 +631,7 @@
       #2\zerocount % mode is always zero at the end
       \the#9}}
 
-\unexpanded\def\installswitchsetuphandler#1#2%
+\protected\def\installswitchsetuphandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_switch_setup_handler_a
         {\noexpand#1}% \??aa
@@ -650,10 +650,10 @@
         \expandafter\noexpand\csname everyswitch#2\endcsname
         \expandafter\noexpand\csname everysetup#2root\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8#9%
+\protected\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8#9%
   {\ifx#3\relax\let#3\empty\fi
-   \unexpanded\def#2{\dotripleempty#4}%
-   \unexpanded\def#6{\mult_interfaces_get_parameters{#1#3:}}%
+   \protected\def#2{\dotripleempty#4}%
+   \protected\def#6{\mult_interfaces_get_parameters{#1#3:}}%
    \newtoks#5%
    \def#4[##1][##2][##3]%
      {\let#8#3%
@@ -678,7 +678,7 @@
       \fi
       \let#3#8}}
 
-\unexpanded\def\installautosetuphandler#1#2%
+\protected\def\installautosetuphandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_auto_setup_handler
         {\noexpand#1}% \??aa
@@ -691,40 +691,40 @@
         \expandafter\noexpand\csname saved_setup_current#2\endcsname
         \expandafter\noexpand\csname nested_setup_current#2\endcsname}}
 
-\unexpanded\def\installbasicparameterhandler#1#2%
+\protected\def\installbasicparameterhandler#1#2%
   {\installparameterhandler    {#1}{#2}%
    \installparameterhashhandler{#1}{#2}%
    \installparametersethandler {#1}{#2}%
    \installrootparameterhandler{#1}{#2}}
 
-\unexpanded\def\installbasicautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installbasicautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}}
 
-\unexpanded\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installstylisticautosetuphandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installautosetuphandler     {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
 
-\unexpanded\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installcommandhandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installsetuphandler         {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
 
-\unexpanded\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
+\protected\def\installswitchcommandhandler#1#2#3% \??self name \??parent (can be \??self)
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installswitchsetuphandler   {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
 
-\unexpanded\def\installautocommandhandler#1#2#3% automatically defined cloned setups
+\protected\def\installautocommandhandler#1#2#3% automatically defined cloned setups
   {\installbasicparameterhandler{#1}{#2}%
    \installdefinehandler        {#1}{#2}{#3}%
    \installautosetuphandler     {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
 
-\unexpanded\def\installsimplecommandhandler#1#2#3% no define (experiment) - use \check*parent when defining
+\protected\def\installsimplecommandhandler#1#2#3% no define (experiment) - use \check*parent when defining
   {\installbasicparameterhandler{#1}{#2}%
    \installsetuphandler         {#1}{#2}%
    \installstyleandcolorhandler {#1}{#2}}
@@ -740,14 +740,14 @@
 
 %D We don't need colons for such simple cases.
 
-\unexpanded\def\mult_interfaces_install_direct_parameter_handler#1#2#3#4#5%
+\protected\def\mult_interfaces_install_direct_parameter_handler#1#2#3#4#5%
 %%{\def#3##1{\csname\ifcsname#1##1\endcsname#1##1\else\s!empty\fi\endcsname}%
   {\def#3##1{\begincsname#1##1\endcsname}%
    \def#4##1{\detokenize\expandafter\expandafter\expandafter{\csname#1##1\endcsname}}%
  % \def#4##1{\mult_interfaces_detokenize{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}}%
    \def#5##1{\begincsname#1##1\endcsname}}
 
-\unexpanded\def\installdirectparameterhandler#1#2%
+\protected\def\installdirectparameterhandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_direct_parameter_handler
         {\noexpand#1}%
@@ -756,13 +756,13 @@
         \expandafter\noexpand\csname detokenized#2parameter\endcsname
         \expandafter\noexpand\csname direct#2parameter\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_direct_setup_handler#1#2#3#4#5%
-  {\unexpanded\def#2{\dosingleempty#3}%
+\protected\def\mult_interfaces_install_direct_setup_handler#1#2#3#4#5%
+  {\protected\def#2{\dosingleempty#3}%
    \newtoks#5%
    \def#3[##1]{\mult_interfaces_get_parameters#1[##1]\the#5}%
    \def#4{\mult_interfaces_get_parameters#1}}
 
-\unexpanded\def\installdirectsetuphandler#1#2%
+\protected\def\installdirectsetuphandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_direct_setup_handler
         {\noexpand#1}% \??aa
@@ -771,21 +771,21 @@
         \expandafter\noexpand\csname setupcurrent#2\endcsname % no \every (we use 'current' for consistency)
         \expandafter\noexpand\csname everysetup#2\endcsname}}
 
-% \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
-%   {\unexpanded\def#2{\mult_interfaces_def #1}%
-%    \unexpanded\def#3{\mult_interfaces_edef#1}%
-%    \unexpanded\def#4{\mult_interfaces_let #1}%
-%    \unexpanded\def#5{\mult_interfaces_let #1\empty}}%
+% \protected\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
+%   {\protected\def#2{\mult_interfaces_def #1}%
+%    \protected\def#3{\mult_interfaces_edef#1}%
+%    \protected\def#4{\mult_interfaces_let #1}%
+%    \protected\def#5{\mult_interfaces_let #1\empty}}%
 
 % \startinterface english
-    \unexpanded\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
-      {\unexpanded\def#2##1{\expandafter \def\csname#1##1\endcsname}%
-       \unexpanded\def#3##1{\expandafter\edef\csname#1##1\endcsname}%
-       \unexpanded\def#4##1{\expandafter \let\csname#1##1\endcsname}%
-       \unexpanded\def#5##1{\expandafter \let\csname#1##1\endcsname\empty}}%
+    \protected\def\mult_interfaces_install_direct_parameter_set_handler#1#2#3#4#5%
+      {\protected\def#2##1{\expandafter \def\csname#1##1\endcsname}%
+       \protected\def#3##1{\expandafter\edef\csname#1##1\endcsname}%
+       \protected\def#4##1{\expandafter \let\csname#1##1\endcsname}%
+       \protected\def#5##1{\expandafter \let\csname#1##1\endcsname\empty}}%
 % \stopinterface
 
-\unexpanded\def\installdirectparametersethandler#1#2%
+\protected\def\installdirectparametersethandler#1#2%
   {\normalexpanded
      {\mult_interfaces_install_direct_parameter_set_handler
         {\noexpand#1}% \??aa
@@ -796,13 +796,13 @@
 
 \let\installdirectstyleandcolorhandler\installstyleandcolorhandler
 
-\unexpanded\def\installdirectcommandhandler#1#2%
+\protected\def\installdirectcommandhandler#1#2%
   {\installdirectparameterhandler    {#1}{#2}%
    \installdirectsetuphandler        {#1}{#2}%
    \installdirectparametersethandler {#1}{#2}%
    \installdirectstyleandcolorhandler{#1}{#2}}
 
-\unexpanded\def\installsetuponlycommandhandler#1#2%
+\protected\def\installsetuponlycommandhandler#1#2%
   {\installdirectparameterhandler{#1}{#2}%
    \installdirectsetuphandler    {#1}{#2}%
   }% maybe \installdirectparametersethandler {#1}{#2}%
@@ -830,15 +830,15 @@
 % yes:\twoparameter{alpha}\par
 % yes:\twoparameter{beta}\par
 
-\unexpanded\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
+\protected\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
   {\expandafter\edef\csname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
-\unexpanded\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
+\protected\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
   {\expandafter\edef\csname#1#2:\s!parent\endcsname{#3#4}}
 
 %D Here is another experiment:
 
-\unexpanded\def\installactionhandler#1%
+\protected\def\installactionhandler#1%
   {\normalexpanded
      {\mult_interfaces_install_action_handler
         {#1}%
@@ -846,9 +846,9 @@
         \expandafter\noexpand\csname setupcurrent#1\endcsname
         \expandafter\noexpand\csname #1_action\endcsname}}
 
-% \unexpanded\def\mult_interfaces_install_action_handler#1#2#3#4%
-%   {\unexpanded\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
-%    \unexpanded\def#4[##1][##2]%
+% \protected\def\mult_interfaces_install_action_handler#1#2#3#4%
+%   {\protected\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
+%    \protected\def#4[##1][##2]%
 %      {\begingroup
 %       \ifsecondargument
 %         \edef#2{##1}%
@@ -864,9 +864,9 @@
 %       \directsetup{handler:action:#1}%
 %       \endgroup}}
 
-\unexpanded\def\mult_interfaces_install_action_handler#1#2#3#4%
-  {\unexpanded\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
-   \unexpanded\def#4[##1][##2]%
+\protected\def\mult_interfaces_install_action_handler#1#2#3#4%
+  {\protected\expandafter\def\csname#1\endcsname{\dodoubleempty#4}%
+   \protected\def#4[##1][##2]%
      {\begingroup
       \ifsecondargument
         \edef#2{##1}%
@@ -894,7 +894,7 @@
 % First we had, in tune with the regular system variables:
 %
 % \starttyping
-% \unexpanded\def\installnamespace#1{\setvalue{????#1}{@@@@#1}}
+% \protected\def\installnamespace#1{\setvalue{????#1}{@@@@#1}}
 % \stoptyping
 %
 % The following variant is nicer and in principle faster but that gets unnoticed
@@ -928,7 +928,7 @@
 \def\v_interfaces_prefix_template
   {\number\c_mult_interfaces_n_of_namespaces>}
 
-\unexpanded\def\installnamespace#1% for modules and users
+\protected\def\installnamespace#1% for modules and users
   {\ifcsname ????#1\endcsname
      \writestatus\m!system{duplicate user namespace '#1'}\wait
    \else
@@ -936,7 +936,7 @@
      \expandafter\edef\csname ????#1\endcsname{\v_interfaces_prefix_template}%
    \fi}
 
-\unexpanded\def\installcorenamespace#1%
+\protected\def\installcorenamespace#1%
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate core namespace '#1'}\wait
    \else
@@ -961,16 +961,16 @@
 
 \letvalue\??dummy\empty
 
-           \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
-           \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}
-\unexpanded\def\setdummyparameter        #1{\expandafter\def\csname\??dummy#1\endcsname}
-\unexpanded\def\setexpandeddummyparameter#1{\expandafter\edef\csname\??dummy#1\endcsname}
-\unexpanded\def\letdummyparameter        #1{\expandafter\let\csname\??dummy#1\endcsname}
+          \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
+          \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}
+\protected\def\setdummyparameter        #1{\expandafter\def\csname\??dummy#1\endcsname}
+\protected\def\setexpandeddummyparameter#1{\expandafter\edef\csname\??dummy#1\endcsname}
+\protected\def\letdummyparameter        #1{\expandafter\let\csname\??dummy#1\endcsname}
 
-% \unexpanded\def\getdummyparameters
+% \protected\def\getdummyparameters
 %   {\mult_interfaces_get_parameters\??dummy}
 
-\unexpanded\def\getdummyparameters[#1%
+\protected\def\getdummyparameters[#1%
   {\if\noexpand#1]%
      \expandafter\gobbleoneargument
    \else
@@ -1025,7 +1025,7 @@
 %
 % This is a user (module) command:
 
-\unexpanded\def\definenamespace
+\protected\def\definenamespace
   {\dodoubleargument\mult_interfaces_define_name_space}
 
 \def\mult_interfaces_define_name_space[#1][#2]% namespace settings
@@ -1040,7 +1040,7 @@
 %D \showparentchain{@@am}{left}
 %D \stoptyping
 
-\unexpanded\def\showparentchain#1#2%
+\protected\def\showparentchain#1#2%
   {\writestatus\m!system{chain: [ \mult_interfaces_show_parent_chain{#1#2}]}}
 
 % \def\mult_interfaces_show_parent_chain#1%
@@ -1058,7 +1058,7 @@
 
 %D Another helper (needs to be applied):
 
-\unexpanded\def\doifelsecommandhandler#1#2% namespace name
+\protected\def\doifelsecommandhandler#1#2% namespace name
   {\ifcsname#1#2:\s!parent\endcsname
      \expandafter\firstoftwoarguments
    \else
@@ -1067,14 +1067,14 @@
 
 \let\doifcommandhandlerelse\doifelsecommandhandler
 
-\unexpanded\def\doifcommandhandler#1#2% namespace name
+\protected\def\doifcommandhandler#1#2% namespace name
   {\ifcsname#1#2:\s!parent\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifnotcommandhandler#1#2% namespace name
+\protected\def\doifnotcommandhandler#1#2% namespace name
   {\ifcsname#1#2:\s!parent\endcsname
      \expandafter\gobbleoneargument
    \else
@@ -1127,30 +1127,30 @@
 
 \let\c_mult_set\relax
 
-\unexpanded\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
+\protected\def\mult_interfaces_install_definition_set#1#2#3#4#5#6#7%
   {\newcount#3%
    \let#6\empty
-   \unexpanded\def#2%
+   \protected\def#2%
      {\expandafter\let\expandafter\c_mult_set\csname #1_t_#6\endcsname
       \ifx\c_mult_set\relax
         \expandafter\newtoks\c_mult_set
         \expandafter\let\csname #1_t_#6\endcsname\c_mult_set
       \fi}
-   \unexpanded\def#4##1%
+   \protected\def#4##1%
      {\pushmacro#6%
       \advance#3\plusone
       \edef#6{##1}%
       \unprotect}%
-   \unexpanded\def#5%
+   \protected\def#5%
      {\protect
       \advance#3\minusone
       \popmacro#6}%
-   \unexpanded\def#7##1%
+   \protected\def#7##1%
      {\edef#6{##1}%
       #2%
       \the\c_mult_set\relax}}
 
-\unexpanded\def\installdefinitionset#1#2%
+\protected\def\installdefinitionset#1#2%
   {\normalexpanded
      {\mult_interfaces_install_definition_set
         {\noexpand#1}% \??aa
@@ -1161,13 +1161,13 @@
         \expandafter\noexpand\csname current#2\endcsname
         \expandafter\noexpand\csname use#2\endcsname}}
 
-\unexpanded\def\mult_interfaces_install_definition_set_member#1#2#3#4#5#6#7#8#9% no everysetups etc
+\protected\def\mult_interfaces_install_definition_set_member#1#2#3#4#5#6#7#8#9% no everysetups etc
   {\let#5#2%
-   \unexpanded\def#2%
+   \protected\def#2%
      {\ifcase#4\relax\expandafter#5\else\expandafter#6\fi}%
-   \unexpanded\def#6%
+   \protected\def#6%
      {\dodoubleempty#7}%
-   \unexpanded\def#7[##1][##2]%
+   \protected\def#7[##1][##2]%
      {\ifsecondargument
        %#3\c_mult_set\expandafter{\the\c_mult_set#9[##1][##2]}%
         #3\toksapp\c_mult_set{#9[##1][##2]}%
@@ -1176,7 +1176,7 @@
         #3\toksapp\c_mult_set{#8[##1]}%
       \fi}}
 
-\unexpanded\def\installdefinitionsetmember#1#2#3#4%
+\protected\def\installdefinitionsetmember#1#2#3#4%
   {\normalexpanded
      {\mult_interfaces_install_definition_set_member
         {\noexpand#3}% \??aa
@@ -1191,14 +1191,14 @@
 
 %D Another experiment:
 
-\unexpanded\def\mult_interfaces_install_parent_injector#1#2#3#4%
-  {\unexpanded\def#4##1%
+\protected\def\mult_interfaces_install_parent_injector#1#2#3#4%
+  {\protected\def#4##1%
     %{\ifx#3\empty
      {\ifempty#3%
         \expandafter\def\csname#1#2:\s!parent\endcsname{#1##1}%
       \fi}}
 
-\unexpanded\def\installparentinjector#1#2%
+\protected\def\installparentinjector#1#2%
   {\normalexpanded{\mult_interfaces_install_parent_injector
      {\noexpand#1}%
      \expandafter\noexpand\csname current#2\endcsname
@@ -1208,7 +1208,7 @@
 % Faster but not used that much to make a dent in performance. But, because it's
 % cleaner anyway and also gives less tracing, we apply it a few times.
 
-% \unexpanded\def\syst_helpers_install_macro_stack#1#2#3%
+% \protected\def\syst_helpers_install_macro_stack#1#2#3%
 %   {\xdef\m_syst_helpers_push_macro{\csstring#1}%
 %    \ifcsname#3\m_syst_helpers_push_macro\endcsname\else
 %      \expandafter\newcount\csname#3\m_syst_helpers_push_macro\endcsname
@@ -1224,39 +1224,39 @@
 %            \noexpand\csname\m_syst_helpers_push_macro\noexpand\the\csname#3\m_syst_helpers_push_macro\endcsname\endcsname}%
 %    \fi}
 %
-% \unexpanded\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
-% \unexpanded\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
+% \protected\def\installmacrostack      #1{\syst_helpers_install_macro_stack#1\let \??localpushedmacro }
+% \protected\def\installglobalmacrostack#1{\syst_helpers_install_macro_stack#1\glet\??globalpushedmacro}
 
 % The \LUA\ based variant is twice as fast as the above but as said, we don't use
 % this one that often. It's more about less tracing than speed here.
 
-\unexpanded\def\installmacrostack#1%
+\protected\def\installmacrostack#1%
   {\ifdefined#1\else\let#1\empty\fi
-   \unexpanded\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
-   \unexpanded\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
+   \protected\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\localpushmacro#1}%
+   \protected\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\localpopmacro #1}}
 
 
-\unexpanded\def\installglobalmacrostack#1%
+\protected\def\installglobalmacrostack#1%
   {\ifdefined#1\else\glet#1\empty\fi
-   \unexpanded\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
-   \unexpanded\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
+   \protected\expandafter\gdef\csname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
+   \protected\expandafter\gdef\csname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
 
 % \showmacrostack can be used to see if there are different entries
 
 %  \unprotect
 %
 %  \installcorenamespace {test} \installcommandhandler \??test {test} \??test
-%  \unexpanded\def\TestMeA[#1]%
+%  \protected\def\TestMeA[#1]%
 %    {\edef\currenttest{#1}
 %     \edef\p_before{\testparameter\c!before}%
 %     \ifx\p_before\empty \relax \else \relax \fi}
-%  \unexpanded\def\TestMeB[#1]%
+%  \protected\def\TestMeB[#1]%
 %    {\edef\currenttest{#1}
 %     \doifelsenothing{\testparameter\c!before}\relax\relax}
-%  \unexpanded\def\TestMeC[#1]%
+%  \protected\def\TestMeC[#1]%
 %    {\edef\currenttest{#1}
 %     \expandafter\expandafter\expandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
-%  \unexpanded\def\TestMeD[#1]%
+%  \protected\def\TestMeD[#1]%
 %    {\edef\currenttest{#1}
 %     \doubleexpandafter\ifx\testparameter\c!before\empty \relax \else \relax \fi}
 %
@@ -1274,7 +1274,7 @@
 % only gain a few milliseconds:
 %
 % \starttyping
-% \unexpanded\def\foo#1{[foo:#1]}
+% \protected\def\foo#1{[foo:#1]}
 %
 % \installcommalistprocessor                        {foo} \foo
 % \installcommalistprocessorcommand \processfoolist \foo
@@ -1291,7 +1291,7 @@
 % \processfoolist[{x,y,z}]\par
 % \processcommalist[{x,y,z}]\foo\blank
 %
-% \unexpanded\def\foo#1{}
+% \protected\def\foo#1{}
 %
 % \testfeatureonce{400000}{\processfoolist         [fixed,middle,bar]}     \elapsedtime\quad
 %%\testfeatureonce{400000}{\commalistprocessor{foo}[fixed,middle,bar]}     \elapsedtime\quad
@@ -1307,30 +1307,30 @@
 \installcorenamespace{commalistprocessornext}
 \installcorenamespace{commalistprocessoraction}
 
-\unexpanded\def\installcommalistprocessor#1#2% 5 macro names overhead
-  {\unexpanded\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
+\protected\def\installcommalistprocessor#1#2% 5 macro names overhead
+  {\protected\expandafter\edef\csname\??commalistprocessor#1\endcsname[%
   %  {\noexpand\futureexpandis]%
   %     \noexpand\gobbleoneargument
   %     \csname\??commalistprocessorpickup#1\endcsname}
-  %\unexpanded\expandafter\edef\csname\??commalistprocessorpickup#1\endcsname
+  %\protected\expandafter\edef\csname\??commalistprocessorpickup#1\endcsname
      {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
-   \unexpanded\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
+   \protected\expandafter\edef\csname\??commalistprocessorwrap#1\endcsname##1]%
      {\csname\??commalistprocessorfirst#1\endcsname##1,]}
-   \unexpanded\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname\relax
+   \protected\expandafter\edef\csname\??commalistprocessorfirst#1\endcsname\relax
      {\csname\??commalistprocessornext#1\endcsname}%
-   \unexpanded\expandafter\edef\csname\??commalistprocessornext#1\endcsname
+   \protected\expandafter\edef\csname\??commalistprocessornext#1\endcsname
      {\noexpand\futureexpandis]%
         \noexpand\gobbleoneargument
         \csname\??commalistprocessoraction#1\endcsname}
-   \unexpanded\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
+   \protected\expandafter\edef\csname\??commalistprocessoraction#1\endcsname##1,%
      {\noexpand#2{##1}%
       \csname\??commalistprocessornext#1\endcsname}}
 
-\unexpanded\def\installcommalistprocessorcommand#1#2% \processor \action
+\protected\def\installcommalistprocessorcommand#1#2% \processor \action
   {\edef\p_name{\csstring#2}%
    \installcommalistprocessor\p_name{#2}%
    \expandafter\let\expandafter#1\csname\??commalistprocessor\p_name\endcsname}
 
-\unexpanded\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
+\protected\def\commalistprocessor#1{\csname\??commalistprocessor#1\endcsname}
 
 \protect \endinput

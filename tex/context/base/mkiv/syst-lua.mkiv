@@ -68,7 +68,7 @@
 \edef\!!bs{[\luastringsep[}
 \edef\!!es{]\luastringsep]}
 
-\unexpanded\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
+\protected\def\writestatus#1#2{\clf_writestatus{#1}{#2}}
 
 %D We can omit the tex.ctxcatcodes here as nowadays we seldom change the regime at
 %D the \TEX\ end:

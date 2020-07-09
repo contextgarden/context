@@ -128,18 +128,18 @@
 
 % for the moment here:
 
-\normalprotected\def\starttexcode
+\protected\def\starttexcode
   {\pushcatcodetable
    \catcodetable\prtcatcodes}
 
-\normalprotected\def\stoptexcode
+\protected\def\stoptexcode
   {\popcatcodetable}
 
-\normalprotected\def\startcontextcode
+\protected\def\startcontextcode
   {\pushcatcodetable
    \catcodetable\ctxcatcodes}
 
-\normalprotected\def\stopcontextcode
+\protected\def\stopcontextcode
   {\popcatcodetable}
 
 % not visible, only for special cases
@@ -169,11 +169,11 @@
     \catcode\barasciicode            \activecatcode
 \stopcatcodetable
 
-\normalprotected\def\startcontextdefinitioncode
+\protected\def\startcontextdefinitioncode
   {\pushcatcodetable
    \catcodetable\ctdcatcodes}
 
-\normalprotected\def\stopcontextdefinitioncode
+\protected\def\stopcontextdefinitioncode
   {\popcatcodetable}
 
 \endinput

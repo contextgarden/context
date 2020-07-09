@@ -20,15 +20,15 @@
 
 \unprotect
 
-\unexpanded\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax\relax}
-\unexpanded\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen\dimexpr#2\relax\dimexpr#3\relax\scaledpoint\relax}
-\unexpanded\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax}}
-\unexpanded\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat\dimexpr#2\relax\dimexpr#3\relax}}
-\unexpanded\def\setrandomseed      #1{\clf_setrandomseed\numexpr#1\relax}
-\unexpanded\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
-\unexpanded\def\pushrandomseed       {\clf_pushrandomseed}
-\unexpanded\def\poprandomseed        {\clf_poprandomseed}
-\unexpanded\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop
+\protected\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax\relax}
+\protected\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen\dimexpr#2\relax\dimexpr#3\relax\scaledpoint\relax}
+\protected\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax}}
+\protected\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat\dimexpr#2\relax\dimexpr#3\relax}}
+\protected\def\setrandomseed      #1{\clf_setrandomseed\numexpr#1\relax}
+\protected\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
+\protected\def\pushrandomseed       {\clf_pushrandomseed}
+\protected\def\poprandomseed        {\clf_poprandomseed}
+\protected\def\reuserandomseed      {\clf_reuserandomseed} % within push/pop
 
 \let\freezerandomseed \pushrandomseed
 \let\defrostrandomseed\poprandomseed

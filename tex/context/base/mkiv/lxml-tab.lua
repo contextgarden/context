@@ -1427,9 +1427,17 @@ local function copy(old,p)
                 new[k] = t
             elseif k == "dt" then
                 v.__p__ = nil
-                v = copy(v,new)
-                new[k] = v
-                v.__p__ = p
+                local t = { }
+                for i=1,#v do
+                    local vi = v[i]
+                    if type(vi) == "table" then
+                        t[i] = copy(vi,new)
+                    else
+                        t[i] = vi
+                    end
+                end
+                new[k] = t
+                t.__p__ = p
             else
                 new[k] = v -- so we also share entities, etc in root
             end

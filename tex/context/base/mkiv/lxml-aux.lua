@@ -195,16 +195,29 @@ end
 
 xml.toelement = xmltoelement
 
+-- local function copiedelement(element,newparent)
+--     if type(element) ~= "string" then
+--         element = xmlcopy(element).dt
+--         if newparent and type(element) == "table" then
+--             element.__p__ = newparent
+--         end
+--     end
+--     return element
+-- end
+
 local function copiedelement(element,newparent)
-    if type(element) == "string" then
-        return element
-    else
+    if type(element) ~= "string" then
         element = xmlcopy(element).dt
         if newparent and type(element) == "table" then
-            element.__p__ = newparent
+            for i=1,#element do
+                local e = element[i]
+                if type(e) == "table" then
+                    e.__p__ = newparent
+                end
+            end
         end
-        return element
     end
+    return element
 end
 
 function xml.delete(root,pattern)
@@ -544,30 +557,50 @@ end
 local b_collapser  = lpegpatterns.b_collapser
 local m_collapser  = lpegpatterns.m_collapser
 local e_collapser  = lpegpatterns.e_collapser
+local x_collapser  = lpegpatterns.x_collapser
 
 local b_stripper   = lpegpatterns.b_stripper
 local m_stripper   = lpegpatterns.m_stripper
 local e_stripper   = lpegpatterns.e_stripper
+local x_stripper   = lpegpatterns.x_stripper
 
-local function stripelement(e,nolines,anywhere)
+local function stripelement(e,nolines,anywhere,everything)
     local edt = e.dt
+    print(nolines,anywhere,everything)
     if edt then
         local n = #edt
         if n == 0 then
             return e -- convenient
+        elseif everything then
+            local t = { }
+            local m = 0
+            for i=1,n do
+                local str = edt[i]
+                if type(str) ~= "string" then
+                    m = m + 1
+                    t[m] = str
+                elseif str ~= "" then
+                    str = lpegmatch(x_collapser,str)
+                    if str ~= "" then
+                        m = m + 1
+                        t[m] = str
+                    end
+                end
+            end
+            e.dt = t
         elseif anywhere then
             local t = { }
             local m = 0
-            for e=1,n do
-                local str = edt[e]
+            for i=1,n do
+                local str = edt[i]
                 if type(str) ~= "string" then
                     m = m + 1
                     t[m] = str
                 elseif str ~= "" then
                     if nolines then
-                        str = lpegmatch((n == 1 and b_collapser) or (n == m and e_collapser) or m_collapser,str)
+                        str = lpegmatch((i == 1 and b_collapser) or (i == m and e_collapser) or m_collapser,str)
                     else
-                        str = lpegmatch((n == 1 and b_stripper) or (n == m and e_stripper) or m_stripper,str)
+                        str = lpegmatch((i == 1 and b_stripper) or (i == m and e_stripper) or m_stripper,str)
                     end
                     if str ~= "" then
                         m = m + 1
@@ -611,11 +644,11 @@ end
 
 xml.stripelement = stripelement
 
-function xml.strip(root,pattern,nolines,anywhere) -- strips all leading and trailing spacing
+function xml.strip(root,pattern,nolines,anywhere,everything) -- strips all leading and trailing spacing
     local collected = xmlapplylpath(root,pattern) -- beware, indices no longer are valid now
     if collected then
         for i=1,#collected do
-            stripelement(collected[i],nolines,anywhere)
+            stripelement(collected[i],nolines,anywhere,everything)
         end
     end
 --  return root

@@ -116,6 +116,7 @@ implement { name = "xmlsetsetup",          public = true, actions = lxml.setsetu
 implement { name = "xmlsnippet",           public = true, actions = lxml.snippet,           arguments = "2 strings" }
 implement { name = "xmlstrip",             public = true, actions = lxml.strip,             arguments = "2 strings" }
 implement { name = "xmlstripanywhere",     public = true, actions = lxml.strip,             arguments = { "string", "string", true, true } }
+implement { name = "xmlstripeverything",   public = true, actions = lxml.strip,             arguments = { "string", "string", true, true, true } }
 implement { name = "xmlstripnolines",      public = true, actions = lxml.strip,             arguments = { "string", "string", true } }
 implement { name = "xmlstripped",          public = true, actions = lxml.stripped,          arguments = "2 strings" }
 implement { name = "xmlstrippednolines",   public = true, actions = lxml.stripped,          arguments = { "string", "string", true } }

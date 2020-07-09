@@ -170,9 +170,9 @@
 %D \def\e!name{meaning}
 %D \stoptyping
 
-\unexpanded\def\defineinterfaceconstant #1#2{\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
-\unexpanded\def\defineinterfacevariable #1#2{\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
-\unexpanded\def\defineinterfaceelement  #1#2{\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfaceconstant #1#2{\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfacevariable #1#2{\expandafter\def\csname\v!prefix!#1\endcsname{#2}}
+\protected\def\defineinterfaceelement  #1#2{\expandafter\def\csname\e!prefix!#1\endcsname{#2}}
 
 %D Next come some interface independant constants:
 %D
@@ -180,7 +180,7 @@
 %D \definefileconstant      {name} {meaning}
 %D \stoptyping
 
-\unexpanded\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
+\protected\def\definefileconstant      #1#2{\expandafter\def\csname\f!prefix!#1\endcsname{#2}}
 
 %D And finaly we have the one argument, space saving constants
 %D
@@ -189,8 +189,8 @@
 %D \definemessageconstant {name}
 %D \stoptyping
 
-\unexpanded\def\definesystemconstant  #1{\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
-\unexpanded\def\definemessageconstant #1{\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
+\protected\def\definesystemconstant  #1{\expandafter\def\csname\s!prefix!#1\endcsname{#1}}
+\protected\def\definemessageconstant #1{\expandafter\def\csname\m!prefix!#1\endcsname{#1}}
 
 %D In a parameter driven system, some parameters are shared by more system
 %D components. In \CONTEXT\ we can distinguish parameters by a unique prefix. Such a
@@ -200,7 +200,7 @@
 %D \definesystemvariable {name}
 %D \stoptyping
 
-\unexpanded\def\definesystemvariable#1{\expandafter\edef\csname\??prefix#1\endcsname{\@@prefix#1}}
+\protected\def\definesystemvariable#1{\expandafter\edef\csname\??prefix#1\endcsname{\@@prefix#1}}
 
 \definesystemvariable{ms}
 
@@ -265,7 +265,7 @@
 %D \stopinterface
 %D \stoptyping
 
-\unexpanded\def\startinterface #1
+\protected\def\startinterface #1
   {\doifnot{#1}{all}{\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}}
 
 \let\stopinterface\relax
@@ -349,7 +349,7 @@
 %D
 %D These will become obsolete:
 
-\unexpanded\def\startmessages #1 library: #2 %
+\protected\def\startmessages #1 library: #2 %
   {\begingroup
    \ifcsname\m!prefix!#2\endcsname\else\setgvalue{\m!prefix!#2}{#2}\fi
    \catcode\endoflineasciicode\othercatcode
@@ -364,21 +364,21 @@
 
 \let\stopmessages\relax
 
-\unexpanded\def\setinterfacemessage#1#2#3%
+\protected\def\setinterfacemessage#1#2#3%
   {\ifcsname\m!prefix!#1\endcsname\else\setgvalue{\m!prefix!#1}{#1}\fi
    \clf_setinterfacemessage{#1}{#2}{#3}}
 
-\unexpanded\def\setmessagetext   #1#2{\relax\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
-\unexpanded\def\getmessage       #1#2{\relax\clf_getmessage{#1}{#2}}
-\unexpanded\def\doifelsemessage  #1#2{\relax\clf_doifelsemessage{#1}{#2}}
-\unexpanded\def\showmessage    #1#2#3{\relax\clf_showmessage{#1}{#2}{#3}}
-\unexpanded\def\writestatus      #1#2{\relax\clf_writestatus{#1}{#2}}
-\unexpanded\def\message              {\relax\clf_message}
+\protected\def\setmessagetext   #1#2{\relax\edef\currentmessagetext{\clf_getmessage{#1}{#2}}}
+\protected\def\getmessage       #1#2{\relax\clf_getmessage{#1}{#2}}
+\protected\def\doifelsemessage  #1#2{\relax\clf_doifelsemessage{#1}{#2}}
+\protected\def\showmessage    #1#2#3{\relax\clf_showmessage{#1}{#2}{#3}}
+\protected\def\writestatus      #1#2{\relax\clf_writestatus{#1}{#2}}
+\protected\def\message              {\relax\clf_message}
 
 \let\doifmessageelse\doifelsemessage
 
-\unexpanded\def\inlinemessage #1{\dontleavehmode{\tttf#1}}
-\unexpanded\def\displaymessage#1{\blank\inlinemessage{#1}\blank}
+\protected\def\inlinemessage #1{\dontleavehmode{\tttf#1}}
+\protected\def\displaymessage#1{\blank\inlinemessage{#1}\blank}
 
 \let\getsetupstring\clf_getsetupstring
 \let\rawsetupstring\clf_rawsetupstring
@@ -397,15 +397,15 @@
 %D backmapping (\type{\c!k...}) and make \type {\c!c...} similar to \type {\v!...}.
 %D In that case we can simply the following setters.
 
-\unexpanded\def\doletvalue     #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\dosetvalue     #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
-\unexpanded\def\doresetvalue   #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
-\unexpanded\def\doignorevalue#1#2#3{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\protected\def\doletvalue     #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\dosetvalue     #1#2{\expandafter\def \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\dosetevalue    #1#2{\expandafter\edef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+\protected\def\doresetvalue   #1#2{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
+\protected\def\doignorevalue#1#2#3{\expandafter\let \csname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname\empty}
 
-\unexpanded\def\docopyvalue#1#2#3%
+\protected\def\docopyvalue#1#2#3%
   {\ifcsname\k!prefix!#3\endcsname
      \expandafter\def\csname#1\csname\k!prefix!#3\endcsname\expandafter\endcsname\expandafter
        {\csname#2\csname\k!prefix!#3\endcsname\endcsname}%
@@ -416,15 +416,15 @@
 
 \startinterface english
 
-    \unexpanded\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
-    \unexpanded\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
-    \unexpanded\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
-    \unexpanded\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
-    \unexpanded\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
-    \unexpanded\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
-    \unexpanded\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
+    \protected\def\doletvalue     #1#2{\expandafter \let\csname#1#2\endcsname}
+    \protected\def\dosetvalue     #1#2{\expandafter \def\csname#1#2\endcsname}
+    \protected\def\dosetevalue    #1#2{\expandafter\edef\csname#1#2\endcsname}
+    \protected\def\dosetgvalue    #1#2{\expandafter\gdef\csname#1#2\endcsname}
+    \protected\def\dosetxvalue    #1#2{\expandafter\xdef\csname#1#2\endcsname}
+    \protected\def\doresetvalue   #1#2{\expandafter \let\csname#1#2\endcsname\empty}
+    \protected\def\doignorevalue#1#2#3{\expandafter \let\csname#1#2\endcsname\empty}
 
-    \unexpanded\def\docopyvalue#1#2#3%
+    \protected\def\docopyvalue#1#2#3%
       {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter
          {\csname#2#3\endcsname}}
 
@@ -433,9 +433,9 @@
 %D We can now redefine some messages that will be introduced in the multi||lingual
 %D system module.
 
-\unexpanded\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}}
-\unexpanded\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}}
-\unexpanded\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}}
+\protected\def\showassignerror  #1#2{\showmessage\m!check1{#1,#2}}
+\protected\def\showargumenterror#1#2{\showmessage\m!check2{#1,#2}}
+\protected\def\showdefinederror #1#2{\showmessage\m!check3{#1,#2}}
 
 %D \CONTEXT\ is a parameter driven package. This means that users instruct the
 %D system by means of variables, values and keywords. These instructions take the
@@ -603,7 +603,7 @@
 %D simple setup command:
 %D
 %D \starttyping
-%D \unexpanded\def\setupbox[#1]%
+%D \protected\def\setupbox[#1]%
 %D   {\getparameters[\??bx][#1]}
 %D \stoptyping
 %D
@@ -672,11 +672,11 @@
 
 % temporary mkiv hack (we can best just store the whole table in memory)
 
-\unexpanded\def\setinterfaceconstant#1#2%
+\protected\def\setinterfaceconstant#1#2%
   {\clf_setinterfaceconstant{#1}{#2}%
    \expandafter\def\csname\c!prefix!#1\endcsname{#1}}
 
-\unexpanded\def\setinterfacevariable#1#2%
+\protected\def\setinterfacevariable#1#2%
   {\clf_setinterfacevariable{#1}{#2}%
    \expandafter\def\csname\v!prefix!#1\endcsname{#2}}
 
@@ -687,7 +687,7 @@
 %D too. It's a bit redundant, because in these situations we could use the
 %D c||version, but for documentation purposes the x||alternative comes in handy.
 
-\unexpanded\def\defineinterfaceconstant#1#2%
+\protected\def\defineinterfaceconstant#1#2%
   {\expandafter\def\csname\c!prefix!#1\endcsname{#2}}
 
 %D \macros
@@ -702,7 +702,7 @@
 %D {\stel<iets>in}. Such split elements are no problem, because we just define two
 %D elements. When no second part is needed, we use a \type {-}:
 
-\unexpanded\def\setinterfaceelement#1#2%
+\protected\def\setinterfaceelement#1#2%
   {\clf_setinterfaceelement{#1}{#2}%
    \ifcsname\e!prefix!#1\endcsname
      \doifnotvalue{\e!prefix!#1}{#2}{\setvalue{\e!prefix!#1}{#2}}%
@@ -710,16 +710,16 @@
      \setvalue{\e!prefix!#1}{#2}%
    \fi}
 
-\unexpanded\def\setinterfacecommand#1#2%
+\protected\def\setinterfacecommand#1#2%
   {\doifnot{#1}{#2}% todo: let when already defined
      {\expandafter\def\csname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}}
 
 %D We just ignore these:
 
-\unexpanded\def\startvariables{\gobbleuntil\stopvariables} \let\stopvariables\relax
-\unexpanded\def\startconstants{\gobbleuntil\stopconstants} \let\stopconstants\relax
-\unexpanded\def\startelements {\gobbleuntil\stopelements } \let\stopelements \relax
-\unexpanded\def\startcommands {\gobbleuntil\stopcommands } \let\stopcommands \relax
+\protected\def\startvariables{\gobbleuntil\stopvariables} \let\stopvariables\relax
+\protected\def\startconstants{\gobbleuntil\stopconstants} \let\stopconstants\relax
+\protected\def\startelements {\gobbleuntil\stopelements } \let\stopelements \relax
+\protected\def\startcommands {\gobbleuntil\stopcommands } \let\stopcommands \relax
 
 %D For at the \LUA\ end (experiment):
 
@@ -769,7 +769,7 @@
    fmt: \formatversion \space \space
    int: \currentinterface/\currentresponses}
 
-\unexpanded\def\showcontextbanner
+\protected\def\showcontextbanner
   {\writestatus\m!system\empty
    \writestatus\m!system\contextbanner
    \writestatus\m!system\empty}
@@ -786,9 +786,9 @@
 % \def\contextversionnumber#1.#2.#3 #4:#5\relax{#1\ifnum#2<10 0\fi\purenumber{#2}\ifnum#3<10 0\fi\purenumber{#3} #4:#5}
 % \edef\contextversionnumber{\expandafter\contextversionnumber\contextversion\relax\space\contextmark}
 
-\unexpanded\def \contextversionnumber #1.#2.#3 #4:#5\relax{#1#2#3}
-                \contextversionno     \expandafter\contextversionnumber\contextversion\relax
-          \edef \contextversionnumber {\the\contextversionno\space\contextmark}
+\protected\def \contextversionnumber #1.#2.#3 #4:#5\relax{#1#2#3}
+               \contextversionno     \expandafter\contextversionnumber\contextversion\relax
+         \edef \contextversionnumber {\the\contextversionno\space\contextmark}
 
 %D \macros
 %D   {everydump}

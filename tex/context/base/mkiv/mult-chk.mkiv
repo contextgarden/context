@@ -35,8 +35,8 @@
 
 \registerctxluafile{mult-chk}{}
 
-\unexpanded\def\setvalidparameterkeys{\dodoubleargument\mult_checkers_set_valid_parameter_keys}
-\unexpanded\def\addvalidparameterkeys{\dodoubleargument\mult_checkers_add_valid_parameter_keys}
+\protected\def\setvalidparameterkeys{\dodoubleargument\mult_checkers_set_valid_parameter_keys}
+\protected\def\addvalidparameterkeys{\dodoubleargument\mult_checkers_add_valid_parameter_keys}
 
 \def\mult_checkers_set_valid_parameter_keys[#1][#2]{\clf_setvalidinterfacekeys{#1}{#2}}
 \def\mult_checkers_add_valid_parameter_keys[#1][#2]{\clf_addvalidinterfacekeys{#1}{#2}}
@@ -64,8 +64,8 @@
   {\def\syst_helpers_get_parameters_assign{\syst_helpers_get_parameters_assign_indeed#1}% will change
    \syst_helpers_process_comma_item#2,],^^^^0004}
 
-\unexpanded\def\disablecheckparameters{\let\getcheckedparameters\mult_checkers_get_checked_parameters_nop}
-\unexpanded\def\enablecheckparameters {\let\getcheckedparameters\mult_checkers_get_checked_parameters_yes}
+\protected\def\disablecheckparameters{\let\getcheckedparameters\mult_checkers_get_checked_parameters_nop}
+\protected\def\enablecheckparameters {\let\getcheckedparameters\mult_checkers_get_checked_parameters_yes}
 
 \disablecheckparameters
 

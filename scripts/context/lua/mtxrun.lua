@@ -1174,7 +1174,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38440, stripped down to: 19316
+-- original size: 38703, stripped down to: 19489
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -1272,11 +1272,13 @@ local fullstripper=whitespace^0*C((whitespace^0*nonwhitespace^1)^0)
 local collapser=Cs(spacer^0/""*nonspacer^0*((spacer^0/" "*nonspacer^1)^0))
 local nospacer=Cs((whitespace^1/""+nonwhitespace^1)^0)
 local b_collapser=Cs(whitespace^0/""*(nonwhitespace^1+whitespace^1/" ")^0)
-local e_collapser=Cs((whitespace^1*endofstring/""+nonwhitespace^1+whitespace^1/" ")^0)
 local m_collapser=Cs((nonwhitespace^1+whitespace^1/" ")^0)
+local e_collapser=Cs((whitespace^1*endofstring/""+nonwhitespace^1+whitespace^1/" ")^0)
+local x_collapser=Cs((nonwhitespace^1+whitespace^1/"" )^0)
 local b_stripper=Cs(spacer^0/""*(nonspacer^1+spacer^1/" ")^0)
-local e_stripper=Cs((spacer^1*endofstring/""+nonspacer^1+spacer^1/" ")^0)
 local m_stripper=Cs((nonspacer^1+spacer^1/" ")^0)
+local e_stripper=Cs((spacer^1*endofstring/""+nonspacer^1+spacer^1/" ")^0)
+local x_stripper=Cs((nonspacer^1+spacer^1/"" )^0)
 patterns.stripper=stripper
 patterns.fullstripper=fullstripper
 patterns.collapser=collapser
@@ -1284,9 +1286,11 @@ patterns.nospacer=nospacer
 patterns.b_collapser=b_collapser
 patterns.m_collapser=m_collapser
 patterns.e_collapser=e_collapser
+patterns.x_collapser=x_collapser
 patterns.b_stripper=b_stripper
 patterns.m_stripper=m_stripper
 patterns.e_stripper=e_stripper
+patterns.x_stripper=x_stripper
 patterns.lowercase=lowercase
 patterns.uppercase=uppercase
 patterns.letter=patterns.lowercase+patterns.uppercase
@@ -16537,7 +16541,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 61549, stripped down to: 36097
+-- original size: 61808, stripped down to: 36227
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -17606,9 +17610,17 @@ local function copy(old,p)
     new[k]=t
    elseif k=="dt" then
     v.__p__=nil
-    v=copy(v,new)
-    new[k]=v
-    v.__p__=p
+    local t={}
+    for i=1,#v do
+     local vi=v[i]
+     if type(vi)=="table" then
+      t[i]=copy(vi,new)
+     else
+      t[i]=vi
+     end
+    end
+    new[k]=t
+    t.__p__=p
    else
     new[k]=v 
    end
@@ -18012,7 +18024,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-lpt"] = package.loaded["lxml-lpt"] or true
 
--- original size: 54653, stripped down to: 31255
+-- original size: 54667, stripped down to: 31258
 
 if not modules then modules={} end modules ['lxml-lpt']={
  version=1.001,
@@ -18507,7 +18519,7 @@ local builtin={
 local lp_builtin=lpeg.utfchartabletopattern(builtin)/builtin*((spaces*P("(")*spaces*P(")"))/"")
 local lp_attribute=(P("@")+P("attribute::"))/""*Cc("(ll.at and ll.at['")*((R("az","AZ")+S("-_:"))^1)*Cc("'])")
 local lp_fastpos_p=P("+")^0*R("09")^1*P(-1)/"l==%0"
-local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0==l))"
+local lp_fastpos_n=P("-")*R("09")^1*P(-1)/"(%0<0 and (#list+%0+1==l))" 
 local lp_fastpos=lp_fastpos_n+lp_fastpos_p
 local lp_reserved=C("and")+C("or")+C("not")+C("div")+C("mod")+C("true")+C("false")
 local lp_lua_function=Cs((R("az","AZ","__")^1*(P(".")*R("az","AZ","__")^1)^1)*("("))/"%0"
@@ -19332,7 +19344,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-aux"] = package.loaded["lxml-aux"] or true
 
--- original size: 32655, stripped down to: 20486
+-- original size: 33747, stripped down to: 20989
 
 if not modules then modules={} end modules ['lxml-aux']={
  version=1.001,
@@ -19494,15 +19506,18 @@ local function xmltoelement(whatever,root)
 end
 xml.toelement=xmltoelement
 local function copiedelement(element,newparent)
- if type(element)=="string" then
-  return element
- else
+ if type(element)~="string" then
   element=xmlcopy(element).dt
   if newparent and type(element)=="table" then
-   element.__p__=newparent
+   for i=1,#element do
+    local e=element[i]
+    if type(e)=="table" then
+     e.__p__=newparent
+    end
+   end
   end
-  return element
  end
+ return element
 end
 function xml.delete(root,pattern)
  if not pattern or pattern=="" then
@@ -19817,28 +19832,48 @@ end
 local b_collapser=lpegpatterns.b_collapser
 local m_collapser=lpegpatterns.m_collapser
 local e_collapser=lpegpatterns.e_collapser
+local x_collapser=lpegpatterns.x_collapser
 local b_stripper=lpegpatterns.b_stripper
 local m_stripper=lpegpatterns.m_stripper
 local e_stripper=lpegpatterns.e_stripper
-local function stripelement(e,nolines,anywhere)
+local x_stripper=lpegpatterns.x_stripper
+local function stripelement(e,nolines,anywhere,everything)
  local edt=e.dt
+ print(nolines,anywhere,everything)
  if edt then
   local n=#edt
   if n==0 then
    return e 
+  elseif everything then
+   local t={}
+   local m=0
+   for i=1,n do
+    local str=edt[i]
+    if type(str)~="string" then
+     m=m+1
+     t[m]=str
+    elseif str~="" then
+     str=lpegmatch(x_collapser,str)
+     if str~="" then
+      m=m+1
+      t[m]=str
+     end
+    end
+   end
+   e.dt=t
   elseif anywhere then
    local t={}
    local m=0
-   for e=1,n do
-    local str=edt[e]
+   for i=1,n do
+    local str=edt[i]
     if type(str)~="string" then
      m=m+1
      t[m]=str
     elseif str~="" then
      if nolines then
-      str=lpegmatch((n==1 and b_collapser) or (n==m and e_collapser) or m_collapser,str)
+      str=lpegmatch((i==1 and b_collapser) or (i==m and e_collapser) or m_collapser,str)
      else
-      str=lpegmatch((n==1 and b_stripper) or (n==m and e_stripper) or m_stripper,str)
+      str=lpegmatch((i==1 and b_stripper) or (i==m and e_stripper) or m_stripper,str)
      end
      if str~="" then
       m=m+1
@@ -19880,11 +19915,11 @@ local function stripelement(e,nolines,anywhere)
  return e 
 end
 xml.stripelement=stripelement
-function xml.strip(root,pattern,nolines,anywhere) 
+function xml.strip(root,pattern,nolines,anywhere,everything) 
  local collected=xmlapplylpath(root,pattern) 
  if collected then
   for i=1,#collected do
-   stripelement(collected[i],nolines,anywhere)
+   stripelement(collected[i],nolines,anywhere,everything)
   end
  end
 end
@@ -26176,8 +26211,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1040106
--- stripped bytes    : 410421
+-- original bytes    : 1041734
+-- stripped bytes    : 411240
 
 -- end library merge
 

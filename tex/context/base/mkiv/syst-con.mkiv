@@ -84,14 +84,14 @@
 
 %D \macros{setcalculatedsin,setcalculatedcos,setcalculatedtan}
 
-\unexpanded\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
-\unexpanded\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
-\unexpanded\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
+\protected\def\setcalculatedsin#1#2{\edef#1{\clf_sind#2}}
+\protected\def\setcalculatedcos#1#2{\edef#1{\clf_cosd#2}}
+\protected\def\setcalculatedtan#1#2{\edef#1{\clf_tand#2}}
 
 %D \macros{formatted,format}
 
-           \def\formatted#1{\ctxcommand{format(#1)}} % not clf
-\unexpanded\def\format   #1{\ctxcommand{format(#1)}} % not clf
+          \def\formatted#1{\ctxcommand{format(#1)}} % not clf
+\protected\def\format   #1{\ctxcommand{format(#1)}} % not clf
 
 %D The \type {\modulatednumber} and \type {\realnumber} macros have been removed.
 

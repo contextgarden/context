@@ -23,7 +23,7 @@
 
 \let\m_syst_catcodes_temp\empty
 
-\normalprotected\def\installactivecharacter#1 %
+\protected\def\installactivecharacter#1 %
   {\edef\m_syst_catcodes_temp{\detokenize{#1}}%
    \c_syst_catcodes_c\expandafter`\m_syst_catcodes_temp\relax % relax needed
    \expandafter\startextendcatcodetable
@@ -41,7 +41,7 @@
 
 \setnewconstant\c_syst_catcodes_hack\tildeasciicode % also defined in catc-ini.mkiv
 
-\normalprotected\def\defineactivecharacter #1#2 #3% uses \doifelsenumber which is not yet defined
+\protected\def\defineactivecharacter #1#2 #3% uses \doifelsenumber which is not yet defined
   {\c_syst_catcodes_c\uccode\c_syst_catcodes_hack
    \if#1"\uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty #1#2\else
          \uccode\c_syst_catcodes_hack\expandafter\doifelsenumber\expandafter{\string#1#2}\empty`#1#2\fi
@@ -64,10 +64,10 @@
 \def\syst_catcodes_handle_yes#1#2{#2}
 \def\syst_catcodes_handle_nop#1#2{\noexpand#1}
 
-\normalprotected\def\makecharacteractive #1 %
+\protected\def\makecharacteractive #1 %
   {\catcode`#1\activecatcode}
 
-\normalprotected\def\installanddefineactivecharacter #1 % #2%
+\protected\def\installanddefineactivecharacter #1 % #2%
   {\normalexpanded{\noexpand\installactivecharacter \utfchar{#1} }%
    \defineactivecharacter #1 }% {#2}}
 

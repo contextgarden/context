@@ -840,6 +840,39 @@ characters, kind of verbatim.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\tex {tokenized}}]
+
+Just as \type {\expanded} has a counterpart \type {\unexpanded}, it makes sense to give
+\type {\detokenize} a companion:
+
+\startbuffer
+\edef\foo{\detokenize{\inframed{foo}}}
+\edef\oof{\detokenize{\inframed{oof}}}
+
+\meaning\foo \crlf
+\dontleavehmode\foo
+
+\edef\foo{\tokenized{\foo\foo}}
+
+\meaning\foo \crlf
+\dontleavehmode\foo
+
+\dontleavehmode\tokenized{\foo\oof}
+\stopbuffer
+
+\typebuffer {\getbuffer}
+
+This primitive is similar to:
+
+\starttyping
+\def\tokenized#1{\scantextokens\expandafter{\normalexpanded{#1}}}
+\stoptyping
+
+and should be more efficient, not that it matters much as we don't use it that
+much (if at all).
+
+\stopnewprimitive
+
 \startnewprimitive[title={\tex {expanded}}]
 
 This primitive complements the two expansion related primitives mentioned in the
@@ -851,9 +884,9 @@ examples:
 
 \startbuffer
 \def\A{!}
-                \def\B#1{\string#1}                          \B{\A}  \crlf
-                \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}} \crlf
-\normalprotected\def\B#1{\string#1}                          \B{\A}  \crlf
+          \def\B#1{\string#1}                          \B{\A}  \crlf
+          \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}} \crlf
+\protected\def\B#1{\string#1}                          \B{\A}  \crlf
 \stopbuffer
 
 \typebuffer {\getbuffer}
@@ -1993,9 +2026,10 @@ A protected macro is one that doesn't get expanded unless it is time to do so.
 For instance, inside an \type {\edef} it just stays what it is. It often makes
 sense to pass macros as|-|is to (multi|-|pass) file (for tables of contents).
 
-In \CONTEXT\ we use either \type {\normalprotected} or \type {\unexpanded}
-because the later was the command we used to achieve the same results before
-\ETEX\ introduced this protection primitive.
+In \CONTEXT\ we use either \type {\protected} or \type {\unexpanded} because the
+later was the command we used to achieve the same results before \ETEX\
+introduced this protection primitive. Originally the \type {\protected} macro was
+also defined but it has been dropped.
 
 \stopoldprimitive
 
@@ -2056,20 +2090,18 @@ undecided to what extend \CONTEXT\ will use this feature.
 Say that you have these definitions:
 
 \startbuffer
-                 \def  \MyMacroA{alpha}
-\normalprotected \def  \MyMacroB{beta}
-                 \edef \MyMacroC{\MyMacroA\MyMacroB}
-\letprotected          \MyMacroA
-                 \edef \MyMacroD{\MyMacroA\MyMacroB}
-\meaning               \MyMacroC\crlf
-\meaning               \MyMacroD
+             \def  \MyMacroA{alpha}
+\protected   \def  \MyMacroB{beta}
+             \edef \MyMacroC{\MyMacroA\MyMacroB}
+\letprotected      \MyMacroA
+             \edef \MyMacroD{\MyMacroA\MyMacroB}
+\meaning           \MyMacroC\crlf
+\meaning           \MyMacroD
 \stopbuffer
 
 \typebuffer
 
-We use \type {\normalprotected} because when the \ETEX\ \type {\protected}
-primitive showed up we already had that name in use. The typeset meaning
-in this example is:
+The typeset meaning in this example is:
 
 {\tttf \getbuffer}
 
@@ -2081,13 +2113,13 @@ The complementary operation of \type {\letprotected} can be used to unprotect
 a macro, so that it gets expandable.
 
 \startbuffer
-                 \def  \MyMacroA{alpha}
-\normalprotected \def  \MyMacroB{beta}
-                 \edef \MyMacroC{\MyMacroA\MyMacroB}
-\unletprotected        \MyMacroB
-                 \edef \MyMacroD{\MyMacroA\MyMacroB}
-\meaning               \MyMacroC\crlf
-\meaning               \MyMacroD
+               \def  \MyMacroA{alpha}
+\protected     \def  \MyMacroB{beta}
+               \edef \MyMacroC{\MyMacroA\MyMacroB}
+\unletprotected      \MyMacroB
+               \edef \MyMacroD{\MyMacroA\MyMacroB}
+\meaning             \MyMacroC\crlf
+\meaning             \MyMacroD
 \stopbuffer
 
 \typebuffer

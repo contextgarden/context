@@ -235,21 +235,21 @@
 
 %D The allocators share a common helper macro.
 
-\normalprotected\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef   \c_syst_max_allocated_register}
-\normalprotected\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef   \c_syst_max_allocated_register}
-\normalprotected\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef    \c_syst_max_allocated_register}
-\normalprotected\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef  \c_syst_max_allocated_register}
-\normalprotected\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \mathchardef\c_syst_max_allocated_register}
-\normalprotected\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef    \c_syst_max_allocated_register}
-\normalprotected\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \chardef    \c_syst_max_allocated_read}
-\normalprotected\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \chardef    \c_syst_max_allocated_write}
-\normalprotected\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \mathchardef\c_syst_max_allocated_register}
-\normalprotected\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef    \c_syst_max_allocated_insert}
+\protected\def\newcount   {\syst_basics_allocate\c_syst_last_allocated_count    \count   \countdef   \c_syst_max_allocated_register}
+\protected\def\newdimen   {\syst_basics_allocate\c_syst_last_allocated_dimen    \dimen   \dimendef   \c_syst_max_allocated_register}
+\protected\def\newskip    {\syst_basics_allocate\c_syst_last_allocated_skip     \skip    \skipdef    \c_syst_max_allocated_register}
+\protected\def\newmuskip  {\syst_basics_allocate\c_syst_last_allocated_muskip   \muskip  \muskipdef  \c_syst_max_allocated_register}
+\protected\def\newbox     {\syst_basics_allocate\c_syst_last_allocated_box      \box     \mathchardef\c_syst_max_allocated_register}
+\protected\def\newtoks    {\syst_basics_allocate\c_syst_last_allocated_toks     \toks    \toksdef    \c_syst_max_allocated_register}
+\protected\def\newread    {\syst_basics_allocate\c_syst_last_allocated_read     \read    \chardef    \c_syst_max_allocated_read}
+\protected\def\newwrite   {\syst_basics_allocate\c_syst_last_allocated_write    \write   \chardef    \c_syst_max_allocated_write}
+\protected\def\newmarks   {\syst_basics_allocate\c_syst_last_allocated_marks    \marks   \mathchardef\c_syst_max_allocated_register}
+\protected\def\newinsert  {\syst_basics_allocate\c_syst_last_allocated_insertion\insert  \chardef    \c_syst_max_allocated_insert}
 
 %D We don't need these in \CONTEXT:
 
-\normalprotected\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\chardef    \c_syst_max_allocated_language}
-\normalprotected\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \chardef    \c_syst_max_allocated_family}
+\protected\def\newlanguage{\syst_basics_allocate\c_syst_last_allocated_language \language\chardef    \c_syst_max_allocated_language}
+\protected\def\newfamily  {\syst_basics_allocate\c_syst_last_allocated_family   \fam     \chardef    \c_syst_max_allocated_family}
 
 \let\newfam\newfamily
 
@@ -258,10 +258,10 @@
 % Watch out, for the moment we disable the check for already being defined
 % later we will revert this but first all chardefs must be replaced.
 
-\normalprotected\def\newconstant       #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
-\normalprotected\def\setnewconstant    #1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
-\normalprotected\def\setconstant         {}                                             % dummy, no checking, so it warns
-\normalprotected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
+\protected\def\newconstant       #1{\ifdefined#1\let#1\undefined\fi\newcount#1}
+\protected\def\setnewconstant    #1{\ifdefined#1\let#1\undefined\fi\newcount#1#1} % just a number
+\protected\def\setconstant         {}                                             % dummy, no checking, so it warns
+\protected\def\setconstantvalue#1#2{\csname#1\endcsname\numexpr#2\relax}
 
 % maybe setconstant with check
 
@@ -276,8 +276,8 @@
 %D as all engines now provide many registers we removed all traces.
 
 \ifdefined\writestatus \else
-   %\normalprotected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
-    \normalprotected\def\writestatus#1#2{\message{#1: #2}}
+   %\protected\def\writestatus#1#2{\immediate\write\statuswrite{#1: #2}}
+    \protected\def\writestatus#1#2{\message{#1: #2}}
 \fi
 
 \def\syst_basics_allocate_yes#1#2#3#4#5% last class method max name
@@ -304,8 +304,8 @@
 %D Since the number of chars exceed 256 now, we can use \type {\chardef} instead of
 %D the more limited \type {\mathchardef}.
 
-\normalprotected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
-\normalprotected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
+\protected\def\newbox  {\syst_basics_allocate\c_syst_last_allocated_box  \box  \chardef\c_syst_max_allocated_register}
+\protected\def\newmarks{\syst_basics_allocate\c_syst_last_allocated_marks\marks\chardef\c_syst_max_allocated_register}
 
 %D Attributes are something very \LUATEX. In \CONTEXT\ you are not supposed to use
 %D the attributes directly but always allocate then first. For instance attribute~0
@@ -314,14 +314,14 @@
 
 \let\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
 
-\normalprotected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
+\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_register}
 
 %D Not used by \CONTEXT\ but for instance \PICTEX\ needs it. It's a trick to force
 %D strings instead of tokens that take more memory. It's a trick to trick to force
 %D strings. This macro is never used in \CONTEXT.
 
-%normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
-\normalprotected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
+%protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\csname#2\endcsname}}
+\protected\def\newhelp#1#2{\newtoks#1#1\expandafter{\detokenize{#2}}}
 
 %D \macros
 %D   {scratchcounter,
@@ -490,7 +490,7 @@
 %D
 %D We need this one soon:
 
-\normalprotected\def\dontcomplain
+\protected\def\dontcomplain
   {\hbadness\plustenthousand
    \vbadness\plustenthousand
    \hfuzz   \maxdimen
@@ -524,7 +524,7 @@
 %D creates \type {\footrue}, \type {\foofalse} to go with \type {\iffoo}.
 %D \stopnarrower
 
-% \normalprotected\def\newif#1%
+% \protected\def\newif#1%
 %   {\count@\escapechar
 %    \escapechar\minusone
 %    \expandafter\expandafter\expandafter\def\new_if #1{true}{\let#1\iftrue }%
@@ -542,7 +542,7 @@
 % We use \csstring so there is no need to push/pop escapechar.
 % We use different names so that we get a better error message.
 %
-% \normalprotected\def\newif#1%
+% \protected\def\newif#1%
 %   {\let\new_if_saved\newif
 %    \let\newif\new_if_check
 %    \expandafter\expandafter\expandafter\def\new_if_cs #1{true}{\let#1\iftrue }%
@@ -550,12 +550,12 @@
 %    \new_if_cs#1{false}%
 %    \let\newif\new_if_saved}
 %
-% \normalprotected\def\new_if_cs#1#2%
+% \protected\def\new_if_cs#1#2%
 %   {\csname\expandafter\newif\csstring#1#2\endcsname}
 %
 % We wrap all into one macro:
 
-\normalprotected\def\newif#1%
+\protected\def\newif#1%
   {\let\new_if_saved\newif
    \let\newif\new_if_check
    \expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
@@ -576,10 +576,10 @@
 
 %D A few shortcuts:
 
-\normalprotected\def\udef {\normalprotected\def }
-\normalprotected\def\ugdef{\normalprotected\gdef}
-\normalprotected\def\uedef{\normalprotected\edef}
-\normalprotected\def\uxdef{\normalprotected\xdef}
+\protected\def\udef {\protected\def }
+\protected\def\ugdef{\protected\gdef}
+\protected\def\uedef{\protected\edef}
+\protected\def\uxdef{\protected\xdef}
 
 %D For a while we keep the following, as systems like tikz need it. Best
 %D not use that one \CONTEXT.
@@ -696,7 +696,7 @@
 
 % no longer \errorstopmode cf. plain tex 3.141592653
 
-\normalprotected\def\tracingall
+\protected\def\tracingall
   {\tracingonline    \plusone
    \tracingcommands  \plusthree
    \tracingstats     \plustwo
@@ -714,11 +714,11 @@
    \tracingnesting   \plustwo
    \tracingassigns   \plustwo}
 
-\normalprotected\def\loggingall
+\protected\def\loggingall
   {\tracingall
    \tracingonline    \zerocount}
 
-\normalprotected\def\tracingnone
+\protected\def\tracingnone
   {\tracingassigns   \zerocount
    \tracingnesting   \zerocount
    \tracingscantokens\zerocount
@@ -811,11 +811,11 @@
 \let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
 \let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
 
-\normalprotected\def\settrue #1{\let#1\conditionaltrue }
-\normalprotected\def\setfalse#1{\let#1\conditionalfalse}
+\protected\def\settrue #1{\let#1\conditionaltrue }
+\protected\def\setfalse#1{\let#1\conditionalfalse}
 
-\normalprotected\def\settruevalue #1{\expandafter\let\csname#1\endcsname\conditionaltrue }
-\normalprotected\def\setfalsevalue#1{\expandafter\let\csname#1\endcsname\conditionalfalse}
+\protected\def\settruevalue #1{\expandafter\let\csname#1\endcsname\conditionaltrue }
+\protected\def\setfalsevalue#1{\expandafter\let\csname#1\endcsname\conditionalfalse}
 
 \let\newconditional\setfalse
 \let\ifconditional \ifcase
@@ -831,13 +831,13 @@
 %D Let's be complete and also introduce some definers. These are not mandate
 %D but handy for grepping.
 
-\normalprotected\def\newmacro   #1{\let#1\empty}
-\normalprotected\def\setnewmacro#1{\let#1}
+\protected\def\newmacro   #1{\let#1\empty}
+\protected\def\setnewmacro#1{\let#1}
 
 \def\!!zerocount{0}
 \def\!!plusone  {1}
 
-\normalprotected\def\newfraction#1{\let#1\!!plusone}
+\protected\def\newfraction#1{\let#1\!!plusone}
 
 %D It would be handy to have a primitive \type {\unless\ifcase} because then we
 %D could use nicer values. Anyhow, this conditional code used to be in the \type
@@ -859,19 +859,19 @@
 %
 % we assume a \cs. not toks0 or so
 %
-% \normalprotected\def\appendtotoks #1#{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
-% \normalprotected\def\prependtotoks#1#{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
+% \protected\def\appendtotoks #1#{\def\temp{#1}\afterassignment\doappendtotoks \scratchtoks=}
+% \protected\def\prependtotoks#1#{\def\temp{#1}\afterassignment\doprependtotoks\scratchtoks=}
 
 \newtoks\t_syst_toks_temp \let\m_syst_toks_temp\t_syst_toks_temp
 
-\normalprotected\def\appendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_l \t_syst_toks_temp=}
-\normalprotected\def\prependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_l\t_syst_toks_temp=}
+\protected\def\appendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_l \t_syst_toks_temp=}
+\protected\def\prependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_l\t_syst_toks_temp=}
 
 % \def\syst_toks_append {\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\m_syst_toks_temp\the\t_syst_toks_temp}}}
 % \def\syst_toks_prepend{\m_syst_toks_temp\expandafter\expandafter\expandafter{\expandafter\the\expandafter\t_syst_toks_temp\the\m_syst_toks_temp}}}
 
-\normalprotected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
-\normalprotected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
+\protected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
+\protected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
 
 \def\syst_toks_append_l {\normalexpanded{\m_syst_toks_temp{\the\m_syst_toks_temp\the\t_syst_toks_temp}}}
 \def\syst_toks_prepend_l{\normalexpanded{\m_syst_toks_temp{\the\t_syst_toks_temp\the\m_syst_toks_temp}}}
@@ -879,14 +879,14 @@
 \def\syst_toks_append_g {\global\syst_toks_append_l }
 \def\syst_toks_prepend_g{\global\syst_toks_prepend_l}
 
-\normalprotected\def\addtotoks      #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_l\let\next}
-\normalprotected\def\globaladdtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_g\let\next}
+\protected\def\addtotoks      #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_l\let\next}
+\protected\def\globaladdtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_add_g\let\next}
 
 \def\syst_toks_add_l{\m_syst_toks_temp\expandafter\bgroup\the\m_syst_toks_temp}
 \def\syst_toks_add_g{\global\syst_toks_add_l}
 
-\normalprotected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
-\normalprotected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes
+\protected\def\addtotokscs      #1#2{#1{\the#1#2}}        % saves a few bytes
+\protected\def\globaladdtotokscs#1#2{\global#1{\the#1#2}} % saves a few bytes
 
 %D \macros
 %D   {begcsname}
@@ -905,20 +905,20 @@
 %
 % \newtoks\everyendpar
 %
-% \normalprotected\def\endpar{\the\everyendpar\normalpar}
-% \normalprotected\def\par   {\endpar}
+% \protected\def\endpar{\the\everyendpar\normalpar}
+% \protected\def\par   {\endpar}
 %
-% \normalprotected\def\reseteverypar
+% \protected\def\reseteverypar
 %   {\everypar   \emptytoks
 %    \everyendpar\emptytoks}
 
-\normalprotected\def\reseteverypar
+\protected\def\reseteverypar
   {\everypar\emptytoks}
 
 \let\endgraf\par
 \let\endline\cr
 
-\normalprotected\def\null{\hpack{}}
+\protected\def\null{\hpack{}}
 
 %D The following two might be overloaded later on but some modules need then
 %D earlier. These functionality is reflected in the name and will not change.
@@ -997,8 +997,8 @@
 %D Sometimes kerns make more sense than glue but we need to be in the
 %D right mode:
 
-\normalprotected\def\vkern{\ifhmode\par           \fi\kern}
-\normalprotected\def\hkern{\ifvmode\dontleavehmode\fi\kern}
+\protected\def\vkern{\ifhmode\par           \fi\kern}
+\protected\def\hkern{\ifvmode\dontleavehmode\fi\kern}
 
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but
 %D are probably not used in \CONTEXT.
@@ -1146,7 +1146,7 @@
 \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
 %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
 
-\normalprotected\def\installsystemnamespace#1%
+\protected\def\installsystemnamespace#1%
   {\ifcsname ??#1\endcsname
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
      \expandafter\normalend
@@ -1181,5 +1181,14 @@
 \ifdefined\glyphdimensionsmode \else \newcount\glyphdimensionsmode \fi
 
 \glyphdimensionsmode\plusone
+
+%D For completeness (tokenizer commands have complements), so this one complements
+%D \type {\detokenize}, like \type {\expanded} and \type {\unexpanded}. Not that we
+%D ever needed this one:
+
+\ifdefined \tokenized \else
+    \def\tokenized#1{\scantextokens\expandafter{\normalexpanded{#1}}}
+\fi
+
 
 \protect \endinput

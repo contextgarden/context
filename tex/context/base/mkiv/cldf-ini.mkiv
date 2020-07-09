@@ -49,11 +49,11 @@
 % \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode1=\activecatcode \glet^^A=\cldf
 % \catcodetable\ctxcatcodes \catcode`^=\superscriptcatcode\catcode2=\activecatcode \glet^^B=\cldn
 
-\normalprotected\def\cldprocessfile#1{\directlua{context.runfile("#1")}}
-                \def\cldloadfile   #1{\directlua{context.loadfile("#1")}}
-                \def\cldloadviafile#1{\directlua{context.loadviafile("#1")}}
-                \def\cldcontext    #1{\directlua{context(#1)}}
-                \def\cldcommand    #1{\directlua{context.#1}}
-              % \def\cldverbatim   #1{\directlua{context.verbatim.#1}} % maybe make verbatim global
+\protected\def\cldprocessfile#1{\directlua{context.runfile("#1")}}
+          \def\cldloadfile   #1{\directlua{context.loadfile("#1")}}
+          \def\cldloadviafile#1{\directlua{context.loadviafile("#1")}}
+          \def\cldcontext    #1{\directlua{context(#1)}}
+          \def\cldcommand    #1{\directlua{context.#1}}
+        % \def\cldverbatim   #1{\directlua{context.verbatim.#1}} % maybe make verbatim global
 
 \endinput

@@ -648,7 +648,7 @@ local lp_attribute = (P("@") + P("attribute::")) / "" * Cc("(ll.at and ll.at['")
 ----- lp_fastpos_n = (P("-")   * R("09")^1 * P(-1)) / function(s) return "(" .. s .. "<0 and (#list+".. s .. "==l))" end
 
 local lp_fastpos_p = P("+")^0 * R("09")^1 * P(-1) / "l==%0"
-local lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0==l))"
+local lp_fastpos_n = P("-")   * R("09")^1 * P(-1) / "(%0<0 and (#list+%0+1==l))" -- +1 added
 local lp_fastpos   = lp_fastpos_n + lp_fastpos_p
 
 local lp_reserved  = C("and") + C("or") + C("not") + C("div") + C("mod") + C("true") + C("false")

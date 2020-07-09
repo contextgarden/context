@@ -38,11 +38,12 @@
 %D code.
 %D
 %D \starttyping
-%D \unexpanded\def\somecommand{... ... ...}
+%D \protected\def\somecommand{... ... ...}
 %D \stoptyping
 %D
 %D This overloads the \ETEX\ primitive but as we already had an \MKII\ solution we
-%D keep the same name for a similar mechanism.
+%D keep the same name for a similar mechanism. So, effectively we have two ways to
+%D protect a macro.
 
 \let\unexpanded\normalprotected
 
@@ -69,7 +70,7 @@
 
 \fi
 
-\unexpanded\def\installsystemnamespace#1% maybe move this to syst-ini
+\protected\def\installsystemnamespace#1% maybe move this to syst-ini
   {\ifcsname ??#1\endcsname
      \writestatus\m!system{duplicate system namespace '#1'}\wait
    \else
@@ -176,10 +177,10 @@
 
 \let\m_syst_helpers_expanded\empty
 
-\unexpanded\def\expanded#1%
+\protected\def\expanded#1%
   {\xdef\m_syst_helpers_expanded{\noexpand#1}\m_syst_helpers_expanded}
 
-\unexpanded\def\startexpanded#1\stopexpanded
+\protected\def\startexpanded#1\stopexpanded
   {\xdef\m_syst_helpers_expanded{#1}\m_syst_helpers_expanded}
 
 \let\stopexpanded\relax
@@ -248,12 +249,12 @@
 \let\m_syst_action_yes\relax
 \let\m_syst_action_nop\relax
 
-\unexpanded\def\doifelsenextchar#1#2#3% #1 should not be {} !
+\protected\def\doifelsenextchar#1#2#3% #1 should not be {} !
   {\def\m_syst_action_yes{#2}%
    \def\m_syst_action_nop{#3}%
    \futureexpandis#1\m_syst_action_yes\m_syst_action_nop}
 
-\unexpanded\def\doifelsenextcharcs % #1#2#3% #1 should not be {} !
+\protected\def\doifelsenextcharcs % #1#2#3% #1 should not be {} !
   {\futureexpandis}
 
 \let\doifnextcharelse  \doifelsenextchar
@@ -268,29 +269,29 @@
 %D reputations depends on understanding obscure macro definitions will love the more
 %D low level variants.
 
-\unexpanded\def\doifelsenextoptional#1#2%
+\protected\def\doifelsenextoptional#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futureexpandis[\m_syst_action_yes\m_syst_action_nop}
 
-\unexpanded\def\doifelsenextoptionalcs
+\protected\def\doifelsenextoptionalcs
   {\futureexpandis[}
 
 \let\doifnextoptionalelse  \doifelsenextoptional
 \let\doifnextoptionalcselse\doifelsenextoptionalcs
 
-\unexpanded\def\doifelsenextbgroup#1#2%
+\protected\def\doifelsenextbgroup#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futureexpandis\bgroup\m_syst_action_yes\m_syst_action_nop}
 
-\unexpanded\def\doifelsenextbgroupcs % #1#2
+\protected\def\doifelsenextbgroupcs % #1#2
   {\futureexpandis\bgroup}
 
 \let\doifnextbgroupelse  \doifelsenextbgroup
 \let\doifnextbgroupcselse\doifelsenextbgroupcs
 
-\unexpanded\def\doifelsenextparenthesis#1#2%
+\protected\def\doifelsenextparenthesis#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futureexpandis(\m_syst_action_yes\m_syst_action_nop}
@@ -306,12 +307,12 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\unexpanded\def\doifelsefastoptionalcheck#1#2%
+\protected\def\doifelsefastoptionalcheck#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futureexpandis[\m_syst_action_yes\m_syst_action_nop}
 
-\unexpanded\def\doifelsefastoptionalcheckcs
+\protected\def\doifelsefastoptionalcheckcs
   {\futureexpandis[}
 
 \let\doiffastoptionalcheckelse  \doifelsefastoptionalcheck
@@ -392,12 +393,12 @@
 \def\undefinevalue#1{\expandafter\let \csname#1\endcsname\undefined}
 \def\ignorevalue#1#2{\expandafter\let \csname#1\endcsname\empty}
 
-\def\setuvalue    #1{\normalprotected\expandafter \def\csname#1\endcsname}
-\def\setuevalue   #1{\normalprotected\expandafter\edef\csname#1\endcsname}
-\def\setugvalue   #1{\normalprotected\expandafter\gdef\csname#1\endcsname}
-\def\setuxvalue   #1{\normalprotected\expandafter\xdef\csname#1\endcsname}
+\def\setuvalue    #1{\protected\expandafter \def\csname#1\endcsname}
+\def\setuevalue   #1{\protected\expandafter\edef\csname#1\endcsname}
+\def\setugvalue   #1{\protected\expandafter\gdef\csname#1\endcsname}
+\def\setuxvalue   #1{\protected\expandafter\xdef\csname#1\endcsname}
 
-\unexpanded\def\getuvalue#1{\csname#1\endcsname}
+\protected\def\getuvalue#1{\csname#1\endcsname}
 
 %D \macros
 %D   {globallet,glet}
@@ -477,13 +478,13 @@
 %D {\undefined}! In \ETEX\ we have \type {\ifcsname} and that way of testing on
 %D existance is not the same as the one described here. Therefore we introduce:
 
-\unexpanded\def\letbeundefined#1%
+\protected\def\letbeundefined#1%
   {\expandafter\let\csname#1\endcsname\undefined} % or use \undefinevalue to match \setvalue
 
-\unexpanded\def\localundefine#1% conditional
+\protected\def\localundefine#1% conditional
   {\ifcsname#1\endcsname\expandafter\let\csname#1\endcsname\undefined\fi}
 
-\unexpanded\def\globalundefine#1% conditional
+\protected\def\globalundefine#1% conditional
   {\ifcsname#1\endcsname\expandafter\glet\csname#1\endcsname\undefined\fi}
 
 %D Beware, being \type {\undefined} in \ETEX\ means that the macro {\em is} defined!
@@ -492,7 +493,7 @@
 %D behavior in text and math mode, which was due to this grouping subtilities. We
 %D therefore decided to use \type {\begingroup} instead of \type {\bgroup}.
 
-\unexpanded\def\doifelsealldefined#1%
+\protected\def\doifelsealldefined#1%
   {\begingroup
    \donetrue % we could use a reserved one and avoid the group
    \processcommalist[#1]\syst_helpers_do_if_all_defined_else
@@ -531,21 +532,21 @@
 %D \type {\edef}'s and \type {\ifx} comparison works as well, but this saves tokens
 %D and, more important, tracing clutter.
 
-\unexpanded\def\doifelse#1#2%
+\protected\def\doifelse#1#2%
   {\iftok{#1}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doif#1#2%
+\protected\def\doif#1#2%
   {\iftok{#1}{#2}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifnot#1#2%
+\protected\def\doifnot#1#2%
   {\iftok{#1}{#2}%
      \expandafter\gobbleoneargument
    \else
@@ -566,7 +567,7 @@
 %D This time, the string is not expanded, but we use the dedicated empty checker
 %D here.
 
-\unexpanded\def\doifelseempty#1%
+\protected\def\doifelseempty#1%
   {\def\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \expandafter\firstoftwoarguments
@@ -576,7 +577,7 @@
 
 \let\doifemptyelse\doifelseempty
 
-\unexpanded\def\doifempty#1%
+\protected\def\doifempty#1%
   {\def\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \expandafter\firstofoneargument
@@ -584,7 +585,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifnotempty#1%
+\protected\def\doifnotempty#1%
   {\def\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \expandafter\gobbleoneargument
@@ -641,21 +642,21 @@
 
 % These don't accept spaces after commas:
 %
-% \unexpanded\def\doifelseinset#1#2%
+% \protected\def\doifelseinset#1#2%
 %   {\ifhasxtoks{,#1,}{,#2,}%
 %      \expandafter\firstoftwoarguments
 %    \else
 %      \expandafter\secondoftwoarguments
 %    \fi}
 
-% \unexpanded\def\doifinset#1#2%
+% \protected\def\doifinset#1#2%
 %   {\ifhasxtoks{,#1,}{,#2,}%
 %      \expandafter\firstofoneargument
 %    \else
 %      \expandafter\gobbleoneargument
 %    \fi}
 
-% \unexpanded\def\doifnotinset#1#2%
+% \protected\def\doifnotinset#1#2%
 %   {\ifhasxtoks{,#1,}{,#2,}%
 %      \expandafter\gobbleoneargument
 %    \else
@@ -669,21 +670,21 @@
 
 \normalexpanded {
 
-    \unexpanded \def \noexpand \doifelseinset#1#2%
+    \protected \def \noexpand \doifelseinset#1#2%
       {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
          \noexpand\expandafter\noexpand\firstoftwoarguments
        \noexpand\else
          \noexpand\expandafter\noexpand\secondoftwoarguments
        \noexpand\fi}
 
-    \unexpanded \def \noexpand \doifinset#1#2%
+    \protected \def \noexpand \doifinset#1#2%
       {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
          \noexpand\expandafter\noexpand\firstofoneargument
        \noexpand\else
          \noexpand\expandafter\noexpand\gobbleoneargument
        \noexpand\fi}
 
-    \unexpanded \def \noexpand \doifnotinset#1#2%
+    \protected \def \noexpand \doifnotinset#1#2%
       {\noexpand\ifhasxtoks{,\a!space#1,}{,#2,}%
          \noexpand\expandafter\noexpand\gobbleoneargument
        \noexpand\else
@@ -724,9 +725,9 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
-\unexpanded\def\doifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
-\unexpanded\def\doifcommon    #1#2{\clf_doifcommon    {#1}{#2}}
-\unexpanded\def\doifnotcommon #1#2{\clf_doifnotcommon {#1}{#2}}
+\protected\def\doifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+\protected\def\doifcommon    #1#2{\clf_doifcommon    {#1}{#2}}
+\protected\def\doifnotcommon #1#2{\clf_doifnotcommon {#1}{#2}}
 
 \let\doifcommonelse\doifelsecommon
 
@@ -796,7 +797,7 @@
 %D arguments state. Again it permits leaner and meaner macro definitions with a bit
 %D less clutter in tracing.
 
-\unexpanded\def\syst_helpers_process_comma_item#1,%
+\protected\def\syst_helpers_process_comma_item#1,%
   {\ifarguments
      \expandafter\syst_helpers_process_comma_item_gobble
    \or
@@ -807,13 +808,13 @@
 \def\syst_helpers_process_comma_item_next
   {\expandafterspaces\syst_helpers_process_comma_item}
 
-\unexpanded\def\processcommalist[#1]#2%
+\protected\def\processcommalist[#1]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
    \expandafterspaces\syst_helpers_process_comma_item#1,\ignorearguments\ignorearguments\ignorearguments
    \popmacro\commalistcommand}
 
-\unexpanded\def\processcommacommand[#1]#2%
+\protected\def\processcommacommand[#1]#2%
   {\pushmacro\commalistcommand
    \def\commalistcommand{#2}%
    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_comma_item#1,}\ignorearguments\ignorearguments\ignorearguments
@@ -829,8 +830,8 @@
 \def\syst_helpers_process_comma_item_next_c#-\ignorearguments{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
 \def\syst_helpers_process_comma_item_gobble#-\ignorearguments{}
 
-\unexpanded\def\quitcommalist    {\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
-\unexpanded\def\quitprevcommalist{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_c}
+\protected\def\quitcommalist    {\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_b}
+\protected\def\quitprevcommalist{\let\syst_helpers_process_comma_item_next\syst_helpers_process_comma_item_next_c}
 
 %D \startbuffer
 %D \def\foo#1{(#1)}
@@ -871,7 +872,7 @@
 %D \def\command[#1]{... #1 ...}
 %D \stoptyping
 
-\unexpanded\def\processcommalistwithparameters[#1]#2%
+\protected\def\processcommalistwithparameters[#1]#2%
   {\def\syst_helpers_do_process_comma_list_with_parameters##1{#2[##1]}%
    \processcommalist[#1]\syst_helpers_do_process_comma_list_with_parameters}
 
@@ -882,11 +883,11 @@
 
 \let\syst_helpers_comma_list_step\relax
 
-\unexpanded\def\startprocesscommalist[#1]#2\stopprocesscommalist
+\protected\def\startprocesscommalist[#1]#2\stopprocesscommalist
   {\def\syst_helpers_comma_list_step##1{\def\currentcommalistitem{##1}#2}%
    \processcommalist[#1]\syst_helpers_comma_list_step}
 
-\unexpanded\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
+\protected\def\startprocesscommacommand[#1]#2\stopprocesscommacommand
   {\def\syst_helpers_comma_list_step##1{\def\currentcommalistitem{##1}#2}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_comma_list_step}
 
@@ -936,14 +937,14 @@
 %D this more hip and a bit faster now but \unknown\ it's seldom used nowadays as we
 %D have better ways now.
 
-\unexpanded\def\syst_helpers_do_compare_process_action_a[#1=>#2][#3]%
+\protected\def\syst_helpers_do_compare_process_action_a[#1=>#2][#3]%
   {\edef\m_syst_string_two{#1}%
    \ifx\m_syst_string_two\s!default
      \let\commalistelement\empty
      #2%
    \fi}
 
-\unexpanded\def\syst_helpers_do_compare_process_action_b[#1=>#2][#3]%
+\protected\def\syst_helpers_do_compare_process_action_b[#1=>#2][#3]%
   {\edef\m_syst_string_two{#1}%
    \ifx\m_syst_string_one\m_syst_string_two
      \def\commalistelement{#3}%
@@ -954,7 +955,7 @@
      #2%
    \fi}
 
-\unexpanded\def\processaction[#1]#2[%
+\protected\def\processaction[#1]#2[%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \let\syst_helpers_do_compare_process_action\syst_helpers_do_compare_process_action_a
@@ -964,7 +965,7 @@
    \edef\syst_helpers_do_process_action##1{\syst_helpers_do_compare_process_action[##1][#1]}% expands #1
    \processnextcommalist\relax\relax\syst_helpers_do_process_action[}
 
-\unexpanded\def\syst_helpers_do_compare_process_action_c[#1=>#2][#3]%
+\protected\def\syst_helpers_do_compare_process_action_c[#1=>#2][#3]%
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{#3}%
    \ifx\m_syst_string_one\m_syst_string_two
@@ -979,7 +980,7 @@
      \fi
    \fi}
 
-\unexpanded\def\processfirstactioninset[#1]%
+\protected\def\processfirstactioninset[#1]%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \expandafter\processaction
@@ -988,13 +989,13 @@
    \fi
    [#1]}
 
-\unexpanded\def\syst_helpers_process_first_action_in_set_indeed[#1]#2[#3]%
+\protected\def\syst_helpers_process_first_action_in_set_indeed[#1]#2[#3]%
   {\def\syst_helpers_do_process_action##1%
      {\def\syst_helpers_do_do_process_action####1{\syst_helpers_do_compare_process_action_c[####1][##1]}%
       \processcommalist[#3]\syst_helpers_do_do_process_action}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_do_process_action}
 
-\unexpanded\def\syst_helpers_do_compare_process_action_d[#1=>#2][#3]%
+\protected\def\syst_helpers_do_compare_process_action_d[#1=>#2][#3]%
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{#3}%
    \ifx\m_syst_string_one\m_syst_string_two
@@ -1009,7 +1010,7 @@
      \fi
    \fi}
 
-\unexpanded\def\syst_helpers_process_all_actions_in_set_indeed[#1]#2[#3]%
+\protected\def\syst_helpers_process_all_actions_in_set_indeed[#1]#2[#3]%
   {\globalpushmacro\syst_process_action_in_set_all
    \def\syst_process_action_in_set##1%
      {\def\syst_process_action_in_set_one####1{\syst_helpers_do_compare_process_action_d[####1][##1]}%
@@ -1017,7 +1018,7 @@
    \processcommacommand[#1]\syst_process_action_in_set
    \globalpopmacro\syst_process_action_in_set_all}
 
-\unexpanded\def\processallactionsinset[#1]%
+\protected\def\processallactionsinset[#1]%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
      \expandafter\processaction
@@ -1028,7 +1029,7 @@
 
 %D These macros use:
 
-\unexpanded\def\processnextcommalist#1#2#3[#4#5]%
+\protected\def\processnextcommalist#1#2#3[#4#5]%
   {#1\relax
    \pushmacro\commalistcommand
    \def\commalistcommand{#3}%
@@ -1052,10 +1053,10 @@
 \let\firstcharacter     \empty
 \let\remainingcharacters\empty
 
-\unexpanded\def\getfirstcharacter     #1{\clf_getfirstcharacter{#1}}
-\unexpanded\def\doifelsefirstchar   #1#2{\clf_doifelsefirstchar{#1}{#2}}
-\unexpanded\def\thefirstcharacter     #1{\clf_thefirstcharacter{#1}}
-\unexpanded\def\theremainingcharacters#1{\clf_theremainingcharacters{#1}}
+\protected\def\getfirstcharacter     #1{\clf_getfirstcharacter{#1}}
+\protected\def\doifelsefirstchar   #1#2{\clf_doifelsefirstchar{#1}{#2}}
+\protected\def\thefirstcharacter     #1{\clf_thefirstcharacter{#1}}
+\protected\def\theremainingcharacters#1{\clf_theremainingcharacters{#1}}
 
 \let\doiffirstcharelse\doifelsefirstchar
 
@@ -1096,7 +1097,7 @@
 %
 % \let\m_syst_sub_string                   \empty
 %
-% \unexpanded\def\doifelseinstring#1%
+% \protected\def\doifelseinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
 %    \ifempty\m_syst_sub_string
 %      \expandafter\thirdofthreearguments
@@ -1106,8 +1107,8 @@
 %
 % \let\doifinstringelse\doifelseinstring
 %
-% \unexpanded\def\syst_helpers_do_if_in_string_else#1% ##2 can be {abc}
-%   {\normalexpanded{\unexpanded\def\syst_helpers_do_do_if_in_string_else##1\m_syst_sub_string##2}%
+% \protected\def\syst_helpers_do_if_in_string_else#1% ##2 can be {abc}
+%   {\normalexpanded{\protected\def\syst_helpers_do_do_if_in_string_else##1\m_syst_sub_string##2}%
 %      {\ifarguments
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_else_nop
@@ -1116,8 +1117,8 @@
 %       \fi}%
 %    \normalexpanded{\syst_helpers_do_do_if_in_string_else#1}\e_o_t\ignorearguments\ignorearguments}
 %
-% \unexpanded\def\syst_helpers_do_if_in_string_else_delimited#1% ##2 can be {abc}
-%   {\normalexpanded{\unexpanded\def\syst_helpers_do_do_if_in_string_else##1,\m_syst_sub_string,##2}%
+% \protected\def\syst_helpers_do_if_in_string_else_delimited#1% ##2 can be {abc}
+%   {\normalexpanded{\protected\def\syst_helpers_do_do_if_in_string_else##1,\m_syst_sub_string,##2}%
 %      {\ifarguments
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_else_nop
@@ -1126,7 +1127,7 @@
 %       \fi}%
 %    \normalexpanded{\syst_helpers_do_do_if_in_string_else,#1,}\e_o_t\ignorearguments\ignorearguments}
 %
-% \unexpanded\def\doifinstring#1%
+% \protected\def\doifinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
 %    \ifempty\m_syst_sub_string
 %      \expandafter\gobbletwoarguments
@@ -1134,8 +1135,8 @@
 %      \expandafter\syst_helpers_do_if_in_string
 %    \fi}
 %
-% \unexpanded\def\syst_helpers_do_if_in_string#1% ##2 can be {abc}
-%   {\normalexpanded{\unexpanded\def\syst_helpers_do_do_if_in_string##1\m_syst_sub_string##2}%
+% \protected\def\syst_helpers_do_if_in_string#1% ##2 can be {abc}
+%   {\normalexpanded{\protected\def\syst_helpers_do_do_if_in_string##1\m_syst_sub_string##2}%
 %      {\ifarguments
 %       \or
 %         \expandafter\syst_helpers_do_if_in_string_nop
@@ -1144,7 +1145,7 @@
 %       \fi}%
 %    \normalexpanded{\syst_helpers_do_do_if_in_string#1}\e_o_t\ignorearguments\ignorearguments}
 %
-% \unexpanded\def\doifnotinstring#1%
+% \protected\def\doifnotinstring#1%
 %   {\edef\m_syst_sub_string{#1}% expand #1 here
 %    \ifempty\m_syst_sub_string
 %      \expandafter\secondoftwoarguments
@@ -1152,8 +1153,8 @@
 %      \expandafter\syst_helpers_do_if_not_in_string
 %    \fi}
 %
-% \unexpanded\def\syst_helpers_do_if_not_in_string#1% ##2 can be {abc}
-%   {\normalexpanded{\unexpanded\def\syst_helpers_do_do_if_not_in_string##1\m_syst_sub_string##2}%
+% \protected\def\syst_helpers_do_if_not_in_string#1% ##2 can be {abc}
+%   {\normalexpanded{\protected\def\syst_helpers_do_do_if_not_in_string##1\m_syst_sub_string##2}%
 %      {\ifarguments
 %       \or
 %         \expandafter\syst_helpers_do_if_not_in_string_nop
@@ -1169,21 +1170,21 @@
 % \def\syst_helpers_do_if_not_in_string_yes #0\ignorearguments\ignorearguments#0{}
 % \def\syst_helpers_do_if_not_in_string_nop #0\ignorearguments#2{#2}
 
-\unexpanded\def\doifelseinstring#1#2%
+\protected\def\doifelseinstring#1#2%
   {\ifhasxtoks{#1}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifinstring#1#2%
+\protected\def\doifinstring#1#2%
   {\ifhasxtoks{#1}{#2}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifnotinstring#1#2%
+\protected\def\doifnotinstring#1#2%
   {\ifhasxtoks{#1}{#2}%
      \expandafter\gobbleoneargument
    \else
@@ -1245,7 +1246,7 @@
 \def\percentdimen#1#2% dimen percentage (with %)
   {\dimexpr\clf_percentageof{#2}\dimexpr#1\relax}
 
-\unexpanded\def\setpercentdimen#1#2% dimen percentage (with %)
+\protected\def\setpercentdimen#1#2% dimen percentage (with %)
   {#1=\clf_percentageof{#2}\dimexpr#1\relax}
 
 %D \macros
@@ -1273,7 +1274,7 @@
 %D The gain in speed depends on the length of the argument (the longer the argument,
 %D the less we gain). The question is: do we still need these raw variants?
 
-\unexpanded\def\makerawcommalist[#1]#2% use \processnext ... here
+\protected\def\makerawcommalist[#1]#2% use \processnext ... here
   {\scratchtoks\emptytoks
    \def\syst_helpers_do_make_raw_comma_list##1{\iftok\scratchtoks\emptytoks\scratchtoks{##1}\else\toksapp\scratchtoks{,##1}\fi}%
    \processcommalist[#1]\syst_helpers_do_make_raw_comma_list
@@ -1284,7 +1285,7 @@
 
 %D Here is one without nesting:
 
-\unexpanded\def\syst_helpers_process_fast_comma_item#1,%
+\protected\def\syst_helpers_process_fast_comma_item#1,%
   {\ifarguments
      \expandafter\syst_helpers_process_comma_item_gobble
    \or
@@ -1292,14 +1293,14 @@
      \expandafter\syst_helpers_process_fast_comma_item_next
    \fi}
 
-\unexpanded\def\syst_helpers_process_fast_comma_item_next
+\protected\def\syst_helpers_process_fast_comma_item_next
   {\expandafterspaces\syst_helpers_process_fast_comma_item}
 
-\unexpanded\def\fastprocesscommalist[#1]#2%
+\protected\def\fastprocesscommalist[#1]#2%
   {\let\fastcommalistcommand#2%
    \expandafterspaces\syst_helpers_process_fast_comma_item#1\ignorearguments\ignorearguments\ignorearguments}
 
-\unexpanded\def\fastprocesscommacommand[#1]#2%
+\protected\def\fastprocesscommacommand[#1]#2%
   {\let\fastcommalistcommand#2%
    \normalexpanded{\noexpand\expandafterspaces\syst_helpers_process_fast_comma_item#1}\ignorearguments\ignorearguments\ignorearguments}
 
@@ -1313,7 +1314,7 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\rawdoifelseinset#1%
+\protected\def\rawdoifelseinset#1%
   {\edef\m_syst_sub_string{#1}% expand #1 here
    \ifx\m_syst_sub_string\empty
      \expandafter\thirdofthreearguments
@@ -1330,7 +1331,7 @@
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\rawdoifinset#1% or just alias this one
+\protected\def\rawdoifinset#1% or just alias this one
   {\edef\m_syst_sub_string{#1}% expand #1 here
    \ifx\m_syst_sub_string\m_syst_two_commas
      \expandafter\gobbletwoarguments
@@ -1364,7 +1365,7 @@
 \def\syst_helpers_raw_process_action_next
   {\expandafterspaces\syst_helpers_raw_process_action}
 
-\unexpanded\def\xrawprocessaction[#1]#2[#3]%
+\protected\def\xrawprocessaction[#1]#2[#3]%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one
       \let\m_syst_string_one\s!default
@@ -1440,10 +1441,10 @@
 %D will redefine this macro later on, when a more advanced message mechanism is
 %D implemented.
 
-\unexpanded\def\showassignerror#1#2%
+\protected\def\showassignerror#1#2%
   {\writestatus{setup}{missing or ungrouped '=' after '#1' in line #2}}
 
-\unexpanded\def\doassignempty[#1][#2=#3]%
+\protected\def\doassignempty[#1][#2=#3]%
   {\ifcsname#1#2\endcsname\else\dosetvalue{#1}{#2}{#3}\fi}
 
 %D \macros
@@ -1513,11 +1514,11 @@
 
 \let\currentvalue\empty
 
-\unexpanded\def\getparameters   {\dogetparameters\dosetvalue}
-\unexpanded\def\geteparameters  {\dogetparameters\dosetevalue}
-\unexpanded\def\getgparameters  {\dogetparameters\dosetgvalue}
-\unexpanded\def\getxparameters  {\dogetparameters\dosetxvalue}
-\unexpanded\def\forgetparameters{\dogetparameters\doignorevalue}
+\protected\def\getparameters   {\dogetparameters\dosetvalue}
+\protected\def\geteparameters  {\dogetparameters\dosetevalue}
+\protected\def\getgparameters  {\dogetparameters\dosetgvalue}
+\protected\def\getxparameters  {\dogetparameters\dosetxvalue}
+\protected\def\forgetparameters{\dogetparameters\doignorevalue}
 
 \let\getexpandedparameters\geteparameters
 
@@ -1543,7 +1544,7 @@
 \def\syst_helpers_grab_parameter_next
   {\expandafterspaces\syst_helpers_grab_parameter}
 
-\unexpanded\def\dogetparameters#1[#2]#-[#3]%
+\protected\def\dogetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
    \let\m_syst_parameter_s#1%
    \expandafterspaces\syst_helpers_grab_parameter#3\ignorearguments\ignorearguments}
@@ -1559,7 +1560,7 @@
 %D \getemptyparameters [label] [...=...,...=...]
 %D \stoptyping
 
-\unexpanded\def\getemptyparameters[#1]#2[#3]%
+\protected\def\getemptyparameters[#1]#2[#3]%
   {\def\syst_helpers_get_empty_parameters##1{\doassignempty[#1][##1]}%
    \processcommalist[#3]\syst_helpers_get_empty_parameters}
 
@@ -1584,18 +1585,18 @@
 %D We can optimize this one if needed but it's not a core macro so hardly worth the
 %D trouble and tokens.
 
-\unexpanded\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
+\protected\def\processassignmentlist[#1]#2% #2 == \command{key}{value]
   {\def\syst_helpers_process_assignment_entry##1{#2}% {##2}{##3} % namespace is ignored
    \dogetparameters\syst_helpers_process_assignment_entry[][#1]}
 
-\unexpanded\def\processassignmentcommand[#1]%
+\protected\def\processassignmentcommand[#1]%
   {\normalexpanded{\processassignmentlist[#1]}}
 
-\unexpanded\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
+\protected\def\startprocessassignmentlist[#1]#2\stopprocessassignmentlist
   {\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \processassignmentlist[#1]\currentassignmentlistcommand}
 
-\unexpanded\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
+\protected\def\startprocessassignmentcommand[#1]#2\stopprocessassignmentcommand
   {\def\currentassignmentlistcommand##1##2{\def\currentassignmentlistkey{##1}\def\currentassignmentlistvalue{##2}#2}%
    \normalexpanded{\processassignmentlist[#1]}\currentassignmentlistcommand}
 
@@ -1642,7 +1643,7 @@
 %D By using \type {\docopyvalue} we've prepared this command for use in a
 %D multi||lingual environment.
 
-\unexpanded\def\copyparameters[#1]#-[#2]#-[#3]%
+\protected\def\copyparameters[#1]#-[#2]#-[#3]%
   {\doifnot{#1}{#2}
      {\def\syst_helpers_copy_parameter{\docopyvalue{#1}{#2}}% ##1
       \processcommalist[#3]\syst_helpers_copy_parameter}}
@@ -1662,7 +1663,7 @@
 
 \newif\ifparameters
 
-\unexpanded\def\checkparameters[#1]%
+\protected\def\checkparameters[#1]%
   {\ifhastok={#1}\parameterstrue\else\parametersfalse\fi}
 
 %D \macros
@@ -1702,7 +1703,7 @@
      \expandafter\syst_helpers_get_comma_list_size
    \fi}
 
-\unexpanded\def\getcommalistsize[%
+\protected\def\getcommalistsize[%
   {\futureexpand]\syst_helpers_get_comma_list_size_nop\syst_helpers_get_comma_list_size_yes}
 
 \def\syst_helpers_get_comma_list_size_yes#+]%
@@ -1714,7 +1715,7 @@
   {\commalistcounter\zerocount
    \let\commalistsize\!!zerocount}
 
-\unexpanded\def\getcommacommandsize[#1]%
+\protected\def\getcommacommandsize[#1]%
   {\normalexpanded{\getcommalistsize[#1]}}
 
 %D Filters:
@@ -1737,12 +1738,12 @@
 \def\syst_helpers_get_from_comma_list_next
   {\expandafterspaces\syst_helpers_get_from_comma_list}
 
-\unexpanded\def\getfromcommalist[#1]#2[#3]%
+\protected\def\getfromcommalist[#1]#2[#3]%
   {\let\commalistelement\empty
    \commalistcounter#3\relax
    \expandafterspaces\syst_helpers_get_from_comma_list#1\ignorearguments\ignorearguments}
 
-\unexpanded\def\getfromcommacommand[#1]%
+\protected\def\getfromcommacommand[#1]%
   {\normalexpanded{\getfromcommalist[#1]}}
 
 %D Watertight (and efficient) solutions are hard to find, due to the handling of
@@ -1781,7 +1782,7 @@
   {\ifcase\scratchcounter\or#1\or#2\or#3\or#4\or#5\or#6\or#7\or#8\or#9\fi
    \syst_helpers_gobble_comma_list}
 
-\unexpanded\def\dogetcommacommandelement#1\from#2\to#3%
+\protected\def\dogetcommacommandelement#1\from#2\to#3%
   {\scratchcounter#1\relax
    \edef#3{\normalexpanded{\syst_helpers_get_comma_list_element#2\ignorearguments\ignorearguments}}}
 
@@ -1810,7 +1811,7 @@
 %D \def\dosetupsomething[#1][#2]%
 %D   {... #1 ... #2 ...}
 %D
-%D \unexpanded\def\setupsomething
+%D \protected\def\setupsomething
 %D   {\dodoubleargument\dosetupsomething}
 %D \stoptyping
 %D
@@ -1896,7 +1897,7 @@
 
 %D Single:
 
-\unexpanded\def\dosingleempty#1%
+\protected\def\dosingleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_single_empty_one_yes\syst_helpers_single_empty_one_nop}
 
@@ -1906,7 +1907,7 @@
 
 %D Double
 
-\unexpanded\def\dodoubleempty#1%
+\protected\def\dodoubleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_double_empty_one_yes\syst_helpers_double_empty_one_nop}
 
@@ -1926,7 +1927,7 @@
 
 % Triple
 
-\unexpanded\def\dotripleempty#1%
+\protected\def\dotripleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_triple_empty_one_yes\syst_helpers_triple_empty_one_nop}
 
@@ -1957,7 +1958,7 @@
 
 %D Quadruple:
 
-\unexpanded\def\doquadrupleempty#1%
+\protected\def\doquadrupleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_quadruple_empty_one_yes\syst_helpers_quadruple_empty_one_nop}
 
@@ -2000,7 +2001,7 @@
 
 %D Quintuple:
 
-\unexpanded\def\doquintupleempty#1%
+\protected\def\doquintupleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_quintuple_empty_one_yes\syst_helpers_quintuple_empty_one_nop}
 
@@ -2056,7 +2057,7 @@
 
 %D Sixtuple:
 
-\unexpanded\def\dosixtupleempty#1%
+\protected\def\dosixtupleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_sixtuple_empty_one_yes\syst_helpers_sixtuple_empty_one_nop}
 
@@ -2126,7 +2127,7 @@
 
 %D Seventuple:
 
-\unexpanded\def\doseventupleempty#1%
+\protected\def\doseventupleempty#1%
   {\t_syst_aux{#1}%
    \futureexpand[\syst_helpers_seventuple_empty_one_yes\syst_helpers_seventuple_empty_one_nop}
 
@@ -2271,12 +2272,12 @@
 %D Many \CONTEXT\ commands started as complex or simple ones, but changed into more
 %D versatile (more object oriented) ones using the \type {\get..argument} commands.
 
-\unexpanded\def\complexorsimple#1%
+\protected\def\complexorsimple#1%
   {\doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
      {\firstargumentfalse\csname\s!simple \csstring#1\endcsname}}
 
-\unexpanded\def\complexorsimpleempty#1%
+\protected\def\complexorsimpleempty#1%
   {\doifelsenextoptional
      {\firstargumenttrue \csname\s!complex\csstring#1\endcsname}
      {\firstargumentfalse\csname\s!complex\csstring#1\endcsname[]}}
@@ -2287,19 +2288,19 @@
 %D The previous commands are used that often that we found it worthwile to offer two
 %D more alternatives. Watch the build in protection.
 
-\unexpanded\def\syst_helpers_complex_or_simple#1#2%
+\protected\def\syst_helpers_complex_or_simple#1#2%
   {\doifelsenextoptional{\firstargumenttrue#1}{\firstargumentfalse#2}}
 
-\unexpanded\def\syst_helpers_complex_or_simple_empty#1%
+\protected\def\syst_helpers_complex_or_simple_empty#1%
   {\doifelsenextoptional{\firstargumenttrue#1}{\firstargumentfalse#1[]}}
 
-\unexpanded\def\definecomplexorsimple#1%
-  {\unexpanded\edef#1{\syst_helpers_complex_or_simple
+\protected\def\definecomplexorsimple#1%
+  {\protected\edef#1{\syst_helpers_complex_or_simple
      \expandafter\noexpand\csname\s!complex\csstring#1\endcsname
      \expandafter\noexpand\csname\s!simple \csstring#1\endcsname}}
 
-\unexpanded\def\definecomplexorsimpleempty#1%
-  {\unexpanded\edef#1{\syst_helpers_complex_or_simple_empty
+\protected\def\definecomplexorsimpleempty#1%
+  {\protected\edef#1{\syst_helpers_complex_or_simple_empty
      \expandafter\noexpand\csname\s!complex\csstring#1\endcsname}}
 
 %D These commands are called as:
@@ -2337,8 +2338,8 @@
 
 \newconditional\c_syst_helpers_permit_spaces_between_groups
 
-\unexpanded\def    \permitspacesbetweengroups{\settrue \c_syst_helpers_permit_spaces_between_groups}
-\unexpanded\def\dontpermitspacesbetweengroups{\setfalse\c_syst_helpers_permit_spaces_between_groups}
+\protected\def    \permitspacesbetweengroups{\settrue \c_syst_helpers_permit_spaces_between_groups}
+\protected\def\dontpermitspacesbetweengroups{\setfalse\c_syst_helpers_permit_spaces_between_groups}
 
 \dontpermitspacesbetweengroups
 
@@ -2349,7 +2350,7 @@
 
 %D NB: experimental code in cont-exp.mkiv
 
-\unexpanded\def\dosinglegroupempty#1%
+\protected\def\dosinglegroupempty#1%
   {\t_syst_aux{#1}%
    \futureexpand\bgroup\syst_helpers_single_empty_one_yes\syst_helpers_single_group_empty_one_nop}
 
@@ -2357,7 +2358,7 @@
   {\firstargumentfalse
    \the\t_syst_aux{}}
 
-\unexpanded\def\dodoublegroupempty#1%
+\protected\def\dodoublegroupempty#1%
   {\t_syst_aux{#1}%
    \futureexpand\bgroup\syst_helpers_group_double_empty_one_yes\syst_helpers_group_double_empty_one_nop}
 
@@ -2375,7 +2376,7 @@
   {\secondargumentfalse
    \the\t_syst_aux{}}
 
-\unexpanded\def\dotriplegroupempty#1%
+\protected\def\dotriplegroupempty#1%
   {\t_syst_aux{#1}%
    \futureexpand\bgroup\syst_helpers_group_triple_empty_one_yes\syst_helpers_group_triple_empty_one_nop}
 
@@ -2404,7 +2405,7 @@
   {\thirdargumentfalse
    \the\t_syst_aux{}}
 
-\unexpanded\def\doquadruplegroupempty#1%
+\protected\def\doquadruplegroupempty#1%
   {\t_syst_aux{#1}%
    \futureexpand\bgroup\syst_helpers_group_quadruple_empty_one_yes\syst_helpers_group_quadruple_empty_one_nop}
 
@@ -2445,7 +2446,7 @@
   {\fourthargumentfalse
    \the\t_syst_aux{}}
 
-\unexpanded\def\doquintuplegroupempty#1%
+\protected\def\doquintuplegroupempty#1%
   {\t_syst_aux{#1}%
    \futureexpand\bgroup\syst_helpers_group_quintuple_empty_one_yes\syst_helpers_group_quintuple_empty_one_nop}
 
@@ -2553,14 +2554,14 @@
 \def\fifthofsixarguments #-#-#-#-#1#-{#1}
 \def\sixthofsixarguments #-#-#-#-#-#1{#1}
 
-\unexpanded\def\firstofoneunexpanded       #1{#1}
+\protected\def\firstofoneunexpanded       #1{#1}
 
-\unexpanded\def\firstoftwounexpanded     #1#-{#1}
-\unexpanded\def\secondoftwounexpanded    #-#1{#1}
+\protected\def\firstoftwounexpanded     #1#-{#1}
+\protected\def\secondoftwounexpanded    #-#1{#1}
 
-\unexpanded\def\firstofthreeunexpanded #1#-#-{#1}
-\unexpanded\def\secondofthreeunexpanded#-#1#-{#1}
-\unexpanded\def\thirdofthreeunexpanded #-#-#1{#1}
+\protected\def\firstofthreeunexpanded #1#-#-{#1}
+\protected\def\secondofthreeunexpanded#-#1#-{#1}
+\protected\def\thirdofthreeunexpanded #-#-#1{#1}
 
 %D \macros
 %D   {globalletempty,letempty,
@@ -2569,15 +2570,15 @@
 %D
 %D Trivial:
 
-\unexpanded\def\letempty      #1{\let #1\empty}
-\unexpanded\def\globalletempty#1{\glet#1\empty}
+\protected\def\letempty      #1{\let #1\empty}
+\protected\def\globalletempty#1{\glet#1\empty}
 
-\unexpanded\def\letvalueempty #1{\expandafter\let \csname#1\endcsname\empty}
-\unexpanded\def\letgvalueempty#1{\expandafter\glet\csname#1\endcsname\empty}
-\unexpanded\def\letvaluerelax #1{\expandafter\let \csname#1\endcsname\relax}
-\unexpanded\def\letgvalurelax #1{\expandafter\glet\csname#1\endcsname\relax}
+\protected\def\letvalueempty #1{\expandafter\let \csname#1\endcsname\empty}
+\protected\def\letgvalueempty#1{\expandafter\glet\csname#1\endcsname\empty}
+\protected\def\letvaluerelax #1{\expandafter\let \csname#1\endcsname\relax}
+\protected\def\letgvalurelax #1{\expandafter\glet\csname#1\endcsname\relax}
 
-\unexpanded\def\relaxvalueifundefined#1%
+\protected\def\relaxvalueifundefined#1%
   {\ifcsname#1\endcsname \else
      \expandafter\let\csname#1\endcsname\relax
    \fi}
@@ -2588,7 +2589,7 @@
 %D The next macro hardly needs explanation. Because no nesting is to be expected, we
 %D can reuse \type {\wait} within \type {\wait} itself.
 
-\unexpanded\def\wait
+\protected\def\wait
   {\begingroup
    \read16 to \wait
    \endgroup}
@@ -2615,12 +2616,12 @@
 
 \ifdefined\writestring \else
 
-    \unexpanded\def\writestring{\immediate\write\statuswrite}
-    \unexpanded\def\writeline  {\writestring{}}
+    \protected\def\writestring{\immediate\write\statuswrite}
+    \protected\def\writeline  {\writestring{}}
 
 \fi
 
-\unexpanded\def\normalwritestatus#1#2%
+\protected\def\normalwritestatus#1#2%
   {\writestring{\expandafter\syst_helpers_split_status_yes\expandafter\statuswidth#1%
      \space\space\space\space\space\space\space
      \space\space\space\space\space\space\space
@@ -2655,7 +2656,7 @@
 \def\syst_helpers_grab_raw_parameter_next
   {\expandafterspaces\syst_helpers_grab_raw_parameter}
 
-\unexpanded\def\rawgetparameters#1[#2]#-[#3]%
+\protected\def\rawgetparameters#1[#2]#-[#3]%
   {\def\m_syst_parameter_n{#2}%
   %\expandafterspaces\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
    \expandafter\expandafterspaces\expandafter\syst_helpers_grab_raw_parameter#3\ignorearguments\ignorearguments}
@@ -2670,13 +2671,13 @@
 %D all preceding ones with \type {\redoglobal}. When using only alternatives, one
 %D can reset this mechanism with \type {\resetglobal}.
 
-\unexpanded\def\resetglobal
+\protected\def\resetglobal
   {\let\redoglobal\relax
    \let\dodoglobal\relax}
 
 \resetglobal
 
-\unexpanded\def\doglobal
+\protected\def\doglobal
   {\ifx\redoglobal\relax
      \let\redoglobal\global
      \let\dodoglobal\syst_helpers_dodo_global
@@ -2710,7 +2711,7 @@
 %D
 %D Apart from the prefixes, a few more \type {\expandafters} are needed:
 
-% \unexpanded\def\newif#1% uses the original plain \@if
+% \protected\def\newif#1% uses the original plain \@if
 %   {\privatescratchcounter\escapechar
 %    \escapechar\minusone
 %    \expandafter\expandafter\expandafter
@@ -2722,7 +2723,7 @@
 %    \dodoglobal\@if#1{false}%
 %    \escapechar\privatescratchcounter}
 
-\normalprotected\def\newif#1% see syst-ini.mkiv
+\protected\def\newif#1% see syst-ini.mkiv
   {\let\new_if_saved\newif
    \let\newif\new_if_check
    \expandafter\redoglobal\expandafter\def\csname\expandafter\newif\csstring#1true\endcsname {\let#1\iftrue }%
@@ -2732,26 +2733,26 @@
 
 %D Also new:
 
-\unexpanded\def\define#1%
+\protected\def\define#1%
   {\ifdefined#1%
      \message{[\noexpand#1is already defined]}%
-     \unexpanded\expandafter\def\expandafter\gobbleddefinition
+     \protected\expandafter\def\expandafter\gobbleddefinition
    \else
-     \unexpanded\expandafter\def
+     \protected\expandafter\def
    \fi#1}
 
-\unexpanded\def\redefine#1%
+\protected\def\redefine#1%
   {\ifdefined#1%
      \message{[\noexpand#1is redefined]}%
    \fi
-   \unexpanded\def#1}
+   \protected\def#1}
 
-\unexpanded\def\definemacro#1%
+\protected\def\definemacro#1%
   {\ifdefined#1%
      \message{[\noexpand#1is already defined]}%
-     \unexpanded\expandafter\def\expandafter\gobbleddefinition
+     \protected\expandafter\def\expandafter\gobbleddefinition
    \else
-     \unexpanded\expandafter\def
+     \protected\expandafter\def
    \fi#1}
 
 % \define\hans{hans}
@@ -2782,7 +2783,7 @@
 
 \glet\stoptexdefinition\relax
 
-\unexpanded\gdef\starttexdefinition%
+\protected\gdef\starttexdefinition%
   {\bgroup%
    \obeylines%
    \syst_helpers_start_tex_definition}
@@ -2797,14 +2798,14 @@
 
 \egroup
 
-% \unexpanded\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname} % todo: a nop cs: char 0 or some corenamespace
+% \protected\def\texdefinition#1{\csname\ifcsname#1\endcsname#1\else donothing\fi\endcsname} % todo: a nop cs: char 0 or some corenamespace
 
-\unexpanded\def\texdefinition#1{\begincsname#1\endcsname}
+\protected\def\texdefinition#1{\begincsname#1\endcsname}
 
 % This is a first variant, more might be added:
 
-\unexpanded\def\starttexcode{\unprotect}
-\unexpanded\def\stoptexcode {\protect}
+\protected\def\starttexcode{\unprotect}
+\protected\def\stoptexcode {\protect}
 
 %D \macros
 %D   {newcounter,
@@ -2859,7 +2860,7 @@
 
 \def\zerocountervalue{0}
 
-\unexpanded\def\newcounter#1%
+\protected\def\newcounter#1%
   {\dodoglobal\let#1\zerocountervalue}
 
 %D Nowadays we don't mind a few more tokens if we can gain a bit of speed.
@@ -2880,14 +2881,14 @@
    \def\m_syst_action_nop{\syst_helpers_do_do_do_decrement#1,\plusone}%
    \doifelsenextcharcs,\m_syst_action_yes\m_syst_action_nop}
 
-\unexpanded\def\increment{\doifelsenextcharcs(\syst_helpers_do_do_increment\syst_helpers_do_increment}
-\unexpanded\def\decrement{\doifelsenextcharcs(\syst_helpers_do_do_decrement\syst_helpers_do_decrement}
+\protected\def\increment{\doifelsenextcharcs(\syst_helpers_do_do_increment\syst_helpers_do_increment}
+\protected\def\decrement{\doifelsenextcharcs(\syst_helpers_do_do_decrement\syst_helpers_do_decrement}
 
-\unexpanded\def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr#1+\plusone \relax}}
-\unexpanded\def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr#1+\minusone\relax}}
+\protected\def\fastincrement#1{\dodoglobal\edef#1{\the\numexpr#1+\plusone \relax}}
+\protected\def\fastdecrement#1{\dodoglobal\edef#1{\the\numexpr#1+\minusone\relax}}
 
-\unexpanded\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
-\unexpanded\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
+\protected\def\incrementvalue#1{\expandafter\increment\csname#1\endcsname}
+\protected\def\decrementvalue#1{\expandafter\decrement\csname#1\endcsname}
 
 %D \macros
 %D  {newsignal}
@@ -2906,7 +2907,7 @@
 
 \newdimen\maximumsignal % step is about 0.00025pt
 
-\unexpanded\def\newsignal#1%
+\protected\def\newsignal#1%
   {\ifdefined#1\else
      \advance\maximumsignal 2\scaledpoint % to be save in rounding
      \edef#1{\the\maximumsignal}%
@@ -2928,7 +2929,7 @@
 %D
 %D We will use this one in:
 
-\unexpanded\def\savenormalmeaning#1%
+\protected\def\savenormalmeaning#1%
   {\ifcsname normal\csstring#1\endcsname \else
      \expandafter\let\csname normal\csstring#1\endcsname#1%
    \fi}
@@ -2984,7 +2985,7 @@
 
 \let\syst_helpers_stepwise_next\relax
 
-\unexpanded\def\syst_helpers_stepwise_recurse#1#2#3% from to step
+\protected\def\syst_helpers_stepwise_recurse#1#2#3% from to step
   {\ifnum#1>#2\relax
      \expandafter\syst_helpers_stepwise_recurse_nop
    \else
@@ -2992,11 +2993,11 @@
      \doubleexpandafter\syst_helpers_stepwise_recurse_yes\expandafter
    \fi\expandafter{\the\numexpr\recurselevel+#3\relax}{#2}{#3}}
 
-\unexpanded\def\syst_helpers_stepwise_recurse_yes
+\protected\def\syst_helpers_stepwise_recurse_yes
   {\syst_helpers_recurse_content
    \syst_helpers_stepwise_recurse}
 
-\unexpanded\def\syst_helpers_stepwise_reverse#1#2#3% from to step
+\protected\def\syst_helpers_stepwise_reverse#1#2#3% from to step
   {\ifnum#1<#2\relax
      \expandafter\syst_helpers_stepwise_recurse_nop
    \else
@@ -3006,11 +3007,11 @@
      \doubleexpandafter\syst_helpers_stepwise_reverse_yes\expandafter
    \fi\expandafter{\the\innerrecurse}{#2}{#3}}
 
-\unexpanded\def\syst_helpers_stepwise_reverse_yes
+\protected\def\syst_helpers_stepwise_reverse_yes
   {\syst_helpers_recurse_content
    \syst_helpers_stepwise_reverse}
 
-\unexpanded\def\syst_helpers_stepwise_exit
+\protected\def\syst_helpers_stepwise_exit
   {\syst_helpers_stepwise_recurse_nop\relax}
 
 \def\doexpandedrecurse#1#2% user macro (also was \doxprecurse)
@@ -3035,7 +3036,7 @@
 %D
 %D Because the simple case (n=1) is used often, we implement it more efficiently:
 
-\unexpanded\def\dorecurse#1%
+\protected\def\dorecurse#1%
   {\ifcase#1\relax
      \expandafter\gobbletwoarguments
    \or
@@ -3044,7 +3045,7 @@
      \expandafter\syst_helpers_recurse_x
    \fi{#1}}
 
-\unexpanded\def\syst_helpers_recurse_indeed#1#2% from to
+\protected\def\syst_helpers_recurse_indeed#1#2% from to
   {\ifnum#1>#2\relax
      \expandafter\syst_helpers_recurse_indeed_nop
    \else
@@ -3053,11 +3054,11 @@
      \doubleexpandafter\syst_helpers_recurse_indeed_yes
    \fi\expandafter{\the\innerrecurse}{#2}}
 
-\unexpanded\def\syst_helpers_recurse_indeed_yes
+\protected\def\syst_helpers_recurse_indeed_yes
   {\syst_helpers_recurse_content
    \syst_helpers_recurse_indeed}
 
-\unexpanded\def\syst_helpers_recurse_indeed_nop#1#2#3%
+\protected\def\syst_helpers_recurse_indeed_nop#1#2#3%
   {}
 
 %D \macros
@@ -3069,7 +3070,7 @@
 %D \dowith{a,b,c}{[#1]}
 %D \stoptyping
 
-\unexpanded\def\dowith#1#2%
+\protected\def\dowith#1#2%
   {\def\syst_helpers_with##1{#2}%
    \normalexpanded{\processcommalist[#1]}\syst_helpers_with}
 
@@ -3092,32 +3093,32 @@
 \let\endofloop\donothing % maybe \syst_helpers_loop_end
 
 
-\unexpanded\def\doloop#1%
+\protected\def\doloop#1%
   {\global\advance\outerrecurse \plusone
    \globalpushmacro\recurselevel
    \globalpushmacro\recurseaction
-   \unexpanded\gdef\recurseaction##1##2{#1}%
+   \protected\gdef\recurseaction##1##2{#1}%
    \let\endofloop\syst_helpers_loop
    \syst_helpers_loop1}% no \plusone else \recurselevel wrong
 
-\unexpanded\def\syst_helpers_loop#1%
+\protected\def\syst_helpers_loop#1%
   {\def\recurselevel{#1}%
    \expandafter\syst_helpers_loop_yes\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
 
-\unexpanded\def\syst_helpers_loop_yes
+\protected\def\syst_helpers_loop_yes
   {\syst_helpers_recurse_content
    \endofloop}
 
-\unexpanded\def\syst_helpers_loop_nop#0%
+\protected\def\syst_helpers_loop_nop#0%
   {\let\endofloop\syst_helpers_loop
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\unexpanded\def\exitloop                % \exitloop quits at end
+\protected\def\exitloop                % \exitloop quits at end
   {\let\endofloop\syst_helpers_loop_nop}
 
-\unexpanded\def\exitloopnow#0\endofloop % \exitloopnow quits directly
+\protected\def\exitloopnow#0\endofloop % \exitloopnow quits directly
   {\syst_helpers_loop_nop}
 
 %D The loop is executed at least once, so beware of situations like:
@@ -3158,32 +3159,32 @@
 \def\syst_helpers_recurse_content
   {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}}
 
-\unexpanded\def\syst_helpers_recurse_x#1#2%
+\protected\def\syst_helpers_recurse_x#1#2%
   {\global\advance\outerrecurse\plusone
    \globalpushmacro\recurseaction
    \globalpushmacro\recurselevel
-   \unexpanded\gdef\recurseaction##1##2{#2}%
+   \protected\gdef\recurseaction##1##2{#2}%
    \expandafter\syst_helpers_recurse_indeed\expandafter1\expandafter{\number#1}%
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\unexpanded\def\syst_helpers_recurse_y#1#2%
+\protected\def\syst_helpers_recurse_y#1#2%
   {\global\advance\outerrecurse\plusone
    \globalpushmacro\recurseaction
    \globalpushmacro\recurselevel
    \let\recurselevel\!!plusone
-   \unexpanded\gdef\recurseaction##1##2{#2}%
+   \protected\gdef\recurseaction##1##2{#2}%
    \syst_helpers_recurse_content
    \globalpopmacro\recurselevel
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\unexpanded\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
+\protected\def\dostepwiserecurse#1#2#3#4% can be made faster by postponing #4
   {\global\advance\outerrecurse \plusone
    \globalpushmacro\recurselevel
    \globalpushmacro\recurseaction
-   \unexpanded\gdef\recurseaction##1##2{#4}%
+   \protected\gdef\recurseaction##1##2{#4}%
    \normalexpanded{\ifcmpnum#3\zerocount
      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
        \syst_helpers_stepwise_exit
@@ -3203,7 +3204,7 @@
    \globalpopmacro\recurseaction
    \global\advance\outerrecurse\minusone}
 
-\unexpanded\def\syst_helpers_stepwise_recurse_nop#1#2#3#4%
+\protected\def\syst_helpers_stepwise_recurse_nop#1#2#3#4%
   {}
 
 \newcount\fastloopindex
@@ -3211,7 +3212,7 @@
 
 \let\m_syst_helpers_fast_loop_cs\relax
 
-\unexpanded\def\dofastloopcs#1%
+\protected\def\dofastloopcs#1%
   {\fastloopfinal#1\relax
    \ifcase\fastloopfinal
      \expandafter\gobbleoneargument
@@ -3219,12 +3220,12 @@
      \expandafter\syst_helpers_fast_loop_cs
    \fi}
 
-\unexpanded\def\syst_helpers_fast_loop_cs#1%
+\protected\def\syst_helpers_fast_loop_cs#1%
   {\let\m_syst_helpers_fast_loop_cs#1%
    \fastloopindex\plusone
    \syst_helpers_fast_loop_cs_step}
 
-\unexpanded\def\syst_helpers_fast_loop_cs_step
+\protected\def\syst_helpers_fast_loop_cs_step
   {\ifnum\fastloopindex>\fastloopfinal
      \let\m_syst_helpers_fast_loop_cs\relax
    \else
@@ -3235,7 +3236,7 @@
 
 % Helper:
 
-\unexpanded\def\resetrecurselevel{\let\recurselevel\!!zerocount}
+\protected\def\resetrecurselevel{\let\recurselevel\!!zerocount}
 
 \let\recurselevel\!!zerocount
 
@@ -3264,11 +3265,11 @@
 %D  }
 %D \stoptyping
 
-\unexpanded\def\doloopoverlist#1#2%
+\protected\def\doloopoverlist#1#2%
   {\global\advance\outerrecurse\plusone
    \globalpushmacro\recurseaction
    \globalpushmacro\recursestring
-   \unexpanded\gdef\recurseaction##1{\edef\recursestring{##1}#2}%
+   \protected\gdef\recurseaction##1{\edef\recursestring{##1}#2}%
    \processcommacommand[#1]\recurseaction
    \globalpopmacro\recursestring
    \globalpopmacro\recurseaction
@@ -3298,14 +3299,14 @@
 
 \installsystemnamespace{extraevery}
 
-\unexpanded\def\newevery#1#2%
+\protected\def\newevery#1#2%
   {\ifx#1\everypar\else\newtoks#1\fi% we test for redefinition elsewhere
    \ifx#2\relax\orelse\ifdefined#2\else
      \expandafter\newtoks\csname\??extraevery\csstring#1\endcsname
      \edef#2{\syst_helpers_every#1\csname\??extraevery\csstring#1\endcsname}%
    \fi}
 
-\unexpanded\def\syst_helpers_every#1#2%
+\protected\def\syst_helpers_every#1#2%
   {\removetoks\the#2\from#1%
    \appendtoks\the#2\to  #1%
    #2}
@@ -3319,7 +3320,7 @@
 
 \newtoks \neverypar
 
-\unexpanded\def\forgeteverypar
+\protected\def\forgeteverypar
   {\everypar{\the\neverypar}}
 
 %D Which we're going to use indeed! When the second argument equals \type {\relax},
@@ -3385,10 +3386,10 @@
 %D
 %D Both commands accept the prefix \type{\doglobal} for global assignments.
 
-\unexpanded\def\convertvalue#1\to
+\protected\def\convertvalue#1\to
   {\expandafter\convertcommand\csname#1\endcsname\to}
 
-\unexpanded\def\defconvertedvalue#1#2% less sensitive for \to
+\protected\def\defconvertedvalue#1#2% less sensitive for \to
   {\expandafter\defconvertedcommand\expandafter#1\csname#2\endcsname}
 
 %D \macros
@@ -3421,14 +3422,14 @@
 %D
 %D \typebuffer gives: \blank \getbuffer \blank
 
-\unexpanded\def\doifelseassignment#1%
+\protected\def\doifelseassignment#1%
   {\ifhastok={#1}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifelseassignmentcs#1#2#3%
+\protected\def\doifelseassignmentcs#1#2#3%
   {\ifhastok={#1}%
      \expandafter#2%
    \else
@@ -3440,31 +3441,31 @@
 
 \newif\ifassignment
 
-\unexpanded\def\docheckassignment#1%
+\protected\def\docheckassignment#1%
   {\ifhastok={#1}%
      \assignmenttrue
    \else
      \assignmentfalse
    \fi}
 
-\unexpanded\def\validassignment  #1{\ifhastok={#1}}
-\unexpanded\def\novalidassignment#1{\ifnum\ifhastok={#1}\zerocount\else\plusone\fi=\plusone}
+\protected\def\validassignment  #1{\ifhastok={#1}}
+\protected\def\novalidassignment#1{\ifnum\ifhastok={#1}\zerocount\else\plusone\fi=\plusone}
 
 %D In \ETEX\ we can use \type {\detokenize} and gain some speed, but in general far
 %D less that 1\% for \type {\convertargument} and nil for \type {\convertcommand}.
 %D This macro is more robust than the pure \TEX\ one, something I found out when
 %D primitives like \type {\jobname} were fed (or something undefined).
 
-\unexpanded\def\convertargument#1\to#2{\dodoglobal\edef#2{\detokenize{#1}}}
-\unexpanded\def\convertcommand #1\to#2{\dodoglobal\edef#2{\expandafter\detokenize\expandafter{#1}}} % hm, only second is also ok
+\protected\def\convertargument#1\to#2{\dodoglobal\edef#2{\detokenize{#1}}}
+\protected\def\convertcommand #1\to#2{\dodoglobal\edef#2{\expandafter\detokenize\expandafter{#1}}} % hm, only second is also ok
 
-\unexpanded\def\defconvertedargument #1#2{\edef#1{\detokenize{#2}}}
-\unexpanded\def\defconvertedcommand  #1#2{\edef#1{\detokenize\expandafter{#2}}}
-\unexpanded\def\edefconvertedargument#1#2{\edef#1{#2}%
+\protected\def\defconvertedargument #1#2{\edef#1{\detokenize{#2}}}
+\protected\def\defconvertedcommand  #1#2{\edef#1{\detokenize\expandafter{#2}}}
+\protected\def\edefconvertedargument#1#2{\edef#1{#2}%
                                           \edef#1{\detokenize\expandafter{#1}}}
-\unexpanded\def\gdefconvertedargument#1#2{\xdef#1{\detokenize{#2}}}
-\unexpanded\def\gdefconvertedcommand #1#2{\xdef#1{\detokenize\expandafter{#2}}}
-\unexpanded\def\xdefconvertedargument#1#2{\xdef#1{#2}%
+\protected\def\gdefconvertedargument#1#2{\xdef#1{\detokenize{#2}}}
+\protected\def\gdefconvertedcommand #1#2{\xdef#1{\detokenize\expandafter{#2}}}
+\protected\def\xdefconvertedargument#1#2{\xdef#1{#2}%
                                           \xdef#1{\detokenize\expandafter{#1}}}
 
 %D When you try to convert a primitive command, you'll find out that the \ETEX\
@@ -3488,7 +3489,7 @@
 %D
 %D Ahandy macro, for testing purposes only:
 
-\unexpanded\def\showvalue#1%
+\protected\def\showvalue#1%
   {\ifcsname#1\endcsname
      \expandafter\show\csname#1\endcsname
    \else
@@ -3508,7 +3509,7 @@
 %D
 %D Watch the one level expansion of the second argument.
 
-\unexpanded\def\doifelsemeaning#1#2%
+\protected\def\doifelsemeaning#1#2%
   {\edef\m_syst_string_one{\normalmeaning#1}%
    \def \m_syst_string_two{#2}%
    \edef\m_syst_string_two{\normalmeaning\m_syst_string_two}%
@@ -3537,9 +3538,9 @@
    \edef\m_syst_string_two{\detokenize\expandafter{\normalexpanded{#4}}}%
    \ifx\m_syst_string_one\m_syst_string_two\expandafter#1\else\expandafter#2\fi}
 
-\unexpanded\def\doifelsesamestring{\syst_helpers_if_samestring_else\firstoftwoarguments\secondoftwoarguments}
-\unexpanded\def\doifsamestring    {\syst_helpers_if_samestring_else\firstofoneargument \gobbleoneargument   }
-\unexpanded\def\doifnotsamestring {\syst_helpers_if_samestring_else\gobbleoneargument  \firstofoneargument  }
+\protected\def\doifelsesamestring{\syst_helpers_if_samestring_else\firstoftwoarguments\secondoftwoarguments}
+\protected\def\doifsamestring    {\syst_helpers_if_samestring_else\firstofoneargument \gobbleoneargument   }
+\protected\def\doifnotsamestring {\syst_helpers_if_samestring_else\gobbleoneargument  \firstofoneargument  }
 
 \let\doifsamestringelse\doifelsesamestring
 
@@ -3569,7 +3570,7 @@
 %D
 %D In examples~2 and~3 both arguments equal, in~1 and~4 they differ.
 
-\unexpanded\def\ConvertToConstant#1#2#3%
+\protected\def\ConvertToConstant#1#2#3%
   {\edef\m_syst_string_one{\expandafter\detokenize\expandafter{#2}}%
    \edef\m_syst_string_two{\expandafter\detokenize\expandafter{#3}}%
    #1{\m_syst_string_one}{\m_syst_string_two}}
@@ -3599,14 +3600,14 @@
 %D
 %D where \type {...} can be anything legally \TEX.
 
-\unexpanded\def\CheckConstantAfter#1#2%
+\protected\def\CheckConstantAfter#1#2%
   {\expandafter\convertargument\v!prefix!\to\ascii
    \convertargument#1\to#2\relax
    \doifelseinstring\ascii{#2}
      {\expandafter\convertargument#1\to#2}
      {}}
 
-\unexpanded\def\ConvertConstantAfter#1#2#3%
+\protected\def\ConvertConstantAfter#1#2#3%
   {\CheckConstantAfter{#2}\asciia
    \CheckConstantAfter{#3}\asciib
    #1{\asciia}{\asciib}}
@@ -3624,7 +3625,7 @@
 %D
 %D We don't explicitly test if the macro is defined.
 
-\unexpanded\def\assignifempty#1#2%
+\protected\def\assignifempty#1#2%
   {\iftok{#1}\emptytoks \def#1{#2}\fi}
 
 %D \macros
@@ -3637,7 +3638,7 @@
 %D In \CONTEXT\ we use a lot of \type {\start}||\type {\stop} like constructions.
 %D Sometimes, the \type {\stop} is used as a hard coded delimiter like in: %D
 %D \starttyping
-%D \unexpanded\def\startcommand#1\stopcommand%
+%D \protected\def\startcommand#1\stopcommand%
 %D   {... #1 ...}
 %D \stoptyping
 %D
@@ -3655,7 +3656,7 @@
 %D {\stop}. This means that:
 %D
 %D \starttyping
-%D \unexpanded\def\starthello%
+%D \protected\def\starthello%
 %D   {\grabuntil{stophello}\message}
 %D
 %D \starthello Hello world!\stophello
@@ -3665,10 +3666,10 @@
 
 \let\syst_helpers_grab_indeed\relax
 
-\unexpanded\def\syst_helpers_grab#1#2%
+\protected\def\syst_helpers_grab#1#2%
   {\def\syst_helpers_grab_indeed##1#1{#2{##1}}\syst_helpers_grab_indeed}
 
-\unexpanded\def\grabuntil#1%
+\protected\def\grabuntil#1%
   {\expandafter\syst_helpers_grab\expandafter{\begincsname#1\endcsname}}
 
 %D The next command build on this mechanism:
@@ -3695,19 +3696,19 @@
 
 \let\syst_helpers_gobble_indeed\relax
 
-\unexpanded\def\processbetween#1#2%
+\protected\def\processbetween#1#2%
   {\setvalue{\s!start#1}{\grabuntil{\s!stop#1}{#2}}}
 
-% \unexpanded\def\gobbleuntil#1%
+% \protected\def\gobbleuntil#1%
 %   {\def\syst_helpers_gobble_indeed##1#1{}\syst_helpers_gobble_indeed}
 %
-% \unexpanded\def\gobbleuntilrelax#1\relax
+% \protected\def\gobbleuntilrelax#1\relax
 %   {}
 
-\unexpanded\def\gobbleuntil#1%
+\protected\def\gobbleuntil#1%
   {\def\syst_helpers_gobble_indeed##-#1{}\syst_helpers_gobble_indeed}
 
-\unexpanded\def\gobbleuntilrelax#-\relax
+\protected\def\gobbleuntilrelax#-\relax
   {}
 
 %D The next one simply expands the pickup up tokens.
@@ -3718,7 +3719,7 @@
 
 \let\syst_helpers_until_indeed\relax
 
-\unexpanded\def\processuntil#1%
+\protected\def\processuntil#1%
   {\def\syst_helpers_until_indeed##1#1{##1}\syst_helpers_until_indeed}
 
 %D \macros
@@ -3787,7 +3788,7 @@
 \let\m_syst_helpers_handle_group_after \relax
 \let\m_syst_helpers_handle_group_before\relax
 
-\unexpanded\def\syst_helpers_handle_group_nop
+\protected\def\syst_helpers_handle_group_nop
   {\ifnum\currentgrouptype=\semisimplegroupcode
      \expandafter\syst_helpers_handle_group_nop_a
    \else
@@ -3806,7 +3807,7 @@
    \aftergroup\egroup
    \m_syst_helpers_handle_group_b}
 
-\unexpanded\def\syst_helpers_handle_group_normal
+\protected\def\syst_helpers_handle_group_normal
   {\bgroup
    \afterassignment\m_syst_helpers_handle_group_normal_before
    \let\next=}
@@ -3819,7 +3820,7 @@
    \aftergroup\egroup
    \aftergroup\egroup}
 
-\unexpanded\def\syst_helpers_handle_group_simple% no inner group (so no kerning interference)
+\protected\def\syst_helpers_handle_group_simple% no inner group (so no kerning interference)
   {\bgroup
    \afterassignment\m_syst_helpers_handle_group_simple_before
    \let\next=}
@@ -3833,7 +3834,7 @@
   {\m_syst_helpers_handle_group_a
    \egroup}%
 
-\unexpanded\def\syst_helpers_handle_group_pickup% no inner group (so no kerning interference)
+\protected\def\syst_helpers_handle_group_pickup% no inner group (so no kerning interference)
   {\bgroup
    \afterassignment\m_syst_helpers_handle_group_pickup_before
    \let\next=}
@@ -3845,7 +3846,7 @@
    \aftergroup\m_syst_helpers_handle_group_p
    \m_syst_helpers_handle_group_b}
 
-\unexpanded\def\syst_helpers_handle_group_nop_x
+\protected\def\syst_helpers_handle_group_nop_x
   {\ifnum\currentgrouptype=\semisimplegroupcode
      \begingroup
      \aftergroup\endgroup
@@ -3855,7 +3856,7 @@
    \fi
    \m_syst_helpers_handle_group_b}
 
-\unexpanded\def\syst_helpers_handle_group_normal_x
+\protected\def\syst_helpers_handle_group_normal_x
   {\bgroup
    \afterassignment\m_syst_helpers_handle_group_normal_before_x
    \let\next=}
@@ -3878,32 +3879,32 @@
 %D {\futurelet} obeys blank spaces, and a line||ending token is treated as a blank
 %D space. So the final implementation became:
 
-\unexpanded\def\groupedcommand#1#2%
+\protected\def\groupedcommand#1#2%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \def\m_syst_helpers_handle_group_a{#2}%
    \futureexpandis\bgroup\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
 
-\unexpanded\def\groupedcommandcs#1#2%
+\protected\def\groupedcommandcs#1#2%
   {\let\m_syst_helpers_handle_group_b#1%
    \let\m_syst_helpers_handle_group_a#2%
    \futureexpandis\bgroup\syst_helpers_handle_group_normal\syst_helpers_handle_group_nop}
 
-\unexpanded\def\simplegroupedcommand#1#2%
+\protected\def\simplegroupedcommand#1#2%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \def\m_syst_helpers_handle_group_a{#2}%
    \futureexpandis\bgroup\syst_helpers_handle_group_simple\syst_helpers_handle_group_nop}
 
-\unexpanded\def\pickupgroupedcommand#1#2#3%
+\protected\def\pickupgroupedcommand#1#2#3%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \def\m_syst_helpers_handle_group_a{#2}%
    \def\m_syst_helpers_handle_group_p{#3}%
    \futureexpandis\bgroup\syst_helpers_handle_group_pickup\syst_helpers_handle_group_nop}
 
-\unexpanded\def\triggergroupedcommand#1%
+\protected\def\triggergroupedcommand#1%
   {\def\m_syst_helpers_handle_group_b{#1}%
    \futureexpandis\bgroup\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
 
-\unexpanded\def\triggergroupedcommandcs#1%
+\protected\def\triggergroupedcommandcs#1%
   {\let\m_syst_helpers_handle_group_b#1%
    \futureexpandis\bgroup\syst_helpers_handle_group_normal_x\syst_helpers_handle_group_nop_x}
 
@@ -3932,10 +3933,10 @@
 %D The user is warned with the suggestion to use \type {CAPITALS}. This suggestion
 %D is feasible, because \CONTEXT only defines lowcased macros.
 
-\unexpanded\def\showdefinederror#1#2%
+\protected\def\showdefinederror#1#2%
   {\writestatus\m!system{#1 #2 replaces a macro, use CAPITALS!}}
 
-\unexpanded\def\checkdefined#1#2#3%
+\protected\def\checkdefined#1#2#3%
   {\doifdefined{#3}{\showdefinederror{#2}{#3}}}
 
 %D \macros
@@ -3990,19 +3991,19 @@
 \let\syst_helpers_par_before\relax
 \let\syst_helpers_par_around\relax
 
-\unexpanded\def\dowithpar#1#2%
+\protected\def\dowithpar#1#2%
   {\globalpushmacro\syst_helpers_par_around
    \def\syst_helpers_par_around##1\par{#1##1#2\globalpopmacro\syst_helpers_par_around}%
    \expandafter\syst_helpers_par_around\ignorepars}
 
-\unexpanded\def\dogotopar#1%
+\protected\def\dogotopar#1%
   {\globalpushmacro\syst_helpers_par_before
    \def\syst_helpers_par_before{#1\globalpopmacro\syst_helpers_par_before}%
    \expandafter\syst_helpers_par_before\ignorepars}
 
 \let\dogotoparcs\dogotopar
 
-\unexpanded\def\dogotoparstart
+\protected\def\dogotoparstart
   {\ignorepars}
 
 %D This is old and kind of obsolete:
@@ -4010,7 +4011,7 @@
 \newtoks\BeforePar
 \newtoks\AfterPar
 
-\unexpanded\def\GetPar
+\protected\def\GetPar
   {\expanded
      {\dowithpar
         {\the\BeforePar
@@ -4019,7 +4020,7 @@
          \BeforePar\emptytoks
          \AfterPar\emptytoks}}}
 
-\unexpanded\def\GotoPar
+\protected\def\GotoPar
   {\expanded
      {\dogotopar
         {\the\BeforePar
@@ -4058,7 +4059,7 @@
 \let\syst_helpers_next_par\relax
 \let\syst_helpers_next_arg\relax
 
-\unexpanded\def\dowithpargument#1%
+\protected\def\dowithpargument#1%
   {\def\syst_helpers_next_par##1 \par{#1{##1}}%
    \def\syst_helpers_next_arg##1{#1{##1}}%
    \doifelsenextbgroup\syst_helpers_next_arg{\doifelsenextchar\par{#1{}}\syst_helpers_next_par}}
@@ -4086,7 +4087,7 @@
 \let\syst_helpers_next_war\relax
 \let\syst_helpers_next_arg\relax
 
-\unexpanded\def\dowithwargument#1%
+\protected\def\dowithwargument#1%
   {\def\syst_helpers_next_war##1 {#1{##1}}%
    \def\syst_helpers_next_arg##1{#1{##1}}%
    \doifelsenextbgroup\syst_helpers_next_arg\syst_helpers_next_war}
@@ -4120,7 +4121,7 @@
 %D commands, the \type {n*} is optional. When this specification is missing, the
 %D command executes once.
 
-\unexpanded\def\dorepeatwithcommand[#1]%
+\protected\def\dorepeatwithcommand[#1]%
   {\syst_helpers_repeat_with_command#1*\empty*\relax}
 
 \def\syst_helpers_repeat_with_command#1*#2#3*#4\relax#5%
@@ -4187,7 +4188,7 @@
 \newtoks\t_syst_helpers_scratch
 \let    \m_syst_helpers_scratch\empty
 
-\unexpanded\def\appendtoks#1\to#2%
+\protected\def\appendtoks#1\to#2%
   {\ifx\dodoglobal\relax
      \expandafter\toksapp
    \else
@@ -4195,7 +4196,7 @@
      \expandafter\gtoksapp
    \fi#2{#1}}
 
-\unexpanded\def\prependtoks#1\to#2%
+\protected\def\prependtoks#1\to#2%
   {\ifx\dodoglobal\relax
      \expandafter\tokspre
    \else
@@ -4219,14 +4220,14 @@
      \expandafter\gtokspre
    \fi\m_syst_helpers_scratch\t_syst_helpers_scratch}
 
-\unexpanded\def\appendtoksonce#1\to#2%
+\protected\def\appendtoksonce#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch{#1}%
    \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
      \syst_helpers_append_toks_indeed
    \fi}
 
-\unexpanded\def\prependtoksonce#1\to#2%
+\protected\def\prependtoksonce#1\to#2%
   {\let\m_syst_helpers_scratch#2%
    \t_syst_helpers_scratch{#1}%
    \ifhasxtoks\t_syst_helpers_scratch\m_syst_helpers_scratch\else
@@ -4235,7 +4236,7 @@
 
 %D The test macro:
 
-\unexpanded\def\doifelseintoks#1#2% #1 en #2 zijn toks
+\protected\def\doifelseintoks#1#2% #1 en #2 zijn toks
   {\ifhasxtoks#1#2%
      \expandafter\firstoftwoarguments
    \else
@@ -4265,14 +4266,14 @@
 
 \newtoks \collectingtoks
 
-\unexpanded\def\startcollect        #1\stopcollect        {\toksapp \collectingtoks{#1}}
-\unexpanded\def\startexpandedcollect#1\stopexpandedcollect{\etoksapp\collectingtoks{#1}}
+\protected\def\startcollect        #1\stopcollect        {\toksapp \collectingtoks{#1}}
+\protected\def\startexpandedcollect#1\stopexpandedcollect{\etoksapp\collectingtoks{#1}}
 
-\unexpanded\def\startcollecting{\collectingtoks\emptytoks}
-\unexpanded\def\stopcollecting {\the\collectingtoks}
+\protected\def\startcollecting{\collectingtoks\emptytoks}
+\protected\def\stopcollecting {\the\collectingtoks}
 
-\unexpanded\def\collect        {\toksapp \collectingtoks}
-\unexpanded\def\collectexpanded{\etoksapp\collectingtoks}
+\protected\def\collect        {\toksapp \collectingtoks}
+\protected\def\collectexpanded{\etoksapp\collectingtoks}
 
 %D A nice one too:
 
@@ -4282,7 +4283,7 @@
 % {\scratchtoks{xaa} \removetoks x\from\scratchtoks [\the\scratchtoks]}
 % {\scratchtoks{a\relax b} \removetoks \relax\from\scratchtoks [\showthe\scratchtoks]}
 
-\unexpanded\def\removetoks#1\from#2%
+\protected\def\removetoks#1\from#2%
   {\def\syst_helpers_remove_toks##1#1##2\empty\empty\empty##3^^^^0004%
      {\def\m_syst_string_one{##3}%
       \ifempty\m_syst_string_one#2{##1}\else#2{##1##2}\fi}%
@@ -4290,7 +4291,7 @@
 
 %D Also:
 
-\unexpanded\def\appendetoks#1\to#2%
+\protected\def\appendetoks#1\to#2%
   {\ifx\dodoglobal\relax
      \expandafter\etoksapp
    \else
@@ -4298,7 +4299,7 @@
      \expandafter\xtoksapp
    \fi#2{#1}}
 
-\unexpanded\def\prependetoks#1\to#2%
+\protected\def\prependetoks#1\to#2%
   {\ifx\dodoglobal\relax
      \expandafter\etokspre
    \else
@@ -4308,7 +4309,7 @@
 
 %D Hm.
 
-\unexpanded\def\flushtoks#1% nb: can reassign to #1 again, hence the indirectness
+\protected\def\flushtoks#1% nb: can reassign to #1 again, hence the indirectness
   {\t_syst_helpers_scratch#1\relax
    \dodoglobal#1\emptytoks
    \the\t_syst_helpers_scratch\relax}
@@ -4333,7 +4334,7 @@
 
 \let\syst_helpers_split_string\relax
 
-\unexpanded\def\beforesplitstring#1\at#2\to#3%
+\protected\def\beforesplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##1#2##0^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
@@ -4344,7 +4345,7 @@
      \fi}%
    \expandafter\syst_helpers_split_string#1^^^^0004\ignorearguments\ignorearguments}
 
-\unexpanded\def\aftersplitstring#1\at#2\to#3%
+\protected\def\aftersplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
@@ -4360,7 +4361,7 @@
 %D
 %D A bonus macro.
 
-\unexpanded\def\splitstring#1\at#2\to#3\and#4%
+\protected\def\splitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
         \let#3\empty
@@ -4374,7 +4375,7 @@
      \fi}%
    \expandafter\syst_helpers_split_string#1^^^^0004\ignorearguments\ignorearguments}
 
-\unexpanded\def\greedysplitstring#1\at#2\to#3\and#4%
+\protected\def\greedysplitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
         \let#3\empty
@@ -4404,7 +4405,7 @@
 
 \let\beforetestandsplitstring\beforesplitstring
 
-\unexpanded\def\aftertestandsplitstring#1\at#2\to#3%
+\protected\def\aftertestandsplitstring#1\at#2\to#3%
   {\def\syst_helpers_split_string##0#2##2^^^^0004% no #- as we need to count
      {\ifarguments
         \let#3\empty
@@ -4415,7 +4416,7 @@
      \fi}%
    \expandafter\syst_helpers_split_string#1^^^^0004\ignorearguments\ignorearguments}
 
-\unexpanded\def\testandsplitstring#1\at#2\to#3\and#4%
+\protected\def\testandsplitstring#1\at#2\to#3\and#4%
   {\def\syst_helpers_split_string##1#2##2^^^^0004%
      {\ifarguments
         \let#3\empty
@@ -4436,23 +4437,23 @@
 %D    splitatcolon,
 %D    splitatcolons}
 
-% \unexpanded\def\syst_helpers_splitatperiod    #1.#2.#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-% \unexpanded\def\syst_helpers_splitatcomma     #1,#2,#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-% \unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-% \unexpanded\def\syst_helpers_splitatcolon     #1:#2:#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
-% \unexpanded\def\syst_helpers_splitatcolons  #1::#2::#0^^^^0004#4#5{\edef#4{#1}\edef#5{#2}}
+% \protected\def\syst_helpers_splitatperiod    #1.#2.#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \protected\def\syst_helpers_splitatcomma     #1,#2,#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \protected\def\syst_helpers_splitatasterisk  #1*#2*#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \protected\def\syst_helpers_splitatcolon     #1:#2:#0^^^^0004#4#5{\def #4{#1}\def #5{#2}}
+% \protected\def\syst_helpers_splitatcolons  #1::#2::#0^^^^0004#4#5{\edef#4{#1}\edef#5{#2}}
 
-\unexpanded\def\syst_helpers_splitatperiod    #1.#2.#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
-\unexpanded\def\syst_helpers_splitatcomma     #1,#2,#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
-\unexpanded\def\syst_helpers_splitatasterisk  #1*#2*#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
-\unexpanded\def\syst_helpers_splitatcolon     #1:#2:#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
-\unexpanded\def\syst_helpers_splitatcolons  #1::#2::#-^^^^0004#3#4{\edef#3{#1}\edef#4{#2}}
+\protected\def\syst_helpers_splitatperiod    #1.#2.#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\protected\def\syst_helpers_splitatcomma     #1,#2,#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\protected\def\syst_helpers_splitatasterisk  #1*#2*#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\protected\def\syst_helpers_splitatcolon     #1:#2:#-^^^^0004#3#4{\def #3{#1}\def #4{#2}}
+\protected\def\syst_helpers_splitatcolons  #1::#2::#-^^^^0004#3#4{\edef#3{#1}\edef#4{#2}}
 
-\unexpanded\def\splitatperiod  #1{\normalexpanded{\syst_helpers_splitatperiod  #1}..^^^^0004}
-\unexpanded\def\splitatcomma   #1{\normalexpanded{\syst_helpers_splitatcomma   #1},,^^^^0004}    % not at ", "
-\unexpanded\def\splitatasterisk#1{\normalexpanded{\syst_helpers_splitatasterisk#1}**^^^^0004}
-\unexpanded\def\splitatcolon   #1{\normalexpanded{\syst_helpers_splitatcolon   #1}::^^^^0004}
-\unexpanded\def\splitatcolons  #1{\normalexpanded{\syst_helpers_splitatcolons  #1}::::^^^^0004}
+\protected\def\splitatperiod  #1{\normalexpanded{\syst_helpers_splitatperiod  #1}..^^^^0004}
+\protected\def\splitatcomma   #1{\normalexpanded{\syst_helpers_splitatcomma   #1},,^^^^0004}    % not at ", "
+\protected\def\splitatasterisk#1{\normalexpanded{\syst_helpers_splitatasterisk#1}**^^^^0004}
+\protected\def\splitatcolon   #1{\normalexpanded{\syst_helpers_splitatcolon   #1}::^^^^0004}
+\protected\def\splitatcolons  #1{\normalexpanded{\syst_helpers_splitatcolons  #1}::::^^^^0004}
 
 %D \macros
 %D   {removesubstring}
@@ -4465,7 +4466,7 @@
 %D
 %D Which in terms of \TEX\ looks like:
 
-\unexpanded\def\removesubstring#1\from#2\to#3%
+\protected\def\removesubstring#1\from#2\to#3%
   {\splitstring#2\to\m_syst_string_one\and\m_syst_string_two
    \dodoglobal#3{\m_syst_string_one\m_syst_string_two}}
 
@@ -4522,36 +4523,36 @@
 %D
 %D The faster alternatives are:
 
-\unexpanded\def\appendtocommalist#1#2%
+\protected\def\appendtocommalist#1#2%
   {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}
 
-\unexpanded\def\prependtocommalist#1#2%
+\protected\def\prependtocommalist#1#2%
   {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}
 
-\unexpanded\def\addtocommalist#1#2% {item} \cs
+\protected\def\addtocommalist#1#2% {item} \cs
   {\rawdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}}
 
-\unexpanded\def\pretocommalist#1#2% {item} \cs
+\protected\def\pretocommalist#1#2% {item} \cs
   {\rawdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
-\unexpanded\def\robustdoifelseinset#1#2%
+\protected\def\robustdoifelseinset#1#2%
   {\edef\m_syst_string_one{\detokenize\expandafter{\normalexpanded{#1}}}%
    \edef\m_syst_string_two{\detokenize\expandafter{\normalexpanded{#2}}}%
    \rawdoifelseinset\m_syst_string_one\m_syst_string_two}
 
 \let\robustdoifinsetelse\robustdoifelseinset
 
-\unexpanded\def\robustaddtocommalist#1#2% {item} \cs
+\protected\def\robustaddtocommalist#1#2% {item} \cs
   {\robustdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{\ifempty#2\else#2,\fi#1}}}
 
-\unexpanded\def\robustpretocommalist#1#2% {item} \cs
+\protected\def\robustpretocommalist#1#2% {item} \cs
   {\robustdoifelseinset{#1}#2\resetglobal
      {\dodoglobal\edef#2{#1\ifempty#2\else,#2\fi}}}
 
-\unexpanded\def\xsplitstring#1#2% \cs {str}
+\protected\def\xsplitstring#1#2% \cs {str}
  %{\def\syst_helpers_split_string##1,#2,##2,#2,##3\\%
   {\def\syst_helpers_split_string##1,#2,##2,#2,##-\\%
      {\edef\m_syst_string_one{\bcleanedupcommalist##1\empty\empty\relax}%
@@ -4563,7 +4564,7 @@
 %def\acleanedupcommalist#1,,#2\relax{#1}
 \def\acleanedupcommalist#1,,#-\relax{#1}
 
-\unexpanded\def\removefromcommalist#1#2% to be sped up
+\protected\def\removefromcommalist#1#2% to be sped up
   {\rawdoifelseinset{#1}#2%
      {\normalexpanded{\xsplitstring\noexpand#2{#1}}%
       \dodoglobal\edef#2%
@@ -4593,7 +4594,7 @@
      \edef\m_syst_string_four{\ifempty\m_syst_string_four\else\m_syst_string_four,\fi#1}%
    \fi}
 
-\unexpanded\def\substituteincommalist#1#2#3% old, new, list (slooow)
+\protected\def\substituteincommalist#1#2#3% old, new, list (slooow)
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{#2}%
    \let\m_syst_string_four\empty
@@ -4656,7 +4657,7 @@
    \fi
    \advance\commalistcounter\plusone}
 
-\unexpanded\def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
+\protected\def\replaceincommalist#1#2% #1 = commalistelement #2 = position starts at 1
   {\c_syst_helpers_comma_list_index#2\relax
    \let\m_syst_helpers_comma_list_target\empty
    \let\commalistelement\empty
@@ -4680,7 +4681,7 @@
      \expandafter\syst_helpers_comma_list_command_global_step
    \fi}
 
-\unexpanded\def\globalprocesscommalist[#1]#2%
+\protected\def\globalprocesscommalist[#1]#2%
   {\glet\m_syst_helpers_comma_list_command_global#2%
    \expandafter\syst_helpers_comma_list_command_global_step#1,],}
 
@@ -4748,13 +4749,13 @@
 \newcount\c_syst_helpers_swapped
 \let     \m_syst_helpers_swapped\relax
 
-\unexpanded\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
-\unexpanded\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
-\unexpanded\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
+\protected\def\swapdimens#1#2{\d_syst_helpers_swapped#1#1#2#2\d_syst_helpers_swapped}
+\protected\def\swapcounts#1#2{\c_syst_helpers_swapped#1#1#2#2\c_syst_helpers_swapped}
+\protected\def\swapmacros#1#2{\let\m_syst_helpers_swapped#1\let#1#2\let#2\m_syst_helpers_swapped}
 
-\unexpanded\def\globalswapdimens#1#2{\d_syst_helpers_swapped#1\global#1#2\global#2\d_syst_helpers_swapped}
-\unexpanded\def\globalswapcounts#1#2{\c_syst_helpers_swapped#1\global#1#2\global#2\c_syst_helpers_swapped}
-\unexpanded\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet#1#2\glet#2\m_syst_helpers_swapped}
+\protected\def\globalswapdimens#1#2{\d_syst_helpers_swapped#1\global#1#2\global#2\d_syst_helpers_swapped}
+\protected\def\globalswapcounts#1#2{\c_syst_helpers_swapped#1\global#1#2\global#2\c_syst_helpers_swapped}
+\protected\def\globalswapmacros#1#2{\let\m_syst_helpers_swapped#1\glet#1#2\glet#2\m_syst_helpers_swapped}
 
 %D \macros
 %D   {pushmacro,popmacro}
@@ -4787,7 +4788,7 @@
 
 \newdimen\localhsize
 
-\unexpanded\def\setlocalhsize % don't change !
+\protected\def\setlocalhsize % don't change !
   {\doifelsenextoptional
      \syst_helpers_set_local_hsize_yes
      \syst_helpers_set_local_hsize_nop}
@@ -4823,70 +4824,70 @@
 %D three tokens per call. Anyone familiar with the not||values ones, can derive
 %D their meaning from the definitions.
 
-\unexpanded\def\doifvalue#1#2%
+\protected\def\doifvalue#1#2%
   {\iftok{\csname#1\endcsname}{#2}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifnotvalue#1#2%
+\protected\def\doifnotvalue#1#2%
   {\iftok{\csname#1\endcsname}{#2}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\doifelsevalue#1#2%
+\protected\def\doifelsevalue#1#2%
   {\iftok{\csname#1\endcsname}{#2}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifnothing#1%
+\protected\def\doifnothing#1%
   {\iftok{#1}\emptytoks
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifsomething#1%
+\protected\def\doifsomething#1%
   {\iftok{#1}\emptytoks
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\doifelsenothing#1%
+\protected\def\doifelsenothing#1%
   {\iftok{#1}\emptytoks
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\doifelsesomething#1%
+\protected\def\doifelsesomething#1%
   {\iftok{#1}\emptytoks
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\unexpanded\def\doifvaluenothing#1%
+\protected\def\doifvaluenothing#1%
   {\iftok{\csname#1\endcsname}\emptytoks
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\doifvaluesomething#1%
+\protected\def\doifvaluesomething#1%
   {\iftok{\csname#1\endcsname}\emptytoks
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\doifelsevaluenothing#1%
+\protected\def\doifelsevaluenothing#1%
   {\iftok{\csname#1\endcsname}\emptytoks
      \expandafter\firstoftwoarguments
    \else
@@ -4940,9 +4941,9 @@
    \processcommalist[#3]\syst_helpers_do_common_check_all
    \ifdone\expandafter#1\else\expandafter#2\fi}
 
-\unexpanded\def\doifelseallcommon{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
-\unexpanded\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
-\unexpanded\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
+\protected\def\doifelseallcommon{\syst_helpers_do_if_all_common_else\firstoftwoarguments\secondoftwoarguments}
+\protected\def\doifallcommon    {\syst_helpers_do_if_all_common_else\firstofonearguments\gobbleoneargument   }
+\protected\def\doifnotallcommon {\syst_helpers_do_if_all_common_else\gobbleoneargument  \firstofonearguments }
 
 \let\doifallcommonelse\doifelseallcommon
 
@@ -4965,34 +4966,34 @@
 %D These might end up as \LUA based helpers (i.e. consider these
 %D obsolete:
 
-\unexpanded\def\syst_helpers_do_IF#1#2%
+\protected\def\syst_helpers_do_IF#1#2%
   {\uppercase{\iftok{#1}{#2}}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\unexpanded\def\syst_helpers_do_IF_NOT#1#2%
+\protected\def\syst_helpers_do_IF_NOT#1#2%
   {\uppercase{\iftok{#1}{#2}}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\syst_helpers_do_IF_ELSE#1#2%
+\protected\def\syst_helpers_do_IF_ELSE#1#2%
   {\uppercase{\iftok{#1}{#2}}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
-\unexpanded\def\syst_helpers_do_IF_INSTRING_ELSE#1#2%
+\protected\def\syst_helpers_do_IF_INSTRING_ELSE#1#2%
   {\uppercase{\doifelseinstring{#1}{#2}}}
 
-\unexpanded\def\DOIF             #1#2{\normalexpanded{\syst_helpers_do_IF              {#1}{#2}}}% will become obsolete
-\unexpanded\def\DOIFNOT          #1#2{\normalexpanded{\syst_helpers_do_IF_NOT          {#1}{#2}}}% will become obsolete
-\unexpanded\def\DOIFELSE         #1#2{\normalexpanded{\syst_helpers_do_IF_ELSE         {#1}{#2}}}% will become obsolete
-\unexpanded\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\syst_helpers_do_IF_INSTRING_ELSE{#1}{#2}}}% will become obsolete
+\protected\def\DOIF             #1#2{\normalexpanded{\syst_helpers_do_IF              {#1}{#2}}}% will become obsolete
+\protected\def\DOIFNOT          #1#2{\normalexpanded{\syst_helpers_do_IF_NOT          {#1}{#2}}}% will become obsolete
+\protected\def\DOIFELSE         #1#2{\normalexpanded{\syst_helpers_do_IF_ELSE         {#1}{#2}}}% will become obsolete
+\protected\def\DOIFINSTRINGELSE #1#2{\normalexpanded{\syst_helpers_do_IF_INSTRING_ELSE{#1}{#2}}}% will become obsolete
 
 %D \macros
 %D   {dosingleargumentwithset,
@@ -5017,7 +5018,7 @@
 %D \def\dodefinesomething[#1][#2]%
 %D   {\getparameters[\??xx#1][#2]}
 %D
-%D \unexpanded\def\definesomething%
+%D \protected\def\definesomething%
 %D   {\dodoubleargumentwithset\dodefinesomething}
 %D \stoptyping
 %D
@@ -5071,7 +5072,7 @@
 
 \let\m_syst_helpers_strip_character\empty
 
-\unexpanded\def\stripcharacter#1\from#2\to#3%
+\protected\def\stripcharacter#1\from#2\to#3%
   {\def\syst_helpers_strip_character##1#1##2\end
      {\edef\m_syst_helpers_strip_character{\m_syst_helpers_strip_character##1}%
       \doifnotempty{##2}{\syst_helpers_strip_character##2\end}}%
@@ -5080,7 +5081,7 @@
    \expandafter\syst_helpers_strip_character\m_syst_string_one#1\end
    \dodoglobal\let#3\m_syst_helpers_strip_character}
 
-\unexpanded\def\stripspaces\from#1\to#2% will become \unspacestring#1\from#2
+\protected\def\stripspaces\from#1\to#2% will become \unspacestring#1\from#2
   {\stripcharacter{ }\from#1\to#2}
 
 %D \macros
@@ -5089,7 +5090,7 @@
 %D The next macro does the same but is more compatible with other macros, like \type
 %D {\convert...}.
 
-\unexpanded\def\unspacestring#1\to#2%
+\protected\def\unspacestring#1\to#2%
   {\stripcharacter{ }\from#1\to#2}
 
 %D \macros
@@ -5201,7 +5202,7 @@
        \syst_helpers_process_separated_list_step}%
     \expandafter\syst_helpers_process_separated_list_step\gobbleoneargument#1#3]#3}
 
-\unexpanded\def\processseparatedlist[%
+\protected\def\processseparatedlist[%
   {\syst_helpers_process_separated_list\relax}
 
 %D \macros
@@ -5224,7 +5225,7 @@
 \let\syst_helpers_process_any_list_indeed\relax
 \let\syst_helpers_process_any_list_step  \relax
 
-\unexpanded\def\processlist#1#2#3#4% no blank skipping !
+\protected\def\processlist#1#2#3#4% no blank skipping !
   {\def\syst_helpers_process_any_list_indeed##1#2%
      {\def\syst_helpers_process_any_list_step####1####2#3%
         {\ifx#2####1%
@@ -5253,14 +5254,14 @@
 %D This command can be integrated in \type {\getparameters}, but we decided best not
 %D to do so.
 
-% \unexpanded\def\processassignlist#1[#2]#3%
+% \protected\def\processassignlist#1[#2]#3%
 %   {\def\syst_helpers_process_assign_list_assign[##1=##2=##3]%
 %      {\doif{##3}\relax{#3{##1}}}%
 %    \def\syst_helpers_process_assign_list_step##1%
 %      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
 %    \processcommalist[#2]\syst_helpers_process_assign_list_step}
 
-\unexpanded\def\processassignlist#1[#2]#3%
+\protected\def\processassignlist#1[#2]#3%
   {\def\syst_helpers_process_assign_list_assign[##1=##-=##2]%
      {\doif{##2}\relax{#3{##1}}}%
    \def\syst_helpers_process_assign_list_step##1%
@@ -5283,7 +5284,7 @@
 
 \let\m_syst_helpers_untexed\empty
 
-\unexpanded\def\untexsomething
+\protected\def\untexsomething
   {\begingroup
    \catcode\leftbraceasciicode \ignorecatcode
    \catcode\rightbraceasciicode\ignorecatcode
@@ -5295,8 +5296,8 @@
    \endgroup
    \let#3\m_syst_helpers_untexed}
 
-\unexpanded\def\untexargument{\untexsomething\convertargument}
-\unexpanded\def\untexcommand {\untexsomething\convertcommand}
+\protected\def\untexargument{\untexsomething\convertargument}
+\protected\def\untexcommand {\untexsomething\convertcommand}
 
 %D \macros
 %D   {ScaledPointsToBigPoints,ScaledPointsToWholeBigPoints}
@@ -5313,10 +5314,10 @@
 \let\tobigpoints     \clf_tobigpoints
 \let\towholebigpoints\clf_towholebigpoints
 
-\unexpanded\def\PointsToBigPoints           #1#2{\edef#2{\tobigpoints     #1}}             % can be avoided
-\unexpanded\def\PointsToWholeBigPoints      #1#2{\edef#2{\towholebigpoints#1}}             % can be avoided
-\unexpanded\def\ScaledPointsToBigPoints     #1#2{\edef#2{\tobigpoints     #1\scaledpoint}} % obsolete
-\unexpanded\def\ScaledPointsToWholeBigPoints#1#2{\edef#2{\towholebigpoints#1\scaledpoint}} % obsolete
+\protected\def\PointsToBigPoints           #1#2{\edef#2{\tobigpoints     #1}}             % can be avoided
+\protected\def\PointsToWholeBigPoints      #1#2{\edef#2{\towholebigpoints#1}}             % can be avoided
+\protected\def\ScaledPointsToBigPoints     #1#2{\edef#2{\tobigpoints     #1\scaledpoint}} % obsolete
+\protected\def\ScaledPointsToWholeBigPoints#1#2{\edef#2{\towholebigpoints#1\scaledpoint}} % obsolete
 
 %D \macros
 %D   {PointsToReal}
@@ -5328,10 +5329,10 @@
 %D \PointsToReal {dimension} \target
 %D \stoptyping
 
-% \unexpanded\def\PointsToReal#1#2%
+% \protected\def\PointsToReal#1#2%
 %   {\edef#2{\withoutpt\the\dimexpr#1}}
 
-\unexpanded\def\PointsToReal#1#2%
+\protected\def\PointsToReal#1#2%
   {\edef#2{\thewithoutunit\dimexpr#1}}
 
 %D \macros
@@ -5366,7 +5367,7 @@
 %D \starttyping
 %D \newbox\b_syst_helpers_dlh
 %D
-%D \unexpanded\def\dontleavehmode
+%D \protected\def\dontleavehmode
 %D   {\ifhmode\else \ifmmode\else
 %D      \setbox\b_syst_helpers_dlh\hbox{\mathsurround\zeropoint\everymath\emptytoks$ $}\unhbox\b_syst_helpers_dlh
 %D    \fi \fi}
@@ -5394,8 +5395,8 @@
 \def\utfupper#1{\clf_upper{#1}} % expandable
 \def\utflower#1{\clf_lower{#1}} % expandable
 
-\unexpanded\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\clf_upper{#1}}}
-\unexpanded\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\clf_lower{#1}}}
+\protected\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\clf_upper{#1}}}
+\protected\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\clf_lower{#1}}}
 
 %D \macros
 %D   {handletokens}
@@ -5440,14 +5441,14 @@
      \expandafter\syst_helpers_count_token
    \fi}
 
-\unexpanded\def\counttoken#1\in#2\to#3%
+\protected\def\counttoken#1\in#2\to#3%
   {\privatescratchcounter\zerocount
    \def\m_syst_string_one{#1}%
    \def\m_syst_string_two{\end}%
    \syst_helpers_count_token#2\end
    \dodoglobal#3\privatescratchcounter}
 
-\unexpanded\def\counttokens#1\to#2%
+\protected\def\counttokens#1\to#2%
   {\privatescratchcounter\zerocount
    \def\syst_helpers_count_token##1{\advance\privatescratchcounter\plusone}%
    \handletokens#1\with\syst_helpers_count_token
@@ -5459,7 +5460,7 @@
 %D Running this one not always gives the expected results. Consider for instance the
 %D macro for which I originally wrote this token handler.
 
-\unexpanded\def\splitofftokens#1\from#2\to#3% slow but hardly used
+\protected\def\splitofftokens#1\from#2\to#3% slow but hardly used
   {\ifnum#1>\zerocount
      \privatescratchcounter#1\relax
      \def\syst_helpers_split_off_tokens##1%
@@ -5503,10 +5504,10 @@
 %D assignment, this time by using \type {\futurelet}, and grabbing an argument as
 %D well. That way we can handle the sentinal, a blank space and grouped tokens.
 
-\unexpanded\def\syst_helpers_handle_tokens % \nexthandledtoken is part of interface
+\protected\def\syst_helpers_handle_tokens % \nexthandledtoken is part of interface
   {\futurelet\nexthandledtoken\syst_helpers_handle_tokens_indeed}
 
-\unexpanded\def\handletokens#1\with#2%
+\protected\def\handletokens#1\with#2%
   {\gdef\syst_helpers_handle_tokens_command{#2}% permits more complex #2's
    \syst_helpers_handle_tokens#1\end}
 
@@ -5555,8 +5556,8 @@
 \newtoks\everysettrialtypesetting
 \newtoks\everyresettrialtypesetting
 
-\unexpanded\def\settrialtypesetting  {\the\everysettrialtypesetting  } % obeys grouping so
-\unexpanded\def\resettrialtypesetting{\the\everyresettrialtypesetting} % this one is seldom needed
+\protected\def\settrialtypesetting  {\the\everysettrialtypesetting  } % obeys grouping so
+\protected\def\resettrialtypesetting{\the\everyresettrialtypesetting} % this one is seldom needed
 
 \let\iftrialtypesetting\iffalse % so we have no \trialtypesettingtrue|false in mkiv !
 
@@ -5581,15 +5582,15 @@
 %D This macro is first used in the tabulation macros.
 %D
 %D \starttyping
-%D \unexpanded\def\starthans%
+%D \protected\def\starthans%
 %D   {\processcontent{stophans}\test{\message{\test}\wait}}
 %D \stoptyping
 
-\unexpanded\def\processcontent#1%
+\protected\def\processcontent#1%
   {\begingroup\expandafter\syst_helpers_process_content\csname#1\endcsname}
 
-\unexpanded\def\syst_helpers_process_content#1#2#3%
-  {\unexpanded\def\syst_helpers_process_content##1#1%
+\protected\def\syst_helpers_process_content#1#2#3%
+  {\protected\def\syst_helpers_process_content##1#1%
      {\endgroup\def#2{##1}#3}%
    \syst_helpers_process_content}
 
@@ -5623,10 +5624,10 @@
 %D As an alternative for the next macro we can use a global assignment inside a box.
 %D The \type {\empty}'s permits gobbling while preventing spurious \type {\relax}'s.
 
-\unexpanded\def\setdimensionwithunit#1#2#3% number unit dimension / nice trick
+\protected\def\setdimensionwithunit#1#2#3% number unit dimension / nice trick
   {\afterassignment\gobblefourarguments#1=#2#3pt\relax\empty\empty\empty\empty}
 
-\unexpanded\def\freezedimensionwithunit#1#2%
+\protected\def\freezedimensionwithunit#1#2%
   {\setdimensionwithunit\privatescratchdimen#1{#2}\edef#1{\the\privatescratchdimen}}
 
 %D \macros
@@ -5634,21 +5635,21 @@
 %D
 %D Not that fast I guess, but here's a way to test for token registers being empty.
 
-\unexpanded\def\doifelsesometoks#1%
+\protected\def\doifelsesometoks#1%
   {\iftok#1\emptytoks
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
-\unexpanded\def\doifsometoks#1%
+\protected\def\doifsometoks#1%
   {\iftok#1\emptytoks
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\doifemptytoks#1%
+\protected\def\doifemptytoks#1%
   {\iftok#1\emptytoks
      \expandafter\firstofoneargument
    \else
@@ -5671,7 +5672,7 @@
      \expandafter\m_syst_action_nop
    \fi}
 
-\unexpanded\def\strictdoifelsenextoptional#1#2%
+\protected\def\strictdoifelsenextoptional#1#2%
   {\def\m_syst_action_yes{#1}%
    \def\m_syst_action_nop{#2}%
    \futurelet\nexttoken\syst_helpers_strict_inspect_next_character}
@@ -5720,7 +5721,7 @@
 \def\syst_helpers_serialize_comma_list_step#1%
   {\edef\serializedcommalist{\serializedcommalist#1}}
 
-\unexpanded\def\serializecommalist[#1]%
+\protected\def\serializecommalist[#1]%
   {\let\serializedcommalist\empty
    \processcommacommand[#1]\syst_helpers_serialize_comma_list_step}
 
@@ -5815,22 +5816,22 @@
 
 \installsystemnamespace{measure}
 
-\unexpanded\def\definemeasure
+\protected\def\definemeasure
   {\dodoubleargument\syst_helpers_define_measure}
 
 \def\syst_helpers_define_measure[#1][#2]%
   {\expandafter\def\csname\??measure#1\endcsname{#2}}
 
-\unexpanded\def\freezemeasure
+\protected\def\freezemeasure
   {\dodoubleargument\syst_helpers_freeze_measure}
 
 \def\syst_helpers_freeze_measure[#1][#2]%
   {\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}}
 
-\unexpanded\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}}             % quick way
-\unexpanded\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}}             % quick way
-\unexpanded\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
-\unexpanded\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
+\protected\def\setmeasure #1#2{\expandafter\def \csname\??measure#1\endcsname{#2}}             % quick way
+\protected\def\setgmeasure#1#2{\expandafter\gdef\csname\??measure#1\endcsname{#2}}             % quick way
+\protected\def\setemeasure#1#2{\expandafter\edef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
+\protected\def\setxmeasure#1#2{\expandafter\xdef\csname\??measure#1\endcsname{\the\dimexpr#2}} % quick way
 
 \def\measure
   {\the\measured}
@@ -5852,22 +5853,22 @@
 
 \installsystemnamespace{quantity}
 
-\unexpanded\def\definequantity
+\protected\def\definequantity
   {\dodoubleargument\syst_helpers_define_quantity}
 
 \def\syst_helpers_define_quantity[#1][#2]%
   {\expandafter\def\csname\??quantity#1\endcsname{#2}}
 
-\unexpanded\def\freezequantity
+\protected\def\freezequantity
   {\dodoubleargument\syst_helpers_freeze_quantity}
 
 \def\syst_helpers_freeze_quantity[#1][#2]%
   {\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}}
 
-\unexpanded\def\setquantity #1#2{\expandafter\def \csname\??quantity#1\endcsname{#2}}             % quick way
-\unexpanded\def\setgquantity#1#2{\expandafter\gdef\csname\??quantity#1\endcsname{#2}}             % quick way
-\unexpanded\def\setequantity#1#2{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
-\unexpanded\def\setxquantity#1#2{\expandafter\xdef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
+\protected\def\setquantity #1#2{\expandafter\def \csname\??quantity#1\endcsname{#2}}             % quick way
+\protected\def\setgquantity#1#2{\expandafter\gdef\csname\??quantity#1\endcsname{#2}}             % quick way
+\protected\def\setequantity#1#2{\expandafter\edef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
+\protected\def\setxquantity#1#2{\expandafter\xdef\csname\??quantity#1\endcsname{\the\numexpr#2}} % quick way
 
 \def\quantity
   {\the\quantitied}
@@ -5964,19 +5965,19 @@
 
 % \copycsname xxx\endcsname\csname ..\endcsname
 
-\unexpanded\def\copycsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter\csname}
+\protected\def\copycsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter\csname}
 
 % \letcscsname    \crap               \csname ..\endcsname
 % \letcsnamecs    \csname ..\endcsname\crap
 % \letcsnamecsname\csname ..\endcsname\csname ..\endcsname
 
-\unexpanded\def\letcscsname    {\expandafter\let\expandafter}
-\unexpanded\def\letcsnamecs    {\expandafter\let}
-\unexpanded\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
+\protected\def\letcscsname    {\expandafter\let\expandafter}
+\protected\def\letcsnamecs    {\expandafter\let}
+\protected\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
 
 % another one, add an item to a commalist
 
-\unexpanded\def\addvalue#1#2% cs item
+\protected\def\addvalue#1#2% cs item
   {\ifcsname#1\endcsname\else\expandafter\let\csname#1\endcsname\empty\fi
    \normalexpanded{\addtocommalist{#2}\expandafter\noexpand\csname#1\endcsname}}
 
@@ -5993,25 +5994,25 @@
    \fi
    \syst_helpers_unspaced}
 
-\unexpanded\def\unspaceargument#1\to#2%
+\protected\def\unspaceargument#1\to#2%
   {\privatescratchcounter\catcode\spaceasciicode
    \catcode\spaceasciicode\ignorecatcode
    \scantextokens{\edef#2{#1}}%
    \catcode\spaceasciicode\privatescratchcounter}
 
-\unexpanded\def\unspaceafter#1#2%
+\protected\def\unspaceafter#1#2%
   {\unspaceargument#2\to\ascii
    \expandafter#1\expandafter{\ascii}}
 
 % sometimes handy:
 
-\unexpanded\def\doifelsehasspace#1%
+\protected\def\doifelsehasspace#1%
   {\edef\m_syst_string_one{#1}%
    \normalexpanded{\syst_helpers_if_has_space_else#1\space}\empty\relax}
 
 \let\doifhasspaceelse\doifelsehasspace
 
-\unexpanded\def\syst_helpers_if_has_space_else#1 #2#3\relax % \space\empty\relax
+\protected\def\syst_helpers_if_has_space_else#1 #2#3\relax % \space\empty\relax
   {\ifx\m_syst_string_one\space
      \expandafter\firstoftwoarguments
    \orelse\ifempty#2%
@@ -6024,8 +6025,8 @@
 
 \installsystemnamespace{flag}
 
-\unexpanded\def\setflag  #1{\expandafter\dodoglobal\expandafter\let\csname\??flag#1\endcsname\zerocount}
-\unexpanded\def\resetflag#1{\expandafter\dodoglobal\expandafter\let\csname\??flag#1\endcsname\plusone}
+\protected\def\setflag  #1{\expandafter\dodoglobal\expandafter\let\csname\??flag#1\endcsname\zerocount}
+\protected\def\resetflag#1{\expandafter\dodoglobal\expandafter\let\csname\??flag#1\endcsname\plusone}
 
 \def\flag#1{\csname\??flag#1\endcsname}
 
@@ -6049,7 +6050,7 @@
      \expandafter\firstofoneargument
    \fi}
 
-\unexpanded\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey
+\protected\def\inheritparameter[#1]#2[#3]#4[#5]% tag tokey fromkey
   {\expandafter\def\csname#1#3\expandafter\endcsname\expandafter{\csname#1#5\endcsname}}
 
 \def\syst_helpers_if_non_zero_positive_else#1#2\end % #3#4%
@@ -6075,36 +6076,36 @@
 
 % here ?
 
-\unexpanded\def\dosetrawvalue #1#2#3{\expandafter \def\csname#1#2\endcsname{#3}}
-\unexpanded\def\dosetrawevalue#1#2#3{\expandafter\edef\csname#1#2\endcsname{#3}}
-\unexpanded\def\dosetrawgvalue#1#2#3{\expandafter\gdef\csname#1#2\endcsname{#3}}
-\unexpanded\def\dosetrawxvalue#1#2#3{\expandafter\xdef\csname#1#2\endcsname{#3}}
+\protected\def\dosetrawvalue #1#2#3{\expandafter \def\csname#1#2\endcsname{#3}}
+\protected\def\dosetrawevalue#1#2#3{\expandafter\edef\csname#1#2\endcsname{#3}}
+\protected\def\dosetrawgvalue#1#2#3{\expandafter\gdef\csname#1#2\endcsname{#3}}
+\protected\def\dosetrawxvalue#1#2#3{\expandafter\xdef\csname#1#2\endcsname{#3}}
 
-\unexpanded\def\getrawparameters      {\dogetparameters\dosetrawvalue }
-\unexpanded\def\getraweparameters     {\dogetparameters\dosetrawevalue}
-\unexpanded\def\getrawgparameters     {\dogetparameters\dosetrawgvalue}
-\unexpanded\def\getrawxparameters     {\dogetparameters\dosetrawxvalue}
+\protected\def\getrawparameters      {\dogetparameters\dosetrawvalue }
+\protected\def\getraweparameters     {\dogetparameters\dosetrawevalue}
+\protected\def\getrawgparameters     {\dogetparameters\dosetrawgvalue}
+\protected\def\getrawxparameters     {\dogetparameters\dosetrawxvalue}
 
-\unexpanded\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue} % obsolete
+\protected\def\globalgetrawparameters{\dogetparameters\dosetrawgvalue} % obsolete
 
 %D Sort of obsolete:
 
 \newcount\c_syst_helpers_mod
 
-\unexpanded\def\dosetmodulo#1#2#3%
+\protected\def\dosetmodulo#1#2#3%
   {\c_syst_helpers_mod#1\divide\c_syst_helpers_mod#2\multiply\c_syst_helpers_mod#2%
    #3#1\advance#3-\c_syst_helpers_mod}
 
-\unexpanded\def\dosetdivision#1#2#3%
+\protected\def\dosetdivision#1#2#3%
   {#3#1\divide#3 #2\relax}
 
-\unexpanded\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
-\unexpanded\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
+\protected\def\DoMod#1by#2to#3{\dosetmodulo  {#1}{#2}{#3}}
+\protected\def\DoDiv#1by#2to#3{\dosetdivision{#1}{#2}{#3}}
 
 \def\syst_helpers_unprotected#1\par
   {#1\protect}
 
-\unexpanded\def\unprotected
+\protected\def\unprotected
   {\unprotect
    \syst_helpers_unprotected}
 
@@ -6114,7 +6115,7 @@
 
 \let\elapsedsteps\!!zerocount
 
-\unexpanded\def\elapsedsteptime % unexpanded ! a bit useless but who knows ...
+\protected\def\elapsedsteptime % unexpanded ! a bit useless but who knows ...
   {\clf_elapsedsteptime\elapsedsteps\relax}
 
 \newcount\c_syst_helpers_test_feature_n
@@ -6122,7 +6123,7 @@
 
 \def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
 
-\unexpanded\def\testfeature#1#2%
+\protected\def\testfeature#1#2%
   {\c_syst_helpers_test_feature_m#1\relax
    \xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
    \def\syst_helpers_test_feature_yes
@@ -6137,7 +6138,7 @@
       \fi}%
    \retestfeature}
 
-\unexpanded\def\retestfeature % timer support is new per 10/5/2005
+\protected\def\retestfeature % timer support is new per 10/5/2005
   {\bgroup
    \ifcase\interactionmode\let\wait\relax\fi
    \clf_resettimer
@@ -6156,10 +6157,10 @@
       \clf_elapsedsteptime\elapsedsteps\space\space per step}%
    \egroup}
 
-\unexpanded\def\showtimer#1%
+\protected\def\showtimer#1%
   {\writestatus{runtime}{\elapsedseconds\space s / #1}}
 
-\unexpanded\def\testfeatureonce#1#2%
+\protected\def\testfeatureonce#1#2%
   {\begingroup
    \let\wait\relax
    \testfeature{#1}{#2}%
@@ -6174,7 +6175,7 @@
 %D \freezedimenmacro\leftmargindistance
 %D \stoptyping
 
-\unexpanded\def\freezedimenmacro#1%
+\protected\def\freezedimenmacro#1%
   {\edef#1{\the\dimexpr#1}}
 
 %D The next macro negates a macro (dimension or number, or actually, whatever. It's
@@ -6192,17 +6193,17 @@
 \def\assigndimen#1#2%
   {\afterassignment\gobbleassigndimen#1=#2\zeropoint\\}
 
-\unexpanded\def\appended#1#2#3{\expandafter#1\expandafter#2\expandafter{#2#3}}
-\unexpanded\def\appendvalue #1{\expandafter\appended\expandafter \def\csname#1\endcsname}
-\unexpanded\def\appendgvalue#1{\expandafter\appended\expandafter\gdef\csname#1\endcsname}
+\protected\def\appended#1#2#3{\expandafter#1\expandafter#2\expandafter{#2#3}}
+\protected\def\appendvalue #1{\expandafter\appended\expandafter \def\csname#1\endcsname}
+\protected\def\appendgvalue#1{\expandafter\appended\expandafter\gdef\csname#1\endcsname}
 
-\unexpanded\def\prepended#1#2#3%
+\protected\def\prepended#1#2#3%
   {\t_syst_helpers_scratch{#3}%
    \expandafter\expandafter\expandafter#1\expandafter\expandafter\expandafter#2\expandafter\expandafter\expandafter
      {\expandafter\the\expandafter\t_syst_helpers_scratch#2}}
 
-\unexpanded\def\prependvalue #1{\expandafter\prepended\expandafter \def\csname#1\endcsname}
-\unexpanded\def\prependgvalue#1{\expandafter\prepended\expandafter\gdef\csname#1\endcsname}
+\protected\def\prependvalue #1{\expandafter\prepended\expandafter \def\csname#1\endcsname}
+\protected\def\prependgvalue#1{\expandafter\prepended\expandafter\gdef\csname#1\endcsname}
 
 %D \macros
 %D   {dowithrange}
@@ -6224,11 +6225,11 @@
    \ifempty\m_syst_helpers_range_to\let\m_syst_helpers_range_to\m_syst_helpers_range_from\fi
    \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_helpers_range_action{##1}}}%
 
-\unexpanded\def\processranges[#1]#2% #1= n:m,p,q:r
+\protected\def\processranges[#1]#2% #1= n:m,p,q:r
   {\def\m_helpers_range_action{#2}%
    \processcommacommand[#1]\syst_helpers_with_range}
 
-\unexpanded\def\dowithrange#1#2%
+\protected\def\dowithrange#1#2%
   {\def\m_helpers_range_action{#2}%
    \processcommacommand[#1]\syst_helpers_with_range}
 
@@ -6247,7 +6248,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\unexpanded\def\ignoreimplicitspaces
+\protected\def\ignoreimplicitspaces
   {\doifelsenextchar\relax\relax\relax}
 
 %D \macros
@@ -6274,11 +6275,11 @@
 
 \newbox\b_syst_helpers_no_interference
 
-\unexpanded\def\startnointerference % not even grouped !
+\protected\def\startnointerference % not even grouped !
   {\setbox\b_syst_helpers_no_interference\vbox
    \bgroup}
 
-\unexpanded\def\stopnointerference
+\protected\def\stopnointerference
   {\egroup
    \setbox\b_syst_helpers_no_interference\emptybox}
 
@@ -6293,7 +6294,7 @@
 %D Signal. Some fonts have a char0 rendering so we need to make sure that it is not
 %D set in the font! (This will be overloaded)
 
-\unexpanded\def\signalcharacter{\char\zerocount} % \zwj
+\protected\def\signalcharacter{\char\zerocount} % \zwj
 
 %D A few secial variants of commands defined here. Some more will be moved here (e.g.
 %D from table modules.
@@ -6431,7 +6432,7 @@
 %     {title}   {\texdefinition{btx:apa:title-subtitle-type}}
 %     {default} {\btxflush{author}}
 
-% \unexpanded\def\doifcase#1%
+% \protected\def\doifcase#1%
 %   {\edef\m_case_asked{#1}%
 %    \syst_aux_case}
 %
@@ -6478,12 +6479,12 @@
 
 %D Experiment (sometimes looks nicer in code):
 
-\unexpanded\def\sameargumentscondition#1#2%
+\protected\def\sameargumentscondition#1#2%
   {\edef\m_syst_string_one{#1}%
    \edef\m_syst_string_two{#2}%
    \ifx\m_syst_string_one\m_syst_string_two}
 
-\unexpanded\def\emptyargumentcondition#1%
+\protected\def\emptyargumentcondition#1%
   {\edef\m_syst_string_one{#1}%
    \ifempty\m_syst_string_one}
 

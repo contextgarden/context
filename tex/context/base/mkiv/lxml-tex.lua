@@ -2382,8 +2382,8 @@ function lxml.nonspace(id,pattern) -- slow, todo loop
     xmltprint(xmlcollect(getid(id),pattern,true))
 end
 
-function lxml.strip(id,pattern,nolines,anywhere)
-    xml.strip(getid(id),pattern,nolines,anywhere)
+function lxml.strip(id,pattern,nolines,anywhere,everywhere)
+    xml.strip(getid(id),pattern,nolines,anywhere,everywhere)
 end
 
 function lxml.stripped(id,pattern,nolines)

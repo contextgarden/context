@@ -53,7 +53,7 @@
 % \let\normalstartdmath \Ustartdisplaymath
 % \let\normalstopdmath  \Ustopdisplaymath
 
-% \unexpanded\def\Ustartdisplaymath
+% \protected\def\Ustartdisplaymath
 %   {\ifinner
 %      \ifhmode
 %        \normalUstartmath
@@ -67,7 +67,7 @@
 %      \let\Ustopdisplaymath\normalUstopdisplaymath
 %    \fi}
 
-\unexpanded\def\Ucheckedstartdisplaymath
+\protected\def\Ucheckedstartdisplaymath
   {\ifinner
      \ifhmode
        \normalUstartmath
@@ -93,16 +93,16 @@
 \let\startdmath        \Ustartdisplaymath  % \Ucheckedstartdisplaymath
 \let\stopdmath         \Ustopdisplaymath   % \Ucheckedstopdisplaymath
 
-\unexpanded\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
-\unexpanded\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
-\unexpanded\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
-\unexpanded\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
+\protected\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\protected\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
+\protected\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
+\protected\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
 
 \let\m\mathematics
 
 \let\stopmathmode\relax
 
-\unexpanded\def\startmathmode % nested variant
+\protected\def\startmathmode % nested variant
   {\relax\ifmmode
      \begingroup
      \let\stopmathmode\endgroup
@@ -111,7 +111,7 @@
      \let\stopmathmode\normalstopimath
    \fi}
 
-\unexpanded\def\nomathematics#1%
+\protected\def\nomathematics#1%
   {\relax\ifmmode\hbox{#1}\else#1\fi}
 
 \let\math\mathematics
@@ -126,13 +126,13 @@
     \def\strc_formulas_stop_formula {\normalstopdmath }
 \fi
 
-\unexpanded\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
-\unexpanded\def\inlinemathematics   {\dontleavehmode\mathematics}
-\unexpanded\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
+\protected\def\displaymathematics#1{\relax\ifmmode#1\else\strc_formulas_start_formula{}#1\strc_formulas_stop_formula\fi}
+\protected\def\inlinemathematics   {\dontleavehmode\mathematics}
+\protected\def\automathematics     {\relax\ifhmode\expandafter\inlinemathematics\else\expandafter\displaymathematics\fi}
 
 % better, esp when used in bTABLE ... eTABLE
 
-\unexpanded\def\automathematics
+\protected\def\automathematics
   {\relax
    \ifhmode
      \expandafter\inlinemathematics
@@ -157,7 +157,7 @@
 \def\dimensiontypeface  {\tf}
 \def\dimensionhalfspace {\,}
 
-\unexpanded\def\dimension#1%
+\protected\def\dimension#1%
   {\pushmacro\dodimensionsignal
    \gdef\dodimensionsignal{\kern\dimensionsignal}%
    \ifzeropt\lastskip
@@ -178,7 +178,7 @@
    \dodimensionsignal
    \popmacro\dodimensionsignal}
 
-\unexpanded\def\nodimension#1%
+\protected\def\nodimension#1%
   {\unskip#1\glet\dodimensionsignal\relax}
 
 %D \macros
@@ -193,7 +193,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\unexpanded\def\cramped
+\protected\def\cramped
   {\mathpalette\math_cramped}
 
 %D We force a cramped style by issuing a non||existing radical (box).
@@ -294,9 +294,9 @@
 %D Notice that \type {\clap{\cramped ... }} would also work,
 %D but it requires \TEX\ to typeset it arguments 16 times.
 
-\unexpanded\def\crampedllap{\mathpalette\math_cramped_llap}
-\unexpanded\def\crampedrlap{\mathpalette\math_cramped_rlap}
-\unexpanded\def\crampedclap{\mathpalette\math_cramped_clap}
+\protected\def\crampedllap{\mathpalette\math_cramped_llap}
+\protected\def\crampedrlap{\mathpalette\math_cramped_rlap}
+\protected\def\crampedclap{\mathpalette\math_cramped_clap}
 
 \def\math_cramped_llap#1#2{{}\dollap{\math_cramped #1{#2}}}
 \def\math_cramped_rlap#1#2{{}\dorlap{\math_cramped #1{#2}}}
@@ -304,7 +304,7 @@
 
 % experiment, not yet to be used
 
-% \unexpanded\def\displaybreak
+% \protected\def\displaybreak
 %   {\ifhmode
 %      \removeunwantedspaces
 %      \ifcase\raggedstatus\hfill\fi

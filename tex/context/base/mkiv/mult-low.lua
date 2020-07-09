@@ -336,7 +336,7 @@ return {
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",
         --
-        "unexpanded", "expanded", "startexpanded", "stopexpanded", "protected", "protect", "unprotect",
+        "unexpanded", "expanded", "startexpanded", "stopexpanded", "protect", "unprotect",
         --
         "firstofoneargument",
         "firstoftwoarguments", "secondoftwoarguments",

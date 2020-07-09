@@ -97,7 +97,7 @@
 %D  unwanted results. We can therefore turn all those things
 %D off with \type{\dontinterfere}.
 
-\unexpanded\def\dontinterfere % or maybe just forgetall
+\protected\def\dontinterfere % or maybe just forgetall
   {\reseteverypar
    \parindent\zeropoint
    \parskip  \zeropoint
@@ -114,7 +114,7 @@
 
 \ifdefined\dontcomplain \else
 
-    \unexpanded\def\dontcomplain
+    \protected\def\dontcomplain
       {\hbadness\plustenthousand
        \vbadness\plustenthousand
        \hfuzz   \maxdimen
@@ -316,7 +316,7 @@
 
 \let\dowithruledbox\relax % hook
 
-\unexpanded\def\makeruledbox#1%
+\protected\def\makeruledbox#1%
   {\boxruleht\ht#1%
    \boxruledp\dp#1%
    \boxrulewd\wd#1%
@@ -397,7 +397,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledhbox
+\protected\def\ruledhbox
   {\normalhbox\bgroup
    \dowithnextboxcs\supp_visualizers_hbox_finish\normalhbox}
 
@@ -419,7 +419,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvbox
+\protected\def\ruledvbox
   {\normalvbox\bgroup
    \dowithnextboxcs\supp_visualizers_vbox_finish\normalvbox}
 
@@ -441,7 +441,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvtop
+\protected\def\ruledvtop
   {\normalvtop\bgroup
    \dowithnextboxcs\supp_visualizers_vtop_finish\normalvtop}
 
@@ -462,7 +462,7 @@
 %D
 %D \ShowBufferedExampleBox
 
-\unexpanded\def\ruledvcenter
+\protected\def\ruledvcenter
   {\normalvbox\bgroup
    \dontinterfere
    \dowithnextboxcs\supp_visualizers_vcenter_finish\normalvbox}
@@ -499,7 +499,7 @@
 %D At the cost of some extra macros we can implement a
 %D variant that does not need the~\type{=}, but we stick to:
 
-\unexpanded\def\ruledbox
+\protected\def\ruledbox
   {\dowithnextboxcs\supp_visualizers_box_finish}
 
 \def\supp_visualizers_box_finish
@@ -811,11 +811,11 @@
 %D All five substitutions use the same auxiliary macro. Watch
 %D the positive first -- negative next approach.
 
-\unexpanded\def\ruledhss     {\doruledhfiller\normalhss     \normalhfilneg  {0}{0}}
-\unexpanded\def\ruledhfil    {\doruledhfiller\normalhfil    \normalhfilneg {10}{-6}}
-\unexpanded\def\ruledhfill   {\doruledhfiller\normalhfill   \normalhfillneg{18}{-14}}
-\unexpanded\def\ruledhfilneg {\doruledhfiller\normalhfilneg \normalhfil    {-6}{10}}
-\unexpanded\def\ruledhfillneg{\doruledhfiller\normalhfillneg\normalhfill  {-14}{18}}
+\protected\def\ruledhss     {\doruledhfiller\normalhss     \normalhfilneg  {0}{0}}
+\protected\def\ruledhfil    {\doruledhfiller\normalhfil    \normalhfilneg {10}{-6}}
+\protected\def\ruledhfill   {\doruledhfiller\normalhfill   \normalhfillneg{18}{-14}}
+\protected\def\ruledhfilneg {\doruledhfiller\normalhfilneg \normalhfil    {-6}{10}}
+\protected\def\ruledhfillneg{\doruledhfiller\normalhfillneg\normalhfill  {-14}{18}}
 
 %D \macros
 %D   {ruledvss,
@@ -889,11 +889,11 @@
 %D Keep in mind that \type{\vfillneg} is not part of \PLAIN\
 %D \TEX, but are mimmicked by a macro.
 
-\unexpanded\def\ruledvss     {\doruledvfiller\normalvss     \normalvfilneg   {2}}
-\unexpanded\def\ruledvfil    {\doruledvfiller\normalvfil    \normalvfilneg  {-4}}
-\unexpanded\def\ruledvfill   {\doruledvfiller\normalvfill   \normalvfillneg{-12}}
-\unexpanded\def\ruledvfilneg {\doruledvfiller\normalvfilneg \normalvfil      {8}}
-\unexpanded\def\ruledvfillneg{\doruledvfiller\normalvfillneg\normalvfill    {16}}
+\protected\def\ruledvss     {\doruledvfiller\normalvss     \normalvfilneg   {2}}
+\protected\def\ruledvfil    {\doruledvfiller\normalvfil    \normalvfilneg  {-4}}
+\protected\def\ruledvfill   {\doruledvfiller\normalvfill   \normalvfillneg{-12}}
+\protected\def\ruledvfilneg {\doruledvfiller\normalvfilneg \normalvfil      {8}}
+\protected\def\ruledvfillneg{\doruledvfiller\normalvfillneg\normalvfill    {16}}
 
 %D \macros
 %D   {ruledhskip}
@@ -999,7 +999,7 @@
    \fi
    \egroup}
 
-\unexpanded\def\ruledhskip
+\protected\def\ruledhskip
   {\bgroup
    \afterassignment\supp_visualizers_hskip_indeed
    \scratchskip=}
@@ -1149,7 +1149,7 @@
    \fi
    \egroup}
 
-\unexpanded\def\ruledvskip
+\protected\def\ruledvskip
   {\bgroup
    \afterassignment\doruledvskip
    \scratchskip=}
@@ -1228,7 +1228,7 @@
    \afterwards\scratchskip
    \egroup}
 
-\unexpanded\def\ruledhkern#1%
+\protected\def\ruledhkern#1%
   {\bgroup
    \let\afterwards#1%
    \afterassignment\supp_visualizers_hkern_indeed
@@ -1317,13 +1317,13 @@
    \afterwards\scratchskip
    \egroup}
 
-\unexpanded\def\ruledvkern#1%
+\protected\def\ruledvkern#1%
   {\bgroup
    \let\afterwards#1\relax
    \afterassignment\supp_visualizers_vkern_indeed
    \scratchskip=}
 
-\unexpanded\def\ruledkern
+\protected\def\ruledkern
   {\ifvmode
      \expandafter\ruledvkern
    \else
@@ -1334,7 +1334,7 @@
 %D A a bit more \TEX nice solution is:
 %D
 %D \starttyping
-%D \unexpanded\def\ruledkern%
+%D \protected\def\ruledkern%
 %D   {\csname ruled\ifvmode v\else h\fi kern\endcsname\normalkern}
 %D \stoptyping
 
@@ -1370,7 +1370,7 @@
    \spacefactor\scratchcounter
    \egroup}
 
-\unexpanded\def\ruledhglue
+\protected\def\ruledhglue
   {\bgroup
    \afterassignment\supp_visualizers_hglue_indeed\scratchskip=}
 
@@ -1400,7 +1400,7 @@
    \prevdepth\nextdepth
    \egroup}
 
-\unexpanded\def\ruledvglue
+\protected\def\ruledvglue
   {\bgroup
    \afterassignment\supp_visualizers_vglue_indeed\scratchskip=}
 
@@ -1461,7 +1461,7 @@
 %D
 %D \ShowBufferedExample
 
-\unexpanded\def\ruledmkern
+\protected\def\ruledmkern
   {\bgroup
    \afterassignment\supp_visualizers_mkern_indeed
    \scratchmuskip=}
@@ -1485,7 +1485,7 @@
    \flexibletrue
    \supp_visualizers_mkern_finish\normalmskip}
 
-\unexpanded\def\ruledmskip
+\protected\def\ruledmskip
   {\bgroup
    \afterassignment\supp_visualizers_mskip_indeed
    \scratchmuskip=}
@@ -1589,7 +1589,7 @@
       \fi}%
    \smashbox#1}
 
-\unexpanded\def\ruledhpenalty
+\protected\def\ruledhpenalty
   {\bgroup
    \afterassignment\supp_visualizers_hpenalty_indeed
    \scratchcounter=}
@@ -1639,7 +1639,7 @@
 %D
 %D \ShowBufferedExample
 
-\unexpanded\def\ruledvpenalty
+\protected\def\ruledvpenalty
   {\bgroup
    \afterassignment\supp_visualizers_vpenalty_indeed
    \scratchcounter=}
@@ -1682,7 +1682,7 @@
 
 %D This comes together in:
 
-\unexpanded\def\ruledpenalty
+\protected\def\ruledpenalty
   {\ifvmode
      \expandafter\ruledvpenalty
    \else
@@ -1698,7 +1698,7 @@
 %D For those who want to manipulate the visual cues in detail,
 %D we have grouped them.
 
-\unexpanded\def\showfils
+\protected\def\showfils
   {\showingcompositiontrue
    \let\hss      \ruledhss
    \let\hfil     \ruledhfil
@@ -1711,7 +1711,7 @@
    \let\vfilneg  \ruledvfilneg
    \let\vfillneg \ruledvfillneg}
 
-\unexpanded\def\dontshowfils
+\protected\def\dontshowfils
   {\let\hss      \normalhss
    \let\hfil     \normalhfil
    \let\hfill    \normalhfill
@@ -1723,7 +1723,7 @@
    \let\vfilneg  \normalvfilneg
    \let\vfillneg \normalvfillneg}
 
-\unexpanded\def\showboxes
+\protected\def\showboxes
   {\showingcompositiontrue
    \baselineruletrue
    \let\hbox     \ruledhbox
@@ -1731,13 +1731,13 @@
    \let\vtop     \ruledvtop
    \let\vcenter  \ruledvcenter}
 
-\unexpanded\def\dontshowboxes
+\protected\def\dontshowboxes
   {\let\hbox     \normalhbox
    \let\vbox     \normalvbox
    \let\vtop     \normalvtop
    \let\vcenter  \normalvcenter}
 
-\unexpanded\def\showskips
+\protected\def\showskips
   {\showingcompositiontrue
    \let\hskip    \ruledhskip
    \let\vskip    \ruledvskip
@@ -1747,7 +1747,7 @@
    \let\hglue    \ruledhglue
    \let\vglue    \ruledvglue}
 
-\unexpanded\def\dontshowskips
+\protected\def\dontshowskips
   {\let\hskip    \normalhskip
    \let\vskip    \normalvskip
    \let\kern     \normalkern
@@ -1756,11 +1756,11 @@
    \let\hglue    \normalhglue
    \let\vglue    \normalvglue}
 
-\unexpanded\def\showpenalties
+\protected\def\showpenalties
   {\showingcompositiontrue
    \let\penalty  \ruledpenalty}
 
-\unexpanded\def\dontshowpenalties
+\protected\def\dontshowpenalties
   {\let\penalty  \normalpenalty}
 
 %D \macros
@@ -1787,7 +1787,7 @@
 
 \newif\ifshowingcomposition
 
-\unexpanded\def\showcomposition
+\protected\def\showcomposition
   {\ifshowingcomposition
      \showfils
      \showboxes
@@ -1795,7 +1795,7 @@
      \showpenalties
    \fi}
 
-\unexpanded\def\dontshowcomposition
+\protected\def\dontshowcomposition
   {\ifshowingcomposition
      \dontshowfils
      \dontshowboxes
@@ -1829,7 +1829,7 @@
     \def\defaulttestrulewidth{.02\bodyfontsize}
 \fi
 
-\unexpanded\def\showmakeup
+\protected\def\showmakeup
   {\testrulewidth\defaulttestrulewidth
    \showingcompositiontrue
    \showcomposition}

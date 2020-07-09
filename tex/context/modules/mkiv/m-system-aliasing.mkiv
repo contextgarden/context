@@ -1,0 +1,120 @@
+%D \module
+%D   [       file=m-system-aliasing,
+%D        version=2020.07.08,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Loading generic stuff,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startmodule[system-aliasing]
+
+\startluacode
+    local next = next
+    local find, topattern = string.find, string.topattern
+
+    local aliases   = { }
+    local replacer  = false
+    local filenames = false
+    local wildcards = false
+    local enabled   = false
+
+    local report    = logs.reporter("system", "aliasing")
+
+    -- This is not yet perfect as we actually need to quit at a non token.
+
+    interfaces.implement {
+        name      = "registeralias",
+        public    = true,
+        arguments = { "csname", "csname" },
+        actions   = function(old,new)
+            aliases[old] = new
+            replacer = false
+        end
+    }
+
+    interfaces.implement {
+        name      = "registeraliasfile",
+        public    = true,
+        arguments = "string",
+        actions   = function(name)
+            if find(name,"%*") then
+                name = topattern(name)
+                if wildcards then wildcards[name] = true else wildcards = { [name] = true } end
+            else
+                if filenames then filenames[name] = true else filenames = { [name] = true } end
+            end
+            if not enabled then
+                utilities.sequencers.appendaction(
+                    resolvers.openers.helpers.textfileactions,
+                    "system","resolvers.macros.processgeneric"
+                )
+                utilities.sequencers.enableaction(
+                    resolvers.openers.helpers.textfileactions,
+                    "resolvers.macros.processgeneric"
+                )
+                enabled = true
+            end
+        end
+    }
+
+    local function found(name)
+        if filenames and filenames[name] then
+            return true
+        end
+        if wildcards then
+            for k, v in next, wildcards do
+                if find(name,k) then
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    local Cs, lpegmatch = lpeg.Cs, lpeg.match
+
+    local utfchartabletopattern = lpeg.utfchartabletopattern
+    local utf8character         = lpeg.patterns.utf8character
+    local escapecharacter       = lpeg.P("\\")
+    local terminal              = lpeg.S([[`"'~@#$%^&_-+/*=(){}[]<>:;,.!?|\\]])
+                                + lpeg.P(-1)
+    local lpegmatch             = lpeg.match
+
+    function resolvers.macros.processgeneric(str,name)
+        if found(name) then
+            report("file %a",name)
+            if not replacer then
+                replacer = Cs( (
+                    escapecharacter
+                  * (utfchartabletopattern(aliases) / aliases)
+                  * terminal
+                  + utf8character
+                )^0 )
+            end
+            str = lpegmatch(replacer,str) or str
+        end
+        return str
+    end
+
+\stopluacode
+
+\registeralias \protected  \normalprotected
+\registeralias \unexpanded \normalunexpanded
+\registeralias \expanded   \normalexpanded
+
+%D \starttyping
+%D \registeraliasfile{rubish.tex}
+%D \registeraliasfile{generic/*.tex}
+%D
+%D % e.g. \def\foo{\unexpanded{test}}
+%D
+%D \input rubish.tex
+%D \input generic/foo.tex
+%D \stoptyping
+
+\stopmodule

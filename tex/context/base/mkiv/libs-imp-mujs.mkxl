@@ -29,7 +29,7 @@
 
 \let\stopecmacode\relax
 
-\normalprotected\def\startecmacode % \stopecmacode
+\protected\def\startecmacode % \stopecmacode
   {\begingroup
    \obeylualines
    \obeyluatokens

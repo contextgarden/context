@@ -23,12 +23,12 @@
 %D \MKII\ file. There is some overlap in code with \MKII\ but we take that
 %D for granted. Also, in \MKIV\ less active characters are used.
 
-% \normalprotected\def\setnewconstantfromchar#1%
+% \protected\def\setnewconstantfromchar#1%
 %   {\expandafter\ifdefined\expandafter#1\expandafter
 %         \let\expandafter#1\expandafter\undefined\expandafter\fi\expandafter
 %         \newcount\expandafter#1\expandafter#1\the#1\relax}
 %
-% \normalprotected\def\setnewconstantfromchar#1%
+% \protected\def\setnewconstantfromchar#1%
 %   {\begingroup
 %    \scratchcounter#1%
 %    \edef\!!stringa{\meaning#1}%
@@ -41,7 +41,7 @@
 %      \fi
 %      #1\the\scratchcounter\relax}}
 %
-% \normalprotected\def\setnewconstantfromchar#1%
+% \protected\def\setnewconstantfromchar#1%
 %   {\begingroup
 %    \edef\!!stringa{\meaning#1}%
 %    \expandafter\chardef\expandafter#1\the#1%
@@ -53,7 +53,7 @@
 %      \fi
 %      #1\the#1\relax}}
 %
-% \normalprotected\def\setnewconstantfromchar#1%
+% \protected\def\setnewconstantfromchar#1%
 %   {\scratchcounter#1\let#1\undefined\newcount#1#1\scratchcounter}
 
 \def\promote#1{\scratchcounter#1\let#1\undefined\newcount#1#1\scratchcounter}
@@ -134,13 +134,13 @@
 
 % rather special and used in writing to file: \let\par\outputnewlinechar
 
-% \normalprotected\def\initializenewlinechar % operating system dependent
+% \protected\def\initializenewlinechar % operating system dependent
 %   {\begingroup
 %    \newlinechar\newlineasciicode
 %    \xdef\outputnewlinechar{^^J}%
 %    \endgroup}
 
-\normalprotected\def\initializenewlinechar % operating system dependent
+\protected\def\initializenewlinechar % operating system dependent
   {\begingroup
    \letcharcode\newlineasciicode\relax
    \newlinechar\newlineasciicode
@@ -153,7 +153,7 @@
 %
 % \def\??catcodelet   {1>>} % let : \let
 % \def\??catcodedef   {2>>} % def : \def
-% \def\??catcodeued   {3>>} % ued : \unexpanded\def
+% \def\??catcodeued   {3>>} % ued : \protected\def
 % \def\??catcodeget   {4>>} %       \meaning
 %
 % \def\??catcodetablet{5>>}
@@ -161,7 +161,7 @@
 
 \installsystemnamespace {catcodelet} % let : \let
 \installsystemnamespace {catcodedef} % def : \def
-\installsystemnamespace {catcodeued} % ued : \unexpanded\def
+\installsystemnamespace {catcodeued} % ued : \protected\def
 \installsystemnamespace {catcodeget} %       \meaning
 
 \installsystemnamespace {catcodetablet}
@@ -172,7 +172,7 @@
 \newcount\c_syst_catcodes_b
 \newcount\c_syst_catcodes_c
 
-\normalprotected\def\newcatcodetable#1% we could move the cctdefcounter to lua
+\protected\def\newcatcodetable#1% we could move the cctdefcounter to lua
   {\global\advance\c_syst_catcodes_n\plusone
    \expandafter\xdef\csname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
    \newconstant#1%
@@ -188,7 +188,7 @@
    \catcode\commentasciicode  \othercatcode
    \catcode\delasciicode      \othercatcode}
 
-\normalprotected\def\startcatcodetable#1#2\stopcatcodetable
+\protected\def\startcatcodetable#1#2\stopcatcodetable
   {\begingroup
    \catcodetable\inicatcodes
    \the\everysetdefaultcatcodes
@@ -198,7 +198,7 @@
 
 \let\stopcatcodetable\relax
 
-\normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\begingroup
    \catcodetable#1\relax
    \globaldefs\plusone
@@ -208,14 +208,14 @@
 
 \let\stopextendcatcodetable\relax
 
-\normalprotected\def\permitcircumflexescape % to be used grouped
+\protected\def\permitcircumflexescape % to be used grouped
   {\catcode\circumflexasciicode\superscriptcatcode}
 
 \let\permitcaretescape\permitcircumflexescape
 
 % ==
 %
-% \normalprotected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+% \protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
 %   {\bgroup
 %    \scratchcounter\the\catcodetable
 %    \catcodetable #1 #2
@@ -277,7 +277,7 @@
 \def\syst_catcodes_ued_c % only first time
   {\expandafter\gdef\csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
      \expandafter##\expandafter1\expandafter
-       {\expandafter\normalprotected\expandafter\def\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+       {\expandafter\protected\expandafter\def\csname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
    \syst_catcodes_reinstate_unexpanded
    \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
 
@@ -294,7 +294,7 @@
   {\begingroup                          % and the selector has been lost
    \uccode\c_syst_catcodes_hack\c_syst_catcodes_b
    \catcode\uccode\c_syst_catcodes_hack\activecatcode
-   \uppercase{\normalprotected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
+   \uppercase{\protected\xdef~{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}}%
    \endgroup}
 
 %D This can be used when a direct definition has been done and the selector has been
@@ -310,7 +310,7 @@
 %
 % \def\syst_catcodes_reinstate_unexpanded
 %   {\begingroup
-%    \normalprotected\edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%    \protected\edef\next{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
 %    \global\letcharcode\c_syst_catcodes_b\next
 %    \endgroup}
 
@@ -337,12 +337,12 @@
 
 \newcount\c_syst_catcodes_level
 
-\normalprotected\def\pushcatcodetable
+\protected\def\pushcatcodetable
   {\advance\c_syst_catcodes_level\plusone
    \syst_catcodes_trace_push
    \expandafter\chardef\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname\currentcatcodetable}
 
-\normalprotected\def\popcatcodetable
+\protected\def\popcatcodetable
   {\ifcase\c_syst_catcodes_level
      \syst_catcodes_trace_nesting_error
    \else
@@ -351,19 +351,19 @@
      \advance\c_syst_catcodes_level\minusone
    \fi}
 
-\normalprotected\def\syst_catcodes_trace_nesting_error
+\protected\def\syst_catcodes_trace_nesting_error
   {\immediate\write\statuswrite{}%
    \immediate\write\statuswrite{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\c_syst_catcodes_level)}\wait\end
    \immediate\write\statuswrite{}}
 
-\normalprotected\def\restorecatcodes % takes previous level
+\protected\def\restorecatcodes % takes previous level
   {\ifnum\c_syst_catcodes_level>\plusone
      \expandafter\catcodetable\csname\??catcodetablet\number\numexpr\c_syst_catcodes_level-1\relax\endcsname
    \fi}
 
 % \newtoks\everycatcodetable
 
-\normalprotected\def\setcatcodetable#1%
+\protected\def\setcatcodetable#1%
   {\catcodetable#1%
 %  \the\everycatcodetable
    \syst_catcodes_trace_set}
@@ -374,7 +374,7 @@
 %D \tracecatcodetables
 %D \stoptyping
 
-\normalprotected\def\tracecatcodetables
+\protected\def\tracecatcodetables
   {\def\syst_catcodes_trace_set {\syst_catcodes_trace{set  \catcodetablename\space                                at \number\c_syst_catcodes_level}}%
    \def\syst_catcodes_trace_push{\syst_catcodes_trace{push \catcodetablename\space from \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}%
    \def\syst_catcodes_trace_pop {\syst_catcodes_trace{pop  \catcodetablename\space to   \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}}

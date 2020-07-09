@@ -48,10 +48,10 @@
 \setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
 \letvalue{\??dimensionnormal\s!unknown}\assign_dimension_direct
 
-% \unexpanded\def\assigndimension#value%
+% \protected\def\assigndimension#value%
 %   {\csname\??dimensionnormal\ifcsname\??dimensionnormal#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
-\unexpanded\def\assigndimension#value%
+\protected\def\assigndimension#value%
   {\ifcsname\??dimensionnormal#value\endcsname
      \expandafter\lastnamedcs
    \else
@@ -81,10 +81,10 @@
 \setvalue{\??dimensionalfa\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
 \letvalue{\??dimensionalfa\s!unknown}\assign_alpha_dimension_direct
 
-% \unexpanded\def\assignalfadimension#value%
+% \protected\def\assignalfadimension#value%
 %   {\csname\??dimensionalfa\ifcsname\??dimensionalfa#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
-\unexpanded\def\assignalfadimension#value%
+\protected\def\assignalfadimension#value%
   {\ifcsname\??dimensionalfa#value\endcsname
      \expandafter\lastnamedcs
    \else
@@ -115,10 +115,10 @@
 \setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
 \letvalue{\??dimensionvalue\s!unknown}\assign_value_direct
 
-% \unexpanded\def\assignvalue#value%
+% \protected\def\assignvalue#value%
 %   {\csname\??dimensionvalue\ifcsname\??dimensionvalue#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
-\unexpanded\def\assignvalue#value%
+\protected\def\assignvalue#value%
   {\ifcsname\??dimensionvalue#value\endcsname
      \expandafter\lastnamedcs
    \else
@@ -157,10 +157,10 @@
                                                                      \setbox\b_assign_width\emptybox}
 \letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
 
-% \unexpanded\def\assignwidth#value%
+% \protected\def\assignwidth#value%
 %   {\csname\??dimensionwidth\ifcsname\??dimensionwidth#value\endcsname#value\else\s!unknown\fi\endcsname{#value}}
 
-\unexpanded\def\assignwidth#value%
+\protected\def\assignwidth#value%
   {\ifcsname\??dimensionwidth#value\endcsname
      \expandafter\lastnamedcs
    \else
